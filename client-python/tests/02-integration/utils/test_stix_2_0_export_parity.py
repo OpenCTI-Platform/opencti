@@ -61,6 +61,14 @@ PENDING_DIFFERENCES_BY_STIX_TYPE = {
     # from the nested refs, next to `x_mitre_data_source_ref`. The import only
     # reads it on a `data-component`, not on an `x-mitre-data-component`.
     "x-mitre-data-component": {"data_source_ref"},
+    # Only output by the backend converter. The import reads `x_opencti_order`
+    # and `x_opencti_color` back, which the legacy export loses.
+    "marking-definition": {
+        "x_opencti_color",
+        "x_opencti_id",
+        "x_opencti_order",
+        "x_opencti_type",
+    },
 }
 
 # Keys the legacy export leaves out because its GraphQL reader does not select
@@ -1327,11 +1335,21 @@ def rich_relationships(api_client, related_objects):
         killChainPhases=related_objects["killChainPhases"],
         **common,
     )
+    # A statement marking: both exports remove every `tlp:` from its value.
+    statement_marking = api_client.marking_definition.create(
+        definition_type="statement",
+        definition="STIX 2.0 parity tlp:statement tlp:copy",
+        x_opencti_order=0,
+        x_opencti_color="#ffffff",
+    )
     observable_relationship = api_client.stix_core_relationship.create(
         fromId=intrusion_set["id"],
         toId=ip_address["id"],
         relationship_type="related-to",
-        **common,
+        **{
+            **common,
+            "objectMarking": common["objectMarking"] + [statement_marking["id"]],
+        },
     )
     sighting = api_client.stix_sighting_relationship.create(
         fromId=red_tool["id"],
@@ -1372,6 +1390,7 @@ def rich_relationships(api_client, related_objects):
     }, (red_marking, red_tool["standard_id"])
     api_client.stix_sighting_relationship.delete(id=sighting["id"])
     api_client.stix_core_relationship.delete(id=observable_relationship["id"])
+    api_client.marking_definition.delete(id=statement_marking["id"])
     api_client.stix_core_relationship.delete(id=relationship["id"])
     api_client.stix_cyber_observable.delete(id=ip_address["id"])
     for entity in (victim, red_tool, intrusion_set):
@@ -1411,6 +1430,17 @@ def test_rich_relationship_stix_2_0_export_matches_legacy_export(
     assert {key: exported.get(key) for key in _ENDPOINT_REF_KEYS} == {
         key: endpoint_refs.get(key) for key in _ENDPOINT_REF_KEYS
     }
+    # The marking definitions come from the backend converter too.
+    markings = [
+        item
+        for item in stix_2_0_bundle["objects"]
+        if item["type"] == "marking-definition"
+    ]
+    # Without custom attributes, only the full mode has markings: the related
+    # objects are exported with their custom attributes, as in legacy.
+    if option != "no_custom_attributes" or mode == "full":
+        assert markings
+    assert all("x_opencti_order" in marking for marking in markings)
     differences = _differences(legacy_bundle, stix_2_0_bundle)
     assert differences == {}, json.dumps(differences, indent=1, default=str)
 

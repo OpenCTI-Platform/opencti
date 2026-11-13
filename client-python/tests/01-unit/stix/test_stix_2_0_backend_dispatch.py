@@ -46,6 +46,8 @@ def stix_helper():
     client.stix_sighting_relationship = MagicMock(
         name="stix_sighting_relationship_client"
     )
+    client.marking_definition = MagicMock(name="marking_definition_client")
+    client.marking_definition.to_stix.side_effect = _backend_marking_payload
     return OpenCTIStix2(client)
 
 
@@ -100,12 +102,41 @@ def _raw_graphql_entity(with_import_files=False):
     return entity
 
 
+TLP_AMBER_INTERNAL_ID = "internal-tlp-amber"
+
+
 def _tlp_amber_marking():
     return {
+        "id": TLP_AMBER_INTERNAL_ID,
         "standard_id": MARKING_ID,
         "definition_type": "TLP",
         "definition": "TLP:AMBER",
         "created": "2017-01-20T00:00:00.000Z",
+        "modified": "2024-01-01T00:00:00.000Z",
+    }
+
+
+def _backend_marking_payload(id, version=None):
+    """STIX 2.0 marking as produced by ``convertMarkingDefinitionToStix``.
+
+    The internal ids are the ones of ``_tlp_amber_marking`` and ``_file_marking``.
+    """
+    if id == TLP_AMBER_INTERNAL_ID:
+        standard_id = MARKING_ID
+    else:
+        standard_id = "marking-definition--" + id.removesuffix("-id")
+    return {
+        "id": standard_id,
+        "type": "marking-definition",
+        "spec_version": "2.0",
+        "created": "2017-01-20T00:00:00.000Z",
+        "definition_type": "tlp",
+        "name": "TLP:AMBER",
+        "definition": {"tlp": "amber"},
+        "x_opencti_id": id,
+        "x_opencti_type": "Marking-Definition",
+        "x_opencti_order": 2,
+        "x_opencti_color": "#d84315",
     }
 
 
@@ -140,6 +171,7 @@ def test_prepare_export_legacy_entity_with_stored_spec_version_2_0(stix_helper):
     stix_helper.opencti.stix_nested_ref_relationship.list.assert_called_once()
     markings = [obj for obj in result if obj.get("type") == "marking-definition"]
     assert markings[0]["spec_version"] == "2.1"
+    stix_helper.opencti.marking_definition.to_stix.assert_not_called()
 
 
 def test_generate_export_stix_2_0_non_migrated_type_uses_legacy_converter(
@@ -356,10 +388,160 @@ def test_prepare_export_stix_2_0_marking_definition_is_stix_2_0(stix_helper):
     result = stix_helper.prepare_export(prepared, stix_version=STIX_VERSION_2_0)
 
     markings = [obj for obj in result if obj.get("type") == "marking-definition"]
-    assert len(markings) == 1
-    assert markings[0]["spec_version"] == "2.0"
+    # From the backend converter, with its custom attributes.
+    assert markings == [_backend_marking_payload(TLP_AMBER_INTERNAL_ID)]
+    stix_helper.opencti.marking_definition.to_stix.assert_called_once_with(
+        id=TLP_AMBER_INTERNAL_ID, version=STIX_VERSION_2_0
+    )
     malware = next(obj for obj in result if obj.get("type") == "malware")
     assert malware["object_marking_refs"] == [MARKING_ID]
+
+
+def _export_malware_with_marking(stix_helper, marking):
+    stix_helper.opencti.stix_core_object.to_stix.return_value = (
+        _backend_malware_payload()
+    )
+    raw_entity = _raw_graphql_entity()
+    raw_entity["objectMarking"] = [marking]
+    raw_entity["objectMarkingIds"] = [marking["id"]]
+    return stix_helper.prepare_export(
+        stix_helper.generate_export(raw_entity, stix_version=STIX_VERSION_2_0),
+        stix_version=STIX_VERSION_2_0,
+    )
+
+
+def test_prepare_export_stix_2_0_marking_definition_is_cached(stix_helper):
+    """A marking is read once, until it is modified."""
+    marking = _tlp_amber_marking()
+
+    _export_malware_with_marking(stix_helper, marking)
+    result = _export_malware_with_marking(stix_helper, marking)
+
+    to_stix = stix_helper.opencti.marking_definition.to_stix
+    assert to_stix.call_count == 1
+    # The cached marking is not shared with the exported bundle.
+    result[0]["name"] = "edited"
+    result[0]["definition"]["tlp"] = "edited"
+    exported_again = _export_malware_with_marking(stix_helper, marking)[0]
+    assert exported_again["name"] == "TLP:AMBER"
+    assert exported_again["definition"] == {"tlp": "amber"}
+
+    _export_malware_with_marking(
+        stix_helper, {**marking, "modified": "2025-01-01T00:00:00.000Z"}
+    )
+    assert to_stix.call_count == 2
+
+
+def test_prepare_export_stix_2_0_marking_without_modified_is_not_cached(
+    stix_helper,
+):
+    marking = {**_tlp_amber_marking(), "modified": None}
+
+    _export_malware_with_marking(stix_helper, marking)
+    _export_malware_with_marking(stix_helper, marking)
+
+    assert stix_helper.opencti.marking_definition.to_stix.call_count == 2
+
+
+def test_export_marking_definition_stix_2_0_without_custom_attributes(stix_helper):
+    marking_definition = stix_helper._export_marking_definition(
+        _tlp_amber_marking(), is_backend_stix_2_0=True, no_custom_attributes=True
+    )
+
+    assert marking_definition["id"] == MARKING_ID
+    assert not [key for key in marking_definition if key.startswith("x_")]
+
+
+@pytest.mark.parametrize(
+    "marking, backend_payload",
+    [
+        # The backend cannot convert the marking (e.g. deleted meanwhile).
+        (_tlp_amber_marking(), None),
+        # Read without its id (custom attributes): the backend cannot be asked.
+        ({**_tlp_amber_marking(), "id": None}, "not called"),
+    ],
+    ids=["backend-returns-none", "marking-without-id"],
+)
+def test_export_marking_definition_stix_2_0_falls_back_to_client(
+    stix_helper, marking, backend_payload
+):
+    """The marking is built client-side instead of failing the export."""
+    to_stix = stix_helper.opencti.marking_definition.to_stix
+    to_stix.side_effect = None
+    to_stix.return_value = backend_payload
+
+    marking_definition = stix_helper._export_marking_definition(
+        marking, is_backend_stix_2_0=True
+    )
+
+    assert to_stix.called == (backend_payload is None)
+    assert marking_definition == {
+        "type": "marking-definition",
+        "spec_version": "2.0",
+        "id": MARKING_ID,
+        "created": "2017-01-20T00:00:00.000Z",
+        "definition_type": "tlp",
+        "name": "TLP:AMBER",
+        "definition": {"tlp": "amber"},
+    }
+
+
+def test_prepare_export_stix_2_0_file_marking_without_id(stix_helper):
+    """A file marking read without its id does not fail the export."""
+    marking_without_id = {
+        key: value for key, value in _file_marking("green").items() if key != "id"
+    }
+    with patch.object(
+        stix_helper.opencti, "fetch_opencti_file_by_id", return_value="ZmFrZQ=="
+    ):
+        result = _export_malware_with_file_marking(stix_helper, marking_without_id)
+
+    file_marking = next(
+        obj for obj in result if obj.get("id") == "marking-definition--green"
+    )
+    assert file_marking["spec_version"] == "2.0"
+    stix_helper.opencti.marking_definition.to_stix.assert_not_called()
+
+
+def test_prepare_export_stix_2_0_file_marking_without_custom_attributes(
+    stix_helper,
+):
+    """File markings come from the backend, without their custom attributes."""
+    with patch.object(
+        stix_helper.opencti, "fetch_opencti_file_by_id", return_value="ZmFrZQ=="
+    ):
+        result = _export_malware_with_file_marking(
+            stix_helper, _file_marking("green"), no_custom_attributes=True
+        )
+
+    file_marking = next(
+        obj for obj in result if obj.get("id") == "marking-definition--green"
+    )
+    assert file_marking["spec_version"] == "2.0"
+    assert not [key for key in file_marking if key.startswith("x_")]
+    stix_helper.opencti.marking_definition.to_stix.assert_called_once_with(
+        id="green-id", version=STIX_VERSION_2_0
+    )
+
+
+def _export_malware_with_file_marking(
+    stix_helper, file_marking, no_custom_attributes=False
+):
+    stix_helper.opencti.stix_core_object.to_stix.return_value = (
+        _backend_malware_payload()
+    )
+    raw_entity = _raw_graphql_entity(with_import_files=True)
+    raw_entity["importFiles"][0]["objectMarking"] = [file_marking]
+    prepared = stix_helper.generate_export(
+        raw_entity,
+        no_custom_attributes=no_custom_attributes,
+        stix_version=STIX_VERSION_2_0,
+    )
+    return stix_helper.prepare_export(
+        prepared,
+        no_custom_attributes=no_custom_attributes,
+        stix_version=STIX_VERSION_2_0,
+    )
 
 
 def test_prepare_export_stix_2_0_no_custom_attributes_has_no_dangling_marking(
@@ -504,6 +686,7 @@ def test_stix_2_0_external_reference_files_follow_export_access_filter(
         obj for obj in result if obj.get("id") == "marking-definition--green"
     )
     assert file_marking["spec_version"] == "2.0"
+    assert file_marking["x_opencti_id"] == "green-id"
     assert not any(obj.get("id") == "marking-definition--red" for obj in result)
 
 
@@ -1443,9 +1626,10 @@ def test_prepare_export_stix_2_0_relationship_full_mode_reads_typed_endpoints(
     [
         ("stix_core_relationship", "stixCoreRelationship"),
         ("stix_sighting_relationship", "stixSightingRelationship"),
+        ("marking_definition", "markingDefinition"),
     ],
 )
-def test_relationship_to_stix_parses_backend_payload(client_name, field):
+def test_sub_client_to_stix_parses_backend_payload(client_name, field):
     client = _fake_client()
     backend_payload = _backend_relationship_payload()
     with patch.object(
@@ -1470,9 +1654,10 @@ def test_relationship_to_stix_parses_backend_payload(client_name, field):
     [
         ("stix_core_relationship", "stixCoreRelationship"),
         ("stix_sighting_relationship", "stixSightingRelationship"),
+        ("marking_definition", "markingDefinition"),
     ],
 )
-def test_relationship_to_stix_returns_none_when_not_found(client_name, field):
+def test_sub_client_to_stix_returns_none_when_not_found(client_name, field):
     client = _fake_client()
     with patch.object(client, "query", return_value={"data": {field: None}}):
         assert getattr(client, client_name).to_stix(id="internal-relationship") is None

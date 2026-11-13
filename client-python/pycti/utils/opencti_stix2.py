@@ -1,4 +1,5 @@
 import base64
+import copy
 import datetime
 import json
 import math
@@ -387,8 +388,12 @@ class OpenCTIStix2:
         self.stix2_update = OpenCTIStix2Update(opencti)
         self.mapping_cache = LRUCache(maxsize=50000)
         self.mapping_cache_permanent = {}
-        # STIX marking definitions of the exported external reference files, by id
+        # Markings of the exported external reference files, as read from the
+        # API, by STIX id
         self.export_file_marking_definitions = {}
+        # STIX 2.0 marking definitions from the backend, by marking id and
+        # modification date: the same markings are on most exported objects.
+        self.stix_2_0_marking_definitions = LRUCache(maxsize=1000)
 
     def get_in_cache(self, data_id):
         """Get an item from the cache.
@@ -2405,13 +2410,12 @@ class OpenCTIStix2:
                     if "objectMarking" in file:
                         x_opencti_file["object_marking_refs"] = []
                         for file_marking in file["objectMarking"]:
-                            marking_definition = self._marking_to_stix(file_marking)
                             # Kept so prepare_export adds it to the bundle
                             self.export_file_marking_definitions[
-                                marking_definition["id"]
-                            ] = marking_definition
+                                file_marking["standard_id"]
+                            ] = file_marking
                             x_opencti_file["object_marking_refs"].append(
-                                marking_definition["id"]
+                                file_marking["standard_id"]
                             )
                     external_reference["x_opencti_files"].append(x_opencti_file)
             result.append(external_reference)
@@ -2819,6 +2823,62 @@ class OpenCTIStix2:
             },
         }
 
+    def _export_marking_definition(
+        self,
+        marking: Dict,
+        is_backend_stix_2_0: bool,
+        no_custom_attributes: bool = False,
+    ) -> Dict:
+        """Get the STIX marking definition of a marking read with an exported object.
+
+        An object exported by the backend STIX 2.0 converter gets its markings
+        from the same converter. They are cached by marking id and modification
+        date, so a marking updated since is read again (unless an upsert kept
+        its modification date). A marking the backend cannot convert, or read
+        without its id, is built client-side with the legacy rules instead, so
+        that it does not fail the whole export.
+
+        An object that is not migrated (e.g. Language) keeps legacy markings:
+        in a bundle mixing both, the first copy of a shared marking is kept.
+
+        :param marking: Marking definition as returned by the API
+            (``objectMarking`` entry)
+        :type marking: Dict
+        :param is_backend_stix_2_0: Whether the object carrying the marking is
+            exported by the backend STIX 2.0 converter
+        :type is_backend_stix_2_0: bool
+        :param no_custom_attributes: Whether to exclude custom attributes, defaults to False
+        :type no_custom_attributes: bool, optional
+        :return: STIX marking definition, a copy the caller can edit
+        :rtype: Dict
+        """
+        # TODO(stix-2-0-migration): DELETE the legacy branch once every entity is migrated.
+        if not is_backend_stix_2_0:
+            return self._marking_to_stix(marking)
+        marking_id = marking.get("id")
+        cache_key = (marking_id, marking.get("modified"))
+        marking_definition = self.stix_2_0_marking_definitions.get(cache_key)
+        if marking_definition is None and marking_id is not None:
+            marking_definition = self.opencti.marking_definition.to_stix(
+                id=marking_id, version=STIX_VERSION_2_0
+            )
+            if marking_definition is not None and marking.get("modified") is not None:
+                self.stix_2_0_marking_definitions[cache_key] = marking_definition
+        if marking_definition is None:
+            self.opencti.app_logger.warning(
+                "Backend STIX 2.0 conversion unavailable for a marking definition, "
+                "built client-side",
+                {"id": marking_id, "standard_id": marking.get("standard_id")},
+            )
+            marking_definition = self._marking_to_stix(marking, "2.0")
+        if no_custom_attributes:
+            marking_definition = {
+                key: value
+                for key, value in marking_definition.items()
+                if not key.startswith("x_")
+            }
+        return copy.deepcopy(marking_definition)
+
     @staticmethod
     def _append_marking_definition(result: List, marking_definition: Dict) -> None:
         """Add a marking definition to the export objects, once."""
@@ -2856,12 +2916,12 @@ class OpenCTIStix2:
         self._rewrite_embedded_image_uris_for_export(entity)
 
         # Entities produced by the backend STIX 2.0 converter already carry
-        # their nested refs, and the objects generated below (marking
-        # definitions) must use the same spec_version. Keyed on the opt-in and
-        # the type, not on `spec_version`: legacy entities also carry the
-        # stored `spec_version`, which may be "2.0". The backend relationships
-        # carry their relationship type as `x_opencti_type` (e.g. `uses`), so
-        # they are recognized by their STIX type.
+        # their nested refs, and their marking definitions come from the same
+        # converter. Keyed on the opt-in and the type, not on `spec_version`:
+        # legacy entities also carry the stored `spec_version`, which may be
+        # "2.0". The backend relationships carry their relationship type as
+        # `x_opencti_type` (e.g. `uses`), so they are recognized by their STIX
+        # type.
         # TODO(stix-2-0-migration): DELETE once every entity is migrated.
         is_backend_stix_2_0 = self._is_backend_stix_2_0(
             _STIX_2_0_RELATIONSHIP_TYPES.get(
@@ -2869,7 +2929,6 @@ class OpenCTIStix2:
             ),
             stix_version,
         )
-        related_objects_spec_version = "2.0" if is_backend_stix_2_0 else SPEC_VERSION
 
         # CreatedByRef
         if (
@@ -2968,26 +3027,9 @@ class OpenCTIStix2:
         ):
             entity["object_marking_refs"] = []
             for entity_marking_definition in entity["objectMarking"]:
-                if entity_marking_definition["definition_type"] == "TLP":
-                    created = "2017-01-20T00:00:00.000Z"
-                else:
-                    created = entity_marking_definition["created"]
-                marking_definition = {
-                    "type": "marking-definition",
-                    "spec_version": related_objects_spec_version,
-                    "id": entity_marking_definition["standard_id"],
-                    "created": created,
-                    "definition_type": entity_marking_definition[
-                        "definition_type"
-                    ].lower(),
-                    "name": entity_marking_definition["definition"],
-                    "definition": {
-                        entity_marking_definition["definition_type"]
-                        .lower(): entity_marking_definition["definition"]
-                        .lower()
-                        .replace("tlp:", "")
-                    },
-                }
+                marking_definition = self._export_marking_definition(
+                    entity_marking_definition, is_backend_stix_2_0
+                )
                 result.append(marking_definition)
                 entity["object_marking_refs"].append(marking_definition["id"])
         if "objectMarking" in entity:
@@ -3188,8 +3230,10 @@ class OpenCTIStix2:
                     "object_marking_refs": [],
                 }
                 for file_marking_definition in file.get("objectMarking") or []:
-                    marking_definition = self._marking_to_stix(
-                        file_marking_definition, related_objects_spec_version
+                    marking_definition = self._export_marking_definition(
+                        file_marking_definition,
+                        is_backend_stix_2_0,
+                        no_custom_attributes,
                     )
                     self._append_marking_definition(result, marking_definition)
                     x_opencti_file["object_marking_refs"].append(
@@ -3206,10 +3250,11 @@ class OpenCTIStix2:
                     if marking_id in self.export_file_marking_definitions:
                         self._append_marking_definition(
                             result,
-                            {
-                                **self.export_file_marking_definitions[marking_id],
-                                "spec_version": related_objects_spec_version,
-                            },
+                            self._export_marking_definition(
+                                self.export_file_marking_definitions[marking_id],
+                                is_backend_stix_2_0,
+                                no_custom_attributes,
+                            ),
                         )
 
         # StixRefRelationship

@@ -180,6 +180,8 @@ import {
   EXPECTED_MARKING_DEFINITION,
   PAP_MARKING_DEFINITION_INSTANCE,
   EXPECTED_PAP_MARKING_DEFINITION,
+  STATEMENT_MARKING_DEFINITION_INSTANCE,
+  EXPECTED_STATEMENT_MARKING_DEFINITION,
 } from './stix-2-0-converter-fixtures/SMOs/marking-definition';
 import { LABEL_INSTANCE, EXPECTED_LABEL } from './stix-2-0-converter-fixtures/SMOs/label';
 import { KILL_CHAIN_PHASE_INSTANCE, EXPECTED_KILL_CHAIN_PHASE } from './stix-2-0-converter-fixtures/SMOs/kill-chain-phase';
@@ -553,6 +555,10 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Marking Definition (non-TLP, e.g. PAP)', () => {
     const result = convertMarkingDefinitionToStix(PAP_MARKING_DEFINITION_INSTANCE);
     expect(result).toEqual(EXPECTED_PAP_MARKING_DEFINITION);
+  });
+  it('should convert Marking Definition (statement, value as in the legacy export)', () => {
+    const result = convertMarkingDefinitionToStix(STATEMENT_MARKING_DEFINITION_INSTANCE);
+    expect(result).toEqual(EXPECTED_STATEMENT_MARKING_DEFINITION);
   });
   it('should convert Label', () => {
     const result = convertLabelToStix(LABEL_INSTANCE);
