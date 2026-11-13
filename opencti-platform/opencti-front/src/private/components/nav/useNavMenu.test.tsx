@@ -1,6 +1,27 @@
 import React from 'react';
-import { describe, expect, it } from 'vitest';
-import { filterNavGroups, NavItem, RawNavGroup } from './useNavMenu';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import useNavMenu, { filterNavGroups, NavItem, RawNavGroup } from './useNavMenu';
+import { testRenderHook } from '../../../utils/tests/test-render';
+
+let mockHiddenEntities: string[] = [];
+
+vi.mock('../../../utils/hooks/useEntitySettings', () => ({
+  useHiddenEntities: () => mockHiddenEntities,
+  useIsHiddenEntities: (...types: string[]) => types.every((type) => mockHiddenEntities.includes(type)),
+}));
+
+vi.mock('../../../utils/hooks/useGranted', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  default: () => true,
+}));
+
+vi.mock('../../../utils/hooks/useHelper', () => ({
+  default: () => ({ isFeatureEnable: () => false, isTrashEnable: () => false }),
+}));
+
+vi.mock('../../../utils/hooks/useImportAccess', () => ({
+  default: () => ({ hasOnlyAccessToImportDraftTab: false }),
+}));
 
 const item = (id: string, extra: Partial<NavItem> = {}): NavItem => ({
   id, label: id, icon: <svg />, link: `/${id}`, ...extra,
@@ -86,5 +107,37 @@ describe('filterNavGroups', () => {
 
   it('returns nothing at all when the user may see nothing', () => {
     expect(filterNavGroups([{ id: 'g', items: [false] }, false], [])).toEqual([]);
+  });
+});
+
+describe('useNavMenu, Techniques group', () => {
+  const techniqueTypes = ['Attack-Pattern', 'Narrative', 'Course-Of-Action', 'Data-Component', 'Data-Source', 'Procedure'];
+
+  const techniquesItem = () => {
+    const { hook } = testRenderHook(() => useNavMenu());
+    return hook.result.current.flatMap((group) => group.items).find((entry) => entry.id === 'techniques');
+  };
+
+  beforeEach(() => {
+    mockHiddenEntities = [];
+  });
+
+  it('lists the Procedures entry under Techniques', () => {
+    const subItems = techniquesItem()?.subItems ?? [];
+    expect(subItems.map(({ type, link }) => ({ type, link }))).toContainEqual({
+      type: 'Procedure',
+      link: '/dashboard/techniques/procedures',
+    });
+  });
+
+  it('keeps the Techniques group when only Procedure is left visible', () => {
+    mockHiddenEntities = techniqueTypes.filter((type) => type !== 'Procedure');
+    const subItems = techniquesItem()?.subItems ?? [];
+    expect(subItems.map(({ type }) => type)).toEqual(['Procedure']);
+  });
+
+  it('hides the Techniques group when every Techniques type, Procedure included, is hidden', () => {
+    mockHiddenEntities = techniqueTypes;
+    expect(techniquesItem()).toBeUndefined();
   });
 });

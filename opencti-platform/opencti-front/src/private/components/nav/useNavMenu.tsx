@@ -5,6 +5,7 @@ import {
   BiotechOutlined,
   BugReportOutlined,
   CasesOutlined,
+  ChecklistOutlined,
   ConstructionOutlined,
   DescriptionOutlined,
   DiamondOutlined,
@@ -195,7 +196,7 @@ const useNavMenu = (): NavGroup[] => {
   const hideEntities = useIsHiddenEntities('Sector', 'Event', 'Organization', 'Security-platforms', 'System', 'Individual');
   const hideCases = useIsHiddenEntities('Case-Incident', 'Feedback', 'Case-Rfi', 'Case-Rft', 'Task');
   const hideArsenal = useIsHiddenEntities('Malware', 'Channel', 'Tool', 'Vulnerability');
-  const hideTechniques = useIsHiddenEntities('Attack-Pattern', 'Narrative', 'Course-Of-Action', 'Data-Component', 'Data-Source');
+  const hideTechniques = useIsHiddenEntities('Attack-Pattern', 'Narrative', 'Course-Of-Action', 'Data-Component', 'Data-Source', 'Procedure');
   const hideLocations = useIsHiddenEntities('Region', 'Administrative-Area', 'Country', 'City', 'Position');
 
   const inDraft = !!draftContext;
@@ -326,6 +327,7 @@ const useNavMenu = (): NavGroup[] => {
             { type: 'Course-Of-Action', link: '/dashboard/techniques/courses_of_action', label: t_i18n('Courses of action'), icon: <ProgressWrench fontSize="small" /> },
             { type: 'Data-Component', link: '/dashboard/techniques/data_components', label: t_i18n('Data components'), icon: <SourceOutlined fontSize="small" /> },
             { type: 'Data-Source', link: '/dashboard/techniques/data_sources', label: t_i18n('Data sources'), icon: <StreamOutlined fontSize="small" /> },
+            { type: 'Procedure', link: '/dashboard/techniques/procedures', label: t_i18n('Procedures'), icon: <ChecklistOutlined fontSize="small" /> },
           ],
         },
         !hideEntities && {

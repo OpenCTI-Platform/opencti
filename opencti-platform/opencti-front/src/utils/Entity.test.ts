@@ -61,6 +61,10 @@ describe('Function: resolveLink', () => {
     expect(resolveLink('Data-Component')).toEqual('/dashboard/techniques/data_components');
   });
 
+  it('should return URL to procedures for Procedure type', () => {
+    expect(resolveLink('Procedure')).toEqual('/dashboard/techniques/procedures');
+  });
+
   it('should return URL to data sources for Data-Source type', () => {
     expect(resolveLink('Data-Source')).toEqual('/dashboard/techniques/data_sources');
   });
