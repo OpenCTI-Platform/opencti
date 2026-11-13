@@ -1,10 +1,26 @@
+import { pipeline, type Readable, Transform } from 'node:stream';
 import { downloadFile } from '../../database/raw-file-storage';
 import { FunctionalError } from '../../config/errors';
 import type { BasicStoreEntityFintelDesign } from './fintelDesign-types';
 
 // The folder the logos are stored in: the logo of a design is stored under its internal id, without extension
 export const FINTEL_DESIGN_LOGO_FOLDER = 'fintelDesigns';
+// The largest logo a design can have: the largest file a configuration bundle carries, so that any design can be exported and imported back
 export const FINTEL_DESIGN_LOGO_MAX_SIZE = 5 * 1024 * 1024;
+
+// The logo being uploaded through a counter that fails as soon as it goes over the limit, so an oversized logo is never stored.
+// A pipeline, not a pipe: a refusal destroys the source too, otherwise the temporary file of the upload stays on disk
+export const limitFintelDesignLogoStream = (source: Readable): Readable => {
+  let size = 0;
+  const counter = new Transform({
+    transform(chunk, _encoding, callback) {
+      size += chunk.length;
+      const tooLarge = size > FINTEL_DESIGN_LOGO_MAX_SIZE;
+      callback(tooLarge ? FunctionalError('The logo of the fintel design is too large', { maxFileSize: FINTEL_DESIGN_LOGO_MAX_SIZE }) : null, chunk);
+    },
+  });
+  return pipeline(source, counter, () => undefined);
+};
 
 export const fintelDesignLogoStorageKey = (internalId: string) => `${FINTEL_DESIGN_LOGO_FOLDER}/${internalId}`;
 

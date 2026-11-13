@@ -12,7 +12,7 @@ import { guessMimeType } from '../../database/file-storage';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { lockResources } from '../../lock/master-lock';
-import { FINTEL_DESIGN_LOGO_FOLDER } from './fintelDesign-logo';
+import { FINTEL_DESIGN_LOGO_FOLDER, limitFintelDesignLogoStream } from './fintelDesign-logo';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string): Promise<BasicStoreEntityFintelDesign> => {
   await checkEnterpriseEdition(context);
@@ -112,7 +112,8 @@ const uploadFintelDesignFile = async (context: AuthContext, user: AuthUser, fint
   if (!mimeType.includes('image/')) {
     throw UnsupportedError('Fintel design logo file format must be image/', { mimeType });
   }
-  const fintelDesignLogoFile = { ...fullFile, filename: `${fintelDesignId}` };
+  // The size is checked on the bytes really read, before anything is stored
+  const fintelDesignLogoFile = { ...fullFile, filename: `${fintelDesignId}`, createReadStream: () => limitFintelDesignLogoStream(fullFile.createReadStream()) };
   const { upload } = await uploadToStorage(context, user, FINTEL_DESIGN_LOGO_FOLDER, fintelDesignLogoFile, {});
   return { upload };
 };
