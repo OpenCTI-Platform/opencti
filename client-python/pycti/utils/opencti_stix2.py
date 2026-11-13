@@ -1454,6 +1454,7 @@ class OpenCTIStix2:
             "Vulnerability": self.opencti.vulnerability.read,
             "Security-Coverage": self.opencti.security_coverage.read,
             "Security-Coverage-Result": self.opencti.security_coverage_result.read,
+            "Procedure": self.opencti.procedure.read,
         }
 
     def get_reader(self, entity_type: str):
@@ -1533,6 +1534,8 @@ class OpenCTIStix2:
             "x-opencti-task": self.opencti.task,
             "security-coverage": self.opencti.security_coverage,
             "security-coverage-result": self.opencti.security_coverage_result,
+            "x-opencti-procedure": self.opencti.procedure,
+            "x-procedure": self.opencti.procedure,
             "vocabulary": self.opencti.vocabulary,
             # relationships
             "relationship": self.opencti.stix_core_relationship,
@@ -4767,7 +4770,7 @@ class OpenCTIStix2:
             else None
         )
 
-        stix2_splitter = OpenCTIStix2Splitter()
+        stix2_splitter = OpenCTIStix2Splitter(logger=self.opencti.app_logger)
         _, incompatible_elements, bundles = (
             stix2_splitter.split_bundle_with_expectations(
                 stix_bundle, False, event_version
