@@ -65,7 +65,7 @@ describe('buildCellDecorations', () => {
 
   it('borders an unscored parent in the stop of its highest scoring sub-technique', () => {
     const decoration = build().get('ap-1074');
-    expect(decoration?.fill).toBeUndefined();
+    expect(decoration?.fill).toBe('transparent');
     expect(decoration?.textTone).toBeUndefined();
     expect(decoration?.border).toBe(heatBorder(4));
   });
@@ -77,7 +77,7 @@ describe('buildCellDecorations', () => {
 
   it('gives a present, unscored technique the neutral outline and no fill', () => {
     const decoration = build().get('ap-1110');
-    expect(decoration?.fill).toBeUndefined();
+    expect(decoration?.fill).toBe('transparent');
     expect(decoration?.border).toBe(NEUTRAL);
     expect(decoration?.linkedEntities).toEqual([]);
   });
@@ -87,7 +87,7 @@ describe('buildCellDecorations', () => {
       usage: toMap([usageOf('ap-1074-001', entities(5, 'a'))]),
       investigationIds: new Set(['ap-1074-001', 'ap-1074-004']),
     }).get('ap-1074-004');
-    expect(decoration?.fill).toBeUndefined();
+    expect(decoration?.fill).toBe('transparent');
     expect(decoration?.border).toBe(NEUTRAL);
   });
 
