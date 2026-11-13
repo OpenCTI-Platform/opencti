@@ -212,6 +212,7 @@ interface EntityStixCoreRelationshipsEntitiesLineProps {
   onToggleShiftEntity: (
     index: number,
     entity: EntityStixCoreRelationshipsEntitiesViewLine_node$data,
+    event?: React.MouseEvent,
   ) => void;
   index: number;
 }
@@ -245,7 +246,7 @@ export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
         sx={{ color: 'primary.main' }}
         style={{ minWidth: 40 }}
         onClick={(event) => (event.shiftKey
-          ? onToggleShiftEntity(index, stixCoreObject)
+          ? onToggleShiftEntity(index, stixCoreObject, event)
           : onToggleEntity(stixCoreObject, event))
         }
       >
