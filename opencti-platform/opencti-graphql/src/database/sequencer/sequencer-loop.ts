@@ -36,6 +36,7 @@ import { SequencerWriteBuffer, setCurrentWriteBuffer } from './sequencer-write-b
 import { SEQUENCER_CONFIG } from './sequencer-config';
 import { DeferredLanes } from './sequencer-lanes';
 import { sequencerMetrics } from './sequencer-metrics';
+import type { BatchPhase } from './sequencer-metrics';
 import { SequencerQueue } from './sequencer-queue';
 import { buildIntent, intentOwnIds } from './sequencer-intent';
 import { sequencerIdentityMap, startIdentityMapInvalidation } from './sequencer-identity-map';
@@ -618,18 +619,28 @@ const resolveUnderLock = async (batch: SequencerIntent[]): Promise<any[]> => {
   const t0 = Date.now();
   const m0 = sequencerMetrics.mark();
   const context = executionContext('sequencer', SYSTEM_USER);
+  // task 0040 step B1: each read of this phase timed apart (locked_* sub-phases, parts of resolve_locked)
+  const timed = async <T>(phase: BatchPhase, read: () => Promise<T>): Promise<T> => {
+    const ts = Date.now();
+    const ms = sequencerMetrics.mark();
+    try {
+      return await read();
+    } finally {
+      sequencerMetrics.phase(phase, (Date.now() - ts) / 1000, ms);
+    }
+  };
   const absent = sequencerIdentityMap.knownAbsentIds();
   if (absent.length > 0) {
-    const found = await inPackets(absent, (packet) => elFindByIds(context, SYSTEM_USER, packet, { searchCaller: 'sequencer_recheck' }) as Promise<any[]>);
+    const found = await timed('locked_recheck', () => inPackets(absent, (packet) => elFindByIds(context, SYSTEM_USER, packet, { searchCaller: 'sequencer_recheck' }) as Promise<any[]>));
     sequencerMetrics.esOp('search');
     if (found.length > 0) {
       sequencerMetrics.phase('resolve_locked', (Date.now() - t0) / 1000, m0);
       return found;
     }
   }
-  await loadUpsertBases(context, collectBatchResolveIds(batch).entityCandidateIds);
-  await prefetchRelationDedup(context, batch);
-  await loadRelationUpsertBases(context);
+  await timed('locked_bases', () => loadUpsertBases(context, collectBatchResolveIds(batch).entityCandidateIds));
+  await timed('locked_dedup', () => prefetchRelationDedup(context, batch));
+  await timed('locked_relation_bases', () => loadRelationUpsertBases(context));
   sequencerMetrics.phase('resolve_locked', (Date.now() - t0) / 1000, m0);
   return [];
 };
