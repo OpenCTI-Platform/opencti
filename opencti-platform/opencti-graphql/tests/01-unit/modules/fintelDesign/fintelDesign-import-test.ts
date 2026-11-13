@@ -18,7 +18,7 @@ vi.mock('../../../../src/modules/fintelDesign/fintelDesign-logo', async (importO
 
 import { fullEntitiesList, storeLoadById } from '../../../../src/database/middleware-loader';
 import { addFintelDesign, fintelDesignEditField } from '../../../../src/modules/fintelDesign/fintelDesign-domain';
-import { FINTEL_DESIGN_LOGO_MAX_SIZE, fintelDesignLogoExtension, readFintelDesignLogo } from '../../../../src/modules/fintelDesign/fintelDesign-logo';
+import { FINTEL_DESIGN_LOGO_MAX_SIZE, fintelDesignLogoExtension, limitFintelDesignLogoStream, readFintelDesignLogo } from '../../../../src/modules/fintelDesign/fintelDesign-logo';
 import { exportFintelDesign } from '../../../../src/modules/fintelDesign/fintelDesign-export';
 import { importFintelDesign } from '../../../../src/modules/fintelDesign/fintelDesign-import';
 import { fintelDesignImportSchema } from '../../../../src/modules/fintelDesign/fintelDesign-import-schema';
@@ -105,6 +105,25 @@ describe('Fintel design logo format', () => {
     // A prolog never closed, or nothing after it
     expect(fintelDesignLogoExtension(Buffer.from(`<!-- ${svg}`))).toBeUndefined();
     expect(fintelDesignLogoExtension(Buffer.from('<?xml version="1.0"?>\n'))).toBeUndefined();
+  });
+});
+
+describe('Fintel design logo upload', () => {
+  const read = async (source: Readable) => {
+    const chunks: Buffer[] = [];
+    for await (const chunk of limitFintelDesignLogoStream(source)) {
+      chunks.push(chunk as Buffer);
+    }
+    return Buffer.concat(chunks);
+  };
+
+  it('lets a logo up to the limit through as it is, and refuses a larger one as soon as it goes over, destroying the upload', async () => {
+    const atLimit = Buffer.alloc(FINTEL_DESIGN_LOGO_MAX_SIZE, 1);
+    expect((await read(Readable.from([atLimit.subarray(0, 1024), atLimit.subarray(1024)]))).equals(atLimit)).toBe(true);
+
+    const upload = Readable.from([atLimit, Buffer.from([1]), Buffer.from('never read')]);
+    await expect(read(upload)).rejects.toThrow('The logo of the fintel design is too large');
+    expect(upload.destroyed).toBe(true);
   });
 });
 
