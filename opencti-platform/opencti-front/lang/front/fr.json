@@ -128,6 +128,7 @@
   "A connector that is not managed by the platform has this name": "Un connecteur non géré par la plateforme porte ce nom",
   "A connector with this name already exists. Please choose a different name.": "Un connecteur portant ce nom existe déjà. Veuillez choisir un autre nom.",
   "A dashboard cannot hold more than 50 variables": "Un tableau de bord ne peut pas contenir plus de 50 variables",
+  "A date of the time range is not valid": "Une date de la période n'est pas valide",
   "A field will be created with appropriate type based on the attribute.": "Un champ sera créé avec le type approprié en fonction de l'attribut.",
   "A filter cannot reference another variable": "Un filtre ne peut pas référencer une autre variable",
   "A FINTEL export will contain extra information like markings and creation date": "Une exportation FINTEL contiendra des informations supplémentaires telles que les marquages et la date de création",

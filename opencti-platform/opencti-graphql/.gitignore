@@ -8,3 +8,4 @@ config/*.json.bak
 /telemetry
 .support
 graphql.schema.json
+*.tsbuildinfo

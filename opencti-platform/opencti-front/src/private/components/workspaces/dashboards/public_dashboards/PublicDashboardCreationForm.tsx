@@ -106,6 +106,8 @@ const PublicDashboardCreationFormComponent = ({
     time_range: Yup.object().test('ordered-range', t_i18n("The end date can't be before start date"), (range) => (
       !isVariablesEnabled || !range || isOrderedPublishedTimeRange(range as PublishedTimeRange)
     )),
+    // A refused date is shown in its picker but never reaches the range: publishing would freeze another range
+    time_range_invalid: Yup.boolean().test('valid-dates', t_i18n('A date of the time range is not valid'), (invalid) => !isVariablesEnabled || !invalid),
   });
 
   const onSubmit: FormikConfig<PublicDashboardCreationFormData>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
@@ -140,6 +142,7 @@ const PublicDashboardCreationFormComponent = ({
         variable_values: {},
         time_range: EMPTY_PUBLISHED_TIME_RANGE,
         published_for: null,
+        time_range_invalid: false,
       }}
       onSubmit={onSubmit}
     >

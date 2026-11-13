@@ -43,6 +43,8 @@ export interface PublicDashboardCreationFormData {
   // The dashboard the published values were built for: null while they load, so the form cannot publish an
   // incomplete snapshot under another dashboard id.
   published_for: string | null;
+  // A date picker of the range shows a date it refuses (malformed, or in the future), which the range does not hold
+  time_range_invalid?: boolean;
 }
 
 // A dashboard as the creation form loads it: the manifest holds the definitions, `variables` their usage,

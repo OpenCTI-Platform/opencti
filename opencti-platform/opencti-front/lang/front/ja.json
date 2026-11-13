@@ -128,6 +128,7 @@
   "A connector that is not managed by the platform has this name": "プラットフォームで管理されていないコネクタがこの名前を使用しています",
   "A connector with this name already exists. Please choose a different name.": "この名前のコネクタは既に存在します。別の名前を選択してください。",
   "A dashboard cannot hold more than 50 variables": "ダッシュボードに設定できる変数は50個までです",
+  "A date of the time range is not valid": "期間の日付が無効です",
   "A field will be created with appropriate type based on the attribute.": "フィールドは、属性に基づいて適切なタイプで作成されます。",
   "A filter cannot reference another variable": "フィルターは他の変数を参照できません",
   "A FINTEL export will contain extra information like markings and creation date": "FINTELエクスポートには、マーキングや作成日などの追加情報が含まれます。",
