@@ -18,6 +18,8 @@ interface ConfigPresetResultLineProps {
   code?: string | null;
   // The item went well: a tick leads the line
   isDone?: boolean;
+  // The reason is shown elsewhere (under the label of the row, in the preview)
+  withoutReason?: boolean;
 }
 
 const STATUS_LABELS: Record<ConfigPresetResultStatus, string> = {
@@ -196,10 +198,10 @@ const translateReason = (t_i18n: Translate, reason: string) => {
   return reason;
 };
 
-const translateReasons = (t_i18n: Translate, reason: string) => reason.split('\n').map((part) => translateReason(t_i18n, part)).join(' · ');
+export const translateReasons = (t_i18n: Translate, reason: string) => reason.split('\n').map((part) => translateReason(t_i18n, part)).join(' · ');
 
 // The result of an item of an import: its status and the reason
-const ConfigPresetResultLine: FunctionComponent<ConfigPresetResultLineProps> = ({ label, status, reason, code, isDone = false }) => {
+const ConfigPresetResultLine: FunctionComponent<ConfigPresetResultLineProps> = ({ label, status, reason, code, isDone = false, withoutReason = false }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const known = status in STATUS_LABELS;
@@ -213,7 +215,7 @@ const ConfigPresetResultLine: FunctionComponent<ConfigPresetResultLineProps> = (
           severity={known ? STATUS_SEVERITIES[status as ConfigPresetResultStatus] : 'neutral'}
         />
       )}
-      {reason && <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{translateReasons(t_i18n, reason)}</Text>}
+      {reason && !withoutReason && <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{translateReasons(t_i18n, reason)}</Text>}
     </div>
   );
 };
