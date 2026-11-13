@@ -80,6 +80,11 @@ describe('buildDashboardPreset', () => {
   it('should refuse an invalid time range', () => {
     expect(() => buildDashboardPreset({ name: 'P', config: { relativeDate: 'last-week' } }, [], variables)).toThrow('Invalid dashboard preset time range');
     expect(() => buildDashboardPreset({ name: 'P', config: { startDate: 'yesterday' } }, [], variables)).toThrow('Invalid dashboard preset time range');
+    // A reversed absolute range would match nothing for everyone using the preset.
+    expect(() => buildDashboardPreset({ name: 'P', config: { startDate: '2026-02-01T00:00:00.000Z', endDate: '2026-01-01T00:00:00.000Z' } }, [], variables)).toThrow('Invalid dashboard preset time range');
+    // The same instant written in two zones is not reversed.
+    expect(buildDashboardPreset({ name: 'P', config: { startDate: '2026-01-01T00:00:00Z', endDate: '2026-01-01T01:00:00+01:00' } }, [], variables).config)
+      .toEqual({ relativeDate: null, startDate: '2026-01-01T00:00:00Z', endDate: '2026-01-01T01:00:00+01:00' });
   });
 
   it('should enforce the presets quota', () => {

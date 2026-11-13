@@ -15,14 +15,20 @@ export interface DashboardTimeRangeInputLike {
 /**
  * The time range of a dashboard as the front writes it, checked and normalized: a relative date must be one the front
  * can compute, an absolute date a strict ISO-8601 date, and a relative date always comes alone (picking one clears
- * the absolute dates, as the time filters do). Throws a FunctionalError with the given message otherwise.
+ * the absolute dates, as the time filters do), and an absolute range starts before it ends. Throws a FunctionalError with the
+ * given message otherwise.
  */
 export const buildDashboardTimeRange = (range: DashboardTimeRangeInputLike | null | undefined, errorMessage: string): StoreDashboardTimeRange => {
   const relativeDate = range?.relativeDate ?? null;
   const startDate = range?.startDate ?? null;
   const endDate = range?.endDate ?? null;
   const isValidDate = (date: string | null) => date === null || isStrictIsoDate(date);
+  // A reversed absolute range would match nothing for everyone using it: refused like a malformed one.
+  const isOrderedRange = (start: string | null, end: string | null) => start === null || end === null || Date.parse(start) <= Date.parse(end);
   if ((relativeDate !== null && !RELATIVE_DATE_REGEXP.test(relativeDate)) || !isValidDate(startDate) || !isValidDate(endDate)) {
+    throw FunctionalError(errorMessage);
+  }
+  if (relativeDate === null && !isOrderedRange(startDate, endDate)) {
     throw FunctionalError(errorMessage);
   }
   if (relativeDate !== null) {
