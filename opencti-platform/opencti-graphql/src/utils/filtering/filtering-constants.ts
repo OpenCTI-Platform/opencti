@@ -3,6 +3,7 @@ import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
 import { isMetricsName } from '../../modules/metrics/metrics-utils';
 import { CUSTOM_FIELD_PREFIX } from '../../modules/customField/custom-field-types';
+import { FilterOperator } from '../../generated/graphql';
 
 // Resolved-Filters
 // These require special handling when comparing to a stix object as they need to be resolved before comparison
@@ -130,6 +131,29 @@ export const CUSTOM_FIELD_SELECT_VALUES_SUBFILTER = 'select_values';
 export const isCustomFieldFilterKey = (key: string): boolean => {
   return key.startsWith(CUSTOM_FIELD_PREFIX);
 };
+
+// ---- generic nested filter keys (filterable nested attributes, ex: coverage_information)
+// type of their filter definition ('nested' is the type of regardingOf and dynamicRegardingOf)
+export const GENERIC_NESTED_FILTER_TYPE = 'nested_attribute';
+// operators the nested query implements for a sub-filter (buildLocalMustFilter in engine.ts): any other one would run as an equality
+export const NESTED_SUB_FILTER_OPERATORS: string[] = [
+  FilterOperator.Eq,
+  FilterOperator.NotEq,
+  FilterOperator.Gt,
+  FilterOperator.Gte,
+  FilterOperator.Lt,
+  FilterOperator.Lte,
+  FilterOperator.Within,
+  FilterOperator.Wildcard,
+  FilterOperator.Contains,
+  FilterOperator.NotContains,
+  FilterOperator.StartsWith,
+  FilterOperator.NotStartsWith,
+  FilterOperator.EndsWith,
+  FilterOperator.NotEndsWith,
+  FilterOperator.Nil,
+  FilterOperator.NotNil,
+];
 
 // for users
 export const USER_SERVICE_ACCOUNT_FILTER = 'user_service_account';

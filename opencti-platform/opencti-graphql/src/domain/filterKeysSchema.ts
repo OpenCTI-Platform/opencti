@@ -1,11 +1,12 @@
 import { uniq } from 'ramda';
-import { schemaAttributesDefinition } from '../schema/schema-attributes';
+import { isGenericNestedFilterAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import type {
   AttributeDefinition,
   ComplexAttributeWithMappings,
   EnumAttribute,
   IdAttribute,
+  NestedObjectAttribute,
   NumericAttribute,
   RefAttribute,
   StringAttribute,
@@ -23,6 +24,7 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
+  GENERIC_NESTED_FILTER_TYPE,
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
   IS_INFERRED_FILTER,
@@ -61,7 +63,7 @@ import { getCustomFieldDefinitionsForEntityType } from '../modules/customField/c
 
 export type FilterDefinition = {
   filterKey: string;
-  type: string; // possible values: boolean, date, integer, float, version, string, id, vocabulary, text, enum, object, nested
+  type: string; // possible values: boolean, date, integer, float, version, string, id, vocabulary, text, enum, object, nested, nested_attribute
   label: string; // filter key translation in English
   multiple: boolean; // if the field can have multiple values
   subEntityTypes: string[]; // entity types that have the given type as parent and have this filter key in their schema
@@ -182,6 +184,31 @@ const completeFilterDefinitionMapWithObjectAttributeWithMappings = (
   });
 };
 
+// a filterable nested attribute is exposed as ONE filter key of type 'nested_attribute',
+// whose subFilters are the filterable mappings of the attribute
+const completeFilterDefinitionMapWithNestedAttribute = (
+  filterDefinitionMap: Map<string, FilterDefinition>, // map in construction
+  nestedAttributeDefinition: NestedObjectAttribute, // nested attribute with mappings
+  types: string[], // entity types to apply
+) => {
+  const existingDefinition = filterDefinitionMap.get(nestedAttributeDefinition.name);
+  if (!existingDefinition) {
+    const subFilters = nestedAttributeDefinition.mappings
+      .filter((mapping) => mapping.isFilterable)
+      .map((mapping) => buildFilterDefinitionFromAttributeDefinition(mapping, []));
+    filterDefinitionMap.set(nestedAttributeDefinition.name, {
+      ...buildFilterDefinitionFromAttributeDefinition(nestedAttributeDefinition, types),
+      type: GENERIC_NESTED_FILTER_TYPE,
+      subFilters,
+    });
+  } else if (!types.every((type) => existingDefinition.subEntityTypes.includes(type))) {
+    filterDefinitionMap.set(
+      nestedAttributeDefinition.name,
+      { ...existingDefinition, subEntityTypes: uniq(existingDefinition.subEntityTypes.concat(types)) },
+    );
+  }
+};
+
 const completeFilterDefinitionMapForType = (
   filterDefinitionMap: Map<string, FilterDefinition>, // filter definition map to complete
   type: string, // type whose attributes and relations refs to study (eventually add them in the map or complete subEntityTypes)
@@ -192,7 +219,9 @@ const completeFilterDefinitionMapForType = (
   const types = subTypes ? subTypes.concat(type) : [type];
   attributesMap.forEach((attributeDefinition, attributeName) => {
     if (attributeDefinition.isFilterable) { // if it is filterable
-      if (attributeDefinition.type === 'object' && ['nested', 'standard'].includes(attributeDefinition.format)) { // case 1.1: attribute with mappings
+      if (isGenericNestedFilterAttribute(attributeDefinition)) { // case 1.3: generic nested attribute, exposed as one 'nested_attribute' key with subFilters
+        completeFilterDefinitionMapWithNestedAttribute(filterDefinitionMap, attributeDefinition, types);
+      } else if (attributeDefinition.type === 'object' && ['nested', 'standard'].includes(attributeDefinition.format)) { // case 1.1: attribute with mappings
         completeFilterDefinitionMapWithObjectAttributeWithMappings(filterDefinitionMap, attributeDefinition as ComplexAttributeWithMappings, types);
       } else { // case 1.2: attribute with no mappings
         completeFilterDefinitionMapWithElement(filterDefinitionMap, types, attributeName, attributeDefinition, 'attribute');

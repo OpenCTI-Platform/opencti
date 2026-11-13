@@ -1,10 +1,10 @@
 import Popover from '@mui/material/Popover';
 import { FunctionComponent, useState } from 'react';
 import { Filter, FilterEditorInputValue, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
-import { FilterSearchContext, useFilterDefinition } from '../../utils/filters/filtersUtils';
+import { FilterSearchContext, isGenericNestedFilterDefinition, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import type { WidgetHost } from '../../utils/widget/widget';
 import { FilterRepresentative } from './FiltersModel';
-import CompositeRegardingOfFilterEditor from './fields/CompositeRegardingOfFilterEditor';
+import CompositeNestedFilterEditor from './fields/CompositeNestedFilterEditor';
 import { FilterEditorProvider, useFilterEditorContext } from './fields/FilterEditorContext';
 import FilterOperatorSelect from './fields/FilterOperatorSelect';
 import FilterValueInput from './fields/FilterValueInput';
@@ -83,9 +83,10 @@ const FilterChipEditor: FunctionComponent<FilterChipEditorProps> = ({
     </>
   );
 
-  if (filterDefinition?.subFilters && filterDefinition.subFilters.length > 1) {
+  // generic nested keys (e.g. coverage_information), regardingOf and dynamicRegardingOf
+  if (isGenericNestedFilterDefinition(filterDefinition) || (filterDefinition?.subFilters?.length ?? 0) > 1) {
     return (
-      <CompositeRegardingOfFilterEditor
+      <CompositeNestedFilterEditor
         filter={filter}
         filterKey={filterKey}
         inputValues={inputValues}

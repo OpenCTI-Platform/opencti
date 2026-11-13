@@ -78,4 +78,18 @@ describe('useFiltersState nested groups helpers', () => {
     expect(hook.result.current[0].filters).toEqual([]);
     expect(hook.result.current[0].filterGroups).toEqual([]);
   });
+
+  it('should change the operator of a sub-filter of a nested filter', () => {
+    const nested = {
+      id: 'root',
+      mode: 'and',
+      filters: [
+        { id: 'f1', key: 'coverage_information', values: [{ key: 'coverage_score', operator: 'gt', values: ['20'] }], operator: 'eq', mode: 'and' },
+      ],
+      filterGroups: [],
+    };
+    const { hook } = testRenderHook(() => useFiltersState(nested));
+    act(() => hook.result.current[1].handleChangeSubFilter('f1', 'coverage_score', { operator: 'lt' }));
+    expect(hook.result.current[0].filters[0].values).toEqual([{ key: 'coverage_score', operator: 'lt', values: ['20'] }]);
+  });
 });

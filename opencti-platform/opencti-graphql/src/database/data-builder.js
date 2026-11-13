@@ -5,7 +5,7 @@ import { generateAliasesIdsForInstance, generateInternalId, generateStandardId, 
 import { FROM_START, now, UNTIL_END } from '../utils/format';
 import { inferIndexFromConceptType, isEmptyField, isNotEmptyField } from './utils';
 import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, RELATION_HAS_COVERED } from '../schema/stixCoreRelationship';
 import { DatabaseError } from '../config/errors';
 import {
   isStixRefRelationship,
@@ -247,7 +247,10 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   // stix-core-relationship
   if (isStixCoreRelationship(relationshipType)) {
     data.description = input.description ? input.description : '';
-    data.coverage_information = input.coverage_information ? input.coverage_information : [];
+    // Coverage information is registered on has-covered only: elsewhere it could not be edited
+    if (relationshipType === RELATION_HAS_COVERED) {
+      data.coverage_information = input.coverage_information ? input.coverage_information : [];
+    }
     data.start_time = isEmptyField(input.start_time) ? new Date(FROM_START) : input.start_time;
     data.stop_time = isEmptyField(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     //* v8 ignore if */

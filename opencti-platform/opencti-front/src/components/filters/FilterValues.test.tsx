@@ -20,8 +20,22 @@ const TOKEN = `$var:${VARIABLE_ID}`;
 const DELETED_TOKEN = `$var:${DELETED_VARIABLE_ID}`;
 const labelVariable: DashboardVariable = { id: VARIABLE_ID, name: 'Client label', type: 'label', restriction: { mode: 'none' }, defaultValue: null };
 
+const coverageDefinition = {
+  filterKey: 'coverage_information',
+  type: 'nested_attribute',
+  label: 'Coverage score',
+  multiple: true,
+  subEntityTypes: ['Stix-Core-Object'],
+  elementsForFilterValuesSearch: [],
+  subFilters: [
+    { filterKey: 'coverage_name', type: 'vocabulary', label: 'Coverage name', multiple: false, subEntityTypes: [], elementsForFilterValuesSearch: ['coverage_ov'] },
+    { filterKey: 'coverage_score', type: 'float', label: 'Score', multiple: false, subEntityTypes: [], elementsForFilterValuesSearch: [] },
+  ],
+} as FilterDefinition;
+
 const filterKeysSchema = new Map([
   ['Stix-Core-Object', new Map([
+    ['coverage_information', coverageDefinition],
     ['objectLabel', {
       filterKey: 'objectLabel',
       type: 'id',
@@ -133,5 +147,43 @@ describe('FilterValues', () => {
 
     expect(screen.getByText('Name')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Name' })).not.toBeInTheDocument();
+  });
+});
+
+describe('FilterValues for a generic nested filter key', () => {
+  const renderCoverage = (operator: string, values: unknown[]) => testRender(
+    <FilterValues
+      label="Coverage score"
+      currentFilter={{ id: 'filter-1', key: 'coverage_information', operator, mode: 'and', values } as unknown as Filter}
+      filtersRepresentativesMap={new Map()}
+    />,
+    { userContext },
+  );
+
+  it.each([
+    // the operator symbols are the ones of the other filter chips (convertOperatorToIcon), after a non-breaking space
+    [[{ key: 'coverage_name', operator: 'eq', values: ['detection'] }, { key: 'coverage_score', operator: 'lt', values: ['20'] }], ' detection\u00a0< 20'],
+    [[{ key: 'coverage_score', operator: 'gte', values: ['90'] }], '\u00a0≥ 90'],
+    [[{ key: 'coverage_score', operator: 'not_eq', values: ['20'] }], '\u00a0≠ 20'],
+    // a negated name too, like a not_eq filter chip; an equal name reads without its symbol (Coverage detection < 20)
+    [[{ key: 'coverage_name', operator: 'not_eq', values: ['detection', 'prevention'] }, { key: 'coverage_score', operator: 'eq', values: ['0'] }], '\u00a0\u2260 detection, prevention\u00a0= 0'],
+  ])('renders the coverage chip', (values, text) => {
+    const { container } = renderCoverage('eq', values);
+    expect(screen.getByText('Coverage score')).toBeInTheDocument();
+    expect(container.textContent).toBe(`Coverage score${text}`);
+  });
+
+  it('renders the sub-filters in definition order, whatever the order of the stored values', () => {
+    const { container } = renderCoverage('eq', [
+      { key: 'coverage_score', operator: 'gt', values: ['5'] },
+      { key: 'coverage_name', operator: 'eq', values: ['detection'] },
+    ]);
+    expect(container.textContent).toBe('Coverage score detection\u00a0> 5');
+  });
+
+  it('renders an empty coverage filter as "is empty"', () => {
+    const { container } = renderCoverage('nil', []);
+    expect(screen.getByText('is empty')).toBeInTheDocument();
+    expect(container.textContent).toBe('Coverage score is empty');
   });
 });

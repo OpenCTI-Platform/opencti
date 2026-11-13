@@ -959,17 +959,31 @@ export const getDefaultOperatorFilter = (
 };
 
 /**
- * Get the possible operator for a given key/subkey.
+ * Generic nested keys (e.g. coverage_information) store one operator per sub-filter in their value objects.
+ * The backend gives them the 'nested_attribute' type: regardingOf and dynamicRegardingOf, of type 'nested',
+ * have their own dedicated editor.
+ */
+export const isGenericNestedFilterDefinition = (definition?: FilterDefinition): boolean => {
+  return definition?.type === 'nested_attribute';
+};
+
+/**
+ * Get the possible operator for a given nested filter definition/subkey.
  * Subkeys are nested inside special filter that combine several fields (filter values is not a string[] but object[])
  */
-export const getAvailableOperatorForFilterSubKey = (filterKey: string, subKey: string): string[] => {
-  if (filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf') {
+export const getAvailableOperatorForFilterSubKey = (filterDefinition: FilterDefinition, subKey: string): string[] => {
+  if (filterDefinition.filterKey === 'regardingOf' || filterDefinition.filterKey === 'dynamicRegardingOf') {
     if (subKey === 'relationship_type') { // As first element of the filter
       return ['eq', 'not_eq'];
     }
     return [];
   }
-
+  // A sub-filter of a generic nested key follows the rules of its own type. Empty / not empty tell whether
+  // the nested elements exist, so they belong to the nested filter itself (see FilterOperatorSelect).
+  if (isGenericNestedFilterDefinition(filterDefinition)) {
+    const subFilterDefinition = filterDefinition.subFilters?.find((subFilter) => subFilter.filterKey === subKey);
+    return getAvailableOperatorForFilterKey(subFilterDefinition).filter((op) => !NO_VALUES_FILTER_OPERATORS.includes(op));
+  }
   return ['eq', 'not_eq', 'nil', 'not_nil'];
 };
 
@@ -999,6 +1013,9 @@ export const getAvailableOperatorForFilterKey = (
   if (filterType === 'boolean') {
     return ['eq', 'not_eq', ...changeOperators];
   }
+  if (isGenericNestedFilterDefinition(filterDefinition)) { // each sub-filter carries its own operator, the nested filter only tells whether the nested elements exist
+    return ['eq', 'nil', 'not_nil', ...changeOperators];
+  }
   if (isBasicTextFilter(filterDefinition)) {
     if (filterDefinition.type === 'string' || opts?.isStixFiltering) { // all the string operators are available for short string or in stix filtering
       return ['eq', 'not_eq', 'nil', 'not_nil', 'contains', 'not_contains',
@@ -1026,7 +1043,7 @@ export const getAvailableOperatorForFilter = (
   opts?: { isStixFiltering?: boolean },
 ): string[] => {
   const isStixFiltering = opts?.isStixFiltering ?? false;
-  if (filterDefinition && subKey) return getAvailableOperatorForFilterSubKey(filterDefinition.filterKey, subKey);
+  if (filterDefinition && subKey) return getAvailableOperatorForFilterSubKey(filterDefinition, subKey);
   return getAvailableOperatorForFilterKey(filterDefinition, { isStixFiltering });
 };
 
@@ -1184,8 +1201,12 @@ export const useBuildEntityTypeBasedFilterContext = (
 export const getFilterDefinitionFromFilterKeysMap = (
   key: string | string[],
   filterKeysMap: Map<string, FilterDefinition>,
+  parentFilterKey?: string,
 ): FilterDefinition | undefined => {
   const filterKey = getStringFilterKey(key);
+  if (parentFilterKey) {
+    return filterKeysMap.get(parentFilterKey)?.subFilters?.find((subFilter) => subFilter.filterKey === filterKey);
+  }
   if (filterKey === PIR_SCORE_FILTER) {
     return pirScoreFilterDefinition;
   }

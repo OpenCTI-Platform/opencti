@@ -300,6 +300,17 @@ describe('Filtering utils', () => {
     } as FilterGroup;
     expect(extractFilterGroupValues(filterGroup4, ['objectLabel', 'regardingOf'])).toStrictEqual(['label1', 'id1', 'id2']);
   });
+  it('should not extract the sub-filter objects of a nested filter as values', async () => {
+    const filterGroup = {
+      mode: 'and',
+      filters: [
+        { key: ['coverage_information'], operator: 'eq', mode: 'and', values: [{ key: 'coverage_score', operator: 'lt', values: ['20'] }] },
+        { key: ['fromId'], operator: 'eq', mode: 'or', values: ['scr-id'] },
+      ],
+      filterGroups: [],
+    } as FilterGroup;
+    expect(extractFilterGroupValues(filterGroup)).toEqual(['scr-id']);
+  });
   it('should extract the filter values corresponding to a given array of filter keys for a dynamic filter', async () => {
     // dynamicRegardingOf filter with option to look inside dynamic filters
     const dynamicRegardingOfFilterGroup = {

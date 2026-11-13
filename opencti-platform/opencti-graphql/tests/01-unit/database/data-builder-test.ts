@@ -19,3 +19,25 @@ describe('buildRelationData custom fields', () => {
     expect(element.custom_field_values).toEqual(customFieldValues);
   });
 });
+
+describe('buildRelationData coverage information', () => {
+  const coverageInformation = [{ coverage_name: 'detection', coverage_score: 20 }];
+  const build = async (relationshipType: string, extra: Record<string, unknown> = {}) => {
+    vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockResolvedValue([]);
+    vi.spyOn(cacheModule, 'getEntitiesMapFromCache').mockResolvedValue(new Map());
+    vi.spyOn(cacheModule, 'getEntityFromCache').mockResolvedValue({} as any);
+    const context = { user_inside_platform_organization: true } as any;
+    const input = { from, to, fromId: from.internal_id, toId: to.internal_id, relationship_type: relationshipType, ...extra };
+    const { element } = await buildRelationData(context, ADMIN_USER, input);
+    return element;
+  };
+  it('should keep the coverage information of a has-covered relationship, empty by default', async () => {
+    expect((await build('has-covered', { coverage_information: coverageInformation })).coverage_information).toEqual(coverageInformation);
+    expect((await build('has-covered')).coverage_information).toEqual([]);
+  });
+  it('should not store coverage information on the other relationships, where the attribute is not registered', async () => {
+    // the edit API could not change it: coverage_information is registered on has-covered only
+    expect((await build('targets', { coverage_information: coverageInformation })).coverage_information).toBeUndefined();
+    expect((await build('targets')).coverage_information).toBeUndefined();
+  });
+});
