@@ -23,7 +23,15 @@ import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { INPUT_EXTERNAL_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../../schema/general';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
 import { elCreateIndexWithMapping, elFindByIds, elFlushSequencerWrites, elIndexExists, elPutIndexMappingProperties, elRawBulk, elRawMget, elRawSearch } from '../engine';
-import { creatableNestedIds, dedupFoundRelationIds, ignoreIndexAlreadyExists, isLockError, lockErrorKeys, relationDedupLockKey } from './sequencer-multi-writer';
+import {
+  creatableNestedIds,
+  dedupFoundRelationIds,
+  ignoreIndexAlreadyExists,
+  isLockError,
+  lockErrorKeys,
+  relationDedupLockKey,
+  staleDedupSearches,
+} from './sequencer-multi-writer';
 import { buildPendingRecords, fireReconcile, initPendingRefs, matchCreatedElement, persistPendingRecords, registerPendingRefsEsOps } from './sequencer-pending-refs';
 import type { StrippedRef, StrippedRefInput } from './sequencer-pending-refs';
 import { computeApplyLevels, groupIndicesByLevel, runBounded } from './sequencer-apply-levels';
@@ -31,7 +39,7 @@ import { deferIntents, fireResubmit, initPendingIntents, matchLandedIntents, pen
 import { DeferredMissingReferenceError } from '../../config/errors';
 import { flushSequencerEvents } from '../stream/stream-handler';
 import { lockResources } from '../../lock/master-lock';
-import { lockedResources } from '../redis';
+import { bumpLockStamps, lockedResources, readLockStamps } from '../redis';
 import { SequencerWriteBuffer, setCurrentWriteBuffer } from './sequencer-write-buffer';
 import { SEQUENCER_CONFIG } from './sequencer-config';
 import { DeferredLanes } from './sequencer-lanes';
@@ -274,6 +282,11 @@ const dedupPrefetch = new Map<string, { inputIds: Set<string>; existing: any[] }
 // normalisation) and "no entry at all" (the prefetch skipped this relation)
 const dedupPrefetchEndpoints = new Set<string>();
 const dedupEndpointsOf = (key: string) => key.split('|').slice(0, 3).join('|');
+// task 0040 step B2 (dedup_before_lock): the relation-dedup lock key of each search made before the
+// batch lock, and the stamps of those keys read before the searches (staleDedupSearches)
+const dedupLockKeyOfSearch = new Map<string, string>();
+const dedupStampsBefore = new Map<string, string>();
+const DEDUP_STAMP_TTL_S = 600;
 const setDedupPrefetch = (key: string, entry: { inputIds: Set<string>; existing: any[] }) => {
   dedupPrefetch.set(key, entry);
   dedupPrefetchEndpoints.add(dedupEndpointsOf(key));
@@ -512,6 +525,7 @@ const prefetchRelationDedup = async (context: AuthContext, batch: SequencerInten
       } catch {
         // underspecified input: keep candidateIds; the subset check will fall back live
       }
+      if (SEQUENCER_CONFIG.multiWriter) dedupLockKeyOfSearch.set(key, relationDedupLockKey(intent.input.relationship_type, fromElement.internal_id, toElement.internal_id));
       jobs.push({ key, inputIds, input: dedupInput, run: () => (dedupLoader as DedupLoader)(context, dedupInput, inputIds) });
     });
     // msearch form (dedup_prefetch_msearch, 2026-09-25): the batch's dedup queries in packets of
@@ -551,6 +565,8 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
   sequencerIdentityMap.clearAbsent();
   dedupPrefetch.clear();
   dedupPrefetchEndpoints.clear();
+  dedupLockKeyOfSearch.clear();
+  dedupStampsBefore.clear();
   basisVersions.clear();
   noopRecords.length = 0;
   noopTargetIds.length = 0;
@@ -582,10 +598,28 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
     sequencerIdentityMap.markAbsent(untypedMisses.filter((id) => !sequencerIdentityMap.hasBare(id)), null);
   }
   // task 0040 multi_writer: another platform may write between this resolution and the batch
-  // lock, the diff bases and the relation dedup are read under the lock (resolveUnderLock)
+  // lock, the diff bases and the relation dedup are read under the lock (resolveUnderLock). Step B2
+  // (dedup_before_lock): the dedup searches run now, after reading the stamps of their keys; under
+  // the lock only the searches whose key was stamped since run again.
   if (!SEQUENCER_CONFIG.multiWriter) {
     await loadUpsertBases(context, entityCandidateIds);
     await prefetchRelationDedup(context, batch);
+  } else if (SEQUENCER_CONFIG.dedupBeforeLock) {
+    const keys = new Set<string>();
+    batch.forEach((intent) => {
+      if (intent.kind !== 'relation') return;
+      const key = relationDedupKey(intent);
+      if (key) keys.add(key);
+    });
+    const stamps = await readLockStamps(Array.from(keys)).catch((err) => {
+      logApp.warn('[SEQUENCER] dedup stamps unreadable, the dedup runs under the lock', { cause: err });
+      return null;
+    });
+    if (stamps) {
+      stamps.forEach((stamp, key) => dedupStampsBefore.set(key, stamp));
+      await prefetchRelationDedup(context, batch);
+      sequencerMetrics.mapEvent('dedup_before_lock', dedupPrefetch.size);
+    }
   }
   sequencerMetrics.phase('resolve', (Date.now() - t0) / 1000, m0);
 };
@@ -639,6 +673,17 @@ const resolveUnderLock = async (batch: SequencerIntent[]): Promise<any[]> => {
     }
   }
   await timed('locked_bases', () => loadUpsertBases(context, collectBatchResolveIds(batch).entityCandidateIds));
+  // step B2: the searches made before the lock whose relation-dedup key was stamped since are dropped
+  // and run again below with the ones not made yet (stamps unreadable: all of them)
+  if (dedupLockKeyOfSearch.size > 0) {
+    const stampsNow = await readLockStamps(Array.from(dedupStampsBefore.keys())).catch(() => null);
+    const { stale, changedKeys } = stampsNow
+      ? staleDedupSearches(dedupLockKeyOfSearch, dedupStampsBefore, stampsNow)
+      : { stale: Array.from(dedupLockKeyOfSearch.keys()), changedKeys: dedupStampsBefore.size };
+    stale.forEach((key) => dedupPrefetch.delete(key));
+    if (changedKeys > 0) sequencerMetrics.mapEvent('dedup_stamp_changed', changedKeys);
+    if (stale.length > 0) sequencerMetrics.mapEvent('dedup_research', stale.length);
+  }
   await timed('locked_dedup', () => prefetchRelationDedup(context, batch));
   await timed('locked_relation_bases', () => loadRelationUpsertBases(context));
   sequencerMetrics.phase('resolve_locked', (Date.now() - t0) / 1000, m0);
@@ -1499,10 +1544,18 @@ const runBatchLoop = async () => {
       // s10.3: absence and prefetches are only valid while this batch's lock is held
       sequencerIdentityMap.clearAbsent();
       dedupPrefetch.clear();
+      dedupLockKeyOfSearch.clear();
+      dedupStampsBefore.clear();
       evictRelationUpsertBases();
       basisVersions.clear();
       noopRecords.length = 0;
       noopTargetIds.length = 0;
+      // step B2: the relation-dedup keys this batch held are stamped before their release (its writes
+      // are refreshed by the flush above), so a platform that searched them before its lock searches again
+      if (SEQUENCER_CONFIG.multiWriter && SEQUENCER_CONFIG.dedupBeforeLock) {
+        await bumpLockStamps(lockKeys.filter((key) => key.startsWith('relation-dedup:')), DEDUP_STAMP_TTL_S)
+          .catch((err) => logApp.error('[SEQUENCER] dedup stamps not written, another platform may miss a dedup', { cause: err }));
+      }
       await lock.unlock();
     }
     // record the REAL assembly size (before the batchEwp-a diagnosis this recorded the

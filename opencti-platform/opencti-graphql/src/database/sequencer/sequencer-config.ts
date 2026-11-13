@@ -67,6 +67,9 @@ export interface SequencerConfig {
   // task 0040: delay between two batch lock attempts, 0 = app:concurrency:retry_delay; the attempt
   // count is scaled to keep the same total wait budget
   batchLockRetryDelayMs: number;
+  // task 0040 step B2 (multi_writer): the relation dedup searches run before the batch lock; under it
+  // only those whose relation-dedup key another platform stamped since are searched again
+  dedupBeforeLock: boolean;
 }
 
 const readConfig = (): SequencerConfig => {
@@ -143,6 +146,7 @@ const readConfig = (): SequencerConfig => {
     nodeId: conf.get('app:node_identifier') || hostname(),
     contentionDiag: booleanConf('app:ingestion_sequencer:contention_diag', false),
     batchLockRetryDelayMs: Math.max(0, Math.floor(Number(conf.get('app:ingestion_sequencer:batch_lock_retry_delay_ms') ?? 0))),
+    dedupBeforeLock: booleanConf('app:ingestion_sequencer:dedup_before_lock', false),
   };
 };
 

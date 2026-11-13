@@ -1,6 +1,7 @@
 import { Cluster, Redis } from 'ioredis';
 import type { ChainableCommander, CommonRedisOptions, ClusterOptions, RedisOptions, SentinelAddress, SentinelConnectionOptions } from 'ioredis';
 import { Redlock } from '@sesamecare-oss/redlock';
+import { v4 as uuidv4 } from 'uuid';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX, TOPIC_PREFIX } from '../config/conf';
@@ -471,6 +472,25 @@ export const lockedResources = async (ids: string[]): Promise<string[]> => {
   ids.forEach((id) => pipeline.exists(buildLockKey(id)));
   const results = (await pipeline.exec()) ?? [];
   return ids.filter((_, i) => Number(results[i]?.[1] ?? 0) > 0);
+};
+
+// task 0040 step B2: version stamps of lock resources, in the {locks} slot. A writer sets a fresh
+// unique value on each resource it held, after its writes are refreshed and before it releases
+// them; a reader compares the values it read before its searches with the values under its lock.
+// A unique value (not a counter) so an expiry followed by a new write can never look unchanged.
+const buildStampKey = (id: string) => `{locks}:ver:${id}`;
+export const readLockStamps = async (ids: string[]): Promise<Map<string, string>> => {
+  const stamps = new Map<string, string>();
+  if (ids.length === 0) return stamps;
+  const values = await getClientLock().mget(ids.map(buildStampKey));
+  ids.forEach((id, i) => stamps.set(id, values[i] ?? ''));
+  return stamps;
+};
+export const bumpLockStamps = async (ids: string[], ttlS: number): Promise<void> => {
+  if (ids.length === 0) return;
+  const pipeline = getClientLock().pipeline();
+  ids.forEach((id) => pipeline.set(buildStampKey(id), uuidv4(), 'EX', ttlS));
+  await pipeline.exec();
 };
 
 export const lockResource = async (resources: Array<string>, opts: LockOptions = defaultLockOpts): Promise<LockHandle> => {

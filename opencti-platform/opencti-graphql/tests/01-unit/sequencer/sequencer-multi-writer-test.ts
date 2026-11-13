@@ -7,6 +7,7 @@ import {
   ownedPendingQuery,
   recordOwner,
   relationBasisContext,
+  staleDedupSearches,
 } from '../../../src/database/sequencer/sequencer-multi-writer';
 import { deferIntents, deferOperation, initPendingIntents, registerPendingIntentsEsOps } from '../../../src/database/sequencer/sequencer-pending-intents';
 import { buildPendingRecords, initPendingRefs, registerPendingRefsEsOps } from '../../../src/database/sequencer/sequencer-pending-refs';
@@ -162,5 +163,26 @@ describe('relation upsert basis on a multi writer', () => {
       { existing: [] },
     ];
     expect(dedupFoundRelationIds(prefetch).sort()).toEqual(['rel-a', 'rel-b']);
+  });
+});
+
+describe('step B2: dedup searches made before the batch lock', () => {
+  const keyOf = new Map([['s1', 'relation-dedup:targets:a:b'], ['s2', 'relation-dedup:targets:a:c'], ['s3', 'relation-dedup:targets:a:b']]);
+
+  it('should keep every search whose key was not stamped since', () => {
+    const before = new Map([['relation-dedup:targets:a:b', 'x'], ['relation-dedup:targets:a:c', '']]);
+    expect(staleDedupSearches(keyOf, before, new Map(before))).toEqual({ stale: [], changedKeys: 0 });
+  });
+
+  it('should search again every search on a key another platform stamped since, a first stamp included', () => {
+    const before = new Map([['relation-dedup:targets:a:b', 'x'], ['relation-dedup:targets:a:c', '']]);
+    const now = new Map([['relation-dedup:targets:a:b', 'y'], ['relation-dedup:targets:a:c', 'z']]);
+    expect(staleDedupSearches(keyOf, before, now)).toEqual({ stale: ['s1', 's2', 's3'], changedKeys: 2 });
+  });
+
+  it('should search again a search whose key had no stamp read before it, or has none now', () => {
+    const before = new Map([['relation-dedup:targets:a:b', 'x']]);
+    expect(staleDedupSearches(keyOf, before, new Map(before)).stale).toEqual(['s2']);
+    expect(staleDedupSearches(keyOf, before, new Map()).stale).toEqual(['s1', 's2', 's3']);
   });
 });

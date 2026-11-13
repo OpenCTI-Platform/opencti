@@ -123,3 +123,23 @@ export const creatableNestedIds = (input: Record<string, any>, labelKnown: (id: 
   objects(input[INPUT_KILLCHAIN], ENTITY_TYPE_KILL_CHAIN_PHASE);
   return out;
 };
+
+// task 0040 step B2: the dedup searches made before the batch lock that must run again under it. A
+// search is kept only if the stamp of its relation-dedup key read under the lock equals the one read
+// before the search: any platform that held that key since stamped it before releasing it, after its
+// refresh. A search without a stamp read before it, or a key without a stamp now, is searched again.
+export const staleDedupSearches = (
+  lockKeyOfSearch: Map<string, string>,
+  stampsBefore: Map<string, string>,
+  stampsNow: Map<string, string>,
+): { stale: string[]; changedKeys: number } => {
+  const changed = new Set<string>();
+  stampsBefore.forEach((before, lockKey) => {
+    if (stampsNow.get(lockKey) !== before) changed.add(lockKey);
+  });
+  const stale: string[] = [];
+  lockKeyOfSearch.forEach((lockKey, searchKey) => {
+    if (!stampsBefore.has(lockKey) || changed.has(lockKey)) stale.push(searchKey);
+  });
+  return { stale, changedKeys: changed.size };
+};
