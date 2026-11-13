@@ -89,15 +89,8 @@ jobs:
 
     # The sync instances keep booting while the first test files run: only the sync tests use them,
     # and each of these tests waits for its own instance (see waitForRemotePlatform in tests/11-sync/sync-utils.js)
-    # The tests check these services once at start up, without retry
     - name: Wait for the backend services to start
-      run: |
-          set -eux
-          # OpenSearch installs a plugin before booting
-          ./scripts/ci/wait-for-url-200.sh "http://localhost:9200/_cluster/health?wait_for_status=yellow" 300 2
-          ./scripts/ci/wait-for-url-200.sh http://localhost:9000/minio/health/live 120 2
-          timeout 120 sh -c 'until docker exec rabbitmq rabbitmq-diagnostics -q check_port_connectivity; do sleep 2; done'
-          timeout 60 sh -c 'until docker exec redis redis-cli ping; do sleep 1; done'
+      run: ./scripts/ci/wait-for-backends.sh
 
     - name: Start backend test (aka yarn test:ci-integration-sync)
       run: |
@@ -249,7 +242,9 @@ jobs:
          printf "\nAPP__ENTERPRISE_EDITION_LICENSE=\"%s\"" "$EE_LICENSE" >> ci-common.env
          docker network create runner-docker-network
          docker compose --profile "backend" --profile "ci-test-rules" up -d
-         ./wait-for-url-200.sh http://localhost:9200/_cluster/health?wait_for_status=yellow  120 2
+
+    - name: Wait for the backend services to start
+      run: ./scripts/ci/wait-for-backends.sh
 
     - name: Start rules test and others (aka yarn test:ci-rules-and-others)
       run: |
