@@ -718,7 +718,10 @@ const InvestigationGraph = ({
 
   return (
     <Suspense fallback={<Loader />}>
+      {/* Keyed by investigation: opening another one remounts the graph, its objects and the matrix, so
+          nothing of the previous investigation is shown while the new one loads. */}
       <InvestigationGraphLoader
+        key={id}
         pageSize={PAGE_SIZE}
         queryObjectsRef={queryObjectsRef}
         investigationId={id}
