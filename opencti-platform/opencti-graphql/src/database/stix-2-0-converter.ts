@@ -113,7 +113,7 @@ import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedbac
 import { isBasicObject } from '../schema/stixCoreObject';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import { isEmptyField } from './utils';
+import { isEmptyField, isNotEmptyField } from './utils';
 import type * as SRO from '../types/stix-2-0-sro';
 
 const CUSTOM_ENTITY_TYPES = [
@@ -247,8 +247,9 @@ export const convertLocationToStix = (instance: StoreEntity, type: string): SDO.
     ...location,
     name: instance.name,
     description: instance.description,
-    latitude: instance.latitude ? parseFloat(instance.latitude) : undefined,
-    longitude: instance.longitude ? parseFloat(instance.longitude) : undefined,
+    // A coordinate of 0 is valid: the equator and the prime meridian.
+    latitude: isNotEmptyField(instance.latitude) ? parseFloat(instance.latitude) : undefined,
+    longitude: isNotEmptyField(instance.longitude) ? parseFloat(instance.longitude) : undefined,
     precision: instance.precision,
     region: instance.entity_type === ENTITY_TYPE_LOCATION_REGION ? instance.name : undefined,
     country: instance.entity_type === ENTITY_TYPE_LOCATION_COUNTRY ? instance.name : undefined,
@@ -438,6 +439,7 @@ export const convertReportToStix = (instance: StoreEntity): SDO.StixReport => {
     report_types: instance.report_types,
     published: convertToStixDate(instance.published, { allowEpoch: true }),
     object_refs: convertObjectReferences(instance),
+    content: instance.content,
     x_opencti_reliability: instance.x_opencti_reliability,
   };
 };

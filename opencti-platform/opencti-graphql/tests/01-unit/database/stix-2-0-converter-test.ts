@@ -212,6 +212,20 @@ describe('Stix 2.0 opencti converter', () => {
     const result = convertIndicatorToStix_2_0(INDICATOR_INSTANCE);
     expect(result).toEqual(EXPECTED_INDICATOR);
   });
+  it('should convert Indicator with a valid_until one second after an equal valid_from', async () => {
+    const validity = '2025-08-01T10:00:00.000Z';
+    // Stored dates are strings, so equal dates are detected by value.
+    const instance = { ...INDICATOR_INSTANCE, valid_from: validity, valid_until: validity } as unknown as typeof INDICATOR_INSTANCE;
+    const result = convertIndicatorToStix_2_0(instance);
+    expect(result.valid_from).toEqual(validity);
+    expect(result.valid_until).toEqual('2025-08-01T10:00:01.000Z');
+  });
+  it('should convert Indicator with equal validity Date objects', async () => {
+    const validity = '2025-08-01T10:00:00.000Z';
+    const instance = { ...INDICATOR_INSTANCE, valid_from: new Date(validity), valid_until: new Date(validity) };
+    const result = convertIndicatorToStix_2_0(instance);
+    expect(result.valid_until).toEqual('2025-08-01T10:00:01.000Z');
+  });
   it('should convert Indicator observable hashes as the legacy export', async () => {
     const sha256 = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
     const instance = { ...INDICATOR_INSTANCE, pattern: `[file:hashes.'SHA-256' = '${sha256}']` };
@@ -520,6 +534,12 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Position', async () => {
     const result = convertLocationToStix(POSITION_INSTANCE, ENTITY_TYPE_LOCATION_POSITION);
     expect(result).toEqual(EXPECTED_POSITION);
+  });
+  it('should convert Position with zero coordinates', async () => {
+    const instance = { ...POSITION_INSTANCE, latitude: 0, longitude: 0 } as unknown as typeof POSITION_INSTANCE;
+    const result = convertLocationToStix(instance, ENTITY_TYPE_LOCATION_POSITION);
+    expect(result.latitude).toEqual(0);
+    expect(result.longitude).toEqual(0);
   });
   it('should convert Administrative Area', async () => {
     const result = convertAdministrativeAreaToStix_2_0(ADMINISTRATIVE_AREA_INSTANCE);
