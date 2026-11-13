@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import DatePicker from '@common/input/DatePicker';
 import { DateValidationError, PickerChangeHandlerContext } from '@mui/x-date-pickers/models';
 import { parse, buildDate } from '../../utils/Time';
@@ -17,15 +17,29 @@ import DashboardRelativeDateSelect from './DashboardRelativeDateSelect';
  * publishes. Typing a year goes through dates that fail validation (0002, 0020...), so the
  * value must still follow them, or the month and day typed before would be wiped.
  */
-const useDateDraft = (date: string | null | undefined, onValidChange: (value: Date | null) => void) => {
+const useDateDraft = (
+  date: string | null | undefined,
+  onValidChange: (value: Date | null) => void,
+  onInvalidChange?: (invalid: boolean) => void,
+) => {
   const [draft, setDraft] = useState(() => buildDate(date));
   const [draftSource, setDraftSource] = useState(date);
+  // Whether the date shown is one the picker refuses (malformed, or in the future): it is never forwarded, so a form
+  // that holds the range must know the field does not show what it holds.
+  const [invalid, setInvalid] = useState(false);
   if (date !== draftSource) {
     setDraftSource(date);
     setDraft(buildDate(date));
+    setInvalid(false);
   }
+  const onInvalidChangeRef = useRef(onInvalidChange);
+  onInvalidChangeRef.current = onInvalidChange;
+  useEffect(() => {
+    onInvalidChangeRef.current?.(invalid);
+  }, [invalid]);
   const onChange = (value: Date | null, context: PickerChangeHandlerContext<DateValidationError>) => {
     setDraft(value);
+    setInvalid(!!context.validationError);
     if (!context.validationError) {
       onValidChange(value);
     }
@@ -36,6 +50,8 @@ const useDateDraft = (date: string | null | undefined, onValidChange: (value: Da
 interface DashboardTimeFiltersProps {
   config?: DashboardConfig;
   handleDateChange: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void;
+  // Told when a date picker starts or stops showing a date it refuses, which is not forwarded.
+  onInvalidDateChange?: (type: 'startDate' | 'endDate', invalid: boolean) => void;
 }
 
 const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
@@ -45,6 +61,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
     relativeDate: null,
   },
   handleDateChange,
+  onInvalidDateChange,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -57,8 +74,8 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
     const formattedDate = value ? parse(value).format() : null;
     handleDateChange(type, formattedDate);
   };
-  const startDate = useDateDraft(config.startDate, (value) => handleChangeDate('startDate', value));
-  const endDate = useDateDraft(config.endDate, (value) => handleChangeDate('endDate', value));
+  const startDate = useDateDraft(config.startDate, (value) => handleChangeDate('startDate', value), (invalid) => onInvalidDateChange?.('startDate', invalid));
+  const endDate = useDateDraft(config.endDate, (value) => handleChangeDate('endDate', value), (invalid) => onInvalidDateChange?.('endDate', invalid));
 
   return (
     <Stack

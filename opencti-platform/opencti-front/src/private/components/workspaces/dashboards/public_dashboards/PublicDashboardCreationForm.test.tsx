@@ -17,6 +17,16 @@ vi.mock('@components/common/form/ObjectMarkingField', () => ({
   ),
 }));
 
+// The date pickers stand for themselves through two buttons: a date they refuse, then a valid one.
+vi.mock('../../../../../components/dashboard/DashboardTimeFilters', () => ({
+  default: ({ onInvalidDateChange }: { onInvalidDateChange?: (type: 'startDate' | 'endDate', invalid: boolean) => void }) => (
+    <>
+      <button type="button" onClick={() => onInvalidDateChange?.('startDate', true)}>Type a refused start date</button>
+      <button type="button" onClick={() => onInvalidDateChange?.('startDate', false)}>Fix the start date</button>
+    </>
+  ),
+}));
+
 const SECTOR = '11111111-1111-4111-8111-111111111111';
 const MANIFEST = toB64(JSON.stringify({
   widgets: {
@@ -75,6 +85,35 @@ describe('PublicDashboardCreationForm', () => {
       time_range: { relative_date: 'months-1', start_date: null, end_date: null },
       time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     });
+  });
+
+  it('should keep Create disabled while a date picker shows a date it refuses', async () => {
+    const { user } = renderForm(['DASHBOARD_VARIABLES']);
+    await screen.findByDisplayValue('Finance');
+    // The manifest range is relative: the pickers are not in use, a refused date there does not count
+    await user.type(screen.getByLabelText('Name'), 'Finance view');
+    await user.click(screen.getByRole('button', { name: 'Pick a marking' }));
+    const create = screen.getByRole('button', { name: 'Create' });
+    await waitFor(() => expect(create).toBeEnabled());
+    await user.click(screen.getByRole('button', { name: 'Type a refused start date' }));
+    await new Promise((resolve) => { setTimeout(resolve, 50); });
+    expect(create).toBeEnabled();
+  });
+
+  it('should block the publication on a refused date when the range is absolute', async () => {
+    localStorage.setItem('dashboard-time-range-user-1-dashboard-1', JSON.stringify({ relativeDate: null, startDate: null, endDate: null }));
+    const { user } = renderForm(['DASHBOARD_VARIABLES']);
+    await screen.findByDisplayValue('Finance');
+    await user.type(screen.getByLabelText('Name'), 'Finance view');
+    await user.click(screen.getByRole('button', { name: 'Pick a marking' }));
+    const create = screen.getByRole('button', { name: 'Create' });
+    await waitFor(() => expect(create).toBeEnabled());
+    await user.click(screen.getByRole('button', { name: 'Type a refused start date' }));
+    await waitFor(() => expect(create).toBeDisabled());
+    expect((await screen.findByTestId('public-dashboard-published-date-error')).textContent).toBe('A date of the time range is not valid');
+    await user.click(screen.getByRole('button', { name: 'Fix the start date' }));
+    await waitFor(() => expect(create).toBeEnabled());
+    expect(captured.commit).not.toHaveBeenCalled();
   });
 
   it('should neither show the section nor send its values without the feature flag', async () => {

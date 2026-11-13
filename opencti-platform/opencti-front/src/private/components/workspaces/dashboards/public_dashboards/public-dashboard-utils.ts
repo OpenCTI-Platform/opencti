@@ -39,6 +39,8 @@ export interface PublicDashboardCreationFormData {
   // Frozen in the public dashboard (dashboard variables feature), keyed by variable id
   variable_values: Record<string, string>;
   time_range: PublishedTimeRange;
+  // A date picker of the range shows a date it refuses (malformed, or in the future), which the range does not hold
+  time_range_invalid?: boolean;
 }
 
 // A dashboard as the creation form loads it: the manifest holds the widgets and the variables.

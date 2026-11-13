@@ -128,6 +128,7 @@
   "A connector that is not managed by the platform has this name": "Это имя носит коннектор, не управляемый платформой",
   "A connector with this name already exists. Please choose a different name.": "Коннектор с таким именем уже существует. Пожалуйста, выберите другое имя.",
   "A dashboard cannot hold more than 50 variables": "Дашборд не может содержать более 50 переменных",
+  "A date of the time range is not valid": "Одна из дат периода недействительна",
   "A field will be created with appropriate type based on the attribute.": "На основе атрибута будет создано поле с соответствующим типом.",
   "A filter cannot reference another variable": "Фильтр не может ссылаться на другую переменную",
   "A FINTEL export will contain extra information like markings and creation date": "Экспорт FINTEL содержит дополнительную информацию, например, маркировку и дату создания.",

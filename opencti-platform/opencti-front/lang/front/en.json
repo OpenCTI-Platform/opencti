@@ -128,6 +128,7 @@
   "A connector that is not managed by the platform has this name": "A connector that is not managed by the platform has this name",
   "A connector with this name already exists. Please choose a different name.": "A connector with this name already exists. Please choose a different name.",
   "A dashboard cannot hold more than 50 variables": "A dashboard cannot hold more than 50 variables",
+  "A date of the time range is not valid": "A date of the time range is not valid",
   "A field will be created with appropriate type based on the attribute.": "A field will be created with appropriate type based on the attribute.",
   "A filter cannot reference another variable": "A filter cannot reference another variable",
   "A FINTEL export will contain extra information like markings and creation date": "A FINTEL export will contain extra information like markings and creation date",
