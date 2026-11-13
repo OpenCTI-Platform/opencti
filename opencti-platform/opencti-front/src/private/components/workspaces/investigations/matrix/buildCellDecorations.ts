@@ -1,6 +1,7 @@
 import { getMatrixConfig } from '../../../techniques/attack_patterns/attack_patterns_matrix/attackPatternsMatrixConfig';
 import { heatBorder, heatFill, heatStopIndex } from './heatScale';
-import type { CellDecoration, HeatScale, LinkedEntity, TechniqueUsage } from './matrixTypes';
+import type { CellDecoration, LinkedEntity } from '@components/techniques/attack_patterns/attack_patterns_matrix/attackPatternsMatrixCellDecoration';
+import type { HeatScale, TechniqueUsage } from './matrixTypes';
 
 export interface MatrixTechniqueNode {
   attack_pattern_id: string;

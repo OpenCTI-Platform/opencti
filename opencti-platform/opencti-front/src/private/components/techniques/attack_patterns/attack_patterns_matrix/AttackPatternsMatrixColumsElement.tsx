@@ -16,7 +16,7 @@ import { CoverageInformation } from '@components/analyses/security_coverages/Sec
 import { useFormatter } from '../../../../../components/i18n';
 import { MatrixConfig } from './attackPatternsMatrixConfig';
 import AttackPatternsMatrixCellTooltip from './AttackPatternsMatrixCellTooltip';
-import type { CellDecoration } from '../../../workspaces/investigations/matrix/matrixTypes';
+import type { CellDecoration } from './attackPatternsMatrixCellDecoration';
 
 interface AttackPatternsMatrixColumnsElementProps {
   attackPattern: FilteredAttackPattern | FilteredSubAttackPattern;

@@ -1,6 +1,7 @@
 import type { ObjectToParse } from '../../../../../components/graph/utils/useGraphParser';
 import { getMainRepresentative } from '../../../../../utils/defaultRepresentatives';
-import type { LinkedEntity, TechniqueUsage } from './matrixTypes';
+import type { LinkedEntity } from '@components/techniques/attack_patterns/attack_patterns_matrix/attackPatternsMatrixCellDecoration';
+import type { TechniqueUsage } from './matrixTypes';
 
 const ATTACK_PATTERN = 'Attack-Pattern';
 

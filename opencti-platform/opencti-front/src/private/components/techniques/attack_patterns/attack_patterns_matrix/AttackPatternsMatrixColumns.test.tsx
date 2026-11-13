@@ -10,7 +10,7 @@ import AttackPatternsMatrix, { attackPatternsMatrixQuery } from './AttackPattern
 import AttackPatternsMatrixColumns from './AttackPatternsMatrixColumns';
 import { getMatrixConfig, MatrixVariant } from './attackPatternsMatrixConfig';
 import { AttackPatternsMatrixQuery } from './__generated__/AttackPatternsMatrixQuery.graphql';
-import { CellDecoration } from '../../../workspaces/investigations/matrix/matrixTypes';
+import type { CellDecoration } from './attackPatternsMatrixCellDecoration';
 
 vi.mock('../../../../../utils/hooks/useTopBanner', () => ({ default: () => ({ height: 0 }) }));
 vi.mock('../../../../../utils/hooks/useQueryLoading', async (importOriginal) => {
