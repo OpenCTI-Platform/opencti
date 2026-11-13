@@ -185,6 +185,19 @@ const AttackPatternKnowledgeComponent = ({
           )}
         />
         <Route
+          path="/procedures"
+          element={(
+            <EntityStixCoreRelationships
+              key={location.pathname}
+              entityId={attackPattern.id}
+              relationshipTypes={['implements-technique']}
+              stixCoreObjectTypes={['Procedure']}
+              entityLink={link}
+              isRelationReversed={true}
+            />
+          )}
+        />
+        <Route
           path="/malwares"
           element={(
             <EntityStixCoreRelationships

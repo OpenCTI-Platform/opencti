@@ -145,6 +145,19 @@ const IntrusionSetKnowledgeComponent = ({
           )}
         />
         <Route
+          path="/procedures"
+          element={(
+            <EntityStixCoreRelationships
+              key={location.pathname}
+              entityId={intrusionSet.id}
+              relationshipTypes={['uses']}
+              stixCoreObjectTypes={['Procedure']}
+              entityLink={link}
+              isRelationReversed={false}
+            />
+          )}
+        />
+        <Route
           path="/malwares"
           element={(
             <EntityStixCoreRelationships
