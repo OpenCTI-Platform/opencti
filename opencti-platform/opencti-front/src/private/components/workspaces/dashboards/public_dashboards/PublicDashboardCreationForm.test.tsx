@@ -128,7 +128,9 @@ describe('PublicDashboardCreationForm', () => {
     const create = screen.getByRole('button', { name: 'Create' });
     await waitFor(() => expect(create).toBeEnabled());
     await user.click(screen.getByRole('button', { name: 'Type a refused start date' }));
-    await new Promise((resolve) => { setTimeout(resolve, 50); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
     expect(create).toBeEnabled();
   });
 

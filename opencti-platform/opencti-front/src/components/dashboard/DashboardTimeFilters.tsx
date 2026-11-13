@@ -17,6 +17,15 @@ import DashboardRelativeDateSelect from './DashboardRelativeDateSelect';
  * publishes. Typing a year goes through dates that fail validation (0002, 0020...), so the
  * value must still follow them, or the month and day typed before would be wiped.
  */
+// Mirrors what the pickers refuse: a malformed date, or a day after today (they are disableFuture).
+const isRefusedDate = (value: Date | null) => {
+  if (value === null) return false;
+  if (Number.isNaN(value.getTime())) return true;
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
+  return value > endOfToday;
+};
+
 const useDateDraft = (
   date: string | null | undefined,
   onValidChange: (value: Date | null) => void,
@@ -25,12 +34,14 @@ const useDateDraft = (
   const [draft, setDraft] = useState(() => buildDate(date));
   const [draftSource, setDraftSource] = useState(date);
   // Whether the date shown is one the picker refuses (malformed, or in the future): it is never forwarded, so a form
-  // that holds the range must know the field does not show what it holds.
-  const [invalid, setInvalid] = useState(false);
+  // that holds the range must know the field does not show what it holds. A date given from outside (a stored range,
+  // a preset) is checked as well: the picker shows it as refused without any change.
+  const [invalid, setInvalid] = useState(() => isRefusedDate(buildDate(date)));
   if (date !== draftSource) {
+    const next = buildDate(date);
     setDraftSource(date);
-    setDraft(buildDate(date));
-    setInvalid(false);
+    setDraft(next);
+    setInvalid(isRefusedDate(next));
   }
   const onInvalidChangeRef = useRef(onInvalidChange);
   onInvalidChangeRef.current = onInvalidChange;
