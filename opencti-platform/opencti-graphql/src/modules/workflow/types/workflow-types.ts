@@ -111,6 +111,8 @@ export interface Context {
   undeletedShareSlots?: AsyncActionSlot[];
   /** Direct grants a refused request access share could not undo: the transition records them so an admin clear revokes them. */
   unrevokedDirectGrants?: RequestAccessDirectGrant[];
+  /** Audience pass: knowledge (entity data) filters count as met, only user / group / organization / role filters are evaluated. */
+  assumeKnowledgeConditionsMet?: boolean;
   [key: string]: any;
 }
 
@@ -138,6 +140,8 @@ export interface Transition<TContext extends Context = Context> {
   comment?: string;
   closingReason?: string;
   conditions?: ConditionValidator<TContext>[];
+  /** The conditions without the audience filters, shown to users when the transition is blocked. */
+  knowledgeConditions?: FilterGroup | null;
   /** Phase 1: async effects (background tasks). State does NOT advance until all succeed. */
   asyncSideEffects?: SideEffect<TContext>[];
   /** Phase 2: sync effects run after all async succeed (or immediately if no async). */

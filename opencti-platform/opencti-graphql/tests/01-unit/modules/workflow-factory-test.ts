@@ -41,6 +41,7 @@ vi.mock('../../../src/utils/filtering/filtering-constants', () => ({
   FILTER_KEYS_WITH_ME_VALUE: ['objectAssignee', 'objectParticipant'],
   ME_FILTER_VALUE: '@me',
   WORKFLOW_CONTEXT_FILTER_KEYS: ['workflow_user', 'workflow_group', 'workflow_organization', 'workflow_role', 'name'],
+  WORKFLOW_GROUP_FILTER: 'workflow_group',
   WORKFLOW_ORGANIZATION_FILTER: 'workflow_organization',
   WORKFLOW_ROLE_FILTER: 'workflow_role',
   WORKFLOW_USER_FILTER: 'workflow_user',
@@ -351,6 +352,25 @@ describe('WorkflowFactory.createConditions – entity attribute filters', () => 
     expect(await evaluate(group(FilterMode.And, [nameFilter]))).toBe(true);
     expect(stixLoadByIdMock).not.toHaveBeenCalled();
   });
+
+  describe('audience pass (knowledge conditions assumed met)', () => {
+    const evaluateAudience = (filters: FilterGroup) => WorkflowFactory.createConditions({ filters })[0]({ ...conditionContext(), assumeKnowledgeConditionsMet: true } as any);
+
+    it('assumes knowledge filters met in the audience pass without loading the entity', async () => {
+      const result = await evaluateAudience(group(FilterMode.And, [filter('workflow_group', ['group-1']), filter('objectLabel', ['label-1'])]));
+      expect(result).toBe(true);
+      expect(stixLoadByIdMock).not.toHaveBeenCalled();
+      expect(isStixMatchFilterGroupMock).not.toHaveBeenCalled();
+    });
+
+    it('still evaluates audience filters in the audience pass', async () => {
+      expect(await evaluateAudience(group(FilterMode.And, [filter('workflow_group', ['other']), filter('objectLabel', ['label-1'])]))).toBe(false);
+    });
+
+    it('treats the entity name filter as knowledge', async () => {
+      expect(await evaluateAudience(group(FilterMode.And, [filter('name', ['nope'])]))).toBe(true);
+    });
+  });
 });
 
 describe('WorkflowFactory.createDefinition – closingReason field', () => {
@@ -362,5 +382,40 @@ describe('WorkflowFactory.createDefinition – closingReason field', () => {
   it('leaves closingReason undefined when the schema transition has none', () => {
     const definition = WorkflowFactory.createDefinition(makeSchema());
     expect(definition.getTransition('draft', 'submit')!.closingReason).toBeUndefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// WorkflowFactory.extractKnowledgeConditions – tooltip content of blocked transitions
+// ---------------------------------------------------------------------------
+describe('WorkflowFactory.extractKnowledgeConditions', () => {
+  const filter = (key: string, values: string[]): Filter => ({ key: [key], values, operator: FilterOperator.Eq, mode: FilterMode.Or });
+  const group = (mode: FilterMode, filters: Filter[], filterGroups: FilterGroup[] = []): FilterGroup => ({ mode, filters, filterGroups });
+
+  it('removes audience filters and keeps knowledge filters', () => {
+    const conditions = group(FilterMode.Or, [filter('workflow_user', ['u']), filter('objectAssignee', ['@me'])]);
+    expect(WorkflowFactory.extractKnowledgeConditions(conditions)).toEqual(group(FilterMode.Or, [filter('objectAssignee', ['@me'])]));
+  });
+
+  it('returns null when only audience filters remain', () => {
+    expect(WorkflowFactory.extractKnowledgeConditions(group(FilterMode.And, [filter('workflow_group', ['g'])]))).toBeNull();
+    expect(WorkflowFactory.extractKnowledgeConditions(undefined)).toBeNull();
+  });
+
+  it('drops nested groups left empty', () => {
+    const conditions = group(FilterMode.And, [filter('workflow_group', ['g'])], [
+      group(FilterMode.Or, [filter('workflow_role', ['r'])]),
+      group(FilterMode.And, [filter('objectLabel', ['l'])]),
+    ]);
+    expect(WorkflowFactory.extractKnowledgeConditions(conditions))
+      .toEqual(group(FilterMode.And, [], [group(FilterMode.And, [filter('objectLabel', ['l'])])]));
+  });
+
+  it('exposes knowledgeConditions on the created transitions', () => {
+    const conditions = group(FilterMode.And, [filter('workflow_group', ['g']), filter('objectLabel', ['l'])]);
+    const withConditions = WorkflowFactory.createDefinition(makeSchema({ conditions: { filters: conditions } } as any));
+    expect(withConditions.getTransitions('draft')[0].knowledgeConditions).toEqual(group(FilterMode.And, [filter('objectLabel', ['l'])]));
+    const withoutConditions = WorkflowFactory.createDefinition(makeSchema());
+    expect(withoutConditions.getTransitions('draft')[0].knowledgeConditions).toBeNull();
   });
 });

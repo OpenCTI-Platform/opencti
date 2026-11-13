@@ -14,6 +14,7 @@ import {
   FILTER_KEYS_WITH_ME_VALUE,
   ME_FILTER_VALUE,
   WORKFLOW_CONTEXT_FILTER_KEYS,
+  WORKFLOW_GROUP_FILTER,
   WORKFLOW_ORGANIZATION_FILTER,
   WORKFLOW_ROLE_FILTER,
   WORKFLOW_USER_FILTER,
@@ -58,6 +59,28 @@ export class WorkflowFactory {
   private static isContextFilter(filter: Filter): boolean {
     const keys = Array.isArray(filter.key) ? filter.key : [filter.key];
     return keys.every((k) => WORKFLOW_CONTEXT_FILTER_KEYS.includes(k));
+  }
+
+  // Who-can-do-it filters. Every other filter (entity name included) is about the entity data: a knowledge filter.
+  private static AUDIENCE_FILTER_KEYS = [WORKFLOW_USER_FILTER, WORKFLOW_GROUP_FILTER, WORKFLOW_ORGANIZATION_FILTER, WORKFLOW_ROLE_FILTER];
+
+  private static isAudienceFilter(filter: Filter): boolean {
+    const keys = Array.isArray(filter.key) ? filter.key : [filter.key];
+    return keys.every((k) => this.AUDIENCE_FILTER_KEYS.includes(k));
+  }
+
+  /**
+   * The conditions with the audience filters removed: what the entity must satisfy for the transition to open.
+   * Null when no knowledge filter is left.
+   */
+  public static extractKnowledgeConditions(filters?: FilterGroup | null): FilterGroup | null {
+    if (!filters) return null;
+    const knowledgeFilters = filters.filters.filter((f) => !this.isAudienceFilter(f));
+    const knowledgeGroups = filters.filterGroups
+      .map((g) => this.extractKnowledgeConditions(g))
+      .filter((g): g is FilterGroup => g !== null);
+    if (knowledgeFilters.length === 0 && knowledgeGroups.length === 0) return null;
+    return { ...filters, filters: knowledgeFilters, filterGroups: knowledgeGroups };
   }
 
   private static entityFilterCaches = new WeakMap<object, EntityFilterCache>();
@@ -121,7 +144,7 @@ export class WorkflowFactory {
     const hasEntityFilter = this.hasEntityFilter(normalizedFilters);
     const rootValidator = async (ctx: TContext): Promise<boolean> => {
       let entityFilterInput: EntityFilterInput | undefined;
-      if (hasEntityFilter) {
+      if (hasEntityFilter && !ctx.assumeKnowledgeConditionsMet) {
         try {
           entityFilterInput = await this.loadEntityFilterInput(ctx, normalizedFilters);
         } catch (error) {
@@ -138,9 +161,10 @@ export class WorkflowFactory {
     const { mode, filters, filterGroups } = group;
 
     // Evaluate individual filters in this group
-    const filterResults = await Promise.all(filters.map((f) => (this.isContextFilter(f)
-      ? this.evaluateFilter(ctx, f)
-      : this.evaluateEntityFilter(ctx, f, entityFilterInput))));
+    const filterResults = await Promise.all(filters.map((f) => {
+      if (ctx.assumeKnowledgeConditionsMet && !this.isAudienceFilter(f)) return true;
+      return this.isContextFilter(f) ? this.evaluateFilter(ctx, f) : this.evaluateEntityFilter(ctx, f, entityFilterInput);
+    }));
 
     // Recursively evaluate nested filter groups
     const groupResults = await Promise.all(filterGroups.map((g) => this.evaluateFilterGroup(ctx, g, entityFilterInput)));
@@ -283,6 +307,7 @@ export class WorkflowFactory {
           comment: t.comment,
           closingReason: t.closingReason,
           conditions: this.createConditions<TContext>(t.conditions),
+          knowledgeConditions: this.extractKnowledgeConditions(t.conditions?.filters),
           asyncSideEffects,
           onTransition: syncSideEffects,
           actionTypes: allActionTypes,
