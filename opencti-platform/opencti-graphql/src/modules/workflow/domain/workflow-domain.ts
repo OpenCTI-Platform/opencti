@@ -298,6 +298,10 @@ export const assertScopeAllowed = (entityType: string, scope: StatusScope): void
   if (scope !== StatusScope.Global && entityType !== ENTITY_TYPE_CONTAINER_CASE_RFI) {
     throw FunctionalError('Workflow scope is not available for this entity type', { entityType, scope });
   }
+  // Without the feature the legacy flow decides requests: a scoped workflow must not rewrite its statuses
+  if (scope !== StatusScope.Global && !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    throw FunctionalError('Workflow scope is not available while the ENTITIES_WORKFLOW feature is disabled', { entityType, scope });
+  }
 };
 
 /**

@@ -6282,6 +6282,28 @@ describe('scope-aware workflow definitions', () => {
       expect(() => assertScopeAllowed('Report', StatusScope.Global)).not.toThrow();
       expect(() => assertScopeAllowed('Case-Rfi', StatusScope.Global)).not.toThrow();
     });
+
+    it('rejects a non-Global scope while ENTITIES_WORKFLOW is disabled, so the legacy request flow keeps its statuses', () => {
+      vi.mocked(isFeatureEnabled).mockReturnValue(false);
+      try {
+        expect(() => assertScopeAllowed('Case-Rfi', StatusScope.RequestAccess)).toThrow('Workflow scope is not available while the ENTITIES_WORKFLOW feature is disabled');
+        expect(() => assertScopeAllowed('Case-Rfi', StatusScope.Global)).not.toThrow();
+        expect(() => assertScopeAllowed('DraftWorkspace', StatusScope.Global)).not.toThrow();
+      } finally {
+        vi.mocked(isFeatureEnabled).mockReturnValue(true);
+      }
+    });
+
+    it('refuses to save or publish a request access workflow while ENTITIES_WORKFLOW is disabled', async () => {
+      vi.mocked(isFeatureEnabled).mockReturnValue(false);
+      try {
+        const refusal = 'Workflow scope is not available while the ENTITIES_WORKFLOW feature is disabled';
+        await expect(setWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', '{}', StatusScope.RequestAccess)).rejects.toThrow(refusal);
+        await expect(publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess)).rejects.toThrow(refusal);
+      } finally {
+        vi.mocked(isFeatureEnabled).mockReturnValue(true);
+      }
+    });
   });
 
   describe('getWorkflowDefinition', () => {
