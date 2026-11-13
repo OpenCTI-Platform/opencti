@@ -2,7 +2,7 @@ import React, { Suspense, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Link, useNavigate } from 'react-router';
 import { Field, Form, Formik } from 'formik';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import {
   Alert,
   Dialog,

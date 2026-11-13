@@ -1,7 +1,7 @@
 import React, { CSSProperties, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import { Field } from 'formik';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { ComboboxChangeMeta } from '@filigran/design-system';
 import ComboboxField from '../../../components/ComboboxField';
 import ItemIcon from '../../../components/ItemIcon';

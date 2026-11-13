@@ -1,7 +1,7 @@
 import React, { KeyboardEvent, ReactNode, UIEvent, useId, useMemo, useRef } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { a11yDark, coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Text } from '@filigran/design-system';
 import { FieldProps, useField } from 'formik';
 import { useFormatter } from '../../../components/i18n';

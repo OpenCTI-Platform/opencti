@@ -1,6 +1,6 @@
 import React, { Suspense, useMemo, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Text } from '@filigran/design-system';
 import DataTableWithoutFragment from '../../../components/dataGrid/DataTableWithoutFragment';
 import { DataTableVariant } from '../../../components/dataGrid/dataTableTypes';

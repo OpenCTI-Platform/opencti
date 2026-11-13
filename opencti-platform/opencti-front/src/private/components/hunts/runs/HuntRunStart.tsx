@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { PlayArrowOutlined } from '@mui/icons-material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import {
   Alert,
   Checkbox,

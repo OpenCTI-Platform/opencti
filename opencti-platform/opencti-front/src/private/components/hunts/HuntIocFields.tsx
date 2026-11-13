@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Field, useFormikContext } from 'formik';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Chip, Text } from '@filigran/design-system';
 import TextareaField from '../../../components/TextareaField';
 import FilterIconButton from '../../../components/FilterIconButton';

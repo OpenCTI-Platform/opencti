@@ -5,7 +5,7 @@ import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Step, StepButton, StepLabel, Stepper } from '@mui/material';
 import { Text } from '@filigran/design-system';
 import Button from '@common/button/Button';

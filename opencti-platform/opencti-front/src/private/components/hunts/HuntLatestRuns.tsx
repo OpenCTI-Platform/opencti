@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Link } from 'react-router';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Text } from '@filigran/design-system';
 import Card from '../../../components/common/card/Card';
 import Loader, { LoaderVariant } from '../../../components/Loader';

@@ -1,7 +1,7 @@
 import React, { InputHTMLAttributes, Suspense, useId, useRef, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useFormikContext } from 'formik';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { AutoAwesomeOutlined, FileUploadOutlined } from '@mui/icons-material';
 import { Alert, Button, Checkbox, Paper, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../components/i18n';

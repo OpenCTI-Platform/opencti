@@ -1,6 +1,6 @@
 import React from 'react';
 import { FieldArray, useFormikContext } from 'formik';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
 import { IconButton, Text } from '@filigran/design-system';
 import Button from '@common/button/Button';

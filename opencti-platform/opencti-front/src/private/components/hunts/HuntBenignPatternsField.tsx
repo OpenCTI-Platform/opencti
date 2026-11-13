@@ -1,6 +1,6 @@
 import React, { useId } from 'react';
 import { Field } from 'formik';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Text } from '@filigran/design-system';
 import TextareaField from '../../../components/TextareaField';
 import { useFormatter } from '../../../components/i18n';

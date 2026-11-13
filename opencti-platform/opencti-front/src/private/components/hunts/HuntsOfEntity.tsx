@@ -1,7 +1,7 @@
 import React, { Suspense, useMemo } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Link } from 'react-router';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { v4 as uuid } from 'uuid';
 import { Text } from '@filigran/design-system';
 import Card from '../../../components/common/card/Card';

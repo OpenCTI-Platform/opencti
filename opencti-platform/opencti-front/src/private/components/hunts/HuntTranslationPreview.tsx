@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Check, ContentCopyOutlined } from '@mui/icons-material';
 import { Link } from 'react-router';
 import { Alert, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Spinner, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';

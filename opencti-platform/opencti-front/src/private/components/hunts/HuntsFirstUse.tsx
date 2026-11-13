@@ -1,6 +1,6 @@
 import React, { Suspense, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { AutoAwesomeOutlined, MenuBookOutlined, PolicyOutlined, RuleOutlined, SettingsOutlined } from '@mui/icons-material';
 import { Crosshairs } from 'mdi-material-ui';
 import { Hero, HeroBody, HeroHeader, Text, Thumbnail } from '@filigran/design-system';

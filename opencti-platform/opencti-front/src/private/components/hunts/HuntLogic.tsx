@@ -4,7 +4,7 @@ import { Link } from 'react-router';
 import { Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Alert, Chip, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import CodeBlock from '@components/common/CodeBlock';

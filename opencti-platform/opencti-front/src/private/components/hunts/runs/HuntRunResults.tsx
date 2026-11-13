@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql, useFragment, usePaginationFragment } from 'react-relay';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Card from '../../../../components/common/card/Card';

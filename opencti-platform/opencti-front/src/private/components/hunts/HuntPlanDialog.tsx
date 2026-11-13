@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import { Formik, useFormikContext } from 'formik';
 import { useNavigate } from 'react-router';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import {
   Alert,
   Dialog,

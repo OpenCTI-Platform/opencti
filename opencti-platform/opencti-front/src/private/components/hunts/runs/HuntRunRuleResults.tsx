@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Chip, Text } from '@filigran/design-system';
 import Card from '../../../../components/common/card/Card';
 import { useFormatter } from '../../../../components/i18n';

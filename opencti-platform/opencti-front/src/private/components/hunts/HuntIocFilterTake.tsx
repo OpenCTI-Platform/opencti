@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import { v4 as uuid } from 'uuid';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../components/i18n';

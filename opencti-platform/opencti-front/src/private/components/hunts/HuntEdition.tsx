@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-r
 import { useLocation, useNavigate } from 'react-router';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Drawer, { DrawerControlledDialType } from '@components/common/drawer/Drawer';

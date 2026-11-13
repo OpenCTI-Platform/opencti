@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import { Alert, Text } from '@filigran/design-system';
 import Button from '@common/button/Button';

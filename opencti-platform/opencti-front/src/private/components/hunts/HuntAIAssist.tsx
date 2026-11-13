@@ -3,7 +3,7 @@ import { graphql, useMutation } from 'react-relay';
 import type { Disposable, PayloadError } from 'relay-runtime';
 import { Link } from 'react-router';
 import { useFormikContext } from 'formik';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { AutoAwesomeOutlined } from '@mui/icons-material';
 import {
   Alert,

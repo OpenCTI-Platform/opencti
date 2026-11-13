@@ -1,7 +1,7 @@
 import React, { Suspense, useEffect } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Link, useParams } from 'react-router';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { ArrowBackOutlined } from '@mui/icons-material';
 import { Text } from '@filigran/design-system';
 import Button from '@common/button/Button';

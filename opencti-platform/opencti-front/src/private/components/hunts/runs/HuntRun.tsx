@@ -5,7 +5,7 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { ArrowBackOutlined, AutoAwesomeOutlined, ExpandLessOutlined, ExpandMoreOutlined, ReplayOutlined, WarningAmberOutlined } from '@mui/icons-material';
 import { Alert, Chip, Text } from '@filigran/design-system';
 import Button from '@common/button/Button';

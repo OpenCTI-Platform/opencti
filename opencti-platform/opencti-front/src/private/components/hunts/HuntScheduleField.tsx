@@ -1,6 +1,6 @@
 import React from 'react';
 import { Field, useFormikContext } from 'formik';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Text } from '@filigran/design-system';
 import SelectFieldFds, { SelectItem } from '../../../components/fields/SelectFieldFds';
 import TextField from '../../../components/TextField';

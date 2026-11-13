@@ -1,7 +1,7 @@
 import React, { Suspense, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link, useLocation, useNavigate } from 'react-router';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { CheckCircleOutlined, ErrorOutlineOutlined, ManageSearchOutlined, WarningAmberOutlined } from '@mui/icons-material';
 import { Alert, Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogTitle, Spinner, Text } from '@filigran/design-system';
 import Button from '@common/button/Button';

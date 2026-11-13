@@ -1,7 +1,7 @@
 import React from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Link } from 'react-router';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { CheckCircleOutlined, WarningAmberOutlined } from '@mui/icons-material';
 import { Text } from '@filigran/design-system';
 import Button from '@common/button/Button';

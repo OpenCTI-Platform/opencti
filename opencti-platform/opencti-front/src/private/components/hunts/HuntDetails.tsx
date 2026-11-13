@@ -2,7 +2,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router';
 import Grid from '@mui/material/Grid';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Chip, Text } from '@filigran/design-system';
 import Card from '../../../components/common/card/Card';
 import Label from '../../../components/common/label/Label';

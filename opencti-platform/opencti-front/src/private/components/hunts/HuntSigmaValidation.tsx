@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Chip, Spinner, Text } from '@filigran/design-system';
 import { CheckCircleOutlined, ErrorOutlineOutlined, WarningAmberOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';

@@ -1,7 +1,7 @@
 import React, { ReactNode, Suspense, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { useFormatter } from '../../../components/i18n';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';

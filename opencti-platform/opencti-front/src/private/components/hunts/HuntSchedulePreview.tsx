@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Text } from '@filigran/design-system';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';

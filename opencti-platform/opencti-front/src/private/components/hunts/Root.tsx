@@ -1,7 +1,7 @@
 import React, { Suspense, useMemo } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { useLocation, useParams } from 'react-router';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import FileManager from '@components/common/files/FileManager';
 import StixCoreObjectHistory from '@components/common/stix_core_objects/StixCoreObjectHistory';

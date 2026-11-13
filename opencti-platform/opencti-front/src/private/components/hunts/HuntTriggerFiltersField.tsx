@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Text } from '@filigran/design-system';
 import FilterIconButton from '../../../components/FilterIconButton';
 import Filters from '../common/lists/Filters';
