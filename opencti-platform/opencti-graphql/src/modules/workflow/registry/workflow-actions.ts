@@ -212,7 +212,8 @@ export const ActionDefinitions: Record<string, ActionDefinition> = {
   resetAuthorizedMembers: {
     fn: ActionRegistry.resetAuthorizedMembers,
     paramsSchema: z.object({}).optional(),
-    allowedModes: ['sync', 'async'],
+    // It creates no background task slot: as an async action, the transition would never complete
+    allowedModes: ['sync'],
   },
   asyncBulkAction: {
     fn: ActionRegistry.asyncBulkAction,

@@ -47,7 +47,7 @@ describe('Workflow bypass API', () => {
   const schema = () => authDirectiveBuilder('auth').authDirectiveTransformer(makeExecutableSchema({
     typeDefs: [
       `
-        enum Capabilities { BYPASS KNOWLEDGE_KNUPDATE SETTINGS_SETCUSTOMIZATION SETTINGS }
+        enum Capabilities { BYPASS KNOWLEDGE_KNUPDATE SETTINGS_SETCUSTOMIZATION SETTINGS AUTOMATION_AUTMANAGE }
         directive @auth(for: [Capabilities!]!, forDraft: [Capabilities!], and: Boolean) on FIELD_DEFINITION | OBJECT
         directive @public on FIELD_DEFINITION
         directive @ff(flags: [String!]!, softFail: Boolean = false, defaultValue: String = null) on FIELD_DEFINITION

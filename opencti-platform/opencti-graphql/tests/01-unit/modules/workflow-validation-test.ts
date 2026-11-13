@@ -1054,6 +1054,18 @@ describe('Workflow Validation', () => {
       .rejects.toThrow('not allowed in syncActions');
   });
 
+  it('should fail when resetAuthorizedMembers is placed in asyncActions (no background task slot)', async () => {
+    const invalid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'done' }],
+      transitions: [
+        { from: 'existing-state', to: 'done', event: 'publish', asyncActions: [{ type: 'resetAuthorizedMembers' }] },
+      ],
+    };
+    await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'DraftWorkspace'))
+      .rejects.toThrow('not allowed in asyncActions');
+  });
+
   it('should detect validateDraft in syncActions for DraftWorkspace requirement', async () => {
     const valid = {
       initialState: 'existing-state',

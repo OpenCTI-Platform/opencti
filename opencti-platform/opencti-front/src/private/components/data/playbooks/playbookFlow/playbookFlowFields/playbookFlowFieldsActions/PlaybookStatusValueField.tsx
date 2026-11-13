@@ -110,8 +110,10 @@ const PlaybookStatusValueField = ({ action, index, disabled = false }: PlaybookS
             ? entityTypeOptions.find((o) => o.value === option)?.label ?? option
             : option.label)}
           onInternalChange={(_: string, val: FieldOption | null) => {
-            // The selected status belongs to the previous type workflow
-            setFieldValue(`actions.${index}`, { op: action.op, attribute: action.attribute, entity_type: val?.value });
+            // The selected status belongs to the previous type workflow: clear only the value,
+            // keep the other settings of the action (e.g. apply_transition_actions)
+            const { value: _previousStatus, ...settings } = action;
+            setFieldValue(`actions.${index}`, { ...settings, entity_type: val?.value });
             setFieldValue(`actionsFormValues.${index}`, null);
           }}
         />
