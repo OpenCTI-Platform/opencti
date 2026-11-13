@@ -1,10 +1,12 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as Yup from 'yup';
 import testRender from '../../../../utils/tests/test-render';
 import CaseRfiEditionOverview from './CaseRfiEditionOverview';
 import type { CaseRfiEditionOverview_case$key } from './__generated__/CaseRfiEditionOverview_case.graphql';
+
+const { fieldPatch } = vi.hoisted(() => ({ fieldPatch: vi.fn() }));
 
 vi.mock('react-relay', async (importOriginal) => ({
   ...await importOriginal<typeof import('react-relay')>(),
@@ -15,7 +17,7 @@ vi.mock('../../../../utils/hooks/useEntitySettings', () => ({
   yupShapeConditionalRequired: (shape: Yup.ObjectShape) => shape,
   useDynamicSchemaEditionValidation: (_mandatory: string[], shape: Yup.ObjectShape) => Yup.object(shape),
 }));
-vi.mock('../../../../utils/hooks/useFormEditor', () => ({ default: () => ({ changeFocus: vi.fn(), fieldPatch: vi.fn() }) }));
+vi.mock('../../../../utils/hooks/useFormEditor', () => ({ default: () => ({ changeFocus: vi.fn(), fieldPatch }) }));
 vi.mock('../../common/form/StatusField', () => ({ default: ({ scope }: { scope: string }) => <div>Status field {scope}</div> }));
 vi.mock('../../../../components/AlertConfidenceForEntity', () => ({ default: () => null }));
 vi.mock('../../common/form/OpenVocabField', () => ({ default: () => null }));
@@ -24,7 +26,9 @@ vi.mock('../../common/form/ObjectAssigneeField', () => ({ default: () => null })
 vi.mock('../../common/form/ObjectParticipantField', () => ({ default: () => null }));
 vi.mock('../../common/form/CreatedByField', () => ({ default: () => null }));
 vi.mock('../../common/form/ObjectMarkingField', () => ({ default: () => null }));
-vi.mock('../../common/form/CommitMessage', () => ({ default: () => null }));
+vi.mock('../../common/form/CommitMessage', () => ({
+  default: ({ submitForm }: { submitForm: () => void }) => <button type="button" onClick={submitForm}>Submit with references</button>,
+}));
 vi.mock('@components/common/custom_fields/CustomFieldValuesEdition', () => ({ default: () => null }));
 vi.mock('../../../../components/fields/markdownField/MarkdownField', () => ({ default: () => null }));
 vi.mock('../../../../components/DateTimePickerField', () => ({ default: () => null }));
@@ -53,5 +57,28 @@ describe('CaseRfiEditionOverview', () => {
   it('keeps it for ordinary RFIs', () => {
     testRender(<CaseRfiEditionOverview caseRef={makeRfi(null, false)} handleClose={vi.fn()} />);
     expect(screen.getByText('Status field GLOBAL')).toBeVisible();
+  });
+
+  describe('with references enforced', () => {
+    const submittedKeys = () => (fieldPatch.mock.calls[0][0].variables.input as { key: string }[]).map(({ key }) => key);
+
+    beforeEach(() => {
+      fieldPatch.mockClear();
+    });
+
+    it('never sends the stale status of a workflow-driven RFI', async () => {
+      const { user } = testRender(<CaseRfiEditionOverview caseRef={makeRfi(requestAccess, true)} enableReferences handleClose={vi.fn()} />);
+      await user.click(screen.getByRole('button', { name: 'Submit with references' }));
+      await waitFor(() => expect(fieldPatch).toHaveBeenCalledTimes(1));
+      expect(submittedKeys()).toContain('name');
+      expect(submittedKeys()).not.toContain('x_opencti_workflow_id');
+    });
+
+    it('still sends the status of an RFI that is not workflow-driven', async () => {
+      const { user } = testRender(<CaseRfiEditionOverview caseRef={makeRfi(null, false)} enableReferences handleClose={vi.fn()} />);
+      await user.click(screen.getByRole('button', { name: 'Submit with references' }));
+      await waitFor(() => expect(fieldPatch).toHaveBeenCalledTimes(1));
+      expect(submittedKeys()).toContain('x_opencti_workflow_id');
+    });
   });
 });
