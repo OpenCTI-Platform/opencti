@@ -1798,11 +1798,13 @@ export const getWorkflowInstance = async (
     }
   }
 
-  // Pass entitySetting and definitionData to avoid redundant lookups in getAllowedTransitions
+  // Pass entitySetting and definitionData to avoid redundant lookups in getWorkflowTransitions
   const statuses = await findStatusesByType(bypassDraftContext(context), bypassDraftUser(user), entity.entity_type);
   const { scope } = resolved;
   const currentStatus = statuses.find((status) => status.scope === scope && status.template_id === currentState) ?? null;
-  const allowedTransitions = await getAllowedTransitions(context, user, entityId, { entity, entitySetting, definitionData, instanceEntity, statuses });
+  const { allowed: allowedTransitions, blocked: blockedTransitions } = await getWorkflowTransitions(context, user, entityId, {
+    entity, entitySetting, definitionData, instanceEntity, statuses,
+  });
   const id = instanceEntity?.internal_id ?? instanceEntity?.id ?? `initial-${effectiveEntityId}`;
 
   // Parse pending transition and enrich with live Work data
@@ -1857,6 +1859,7 @@ export const getWorkflowInstance = async (
     currentState: currentState || '',
     currentStatus,
     allowedTransitions,
+    blockedTransitions,
     history: JSON.parse(instanceEntity?.history || '[]'),
     pendingStatus: instanceEntity?.pendingStatus ?? null,
     pendingError: instanceEntity?.pendingError ?? null,
@@ -1943,23 +1946,7 @@ const getTransitionRefusal = async (context: AuthContext, user: AuthUser, entity
   return controlUserConfidenceAgainstElement(user, statusWriteTarget, true) ? null : 'confidence';
 };
 
-/**
- * Get allowed transitions for an entity.
- */
-export const getAllowedTransitions = async (
-  context: AuthContext,
-  user: AuthUser,
-  entityId: string,
-  options?: {
-    entity?: BasicStoreCommon;
-    entitySetting?: BasicStoreEntityEntitySetting;
-    definitionData?: WorkflowDefinitionResponse | null;
-    instanceEntity?: WorkflowInstanceStoreEntity | null;
-    statuses?: BasicWorkflowStatus[];
-    // State of an entity whose instance is not created yet, when its status maps to another state than the initial one
-    currentState?: string;
-  },
-): Promise<Array<{
+type AllowedTransition = {
   event: string;
   toState: string | null;
   toStatus: BasicWorkflowStatus | null;
@@ -1969,19 +1956,45 @@ export const getAllowedTransitions = async (
   requiresShareOrganizationInput: boolean;
   requiresUnshareOrganizationInput: boolean;
   requestAccessOutcome: RequestAccessOutcome | null;
-}>> => {
+};
+
+// A transition the user is targeted by, but whose knowledge (entity data) conditions are not met yet
+type BlockedTransition = AllowedTransition & { blockingConditions: string | null };
+
+type WorkflowTransitionsOptions = {
+  entity?: BasicStoreCommon;
+  entitySetting?: BasicStoreEntityEntitySetting;
+  definitionData?: WorkflowDefinitionResponse | null;
+  instanceEntity?: WorkflowInstanceStoreEntity | null;
+  statuses?: BasicWorkflowStatus[];
+  // State of an entity whose instance is not created yet, when its status maps to another state than the initial one
+  currentState?: string;
+};
+
+const NO_TRANSITIONS = (): { allowed: AllowedTransition[]; blocked: BlockedTransition[] } => ({ allowed: [], blocked: [] });
+
+/**
+ * Get the transitions of an entity the user can trigger (allowed) or will be able to once its data
+ * meets the transition conditions (blocked). Transitions whose audience conditions exclude the user are in neither.
+ */
+export const getWorkflowTransitions = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityId: string,
+  options?: WorkflowTransitionsOptions,
+): Promise<{ allowed: AllowedTransition[]; blocked: BlockedTransition[] }> => {
   const entity = options?.entity ?? await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) {
-    return [];
+    return NO_TRANSITIONS();
   }
 
   if (isEntityWorkflowLockedByDraft(context, user, entity.entity_type)) {
-    return [];
+    return NO_TRANSITIONS();
   }
 
   const entitySetting = options?.entitySetting ?? await getWorkflowConfig(context, user, entity.entity_type);
   if (!hasWorkflowDefinition(entitySetting)) {
-    return [];
+    return NO_TRANSITIONS();
   }
 
   const effectiveEntityId = entity.internal_id || entity.id;
@@ -1992,14 +2005,14 @@ export const getAllowedTransitions = async (
     : await resolveInstanceDefinition(context, user, entitySetting, instanceEntity, suppliedStatus);
   // A supplied definition is only valid for the scope it belongs to: it is never read with the statuses of another
   if (!definitionData || definitionData.id !== resolveScopedDefinitionId(entitySetting, scope)) {
-    return [];
+    return NO_TRANSITIONS();
   }
   if (instanceEntity?.completed) {
-    return [];
+    return NO_TRANSITIONS();
   }
   // Checked after the cheap checks: from a draft, it loads the live entity
   if (await getTransitionRefusal(context, user, entityId, entity)) {
-    return [];
+    return NO_TRANSITIONS();
   }
   // Without instance yet, the entity is in the state its instance will be created at
   const currentStateId = instanceEntity?.currentState ?? options?.currentState ?? resolveSuppliedStatus(definitionData, suppliedStatus) ?? definitionData.initialState;
@@ -2007,30 +2020,53 @@ export const getAllowedTransitions = async (
   const definition = WorkflowFactory.createDefinition(definitionData);
   const effectiveStateId = currentStateId || definition.getInitialState();
   if (!effectiveStateId || !definition.hasState(effectiveStateId)) {
-    return [];
+    return NO_TRANSITIONS();
   }
 
   const transitions = definition.getTransitions(effectiveStateId);
   const statuses = options?.statuses ?? await findStatusesByType(bypassDraftContext(context), bypassDraftUser(user), entity.entity_type);
 
   // Pre-evaluate conditions against the requesting user so the frontend only
-  // sees transitions the current user is actually allowed to trigger.
+  // sees transitions the current user is targeted by.
   // Entity attribute conditions read the live entity, like triggerWorkflowEvent does: workflow state is live only.
   const conditionContext = { entity, user, triggeringUser: user, context: bypassDraftContext(context) };
-  const resolvedTransitions = (await Promise.all(
+  // Audience pass: knowledge conditions count as met, so a false result means the user is not targeted.
+  // Sound because condition groups combine with AND/OR only, never negated.
+  const audienceContext = { ...conditionContext, assumeKnowledgeConditionsMet: true };
+  const passesAll = async (conditions: NonNullable<typeof transitions[number]['conditions']>, ctx: object) => {
+    for (const condition of conditions) {
+      if (!(await condition(ctx as any))) return false;
+    }
+    return true;
+  };
+  const classified = await Promise.all(
     transitions.map(async (transition) => {
-      for (const condition of (transition.conditions ?? [])) {
-        const passes = await condition(conditionContext as any);
-        if (!passes) return null;
-      }
-      return toAllowedTransition(transition, statuses, scope, definitionData, scope === StatusScope.RequestAccess && hasRequestAccess(entity));
+      const conditions = transition.conditions ?? [];
+      const resolved = toAllowedTransition(transition, statuses, scope, definitionData, scope === StatusScope.RequestAccess && hasRequestAccess(entity));
+      if (conditions.length === 0) return { kind: 'allowed' as const, resolved };
+      if (!(await passesAll(conditions, audienceContext))) return null;
+      if (await passesAll(conditions, conditionContext)) return { kind: 'allowed' as const, resolved };
+      const blockingConditions = transition.knowledgeConditions ? JSON.stringify(transition.knowledgeConditions) : null;
+      return { kind: 'blocked' as const, resolved: { ...resolved, blockingConditions } };
     }),
-  )).filter((t): t is NonNullable<typeof t> => t !== null);
-
-  return resolvedTransitions;
+  );
+  const result = NO_TRANSITIONS();
+  for (const item of classified) {
+    if (item?.kind === 'allowed') result.allowed.push(item.resolved);
+    if (item?.kind === 'blocked') result.blocked.push(item.resolved);
+  }
+  return result;
 };
 
-type AllowedTransition = Awaited<ReturnType<typeof getAllowedTransitions>>[number];
+/**
+ * Get allowed transitions for an entity.
+ */
+export const getAllowedTransitions = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityId: string,
+  options?: WorkflowTransitionsOptions,
+): Promise<AllowedTransition[]> => (await getWorkflowTransitions(context, user, entityId, options)).allowed;
 
 // The mass update collects these inputs once for every entity, so they must be the same for all of them
 const hasSameInputRequirements = (transition: AllowedTransition, other: AllowedTransition) => {

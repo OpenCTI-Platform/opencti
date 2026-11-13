@@ -40311,6 +40311,8 @@ export enum WorkflowExecutionStatus {
 export type WorkflowInstance = {
   __typename?: 'WorkflowInstance';
   allowedTransitions: Array<WorkflowTransition>;
+  /** Transitions the user is targeted by but whose entity conditions are not met yet */
+  blockedTransitions: Array<WorkflowTransition>;
   currentState: Scalars['String']['output'];
   currentStatus?: Maybe<Status>;
   id: Scalars['ID']['output'];
@@ -40435,6 +40437,8 @@ export type WorkflowSerializedTransition = {
 export type WorkflowTransition = {
   __typename?: 'WorkflowTransition';
   actions?: Maybe<Array<Scalars['String']['output']>>;
+  /** Blocked transitions only: JSON filter group of the entity conditions not met yet */
+  blockingConditions?: Maybe<Scalars['String']['output']>;
   closingReason?: Maybe<Scalars['String']['output']>;
   comment?: Maybe<Scalars['String']['output']>;
   event: Scalars['String']['output'];
@@ -42962,7 +42966,7 @@ export type ResolversTypes = ResolversObject<{
   WorkflowDefinitionMutationResult: ResolverTypeWrapper<WorkflowDefinitionMutationResult>;
   WorkflowEntityRef: ResolverTypeWrapper<WorkflowEntityRef>;
   WorkflowExecutionStatus: WorkflowExecutionStatus;
-  WorkflowInstance: ResolverTypeWrapper<Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversTypes['Status']> }>;
+  WorkflowInstance: ResolverTypeWrapper<Omit<WorkflowInstance, 'allowedTransitions' | 'blockedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversTypes['WorkflowTransition']>, blockedTransitions: Array<ResolversTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversTypes['Status']> }>;
   WorkflowLastHistoryEntry: ResolverTypeWrapper<WorkflowLastHistoryEntry>;
   WorkflowMigrationDiagnostic: ResolverTypeWrapper<WorkflowMigrationDiagnostic>;
   WorkflowMigrationDiagnosticType: WorkflowMigrationDiagnosticType;
@@ -44037,7 +44041,7 @@ export type ResolversParentTypes = ResolversObject<{
   WorkflowBypassStatus: Omit<WorkflowBypassStatus, 'status'> & { status: ResolversParentTypes['Status'] };
   WorkflowDefinitionMutationResult: WorkflowDefinitionMutationResult;
   WorkflowEntityRef: WorkflowEntityRef;
-  WorkflowInstance: Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversParentTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversParentTypes['Status']> };
+  WorkflowInstance: Omit<WorkflowInstance, 'allowedTransitions' | 'blockedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversParentTypes['WorkflowTransition']>, blockedTransitions: Array<ResolversParentTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversParentTypes['Status']> };
   WorkflowLastHistoryEntry: WorkflowLastHistoryEntry;
   WorkflowMigrationDiagnostic: WorkflowMigrationDiagnostic;
   WorkflowMigrationPreview: WorkflowMigrationPreview;
@@ -56430,6 +56434,7 @@ export type WorkflowEntityRefResolvers<ContextType = any, ParentType extends Res
 
 export type WorkflowInstanceResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowInstance'] = ResolversParentTypes['WorkflowInstance']> = ResolversObject<{
   allowedTransitions?: Resolver<Array<ResolversTypes['WorkflowTransition']>, ParentType, ContextType>;
+  blockedTransitions?: Resolver<Array<ResolversTypes['WorkflowTransition']>, ParentType, ContextType>;
   currentState?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   currentStatus?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -56528,6 +56533,7 @@ export type WorkflowSerializedTransitionResolvers<ContextType = any, ParentType 
 
 export type WorkflowTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowTransition'] = ResolversParentTypes['WorkflowTransition']> = ResolversObject<{
   actions?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  blockingConditions?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   closingReason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   comment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

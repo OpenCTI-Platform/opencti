@@ -29,6 +29,7 @@ import {
   clearWorkflowPendingState,
   deleteWorkflowDefinition,
   getAllowedTransitions,
+  getWorkflowTransitions,
   getWorkflowDefinition,
   getWorkflowInstance,
   getWorkflowPublishedVersionId,
@@ -8305,5 +8306,94 @@ describe('Workflow mutations inside a draft', () => {
 
     expect(lockResources).toHaveBeenCalledWith(['workflow-mutation-draft-id']);
     expect(updateAttribute).toHaveBeenCalled();
+  });
+});
+
+// ===========================================================================
+// getWorkflowTransitions — transitions blocked by a knowledge condition
+// ===========================================================================
+
+describe('getWorkflowTransitions – blocked transitions', () => {
+  const assigneeConditions = {
+    mode: 'and',
+    filters: [{ key: ['objectAssignee'], values: ['@me'], operator: 'eq', mode: 'or' }],
+    filterGroups: [],
+  };
+  // Fails for real, passes when knowledge conditions are assumed met: the user is in the audience, the entity data is missing
+  const knowledgeOnlyCondition = (ctx: any) => Promise.resolve(!!ctx.assumeKnowledgeConditionsMet);
+
+  const setup = (transitions: any[], instance: any = { id: 'instance-id', internal_id: 'instance-id', currentState: 'draft', history: '[]' }) => {
+    vi.mocked(WorkflowFactory.createDefinition).mockImplementation((() => ({
+      getInitialState: () => 'draft',
+      hasState: () => true,
+      getTransitions: (fromState: string) => (fromState === 'draft' ? transitions : []),
+    })) as any);
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
+      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', name: 'Test Workflow', published_version: { id: 'v1', content: '{}', timestamp: '', createdBy: '', validation_errors: [] } });
+      return Promise.resolve(null);
+    });
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (loadEntity as any).mockResolvedValue(instance);
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(findStatusesByType).mockResolvedValue([]);
+  });
+
+  afterEach(() => {
+    vi.mocked(WorkflowFactory.createDefinition).mockReset();
+  });
+
+  it('classifies a transition failing only knowledge conditions as blocked', async () => {
+    setup([{ event: 'review', to: 'reviewed', actionTypes: [], conditions: [knowledgeOnlyCondition], knowledgeConditions: assigneeConditions }]);
+
+    const { allowed, blocked } = await getWorkflowTransitions(mockContext, mockUser, 'entity-id');
+
+    expect(allowed).toEqual([]);
+    expect(blocked).toHaveLength(1);
+    expect(blocked[0].event).toBe('review');
+    expect(JSON.parse(blocked[0].blockingConditions as string)).toEqual(assigneeConditions);
+    expect(await getAllowedTransitions(mockContext, mockUser, 'entity-id')).toEqual([]);
+  });
+
+  it('hides a transition failing audience conditions', async () => {
+    setup([{ event: 'review', to: 'reviewed', actionTypes: [], conditions: [() => Promise.resolve(false)], knowledgeConditions: assigneeConditions }]);
+
+    const { allowed, blocked } = await getWorkflowTransitions(mockContext, mockUser, 'entity-id');
+
+    expect(allowed).toEqual([]);
+    expect(blocked).toEqual([]);
+  });
+
+  it('allows a transition without conditions', async () => {
+    setup([{ event: 'review', to: 'reviewed', actionTypes: [], conditions: [], knowledgeConditions: null }]);
+
+    const { allowed, blocked } = await getWorkflowTransitions(mockContext, mockUser, 'entity-id');
+
+    expect(allowed.map((t) => t.event)).toEqual(['review']);
+    expect(blocked).toEqual([]);
+  });
+
+  it('returns no blocked transition when the instance is completed', async () => {
+    setup(
+      [{ event: 'review', to: 'reviewed', actionTypes: [], conditions: [knowledgeOnlyCondition], knowledgeConditions: assigneeConditions }],
+      { id: 'instance-id', internal_id: 'instance-id', currentState: 'draft', history: '[]', completed: true },
+    );
+
+    const { allowed, blocked } = await getWorkflowTransitions(mockContext, mockUser, 'entity-id');
+
+    expect(allowed).toEqual([]);
+    expect(blocked).toEqual([]);
+  });
+
+  it('getWorkflowInstance exposes blockedTransitions', async () => {
+    setup([{ event: 'review', to: 'reviewed', actionTypes: [], conditions: [knowledgeOnlyCondition], knowledgeConditions: assigneeConditions }]);
+
+    const instance = await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(instance.allowedTransitions).toEqual([]);
+    expect(instance.blockedTransitions.map((t: any) => t.event)).toEqual(['review']);
   });
 });

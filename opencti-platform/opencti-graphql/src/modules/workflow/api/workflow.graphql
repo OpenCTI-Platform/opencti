@@ -165,6 +165,8 @@ type WorkflowTransition {
     requiresUnshareOrganizationInput: Boolean
     # Outcome marked on the target state of a request access transition, null for any other transition.
     requestAccessOutcome: WorkflowRequestAccessOutcome
+    """Blocked transitions only: JSON filter group of the entity conditions not met yet"""
+    blockingConditions: String
 }
 
 type WorkflowBypassStatus {
@@ -188,6 +190,8 @@ type WorkflowInstance {
     currentState: String!
     currentStatus: Status
     allowedTransitions: [WorkflowTransition!]!
+    """Transitions the user is targeted by but whose entity conditions are not met yet"""
+    blockedTransitions: [WorkflowTransition!]!
     lastHistoryEntry: WorkflowLastHistoryEntry
     pendingStatus: WorkflowExecutionStatus
     pendingError: String

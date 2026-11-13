@@ -141,6 +141,7 @@ const workflowResolvers = {
     currentState: (instance: any) => instance.currentState,
     currentStatus: (instance: any) => instance.currentStatus ?? null,
     allowedTransitions: (instance: any) => instance.allowedTransitions,
+    blockedTransitions: (instance: any) => instance.blockedTransitions ?? [],
     lastHistoryEntry: (instance: any) => {
       const history: Array<{ state: string; event: string; user_id: string; timestamp: string; comment?: string | null }> = instance.history ?? [];
       // External writes that left the state unchanged must not hide the last real transition.
