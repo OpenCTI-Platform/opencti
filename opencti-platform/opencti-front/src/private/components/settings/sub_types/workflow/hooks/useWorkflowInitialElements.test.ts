@@ -6,7 +6,8 @@ import { SubTypeWorkflowDependenciesQuery$data } from '../../__generated__/SubTy
 import { WorkflowNodeType } from '../utils';
 import { useWorkflowInitialElements } from './useWorkflowInitialElements';
 
-vi.mock('@mui/styles', () => ({
+vi.mock('@mui/material/styles', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@mui/material/styles')>()),
   useTheme: () => ({
     palette: {
       chip: { main: '#00bcd4' },
@@ -73,6 +74,7 @@ describe('useWorkflowInitialElements', () => {
         event: 'close_event',
         conditions: {},
         comment: null,
+        closingReason: null,
         asyncActions: [],
         syncActions: [],
       },
@@ -225,6 +227,7 @@ describe('useWorkflowInitialElements', () => {
           event: 'share_event',
           conditions: {},
           comment: null,
+          closingReason: null,
           asyncActions: [
             {
               type: 'asyncBulkAction',
@@ -267,6 +270,7 @@ describe('useWorkflowInitialElements', () => {
           event: 'unshare_event',
           conditions: {},
           comment: null,
+          closingReason: null,
           asyncActions: [
             {
               type: 'asyncBulkAction',
@@ -307,6 +311,7 @@ describe('useWorkflowInitialElements', () => {
         event: 'draft_event',
         conditions: {},
         comment: null,
+        closingReason: null,
         asyncActions: [],
         syncActions: [],
       }],

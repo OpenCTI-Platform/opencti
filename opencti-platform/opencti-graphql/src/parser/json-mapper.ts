@@ -13,7 +13,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import * as JSONPath from 'jsonpath-plus';
 import RE2 from 're2';
 
 import { v4 as uuidv4 } from 'uuid';
@@ -46,7 +45,8 @@ import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import type { BasicStoreObject, StoreCommon } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import { SYSTEM_USER } from '../utils/access';
-import { safeRender } from '../utils/safeEjs';
+import { createSafeEjsSandbox, type SafeEjsSandbox } from '../utils/safeEjs';
+import { queryJsonPath } from '../utils/jsonPath.client';
 import { computeDefaultValue, formatValue, handleDefaultMarkings, handleRefEntities, type InputType } from './csv-mapper';
 import { getCustomFieldAttributeDefinitions, moveCustomFieldValuesToInput } from '../modules/customField/custom-field-attributes';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
@@ -65,8 +65,29 @@ const format = (value: string | string[], def: AttributeDefinition, attribute: S
   return formatValue(value, def.type, attribute);
 };
 
+// The base document of one mapping execution. An independent path does not depend on the record:
+// it is evaluated once per execution instead of once per record, and its result is reused.
+interface MappingBase {
+  json: JSON;
+  independentResults: Map<string, Promise<unknown>>;
+}
+
+const queryRecordOrBase = (base: MappingBase, record: JSON, path: string, independent: boolean | undefined, wrap: boolean) => {
+  if (independent !== true) {
+    return queryJsonPath({ path, json: record, wrap, flatten: true });
+  }
+  const key = JSON.stringify([path, wrap]);
+  let result = base.independentResults.get(key);
+  if (!result) {
+    result = queryJsonPath({ path, json: base.json, wrap, flatten: true });
+    base.independentResults.set(key, result);
+  }
+  return result;
+};
+
 const extractComplexPathFromJson = async (
-  base: JSON,
+  sandbox: SafeEjsSandbox,
+  base: MappingBase,
   metaData: Record<string, any>,
   record: JSON,
   attribute: ComplexAttributePath,
@@ -76,13 +97,7 @@ const extractComplexPathFromJson = async (
   const data: any = { ...metaData };
   for (let i = 0; i < (variables ?? []).length; i += 1) {
     const variable = (variables ?? [])[i];
-    const onBase = variable.independent === true;
-    data[variable.variable] = JSONPath.JSONPath({
-      path: variable.path,
-      json: onBase ? base : record,
-      wrap: attrDef?.multiple ?? false,
-      flatten: true,
-    });
+    data[variable.variable] = await queryRecordOrBase(base, record, variable.path, variable.independent, attrDef?.multiple ?? false);
   }
   data.patternFromValue = (k: string, value: string) => {
     try {
@@ -108,7 +123,7 @@ const extractComplexPathFromJson = async (
     }
     return defaultValue;
   };
-  const val = await safeRender(`<?- ${formula} ?>`, data, {
+  const val = await sandbox.safeRender(`<?- ${formula} ?>`, data, {
     delimiter: '?',
     async: true,
     maxExecutedStatementCount: 10000,
@@ -117,20 +132,13 @@ const extractComplexPathFromJson = async (
   return attrDef ? format(val, attrDef, attribute) : val;
 };
 
-const extractSimpleMultiPathFromJson = (
-  base: JSON,
+const extractSimpleMultiPathFromJson = async (
+  base: MappingBase,
   record: JSON,
   attribute: SimpleAttributePath,
   attrDef: AttributeDefinition,
 ) => {
-  const { path } = attribute;
-  const onBase = attribute.independent === true;
-  const val = JSONPath.JSONPath({
-    path,
-    json: onBase ? base : record,
-    wrap: attrDef.multiple ?? false,
-    flatten: true,
-  }) as string | string[];
+  const val = await queryRecordOrBase(base, record, attribute.path, attribute.independent, attrDef.multiple ?? false) as string | string[];
   if (Array.isArray(val)) {
     const formattedValues = val.map((value) => {
       const formatedData = format(value, attrDef, attribute);
@@ -148,19 +156,23 @@ const extractSimpleMultiPathFromJson = (
   return formattedValue;
 };
 
-const extractSimpleIdentifierFromJson = (
-  base: JSON,
+const extractSimpleIdentifierFromJson = async (
+  base: MappingBase,
   record: JSON,
   attribute: SimpleAttributePath,
   attrDef: AttributeDefinition,
 ) => {
-  const value = extractSimpleMultiPathFromJson(base, record, attribute, attrDef);
+  const value = await extractSimpleMultiPathFromJson(base, record, attribute, attrDef);
   return Array.isArray(value) ? value.join('-') : value;
 };
 
-const extractIdentifierFromJson = (base: JSON, record: JSON, identifier: string, attrDef: AttributeDefinition) => {
+const extractIdentifierFromJson = async (base: MappingBase, record: JSON, identifier: string, attrDef: AttributeDefinition) => {
   const identifiers = identifier.split(',');
-  return identifiers.map((id) => extractSimpleIdentifierFromJson(base, record, { path: id }, attrDef)).join('-');
+  const values = [];
+  for (let i = 0; i < identifiers.length; i += 1) {
+    values.push(await extractSimpleIdentifierFromJson(base, record, { path: identifiers[i] }, attrDef));
+  }
+  return values.join('-');
 };
 
 const orderedIdentifiersCombinations = <T>(arrays: T[][]): T[][] => {
@@ -181,19 +193,20 @@ const orderedIdentifiersCombinations = <T>(arrays: T[][]): T[][] => {
   return result;
 };
 
-const extractTargetIdentifierFromJson = (base: JSON, record: JSON, identifier: string, attrDef: AttributeDefinition): string[] => {
+const extractTargetIdentifierFromJson = async (base: MappingBase, record: JSON, identifier: string, attrDef: AttributeDefinition): Promise<string[]> => {
   const identifiers = identifier.split(',');
   const arrayOfMappedIdentifiers = [];
   for (let i = 0; i < identifiers.length; i += 1) {
     const id = identifiers[i];
-    const value = extractSimpleMultiPathFromJson(base, record, { path: id }, attrDef);
+    const value = await extractSimpleMultiPathFromJson(base, record, { path: id }, attrDef);
     arrayOfMappedIdentifiers.push(Array.isArray(value) ? value : [value]);
   }
   return orderedIdentifiersCombinations(arrayOfMappedIdentifiers).map((comb) => comb.join('-'));
 };
 
 const handleDirectAttribute = async (
-  base: JSON,
+  sandbox: SafeEjsSandbox,
+  base: MappingBase,
   metaData: Record<string, any>,
   attribute: RepresentationAttribute,
   input: Record<string, InputType>,
@@ -209,7 +222,7 @@ const handleDirectAttribute = async (
     }
   }
   if (attribute.mode === 'simple' && attribute.attr_path) {
-    const computedValue: InputType | null | undefined = extractSimpleMultiPathFromJson(base, record, attribute.attr_path, definition);
+    const computedValue: InputType | null | undefined = await extractSimpleMultiPathFromJson(base, record, attribute.attr_path, definition);
     if (isNotEmptyField(computedValue)) {
       if (isAttributeHash) {
         const values = (input.hashes ?? {}) as Record<string, any>;
@@ -220,7 +233,7 @@ const handleDirectAttribute = async (
     }
   }
   if (attribute.mode === 'complex' && attribute.complex_path) {
-    const computedValue: InputType | null | undefined = await extractComplexPathFromJson(base, metaData, record, attribute.complex_path, definition);
+    const computedValue: InputType | null | undefined = await extractComplexPathFromJson(sandbox, base, metaData, record, attribute.complex_path, definition);
     if (isNotEmptyField(computedValue)) {
       if (isAttributeHash) {
         const values = (input.hashes ?? {}) as Record<string, any>;
@@ -235,7 +248,7 @@ const handleDirectAttribute = async (
 const handleBasedOnAttribute = async (
   context: AuthContext,
   user: AuthUser,
-  base: JSON,
+  base: MappingBase,
   attribute: BasedRepresentationAttribute,
   input: Record<string, InputType>,
   record: JSON,
@@ -277,13 +290,13 @@ const handleBasedOnAttribute = async (
       let mappedIdentifiers: string[] = [];
       if (isRetroCompatibilityIdentifier) {
         emptyMatching = false;
-        mappedIdentifiers = extractTargetIdentifierFromJson(base, record, ident, definition);
+        mappedIdentifiers = await extractTargetIdentifierFromJson(base, record, ident, definition);
       } else {
         const identifiers = (attribute.based_on.identifier ?? []) as AttributeBasedOnIdentifierComplex[];
         const targetIdentifier = identifiers.find((ident) => ident.representation === representation);
         if (targetIdentifier?.identifier) {
           emptyMatching = false;
-          mappedIdentifiers = extractTargetIdentifierFromJson(base, record, targetIdentifier.identifier, definition);
+          mappedIdentifiers = await extractTargetIdentifierFromJson(base, record, targetIdentifier.identifier, definition);
         }
       }
       const byRepresentation = otherEntities.get(representation);
@@ -362,6 +375,7 @@ const jsonMappingExecution = async (
 
   const finalObjects: StixObject[] = [];
   const seenIds = new Set<string>();
+  const ejsSandbox = createSafeEjsSandbox();
 
   const processInput = (representation: JsonMapperRepresentation, input: any) => {
     let stixObject: StixObject | undefined;
@@ -402,6 +416,7 @@ const jsonMappingExecution = async (
   };
 
   const baseJson = typeof data === 'string' ? JSON.parse(data) : data;
+  const mappingBase: MappingBase = { json: baseJson, independentResults: new Map() };
   const baseArray = [baseJson]; // Wrapping in array for base JSON to have JsonPath base array compatibility
   for (let index = 0; index < baseArray.length; index += 1) {
     const element = baseArray[index];
@@ -409,7 +424,7 @@ const jsonMappingExecution = async (
     const dataVars: any = { ...variables };
     for (let indexVar = 0; indexVar < (mapper.variables ?? []).length; indexVar += 1) {
       const variable = (mapper.variables ?? [])[indexVar];
-      dataVars[variable.name] = await extractComplexPathFromJson(baseJson, {}, element, variable.path);
+      dataVars[variable.name] = await extractComplexPathFromJson(ejsSandbox, mappingBase, {}, element, variable.path);
     }
     // endregion
     // region representations
@@ -421,7 +436,7 @@ const jsonMappingExecution = async (
         const { entity_type, path: base_path } = representation.target;
         const hashesNames = getHashesNames(entity_type);
         const customFieldAttributes = await getCustomFieldAttributeDefinitions(context, user, entity_type, representation.attributes.map((a) => a.key));
-        const baseData = JSONPath.JSONPath({ path: base_path, json: element, flatten: true });
+        const baseData = await queryJsonPath({ path: base_path, json: element, flatten: true });
         const baseDatas = (Array.isArray(baseData) ? baseData : [baseData]);
         for (let baseInfo = 0; baseInfo < baseDatas.length; baseInfo += 1) {
           let input: any = {};
@@ -444,21 +459,21 @@ const jsonMappingExecution = async (
                 if (hashesNames.includes(attribute.key)) {
                   const definitionHash = (attributeDef as ObjectAttribute).mappings.find((definition) => (definition.name === attribute.key));
                   if (definitionHash) {
-                    await handleDirectAttribute(baseJson, dataVars, attribute, input, baseDatum, attributeDef, hashesNames);
+                    await handleDirectAttribute(ejsSandbox, mappingBase, dataVars, attribute, input, baseDatum, attributeDef, hashesNames);
                   }
                 } else {
-                  await handleDirectAttribute(baseJson, dataVars, attribute, input, baseDatum, attributeDef, []);
+                  await handleDirectAttribute(ejsSandbox, mappingBase, dataVars, attribute, input, baseDatum, attributeDef, []);
                 }
               } else {
                 throw UnsupportedError('Unknown schema for attribute:', { attribute });
               }
             } else if (attribute.mode === 'base') {
               if (refDef) {
-                await handleBasedOnAttribute(context, user, baseJson, attribute, input, baseDatum, refDef, results, refEntities, representation, chosenMarkings);
+                await handleBasedOnAttribute(context, user, mappingBase, attribute, input, baseDatum, refDef, results, refEntities, representation, chosenMarkings);
               } else if (attribute.key === 'from') {
-                await handleBasedOnAttribute(context, user, baseJson, attribute, input, baseDatum, fromRef, results, refEntities, representation, chosenMarkings);
+                await handleBasedOnAttribute(context, user, mappingBase, attribute, input, baseDatum, fromRef, results, refEntities, representation, chosenMarkings);
               } else if (attribute.key === 'to') {
-                await handleBasedOnAttribute(context, user, baseJson, attribute, input, baseDatum, toRef, results, refEntities, representation, chosenMarkings);
+                await handleBasedOnAttribute(context, user, mappingBase, attribute, input, baseDatum, toRef, results, refEntities, representation, chosenMarkings);
               } else {
                 throw UnsupportedError('Unknown schema for attribute:', { attribute });
               }
@@ -489,7 +504,7 @@ const jsonMappingExecution = async (
           } else {
             input.standard_id = generateStandardId(entity_type, input);
             if (representation.identifier) {
-              const identifier = extractIdentifierFromJson(baseJson, baseDatum, representation.identifier, idType);
+              const identifier = await extractIdentifierFromJson(mappingBase, baseDatum, representation.identifier, idType);
               input.__identifier = identifier ? identifier.trim() : identifier;
             } else {
               input.__identifier = uuidv4();

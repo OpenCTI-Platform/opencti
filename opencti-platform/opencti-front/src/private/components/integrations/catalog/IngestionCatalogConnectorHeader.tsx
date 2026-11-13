@@ -1,7 +1,7 @@
 import Typography from '@mui/material/Typography';
 import { GroupsOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import IngestionCatalogChip from '@components/integrations/catalog/IngestionCatalogUseCaseChip';
 import { IngestionConnector } from '@components/integrations/catalog/types';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
@@ -38,9 +38,16 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
   return (
     <Stack
       direction="row"
-      justifyContent="space-between"
+      sx={{
+        justifyContent: 'space-between',
+      }}
     >
-      <Stack direction="row" gap={2}>
+      <Stack
+        direction="row"
+        sx={{
+          gap: 2,
+        }}
+      >
         <img
           src={connector.logo}
           alt={connector.title}
@@ -52,8 +59,17 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
           }}
         />
 
-        <Stack gap={1}>
-          <Stack direction="row" gap={2} alignItems="center">
+        <Stack sx={{
+          gap: 1,
+        }}
+        >
+          <Stack
+            direction="row"
+            sx={{
+              gap: 2,
+              alignItems: 'center',
+            }}
+          >
             {/* Sentence case: the V7 design language avoids all-caps text. */}
             <Typography
               variant="h1"

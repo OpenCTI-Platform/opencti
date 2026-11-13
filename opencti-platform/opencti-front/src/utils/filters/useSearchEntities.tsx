@@ -15,7 +15,7 @@ import { VocabularyQuery$data } from '@components/settings/__generated__/Vocabul
 import { ObjectAssigneeFieldMembersSearchQuery$data } from '@components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
 import { ObjectParticipantFieldParticipantsSearchQuery$data } from '@components/common/form/__generated__/ObjectParticipantFieldParticipantsSearchQuery.graphql';
 import { objectParticipantFieldParticipantsSearchQuery } from '@components/common/form/ObjectParticipantField';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { StatusTemplateFieldQuery } from '@components/common/form/StatusTemplateField';
 import { StatusTemplateFieldSearchQuery$data } from '@components/common/form/__generated__/StatusTemplateFieldSearchQuery.graphql';
 import { externalReferencesQueriesSearchQuery } from '@components/analyses/external_references/ExternalReferencesQueries';

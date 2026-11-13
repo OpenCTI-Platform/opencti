@@ -1,12 +1,11 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import Tooltip from '@mui/material/Tooltip';
 import { IndicatorsLinesPaginationQuery, IndicatorsLinesPaginationQuery$variables } from '@components/observations/__generated__/IndicatorsLinesPaginationQuery.graphql';
 import { IndicatorsLines_data$data } from '@components/observations/__generated__/IndicatorsLines_data.graphql';
 import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import IndicatorCreation from './indicators/IndicatorCreation';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -17,6 +16,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 
 const LOCAL_STORAGE_KEY = 'indicators-list';
 
@@ -178,7 +178,7 @@ const Indicators = () => {
     },
     created: {
       percentWidth: 15,
-      render: ({ created }, { nsdt }) => <Tooltip title={nsdt(created)}>{nsdt(created)}</Tooltip>,
+      render: ({ created }, { ftdt }) => defaultRender(ftdt(created)),
     },
     objectMarking: {
       percentWidth: 10,
@@ -208,8 +208,8 @@ const Indicators = () => {
           preloadedPaginationProps={preloadedPaginationOptions}
           exportContext={{ entity_type: 'Indicator' }}
           additionalHeaderButtons={[
-            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
-              <StixCoreObjectForms entityType="Threat-Actor-Group" />
+            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE]}>
+              <StixCoreObjectForms entityType="Indicator" />
             </Security>,
           ]}
           createButton={(

@@ -5,9 +5,8 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import withStyles from '@mui/styles/withStyles';
+import { styled } from '@mui/material/styles';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { Component } from 'react';
 import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
@@ -16,10 +15,8 @@ import { deleteNode } from '../../../../utils/store';
 import LabelEdition from './LabelEdition';
 import { IconButton } from '@filigran/design-system';
 
-const styles = () => ({
-  container: {
-    margin: 0,
-  },
+const Container = styled('div')({
+  margin: 0,
 });
 
 const labelPopoverDeletionMutation = graphql`
@@ -88,9 +85,9 @@ class LabelPopover extends Component {
   }
 
   render() {
-    const { classes, t } = this.props;
+    const { t } = this.props;
     return (
-      <div className={classes.container}>
+      <Container>
         <IconButton
           variant="default"
           priority="tertiary"
@@ -142,7 +139,7 @@ class LabelPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-      </div>
+      </Container>
     );
   }
 }
@@ -150,8 +147,7 @@ class LabelPopover extends Component {
 LabelPopover.propTypes = {
   label: PropTypes.object,
   paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(LabelPopover);
+export default inject18n(LabelPopover);

@@ -1,0 +1,366 @@
+import { describe, expect, it } from 'vitest';
+import * as C from '@mui/material/colors';
+import { itemColor } from '../../utils/Colors';
+import {
+  coarsenSeriesForRendering,
+  COMPACT_LEGEND_ROW_HEIGHT,
+  getBreakdownLegendMaxHeight,
+  getBreakdownPalette,
+  getBreakdownSeriesColors,
+  getEntityTypeColor,
+  getReadableOwnColor,
+  getBreakdownTickAmount,
+  getRenderedBarsBudget,
+  getRenderedPointsBudget,
+  isSameBreakdown,
+  MAX_RENDERED_BARS,
+  MAX_RENDERED_HEATMAP_CELLS,
+  MAX_RENDERED_LINE_POINTS,
+  MIN_PLOT_HEIGHT,
+  MIN_RENDERED_BARS,
+  nextBreakdownChartWidth,
+  numberSharedSeriesNames,
+} from './timeSeriesBreakdownRendering';
+
+// One point per UTC day, starting on a given date
+const daily = (start: string, values: number[]) => values.map((y, i) => {
+  const x = new Date(start);
+  x.setUTCDate(x.getUTCDate() + i);
+  return { x, y };
+});
+
+describe('rendered bars budget', () => {
+  it('follows the width, within the minimum and maximum', () => {
+    expect(getRenderedBarsBudget(800)).toEqual(400);
+    expect(getRenderedBarsBudget(801)).toEqual(400);
+    expect(getRenderedBarsBudget(100)).toEqual(MIN_RENDERED_BARS);
+    expect(getRenderedBarsBudget(5000)).toEqual(MAX_RENDERED_BARS);
+  });
+
+  it('gives the maximum when the width is unknown', () => {
+    expect(getRenderedBarsBudget(0)).toEqual(MAX_RENDERED_BARS);
+    expect(getRenderedBarsBudget(-10)).toEqual(MAX_RENDERED_BARS);
+    expect(getRenderedBarsBudget(Number.NaN)).toEqual(MAX_RENDERED_BARS);
+  });
+});
+
+describe('rendered points budget', () => {
+  it('shares the bars budget between every series of grouped bars', () => {
+    expect(getRenderedPointsBudget('vertical-bar', 800, 20)).toEqual(getRenderedBarsBudget(800));
+    expect(getRenderedPointsBudget('vertical-bar', 800, 20, false)).toEqual(getRenderedBarsBudget(800));
+  });
+
+  it('gives the bars budget to the columns of stacked bars, within the cost of their bars', () => {
+    // 10 series of 31 days: 31 columns of 10 bars
+    expect(getRenderedPointsBudget('vertical-bar', 500, 10, true)).toEqual(MAX_RENDERED_BARS);
+    expect(getRenderedPointsBudget('vertical-bar', 500, 10, true)).toBeGreaterThanOrEqual(10 * 31);
+    expect(getRenderedPointsBudget('vertical-bar', 500, 10)).toBeLessThan(10 * 31);
+    // A single series is one column per bar either way
+    expect(getRenderedPointsBudget('vertical-bar', 500, 1, true)).toEqual(getRenderedBarsBudget(500));
+    // Never more than the bars budget of the width per column, nor than the cost cap
+    expect(getRenderedPointsBudget('vertical-bar', 300, 2, true)).toEqual(2 * 150);
+    expect(getRenderedPointsBudget('vertical-bar', 2000, 50, true)).toEqual(MAX_RENDERED_BARS);
+    expect(getRenderedPointsBudget('vertical-bar', 0, 0, true)).toEqual(MAX_RENDERED_BARS);
+  });
+
+  it('does not change the budget of stacked areas', () => {
+    expect(getRenderedPointsBudget('area', 700, 10, true)).toEqual(getRenderedPointsBudget('area', 700, 10));
+  });
+
+  it('gives each line or area series a point every 2 pixels', () => {
+    expect(getRenderedPointsBudget('line', 700, 1)).toEqual(350);
+    expect(getRenderedPointsBudget('area', 700, 10)).toEqual(350 * 10);
+  });
+
+  it('gives each heatmap series a cell every 6 pixels', () => {
+    expect(getRenderedPointsBudget('heatmap', 600, 10)).toEqual(100 * 10);
+  });
+
+  it('keeps a few points per series on a tiny or unknown width', () => {
+    expect(getRenderedPointsBudget('heatmap', 12, 2)).toEqual(10 * 2);
+    expect(getRenderedPointsBudget('line', 0, 1)).toEqual((MAX_RENDERED_BARS * 2) / 2);
+  });
+
+  it('caps the points of a wide chart with many series, keeping a few points per series', () => {
+    expect(getRenderedPointsBudget('line', 2000, 50)).toEqual(MAX_RENDERED_LINE_POINTS);
+    expect(getRenderedPointsBudget('heatmap', 1200, 20)).toEqual(MAX_RENDERED_HEATMAP_CELLS);
+    expect(getRenderedPointsBudget('heatmap', 600, 200)).toEqual(10 * 200);
+  });
+});
+
+describe('isSameBreakdown', () => {
+  const breakdown = (values: number[], overrides = {}) => ({
+    truncated: false,
+    dates: ['2025-10-01T00:00:00.000Z', '2025-10-02T00:00:00.000Z'],
+    series: [{ label: 'user-id', isOther: false, entity: { id: 'user-id', name: 'Alice' }, values }],
+    ...overrides,
+  });
+
+  it('finds a refreshed breakdown with the same values the same', () => {
+    expect(isSameBreakdown(breakdown([1, 2]), breakdown([1, 2]))).toBe(true);
+    expect(isSameBreakdown(null, null)).toBe(true);
+  });
+
+  it('finds a breakdown with other values, dates, series or names different', () => {
+    expect(isSameBreakdown(breakdown([1, 2]), breakdown([1, 3]))).toBe(false);
+    expect(isSameBreakdown(breakdown([1, 2]), breakdown([1, 2], { truncated: true }))).toBe(false);
+    expect(isSameBreakdown(breakdown([1, 2]), breakdown([1, 2], { dates: ['2025-10-02T00:00:00.000Z', '2025-10-03T00:00:00.000Z'] }))).toBe(false);
+    expect(isSameBreakdown(breakdown([1, 2]), breakdown([1, 2], { series: [] }))).toBe(false);
+    const renamed = breakdown([1, 2], { series: [{ label: 'user-id', isOther: false, entity: { id: 'user-id', name: 'Bob' }, values: [1, 2] }] });
+    expect(isSameBreakdown(breakdown([1, 2]), renamed)).toBe(false);
+    expect(isSameBreakdown(breakdown([1, 2]), null)).toBe(false);
+  });
+});
+
+describe('nextBreakdownChartWidth', () => {
+  it('takes the first measured width', () => {
+    expect(nextBreakdownChartWidth(undefined, 800)).toEqual(800);
+  });
+
+  it('keeps the previous width on a small resize, and changes it from 20 %', () => {
+    expect(nextBreakdownChartWidth(800, 900)).toEqual(800); // +12.5 %
+    expect(nextBreakdownChartWidth(800, 700)).toEqual(800); // -12.5 %
+    expect(nextBreakdownChartWidth(800, 960)).toEqual(960); // +20 %
+    expect(nextBreakdownChartWidth(800, 500)).toEqual(500);
+  });
+});
+
+describe('getBreakdownLegendMaxHeight', () => {
+  it('lets the legend of a small chart scroll past the height the plot keeps, one row at least', () => {
+    expect(getBreakdownLegendMaxHeight(200)).toEqual(200 - MIN_PLOT_HEIGHT);
+    expect(getBreakdownLegendMaxHeight(130)).toEqual(COMPACT_LEGEND_ROW_HEIGHT);
+  });
+
+  it('leaves the legend of a large chart, or of an unmeasured one, to ApexCharts, which caps it at half of the chart', () => {
+    expect(getBreakdownLegendMaxHeight(2 * MIN_PLOT_HEIGHT)).toBeUndefined();
+    expect(getBreakdownLegendMaxHeight(600)).toBeUndefined();
+    expect(getBreakdownLegendMaxHeight(0)).toBeUndefined();
+  });
+});
+
+describe('getBreakdownTickAmount', () => {
+  it('gives a label per 60 pixels, at least 2', () => {
+    expect(getBreakdownTickAmount(1200)).toEqual(20);
+    expect(getBreakdownTickAmount(130)).toEqual(2);
+    expect(getBreakdownTickAmount(0)).toEqual(2);
+  });
+});
+
+describe('coarsenSeriesForRendering', () => {
+  it('keeps the series untouched under the budget', () => {
+    const series = [{ name: 'A', data: daily('2026-01-01T00:00:00.000Z', [1, 2, 3]) }];
+    const result = coarsenSeriesForRendering(series, 'day', 10);
+    expect(result.interval).toEqual('day');
+    expect(result.series).toBe(series);
+    expect(result.pointsCount).toEqual(3);
+  });
+
+  it('sums days into weeks starting on Monday', () => {
+    // 2026-01-01 is a Thursday: Thu-Sun belong to the week of Monday 2025-12-29
+    const series = [{ name: 'A', data: daily('2026-01-01T00:00:00.000Z', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) }];
+    const result = coarsenSeriesForRendering(series, 'day', 5);
+    expect(result.interval).toEqual('week');
+    expect(result.series[0].data).toEqual([
+      { x: new Date('2025-12-29T00:00:00.000Z'), y: 1 + 2 + 3 + 4 },
+      { x: new Date('2026-01-05T00:00:00.000Z'), y: 5 + 6 + 7 + 8 + 9 + 10 },
+    ]);
+    expect(result.series[0].name).toEqual('A');
+  });
+
+  it('keeps getting coarser until the budget is met, without losing any count', () => {
+    const values = Array.from({ length: 366 }, (_, i) => i % 7);
+    const series = Array.from({ length: 20 }, (_, i) => ({ name: `S${i}`, data: daily('2025-10-01T00:00:00.000Z', values) }));
+    const total = values.reduce((sum, value) => sum + value, 0);
+
+    const toWeeks = coarsenSeriesForRendering(series, 'day', 1200);
+    expect(toWeeks.interval).toEqual('week');
+    expect(toWeeks.pointsCount).toBeLessThanOrEqual(1200);
+
+    const toMonths = coarsenSeriesForRendering(series, 'day', 600);
+    expect(toMonths.interval).toEqual('month');
+    expect(toMonths.series[0].data).toHaveLength(13); // October 2025 to October 2026 included
+    toMonths.series.forEach((serie) => {
+      expect(serie.data.reduce((sum, point) => sum + point.y, 0)).toEqual(total);
+    });
+    expect(toMonths.weeksCountedByMonday).toBe(false);
+  });
+
+  it('coarsens a week series with a smaller budget', () => {
+    const values = Array.from({ length: 366 }, (_, i) => i % 7);
+    const series = [{ name: 'A', data: daily('2025-10-01T00:00:00.000Z', values) }];
+    expect(coarsenSeriesForRendering(series, 'day', MIN_RENDERED_BARS).interval).toEqual('week');
+    const result = coarsenSeriesForRendering(series, 'week', 20);
+    expect(result.interval).toEqual('month');
+    expect(result.pointsCount).toEqual(13);
+  });
+
+  it('tells when weeks are counted in the month, quarter or year of their Monday', () => {
+    // The week of Monday 2026-03-30 ends in April: it is counted in March, and in the first quarter
+    const weekly = [
+      { x: new Date('2026-03-23T00:00:00.000Z'), y: 1 },
+      { x: new Date('2026-03-30T00:00:00.000Z'), y: 2 },
+      { x: new Date('2026-04-06T00:00:00.000Z'), y: 4 },
+    ];
+    const series = [{ name: 'A', data: weekly }];
+    const toMonths = coarsenSeriesForRendering(series, 'week', 2);
+    expect(toMonths.interval).toEqual('month');
+    expect(toMonths.series[0].data).toEqual([
+      { x: new Date('2026-03-01T00:00:00.000Z'), y: 1 + 2 },
+      { x: new Date('2026-04-01T00:00:00.000Z'), y: 4 },
+    ]);
+    expect(toMonths.weeksCountedByMonday).toBe(true);
+    const toYears = coarsenSeriesForRendering(series, 'week', 1);
+    expect(toYears.interval).toEqual('year');
+    expect(toYears.weeksCountedByMonday).toBe(true);
+
+    // Weeks drawn as weeks, or weeks summed from days, keep every count where it belongs
+    expect(coarsenSeriesForRendering(series, 'week', 3).weeksCountedByMonday).toBe(false);
+    expect(coarsenSeriesForRendering([{ name: 'A', data: daily('2026-03-23T00:00:00.000Z', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) }], 'day', 5))
+      .toMatchObject({ interval: 'week', weeksCountedByMonday: false });
+  });
+
+  it('never goes beyond years', () => {
+    const series = [{ name: 'A', data: daily('2026-01-01T00:00:00.000Z', [1, 2]) }];
+    const result = coarsenSeriesForRendering(series, 'year', 1);
+    expect(result.interval).toEqual('year');
+    expect(result.series).toBe(series);
+  });
+});
+
+describe('numberSharedSeriesNames', () => {
+  it('numbers by order the series sharing a name, and only them', () => {
+    expect(numberSharedSeriesNames(['Restricted', 'Alice', 'Restricted', 'Bob', 'Restricted']))
+      .toEqual(['Restricted (1)', 'Alice', 'Restricted (2)', 'Bob', 'Restricted (3)']);
+    expect(numberSharedSeriesNames(['Alice', 'Bob'])).toEqual(['Alice', 'Bob']);
+    expect(numberSharedSeriesNames([])).toEqual([]);
+  });
+
+  it('skips the numbers other series are already named with', () => {
+    expect(numberSharedSeriesNames(['Alice', 'Alice', 'Alice (1)'])).toEqual(['Alice (2)', 'Alice (3)', 'Alice (1)']);
+    expect(numberSharedSeriesNames(['Alice (2)', 'Alice', 'Alice', 'Alice', 'Alice (4)'])).toEqual(['Alice (2)', 'Alice (1)', 'Alice (3)', 'Alice (5)', 'Alice (4)']);
+    // Shared numbered names are numbered too, apart from the others
+    const names = numberSharedSeriesNames(['Alice', 'Alice', 'Alice (1)', 'Alice (1)']);
+    expect(names).toEqual(['Alice (2)', 'Alice (3)', 'Alice (1) (1)', 'Alice (1) (2)']);
+    expect(new Set(names).size).toEqual(names.length);
+  });
+});
+
+describe('getBreakdownPalette', () => {
+  it('gives enough distinct colors for 50 series, without the greys of the Other series', () => {
+    (['dark', 'light'] as const).forEach((mode) => {
+      const palette = getBreakdownPalette(mode);
+      const sequence = palette.flat();
+      expect(new Set(sequence).size).toEqual(sequence.length);
+      expect(sequence.length).toBeGreaterThanOrEqual(50);
+      [400, 600, 200, 800, 300, 700].forEach((shade) => {
+        expect(sequence).not.toContain(C.grey[shade as 400]);
+        expect(sequence).not.toContain(C.blueGrey[shade as 400]);
+      });
+    });
+    expect(getBreakdownPalette('dark')[0]).toContain(C.red[400]);
+    expect(getBreakdownPalette('light')[0]).toContain(C.red[600]);
+  });
+});
+
+describe('getEntityTypeColor', () => {
+  it('colors an entity type as the platform does, but not the relationship types, all one grey', () => {
+    expect(getEntityTypeColor('Malware')).toEqual(itemColor('Malware'));
+    expect(getEntityTypeColor('IPv4-Addr')).toEqual(itemColor('IPv4-Addr'));
+    expect(getEntityTypeColor('targets')).toBeUndefined();
+    expect(getEntityTypeColor('Not-A-Type')).toBeUndefined();
+  });
+});
+
+describe('getBreakdownSeriesColors', () => {
+  const palette = getBreakdownPalette('dark');
+  const other = '#95969d';
+  const serie = (key: string, ownColor?: string | null) => ({ key, isOther: false, ownColor });
+  const otherSerie = { key: 'Other', isOther: true };
+
+  it('keeps the own color of a value, and gives the Other series its neutral color', () => {
+    expect(getBreakdownSeriesColors([serie('label-a', '#FF0000'), otherSerie], palette, other)).toEqual(['#ff0000', other]);
+  });
+
+  it('gives a value without color the same color whatever its rank and the other series', () => {
+    const [alone] = getBreakdownSeriesColors([serie('user-alice')], palette, other);
+    const [, ranked] = getBreakdownSeriesColors([serie('user-bob-xyz'), serie('user-alice'), otherSerie], palette, other);
+    expect(palette.flat()).toContain(alone);
+    expect(ranked).toEqual(alone);
+  });
+
+  it('never gives two series of a widget the same color', () => {
+    // Two labels of the same color, and a value hashed to it
+    const [first, second] = getBreakdownSeriesColors([serie('label-a', '#ff0000'), serie('label-b', '#FF0000')], palette, other);
+    expect(first).toEqual('#ff0000');
+    expect(second).not.toEqual(first);
+    // An own color equal to the one of the Other series
+    expect(getBreakdownSeriesColors([serie('label-grey', other), otherSerie], palette, other)[0]).not.toEqual(other);
+    // The 50 series of the largest breakdown, and Other
+    const colors = getBreakdownSeriesColors([...Array.from({ length: 50 }, (_, i) => serie(`value-${i}`)), otherSerie], palette, other);
+    expect(new Set(colors).size).toEqual(51);
+  });
+
+  it('lets an own color win over a value hashed to it', () => {
+    const [hashed] = getBreakdownSeriesColors([serie('user-alice')], palette, other);
+    const [alice, label] = getBreakdownSeriesColors([serie('user-alice'), serie('label', hashed)], palette, other);
+    expect(label).toEqual(hashed);
+    expect(alice).not.toEqual(hashed);
+  });
+
+  it('ignores an own color that is not a color', () => {
+    const [color] = getBreakdownSeriesColors([serie('label-a', 'red; background: url(x)')], palette, other);
+    expect(color).toEqual(getBreakdownSeriesColors([serie('label-a')], palette, other)[0]);
+  });
+
+  it('gives each value the same color whatever the ranks of the values it is shown with', () => {
+    // Colors by key, for every order of the same series
+    const colorsByKey = (series: ReturnType<typeof serie>[]) => {
+      const colors = getBreakdownSeriesColors([...series, otherSerie], palette, other);
+      return Object.fromEntries(series.map(({ key }, index) => [key, colors[index]]));
+    };
+    const reversed = <T>(items: T[]) => [...items].reverse();
+    // Two values hashed to the same color of the palette: alone, each one takes it
+    const hashedColor = (key: string) => getBreakdownSeriesColors([serie(key)], palette, other)[0];
+    const keys = Array.from({ length: 40 }, (_, i) => `value-${i}`);
+    const [first, colliding] = keys.flatMap((key) => keys.filter((next) => next > key && hashedColor(next) === hashedColor(key)).map((next) => [key, next]))[0];
+    expect(hashedColor(colliding)).toEqual(hashedColor(first));
+    const hashed = [serie(first), serie(colliding), serie('ransomware'), serie('fraud')];
+    expect(colorsByKey(reversed(hashed))).toEqual(colorsByKey(hashed));
+    // Two values of the same own color, such as TLP:AMBER and TLP:AMBER+STRICT
+    const markings = [serie('TLP:AMBER', '#ffc000'), serie('TLP:AMBER+STRICT', '#FFC000'), serie('TLP:GREEN', '#2e7d32')];
+    expect(colorsByKey(reversed(markings))).toEqual(colorsByKey(markings));
+    expect(colorsByKey(markings)['TLP:AMBER']).toEqual('#ffc000');
+    expect(colorsByKey(markings)['TLP:AMBER+STRICT']).not.toEqual('#ffc000');
+  });
+
+  it('compares the own colors whatever their spelling', () => {
+    // A white marking drawn black on a light card, next to a label written #000
+    const [marking, label] = getBreakdownSeriesColors([
+      serie('marking', getReadableOwnColor('#ffffff', 'light')),
+      serie('label', '#000'),
+    ], palette, other);
+    // The label comes first in key order and keeps black
+    expect(label).toEqual('#000000');
+    expect(marking).not.toEqual('#000000');
+    expect(getBreakdownSeriesColors([serie('label', '#ABC')], palette, other)).toEqual(['#aabbcc']);
+  });
+
+  it('does not give a value an own color that can be taken for the Other series', () => {
+    // A grey label next to the grey of Other
+    const [botnet, phishing] = getBreakdownSeriesColors([serie('botnet', '#76828d'), serie('phishing', '#e91e63'), otherSerie], palette, other);
+    expect(botnet).not.toEqual('#76828d');
+    expect(palette.flat().map((color) => color.toLowerCase())).toContain(botnet);
+    expect(phishing).toEqual('#e91e63');
+  });
+});
+
+describe('getReadableOwnColor', () => {
+  it('draws white black on a light card, as the donut widgets do', () => {
+    expect(getReadableOwnColor('#FFFFFF', 'light')).toEqual('#000000');
+    expect(getReadableOwnColor('#fff', 'light')).toEqual('#000000');
+    expect(getReadableOwnColor('#ffffff', 'dark')).toEqual('#ffffff');
+    expect(getReadableOwnColor('#ffc000', 'light')).toEqual('#ffc000');
+    expect(getReadableOwnColor(null, 'light')).toBeNull();
+    expect(getReadableOwnColor(undefined, 'dark')).toBeUndefined();
+  });
+});

@@ -12,7 +12,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import React, { useRef, useState } from 'react';

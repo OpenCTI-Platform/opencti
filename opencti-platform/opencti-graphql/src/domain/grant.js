@@ -29,6 +29,7 @@ export const addRole = async (context, user, role) => {
   const roleToCreate = pipe(
     assoc('description', role.description ? role.description : ''),
     dissoc('capabilities'),
+    dissoc('capabilitiesInDraft'),
   )(role);
 
   const completeRoleToCreate = {

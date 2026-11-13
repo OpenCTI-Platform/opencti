@@ -170,6 +170,30 @@ describe('Workflow Validation', () => {
     expect(errors.some((e) => e.message.includes('Transition test should be linked to at least one status'))).toBe(true);
   });
 
+  it('should not return an unlinked-transition error when a null to completes the workflow via validateDraft', async () => {
+    const valid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }],
+      transitions: [
+        { from: 'existing-state', to: null, event: 'complete', syncActions: [{ type: 'validateDraft' }] },
+      ],
+    };
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'DraftWorkspace');
+    expect(errors.some((e) => e.type === 'UNLINKED_TRANSITION')).toBe(false);
+  });
+
+  it('should still return an unlinked-transition error for a null to without validateDraft (an orphaned reference)', async () => {
+    const invalid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }],
+      transitions: [
+        { from: 'existing-state', to: null, event: 'test' },
+      ],
+    };
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
+    expect(errors.some((e) => e.type === 'UNLINKED_TRANSITION' && e.message.includes('Transition test should be linked to at least one status'))).toBe(true);
+  });
+
   it('should return error if filter operator is invalid', async () => {
     const invalid = {
       initialState: 'existing-state',
@@ -687,6 +711,47 @@ describe('Workflow Validation', () => {
     );
 
     // Ending states can be removed even when instances are in them
+    expect(errors.some((e) => e.type === 'STATE_IN_USE')).toBe(false);
+  });
+
+  it('should not flag completed instances sitting in a removed non-ending state (same rule as publish)', async () => {
+    vi.mocked(middlewareLoader.storeLoadById).mockReset();
+    vi.mocked(middlewareLoader.fullEntitiesList).mockReset();
+
+    // state-b has an outgoing transition (non-ending), like the source status of a terminal "Validate".
+    vi.mocked(middlewareLoader.storeLoadById).mockResolvedValue({
+      id: 'existing-workflow',
+      draft_version: {
+        id: 'v1', timestamp: '', createdBy: '',
+        content: JSON.stringify({
+          initialState: 'state-a',
+          states: [{ statusId: 'state-a' }, { statusId: 'state-b' }, { statusId: 'state-c' }],
+          transitions: [
+            { from: 'state-a', to: 'state-b', event: 'proceed' },
+            { from: 'state-b', to: 'state-c', event: 'complete' },
+          ],
+        }),
+        validation_errors: [],
+      },
+    } as any);
+
+    vi.mocked(middlewareLoader.fullEntitiesList).mockImplementation(
+      async (_context: any, _user: any, entityTypes: any): Promise<any> => {
+        if (entityTypes.includes('WorkflowInstance')) {
+          return [{ id: 'instance-1', workflow_id: 'existing-workflow', currentState: 'state-b', completed: true }];
+        }
+        return [];
+      },
+    );
+
+    const updated = {
+      initialState: 'state-a',
+      states: [{ statusId: 'state-a' }, { statusId: 'state-c' }],
+      transitions: [{ from: 'state-a', to: 'state-c', event: 'skip' }],
+    };
+
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(updated), 'Incident', 'existing-workflow');
+
     expect(errors.some((e) => e.type === 'STATE_IN_USE')).toBe(false);
   });
 
@@ -1216,5 +1281,86 @@ describe('Workflow Validation – transition comment field', () => {
 
     const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Task');
     expect(errors.some((e) => e.type === 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_ENTITY_TYPE')).toBe(true);
+  });
+});
+
+describe('Workflow Validation – transition closingReason field', () => {
+  const makeDefinition = (closingReason: string) => ({
+    initialState: 'existing-state',
+    states: [{ statusId: 'existing-state' }, { statusId: 'closed' }],
+    transitions: [
+      { from: 'existing-state', to: 'closed', event: 'close', closingReason },
+    ],
+  });
+
+  it.each(['allowed', 'required', 'disabled'])('should pass with closing reason mode %s on a domain object type', async (mode) => {
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(makeDefinition(mode)), 'Incident');
+    expect(result).toHaveLength(0);
+  });
+
+  it('should fail when the closing reason mode is invalid', async () => {
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(makeDefinition('invalid_mode')), 'Incident');
+    expect(result.some((e) => e.type === 'SCHEMA_VALIDATION_FAILED')).toBe(true);
+  });
+
+  it('should fail when a closing reason is enabled on a type without the closing reason attribute', async () => {
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(makeDefinition('allowed')), 'DraftWorkspace');
+    expect(result).toContainEqual(expect.objectContaining({
+      type: 'CLOSING_REASON_NOT_SUPPORTED',
+      message: "Closing reason in transition 'close' is only supported for domain objects",
+    }));
+  });
+
+  it('should accept a disabled closing reason on a type without the closing reason attribute', async () => {
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(makeDefinition('disabled')), 'DraftWorkspace');
+    expect(result.some((e) => e.type === 'CLOSING_REASON_NOT_SUPPORTED')).toBe(false);
+  });
+
+  describe('closing reason into a final state', () => {
+    const makeWorkflow = (extraTransitions: object[] = []) => ({
+      initialState: 'new',
+      states: [{ statusId: 'new' }, { statusId: 'in_progress' }, { statusId: 'closed' }],
+      transitions: [
+        { from: 'new', to: 'in_progress', event: 'start' },
+        { from: 'in_progress', to: 'closed', event: 'close', closingReason: 'required' },
+        ...extraTransitions,
+      ],
+    });
+
+    it('should accept a closing reason on a transition into a state no transition leaves', async () => {
+      const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(makeWorkflow()), 'Incident');
+      expect(result).toHaveLength(0);
+    });
+
+    it.each([
+      ['a way back', { from: 'closed', to: 'in_progress', event: 'reopen' }],
+      ['a transition on itself', { from: 'closed', to: 'closed', event: 'share' }],
+    ])('should fail when the target state is left by %s', async (_, leaving) => {
+      const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(makeWorkflow([leaving])), 'Incident');
+      expect(result).toEqual([expect.objectContaining({
+        type: 'CLOSING_REASON_NOT_FINAL',
+        message: "Closing reason in transition 'close' is only allowed into a final state, but transitions leave 'closed'",
+      })]);
+    });
+
+    it('should not depend on the order of the transitions', async () => {
+      const definition = makeWorkflow([{ from: 'closed', to: 'in_progress', event: 'reopen' }]);
+      definition.transitions.reverse();
+      const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), 'Incident');
+      expect(result.map((e) => e.type)).toEqual(['CLOSING_REASON_NOT_FINAL']);
+    });
+
+    it('should fail when a closing reason leads to any state', async () => {
+      const definition = {
+        initialState: 'new',
+        states: [{ statusId: 'new' }],
+        transitions: [{ from: 'new', to: '*', event: 'close', closingReason: 'allowed' }],
+      };
+      const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), 'Incident');
+      expect(result).toContainEqual(expect.objectContaining({
+        type: 'CLOSING_REASON_ANY_STATE',
+        message: "Closing reason in transition 'close' is not allowed on a transition to any state",
+      }));
+    });
   });
 });

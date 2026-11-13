@@ -20,6 +20,8 @@ Clicking on this icon unveils a side panel displaying a list of available connec
 
 ![Enrichment panel](assets/enrichment-panel.png)
 
+In an investigation, you can also enrich the selected entities from the graph and choose which results to add to it: see [Enrich from the graph](pivoting.md#enrich-from-the-graph).
+
 Activation of an enrichment connector triggers a contact with the designated remote source, importing a set of data into OpenCTI to enrich the selected object. Each enrichment connector operates uniquely, focusing on a specific set of object types it can enrich and a distinct set of data it imports. Depending on the connectors, they may, establish relationships, add external references, or complete object information, thereby contributing to the comprehensiveness of information within the platform.
 
 The list of available connectors can be found in our [connectors catalog](https://hub.filigran.io/cybersecurity-solutions/open-cti-integrations). In addition, further documentation on connectors is available on [the dedicated documentation page](../deployment/connectors.md).

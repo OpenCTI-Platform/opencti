@@ -49,6 +49,14 @@ type PublicDashboardConnection {
 }
 
 # Queries
+extend type TimeSeriesBreakdown {
+  """
+  Interval of the dates, given by the public breakdowns: they count a long period in coarser intervals than the one of the
+  widget, as the dashboards would draw it. Not given by the other breakdowns, whose dates are at the requested interval.
+  """
+  interval: String
+}
+
 type Query {
   publicDashboard(id: String!): PublicDashboard  @auth(for: [EXPLORE])
   publicDashboards(
@@ -78,12 +86,24 @@ type Query {
     startDate: DateTime
     endDate: DateTime
   ): [MultiTimeSeries] @public
+  publicStixCoreObjectsTimeSeriesBreakdown(
+    uriKey: String!
+    widgetId : String!
+    startDate: DateTime
+    endDate: DateTime
+  ): TimeSeriesBreakdown @public
   publicStixRelationshipsMultiTimeSeries(
     uriKey: String!
     widgetId : String!
     startDate: DateTime
     endDate: DateTime
   ): [MultiTimeSeries] @public
+  publicStixRelationshipsTimeSeriesBreakdown(
+    uriKey: String!
+    widgetId : String!
+    startDate: DateTime
+    endDate: DateTime
+  ): TimeSeriesBreakdown @public
   publicStixCoreObjectsDistribution(
     uriKey: String!
     widgetId : String!

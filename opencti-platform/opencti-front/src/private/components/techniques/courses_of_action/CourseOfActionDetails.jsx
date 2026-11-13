@@ -24,7 +24,7 @@ class CourseOfActionDetailsComponent extends Component {
       <div style={{ height: '100%' }}>
         <Card title={t('Details')}>
           <Grid container={true} spacing={2}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Label>
                 {t('Description')}
               </Label>
@@ -33,7 +33,7 @@ class CourseOfActionDetailsComponent extends Component {
                 limit={300}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Label>
                 {t('Log sources')}
               </Label>
@@ -50,7 +50,7 @@ class CourseOfActionDetailsComponent extends Component {
                 </List>
               </FieldOrEmpty>
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Label>
                 {t('External ID')}
               </Label>

@@ -18,6 +18,8 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import { ENTITY_TYPE_USER } from '../modules/user/user-types';
+import { withoutUserSecrets } from '../modules/user/user-secrets';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -358,7 +360,9 @@ export const notify = async (topic: string, instance: any, user: AuthUser) => {
 
 export const removeResolvedRefs = (instance: any) => {
   const refInputNames = new Set([INPUT_OBJECTS, ...schemaRelationsRefDefinition.getAllInputNames()]);
-  return Object.fromEntries(Object.entries(instance).filter(([k]) => !refInputNames.has(k)));
+  const data = Object.fromEntries(Object.entries(instance).filter(([k]) => !refInputNames.has(k)));
+  // Password hashes never travel between nodes
+  return instance.entity_type === ENTITY_TYPE_USER ? withoutUserSecrets(data) : data;
 };
 
 // region user context (clientContext)
@@ -431,13 +435,21 @@ export interface LockHandle {
   unlock: () => Promise<void>;
 }
 
+// The redlock key of a resource: shared by the lock and by the check that tells whether a resource is locked
+const buildLockKey = (id: string, draftId = '') => `{locks}:${id}${draftId}`;
+
+// Whether a resource is locked right now, without taking the lock (no draftId: such a lock is platform-wide)
+export const isResourceLocked = async (id: string): Promise<boolean> => {
+  return (await getClientLock().exists(buildLockKey(id))) > 0;
+};
+
 export const lockResource = async (resources: Array<string>, opts: LockOptions = defaultLockOpts): Promise<LockHandle> => {
   let timeout: NodeJS.Timeout | undefined;
   let extension: undefined | Promise<void>;
   const { retryCount = defaultLockOpts.retryCount, automaticExtension = defaultLockOpts.automaticExtension, draftId = defaultLockOpts.draftId } = opts;
   const initialCallStack = getStackTrace();
   const resourcesId = R.uniq(resources).map((id) => `${id}${draftId}`);
-  const locks = R.uniq(resourcesId).map((id) => `{locks}:${id}${draftId}`);
+  const locks = R.uniq(resourcesId).map((id) => buildLockKey(id, draftId));
   const automaticExtensionThreshold = conf.get('app:concurrency:extension_threshold');
   const retryDelay = conf.get('app:concurrency:retry_delay');
   const retryJitter = conf.get('app:concurrency:retry_jitter');
@@ -523,9 +535,73 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
 // endregion
 
 // region work handling
+
+const WORKS_TTL = (conf.get('connector_manager:works_day_range') || 7);
+export const WORK_TOUCHED_TTL = WORKS_TTL * 24 * 60 * 60;
+export const WORK_TOUCHED_CAP = 1000; // safety net, enrichments touch far fewer elements
+
+// Touched elements of enrichment works: ids of elements created or updated while
+// processing the work. A separate key (not a field of the work hash) so that writing
+// it can never recreate an orphaned work hash. All operations are single-key (cluster safe).
+// work_touched:${workId} => Redis key of the set holding the ids touched by a work.
+const workTouchedKey = (workId: string) => `work_touched:${workId}`;
+
+// Cap checks, adds and TTL refresh in one atomic round-trip on a single key (cluster safe).
+// KEYS[1] touched set, ARGV[1] cap, ARGV[2] ttl, ARGV[3..] element ids.
+// Returns the number of ids refused by the cap; an id already in the set is never refused.
+const WORK_TOUCHED_ADD_SCRIPT = `
+  local refused = 0
+  for i = 3, #ARGV do
+    if redis.call('SCARD', KEYS[1]) < tonumber(ARGV[1]) then
+      redis.call('SADD', KEYS[1], ARGV[i])
+    elseif redis.call('SISMEMBER', KEYS[1], ARGV[i]) == 0 then
+      refused = refused + 1
+    end
+  end
+  redis.call('EXPIRE', KEYS[1], ARGV[2])
+  return refused`;
+
+/**
+ * Record element ids as touched by a work. The cap checks, the adds and the TTL refresh run
+ * atomically in one Lua script, so the cap is exact even under concurrent writers.
+ * @param cap maximum number of ids kept per work, beyond it new ids are dropped
+ * @returns false when at least one id was refused by the cap
+ */
+export const redisAddWorkTouchedElements = async (
+  workId: string,
+  elementIds: string[],
+  cap = WORK_TOUCHED_CAP,
+): Promise<boolean> => {
+  if (elementIds.length === 0) {
+    return true;
+  }
+  const refused = await getClientBase().eval(WORK_TOUCHED_ADD_SCRIPT, 1, workTouchedKey(workId), cap, WORK_TOUCHED_TTL, ...elementIds);
+  return refused === 0;
+};
+
+/**
+ * Read the ids touched by a work.
+ */
+export const redisGetWorkTouchedElements = async (workId: string) => {
+  const touched = await getClientBase().smembers(workTouchedKey(workId));
+  return { touched_ids: touched };
+};
+
+/**
+ * Delete the touched ids of the given works.
+ */
+export const redisDeleteWorkTouchedElements = async (workIds: Array<string>) => {
+  await Promise.all(workIds.map((id) => getClientBase().del(workTouchedKey(id))));
+};
+
+/**
+ * Delete the work hashes together with their touched elements sets.
+ */
 export const redisDeleteWorks = async (internalIds: Array<string>) => {
+  await redisDeleteWorkTouchedElements(internalIds);
   return Promise.all(internalIds.map((id) => getClientBase().del(id)));
 };
+
 export const redisGetWork = async (internalId: string) => {
   return getClientBase().hgetall(internalId);
 };
@@ -569,14 +645,43 @@ export const redisUpdateActionExpectation = async (user: AuthUser, workId: strin
   });
   return workId;
 };
-export const redisInitializeWork = async (workId: string, isMultiPartWork: boolean) => {
+
+// A work created by a Form Intake submission is bound to its applicant, its form and its draft:
+// the API only lets the import write on behalf of a form-only user for that exact work.
+export interface FormSubmissionBinding {
+  applicant_id: string;
+  form_id: string;
+  draft_id?: string | null;
+}
+
+/**
+ * Initialize the work hash. The event type, the investigation id and the internal id of the enriched entity
+ * are only stored when given: they tell whether and how the touched elements of the work are tracked.
+ */
+export const redisInitializeWork = async (
+  workId: string,
+  isMultiPartWork: boolean,
+  formSubmission?: FormSubmissionBinding,
+  eventType?: string,
+  investigationId?: string,
+  enrichedEntityId?: string,
+) => {
   await redisTx(getClientBase(), async (tx) => {
     await updateObjectRaw(tx, workId, {
       is_initialized: true,
       is_multipart: isMultiPartWork,
+      ...(formSubmission ? {
+        form_applicant_id: formSubmission.applicant_id,
+        form_id: formSubmission.form_id,
+        form_draft_id: formSubmission.draft_id ?? '',
+      } : {}),
+      ...(eventType ? { event_type: eventType } : {}),
+      ...(investigationId ? { investigation_id: investigationId } : {}),
+      ...(enrichedEntityId ? { enriched_entity_id: enrichedEntityId } : {}),
     });
   });
 };
+
 // Atomic first-completion marker for a work: SET NX guarantees that exactly
 // one caller wins, whichever completion path (reportExpectation vs
 // updateProcessedTime) and whichever node observes the completion first.
@@ -743,7 +848,10 @@ export const redisSetForgotPasswordOtp = async (
 };
 export const redisGetForgotPasswordOtp = async (id: string) => {
   const keyName = `forgot_password_otp_${id}`;
-  const str = await getClientBase().get(keyName) ?? '{}';
+  const str = await getClientBase().get(keyName);
+  if (!str) {
+    return null;
+  }
   const values: { hashedOtp: string; email: string; mfa_activated: boolean; mfa_validated: boolean; userId: string } = JSON.parse(str);
   const ttl = await getClientBase().ttl(keyName);
   return { ...values, ttl };
@@ -762,6 +870,40 @@ export const redisDelForgotPassword = async (id: string, email: string) => {
 };
 
 // endregion - forgot password handling
+
+// region - password change throttling
+
+// Only a positive integer is usable: 0 attempts would refuse every change, and a 0 second window never throttles
+export const readPasswordChangeLimit = (key: string, value: unknown, defaultValue: number): number => {
+  if (value === undefined || value === null) {
+    return defaultValue;
+  }
+  const limit = Number(value);
+  if (!Number.isInteger(limit) || limit < 1) {
+    logApp.warn('[PASSWORD_HISTORY] Ignoring an invalid password change limit, using the default', { key, value, default: defaultValue });
+    return defaultValue;
+  }
+  return limit;
+};
+
+const PASSWORD_CHANGE_MAX_ATTEMPTS = readPasswordChangeLimit('app:password_change:max_attempts', conf.get('app:password_change:max_attempts'), 5);
+const PASSWORD_CHANGE_WINDOW_SECONDS = readPasswordChangeLimit('app:password_change:window_seconds', conf.get('app:password_change:window_seconds'), 900);
+
+// Counts one password change attempt on this account by this submitter and tells whether it is still within
+// the limit. One counter per submitter: whoever uses up their attempts on an account never blocks the others,
+// such as an administrator resetting the password of a compromised account.
+// The window starts with the first attempt and a success never resets it.
+export const redisConsumePasswordChangeAttempt = async (targetUserId: string, submitterId: string): Promise<boolean> => {
+  const keyName = `password_change_attempts_${targetUserId}_${submitterId}`;
+  const attempts = await getClientBase().incr(keyName);
+  // Also set when a previous expire was lost, so the counter can never stay forever
+  if (attempts === 1 || await getClientBase().ttl(keyName) < 0) {
+    await getClientBase().expire(keyName, PASSWORD_CHANGE_WINDOW_SECONDS);
+  }
+  return attempts <= PASSWORD_CHANGE_MAX_ATTEMPTS;
+};
+
+// endregion - password change throttling
 
 // region - telemetry gauges
 const TELEMETRY_EVENT_KEY = 'telemetry_events';
@@ -955,6 +1097,9 @@ export const redisDeleteAuthLogHistory = async (id: string): Promise<void> => {
 // region ingestion log history (FIFO, last 20 per feed)
 const INGESTION_LOG_KEY_PREFIX = 'ingestion-log-';
 const INGESTION_LOG_MAX_SIZE = 20;
+// Refreshed on every push: an execution still in flight when its feed is deleted can log after the
+// cleanup and recreate the list, so the key must never live forever.
+export const INGESTION_LOG_TTL = 30 * 24 * 60 * 60; // 30 days
 
 export interface IngestionLogEntry {
   timestamp: number;
@@ -974,6 +1119,7 @@ export const redisPushIngestionLog = async (feedId: string, entry: Omit<Ingestio
     await redisTx(getClientBase(), async (tx) => {
       tx.lpush(key, value);
       tx.ltrim(key, 0, INGESTION_LOG_MAX_SIZE - 1);
+      tx.expire(key, INGESTION_LOG_TTL);
     });
   } catch (err) {
     logApp.error('Failed to push ingestion log entry to Redis', { cause: err });
@@ -1114,3 +1260,113 @@ export const redisUserMergeJournalRead = async (mergeId?: string) => {
   return keysFromList(listId, USER_MERGE_JOURNAL_TTL);
 };
 // endregion - user merge journal
+
+// region config preset import session
+// The wizard state of an administrator, one JSON document per user. Not an indexed entity, for the same reason as the user merge journal.
+const CONFIG_PRESET_IMPORT_SESSION_TTL = 30 * 24 * 60 * 60; // 30 days, renewed on every write
+const configPresetImportSessionKey = (userId: string) => `config_preset_import_session_${userId}`;
+
+export const redisSetConfigPresetImportSession = async (userId: string, session: object) => {
+  await getClientBase().set(configPresetImportSessionKey(userId), JSON.stringify(session), 'EX', CONFIG_PRESET_IMPORT_SESSION_TTL);
+};
+
+// The parsed document, null when absent or unreadable: the caller checks its content
+export const redisGetConfigPresetImportSession = async (userId: string): Promise<unknown | null> => {
+  const raw = await getClientBase().get(configPresetImportSessionKey(userId));
+  try {
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    logApp.warn('[CONFIG PRESET] The import session in Redis could not be parsed', { user_id: userId });
+    return null;
+  }
+};
+
+export const redisDeleteConfigPresetImportSession = async (userId: string) => {
+  await getClientBase().del(configPresetImportSessionKey(userId));
+};
+
+// The running record of a real import: who, since when, how far. The other administrators read their banner from it.
+// The 24 h TTL is a safety net for a record left by a dead node, set in seconds on every write.
+const CONFIG_PRESET_IMPORT_RUNNING_KEY = 'config_preset_import_running';
+const CONFIG_PRESET_IMPORT_RUNNING_TTL = 24 * 60 * 60;
+const CONFIG_PRESET_IMPORT_LAST_FINISHED_KEY = 'config_preset_import_last_finished';
+const CONFIG_PRESET_IMPORT_LAST_FINISHED_TTL = 30 * 24 * 60 * 60; // 30 days
+
+export const redisSetConfigPresetImportRunning = async (record: object) => {
+  await getClientBase().set(CONFIG_PRESET_IMPORT_RUNNING_KEY, JSON.stringify(record), 'EX', CONFIG_PRESET_IMPORT_RUNNING_TTL);
+};
+
+// The parsed record, null when absent or unreadable; a Redis error is thrown: the callers handle it
+export const redisGetConfigPresetImportRunning = async (): Promise<unknown | null> => {
+  const raw = await getClientBase().get(CONFIG_PRESET_IMPORT_RUNNING_KEY);
+  try {
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    logApp.warn('[CONFIG PRESET] The running record of the import in Redis could not be parsed');
+    return null;
+  }
+};
+
+// Compare-and-update and compare-and-delete: only while the record still holds this run's user and start date, so that a
+// run that lost its lock never touches the record of the import that took over. The key is KEYS[1]: ioredis prefixes the
+// key arguments only, a key built in the script would miss the namespace.
+const RUNNING_RECORD_UPDATE_SCRIPT = `
+local raw = redis.call('get', KEYS[1])
+if not raw then return 0 end
+local record = cjson.decode(raw)
+if record.user_id ~= ARGV[1] or record.started_at ~= ARGV[2] then return 0 end
+record.processed = tonumber(ARGV[3])
+redis.call('set', KEYS[1], cjson.encode(record), 'EX', ARGV[4])
+return 1
+`;
+const RUNNING_RECORD_DELETE_SCRIPT = `
+local raw = redis.call('get', KEYS[1])
+if not raw then return 0 end
+local record = cjson.decode(raw)
+if record.user_id ~= ARGV[1] or record.started_at ~= ARGV[2] then return 0 end
+redis.call('del', KEYS[1])
+return 1
+`;
+
+export const redisUpdateConfigPresetImportRunning = async (userId: string, startedAt: string, processed: number): Promise<boolean> => {
+  const ttl = String(CONFIG_PRESET_IMPORT_RUNNING_TTL);
+  const updated = await getClientBase().eval(RUNNING_RECORD_UPDATE_SCRIPT, 1, CONFIG_PRESET_IMPORT_RUNNING_KEY, userId, startedAt, String(processed), ttl);
+  return updated === 1;
+};
+
+export const redisDeleteConfigPresetImportRunning = async (userId: string, startedAt: string): Promise<boolean> => {
+  const deleted = await getClientBase().eval(RUNNING_RECORD_DELETE_SCRIPT, 1, CONFIG_PRESET_IMPORT_RUNNING_KEY, userId, startedAt);
+  return deleted === 1;
+};
+
+export const redisSetConfigPresetImportLastFinished = async (finishedAt: string) => {
+  await getClientBase().set(CONFIG_PRESET_IMPORT_LAST_FINISHED_KEY, finishedAt, 'EX', CONFIG_PRESET_IMPORT_LAST_FINISHED_TTL);
+};
+
+export const redisGetConfigPresetImportLastFinished = async (): Promise<string | null> => {
+  return getClientBase().get(CONFIG_PRESET_IMPORT_LAST_FINISHED_KEY);
+};
+// endregion - config preset import session
+
+// region - ingestion deduplication
+// dedup:${standardId}:${userId} => hash of the last content this user imported for the entity, and the entity's updated_at right after, each key with its own TTL
+const ingestionDeduplicationKey = (standardId: string, userId: string) => `dedup:${standardId}:${userId}`;
+
+export interface IngestionRecord {
+  hash: string;
+  updatedAt: number;
+}
+
+export const redisGetIngestionRecord = async (standardId: string, userId: string): Promise<IngestionRecord | null> => {
+  const record = await getClientBase().get(ingestionDeduplicationKey(standardId, userId));
+  return record ? JSON.parse(record) : null;
+};
+
+export const redisSetIngestionRecord = async (standardId: string, userId: string, record: IngestionRecord, ttl: number) => {
+  await getClientBase().set(ingestionDeduplicationKey(standardId, userId), JSON.stringify(record), 'EX', ttl);
+};
+
+export const redisDeleteIngestionRecord = async (standardId: string, userId: string) => {
+  await getClientBase().del(ingestionDeduplicationKey(standardId, userId));
+};
+// endregion - ingestion deduplication

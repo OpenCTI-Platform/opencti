@@ -89,19 +89,19 @@ const AttackPattern: React.FC<AttackPatternProps> = ({
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <AttackPatternDetails attackPattern={attackPattern} />
                   </Grid>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixDomainObjectOverview stixDomainObject={attackPattern} />
                   </Grid>
                 );
               case 'latestCreatedRelationships':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <SimpleStixObjectOrStixRelationshipStixCoreRelationships
                       stixObjectOrStixRelationshipId={attackPattern.id}
                       stixObjectOrStixRelationshipLink={`/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`}
@@ -110,7 +110,7 @@ const AttackPattern: React.FC<AttackPatternProps> = ({
                 );
               case 'latestContainers':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectOrStixRelationshipLastContainers
                       stixCoreObjectOrStixRelationshipId={attackPattern.id}
                     />
@@ -118,7 +118,7 @@ const AttackPattern: React.FC<AttackPatternProps> = ({
                 );
               case 'externalReferences':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectExternalReferences
                       stixCoreObjectId={attackPattern.id}
                     />
@@ -126,7 +126,7 @@ const AttackPattern: React.FC<AttackPatternProps> = ({
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={attackPattern.id}
                     />
@@ -134,7 +134,7 @@ const AttackPattern: React.FC<AttackPatternProps> = ({
                 );
               case 'notes':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
                       stixCoreObjectOrStixCoreRelationshipId={attackPattern.id}
                       defaultMarkings={attackPattern.objectMarking ?? []}

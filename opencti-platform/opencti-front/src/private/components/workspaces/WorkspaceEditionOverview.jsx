@@ -2,38 +2,13 @@ import React from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
-import { compose, pick } from 'ramda';
+import { pick } from 'ramda';
 import * as Yup from 'yup';
 import inject18n, { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation } from '../../../relay/environment';
 import MarkdownField from '../../../components/fields/markdownField/MarkdownField';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
 
 export const workspaceMutationFieldPatch = graphql`
   mutation WorkspaceEditionOverviewFieldPatchMutation(
@@ -140,8 +115,6 @@ const WorkspaceEditionOverviewComponent = ({ workspace, context }) => {
 };
 
 WorkspaceEditionOverviewComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
   t: PropTypes.func,
   workspace: PropTypes.object,
   context: PropTypes.array,
@@ -162,7 +135,4 @@ const WorkspaceEditionOverview = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(WorkspaceEditionOverview);
+export default inject18n(WorkspaceEditionOverview);

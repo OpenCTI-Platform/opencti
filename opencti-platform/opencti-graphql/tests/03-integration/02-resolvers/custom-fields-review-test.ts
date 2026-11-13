@@ -1,10 +1,11 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin, queryAsUser } from '../../utils/testQueryHelper';
 import { USER_EDITOR } from '../../utils/testQuery';
 import { buildCustomFieldTaskInputs } from '../../../src/modules/customField/custom-field-task';
 import type { BasicStoreEntityCustomFieldDefinition } from '../../../src/modules/customField/custom-field-types';
 import type { EditInput } from '../../../src/generated/graphql';
+import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
 
 const CUSTOM_FIELD_ADD = gql`
   mutation CustomFieldsReviewAdd($input: CustomFieldDefinitionAddInput!) {
@@ -14,6 +15,13 @@ const CUSTOM_FIELD_ADD = gql`
 const CUSTOM_FIELD_ADD_ENTITY_TYPE = gql`
   mutation CustomFieldsReviewAddEntityType($id: ID!, $entityType: String!, $mandatory: Boolean!) {
     customFieldDefinitionAddEntityType(id: $id, entityType: $entityType, mandatory: $mandatory) { id }
+  }
+`;
+const CUSTOM_FIELD_UPDATE_ENTITY_TYPE = gql`
+  mutation CustomFieldsReviewUpdateEntityType($id: ID!, $entityType: String!, $mandatory: Boolean!, $defaultValue: String) {
+    customFieldDefinitionUpdateEntityType(id: $id, entityType: $entityType, mandatory: $mandatory, default_value: $defaultValue) {
+      entity_type_settings { entity_type default_value }
+    }
   }
 `;
 const CUSTOM_FIELD_DELETE = gql`
@@ -42,6 +50,11 @@ const CASE_READ = gql`
       id
       customFieldValues { field_id field_name string_value int_value select_values }
     }
+  }
+`;
+const CASE_READ_DECIMAL = gql`
+  query CustomFieldsReviewCaseReadDecimal($id: String!) {
+    caseIncident(id: $id) { id customFieldValues { field_name float_value } }
   }
 `;
 const CASES_FILTER = gql`
@@ -111,9 +124,10 @@ const TAGS = 'x_opencti_cf_review_tags';
 const REQUIRED = 'x_opencti_cf_review_required';
 const LEVEL = 'x_opencti_cf_review_level';
 const DUE = 'x_opencti_cf_review_due';
+const RATE = 'x_opencti_cf_review_rate';
 
 const addDefinition = async (input: Record<string, unknown>, entityTypes: { entityType: string; mandatory: boolean }[]) => {
-  const result = await queryAsAdmin({ query: CUSTOM_FIELD_ADD, variables: { input } });
+  const result = await queryAsAdmin({ query: CUSTOM_FIELD_ADD, variables: { input: { description: `${input.label} description`, ...input } } });
   expect(result.errors).toBeUndefined();
   const { id } = result.data?.customFieldDefinitionAdd ?? {};
   for (const { entityType, mandatory } of entityTypes) {
@@ -134,9 +148,18 @@ const readCaseValues = async (id: string) => {
   return result.data?.caseIncident.customFieldValues as Record<string, any>[];
 };
 
+// Managing the custom field definitions is an Enterprise Edition feature
+beforeAll(() => {
+  vi.spyOn(enterpriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+});
+afterAll(() => {
+  vi.restoreAllMocks();
+});
+
 describe('Custom fields review: relationships, mandatory fields, filters and merge', () => {
   const definitionIds: string[] = [];
   const caseIds: string[] = [];
+  let rateDefinitionId: string;
   let malwareId: string;
   let areaId: string;
 
@@ -155,6 +178,10 @@ describe('Custom fields review: relationships, mandatory fields, filters and mer
     definitionIds.push(await addDefinition({ name: DUE, label: 'Review due date', field_type: 'date' }, [
       { entityType: 'Case-Incident', mandatory: false },
     ]));
+    rateDefinitionId = await addDefinition({ name: RATE, label: 'Review rate', field_type: 'decimal' }, [
+      { entityType: 'Case-Incident', mandatory: false },
+    ]);
+    definitionIds.push(rateDefinitionId);
     const malware = await queryAsAdmin({ query: MALWARE_ADD, variables: { input: { name: 'Custom fields review malware' } } });
     malwareId = malware.data?.malwareAdd.id;
     const area = await queryAsAdmin({ query: AREA_ADD, variables: { input: { name: 'Custom fields review area' } } });
@@ -242,6 +269,28 @@ describe('Custom fields review: relationships, mandatory fields, filters and mer
     });
   });
 
+  describe('default values', () => {
+    const setRateDefault = (defaultValue: string | null) => queryAsAdmin({
+      query: CUSTOM_FIELD_UPDATE_ENTITY_TYPE,
+      variables: { id: rateDefinitionId, entityType: 'Case-Incident', mandatory: false, defaultValue },
+    });
+
+    afterAll(async () => {
+      await setRateDefault(null);
+    });
+
+    it('should reject a default value the creation of the entities would ignore', async () => {
+      const result = await setRateDefault('1e400');
+      expect(result.errors?.[0].message).toEqual('Invalid default value for the custom field');
+    });
+
+    it('should store a valid default value', async () => {
+      const result = await setRateDefault('0.125');
+      expect(result.errors).toBeUndefined();
+      expect(result.data?.customFieldDefinitionUpdateEntityType.entity_type_settings).toContainEqual({ entity_type: 'Case-Incident', default_value: '0.125' });
+    });
+  });
+
   describe('filters', () => {
     let caseWithNoteId: string;
     let caseWithoutNoteId: string;
@@ -264,13 +313,15 @@ describe('Custom fields review: relationships, mandatory fields, filters and mer
     beforeAll(async () => {
       caseWithNoteId = await createCase('Custom fields review with note', [
         { field_name: NOTE, value: ['hello'] }, { field_name: TAGS, value: ['a', 'b'] }, { field_name: LEVEL, value: [10] },
-        { field_name: DUE, value: ['2026-01-10T00:00:00.000Z'] },
+        { field_name: DUE, value: ['2026-01-10T00:00:00.000Z'] }, { field_name: RATE, value: [0.85] },
       ]);
       caseWithoutNoteId = await createCase('Custom fields review without note', [
         { field_name: TAGS, value: ['a'] }, { field_name: LEVEL, value: [15] }, { field_name: DUE, value: ['2026-06-15T00:00:00.000Z'] },
+        { field_name: RATE, value: [0.5] },
       ]);
       caseOtherId = await createCase('Custom fields review other', [
         { field_name: TAGS, value: ['c'] }, { field_name: LEVEL, value: [20] }, { field_name: DUE, value: ['2026-12-20T00:00:00.000Z'] },
+        { field_name: RATE, value: [2.25] },
       ]);
       caseIds.push(caseWithNoteId, caseWithoutNoteId, caseOtherId);
     });
@@ -296,6 +347,14 @@ describe('Custom fields review: relationships, mandatory fields, filters and mer
       expect(await filterCases(LEVEL, 'eq', ['10', '20'], 'and')).toEqual([]);
       expect(await filterCases(LEVEL, 'not_eq', ['10', '20'], 'or')).toEqual([caseWithNoteId, caseWithoutNoteId, caseOtherId].sort());
       expect(await filterCases(LEVEL, 'not_eq', ['10', '20'], 'and')).toEqual([caseWithoutNoteId]);
+    });
+
+    it('should store, read back and filter decimal values', async () => {
+      const read = await queryAsAdmin({ query: CASE_READ_DECIMAL, variables: { id: caseWithNoteId } });
+      expect(read.data?.caseIncident.customFieldValues).toEqual(expect.arrayContaining([{ field_name: RATE, float_value: 0.85 }]));
+      expect(await filterCases(RATE, 'eq', ['0.85', '2.25'], 'or')).toEqual([caseWithNoteId, caseOtherId].sort());
+      expect(await filterCases(RATE, 'gt', ['1'])).toEqual([caseOtherId]);
+      expect(await filterCases(RATE, 'lte', ['0.85'])).toEqual([caseWithNoteId, caseWithoutNoteId].sort());
     });
 
     it('should match the range of within whatever the filter mode', async () => {

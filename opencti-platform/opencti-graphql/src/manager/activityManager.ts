@@ -18,7 +18,7 @@ import { createStreamProcessor, storeNotificationEvent } from '../database/strea
 import conf, { booleanConf, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { INDEX_HISTORY, isEmptyField } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
-import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
+import { executionContext, INTERNAL_USERS, REDACTED_USER, SYSTEM_USER } from '../utils/access';
 import type { ActivityStreamEvent, SseEvent } from '../types/event';
 import { utcDate } from '../utils/format';
 import { topEntitiesList } from '../database/middleware-loader';
@@ -50,6 +50,34 @@ export const getLiveActivityNotifications = async (context: AuthContext): Promis
   return liveNotifications.filter(isLiveActivity);
 };
 
+/**
+ * Resolve the user at the origin of an activity event, whose name prefixes the notification message.
+ * Internal users (managers) are not in the users cache, so they are looked up in INTERNAL_USERS first.
+ * @param userId the origin user id of the event, absent for system events
+ * @param platformUsers the users cache, by id
+ * @returns SYSTEM_USER when there is no user id, undefined when the user is unknown
+ */
+export const resolveActivitySourceUser = (userId: string | undefined, platformUsers: Map<string, AuthUser>): AuthUser | undefined => {
+  if (!userId) {
+    return SYSTEM_USER;
+  }
+  return INTERNAL_USERS[userId] || platformUsers.get(userId);
+};
+
+/**
+ * Build the data given to the notifiers for an activity event.
+ * The context data names its element entity_name, not name (the history index mapping is strict),
+ * so without a given representative the notification title would be 'Unknown'.
+ * @param data the context data of the activity event
+ * @returns the context data, with the element name as representative when there is one
+ */
+export const buildActivityNotificationData = (data: ActivityStreamEvent['data'] & { entity_name?: string }): ActivityNotificationEvent['data'] => {
+  if (!data.entity_name) {
+    return data;
+  }
+  return { ...data, representative: { main: data.entity_name, secondary: '' } };
+};
+
 const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<ActivityStreamEvent>>) => {
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const triggers = await getLiveActivityNotifications(context);
@@ -59,7 +87,7 @@ const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<Act
     // status: 'error' | 'success'
     const event = events[index];
     const { message, data, origin, event_scope } = event.data;
-    let sourceUser = origin.user_id ? platformUsers.get(origin.user_id) : SYSTEM_USER;
+    let sourceUser = resolveActivitySourceUser(origin.user_id, platformUsers);
     if (ENABLED_DEMO_MODE) sourceUser = REDACTED_USER;
     for (let triggerIndex = 0; triggerIndex < triggers.length; triggerIndex += 1) {
       const { trigger, users } = triggers[triggerIndex];
@@ -74,7 +102,7 @@ const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<Act
           const user = users[indexUser];
           targets.push({ user: convertToNotificationUser(user, notifiers), type: event_scope, message: `\`${sourceUser?.name}\` ${message}` });
         }
-        const notificationEvent: ActivityNotificationEvent = { version, notification_id, type: 'live', targets, data, origin };
+        const notificationEvent: ActivityNotificationEvent = { version, notification_id, type: 'live', targets, data: buildActivityNotificationData(data), origin };
         await storeNotificationEvent(context, notificationEvent);
       }
     }

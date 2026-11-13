@@ -52,10 +52,8 @@ export const customFieldDefinitionsForEntityTypeQuery = graphql`
   }
 `;
 
-// Isolates the useLazyLoadQuery call so it can be conditionally mounted (feature-flag gated)
-// without violating the Rules of Hooks. Meant to be rendered inside a <Suspense> boundary and
-// only when the CUSTOM_FIELDS feature flag is enabled: the query field itself throws server-side
-// (no softFail) when the flag is disabled, so it must never be called in that case.
+// Isolates the useLazyLoadQuery call so it can be conditionally mounted without violating the
+// Rules of Hooks. Meant to be rendered inside a <Suspense> boundary.
 export const CustomFieldsLoader: FunctionComponent<{
   entityType: string;
   onLoaded: (definitions: CustomFieldDef[]) => void;
@@ -120,7 +118,9 @@ const TextInputCustomField: FunctionComponent<{
       <Input
         label={label}
         value={typeof localValue === 'string' ? localValue : ''}
-        isTypeNumber={definition.field_type === 'integer'}
+        isTypeNumber={definition.field_type === 'integer' || definition.field_type === 'decimal'}
+        // A decimal accepts any precision, as the EPSS score of the vulnerabilities
+        step={definition.field_type === 'decimal' ? 'any' : undefined}
         min={definition.field_type === 'integer' ? definition.min_value ?? undefined : undefined}
         max={definition.field_type === 'integer' ? definition.max_value ?? undefined : undefined}
         error={error}

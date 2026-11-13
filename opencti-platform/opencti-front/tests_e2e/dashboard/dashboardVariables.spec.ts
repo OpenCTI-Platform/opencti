@@ -20,7 +20,7 @@ test.describe.configure({ mode: 'serial' });
  * Content of the test
  * -------------------
  * Needs the backend started with the DASHBOARD_VARIABLES dev feature. In CI, dev features are only enabled
- * for the `@groupff` e2e group (`dev_features: '["*"]'`), hence this spec is tagged `@groupff`, not `@group1`.
+ * for the `@groupff` e2e group (`dev_features: '["*"]'`), hence this spec is tagged `@groupff`.
  *
  * Data (API): two sectors, and one report containing each of them.
  *

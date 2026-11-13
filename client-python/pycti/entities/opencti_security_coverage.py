@@ -5,6 +5,8 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.utils.opencti_stix2_utils import build_custom_field_values_input
+
 
 class SecurityCoverage:
     """Main SecurityCoverage class for OpenCTI
@@ -27,6 +29,7 @@ class SecurityCoverage:
                 field_id
                 field_name
                 int_value
+                float_value
                 string_value
                 boolean_value
                 date_value
@@ -275,13 +278,17 @@ class SecurityCoverage:
         :type files: list
         :param filesMarkings: (optional) list of lists of marking definition IDs for each file
         :type filesMarkings: list
-        :param custom_properties: (optional) list of custom field name/value inputs
-        :type custom_properties: list
+        :param custom_field_values: (optional) list of custom field name/value inputs
+        :type custom_field_values: list
         :return: Security Coverage object
         :rtype: dict or None
         """
         stix_id = kwargs.get("stix_id", None)
-        custom_properties = kwargs.get("custom_properties", None)
+        custom_field_values = build_custom_field_values_input(
+            kwargs.get("custom_field_values", None),
+            kwargs.get("custom_properties", None),
+            self.opencti.app_logger,
+        )
         name = kwargs.get("name", None)
         description = kwargs.get("description", None)
         created_by = kwargs.get("createdBy", None)
@@ -324,7 +331,7 @@ class SecurityCoverage:
                 {
                     "input": {
                         "stix_id": stix_id,
-                        "customFieldValues": custom_properties,
+                        "customFieldValues": custom_field_values,
                         "name": name,
                         "description": description,
                         "createdBy": created_by,
@@ -395,7 +402,7 @@ class SecurityCoverage:
             ]
 
             return self.create(
-                custom_properties=extras.get("custom_properties", None),
+                custom_field_values=extras.get("custom_field_values", None),
                 stix_id=stix_object["id"],
                 name=stix_object["name"],
                 external_uri=(

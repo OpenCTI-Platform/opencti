@@ -28,7 +28,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { deleteNode } from '../../../utils/store';
 import { EMPTY_VALUE } from '../../../utils/String';
 import { isNotEmptyField } from '../../../utils/utils';
-import { getFirstOperation, iconSelector } from './notifications/notificationUtils';
+import { computeNotificationLink, getFirstOperation, iconSelector, operationSeverity } from './notifications/notificationUtils';
 import MarkdownDisplay from '../../../components/markdownDisplay/MarkdownDisplay';
 
 const LOCAL_STORAGE_KEY = 'notifiers';
@@ -47,6 +47,7 @@ const alertsLineFragment = graphql`
         message
         operation
         instance_id
+        entity_internal_id
         entity_type
       }
     }
@@ -130,21 +131,6 @@ interface AlertsLineActionsProps {
   setNotificationToDelete: (notification: AlertsLine_node$data) => void;
 }
 
-// Event type is categorical, so the tone carries the distinction without asserting a level:
-// create -> low, update -> info, delete -> critical, several at once -> medium.
-const operationSeverity = (operation: string): 'low' | 'info' | 'medium' | 'critical' => {
-  switch (operation) {
-    case 'update':
-      return 'info';
-    case 'delete':
-      return 'critical';
-    case 'multiple':
-      return 'medium';
-    default:
-      return 'low';
-  }
-};
-
 const AlertsLineActions: FunctionComponent<AlertsLineActionsProps> = ({
   data,
   setNotificationToDelete,
@@ -172,7 +158,12 @@ const AlertsLineActions: FunctionComponent<AlertsLineActionsProps> = ({
   };
 
   return (
-    <Stack direction="row" alignItems="center">
+    <Stack
+      direction="row"
+      sx={{
+        alignItems: 'center',
+      }}
+    >
       <Tooltip title={data.is_read ? t_i18n('Mark as unread') : t_i18n('Mark as read')}>
         <IconButton
           disabled={updating}
@@ -253,11 +244,7 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
     const isLinkAvailable = events.length === 1 && isNotEmptyField(firstEvent?.instance_id) && firstOperation !== 'delete';
     if (isLinkAvailable && firstEvent.instance_id) {
       markAsRead();
-      if (firstEvent.entity_type === 'DraftWorkspace') {
-        navigate(`/dashboard/data/import/draft/${firstEvent.instance_id}`);
-      } else {
-        navigate(`/dashboard/id/${firstEvent.instance_id}`);
-      }
+      navigate(computeNotificationLink(firstEvent.entity_internal_id ?? firstEvent.instance_id, firstEvent.entity_type));
     }
   };
 
@@ -297,6 +284,9 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
           update: t_i18n('Modification'),
           delete: t_i18n('Deletion'),
           none: t_i18n('Unknown'),
+          critical: t_i18n('Critical'),
+          degraded: t_i18n('Degraded'),
+          recovered: t_i18n('Recovered'),
         };
         return (
           <div style={{ fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
@@ -342,7 +332,7 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
       label: 'Original creation date',
       percentWidth: 25,
       isSortable: isRuntimeSort,
-      render: ({ created }, item) => defaultRender(item.fldt(created)),
+      render: ({ created }, item) => defaultRender(item.ftdt(created, 'long')),
     },
     name: {
       id: 'name',

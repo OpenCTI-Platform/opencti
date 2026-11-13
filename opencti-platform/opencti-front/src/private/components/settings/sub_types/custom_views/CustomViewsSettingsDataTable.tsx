@@ -1,6 +1,6 @@
 import { graphql } from 'relay-runtime';
 import Insights from '@mui/icons-material/Insights';
-import { useTheme } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import DataTable from '../../../../../components/dataGrid/DataTable';

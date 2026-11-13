@@ -24,6 +24,10 @@
   updateNotScheduled: false,
   // only rebase when there is a conflict; avoids unnecessary CI runs on every base branch change, can be removed when number of open PR is low
   rebaseWhen: 'conflicted',
+  // run `yarn dedupe --strategy highest` after each update, so that yarn.lock keeps a single copy of a package when one version satisfies every range
+  postUpdateOptions: [
+    'yarnDedupeHighest',
+  ],
   vulnerabilityAlerts: {
     // as we don't rely on Renovate to be informed of dependency security advisories,
     // vulnerabilityAlerts is disabled since it can cause problems by skipping minimumReleaseAge, schedule and others constraints
@@ -54,14 +58,28 @@
       allowedVersions: '<3.13',
       description: 'Keep Python docker images and setup-python at version 3.12.x',
     },
+    // Elasticsearch 8 and 9 are both supported: the client is installed twice (@elastic/elasticsearch and its alias
+    // @elastic/elasticsearch-v9, whose package name stays @elastic/elasticsearch) and the CI runs both images.
+    // Each one keeps its own major, read from its current version.
     {
       matchPackageNames: [
         'elasticsearch',
         'kibana',
         '@elastic/elasticsearch',
       ],
+      matchCurrentVersion: '/^8\\./',
       allowedVersions: '<9',
-      description: 'Keep Elasticsearch, Kibana and the Elasticsearch client at version 8.x',
+      description: 'Keep Elasticsearch, Kibana and the Elasticsearch client at version 8.x where they are on 8.x',
+    },
+    {
+      matchPackageNames: [
+        'elasticsearch',
+        'kibana',
+        '@elastic/elasticsearch',
+      ],
+      matchCurrentVersion: '/^9\\./',
+      allowedVersions: '<10',
+      description: 'Keep Elasticsearch, Kibana and the Elasticsearch client at version 9.x where they are on 9.x',
     },
     {
       matchPackageNames: [
@@ -80,6 +98,26 @@
       ],
       allowedVersions: '<8.7',
       description: 'Keep redis docker image at version 8.6.x',
+    },
+    {
+      matchDatasources: [
+        'docker',
+      ],
+      matchPackageNames: [
+        'rabbitmq',
+      ],
+      allowedVersions: '<4.4',
+      description: 'Keep rabbitmq docker image at version 4.3.x',
+    },
+    {
+      matchDatasources: [
+        'docker',
+      ],
+      matchPackageNames: [
+        'pgsty/silo',
+      ],
+      versioning: 'regex:^RELEASE\\.(?<patch>\\d{4})-(?<build>\\d{2})-(?<revision>\\d{2})T\\d{2}-\\d{2}-\\d{2}Z$',
+      description: 'Read the date-based RELEASE tags of the silo docker image as patch versions',
     },
     // sticks to MIT version of apexcharts
     {
@@ -164,6 +202,34 @@
       ],
       // use 'auto' here so grouped PRs stay up-to-date automatically,
       // since we batch them and want them merge-ready on Monday
+      rebaseWhen: 'auto',
+    },
+    {
+      groupName: 'devDependencies (non-major)',
+      groupSlug: 'dev-dependencies-non-major',
+      description: 'Batch non-major updates of the development tooling docker images with the dev dependencies once a week on Sunday',
+      schedule: [
+        '* * * * 0',
+      ],
+      matchDatasources: [
+        'docker',
+      ],
+      matchPackageNames: [
+        'redislabs/redisinsight',
+        'grafana/pyroscope',
+        'jaegertracing/all-in-one',
+        'otel/opentelemetry-collector-contrib',
+        'prom/prometheus',
+        'grafana/grafana',
+        'keycloak/keycloak',
+        'mokapi/mokapi',
+      ],
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+        'pin',
+        'digest',
+      ],
       rebaseWhen: 'auto',
     },
   ],

@@ -2,7 +2,6 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
 import CsvMapperRepresentationAttributeOptions from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributeOptions';
 import { alphabet } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
-import makeStyles from '@mui/styles/makeStyles';
 import { FieldProps } from 'formik';
 import CsvMapperRepresentationDialogOption from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationDialogOption';
 import CsvMapperRepresentionAttributeSelectedConfigurations from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentionAttributeSelectedConfigurations';
@@ -10,8 +9,18 @@ import { CsvMapperRepresentationAttributeFormData } from '@components/data/csvMa
 import { SchemaAttribute } from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
 import { useFormatter } from '../../../../../../components/i18n';
 import { isEmptyField } from '../../../../../../utils/utils';
-import { useTheme } from '@mui/styles';
+import { styled, useTheme } from '@mui/material/styles';
+import Box from '@mui/material/Box';
 import { Theme } from '../../../../../../components/Theme';
+
+const Container = styled('div')({
+  width: '100%',
+  display: 'inline-grid',
+  gridTemplateColumns: '2fr 3fr 50px',
+  alignItems: 'center',
+  marginTop: '10px',
+  gap: '10px',
+});
 
 export type RepresentationAttributeForm = CsvMapperRepresentationAttributeFormData | undefined;
 
@@ -27,23 +36,6 @@ const CsvMapperRepresentationAttributeForm: FunctionComponent<
 > = ({ form, field, schemaAttribute, label, handleErrors }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  // Deprecated - https://mui.com/system/styles/basics/
-  // Do not use it for new code.
-  const useStyles = makeStyles(() => ({
-    container: {
-      width: '100%',
-      display: 'inline-grid',
-      gridTemplateColumns: '2fr 3fr 50px',
-      alignItems: 'center',
-      marginTop: '10px',
-      gap: '10px',
-    },
-    redStar: {
-      color: theme.palette.designSystem.tertiary.red[400],
-      marginLeft: '5px',
-    },
-  }));
-  const classes = useStyles();
   const { name, value } = field;
   const { setFieldValue } = form;
 
@@ -92,10 +84,10 @@ const CsvMapperRepresentationAttributeForm: FunctionComponent<
   };
 
   return (
-    <div className={classes.container}>
+    <Container>
       <div>
         {label}
-        {schemaAttribute.mandatory && <span className={classes.redStar}>*</span>}
+        {schemaAttribute.mandatory && <Box component="span" sx={{ color: theme.palette.designSystem.tertiary.red[400], marginLeft: '5px' }}>*</Box>}
       </div>
       <div>
         <Combobox
@@ -136,7 +128,7 @@ const CsvMapperRepresentationAttributeForm: FunctionComponent<
       <CsvMapperRepresentionAttributeSelectedConfigurations
         configuration={value}
       />
-    </div>
+    </Container>
   );
 };
 

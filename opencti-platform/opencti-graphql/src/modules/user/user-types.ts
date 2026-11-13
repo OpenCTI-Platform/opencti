@@ -5,6 +5,7 @@ import type { ConfidenceLevel, UserSession } from '../../generated/graphql';
 import type { NestedObjectAttribute } from '../../schema/attribute-definition';
 
 export const ENTITY_TYPE_USER = 'User';
+export const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr', 'ru-ru', 'it-it'];
 
 export const apiTokens: NestedObjectAttribute = {
   name: 'api_tokens',
@@ -36,6 +37,7 @@ export interface BasicStoreEntityUser extends BasicStoreEntity {
   user_email: string;
   personal_notifiers: Array<string>;
   password: string;
+  password_history?: Array<string>;
   name: string;
   description: string;
   firstname: string;
@@ -57,7 +59,10 @@ export interface BasicStoreEntityUser extends BasicStoreEntity {
   merged_into: string;
   administrated_organizations: string;
   unit_system: string;
+  date_format: string;
+  time_format: string;
   submenu_show_icons: boolean;
+  bootstrap_wizard_skipped?: boolean;
   submenu_auto_collapse: boolean;
   monochrome_labels: boolean;
   unsubscribed_news_feed_types: Array<string>;

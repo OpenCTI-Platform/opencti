@@ -57,6 +57,7 @@ import { type BasicStoreEntityPir, ENTITY_TYPE_PIR } from '../modules/pir/pir-ty
 import { fromB64 } from '../utils/base64';
 import type { BasicStoreEntityDecayExclusionRule } from '../modules/decayRule/exclusions/decayExclusionRule-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
+import { ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE } from '../modules/ingestionDeduplication/ingestionDeduplicationRule-types';
 import type * as S from '../types/stix-2-1-common';
 import { pushAll } from '../utils/arrayUtil';
 import { ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from '../modules/customField/custom-field-types';
@@ -102,11 +103,29 @@ export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) =
       .flatMap((config) => [config.filters, config.applyWithFilters])
       .filter((f) => isNotEmptyField(f))
       .flatMap((f) => extractFilterGroupValuesToResolveForCache(JSON.parse(f)));
-    // IDs from list of PIRs to listen.
-    const playbookInPirFilterIds = configurations
-      .map((config) => config.inPirFilters)
-      .map((f) => (f ?? []).map((i: { value: string }) => i.value))
-      .flat();
+    // IDs from list of PIRs to listen (only for "Listen PIR events" nodes).
+    // inPirFilters is not validated at save time, ignore anything that is not an array of { value }
+    // so a single malformed playbook cannot break the whole resolved filters cache.
+    const playbookInPirFilterIds: string[] = [];
+    for (let index = 0; index < definition.nodes.length; index += 1) {
+      const { inPirFilters } = configurations[index];
+      if (definition.nodes[index].component_id === 'PLAYBOOK_DATA_STREAM_PIR' && inPirFilters !== null && inPirFilters !== undefined) {
+        const inPirFilterIds = (Array.isArray(inPirFilters) ? inPirFilters : [])
+          .map((i: unknown) => (
+            typeof i === 'object' && i !== null && 'value' in i
+              ? i.value
+              : undefined
+          ))
+          .filter((id): id is string => typeof id === 'string' && isNotEmptyField(id));
+        if (!Array.isArray(inPirFilters) || inPirFilterIds.length !== inPirFilters.length) {
+          logApp.warn('[CACHE] Malformed inPirFilters in playbook configuration, invalid values are ignored', {
+            playbook_id: instance.internal_id,
+            node_id: definition.nodes[index].id,
+          });
+        }
+        pushAll(playbookInPirFilterIds, inPirFilterIds);
+      }
+    }
     pushAll(filteringIds, playbookFilterIds);
     pushAll(filteringIds, playbookInPirFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_PIR) {
@@ -199,6 +218,12 @@ const platformDecayExclusionRules = (context: AuthContext) => {
     return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_DECAY_EXCLUSION_RULE]);
   };
   return { value: null, fn: reloadDecayExclusionRules };
+};
+const platformIngestionDeduplicationRules = (context: AuthContext) => {
+  const reloadIngestionDeduplicationRules = () => {
+    return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE]);
+  };
+  return { values: null, fn: reloadIngestionDeduplicationRules };
 };
 const platformMarkings = (context: AuthContext) => {
   const reloadMarkings = () => {
@@ -370,6 +395,7 @@ const CACHED_ENTITIES_MAP = {
   [ENTITY_TYPE_DRAFT_WORKSPACE]: platformDraftWorkspaces,
   [ENTITY_TYPE_PIR]: platformPirs,
   [ENTITY_TYPE_DECAY_EXCLUSION_RULE]: platformDecayExclusionRules,
+  [ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE]: platformIngestionDeduplicationRules,
   [ENTITY_TYPE_CUSTOM_FIELD_DEFINITION]: platformCustomFieldDefinitions,
 };
 // ABSTRACT_INTERNAL_OBJECT is always included

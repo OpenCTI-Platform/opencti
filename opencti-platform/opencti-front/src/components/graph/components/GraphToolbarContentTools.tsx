@@ -18,6 +18,9 @@ import { ObjectToParse } from '../utils/useGraphParser';
 import GraphToolbarRemoveConfirm, { GraphToolbarDeleteConfirmProps } from './GraphToolbarRemoveConfirm';
 import ContainerAddStixCoreObjectsInLine from '../../../private/components/common/containers/ContainerAddStixCoreObjectsInLine';
 import { getRelationshipMainRepresentative } from '../../../utils/defaultRepresentatives';
+import InvestigationEnrichmentTool from '../../../private/components/workspaces/investigations/investigations_enrichment/InvestigationEnrichmentTool';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE } from '../../../utils/hooks/useGranted';
 
 export interface GraphToolbarContentToolsProps {
   stixCoreObjectRefetchQuery?: GraphQLTaggedNode;
@@ -27,6 +30,7 @@ export interface GraphToolbarContentToolsProps {
   enableReferences?: boolean;
   onDeleteRelation?: GraphToolbarDeleteConfirmProps['onDeleteRelation'];
   onRemove?: GraphToolbarDeleteConfirmProps['onRemove'];
+  onInvestigationExpand?: (newObjects: ObjectToParse[]) => void;
 }
 
 const GraphToolbarContentTools = ({
@@ -37,6 +41,7 @@ const GraphToolbarContentTools = ({
   onAddRelation,
   onDeleteRelation,
   onRemove,
+  onInvestigationExpand,
 }: GraphToolbarContentToolsProps) => {
   const { t_i18n } = useFormatter();
 
@@ -51,7 +56,7 @@ const GraphToolbarContentTools = ({
 
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
 
-  const { setIsAddRelationOpen } = useGraphInteractions();
+  const { setIsAddRelationOpen, setIsAddEntitiesOpen } = useGraphInteractions();
 
   const {
     graphData,
@@ -61,6 +66,7 @@ const GraphToolbarContentTools = ({
       selectedNodes: rawSelectedNodes,
       selectedLinks: rawSelectedLinks,
       isAddRelationOpen,
+      isAddEntitiesOpen,
     },
   } = useGraphContext();
 
@@ -161,13 +167,24 @@ const GraphToolbarContentTools = ({
         />
       )}
       {entity && context === 'investigation' && (
-        <InvestigationAddStixCoreObjects
-          workspaceId={entity.id}
-          workspaceStixCoreObjects={rawObjects.map((o) => ({ node: o }))}
-          targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
-          onAdd={addNode}
-          onDelete={removeFromAddPanel}
-        />
+        <>
+          <InvestigationAddStixCoreObjects
+            workspaceId={entity.id}
+            workspaceStixCoreObjects={rawObjects.map((o) => ({ node: o }))}
+            targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
+            onAdd={addNode}
+            onDelete={removeFromAddPanel}
+            open={isAddEntitiesOpen}
+            onOpenChange={setIsAddEntitiesOpen}
+          />
+
+          <Security needs={[KNOWLEDGE]}>
+            <InvestigationEnrichmentTool
+              entity={entity}
+              onExpand={onInvestigationExpand}
+            />
+          </Security>
+        </>
       )}
 
       {stixCoreObjectRefetchQuery && relationshipRefetchQuery && (

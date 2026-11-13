@@ -31,11 +31,12 @@ import { READ_DATA_INDICES } from '../database/utils';
 import { internalFindByIds } from '../database/middleware-loader';
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccess-domain';
-import { CguStatus, PlatformType } from '../generated/graphql';
+import { CguStatus, DateFormat, PlatformType, TimeFormat } from '../generated/graphql';
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 import { isEmailRewriteAllowed, smtpConfiguredEmail } from '../database/smtp';
 import { isAuthenticationForcedFromEnv } from '../modules/authenticationProvider/providers-configuration';
-import { updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../domain/setting-auth';
+import { LOCAL_AUTH_LOCKOUT_DEFAULTS, updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../domain/setting-auth';
+import { readPasswordHistoryCount } from '../modules/user/user-password-history';
 
 const settingsResolvers = {
   Query: {
@@ -68,14 +69,25 @@ const settingsResolvers = {
     password_policy_min_lowercase: (settings) => settings.password_policy_min_lowercase ?? 0,
     password_policy_min_uppercase: (settings) => settings.password_policy_min_uppercase ?? 0,
     password_policy_validity_days: (settings) => settings.password_policy_validity_days ?? 0,
+    password_policy_history_count: (settings) => readPasswordHistoryCount(settings),
+    local_auth_lockout_enabled: (settings) => settings.local_auth_lockout_enabled ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_enabled,
+    local_auth_lockout_max_attempts: (settings) => settings.local_auth_lockout_max_attempts ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_max_attempts,
+    local_auth_lockout_admin_max_attempts: (settings) => settings.local_auth_lockout_admin_max_attempts ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_admin_max_attempts,
+    local_auth_lockout_final_action: (settings) => settings.local_auth_lockout_final_action ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_final_action,
+    local_auth_lockout_window: (settings) => settings.local_auth_lockout_window ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_window,
+    local_auth_lockout_duration: (settings) => settings.local_auth_lockout_duration ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_duration,
     editContext: (settings) => fetchEditContext(settings.id),
     platform_messages: (settings, _, context) => getMessagesFilteredByRecipients(context.user, settings),
     messages_administration: (settings) => JSON.parse(settings.platform_messages ?? '[]'),
     platform_enterprise_edition: (settings) => getEnterpriseEditionInfo(settings),
     request_access_enabled: (_, __, context) => isRequestAccessEnabled(context, context.user),
+    platform_date_format: (settings) => settings.platform_date_format ?? DateFormat.Auto,
+    platform_time_format: (settings) => settings.platform_time_format ?? TimeFormat.Auto,
     platform_ai_enabled: (settings) => settings.platform_ai_enabled ?? true,
     platform_notifier_auto_trigger_assignee: (settings) => settings.platform_notifier_auto_trigger_assignee ?? true,
     filigran_chatbot_ai_cgu_status: (settings) => settings.filigran_chatbot_ai_cgu_status ?? CguStatus.Pending,
+    // No default: an existing platform has no status, so the wizard never opens by itself
+    platform_bootstrap_status: (settings) => (['pending', 'completed'].includes(settings.platform_bootstrap_status) ? settings.platform_bootstrap_status : null),
     platform_https_enabled: () => !!(nconf.get('app:https_cert:key') && nconf.get('app:https_cert:crt')),
     caller_ip: (_, __, context) => context.req?.ip ?? null,
     metrics_definition: () => getEntityMetricsConfiguration(),
@@ -98,6 +110,10 @@ const settingsResolvers = {
         size: meta.contentLength ?? 0,
       };
     },
+  },
+  PublicSettings: {
+    // Read by the login page: 0 whenever the rule is off, so no screen shows it
+    password_policy_history_count: (settings) => readPasswordHistoryCount(settings),
   },
   AppInfo: {
     memory: getMemoryStatistics(),

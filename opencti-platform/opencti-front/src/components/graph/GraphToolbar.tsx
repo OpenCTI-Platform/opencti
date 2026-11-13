@@ -190,7 +190,10 @@ const GraphToolbar = ({
           onInvestigationRollback={onInvestigationRollback}
         />
       )}
-      <GraphToolbarContentTools {...props} />
+      <GraphToolbarContentTools
+        {...props}
+        onInvestigationExpand={onInvestigationExpand}
+      />
     </>
   );
   // The creation and removal tools are one subtree mounted whatever the room, rendered into one host element that

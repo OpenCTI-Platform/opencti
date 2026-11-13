@@ -62,7 +62,8 @@ vi.mock('../hooks/useAttributes', () => ({
   containerTypes: ['Report', 'Grouping', 'Note', 'Opinion', 'Observed-Data'],
 }));
 
-vi.mock('@mui/styles', () => ({
+vi.mock('@mui/material/styles', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@mui/material/styles')>()),
   useTheme: () => ({
     palette: {
       mode: 'light',

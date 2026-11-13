@@ -193,7 +193,7 @@ describe('StixCoreObjectFileExportForm FINTEL PDF export', () => {
     await user.click(await screen.findByRole('option', { name: 'Generate FINTEL from template' }));
 
     if (reselectPdf) {
-      await user.click(screen.getByRole('button', { name: 'Format' }));
+      await user.click(screen.getByRole('tab', { name: 'Format' }));
       await user.click(screen.getByRole('button', { name: 'PDF' }));
     }
 
@@ -332,5 +332,26 @@ describe('StixCoreObjectFileExportForm — default template pre-selection', () =
 
     const templateInput = screen.getByLabelText('Template') as HTMLInputElement;
     expect(templateInput.value).toBe('');
+  });
+});
+
+describe('StixCoreObjectFileExportForm — format selection', () => {
+  it('selects the STIX connector when JSON is picked on an entity whose only PDF connector is HTML-to-PDF', async () => {
+    const { user } = testRender(
+      <StixCoreObjectFileExportForm
+        {...baseProps}
+        connectors={[
+          { value: 'connector-stix', label: 'ExportFileStix', connectorScope: ['application/json'] },
+          { ...BUILT_IN_HTML_TO_PDF, label: 'HTML content files to PDF' },
+        ]}
+        templates={[]}
+        fileOptions={[{ value: 'mappableContent', label: 'Mappable main content', fileMarkings: [] }]}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'JSON' }));
+
+    await waitFor(() => expect(screen.getByLabelText('Connector')).toHaveValue('ExportFileStix'));
+    expect(screen.queryByLabelText('Include cover page')).not.toBeInTheDocument();
   });
 });

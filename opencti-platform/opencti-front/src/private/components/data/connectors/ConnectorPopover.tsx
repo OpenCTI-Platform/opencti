@@ -12,7 +12,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { PopoverProps } from '@mui/material/Popover';
 import ToggleButton from '@mui/material/ToggleButton';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import DeleteDialog from '../../../../components/DeleteDialog';

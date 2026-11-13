@@ -14,6 +14,9 @@ describe('buildCustomFieldTaskInputs', () => {
     expect(buildCustomFieldTaskInputs(INTEGER, 'REPLACE', ['42'])).toEqual([
       { key: 'custom_field_values', operation: 'add', value: [{ field_name: 'x_opencti_cf_score', int_value: 42 }] },
     ]);
+    expect(buildCustomFieldTaskInputs(makeDefinition('x_opencti_cf_rate', 'decimal'), 'REPLACE', ['0.85'])).toEqual([
+      { key: 'custom_field_values', operation: 'add', value: [{ field_name: 'x_opencti_cf_rate', float_value: 0.85 }] },
+    ]);
     expect(buildCustomFieldTaskInputs(BOOLEAN, 'REPLACE', ['false'])).toEqual([
       { key: 'custom_field_values', operation: 'add', value: [{ field_name: 'x_opencti_cf_flag', boolean_value: false }] },
     ]);

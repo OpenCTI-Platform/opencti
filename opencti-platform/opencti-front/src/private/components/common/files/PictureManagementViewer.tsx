@@ -59,7 +59,7 @@ const PictureManagementViewer: FunctionComponent<
     ?.filter((edge) => edge?.node)
     .map((edge) => edge?.node) ?? [];
   return (
-    <Grid item xs={6}>
+    <Grid size={6}>
       <div style={{ height: '100%' }} className="break">
         <Card title={t_i18n('Pictures Management')}>
           {images && images.length > 0 ? (

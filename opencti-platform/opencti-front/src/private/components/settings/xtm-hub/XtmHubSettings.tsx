@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 import XtmHubTab from '@components/settings/xtm-hub/XtmHubTab';
 import Button from '@common/button/Button';
 import Tag from '@common/tag/Tag';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 import { XtmHubSettingsQuery } from './__generated__/XtmHubSettingsQuery.graphql';
 import useGranted, { SETTINGS_SETMANAGEXTMHUB } from '../../../../utils/hooks/useGranted';
@@ -227,7 +227,15 @@ const XtmHubSettings: React.FC = () => {
     return <Loader variant={LoaderVariant.inElement} />;
   }
 
-  return <XtmHubSettingsComponent />;
+  // XtmHubSettingsComponent suspends (network-only query). Without a local
+  // boundary, the closest one is the page-level Suspense of the Experience
+  // page, which would hide the whole page (including the Enterprise Edition
+  // card) behind a full loader as soon as the connectivity check completes.
+  return (
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <XtmHubSettingsComponent />
+    </React.Suspense>
+  );
 };
 
 export default XtmHubSettings;

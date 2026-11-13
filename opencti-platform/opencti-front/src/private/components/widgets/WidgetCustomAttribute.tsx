@@ -22,7 +22,7 @@ const WidgetCustomAttributes: FunctionComponent<WidgetCustomAttributesProps> = (
 
   return (
     <Grid container spacing={3}>
-      <Grid item xs={layout === '2' ? 6 : 12}>
+      <Grid size={layout === '2' ? 6 : 12}>
         {col1.map((column) => (
           <WidgetCustomAttributesCard
             key={column.attribute}
@@ -33,7 +33,7 @@ const WidgetCustomAttributes: FunctionComponent<WidgetCustomAttributesProps> = (
         ))}
       </Grid>
       {layout === '2' && (
-        <Grid item xs={6}>
+        <Grid size={6}>
           {col2.map((column) => (
             <WidgetCustomAttributesCard
               key={column.attribute}

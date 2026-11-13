@@ -55,7 +55,10 @@ const HistoryDrawerContent: FunctionComponent<HistoryDrawerContentProps> = ({ lo
     }));
 
   return (
-    <Stack gap={2}>
+    <Stack sx={{
+      gap: 2,
+    }}
+    >
       <Alert
         content={(
           <>

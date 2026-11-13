@@ -8,24 +8,12 @@ interface themeToExport {
   name: string;
 }
 
+// The content of the file is built by the backend, in the format of the theme import
 const ThemeExportHandlerQuery = graphql`
   query ThemeExportHandlerQuery($id: ID!) {
     theme(id: $id) {
       name
-      theme_background
-      theme_paper
-      theme_nav
-      theme_primary
-      theme_secondary
-      theme_accent
-      theme_text_color
-      theme_logo
-      theme_logo_collapsed
-      theme_logo_login     
-      theme_login_aside_color
-      theme_login_aside_gradient_end
-      theme_login_aside_gradient_start
-      theme_login_aside_image 
+      toConfigurationExport
     }
   }
 `;
@@ -36,10 +24,7 @@ const handleExportJson = async (theme: themeToExport) => {
 
   if (!result.theme) return;
 
-  const themeData = { ...result.theme };
-
-  const jsonString = JSON.stringify(themeData, null, 2);
-  const blob = new Blob([jsonString], { type: 'application/json' });
+  const blob = new Blob([result.theme.toConfigurationExport], { type: 'application/json' });
   const todayDate = new Date().toISOString().split('T')[0].replaceAll('-', '');
   const fileName = `${todayDate}_octi_theme_${theme.name.toLowerCase()}.json`;
   fileDownload(blob, fileName);

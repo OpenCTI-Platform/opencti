@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  areCustomFieldAliasesValid,
+  buildCustomFieldNameSuffix,
   buildCustomFieldValueAddInputEntry,
   buildCustomFieldValueEntry,
   buildCustomFieldValuesAddInput,
@@ -42,6 +44,7 @@ const valueCases: [string, CustomFieldValue, Partial<CustomFieldStoredValue>][] 
   ['string', 'text', { string_value: 'text' }],
   ['markdown', '**text**', { string_value: '**text**' }],
   ['integer', '0', { int_value: 0 }],
+  ['decimal', '0.85', { float_value: 0.85 }],
   ['boolean', false, { boolean_value: false }],
   ['boolean', true, { boolean_value: true }],
   ['date', '2026-09-11T12:00:00.000Z', { date_value: '2026-09-11T12:00:00.000Z' }],
@@ -189,6 +192,28 @@ describe('customFields', () => {
     expect(() => schema.validateSync({ integer: '3000000000' })).toThrow('The value must be between min and max value');
   });
 
+  it('accepts any finite decimal without min/max bounds', () => {
+    const decimal = definition('decimal');
+    expect(getCustomFieldValueError(decimal, '0.123456', translate)).toBeUndefined();
+    expect(getCustomFieldValueError(decimal, '-3000000000.5', translate)).toBeUndefined();
+    expect(getCustomFieldValueError(decimal, 'invalid', translate)).toBe('The value must be a number');
+    expect(getCustomFieldValueError(decimal, '1e39', translate)).toBeUndefined();
+    expect(getCustomFieldValueError(decimal, '1e400', translate)).toBe('The value must be a number');
+    const schema = buildCustomFieldsValidationSchema([decimal], 'Report', translate);
+    expect(schema.isValidSync({ decimal: '0.5' })).toBe(true);
+    expect(schema.isValidSync({ decimal: '' })).toBe(true);
+    expect(() => schema.validateSync({ decimal: 'invalid' })).toThrow('The value must be a number');
+    expect(() => schema.validateSync({ decimal: 'Infinity' })).toThrow('The value must be a number');
+    expect(schema.isValidSync({ decimal: '-1e39' })).toBe(true);
+  });
+
+  it('requires a mandatory decimal', () => {
+    const decimal = definition('decimal', { entity_type_settings: [{ entity_type: 'Report', mandatory: true, default_value: null }] });
+    const schema = buildCustomFieldsValidationSchema([decimal], 'Report', translate);
+    expect(schema.isValidSync({ decimal: '' })).toBe(false);
+    expect(schema.isValidSync({ decimal: '0' })).toBe(true);
+  });
+
   it('clears an integer value when the input is emptied', () => {
     const stored = Object.freeze([{ field_id: 'integer', field_name: 'custom_integer', int_value: 5 }]);
     expect(updateCustomFieldValues(definition('integer'), '', stored)).toEqual([]);
@@ -205,7 +230,7 @@ describe('customFields', () => {
   });
 
   it.each<[string, CustomFieldValue]>([
-    ['string', ''], ['integer', ''], ['integer', 'invalid'], ['date', ''], ['select', ''], ['multi_select', []],
+    ['string', ''], ['integer', ''], ['integer', 'invalid'], ['decimal', ''], ['decimal', 'invalid'], ['date', ''], ['select', ''], ['multi_select', []],
   ])('removes a cleared or invalid %s value', (type, rawValue) => {
     const other = { field_id: 'other', field_name: 'other', int_value: 1 };
     expect(updateCustomFieldValues(definition(type), rawValue, [
@@ -234,6 +259,7 @@ describe('customFields', () => {
     [{ boolean_value: true }, 'translated:True'],
     [{ date_value: '2026-09-11' }, 'date:2026-09-11'],
     [{ int_value: 0 }, '0'],
+    [{ float_value: 0.85 }, '0.85'],
     [{ select_values: ['one', 'two'] }, 'one, two'],
     [{ select_value: 'one' }, 'one'],
     [{ string_value: '**text**' }, '**text**'],
@@ -329,5 +355,29 @@ describe('getTaskTargetedTypes', () => {
     expect(getTaskTargetedTypes(true, [], ['Malware'], ['Stix-Domain-Object'])).toEqual(['Malware']);
     expect(getTaskTargetedTypes(true, [], [], ['Case-Incident'])).toEqual(['Case-Incident']);
     expect(getTaskTargetedTypes(true, [], [], undefined)).toEqual([]);
+  });
+});
+
+describe('buildCustomFieldNameSuffix', () => {
+  it.each([
+    ['Closing reason', 'closing_reason'],
+    ['Priorité métier', 'priorite_metier'],
+    ['  Risk -- score!  ', 'risk_score'],
+    ['2nd analyst', 'nd_analyst'],
+    ['', ''],
+  ])('suggests the technical name of %j', (label, expected) => {
+    expect(buildCustomFieldNameSuffix(label)).toBe(expected);
+  });
+});
+
+describe('areCustomFieldAliasesValid', () => {
+  it('accepts no alias and aliases formatted as STIX custom properties', () => {
+    expect(areCustomFieldAliasesValid(undefined)).toBe(true);
+    expect(areCustomFieldAliasesValid([])).toBe(true);
+    expect(areCustomFieldAliasesValid(['x_priority', 'x_source_2'])).toBe(true);
+  });
+
+  it.each([['Hello'], ['priority'], ['x_Priority'], ['x_prio-rity'], ['x_']])('rejects the alias %s', (alias) => {
+    expect(areCustomFieldAliasesValid(['x_priority', alias])).toBe(false);
   });
 });

@@ -74,10 +74,12 @@ const DashboardVariablesBar = ({
     <Stack
       data-testid="dashboard-variables-bar"
       direction="row"
-      flexWrap="wrap"
-      alignItems="center"
-      gap={1}
-      sx={{ marginBottom: 1.5 }}
+      sx={{
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        gap: 1,
+        marginBottom: 1.5,
+      }}
     >
       {variables.map((variable) => (
         <DashboardVariableChip

@@ -130,7 +130,7 @@ const ExclusionLists = () => {
     <EnrichedTooltip title={(
       <Grid container spacing={2} sx={{ marginBottom: '10px' }}>
         {exclusionListEntityTypes.map((type) => (
-          <Grid item key={type} xs={6}>
+          <Grid key={type} size={6}>
             <ItemEntityType entityType={type} />
           </Grid>
         ))}

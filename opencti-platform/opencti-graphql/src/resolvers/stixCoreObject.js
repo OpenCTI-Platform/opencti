@@ -41,6 +41,7 @@ import {
   stixCoreObjectsMultiDistribution,
   stixCoreObjectsMultiNumber,
   stixCoreObjectsMultiTimeSeries,
+  stixCoreObjectsTimeSeriesBreakdown,
   stixCoreObjectsNumber,
   stixCoreObjectsTimeSeries,
   stixCoreObjectsTimeSeriesByAuthor,
@@ -50,7 +51,7 @@ import {
   stixCoreObjectsExportFiles,
 } from '../domain/stixCoreObject';
 import { fetchEditContext } from '../database/redis';
-import { distributionRelations, stixLoadByIdStringify } from '../database/middleware';
+import { distributionRelations, stixLoadByIdStringify, timeSeriesBreakdownFields } from '../database/middleware';
 import { worksForSource } from '../domain/work';
 import { BUS_TOPICS } from '../config/conf';
 import { ABSTRACT_STIX_CORE_OBJECT, INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS } from '../schema/general';
@@ -80,6 +81,8 @@ const stixCoreObjectResolvers = {
       return stixCoreObjectsTimeSeries(context, context.user, args);
     },
     stixCoreObjectsMultiTimeSeries: (_, args, context) => stixCoreObjectsMultiTimeSeries(context, context.user, args),
+    stixCoreObjectsTimeSeriesBreakdown: (_, args, context) => stixCoreObjectsTimeSeriesBreakdown(context, context.user, args),
+    timeSeriesBreakdownFields: (_, { perspective, types }) => timeSeriesBreakdownFields(perspective, types),
     stixCoreObjectsNumber: (_, args, context) => stixCoreObjectsNumber(context, context.user, args),
     stixCoreObjectsMultiNumber: (_, args, context) => stixCoreObjectsMultiNumber(context, context.user, args),
     stixCoreObjectsDistribution: (_, args, context) => {
@@ -172,8 +175,8 @@ const stixCoreObjectResolvers = {
       restrictionOrganizationDelete: ({ organizationId, directContainerSharing }) => {
         return removeOrganizationRestriction(context, context.user, id, organizationId, directContainerSharing);
       },
-      askEnrichment: ({ connectorId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId),
-      askEnrichments: ({ connectorIds }) => askElementEnrichmentForConnectors(context, context.user, id, connectorIds),
+      askEnrichment: ({ connectorId, investigationId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId, { investigationId }),
+      askEnrichments: ({ connectorIds, investigationId }) => askElementEnrichmentForConnectors(context, context.user, id, connectorIds, { investigationId }),
       importPush: (args) => stixCoreObjectImportPush(context, context.user, id, args.file, args),
       uploadAndAskJobImport: (args) => stixCoreObjectImportFile(context, context.user, id, args.file, args),
       askAnalysis: ({ contentSource, contentType, connectorId }) => askElementAnalysisForConnector(context, context.user, id, contentSource, contentType, connectorId),

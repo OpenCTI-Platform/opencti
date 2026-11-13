@@ -49,7 +49,7 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={2}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
@@ -57,7 +57,7 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
               <ExpandableMarkdown source={data.description} limit={300} />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Platforms')}
             </Label>
@@ -70,7 +70,7 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
             <TextList list={data.collection_layers} />
           </Grid>
           <CustomFieldValuesDisplay entityType={data.entity_type} values={data.customFieldValues ?? []} />
-          <Grid item xs={12}>
+          <Grid size={12}>
             <DataSourceDataComponents dataSource={data} />
           </Grid>
         </Grid>

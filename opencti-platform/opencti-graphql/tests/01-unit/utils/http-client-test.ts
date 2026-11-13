@@ -1,13 +1,28 @@
-import { generateKeyPairSync } from 'node:crypto';
 import { once } from 'node:events';
 import http from 'node:http';
 import https from 'node:https';
-import type { AddressInfo } from 'node:net';
+import net, { type AddressInfo } from 'node:net';
+import type { TLSSocket } from 'node:tls';
 import { Readable } from 'node:stream';
 import { gzipSync } from 'node:zlib';
-import forge from 'node-forge';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { ProxyAgent } from 'undici';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { getPlatformHttpProxyAgent } from '../../../src/config/conf';
 import { getHttpClient, getResponseError, HttpClientError } from '../../../src/utils/http-client';
+import { buildSelfSignedCertificate } from '../../utils/selfSignedCertificate';
+
+// Global tls:reject_unauthorized switch, the real configuration value is used when not overridden
+const tlsConfig = vi.hoisted(() => ({ rejectUnauthorized: undefined as boolean | undefined }));
+vi.mock('../../../src/config/conf', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/config/conf')>();
+  return {
+    ...actual,
+    getPlatformHttpProxyAgent: vi.fn(() => undefined),
+    get TLS_REJECT_UNAUTHORIZED() {
+      return tlsConfig.rejectUnauthorized ?? actual.TLS_REJECT_UNAUTHORIZED;
+    },
+  };
+});
 
 interface ReceivedRequest {
   method?: string;
@@ -22,6 +37,10 @@ let baseURL: string;
 let otherHostBaseURL: string;
 let closedPortURL: string;
 let selfSignedBaseURL: string;
+let selfSignedCertificate: { key: string; cert: string };
+let mutualTlsBaseURL: string;
+let proxyURL: string;
+const proxiedTargets: string[] = [];
 
 const routes: Record<string, (req: http.IncomingMessage, res: http.ServerResponse) => void> = {
   '/json': (_req, res) => res.writeHead(200, { 'Content-Type': 'application/json', 'X-Custom': 'value' }).end('{"hello":"world"}'),
@@ -75,6 +94,10 @@ const routes: Record<string, (req: http.IncomingMessage, res: http.ServerRespons
       }
     }, 20);
   },
+  '/client-certificate': (req, res) => {
+    const peerCertificate = (req.socket as TLSSocket).getPeerCertificate();
+    res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ subject: peerCertificate?.subject?.CN ?? null }));
+  },
   '/echo': (req, res) => res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify(received[received.length - 1])),
 };
 
@@ -94,26 +117,7 @@ const handleRequest = (req: http.IncomingMessage, res: http.ServerResponse) => {
   });
 };
 
-const buildSelfSignedCertificate = () => {
-  const { publicKey, privateKey } = generateKeyPairSync('rsa', {
-    modulusLength: 2048,
-    publicKeyEncoding: { type: 'spki', format: 'pem' },
-    privateKeyEncoding: { type: 'pkcs1', format: 'pem' },
-  });
-  const certificate = forge.pki.createCertificate();
-  certificate.publicKey = forge.pki.publicKeyFromPem(publicKey);
-  certificate.serialNumber = '01';
-  certificate.validity.notBefore = new Date(Date.now() - 60_000);
-  certificate.validity.notAfter = new Date(Date.now() + 3_600_000);
-  const attributes = [{ name: 'commonName', value: '127.0.0.1' }];
-  certificate.setSubject(attributes);
-  certificate.setIssuer(attributes);
-  certificate.setExtensions([{ name: 'subjectAltName', altNames: [{ type: 7, ip: '127.0.0.1' }] }]);
-  certificate.sign(forge.pki.privateKeyFromPem(privateKey), forge.md.sha256.create());
-  return { key: privateKey, cert: forge.pki.certificateToPem(certificate) };
-};
-
-const startServer = async (tls?: { key: string; cert: string }) => {
+const startServer = async (tls?: https.ServerOptions) => {
   const server = tls ? https.createServer(tls, handleRequest) : http.createServer(handleRequest);
   await new Promise<void>((resolve) => {
     server.listen(0, '127.0.0.1', resolve);
@@ -130,9 +134,31 @@ const closeServer = (server: http.Server) => new Promise((resolve) => {
 beforeAll(async () => {
   baseURL = await startServer();
   otherHostBaseURL = await startServer();
-  closedPortURL = await startServer();
-  await closeServer(servers.pop() as http.Server);
-  selfSignedBaseURL = await startServer(buildSelfSignedCertificate());
+  // Port 2 is privileged and below the ephemeral range: listen(0) never assigns it, so no test server
+  // (in this file or a parallel worker) can take it over, unlike a freed ephemeral port (#19719).
+  // Port 1 is not usable: it is on the Fetch standard's bad-ports list, which undici refuses before connecting.
+  closedPortURL = 'http://127.0.0.1:2';
+  selfSignedCertificate = buildSelfSignedCertificate();
+  selfSignedBaseURL = await startServer(selfSignedCertificate);
+  mutualTlsBaseURL = await startServer({ ...selfSignedCertificate, requestCert: true, rejectUnauthorized: false });
+  const proxy = http.createServer((_req, res) => res.writeHead(405).end());
+  proxy.on('connect', (req: http.IncomingMessage, clientSocket: net.Socket, head: Buffer) => {
+    proxiedTargets.push(req.url ?? '');
+    const [host, port] = (req.url ?? '').split(':');
+    const targetSocket = net.connect(Number(port), host, () => {
+      clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+      targetSocket.write(head);
+      targetSocket.pipe(clientSocket);
+      clientSocket.pipe(targetSocket);
+    });
+    targetSocket.on('error', () => clientSocket.destroy());
+    clientSocket.on('error', () => targetSocket.destroy());
+  });
+  await new Promise<void>((resolve) => {
+    proxy.listen(0, '127.0.0.1', resolve);
+  });
+  servers.push(proxy);
+  proxyURL = `http://127.0.0.1:${(proxy.address() as AddressInfo).port}`;
 });
 
 afterAll(async () => {
@@ -377,11 +403,38 @@ describe('getHttpClient', () => {
 
   it('should reject an untrusted certificate unless certificate verification is disabled', async () => {
     const verified = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized: true }).get('/not-json').catch((e) => e);
-    const unverified = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text' }).get('/not-json');
+    const unverified = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized: false }).get('/not-json');
 
     expect(verified).toBeInstanceOf(HttpClientError);
     expect(verified.code).toBe('DEPTH_ZERO_SELF_SIGNED_CERT');
     expect(unverified.data).toBe('plain text');
+  });
+
+  describe('global tls:reject_unauthorized switch', () => {
+    afterEach(() => {
+      tlsConfig.rejectUnauthorized = undefined;
+    });
+
+    it.each([undefined, null])('should not verify the certificate by default when rejectUnauthorized is %s', async (rejectUnauthorized) => {
+      const response = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized }).get('/not-json');
+
+      expect(response.data).toBe('plain text');
+    });
+
+    it.each([undefined, null])('should verify the certificate when enabled globally and rejectUnauthorized is %s', async (rejectUnauthorized) => {
+      tlsConfig.rejectUnauthorized = true;
+      const error = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized }).get('/not-json').catch((e) => e);
+
+      expect(error).toBeInstanceOf(HttpClientError);
+      expect(error.code).toBe('DEPTH_ZERO_SELF_SIGNED_CERT');
+    });
+
+    it('should let rejectUnauthorized override the global switch', async () => {
+      tlsConfig.rejectUnauthorized = true;
+      const response = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized: false }).get('/not-json');
+
+      expect(response.data).toBe('plain text');
+    });
   });
 
   it('should always verify the certificate on call', async () => {
@@ -391,6 +444,46 @@ describe('getHttpClient', () => {
 
     expect(error).toBeInstanceOf(HttpClientError);
     expect(error.code).toBe('DEPTH_ZERO_SELF_SIGNED_CERT');
+  });
+
+  it('should honor the certificate verification option on request', async () => {
+    const config = { url: '/not-json', method: 'POST', data: {} };
+
+    const unverified = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized: false }).request(config);
+    const verified = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized: true }).request(config).catch((e) => e);
+
+    expect(unverified.data).toBe('plain text');
+    expect(verified).toBeInstanceOf(HttpClientError);
+    expect(verified.code).toBe('DEPTH_ZERO_SELF_SIGNED_CERT');
+  });
+
+  it('should use the client certificates on request', async () => {
+    const toBase64 = (value: string) => Buffer.from(value).toString('base64');
+    const certificates = { cert: toBase64(selfSignedCertificate.cert), key: toBase64(selfSignedCertificate.key), ca: toBase64(selfSignedCertificate.cert) };
+    const client = getHttpClient({ baseURL: mutualTlsBaseURL, responseType: 'json', rejectUnauthorized: true, certificates });
+
+    const response = await client.request({ url: '/client-certificate', method: 'GET' });
+    const callError = await client.call({ url: '/client-certificate', method: 'GET' }).catch((e) => e);
+
+    expect(response.data).toEqual({ subject: '127.0.0.1' });
+    expect(callError).toBeInstanceOf(HttpClientError);
+    expect(callError.code).toBe('DEPTH_ZERO_SELF_SIGNED_CERT');
+  });
+
+  it('should go through the platform proxy on request but not on call', async () => {
+    const proxyAgentMock = vi.mocked(getPlatformHttpProxyAgent);
+    proxyAgentMock.mockReturnValueOnce(new ProxyAgent({ uri: proxyURL, proxyTunnel: true }));
+    const client = getHttpClient({ baseURL, responseType: 'json' });
+    const target = new URL(baseURL).host;
+
+    const response = await client.request({ url: '/json', method: 'GET' });
+    const proxiedAfterRequest = [...proxiedTargets];
+    await client.call({ url: '/json', method: 'GET' });
+
+    expect(response.data).toEqual({ hello: 'world' });
+    expect(proxiedAfterRequest).toEqual([target]);
+    expect(proxiedTargets).toEqual([target]);
+    expect(proxyAgentMock).toHaveBeenCalledTimes(1);
   });
 
   it('should not time out a body that keeps arriving after the timeout duration', async () => {

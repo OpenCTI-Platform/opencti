@@ -23,22 +23,28 @@ vi.mock('../../../src/modules/connector/connector-redis', () => ({
 }));
 vi.mock('../../../src/modules/connector/connector-rabbitmq', () => ({
   unregisterConnector: vi.fn(), registerConnectorQueues: vi.fn(),
-  purgeConnectorQueues: vi.fn(), getConnectorQueueDetails: vi.fn(), unregisterExchanges: vi.fn(),
+  purgeConnectorQueues: vi.fn(), getConnectorQueueDetails: vi.fn(), unregisterExchanges: vi.fn(), connectorConfig: vi.fn(),
 }));
 vi.mock('../../../src/database/middleware-loader', () => ({
-  storeLoadById: vi.fn(), fullEntitiesList: vi.fn(), internalLoadById: vi.fn(), pageEntitiesConnection: vi.fn(),
+  storeLoadById: vi.fn(), fullEntitiesList: vi.fn(), internalLoadById: vi.fn(), pageEntitiesConnection: vi.fn(), topEntitiesList: vi.fn(async () => []),
 }));
 vi.mock('../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(), completeContextDataForEntity: vi.fn(),
 }));
 vi.mock('../../../src/modules/catalog/catalog-domain', () => ({
-  computeConnectorTargetContract: vi.fn(), getSupportedContractsByImage: vi.fn(),
+  computeConnectorTargetContract: vi.fn(),
+  getSupportedContractsByImage: vi.fn(),
+  getContractConfigSchemaWithoutExcludedRuntimeVars: vi.fn(() => ({ properties: {}, required: [] })),
+  mapContractEntityFieldsToEmbeddedConnectorManagerContract: vi.fn(),
 }));
 vi.mock('../../../src/database/cache', () => ({ getEntitiesMapFromCache: vi.fn() }));
 vi.mock('../../../src/manager/telemetryManager', () => ({
   addConnectorDeployedCount: vi.fn(), addWorkbenchDraftConvertionCount: vi.fn(), addWorkbenchValidationCount: vi.fn(),
 }));
 vi.mock('../../../src/modules/user/user-domain', () => ({ createOnTheFlyUser: vi.fn() }));
+vi.mock('../../../src/modules/connector/connector-built-in-domain', () => ({
+  builtInConnectorsRuntime: vi.fn(async () => []), builtInConnectors: vi.fn(async () => []), builtInConnector: vi.fn(),
+}));
 vi.mock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({ addDraftWorkspace: vi.fn() }));
 vi.mock('../../../src/utils/platformCrypto', () => ({
   getPlatformCrypto: vi.fn(),
@@ -64,14 +70,18 @@ vi.mock('../../../src/config/conf', async () => {
 });
 vi.mock('../../../src/enterprise-edition/ee', () => ({ checkEnterpriseEdition: vi.fn() }));
 vi.mock('../../../src/modules/catalog/catalog-repository', () => ({
+  findCatalogByCatalogId: vi.fn(),
   findLatestCompatibleCatalogContractByImageName: vi.fn(),
   findCatalogContractsByImageName: vi.fn(),
 }));
 
-import { findCatalogContractsByImageName, findLatestCompatibleCatalogContractByImageName } from '../../../src/modules/catalog/catalog-repository';
+import { findCatalogByCatalogId, findCatalogContractsByImageName, findLatestCompatibleCatalogContractByImageName } from '../../../src/modules/catalog/catalog-repository';
 import { managedConnectorAdd, managedConnectorEdit } from '../../../src/modules/connector/connector-domain';
 import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
 import { createOnTheFlyUser } from '../../../src/modules/user/user-domain';
+import { computeConnectorTargetContract, getContractConfigSchemaWithoutExcludedRuntimeVars } from '../../../src/modules/catalog/catalog-domain';
+import { createEntity } from '../../../src/database/middleware';
+import { publishUserAction } from '../../../src/listener/UserActionListener';
 
 const fakeContext = {} as any;
 const fakeUser = { id: 'user-1', name: 'Test User', capabilities: [] } as any;
@@ -83,9 +93,34 @@ const input = {
   manager_contract_configuration: [],
 } as any;
 
+describe('connector-domain.ts — managedConnectorAdd catalog validation', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should reject an unknown catalog', async () => {
+    vi.mocked(findCatalogByCatalogId).mockResolvedValue(undefined as never);
+
+    await expect(managedConnectorAdd(fakeContext, fakeUser, { ...input, catalog_id: 'test' })).rejects.toThrow('Catalog not found');
+    expect(findCatalogByCatalogId).toHaveBeenCalledWith(fakeContext, fakeUser, 'test');
+    expect(findLatestCompatibleCatalogContractByImageName).not.toHaveBeenCalled();
+  });
+
+  it('should only look for the contract in the given catalog', async () => {
+    vi.mocked(findCatalogByCatalogId).mockResolvedValue({ catalog_id: 'catalog-id' } as never);
+    vi.mocked(findLatestCompatibleCatalogContractByImageName).mockResolvedValue(undefined as never);
+    vi.mocked(findCatalogContractsByImageName).mockResolvedValue([] as never);
+
+    await expect(managedConnectorAdd(fakeContext, fakeUser, input)).rejects.toThrow('Target contract not found');
+    expect(findLatestCompatibleCatalogContractByImageName).toHaveBeenCalledWith(fakeContext, fakeUser, 'opencti/connector-test', 'catalog-id');
+    expect(findCatalogContractsByImageName).toHaveBeenCalledWith(fakeContext, fakeUser, 'opencti/connector-test', 'catalog-id');
+  });
+});
+
 describe('connector-domain.ts — managedConnectorAdd contract compatibility', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(findCatalogByCatalogId).mockResolvedValue({ catalog_id: 'catalog-id' } as never);
   });
 
   it('should reject a connector whose contracts are all incompatible with the platform version', async () => {
@@ -116,6 +151,7 @@ describe('connector-domain.ts — managedConnectorAdd input validation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(storeLoadById).mockReset();
+    vi.mocked(findCatalogByCatalogId).mockResolvedValue({ catalog_id: 'catalog-id' } as never);
     vi.mocked(findLatestCompatibleCatalogContractByImageName).mockResolvedValue({ contract_id: 'test-1.0.0', manager_supported: true } as never);
     vi.mocked(fullEntitiesList).mockResolvedValue([manager] as never);
   });
@@ -151,6 +187,35 @@ describe('connector-domain.ts — managedConnectorAdd input validation', () => {
     vi.mocked(storeLoadById).mockResolvedValue({ id: 'user-connector' } as never);
 
     await expect(managedConnectorAdd(fakeContext, fakeUser, { ...input, name: 'a' })).rejects.toThrow('Invalid connector name');
+  });
+
+  it('should never write the secrets of the connector in the activity history', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue({ id: 'user-connector' } as never);
+    vi.mocked(getContractConfigSchemaWithoutExcludedRuntimeVars).mockReturnValue({
+      properties: { API_PASSWORD: { format: 'password' }, SERVICE_TOKEN: { type: 'string' }, CUSTOM_SECRET: { type: 'string' }, URL: { type: 'string' } },
+      required: [],
+    } as never);
+    vi.mocked(computeConnectorTargetContract).mockReturnValue([
+      { key: 'API_PASSWORD', value: 'encrypted-value', encrypted: true },
+      { key: 'SERVICE_TOKEN', value: 'plain-token' },
+      { key: 'URL', value: 'https://example.com' },
+    ] as never);
+    vi.mocked(createEntity).mockResolvedValue({ internal_id: 'connector-id', name: 'my-connector' } as never);
+    const configuration = [
+      { key: 'API_PASSWORD', value: 'password-value' },
+      { key: 'SERVICE_TOKEN', value: 'plain-token' },
+      { key: 'URL', value: 'https://example.com' },
+    ];
+
+    await managedConnectorAdd(fakeContext, fakeUser, { ...input, manager_contract_configuration: configuration });
+
+    const event = vi.mocked(publishUserAction).mock.calls[0][0] as any;
+    expect(event.context_data.input.manager_contract_configuration).toEqual([
+      { key: 'API_PASSWORD', value: '*** Redacted ***' },
+      { key: 'SERVICE_TOKEN', value: '*** Redacted ***' },
+      { key: 'URL', value: 'https://example.com' },
+    ]);
+    expect(JSON.stringify(event)).not.toMatch(/password-value|plain-token/);
   });
 });
 

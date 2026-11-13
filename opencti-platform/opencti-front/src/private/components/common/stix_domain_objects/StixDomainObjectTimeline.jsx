@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pipe, map, assoc } from 'ramda';
-import withTheme from '@mui/styles/withTheme';
+import { pipe, map, assoc } from 'ramda';
 import Typography from '@mui/material/Typography';
 import Timeline from '@mui/lab/Timeline';
 import TimelineItem from '@mui/lab/TimelineItem';
@@ -16,6 +15,7 @@ import { Link } from 'react-router';
 import Slide from '@mui/material/Slide';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n, { isDateStringNone } from '../../../../components/i18n';
+import withTheme from '../../../../components/withTheme';
 import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 import { truncate } from '../../../../utils/String';
 import { getSecondaryRepresentative, getMainRepresentative } from '../../../../utils/defaultRepresentatives';
@@ -73,8 +73,10 @@ class StixDomainObjectTimelineComponent extends Component {
               return (
                 <TimelineItem key={stixRelationship.id}>
                   <TimelineOppositeContent
-                    sx={{ paddingTop: '18px' }}
-                    color="text.secondary"
+                    sx={{
+                      color: 'text.secondary',
+                      paddingTop: '18px',
+                    }}
                   >
                     {getDate(stixRelationship)}
                   </TimelineOppositeContent>
@@ -581,7 +583,4 @@ const StixDomainObjectTimeline = createRefetchContainer(
   stixDomainObjectThreatKnowledgeStixRelationshipsQuery,
 );
 
-export default compose(
-  inject18n,
-  withTheme,
-)(StixDomainObjectTimeline);
+export default inject18n(withTheme(StixDomainObjectTimeline));

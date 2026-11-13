@@ -2,13 +2,13 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput, VocabularyCategory } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
-import { countAllThings, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, type StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
+import { countAllThings, type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, isVocabularyCategoryEnabled, type StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { elRawUpdateByQuery } from '../../database/engine';
 import { READ_ENTITIES_INDICES } from '../../database/utils';
-import { getVocabulariesCategories, openVocabularies, updateElasticVocabularyValue } from './vocabulary-utils';
+import { getVocabulariesCategories, getVocabularyCategory, openVocabularies, updateElasticVocabularyValue } from './vocabulary-utils';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { normalizeName } from '../../schema/identifier';
@@ -50,9 +50,13 @@ export const findVocabularyPaginated = (context: AuthContext, user: AuthUser, op
 };
 
 export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, vocabulary: BasicStoreEntityVocabulary) => {
-  const categoryDefinition = getVocabulariesCategories().find(({ key }) => key === vocabulary.category);
+  const categoryDefinition = getVocabularyCategory(vocabulary.category);
   if (!categoryDefinition) {
     throw UnsupportedError(`Cant find category for vocabulary ${vocabulary.name}`);
+  }
+  // A hidden category's field is not registered, so no filter can count it
+  if (!isVocabularyCategoryEnabled(vocabularyDefinitions[categoryDefinition.key])) {
+    return 0;
   }
   return countAllThings(context, user, {
     filters: {
@@ -66,18 +70,27 @@ export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, 
   });
 };
 
+export const findAllVocabularies = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntityVocabulary> = {}) => {
+  return fullEntitiesList<BasicStoreEntityVocabulary>(context, user, [ENTITY_TYPE_VOCABULARY], args);
+};
+
 // A closed category only accepts its default values, new ones can't be added
-const checkVocabularyNameAllowed = (category: VocabularyCategory, name: string) => {
+export const isVocabularyNameAllowed = (category: VocabularyCategory, name: string) => {
   if (!vocabularyDefinitions[category]?.closed) {
-    return;
+    return true;
   }
   const allowedNames = (openVocabularies[category] ?? []).map(({ key }) => normalizeName(key));
-  if (!allowedNames.includes(normalizeName(name))) {
+  return allowedNames.includes(normalizeName(name));
+};
+
+const checkVocabularyNameAllowed = (category: VocabularyCategory, name: string) => {
+  if (!isVocabularyNameAllowed(category, name)) {
     throw FunctionalError('This vocabulary category is closed, new values cannot be added', { category, name });
   }
 };
 
-export const addVocabulary = async (context: AuthContext, user: AuthUser, vocabulary: VocabularyAddInput) => {
+// is_hidden is not part of the add input of the API (an entry is hidden by editing it), but the platform stores it on creation
+export const addVocabulary = async (context: AuthContext, user: AuthUser, vocabulary: VocabularyAddInput & { is_hidden?: boolean }) => {
   checkVocabularyNameAllowed(vocabulary.category, vocabulary.name);
   const element = await createEntity(context, user, { ...vocabulary, order: vocabulary.order ?? 0 }, ENTITY_TYPE_VOCABULARY);
   return notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].ADDED_TOPIC, element, user);
@@ -86,7 +99,7 @@ export const addVocabulary = async (context: AuthContext, user: AuthUser, vocabu
 export const deleteVocabulary = async (context: AuthContext, user: AuthUser, vocabularyId: string, props?: Record<string, unknown>) => {
   const vocabulary = await findById(context, user, vocabularyId);
   const usages = await getVocabularyUsages(context, user, vocabulary);
-  const completeCategory = getVocabulariesCategories().find(({ key }) => key === vocabulary.category);
+  const completeCategory = getVocabularyCategory(vocabulary.category);
   const deletable = !vocabulary.builtIn && (!completeCategory || (!completeCategory.fields.some(({ required }) => required) || usages === 0));
   if (deletable) {
     if (completeCategory) {
@@ -145,7 +158,7 @@ export const editVocabulary = async (context: AuthContext, user: AuthUser, id: s
     const oldValue = await findById(context, user, id);
     if (name) {
       checkVocabularyNameAllowed(oldValue.category, name);
-      const completeCategory = getVocabulariesCategories().find(({ key }) => key === oldValue.category);
+      const completeCategory = getVocabularyCategory(oldValue.category);
       if (completeCategory) {
         await updateElasticVocabularyValue([oldValue.name], name, completeCategory);
       }

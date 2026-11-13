@@ -19,6 +19,8 @@ import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 import TagsOverflow from '../../../../components/common/tag/TagsOverflow';
 import { getCustomFieldTypeLabel } from '../sub_types/entity_setting/EntitySettingCustomFields';
+import EnterpriseEdition from '../../common/entreprise_edition/EnterpriseEdition';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 export const customFieldsQuery = graphql`
   query CustomFieldsLinesPaginationQuery(
@@ -112,6 +114,8 @@ const CustomFields = () => {
     filters: contextFilters,
   } as unknown as CustomFieldsLinesPaginationQuery$variables;
 
+  // Managing the custom field definitions is an Enterprise Edition feature
+  const isEnterpriseEdition = useEnterpriseEdition();
   const queryRef = useQueryLoading<CustomFieldsLinesPaginationQuery>(
     customFieldsQuery,
     queryPaginationOptions,
@@ -188,7 +192,8 @@ const CustomFields = () => {
   return (
     <div style={{ marginRight: 200 }} data-testid="custom-fields-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Custom fields'), current: true }]} />
-      {queryRef && (
+      {!isEnterpriseEdition && <EnterpriseEdition feature={t_i18n('Custom fields')} />}
+      {isEnterpriseEdition && queryRef && (
         <DataTable
           dataColumns={dataColumns}
           resolvePath={(data) => data.customFieldDefinitions?.edges?.map(({ node }: { node: CustomFieldsLine_node$data }) => node)}

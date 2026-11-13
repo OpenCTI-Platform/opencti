@@ -449,6 +449,7 @@ export const convertNoteToStix = (instance: StoreEntity): SDO.StixNote => {
     ...note,
     abstract: instance.attribute_abstract,
     content: instance.content,
+    authors: instance.authors,
     object_refs: convertObjectReferences(instance),
     note_types: instance.note_types,
     likelihood: instance.likelihood,
@@ -473,6 +474,7 @@ export const convertOpinionToStix = (instance: StoreEntity): SDO.StixOpinion => 
   return {
     ...opinion,
     explanation: instance.explanation,
+    authors: instance.authors,
     opinion: instance.opinion,
     object_refs: convertObjectReferences(instance),
   };
@@ -706,6 +708,7 @@ export const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation
   const resolvedTo = instance.to as BasicStoreCommon;
   return {
     ...stixRelationship,
+    lang: instance.lang,
     relationship_type: instance.relationship_type,
     description: instance.description,
     source_ref: resolvedFrom.standard_id,
@@ -816,8 +819,6 @@ export const convertCryptocurrencyWalletToStix = (instance: StoreCyberObservable
     ...buildStixCyberObservable(instance),
     value: instance.value,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
-    description: instance.x_opencti_description,
-    score: instance.x_opencti_score,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
   };
@@ -829,8 +830,6 @@ export const convertCryptographicKeyToStix = (instance: StoreCyberObservable): S
     ...buildStixCyberObservable(instance),
     value: instance.value,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
-    description: instance.x_opencti_description,
-    score: instance.x_opencti_score,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
   };
@@ -900,8 +899,6 @@ export const convertEmailMimePartToStix = (instance: StoreCyberObservable): SCO.
     body: instance.body,
     body_raw_ref: instance[INPUT_BODY_RAW]?.standard_id,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
-    description: instance.x_opencti_description,
-    score: instance.x_opencti_score,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
   };
@@ -933,8 +930,6 @@ export const convertHostnameToStix = (instance: StoreCyberObservable): SCO.StixH
     ...buildStixCyberObservable(instance),
     value: instance.value,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
-    description: instance.x_opencti_description,
-    score: instance.x_opencti_score,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
   };
@@ -1052,7 +1047,6 @@ export const convertURLToStix = (instance: StoreCyberObservable): SCO.StixURL =>
   return {
     ...buildStixCyberObservable(instance),
     value: instance.value,
-    score: instance.x_opencti_score,
   };
 };
 
@@ -1062,8 +1056,6 @@ export const convertTextToStix = (instance: StoreCyberObservable): SCO.StixText 
     ...buildStixCyberObservable(instance),
     value: instance.value,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
-    description: instance.x_opencti_description,
-    score: instance.x_opencti_score,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
   };
@@ -1077,8 +1069,6 @@ export const convertBankAccountToStix = (instance: StoreCyberObservable): SCO.St
     bic: instance.bic,
     account_number: instance.account_number,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
-    description: instance.x_opencti_description,
-    score: instance.x_opencti_score,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
   };
@@ -1090,8 +1080,6 @@ export const convertCredentialToStix = (instance: StoreCyberObservable): SCO.Sti
     ...buildStixCyberObservable(instance),
     value: instance.value,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
-    description: instance.x_opencti_description,
-    score: instance.x_opencti_score,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
   };
@@ -1103,8 +1091,6 @@ export const convertTrackingNumberToStix = (instance: StoreCyberObservable): SCO
     ...buildStixCyberObservable(instance),
     value: instance.value,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
-    description: instance.x_opencti_description,
-    score: instance.x_opencti_score,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
   };
@@ -1116,8 +1102,6 @@ export const convertPhoneNumberToStix = (instance: StoreCyberObservable): SCO.St
     ...buildStixCyberObservable(instance),
     value: instance.value,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
-    description: instance.x_opencti_description,
-    score: instance.x_opencti_score,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
   };
@@ -1132,8 +1116,6 @@ export const convertPaymentCardToStix = (instance: StoreCyberObservable): SCO.St
     cvv: instance.cvv,
     holder_name: instance.holder_name,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
-    description: instance.x_opencti_description,
-    score: instance.x_opencti_score,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
   };
@@ -1144,13 +1126,11 @@ export const convertMediaContentToStix = (instance: StoreCyberObservable): SCO.S
   return {
     ...buildStixCyberObservable(instance),
     title: instance.title,
-    description: instance.x_opencti_description,
     content: instance.content,
     media_category: instance.media_category,
     url: instance.url,
     publication_date: convertToStixDate(instance.publication_date),
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
-    score: instance.x_opencti_score,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
   };
@@ -1162,8 +1142,6 @@ export const convertUserAgentToStix = (instance: StoreCyberObservable): SCO.Stix
     ...buildStixCyberObservable(instance),
     value: instance.value,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
-    description: instance.x_opencti_description,
-    score: instance.x_opencti_score,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
   };
@@ -1256,7 +1234,6 @@ export const convertPersonaToStix = (instance: StoreCyberObservable): SCO.StixPe
     persona_name: instance.persona_name,
     persona_type: instance.persona_type,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
-    score: instance.x_opencti_score,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
   };
@@ -1284,8 +1261,6 @@ export const convertAIPromptToStix = (instance: StoreCyberObservable): SCO.StixA
     ...buildStixCyberObservable(instance),
     value: instance.value,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
-    description: instance.x_opencti_description,
-    score: instance.x_opencti_score,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
   };
@@ -1297,8 +1272,6 @@ export const convertIMEIToStix = (instance: StoreCyberObservable): SCO.StixIMEI 
     ...buildStixCyberObservable(instance),
     value: instance.value,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
-    description: instance.x_opencti_description,
-    score: instance.x_opencti_score,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
   };
@@ -1310,8 +1283,6 @@ export const convertICCIDToStix = (instance: StoreCyberObservable): SCO.StixICCI
     ...buildStixCyberObservable(instance),
     value: instance.value,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
-    description: instance.x_opencti_description,
-    score: instance.x_opencti_score,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
   };
@@ -1323,8 +1294,6 @@ export const convertIMSIToStix = (instance: StoreCyberObservable): SCO.StixIMSI 
     ...buildStixCyberObservable(instance),
     value: instance.value,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
-    description: instance.x_opencti_description,
-    score: instance.x_opencti_score,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
   };

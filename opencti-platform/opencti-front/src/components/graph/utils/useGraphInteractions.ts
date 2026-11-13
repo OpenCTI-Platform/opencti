@@ -683,8 +683,20 @@ const useGraphInteractions = () => {
     setGraphStateProp('isAddRelationOpen', val);
   };
 
-  const setIsExpandOpen = (val: boolean) => {
-    setGraphStateProp('isExpandOpen', val);
+  const setIsAddEntitiesOpen = (val: boolean) => {
+    setGraphStateProp('isAddEntitiesOpen', val);
+  };
+
+  /**
+   * Opens or closes the expand of the selection. A callback given on opening
+   * runs if the expand is submitted, and is dropped when the expand closes.
+   */
+  const setIsExpandOpen = (val: boolean, onSubmit?: () => void) => {
+    setGraphState((oldState) => ({
+      ...oldState,
+      isExpandOpen: val,
+      onExpandSubmit: val ? onSubmit : undefined,
+    }));
   };
 
   return {
@@ -726,6 +738,7 @@ const useGraphInteractions = () => {
     removeLinks,
     setSelectedTimeRange,
     setIsAddRelationOpen,
+    setIsAddEntitiesOpen,
     setRawPositions,
     setLinearProgress,
     rebuildGraphData,

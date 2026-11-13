@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { AlertsLine_node$data } from '@components/profile/__generated__/AlertsLine_node.graphql';
 import { Chip } from '@filigran/design-system';
-import { iconSelector } from './notificationUtils';
+import { computeNotificationLink, iconSelector, operationSeverity } from './notificationUtils';
 import { DataTableProps, DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableWithoutFragment';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
@@ -26,19 +26,9 @@ const DigestNotification: FunctionComponent<DigestNotificationProps> = ({ notifi
       percentWidth: 20,
       isSortable: false,
       render: ({ operation }) => {
-        const getChipOperationSeverity = () => {
-          switch (operation) {
-            case 'update':
-              return 'info' as const;
-            case 'delete':
-              return 'critical' as const;
-            default:
-              return 'low' as const;
-          }
-        };
         return (
           <Chip
-            severity={getChipOperationSeverity()}
+            severity={operationSeverity(operation)}
             label={t_i18n(operation)}
             style={{ float: 'left' }}
           />
@@ -70,11 +60,13 @@ const DigestNotification: FunctionComponent<DigestNotificationProps> = ({ notifi
       globalCount={events ? events.length : 0}
       variant={DataTableVariant.inline}
       icon={({ operation }) => (iconSelector(operation))}
-      getComputeLink={({ instance_id, entity_type }: { instance_id: string | undefined; entity_type: string | null | undefined }) => {
-        if (entity_type === 'DraftWorkspace') {
-          return `/dashboard/data/import/draft/${instance_id}`;
-        }
-        return `/dashboard/id/${instance_id}`;
+      getComputeLink={({ instance_id, entity_internal_id, entity_type }: {
+        instance_id: string | undefined;
+        entity_internal_id: string | null | undefined;
+        entity_type: string | null | undefined;
+      }) => {
+        // The internal id survives a rename; notifications sent before it existed only carry instance_id
+        return computeNotificationLink(entity_internal_id ?? instance_id ?? '', entity_type);
       }}
     />
   );

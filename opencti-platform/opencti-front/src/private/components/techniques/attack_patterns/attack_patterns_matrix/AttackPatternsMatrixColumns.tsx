@@ -258,7 +258,12 @@ const AttackPatternsMatrixColumns = ({
               marginBlockStart: 3,
             }}
           >
-            <Box display="inline-flex" id="container">
+            <Box
+              id="container"
+              sx={{
+                display: 'inline-flex',
+              }}
+            >
               {filteredData?.map((col) => (
                 <Box key={col.kill_chain_id} sx={{ mr: 1.5, display: 'flex', flexDirection: 'column', minWidth: 150 }}>
                   <Box sx={{ textAlign: 'center', mb: 1, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { graphql } from 'relay-runtime';
 import { PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Stack, Typography } from '@mui/material';
@@ -71,6 +71,7 @@ const DraftToolbarComponent = ({
 
   return (
     <Stack
+      data-testid="draft-toolbar"
       sx={{
         p: 2,
         gap: 1,

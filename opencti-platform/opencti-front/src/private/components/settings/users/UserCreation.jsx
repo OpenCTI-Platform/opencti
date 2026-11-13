@@ -24,7 +24,7 @@ import GroupField, { groupsQuery } from '../../common/form/GroupField';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import PasswordPolicies from '../../common/form/PasswordPolicies';
 import UserConfidenceLevelField from './edition/UserConfidenceLevelField';
-import { Stack } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 
 const userMutation = graphql`
   mutation UserCreationMutation($input: UserAddInput!) {
@@ -161,27 +161,33 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
             onSubmit={onSubmit}
             onReset={onClose}
           >
-            {({ submitForm, handleReset, isSubmitting, values }) => (
+            {({ submitForm, handleReset, isSubmitting, values, setFieldValue }) => (
               <Form>
                 <Stack sx={{ gap: 2.5 }}>
                   {hasSetAccess && (
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <Field
                         component={SwitchField}
                         type="checkbox"
                         name="user_service_account"
                         label={t_i18n('This user is a service account')}
+                        onChange={(_, value) => {
+                          // Service accounts have no password: drop anything typed before the toggle,
+                          // so hidden fields can neither be submitted nor fail validation.
+                          if (value === 'true') {
+                            setFieldValue('password', '');
+                            setFieldValue('confirmation', '');
+                          }
+                        }}
                       />
-                      <Tooltip
-                        title={t_i18n('Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.')}
-                      >
+                      <Tooltip title={t_i18n('Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.')}>
                         <InformationOutline
                           fontSize="small"
                           color="primary"
-                          style={{ cursor: 'default' }}
+                          sx={{ position: 'relative', top: '-4px' }}
                         />
                       </Tooltip>
-                    </div>
+                    </Box>
                   )}
                   <Field
                     component={TextField}
@@ -219,26 +225,28 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                     multiline={true}
                     rows={4}
                   />
-                  <Stack sx={{ gap: 2.5 }}>
-                    <PasswordPolicies value={values.password} />
-                    <Field
-                      component={TextField}
-                      variant="outlined"
-                      name="password"
-                      label={t_i18n('Password')}
-                      type="password"
-                      fullWidth={true}
-                      data-testid="user-creation-password-input"
-                    />
-                    <Field
-                      component={TextField}
-                      variant="outlined"
-                      name="confirmation"
-                      label={t_i18n('Confirmation')}
-                      type="password"
-                      fullWidth={true}
-                    />
-                  </Stack>
+                  {!values.user_service_account && (
+                    <Stack sx={{ gap: 2.5 }}>
+                      <PasswordPolicies value={values.password} hideHistory />
+                      <Field
+                        component={TextField}
+                        variant="outlined"
+                        name="password"
+                        label={t_i18n('Password')}
+                        type="password"
+                        fullWidth={true}
+                        data-testid="user-creation-password-input"
+                      />
+                      <Field
+                        component={TextField}
+                        variant="outlined"
+                        name="confirmation"
+                        label={t_i18n('Confirmation')}
+                        type="password"
+                        fullWidth={true}
+                      />
+                    </Stack>
+                  )}
                   <ObjectOrganizationField
                     outlined={false}
                     name="objectOrganization"
@@ -251,21 +259,23 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                     style={fieldSpacingContainerStyle}
                     showConfidence={true}
                   />
-                  <Field
-                    component={SwitchField}
-                    type="checkbox"
-                    name="prevent_default_groups"
-                    label={(
-                      <div style={{ display: 'flex' }}>
-                        <>{t_i18n('Don\'t add the user to the default groups')}</>
-                        <Tooltip
-                          title={`${t_i18n('The default groups are:')} ${defaultGroups.edges.map((g) => g.node.name)}`}
-                        >
-                          <InformationOutline style={{ marginLeft: 8 }} fontSize="small" color="primary" />
-                        </Tooltip>
-                      </div>
-                    )}
-                  />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Field
+                      component={SwitchField}
+                      type="checkbox"
+                      name="prevent_default_groups"
+                      label={t_i18n('Don\'t add the user to the default groups')}
+                    />
+                    <Tooltip
+                      title={`${t_i18n('The default groups are:')} ${defaultGroups.edges.map((g) => g.node.name)}`}
+                    >
+                      <InformationOutline
+                        fontSize="small"
+                        color="primary"
+                        sx={{ position: 'relative', top: '-4px' }}
+                      />
+                    </Tooltip>
+                  </Box>
                   <Field
                     component={SelectFieldFds}
                     variant="outlined"

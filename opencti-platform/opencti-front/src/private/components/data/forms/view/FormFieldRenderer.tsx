@@ -3,7 +3,7 @@ import Grid from '@mui/material/Grid';
 import { Chip as FdsChip } from '@filigran/design-system';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { isBypassUser } from '../../../../../utils/hooks/useGranted';
 import { fieldRendererRegistry } from './fieldRenderers/registry';
@@ -99,7 +99,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
   const renderFieldWithGrid = (content: React.ReactNode) => {
     if (useGridLayout) {
       return (
-        <Grid item xs={getGridSize()}>
+        <Grid size={getGridSize()}>
           {content}
         </Grid>
       );

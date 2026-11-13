@@ -1,20 +1,15 @@
 import { SimplePaletteColorOptions } from '@mui/material';
-import { useTheme } from '@mui/styles';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled, useTheme } from '@mui/material/styles';
 import React, { FunctionComponent, MutableRefObject, useEffect, useRef } from 'react';
 import { ForceGraphMethods, LinkObject, NodeObject } from 'react-force-graph-2d';
 import type { Theme } from '../../Theme';
 import { GraphLink, GraphNode } from '../graph.types';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles({
-  canvas: {
-    position: 'absolute',
-    overflow: 'hidden',
-    top: 0,
-    left: 0,
-  },
+const Canvas = styled('canvas')({
+  position: 'absolute',
+  overflow: 'hidden',
+  top: 0,
+  left: 0,
 });
 
 interface RelationSelectionProps {
@@ -44,7 +39,6 @@ const RelationSelection: FunctionComponent<RelationSelectionProps> = ({
   setSelectedNodes,
   graph,
 }) => {
-  const classes = useStyles();
   const theme = useTheme<Theme>();
   const lineRef = useRef<HTMLCanvasElement>(null);
   const gesture = useRef({ freeHand: false, selectedNodes: new Set<GraphNode>() });
@@ -160,11 +154,10 @@ const RelationSelection: FunctionComponent<RelationSelectionProps> = ({
   }, [activated, graph]);
 
   return (
-    <canvas
+    <Canvas
       ref={lineRef}
       width={(width - 30)}
       height={height}
-      className={classes.canvas}
       id="relation-canvas"
     />
   );

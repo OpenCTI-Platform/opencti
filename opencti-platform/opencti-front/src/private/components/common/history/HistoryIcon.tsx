@@ -3,7 +3,7 @@ import { AddOutlined, DeleteOutlined, EditOutlined, HelpOutlined, LinkOffOutline
 import Avatar from '@mui/material/Avatar';
 import { deepOrange, deepPurple, green, indigo, pink, red, teal, yellow } from '@mui/material/colors';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 

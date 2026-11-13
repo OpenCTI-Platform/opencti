@@ -9,7 +9,7 @@ import { elLoadById } from '../database/engine';
 import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { OPENCTI_NAMESPACE } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
-import { delEditContext, notify, redisGetWork, setEditContext } from '../database/redis';
+import { delEditContext, notify, redisDeleteIngestionLogHistory, redisGetWork, setEditContext } from '../database/redis';
 import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { completeContextDataForEntity, publishUserAction, type UserImportActionContextData } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -74,6 +74,10 @@ interface ConnectorIngestionInput {
   connector_priority_group?: ConnectorPriorityGroup;
 }
 export const connectorIdFromIngestId = (id: string) => uuidv5(id, OPENCTI_NAMESPACE);
+
+// Only a sync explicitly started is consumed by the sync manager
+export const isSyncRunning = (sync: Pick<Partial<BasicStoreEntitySynchronizer>, 'running'>) => sync.running === true;
+
 export const registerConnectorForIngestion = async (context: AuthContext, input: ConnectorIngestionInput) => {
   // Create the representing connector
   await registerConnector(context, SYSTEM_USER, {
@@ -149,7 +153,7 @@ export const fetchRemoteStreams = async (context: AuthContext, user: AuthUser, i
   `;
 
     const headers = !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined;
-    const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: ssl_verify ?? false, responseType: 'json' };
+    const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: ssl_verify, responseType: 'json' };
     const httpClient = getHttpClient(httpClientOptions);
     const remoteUri = computeStreamRemoteUrl(uri);
     const { data } = await httpClient.post(remoteUri, { query });
@@ -281,6 +285,7 @@ export const syncEditField = async (context: AuthContext, user: AuthUser, syncId
 export const syncDelete = async (context: AuthContext, user: AuthUser, syncId: string) => {
   const deleted = await deleteElementById<StoreEntity>(context, user, syncId, ENTITY_TYPE_SYNC);
   await unregisterConnector(syncId);
+  await redisDeleteIngestionLogHistory(deleted.internal_id);
   await publishUserAction({
     user,
     event_type: 'mutation',

@@ -6,9 +6,10 @@ import { notify } from '../database/redis';
 import { type ManagerDefinition, registerManager } from './managerModule';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { getResolvedIngestionHealthSettings } from '../modules/ingestionHealth/ingestionHealth-domain';
 import type { BasicStoreEntity } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
-import { executionContext, INGESTION_HEALTH_MANAGER_USER, INTERNAL_USERS } from '../utils/access';
+import { executionContext, INGESTION_HEALTH_MANAGER_USER, INTERNAL_USERS, isUserAccountActive, isUserHasCapability } from '../utils/access';
 import { now } from '../utils/format';
 import type { CachedConnector } from '../modules/connector/connector-types';
 import {
@@ -18,43 +19,57 @@ import {
   ENTITY_TYPE_INGESTION_TAXII,
   ENTITY_TYPE_INGESTION_TAXII_COLLECTION,
 } from '../modules/ingestion/ingestion-types';
-import { computeIngestionHealthChecks, computeIngestionHealthPatch } from '../modules/ingestionHealth/ingestionHealth-checks';
-import type { IngestionHealthFields } from '../modules/ingestionHealth/ingestionHealth-types';
+import {
+  buildHealthTransitionMessage,
+  describeHealthChecks,
+  buildIngestionHealthContext,
+  computeHealthTransition,
+  computeIngestionHealthChecks,
+  computeIngestionHealthPatch,
+  getEnabledRuntimeChecks,
+  groupHealthCheckMessages,
+  type IngestionHealthEvaluationContext,
+  isRuntimeCheckEnabled,
+  markHealthNotified,
+} from '../modules/ingestionHealth/ingestionHealth-checks';
+import { publishUserAction } from '../listener/UserActionListener';
+import { type GlobalIngestionHealthContext, type HealthCheckUser, HealthTransition, type IngestionHealthFields } from '../modules/ingestionHealth/ingestionHealth-types';
+import { findRegularlyPingingConnectors, isConnectorStopped } from '../modules/connector/connector-domain';
+import { isSyncRunning } from '../domain/connector';
+import { isIngestionRunning } from '../modules/ingestion/ingestion-common';
+import type { RuntimeData } from '../modules/ingestionHealth/ingestionHealth-registry';
+import { getIngestorUserId } from '../modules/ingestionHealth/ingestionHealth-registry-utils';
 
 const INGESTION_HEALTH_MANAGER_ENABLED = booleanConf('ingestion_health_manager:enabled', true);
 const INGESTION_HEALTH_MANAGER_KEY = conf.get('ingestion_health_manager:lock_key') || 'ingestion_health_manager_lock';
 const SCHEDULE_TIME = conf.get('ingestion_health_manager:interval') || 60000; // 1 minute
 
-type IngestionElement = BasicStoreEntity & IngestionHealthFields;
+export type IngestionElement = BasicStoreEntity & IngestionHealthFields;
 
-interface IngestionSource<T extends IngestionElement> {
+export interface IngestionSource<T extends IngestionElement> {
   entityType: string;
   load: (context: AuthContext) => Promise<T[]>;
-  getUserId: (element: T) => string | null | undefined;
-  // Connectors authenticate with their own user; feeds and syncs without one run as the system user
-  isUserRequired: boolean;
-  isEvaluated?: (element: T) => boolean;
 }
+
+// Built-in connectors (feed twins) are not deployed: no process runs them, nothing to evaluate
+const isConnectorNotBuiltIn = (element: { built_in?: boolean }) => !element.built_in;
 
 const connectorSource: IngestionSource<CachedConnector> = {
   entityType: ENTITY_TYPE_CONNECTOR,
   // Cached on every node, and refreshed cache after each health write
-  load: (context) => getEntitiesListFromCache<CachedConnector>(context, INGESTION_HEALTH_MANAGER_USER, ENTITY_TYPE_CONNECTOR),
-  getUserId: (connector) => connector.connector_user_id,
-  isUserRequired: true,
-  // Built-ins (feed twins) are not deployed: no process runs them
-  isEvaluated: (connector) => !connector.built_in,
+  load: async (context) => {
+    const connectors = await getEntitiesListFromCache<CachedConnector>(context, INGESTION_HEALTH_MANAGER_USER, ENTITY_TYPE_CONNECTOR);
+    return connectors.filter(isConnectorNotBuiltIn);
+  },
 };
 
 const feedOrSyncSource = (entityType: string): IngestionSource<IngestionElement & { user_id?: string | null }> => ({
   entityType,
   // Feeds and syncs are not cached
   load: (context) => fullEntitiesList(context, INGESTION_HEALTH_MANAGER_USER, [entityType]),
-  getUserId: (element) => element.user_id,
-  isUserRequired: false,
 });
 
-const INGESTION_SOURCES = [
+export const INGESTION_SOURCES: IngestionSource<IngestionElement>[] = [
   connectorSource,
   feedOrSyncSource(ENTITY_TYPE_INGESTION_RSS),
   feedOrSyncSource(ENTITY_TYPE_INGESTION_CSV),
@@ -62,19 +77,22 @@ const INGESTION_SOURCES = [
   feedOrSyncSource(ENTITY_TYPE_INGESTION_TAXII),
   feedOrSyncSource(ENTITY_TYPE_INGESTION_TAXII_COLLECTION),
   feedOrSyncSource(ENTITY_TYPE_SYNC),
-] as IngestionSource<IngestionElement>[];
+];
 
-const evaluateIngestionHealth = async <T extends IngestionElement>(
-  context: AuthContext,
-  source: IngestionSource<T>,
-  element: T,
-  isExistingUser: (userId: string) => boolean,
-) => {
-  const checks = computeIngestionHealthChecks({ userId: source.getUserId(element), isUserRequired: source.isUserRequired }, isExistingUser);
-  const patch = computeIngestionHealthPatch(element, checks, now());
-  if (!patch) {
-    return;
+// Stopped on purpose, each type with the rule of the process running it
+const isIngestionStopped = (element: IngestionElement & { ingestion_running?: boolean; running?: boolean }) => {
+  switch (element.entity_type) {
+    case ENTITY_TYPE_CONNECTOR:
+      return isConnectorStopped(element);
+    case ENTITY_TYPE_SYNC:
+      return !isSyncRunning(element);
+    default:
+      // Feeds
+      return !isIngestionRunning(element);
   }
+};
+
+const writeIngestionHealth = async <T extends IngestionElement>(context: AuthContext, source: IngestionSource<T>, element: T, patch: IngestionHealthFields) => {
   // Standard update: moves updated_at and emits an update event
   const { element: updatedElement } = await patchAttribute(context, INGESTION_HEALTH_MANAGER_USER, element.internal_id, source.entityType, patch);
   if (source.entityType === ENTITY_TYPE_CONNECTOR) {
@@ -83,25 +101,183 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   }
 };
 
+// Reads the values of the runtime checks for a batch of ingestions: one getRuntimeData call per check, whatever the number of ingestions.
+// Each check only reads the ingestions it is enabled for, and is not called when there is none.
+// A read failure is not hidden: the ingestions the failed check is enabled for are returned as unread, so that an unreachable
+// storage is never read as a missing value. The checks read are kept: the ingestions needing none of the failed ones are still evaluated.
+const loadRuntimeData = async (
+  context: AuthContext,
+  elements: IngestionElement[],
+  globalContext: GlobalIngestionHealthContext,
+): Promise<{ runtimeDataByIngestion: Map<string, RuntimeData>; unreadIngestionIds: Set<string> }> => {
+  // A disabled check is not evaluated: its values are not read
+  const runtimeChecks = getEnabledRuntimeChecks(globalContext);
+  const elementsByCheck = runtimeChecks.map(([, definition]) => elements.filter((element) => definition.isEnabled(element, globalContext)));
+  const results = await Promise.allSettled(runtimeChecks.map(([, definition], index) => (elementsByCheck[index].length > 0
+    ? definition.getRuntimeData(elementsByCheck[index], { context, user: INGESTION_HEALTH_MANAGER_USER })
+    : Promise.resolve(new Map<string, unknown>()))));
+  const unreadIngestionIds = new Set<string>();
+  const valuesByCheck = results.map((result, index) => {
+    if (result.status === 'fulfilled') {
+      return result.value;
+    }
+    logApp.warn('[OPENCTI-MODULE] Ingestion health runtime data read error', { cause: result.reason, manager: 'INGESTION_HEALTH_MANAGER', health_check_code: runtimeChecks[index][0] });
+    elementsByCheck[index].forEach((element) => unreadIngestionIds.add(element.internal_id));
+    return new Map<string, unknown>();
+  });
+  const runtimeDataByIngestion = new Map(elements.map((element) => {
+    const runtimeData = Object.fromEntries(runtimeChecks.map(([code], index) => [code, valuesByCheck[index].get(element.internal_id)]));
+    return [element.internal_id, runtimeData];
+  }));
+  return { runtimeDataByIngestion, unreadIngestionIds };
+};
+
+// Stopped on purpose: nothing is evaluated (no checks, no runtime data read) and nothing is reported,
+// the stored health, if any, is removed
+const clearIngestionHealth = async <T extends IngestionElement>(context: AuthContext, source: IngestionSource<T>, element: T) => {
+  if (element.ingestion_health) {
+    await writeIngestionHealth(context, source, element, { ingestion_health: null });
+  }
+};
+
+const evaluateIngestionHealth = async <T extends IngestionElement>(
+  context: AuthContext,
+  source: IngestionSource<T>,
+  element: T,
+  sourceContext: IngestionHealthEvaluationContext,
+) => {
+  const healthContext = buildIngestionHealthContext(element, sourceContext);
+  const checks = computeIngestionHealthChecks(element, healthContext);
+  const patch = computeIngestionHealthPatch(element, checks, healthContext);
+
+  // The notification is evaluated at every period, even when the health did not change: it is deferred until the status is stable
+  const nextHealth = patch ? patch.ingestion_health : element.ingestion_health;
+  const transition = computeHealthTransition(nextHealth, sourceContext.evaluatedAt, sourceContext.notificationDelay);
+  if (transition && nextHealth) {
+    const checksDescription = describeHealthChecks(element.entity_type, nextHealth.health_checks ?? []);
+    const { critical: criticalMessages, advisory: advisoryMessages } = groupHealthCheckMessages(element.entity_type, nextHealth.health_checks ?? []);
+    try {
+      await publishUserAction({
+        user: INGESTION_HEALTH_MANAGER_USER,
+        event_type: 'ingestion_health',
+        event_scope: transition,
+        event_access: 'administration',
+        status: transition === HealthTransition.Recovered ? 'success' : 'error',
+        message: buildHealthTransitionMessage(element, transition, nextHealth.health_checks ?? []),
+        context_data: {
+          id: element.internal_id,
+          entity_type: source.entityType,
+          entity_name: element.name,
+          ingestion_health_changes: {
+            // What fails, joined: absent when no check fails
+            ...(checksDescription ? { message: checksDescription } : {}),
+            // The same messages, one by check, the critical ones apart: absent when empty
+            ...(criticalMessages.length > 0 ? { critical_messages: criticalMessages } : {}),
+            ...(advisoryMessages.length > 0 ? { advisory_messages: advisoryMessages } : {}),
+            // Not yet overwritten by markHealthNotified: the status reported by the previous event
+            ...(nextHealth.last_event_status ? { previous_status: nextHealth.last_event_status } : {}),
+            status_since: nextHealth.status_since,
+          },
+        },
+      });
+    } catch (error) {
+      // Not published: the health is written without the marker, the transition is published again at the next period
+      if (patch) {
+        await writeIngestionHealth(context, source, element, patch);
+      }
+      throw error;
+    }
+    // Published first, so the health and the marker go in a single write (one update event, one cache notification).
+    // A failed write publishes the transition again at the next period: a duplicate event rather than a lost one
+    await writeIngestionHealth(context, source, element, { ingestion_health: markHealthNotified(nextHealth, sourceContext.evaluatedAt) });
+    return;
+  }
+  if (patch) {
+    await writeIngestionHealth(context, source, element, patch);
+  }
+};
+
 export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
   const context = executionContext('ingestion_health_manager');
+
+  // build required info data
   const users = await getEntitiesMapFromCache<AuthUser>(context, INGESTION_HEALTH_MANAGER_USER, ENTITY_TYPE_USER);
-  const isExistingUser = (userId: string) => users.has(userId) || userId in INTERNAL_USERS;
+  // The user an ingestion runs as: undefined when no user is set or it does not exist anymore
+  const resolveUser = (element: IngestionElement): HealthCheckUser | undefined => {
+    const userId = getIngestorUserId(element);
+    if (!userId) {
+      return undefined;
+    }
+    const internal = userId in INTERNAL_USERS;
+    const authUser = internal ? INTERNAL_USERS[userId] : users.get(userId); // Ensure userID exist in user list or INTERNAL_USERS
+    return authUser
+      ? {
+          internal,
+          user_service_account: authUser.user_service_account === true,
+          user_account_active: isUserAccountActive(authUser),
+          hasCapability: (capability) => isUserHasCapability(authUser, capability),
+        }
+      : undefined;
+  };
+  const { notification_delay: notificationDelay, disabled_health_checks: disabledHealthChecks } = await getResolvedIngestionHealthSettings(context, INGESTION_HEALTH_MANAGER_USER);
+  const pingingConnectors = await findRegularlyPingingConnectors(context, INGESTION_HEALTH_MANAGER_USER);
+  const pingingConnectorsIds = new Set(pingingConnectors.map((connector) => connector.internal_id));
+
+  // The disabled checks are known before the read: the ingestions depending on them only are not read, nor skipped on a read failure
+  const globalContext: GlobalIngestionHealthContext = { pingingConnectorsIds, disabledHealthChecks };
+
+  // check the ingestions sources: the active ones are evaluated together, once the runtime data is read for all of them
+  const activeIngestions: { source: IngestionSource<IngestionElement>; element: IngestionElement }[] = [];
   for (let sourceIndex = 0; sourceIndex < INGESTION_SOURCES.length; sourceIndex += 1) {
     lock.signal.throwIfAborted();
     const source = INGESTION_SOURCES[sourceIndex];
     const elements = await source.load(context);
-    const evaluatedElements = source.isEvaluated ? elements.filter(source.isEvaluated) : elements;
-    for (let i = 0; i < evaluatedElements.length; i += 1) {
+    const stoppedElements: IngestionElement[] = [];
+    const activeElements: IngestionElement[] = [];
+    elements.forEach((element) => (isIngestionStopped(element) ? stoppedElements : activeElements).push(element));
+
+    // Stopped: the only place handling them, nothing read, nothing evaluated, nothing reported
+    for (let i = 0; i < stoppedElements.length; i += 1) {
       // Outside the try: losing the lock must stop the scan, not be logged as an element failure
       lock.signal.throwIfAborted();
-      const element = evaluatedElements[i];
       try {
-        await evaluateIngestionHealth(context, source, element, isExistingUser);
+        await clearIngestionHealth(context, source, stoppedElements[i]);
       } catch (e) {
-        // One broken ingestion must not stop the evaluation of the others, retried at the next period
-        logApp.warn('[OPENCTI-MODULE] Ingestion health evaluation error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER', id: element.internal_id, type: source.entityType });
+        logApp.warn('[OPENCTI-MODULE] Ingestion health clear error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER', id: stoppedElements[i].internal_id, type: source.entityType });
       }
+    }
+    activeIngestions.push(...activeElements.map((element) => ({ source, element })));
+  }
+
+  // Read once per period, for the ingestions enabling a runtime check only: nothing is read when there is none
+  const runtimeElements = activeIngestions
+    .map(({ element }) => element)
+    .filter((element) => isRuntimeCheckEnabled(element, globalContext));
+  // Not read as a missing value: the ingestions needing a check that could not be read are skipped until the next period,
+  // the others are still evaluated. On an unexpected failure of the whole read, every ingestion needing runtime data is skipped
+  let runtimeDataByIngestion = new Map<string, RuntimeData>();
+  let unreadIngestionIds = new Set(runtimeElements.map((element) => element.internal_id));
+  try {
+    ({ runtimeDataByIngestion, unreadIngestionIds } = await loadRuntimeData(context, runtimeElements, globalContext));
+  } catch (e) {
+    logApp.warn('[OPENCTI-MODULE] Ingestion health runtime data read error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER' });
+  }
+  // Right after the read: the values read are judged against the moment they were read at
+  const periodContext = { ...globalContext, evaluatedAt: now(), notificationDelay };
+
+  // Active
+  for (let i = 0; i < activeIngestions.length; i += 1) {
+    lock.signal.throwIfAborted();
+    const { source, element } = activeIngestions[i];
+    if (unreadIngestionIds.has(element.internal_id)) {
+      continue;
+    }
+    try {
+      const runtimeData = runtimeDataByIngestion.get(element.internal_id) ?? {};
+      await evaluateIngestionHealth(context, source, element, { ...periodContext, runtimeData, user: resolveUser(element) });
+    } catch (e) {
+      // One broken ingestion must not stop the evaluation of the others, retried at the next period
+      logApp.warn('[OPENCTI-MODULE] Ingestion health evaluation error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER', id: element.internal_id, type: source.entityType });
     }
   }
 };

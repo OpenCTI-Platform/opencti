@@ -55,7 +55,13 @@ const SyncLogsTab: React.FC<SyncLogsTabProps> = ({ feedId, feedName }) => {
 
   return (
     <Box>
-      <Stack direction="row" justifyContent="flex-end" sx={{ mb: 1 }}>
+      <Stack
+        direction="row"
+        sx={{
+          justifyContent: 'flex-end',
+          mb: 1,
+        }}
+      >
         <Tooltip>
           <TooltipTrigger asChild>
             <IconButton

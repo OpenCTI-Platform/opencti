@@ -27,7 +27,13 @@ const ItemStatusTemplate = ({ statuses, disabled, actionComponent }: ItemStatusT
 
   if (disabled) {
     return (
-      <Stack direction="row" alignItems="center" gap={1}>
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: 'center',
+          gap: 1,
+        }}
+      >
         <Tag label={t_i18n('Disabled')} disabled />
         {actionComponent}
       </Stack>
@@ -37,10 +43,22 @@ const ItemStatusTemplate = ({ statuses, disabled, actionComponent }: ItemStatusT
   const statusByOrder = Object.values(Object.groupBy(statuses, ({ order }) => order));
 
   return (
-    <Stack direction="row" alignItems="center" gap={1} flexWrap="wrap">
+    <Stack
+      direction="row"
+      sx={{
+        alignItems: 'center',
+        gap: 1,
+        flexWrap: 'wrap',
+      }}
+    >
       {statusByOrder.map((statusesForIndex, index) => (
         <React.Fragment key={`statuses-order-${index}`}>
-          <Stack direction="column" gap={1}>
+          <Stack
+            direction="column"
+            sx={{
+              gap: 1,
+            }}
+          >
             {statusesForIndex?.map((status) => (
               <Tag
                 key={status.id}

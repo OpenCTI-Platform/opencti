@@ -58,7 +58,7 @@ const waitForBackgroundTaskComplete = async (request: Parameters<typeof graphqlQ
  * Check that the referenced relationship is listed.
  * Check that deleting the report does not remove the relationship itself.
  */
-test('Report relationships tab', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group1'] }, async ({ page, request }) => {
+test('Report relationships tab', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, async ({ page, request }) => {
   const leftNavigation = new LeftBarPage(page);
   const reportPage = new ReportPage(page);
   const reportDetailsPage = new ReportDetailsPage(page);
@@ -133,7 +133,7 @@ test('Report relationships tab', { tag: ['@report', '@knowledge', '@mutation', '
  * Wait for the background task to complete.
  * Check the relationship is removed from the Report but still exists globally.
  */
-test('Report relationships tab - bulk remove from container', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group1'] }, async ({ page, request }) => {
+test('Report relationships tab - bulk remove from container', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, async ({ page, request }) => {
   test.setTimeout(300_000);
   const leftNavigation = new LeftBarPage(page);
   const reportPage = new ReportPage(page);

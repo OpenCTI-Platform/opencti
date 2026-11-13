@@ -2,7 +2,7 @@ services:
   redis:
     container_name: redis
     profiles: ["backend"]
-    image: redis:8.6.7
+    image: redis:8.6.8@sha256:8b30009c0de4fdb3fb67deb8afab050fe454e9b233c6a2c142ec34fcc51fa7f5
     restart: unless-stopped
     networks:
       - runner-docker-network
@@ -11,7 +11,8 @@ services:
   elasticsearch:
     container_name: elasticsearch
     profiles: ["backend"]
-    image: elasticsearch:8.19.23
+    # Replaced by docker-compose.elasticsearch9.yml or docker-compose.opensearch.yml in the backend tests matrix
+    image: elasticsearch:8.19.23@sha256:ef5cafd961d7e273f13fed8def82e63c5ae0491106b5eecb5a69aa12d64f089b
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -32,7 +33,7 @@ services:
   minio:
     container_name: minio
     profiles: ["backend"]
-    image: pgsty/silo:latest
+    image: pgsty/silo:RELEASE.2026-10-26T00-00-00Z@sha256:7bb2aff6b89efe1cb1303c10fc21d579447434ed06649ac9ec05a5e2dbf30ad7
     networks:
       - runner-docker-network
     ports:
@@ -51,7 +52,7 @@ services:
   rabbitmq:
     profiles: ["backend"]
     container_name: rabbitmq
-    image: rabbitmq:4.3-management
+    image: rabbitmq:4.3.6-management@sha256:54cb013d76cd1fd6c0a0708f34062ad61c452bb6f016b434c6c33f1a765d2b58
     restart: unless-stopped
     networks:
       - runner-docker-network
@@ -61,7 +62,7 @@ services:
   smtp:
     profiles: ["backend"]
     container_name: smtp
-    image: maildev/maildev:3.0.0
+    image: maildev/maildev:3.0.0@sha256:6e09695961f4aef9016a390ad391314a078220216601b15a35d389a7df2a3855
     restart: unless-stopped
     ports:
       - 1025:1025

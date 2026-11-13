@@ -7,7 +7,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
-import withStyles from '@mui/styles/withStyles';
+import { styled } from '@mui/material/styles';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import React, { Component } from 'react';
@@ -17,21 +17,8 @@ import { APP_BASE_PATH, commitMutation } from '../../../../../relay/environment'
 import { resolveLink } from '../../../../../utils/Entity';
 import withRouter from '../../../../../utils/compat_router/withRouter';
 
-const styles = (theme) => ({
-  container: {
-    margin: 0,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
+const Container = styled('div')({
+  margin: 0,
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -92,9 +79,9 @@ class WorkbenchFilePopover extends Component {
   }
 
   render() {
-    const { classes, t, file } = this.props;
+    const { t, file } = this.props;
     return (
-      <div className={classes.container}>
+      <Container>
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-label={t('Open menu')}
@@ -143,14 +130,13 @@ class WorkbenchFilePopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-      </div>
+      </Container>
     );
   }
 }
 
 WorkbenchFilePopover.propTypes = {
   file: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
   navigate: PropTypes.func,
 };
@@ -158,5 +144,4 @@ WorkbenchFilePopover.propTypes = {
 export default compose(
   inject18n,
   withRouter,
-  withStyles(styles),
 )(WorkbenchFilePopover);

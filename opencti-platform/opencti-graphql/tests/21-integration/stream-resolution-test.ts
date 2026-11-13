@@ -8,6 +8,7 @@ import { resolveMissingReferences } from '../../src/graphql/sseMiddleware';
 import { convertStoreToStix_2_1 } from '../../src/database/stix-2-1-converter';
 import { storeLoadByIdWithRefs } from '../../src/database/middleware';
 import { queryAsAdminWithSuccess } from '../utils/testQueryHelper';
+import { MARKING_TLP_GREEN } from '../../src/schema/identifier';
 import type { StoreObject } from '../../src/types/store';
 
 const CREATE_REPORT_QUERY = gql`
@@ -49,6 +50,48 @@ const CREATE_CASE_QUERY = gql`
           }
         }
       }
+    }
+  }
+`;
+
+const CREATE_ORGANIZATION_QUERY = gql`
+  mutation OrganizationAdd($input: OrganizationAddInput!) {
+    organizationAdd(input: $input) {
+      id
+    }
+  }
+`;
+
+const CREATE_MALWARE_QUERY = gql`
+  mutation MalwareAdd($input: MalwareAddInput!) {
+    malwareAdd(input: $input) {
+      id
+    }
+  }
+`;
+
+const CREATE_OBSERVABLE_QUERY = gql`
+  mutation StixCyberObservableAdd($type: String!, $EmailAddr: EmailAddrAddInput, $EmailMessage: EmailMessageAddInput) {
+    stixCyberObservableAdd(type: $type, EmailAddr: $EmailAddr, EmailMessage: $EmailMessage) {
+      id
+      standard_id
+    }
+  }
+`;
+
+const CREATE_REF_RELATIONSHIP_QUERY = gql`
+  mutation StixRefRelationshipAdd($input: StixRefRelationshipAddInput!) {
+    stixRefRelationshipAdd(input: $input) {
+      id
+      standard_id
+    }
+  }
+`;
+
+const DELETE_OBSERVABLE_QUERY = gql`
+  mutation StixCyberObservableDelete($id: ID!) {
+    stixCyberObservableEdit(id: $id) {
+      delete
     }
   }
 `;
@@ -113,24 +156,143 @@ describe('Should stream parent resolutions correctly working', () => {
     const stixReport = convertStoreToStix_2_1(reportWithRefs as StoreObject);
     const refs = stixRefsExtractor(stixReport);
     const cache = new LRUCache({ max: 5000, ttl: 1000 * 60 * 60 });
-    const missingInstances: any[] = await resolveMissingReferences(testContext, ADMIN_USER, refs, cache);
+    const missingInstances: any[] = [];
+    const isComplete = await resolveMissingReferences(testContext, ADMIN_USER, refs, cache, (resolved: any[]) => {
+      missingInstances.push(...resolved);
+    });
+    expect(isComplete).toBe(true);
     expect(missingInstances.length).toBe(4);
+    const indexOf = (name: string) => missingInstances.findIndex((instance) => instance.stix.name === name);
     // REPORT01
-    expect(missingInstances[0].stix.id).toBe('report--b8c1e232-cfa4-5fe9-b7cc-b631b46d4424');
-    expect(missingInstances[0].stix.name).toBe('Report-01-Resolution');
+    const report01 = missingInstances[indexOf('Report-01-Resolution')];
+    expect(report01.stix.id).toBe('report--b8c1e232-cfa4-5fe9-b7cc-b631b46d4424');
     // INDIVIDUAL (auto created)
-    expect(missingInstances[1].stix.id).toBe('identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91');
-    expect(missingInstances[1].stix.name).toBe('admin');
-    expect(missingInstances[1].message).toBe('creates a Individual `admin`');
+    const individual = missingInstances[indexOf('admin')];
+    expect(individual.stix.id).toBe('identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91');
+    expect(individual.message).toBe('creates a Individual `admin`');
     // CASE02
-    expect(missingInstances[2].stix.name).toBe('Case-02-Resolution');
-    expect(missingInstances[2].message).toBe('creates a Case-Incident `Case-02-Resolution`');
+    expect(missingInstances[indexOf('Case-02-Resolution')].message).toBe('creates a Case-Incident `Case-02-Resolution`');
     // CASE01
-    expect(missingInstances[3].stix.name).toBe('Case-01-Resolution');
-    expect(missingInstances[3].message).toBe('creates a Case-Incident `Case-01-Resolution`');
+    expect(missingInstances[indexOf('Case-01-Resolution')].message).toBe('creates a Case-Incident `Case-01-Resolution`');
+    // Dependencies first: CASE01 needs CASE02, which needs REPORT01 (the cycle is closed by the report itself)
+    expect(indexOf('Report-01-Resolution')).toBeLessThan(indexOf('Case-02-Resolution'));
+    expect(indexOf('Case-02-Resolution')).toBeLessThan(indexOf('Case-01-Resolution'));
     // CLEANUP
     await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: case02ResolutionId } });
     await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: case01ResolutionId } });
     await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: report01ResolutionId } });
+  });
+
+  it('should load containers for the stream without hydrating their members', async () => {
+    // Self-contained data: an author, a marking and members that are neither of them
+    const author = await queryAsAdminWithSuccess({
+      query: CREATE_ORGANIZATION_QUERY,
+      variables: { input: { name: 'Organization-Base-Data-Resolution' } },
+    });
+    const authorId = author.data.organizationAdd.id;
+    const memberIds: string[] = [];
+    for (let index = 0; index < 2; index += 1) {
+      const malware = await queryAsAdminWithSuccess({
+        query: CREATE_MALWARE_QUERY,
+        variables: { input: { name: `Malware-Base-Data-Resolution-${index}` } },
+      });
+      memberIds.push(malware.data.malwareAdd.id);
+    }
+    const report = await queryAsAdminWithSuccess({
+      query: CREATE_REPORT_QUERY,
+      variables: {
+        input: {
+          name: 'Report-Base-Data-Resolution',
+          published: '2020-02-26T00:51:35.000Z',
+          createdBy: authorId,
+          objectMarking: [MARKING_TLP_GREEN],
+          objects: memberIds,
+        },
+      },
+    });
+    const reportId = report.data.reportAdd.id;
+    const full = await storeLoadByIdWithRefs(testContext, ADMIN_USER, reportId) as any;
+    const base = await storeLoadByIdWithRefs(testContext, ADMIN_USER, reportId, { objectsBaseData: true }) as any;
+    expect(full.objects.length).toBeGreaterThan(0);
+    expect(base.objects.length).toBe(full.objects.length);
+    // Members only keep their base data, authors and markings stay complete
+    const fullDataIds = new Set([full.createdBy?.internal_id, ...(full.objectMarking ?? []).map((m: any) => m.internal_id)]);
+    const onlyMembers = base.objects.filter((o: any) => !fullDataIds.has(o.internal_id));
+    expect(onlyMembers.length).toBeGreaterThan(0);
+    onlyMembers.forEach((member: any) => {
+      expect(member.standard_id).toBeDefined();
+      expect(member.created_at).toBeUndefined();
+    });
+    expect(base.objectMarking).toEqual(full.objectMarking);
+    // STIX conversion is unchanged
+    expect(convertStoreToStix_2_1(base as StoreObject)).toEqual(convertStoreToStix_2_1(full as StoreObject));
+    // CLEANUP
+    await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: reportId } });
+    for (let index = 0; index < memberIds.length; index += 1) {
+      await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: memberIds[index] } });
+    }
+    await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: authorId } });
+  });
+
+  it('should resolve a container holding a nested ref relationship (#13236)', async () => {
+    // REPORT -- ref --> EMAIL-MESSAGE -- to --> EMAIL-ADDR, the "to" ref relationship itself being in the report
+    const emailAddr = await queryAsAdminWithSuccess({
+      query: CREATE_OBSERVABLE_QUERY,
+      variables: { type: 'Email-Addr', EmailAddr: { value: 'stream-resolution-13236@example.com' } },
+    });
+    const emailAddrId = emailAddr.data.stixCyberObservableAdd.id;
+    const emailMessage = await queryAsAdminWithSuccess({
+      query: CREATE_OBSERVABLE_QUERY,
+      variables: { type: 'Email-Message', EmailMessage: { subject: 'Stream-Resolution-13236', body: 'Stream-Resolution-13236' } },
+    });
+    const emailMessageId = emailMessage.data.stixCyberObservableAdd.id;
+    const refRelationship = await queryAsAdminWithSuccess({
+      query: CREATE_REF_RELATIONSHIP_QUERY,
+      variables: { input: { fromId: emailMessageId, toId: emailAddrId, relationship_type: 'to' } },
+    });
+    const refRelationshipId = refRelationship.data.stixRefRelationshipAdd.id;
+    const refRelationshipStixId = refRelationship.data.stixRefRelationshipAdd.standard_id;
+    const emailAddrStixId = emailAddr.data.stixCyberObservableAdd.standard_id;
+    const emailMessageStixId = emailMessage.data.stixCyberObservableAdd.standard_id;
+    // Only the ref relationship in the report, or along with its source and target (as done from the report graph)
+    const objectsCases = [[refRelationshipId], [refRelationshipId, emailMessageId, emailAddrId]];
+    const reportIds: string[] = [];
+    for (let caseIndex = 0; caseIndex < objectsCases.length; caseIndex += 1) {
+      const report = await queryAsAdminWithSuccess({
+        query: CREATE_REPORT_QUERY,
+        variables: {
+          input: {
+            name: `Report-Nested-Ref-Resolution-${caseIndex}`,
+            published: '2020-02-26T00:51:35.000Z',
+            objects: objectsCases[caseIndex],
+          },
+        },
+      });
+      const reportId = report.data.reportAdd.id;
+      reportIds.push(reportId);
+      const reportWithRefs = await storeLoadByIdWithRefs(testContext, ADMIN_USER, reportId);
+      const stixReport = convertStoreToStix_2_1(reportWithRefs as StoreObject);
+      const refs = stixRefsExtractor(stixReport);
+      const cache = new LRUCache({ max: 5000, ttl: 1000 * 60 * 60 });
+      const missingInstances: any[] = [];
+      const isComplete = await resolveMissingReferences(testContext, ADMIN_USER, refs, cache, (resolved: any[]) => {
+        missingInstances.push(...resolved);
+      });
+      expect(isComplete).toBe(true);
+      // The ref relationship is not published as such, its source and target are
+      const stixIds = missingInstances.map((m) => m.stix.id);
+      expect(stixIds).not.toContain(refRelationshipStixId);
+      expect(stixIds).toContain(emailAddrStixId);
+      const stixMessage = missingInstances.find((m) => m.stix.id === emailMessageStixId);
+      expect(stixMessage.stix.to_refs).toEqual([emailAddrStixId]);
+      // Dependencies first: the address is published before the message referencing it
+      expect(stixIds.indexOf(emailAddrStixId)).toBeLessThan(stixIds.indexOf(emailMessageStixId));
+    }
+    // CLEANUP
+    for (let reportIndex = 0; reportIndex < reportIds.length; reportIndex += 1) {
+      await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: reportIds[reportIndex] } });
+    }
+    await queryAsAdmin({ query: DELETE_OBSERVABLE_QUERY, variables: { id: emailMessageId } });
+    await queryAsAdmin({ query: DELETE_OBSERVABLE_QUERY, variables: { id: emailAddrId } });
   });
 });

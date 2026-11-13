@@ -3,6 +3,7 @@ import { type ModuleDefinition, registerDefinition } from '../../../../schema/mo
 import { ENTITY_TYPE_NEWS_FEED_ITEM, type StixNewsFeedItem, type StoreEntityNewsFeedItem } from './news-feed-types';
 import { convertNewsFeedItemToStix } from './news-feed-converter';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../../schema/general';
+import { ENTITY_TYPE_USER } from '../../../../schema/internalObject';
 
 const NEWS_FEED_DEFINITION: ModuleDefinition<StoreEntityNewsFeedItem, StixNewsFeedItem> = {
   type: {
@@ -23,7 +24,7 @@ const NEWS_FEED_DEFINITION: ModuleDefinition<StoreEntityNewsFeedItem, StixNewsFe
     { name: 'metadata', label: 'Metadata', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'creation_date', label: 'Creation date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'is_read', label: 'Is read', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'user_id', label: 'User ID', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'user_id', label: 'User ID', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   relations: [],
   relationsRefs: [],

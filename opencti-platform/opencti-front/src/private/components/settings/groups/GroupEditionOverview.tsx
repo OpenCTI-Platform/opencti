@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { ObjectShape } from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import FormHelperText from '@mui/material/FormHelperText';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';

@@ -59,7 +59,15 @@ const FilterGroupPanel: FunctionComponent<FilterGroupPanelProps> = ({ group }) =
       }}
     >
       {!isReadOnly && (
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ gap: 1, marginBottom: 1 }}>
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 1,
+            marginBottom: 1,
+          }}
+        >
           <Select value={mode} onValueChange={handleChangeMode}>
             <SelectTrigger
               id={`filter-group-mode-select-${groupId ?? 'root'}`}
@@ -74,7 +82,13 @@ const FilterGroupPanel: FunctionComponent<FilterGroupPanelProps> = ({ group }) =
               <SelectItem value="or">{t_i18n('or').toUpperCase()}</SelectItem>
             </SelectContent>
           </Select>
-          <Stack direction="row" alignItems="center" sx={{ gap: 1 }}>
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              gap: 1,
+            }}
+          >
             <Button
               variant="tertiary"
               size="small"

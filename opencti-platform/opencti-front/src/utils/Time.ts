@@ -1,5 +1,6 @@
 import moment, { Moment } from 'moment';
 import { subDays } from 'date-fns';
+import type { PickerChangeHandlerContext } from '@mui/x-date-pickers/models';
 import { isNone } from '../components/i18n';
 
 const defaultDateFormat = 'YYYY-MM-DD';
@@ -275,3 +276,12 @@ export function dateFiltersValueForDisplay(
   }
   return dateFilterValue;
 }
+
+/**
+ * Whether a picker's `onAccept` comes from its views (calendar, clock, action bar, shortcuts).
+ *
+ * The picker also calls `onAccept` for each value typed in its field, including the dates a
+ * year goes through while it is typed (0002, 0020...). Fields that apply typed values on blur
+ * or Enter use this to keep `onAccept` for the values picked in the views.
+ */
+export const isAcceptedFromView = (context: PickerChangeHandlerContext<unknown>) => context.source === 'view';

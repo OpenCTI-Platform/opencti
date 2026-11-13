@@ -52,7 +52,7 @@ describe('Component: UserTokenList', () => {
     expect(within(dialog).getByText('Admin View Token')).toBeInTheDocument();
 
     // Confirm
-    await user.click(screen.getByText('Revoke'));
+    await user.click(within(dialog).getByRole('button', { name: 'Revoke' }));
 
     // Check mutation variables
     expect(commitMutationMock).toHaveBeenCalledWith(expect.objectContaining({

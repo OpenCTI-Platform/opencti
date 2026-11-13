@@ -408,7 +408,7 @@ describe('useFieldRenderer', () => {
     const field = createField({ type: 'files' });
     renderField(field, createFormData({ fields: [field] }), { handleFieldChange });
 
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Allow multiple files' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Allow multiple files' }));
 
     expect(handleFieldChange).toHaveBeenCalledWith('fields.0.multiple', true);
   });
@@ -417,7 +417,7 @@ describe('useFieldRenderer', () => {
     const field = createField({ type: 'text' });
     renderField(field);
 
-    expect(screen.queryByRole('checkbox', { name: 'Allow multiple files' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('switch', { name: 'Allow multiple files' })).not.toBeInTheDocument();
   });
 
   it('toggles read-only and required switches, disabling required for mandatory fields', () => {
@@ -425,15 +425,15 @@ describe('useFieldRenderer', () => {
     const field = createField();
     renderField(field, createFormData({ fields: [field] }), { handleFieldChange });
 
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Not editable by user' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Not editable by user' }));
     expect(handleFieldChange).toHaveBeenCalledWith('fields.0.isReadOnly', true);
 
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Required' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Required' }));
     expect(handleFieldChange).toHaveBeenCalledWith('fields.0.required', true);
 
     cleanup();
     const mandatoryField = createField({ isMandatory: true });
     renderField(mandatoryField);
-    expect(screen.getByRole('checkbox', { name: 'Required' })).toBeDisabled();
+    expect(screen.getByRole('switch', { name: 'Required' })).toBeDisabled();
   });
 });

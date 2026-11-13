@@ -1,5 +1,5 @@
-import { ENABLED_DEMO_MODE, isFeatureEnabled, logApp, MERGE_USERS_FEATURE_FLAG } from '../../config/conf';
-import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
+import { ENABLED_DEMO_MODE, logApp } from '../../config/conf';
+import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { storeLoadById } from '../../database/middleware-loader';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -59,9 +59,6 @@ export const assertValidUserMergeIds = (sourceId: string, targetId: string): voi
  * result to a caller that was refused is the behaviour this feature is specified against.
  */
 export const assertUserMergeAllowed = (user: AuthUser): void => {
-  if (!isFeatureEnabled(MERGE_USERS_FEATURE_FLAG)) {
-    throw UnsupportedError('Feature is disabled', { flag: MERGE_USERS_FEATURE_FLAG });
-  }
   if (!isBypassUser(user)) {
     throw ForbiddenAccess('Merging users requires the BYPASS capability', { user_id: user.id });
   }

@@ -95,7 +95,7 @@ const RatingField: FunctionComponent<RatingProps> = ({
       <StyledRating
         name="highlight-selected-only"
         value={rating ?? 0}
-        IconContainerComponent={IconContainer}
+        slotProps={{ icon: { component: IconContainer } }}
         onChange={(_, value) => handleOnChange && handleOnChange(value)}
         highlightSelectedOnly
         readOnly={readOnly === true}

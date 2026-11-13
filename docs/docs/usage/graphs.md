@@ -115,7 +115,7 @@ From left to right:
 | View | Zoom in and out, **Fit the whole graph**, fit the selection, locate the selection, full screen. |
 | Layout | 3D mode, hierarchical layouts (top to bottom, left to right), layered layout (by entity category), radial layout, force-directed layout (see [Layouts](#layouts)). |
 | Selection | Box and lasso selection, adding the neighbours to the selection, the shortest path between two entities (see [Select](#select)). |
-| Creation and removal | Add entities, edit the selected item, create a relationship, a nested relationship or a sighting, remove the selection; in investigations, expand the selection and roll the last expansion back. |
+| Creation and removal | Add entities, edit the selected item, create a relationship, a nested relationship or a sighting, remove the selection; in investigations, expand the selection, roll the last expansion back and open the **Enrichment** panel (see [Enrich from the graph](pivoting.md#enrich-from-the-graph)). |
 | Filters | Filter by type (entity and relationship types, the same filters as the legend), by marking and by author, the time range selector, and **Clear all filters**; in correlation graphs, show every correlated entity or only the observables and indicators. A number on a filter tells how many choices are in use. Each filter opens a menu of its choices, grouped under headings and checked when in use; the menu stays open so that several choices can be made in a row. |
 | Export and help | The high-resolution image export, the keyboard shortcuts. |
 
@@ -135,7 +135,7 @@ Hovering an entity or a relationship, or selecting it, keeps it and its direct n
 
 After a short moment on an element, a **hover card** previews its key facts: type, name, date, author, confidence, markings, relationship counts, every badge with what it means and, in investigations, the number of relationships not drawn yet. The card only reads; what you can do with the element is in its context menu.
 
-![Hover card of the Copper Lantern intrusion set, with its facts, markings and relationship counts](assets/graph-hover-card.png)
+![Hover card of the apt28 malware, with its facts, markings, relationship counts and a hint to right-click for its actions](assets/graph-hover-card.png)
 
 ## Context menu
 
@@ -144,7 +144,7 @@ Right-click an entity, a relationship or the empty canvas, or press `Shift` + `F
 - On an **entity**: **Open in a new tab**, **Expand this entity** (investigations), **Select entity and neighbours**, **Pin in place** / **Unpin**, **Hide** (the entity is not removed from the container or the investigation; the legend shows it back), **Lay out the graph around it** (radial layout), **Highlight shortest path from the selection** and **Create a relationship from the selection** when one other entity is selected, **Start an investigation** (outside investigations, for users allowed to create them, not in a draft), and the actions other features add.
 - On a **group node**: **Ungroup** and **Pin in place**.
 - On a **relationship**: **Open in a new tab** and **Select this relationship**.
-- On the **selection**, in every menu while something is selected, whether you right-click an entity, a relationship or the empty canvas (first on an element of a selection of several and on the canvas, after the actions of the element otherwise): **Add neighbours to selection**, **Highlight shortest path between the two selected nodes**, the outgoing or incoming relationships of the selection, **Invert selection**, **Fit the selection**, **Hide**, **Create a relationship** between two selected entities and **Start an investigation** with the selected entities.
+- On the **selection**, in every menu while something is selected, whether you right-click an entity, a relationship or the empty canvas (first on an element of a selection of several and on the canvas, after the actions of the element otherwise): **Add neighbours to selection**, **Highlight shortest path between the two selected nodes**, the outgoing or incoming relationships of the selection, **Invert selection**, **Fit the selection**, **Hide**, **Create a relationship** between two selected entities and **Start an investigation** with the selected entities. In an investigation, **Enrichment** lists the connectors that can enrich the selected entities, when they are all of the same type, for users who can launch an enrichment from the enrichment panel: pick one to confirm and launch the enrichment, and the enrichment panel opens on its **To review** tab, where the results show once the connector has finished. While the connectors load, or when the selection mixes types or no connector can enrich it, **Enrichment** says why under its name and cannot be chosen.
 - On the **empty canvas**: **Select all nodes**, **Select by entity type**, **Clear selection**, **Show the hidden entities**, **Ungroup all** and **Unfix the nodes and re-apply forces**.
 
 **Invert selection** inverts the nodes and the relationships each on their own: the selected nodes leave the selection and every other node drawn joins it, and the same for the relationships. A selection of nodes only inverts to nodes, and a selection of relationships only to relationships. Hidden entities and the members of a group are not drawn, so they are never selected; neither are group nodes.
@@ -170,7 +170,8 @@ When the time range selector of the toolbar is open, the legend moves up so that
 
 The graph says why it is empty and offers the next step:
 
-- a container or an investigation without any entity yet explains how to add some, with a link to this page;
+- an empty container explains how to add entities and links to this page;
+- an empty investigation offers **Add entities**, which opens the same panel as the + in the toolbar, and **Read the documentation**, which opens this page;
 - when the filters of the toolbar leave no entity, **Clear filters** restores the graph;
 - when every entity is hidden from the view, **Show the hidden entities** brings them back.
 
@@ -241,9 +242,10 @@ Every entity and relationship drawn is mirrored in a list box that keyboard and 
 Features of the platform add states and actions to the graph without changing it:
 
 - a **badge provider** returns badges for a node from the data the graph received, and returns nothing when its data is absent;
-- a **node action** adds an action, or an action offering a choice, to the context menu of the nodes it applies to.
+- a **node action** adds an action, or an action offering a choice, to the context menu of the nodes it applies to;
+- a **selection action** adds an action, or an action offering a choice, to the selection section of the context menu.
 
-Both are registered in `opencti-platform/opencti-front/src/components/graph/badges/` (see `graphBadgeRegistry.ts` and `graphNodeActionRegistry.ts`); the built-in marking, confidence and inferred badges use the same contract.
+They are registered in `opencti-platform/opencti-front/src/components/graph/badges/` (see `graphBadgeRegistry.ts`, `graphNodeActionRegistry.ts` and `graphSelectionActionRegistry.ts`); the built-in marking, confidence and inferred badges use the same contract.
 
 ## What's next?
 

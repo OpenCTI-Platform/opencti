@@ -218,7 +218,10 @@ const NoteForm = ({
         values,
         isSubmitting,
       }) => (
-        <Stack gap={2}>
+        <Stack sx={{
+          gap: 2,
+        }}
+        >
           <Box>
             <Field
               component={MarkdownField}
@@ -282,7 +285,12 @@ const NoteForm = ({
           </Box>
 
           <CustomFieldValuesCreation />
-          <Stack direction="row" justifyContent="space-between">
+          <Stack
+            direction="row"
+            sx={{
+              justifyContent: 'space-between',
+            }}
+          >
             <Button
               onClick={handleToggleMore}
               disabled={isSubmitting}

@@ -11,6 +11,8 @@ import { transformSpecialFields } from '../../../../src/modules/form/form-fields
 import { completeEntity } from '../../../../src/modules/form/form-entity-builder';
 import { buildAdditionalEntities, buildMainStixEntities, buildRelationships, wrapInContainerOrPush } from '../../../../src/modules/form/form-bundle-builder';
 import { SYSTEM_USER } from '../../../../src/utils/access';
+import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
+import { schemaRelationsRefDefinition } from '../../../../src/schema/schema-relationsRef';
 
 vi.mock('../../../../src/modules/form/form-utils', () => ({
   loadFormEntity: vi.fn(),
@@ -66,7 +68,8 @@ vi.mock('../../../../src/schema/stixCyberObservable', async (importOriginal) => 
   };
 });
 
-vi.mock('../../../../src/utils/syntax', () => ({
+vi.mock('../../../../src/utils/syntax', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/utils/syntax')>()),
   checkObservableSyntax: vi.fn(() => true),
 }));
 
@@ -94,6 +97,10 @@ vi.mock('../../../../src/modules/form/form-entity-builder', () => ({
 
 const context = {} as AuthContext;
 const user = SYSTEM_USER;
+
+// The schema is not registered in this test: the attributes of the pending objects are checked in form-pending-test
+vi.spyOn(schemaAttributesDefinition, 'getAttribute').mockReturnValue({ type: 'string' } as any);
+vi.spyOn(schemaRelationsRefDefinition, 'getRelationRef').mockReturnValue(null);
 
 const makeField = (overrides = {}): any => ({
   id: 'f1',
