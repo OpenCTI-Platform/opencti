@@ -173,6 +173,7 @@ const publishedValuesQuery = graphql`
     workspace(id: $id) {
       id
       manifest
+      currentUserDefaultPresetId
       variables {
         id
         usedInWidgetIds

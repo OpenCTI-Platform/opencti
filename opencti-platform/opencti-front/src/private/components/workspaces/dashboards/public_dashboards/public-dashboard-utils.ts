@@ -7,6 +7,7 @@ import { deserializeDashboardManifestForFrontend } from '../../../../../componen
 import { buildDefaultVariableValues, isValidVariableValue, widgetVariableIds } from '../../../../../components/dashboard/dashboardVariablesResolution';
 import { dashboardVariablesStorageKey, parseVariablesParam, readStoredVariableValues } from '../../../../../components/dashboard/dashboardVariablesStorage';
 import { dashboardTimeRangeStorageKey, parseTimeRangeParam, readStoredTimeRange } from '../../../../../components/dashboard/dashboardTimeRangeStorage';
+import { dashboardPresetStorageKey, parsePresetParam, readStoredPresetId } from '../../../../../components/dashboard/presets/dashboardPresetStorage';
 import { presetFromGraphql, type GraphqlDashboardPreset } from '../../../../../components/dashboard/presets/dashboardPresets';
 
 /**
@@ -54,6 +55,8 @@ export interface PublishableDashboard {
   manifest?: string | null;
   variables?: readonly { id: string; usedInWidgetIds: readonly string[] }[] | null;
   presets?: readonly GraphqlDashboardPreset[] | null;
+  // The preset the dashboard opens on for the current user (own choice, organization or group).
+  currentUserDefaultPresetId?: string | null;
 }
 
 export const EMPTY_PUBLISHED_TIME_RANGE: PublishedTimeRange = { startDate: null, endDate: null, relativeDate: null };
@@ -106,6 +109,8 @@ const isDashboardPage = (pathname: string, dashboardId: string) => {
  * The URL only speaks for the dashboard it shows: it is read for the dashboard of the page, never for another one.
  * The time range follows the same precedence: the one of the address on the page, else the one kept in this browser,
  * else the one of the dashboard.
+ * As on the page, the active preset is the base under these: the preset of the address on the page, else the one kept
+ * in this browser, else the default preset of the user; its values and range replace the defaults of the dashboard.
  */
 export const buildPublishedValuesState = (
   dashboard: PublishableDashboard | undefined,
@@ -117,14 +122,21 @@ export const buildPublishedValuesState = (
   const manifest = deserializeDashboardManifestForFrontend(dashboard.manifest);
   const variables = buildPublishedVariables(manifest.variables ?? [], manifest.widgets);
   const onPage = isDashboardPage(pathname, dashboard.id);
+  const presets = (dashboard.presets ?? []).map(presetFromGraphql);
+  const activePreset = [
+    onPage ? parsePresetParam(search) : null,
+    readStoredPresetId(dashboardPresetStorageKey(userId, dashboard.id)),
+    dashboard.currentUserDefaultPresetId ?? null,
+  ].map((presetId) => presets.find((preset) => preset.id === presetId)).find((preset) => preset !== undefined);
   const stored = {
+    ...(activePreset?.values ?? {}),
     ...readStoredVariableValues(dashboardVariablesStorageKey(userId, dashboard.id)),
     ...(onPage ? parseVariablesParam(search) : {}),
   };
   const localRange = (onPage ? parseTimeRangeParam(search) : null) ?? readStoredTimeRange(dashboardTimeRangeStorageKey(userId, dashboard.id));
   return {
     variable_values: buildPublishedVariableValues(variables, stored),
-    time_range: pickPublishedTimeRange(localRange ?? manifest.config),
+    time_range: pickPublishedTimeRange(localRange ?? activePreset?.config ?? manifest.config),
   };
 };
 
