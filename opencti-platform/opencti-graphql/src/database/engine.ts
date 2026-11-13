@@ -747,6 +747,18 @@ export const elRawGet = async (args: { id: string; index: string }) => {
   };
   return retryElOperations(rawGetOperation);
 };
+// POC ingestion sequencer (task 0040): realtime multi get, the no-op memo reads document versions
+export const elRawMget = async (args: { docs: { _index: string; _id: string }[]; _source?: boolean }) => {
+  const rawMgetOperation = async () => {
+    if (isElkEngine(engine)) {
+      const r = await engine.mget(args);
+      return oebp(r);
+    }
+    const r_1 = await engine.mget({ body: { docs: args.docs }, _source: args._source });
+    return oebp(r_1);
+  };
+  return retryElOperations(rawMgetOperation);
+};
 export const elRawIndex = async (args: any) => {
   const rawIndexOperation = async () => {
     if (isElkEngine(engine)) {

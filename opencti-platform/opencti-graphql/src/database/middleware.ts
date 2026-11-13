@@ -2995,6 +2995,11 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
     if (opts.upsert) {
       const hasEsImpact = impactedInputs.length > 0 || relationsToCreate.length > 0 || relationsToDelete.length > 0;
       meterManager.upsert(hasEsImpact ? 'write' : 'noop', initial.entity_type);
+      // POC ingestion sequencer (task 0040): the running apply learns its upsert left `initial`
+      // untouched, no write and no event below (a User would still sync its Individual)
+      if (!hasEsImpact && updatedInputs.length === 0 && initial.entity_type !== ENTITY_TYPE_USER) {
+        context.sequencer?.noopSink?.set(initial.internal_id, initial);
+      }
     }
     // Impacting information
     if ((getDraftContext(context, user) && isDraftSupportedEntity(initial))) {
@@ -4548,7 +4553,7 @@ export const createEntity = async (
       candidateIds,
       referencedIds: sequencerReferencedIds(type, input),
       memberRefIds,
-      apply: (stripSink) => createEntityDirect(sequencerScopedContext(context, 'applying', stripSink), user, input, type, opts),
+      apply: (stripSink, noopSink) => createEntityDirect(sequencerScopedContext(context, 'applying', stripSink, noopSink), user, input, type, opts),
     });
   }
   return createEntityDirect(context, user, input, type, opts);

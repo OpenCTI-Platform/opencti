@@ -48,8 +48,9 @@ export interface SequencerIntent {
   // task 0040 multi_writer step 2: keys an apply-time lock site could not take at once (held by
   // another platform): the next batch locks them up front, before it holds anything
   extraLockKeys?: string[];
-  // stripSink: the loop's per-apply sink, set on the applying context (sequencer-strip-sink.ts)
-  apply: (stripSink?: StrippedRef[]) => Promise<any>;
+  // stripSink: the loop's per-apply sink, set on the applying context (sequencer-strip-sink.ts);
+  // noopSink: the elements the apply upserted without change, by internal id (sequencer-noop-memo.ts)
+  apply: (stripSink?: StrippedRef[], noopSink?: Map<string, object>) => Promise<any>;
   resolve: (value: any) => void;
   reject: (err: any) => void;
   promise: Promise<any>;
@@ -65,7 +66,7 @@ interface BuildIntentArgs {
   candidateIds: string[];
   referencedIds?: string[];
   memberRefIds?: Set<string>;
-  apply: (stripSink?: StrippedRef[]) => Promise<any>;
+  apply: (stripSink?: StrippedRef[], noopSink?: Map<string, object>) => Promise<any>;
 }
 
 const intentSize = (input: Record<string, any>) => {

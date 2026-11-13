@@ -22,7 +22,7 @@ import { idLabel } from '../../schema/schema-labels';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { INPUT_EXTERNAL_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../../schema/general';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
-import { elCreateIndexWithMapping, elFindByIds, elFlushSequencerWrites, elIndexExists, elPutIndexMappingProperties, elRawBulk, elRawSearch } from '../engine';
+import { elCreateIndexWithMapping, elFindByIds, elFlushSequencerWrites, elIndexExists, elPutIndexMappingProperties, elRawBulk, elRawMget, elRawSearch } from '../engine';
 import { creatableNestedIds, dedupFoundRelationIds, ignoreIndexAlreadyExists, isLockError, lockErrorKeys, relationDedupLockKey } from './sequencer-multi-writer';
 import { buildPendingRecords, fireReconcile, initPendingRefs, matchCreatedElement, persistPendingRecords, registerPendingRefsEsOps } from './sequencer-pending-refs';
 import type { StrippedRef, StrippedRefInput } from './sequencer-pending-refs';
@@ -41,6 +41,8 @@ import { buildIntent, intentOwnIds } from './sequencer-intent';
 import { sequencerIdentityMap, startIdentityMapInvalidation } from './sequencer-identity-map';
 import { buildBatchPlan, canonicalKey, classifyPhase } from './sequencer-batch-plan';
 import { computeBatchLockKeys, computeOwnLockKeys, getCurrentBatchLock, setCurrentBatchLock } from './sequencer-batch-lock';
+import { isNoopOfServedBasis, NoopMemo, noopRecordOf, settleNoopRecords, takeNoopMemoHits } from './sequencer-noop-memo';
+import type { NoopRecord, NoopTarget, NoopVersion, NoopVersionsOf } from './sequencer-noop-memo';
 import type { CoalesceGroup } from './sequencer-batch-plan';
 import type { IntentKind, SequencerIntent } from './sequencer-intent';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -116,6 +118,68 @@ const acquireBatchLock = async (keys: string[]) => {
 // s9.9: batches a group may be skipped for a failed in-batch producer before it applies
 // through today's path anyway
 const FAILED_PRODUCER_DEFER_LIMIT = 2;
+
+// task 0040 no-op memo (sequencer-noop-memo.ts): the recorded no-ops, the keys of the intents of
+// the running batch, and the entity types an apply already ended as a no-op
+const noopMemo = new NoopMemo(SEQUENCER_CONFIG.noopMemoSize);
+const noopMemoKeys = new WeakMap<SequencerIntent, string>();
+const noopMemoTypes = new Set<string>();
+// batch-local: the versions of the upsert targets read just before their basis, by internal id,
+// the no-ops seen at apply, recorded at commit (settleNoopRecords), and the ids of their targets,
+// evicted at commit like the written ones (outside writtenIds: settleNoopRecords drops a written
+// target)
+const basisVersions = new Map<string, NoopVersion>();
+const noopRecords: NoopRecord[] = [];
+const noopTargetIds: string[] = [];
+
+const noopVersionsOf: NoopVersionsOf = async (targets: NoopTarget[]) => {
+  const versions = new Map<string, NoopVersion>();
+  if (targets.length === 0) return versions;
+  const data = await elRawMget({ docs: targets.map(({ id, index }) => ({ _index: index, _id: id })), _source: false });
+  sequencerMetrics.esOp('mget');
+  (data?.docs ?? []).forEach((doc: any) => {
+    if (doc.found && typeof doc._seq_no === 'number') versions.set(doc._id, `${doc._seq_no}:${doc._primary_term}`);
+  });
+  return versions;
+};
+
+// A leader whose upsert changed nothing against the served basis: recorded at commit when nothing
+// else happened during its apply (no strip, no plan-time dead strip). Both the intent type and the
+// stored type key the memo (the hit check reads the first, the version read the second).
+const recordNoop = (group: CoalesceGroup, result: any, basis: any, stripSink: StrippedRef[]) => {
+  const { leader, absorbed } = group;
+  if (stripSink.length > 0 || [leader, ...absorbed].some((intent) => (intent.deadStrippedRefs ?? []).length > 0)) {
+    sequencerMetrics.mapEvent('noop_memo_stripped');
+    return;
+  }
+  const key = noopMemoKeys.get(leader);
+  if (!key) {
+    if (leader.kind === 'entity' && !noopMemoTypes.has(leader.type)) {
+      noopMemoTypes.add(leader.type);
+      noopMemoTypes.add(basis.entity_type);
+      sequencerMetrics.mapEvent('noop_memo_first_of_type');
+    } else {
+      sequencerMetrics.mapEvent('noop_memo_unkeyed'); // ineligible, or batched before its type was keyed
+    }
+    return;
+  }
+  const record = noopRecordOf(key, basis, result, basisVersions.get(basis.internal_id));
+  if (record) noopRecords.push(record);
+  else sequencerMetrics.mapEvent('noop_memo_no_version');
+};
+
+// commit of a batch, its lock still held
+const commitNoopRecords = async (writtenIds: string[]) => {
+  if (noopRecords.length === 0) return;
+  try {
+    const { kept, dropped } = await settleNoopRecords(noopRecords, writtenIds, noopVersionsOf);
+    kept.forEach((record) => noopMemo.record(record));
+    if (kept.length > 0) sequencerMetrics.mapEvent('noop_memo_recorded', kept.length);
+    if (dropped > 0) sequencerMetrics.mapEvent('noop_memo_record_dropped', dropped);
+  } catch (err) {
+    logApp.warn('[SEQUENCER] no-op memo versions unreadable at commit, nothing recorded', { cause: err });
+  }
+};
 
 export const isSequencerLoopAlive = () => loopStarted && !loopDead;
 
@@ -357,10 +421,23 @@ const loadUpsertBases = async (context: AuthContext, entityCandidateIds: Set<str
       if (sequencerIdentityMap.hasBare(id)) targetIds.add(id);
     });
     if (targetIds.size > 0) {
+      // task 0040 no-op memo: the versions of the targets of a memoized type, read BEFORE their
+      // basis, kept once the basis is loaded (a failed read records nothing)
+      const memoTargets = new Map<string, NoopTarget>();
+      if (SEQUENCER_CONFIG.noopMemo && noopMemoTypes.size > 0) {
+        targetIds.forEach((id) => {
+          const element = sequencerIdentityMap.peekBare(id);
+          if (element && noopMemoTypes.has(element.entity_type) && typeof element._index === 'string') {
+            memoTargets.set(element.internal_id, { id: element.internal_id, index: element._index });
+          }
+        });
+      }
+      const versions = memoTargets.size > 0 ? await noopVersionsOf(Array.from(memoTargets.values())).catch(() => null) : null;
       const loader = withRefsLoader;
       const loaded = await inPackets(Array.from(targetIds), (packet) => loader(context, SYSTEM_USER, packet));
       loaded.forEach((element) => sequencerIdentityMap.ingestWithRefs(element));
       sequencerMetrics.esOp('search', 3); // element + meta rels + their targets
+      versions?.forEach((version, id) => basisVersions.set(id, version));
     }
   }
 };
@@ -458,6 +535,9 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
   sequencerIdentityMap.clearAbsent();
   dedupPrefetch.clear();
   dedupPrefetchEndpoints.clear();
+  basisVersions.clear();
+  noopRecords.length = 0;
+  noopTargetIds.length = 0;
   const { typedIds, untypedIds, entityCandidateIds } = collectBatchResolveIds(batch);
   const typedMisses: string[] = [];
   const typedTypes = new Set<string>();
@@ -616,23 +696,31 @@ const applyGroup = async (
   // nested re-entrant creates land in the same sink and get attributed to the leader element
   // (documented POC approximation).
   const stripSink: StrippedRef[] = [];
+  const noopSink = new Map<string, object>();
   try {
-    const result = await leader.apply(stripSink);
+    const result = await leader.apply(stripSink, SEQUENCER_CONFIG.noopMemo ? noopSink : undefined);
     const element = result?.element ?? result;
     if (element?.internal_id) {
+      // task 0040: an upsert that changed nothing wrote nothing, its target is not re-ingested and
+      // it may be memoized
+      const noopBasis = SEQUENCER_CONFIG.noopMemo ? isNoopOfServedBasis(noopSink, element.internal_id, (id) => sequencerIdentityMap.withRefsBasisOf(id)) : null;
+      const noop = noopBasis !== null;
+      if (noopSink.has(element.internal_id)) sequencerMetrics.mapEvent(noop ? 'noop_memo_seen' : 'noop_memo_basis_mismatch');
       // read-your-writes for later intents of THIS batch (E2); evicted at commit (D4a).
       // P2 chaining (s9.7): when a with-refs basis already existed (the element predates
       // the batch, so this apply was an upsert whose result merges attributes and refs),
       // the result REPLACES the basis: the next chain step diffs against it instead of the
       // stale stored element. A creation result is never a valid basis (buildEntityData
       // strips the ref input fields): bare ingest only.
-      sequencerIdentityMap.ingestWritten(element, sequencerIdentityMap.hasWithRefs(element.internal_id));
+      if (noopBasis !== null) recordNoop(group, result, noopBasis, stripSink);
+      else sequencerIdentityMap.ingestWritten(element, sequencerIdentityMap.hasWithRefs(element.internal_id));
       // fix 2026-09-22: the written element's ids join the batch lock's held set, so a later
       // apply of this batch (a relation to an endpoint created here) does not take a real lock
       // on an internal id the batch lock could not predict
       const batchLock = getCurrentBatchLock();
       getInstanceIds(element).forEach((id: string) => {
-        writtenIds.push(id);
+        if (noop) noopTargetIds.push(id);
+        else writtenIds.push(id);
         if (batchLock) batchLock.heldKeys.add(id);
       });
       // s9.12.3 strip-and-reconcile: refs stripped during THIS apply (pushed into the
@@ -820,6 +908,35 @@ const runBatchLoop = async () => {
     if (batch.length === 0) continue;
     sequencerMetrics.queueDepth(queue.size());
     notifyQueueTaken();
+    // task 0040: the intents a recorded no-op settles leave the batch before any resolution
+    if (SEQUENCER_CONFIG.noopMemo) {
+      const { hits, rest, misses } = await takeNoopMemoHits(batch, noopMemo, noopVersionsOf, noopMemoKeys, noopMemoTypes)
+        .catch((err) => {
+          logApp.warn('[SEQUENCER] no-op memo versions unreadable, the batch applies', { cause: err });
+          return { hits: [], rest: batch, misses: null };
+        });
+      if (misses) {
+        if (misses.ineligible > 0) sequencerMetrics.mapEvent('noop_memo_ineligible', misses.ineligible);
+        if (misses.noEntry > 0) sequencerMetrics.mapEvent('noop_memo_no_entry', misses.noEntry);
+        if (misses.tokenChanged > 0) sequencerMetrics.mapEvent('noop_memo_token_changed', misses.tokenChanged);
+        if (misses.inBatchWriter > 0) sequencerMetrics.mapEvent('noop_memo_inbatch_writer', misses.inBatchWriter);
+      }
+      if (hits.length > 0) {
+        batch.length = 0;
+        rest.forEach((intent) => batch.push(intent));
+        hits.forEach(({ intent, result }) => {
+          sequencerMetrics.intent('noop_memo', intent.kind);
+          intent.resolve(result);
+          // as at the commit of an applied no-op
+          const reconciled = matchCreatedElement(result);
+          if (reconciled.length > 0) fireReconcile(reconciled);
+          const landed = matchLandedIntents(result);
+          if (landed.length > 0) fireResubmit(landed);
+        });
+        lanes.wake(settledIds(hits.map(({ intent }) => intent)), 'landed');
+        if (batch.length === 0) continue;
+      }
+    }
     // 2. pre-resolve (optimization: on failure the batch still applies through ES)
     try {
       sequencerIdentityMap.beginBatch(Date.now());
@@ -1280,6 +1397,8 @@ const runBatchLoop = async () => {
         const mEvents = sequencerMetrics.mark();
         await flushSequencerEvents(buffer.events);
         sequencerMetrics.phase('events', (Date.now() - tEvents) / 1000, mEvents);
+        // task 0040: after the flush (its writes are in the versions), before the unlock
+        await commitNoopRecords(writtenIds);
         // s9.12.3: persist this batch's strip records BEFORE resolving the intents (the
         // worker ack must never outrun the recorded debt), then match every committed
         // element against the pending population and re-assert the hits (fire-and-forget:
@@ -1338,11 +1457,15 @@ const runBatchLoop = async () => {
       setCurrentWriteBuffer(null);
       setCurrentBatchLock(null);
       if (writtenIds.length > 0) sequencerIdentityMap.evict(writtenIds, 'write');
+      if (noopTargetIds.length > 0) sequencerIdentityMap.evict(noopTargetIds, 'write');
       sequencerIdentityMap.clearWritten(); // batch-local: the next batch re-reads its writes from ES
       // s10.3: absence and prefetches are only valid while this batch's lock is held
       sequencerIdentityMap.clearAbsent();
       dedupPrefetch.clear();
       evictRelationUpsertBases();
+      basisVersions.clear();
+      noopRecords.length = 0;
+      noopTargetIds.length = 0;
       await lock.unlock();
     }
     // record the REAL assembly size (before the batchEwp-a diagnosis this recorded the
@@ -1405,7 +1528,7 @@ interface SubmitArgs {
   candidateIds: string[];
   referencedIds?: string[];
   memberRefIds?: Set<string>;
-  apply: (stripSink?: StrippedRef[]) => Promise<any>;
+  apply: (stripSink?: StrippedRef[], noopSink?: Map<string, object>) => Promise<any>;
 }
 
 // Called by the boundary (middleware.ts) AFTER isSequencerEligible returned true. The apply

@@ -287,6 +287,12 @@ export class SequencerIdentityMap {
     return entry !== undefined && entry.withRefs !== null;
   }
 
+  // The with-refs basis object serveWithRefs would hand an upsert, unfiltered: the no-op memo's
+  // validity token (sequencer-noop-memo.ts)
+  withRefsBasisOf(id: string): object | null {
+    return this.lookup(id)?.withRefs ?? null;
+  }
+
   resolveInternalId(id: string): string | null {
     const entry = this.lookup(id);
     return entry ? entry.element.internal_id : null;

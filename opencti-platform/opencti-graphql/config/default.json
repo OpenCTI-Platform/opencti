@@ -121,6 +121,8 @@
       "multi_writer": false,
       "contention_diag": false,
       "batch_lock_retry_delay_ms": 0,
+      "noop_memo": false,
+      "noop_memo_size": 50000,
       "origin": "worker"
     },
     "locked_account_statuses": {

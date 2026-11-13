@@ -106,6 +106,9 @@ interface AuthContext {
     scope: 'applying' | 'bypass';
     // s9.12.3: the running apply's strip sink, created by the loop (sequencer-strip-sink.ts)
     stripSink?: { targetRef: string; relType: string }[];
+    // task 0040: the elements the running apply upserted without any change, by internal id, each
+    // the diff basis it was compared with (no-op memo)
+    noopSink?: Map<string, object>;
     // Stage C identity map, served through the context so engine.ts needs no sequencer import
     resolutions?: {
       serveBare: (context: AuthContext, user: AuthUser, ids: string[], opts: Record<string, unknown>)

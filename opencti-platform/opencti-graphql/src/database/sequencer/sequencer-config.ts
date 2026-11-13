@@ -40,6 +40,10 @@ export interface SequencerConfig {
   dedupPrefetchMsearch: boolean;
   dedupPrefetchMsearchSize: number;
   writtenIndex: boolean;
+  // task 0040: entity upserts that changed nothing are kept in the identity map (not evicted as
+  // writes) and memoized, a later identical one settles at the batch start (sequencer-noop-memo.ts)
+  noopMemo: boolean;
+  noopMemoSize: number;
   pendingRefExpiryS: number;
   // s9.8.2 bounded member wait: plan passes spent waiting for a declared in-bundle member
   // before the ref is declared dead. With strip_reconcile on, a dead strip is recorded and
@@ -121,6 +125,9 @@ const readConfig = (): SequencerConfig => {
     // where producers and consumers share a batch: it closed 60% of the soft refs stripped at
     // apply on MITRE (207 to 87) and brought the run from 295 to 353 obj/s (legacy wave 391).
     writtenIndex: booleanConf('app:ingestion_sequencer:identity_map_written_index', true),
+    // Off until measured (task 0040)
+    noopMemo: booleanConf('app:ingestion_sequencer:noop_memo', false),
+    noopMemoSize: Math.max(1, Math.floor(Number(conf.get('app:ingestion_sequencer:noop_memo_size') ?? 50000))),
     pendingRefExpiryS: Number(conf.get('app:ingestion_sequencer:pending_ref_expiry_s') ?? 604800),
     memberWaitLimit: Number(conf.get('app:ingestion_sequencer:member_wait_limit') ?? 2),
     // B10 (2026-09-16): a deferral waiting on a queued producer is re-admitted when the

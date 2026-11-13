@@ -85,10 +85,13 @@ export const stripMemberRefMarks = (value: any, collected: Set<string>): any => 
 // (elFindByIds, storeLoadByIdsWithRefs) serve from it through context.sequencer.resolutions.
 // The map itself refuses to serve outside batch mode, so pass-through semantics are untouched.
 // It also carries the apply's strip sink, the loop's array by reference (sequencer-strip-sink.ts),
-// kept when an already applying context is scoped again.
-export const sequencerScopedContext = (context: AuthContext, scope: 'applying' | 'bypass', stripSink?: StrippedRef[]): AuthContext => {
+// kept when an already applying context is scoped again; its no-op sink likewise.
+export const sequencerScopedContext = (context: AuthContext, scope: 'applying' | 'bypass', stripSink?: StrippedRef[], noopSink?: Map<string, object>): AuthContext => {
   if (scope === 'applying') {
-    return { ...context, sequencer: { scope, resolutions: sequencerIdentityMap, stripSink: stripSink ?? context.sequencer?.stripSink } };
+    return {
+      ...context,
+      sequencer: { scope, resolutions: sequencerIdentityMap, stripSink: stripSink ?? context.sequencer?.stripSink, noopSink: noopSink ?? context.sequencer?.noopSink },
+    };
   }
   return { ...context, sequencer: { scope } };
 };
