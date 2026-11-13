@@ -55,11 +55,11 @@ class OpenCTIStix2Splitter:
         references, and incompatible items.
 
         :param logger: (optional) logger used to report the bundle normalization
-            warnings; without it, the warnings are returned with the
-            incompatible items
+            warnings, which are also kept in :py:attr:`warnings`
         :type logger: logging.Logger or None
         """
         self.logger = logger
+        self.warnings = []
         self.cache_index = {}
         self.cache_refs = {}
         self.elements = []
@@ -264,9 +264,7 @@ class OpenCTIStix2Splitter:
         :type event_version: str or None
         :param cleanup_inconsistent_bundle: whether to cleanup inconsistent references
         :type cleanup_inconsistent_bundle: bool
-        :return: tuple of (number of expectations, incompatible items, list of bundles);
-            without a logger, the incompatible items also hold the procedure
-            normalization warnings, as strings
+        :return: tuple of (number of expectations, incompatible items, list of bundles)
         :rtype: Tuple[int, list, list]
         """
         if use_json:
@@ -282,11 +280,10 @@ class OpenCTIStix2Splitter:
 
         # Convert procedures (x-procedure and their refs) before splitting
         bundle_data, warnings = normalize_procedure_bundle(bundle_data)
-        for warning in warnings:
-            if self.logger is not None:
+        self.warnings.extend(warnings)
+        if self.logger is not None:
+            for warning in warnings:
                 self.logger.warning(warning)
-            else:
-                self.incompatible_items.append(warning)
         if "id" not in bundle_data:
             bundle_data["id"] = "bundle--" + str(uuid.uuid4())
 
