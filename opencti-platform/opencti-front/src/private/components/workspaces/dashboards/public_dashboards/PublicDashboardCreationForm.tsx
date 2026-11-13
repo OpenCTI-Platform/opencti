@@ -22,7 +22,14 @@ import { fromB64 } from '../../../../../utils/String';
 import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
 import useHelper from '../../../../../utils/hooks/useHelper';
 import { DASHBOARD_VARIABLES_FEATURE_FLAG } from '../../../../../components/dashboard/dashboardVariablesFeatureFlag';
-import { buildPublicationInput, EMPTY_PUBLISHED_TIME_RANGE, generatePublicDashboardUriKey, type PublicDashboardCreationFormData } from './public-dashboard-utils';
+import {
+  buildPublicationInput,
+  EMPTY_PUBLISHED_TIME_RANGE,
+  generatePublicDashboardUriKey,
+  isOrderedPublishedTimeRange,
+  type PublicDashboardCreationFormData,
+  type PublishedTimeRange,
+} from './public-dashboard-utils';
 import PublicDashboardPublishedValues from './PublicDashboardPublishedValues';
 
 const publicDashboardCreateMutation = graphql`
@@ -90,6 +97,10 @@ const PublicDashboardCreationFormComponent = ({
     enabled: Yup.boolean(),
     max_markings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
     dashboard_id: Yup.string().required(t_i18n('This field is required')),
+    // Checked here too, so that the author sees it on the field instead of the refusal of the server
+    time_range: Yup.object().test('ordered-range', t_i18n("The end date can't be before start date"), (range) => (
+      !isVariablesEnabled || !range || isOrderedPublishedTimeRange(range as PublishedTimeRange)
+    )),
   });
 
   const onSubmit: FormikConfig<PublicDashboardCreationFormData>['onSubmit'] = (values, { setSubmitting, resetForm }) => {

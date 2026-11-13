@@ -69,6 +69,20 @@ describe('PublicDashboardPublishedValues', () => {
     expect(screen.queryByDisplayValue('Typed')).toBeNull();
   });
 
+  it('should show the error of the published range under the dates', async () => {
+    testRender(
+      <Formik
+        initialValues={{ variable_values: {}, time_range: EMPTY_PUBLISHED_TIME_RANGE }}
+        initialErrors={{ time_range: "The end date can't be before start date" }}
+        onSubmit={() => {}}
+      >
+        <PublicDashboardPublishedValues dashboard={dashboard('dashboard-1', 'Finance')} />
+      </Formik>,
+      { userContext: createMockUserContext({ me: { id: 'user-1', name: 'admin' } }) },
+    );
+    expect((await screen.findByTestId('public-dashboard-published-range-error')).textContent).toBe("The end date can't be before start date");
+  });
+
   it('should say under an emptied typed field that the default value is published', async () => {
     const { user } = renderSection(dashboard('dashboard-1', 'Finance'));
     const input = await screen.findByDisplayValue('Finance');

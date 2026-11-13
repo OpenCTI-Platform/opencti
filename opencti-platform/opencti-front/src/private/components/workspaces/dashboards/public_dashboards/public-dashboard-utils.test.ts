@@ -10,6 +10,7 @@ import {
   buildPublishedValuesState,
   buildPublishedVariables,
   buildPublishedVariableValues,
+  isOrderedPublishedTimeRange,
   isSamePublishedTimeRange,
   isTypedPublishedVariable,
   pickPublishedTimeRange,
@@ -154,5 +155,20 @@ describe('applyPublishedVariableChange', () => {
 
   it('should only count free text and numbers as typed', () => {
     expect([text, { ...text, type: 'numeric' as const }, textSelection, marking].map(isTypedPublishedVariable)).toEqual([true, true, false, false]);
+  });
+});
+
+describe('isOrderedPublishedTimeRange', () => {
+  const range = (startDate: string | null, endDate: string | null, relativeDate: string | null = null) => ({ startDate, endDate, relativeDate });
+
+  it('should refuse a start after the end, as the server does', () => {
+    expect(isOrderedPublishedTimeRange(range('2026-12-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z'))).toBe(false);
+  });
+
+  it('should accept an ordered or equal range, an open range, and any range under a relative date', () => {
+    expect(isOrderedPublishedTimeRange(range('2026-01-01T00:00:00.000Z', '2026-12-01T00:00:00.000Z'))).toBe(true);
+    expect(isOrderedPublishedTimeRange(range('2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'))).toBe(true);
+    expect(isOrderedPublishedTimeRange(range('2026-12-01T00:00:00.000Z', null))).toBe(true);
+    expect(isOrderedPublishedTimeRange(range('2026-12-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z', 'days-7'))).toBe(true);
   });
 });
