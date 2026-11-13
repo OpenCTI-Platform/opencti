@@ -51,6 +51,7 @@ export const hasActiveGraphFilters = (graphState: GraphState): boolean => {
   return graphState.disabledEntityTypes.length > 0
     || graphState.disabledCreators.length > 0
     || graphState.disabledMarkings.length > 0
+    || (graphState.disabledRelationshipTypes?.length ?? 0) > 0
     || !!graphState.selectedTimeRangeInterval;
 };
 
