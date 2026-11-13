@@ -132,6 +132,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                     'incidents',
                     'malwares',
                     'attack_patterns',
+                    'procedures',
                     'tools',
                     'channels',
                     'narratives',

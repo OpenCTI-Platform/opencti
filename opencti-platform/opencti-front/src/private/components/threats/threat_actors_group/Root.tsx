@@ -124,6 +124,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                     'incidents',
                     'malwares',
                     'attack_patterns',
+                    'procedures',
                     'channels',
                     'narratives',
                     'tools',

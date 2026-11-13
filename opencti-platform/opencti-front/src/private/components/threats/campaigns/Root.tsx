@@ -129,6 +129,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                     'channels',
                     'narratives',
                     'attack_patterns',
+                    'procedures',
                     'vulnerabilities',
                     'indicators',
                     'observables',

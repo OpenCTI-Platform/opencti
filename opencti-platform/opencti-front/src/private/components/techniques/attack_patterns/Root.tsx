@@ -116,6 +116,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
                   availableSections={[
                     'victimology',
                     'threat_actors',
+                    'procedures',
                     'intrusion_sets',
                     'campaigns',
                     'incidents',

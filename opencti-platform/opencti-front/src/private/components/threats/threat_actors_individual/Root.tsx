@@ -143,6 +143,7 @@ const RootThreatActorIndividualComponent = ({
                     'organizations',
                     'malwares',
                     'attack_patterns',
+                    'procedures',
                     'channels',
                     'narratives',
                     'tools',

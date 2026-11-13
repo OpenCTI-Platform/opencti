@@ -160,6 +160,19 @@ const ThreatActorGroupKnowledgeComponent = ({
           )}
         />
         <Route
+          path="/procedures"
+          element={(
+            <EntityStixCoreRelationships
+              key={location.pathname}
+              entityId={threatActorGroup.id}
+              relationshipTypes={['uses']}
+              stixCoreObjectTypes={['Procedure']}
+              entityLink={link}
+              isRelationReversed={false}
+            />
+          )}
+        />
+        <Route
           path="/malwares"
           element={(
             <EntityStixCoreRelationships
