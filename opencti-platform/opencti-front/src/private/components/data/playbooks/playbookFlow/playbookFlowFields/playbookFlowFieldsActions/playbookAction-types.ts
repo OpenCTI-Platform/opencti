@@ -42,6 +42,9 @@ export const attributesMultiple = [
   'killChainPhases',
   'indicator_types',
   'report_types',
+  'response_types',
+  'information_types',
+  'takedown_types',
   'x_mitre_platforms',
 ];
 
