@@ -24,14 +24,17 @@ const decodeDashboardManifest = (workspace: WorkspaceLike): StoreDashboardManife
   if (workspace.type !== 'dashboard' || !workspace.manifest) return null;
   const cached = decodedManifests.get(workspace);
   if (cached && cached.encoded === workspace.manifest) return cached.manifest;
-  const manifest = fromB64<StoreDashboardManifest>(workspace.manifest);
+  // These fields are read on every dashboard: a manifest that cannot be decoded gives no variable nor preset instead
+  // of failing the non-null fields, and with them the whole workspace.
+  const manifest = parseManifestObject(workspace.manifest) as StoreDashboardManifest | null;
+  if (!manifest) return null;
   decodedManifests.set(workspace, { encoded: workspace.manifest, manifest });
   return manifest;
 };
 
 export const toGraphqlDashboardVariables = (workspace: WorkspaceLike): DashboardVariable[] => {
   const manifest = decodeDashboardManifest(workspace);
-  if (!manifest || !manifest.variables || manifest.variables.length === 0) return [];
+  if (!manifest || !Array.isArray(manifest.variables) || manifest.variables.length === 0) return [];
   const usage = computeDashboardVariablesUsage(manifest.widgets);
   return manifest.variables.map((variable) => {
     const { restriction } = variable;
@@ -55,8 +58,8 @@ export const toGraphqlDashboardVariables = (workspace: WorkspaceLike): Dashboard
 
 export const toGraphqlDashboardPresets = (workspace: WorkspaceLike): DashboardPreset[] => {
   const manifest = decodeDashboardManifest(workspace);
-  if (!manifest) return [];
-  return (manifest.presets ?? []).map((preset) => ({
+  if (!manifest || !Array.isArray(manifest.presets)) return [];
+  return manifest.presets.map((preset) => ({
     id: preset.id,
     name: preset.name,
     values: Object.entries(preset.values ?? {}).map(([variableId, value]) => ({ variableId, value })),
@@ -88,7 +91,8 @@ export const findCurrentUserDefaultPresetId = (user: AuthUser, workspace: Worksp
   const holder = holders.find((candidate) => candidate.default_dashboard === workspace.id);
   if (!holder?.default_dashboard_preset) return null;
   const manifest = decodeDashboardManifest(workspace);
-  return (manifest?.presets ?? []).some((preset) => preset.id === holder.default_dashboard_preset) ? holder.default_dashboard_preset : null;
+  const presets = Array.isArray(manifest?.presets) ? manifest.presets : [];
+  return presets.some((preset) => preset.id === holder.default_dashboard_preset) ? holder.default_dashboard_preset : null;
 };
 
 const parseManifestObject = (encoded: string): Record<string, unknown> | null => {
