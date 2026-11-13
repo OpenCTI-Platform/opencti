@@ -86,6 +86,11 @@ const PublicDashboardCreationFormComponent = ({
     enabled: Yup.boolean(),
     max_markings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
     dashboard_id: Yup.string().required(t_i18n('This field is required')),
+    // The published values must be those of the selected dashboard: no submission, by button or by keyboard,
+    // while they load.
+    published_for: Yup.string().nullable().test('published-values-loaded', t_i18n('The published values of the selected dashboard are still loading'), function isLoaded(value) {
+      return !this.parent.dashboard_id || value === this.parent.dashboard_id;
+    }),
   });
 
   const onSubmit: FormikConfig<PublicDashboardCreationFormData>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
@@ -212,8 +217,7 @@ const PublicDashboardCreationFormComponent = ({
               {t_i18n('Cancel')}
             </Button>
             <Button
-              // The published values must be those of the selected dashboard: no publication while they load.
-              disabled={isSubmitting || !isValid || !dirty || (!!values.dashboard_id && values.published_for !== values.dashboard_id)}
+              disabled={isSubmitting || !isValid || !dirty}
               onClick={submitForm}
             >
               {t_i18n('Create')}

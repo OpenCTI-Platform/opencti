@@ -92,6 +92,12 @@ describe('PublicDashboardCreationForm', () => {
     await user.click(screen.getByRole('button', { name: 'Pick a marking' }));
     const create = screen.getByRole('button', { name: 'Create' });
     expect(create).toBeDisabled();
+    // A native submit (Enter in a field) is refused as well: the form itself is invalid while the values load.
+    await user.type(screen.getByLabelText('Name'), '{Enter}');
+    await new Promise((resolve) => {
+      setTimeout(resolve, 100);
+    });
+    expect(captured.commit).not.toHaveBeenCalled();
     act(() => {
       relayEnv.mock.resolveMostRecentOperation({
         data: { workspace: { id: 'dashboard-1', manifest: MANIFEST, variables: [{ id: SECTOR, usedInWidgetIds: ['widget-1'] }], presets: [] } },
