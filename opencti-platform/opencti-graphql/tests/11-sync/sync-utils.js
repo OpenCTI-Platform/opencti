@@ -101,10 +101,10 @@ export const checkPreSyncContent = async () => {
   const initStixReport = convertStoreToStix_2_1(initReport);
   return { objectMap, relMap, initStixReport };
 };
-const computeMapDifferences = (before, after) => {
+const computeMapDifferences = (before, after, ignoredKeys = []) => {
   const failedExpects = [];
   // Both sides: a type can be missing on either one
-  new Set([...before.keys(), ...after.keys()]).forEach((key) => {
+  [...new Set([...before.keys(), ...after.keys()])].filter((key) => !ignoredKeys.includes(key)).forEach((key) => {
     const current = `${key} - ${after.get(key)}`;
     const expected = `${key} - ${before.get(key)}`;
     if (current !== expected) {
@@ -113,8 +113,8 @@ const computeMapDifferences = (before, after) => {
   });
   return failedExpects;
 };
-export const checkMapConsistency = (before, after) => {
-  const failedExpects = computeMapDifferences(before, after);
+export const checkMapConsistency = (before, after, ignoredKeys = []) => {
+  const failedExpects = computeMapDifferences(before, after, ignoredKeys);
   expect(failedExpects.length, `checkMapConsistency failed ${JSON.stringify(failedExpects)}`).toEqual(0);
 };
 const fetchRemoteStats = async (client, remoteUri) => {
@@ -178,11 +178,11 @@ export const waitForRemoteSync = async (remoteUri, objectMap, relMap, isRemoteRe
     }
   }
 };
-export const checkPostSyncContent = async (remoteUri, objectMap, relMap, initStixReport) => {
+export const checkPostSyncContent = async (remoteUri, objectMap, relMap, initStixReport, ignoredRelTypes = []) => {
   const client = createHttpClient();
   const { syncObjectMap, syncRelMap } = await fetchRemoteStats(client, remoteUri);
   checkMapConsistency(objectMap, syncObjectMap);
-  checkMapConsistency(relMap, syncRelMap);
+  checkMapConsistency(relMap, syncRelMap, ignoredRelTypes);
   const reportData = await executeExternalQuery(client, remoteUri, REPORT_QUERY, {
     id: 'report--f2b63e80-b523-4747-a069-35c002c690db',
   });

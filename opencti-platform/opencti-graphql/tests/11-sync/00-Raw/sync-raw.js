@@ -87,7 +87,5 @@ export const syncRaw = async () => {
   // TODO Remove with the fix of #10095: the create event does not carry the organizations granted by default to an entity
   // created by a user outside the platform organization (opinion-test.js creates one), so the raw replay cannot rebuild them.
   // The other syncs recover from Elasticsearch and get them.
-  const replayableRelMap = new Map(relMap);
-  replayableRelMap.delete('Granted');
-  await checkPostSyncContent(SYNC_RAW_START_REMOTE_URI, objectMap, replayableRelMap, initStixReport);
+  await checkPostSyncContent(SYNC_RAW_START_REMOTE_URI, objectMap, relMap, initStixReport, ['Granted']);
 };
