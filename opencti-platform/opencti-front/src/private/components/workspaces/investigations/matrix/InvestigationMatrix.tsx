@@ -36,8 +36,8 @@ import { analyseTechniqueUsage } from './ttpAnalyser';
 import { computeHeatScale } from './heatScale';
 import { buildCellDecorations, MatrixTechniqueNode } from './buildCellDecorations';
 import HeatmapLegend from './HeatmapLegend';
+import { formatNameList } from '@components/techniques/attack_patterns/attack_patterns_matrix/attackPatternsMatrixCellDecoration';
 import {
-  formatNameList,
   getInvestigationAttackPatterns,
   getKillChainTechniqueIds,
   getUnplacedAttackPatterns,

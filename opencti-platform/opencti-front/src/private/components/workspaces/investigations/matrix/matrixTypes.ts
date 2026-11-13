@@ -1,8 +1,4 @@
-export interface LinkedEntity {
-  id: string;
-  name: string;
-  entity_type: string;
-}
+import type { LinkedEntity } from '@components/techniques/attack_patterns/attack_patterns_matrix/attackPatternsMatrixCellDecoration';
 
 export interface TechniqueUsage {
   attackPatternId: string;
@@ -12,12 +8,4 @@ export interface TechniqueUsage {
 
 export interface HeatScale {
   max: number; // min is always 1
-}
-
-export interface CellDecoration {
-  fill?: string;
-  border?: string;
-  textTone?: 'dark' | 'default';
-  linkedEntities: LinkedEntity[];
-  accessibleName: string;
 }

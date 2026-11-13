@@ -7,7 +7,7 @@ import AttackPatternsMatrixColumns, { AttackPatternsMatrixColumnsProps } from '.
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
 import { getMatrixConfig, MatrixVariant } from './attackPatternsMatrixConfig';
-import type { CellDecoration } from '@components/workspaces/investigations/matrix/matrixTypes';
+import type { CellDecoration } from './attackPatternsMatrixCellDecoration';
 
 export interface AttackPatternsMatrixProps {
   attackPatterns: ReadonlyArray<{ id: string }>;

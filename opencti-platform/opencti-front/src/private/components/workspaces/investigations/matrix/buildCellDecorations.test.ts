@@ -4,7 +4,8 @@ import en from '../../../../../../lang/front/en.json';
 import { buildCellDecorations, type MatrixTechniqueNode } from './buildCellDecorations';
 import { analyseTechniqueUsage } from './ttpAnalyser';
 import { heatBorder, heatFill } from './heatScale';
-import type { LinkedEntity, TechniqueUsage } from './matrixTypes';
+import type { LinkedEntity } from '@components/techniques/attack_patterns/attack_patterns_matrix/attackPatternsMatrixCellDecoration';
+import type { TechniqueUsage } from './matrixTypes';
 import type { ObjectToParse } from '../../../../../components/graph/utils/useGraphParser';
 
 // The English messages through react-intl, like t_i18n with `values`: ICU plurals are resolved.

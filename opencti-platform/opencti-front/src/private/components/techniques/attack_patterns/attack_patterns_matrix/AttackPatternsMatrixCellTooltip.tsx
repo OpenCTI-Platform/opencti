@@ -1,8 +1,7 @@
 import React, { ReactElement } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../../../components/i18n';
-import { formatNameList } from '../../../workspaces/investigations/matrix/investigationMatrixUtils';
-import type { CellDecoration } from '../../../workspaces/investigations/matrix/matrixTypes';
+import { type CellDecoration, formatNameList } from './attackPatternsMatrixCellDecoration';
 
 const MAX_LISTED_ENTITIES = 10;
 

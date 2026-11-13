@@ -21,7 +21,7 @@ import { hexToRGB } from '../../../../../utils/Colors';
 import type { Theme } from '../../../../../components/Theme';
 import { containerTypes } from '../../../../../utils/hooks/useAttributes';
 import { MatrixConfig } from './attackPatternsMatrixConfig';
-import type { CellDecoration } from '../../../workspaces/investigations/matrix/matrixTypes';
+import type { CellDecoration } from './attackPatternsMatrixCellDecoration';
 
 export type AttackPatternsOfPhase = NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number];
 export type AttackPattern = NonNullable<AttackPatternsOfPhase['attackPatterns']>[number];

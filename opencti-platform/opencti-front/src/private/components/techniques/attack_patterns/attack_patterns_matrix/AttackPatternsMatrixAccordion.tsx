@@ -24,7 +24,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
 import { MatrixConfig } from './attackPatternsMatrixConfig';
 import AttackPatternsMatrixCellTooltip from './AttackPatternsMatrixCellTooltip';
-import type { CellDecoration } from '../../../workspaces/investigations/matrix/matrixTypes';
+import type { CellDecoration } from './attackPatternsMatrixCellDecoration';
 
 interface AccordionAttackPatternProps {
   attackPattern: FilteredAttackPattern;
