@@ -38,6 +38,7 @@ import { isAuthenticationForcedFromEnv } from '../modules/authenticationProvider
 import { updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../domain/setting-auth';
 import { readPasswordHistoryCount } from '../modules/user/user-password-history';
 import { LOCAL_AUTH_LOCKOUT_DEFAULTS } from '../domain/local-auth-lockout';
+import { isSessionPresenceSupported } from '../modules/session/session-presence-domain';
 
 const settingsResolvers = {
   Query: {
@@ -60,6 +61,8 @@ const settingsResolvers = {
     platform_ip_whitelist_enabled: (settings) => settings.platform_ip_whitelist_enabled ?? false,
     platform_ip_whitelist_exclusions: (settings, __, context) => internalFindByIds(context, context.user, settings.platform_ip_whitelist_exclusion_ids),
     otp_mandatory: (settings) => settings.otp_mandatory ?? false,
+    platform_session_presence_enabled: (settings) => settings.platform_session_presence_enabled ?? false,
+    platform_session_presence_supported: () => isSessionPresenceSupported(),
     platform_email: (settings) => smtpConfiguredEmail(settings),
     platform_email_configurable: () => isEmailRewriteAllowed(),
     password_policy_min_length: (settings) => settings.password_policy_min_length ?? 0,

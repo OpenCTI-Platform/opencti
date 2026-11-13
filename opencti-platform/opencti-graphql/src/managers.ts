@@ -37,6 +37,9 @@ import supportPackageListener from './modules/support/supportPackage-listener';
 export const startModules = async () => {
   const startingPromises = [];
 
+  // List the node in the cluster before it accepts any connection, see clusterManager
+  await clusterManager.registerStartingNode();
+
   // region API initialization
   if (ENABLED_API) {
     await httpServer.start();
