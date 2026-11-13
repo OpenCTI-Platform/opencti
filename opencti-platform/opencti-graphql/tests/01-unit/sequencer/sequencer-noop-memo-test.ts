@@ -1,6 +1,16 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { isNoopOfServedBasis, NoopMemo, NoopMemoDiag, noopMemoKey, noopRecordOf, settleNoopRecords, takeNoopMemoHits } from '../../../src/database/sequencer/sequencer-noop-memo';
-import type { NoopRecord, NoopTarget, NoopVersionsOf } from '../../../src/database/sequencer/sequencer-noop-memo';
+import {
+  isNoopOfServedBasis,
+  NoopMemo,
+  NoopMemoDiag,
+  noopMemoKey,
+  noopRecordOf,
+  noopTokenOf,
+  sameNoopToken,
+  settleNoopRecords,
+  takeNoopMemoHits,
+} from '../../../src/database/sequencer/sequencer-noop-memo';
+import type { NoopRecord, NoopTarget, NoopToken, NoopVersionsOf } from '../../../src/database/sequencer/sequencer-noop-memo';
 import { buildIntent } from '../../../src/database/sequencer/sequencer-intent';
 import { SequencerIdentityMap } from '../../../src/database/sequencer/sequencer-identity-map';
 import { SEQUENCER_CONFIG } from '../../../src/database/sequencer/sequencer-config';
@@ -75,9 +85,17 @@ describe('noopMemoKey: eligibility and canonical input', () => {
     expect(noopMemoKey(intentOf({ input: { created: new Date('invalid') } }))).toBeNull();
   });
 
-  it('should refuse relations, opts, replay contexts and drafts', () => {
+  it('should key a complete create apart from a plain one (markings are created complete)', () => {
+    const complete = noopMemoKey(intentOf({ opts: { complete: true } }));
+    expect(complete).not.toBeNull();
+    expect(complete).not.toEqual(noopMemoKey(intentOf({})));
+    expect(noopMemoKey(intentOf({ opts: { complete: false } }))).toEqual(noopMemoKey(intentOf({})));
+  });
+
+  it('should refuse relations, other opts, replay contexts and drafts', () => {
     expect(noopMemoKey(intentOf({ kind: 'relation' }))).toBeNull();
-    expect(noopMemoKey(intentOf({ opts: { complete: true } }))).toBeNull();
+    expect(noopMemoKey(intentOf({ opts: { complete: true, noEnrichOnUpdate: true } }))).toBeNull();
+    expect(noopMemoKey(intentOf({ opts: { references: [] } }))).toBeNull();
     expect(noopMemoKey(intentOf({ context: { eventId: '1-0' } }))).toBeNull();
     expect(noopMemoKey(intentOf({ context: { synchronizedUpsert: true } }))).toBeNull();
     expect(noopMemoKey(intentOf({ context: { draft_context: 'draft1' } }))).toBeNull();
@@ -96,15 +114,18 @@ describe('noopMemoKey: eligibility and canonical input', () => {
   });
 });
 
-const recordOf = (key: string, basis: Record<string, any>, version = '7:1') => noopRecordOf(key, { _index: 'idx', ...basis }, { _index: 'idx', ...basis }, version) as NoopRecord;
+// A token: the version, and the hash of a source named by `content` (same content, same hash)
+const tok = (version: string, content = 'v1'): NoopToken => ({ version, hash: `h-${content}` });
+const recordOf = (key: string, basis: Record<string, any>, version = '7:1') => noopRecordOf(key, { _index: 'idx', ...basis }, { _index: 'idx', ...basis }, tok(version)) as NoopRecord;
 
 // The stored versions a fake engine serves, by internal id; every read is logged
-const versionsServer = (initial: Record<string, string>) => {
-  const versions = new Map(Object.entries(initial));
+// stored versions as 'seq:term' (source unchanged, hash of 'v1') or as tokens
+const versionsServer = (initial: Record<string, string | NoopToken>) => {
+  const versions = new Map(Object.entries(initial).map(([id, v]) => [id, typeof v === 'string' ? tok(v) : v]));
   const reads: NoopTarget[][] = [];
   const versionsOf: NoopVersionsOf = async (targets) => {
     reads.push(targets);
-    return new Map(targets.flatMap(({ id }) => (versions.has(id) ? [[id, versions.get(id) as string] as const] : [])));
+    return new Map(targets.flatMap(({ id }) => (versions.has(id) ? [[id, versions.get(id) as NoopToken] as const] : [])));
   };
   return { versions, reads, versionsOf };
 };
@@ -112,16 +133,22 @@ const versionsServer = (initial: Record<string, string>) => {
 describe('noopRecordOf: what a no-op apply leaves to record', () => {
   it('should carry the target, its index, its ids and the version read before the basis', () => {
     const basis = { _index: 'idx', ...basisOf('i1', 'external-reference--1', { x_opencti_stix_ids: ['external-reference--old'] }) };
-    const record = noopRecordOf('k', basis, basis, '7:1');
-    expect(record).toMatchObject({ key: 'k', targetId: 'i1', targetIndex: 'idx', version: '7:1', result: basis });
+    const record = noopRecordOf('k', basis, basis, tok('7:1'));
+    expect(record).toMatchObject({ key: 'k', targetId: 'i1', targetIndex: 'idx', token: tok('7:1'), result: basis });
     expect(record?.targetIds).toEqual(expect.arrayContaining(['i1', 'external-reference--1', 'external-reference--old']));
   });
 
   it('should refuse a basis without a version read before it, a result of another element, a basis without index', () => {
     const basis = { _index: 'idx', ...basisOf('i1', 'external-reference--1') };
     expect(noopRecordOf('k', basis, basis, undefined)).toBeNull();
-    expect(noopRecordOf('k', basis, { ...basis, internal_id: 'i2' }, '7:1')).toBeNull();
-    expect(noopRecordOf('k', basisOf('i1', 'external-reference--1'), basisOf('i1', 'external-reference--1'), '7:1')).toBeNull();
+    expect(noopRecordOf('k', basis, { ...basis, internal_id: 'i2' }, tok('7:1'))).toBeNull();
+    expect(noopRecordOf('k', basisOf('i1', 'external-reference--1'), basisOf('i1', 'external-reference--1'), tok('7:1'))).toBeNull();
+  });
+
+  it('should read the target of a complete result under its element', () => {
+    const basis = { _index: 'idx', ...basisOf('i1', 'marking-definition--1') };
+    const complete = { element: basis, isCreation: false, event: null };
+    expect(noopRecordOf('k', basis, complete, tok('7:1'))).toMatchObject({ targetId: 'i1', result: complete });
   });
 });
 
@@ -152,8 +179,8 @@ describe('settleNoopRecords: record only a no-op of the version read before its 
     expect(reads).toEqual([[{ id: 'i1', index: 'idx' }, { id: 'i2', index: 'idx' }]]);
   });
 
-  it('should drop a record whose target changed after its basis was read (a ref appended later in the batch, another platform)', async () => {
-    const { versionsOf } = versionsServer({ i1: '9:1' });
+  it('should drop a record whose target changed after its basis was read (an attribute, another platform)', async () => {
+    const { versionsOf } = versionsServer({ i1: tok('9:1', 'v2') });
     const { kept, dropped } = await settleNoopRecords([recordOf('a', basis)], [], versionsOf);
     expect(kept).toEqual([]);
     expect(dropped).toEqual(1);
@@ -169,12 +196,18 @@ describe('settleNoopRecords: record only a no-op of the version read before its 
 
   it('should drop a record whose target is gone (merged, deleted) or whose primary term changed', async () => {
     expect((await settleNoopRecords([recordOf('a', basis)], [], versionsServer({}).versionsOf)).kept).toEqual([]);
-    expect((await settleNoopRecords([recordOf('a', basis)], [], versionsServer({ i1: '7:2' }).versionsOf)).kept).toEqual([]);
+    expect((await settleNoopRecords([recordOf('a', basis)], [], versionsServer({ i1: tok('7:2', 'v2') }).versionsOf)).kept).toEqual([]);
+  });
+
+  it('should keep a record whose version moved but whose source without rel_* and refreshed_at did not (a citing entity appended a ref)', async () => {
+    const { kept, hashMatches } = await settleNoopRecords([recordOf('a', basis)], [], versionsServer({ i1: tok('9:1', 'v1') }).versionsOf);
+    expect(kept.map((r) => r.key)).toEqual(['a']);
+    expect(hashMatches).toEqual(1);
   });
 });
 
 describe('takeNoopMemoHits: settle only what can be nothing else', () => {
-  const setup = (stored: Record<string, string> = { i1: '7:1' }) => {
+  const setup = (stored: Record<string, string | NoopToken> = { i1: '7:1' }) => {
     const memo = new NoopMemo(100);
     const basis = basisOf('i1', 'external-reference--1');
     const key = noopMemoKey(intentOf({})) as string;
@@ -196,13 +229,20 @@ describe('takeNoopMemoHits: settle only what can be nothing else', () => {
   });
 
   it('should not settle once the target changed or is gone, and forget the entry', async () => {
-    const changed = setup({ i1: '8:1' });
+    const changed = setup({ i1: tok('8:1', 'v2') });
     const first = await takeNoopMemoHits([intentOf({})], changed.memo, changed.versionsOf, changed.keys, changed.types);
     expect(first.hits).toEqual([]);
     expect(first.misses.tokenChanged).toEqual(1);
     expect(changed.memo.get(changed.key)).toBeUndefined();
     const gone = setup({});
     expect((await takeNoopMemoHits([intentOf({})], gone.memo, gone.versionsOf, gone.keys, gone.types)).hits).toEqual([]);
+  });
+
+  it('should settle when only refs appended by citing entities moved the version', async () => {
+    const appended = setup({ i1: tok('8:1', 'v1') });
+    const { hits, misses } = await takeNoopMemoHits([intentOf({})], appended.memo, appended.versionsOf, appended.keys, appended.types);
+    expect(hits).toHaveLength(1);
+    expect(misses.hashMatches).toEqual(1);
   });
 
   it('should not read any version when no intent has an entry', async () => {
@@ -254,12 +294,27 @@ describe('takeNoopMemoHits: settle only what can be nothing else', () => {
 
   it('should key an ineligible intent nowhere and never settle it', async () => {
     const { memo, versionsOf, keys, types } = setup();
-    const withOpts = intentOf({ opts: { complete: true } });
+    const withOpts = intentOf({ opts: { references: ['x'] } });
     const { hits, rest, misses } = await takeNoopMemoHits([withOpts], memo, versionsOf, keys, types);
     expect(hits).toEqual([]);
     expect(rest).toEqual([withOpts]);
     expect(keys.has(withOpts)).toBe(false);
     expect(misses.ineligible).toEqual(1);
+  });
+});
+
+describe('noop token: version, or source without rel_* and refreshed_at', () => {
+  it('should hash a source independently of its key order, and tell different sources apart', () => {
+    expect(noopTokenOf(1, 1, { a: 1, b: [1, { c: 2 }] }).hash).toEqual(noopTokenOf(2, 1, { b: [1, { c: 2 }], a: 1 }).hash);
+    expect(noopTokenOf(1, 1, { a: 1 }).hash).not.toEqual(noopTokenOf(1, 1, { a: 2 }).hash);
+    expect(noopTokenOf(7, 3, {}).version).toEqual('7:3');
+  });
+
+  it('should hold on the same version or the same hash, never on an absent document', () => {
+    expect(sameNoopToken(tok('1:1', 'x'), tok('1:1', 'y'))).toBe(true);
+    expect(sameNoopToken(tok('2:1', 'x'), tok('1:1', 'x'))).toBe(true);
+    expect(sameNoopToken(tok('2:1', 'y'), tok('1:1', 'x'))).toBe(false);
+    expect(sameNoopToken(undefined, tok('1:1', 'x'))).toBe(false);
   });
 });
 
@@ -273,7 +328,7 @@ describe('NoopMemoDiag: per type outcomes for the diagnosis', () => {
       intentOf({}), // hit
       intentOf({}), // hit, same key
       intentOf({ input: { source_name: 'other' }, candidateIds: ['external-reference--2'] }), // no entry
-      intentOf({ opts: { complete: true }, candidateIds: ['external-reference--3'] }), // ineligible
+      intentOf({ opts: { references: ['x'] }, candidateIds: ['external-reference--3'] }), // ineligible
     ];
     await takeNoopMemoHits(batch, memo, versionsServer({ i1: '7:1' }).versionsOf, new WeakMap(), new Set(['External-Reference']), (intent, outcome, k) => diag.count(intent.type, outcome, k));
     diag.count('External-Reference', 'recorded', key);

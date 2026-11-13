@@ -94,13 +94,18 @@ const STIX_LIKE_ID = /^[a-z][a-z0-9-]*--/;
 // Step 2 (narrowed lock): the meta objects an apply may CREATE from its own input, so two platforms
 // could create them at once: a label given by its value, an external reference or a kill chain
 // phase given as an object. A meta object given by its id already exists (or is created by its own
-// intent): the apply only reads it and appends to it, it needs no lock across platforms.
-export const creatableNestedIds = (input: Record<string, any>): string[] => {
+// intent): the apply only reads it and appends to it, it needs no lock across platforms. Likewise a
+// label given by its value that already exists (`labelKnown`): the apply resolves it and never writes
+// it (object-label_to is not an impacted role).
+export const creatableNestedIds = (input: Record<string, any>, labelKnown: (id: string) => boolean = () => false): string[] => {
   const out: string[] = [];
   const labels = input[INPUT_LABELS];
   if (Array.isArray(labels)) {
     labels.forEach((label: unknown) => {
-      if (typeof label === 'string' && !STIX_LIKE_ID.test(label)) out.push(idLabel(label));
+      if (typeof label === 'string' && !STIX_LIKE_ID.test(label)) {
+        const id = idLabel(label);
+        if (!labelKnown(id)) out.push(id);
+      }
     });
   }
   const objects = (entries: unknown, type: string) => {

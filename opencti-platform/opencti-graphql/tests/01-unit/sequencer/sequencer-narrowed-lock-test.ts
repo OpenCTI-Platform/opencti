@@ -82,6 +82,11 @@ describe('meta objects an apply may create', () => {
     expect(creatableNestedIds({ objectLabel: ['apt', 'label--8f4c2b52-6f4b-5c4a-9d3e-111111111111'] })).toEqual([idLabel('apt')]);
   });
 
+  it('should not count a label given by its value that already exists, only the unknown ones', () => {
+    const known = new Set([idLabel('apt')]);
+    expect(creatableNestedIds({ objectLabel: ['apt', 'ransomware'] }, (id) => known.has(id))).toEqual([idLabel('ransomware')]);
+  });
+
   it('should count external references and kill chain phases given as objects, not as ids', () => {
     const reference = { source_name: 'mitre-attack', url: 'https://attack.mitre.org/techniques/T1059', external_id: 'T1059' };
     const phase = { kill_chain_name: 'mitre-attack', phase_name: 'execution' };

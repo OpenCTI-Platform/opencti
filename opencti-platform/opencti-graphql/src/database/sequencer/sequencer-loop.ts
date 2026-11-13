@@ -41,8 +41,8 @@ import { buildIntent, intentOwnIds } from './sequencer-intent';
 import { sequencerIdentityMap, startIdentityMapInvalidation } from './sequencer-identity-map';
 import { buildBatchPlan, canonicalKey, classifyPhase } from './sequencer-batch-plan';
 import { computeBatchLockKeys, computeOwnLockKeys, getCurrentBatchLock, setCurrentBatchLock } from './sequencer-batch-lock';
-import { isNoopOfServedBasis, NoopMemo, NoopMemoDiag, noopRecordOf, settleNoopRecords, takeNoopMemoHits } from './sequencer-noop-memo';
-import type { NoopDiagOutcome, NoopRecord, NoopTarget, NoopVersion, NoopVersionsOf } from './sequencer-noop-memo';
+import { isNoopOfServedBasis, NOOP_TOKEN_SOURCE_EXCLUDES, NoopMemo, NoopMemoDiag, noopRecordOf, noopTokenOf, settleNoopRecords, takeNoopMemoHits } from './sequencer-noop-memo';
+import type { NoopDiagOutcome, NoopRecord, NoopTarget, NoopToken, NoopVersionsOf } from './sequencer-noop-memo';
 import type { CoalesceGroup } from './sequencer-batch-plan';
 import type { IntentKind, SequencerIntent } from './sequencer-intent';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -124,11 +124,11 @@ const FAILED_PRODUCER_DEFER_LIMIT = 2;
 const noopMemo = new NoopMemo(SEQUENCER_CONFIG.noopMemoSize);
 const noopMemoKeys = new WeakMap<SequencerIntent, string>();
 const noopMemoTypes = new Set<string>();
-// batch-local: the versions of the upsert targets read just before their basis, by internal id,
+// batch-local: the tokens of the upsert targets read just before their basis, by internal id,
 // the no-ops seen at apply, recorded at commit (settleNoopRecords), and the ids of their targets,
 // evicted at commit like the written ones (outside writtenIds: settleNoopRecords drops a written
 // target)
-const basisVersions = new Map<string, NoopVersion>();
+const basisVersions = new Map<string, NoopToken>();
 const noopRecords: NoopRecord[] = [];
 const noopTargetIds: string[] = [];
 // contention_diag: per type outcomes of the memo, logged every NOOP_DIAG_EVERY batches
@@ -138,14 +138,14 @@ let noopDiagBatches = 0;
 const noopDiagOn = () => SEQUENCER_CONFIG.noopMemo && SEQUENCER_CONFIG.contentionDiag;
 
 const noopVersionsOf: NoopVersionsOf = async (targets: NoopTarget[]) => {
-  const versions = new Map<string, NoopVersion>();
-  if (targets.length === 0) return versions;
-  const data = await elRawMget({ docs: targets.map(({ id, index }) => ({ _index: index, _id: id })), _source: false });
+  const tokens = new Map<string, NoopToken>();
+  if (targets.length === 0) return tokens;
+  const data = await elRawMget({ docs: targets.map(({ id, index }) => ({ _index: index, _id: id })), _source_excludes: NOOP_TOKEN_SOURCE_EXCLUDES });
   sequencerMetrics.esOp('mget');
   (data?.docs ?? []).forEach((doc: any) => {
-    if (doc.found && typeof doc._seq_no === 'number') versions.set(doc._id, `${doc._seq_no}:${doc._primary_term}`);
+    if (doc.found && typeof doc._seq_no === 'number') tokens.set(doc._id, noopTokenOf(doc._seq_no, doc._primary_term, doc._source));
   });
-  return versions;
+  return tokens;
 };
 
 // A leader whose upsert changed nothing against the served basis: recorded at commit when nothing
@@ -177,7 +177,8 @@ const recordNoop = (group: CoalesceGroup, result: any, basis: any, stripSink: St
 const commitNoopRecords = async (writtenIds: string[]) => {
   if (noopRecords.length === 0) return;
   try {
-    const { kept, dropped } = await settleNoopRecords(noopRecords, writtenIds, noopVersionsOf);
+    const { kept, dropped, hashMatches } = await settleNoopRecords(noopRecords, writtenIds, noopVersionsOf);
+    if (hashMatches > 0) sequencerMetrics.mapEvent('noop_memo_hash_match', hashMatches);
     kept.forEach((record) => noopMemo.record(record));
     if (noopDiagOn()) {
       const keptSet = new Set(kept);
@@ -671,7 +672,10 @@ const batchLockKeys = (groups: CoalesceGroup[]): string[] => computeBatchLockKey
   relationOwnIds,
 );
 // task 0040 multi_writer step 2: what the batch locks in Redis (sequencer-batch-lock.ts)
-const ownLockKeys = (groups: CoalesceGroup[]): string[] => computeOwnLockKeys(groups, peekInstanceIds, relationOwnIds, creatableNestedIds, relationDedupKey);
+// task 0040: a label the map knows exists, the apply only references it (object-label_to is not
+// impacted, nothing writes the label): not locked as creatable
+const creatableIds = (input: Record<string, any>) => creatableNestedIds(input, (id) => sequencerIdentityMap.resolveInternalId(id) !== null);
+const ownLockKeys = (groups: CoalesceGroup[]): string[] => computeOwnLockKeys(groups, peekInstanceIds, relationOwnIds, creatableIds, relationDedupKey);
 
 interface ParkedIntent {
   intent: SequencerIntent;
@@ -941,6 +945,7 @@ const runBatchLoop = async () => {
         if (misses.noEntry > 0) sequencerMetrics.mapEvent('noop_memo_no_entry', misses.noEntry);
         if (misses.tokenChanged > 0) sequencerMetrics.mapEvent('noop_memo_token_changed', misses.tokenChanged);
         if (misses.inBatchWriter > 0) sequencerMetrics.mapEvent('noop_memo_inbatch_writer', misses.inBatchWriter);
+        if (misses.hashMatches > 0) sequencerMetrics.mapEvent('noop_memo_hash_match', misses.hashMatches);
       }
       if (hits.length > 0) {
         batch.length = 0;

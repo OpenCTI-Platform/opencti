@@ -6,37 +6,49 @@
 // again. Such an intent is settled at the batch start with the recorded result: no resolution,
 // plan, lock key nor apply.
 // Validity token (2026-11-13): the stored document's version (_seq_no and _primary_term, read
-// realtime). Every write of the document, from any platform, changes it. The identity of the map's
-// basis object was the first token: it never hit, the batch re-reads every upsert basis. The
-// version is read before the basis and again at commit, and a no-op is recorded only when both
-// match: the basis it was compared with is then exactly that version, and no write of this batch
-// (a ref appended by another apply) landed after it.
-// Eligible intents only: entity creates without opts (the result shape depends on them), outside a
+// realtime) and a hash of its source without `refreshed_at` and the denormalized `rel_*` fields.
+// The token holds when either is unchanged. The version changes on every write, from any platform,
+// including a ref appended by an entity citing the document (impacted roles: external references,
+// sectors...), which sets only `rel_*` and `refreshed_at` and cannot change an upsert's outcome. The
+// hash ignores exactly those: every attribute stays covered, and a removal of one of the
+// document's own refs also sets its `updated_at` (cleanup script, from side). Ingestion only adds
+// refs, and an input whose refs are already all there stays a no-op after more are added.
+// The identity of the map's basis object was the first token: it never hit, the batch re-reads
+// every upsert basis. The token is read before the basis and again at commit, and a no-op is
+// recorded only when both match: the basis it was compared with is then exactly that document.
+// Eligible intents only: entity creates without opts but `complete` (part of the key: the result
+// shape depends on it; markings are created with it), outside a
 // draft (the map never serves a draft), without a replay context (eventId, synchronizedUpsert:
 // their freshness checks read more than the basis), whose input is plain data without data URIs
 // (files and embedded images have side effects even when the patch is empty).
+import { createHash } from 'node:crypto';
 import { getInstanceIds } from '../../schema/identifier';
 import { getDraftContext } from '../../utils/draftContext';
 import type { SequencerIntent } from './sequencer-intent';
 
-// `${_seq_no}:${_primary_term}` of a stored document
-export type NoopVersion = string;
+// A stored document: `${_seq_no}:${_primary_term}` and the hash of its source without `rel_*` and
+// `refreshed_at` (NOOP_TOKEN_SOURCE_EXCLUDES)
+export interface NoopToken {
+  version: string;
+  hash: string;
+}
+export const NOOP_TOKEN_SOURCE_EXCLUDES = ['rel_*', 'refreshed_at'];
 export interface NoopTarget {
   id: string; // internal id, the document id
   index: string;
 }
-// The current versions of the targets by internal id, a target not found is absent
-export type NoopVersionsOf = (targets: NoopTarget[]) => Promise<Map<string, NoopVersion>>;
+// The current tokens of the targets by internal id, a target not found is absent
+export type NoopVersionsOf = (targets: NoopTarget[]) => Promise<Map<string, NoopToken>>;
 
 export interface NoopMemoEntry {
   result: any;
   targetId: string;
   targetIndex: string;
   targetIds: string[];
-  version: NoopVersion;
+  token: NoopToken;
 }
 
-// A no-op seen at apply, recorded at commit if its target kept the version read before its basis
+// A no-op seen at apply, recorded at commit if its target kept the token read before its basis
 export interface NoopRecord extends NoopMemoEntry {
   key: string;
 }
@@ -71,21 +83,43 @@ const canonicalInput = (value: unknown): string | null => {
   return null;
 };
 
+// JSON with sorted keys: the same source always hashes the same
+const stableJson = (value: unknown): string => {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
+  if (value !== null && typeof value === 'object') {
+    return `{${Object.keys(value).sort().map((k) => `${JSON.stringify(k)}:${stableJson((value as Record<string, unknown>)[k])}`).join(',')}}`;
+  }
+  return JSON.stringify(value) ?? 'u';
+};
+
+// The token of a document read with NOOP_TOKEN_SOURCE_EXCLUDES
+export const noopTokenOf = (seqNo: number, primaryTerm: number, source: unknown): NoopToken => ({
+  version: `${seqNo}:${primaryTerm}`,
+  hash: createHash('sha1').update(stableJson(source ?? null)).digest('base64'),
+});
+
+// Same document for the memo: same version, or same source but `rel_*` and `refreshed_at`
+export const sameNoopToken = (current: NoopToken | undefined, recorded: NoopToken): boolean => current !== undefined
+  && (current.version === recorded.version || current.hash === recorded.hash);
+
 // The memo key of an intent, null when it is not eligible
 export const noopMemoKey = (intent: SequencerIntent): string | null => {
   if (intent.kind !== 'entity') return null;
-  if (intent.opts && Object.keys(intent.opts).length > 0) return null;
+  const optKeys = Object.keys(intent.opts ?? {});
+  if (optKeys.some((k) => k !== 'complete')) return null;
+  const complete = intent.opts?.complete === true;
   if (intent.context?.eventId || intent.context?.synchronizedUpsert) return null;
   if (getDraftContext(intent.context, intent.user)) return null;
   const input = canonicalInput(intent.input);
-  return input === null ? null : `${intent.user.id}|${intent.type}|${input}`;
+  return input === null ? null : `${intent.user.id}|${intent.type}|${complete ? 'c' : ''}|${input}`;
 };
 
-// The record of a no-op apply against `basis`, null without a version read before the basis
-export const noopRecordOf = (key: string, basis: any, result: any, version: NoopVersion | undefined): NoopRecord | null => {
-  const targetId = result?.internal_id;
-  if (version === undefined || typeof targetId !== 'string' || targetId !== basis?.internal_id || typeof basis._index !== 'string') return null;
-  return { key, result, targetId, targetIndex: basis._index, targetIds: getInstanceIds(basis), version };
+// The record of a no-op apply against `basis`, null without a token read before the basis. A
+// complete result carries the element under `element`.
+export const noopRecordOf = (key: string, basis: any, result: any, token: NoopToken | undefined): NoopRecord | null => {
+  const targetId = (result?.element ?? result)?.internal_id;
+  if (token === undefined || typeof targetId !== 'string' || targetId !== basis?.internal_id || typeof basis._index !== 'string') return null;
+  return { key, result, targetId, targetIndex: basis._index, targetIds: getInstanceIds(basis), token };
 };
 
 // LRU bounded
@@ -126,20 +160,21 @@ const distinctTargets = (entries: NoopMemoEntry[]): NoopTarget[] => {
   return Array.from(targets.values());
 };
 
-// Commit of a batch: the no-ops whose target this batch wrote are dropped (the record's version
-// predates that write), the others are kept when the target still has the version read before
-// their basis, all read in one go
+// Commit of a batch: the no-ops whose target this batch wrote are dropped (the record's token
+// predates that write), the others are kept when the target still has the token read before their
+// basis, all read in one go (hashMatches: kept on the source hash, the version had moved)
 export const settleNoopRecords = async (
   records: NoopRecord[],
   writtenIds: Iterable<string>,
   versionsOf: NoopVersionsOf,
-): Promise<{ kept: NoopRecord[]; dropped: number }> => {
-  if (records.length === 0) return { kept: [], dropped: 0 };
+): Promise<{ kept: NoopRecord[]; dropped: number; hashMatches: number }> => {
+  if (records.length === 0) return { kept: [], dropped: 0, hashMatches: 0 };
   const written = new Set(writtenIds);
   const unwritten = records.filter((record) => !record.targetIds.some((id) => written.has(id)));
-  const versions = unwritten.length > 0 ? await versionsOf(distinctTargets(unwritten)) : new Map<string, NoopVersion>();
-  const kept = unwritten.filter((record) => versions.get(record.targetId) === record.version);
-  return { kept, dropped: records.length - kept.length };
+  const tokens = unwritten.length > 0 ? await versionsOf(distinctTargets(unwritten)) : new Map<string, NoopToken>();
+  const kept = unwritten.filter((record) => sameNoopToken(tokens.get(record.targetId), record.token));
+  const hashMatches = kept.filter((record) => tokens.get(record.targetId)?.version !== record.token.version).length;
+  return { kept, dropped: records.length - kept.length, hashMatches };
 };
 
 export interface NoopMemoHit {
@@ -152,6 +187,7 @@ export interface NoopMemoMisses {
   noEntry: number;
   tokenChanged: number;
   inBatchWriter: number;
+  hashMatches: number; // not a miss: candidates kept on the source hash, the version had moved
 }
 
 // The intents of a batch the memo settles, the others in their batch order. An intent is a hit
@@ -170,7 +206,7 @@ export const takeNoopMemoHits = async (
   keyedTypes: Set<string>,
   onOutcome?: (intent: SequencerIntent, outcome: NoopDiagOutcome, key: string | null) => void,
 ): Promise<{ hits: NoopMemoHit[]; rest: SequencerIntent[]; misses: NoopMemoMisses }> => {
-  const misses: NoopMemoMisses = { ineligible: 0, noEntry: 0, tokenChanged: 0, inBatchWriter: 0 };
+  const misses: NoopMemoMisses = { ineligible: 0, noEntry: 0, tokenChanged: 0, inBatchWriter: 0, hashMatches: 0 };
   const candidates = new Map<SequencerIntent, { key: string; entry: NoopMemoEntry }>();
   batch.forEach((intent) => {
     // a key costs a walk of the input: only for the types an apply already ended as a no-op
@@ -191,9 +227,11 @@ export const takeNoopMemoHits = async (
     }
   });
   if (candidates.size === 0) return { hits: [], rest: batch, misses };
-  const versions = await versionsOf(distinctTargets(Array.from(candidates.values()).map(({ entry }) => entry)));
+  const tokens = await versionsOf(distinctTargets(Array.from(candidates.values()).map(({ entry }) => entry)));
   candidates.forEach(({ key, entry }, intent) => {
-    if (versions.get(entry.targetId) !== entry.version) {
+    const current = tokens.get(entry.targetId);
+    if (current !== undefined && current.version !== entry.token.version && current.hash === entry.token.hash) misses.hashMatches += 1;
+    if (!sameNoopToken(current, entry.token)) {
       memo.delete(key);
       candidates.delete(intent);
       misses.tokenChanged += 1;
