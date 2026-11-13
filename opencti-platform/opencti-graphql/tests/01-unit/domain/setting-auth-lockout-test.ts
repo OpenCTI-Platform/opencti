@@ -5,13 +5,8 @@ import { Kind, parse, type ObjectTypeDefinitionNode, type StringValueNode } from
 import { isFeatureEnabled } from '../../../src/config/conf';
 import { loadEntity, patchAttribute } from '../../../src/database/middleware';
 import { getEntityFromCache } from '../../../src/database/cache';
-import {
-  LOCAL_AUTH_LOCKOUT_DEFAULTS,
-  LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT,
-  LOCAL_AUTH_LOCKOUT_DURATION_LIMIT,
-  LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT,
-  updateLocalAuth,
-} from '../../../src/domain/setting-auth';
+import { isAdministrativeAccount, LOCAL_AUTH_LOCKOUT_DEFAULTS } from '../../../src/domain/local-auth-lockout';
+import { LOCAL_AUTH_LOCKOUT_DURATION_LIMIT, LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT, LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT, updateLocalAuth } from '../../../src/domain/setting-auth';
 import { LocalAuthLockoutFinalAction } from '../../../src/generated/graphql';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 import type { BasicStoreSettings } from '../../../src/types/settings';
@@ -186,5 +181,32 @@ describe('Settings schema - lockout policy', () => {
       expect(argument('softFail')).toMatchObject({ kind: Kind.BOOLEAN, value: true });
       expect(JSON.parse((argument('defaultValue') as StringValueNode).value)).toEqual(defaultValue);
     });
+  });
+});
+
+describe('isAdministrativeAccount - lockout threshold', () => {
+  const accountWith = (...names: string[]) => ({ capabilities: names.map((name) => ({ name })) }) as Pick<AuthUser, 'capabilities'>;
+
+  it.each([
+    ['BYPASS', ['BYPASS']],
+    ['the users, groups and roles management', ['KNOWLEDGE', 'SETTINGS', 'SETTINGS_SETACCESSES']],
+    ['the authentication management', ['SETTINGS', 'SETTINGS_SETAUTH']],
+    ['the platform parameters management', ['SETTINGS', 'SETTINGS_SETPARAMETERS']],
+  ])('should be true with %s', (_, names) => {
+    expect(isAdministrativeAccount(accountWith(...names))).toBe(true);
+  });
+
+  it.each([
+    ['no capability', []],
+    ['knowledge capabilities only', ['KNOWLEDGE', 'KNOWLEDGE_KNUPDATE_KNDELETE', 'APIACCESS_USEBASICAUTH']],
+    ['the access to the administration only', ['SETTINGS']],
+    ['the labels and vocabularies management', ['SETTINGS', 'SETTINGS_SETLABELS', 'SETTINGS_SETVOCABULARIES']],
+    ['the other administration capabilities', [
+      'SETTINGS', 'SETTINGS_SETMARKINGS', 'SETTINGS_SETDISSEMINATION', 'SETTINGS_SETCUSTOMIZATION', 'SETTINGS_SETCASETEMPLATES',
+      'SETTINGS_SETSTATUSTEMPLATES', 'SETTINGS_SETKILLCHAINPHASES', 'SETTINGS_SETMANAGEXTMHUB', 'SETTINGS_SECURITYACTIVITY',
+      'SETTINGS_FILEINDEXING', 'SETTINGS_SUPPORT',
+    ]],
+  ])('should be false with %s', (_, names) => {
+    expect(isAdministrativeAccount(accountWith(...names))).toBe(false);
   });
 });
