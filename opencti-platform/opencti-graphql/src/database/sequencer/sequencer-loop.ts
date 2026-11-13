@@ -41,8 +41,8 @@ import { buildIntent, intentOwnIds } from './sequencer-intent';
 import { sequencerIdentityMap, startIdentityMapInvalidation } from './sequencer-identity-map';
 import { buildBatchPlan, canonicalKey, classifyPhase } from './sequencer-batch-plan';
 import { computeBatchLockKeys, computeOwnLockKeys, getCurrentBatchLock, setCurrentBatchLock } from './sequencer-batch-lock';
-import { isNoopOfServedBasis, NoopMemo, noopRecordOf, settleNoopRecords, takeNoopMemoHits } from './sequencer-noop-memo';
-import type { NoopRecord, NoopTarget, NoopVersion, NoopVersionsOf } from './sequencer-noop-memo';
+import { isNoopOfServedBasis, NoopMemo, NoopMemoDiag, noopRecordOf, settleNoopRecords, takeNoopMemoHits } from './sequencer-noop-memo';
+import type { NoopDiagOutcome, NoopRecord, NoopTarget, NoopVersion, NoopVersionsOf } from './sequencer-noop-memo';
 import type { CoalesceGroup } from './sequencer-batch-plan';
 import type { IntentKind, SequencerIntent } from './sequencer-intent';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -131,6 +131,11 @@ const noopMemoTypes = new Set<string>();
 const basisVersions = new Map<string, NoopVersion>();
 const noopRecords: NoopRecord[] = [];
 const noopTargetIds: string[] = [];
+// contention_diag: per type outcomes of the memo, logged every NOOP_DIAG_EVERY batches
+const noopDiag = new NoopMemoDiag();
+const NOOP_DIAG_EVERY = 100;
+let noopDiagBatches = 0;
+const noopDiagOn = () => SEQUENCER_CONFIG.noopMemo && SEQUENCER_CONFIG.contentionDiag;
 
 const noopVersionsOf: NoopVersionsOf = async (targets: NoopTarget[]) => {
   const versions = new Map<string, NoopVersion>();
@@ -174,6 +179,15 @@ const commitNoopRecords = async (writtenIds: string[]) => {
   try {
     const { kept, dropped } = await settleNoopRecords(noopRecords, writtenIds, noopVersionsOf);
     kept.forEach((record) => noopMemo.record(record));
+    if (noopDiagOn()) {
+      const keptSet = new Set(kept);
+      const written = new Set(writtenIds);
+      noopRecords.forEach((record) => {
+        const type = record.result?.entity_type ?? 'unknown';
+        if (keptSet.has(record)) noopDiag.count(type, 'recorded', record.key);
+        else noopDiag.count(type, record.targetIds.some((id) => written.has(id)) ? 'dropped_written' : 'dropped_version', record.key);
+      });
+    }
     if (kept.length > 0) sequencerMetrics.mapEvent('noop_memo_recorded', kept.length);
     if (dropped > 0) sequencerMetrics.mapEvent('noop_memo_record_dropped', dropped);
   } catch (err) {
@@ -706,6 +720,12 @@ const applyGroup = async (
       const noopBasis = SEQUENCER_CONFIG.noopMemo ? isNoopOfServedBasis(noopSink, element.internal_id, (id) => sequencerIdentityMap.withRefsBasisOf(id)) : null;
       const noop = noopBasis !== null;
       if (noopSink.has(element.internal_id)) sequencerMetrics.mapEvent(noop ? 'noop_memo_seen' : 'noop_memo_basis_mismatch');
+      if (noopDiagOn() && leader.kind === 'entity') {
+        let outcome: 'applied_noop' | 'applied_write' | 'applied_create' = 'applied_create';
+        if (noop) outcome = 'applied_noop';
+        else if (sequencerIdentityMap.hasWithRefs(element.internal_id)) outcome = 'applied_write';
+        noopDiag.count(leader.type, outcome, noopMemoKeys.get(leader) ?? null);
+      }
       // read-your-writes for later intents of THIS batch (E2); evicted at commit (D4a).
       // P2 chaining (s9.7): when a with-refs basis already existed (the element predates
       // the batch, so this apply was an upsert whose result merges attributes and refs),
@@ -910,7 +930,8 @@ const runBatchLoop = async () => {
     notifyQueueTaken();
     // task 0040: the intents a recorded no-op settles leave the batch before any resolution
     if (SEQUENCER_CONFIG.noopMemo) {
-      const { hits, rest, misses } = await takeNoopMemoHits(batch, noopMemo, noopVersionsOf, noopMemoKeys, noopMemoTypes)
+      const onOutcome = noopDiagOn() ? (intent: SequencerIntent, outcome: NoopDiagOutcome, key: string | null) => noopDiag.count(intent.type, outcome, key) : undefined;
+      const { hits, rest, misses } = await takeNoopMemoHits(batch, noopMemo, noopVersionsOf, noopMemoKeys, noopMemoTypes, onOutcome)
         .catch((err) => {
           logApp.warn('[SEQUENCER] no-op memo versions unreadable, the batch applies', { cause: err });
           return { hits: [], rest: batch, misses: null };
@@ -1471,6 +1492,10 @@ const runBatchLoop = async () => {
     // record the REAL assembly size (before the batchEwp-a diagnosis this recorded the
     // applied-group count, which hid a 200-intent assembly behind a mean of 2)
     sequencerMetrics.batchCommitted(batch.length);
+    if (noopDiagOn()) {
+      noopDiagBatches += 1;
+      if (noopDiagBatches % NOOP_DIAG_EVERY === 0) logApp.info('[SEQUENCER] noop memo diag', { batches: noopDiagBatches, memoSize: noopMemo.size(), types: noopDiag.summary() });
+    }
   }
 };
 

@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { isNoopOfServedBasis, NoopMemo, noopMemoKey, noopRecordOf, settleNoopRecords, takeNoopMemoHits } from '../../../src/database/sequencer/sequencer-noop-memo';
+import { isNoopOfServedBasis, NoopMemo, NoopMemoDiag, noopMemoKey, noopRecordOf, settleNoopRecords, takeNoopMemoHits } from '../../../src/database/sequencer/sequencer-noop-memo';
 import type { NoopRecord, NoopTarget, NoopVersionsOf } from '../../../src/database/sequencer/sequencer-noop-memo';
 import { buildIntent } from '../../../src/database/sequencer/sequencer-intent';
 import { SequencerIdentityMap } from '../../../src/database/sequencer/sequencer-identity-map';
@@ -260,6 +260,24 @@ describe('takeNoopMemoHits: settle only what can be nothing else', () => {
     expect(rest).toEqual([withOpts]);
     expect(keys.has(withOpts)).toBe(false);
     expect(misses.ineligible).toEqual(1);
+  });
+});
+
+describe('NoopMemoDiag: per type outcomes for the diagnosis', () => {
+  it('should report each hit check outcome once per intent, with its distinct keys per type', async () => {
+    const memo = new NoopMemo(100);
+    const key = noopMemoKey(intentOf({})) as string;
+    memo.record(recordOf(key, basisOf('i1', 'external-reference--1')));
+    const diag = new NoopMemoDiag();
+    const batch = [
+      intentOf({}), // hit
+      intentOf({}), // hit, same key
+      intentOf({ input: { source_name: 'other' }, candidateIds: ['external-reference--2'] }), // no entry
+      intentOf({ opts: { complete: true }, candidateIds: ['external-reference--3'] }), // ineligible
+    ];
+    await takeNoopMemoHits(batch, memo, versionsServer({ i1: '7:1' }).versionsOf, new WeakMap(), new Set(['External-Reference']), (intent, outcome, k) => diag.count(intent.type, outcome, k));
+    diag.count('External-Reference', 'recorded', key);
+    expect(diag.summary()).toEqual({ 'External-Reference': { distinct_keys: 2, hit: 2, no_entry: 1, ineligible: 1, recorded: 1 } });
   });
 });
 

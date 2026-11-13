@@ -168,6 +168,7 @@ export const takeNoopMemoHits = async (
   versionsOf: NoopVersionsOf,
   keys: WeakMap<SequencerIntent, string>,
   keyedTypes: Set<string>,
+  onOutcome?: (intent: SequencerIntent, outcome: NoopDiagOutcome, key: string | null) => void,
 ): Promise<{ hits: NoopMemoHit[]; rest: SequencerIntent[]; misses: NoopMemoMisses }> => {
   const misses: NoopMemoMisses = { ineligible: 0, noEntry: 0, tokenChanged: 0, inBatchWriter: 0 };
   const candidates = new Map<SequencerIntent, { key: string; entry: NoopMemoEntry }>();
@@ -177,12 +178,17 @@ export const takeNoopMemoHits = async (
     const key = noopMemoKey(intent);
     if (key === null) {
       misses.ineligible += 1;
+      onOutcome?.(intent, 'ineligible', null);
       return;
     }
     keys.set(intent, key);
     const entry = memo.get(key);
-    if (entry) candidates.set(intent, { key, entry });
-    else misses.noEntry += 1;
+    if (entry) {
+      candidates.set(intent, { key, entry });
+    } else {
+      misses.noEntry += 1;
+      onOutcome?.(intent, 'no_entry', key);
+    }
   });
   if (candidates.size === 0) return { hits: [], rest: batch, misses };
   const versions = await versionsOf(distinctTargets(Array.from(candidates.values()).map(({ entry }) => entry)));
@@ -191,6 +197,7 @@ export const takeNoopMemoHits = async (
       memo.delete(key);
       candidates.delete(intent);
       misses.tokenChanged += 1;
+      onOutcome?.(intent, 'token_changed', key);
     }
   });
   const writerIds = new Set<string>();
@@ -205,13 +212,53 @@ export const takeNoopMemoHits = async (
       rest.push(intent);
     } else if (candidate.entry.targetIds.some((id) => writerIds.has(id))) {
       misses.inBatchWriter += 1;
+      onOutcome?.(intent, 'inbatch_writer', candidate.key);
       rest.push(intent);
     } else {
+      onOutcome?.(intent, 'hit', candidate.key);
       hits.push({ intent, result: candidate.entry.result });
     }
   });
   return { hits, rest, misses };
 };
+
+// task 0040 diagnosis (contention_diag): per entity type, what happened to the memo's intents and how
+// many distinct keys they carry. Distinct keys close to the intent count means inputs that vary per
+// occurrence (nothing to memoize); far below it with many no_entry means records that do not land.
+export type NoopDiagOutcome = 'ineligible' | 'no_entry' | 'token_changed' | 'inbatch_writer' | 'hit'
+  | 'applied_noop' | 'applied_write' | 'applied_create' | 'recorded' | 'dropped_written' | 'dropped_version';
+
+// FNV-1a: the diagnosis counts distinct keys without holding them
+const keyHash = (key: string): number => {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < key.length; i += 1) {
+    hash ^= key.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
+};
+
+export class NoopMemoDiag {
+  private types = new Map<string, { keys: Set<number>; counts: Partial<Record<NoopDiagOutcome, number>> }>();
+
+  count(type: string, outcome: NoopDiagOutcome, key: string | null = null) {
+    let stats = this.types.get(type);
+    if (!stats) {
+      stats = { keys: new Set(), counts: {} };
+      this.types.set(type, stats);
+    }
+    stats.counts[outcome] = (stats.counts[outcome] ?? 0) + 1;
+    if (key !== null) stats.keys.add(keyHash(key));
+  }
+
+  summary(): Record<string, Partial<Record<NoopDiagOutcome | 'distinct_keys', number>>> {
+    const out: Record<string, Partial<Record<NoopDiagOutcome | 'distinct_keys', number>>> = {};
+    this.types.forEach(({ keys, counts }, type) => {
+      out[type] = { distinct_keys: keys.size, ...counts };
+    });
+    return out;
+  }
+}
 
 // An apply's upsert of `internalId` changed nothing against the basis the identity map serves:
 // the element it compared with IS that basis. A merge before the upsert evicts the target, a basis
