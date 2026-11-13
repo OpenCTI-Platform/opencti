@@ -9,6 +9,7 @@ import DashboardContent from '../../../components/dashboard/DashboardContent';
 import { CustomView_Query } from './__generated__/CustomView_Query.graphql';
 import { DashboardConfig } from 'src/components/dashboard/dashboard-types';
 import DashboardTimeFilters from 'src/components/dashboard/DashboardTimeFilters';
+import { applyDateChange, pickTimeRange, type DashboardDateField } from 'src/components/dashboard/dashboardTimeRange';
 import { Stack } from '@mui/material';
 import { useFormatter } from 'src/components/i18n';
 
@@ -44,31 +45,8 @@ const CustomViewComponent = ({ queryRef, entityId, entityType }: CustomViewCompo
   const [dateOverride, setDateOverride] = useState<DashboardConfig | null>(null);
   const effectiveConfig = dateOverride ?? helpers.config;
 
-  const handleDateChange = (
-    type: 'startDate' | 'endDate' | 'relativeDate',
-    value: string | null,
-  ) => {
-    setDateOverride((prev) => {
-      const base = prev ?? helpers.config;
-      const normalizedValue = value === 'none' ? null : value;
-
-      let nextConfig: DashboardConfig = {
-        startDate: base?.startDate ?? null,
-        endDate: base?.endDate ?? null,
-        relativeDate: base?.relativeDate ?? null,
-        [type]: normalizedValue,
-      };
-
-      if (type === 'relativeDate' && value !== 'none') {
-        nextConfig = {
-          ...nextConfig,
-          startDate: null,
-          endDate: null,
-        };
-      }
-
-      return nextConfig;
-    });
+  const handleDateChange = (type: DashboardDateField, value: string | null) => {
+    setDateOverride((prev) => applyDateChange(pickTimeRange(prev ?? helpers.config), type, value));
   };
 
   const host = useMemo(() => ({
