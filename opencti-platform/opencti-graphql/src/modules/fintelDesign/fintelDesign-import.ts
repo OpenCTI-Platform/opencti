@@ -64,6 +64,28 @@ const hasSameLogo = async (existing: BasicStoreEntityFintelDesign, content: Buff
   return !!stored && stored.equals(content);
 };
 
+const findDefaultFintelDesignId = async (context: AuthContext, user: AuthUser) => {
+  const filters = { mode: FilterMode.And, filters: [{ key: ['default'], values: [true as unknown as string], operator: FilterOperator.Eq }], filterGroups: [] };
+  const [defaultDesign] = await fullEntitiesList<BasicStoreEntityFintelDesign>(context, user, [ENTITY_TYPE_FINTEL_DESIGN], { filters });
+  return defaultDesign?.id;
+};
+
+// A design created by an item that fails is undone, so that the platform is as it was before the item. The edit that failed may have got
+// as far as making the design the default, taking the default away from the previous one: the previous one is made the default again
+// first, which takes it away from the design, and the design is deleted only then. When that fails, the design stays: a design left as
+// the default is better than a platform without one.
+const undoFintelDesignCreation = async (context: AuthContext, user: AuthUser, createdId: string, previousDefaultId: string | undefined) => {
+  try {
+    const created = await storeLoadById<BasicStoreEntityFintelDesign>(context, user, createdId, ENTITY_TYPE_FINTEL_DESIGN);
+    if (created?.default === true && previousDefaultId) {
+      await fintelDesignEditField(context, user, { id: previousDefaultId, input: [{ key: 'default', value: [true] }] });
+    }
+    await fintelDesignDelete(context, user, createdId);
+  } catch (undoError) {
+    logApp.error('[CONFIG PRESET] A fintel design created by an item that failed could not be undone', { id: createdId, previousDefaultId, cause: undoError });
+  }
+};
+
 const createFintelDesign = async (
   context: AuthContext,
   user: AuthUser,
@@ -84,16 +106,13 @@ const createFintelDesign = async (
     ...(standardId ? { standard_id: standardId } : {}),
   });
   if (logo) {
+    // Read before the edit: the default the platform goes back to when the item fails
+    const previousDefaultId = isDefault ? await findDefaultFintelDesignId(context, user) : undefined;
     try {
       await fintelDesignEditField(context, user, { id: created.id, file: toLogoUpload(logo), input: isDefault ? [{ key: 'default', value: [true] }] : [] });
     } catch (error) {
-      // The item fails as a whole: the design created without its logo is deleted, and the default of the platform never moved.
-      // A deletion that fails too leaves a design that is not the default, which an overwrite of the same bundle completes
-      try {
-        await fintelDesignDelete(context, user, created.id);
-      } catch (deleteError) {
-        logApp.warn('[CONFIG PRESET] Failed to delete a fintel design whose logo could not be stored', { id: created.id, cause: deleteError });
-      }
+      // The item fails as a whole, with the error of the edit, whatever the undo does
+      await undoFintelDesignCreation(context, user, created.id, previousDefaultId);
       throw error;
     }
   }

@@ -229,10 +229,39 @@ describe('Fintel design import', () => {
     await expect(importFintelDesign(context, user, configuration, logoOf(PNG_LOGO), overwrite)).rejects.toThrow('storage down');
     expect(vi.mocked(addFintelDesign).mock.calls[2][2]).toMatchObject({ default: false });
     expect(fintelDesignDelete).toHaveBeenCalledWith(context, user, 'new-design-id');
+    expect(fintelDesignEditField).toHaveBeenCalledTimes(1);
     // A deletion that fails too does not hide the error of the logo
     vi.mocked(fintelDesignEditField).mockRejectedValueOnce(new Error('storage down'));
     vi.mocked(fintelDesignDelete).mockRejectedValueOnce(new Error('delete failed'));
     await expect(importFintelDesign(context, user, configuration, logoOf(PNG_LOGO), copy)).rejects.toThrow('storage down');
+  });
+
+  it('gives the default back to the previous design before deleting a design the failed edit had already made the default', async () => {
+    const previousDefault = { ...nightFintelDesign, id: 'previous-default-id', default: true } as BasicStoreEntityFintelDesign;
+    vi.mocked(fullEntitiesList).mockImplementation(async (_ctx, _user, _types, args) => {
+      const [filter] = (args as { filters: { filters: { key: string[] }[] } }).filters.filters;
+      return (filter.key[0] === 'default' ? [previousDefault] : []) as never;
+    });
+    // The edit made the design the default (and took the default away from the previous one), then its event failed
+    vi.mocked(storeLoadById).mockImplementation(async (_ctx, _user, id) => (id === 'new-design-id' ? { id, default: true } : undefined) as never);
+    vi.mocked(fintelDesignEditField).mockRejectedValueOnce(new Error('notification failed'));
+    await expect(importFintelDesign(context, user, configuration, logoOf(PNG_LOGO), overwrite)).rejects.toThrow('notification failed');
+    expect(vi.mocked(fintelDesignEditField).mock.calls[1][2]).toEqual({ id: 'previous-default-id', input: [{ key: 'default', value: [true] }] });
+    expect(fintelDesignDelete).toHaveBeenCalledWith(context, user, 'new-design-id');
+    expect(vi.mocked(fintelDesignEditField).mock.invocationCallOrder[1]).toBeLessThan(vi.mocked(fintelDesignDelete).mock.invocationCallOrder[0]);
+
+    // The previous default cannot be given back: the design stays the default, never a platform without one
+    vi.mocked(fintelDesignDelete).mockClear();
+    vi.mocked(fintelDesignEditField).mockRejectedValueOnce(new Error('notification failed')).mockRejectedValueOnce(new Error('still down'));
+    await expect(importFintelDesign(context, user, configuration, logoOf(PNG_LOGO), overwrite)).rejects.toThrow('notification failed');
+    expect(fintelDesignDelete).not.toHaveBeenCalled();
+
+    // The edit failed before making the design the default: deleted, the previous default untouched
+    vi.mocked(fintelDesignEditField).mockReset().mockRejectedValueOnce(new Error('storage down'));
+    vi.mocked(storeLoadById).mockImplementation(async (_ctx, _user, id) => (id === 'new-design-id' ? { id, default: false } : undefined) as never);
+    await expect(importFintelDesign(context, user, configuration, logoOf(PNG_LOGO), overwrite)).rejects.toThrow('storage down');
+    expect(fintelDesignEditField).toHaveBeenCalledTimes(1);
+    expect(fintelDesignDelete).toHaveBeenCalledWith(context, user, 'new-design-id');
   });
 
   it('refuses a logo that is too large or is not an image, whatever the mode', async () => {
