@@ -420,6 +420,7 @@
   "An alias must start with x_ and contain only lowercase letters, numbers and underscores": "별칭은 x_로 시작해야 하며 소문자, 숫자, 밑줄만 포함할 수 있습니다",
   "An analysis connector needs to be available to ask for a mapping suggestion.": "매핑 제안을 요청하려면 분석 커넥터를 사용할 수 있어야 합니다.",
   "An analysis is ongoing, waiting for results.": "분석이 진행 중이며 결과를 기다리는 중입니다.",
+  "An Approved state always shares the requested entities. Change the request outcome to turn this off.": "승인됨 상태는 항상 요청된 엔티티를 공유합니다. 이를 끄려면 요청 결과를 변경하세요.",
   "An element will persist in the trash for a fixed period of time before being permanently deleted, according to the garbage collection manager settings.": "요소는 휴지통 관리자 설정에 따라 영구 삭제되기 전에 일정 기간 동안 휴지통에 남아있게 됩니다.",
   "An entity from a selected PIR has been updated": "선택한 PIR의 엔티티가 업데이트되었습니다",
   "An entity has left a selected PIR": "엔티티가 선택한 PIR을 떠났습니다",

@@ -122,10 +122,14 @@ const StatusForm = ({ entityType, scope }: { entityType: string; scope?: Workflo
               <DsSwitch
                 label={t_i18n('Share requested entities on enter')}
                 checked={hasShareRequestedEntitiesOnEnter}
-                disabled={!isEnterpriseEdition}
+                // Publishing refuses an Approved state without the share action: it stays on while the outcome is Approved
+                disabled={!isEnterpriseEdition || hasShareRequestedEntitiesOnEnter}
                 onCheckedChange={handleToggleShareRequestedEntities}
                 data-testid="workflow-status-onenter-share-requested-entities-toggle"
               />
+              <Typography variant="caption" color="text.secondary" data-testid="workflow-status-onenter-share-requested-entities-helper">
+                {t_i18n('An Approved state always shares the requested entities. Change the request outcome to turn this off.')}
+              </Typography>
               {hasShareRequestedEntitiesOnEnter && <WorkflowFieldList name={WorkflowDataType.onEnter} actionType={WorkflowActionType.shareRequestedEntities} />}
             </>
           )}

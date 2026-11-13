@@ -420,6 +420,7 @@
   "An alias must start with x_ and contain only lowercase letters, numbers and underscores": "Un alias debe empezar por x_ y contener solo letras minúsculas, números y guiones bajos",
   "An analysis connector needs to be available to ask for a mapping suggestion.": "Es necesario disponer de un conector de análisis para solicitar una sugerencia de asignación.",
   "An analysis is ongoing, waiting for results.": "Un análisis está en curso, a la espera de los resultados.",
+  "An Approved state always shares the requested entities. Change the request outcome to turn this off.": "Un estado Aprobado siempre comparte las entidades solicitadas. Cambie el resultado de la solicitud para desactivarlo.",
   "An element will persist in the trash for a fixed period of time before being permanently deleted, according to the garbage collection manager settings.": "Un elemento persistirá en la papelera durante un periodo de tiempo fijo antes de ser eliminado definitivamente, según la configuración del gestor de recogida de basura.",
   "An entity from a selected PIR has been updated": "Una entidad de un PIR seleccionado ha sido actualizada",
   "An entity has left a selected PIR": "Una entidad ha abandonado un PIR seleccionado",

@@ -420,6 +420,7 @@
   "An alias must start with x_ and contain only lowercase letters, numbers and underscores": "别名必须以 x_ 开头，且只能包含小写字母、数字和下划线",
   "An analysis connector needs to be available to ask for a mapping suggestion.": "需要有一个分析连接器来询问映射建议。",
   "An analysis is ongoing, waiting for results.": "分析正在进行，等待结果。",
+  "An Approved state always shares the requested entities. Change the request outcome to turn this off.": "已批准状态始终会共享所请求的实体。如需关闭，请更改请求结果。",
   "An element will persist in the trash for a fixed period of time before being permanently deleted, according to the garbage collection manager settings.": "根据垃圾回收管理器的设置，一个元素在被永久删除之前，会在垃圾桶中持续存在一段时间。",
   "An entity from a selected PIR has been updated": "所选 PIR 中的一个实体已更新",
   "An entity has left a selected PIR": "一个实体离开了选定的 PIR",

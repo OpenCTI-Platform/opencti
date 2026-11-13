@@ -420,6 +420,7 @@
   "An alias must start with x_ and contain only lowercase letters, numbers and underscores": "エイリアスは x_ で始まり、小文字、数字、アンダースコアのみを含む必要があります",
   "An analysis connector needs to be available to ask for a mapping suggestion.": "分析コネクターは、マッピングの提案を求めるために利用できる必要がある。",
   "An analysis is ongoing, waiting for results.": "分析が進行中で、結果を待っている。",
+  "An Approved state always shares the requested entities. Change the request outcome to turn this off.": "承認済みの状態では、リクエストされたエンティティが常に共有されます。オフにするには、リクエストの結果を変更してください。",
   "An element will persist in the trash for a fixed period of time before being permanently deleted, according to the garbage collection manager settings.": "ガベージコレクションマネージャの設定に従って、要素は永久に削除されるまでの一定期間、ゴミ箱に残ります。",
   "An entity from a selected PIR has been updated": "選択したPIRのエンティティが更新された",
   "An entity has left a selected PIR": "選択したPIRからエンティティが離脱した",

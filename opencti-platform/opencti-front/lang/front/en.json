@@ -420,6 +420,7 @@
   "An alias must start with x_ and contain only lowercase letters, numbers and underscores": "An alias must start with x_ and contain only lowercase letters, numbers and underscores",
   "An analysis connector needs to be available to ask for a mapping suggestion.": "An analysis connector needs to be available to ask for a mapping suggestion.",
   "An analysis is ongoing, waiting for results.": "An analysis is ongoing, waiting for results.",
+  "An Approved state always shares the requested entities. Change the request outcome to turn this off.": "An Approved state always shares the requested entities. Change the request outcome to turn this off.",
   "An element will persist in the trash for a fixed period of time before being permanently deleted, according to the garbage collection manager settings.": "An element will persists in the trash for a fixed period of time before being permanently deleted, according to the garbage collection manager settings.",
   "An entity from a selected PIR has been updated": "An entity from a selected PIR has been updated",
   "An entity has left a selected PIR": "An entity has left a selected PIR",

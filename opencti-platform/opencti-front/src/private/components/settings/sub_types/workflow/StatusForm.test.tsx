@@ -325,6 +325,11 @@ describe('StatusForm – Request access outcome', () => {
     expect(screen.queryByRole('switch', { name: /share requested entities on enter/i })).toBeNull();
   });
 
+  it('lets an Approved state that lost its share action turn it back on', () => {
+    renderForm({ requestAccessOutcome: 'APPROVED', onEnter: [], onExit: [] }, vi.fn(), 'Case-Rfi', 'REQUEST_ACCESS');
+    expect(screen.getByRole('switch', { name: /share requested entities on enter/i })).toBeEnabled();
+  });
+
   it('offers the share action once Approved is selected', async () => {
     const { user } = renderForm({ onEnter: [], onExit: [] }, vi.fn(), 'Case-Rfi', 'REQUEST_ACCESS');
     expect(screen.queryByRole('switch', { name: /share requested entities on enter/i })).toBeNull();
@@ -344,19 +349,29 @@ describe('StatusForm – Request access outcome', () => {
     expect(screen.queryByTestId('workflow-status-outcome-bookkeeping')).toBeNull();
   });
 
-  it('offers the share action as a removable On enter action in Request access scope', async () => {
+  it('keeps the share action on while the state is Approved, with the reason shown', async () => {
     const onSubmit = vi.fn();
     const existing = shareAction([{ value: 'AUTHOR', label: 'Author' }]);
     const { user } = renderForm({ requestAccessOutcome: 'APPROVED', onEnter: [existing], onExit: [] }, onSubmit, 'Case-Rfi', 'REQUEST_ACCESS');
 
     const toggle = screen.getByRole('switch', { name: /share requested entities on enter/i });
     expect(toggle).toHaveAttribute('aria-checked', 'true');
+    expect(toggle).toBeDisabled();
+    expect(screen.getByTestId('workflow-status-onenter-share-requested-entities-helper')).toHaveTextContent(/always shares the requested entities/i);
     await user.click(toggle);
     submit();
 
     await waitFor(() => {
-      expect(onSubmit.mock.calls[0][0].onEnter).toEqual([]);
+      expect(onSubmit.mock.calls[0][0].onEnter).toEqual([existing]);
     });
+  });
+
+  it('keeps the organizations of the share action editable while the state is Approved', () => {
+    const existing = shareAction([{ value: 'AUTHOR', label: 'Author' }]);
+    renderForm({ requestAccessOutcome: 'APPROVED', onEnter: [existing], onExit: [] }, vi.fn(), 'Case-Rfi', 'REQUEST_ACCESS');
+
+    expect(screen.getByTestId('workflow-status-onenter-share-requested-entities-toggle')).toBeDisabled();
+    expect(screen.getByTestId('workflow-field-list')).toBeInTheDocument();
   });
 
   it('does not offer the share action outside Request access scope', () => {

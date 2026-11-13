@@ -420,6 +420,7 @@
   "An alias must start with x_ and contain only lowercase letters, numbers and underscores": "Псевдоним должен начинаться с x_ и содержать только строчные буквы, цифры и символы подчеркивания",
   "An analysis connector needs to be available to ask for a mapping suggestion.": "Коннектор анализа должен быть доступен для запроса предложений по отображению.",
   "An analysis is ongoing, waiting for results.": "В настоящее время проводится анализ, ожидаются результаты.",
+  "An Approved state always shares the requested entities. Change the request outcome to turn this off.": "Состояние «Одобрено» всегда делится запрошенными сущностями. Чтобы отключить это, измените результат запроса.",
   "An element will persist in the trash for a fixed period of time before being permanently deleted, according to the garbage collection manager settings.": "Элемент будет находиться в корзине в течение определенного периода времени, прежде чем будет удален окончательно, в соответствии с настройками менеджера сбора мусора.",
   "An entity from a selected PIR has been updated": "Сущность из выбранного ДОП была обновлена",
   "An entity has left a selected PIR": "Сущность покинула выбранный PIR",
