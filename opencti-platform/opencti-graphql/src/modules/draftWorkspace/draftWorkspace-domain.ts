@@ -471,6 +471,10 @@ export const draftWorkspaceDeleteRelation = async (context: AuthContext, user: A
 export const draftWorkspaceEditField = async (context: AuthContext, user: AuthUser, draftId: string, input: EditInput[]) => {
   const executionContext = bypassDraftContext(context);
   const executionUser = executionContext.user ?? user;
+  // The status of a draft is owned by its workflow: a written status would diverge from the instance
+  if (input.some((i) => i.key === X_WORKFLOW_ID)) {
+    throw FunctionalError('The workflow status of a draft can only be changed through a workflow transition', { draftId });
+  }
   await checkAndReturnDraft(executionContext, executionUser, draftId);
 
   const { element } = await updateAttribute<StoreEntity>(executionContext, executionUser, draftId, ENTITY_TYPE_DRAFT_WORKSPACE, input);

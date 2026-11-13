@@ -9,8 +9,8 @@ import { loadAssignees, loadParticipants } from '../../../database/members';
 import { createEntity, createRelation, deleteElementById, idVocabulary, loadEntity, updateAttribute } from '../../../database/middleware';
 import { fullEntitiesList, internalLoadById, storeLoadById, storeLoadByIds } from '../../../database/middleware-loader';
 import { notify } from '../../../database/redis';
-import { READ_DATA_INDICES, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY } from '../../../database/utils';
-import { elAggregationCount, ES_MAX_CONCURRENCY } from '../../../database/engine';
+import { READ_DATA_INDICES, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
+import { elAggregationCount, elRawUpdateByQuery, ES_MAX_CONCURRENCY } from '../../../database/engine';
 import { createListTask } from '../../../domain/backgroundTask-common';
 import { resolveUserById } from '../../user/user-domain';
 import { createStatus, findByType as findStatusesByType } from '../../../domain/status';
@@ -72,6 +72,7 @@ import { extractCanonicalStateIds, findInstancesBlockingStateRemoval, validateWo
 import { computeStateOrder, findStatesWithOutgoingTransitions } from './workflow-ordering';
 import { findInstancesInStates, isStatusReferencedByEntity } from './workflow-status-usage';
 import { projectWorkflowState, resolveMappedStatusId, resolveProjectionScope } from './workflow-projection';
+import { projectDraftWorkflowStatuses } from './workflow-draft-projection';
 import {
   appendWorkflowHistoryEntry,
   cancelPendingContainerTasks,
@@ -1640,6 +1641,7 @@ const publishWorkflowDraftUnderLock = async (
   // Full-mapping invariant: every state in the definition being published must map to a real
   // Status record, creating any missing ones before the definition is marked published.
   let publishedDefinitionData: WorkflowDefinitionData | null = null;
+  let publishedInitialState: string | null = null;
   try {
     const rawContent = draftVersion.content;
     publishedDefinitionData = typeof rawContent === 'string' ? JSON.parse(rawContent) : rawContent;
@@ -1647,6 +1649,7 @@ const publishWorkflowDraftUnderLock = async (
     // Malformed content will already have failed validation earlier; nothing to reconcile here.
   }
   if (publishedDefinitionData) {
+    publishedInitialState = publishedDefinitionData.initialState && publishedDefinitionData.initialState !== '*' ? publishedDefinitionData.initialState : null;
     await ensureFullStatusMapping(executionContext, executionUser, entityType, publishedDefinitionData, scope);
     if (scope === StatusScope.RequestAccess) {
       await syncRequestAccessLegacyStatusIds(executionContext, executionUser, entityType, publishedDefinitionData);
@@ -1671,6 +1674,21 @@ const publishWorkflowDraftUnderLock = async (
   ) as WorkflowDefinitionEntity;
   // Validate consistency after update
   validateVersionConsistency(updatedWorkflow);
+
+  // Drafts hold a status only once it is projected: those created before the workflow was published are
+  // in its initial state. Best-effort, a draft left without status is projected when its instance is read.
+  if (entityType === 'DraftWorkspace') {
+    try {
+      await projectDraftWorkflowStatuses(
+        executionContext,
+        executionUser,
+        publishedInitialState,
+        (body) => elRawUpdateByQuery({ index: READ_INDEX_INTERNAL_OBJECTS, refresh: true, conflicts: 'proceed', body }),
+      );
+    } catch (error) {
+      logApp.warn('[OPENCTI-MODULE] Failed to project the published workflow state onto existing drafts', { cause: error });
+    }
+  }
 
   addWorkflowPublishCount();
   if (scope === StatusScope.RequestAccess) {
