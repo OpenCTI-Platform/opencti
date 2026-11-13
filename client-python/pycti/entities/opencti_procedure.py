@@ -548,7 +548,9 @@ class Procedure:
             upsert_operations=stix_object.get("opencti_upsert_operations", None),
         )
 
-    def _list_relationship_target_ids(self, entity_id, relationship_type):
+    def _list_relationship_target_ids(
+        self, entity_id, relationship_type, access_filter=None
+    ):
         """Standard ids of the targets of the relationships of a procedure.
 
         Targets the user cannot read are skipped. Order is kept, duplicates removed.
@@ -556,6 +558,7 @@ class Procedure:
         relationships = self.opencti.stix_core_relationship.list(
             fromId=entity_id,
             relationship_type=relationship_type,
+            filters=access_filter,
             customAttributes=_RELATIONSHIP_TARGET_PROPERTIES,
             getAll=True,
         )
@@ -566,20 +569,27 @@ class Procedure:
                 target_ids.append(target_id)
         return target_ids
 
-    def _list_report_ids(self, entity_id):
+    def _list_report_ids(self, entity_id, access_filter=None):
         """Standard ids of the reports that contain a procedure."""
-        reports = self.opencti.report.list(
-            filters={
+        contains_procedure = {
+            "mode": "and",
+            "filters": [{"key": "objects", "values": [entity_id]}],
+            "filterGroups": [],
+        }
+        if access_filter is not None:
+            contains_procedure = {
                 "mode": "and",
-                "filters": [{"key": "objects", "values": [entity_id]}],
-                "filterGroups": [],
-            },
+                "filters": [],
+                "filterGroups": [contains_procedure, access_filter],
+            }
+        reports = self.opencti.report.list(
+            filters=contains_procedure,
             customAttributes="id standard_id",
             getAll=True,
         )
         return [report["standard_id"] for report in reports]
 
-    def to_stix_export(self, entity_id):
+    def to_stix_export(self, entity_id, access_filter=None):
         """Export a procedure with the links the platform stores once.
 
         The platform ``toStix`` output has no technique, vulnerability, tactic
@@ -592,6 +602,10 @@ class Procedure:
 
         :param entity_id: the internal id of the Procedure
         :type entity_id: str
+        :param access_filter: (optional) export access filter, applied to the
+            relationship and report lookups so that restricted objects are not
+            referenced
+        :type access_filter: dict
         :return: STIX ``x-opencti-procedure`` object
         :rtype: dict
         :raises ValueError: if the platform returns no payload
@@ -603,7 +617,7 @@ class Procedure:
             )
         for relationship_type, stix_property in _RELATIONSHIP_EXPORT_PROPERTIES:
             target_ids = self._list_relationship_target_ids(
-                entity_id, relationship_type
+                entity_id, relationship_type, access_filter
             )
             if len(target_ids) > 0:
                 stix[stix_property] = target_ids
@@ -611,14 +625,16 @@ class Procedure:
         for phase in stix.get("kill_chain_phases") or []:
             if (
                 phase.get("kill_chain_name") == MITRE_ATTACK_KILL_CHAIN
+                and phase.get("phase_name") is not None
                 and phase["phase_name"] not in tactics
             ):
                 tactics.append(phase["phase_name"])
         if len(tactics) > 0:
             stix["tactics"] = tactics
         source_refs = list(stix.get("x_source_refs") or [])
-        for report_id in self._list_report_ids(entity_id):
+        for report_id in self._list_report_ids(entity_id, access_filter):
             if report_id not in source_refs:
                 source_refs.append(report_id)
-        stix["x_source_refs"] = source_refs
+        if len(source_refs) > 0:
+            stix["x_source_refs"] = source_refs
         return stix

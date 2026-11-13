@@ -2616,6 +2616,7 @@ class OpenCTIStix2:
         entity: Dict,
         no_custom_attributes: bool = False,
         excluded_marking_ids: Optional[set] = None,
+        access_filter: Optional[Dict] = None,
     ) -> Dict:
         """Get the STIX representation of a procedure.
 
@@ -2634,10 +2635,13 @@ class OpenCTIStix2:
         :param excluded_marking_ids: Internal ids of the markings excluded by the
             export access filter, defaults to None (no exclusion)
         :type excluded_marking_ids: set, optional
+        :param access_filter: Access filter for the export, applied to the links
+            of the procedure, defaults to None
+        :type access_filter: Dict, optional
         :return: STIX entity dictionary
         :rtype: Dict
         """
-        stix = self.opencti.procedure.to_stix_export(entity["id"])
+        stix = self.opencti.procedure.to_stix_export(entity["id"], access_filter)
         for key in _STIX_2_0_REBUILT_KEYS:
             stix.pop(key, None)
         stix.pop("external_references", None)
@@ -2680,7 +2684,7 @@ class OpenCTIStix2:
         excluded_marking_ids = self._get_excluded_marking_ids(access_filter)
         if entity["entity_type"] == "Procedure":
             return self._generate_procedure_export(
-                entity, no_custom_attributes, excluded_marking_ids
+                entity, no_custom_attributes, excluded_marking_ids, access_filter
             )
         dispatch_type = self._stix_2_0_dispatch_type(
             entity["entity_type"], entity.get("parent_types")
