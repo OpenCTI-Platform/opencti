@@ -986,7 +986,7 @@
       "guards": [
         "imported-from-library"
       ],
-      "reason": "dashboard context bar: the preset pill (the presets of the dashboard, the default one captioned Default, No preset without a default preset, Rename and Delete of the active preset for its editors) and the Save menu (Update the active preset, Save as new preset, Set as dashboard defaults).",
+      "reason": "dashboard context bar: the preset pill (No preset first, then the presets of the dashboard, the default one captioned Default, then Rename preset and Delete preset for the editors) and the Save menu (Update the active preset, Save as new preset, Set as dashboard defaults). No group label: the trigger names the menu, and MenuLabel's narrower inset would not line up with the rows.",
       "files": [
         "opencti-platform/opencti-front/src/components/dashboard/presets/DashboardPresetSelector.tsx",
         "opencti-platform/opencti-front/src/components/dashboard/DashboardSaveMenu.tsx"
@@ -998,19 +998,31 @@
       "guards": [
         "imported-from-library"
       ],
-      "reason": "dashboard context bar: the presets and the actions of the preset pill, the three actions of the Save menu, each with its scope as a caption.",
+      "reason": "dashboard context bar: No preset, the presets and the actions of the preset pill; the three actions of the Save menu, each with an icon and, under its action, a content-compact line saying for whom it writes.",
       "files": [
         "opencti-platform/opencti-front/src/components/dashboard/presets/DashboardPresetSelector.tsx",
         "opencti-platform/opencti-front/src/components/dashboard/DashboardSaveMenu.tsx"
       ]
     },
     {
-      "component": "MenuLabel",
+      "component": "MenuSeparator",
       "importFrom": "@filigran/design-system",
       "guards": [
         "imported-from-library"
       ],
-      "reason": "dashboard context bar: the groups of the preset pill (Presets, the active preset) and of the Save menu (Everyone using this preset, New, Everyone, without a preset).",
+      "reason": "dashboard context bar: separates No preset, the presets and the actions of the preset pill, and the three entries of the Save menu.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/presets/DashboardPresetSelector.tsx",
+        "opencti-platform/opencti-front/src/components/dashboard/DashboardSaveMenu.tsx"
+      ]
+    },
+    {
+      "component": "Text",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard context bar: the Preset prefix of the pill trigger, the Default caption of a preset and the audience line of each Save entry (content-compact, 12px, instead of the 10px content-caption).",
       "files": [
         "opencti-platform/opencti-front/src/components/dashboard/presets/DashboardPresetSelector.tsx",
         "opencti-platform/opencti-front/src/components/dashboard/DashboardSaveMenu.tsx"
