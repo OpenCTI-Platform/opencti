@@ -826,7 +826,8 @@ describe('CustomView and dashboard variables', () => {
   });
 
   it('should refuse a widget using dashboard variables on every way into a custom view', async () => {
-    const TOKEN_ERROR = 'A widget using dashboard variables cannot be used in a custom view';
+    // The refused widgets are named: by their title, else by their id
+    const TOKEN_ERROR = 'A widget using dashboard variables cannot be used in a custom view: token';
     const tokenWidget = { dataSelection: [{ filters: { mode: 'and', filters: [{ key: ['entity_type'], values: [`$var:${VARIABLES[0].id}`] }], filterGroups: [] } }] };
     const parsed = fromB64(DASHBOARD_MANIFEST);
     const tokenManifest = toB64({ ...parsed, widgets: { ...parsed.widgets, token: tokenWidget } });
@@ -841,7 +842,7 @@ describe('CustomView and dashboard variables', () => {
     await queryAsAdminWithError({
       query: IMPORT_CUSTOM_VIEW_QUERY,
       variables: { targetEntityType: ENTITY_TYPE_INTRUSION_SET, file: createUploadFile('./tests/data/dashboard-variables/', 'dashboard-import-valid-variables.json') },
-    }, TOKEN_ERROR, 'FUNCTIONAL_ERROR');
+    }, 'A widget using dashboard variables cannot be used in a custom view: variable widget', 'FUNCTIONAL_ERROR');
     const created = await queryAsAdminWithSuccess({
       query: CREATE_CUSTOM_VIEW_QUERY,
       variables: { input: { name: 'Custom view edited with a token', manifest: DASHBOARD_MANIFEST, targetEntityType: ENTITY_TYPE_INTRUSION_SET } },

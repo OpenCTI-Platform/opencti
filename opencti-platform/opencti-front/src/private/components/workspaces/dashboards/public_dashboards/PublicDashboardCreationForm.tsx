@@ -221,8 +221,9 @@ const PublicDashboardCreationFormComponent = ({
             {t_i18n('You see only marking definitions that can be shared (defined by the admin)')}
           </Alert>
 
+          {/* Another dashboard starts the published values again, the date pickers and what they refused included */}
           {isVariablesEnabled && (
-            <PublicDashboardPublishedValuesLoader dashboardId={values.dashboard_id} />
+            <PublicDashboardPublishedValuesLoader key={values.dashboard_id} dashboardId={values.dashboard_id} />
           )}
 
           <FormButtonContainer>

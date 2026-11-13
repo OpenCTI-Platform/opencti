@@ -209,6 +209,11 @@ describe('sanitizeCustomViewManifest', () => {
     setFlags(['DASHBOARD_VARIABLES']);
     expect(() => sanitizeCustomViewManifest(toB64({ widgets: { a: tokenWidget } }))).toThrow('A widget using dashboard variables cannot be used in a custom view');
   });
+  it('should name the refused widgets, by their title else by their id', () => {
+    setFlags(['DASHBOARD_VARIABLES']);
+    const widgets = { a: tokenWidget, b: { ...tokenWidget, parameters: { title: ' Malware by sector ' } }, c: { dataSelection: [{ filters: FILTERS }] } };
+    expect(() => sanitizeCustomViewManifest(toB64({ widgets }))).toThrow('cannot be used in a custom view: a, Malware by sector');
+  });
   it('should strip the server-owned keys of an accepted manifest', () => {
     setFlags(['DASHBOARD_VARIABLES']);
     const result = sanitizeCustomViewManifest(toB64({ widgets: { a: { dataSelection: [{ filters: FILTERS }] } }, variables: [{ id: VAR_ID }], presets: [] }));
