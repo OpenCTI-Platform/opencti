@@ -1,5 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
-import { consumedPushQueues, createOrderedQueuesLeadership, intakeLockKey } from '../../../src/intake/workerless/push-queues';
+import {
+  consumedPushQueues,
+  createOrderedQueuesLeadership,
+  createPartitionSlot,
+  intakeLockKey,
+  parseQueuePartition,
+  partitionedPushQueues,
+} from '../../../src/intake/workerless/push-queues';
 
 // Several platforms consuming the push queues (multi_writer): each runs its intake under its own
 // lock, the ordered queues of the synchronizations go to the platform holding the historical lock.
@@ -69,5 +76,50 @@ describe('ordered queues leadership', () => {
     await leadership.release();
     await leadership.release();
     expect(lock.unlock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('queue affinity test: connector groups, one slot per platform', () => {
+  const groups = parseQueuePartition(' connector-07, connector-05 | connector-01,connector-02 ||');
+  const connectors = [
+    { name: 'bench-replay-run-connector-07', queue: 'push_cve' },
+    { name: 'bench-replay-run-connector-05', queue: 'push_rw' },
+    { name: 'bench-replay-run-connector-01', queue: 'push_mitre' },
+    { name: 'bench-replay-run-connector-02', queue: 'push_misp' },
+    { name: 'Background task 1 queue', queue: 'push_bg' },
+    { name: 'Background task 1 queue', queue: 'push_bg' },
+  ];
+
+  it('should parse groups, trimming fragments and dropping empty groups', () => {
+    expect(groups).toEqual([['connector-07', 'connector-05'], ['connector-01', 'connector-02']]);
+    expect(parseQueuePartition(undefined)).toEqual([]);
+    expect(parseQueuePartition('')).toEqual([]);
+  });
+
+  it('should give each slot its group and every platform the queues of no group, once', () => {
+    expect(partitionedPushQueues(connectors, groups, 0)).toEqual(['push_cve', 'push_rw', 'push_bg']);
+    expect(partitionedPushQueues(connectors, groups, 1)).toEqual(['push_mitre', 'push_misp', 'push_bg']);
+    expect(partitionedPushQueues(connectors, groups, null)).toEqual(['push_bg']);
+  });
+
+  it('should take the first free slot, keep it, and report it lost once its lock aborts', async () => {
+    const controller = new AbortController();
+    const tried: number[] = [];
+    const slot = createPartitionSlot(2, async (i) => {
+      tried.push(i);
+      return i === 0 ? null : { signal: controller.signal, unlock: async () => {} };
+    });
+    expect(await slot.refresh()).toEqual(1);
+    expect(await slot.refresh()).toEqual(1);
+    expect(tried).toEqual([0, 1]);
+    controller.abort();
+    expect(await slot.refresh()).toBeNull();
+    expect(slot.lost()).toBe(true);
+  });
+
+  it('should hold no slot when every slot is taken', async () => {
+    const slot = createPartitionSlot(2, async () => null);
+    expect(await slot.refresh()).toBeNull();
+    expect(slot.lost()).toBe(false);
   });
 });

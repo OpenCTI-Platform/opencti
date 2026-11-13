@@ -50,3 +50,61 @@ export const createOrderedQueuesLeadership = (tryLock: () => Promise<HeldLock | 
     },
   };
 };
+
+// task 0040 queue affinity test (multi_writer): groups of connector name fragments, `|` between groups
+// and `,` inside one (`connector-07,connector-05|connector-01,connector-02`). A platform holding the
+// slot of a group consumes the push queues of that group's connectors and of the connectors of no
+// group; the queues of the other groups are left to the platforms holding their slots.
+export const parseQueuePartition = (spec: string | undefined): string[][] => (spec ?? '')
+  .split('|')
+  .map((group) => group.split(',').map((fragment) => fragment.trim()).filter((fragment) => fragment.length > 0))
+  .filter((group) => group.length > 0);
+
+export const partitionedPushQueues = (connectors: { name?: string; queue: string }[], groups: string[][], slot: number | null): string[] => {
+  const groupOf = (name: string) => groups.findIndex((group) => group.some((fragment) => name.includes(fragment)));
+  const queues = connectors.filter(({ name }) => {
+    const group = groupOf(name ?? '');
+    return group === -1 || group === slot;
+  }).map(({ queue }) => queue);
+  return [...new Set(queues)];
+};
+
+// The slot (group index) this platform holds: the first free one among `count`, each a lock. Once
+// lost (lock signal aborted), the consumer is declared dead like on the ordered queues and the cron
+// starts the intake again.
+export interface PartitionSlot {
+  refresh: () => Promise<number | null>;
+  lost: () => boolean;
+  release: () => Promise<void>;
+}
+
+export const createPartitionSlot = (count: number, tryLock: (slot: number) => Promise<HeldLock | null>): PartitionSlot => {
+  let held: { slot: number; lock: HeldLock } | null = null;
+  let lost = false;
+  return {
+    refresh: async () => {
+      if (lost) return null;
+      if (held) {
+        if (held.lock.signal.aborted) {
+          lost = true;
+          return null;
+        }
+        return held.slot;
+      }
+      for (let slot = 0; slot < count; slot += 1) {
+        const lock = await tryLock(slot);
+        if (lock) {
+          held = { slot, lock };
+          return slot;
+        }
+      }
+      return null;
+    },
+    lost: () => lost,
+    release: async () => {
+      const current = held;
+      held = null;
+      if (current) await current.lock.unlock();
+    },
+  };
+};

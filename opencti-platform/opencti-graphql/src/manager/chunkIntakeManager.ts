@@ -47,7 +47,14 @@ import { fullEntitiesList } from '../database/middleware-loader';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { lockResources } from '../lock/master-lock';
 import { TYPE_LOCK_ERROR } from '../config/errors';
-import { consumedPushQueues, createOrderedQueuesLeadership, intakeLockKey } from '../intake/workerless/push-queues';
+import {
+  consumedPushQueues,
+  createOrderedQueuesLeadership,
+  createPartitionSlot,
+  intakeLockKey,
+  parseQueuePartition,
+  partitionedPushQueues,
+} from '../intake/workerless/push-queues';
 import { isLockError } from '../database/sequencer/sequencer-multi-writer';
 import { rehydrateFiles, removeStagedFiles, stageFiles } from '../intake/intake-files';
 import { intakeEnvelopeOfMessage, type IntakeEnvelope } from '../intake/intake-envelope';
@@ -91,6 +98,8 @@ const PUSH_RELEASE_QUANTUM = Number(conf.get('chunk_intake_manager:push_release_
 // Transformations running at once: their reads reach the engine outside the pre-loop gate (a read
 // per open vocabulary value, author or marking not yet cached)
 const PUSH_TRANSFORM_CONCURRENCY = Number(conf.get('chunk_intake_manager:push_transform_concurrency') ?? 16);
+// task 0040 queue affinity test (multi_writer): connector groups, one per platform (push-queues.ts); empty = off
+const PUSH_QUEUE_PARTITION = parseQueuePartition(conf.get('chunk_intake_manager:push_queue_partition'));
 // Per-OPERATION transient policy (depth campaign v2, 2026-09-14: a 240-rejection burst of the
 // ES search pool cost 34 indicators at prefetch 48, where pycti's ladder retried them on
 // HTTP). A transient engine error inside one operation (rejected execution, circuit breaker,
@@ -810,10 +819,19 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
     ? createOrderedQueuesLeadership(() => lockResources([CHUNK_INTAKE_MANAGER_KEY], { retryCount: 0 })
         .catch((e: any) => (e?.name === TYPE_LOCK_ERROR ? null : Promise.reject(e))))
     : null;
+  const partition = SEQUENCER_CONFIG.multiWriter && PUSH_QUEUE_PARTITION.length > 0
+    ? createPartitionSlot(PUSH_QUEUE_PARTITION.length, (slot) => lockResources([`${CHUNK_INTAKE_MANAGER_KEY}_partition_${slot}`], { retryCount: 0 })
+        .catch((e: any) => (e?.name === TYPE_LOCK_ERROR ? null : Promise.reject(e))))
+    : null;
   const listQueues = async () => {
     const context = executionContext(CHUNK_INTAKE_MANAGER_CONTEXT);
+    const pushConnectors = (await connectorsForWorker(context, SYSTEM_USER))
+      .map((connector: any) => ({ name: connector.name, queue: connector.config?.push }))
+      .filter((connector: { queue: unknown }): connector is { name: string; queue: string } => typeof connector.queue === 'string');
     // One consumer per queue, as the worker: connectorsForWorker lists some queues twice (background tasks)
-    const queues = [...new Set((await connectorsForWorker(context, SYSTEM_USER)).map((connector: any) => connector.config?.push).filter((queue: unknown): queue is string => typeof queue === 'string'))];
+    const queues = partition
+      ? partitionedPushQueues(pushConnectors, PUSH_QUEUE_PARTITION, await partition.refresh())
+      : [...new Set(pushConnectors.map(({ queue }) => queue))];
     if (!leadership || await leadership.refresh()) return queues;
     const syncs = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_SYNC]);
     const ordered = new Set([connectorConfig('sync').push, ...syncs.map((sync) => connectorConfig(sync.internal_id).push)]);
@@ -873,11 +891,12 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
   );
   return {
     ...consumer,
-    alive: () => consumer.alive() && !leadership?.lost(),
+    alive: () => consumer.alive() && !leadership?.lost() && !partition?.lost(),
     close: async () => {
       unsubscribe();
       await consumer.close();
       await leadership?.release();
+      await partition?.release();
     },
   };
 };
