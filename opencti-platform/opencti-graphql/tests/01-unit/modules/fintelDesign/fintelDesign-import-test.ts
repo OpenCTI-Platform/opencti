@@ -25,6 +25,7 @@ import {
   isCompleteFintelDesignLogo,
   limitFintelDesignLogoStream,
   readFintelDesignLogo,
+  readFintelDesignLogoUpload,
 } from '../../../../src/modules/fintelDesign/fintelDesign-logo';
 import { exportFintelDesign } from '../../../../src/modules/fintelDesign/fintelDesign-export';
 import { importFintelDesign } from '../../../../src/modules/fintelDesign/fintelDesign-import';
@@ -170,6 +171,15 @@ describe('Fintel design logo upload', () => {
     const upload = Readable.from([atLimit, Buffer.from([1]), Buffer.from('never read')]);
     await expect(read(upload)).rejects.toThrow('The logo of the fintel design is too large');
     expect(upload.destroyed).toBe(true);
+  });
+
+  it('stores only a logo the import of a bundle takes back: recognized from its bytes, complete, within the limit', async () => {
+    expect((await readFintelDesignLogoUpload(Readable.from([PNG_LOGO.subarray(0, 10), PNG_LOGO.subarray(10)]))).equals(PNG_LOGO)).toBe(true);
+    // Named as an image by its file name, but not one: another content, a logo cut short
+    await expect(readFintelDesignLogoUpload(Readable.from([Buffer.from('<html></html>')]))).rejects.toThrow('The logo of the fintel design is not a supported image');
+    await expect(readFintelDesignLogoUpload(Readable.from([Buffer.from([0xff, 0xd8, 0xff])]))).rejects.toThrow('The logo of the fintel design is not a supported image');
+    await expect(readFintelDesignLogoUpload(Readable.from([PNG_LOGO.subarray(0, 20)]))).rejects.toThrow('The logo of the fintel design is not a supported image');
+    await expect(readFintelDesignLogoUpload(Readable.from([Buffer.alloc(FINTEL_DESIGN_LOGO_MAX_SIZE + 1)]))).rejects.toThrow('The logo of the fintel design is too large');
   });
 });
 
