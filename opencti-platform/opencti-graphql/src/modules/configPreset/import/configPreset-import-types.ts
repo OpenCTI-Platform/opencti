@@ -87,8 +87,10 @@ export interface ConfigPresetImportPlan {
   releasedThemeNames?: Set<string>;
   // The names (normalized) of the exclusion lists the earlier items of an import hold, dry run or not
   exclusionListNames?: Set<string>;
-  // The names the copies of fintel designs of the earlier items of a dry run would take
+  // The names the fintel designs of the earlier items of a dry run would take (copied, created or renamed)
   fintelDesignNames?: Set<string>;
+  // The ids of the fintel designs the earlier items of a dry run would rename: their current name is free again
+  renamedFintelDesignIds?: Set<string>;
   // The standard ids of the roles the earlier items of a dry run would create
   roleIds?: Set<string>;
   // The standard ids of the groups the earlier items of a dry run would create

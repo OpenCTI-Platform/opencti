@@ -13,8 +13,11 @@ import { type BasicStoreEntityFintelDesign, ENTITY_TYPE_FINTEL_DESIGN } from './
 export type FintelDesignImportCode = 'invalid' | 'exists' | 'name_conflict' | 'unchanged' | 'logo_too_large' | 'logo_invalid';
 
 export interface FintelDesignImportOptions extends ConfigImportOptions {
-  // A dry run writes nothing: the names the copies of the earlier items of the same dry run would take are reserved for the next ones
+  // A dry run writes nothing: the names the earlier items of the same dry run would give (a copy, a creation, a rename) are reserved for the next ones
   reservedNames?: Set<string>;
+  // The ids of the designs an earlier item of the same dry run renames: the name they have now is no longer theirs.
+  // Ids and not names: two designs can have the same name, and the other one keeps it
+  renamedIds?: Set<string>;
 }
 
 // The logo of the design, read when it is needed: null when it is bigger than the limit
@@ -42,13 +45,13 @@ const toLogoUpload = ({ content, extension }: { content: Buffer; extension: stri
   return Promise.resolve({ createReadStream: () => Readable.from(content), filename: `logo.${extension}` });
 };
 
-const isNameTaken = async (context: AuthContext, user: AuthUser, name: string, reservedNames?: Set<string>) => {
+const isNameTaken = async (context: AuthContext, user: AuthUser, name: string, { reservedNames, renamedIds }: FintelDesignImportOptions) => {
   if (reservedNames?.has(name)) {
     return true;
   }
   const filters = { mode: FilterMode.And, filters: [{ key: ['name'], values: [name], operator: FilterOperator.Eq }], filterGroups: [] };
   const designs = await fullEntitiesList<BasicStoreEntityFintelDesign>(context, user, [ENTITY_TYPE_FINTEL_DESIGN], { filters });
-  return designs.some((design) => design.name === name);
+  return designs.some((design) => design.name === name && !renamedIds?.has(design.id));
 };
 
 // The stored logo of the design is the one of the bundle: an unreadable stored logo is replaced
@@ -95,8 +98,9 @@ export const importFintelDesign = async (
   user: AuthUser,
   configuration: unknown,
   logoFile: FintelDesignImportLogo | undefined,
-  { mode, dryRun = false, reservedNames }: FintelDesignImportOptions,
+  options: FintelDesignImportOptions,
 ): Promise<FintelDesignImportResult> => {
+  const { mode, dryRun = false, reservedNames, renamedIds } = options;
   const parsed = fintelDesignImportSchema.safeParse(configuration);
   if (!parsed.success) {
     return refused('failed', 'invalid', configImportValidationReason(parsed.error), false);
@@ -121,7 +125,7 @@ export const importFintelDesign = async (
   // A copy of a design that exists is another design: a new standard id, and a free name to tell them apart
   if (mode === ConfigImportMode.Copy) {
     const name = existing
-      ? await freeConfigImportName(design.name, (candidate) => isNameTaken(context, user, candidate, reservedNames), { maxLength: FINTEL_DESIGN_NAME_MAX_LENGTH })
+      ? await freeConfigImportName(design.name, (candidate) => isNameTaken(context, user, candidate, options), { maxLength: FINTEL_DESIGN_NAME_MAX_LENGTH })
       : design.name;
     if (!name) {
       return refused('failed', 'name_conflict', 'Fintel design name already exists', !!existing, parsed.data);
@@ -135,6 +139,7 @@ export const importFintelDesign = async (
     return copy;
   }
   if (!existing) {
+    reservedNames?.add(design.name);
     if (!dryRun) {
       await createFintelDesign(context, user, design, logo, standardId);
     }
@@ -159,6 +164,10 @@ export const importFintelDesign = async (
   const hasNewLogo = !!logo && !(await hasSameLogo(existing, logo.content));
   if (patch.length === 0 && !hasNewLogo) {
     return refused('skipped', 'unchanged', CONFIG_IMPORT_UNCHANGED_REASON, true, parsed.data);
+  }
+  reservedNames?.add(design.name);
+  if (design.name !== existing.name) {
+    renamedIds?.add(existing.id);
   }
   if (!dryRun) {
     await fintelDesignEditField(context, user, { id: existing.id, input: patch, file: hasNewLogo && logo ? toLogoUpload(logo) : undefined });

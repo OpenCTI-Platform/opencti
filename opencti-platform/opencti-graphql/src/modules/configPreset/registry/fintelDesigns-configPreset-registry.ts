@@ -66,7 +66,13 @@ const fintelDesignsImporter: ConfigPresetImporter = {
       return { ...base, exists: false, conflict: false, status: 'failed', reason: 'The standard id of the fintel design does not match its id' };
     }
     plan.fintelDesignNames ??= new Set();
-    const result = await importFintelDesign(context, user, item.configuration, item.attachment, { mode, dryRun: true, reservedNames: plan.fintelDesignNames });
+    plan.renamedFintelDesignIds ??= new Set();
+    const result = await importFintelDesign(context, user, item.configuration, item.attachment, {
+      mode,
+      dryRun: true,
+      reservedNames: plan.fintelDesignNames,
+      renamedIds: plan.renamedFintelDesignIds,
+    });
     return { ...base, exists: result.exists, conflict: result.exists, status: result.status, reason: result.reason, code: result.code };
   },
   apply: async (context, user, item, computed, mode) => {

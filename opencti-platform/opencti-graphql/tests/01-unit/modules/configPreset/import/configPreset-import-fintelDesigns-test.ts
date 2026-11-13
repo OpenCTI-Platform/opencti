@@ -51,7 +51,12 @@ describe('Fintel designs import (registry)', () => {
   it('computes the item with a dry run of the module, with the logo of the item, named by its name and marked as the default it is', async () => {
     vi.mocked(importFintelDesign).mockResolvedValue({ status: 'overwritten', exists: true });
     const result = await family.importer!.compute(context, user, item(configuration), plan, ConfigImportMode.Overwrite);
-    expect(importFintelDesign).toHaveBeenCalledWith(context, user, configuration, attachment, { mode: ConfigImportMode.Overwrite, dryRun: true, reservedNames: expect.any(Set) });
+    expect(importFintelDesign).toHaveBeenCalledWith(context, user, configuration, attachment, {
+      mode: ConfigImportMode.Overwrite,
+      dryRun: true,
+      reservedNames: expect.any(Set),
+      renamedIds: expect.any(Set),
+    });
     expect(result).toMatchObject({ label: 'Filigran report', translatable: false, isDefault: true, status: 'overwritten', exists: true, conflict: true });
     vi.mocked(importFintelDesign).mockResolvedValue({ status: 'created', exists: false });
     const night = exportFintelDesign(nightFintelDesign);
