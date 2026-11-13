@@ -64,6 +64,7 @@ import {
   type RequestAccessOutcome,
   type RequestAccessWorkflowState,
 } from '../workflow/domain/workflow-request-access';
+import { REQUEST_ACCESS_MAX_LENGTH } from '../workflow/domain/workflow-domain';
 
 // having an id is required for Relay
 const REQUEST_ACCESS_CONFIGURATION_ID = '7059b2f9-86d4-419b-9fde-adf825090820';
@@ -391,9 +392,27 @@ export const configureRequestAccess = async (context: AuthContext, user: AuthUse
   return requestAccessConfigResult;
 };
 
+// The request record is stored as JSON of at most REQUEST_ACCESS_MAX_LENGTH characters. JSON escaping can multiply
+// the reason by 6 (control characters), so 10,000 characters take at most 60,000; 500 standard ids take at most
+// 500 * 65 = 32,500; the other fields stay under 1,000. The worst case is about 93,500, under the limit.
+export const REQUEST_ACCESS_REASON_MAX_LENGTH = 10_000;
+export const REQUEST_ACCESS_ENTITIES_MAX_COUNT = 500;
+
+const assertRequestAccessInputSize = (input: RequestAccessAddInput) => {
+  const reasonLength = input.request_access_reason?.length ?? 0;
+  if (reasonLength > REQUEST_ACCESS_REASON_MAX_LENGTH) {
+    throw FunctionalError(`The reason of a request access is limited to ${REQUEST_ACCESS_REASON_MAX_LENGTH} characters`, { reasonLength });
+  }
+  const entitiesCount = input.request_access_entities.length;
+  if (entitiesCount > REQUEST_ACCESS_ENTITIES_MAX_COUNT) {
+    throw FunctionalError(`A request access is limited to ${REQUEST_ACCESS_ENTITIES_MAX_COUNT} requested entities`, { entitiesCount });
+  }
+};
+
 export const addRequestAccess = async (context: AuthContext, user: AuthUser, input: RequestAccessAddInput) => {
   logApp.debug('[OPENCTI-MODULE][Request access] - addRequestAccess', { input });
   await checkRequestAccessEnabled(context, user);
+  assertRequestAccessInputSize(input);
 
   const requestedEntities = input.request_access_entities;
   const organizationId = input.request_access_members[0];
@@ -432,6 +451,13 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     workflowMapping: allActionStatuses,
     applicant_id: user.id,
   };
+  const serializedAction = JSON.stringify(action);
+  // Backstop of the input limits above (ids are not length-bound): never hand over a record the workflow refuses
+  if (serializedAction.length > REQUEST_ACCESS_MAX_LENGTH) {
+    throw FunctionalError('The reason and the requested entities of this request access are too long, shorten the reason or request fewer entities', {
+      length: serializedAction.length,
+    });
+  }
   const requestAccessWorkflow = await getRequestAccessWorkflow(context, user);
   const firstStatusId = requestAccessWorkflow
     ? await findInitialWorkflowStatusId(context, user, requestAccessWorkflow.definitionData.initialState)
@@ -442,7 +468,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     objects: requestedEntities,
     description: humanDescription,
     information_types: [REQUEST_SHARE_ACCESS_INFO_TYPE],
-    x_opencti_request_access: `${JSON.stringify(action)}`,
+    x_opencti_request_access: serializedAction,
     authorized_members,
     objectMarking: elementData[RELATION_OBJECT_MARKING] ?? [],
     x_opencti_workflow_id: firstStatusId,

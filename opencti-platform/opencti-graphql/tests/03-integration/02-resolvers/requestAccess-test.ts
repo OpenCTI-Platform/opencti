@@ -20,6 +20,8 @@ import {
   addRequestAccess,
   findWorkflowStatusByTemplateId,
   getRfiEntitySettings,
+  REQUEST_ACCESS_ENTITIES_MAX_COUNT,
+  REQUEST_ACCESS_REASON_MAX_LENGTH,
   type RequestAccessAction,
 } from '../../../src/modules/requestAccess/requestAccess-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
@@ -42,6 +44,7 @@ import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from '
 import {
   deleteWorkflowDefinition,
   publishWorkflowDefinition,
+  REQUEST_ACCESS_MAX_LENGTH,
   setWorkflowDefinition,
   setWorkflowStatus,
   triggerWorkflowEvent,
@@ -855,6 +858,48 @@ describe('Request access decided through workflow transitions', async () => {
     expect(leftoverDefinition).toBeUndefined();
     editionSpies.forEach((spy) => spy.mockRestore());
     await unSetOrganization();
+  });
+
+  describe('input limits of a request access', () => {
+    const addWith = (overrides: Record<string, unknown>) => addRequestAccess(testContext, ADMIN_USER, {
+      request_access_reason: 'Access needed for the input limit tests',
+      request_access_entities: [malwareId],
+      request_access_members: [testOrganizationId],
+      request_access_type: RequestAccessType.OrganizationSharing,
+      ...overrides,
+    });
+
+    it('refuses a reason over 10,000 characters and names the field and the limit', async () => {
+      await expect(addWith({ request_access_reason: 'a'.repeat(10_001) }))
+        .rejects.toThrow('The reason of a request access is limited to 10000 characters');
+    });
+
+    it('refuses more than 500 requested entities and names the field and the limit', async () => {
+      const entities = Array.from({ length: 501 }, () => malwareId);
+      await expect(addWith({ request_access_entities: entities }))
+        .rejects.toThrow('A request access is limited to 500 requested entities');
+    });
+
+    it('accepts a reason of exactly 10,000 characters', async () => {
+      const rfiId = await addWith({ request_access_reason: 'a'.repeat(REQUEST_ACCESS_REASON_MAX_LENGTH) });
+      createdRfiIds.push(rfiId);
+      expect(JSON.parse((await findRFIById(testContext, ADMIN_USER, rfiId)).x_opencti_request_access).reason).toHaveLength(REQUEST_ACCESS_REASON_MAX_LENGTH);
+    });
+
+    it('keeps the worst-case record under the stored limit', async () => {
+      // control characters escape to 6 characters each; the longest standard ids are about 65 characters with quotes
+      const longId = `x-mitre-data-component--${'0'.repeat(36)}`;
+      const record = JSON.stringify({
+        reason: '\u0001'.repeat(REQUEST_ACCESS_REASON_MAX_LENGTH),
+        entities: Array.from({ length: REQUEST_ACCESS_ENTITIES_MAX_COUNT }, () => longId),
+        members: [testOrganizationId],
+        type: RequestAccessType.OrganizationSharing,
+        status: ActionStatus.NEW,
+        applicant_id: ADMIN_USER.id,
+        workflowMapping: [1, 2, 3].map(() => ({ rfiStatusId: ADMIN_USER.id, actionStatus: ActionStatus.APPROVED })),
+      });
+      expect(record.length).toBeLessThan(REQUEST_ACCESS_MAX_LENGTH);
+    });
   });
 
   it('Accept shares, sets APPROVED, notifies and counts once', async () => {
