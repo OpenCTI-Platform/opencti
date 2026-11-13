@@ -141,6 +141,44 @@ _STIX_2_0_BACKEND_ENTITY_TYPES = frozenset(
         "Opinion",
         "Report",
         "Task",
+        # Observables (Simple-Observable is not a stored type)
+        "AI-Prompt",
+        "Artifact",
+        "Autonomous-System",
+        "Bank-Account",
+        "Credential",
+        "Cryptocurrency-Wallet",
+        "Cryptographic-Key",
+        "Directory",
+        "Domain-Name",
+        "Email-Addr",
+        "Email-Message",
+        "Email-Mime-Part-Type",
+        "Hostname",
+        "ICCID",
+        "IMEI",
+        "IMSI",
+        "IPv4-Addr",
+        "IPv6-Addr",
+        "Mac-Addr",
+        "Media-Content",
+        "Mutex",
+        "Network-Traffic",
+        "Payment-Card",
+        "Persona",
+        "Phone-Number",
+        "Process",
+        "SSH-Key",
+        "Software",
+        "StixFile",
+        "Text",
+        "Tracking-Number",
+        "Url",
+        "User-Account",
+        "User-Agent",
+        "Windows-Registry-Key",
+        "Windows-Registry-Value-Type",
+        "X509-Certificate",
     }
 )
 
@@ -174,7 +212,26 @@ _STIX_2_0_REBUILT_KEYS = (
     "x_opencti_files",
     "object_refs",
     "x_mitre_data_source_ref",
+    "x_opencti_created_by_ref",
 )
+
+# Nested refs that the backend outputs with another key or shape than the
+# legacy export, per STIX type: backend key -> nested ref relationship type.
+# `prepare_export` drops the backend key and rebuilds the legacy key from the
+# nested refs, as the legacy export does (e.g. `values` inline objects become
+# `values_refs`, and the referenced objects are added to the full bundle).
+# TODO(stix-2-0-migration): this sets the export format, it is not legacy
+# plumbing. MOVE it to the backend converter before deleting the legacy path:
+# deleting it changes the format, and the import does not read
+# `x_opencti_contains_refs` nor the inline `body_multipart`.
+_STIX_2_0_LEGACY_NESTED_REF_KEYS = {
+    "email-addr": {"belongs_to_ref": MultipleRefRelationship.BELONGS_TO.value},
+    "email-message": {
+        "body_multipart": MultipleRefRelationship.BODY_MULTIPART.value,
+        "x_opencti_contains_refs": MultipleRefRelationship.CONTAINS.value,
+    },
+    "windows-registry-key": {"values": MultipleRefRelationship.VALUES.value},
+}
 
 #: STIX Extension ID for OpenCTI custom Cyber Observables (SCO)
 STIX_EXT_OCTI_SCO: str = "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
@@ -2111,8 +2168,69 @@ class OpenCTIStix2:
             and entity_type in _STIX_2_0_BACKEND_ENTITY_TYPES
         )
 
+    @staticmethod
+    def _add_legacy_nested_refs(entity: Dict, nested_refs: List[Dict]) -> None:
+        """Add nested refs to an exported entity, with the legacy key names.
+
+        The key is the relationship type without the ``obs_`` prefix, with
+        ``_ref`` for a single ref and ``_refs`` for a multiple one.
+
+        :param entity: STIX entity being exported
+        :type entity: Dict
+        :param nested_refs: Nested ref relationships starting from the entity
+        :type nested_refs: List[Dict]
+        """
+        for nested_ref in nested_refs:
+            # The target is null when the user cannot read it.
+            target_id = (nested_ref.get("to") or {}).get("standard_id")
+            if target_id is None:
+                continue
+            relationship_type = nested_ref["relationship_type"]
+            key = relationship_type.replace("obs_", "").replace("-", "_")
+            # dirty fix because the sample and operating-system ref are not multiple for a Malware Analysis
+            # will be replaced by a proper toStix converter in the back
+            if not MultipleRefRelationship.has_value(relationship_type) or (
+                entity["type"] == "malware-analysis"
+                and relationship_type in ["operating-system", "sample"]
+            ):
+                entity[key + "_ref"] = target_id
+            elif isinstance(entity.get(key + "_refs"), list):
+                entity[key + "_refs"].append(target_id)
+            else:
+                entity[key + "_refs"] = [target_id]
+
+    def _rebuild_legacy_nested_refs(
+        self, entity: Dict, nested_refs: List[Dict]
+    ) -> None:
+        """Replace the backend nested refs that the legacy export outputs differently.
+
+        See ``_STIX_2_0_LEGACY_NESTED_REF_KEYS``.
+
+        :param entity: STIX 2.0 entity produced by the backend
+        :type entity: Dict
+        :param nested_refs: Nested refs of the entity, read with the export
+            access filter, as in the legacy export
+        :type nested_refs: List[Dict]
+        """
+        replaced_keys = _STIX_2_0_LEGACY_NESTED_REF_KEYS[entity["type"]]
+        for key in replaced_keys:
+            entity.pop(key, None)
+        # Filtered here: `stixNestedRefRelationships` ignores `relationship_type`.
+        relationship_types = set(replaced_keys.values())
+        self._add_legacy_nested_refs(
+            entity,
+            [
+                nested_ref
+                for nested_ref in nested_refs
+                if nested_ref["relationship_type"] in relationship_types
+            ],
+        )
+
     def _remove_nested_refs_excluded_by_filter(
-        self, entity: Dict, access_filter: Dict
+        self,
+        entity: Dict,
+        access_filter: Dict,
+        allowed_nested_refs: Optional[List[Dict]] = None,
     ) -> None:
         """Remove the nested refs that the export access filter excludes.
 
@@ -2126,6 +2244,9 @@ class OpenCTIStix2:
         :type entity: Dict
         :param access_filter: Access filter of the export
         :type access_filter: Dict
+        :param allowed_nested_refs: Nested refs already read with the access
+            filter, defaults to None (read here)
+        :type allowed_nested_refs: List[Dict], optional
         """
 
         def target_ids(nested_refs: List[Dict]) -> set:
@@ -2138,11 +2259,11 @@ class OpenCTIStix2:
         all_ids = target_ids(
             nested_ref_client.list(fromId=entity["x_opencti_id"], getAll=True)
         )
-        allowed_ids = target_ids(
-            nested_ref_client.list(
+        if allowed_nested_refs is None:
+            allowed_nested_refs = nested_ref_client.list(
                 fromId=entity["x_opencti_id"], filters=access_filter, getAll=True
             )
-        )
+        allowed_ids = target_ids(allowed_nested_refs)
         excluded_ids = all_ids - allowed_ids
         if not excluded_ids:
             return
@@ -2269,8 +2390,16 @@ class OpenCTIStix2:
         # The backend only outputs the external reference metadata, not the
         # attached files. Without custom attributes, the legacy export omits
         # the kill chain phases (`x_opencti_order`) and external references.
-        # TODO(stix-2-0-migration): SCOs output `x_opencti_external_references`.
+        # SCOs carry them as `x_opencti_external_references` (custom SCOs
+        # also as `external_references`): the legacy export, and the import,
+        # use `external_references` on every type.
+        # TODO(stix-2-0-migration): the two rules below set the export format.
+        # MOVE them to the backend converter before deleting the legacy path,
+        # do not delete them (the import does not read `x509_v3_extensions`).
         backend_stix.pop("external_references", None)
+        backend_stix.pop("x_opencti_external_references", None)
+        # X509-Certificate: the legacy export, and the import, use flat keys.
+        backend_stix.update(backend_stix.pop("x509_v3_extensions", None) or {})
         if no_custom_attributes:
             backend_stix.pop("kill_chain_phases", None)
         elif entity.get("externalReferences"):
@@ -3003,48 +3132,24 @@ class OpenCTIStix2:
         # StixRefRelationship
         # TODO(stix-2-0-migration): DELETE the legacy branch once every entity is migrated.
         if is_backend_stix_2_0:
+            # Read once with the access filter, for the rebuild and the removal.
+            allowed_nested_refs = None
+            if entity["type"] in _STIX_2_0_LEGACY_NESTED_REF_KEYS:
+                allowed_nested_refs = self.opencti.stix_nested_ref_relationship.list(
+                    fromId=entity["x_opencti_id"], filters=access_filter, getAll=True
+                )
+                self._rebuild_legacy_nested_refs(entity, allowed_nested_refs)
             if access_filter is not None:
-                self._remove_nested_refs_excluded_by_filter(entity, access_filter)
+                self._remove_nested_refs_excluded_by_filter(
+                    entity, access_filter, allowed_nested_refs
+                )
         else:
-            stix_nested_ref_relationships = (
+            self._add_legacy_nested_refs(
+                entity,
                 self.opencti.stix_nested_ref_relationship.list(
                     fromId=entity["x_opencti_id"], filters=access_filter
-                )
+                ),
             )
-            for stix_nested_ref_relationship in stix_nested_ref_relationships:
-                if "standard_id" in stix_nested_ref_relationship["to"]:
-                    # dirty fix because the sample and operating-system ref are not multiple for a Malware Analysis
-                    # will be replaced by a proper toStix converter in the back
-                    if not MultipleRefRelationship.has_value(
-                        stix_nested_ref_relationship["relationship_type"]
-                    ) or (
-                        entity["type"] == "malware-analysis"
-                        and stix_nested_ref_relationship["relationship_type"]
-                        in ["operating-system", "sample"]
-                    ):
-                        key = (
-                            stix_nested_ref_relationship["relationship_type"]
-                            .replace("obs_", "")
-                            .replace("-", "_")
-                            + "_ref"
-                        )
-                        entity[key] = stix_nested_ref_relationship["to"]["standard_id"]
-
-                    else:
-                        key = (
-                            stix_nested_ref_relationship["relationship_type"]
-                            .replace("obs_", "")
-                            .replace("-", "_")
-                            + "_refs"
-                        )
-                        if key in entity and isinstance(entity[key], list):
-                            entity[key].append(
-                                stix_nested_ref_relationship["to"]["standard_id"]
-                            )
-                        else:
-                            entity[key] = [
-                                stix_nested_ref_relationship["to"]["standard_id"]
-                            ]
         result.append(entity)
 
         if mode == "simple":

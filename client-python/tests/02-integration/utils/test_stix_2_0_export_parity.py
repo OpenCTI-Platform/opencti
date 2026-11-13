@@ -4,18 +4,19 @@ The backend STIX 2.0 converter must produce the same bundle as the legacy
 client-side converter (brainstorm decision of 2024-12-06), except for the
 differences validated in the decision log and listed below.
 
-The sweep exports one entity of every type covered by `EntityTestCases` and
-`ExtraEntityTestCases`. The migrated types use `_STIX_2_0_BACKEND_ENTITY_TYPES`
+The sweep exports one entity of every type covered by `EntityTestCases`,
+`ExtraEntityTestCases` and `OBSERVABLE_DATA`. The migrated types use `_STIX_2_0_BACKEND_ENTITY_TYPES`
 as in production; the other types are added to it inside the test only, so
 that each migration chunk can check its types before migrating them.
 """
 
+import base64
 import json
 from datetime import datetime, timezone
 from typing import Dict
 
 import pytest
-from stix2 import TLP_GREEN
+from stix2 import TLP_GREEN, TLP_RED
 
 from pycti.utils import opencti_stix2
 from pycti.utils.opencti_stix2 import STIX_VERSION_2_0
@@ -51,11 +52,6 @@ PENDING_DIFFERENCES_BY_STIX_TYPE = {
     # from the nested refs, next to `x_mitre_data_source_ref`. The import only
     # reads it on a `data-component`, not on an `x-mitre-data-component`.
     "x-mitre-data-component": {"data_source_ref"},
-    # SCOs: legacy outputs `external_references`, the backend outputs
-    # `x_opencti_external_references` (to decide with chunk 2-4).
-    "autonomous-system": {"x_opencti_external_references"},
-    "domain-name": {"x_opencti_external_references"},
-    "ipv4-addr": {"x_opencti_external_references"},
 }
 
 # Keys the legacy export leaves out because its GraphQL reader does not select
@@ -71,11 +67,15 @@ PENDING_DIFFERENCES_BY_STIX_TYPE = {
 #   `content`.
 # - x-mitre-data-source: the Data-Source embedded in a Data-Component is read
 #   with a partial fragment, without `labels`.
+# - artifact: the reader does not select `x_opencti_additional_names`.
+# - email-mime-part-type: the reader does not select `content_type` and `body`.
 PARTIAL_LEGACY_KEYS_BY_STIX_TYPE = {
     "identity": {"confidence", "revoked", "roles"},
     "infrastructure": {"aliases"},
     "report": {"content"},
     "x-mitre-data-source": {"labels"},
+    "artifact": {"x_opencti_additional_names"},
+    "email-mime-part-type": {"content_type", "body"},
 }
 
 # Not STIX core objects: they are not exported on their own.
@@ -376,15 +376,17 @@ def _differences(legacy_bundle, stix_2_0_bundle):
     return differences
 
 
-def _export_both(api_stix, entity_type, entity_id, mode):
+def _export_both(api_stix, entity_type, entity_id, mode, **options):
+    """Export with both converters, with the same export options."""
     legacy_bundle = api_stix.get_stix_bundle_or_object_from_entity_id(
-        entity_type=entity_type, entity_id=entity_id, mode=mode
+        entity_type=entity_type, entity_id=entity_id, mode=mode, **options
     )
     stix_2_0_bundle = api_stix.get_stix_bundle_or_object_from_entity_id(
         entity_type=entity_type,
         entity_id=entity_id,
         mode=mode,
         stix_version=STIX_VERSION_2_0,
+        **options,
     )
     return legacy_bundle, stix_2_0_bundle
 
@@ -549,6 +551,199 @@ RICH_DATA = {
 }
 
 
+# Minimal valid data of every observable type that `EntityTestCases` does not
+# cover (it has IPv4-Addr, Domain-Name and Autonomous-System).
+OBSERVABLE_DATA = {
+    "ai_prompt": {"type": "ai-prompt", "value": "STIX 2.0 parity prompt"},
+    "artifact": {
+        "type": "artifact",
+        "mime_type": "text/plain",
+        "payload_bin": base64.b64encode(b"STIX 2.0 parity artifact").decode(),
+        "hashes": {
+            "SHA-256": "fa80fddae0bdf68436892594e9773196ac6705b55dc192ba5a02df54a471868a"
+        },
+        "x_opencti_additional_names": ["stix-2-0-parity-artifact.txt"],
+    },
+    "bank_account": {
+        "type": "bank-account",
+        "iban": "FR7630006000011234567890189",
+        "bic": "AGRIFRPP",
+        "account_number": "12345678901",
+    },
+    "credential": {"type": "credential", "value": "stix-2-0-parity:secret"},
+    "cryptocurrency_wallet": {
+        "type": "cryptocurrency-wallet",
+        "value": "1Stix20ParityWallet",
+    },
+    "cryptographic_key": {"type": "cryptographic-key", "value": "stix-2-0-parity-key"},
+    "directory": {"type": "directory", "path": "/tmp/stix-2-0-parity"},
+    "email_addr": {
+        "type": "email-addr",
+        "value": "stix-2-0-parity@example.com",
+        "display_name": "STIX 2.0 parity",
+    },
+    "email_message": {
+        "type": "email-message",
+        "is_multipart": False,
+        "subject": "STIX 2.0 parity",
+        "body": "STIX 2.0 parity body",
+        "date": _FIRST,
+    },
+    "email_mime_part_type": {
+        "type": "email-mime-part-type",
+        "content_type": "text/plain",
+        "body": "STIX 2.0 parity part",
+    },
+    "file": {
+        "type": "file",
+        "name": "stix-2-0-parity.exe",
+        "size": 12,
+        "hashes": {
+            "MD5": "4a8a08f09d37b73795649038408b5f33",
+            "SHA-256": "18ac3e7343f016890c510e93f935261169d9e3f565436429830faf0934f4f8e4",
+        },
+    },
+    "hostname": {"type": "hostname", "value": "host.stix-2-0-parity"},
+    "iccid": {"type": "iccid", "value": "8944500102198304827"},
+    "imei": {"type": "imei", "value": "490154203237519"},
+    "imsi": {"type": "imsi", "value": "310150123456780"},
+    "ipv6_addr": {"type": "ipv6-addr", "value": "2001:db8::2020"},
+    "mac_addr": {"type": "mac-addr", "value": "00:11:22:33:20:20"},
+    "media_content": {
+        "type": "media-content",
+        "url": "https://example.com/stix-2-0-parity-media",
+        "title": "STIX 2.0 parity media",
+        "content": "STIX 2.0 parity content",
+        "media_category": "article",
+        "publication_date": _FIRST,
+    },
+    "mutex": {"type": "mutex", "name": "stix-2-0-parity-mutex"},
+    "network_traffic": {
+        "type": "network-traffic",
+        "start": _FIRST,
+        "src_port": 2020,
+        "dst_port": 443,
+        "protocols": ["tcp"],
+    },
+    "payment_card": {
+        "type": "payment-card",
+        "card_number": "4111111111112020",
+        "holder_name": "STIX 2.0 parity",
+        "expiration_date": _LAST,
+        "cvv": 123,
+    },
+    "persona": {
+        "type": "persona",
+        "persona_name": "stix-2-0-parity-persona",
+        "persona_type": "nickname",
+    },
+    "phone_number": {"type": "phone-number", "value": "+33100002020"},
+    "process": {
+        "type": "process",
+        "pid": 2020,
+        "command_line": "stix-2-0-parity.exe --run",
+        "cwd": "/tmp",
+        "created_time": _FIRST,
+    },
+    "software": {
+        "type": "software",
+        "name": "STIX 2.0 parity software",
+        "vendor": "Parity",
+        "version": "2.0",
+        "cpe": "cpe:2.3:a:parity:stix:2.0:*:*:*:*:*:*:*",
+        "languages": ["fr"],
+    },
+    "ssh_key": {
+        "type": "ssh-key",
+        "key_type": "ssh-rsa",
+        "public_key": "AAAAB3NzaC1yc2E stix-2-0-parity",
+        "fingerprint_sha256": "SHA256:stix20parity",
+        "key_length": "2048",
+    },
+    "text": {"type": "text", "value": "STIX 2.0 parity text"},
+    "tracking_number": {"type": "tracking-number", "value": "1Z999AA10123452020"},
+    "url": {"type": "url", "value": "https://example.com/stix-2-0-parity"},
+    "user_account": {
+        "type": "user-account",
+        "user_id": "stix-2-0-parity",
+        "account_login": "stix-2-0-parity",
+        "account_type": "unix",
+        "is_privileged": True,
+        "account_created": _FIRST,
+    },
+    "user_agent": {"type": "user-agent", "value": "Stix20Parity/1.0"},
+    "windows_registry_key": {
+        "type": "windows-registry-key",
+        "key": "HKEY_LOCAL_MACHINE\\Software\\Stix20Parity",
+        "modified_time": _FIRST,
+        "number_of_subkeys": 1,
+    },
+    "windows_registry_value_type": {
+        "type": "windows-registry-value-type",
+        "name": "stix-2-0-parity-value",
+        "data": "parity",
+        "data_type": "REG_SZ",
+    },
+    "x509_certificate": {
+        "type": "x509-certificate",
+        "serial_number": "2020",
+        "issuer": "CN=STIX 2.0 parity",
+        "subject": "CN=STIX 2.0 parity",
+        "validity_not_before": _FIRST,
+        "validity_not_after": _LAST,
+        "hashes": {
+            "SHA-256": "f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b"
+        },
+        "basic_constraints": "CA:FALSE",
+        "name_constraints": "permitted;DNS:example.com",
+        "key_usage": "digitalSignature",
+        "extended_key_usage": "serverAuth",
+        "subject_alternative_name": "DNS:stix-2-0-parity.example.com",
+        "crl_distribution_points": "URI:https://example.com/parity.crl",
+        "private_key_usage_period_not_before": _FIRST,
+        "private_key_usage_period_not_after": _LAST,
+        "certificate_policies": "2.23.140.1.2.1",
+    },
+}
+
+
+class _ObservableTest(EntityTest):
+    """Observable created from `OBSERVABLE_DATA`."""
+
+    def __init__(self, api_client, observable_data):
+        super().__init__(api_client)
+        self.observable_data = observable_data
+
+    def data(self) -> Dict:
+        return {
+            "observableData": {
+                **self.observable_data,
+                "x_opencti_description": "Observable of the STIX 2.0 parity sweep",
+            },
+            "x_opencti_score": 40,
+        }
+
+    def own_class(self):
+        return self.api_client.stix_cyber_observable
+
+    def base_class(self):
+        return self.api_client.stix_cyber_observable
+
+
+def _observable_case(name, observable_data):
+    def case(api_client):
+        return _ObservableTest(api_client, observable_data)
+
+    case.__name__ = f"case_observable_{name}"
+    return case
+
+
+OBSERVABLE_CASES = [
+    _observable_case(name, observable_data)
+    for name, observable_data in OBSERVABLE_DATA.items()
+]
+
+
 @pytest.fixture(scope="module")
 def related_objects(api_client):
     """Author, marking, label, external reference and contained objects."""
@@ -609,7 +804,9 @@ def related_objects(api_client):
 @pytest.fixture(
     params=[
         case
-        for case in cases_of(EntityTestCases) + cases_of(ExtraEntityTestCases)
+        for case in cases_of(EntityTestCases)
+        + cases_of(ExtraEntityTestCases)
+        + OBSERVABLE_CASES
         if case_id(case) not in NOT_EXPORTED_CASES
     ],
     ids=case_id,
@@ -736,6 +933,228 @@ def test_malware_stix_2_0_export_matches_legacy_export(api_stix, rich_malware, m
         attached_files = malware["external_references"][0]["x_opencti_files"]
         assert attached_files[0]["name"] == "stix-2-0-parity-report.txt"
     assert _differences(legacy_bundle, stix_2_0_bundle) == {}
+
+
+@pytest.fixture(scope="module")
+def observable_graph(api_client, related_objects):
+    """Observables linked by every kind of nested ref between observables."""
+    created = []
+
+    def create(observable_data):
+        observable = api_client.stix_cyber_observable.create(
+            observableData=observable_data, **related_objects
+        )
+        created.append(observable["id"])
+        return observable
+
+    def link(from_observable, to_observable, relationship_type):
+        api_client.stix_nested_ref_relationship.create(
+            fromId=from_observable["id"],
+            toId=to_observable["id"],
+            relationship_type=relationship_type,
+        )
+
+    ipv4 = create({"type": "ipv4-addr", "value": "198.51.100.120"})
+    ipv6 = create({"type": "ipv6-addr", "value": "2001:db8::120"})
+    mac = create({"type": "mac-addr", "value": "00:11:22:33:01:20"})
+    autonomous_system = create({"type": "autonomous-system", "number": 64120})
+    domain = create({"type": "domain-name", "value": "graph.stix-2-0-parity.com"})
+    link(domain, ipv4, "obs_resolves-to")
+    link(ipv4, mac, "obs_resolves-to")
+    link(ipv4, autonomous_system, "obs_belongs-to")
+    user = create({"type": "user-account", "user_id": "stix-2-0-parity-graph"})
+    sender = create({"type": "email-addr", "value": "graph-from@example.com"})
+    recipient = create({"type": "email-addr", "value": "graph-to@example.com"})
+    link(sender, user, "obs_belongs-to")
+    directory = create({"type": "directory", "path": "/tmp/stix-2-0-parity-graph"})
+    artifact = create(
+        {
+            "type": "artifact",
+            "mime_type": "text/plain",
+            "payload_bin": base64.b64encode(b"STIX 2.0 parity graph").decode(),
+            "hashes": {
+                "SHA-256": "e61c3f2c9d2b9adc100bddac719b20e1da1d05a1c36cb955cd6930157831af17"
+            },
+        }
+    )
+    file = create({"type": "file", "name": "stix-2-0-parity-graph.exe"})
+    link(file, directory, "parent-directory")
+    link(file, artifact, "obs_content")
+    link(directory, file, "contains")
+    mime_part = create(
+        {
+            "type": "email-mime-part-type",
+            "content_type": "text/plain",
+            "body": "STIX 2.0 parity graph part",
+        }
+    )
+    link(mime_part, artifact, "body-raw")
+    email_message = create(
+        {"type": "email-message", "is_multipart": True, "subject": "Parity graph"}
+    )
+    link(email_message, sender, "from")
+    link(email_message, recipient, "to")
+    link(email_message, recipient, "cc")
+    link(email_message, mime_part, "body-multipart")
+    link(email_message, artifact, "raw-email")
+    link(email_message, file, "contains")
+    network_traffic = create(
+        {
+            "type": "network-traffic",
+            "dst_port": 443,
+            "src_ref": ipv4["id"],
+            "dst_ref": ipv6["id"],
+        }
+    )
+    process = create(
+        {"type": "process", "pid": 120, "command_line": "stix-2-0-parity-graph.exe"}
+    )
+    link(process, file, "image")
+    link(process, network_traffic, "opened-connection")
+    link(process, user, "creator-user")
+    registry_key = create(
+        {
+            "type": "windows-registry-key",
+            "key": "HKEY_LOCAL_MACHINE\\Software\\Stix20ParityGraph",
+            "values": [{"name": "graph", "data": "parity", "data_type": "REG_SZ"}],
+        }
+    )
+    link(registry_key, user, "creator-user")
+    # `stixNestedRefRelationships` ignores `relationship_type`: filter here.
+    created.extend(
+        item["to"]["id"]
+        for item in api_client.stix_nested_ref_relationship.list(
+            fromId=registry_key["id"]
+        )
+        if item["relationship_type"] == "values"
+    )
+    yield [api_client.stix_cyber_observable.read(id=item) for item in created]
+    for observable_id in reversed(created):
+        api_client.stix_cyber_observable.delete(id=observable_id)
+
+
+@pytest.mark.parametrize("mode", ["simple", "full"])
+def test_observable_refs_stix_2_0_export_matches_legacy_export(
+    api_stix, observable_graph, mode
+):
+    differences = {}
+    for observable in observable_graph:
+        legacy_bundle, stix_2_0_bundle = _export_both(
+            api_stix, observable["entity_type"], observable["id"], mode
+        )
+        observable_differences = _differences(legacy_bundle, stix_2_0_bundle)
+        if observable_differences:
+            differences[observable["standard_id"]] = observable_differences
+
+    assert differences == {}, json.dumps(differences, indent=1, default=str)
+
+
+@pytest.fixture(scope="module")
+def rich_email_message(api_client, related_objects):
+    """An Email-Message with an attached file and a ref under TLP:RED."""
+    red = api_client.marking_definition.read(id=TLP_RED["id"])
+    external_reference = api_client.external_reference.create(
+        source_name="stix-2-0-parity-email",
+        url="https://example.com/stix-2-0-parity-email",
+    )
+    api_client.external_reference.add_file(
+        id=external_reference["id"],
+        file_name="stix-2-0-parity-email.txt",
+        data="External reference attachment of the parity email",
+        no_trigger_import=True,
+    )
+    create = api_client.stix_cyber_observable.create
+    sender = create(
+        observableData={"type": "email-addr", "value": "rich-from@example.com"},
+        **related_objects,
+    )
+    mime_part = create(
+        observableData={
+            "type": "email-mime-part-type",
+            "content_type": "text/plain",
+            "body": "STIX 2.0 parity rich part",
+        },
+        **related_objects,
+    )
+    red_attachment = create(
+        observableData={"type": "file", "name": "stix-2-0-parity-red.exe"},
+        objectMarking=[red["id"]],
+    )
+    email_message = create(
+        observableData={
+            "type": "email-message",
+            "is_multipart": True,
+            "subject": "STIX 2.0 parity rich email",
+        },
+        **{**related_objects, "externalReferences": [external_reference["id"]]},
+    )
+    for target, relationship_type in [
+        (sender, "from"),
+        (mime_part, "body-multipart"),
+        (red_attachment, "contains"),
+    ]:
+        api_client.stix_nested_ref_relationship.create(
+            fromId=email_message["id"],
+            toId=target["id"],
+            relationship_type=relationship_type,
+        )
+    yield email_message, red_attachment
+    for observable in (email_message, red_attachment, mime_part, sender):
+        api_client.stix_cyber_observable.delete(id=observable["id"])
+    api_client.external_reference.delete(id=external_reference["id"])
+
+
+# Export filter of a user whose content max marking is below TLP:RED, as
+# built by `getExportFilter` on the platform side.
+def _access_filter_excluding(marking_id):
+    return {
+        "mode": "and",
+        "filters": [
+            {
+                "key": "objectMarking",
+                "mode": "and",
+                "operator": "not_eq",
+                "values": [marking_id],
+            }
+        ],
+        "filterGroups": [],
+    }
+
+
+@pytest.mark.parametrize("mode", ["simple", "full"])
+@pytest.mark.parametrize("option", ["default", "no_custom_attributes", "access_filter"])
+def test_rich_email_message_stix_2_0_export_matches_legacy_export(
+    api_client, api_stix, rich_email_message, mode, option
+):
+    email_message, red_attachment = rich_email_message
+    options = {
+        "default": {},
+        "no_custom_attributes": {"no_custom_attributes": True},
+        "access_filter": {
+            "access_filter": _access_filter_excluding(
+                api_client.marking_definition.read(id=TLP_RED["id"])["id"]
+            )
+        },
+    }[option]
+
+    legacy_bundle, stix_2_0_bundle = _export_both(
+        api_stix, "Email-Message", email_message["id"], mode, **options
+    )
+
+    objects = {item["id"]: item for item in stix_2_0_bundle["objects"]}
+    exported = objects[email_message["standard_id"]]
+    # The access filter applies to the nested ref relationships, not to their
+    # targets: both exports keep the ref, and only leave the TLP:RED object
+    # out of the full bundle.
+    assert exported["contains_refs"] == [red_attachment["standard_id"]]
+    if mode == "full":
+        assert (red_attachment["standard_id"] in objects) == (option != "access_filter")
+    # Files are only read, and embedded, in full mode.
+    if mode == "full" and option != "no_custom_attributes":
+        attached_files = exported["external_references"][0]["x_opencti_files"]
+        assert attached_files[0]["name"] == "stix-2-0-parity-email.txt"
+    differences = _differences(legacy_bundle, stix_2_0_bundle)
+    assert differences == {}, json.dumps(differences, indent=1, default=str)
 
 
 @pytest.fixture
