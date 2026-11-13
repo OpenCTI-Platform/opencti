@@ -11790,17 +11790,6 @@ type PublicDashboard implements BasicObject & InternalObject {
   user_id: String!
 }
 
-input PublicDashboardVariableValueInput {
-  variable_id: String!
-  value: String!
-}
-
-input PublicDashboardTimeRangeInput {
-  relative_date: String
-  start_date: String
-  end_date: String
-}
-
 input PublicDashboardAddInput {
   allowed_markings_ids: [String!]
   dashboard_id: String!
@@ -11809,10 +11798,10 @@ input PublicDashboardAddInput {
 
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
-  uri_key: String!
-  variable_values: [PublicDashboardVariableValueInput!]
   time_range: PublicDashboardTimeRangeInput
   time_zone: String
+  uri_key: String!
+  variable_values: [PublicDashboardVariableValueInput!]
 }
 
 type PublicDashboardConnection {
@@ -11823,6 +11812,17 @@ type PublicDashboardConnection {
 type PublicDashboardEdge {
   cursor: String!
   node: PublicDashboard!
+}
+
+input PublicDashboardTimeRangeInput {
+  end_date: String
+  relative_date: String
+  start_date: String
+}
+
+input PublicDashboardVariableValueInput {
+  value: String!
+  variable_id: String!
 }
 
 enum PublicDashboardsOrdering {
