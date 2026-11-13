@@ -36,6 +36,15 @@ from tests.utils import case_id, cases_of
 #   both converters, and the legacy output is left unchanged.
 ACCEPTED_DIFFERENCES = {"spec_version", "samples"}
 
+# Same as ACCEPTED_DIFFERENCES, for one STIX object type only.
+# 2026-11-13: the legacy export leaks the raw GraphQL `extensions` string of
+#   these observables. STIX reserves `extensions` for a dictionary: the `stix2`
+#   library cannot parse such an object, and the import drops the value.
+ACCEPTED_DIFFERENCES_BY_STIX_TYPE = {
+    stix_type: {"extensions"}
+    for stix_type in ("file", "network-traffic", "process", "user-account")
+}
+
 # Known differences still to validate in the decision log. They are ignored
 # so that the comparison of every other key stays enforced meanwhile.
 # TODO(stix-2-0-migration): move each one to ACCEPTED_DIFFERENCES once
@@ -356,6 +365,7 @@ def _differences(legacy_bundle, stix_2_0_bundle):
         partial_legacy_keys = PARTIAL_LEGACY_KEYS_BY_STIX_TYPE.get(stix_type, set())
         ignored = (
             ACCEPTED_DIFFERENCES
+            | ACCEPTED_DIFFERENCES_BY_STIX_TYPE.get(stix_type, set())
             | PENDING_DIFFERENCES
             | PENDING_DIFFERENCES_BY_STIX_TYPE.get(stix_type, set())
             | (partial_legacy_keys - legacy_object.keys())
@@ -1153,6 +1163,47 @@ def test_rich_email_message_stix_2_0_export_matches_legacy_export(
     if mode == "full" and option != "no_custom_attributes":
         attached_files = exported["external_references"][0]["x_opencti_files"]
         assert attached_files[0]["name"] == "stix-2-0-parity-email.txt"
+    differences = _differences(legacy_bundle, stix_2_0_bundle)
+    assert differences == {}, json.dumps(differences, indent=1, default=str)
+
+
+@pytest.fixture(
+    params=[
+        {"type": "file", "name": "stix-2-0-parity-extensions.exe"},
+        {"type": "network-traffic", "dst_port": 2021},
+        {"type": "process", "command_line": "stix-2-0-parity-extensions.exe"},
+        {"type": "user-account", "user_id": "stix-2-0-parity-extensions"},
+    ],
+    ids=lambda observable_data: observable_data["type"],
+)
+def observable_with_extensions(request, api_client):
+    """An observable whose `extensions` attribute is set (only by an update)."""
+    observable = api_client.stix_cyber_observable.create(observableData=request.param)
+    api_client.stix_cyber_observable.update_field(
+        id=observable["id"], input={"key": "extensions", "value": "parity"}
+    )
+    yield observable
+    api_client.stix_cyber_observable.delete(id=observable["id"])
+
+
+def test_observable_extensions_are_not_exported_in_stix_2_0(
+    api_stix, observable_with_extensions
+):
+    """Accepted difference: the raw `extensions` string is not reproduced."""
+    legacy_bundle, stix_2_0_bundle = _export_both(
+        api_stix,
+        observable_with_extensions["entity_type"],
+        observable_with_extensions["id"],
+        "simple",
+    )
+
+    standard_id = observable_with_extensions["standard_id"]
+
+    def exported(bundle):
+        return next(item for item in bundle["objects"] if item["id"] == standard_id)
+
+    assert exported(legacy_bundle)["extensions"] == "parity"
+    assert "extensions" not in exported(stix_2_0_bundle)
     differences = _differences(legacy_bundle, stix_2_0_bundle)
     assert differences == {}, json.dumps(differences, indent=1, default=str)
 
