@@ -14,6 +14,8 @@ import { resolveProjectionScope } from './workflow-projection';
  * workflow is published (existing drafts are in its initial state) and from the migration that
  * introduced the projection. Only the drafts that hold another status are updated.
  *
+ * The update only touches a draft that still holds the status read here (a concurrent transition wins).
+ *
  * `update` runs the update by query, so that the migration can wait for its task and a publication
  * can not. Returns the number of drafts updated.
  */
@@ -34,6 +36,9 @@ export const projectDraftWorkflowStatuses = async (
   const instanceOf = new Map(instances.map((instance) => [instance.entity_id as string, instance]));
 
   const statusIdByDraftId: Record<string, string> = {};
+  // Status each draft held when read: the update only applies if it still holds it, so a transition
+  // (or another publication) committed since the snapshot is never overwritten with an older status.
+  const previousStatusIdByDraftId: Record<string, string> = {};
   for (let i = 0; i < drafts.length; i += 1) {
     const draft = drafts[i];
     const instance = instanceOf.get(draft.internal_id);
@@ -41,14 +46,23 @@ export const projectDraftWorkflowStatuses = async (
     const statusId = state ? statusIdOf.get(`${resolveProjectionScope(instance?.scope)}|${state}`) : undefined;
     if (statusId && draft.x_opencti_workflow_id !== statusId) {
       statusIdByDraftId[draft.internal_id] = statusId;
+      previousStatusIdByDraftId[draft.internal_id] = draft.x_opencti_workflow_id ?? '';
     }
   }
   const draftIds = Object.keys(statusIdByDraftId);
   if (draftIds.length > 0) {
     await update({
       script: {
-        params: { statusIdByDraftId },
-        source: 'ctx._source.x_opencti_workflow_id = params.statusIdByDraftId[ctx._source.internal_id]',
+        params: { statusIdByDraftId, previousStatusIdByDraftId },
+        source: `
+          def id = ctx._source.internal_id;
+          def current = ctx._source.x_opencti_workflow_id == null ? '' : ctx._source.x_opencti_workflow_id;
+          if (current == params.previousStatusIdByDraftId[id]) {
+            ctx._source.x_opencti_workflow_id = params.statusIdByDraftId[id];
+          } else {
+            ctx.op = 'noop';
+          }
+        `,
       },
       query: {
         bool: {
