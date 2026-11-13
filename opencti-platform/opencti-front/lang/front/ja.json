@@ -4587,6 +4587,7 @@
   "Required headers": "必須ヘッダー",
   "Required permissions": "要求されるパーミッション",
   "Requirements": "要求",
+  "Requires": "必要条件",
   "Requires acceptance to enable login form when set": "設定時にログインフォームを有効にするには同意が必要です",
   "Requires Enterprise Edition": "エンタープライズ版が必要です",
   "Requires SAML responses to be signed": "SAML レスポンスの署名が必要",

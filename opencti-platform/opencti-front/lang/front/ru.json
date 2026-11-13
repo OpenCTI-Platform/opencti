@@ -4587,6 +4587,7 @@
   "Required headers": "Необходимые заголовки",
   "Required permissions": "Необходимые разрешения",
   "Requirements": "Требования",
+  "Requires": "Требуется",
   "Requires acceptance to enable login form when set": "Требуется принятие для включения формы входа в систему, если она установлена",
   "Requires Enterprise Edition": "Требуется Enterprise Edition",
   "Requires SAML responses to be signed": "Требует подписи ответов SAML",

@@ -57,6 +57,19 @@ export const workflowStatusWorkflowInstanceFragment = graphql`
         }
       }
     }
+    blockedTransitions {
+      event
+      toState
+      blockingConditions
+      toStatus {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+    }
   }
 `;
 

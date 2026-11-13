@@ -4587,6 +4587,7 @@
   "Required headers": "Encabezados obligatorios",
   "Required permissions": "Permisos requeridos",
   "Requirements": "Requisitos",
+  "Requires": "Requiere",
   "Requires acceptance to enable login form when set": "Requiere aceptación para habilitar el formulario de inicio de sesión cuando se establece",
   "Requires Enterprise Edition": "Requiere la Edición Enterprise",
   "Requires SAML responses to be signed": "Requiere que las respuestas SAML estén firmadas",

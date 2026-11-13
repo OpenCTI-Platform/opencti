@@ -4587,6 +4587,7 @@
   "Required headers": "필수 헤더",
   "Required permissions": "필요한 권한",
   "Requirements": "요구 사항",
+  "Requires": "필요 조건",
   "Requires acceptance to enable login form when set": "설정 시 로그인 양식을 활성화하려면 동의가 필요합니다",
   "Requires Enterprise Edition": "엔터프라이즈 에디션이 필요합니다",
   "Requires SAML responses to be signed": "SAML 응답에 서명해야 함",

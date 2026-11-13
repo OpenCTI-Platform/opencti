@@ -4587,6 +4587,7 @@
   "Required headers": "必填标头",
   "Required permissions": "所需权限",
   "Requirements": "必要条件",
+  "Requires": "需要",
   "Requires acceptance to enable login form when set": "设置后需要接受才能启用登陆表单",
   "Requires Enterprise Edition": "需要企业版",
   "Requires SAML responses to be signed": "要求对 SAML 响应进行签名",

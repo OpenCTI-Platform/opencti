@@ -47,6 +47,41 @@ import WorkflowTransitionInputs, {
   hasTransitionComment,
   WORKFLOW_TRANSITION_COMMENT_FIELD_ID,
 } from './WorkflowTransitionInputs';
+import FilterIconButton from '../../../../components/FilterIconButton';
+import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+
+const parseBlockingConditions = (blockingConditions: string | null | undefined): FilterGroup | null => {
+  if (!blockingConditions) return null;
+  try {
+    return JSON.parse(blockingConditions) as FilterGroup;
+  } catch {
+    return null;
+  }
+};
+
+// A disabled transition carries the knowledge condition the entity does not meet yet.
+// The tooltip wraps the item from outside: a disabled item ignores pointer events.
+const BlockedTransitionTooltip = ({ event, blockingConditions, children }: {
+  event: string;
+  blockingConditions: string | null | undefined;
+  children: React.ReactNode;
+}) => {
+  const { t_i18n } = useFormatter();
+  const filters = parseBlockingConditions(blockingConditions);
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span data-testid={`workflow-blocked-transition-${event}`} style={{ display: 'block' }}>
+          {children}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>
+        <Text as="span" variant="content-compact">{t_i18n('Requires')}</Text>
+        {filters && <FilterIconButton filters={filters} variant="small" />}
+      </TooltipContent>
+    </Tooltip>
+  );
+};
 
 // The reason only lives in a tooltip, so the trigger is a button: keyboard and screen-reader users reach it too.
 const WorkflowErrorHint = ({ message, severity }: { message: string; severity: 'error' | 'warning' }) => (
@@ -234,7 +269,9 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
     </Box>
   ) : null;
 
-  if (workflowInstance.allowedTransitions.length === 0) {
+  const blockedTransitions = workflowInstance.blockedTransitions ?? [];
+  const transitionCount = workflowInstance.allowedTransitions.length + blockedTransitions.length;
+  if (transitionCount === 0) {
     return divergence;
   }
 
@@ -290,7 +327,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
     <>
       <Box data-testid="workflow-transitions-actions" sx={{ display: 'contents' }}>
         {divergence}
-        {!transitionButtons && workflowInstance.allowedTransitions.length > 1 ? (
+        {!transitionButtons && transitionCount > 1 ? (
           <Menu open={menuOpen} onOpenChange={setMenuOpen}>
             <MenuTrigger asChild>
               <Button
@@ -324,11 +361,42 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                   </MenuItem>
                 );
               })}
+              {blockedTransitions.map((transition) => (
+                <BlockedTransitionTooltip
+                  key={transition.event}
+                  event={transition.event}
+                  blockingConditions={transition.blockingConditions}
+                >
+                  <MenuItem
+                    disabled
+                    style={{ height: 'auto', minHeight: 36, whiteSpace: 'normal' }}
+                  >
+                    <span style={{ overflowWrap: 'anywhere' }}>{transition.event}</span>
+                  </MenuItem>
+                </BlockedTransitionTooltip>
+              ))}
             </MenuContent>
           </Menu>
         ) : (
           <>
             {workflowInstance.allowedTransitions.map(renderTransitionButton)}
+            {blockedTransitions.map((transition) => (
+              <BlockedTransitionTooltip
+                key={transition.event}
+                event={transition.event}
+                blockingConditions={transition.blockingConditions}
+              >
+                {transitionButtons ? (
+                  <FdsButton priority="secondary" disabled>
+                    {transition.event}
+                  </FdsButton>
+                ) : (
+                  <Button variant="primary" size={buttonSize} disabled>
+                    {transition.event}
+                  </Button>
+                )}
+              </BlockedTransitionTooltip>
+            ))}
           </>
         )}
       </Box>

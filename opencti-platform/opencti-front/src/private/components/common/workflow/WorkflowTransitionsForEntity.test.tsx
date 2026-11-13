@@ -26,7 +26,12 @@ const instance = (pendingStatus: string | null, name = 'A') => ({
   pendingStatus, pendingError: pendingStatus === 'error' ? 'Action failed' : null,
   pendingTransition: pendingStatus === 'pending' ? { event: 'approve', toState: 'B', triggeredAt: null, syncActions: [], asyncActions: [] } : null,
   allowedTransitions: [{ event: 'approve', toState: 'B', actions: [], comment: null, closingReason: null, requiresShareOrganizationInput: false, requiresUnshareOrganizationInput: false, requestAccessOutcome: null, toStatus: status('B') }],
+  blockedTransitions: [] as BlockedTransitions,
 });
+
+type BlockedTransitions = NonNullable<WorkflowStatusStixDomainObject_data$data['workflowInstance']>['blockedTransitions'];
+const assigneeCondition = { mode: 'and', filters: [{ key: ['objectAssignee'], values: ['@me'], operator: 'eq', mode: 'or' }], filterGroups: [] };
+const blockedAnswer = { event: 'answer', toState: 'C', blockingConditions: JSON.stringify(assigneeCondition), toStatus: status('C') };
 
 const Harness = () => {
   const query = useLazyLoadQuery<RootReportQuery>(reportQuery, { id: 'entity-1' });
@@ -43,7 +48,7 @@ const Harness = () => {
 
 const setup = async (pendingStatus: string | null = 'pending', enabled = true, access = 'edit', capability = 'KNOWLEDGE_KNUPDATE',
   allowedTransitions: NonNullable<WorkflowStatusStixDomainObject_data$data['workflowInstance']>['allowedTransitions'] = instance(null).allowedTransitions,
-  draftContext: { id: string; name: string } | null = null) => {
+  draftContext: { id: string; name: string } | null = null, blockedTransitions: BlockedTransitions = []) => {
   vi.useFakeTimers();
   const rendered = testRender(<Suspense><Harness /></Suspense>, {
     userContext: createMockUserContext({
@@ -52,7 +57,7 @@ const setup = async (pendingStatus: string | null = 'pending', enabled = true, a
     }),
   });
   await act(async () => rendered.relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
-    Report: () => ({ id: 'entity-1', currentUserAccessRight: access, status: status('A'), workflowInstance: { ...instance(pendingStatus), allowedTransitions } }),
+    Report: () => ({ id: 'entity-1', currentUserAccessRight: access, status: status('A'), workflowInstance: { ...instance(pendingStatus), allowedTransitions, blockedTransitions } }),
   })));
   return rendered;
 };
@@ -271,5 +276,33 @@ describe('WorkflowTransitionsForEntity refresh', () => {
     unmount();
     act(() => vi.advanceTimersByTime(FIVE_SECONDS * 2));
     expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+  });
+});
+
+describe('WorkflowTransitionsForEntity blocked transitions', () => {
+  it('shows a blocked transition as a disabled menu item', async () => {
+    const { relayEnv, user } = await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', instance(null).allowedTransitions, null, [blockedAnswer]);
+    vi.useRealTimers();
+    await user.click(screen.getByRole('button', { name: 'Next status' }));
+    expect(screen.getAllByRole('menuitem')).toHaveLength(2);
+    const blocked = screen.getByRole('menuitem', { name: 'answer' });
+    expect(blocked).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(blocked);
+    expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('shows the blocked reason on hover', async () => {
+    const { user } = await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', instance(null).allowedTransitions, null, [blockedAnswer]);
+    vi.useRealTimers();
+    await user.click(screen.getByRole('button', { name: 'Next status' }));
+    await user.hover(screen.getByTestId('workflow-blocked-transition-answer'));
+    expect((await screen.findAllByText('Requires'))[0]).toBeInTheDocument();
+  });
+
+  it('renders a disabled button when the only transition is blocked', async () => {
+    await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', [], null, [blockedAnswer]);
+    expect(screen.getByRole('button', { name: 'answer' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Next status' })).toBeNull();
   });
 });
