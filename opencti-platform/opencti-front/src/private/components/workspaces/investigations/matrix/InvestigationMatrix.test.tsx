@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, screen, within } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
@@ -10,6 +10,7 @@ import { GraphState } from '../../../../../components/graph/graph.types';
 import { MESSAGING$ } from '../../../../../relay/environment';
 import { INVESTIGATION_MATRIX_EXPORT_ID } from '../InvestigationViewSwitcher';
 import InvestigationMatrix from './InvestigationMatrix';
+import { DEFAULT_INVESTIGATION_MATRIX_SETTINGS, InvestigationMatrixSettings } from './investigationMatrixSettings';
 
 vi.mock('../../../../../utils/hooks/useTopBanner', () => ({ default: () => ({ height: 0 }) }));
 vi.mock('../../../../../components/graph/GraphContext', () => ({ useGraphContext: vi.fn() }));
@@ -111,7 +112,7 @@ const renderMatrix = async ({
     setSecurityPlatformIds: vi.fn(),
     error: postureError,
   });
-  const ui = <InvestigationMatrix />;
+  const ui = <MatrixWithSettings />;
   const rendered = testRender(ui);
   const { mock } = rendered.relayEnv;
   // Queries are issued in effects, some only once an earlier one has answered (the posture
@@ -122,6 +123,20 @@ const renderMatrix = async ({
     });
   }
   return { ...rendered, ui };
+};
+
+// Stands in for the investigation graph: it holds the matrix settings and unmounts the matrix on a view switch.
+const MatrixWithSettings = () => {
+  const [settings, setSettings] = useState<InvestigationMatrixSettings>(DEFAULT_INVESTIGATION_MATRIX_SETTINGS);
+  const [isMatrixShown, setIsMatrixShown] = useState(true);
+  return (
+    <>
+      <button type="button" onClick={() => setIsMatrixShown((shown) => !shown)}>Switch view (test)</button>
+      {isMatrixShown && (
+        <InvestigationMatrix settings={settings} onSettingsChange={(change) => setSettings((current) => ({ ...current, ...change }))} />
+      )}
+    </>
+  );
 };
 
 describe('InvestigationMatrix', () => {
@@ -241,6 +256,20 @@ describe('InvestigationMatrix', () => {
 
       await user.click(heatmapToggle());
       expect(screen.getByRole('img', { name: 'Technique usage scale, 1 to 2' })).toBeInTheDocument();
+    });
+
+    it('keeps the heatmap and "only used" choices after a switch to the graph view and back', async () => {
+      const { user } = await renderMatrix({ rawObjects: SCORED_OBJECTS, phases: HEAT_PHASES });
+      await screen.findByText('T1001 - Placed');
+      await user.click(heatmapToggle());
+      await user.click(screen.getByRole('button', { name: 'Display only used techniques' }));
+
+      await user.click(screen.getByRole('button', { name: 'Switch view (test)' }));
+      expect(screen.queryByRole('img', { name: /Technique usage scale/ })).toBeNull();
+      await user.click(screen.getByRole('button', { name: 'Switch view (test)' }));
+
+      expect(await screen.findByRole('img', { name: 'Technique usage scale, 1 to 2' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Display the whole matrix' })).toBeInTheDocument();
     });
 
     it('names scored cells after their linked entities', async () => {
