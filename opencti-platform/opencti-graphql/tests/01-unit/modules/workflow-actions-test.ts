@@ -3,6 +3,7 @@ import { ActionDefinitions, ActionRegistry } from '../../../src/modules/workflow
 import { addOrganizationRestriction, createSharingTask, removeOrganizationRestriction } from '../../../src/domain/stix';
 import { controlUserConfidenceAgainstElement } from '../../../src/utils/confidence-level';
 import { internalLoadById } from '../../../src/database/middleware-loader';
+import { deleteTask } from '../../../src/domain/backgroundTask';
 
 vi.mock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
   validateDraftWorkspace: vi.fn(),
@@ -53,6 +54,10 @@ vi.mock('../../../src/domain/stix', () => ({
   addOrganizationRestriction: vi.fn(),
   createSharingTask: vi.fn(),
   removeOrganizationRestriction: vi.fn(),
+}));
+
+vi.mock('../../../src/domain/backgroundTask', () => ({
+  deleteTask: vi.fn(),
 }));
 
 vi.mock('../../../src/database/middleware-loader', () => ({
@@ -863,6 +868,23 @@ describe('ActionRegistry.shareRequestedEntities', () => {
         { workflowInstanceId: 'instance-id', workflowActionId: 'generated-slot-id' },
       );
       expect(ctx.pendingAsyncSlots).toEqual([{ id: 'generated-slot-id', workId: 'work-share', type: 'shareRequestedEntities', status: 'pending' }]);
+    });
+
+    it('deletes the tasks already queued and undoes the direct grants when a later task cannot be queued', async () => {
+      vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => (
+        { id, internal_id: id, entity_type: id === 'malware-1' ? 'Malware' : 'Report' }
+      ) as any);
+      vi.mocked(createSharingTask)
+        .mockResolvedValueOnce({ id: 'task-a', work_id: 'work-a' } as any)
+        .mockRejectedValueOnce(new Error('task store unavailable'));
+      const tracked = { ...makeRfiCtx({ entities: ['report-a', 'malware-1', 'report-b'], members: ['org-author'] }), pendingAsyncSlots: [] as any[], __workflowInstanceId: 'instance-id' };
+
+      await expect(ActionRegistry.shareRequestedEntities(tracked, { organizations: ['AUTHOR'] })).rejects.toThrow('task store unavailable');
+
+      expect(deleteTask).toHaveBeenCalledTimes(1);
+      expect(deleteTask).toHaveBeenCalledWith({ ...tracked.context, user: tracked.triggeringUser }, tracked.triggeringUser, 'task-a');
+      expect(removeOrganizationRestriction).toHaveBeenCalledWith(tracked.context, tracked.triggeringUser, 'malware-1', ['org-author']);
+      expect(tracked.pendingAsyncSlots).toEqual([]);
     });
 
     it('queues no task for a container already shared with every organization', async () => {

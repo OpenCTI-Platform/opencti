@@ -173,6 +173,7 @@ export const ActionRegistry: Record<string, ActionFunction> = {
     const { pendingAsyncSlots, __workflowInstanceId } = executionContext as any;
     const tracksContainerTasks = Array.isArray(pendingAsyncSlots) && !!__workflowInstanceId;
     const directlyShared: typeof targets = [];
+    const queuedTasks: { taskId: string; slot: AsyncActionSlot }[] = [];
     try {
       for (const target of orderedTargets) {
         if (target.isContainer && tracksContainerTasks) {
@@ -183,7 +184,7 @@ export const ActionRegistry: Record<string, ActionFunction> = {
             workflowInstanceId: __workflowInstanceId,
             workflowActionId: slotId,
           });
-          pendingAsyncSlots.push({ id: slotId, workId: task.work_id ?? '', type: 'shareRequestedEntities', status: 'pending' } satisfies AsyncActionSlot);
+          queuedTasks.push({ taskId: task.id, slot: { id: slotId, workId: task.work_id ?? '', type: 'shareRequestedEntities', status: 'pending' } });
           continue;
         }
         await addOrganizationRestriction(context, user, target.id, organizationIds);
@@ -192,7 +193,19 @@ export const ActionRegistry: Record<string, ActionFunction> = {
         }
       }
     } catch (error) {
-      // Undo the grants this action added, so a refused decision leaves the targets as they were
+      // Undo what this action did, so a refused decision leaves the targets as they were:
+      // delete the container tasks already queued (a task the task manager already started keeps what it shared),
+      if (queuedTasks.length > 0) {
+        const { deleteTask } = await import('../../../domain/backgroundTask');
+        for (const { taskId } of queuedTasks) {
+          try {
+            await deleteTask({ ...context, user }, user, taskId);
+          } catch (rollbackError) {
+            logApp.error('[shareRequestedEntities] Failed to delete a queued share task after a refused share', { cause: rollbackError, taskId });
+          }
+        }
+      }
+      // then remove the grants added directly.
       for (const target of directlyShared) {
         try {
           await removeOrganizationRestriction(context, user, target.id, target.newOrganizationIds);
@@ -201,6 +214,10 @@ export const ActionRegistry: Record<string, ActionFunction> = {
         }
       }
       throw error;
+    }
+    // Registered once every task is queued: a refused share registers no slot
+    if (queuedTasks.length > 0) {
+      pendingAsyncSlots.push(...queuedTasks.map(({ slot }) => slot));
     }
   },
   /**
