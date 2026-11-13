@@ -1,3 +1,4 @@
+import { Readable } from 'node:stream';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityFintelDesign, ENTITY_TYPE_FINTEL_DESIGN, type StoreEntityFintelDesign } from './fintelDesign-types';
@@ -12,6 +13,7 @@ import { guessMimeType } from '../../database/file-storage';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { lockResources } from '../../lock/master-lock';
+import { FINTEL_DESIGN_LOGO_FOLDER, readFintelDesignLogoUpload } from './fintelDesign-logo';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string): Promise<BasicStoreEntityFintelDesign> => {
   await checkEnterpriseEdition(context);
@@ -23,7 +25,8 @@ export const findFintelDesignPaginated = async (context: AuthContext, user: Auth
   return pageEntitiesConnection<BasicStoreEntityFintelDesign>(context, user, [ENTITY_TYPE_FINTEL_DESIGN], opts);
 };
 
-export const addFintelDesign = async (context: AuthContext, user: AuthUser, fintelDesign: FintelDesignAddInput) => {
+// standard_id is not part of FintelDesignAddInput: only internal callers (the import of a configuration preset) set it
+export const addFintelDesign = async (context: AuthContext, user: AuthUser, fintelDesign: FintelDesignAddInput & { standard_id?: string }) => {
   await checkEnterpriseEdition(context);
   const fintelDesignWithDefault = { ...fintelDesign, default: fintelDesign.default ?? false };
 
@@ -110,8 +113,10 @@ const uploadFintelDesignFile = async (context: AuthContext, user: AuthUser, fint
   if (!mimeType.includes('image/')) {
     throw UnsupportedError('Fintel design logo file format must be image/', { mimeType });
   }
-  const fintelDesignLogoFile = { ...fullFile, filename: `${fintelDesignId}` };
-  const { upload } = await uploadToStorage(context, user, 'fintelDesigns', fintelDesignLogoFile, {});
+  // The size, the format and the completeness are checked on the bytes really read, before anything is stored
+  const content = await readFintelDesignLogoUpload(fullFile.createReadStream());
+  const fintelDesignLogoFile = { ...fullFile, filename: `${fintelDesignId}`, createReadStream: () => Readable.from([content]) };
+  const { upload } = await uploadToStorage(context, user, FINTEL_DESIGN_LOGO_FOLDER, fintelDesignLogoFile, {});
   return { upload };
 };
 

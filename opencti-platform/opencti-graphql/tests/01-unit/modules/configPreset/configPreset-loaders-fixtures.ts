@@ -12,6 +12,7 @@ import { ALL_VOCABULARIES } from './configPreset-vocabularies-fixtures';
 import { ALL_STATUS_TEMPLATES } from './configPreset-statusTemplates-fixtures';
 import { ALL_CASE_TEMPLATES, ALL_TASK_TEMPLATES } from './configPreset-caseTemplates-fixtures';
 import { ALL_CONNECTORS } from './configPreset-connectors-fixtures';
+import { ALL_FINTEL_DESIGNS } from './configPreset-fintelDesigns-fixtures';
 
 interface ListingArgs {
   search?: string | null;
@@ -32,6 +33,7 @@ const FIXTURE_ENTITIES: Record<string, { id: string; name?: string; definition?:
   'Case-Template': ALL_CASE_TEMPLATES,
   'Task-Template': ALL_TASK_TEMPLATES,
   Connector: ALL_CONNECTORS,
+  FintelDesign: ALL_FINTEL_DESIGNS,
 };
 const labelOf = (entity: { name?: string; definition?: string; value?: string }) => entity.name ?? entity.definition ?? entity.value ?? '';
 

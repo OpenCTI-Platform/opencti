@@ -63,6 +63,7 @@ import { customStatusTemplate, defaultStatusTemplate } from './configPreset-stat
 import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemplates-fixtures';
 import { mitreConnector } from './configPreset-connectors-fixtures';
 import { exportConnector } from '../../../../src/modules/connector/connector-export';
+import { defaultFintelDesign, nightFintelDesign, PNG_LOGO } from './configPreset-fintelDesigns-fixtures';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'admin-id', capabilities: [{ name: 'BYPASS' }] } as AuthUser;
@@ -216,14 +217,22 @@ describe('Config preset registry', () => {
         group: 'automationRules',
         itemIds: RULES_DECLARATION.map(({ id }) => id),
       },
+      // The fintel designs by name
+      {
+        id: 'fintelDesigns',
+        label: 'Fintel designs',
+        description: 'Fintel designs, their colors and logos',
+        group: 'customization',
+        itemIds: [defaultFintelDesign.standard_id, nightFintelDesign.standard_id],
+      },
     ]);
   });
 
   it('marks as requiring the Enterprise Edition the families of an Enterprise Edition setting only', () => {
-    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark', 'connectors']);
+    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark', 'connectors', 'fintelDesigns']);
   });
 
-  it('translates the static labels only, never a theme name, a label value, an exclusion list name, a phase name, a vocabulary entry, a status template or a case template name', async () => {
+  it('translates the static labels only, never a theme name, a label value, an exclusion list name, a phase name, a vocabulary entry, a status template, a case template or a fintel design name', async () => {
     const items = await resolveAllItems();
     expect(items.map((item) => [item.label, item.translatable])).toEqual([
       ['Platform configuration', true],
@@ -259,6 +268,8 @@ describe('Config preset registry', () => {
       ['Phishing triage', false],
       ['MITRE', false],
       ...RULES_DECLARATION.map(({ name }) => [name, true]),
+      ['Filigran report', false],
+      ['Night briefing', false],
     ]);
   });
 
@@ -301,6 +312,8 @@ describe('Config preset registry', () => {
       `taxonomy/case_templates/${phishingCaseTemplate.standard_id}.json`,
       'integrations/connectors/mitre.json',
       ...RULES_DECLARATION.map(({ id }) => `automation_rules/rule_engine/${id}.json`),
+      `customization/fintel_designs/${defaultFintelDesign.standard_id}.json`,
+      `customization/fintel_designs/${nightFintelDesign.standard_id}.json`,
     ]);
     expect(new Set(paths).size).toBe(paths.length);
   });
@@ -870,6 +883,89 @@ describe('Config preset registry', () => {
       vi.mocked(fullEntitiesList).mockClear();
       expect(await ids([], [])).toEqual([]);
       expect(fullEntitiesList).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('fintel designs', () => {
+    const designs = findFamily('fintelDesigns');
+
+    it('exports a design in the import format only, says whether it is the default, and points to its logo next to it', async () => {
+      const item = await findItem('fintelDesigns', defaultFintelDesign.standard_id);
+      const file = await exportConfigPresetItem(context, user, designs, item);
+      expect(file).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'customization.fintelDesigns',
+        id: defaultFintelDesign.standard_id,
+        configuration: {
+          standard_id: defaultFintelDesign.standard_id,
+          name: 'Filigran report',
+          description: 'The design of the reports',
+          gradiantFromColor: '#00020c',
+          gradiantToColor: '#001bda',
+          textColor: '#ffffff',
+          default: true,
+        },
+        attachment: `customization/fintel_designs/${defaultFintelDesign.standard_id}.logo`,
+      });
+      expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|default-fintel-design-id|fintelDesigns\//);
+    });
+
+    it('exports a design without logo nor description without attachment, and as not the default', async () => {
+      const item = await findItem('fintelDesigns', nightFintelDesign.standard_id);
+      const file = await exportConfigPresetItem(context, user, designs, item);
+      expect(file.configuration).toEqual({
+        standard_id: nightFintelDesign.standard_id,
+        name: 'Night briefing',
+        gradiantFromColor: '#00020c',
+        gradiantToColor: '#001bda',
+        default: false,
+      });
+      expect(file.attachment).toBeUndefined();
+      expect(item.attachment).toBeUndefined();
+    });
+
+    it('marks the default design, and makes every other design depend on it so that it cannot be left out of the export', async () => {
+      const [first, second] = await designs.resolveItems(context, user, null, []);
+      expect([first.id, first.isDefault, first.dependsOn]).toEqual([defaultFintelDesign.standard_id, true, []]);
+      expect([second.id, second.isDefault, second.dependsOn]).toEqual([nightFintelDesign.standard_id, false, [{ type: 'fintelDesigns', id: defaultFintelDesign.standard_id }]]);
+      // The same on a page of the dialog
+      const page = await designs.listItems(context, user, { first: 10 });
+      expect(page.edges.map(({ node }) => [node.id, node.isDefault, node.dependsOn])).toEqual([
+        [defaultFintelDesign.standard_id, true, []],
+        [nightFintelDesign.standard_id, false, [{ type: 'fintelDesigns', id: defaultFintelDesign.standard_id }]],
+      ]);
+    });
+
+    it('depends on nothing when the platform has no default design', async () => {
+      mockConfigPresetLoaders(entitySettings);
+      vi.mocked(fullEntitiesList).mockImplementation(async (_ctx, _user, types, args) => {
+        const filters = (args as { filters?: { filters: { key: string[] }[] } })?.filters?.filters ?? [];
+        return (types?.[0] === 'FintelDesign' && !filters.some(({ key }) => key[0] === 'default') ? [nightFintelDesign] : []) as never;
+      });
+      const [item] = await designs.resolveItems(context, user, null, []);
+      expect([item.id, item.isDefault, item.dependsOn]).toEqual([nightFintelDesign.standard_id, false, []]);
+    });
+
+    it('reads the logo of a design byte for byte from the storage, by its own key', async () => {
+      vi.mocked(downloadFile).mockResolvedValue(Readable.from([PNG_LOGO.subarray(0, 4), PNG_LOGO.subarray(4)]) as never);
+      const item = await findItem('fintelDesigns', defaultFintelDesign.standard_id);
+      expect(await item.attachment!.read(context, user)).toEqual(PNG_LOGO);
+      expect(downloadFile).toHaveBeenCalledWith('fintelDesigns/default-fintel-design-id');
+    });
+
+    it('refuses to export a design whose logo is missing from the storage, or is not an image, instead of exporting it without its logo', async () => {
+      const item = await findItem('fintelDesigns', defaultFintelDesign.standard_id);
+      vi.mocked(downloadFile).mockResolvedValue(null);
+      await expect(item.attachment!.read(context, user)).rejects.toThrow('The logo of a fintel design is missing from the storage');
+      vi.mocked(downloadFile).mockResolvedValue(Readable.from([Buffer.from('not an image')]) as never);
+      await expect(item.attachment!.read(context, user)).rejects.toThrow('The logo of a fintel design is not a supported image');
+    });
+
+    it('never reads a logo that is not the own file of the design', async () => {
+      vi.mocked(fullEntitiesList).mockResolvedValue([{ ...defaultFintelDesign, file_id: 'import/global/secret.png' }] as never);
+      const [item] = await designs.resolveItems(context, user, [defaultFintelDesign.standard_id], []);
+      await expect(item.attachment!.read(context, user)).rejects.toThrow('The logo of a fintel design is not its own file');
+      expect(downloadFile).not.toHaveBeenCalled();
     });
   });
 

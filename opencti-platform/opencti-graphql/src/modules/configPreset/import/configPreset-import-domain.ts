@@ -172,6 +172,8 @@ export const computeConfigPresetItems = async (
     plannedMarkings: new Map(),
     targets: new Map(),
     connectorNames: new Set(),
+    fintelDesignNames: new Set(),
+    renamedFintelDesignIds: new Set(),
     credentials,
     serviceAccounts,
   };
@@ -208,7 +210,8 @@ export const buildConfigPresetImportTypes = (
         key: item.id,
         label: computed.label,
         translatable: computed.translatable,
-        isDefault: family.id === 'branding' && defaultThemeId?.standard_id === item.id,
+        // The default theme is the one the platform item points to; any other default is said by the item itself
+        isDefault: computed.isDefault ?? (family.id === 'branding' && defaultThemeId?.standard_id === item.id),
         exists: computed.exists,
         conflict: computed.conflict,
         fields: computed.fields ?? [],

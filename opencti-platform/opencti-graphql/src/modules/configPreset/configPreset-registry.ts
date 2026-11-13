@@ -19,6 +19,7 @@ import { killChainPhasesFamily } from './registry/killChainPhases-configPreset-r
 import { vocabulariesFamily } from './registry/vocabularies-configPreset-registry';
 import { statusTemplatesFamily } from './registry/statusTemplates-configPreset-registry';
 import { caseTemplatesFamily } from './registry/caseTemplates-configPreset-registry';
+import { fintelDesignsFamily } from './registry/fintelDesigns-configPreset-registry';
 
 export { BRANDING_FAMILY_ID } from './registry/common-configPreset-registry';
 
@@ -43,6 +44,7 @@ export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   caseTemplatesFamily,
   connectorsFamily,
   ruleEngineFamily,
+  fintelDesignsFamily,
 ];
 
 // How the result of an item is shown next to its family: the name of its type, its place in the registry and its group.
