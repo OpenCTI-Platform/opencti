@@ -4,7 +4,10 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYP
 import { createdAt, creators, updatedAt } from '../../schema/attribute-definition';
 import { createdBy, killChainPhases, objectLabel, objectMarking, objectOrganization } from '../../schema/stixRefRelationship';
 import { ENTITY_PROCESS, isStixCyberObservable } from '../../schema/stixCyberObservable';
-import { isStixDomainObjectIdentity } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_MALWARE, ENTITY_TYPE_TOOL, isStixDomainObjectIdentity } from '../../schema/stixDomainObject';
+import { RELATION_EXPLOITS, RELATION_IMPLEMENTS_TECHNIQUE, RELATION_USES } from '../../schema/stixCoreRelationship';
+import { REL_EXTENDED, REL_NEW } from '../../database/stix';
+import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
 import convertProcedureToStix from './procedure-converter';
 import {
   ATTRIBUTE_COMMAND_REF,
@@ -57,7 +60,27 @@ const PROCEDURE_DEFINITION: ModuleDefinition<StoreEntityProcedure, StixProcedure
     createdAt,
     updatedAt,
   ],
-  relations: [],
+  relations: [
+    {
+      name: RELATION_IMPLEMENTS_TECHNIQUE,
+      targets: [
+        { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_NEW },
+      ],
+    },
+    {
+      name: RELATION_USES,
+      targets: [
+        { name: ENTITY_TYPE_TOOL, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_MALWARE, type: REL_EXTENDED },
+      ],
+    },
+    {
+      name: RELATION_EXPLOITS,
+      targets: [
+        { name: ENTITY_TYPE_VULNERABILITY, type: REL_EXTENDED },
+      ],
+    },
+  ],
   relationsRefs: [
     {
       name: INPUT_PROCEDURE_OBSERVABLES,
