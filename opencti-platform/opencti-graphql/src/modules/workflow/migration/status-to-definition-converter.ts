@@ -18,6 +18,8 @@ export interface WorkflowMigrationDiagnostic {
   legacyStatusId?: string;
   // `StatusTemplate` id of that status, i.e. the `statusId` of the matching migrated state.
   templateId?: string;
+  // Legacy `order` the status shares with others, set on DUPLICATE_ORDER only.
+  order?: number;
 }
 
 // A migrated state is a plain `WorkflowSerializedState` whose optional legacy `order` is always set:
@@ -158,19 +160,22 @@ const convertScopeGroup = (
 
   // Duplicate-order diagnostic: statuses sharing the same legacy `order` within a scope group are
   // ordered by status id, which a reviewer may not expect.
-  const orderCounts = new Map<number, number>();
+  const statusesByOrder = new Map<number, BasicWorkflowStatus[]>();
   ordered.forEach((status) => {
     if (hasOrder(status)) {
-      orderCounts.set(status.order, (orderCounts.get(status.order) ?? 0) + 1);
+      statusesByOrder.set(status.order, [...(statusesByOrder.get(status.order) ?? []), status]);
     }
   });
   ordered.forEach((status) => {
-    if (hasOrder(status) && (orderCounts.get(status.order) ?? 0) > 1) {
+    const tied = hasOrder(status) ? statusesByOrder.get(status.order) ?? [] : [];
+    if (tied.length > 1) {
+      const names = tied.map((tiedStatus) => `"${resolveDisplayName(tiedStatus.template_id, templatesById)}"`).join(', ');
       diagnostics.push({
         type: 'DUPLICATE_ORDER',
-        message: `Multiple statuses share order ${status.order} (status ${status.id}, template ${status.template_id}); the tie is broken by status id.`,
+        message: `Multiple statuses share order ${status.order} (${names}); the tie is broken by status id.`,
         legacyStatusId: status.id,
         templateId: status.template_id,
+        order: status.order,
       });
     }
   });
@@ -289,6 +294,19 @@ export const convertRequestAccessGroup = (
     throw FunctionalError(`Cannot migrate request access: ${problem}`, { approvedTemplateId, declinedTemplateId, initialState: definition.initialState });
   }
   const outcomeIds = new Set([approvedTemplateId, declinedTemplateId]);
+  // The default request access statuses tie Approved and Declined at the same order, which is harmless: both
+  // are outcomes, which have no transition between them. A tie that involves another status stays reported.
+  const tiedTemplateIdsByOrder = new Map<number, string[]>();
+  result.diagnostics.forEach((diagnostic) => {
+    if (diagnostic.type === 'DUPLICATE_ORDER' && diagnostic.order !== undefined && diagnostic.templateId) {
+      tiedTemplateIdsByOrder.set(diagnostic.order, [...(tiedTemplateIdsByOrder.get(diagnostic.order) ?? []), diagnostic.templateId]);
+    }
+  });
+  const diagnostics = result.diagnostics.filter((diagnostic) => !(
+    diagnostic.type === 'DUPLICATE_ORDER'
+    && diagnostic.order !== undefined
+    && (tiedTemplateIdsByOrder.get(diagnostic.order) ?? []).every((templateId) => outcomeIds.has(templateId))
+  ));
   const states: WorkflowMigrationState[] = definition.states.map((state) => {
     if (state.statusId === approvedTemplateId) {
       return { ...state, requestAccessOutcome: 'APPROVED', onEnter: [...(state.onEnter ?? []), { type: 'shareRequestedEntities', params: { organizations: ['AUTHOR'] } }] };
@@ -307,7 +325,7 @@ export const convertRequestAccessGroup = (
     });
   return {
     definition: { ...definition, states, transitions },
-    diagnostics: result.diagnostics,
+    diagnostics,
   };
 };
 

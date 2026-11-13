@@ -536,6 +536,43 @@ describe('convertRequestAccessGroup', () => {
     ]);
   });
 
+  describe('tied orders', () => {
+    // The default request access statuses of a fresh platform: Approved and Declined both at order 1
+    const defaultStatuses = [
+      buildStatus({ id: 'ra-new', template_id: 't-new', type: 'Case-Rfi', scope: StatusScope.RequestAccess, order: 0 }),
+      buildStatus({ id: 'ra-approved', template_id: 't-approved', type: 'Case-Rfi', scope: StatusScope.RequestAccess, order: 1 }),
+      buildStatus({ id: 'ra-declined', template_id: 't-declined', type: 'Case-Rfi', scope: StatusScope.RequestAccess, order: 1 }),
+    ];
+    const tiedOrderWarnings = (statuses = defaultStatuses) => convertSample('t-approved', 't-declined', statuses)
+      .diagnostics.filter((diagnostic) => diagnostic.type === 'DUPLICATE_ORDER');
+
+    it('does not warn when the tied statuses are the Approved and Declined outcomes', () => {
+      expect(tiedOrderWarnings()).toEqual([]);
+    });
+
+    it('still warns, with template names, when another status ties with an outcome', () => {
+      const statuses = [...defaultStatuses, buildStatus({ id: 'ra-review', template_id: 't-review', type: 'Case-Rfi', scope: StatusScope.RequestAccess, order: 1 })];
+
+      const warnings = tiedOrderWarnings(statuses);
+
+      expect(warnings).toHaveLength(3);
+      warnings.forEach((warning) => {
+        expect(warning.message).toBe('Multiple statuses share order 1 ("Approved", "Declined", "Under review"); the tie is broken by status id.');
+      });
+    });
+
+    it('still warns when two non-outcome statuses tie', () => {
+      const statuses = [
+        buildStatus({ id: 'ra-new', template_id: 't-new', type: 'Case-Rfi', scope: StatusScope.RequestAccess, order: 0 }),
+        buildStatus({ id: 'ra-review', template_id: 't-review', type: 'Case-Rfi', scope: StatusScope.RequestAccess, order: 0 }),
+        buildStatus({ id: 'ra-approved', template_id: 't-approved', type: 'Case-Rfi', scope: StatusScope.RequestAccess, order: 1 }),
+        buildStatus({ id: 'ra-declined', template_id: 't-declined', type: 'Case-Rfi', scope: StatusScope.RequestAccess, order: 2 }),
+      ];
+
+      expect(tiedOrderWarnings(statuses).map((warning) => warning.templateId)).toEqual(['t-new', 't-review']);
+    });
+  });
+
   it('adds shareRequestedEntities with AUTHOR on Approved onEnter', () => {
     const { definition } = convertSample();
 
