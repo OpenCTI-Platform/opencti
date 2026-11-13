@@ -6364,5 +6364,6 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "votre utilisateur appartiendra à l'organisation principale de la plate-forme en plus de toute organisation à laquelle l'utilisateur actuel appartient",
   "Zoom": "Zoom",
   "Zoom in": "Zoomer",
-  "Zoom out": "Zoom arrière"
+  "Zoom out": "Zoom arrière",
+  "The published values of the selected dashboard are still loading": "Les valeurs publiées du dashboard sélectionné sont encore en cours de chargement"
 }
