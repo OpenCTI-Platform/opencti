@@ -5,7 +5,8 @@ import { fullEntitiesList, storeLoadById } from '../../database/middleware-loade
 import type { FileUploadData } from '../../database/file-storage';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
 import { CONFIG_IMPORT_UNCHANGED_REASON, configImportReasonValue, configImportValidationReason, freeConfigImportName } from '../configImport/configImport-utils';
-import { addFintelDesign, fintelDesignEditField } from './fintelDesign-domain';
+import { logApp } from '../../config/conf';
+import { addFintelDesign, fintelDesignDelete, fintelDesignEditField } from './fintelDesign-domain';
 import { FINTEL_DESIGN_NAME_MAX_LENGTH, type FintelDesignImportConfiguration, fintelDesignImportSchema } from './fintelDesign-import-schema';
 import { FINTEL_DESIGN_LOGO_MAX_SIZE, fintelDesignLogoExtension, fintelDesignLogoStorageKey, isCompleteFintelDesignLogo, readFintelDesignLogo } from './fintelDesign-logo';
 import { type BasicStoreEntityFintelDesign, ENTITY_TYPE_FINTEL_DESIGN } from './fintelDesign-types';
@@ -70,18 +71,31 @@ const createFintelDesign = async (
   logo: { content: Buffer; extension: string } | undefined,
   standardId?: string,
 ) => {
+  const isDefault = design.default === true;
+  // The logo is stored under the internal id of the design: it is written once the design exists. Until it is, the design is not the
+  // default: the logo and the default are written by one edit, which stores the logo before it changes anything
   const created = await addFintelDesign(context, user, {
     name: design.name,
     description: design.description ?? undefined,
     gradiantFromColor: design.gradiantFromColor ?? undefined,
     gradiantToColor: design.gradiantToColor ?? undefined,
     textColor: design.textColor ?? undefined,
-    default: design.default === true,
+    default: isDefault && !logo,
     ...(standardId ? { standard_id: standardId } : {}),
   });
-  // The logo is stored under the internal id of the design: it is written once the design exists
   if (logo) {
-    await fintelDesignEditField(context, user, { id: created.id, file: toLogoUpload(logo) });
+    try {
+      await fintelDesignEditField(context, user, { id: created.id, file: toLogoUpload(logo), input: isDefault ? [{ key: 'default', value: [true] }] : [] });
+    } catch (error) {
+      // The item fails as a whole: the design created without its logo is deleted, and the default of the platform never moved.
+      // A deletion that fails too leaves a design that is not the default, which an overwrite of the same bundle completes
+      try {
+        await fintelDesignDelete(context, user, created.id);
+      } catch (deleteError) {
+        logApp.warn('[CONFIG PRESET] Failed to delete a fintel design whose logo could not be stored', { id: created.id, cause: deleteError });
+      }
+      throw error;
+    }
   }
 };
 
