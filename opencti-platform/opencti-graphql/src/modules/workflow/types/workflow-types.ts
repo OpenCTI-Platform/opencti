@@ -56,7 +56,32 @@ export interface WorkflowPendingTransition {
   /** Request-access bypass out of an outcome state: the request is reset to NEW once the target state is entered. */
   requestAccessStatus?: 'NEW';
   draftEntityIds?: string[];
+  /**
+   * Organizations the request access share granted directly on plain entities while its container share tasks run.
+   * Only the grants this transition added: an organization the entity was already shared with is not recorded.
+   * Revoked when a container task fails or an admin clears the pending state.
+   */
+  requestAccessDirectGrants?: RequestAccessDirectGrant[];
 }
+
+export interface RequestAccessDirectGrant {
+  entityId: string;
+  organizationIds: string[];
+}
+
+/**
+ * Merges request access direct grant records, one entry per entity with the union of its organizations.
+ */
+export const mergeRequestAccessDirectGrants = (...records: (RequestAccessDirectGrant[] | undefined)[]): RequestAccessDirectGrant[] => {
+  const organizationsByEntity = new Map<string, Set<string>>();
+  for (const grant of records.flatMap((record) => record ?? [])) {
+    if (grant.organizationIds.length === 0) continue;
+    const organizationIds = organizationsByEntity.get(grant.entityId) ?? new Set<string>();
+    grant.organizationIds.forEach((organizationId) => organizationIds.add(organizationId));
+    organizationsByEntity.set(grant.entityId, organizationIds);
+  }
+  return [...organizationsByEntity.entries()].map(([entityId, organizationIds]) => ({ entityId, organizationIds: [...organizationIds] }));
+};
 
 /**
  * Information available during workflow execution (conditions and side effects).
@@ -73,6 +98,8 @@ export interface Context {
    * asyncBulkAction never pushes here, so in onEnter it fires its task and the transition completes.
    */
   suspendingAsyncSlots?: AsyncActionSlot[];
+  /** Direct grants of a request access share that waits for its container tasks, persisted on the pending transition. */
+  requestAccessDirectGrants?: RequestAccessDirectGrant[];
   [key: string]: any;
 }
 

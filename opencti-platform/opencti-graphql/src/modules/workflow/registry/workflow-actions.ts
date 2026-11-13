@@ -1,6 +1,6 @@
 import { logApp } from '../../../config/conf';
 import { draftWorkspaceEditAuthorizedMembers, validateDraftWorkspace } from '../../draftWorkspace/draftWorkspace-domain';
-import type { AsyncActionSlot, Context } from '../types/workflow-types';
+import { type AsyncActionSlot, type Context, mergeRequestAccessDirectGrants } from '../types/workflow-types';
 import { generateInternalId } from '../../../schema/identifier';
 import { z } from 'zod';
 import { editAuthorizedMembers } from '../../../utils/authorizedMembers';
@@ -218,6 +218,11 @@ export const ActionRegistry: Record<string, ActionFunction> = {
     // Registered once every task is queued: a refused share registers no slot
     if (queuedTasks.length > 0) {
       suspendingAsyncSlots.push(...queuedTasks.map(({ slot }) => slot));
+      // Kept on the pending transition, so a failed container task revokes the grants this share added directly
+      executionContext.requestAccessDirectGrants = mergeRequestAccessDirectGrants(
+        executionContext.requestAccessDirectGrants,
+        directlyShared.map((target) => ({ entityId: target.id, organizationIds: target.newOrganizationIds })),
+      );
     }
   },
   /**

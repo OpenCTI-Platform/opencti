@@ -52,8 +52,10 @@ import type { WorkflowSchema } from '../engine/workflow-schema';
 import {
   type AsyncActionSlot,
   COMMENT_MAX_LENGTH,
+  type Context,
   ENTITY_TYPE_WORKFLOW_DEFINITION,
   ENTITY_TYPE_WORKFLOW_INSTANCE,
+  mergeRequestAccessDirectGrants,
   type TriggerResult,
   type WorkflowActionConfig,
   type WorkflowDefinitionData,
@@ -66,7 +68,13 @@ import { extractCanonicalStateIds, findInstancesBlockingStateRemoval, validateWo
 import { computeStateOrder, findStatesWithOutgoingTransitions } from './workflow-ordering';
 import { findInstancesInStates, isStatusReferencedByEntity } from './workflow-status-usage';
 import { projectWorkflowState, resolveMappedStatusId, resolveProjectionScope } from './workflow-projection';
-import { appendWorkflowHistoryEntry, closingReasonNotWrittenError, isClosingReasonLost, runWorkflowBypassActions } from './workflow-async-completion';
+import {
+  appendWorkflowHistoryEntry,
+  closingReasonNotWrittenError,
+  isClosingReasonLost,
+  revokeRequestAccessDirectGrants,
+  runWorkflowBypassActions,
+} from './workflow-async-completion';
 import {
   type ConvertStatusToDefinitionResult,
   convertStatusToDefinition,
@@ -2324,6 +2332,13 @@ export const triggerWorkflowEvent = async (
         && serializedTransitions.some((action) => action.type === 'validateDraft');
       const targetStateDef = completesWorkflow ? undefined : definitionData.states?.find((s: any) => s.statusId === toStateId);
       const serializedOnEnterActions: WorkflowActionConfig[] = (targetStateDef?.onEnter ?? []).slice(completedOnEnterActions ?? 0);
+      // The grants a request access share added directly, revoked if a container task fails. A retry of the failed
+      // transition keeps the grants that could not be revoked: the share sees them as existing and does not record them again.
+      const retriedFailure = instanceEntity.pendingStatus === 'error' ? parsePendingTransition(instanceEntity) : undefined;
+      const requestAccessDirectGrants = mergeRequestAccessDirectGrants(
+        retriedFailure?.event === eventName && retriedFailure?.toState === toStateId ? retriedFailure.requestAccessDirectGrants : undefined,
+        (workflowContext as Context).requestAccessDirectGrants,
+      );
 
       const pendingTransition: WorkflowPendingTransition = {
         event: eventName,
@@ -2338,6 +2353,7 @@ export const triggerWorkflowEvent = async (
         syncActions: serializedTransitions,
         ...(serializedOnEnterActions.length > 0 ? { onEnterActions: serializedOnEnterActions } : {}),
         ...(requestAccessOutcome ? { requestAccessOutcome } : {}),
+        ...(requestAccessDirectGrants.length > 0 ? { requestAccessDirectGrants } : {}),
       };
 
       await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
@@ -2709,9 +2725,9 @@ const parsePendingTransition = (instanceEntity: WorkflowInstanceStoreEntity): Wo
 };
 
 /**
- * Refuses to decide a request access while the background share of its requested entities has failed: part of
- * the access may already be granted, so the request cannot be declined, nor approved some other way, until the
- * failed transition is fired again or an admin clears it.
+ * Refuses to decide a request access while the background share of its requested entities has failed: the grants
+ * added directly were revoked, but a container task may have shared part of the container before it failed, so the
+ * request cannot be declined, nor approved some other way, until the failed transition is fired again or an admin clears it.
  */
 const assertNoFailedRequestAccessShare = (instanceEntity: WorkflowInstanceStoreEntity, eventName: string, toState: string | null | undefined): void => {
   if (instanceEntity.pendingStatus !== 'error') return;
@@ -3138,6 +3154,9 @@ export const isStatusUsedInWorkflow = async (
  * Admin escape hatch: force-clear the pending state of a workflow instance.
  * Leaves currentState unchanged. Logs the intervention in history for audit.
  * Any still-running background tasks become orphaned (admin's conscious decision).
+ * The organizations a request access share granted directly on plain entities are revoked first, so the undecided
+ * request leaves no direct grant behind; what a container share task already shared stays. A failed revoke keeps the
+ * pending state, so the clear can be retried.
  */
 export const clearWorkflowPendingState = async (
   context: AuthContext,
@@ -3170,6 +3189,19 @@ export const clearWorkflowPendingState = async (
     });
 
     const instanceId = instanceEntity.internal_id || instanceEntity.id;
+    const pendingTransition = parsePendingTransition(instanceEntity);
+    if (pendingTransition?.requestAccessDirectGrants?.length) {
+      const remainingGrants = await revokeRequestAccessDirectGrants(executionContext, pendingTransition.requestAccessDirectGrants, pendingTransition.triggeredBy);
+      if (remainingGrants.length > 0) {
+        // Keep the record of what is left, so a later clear only retries those
+        await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+          { key: 'pendingTransition', value: [JSON.stringify({ ...pendingTransition, requestAccessDirectGrants: remainingGrants })] },
+        ]);
+        throw FunctionalError('The organizations shared directly by the request access could not all be revoked: the pending state is kept', {
+          entityIds: remainingGrants.map((grant) => grant.entityId),
+        });
+      }
+    }
     await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
       { key: 'pendingStatus', value: [null] },
       { key: 'pendingError', value: [null] },

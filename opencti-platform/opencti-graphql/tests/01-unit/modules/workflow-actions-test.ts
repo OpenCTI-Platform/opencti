@@ -870,6 +870,26 @@ describe('ActionRegistry.shareRequestedEntities', () => {
       expect(ctx.suspendingAsyncSlots).toEqual([{ id: 'generated-slot-id', workId: 'work-share', type: 'shareRequestedEntities', status: 'pending' }]);
     });
 
+    it('records only the organizations it newly granted on plain entities while a container task runs', async () => {
+      vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => (
+        id === 'entity-1'
+          ? { id, internal_id: id, entity_type: 'Report' }
+          : { id, internal_id: id, entity_type: 'Malware', 'rel_granted.internal_id': ['org-author'] }
+      ) as any);
+      const ctx: any = makeTrackedCtx();
+      await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR', 'org-extra'] });
+
+      expect(ctx.requestAccessDirectGrants).toEqual([{ entityId: 'entity-2', organizationIds: ['org-extra'] }]);
+    });
+
+    it('records no direct grant when no container task is queued', async () => {
+      const ctx: any = makeTrackedCtx();
+      await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });
+
+      expect(createSharingTask).not.toHaveBeenCalled();
+      expect(ctx.requestAccessDirectGrants).toBeUndefined();
+    });
+
     it('deletes the tasks already queued and undoes the direct grants when a later task cannot be queued', async () => {
       vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => (
         { id, internal_id: id, entity_type: id === 'malware-1' ? 'Malware' : 'Report' }

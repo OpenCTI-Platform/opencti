@@ -10,13 +10,20 @@
 import { logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
 import { updateAttribute } from '../../../database/middleware';
-import { storeLoadById } from '../../../database/middleware-loader';
+import { internalLoadById, storeLoadById } from '../../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { bypassDraftContext } from '../../../utils/draftContext';
-import { WORKFLOW_MANAGER_USER } from '../../../utils/access';
+import { SYSTEM_USER, WORKFLOW_MANAGER_USER } from '../../../utils/access';
 import { lockResources } from '../../../lock/master-lock';
 import { ActionRegistry } from '../registry/workflow-actions';
-import { ENTITY_TYPE_WORKFLOW_INSTANCE, type AsyncActionSlot, type Context, type WorkflowPendingTransition } from '../types/workflow-types';
+import {
+  ENTITY_TYPE_WORKFLOW_INSTANCE,
+  type AsyncActionSlot,
+  type Context,
+  mergeRequestAccessDirectGrants,
+  type RequestAccessDirectGrant,
+  type WorkflowPendingTransition,
+} from '../types/workflow-types';
 import { projectWorkflowState, resolveProjectionScope } from './workflow-projection';
 
 // history is rewritten as a whole on each append, so keep only the latest entries.
@@ -51,6 +58,35 @@ const resolveTriggeringUser = async (context: AuthContext, userId: string): Prom
   return undefined;
 };
 
+/**
+ * Revokes the organizations a request access share granted directly on plain entities while its container tasks ran.
+ * Runs as the user who decided the request, as the share did, or as the system user when that user cannot be resolved.
+ * An entity deleted since is skipped. Returns the grants that could not be revoked.
+ * What a container share task already shared before it failed is not undone: only the direct grants are recorded.
+ */
+export const revokeRequestAccessDirectGrants = async (
+  context: AuthContext,
+  grants: RequestAccessDirectGrant[] | undefined,
+  deciderId: string,
+): Promise<RequestAccessDirectGrant[]> => {
+  if (!grants || grants.length === 0) return [];
+  const revokingUser = await resolveTriggeringUser(context, deciderId) ?? SYSTEM_USER;
+  const revokeContext = { ...context, user: revokingUser };
+  const { removeOrganizationRestriction } = await import('../../../domain/stix');
+  const remaining: RequestAccessDirectGrant[] = [];
+  for (const grant of grants) {
+    try {
+      const target = await internalLoadById(revokeContext, SYSTEM_USER, grant.entityId);
+      if (!target) continue;
+      await removeOrganizationRestriction(revokeContext, revokingUser, grant.entityId, grant.organizationIds);
+    } catch (error) {
+      logApp.error('[workflow-async-completion] Failed to revoke a request access direct grant', { cause: error, entityId: grant.entityId });
+      remaining.push(grant);
+    }
+  }
+  return remaining;
+};
+
 export const runWorkflowBypassActions = async (workflowContext: Context, pendingTransition: WorkflowPendingTransition): Promise<void> => {
   const slots: AsyncActionSlot[] = [];
   // A bypass waits for every background task its actions queue
@@ -65,6 +101,9 @@ export const runWorkflowBypassActions = async (workflowContext: Context, pending
     pendingTransition.syncActions.shift();
     if (slots.length > 0) {
       pendingTransition.asyncActions = slots.map(({ id, workId, type, status }) => ({ id, workId, type, status }));
+      if (workflowContext.requestAccessDirectGrants?.length) {
+        pendingTransition.requestAccessDirectGrants = mergeRequestAccessDirectGrants(pendingTransition.requestAccessDirectGrants, workflowContext.requestAccessDirectGrants);
+      }
       return;
     }
   }
@@ -137,11 +176,20 @@ const completeWorkflowAsyncActionResult = async (
   }
 
   if (anyFailed) {
-    // At least one async task failed — surface the error, keep state unchanged
+    // At least one async task failed — surface the error, keep state unchanged.
+    // A request access share revokes the grants it added directly: a retry grants them again.
+    let failureError = error ?? 'One or more async workflow actions failed';
+    if (pendingTransition.requestAccessDirectGrants?.length) {
+      const remainingGrants = await revokeRequestAccessDirectGrants(executionContext, pendingTransition.requestAccessDirectGrants, pendingTransition.triggeredBy);
+      pendingTransition.requestAccessDirectGrants = remainingGrants;
+      if (remainingGrants.length > 0) {
+        failureError = `${failureError} (the organizations shared directly on ${remainingGrants.length} entities could not be revoked: clearing the pending state retries)`;
+      }
+    }
     await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
       { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
       { key: 'pendingStatus', value: ['error'] },
-      { key: 'pendingError', value: [error ?? 'One or more async workflow actions failed'] },
+      { key: 'pendingError', value: [failureError] },
     ]);
     logApp.warn('[workflow-async-completion] Async actions failed', { workflowInstanceId, error });
     return;
@@ -269,6 +317,9 @@ const completeWorkflowAsyncActionResult = async (
       pendingTransition.syncActions = [];
       pendingTransition.onEnterActions = onEnterActions.slice(index + 1);
       pendingTransition.asyncActions = newSlots.map(({ id, workId, type }) => ({ id, workId, type, status: 'pending' as const }));
+      if (workflowContext.requestAccessDirectGrants?.length) {
+        pendingTransition.requestAccessDirectGrants = mergeRequestAccessDirectGrants(pendingTransition.requestAccessDirectGrants, workflowContext.requestAccessDirectGrants);
+      }
       await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
         { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
       ]);

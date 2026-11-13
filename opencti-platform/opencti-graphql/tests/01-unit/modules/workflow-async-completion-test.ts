@@ -1,9 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { logApp } from '../../../src/config/conf';
-import { appendWorkflowHistoryEntry, reportWorkflowAsyncActionResult } from '../../../src/modules/workflow/domain/workflow-async-completion';
+import {
+  appendWorkflowHistoryEntry,
+  reportWorkflowAsyncActionResult,
+  revokeRequestAccessDirectGrants,
+  runWorkflowBypassActions,
+} from '../../../src/modules/workflow/domain/workflow-async-completion';
 import { projectWorkflowState } from '../../../src/modules/workflow/domain/workflow-projection';
 import { updateAttribute } from '../../../src/database/middleware';
-import { storeLoadById } from '../../../src/database/middleware-loader';
+import { internalLoadById, storeLoadById } from '../../../src/database/middleware-loader';
+import { removeOrganizationRestriction } from '../../../src/domain/stix';
 import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
 import { createListTask } from '../../../src/domain/backgroundTask-common';
 import { lockResources } from '../../../src/lock/master-lock';
@@ -11,7 +17,8 @@ import { recordRequestAccessDecision } from '../../../src/modules/workflow/domai
 import { resolveUserById } from '../../../src/modules/user/user-domain';
 
 vi.mock('../../../src/domain/backgroundTask-common', () => ({ createListTask: vi.fn() }));
-vi.mock('../../../src/utils/access', () => ({ WORKFLOW_MANAGER_USER: { id: 'workflow-manager' } }));
+vi.mock('../../../src/utils/access', () => ({ WORKFLOW_MANAGER_USER: { id: 'workflow-manager' }, SYSTEM_USER: { id: 'system-user' } }));
+vi.mock('../../../src/domain/stix', () => ({ removeOrganizationRestriction: vi.fn() }));
 vi.mock('../../../src/lock/master-lock', () => ({ lockResources: vi.fn().mockResolvedValue({ unlock: vi.fn() }) }));
 
 vi.mock('../../../src/database/middleware', () => ({
@@ -19,6 +26,7 @@ vi.mock('../../../src/database/middleware', () => ({
 }));
 
 vi.mock('../../../src/database/middleware-loader', () => ({
+  internalLoadById: vi.fn(),
   storeLoadById: vi.fn(),
 }));
 
@@ -822,6 +830,51 @@ describe('reportWorkflowAsyncActionResult', () => {
       expect(recordRequestAccessDecision).not.toHaveBeenCalled();
     });
 
+    it('revokes the organizations granted directly when the share task failed, so a retry grants them again', async () => {
+      const withGrants = { ...containerShare, requestAccessDirectGrants: [{ entityId: 'malware-1', organizationIds: ['org-author'] }] };
+      vi.mocked(storeLoadById).mockImplementation(async (_context, _user, id) => (
+        id === 'instance-id' ? makeInstance({ pendingTransition: JSON.stringify(withGrants) }) : fullEntity
+      ) as any);
+      vi.mocked(internalLoadById).mockResolvedValue({ id: 'malware-1' } as any);
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'share-slot', 'failed', 'share task failed');
+
+      expect(removeOrganizationRestriction).toHaveBeenCalledWith(
+        expect.objectContaining({ user: expect.objectContaining({ id: 'decider-id' }) }),
+        expect.objectContaining({ id: 'decider-id' }),
+        'malware-1',
+        ['org-author'],
+      );
+      const [, , , , patches] = vi.mocked(updateAttribute).mock.calls[0];
+      expect(patches).toEqual(expect.arrayContaining([
+        { key: 'pendingStatus', value: ['error'] },
+        { key: 'pendingError', value: ['share task failed'] },
+      ]));
+      expect(JSON.parse(patches.find((patch: any) => patch.key === 'pendingTransition').value[0]).requestAccessDirectGrants).toEqual([]);
+      expect(recordRequestAccessDecision).not.toHaveBeenCalled();
+    });
+
+    it('keeps the grants it could not revoke on the failed transition and says so in the error', async () => {
+      const withGrants = {
+        ...containerShare,
+        requestAccessDirectGrants: [{ entityId: 'malware-1', organizationIds: ['org-author'] }, { entityId: 'malware-2', organizationIds: ['org-author'] }],
+      };
+      vi.mocked(storeLoadById).mockImplementation(async (_context, _user, id) => (
+        id === 'instance-id' ? makeInstance({ pendingTransition: JSON.stringify(withGrants) }) : fullEntity
+      ) as any);
+      vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => ({ id }) as any);
+      vi.mocked(removeOrganizationRestriction).mockImplementation(async (_context: any, _user: any, id: any) => {
+        if (id === 'malware-2') throw new Error('revoke refused');
+      });
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'share-slot', 'failed', 'share task failed');
+
+      const [, , , , patches] = vi.mocked(updateAttribute).mock.calls[0];
+      expect(JSON.parse(patches.find((patch: any) => patch.key === 'pendingTransition').value[0]).requestAccessDirectGrants)
+        .toEqual([{ entityId: 'malware-2', organizationIds: ['org-author'] }]);
+      expect(patches.find((patch: any) => patch.key === 'pendingError').value[0]).toMatch(/^share task failed \(the organizations shared directly on 1 entities could not be revoked/);
+    });
+
     it('suspends again when an onEnter action hands a container share to a background task', async () => {
       const afterAsyncBulk = makePendingTransition({
         toState: 'approved',
@@ -839,6 +892,7 @@ describe('reportWorkflowAsyncActionResult', () => {
         expect(ctx.__createListTask).toBeUndefined();
         expect(ctx.__workflowInstanceId).toBe('instance-id');
         ctx.suspendingAsyncSlots.push({ id: 'share-slot', workId: 'work-share', type: 'shareRequestedEntities', status: 'pending' });
+        ctx.requestAccessDirectGrants = [{ entityId: 'malware-1', organizationIds: ['org-author'] }];
       });
       Object.assign(ActionRegistry, { transitionSync, shareContainer, afterShare });
 
@@ -854,6 +908,7 @@ describe('reportWorkflowAsyncActionResult', () => {
         syncActions: [],
         onEnterActions: [{ type: 'afterShare' }],
         asyncActions: [{ id: 'share-slot', workId: 'work-share', type: 'shareRequestedEntities', status: 'pending' }],
+        requestAccessDirectGrants: [{ entityId: 'malware-1', organizationIds: ['org-author'] }],
       });
       expect(recordRequestAccessDecision).not.toHaveBeenCalled();
     });
@@ -1116,6 +1171,51 @@ describe('reportWorkflowAsyncActionResult', () => {
     await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
 
     expect(capturedRuntimeParams).toEqual({});
+  });
+});
+
+describe('revokeRequestAccessDirectGrants', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(removeOrganizationRestriction).mockResolvedValue(undefined as any);
+  });
+
+  it('revokes nothing and resolves no user without a recorded grant', async () => {
+    await expect(revokeRequestAccessDirectGrants(mockContext, [], 'decider-id')).resolves.toEqual([]);
+    expect(resolveUserById).not.toHaveBeenCalled();
+    expect(removeOrganizationRestriction).not.toHaveBeenCalled();
+  });
+
+  it('revokes as the system user when the decider cannot be resolved, and skips a deleted entity', async () => {
+    vi.mocked(resolveUserById).mockResolvedValue(undefined as any);
+    vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => (id === 'deleted' ? undefined : { id }) as any);
+
+    const remaining = await revokeRequestAccessDirectGrants(mockContext, [
+      { entityId: 'deleted', organizationIds: ['org-a'] },
+      { entityId: 'malware-1', organizationIds: ['org-a', 'org-b'] },
+    ], 'decider-id');
+
+    expect(remaining).toEqual([]);
+    expect(removeOrganizationRestriction).toHaveBeenCalledTimes(1);
+    expect(removeOrganizationRestriction).toHaveBeenCalledWith({ ...mockContext, user: { id: 'system-user' } }, { id: 'system-user' }, 'malware-1', ['org-a', 'org-b']);
+  });
+});
+
+describe('runWorkflowBypassActions', () => {
+  it('records on the pending transition the direct grants of a share that waits for its container tasks', async () => {
+    const pending = makePendingTransition({ event: 'event_bypass', asyncActions: [], syncActions: [{ type: 'bypassShare' }, { type: 'bypassAfter' }] }) as any;
+    ActionRegistry.bypassShare = vi.fn(async (ctx: any) => {
+      ctx.suspendingAsyncSlots.push({ id: 'share-slot', workId: 'work-share', type: 'shareRequestedEntities', status: 'pending' });
+      ctx.requestAccessDirectGrants = [{ entityId: 'malware-1', organizationIds: ['org-author'] }];
+    });
+    ActionRegistry.bypassAfter = vi.fn();
+
+    await runWorkflowBypassActions({ user: { id: 'workflow-manager' } }, pending);
+
+    expect(pending.asyncActions).toEqual([{ id: 'share-slot', workId: 'work-share', type: 'shareRequestedEntities', status: 'pending' }]);
+    expect(pending.requestAccessDirectGrants).toEqual([{ entityId: 'malware-1', organizationIds: ['org-author'] }]);
+    expect(pending.syncActions).toEqual([{ type: 'bypassAfter' }]);
+    expect(ActionRegistry.bypassAfter).not.toHaveBeenCalled();
   });
 });
 

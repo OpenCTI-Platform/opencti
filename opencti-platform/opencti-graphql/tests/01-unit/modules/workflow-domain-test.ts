@@ -62,7 +62,7 @@ import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
 import { createListTask } from '../../../src/domain/backgroundTask-common';
 import type { BasicStoreEntity } from '../../../src/types/store';
-import { reportWorkflowAsyncActionResult } from '../../../src/modules/workflow/domain/workflow-async-completion';
+import { reportWorkflowAsyncActionResult, revokeRequestAccessDirectGrants } from '../../../src/modules/workflow/domain/workflow-async-completion';
 import { isUserCanActionRequestAccess, notifyRequestAccessResult } from '../../../src/modules/requestAccess/requestAccess-domain';
 import { publishUserAction } from '../../../src/listener/UserActionListener';
 
@@ -113,6 +113,11 @@ vi.mock('../../../src/modules/workflow/workflow-validation', async (importOrigin
     validateWorkflowDefinitionData: vi.fn().mockResolvedValue([]),
   };
 });
+
+vi.mock('../../../src/modules/workflow/domain/workflow-async-completion', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/modules/workflow/domain/workflow-async-completion')>()),
+  revokeRequestAccessDirectGrants: vi.fn().mockResolvedValue([]),
+}));
 
 vi.mock('../../../src/modules/workflow/engine/workflow-factory', () => ({
   WorkflowFactory: {
@@ -3881,6 +3886,69 @@ describe('triggerWorkflowEvent – async / pending / lock', () => {
     expect(stored.onEnterActions).toEqual([{ type: 'validateDraft' }]);
   });
 
+  describe('request access direct grants', () => {
+    const definitionContent = JSON.stringify({
+      initialState: 'draft',
+      states: [{ statusId: 'draft' }, { statusId: 'reviewing', onEnter: [{ type: 'shareRequestedEntities' }] }],
+      transitions: [{ from: 'draft', to: 'reviewing', event: 'submit' }],
+    });
+    const suspendWithGrants = () => (WorkflowFactory.getInstance as any).mockImplementation((_data: any, _definition: any, _state: any, workflowContext: any) => ({
+      start: vi.fn(),
+      trigger: vi.fn(async () => {
+        workflowContext.requestAccessDirectGrants = [{ entityId: 'malware-2', organizationIds: ['org-a'] }];
+        return { success: true, executionStatus: 'pending', asyncActionSlots: [{ id: 'slot-1', workId: 'work-1', type: 'shareRequestedEntities' }], completedOnEnterActions: 1 };
+      }),
+      getCurrentState: vi.fn().mockReturnValue('reviewing'),
+    }));
+    const failedWith = (overrides: Record<string, unknown>) => (loadEntity as any).mockResolvedValue({
+      id: 'inst-id',
+      internal_id: 'inst-id',
+      currentState: 'draft',
+      history: '[]',
+      pendingStatus: 'error',
+      pendingTransition: JSON.stringify({
+        event: 'submit',
+        toState: 'reviewing',
+        asyncActions: [],
+        syncActions: [],
+        requestAccessDirectGrants: [{ entityId: 'malware-1', organizationIds: ['org-a'] }],
+        ...overrides,
+      }),
+    });
+
+    it('stores the grants the share added directly on the pending transition', async () => {
+      setupAsyncPendingMocks(definitionContent);
+      suspendWithGrants();
+
+      await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'submit');
+
+      expect(getPendingTransitionArg().requestAccessDirectGrants).toEqual([{ entityId: 'malware-2', organizationIds: ['org-a'] }]);
+    });
+
+    it('keeps the grants a failed run could not revoke when that transition is retried', async () => {
+      setupAsyncPendingMocks(definitionContent);
+      suspendWithGrants();
+      failedWith({});
+
+      await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'submit');
+
+      expect(getPendingTransitionArg().requestAccessDirectGrants).toEqual([
+        { entityId: 'malware-1', organizationIds: ['org-a'] },
+        { entityId: 'malware-2', organizationIds: ['org-a'] },
+      ]);
+    });
+
+    it('does not take over the grants of another failed transition', async () => {
+      setupAsyncPendingMocks(definitionContent);
+      suspendWithGrants();
+      failedWith({ event: 'other' });
+
+      await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'submit');
+
+      expect(getPendingTransitionArg().requestAccessDirectGrants).toEqual([{ entityId: 'malware-2', organizationIds: ['org-a'] }]);
+    });
+  });
+
   // line 774 (onEnterActions absent when serializedOnEnterActions is empty)
   it('omits onEnterActions from pendingTransition when the target state has no onEnter actions', async () => {
     const definitionContent = JSON.stringify({
@@ -3961,6 +4029,48 @@ describe('clearWorkflowPendingState', () => {
     expect(patches.find((p: any) => p.key === 'pendingTransition')?.value[0]).toBeNull();
     const history = JSON.parse(patches.find((p: any) => p.key === 'history')?.value[0] ?? '[]');
     expect(history[history.length - 1].event).toBe('admin_clear_pending_state');
+    expect(revokeRequestAccessDirectGrants).not.toHaveBeenCalled();
+  });
+
+  describe('with direct grants recorded by a request access share', () => {
+    const grants = [{ entityId: 'malware-1', organizationIds: ['org-a'] }, { entityId: 'malware-2', organizationIds: ['org-a'] }];
+    beforeEach(() => {
+      (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => (
+        Promise.resolve(id === 'entity-id' ? { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Case-Rfi' } : null)
+      ));
+      (loadEntity as any).mockResolvedValue({
+        id: 'inst-id',
+        internal_id: 'inst-id',
+        currentState: 'review',
+        history: '[]',
+        pendingStatus: 'error',
+        pendingError: 'share task failed',
+        pendingTransition: JSON.stringify({ event: 'approve', toState: 'approved', triggeredBy: 'decider-id', asyncActions: [], syncActions: [], requestAccessDirectGrants: grants }),
+      });
+      (updateAttribute as any).mockResolvedValue({ element: {} });
+    });
+
+    it('revokes them before clearing the pending state', async () => {
+      vi.mocked(revokeRequestAccessDirectGrants).mockResolvedValueOnce([]);
+
+      await clearWorkflowPendingState(mockContext, mockUser, 'entity-id');
+
+      expect(revokeRequestAccessDirectGrants).toHaveBeenCalledWith(expect.anything(), grants, 'decider-id');
+      expect(updateAttribute).toHaveBeenCalledTimes(1);
+      const [, , , , patches] = (updateAttribute as any).mock.calls[0];
+      expect(patches.find((p: any) => p.key === 'pendingTransition')?.value[0]).toBeNull();
+    });
+
+    it('keeps the pending state, with only the grants left, when one cannot be revoked', async () => {
+      vi.mocked(revokeRequestAccessDirectGrants).mockResolvedValueOnce([grants[1]]);
+
+      await expect(clearWorkflowPendingState(mockContext, mockUser, 'entity-id')).rejects.toThrow('could not all be revoked');
+
+      expect(updateAttribute).toHaveBeenCalledTimes(1);
+      const [, , , , patches] = (updateAttribute as any).mock.calls[0];
+      expect(patches).toHaveLength(1);
+      expect(JSON.parse(patches[0].value[0]).requestAccessDirectGrants).toEqual([grants[1]]);
+    });
   });
 });
 
