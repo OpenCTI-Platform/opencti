@@ -271,7 +271,9 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
       const outline = await investigationPage.resolveColor(NEUTRAL_OUTLINE, 'color');
       const firstStopFill = await investigationPage.resolveColor(heatFill(FIRST_STOP), 'backgroundColor');
       await expect(investigationPage.getAccordionOfCell(GAMMA)).toHaveCSS('border-top-color', outline);
-      await expect(investigationPage.getMatrixCell(GAMMA)).not.toHaveCSS('background-color', firstStopFill);
+      // Not filled at all: neither a heat stop nor the red investigation highlight.
+      await expect(investigationPage.getMatrixCell(GAMMA)).toHaveCSS('background-color', TRANSPARENT);
+      expect(firstStopFill).not.toBe(TRANSPARENT);
       // A used technique is filled, and not outlined.
       await expect(investigationPage.getMatrixCell(ALPHA)).not.toHaveCSS('border-top-color', outline);
     });
@@ -291,7 +293,7 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
       // The parent is not filled: its border carries the stop of its sub-technique.
       await expect(investigationPage.getAccordionOfCell(GAMMA))
         .toHaveCSS('border-top-color', await investigationPage.resolveColor(heatBorder(FIRST_STOP), 'color'));
-      await expect(investigationPage.getMatrixCell(GAMMA)).not.toHaveCSS('background-color', firstStopFill);
+      await expect(investigationPage.getMatrixCell(GAMMA)).toHaveCSS('background-color', TRANSPARENT);
 
       // Hovering the parent lists the entities linked to its sub-techniques.
       await investigationPage.getMatrixCell(GAMMA).hover();

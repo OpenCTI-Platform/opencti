@@ -13,6 +13,8 @@ export interface MatrixTechniqueNode {
 type Translate = (s: string, options?: { values?: Record<string, string | number> }) => string;
 
 const NEUTRAL_BORDER = 'var(--border-elevation-default)';
+// An unscored cell has no fill with the heatmap on (PRD): without it, the investigation highlight would show through.
+const NO_FILL = 'transparent';
 
 const { formatLabel } = getMatrixConfig('investigation', false);
 
@@ -61,8 +63,10 @@ export const buildCellDecorations = ({ usage, scale, techniques, investigationId
         decoration.fill = heatFill(heatStopIndex(ownScore, scale));
         decoration.textTone = 'dark';
       } else if (maxSubScore > 0) {
+        decoration.fill = NO_FILL;
         decoration.border = heatBorder(heatStopIndex(maxSubScore, scale));
       } else {
+        decoration.fill = NO_FILL;
         decoration.border = NEUTRAL_BORDER;
       }
     }
