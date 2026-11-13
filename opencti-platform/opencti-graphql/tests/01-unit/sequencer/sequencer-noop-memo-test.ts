@@ -59,6 +59,14 @@ describe('noopMemoKey: eligibility and canonical input', () => {
     expect(noopMemoKey(intentOf({ input: { x: [{ a: 1 }] } }))).not.toEqual(noopMemoKey(intentOf({ input: { x: [{ a: 2 }] } })));
   });
 
+  it('should key a GraphQL input (null prototype objects, nested too) as its plain copy', () => {
+    const nested = Object.assign(Object.create(null), { source_name: 's', url: 'u' });
+    const input = Object.assign(Object.create(null), { name: 'NIST NVD', externalReferences: [nested] });
+    const key = noopMemoKey(intentOf({ input }));
+    expect(key).not.toBeNull();
+    expect(key).toEqual(noopMemoKey(intentOf({ input: { name: 'NIST NVD', externalReferences: [{ source_name: 's', url: 'u' }] } })));
+  });
+
   it('should tell two dates apart (an object walk would read both as {})', () => {
     const first = noopMemoKey(intentOf({ input: { created: new Date('2024-01-01T00:00:00.000Z') } }));
     const second = noopMemoKey(intentOf({ input: { created: new Date('2025-01-01T00:00:00.000Z') } }));

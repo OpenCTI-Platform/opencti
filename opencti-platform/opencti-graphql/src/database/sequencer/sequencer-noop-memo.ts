@@ -57,7 +57,8 @@ const canonicalInput = (value: unknown): string | null => {
     }
     return `[${items.join(',')}]`;
   }
-  if (typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype) {
+  // GraphQL input objects have a null prototype (graphql-js), a mutation's input is one
+  if (typeof value === 'object' && [Object.prototype, null].includes(Object.getPrototypeOf(value))) {
     const keys = Object.keys(value).sort();
     const fields: string[] = [];
     for (let i = 0; i < keys.length; i += 1) {
