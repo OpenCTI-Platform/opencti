@@ -495,6 +495,11 @@ describe('createSmtpTransporter — DB vs JSON config, sendMail, smtpIsAlive', (
     expect(callOptions).toMatchObject({ connectionTimeout: 10000, greetingTimeout: 10000 });
   });
 
+  it('should pin the SMTP socket inactivity timeout to 10 minutes', async () => {
+    await smtpIsAlive();
+    expect(nodemailerCreateTransport).toHaveBeenCalledWith(expect.objectContaining({ socketTimeout: 600000 }));
+  });
+
   it('should use JSON config options when use_db_config is false', async () => {
     await smtpIsAlive();
     // The conf mock sets hostname to 'localhost', port to 25 — verify those are passed.

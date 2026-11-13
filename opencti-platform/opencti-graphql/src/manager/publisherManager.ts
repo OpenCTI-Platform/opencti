@@ -47,6 +47,7 @@ import { NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/stre
 import { InterruptibleTimer } from './interruptible-timer';
 import { addNotificationSentCount } from './telemetryManager';
 import { resolveNotificationEntityInternalId } from './notification-instance-id';
+import { recordEmailFailure } from './email-failure-summary';
 
 const DOC_URI = 'https://docs.opencti.io';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
@@ -160,6 +161,10 @@ const markWriteFailure = (error: unknown) => {
   return error;
 };
 const isWriteFailure = (error: unknown) => !!(error && typeof error === 'object' && (error as Record<symbol, unknown>)[NOTIFICATION_WRITE_FAILURE]);
+
+const isEmailNotifier = (notifierConnectorId: string) => {
+  return notifierConnectorId === NOTIFIER_CONNECTOR_EMAIL || notifierConnectorId === NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL;
+};
 
 export async function handleUINotification(
   context: AuthContext,
@@ -374,6 +379,8 @@ export const processNotificationEvent = async (
         };
         if (isWriteFailure(reason)) {
           logApp.error('[OPENCTI-MODULE] Publisher manager notification write failed', meta);
+        } else if (isEmailNotifier(notifier.notifier_connector_id)) {
+          recordEmailFailure({ cause: reason, userId: user.user_id, triggerIds: [notificationId] });
         } else {
           logApp.warn('[OPENCTI-MODULE] Publisher manager notification processing error', meta);
         }
@@ -500,6 +507,8 @@ const processBufferedEvents = async (
             };
             if (isWriteFailure(reason)) {
               logApp.error('[OPENCTI-MODULE] Publisher manager buffered notification write failed', meta);
+            } else if (isEmailNotifier(notifierEntity.notifier_connector_id)) {
+              recordEmailFailure({ cause: reason, userId: currentUser.user_id, triggerIds: dataToSend.map((data) => data.notification_id) });
             } else {
               logApp.warn('[OPENCTI-MODULE] Publisher manager buffered notification processing error', meta);
             }
