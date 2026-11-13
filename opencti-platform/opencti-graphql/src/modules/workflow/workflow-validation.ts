@@ -539,6 +539,15 @@ export const validateWorkflowDefinitionData = async (
             message: `Approved state '${stateId}' must have a shareRequestedEntities action on enter`,
           });
         }
+        // A container share waits for its background task: an action after it would only run once the task finished,
+        // and nothing undoes it if the task then fails.
+        const onEnter = state.onEnter ?? [];
+        if (outcome === 'APPROVED' && onEnter.some(isShareRequestedEntitiesAction) && !isShareRequestedEntitiesAction(onEnter[onEnter.length - 1])) {
+          errors.push({
+            type: 'REQUEST_ACCESS_SHARE_ACTION_NOT_LAST',
+            message: `Action 'shareRequestedEntities' on state '${stateId}' must be the last action on enter of the Approved state`,
+          });
+        }
       }
     }
   }

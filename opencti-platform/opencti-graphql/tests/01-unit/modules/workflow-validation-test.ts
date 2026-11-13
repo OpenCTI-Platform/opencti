@@ -1262,6 +1262,30 @@ describe('Workflow Validation', () => {
       expect(errorTypes(await validate(definition))).toEqual(['REQUEST_ACCESS_SHARE_ACTION_MISPLACED']);
     });
 
+    it('should return REQUEST_ACCESS_SHARE_ACTION_NOT_LAST when an action follows the share on enter of the Approved state', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state' },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED', onEnter: [shareAction, { type: 'log', params: {} }] },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+      });
+      const errors = await validate(definition);
+      expect(errorTypes(errors)).toEqual(['REQUEST_ACCESS_SHARE_ACTION_NOT_LAST']);
+      expect(errors[0].message).toBe("Action 'shareRequestedEntities' on state 'approved' must be the last action on enter of the Approved state");
+    });
+
+    it('should accept actions before the share on enter of the Approved state', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state' },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED', onEnter: [{ type: 'log', params: {} }, shareAction] },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toEqual([]);
+    });
+
     it('should return REQUEST_ACCESS_SHARE_ACTION_MISPLACED when the Declined state shares on enter', async () => {
       const definition = requestAccessDefinition({
         states: [
