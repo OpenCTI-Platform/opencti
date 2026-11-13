@@ -92,12 +92,12 @@ describe('PublicDashboardPublishedValues', () => {
 // in between must not carry the values of the previous dashboard with the new id.
 describe('PublicDashboardPublishedValuesLoader', () => {
   const Probe = () => {
-    const { values } = useFormikContext<{ variable_values: Record<string, string>; time_range: { relativeDate: string | null } }>();
+    const { values } = useFormikContext<{ variable_values: Record<string, string>; time_range: { relativeDate: string | null }; published_for: string | null }>();
     return <pre data-testid="probe">{JSON.stringify(values)}</pre>;
   };
   const renderLoader = (dashboardId: string) => {
     const ui = (id: string) => (
-      <Formik initialValues={{ variable_values: {}, time_range: EMPTY_PUBLISHED_TIME_RANGE }} onSubmit={() => {}}>
+      <Formik initialValues={{ variable_values: {}, time_range: EMPTY_PUBLISHED_TIME_RANGE, published_for: null }} onSubmit={() => {}}>
         <>
           <PublicDashboardPublishedValuesLoader dashboardId={id} />
           <Probe />
@@ -122,12 +122,15 @@ describe('PublicDashboardPublishedValuesLoader', () => {
     await user.clear(input);
     await user.type(input, 'Typed');
     expect(probe().variable_values[SECTOR]).toBe('Typed');
+    expect(probe().published_for).toBe('dashboard-1');
     select('dashboard-2');
     await waitFor(() => expect(probe().variable_values).toEqual({}));
     expect(probe().time_range).toEqual(EMPTY_PUBLISHED_TIME_RANGE);
+    expect(probe().published_for).toBeNull();
     // The section of the previous dashboard is gone while the next one loads: nothing stale is shown.
     await waitFor(() => expect(screen.queryAllByRole('textbox')).toHaveLength(0));
     await resolve(dashboard('dashboard-2', 'Health'));
     expect(await screen.findByDisplayValue('Health')).toBeDefined();
+    await waitFor(() => expect(probe().published_for).toBe('dashboard-2'));
   });
 });
