@@ -247,8 +247,8 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   // default preset of the user, so that a preset means the same thing to everyone.
   const isActivePresetModified = activePreset !== null
     && isPresetModified(activePreset, variables, variableControls.manifestDefaults, variableControls.values, timeRange.range);
-  // A preset other than the default one is a departure from the defaults in itself: Reset is offered.
-  const isPresetSelected = activePreset !== null && activePreset.id !== (defaultPreset?.id ?? null);
+  // A preset other than the default one, or no preset over a default one, is a departure in itself: Reset is offered.
+  const isPresetSelected = (activePreset?.id ?? null) !== (defaultPreset?.id ?? null);
   // Set as dashboard defaults writes what the dashboard shows without a preset: it is offered whenever the view
   // differs from that, the default preset of the user included, even when nothing departs from the preset itself.
   const manifestRange = useMemo(() => pickTimeRange(config), [config]);
@@ -259,6 +259,12 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   // previous one; no preset goes back to the default preset, or to the manifest.
   const onSelectPreset = (presetId: string | null) => {
     presetControls.select(presetId);
+    variableControls.reset();
+    timeRange.reset();
+  };
+  // No preset picked in the list: the defaults of the dashboard, even over a default preset (Reset goes back to it).
+  const onSelectNoPreset = () => {
+    presetControls.selectNone();
     variableControls.reset();
     timeRange.reset();
   };
@@ -300,7 +306,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
       activePreset={activePreset}
       defaultPreset={defaultPreset}
       disabled={isPresetSubmitting}
-      onSelect={onSelectPreset}
+      onSelect={(presetId) => (presetId === null ? onSelectNoPreset() : onSelectPreset(presetId))}
       onRename={canManageVariables ? setPresetNameDialog : undefined}
       onDelete={canManageVariables ? setPresetToDelete : undefined}
     />

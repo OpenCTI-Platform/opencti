@@ -788,6 +788,20 @@ describe('CustomDashboard presets', () => {
     expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
   });
 
+  it('lets a user with a default preset pick No preset to view the dashboard defaults, and Reset goes back to the default preset', async () => {
+    const { user } = testRender(<CustomDashboard data={withPresets({ currentUserDefaultPresetId: 'p1' }) as never} />, { userContext: userContext() });
+    expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
+    await user.click(screen.getByTestId('dashboard-preset-trigger'));
+    await user.click(await screen.findByTestId('dashboard-preset-none'));
+    expect(captured.values?.get(SECTOR_ID)).toBe('Energy');
+    expect(captured.contentConfig?.relativeDate).toBe('days-7');
+    expect(screen.getByTestId('dashboard-preset-trigger')).toHaveTextContent('No preset');
+    expect(new URLSearchParams(window.location.search).get('preset')).toBe('none');
+    await user.click(within(screen.getByTestId('dashboard-variables-bar')).getByRole('button', { name: 'Reset to “Finance”' }));
+    expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
+    expect(new URLSearchParams(window.location.search).get('preset')).toBeNull();
+  });
+
   it('offers Set as dashboard defaults on the default preset of the user, unmodified, as its view differs from the manifest', async () => {
     const { user } = testRender(<CustomDashboard data={withPresets({ currentUserDefaultPresetId: 'p1' }) as never} />, { userContext: userContext() });
     expect(screen.queryByTestId('dashboard-values-modified')).not.toBeInTheDocument();
