@@ -1,13 +1,14 @@
 import { randomUUID } from 'node:crypto';
 import { LRUCache } from 'lru-cache';
 import { Promise as BluePromise } from 'bluebird';
-import conf, { booleanConf, logApp, ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../../../config/conf';
+import conf, { booleanConf, BUS_TOPICS, logApp, ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../../../config/conf';
 import { ForbiddenAccess, FunctionalError } from '../../../config/errors';
 import { getEntitiesListFromCache } from '../../../database/cache';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../database/members';
 import { createEntity, createRelation, deleteElementById, idVocabulary, loadEntity, updateAttribute } from '../../../database/middleware';
 import { fullEntitiesList, internalLoadById, storeLoadById, storeLoadByIds } from '../../../database/middleware-loader';
+import { notify } from '../../../database/redis';
 import { READ_DATA_INDICES, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY } from '../../../database/utils';
 import { elAggregationCount, ES_MAX_CONCURRENCY } from '../../../database/engine';
 import { createListTask } from '../../../domain/backgroundTask-common';
@@ -18,6 +19,7 @@ import { type EditInput, FilterMode, FilterOperator, StatusScope, OrderingMode, 
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from '../../vocabulary/vocabulary-types';
 import { lockResources } from '../../../lock/master-lock';
 import { addWorkflowPublishCount, addWorkflowRequestAccessMigrationCount, addWorkflowRequestAccessPublishCount } from '../../../manager/telemetryManager';
+import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema/internalObject';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
@@ -1125,6 +1127,13 @@ export const deleteWorkflowDefinition = async (
  * Only the given scope is reconciled here — existing `Status` records in other scopes are
  * left untouched.
  */
+// Status reads go through the platform cache, which only refreshes on a bus event: every Status
+// write from the workflow must notify it, or transitions keep showing the previous order.
+const updateStatusAttribute = async (context: AuthContext, user: AuthUser, statusId: string, input: EditInput[]) => {
+  const { element } = await updateAttribute(context, user, statusId, ENTITY_TYPE_STATUS, input);
+  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+};
+
 export const ensureFullStatusMapping = async (
   context: AuthContext,
   user: AuthUser,
@@ -1162,7 +1171,7 @@ export const ensureFullStatusMapping = async (
         scope,
       });
     } else if (existingStatus.order !== order) {
-      await updateAttribute(executionContext, executionUser, existingStatus.id, ENTITY_TYPE_STATUS, [{ key: 'order', value: [order] }]);
+      await updateStatusAttribute(executionContext, executionUser, existingStatus.id, [{ key: 'order', value: [order] }]);
     }
   }
 };
@@ -1220,7 +1229,7 @@ const reconcileOrphanedStatuses = async (
       if (status.to_be_deleted_at) {
         // Restore-vs-purge race: the state mapping to this Status was reintroduced before the
         // cleanup manager purged it. Restoring wins.
-        await updateAttribute(context, user, status.id, ENTITY_TYPE_STATUS, [{ key: 'to_be_deleted_at', value: [null] }]);
+        await updateStatusAttribute(context, user, status.id, [{ key: 'to_be_deleted_at', value: [null] }]);
       }
       continue;
     }
@@ -1238,7 +1247,7 @@ const reconcileOrphanedStatuses = async (
     if (referencedByRequestAccess) continue;
 
     const toBeDeletedAt = new Date(Date.now() + STATUS_DELETION_GRACE_PERIOD_MS);
-    await updateAttribute(context, user, status.id, ENTITY_TYPE_STATUS, [{ key: 'to_be_deleted_at', value: [toBeDeletedAt] }]);
+    await updateStatusAttribute(context, user, status.id, [{ key: 'to_be_deleted_at', value: [toBeDeletedAt] }]);
   }
 };
 

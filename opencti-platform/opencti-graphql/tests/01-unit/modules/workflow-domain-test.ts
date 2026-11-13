@@ -4,6 +4,9 @@ import { extractEntityRepresentativeName } from '../../../src/database/entity-re
 import { loadAssignees, loadParticipants } from '../../../src/database/members';
 import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../src/database/middleware';
 import { fullEntitiesList, internalLoadById, storeLoadById, storeLoadByIds } from '../../../src/database/middleware-loader';
+import { notify } from '../../../src/database/redis';
+import { BUS_TOPICS } from '../../../src/config/conf';
+import { ABSTRACT_INTERNAL_OBJECT } from '../../../src/schema/general';
 import { resolveUserById } from '../../../src/modules/user/user-domain';
 import { createStatus, findByType as findStatusesByType } from '../../../src/domain/status';
 import { elAggregationCount } from '../../../src/database/engine';
@@ -78,6 +81,11 @@ vi.mock('../../../src/database/middleware', () => ({
   // An id is kept as is; a name gets the case insensitive vocabulary id, like the real identifier
   idVocabulary: (nameOrId: string) => (nameOrId.startsWith('vocabulary--') ? nameOrId : `vocabulary--${nameOrId.toLowerCase()}`),
 }));
+
+vi.mock('../../../src/database/redis', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/database/redis')>();
+  return { ...actual, notify: vi.fn() };
+});
 
 vi.mock('../../../src/database/middleware-loader', () => ({
   fullEntitiesList: vi.fn(),
@@ -864,6 +872,8 @@ describe('Workflow bypass', () => {
 describe('Workflow Domain', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // The real updateAttribute always resolves { element }; Status writes notify the cache with it.
+    vi.mocked(updateAttribute).mockImplementation(async (_context, _user, id) => ({ element: { id } }) as any);
   });
 
   it('denies workflow bypass without BYPASS before accessing or changing an entity', async () => {
@@ -1520,6 +1530,35 @@ describe('Workflow Domain', () => {
       ENTITY_TYPE_STATUS,
       expect.arrayContaining([expect.objectContaining({ key: 'order' })]),
     );
+  });
+
+  it('should notify the Status edit after syncing its order, so cached statuses show the new order (WF-007)', async () => {
+    const draftVersion = {
+      id: 'draft-version-1',
+      timestamp: '2024-01-01T00:00:00Z',
+      createdBy: 'user-1',
+      content: JSON.stringify({
+        name: 'Test Workflow',
+        initialState: 'tpl-open',
+        states: [{ statusId: 'tpl-open' }, { statusId: 'tpl-progress' }],
+        transitions: [{ from: 'tpl-open', to: 'tpl-progress', event: 'start' }],
+      }),
+      validation_errors: [],
+    };
+    const updatedStatus = { id: 'status-progress', entity_type: ENTITY_TYPE_STATUS, order: 1 };
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (storeLoadById as any)
+      .mockResolvedValueOnce({ id: 'workflow-id', name: 'Test Workflow', draft_version: draftVersion, all_versions: [draftVersion] })
+      .mockResolvedValueOnce({ id: 'workflow-id', name: 'Test Workflow', published_version: draftVersion, draft_version: draftVersion, all_versions: [draftVersion] });
+    (fullEntitiesList as any).mockResolvedValue([
+      { id: 'status-open', type: 'Incident', scope: StatusScope.Global, template_id: 'tpl-open', order: 0 },
+      { id: 'status-progress', type: 'Incident', scope: StatusScope.Global, template_id: 'tpl-progress', order: 0 },
+    ]);
+    vi.mocked(updateAttribute).mockResolvedValueOnce({ element: updatedStatus } as any);
+
+    await publishWorkflowDefinition(mockContext, mockUser, 'Incident');
+
+    expect(notify).toHaveBeenCalledWith(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedStatus, mockUser);
   });
 
   it('should be a no-op republish for a DraftWorkspace-shaped definition matching realistic production data (regression, Step 4.9)', async () => {
