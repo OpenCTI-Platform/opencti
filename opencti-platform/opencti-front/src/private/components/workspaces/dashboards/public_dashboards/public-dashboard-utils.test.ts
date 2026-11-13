@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { toB64 } from '../../../../../utils/String';
 import { dashboardVariablesStorageKey } from '../../../../../components/dashboard/dashboardVariablesStorage';
 import { dashboardTimeRangeStorageKey } from '../../../../../components/dashboard/dashboardTimeRangeStorage';
+import { dashboardPresetStorageKey } from '../../../../../components/dashboard/presets/dashboardPresetStorage';
 import type { DashboardVariable } from '../../../../../components/dashboard/dashboard-types';
 import {
   applyPresetToPublishedValues,
@@ -93,6 +94,38 @@ describe('buildPublishedValuesState', () => {
     // The page of another dashboard whose id starts like this one
     const otherPage = buildPublishedValuesState(dashboard('dashboard-1'), 'user-1', search, '/dashboard/workspaces/dashboards/dashboard-10');
     expect(otherPage.variable_values[USED]).toEqual('stored');
+  });
+});
+
+describe('buildPublishedValuesState with presets', () => {
+  beforeEach(() => window.localStorage.clear());
+  const preset = (id: string, used: string, relativeDate: string) => ({
+    id, name: id, values: [{ variableId: USED, value: used }], config: { startDate: null, endDate: null, relativeDate },
+  });
+  const withPresets = (defaultPresetId: string | null = null) => ({
+    ...dashboard('dashboard-1', { relativeDate: 'months-1' }),
+    presets: [preset('alpha', 'from alpha', 'days-7'), preset('beta', 'from beta', 'years-1')],
+    currentUserDefaultPresetId: defaultPresetId,
+  });
+  const page = '/dashboard/workspaces/dashboards/dashboard-1';
+
+  it('should start from the preset of the address on the page, under the values changed on it', () => {
+    window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'dashboard-1'), 'beta');
+    const state = buildPublishedValuesState(withPresets(), 'user-1', '?preset=alpha', page);
+    expect(state).toEqual({ variable_values: { [USED]: 'from alpha', [SELECTION]: 'a' }, time_range: { relativeDate: 'days-7', startDate: null, endDate: null } });
+    window.localStorage.setItem(dashboardVariablesStorageKey('user-1', 'dashboard-1'), JSON.stringify({ [USED]: 'changed' }));
+    expect(buildPublishedValuesState(withPresets(), 'user-1', '?preset=alpha', page).variable_values[USED]).toEqual('changed');
+  });
+
+  it('should start from the preset kept in this browser, else the default preset of the user, else the dashboard', () => {
+    expect(buildPublishedValuesState(withPresets('beta'), 'user-1', '', '/dashboard/workspaces/dashboards_public').time_range.relativeDate).toEqual('years-1');
+    window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'dashboard-1'), 'alpha');
+    expect(buildPublishedValuesState(withPresets('beta'), 'user-1', '', '/dashboard/workspaces/dashboards_public').variable_values[USED]).toEqual('from alpha');
+    // A deleted preset (kept in this browser, or default) falls back to the dashboard
+    window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'dashboard-1'), 'deleted');
+    expect(buildPublishedValuesState(withPresets('gone'), 'user-1', '', '/dashboard/workspaces/dashboards_public')).toEqual({
+      variable_values: { [USED]: 'x', [SELECTION]: 'a' }, time_range: { relativeDate: 'months-1', startDate: null, endDate: null },
+    });
   });
 });
 

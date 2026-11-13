@@ -43,6 +43,13 @@ const PublicDashboardPublishedValues = ({ dashboard }: PublicDashboardPublishedV
   // and the picker would keep its emptied text. Remounting it shows the value again.
   const [revisions, setRevisions] = useState<Record<string, number>>({});
 
+  // The pickers that show a date they refuse: the form cannot be published while one of them is in use.
+  const [invalidDates, setInvalidDates] = useState<Record<string, boolean>>({});
+  const hasInvalidDate = values.time_range.relativeDate === null && Object.values(invalidDates).some(Boolean);
+  useEffect(() => {
+    if (hasInvalidDate !== !!values.time_range_invalid) setFieldValue('time_range_invalid', hasInvalidDate);
+  }, [hasInvalidDate]);
+
   const dashboardId = dashboard?.id;
   // The preset the author started from: a convenience, the fields keep the truth (a snapshot, never a link).
   const [loadedPresetId, setLoadedPresetId] = useState('');
@@ -98,7 +105,19 @@ const PublicDashboardPublishedValues = ({ dashboard }: PublicDashboardPublishedV
         <DashboardTimeFilters
           config={values.time_range}
           handleDateChange={(type, value) => setFieldValue('time_range', applyPublishedTimeRangeChange(values.time_range, type, value))}
+          onInvalidDateChange={(type, invalid) => setInvalidDates((current) => (current[type] === invalid ? current : { ...current, [type]: invalid }))}
         />
+        {typeof errors.time_range_invalid === 'string' && (
+          <Text
+            variant="content-caption"
+            as="p"
+            role="alert"
+            style={{ color: theme.palette.error.main, marginTop: 4 }}
+            data-testid="public-dashboard-published-date-error"
+          >
+            {errors.time_range_invalid}
+          </Text>
+        )}
         {typeof errors.time_range === 'string' && (
           <Text
             variant="content-caption"
@@ -154,6 +173,7 @@ const publishedValuesQuery = graphql`
     workspace(id: $id) {
       id
       manifest
+      currentUserDefaultPresetId
       variables {
         id
         usedInWidgetIds

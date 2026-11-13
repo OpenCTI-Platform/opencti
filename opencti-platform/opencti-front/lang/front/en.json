@@ -128,6 +128,7 @@
   "A connector that is not managed by the platform has this name": "A connector that is not managed by the platform has this name",
   "A connector with this name already exists. Please choose a different name.": "A connector with this name already exists. Please choose a different name.",
   "A dashboard cannot hold more than 50 variables": "A dashboard cannot hold more than 50 variables",
+  "A date of the time range is not valid": "A date of the time range is not valid",
   "A field will be created with appropriate type based on the attribute.": "A field will be created with appropriate type based on the attribute.",
   "A filter cannot reference another variable": "A filter cannot reference another variable",
   "A FINTEL export will contain extra information like markings and creation date": "A FINTEL export will contain extra information like markings and creation date",
@@ -4900,7 +4901,6 @@
   "Set as dashboard defaults": "Set as dashboard defaults",
   "Set as default": "Set as default",
   "Set as default custom view": "Set as default custom view",
-  "Set as default values": "Set as default values",
   "Set custom filters": "Set custom filters",
   "Set full screen": "Set full screen",
   "Sets the main organization: {name}": "Sets the main organization: {name}",
@@ -5311,7 +5311,6 @@
   "The connector works have been cleared": "The connector works have been cleared",
   "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions": "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "The CSV file has been generated with the parameters of the view and is ready for download.",
-  "The current values and time range differ from this preset: save them into it": "The current values and time range differ from this preset: save them into it",
   "The current values of the variables and the time range are saved together, to be restored in one click.": "The current values of the variables and the time range are saved together, to be restored in one click.",
   "The custom view {name} is currently set as default. Do you want to replace it?": "The custom view {name} is currently set as default. Do you want to replace it?",
   "The custom view has been duplicated. You can manage it": "The custom view has been duplicated. You can manage it",
@@ -5370,6 +5369,7 @@
   "The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.": "The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.",
   "The platform keeps its current default theme.": "The platform keeps its current default theme.",
   "The public dashboard is disabled": "The public dashboard is disabled",
+  "The published values of the selected dashboard are still loading": "The published values of the selected dashboard are still loading",
   "The relations attached to selected entities will be copied to the merged entity.": "The relations attached to selected entities will be copied to the merged entity.",
   "The relationship filter is applied only to the entities found in the first stage. If you do not set a source filter or a target filter, the relationship filter applies to all data in the platform.": "The relationship filter is applied only to the entities found in the first stage. If you do not set a source filter or a target filter, the relationship filter applies to all data in the platform.",
   "The relationship type to apply to all created relationships.": "The relationship type to apply to all created relationships.",
@@ -6365,6 +6365,5 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to",
   "Zoom": "Zoom",
   "Zoom in": "Zoom in",
-  "Zoom out": "Zoom out",
-  "The published values of the selected dashboard are still loading": "The published values of the selected dashboard are still loading"
+  "Zoom out": "Zoom out"
 }

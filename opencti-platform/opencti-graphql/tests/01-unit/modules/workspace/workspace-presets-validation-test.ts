@@ -45,6 +45,14 @@ describe('buildDashboardPreset', () => {
     expect(() => buildDashboardPreset({ id: 'not-a-uuid', name: 'Bad' }, existing, variables)).toThrow('Invalid dashboard preset id');
   });
 
+  it('should keep the stored values and range of a preset when an update omits them', () => {
+    const renamed = buildDashboardPreset({ id: PRESET_ID, name: 'Energy & Utilities' }, existing, variables);
+    expect(renamed).toEqual({ ...existing[0], name: 'Energy & Utilities' });
+    // Sent explicitly, they replace the stored ones, an empty list included.
+    const cleared = buildDashboardPreset({ id: PRESET_ID, name: 'Energy', values: [], config: { relativeDate: null, startDate: null, endDate: null } }, existing, variables);
+    expect(cleared).toMatchObject({ values: {}, config: { relativeDate: null, startDate: null, endDate: null } });
+  });
+
   it('should refuse a blank, too long or duplicated name', () => {
     expect(() => buildDashboardPreset({ name: '   ' }, existing, variables)).toThrow('Dashboard preset name is required');
     expect(() => buildDashboardPreset({ name: 'x'.repeat(201) }, existing, variables)).toThrow('Dashboard preset name is too long');
@@ -57,6 +65,11 @@ describe('buildDashboardPreset', () => {
     const values = [{ variableId: '99999999-9999-4999-8999-999999999999', value: 'x' }, { variableId: SECTOR_ID, value: 'sector-b' }];
     expect(() => buildDashboardPreset({ name: 'P', values }, [], variables)).toThrow('Unknown dashboard variable');
     expect(buildDashboardPreset({ name: 'P', values }, [], variables, { dropUnknownVariables: true }).values).toEqual({ [SECTOR_ID]: 'sector-b' });
+  });
+
+  it('should drop a token-shaped value on import or duplication, and keep the preset', () => {
+    const values = [{ variableId: SECTOR_ID, value: `$var:${CONFIDENCE_ID}` }, { variableId: CONFIDENCE_ID, value: '70' }];
+    expect(buildDashboardPreset({ name: 'P', values }, [], variables, { dropUnknownVariables: true }).values).toEqual({ [CONFIDENCE_ID]: '70' });
   });
 
   it('should refuse a duplicated, token-shaped or ill-typed value', () => {

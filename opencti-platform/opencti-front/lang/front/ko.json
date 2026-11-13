@@ -128,6 +128,7 @@
   "A connector that is not managed by the platform has this name": "플랫폼에서 관리하지 않는 커넥터가 이 이름을 사용합니다",
   "A connector with this name already exists. Please choose a different name.": "이 이름을 가진 커넥터가 이미 존재합니다. 다른 이름을 선택해 주세요.",
   "A dashboard cannot hold more than 50 variables": "대시보드에는 변수를 50개까지만 둘 수 있습니다",
+  "A date of the time range is not valid": "기간의 날짜가 올바르지 않습니다",
   "A field will be created with appropriate type based on the attribute.": "속성에 따라 적절한 유형으로 필드가 생성됩니다.",
   "A filter cannot reference another variable": "필터는 다른 변수를 참조할 수 없습니다",
   "A FINTEL export will contain extra information like markings and creation date": "FINTEL 내보내기에는 표시 및 생성 날짜와 같은 추가 정보가 포함됩니다",
@@ -4900,7 +4901,6 @@
   "Set as dashboard defaults": "대시보드 기본값으로 설정",
   "Set as default": "기본값으로 설정",
   "Set as default custom view": "기본 사용자 지정 보기로 설정",
-  "Set as default values": "기본값으로 설정",
   "Set custom filters": "사용자 지정 필터 설정",
   "Set full screen": "전체 화면",
   "Sets the main organization: {name}": "주 조직을 설정합니다: {name}",
@@ -5311,7 +5311,6 @@
   "The connector works have been cleared": "커넥터 작업이 지워졌습니다.",
   "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions": "커버리지 결과 메트릭은 특정 엔티티가 AEV 시나리오 실행에 얼마나 관여했는지 보여줍니다.\\n 일부 인젝트가 실행되지 않았거나 자리 표시자가 해결되지 않았거나 플랫폼이 특정 작업을 지원하지 않는 경우 커버리지가 부분적으로 표시될 수 있습니다",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "CSV 파일이 뷰의 매개변수로 생성되었으며 다운로드할 준비가 되었습니다.",
-  "The current values and time range differ from this preset: save them into it": "현재 값과 기간이 이 프리셋과 다릅니다. 프리셋에 저장합니다",
   "The current values of the variables and the time range are saved together, to be restored in one click.": "변수의 현재 값과 기간을 함께 저장하여 한 번의 클릭으로 복원합니다.",
   "The custom view {name} is currently set as default. Do you want to replace it?": "현재 {name} 사용자 정의 보기가 기본값으로 설정되어 있습니다. 이를 변경하시겠습니까?",
   "The custom view has been duplicated. You can manage it": "사용자 지정 보기가 중복되었습니다. 관리할 수 있습니다",
@@ -5370,6 +5369,7 @@
   "The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.": "플랫폼은 현재 app-config 파일의 SMTP 구성을 사용하고 있습니다. 아래 구성을 대신 사용하려면 위의 옵션을 활성화하십시오.",
   "The platform keeps its current default theme.": "플랫폼은 현재 기본 테마를 유지합니다.",
   "The public dashboard is disabled": "공용 대시보드가 비활성화되었습니다",
+  "The published values of the selected dashboard are still loading": "선택한 대시보드의 게시 값을 아직 불러오는 중입니다",
   "The relations attached to selected entities will be copied to the merged entity.": "선택된 엔터티에 연결된 관계가 병합된 엔터티로 복사됩니다.",
   "The relationship filter is applied only to the entities found in the first stage. If you do not set a source filter or a target filter, the relationship filter applies to all data in the platform.": "관계 필터는 첫 번째 단계에서 발견된 엔티티에만 적용됩니다. 소스 필터나 대상 필터를 설정하지 않으면, 관계 필터는 플랫폼 내의 모든 데이터에 적용됩니다.",
   "The relationship type to apply to all created relationships.": "생성된 모든 관계에 적용할 관계 유형입니다.",
@@ -6365,6 +6365,5 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "사용자는 현재 사용자가 소속된 조직 외에 기본 플랫폼 조직과도 관련됩니다",
   "Zoom": "확대/축소",
   "Zoom in": "확대",
-  "Zoom out": "축소",
-  "The published values of the selected dashboard are still loading": "선택한 대시보드의 게시 값을 아직 불러오는 중입니다"
+  "Zoom out": "축소"
 }

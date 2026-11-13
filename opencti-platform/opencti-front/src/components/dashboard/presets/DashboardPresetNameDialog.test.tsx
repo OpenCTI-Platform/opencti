@@ -33,6 +33,15 @@ describe('DashboardPresetNameDialog', () => {
     expect(onConfirm).toHaveBeenCalledWith('Energy');
   });
 
+  it('sends one confirmation for two quick Enter', async () => {
+    let resolve: () => void = () => {};
+    const onConfirm = vi.fn().mockImplementation(() => new Promise<void>((done) => { resolve = done; }));
+    const { user } = testRender(<DashboardPresetNameDialog open existingPresets={[]} onConfirm={onConfirm} onClose={vi.fn()} />);
+    await user.type(screen.getByLabelText(/Preset name/), 'Alpha{Enter}{Enter}');
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    resolve();
+  });
+
   it('stays open when the confirmation fails', async () => {
     const onConfirm = vi.fn().mockRejectedValue(new Error('refused'));
     const onClose = vi.fn();

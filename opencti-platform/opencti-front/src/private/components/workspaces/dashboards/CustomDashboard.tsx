@@ -262,25 +262,29 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     variableControls.reset();
     timeRange.reset();
   };
+  // Once saved, the preset holds the values and the range on screen: the local ones are redundant, and kept they would
+  // hide a later update of the preset by another editor behind a Modified that is not one.
   const onSavePresetAs = async (name: string) => {
     const presetId = await upsertPreset(presetInputFromValues(name, variables, variableControls.values, timeRange.range));
-    if (presetId) presetControls.select(presetId);
+    if (presetId) {
+      presetControls.select(presetId);
+      variableControls.reset();
+      timeRange.reset();
+    }
   };
   const onUpdatePreset = async () => {
     if (!activePreset) return;
     try {
       await upsertPreset(presetInputFromValues(activePreset.name, variables, variableControls.values, timeRange.range, activePreset.id));
+      variableControls.reset();
+      timeRange.reset();
     } catch {
-      // The mutation already notified the user.
+      // The mutation already notified the user, and the local values are kept so nothing the user chose is lost.
     }
   };
+  // The name alone: the server keeps the stored values and range, so a rename never writes back a stale copy of them.
   const onRenamePreset = async (preset: DashboardPreset, name: string) => {
-    await upsertPreset({
-      id: preset.id,
-      name,
-      values: Object.entries(preset.values).map(([variableId, value]) => ({ variableId, value })),
-      config: preset.config,
-    });
+    await upsertPreset({ id: preset.id, name });
   };
   // Deleting the active preset also drops its values and range: the dashboard goes back to the defaults.
   const onDeletePreset = async (preset: DashboardPreset) => {
@@ -289,7 +293,8 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   };
   // Mirrors the bar, which renders nothing without variables nor a way to create one.
   const isBarVisible = showVariablesBar && (variables.length > 0 || canManageVariables || showPresetSelector);
-  const presetSelector = showPresetSelector ? (
+  // Nothing to switch to yet (the editor saves the first preset from the Save menu): no leading pill, no divider.
+  const presetSelector = showPresetSelector && presets.length > 0 ? (
     <DashboardPresetSelector
       presets={presets}
       activePreset={activePreset}
@@ -344,11 +349,12 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
       // The variables first: their validation is the step most likely to refuse, and their definitions are then the
       // ones just read. A refused variable stops here, before the range is saved for every viewer.
       await setAsDefaults(variables, submittedValues);
-      // The server default now is the submitted value: the local entry is redundant, unless it changed since.
-      variableControls.resetValues(submittedValues);
+      // Without a preset, the server default now is the submitted value: the local entry is redundant, unless it changed
+      // since. With a preset, the preset stays the base of the view: the local values are what keeps it on screen.
+      if (!activePreset) variableControls.resetValues(submittedValues);
       if (isRangeModified) {
         await handleConfigChange(submittedRange);
-        timeRange.resetRange(submittedRange);
+        if (!activePreset) timeRange.resetRange(submittedRange);
       }
     } catch {
       // The mutation already notified the user: this only avoids an unhandled rejection.

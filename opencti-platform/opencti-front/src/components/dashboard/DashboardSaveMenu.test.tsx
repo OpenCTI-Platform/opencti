@@ -1,5 +1,6 @@
+import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { screen } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import testRender from '../../utils/tests/test-render';
 import { EXPORT_REMOVE_CLASS } from '../../utils/Image';
 import DashboardSaveMenu from './DashboardSaveMenu';
@@ -49,6 +50,25 @@ describe('DashboardSaveMenu', () => {
     await user.click(screen.getByTestId('dashboard-save-menu'));
     await user.click(await screen.findByTestId('dashboard-set-as-defaults'));
     expect(onSetAsDefaults).toHaveBeenCalledOnce();
+  });
+
+  it('stays closed once an entry is picked, while the save it starts disables the menu', async () => {
+    // As on the page: the picked entry starts a save that disables the menu, then the save ends.
+    let endSave: () => void = () => {};
+    const Page = () => {
+      const [saving, setSaving] = React.useState(false);
+      const save = () => {
+        setSaving(true);
+        endSave = () => act(() => setSaving(false));
+      };
+      return <DashboardSaveMenu activePresetName="Finance" canUpdatePreset canSetAsDefaults disabled={saving} onUpdatePreset={save} onSavePresetAs={vi.fn()} onSetAsDefaults={save} />;
+    };
+    const { user } = testRender(<Page />);
+    await user.click(screen.getByTestId('dashboard-save-menu'));
+    await user.click(await screen.findByTestId('dashboard-set-as-defaults'));
+    endSave();
+    await new Promise((resolve) => { setTimeout(resolve, 50); });
+    expect(screen.queryByTestId('dashboard-set-as-defaults')).toBeNull();
   });
 
   it('disables the writes that would change nothing', async () => {

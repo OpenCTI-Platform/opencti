@@ -86,6 +86,24 @@ describe('useDashboardPreset', () => {
     expect(window.localStorage.getItem(rangeKey)).toBeNull();
   });
 
+  it('keeps the preset of the address as the one of this browser, so the changes made on it stay with it', () => {
+    window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'ws-1'), 'energy');
+    window.history.replaceState(null, '', '/?preset=finance');
+    renderHook(() => useDashboardPreset('ws-1', presets));
+    expect(window.localStorage.getItem(dashboardPresetStorageKey('user-1', 'ws-1'))).toBe('finance');
+    // Opened later without the address, the dashboard shows the same preset
+    window.history.replaceState(null, '', '/');
+    expect(renderHook(() => useDashboardPreset('ws-1', presets)).result.current.activePreset?.id).toBe('finance');
+  });
+
+  it('leaves no preset in the address of a user who may not switch presets', () => {
+    window.history.replaceState(null, '', '/?preset=finance&variables=v:x');
+    const { result } = renderHook(() => useDashboardPreset('ws-1', presets, { ignoreLocalValues: true, defaultPresetId: 'energy' }));
+    expect(result.current.activePreset?.id).toBe('energy');
+    expect(presetParam()).toBeNull();
+    expect(new URLSearchParams(window.location.search).get('variables')).toBe('v:x');
+  });
+
   it('isolates two dashboards and two users, and reads nothing local when asked to', () => {
     window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'ws-1'), 'energy');
     expect(renderHook(() => useDashboardPreset('ws-2', presets)).result.current.activePreset).toBeNull();

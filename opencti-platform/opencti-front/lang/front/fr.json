@@ -128,6 +128,7 @@
   "A connector that is not managed by the platform has this name": "Un connecteur non géré par la plateforme porte ce nom",
   "A connector with this name already exists. Please choose a different name.": "Un connecteur portant ce nom existe déjà. Veuillez choisir un autre nom.",
   "A dashboard cannot hold more than 50 variables": "Un tableau de bord ne peut pas contenir plus de 50 variables",
+  "A date of the time range is not valid": "Une date de la période n'est pas valide",
   "A field will be created with appropriate type based on the attribute.": "Un champ sera créé avec le type approprié en fonction de l'attribut.",
   "A filter cannot reference another variable": "Un filtre ne peut pas référencer une autre variable",
   "A FINTEL export will contain extra information like markings and creation date": "Une exportation FINTEL contiendra des informations supplémentaires telles que les marquages et la date de création",
@@ -4900,7 +4901,6 @@
   "Set as dashboard defaults": "Définir comme valeurs par défaut du dashboard",
   "Set as default": "Définir comme modèle par défaut",
   "Set as default custom view": "Définir la vue personnalisée par défaut",
-  "Set as default values": "Définir comme valeurs par défaut",
   "Set custom filters": "Définir des filtres personnalisés",
   "Set full screen": "Mettre en plein écran",
   "Sets the main organization: {name}": "Définit l'organisation principale : {name}",
@@ -5311,7 +5311,6 @@
   "The connector works have been cleared": "Les tâches du connecteur ont été effacées",
   "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions": "La mesure du résultat de la couverture indique dans quelle mesure une entité spécifique a été impliquée dans l'exécution du scénario AEV. La couverture peut être partielle si certaines injections n'ont pas été exécutées, si les espaces réservés n'ont pas été résolus ou si la plate-forme ne prend pas en charge certaines actions",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "Le fichier CSV a été généré avec les paramètres de la vue et est prêt pour être téléchargé.",
-  "The current values and time range differ from this preset: save them into it": "Les valeurs et la plage de dates courantes diffèrent de ce preset : les enregistrer dedans",
   "The current values of the variables and the time range are saved together, to be restored in one click.": "Les valeurs courantes des variables et la plage de dates sont enregistrées ensemble, pour être restaurées en un clic.",
   "The custom view {name} is currently set as default. Do you want to replace it?": "La vue personnalisée {name} est actuellement définie comme vue par défaut. Voulez-vous la remplacer ?",
   "The custom view has been duplicated. You can manage it": "La vue personnalisée a été dupliquée. Vous pouvez l'administrer",
@@ -5370,6 +5369,7 @@
   "The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.": "La plateforme utilise actuellement la configuration SMTP du fichier app-config. Activez l’option ci-dessus pour utiliser la configuration ci-dessous à la place.",
   "The platform keeps its current default theme.": "La plateforme conserve son thème par défaut actuel.",
   "The public dashboard is disabled": "Le tableau de bord public est désactivé",
+  "The published values of the selected dashboard are still loading": "Les valeurs publiées du dashboard sélectionné sont encore en cours de chargement",
   "The relations attached to selected entities will be copied to the merged entity.": "Les relations attachées aux entités sélectionnées seront copiées sur l'entité fusionnée.",
   "The relationship filter is applied only to the entities found in the first stage. If you do not set a source filter or a target filter, the relationship filter applies to all data in the platform.": "Le filtre de relation s’applique uniquement aux entités identifiées lors de la première étape. Si vous ne définissez ni filtre source ni filtre cible, le filtre de relation s’applique à toutes les données de la plateforme.",
   "The relationship type to apply to all created relationships.": "Le type de relation à appliquer à toutes les relations créées.",
@@ -6365,6 +6365,5 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "votre utilisateur appartiendra à l'organisation principale de la plate-forme en plus de toute organisation à laquelle l'utilisateur actuel appartient",
   "Zoom": "Zoom",
   "Zoom in": "Zoomer",
-  "Zoom out": "Zoom arrière",
-  "The published values of the selected dashboard are still loading": "Les valeurs publiées du dashboard sélectionné sont encore en cours de chargement"
+  "Zoom out": "Zoom arrière"
 }
