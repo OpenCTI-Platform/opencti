@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
-import { Menu, MenuContent, MenuGroup, MenuItem, MenuLabel, MenuSeparator, MenuTrigger, Text } from '@filigran/design-system';
+import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger, Text } from '@filigran/design-system';
 import { ArrowDropDownOutlined, ArrowDropUpOutlined, DeleteOutlined, EditOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../i18n';
 import type { Theme } from '../../Theme';
@@ -49,41 +49,40 @@ const DashboardPresetSelector = ({
             data-testid="dashboard-preset-trigger"
             endIcon={open ? <ArrowDropUpOutlined /> : <ArrowDropDownOutlined />}
           >
-            <Text variant="content-caption" as="span" style={{ ...secondaryText, marginRight: 6 }}>
+            <Text variant="content-compact" as="span" style={{ ...secondaryText, marginRight: 6 }}>
               {t_i18n('Preset')}
             </Text>
             {activePreset?.name ?? t_i18n('No preset')}
           </Button>
         </MenuTrigger>
-        <MenuContent align="start" sideOffset={6} style={{ minWidth: 220 }}>
-          <MenuGroup>
-            <MenuLabel>{t_i18n('Presets')}</MenuLabel>
-            {presets.map((preset) => (
-              <MenuItem
-                key={preset.id}
-                data-testid={`dashboard-preset-option-${preset.id}`}
-                selected={preset.id === activePreset?.id}
-                onSelect={() => onSelect(preset.id)}
-              >
-                <span style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                  <span>{preset.name}</span>
-                  {preset.id === defaultPreset?.id && (
-                    <Text variant="content-caption" as="span" style={secondaryText}>
-                      {t_i18n('Default')}
-                    </Text>
-                  )}
-                </span>
-              </MenuItem>
-            ))}
-            {/* The defaults of the dashboard, also offered to a user with a default preset. */}
+        {/* No preset first, then the presets, then the actions on the active one: the trigger already names the menu,
+            so no group label (its narrower inset would not line up with the rows). */}
+        <MenuContent align="start" sideOffset={6} style={{ minWidth: 260 }}>
+          <MenuItem
+            data-testid="dashboard-preset-none"
+            selected={activePreset === null}
+            onSelect={() => onSelect(null)}
+          >
+            {t_i18n('No preset')}
+          </MenuItem>
+          <MenuSeparator />
+          {presets.map((preset) => (
             <MenuItem
-              data-testid="dashboard-preset-none"
-              selected={activePreset === null}
-              onSelect={() => onSelect(null)}
+              key={preset.id}
+              data-testid={`dashboard-preset-option-${preset.id}`}
+              selected={preset.id === activePreset?.id}
+              onSelect={() => onSelect(preset.id)}
             >
-              {t_i18n('No preset')}
+              <span style={{ display: 'flex', flex: 1, alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
+                <span>{preset.name}</span>
+                {preset.id === defaultPreset?.id && (
+                  <Text variant="content-compact" as="span" style={secondaryText}>
+                    {t_i18n('Default')}
+                  </Text>
+                )}
+              </span>
             </MenuItem>
-          </MenuGroup>
+          ))}
           {activePreset && (onRename || onDelete) && (
             <>
               <MenuSeparator />
@@ -93,7 +92,7 @@ const DashboardPresetSelector = ({
                   startIcon={<EditOutlined fontSize="small" />}
                   onSelect={() => onRename(activePreset)}
                 >
-                  {t_i18n('Rename “{name}”', { values: { name: activePreset.name } })}
+                  {t_i18n('Rename preset')}
                 </MenuItem>
               )}
               {onDelete && (
@@ -102,7 +101,7 @@ const DashboardPresetSelector = ({
                   startIcon={<DeleteOutlined fontSize="small" />}
                   onSelect={() => onDelete(activePreset)}
                 >
-                  {t_i18n('Delete “{name}”', { values: { name: activePreset.name } })}
+                  {t_i18n('Delete preset')}
                 </MenuItem>
               )}
             </>

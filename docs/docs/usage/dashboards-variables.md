@@ -57,21 +57,21 @@ A preset is a named snapshot of the values of all the variables and of the time 
 
 Open the selector to:
 
+- select *No preset*, first in the list, to view the defaults of the dashboard, also when a default preset applies to you: this choice is kept like a preset (the address then holds `preset=none`), and **Reset** brings you back to your default preset;
 - select a preset: its values and its time range are restored at once. The default preset of the dashboard for you (see [Default preset](#default-preset)) is captioned *Default*;
-- select *No preset* to view the defaults of the dashboard, also when a default preset applies to you: this choice is kept like a preset (the address then holds `preset=none`), and **Reset** brings you back to your default preset;
-- rename or delete the selected preset (editors only).
+- **Rename preset** or **Delete preset**, for the selected preset (editors only).
 
 The selected preset is personal, like the values: it is kept in your browser and in the address bar, so sharing the address opens the same view. A value changed on top of a preset is kept apart from it and lights the **Modified** badge: **Reset** drops it and goes back to your default preset, or to the defaults of the dashboard.
 
 ### Save menu
 
-Editors save from a single **Save** button at the end of the bar. Its menu groups the entries by who they affect:
+Editors save from a single **Save** button at the end of the bar. Each entry of its menu says, under its name, who it affects:
 
 | Entry | Affects | Effect |
 |---|---|---|
-| **Update "<preset>"** | Everyone using this preset | Replaces the values and time range of the selected preset with yours. Shown when a preset is selected; available when you departed from it. |
-| **Save as new preset…** | New | Saves your current values and time range under a new name. A dashboard holds up to 50 presets; names are limited to 200 characters. |
-| **Set as dashboard defaults** | Everyone, without a preset | Saves your current values and time range as the defaults of the dashboard, what it shows with no preset. |
+| **Update "<preset>"** | For everyone using this preset | Replaces the values and time range of the selected preset with yours. Shown when a preset is selected; available when you departed from it. |
+| **Save as new preset…** | Under a new name, for anyone to pick | Saves your current values and time range under a new name. A dashboard holds up to 50 presets; names are limited to 200 characters. |
+| **Set as dashboard defaults** | For everyone without a preset | Saves your current values and time range as the defaults of the dashboard, what it shows with no preset. |
 
 The first preset of a dashboard is created with **Save as new preset…**: the selector appears once it exists.
 
