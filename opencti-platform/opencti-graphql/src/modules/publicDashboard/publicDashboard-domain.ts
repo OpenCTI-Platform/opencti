@@ -273,7 +273,7 @@ export const addPublicDashboard = async (
   const variableValues = buildPublicationVariableValues(parsedManifest.variables, input.variable_values);
   // Before both manifests are built: the public page opens on the published range
   parsedManifest.config = applyPublicationTimeRange(parsedManifest.config, input.time_range);
-  const timeZone = toPublicationTimeZone(input.time_zone);
+  const timeZone = toPublicationTimeZone(input.time_zone, buildDashboardDateVariableIds(parsedManifest.variables).size > 0);
 
   const privateManifest = await createPrivateManifest(context, user, parsedManifest, variableValues, timeZone);
   const publicManifest = createPublicManifest(parsedManifest);
