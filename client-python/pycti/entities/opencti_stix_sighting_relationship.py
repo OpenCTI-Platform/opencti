@@ -5,7 +5,10 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.utils.opencti_stix2_utils import build_custom_field_values_input
+from pycti.utils.opencti_stix2_utils import (
+    build_custom_field_values_input,
+    query_to_stix,
+)
 
 
 class StixSightingRelationship:
@@ -593,6 +596,24 @@ class StixSightingRelationship:
         else:
             self.opencti.app_logger.error("Missing parameters: id or from_id and to_id")
             return None
+
+    def to_stix(self, **kwargs):
+        """Get the STIX representation of a stix_sighting_relationship from the backend.
+
+        :param id: the id of the stix_sighting_relationship
+        :type id: str
+        :param version: the STIX version (``stix_2_0`` or ``stix_2_1``),
+            defaults to the backend default (``stix_2_1``)
+        :type version: str
+        :return: STIX object, or ``None`` if not found
+        :rtype: dict or None
+        """
+        return query_to_stix(
+            self.opencti,
+            "stixSightingRelationship",
+            kwargs.get("id"),
+            kwargs.get("version"),
+        )
 
     def create(self, **kwargs):
         """Create a stix_sighting_relationship object.

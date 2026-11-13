@@ -2,8 +2,9 @@
 
 When the caller opts in with ``stix_version=STIX_VERSION_2_0``, the migrated
 entity types are serialized by the GraphQL field
-``stixCoreObject(id) { toStix(version: stix_2_0) }`` instead of the legacy
-client-side converter. Without the opt-in, the legacy converter is used, so
+``toStix(version: stix_2_0)`` of ``stixCoreObject(id)`` (or
+``stixCoreRelationship(id)`` / ``stixSightingRelationship(id)``) instead of the
+legacy client-side converter. Without the opt-in, the legacy converter is used, so
 the existing exports and the enrichment connectors are unchanged.
 """
 
@@ -1108,6 +1109,373 @@ def test_prepare_export_stix_2_0_observable_without_replaced_refs_skips_listing(
     stix_helper.opencti.stix_nested_ref_relationship.list.assert_not_called()
     assert domain["resolves_to_refs"] == payload["resolves_to_refs"]
     assert domain["x_opencti_labels"] == ["apt"]
+
+
+# --- Relationships ----------------------------------------------------------
+
+RELATIONSHIP_ID = "relationship--abababab-abab-abab-abab-abababababab"
+SIGHTING_ID = "sighting--cdcdcdcd-cdcd-cdcd-cdcd-cdcdcdcdcdcd"
+TOOL_ID = "tool--efefefef-efef-efef-efef-efefefefefef"
+_CORE_RELATIONSHIP_PARENT_TYPES = [
+    "basic-relationship",
+    "stix-relationship",
+    "stix-core-relationship",
+]
+_ACCESS_FILTER = {
+    "mode": "and",
+    "filters": [
+        {
+            "key": "objectMarking",
+            "mode": "and",
+            "operator": "not_eq",
+            "values": ["internal-tlp-red"],
+        }
+    ],
+    "filterGroups": [],
+}
+
+
+def _endpoint(internal_id, standard_id, entity_type):
+    return {
+        "id": internal_id,
+        "standard_id": standard_id,
+        "entity_type": entity_type,
+        "parent_types": ["Stix-Domain-Object"],
+    }
+
+
+def _raw_relationship():
+    """Raw GraphQL ``uses`` relationship, as returned by the reader."""
+    return {
+        **_raw_graphql_entity(),
+        "id": "internal-relationship",
+        "standard_id": RELATIONSHIP_ID,
+        # The entity type of a core relationship is its relationship type.
+        "entity_type": "uses",
+        "parent_types": _CORE_RELATIONSHIP_PARENT_TYPES,
+        "relationship_type": "uses",
+        "from": _endpoint("internal-intrusion-set", INTRUSION_SET_ID, "Intrusion-Set"),
+        "to": _endpoint("internal-tool", TOOL_ID, "Tool"),
+    }
+
+
+def _backend_relationship_payload():
+    """STIX 2.0 relationship as produced by ``convertRelationToStix``."""
+    return {
+        "id": RELATIONSHIP_ID,
+        "type": "relationship",
+        "spec_version": "2.0",
+        "relationship_type": "uses",
+        "source_ref": INTRUSION_SET_ID,
+        "target_ref": TOOL_ID,
+        "x_opencti_id": "internal-relationship",
+        "x_opencti_type": "uses",
+    }
+
+
+def _raw_sighting():
+    """Raw GraphQL sighting, as returned by the reader."""
+    return {
+        **_raw_graphql_entity(),
+        "id": "internal-sighting",
+        "standard_id": SIGHTING_ID,
+        "entity_type": "stix-sighting-relationship",
+        "parent_types": ["basic-relationship", "stix-relationship"],
+        "attribute_count": 3,
+        "x_opencti_negative": True,
+        "objectMarking": [_tlp_amber_marking()],
+        "objectMarkingIds": ["internal-tlp-amber"],
+        "from": _endpoint("internal-intrusion-set", INTRUSION_SET_ID, "Intrusion-Set"),
+        "to": _endpoint("internal-organization", ORGANIZATION_ID, "Organization"),
+    }
+
+
+def _backend_sighting_payload():
+    """STIX 2.0 sighting as produced by ``convertSightingToStix``."""
+    return {
+        "id": SIGHTING_ID,
+        "type": "sighting",
+        "spec_version": "2.0",
+        "count": 3,
+        "sighting_of_ref": INTRUSION_SET_ID,
+        "where_sighted_refs": [ORGANIZATION_ID],
+        "object_marking_refs": [MARKING_ID],
+        "x_opencti_negative": True,
+        "x_opencti_id": "internal-sighting",
+        "x_opencti_type": "stix-sighting-relationship",
+    }
+
+
+def _readable_objects(stix_helper, readable_ids):
+    """Only the given internal ids pass the export access filter."""
+
+    def list_objects(filters):
+        groups = filters["filterGroups"]
+        ids_filter = groups[0]["filters"][0] if groups else filters["filters"][0]
+        return [
+            {"id": value} for value in ids_filter["values"] if value in readable_ids
+        ]
+
+    stix_helper.opencti.opencti_stix_object_or_stix_relationship = MagicMock()
+    stix_helper.opencti.opencti_stix_object_or_stix_relationship.list.side_effect = (
+        list_objects
+    )
+
+
+def test_stix_2_0_backend_entity_types_include_relationships():
+    assert {
+        "stix-core-relationship",
+        "stix-sighting-relationship",
+    } <= _STIX_2_0_BACKEND_ENTITY_TYPES
+
+
+def test_generate_export_without_stix_version_keeps_legacy_relationship(stix_helper):
+    result = stix_helper.generate_export(_raw_relationship())
+
+    stix_helper.opencti.stix_core_relationship.to_stix.assert_not_called()
+    assert result["spec_version"] == "2.1"
+    assert result["type"] == "uses"
+
+
+def test_generate_export_stix_2_0_relationship_uses_relationship_to_stix(stix_helper):
+    """Routed on the abstract type, read from ``stixCoreRelationship``."""
+    stix_helper.opencti.stix_core_relationship.to_stix.return_value = (
+        _backend_relationship_payload()
+    )
+    raw_relationship = _raw_relationship()
+
+    prepared = stix_helper.generate_export(
+        raw_relationship, stix_version=STIX_VERSION_2_0
+    )
+
+    stix_helper.opencti.stix_core_relationship.to_stix.assert_called_once_with(
+        id="internal-relationship", version=STIX_VERSION_2_0
+    )
+    stix_helper.opencti.stix_core_object.to_stix.assert_not_called()
+    # Rebuilt by prepare_export from the raw source and target.
+    assert "source_ref" not in prepared
+    assert "target_ref" not in prepared
+    assert prepared["from"] == raw_relationship["from"]
+    assert prepared["to"] == raw_relationship["to"]
+
+
+def test_prepare_export_stix_2_0_relationship_rebuilds_source_and_target(
+    stix_helper,
+):
+    stix_helper.opencti.stix_core_relationship.to_stix.return_value = (
+        _backend_relationship_payload()
+    )
+    _readable_objects(stix_helper, {"internal-intrusion-set", "internal-tool"})
+
+    result = stix_helper.prepare_export(
+        stix_helper.generate_export(_raw_relationship(), stix_version=STIX_VERSION_2_0),
+        stix_version=STIX_VERSION_2_0,
+    )
+
+    assert len(result) == 1
+    relationship = result[0]
+    assert relationship["type"] == "relationship"
+    assert relationship["spec_version"] == "2.0"
+    assert relationship["source_ref"] == INTRUSION_SET_ID
+    assert relationship["target_ref"] == TOOL_ID
+    assert "from" not in relationship
+    assert "to" not in relationship
+
+
+def test_prepare_export_stix_2_0_relationship_drops_target_excluded_by_filter(
+    stix_helper,
+):
+    """As in the legacy export, no ref to an endpoint the filter excludes."""
+    stix_helper.opencti.stix_core_relationship.to_stix.return_value = (
+        _backend_relationship_payload()
+    )
+    _readable_objects(stix_helper, {"internal-intrusion-set"})
+
+    result = stix_helper.prepare_export(
+        stix_helper.generate_export(
+            _raw_relationship(),
+            access_filter=_ACCESS_FILTER,
+            stix_version=STIX_VERSION_2_0,
+        ),
+        access_filter=_ACCESS_FILTER,
+        stix_version=STIX_VERSION_2_0,
+    )
+
+    relationship = result[0]
+    assert relationship["source_ref"] == INTRUSION_SET_ID
+    assert "target_ref" not in relationship
+    # A relationship has no nested refs to filter.
+    stix_helper.opencti.stix_nested_ref_relationship.list.assert_not_called()
+
+
+@pytest.mark.parametrize("stix_version", [None, STIX_VERSION_2_0])
+def test_prepare_export_sighting_with_unreadable_endpoint(stix_helper, stix_version):
+    """No ref to an endpoint the user cannot read, and no error."""
+    stix_helper.opencti.stix_sighting_relationship.to_stix.return_value = (
+        _backend_sighting_payload()
+    )
+    _readable_objects(stix_helper, {"internal-organization"})
+    # The reader returns a null source when the user cannot read it.
+    raw_sighting = {**_raw_sighting(), "from": None}
+
+    result = stix_helper.prepare_export(
+        stix_helper.generate_export(raw_sighting, stix_version=stix_version),
+        stix_version=stix_version,
+    )
+
+    sighting = next(obj for obj in result if obj["id"] == SIGHTING_ID)
+    assert sighting["type"] == "sighting"
+    assert "sighting_of_ref" not in sighting
+    assert sighting["where_sighted_refs"] == [ORGANIZATION_ID]
+
+
+def test_generate_export_stix_2_0_ref_relationship_uses_legacy_converter(
+    stix_helper,
+):
+    """Only core relationships and sightings are routed to the backend."""
+    raw_ref_relationship = {
+        **_raw_relationship(),
+        "entity_type": "object",
+        "parent_types": ["basic-relationship", "stix-ref-relationship"],
+        "relationship_type": "object",
+    }
+
+    stix_helper.generate_export(raw_ref_relationship, stix_version=STIX_VERSION_2_0)
+
+    stix_helper.opencti.stix_core_relationship.to_stix.assert_not_called()
+    stix_helper.opencti.stix_sighting_relationship.to_stix.assert_not_called()
+    stix_helper.opencti.stix_core_object.to_stix.assert_not_called()
+
+
+def test_prepare_export_stix_2_0_legacy_relationship_payload_stays_legacy(
+    stix_helper,
+):
+    """A legacy payload carries its relationship type (`uses`) as `type`."""
+    _readable_objects(stix_helper, {"internal-intrusion-set", "internal-tool"})
+    legacy_payload = stix_helper.generate_export(_raw_relationship())
+
+    result = stix_helper.prepare_export(
+        legacy_payload, access_filter=_ACCESS_FILTER, stix_version=STIX_VERSION_2_0
+    )
+
+    # The legacy branch reads the nested refs once, with the access filter.
+    stix_helper.opencti.stix_nested_ref_relationship.list.assert_called_once_with(
+        fromId="internal-relationship", filters=_ACCESS_FILTER
+    )
+    assert result[0]["type"] == "relationship"
+    assert result[0]["spec_version"] == "2.1"
+
+
+def test_export_list_stix_2_0_relationships(stix_helper):
+    """List exports route the listed relationships to the backend."""
+    stix_helper.opencti.stix_core_relationship.list.return_value = [_raw_relationship()]
+    stix_helper.opencti.stix_core_relationship.to_stix.return_value = (
+        _backend_relationship_payload()
+    )
+    _readable_objects(stix_helper, {"internal-intrusion-set", "internal-tool"})
+
+    bundle = stix_helper.export_list(
+        "stix-core-relationship", stix_version=STIX_VERSION_2_0
+    )
+
+    assert [obj["id"] for obj in bundle["objects"]] == [RELATIONSHIP_ID]
+    relationship = bundle["objects"][0]
+    assert relationship["spec_version"] == "2.0"
+    assert relationship["source_ref"] == INTRUSION_SET_ID
+    assert relationship["target_ref"] == TOOL_ID
+
+
+def test_prepare_export_stix_2_0_sighting(stix_helper):
+    """Read from ``stixSightingRelationship``, refs rebuilt, count kept."""
+    stix_helper.opencti.stix_sighting_relationship.to_stix.return_value = (
+        _backend_sighting_payload()
+    )
+    _readable_objects(stix_helper, {"internal-intrusion-set", "internal-organization"})
+
+    prepared = stix_helper.generate_export(
+        _raw_sighting(), stix_version=STIX_VERSION_2_0
+    )
+    stix_helper.opencti.stix_sighting_relationship.to_stix.assert_called_once_with(
+        id="internal-sighting", version=STIX_VERSION_2_0
+    )
+    assert "sighting_of_ref" not in prepared
+    assert "where_sighted_refs" not in prepared
+    result = stix_helper.prepare_export(prepared, stix_version=STIX_VERSION_2_0)
+
+    assert [obj["id"] for obj in result] == [MARKING_ID, SIGHTING_ID]
+    # Recognized as a backend payload: its marking is STIX 2.0 too.
+    assert result[0]["spec_version"] == "2.0"
+    sighting = result[1]
+    assert sighting["type"] == "sighting"
+    assert sighting["count"] == 3
+    assert "attribute_count" not in sighting
+    assert sighting["x_opencti_negative"] is True
+    assert sighting["sighting_of_ref"] == INTRUSION_SET_ID
+    assert sighting["where_sighted_refs"] == [ORGANIZATION_ID]
+    assert "from" not in sighting
+
+
+def test_prepare_export_stix_2_0_relationship_full_mode_reads_typed_endpoints(
+    stix_helper,
+):
+    """The endpoints are read with their own reader, not as plain SDOs."""
+    stix_helper.opencti.stix_core_relationship.to_stix.return_value = (
+        _backend_relationship_payload()
+    )
+    stix_helper.opencti.stix_core_relationship.list.return_value = []
+    stix_helper.opencti.stix_sighting_relationship.list.return_value = []
+    _readable_objects(stix_helper, {"internal-intrusion-set", "internal-tool"})
+    prepared = stix_helper.generate_export(
+        _raw_relationship(), stix_version=STIX_VERSION_2_0
+    )
+
+    with patch.object(
+        stix_helper, "get_reader", return_value=lambda **_: None
+    ) as get_reader:
+        stix_helper.prepare_export(prepared, mode="full", stix_version=STIX_VERSION_2_0)
+
+    read_types = [read_call.args[0] for read_call in get_reader.call_args_list]
+    assert read_types[:2] == ["Intrusion-Set", "Tool"]
+
+
+@pytest.mark.parametrize(
+    "client_name, field",
+    [
+        ("stix_core_relationship", "stixCoreRelationship"),
+        ("stix_sighting_relationship", "stixSightingRelationship"),
+    ],
+)
+def test_relationship_to_stix_parses_backend_payload(client_name, field):
+    client = _fake_client()
+    backend_payload = _backend_relationship_payload()
+    with patch.object(
+        client,
+        "query",
+        return_value={"data": {field: {"toStix": json.dumps(backend_payload)}}},
+    ) as query:
+        result = getattr(client, client_name).to_stix(
+            id="internal-relationship", version=STIX_VERSION_2_0
+        )
+
+    assert result == backend_payload
+    assert f"{field}(id: $id)" in query.call_args.args[0]
+    assert query.call_args.args[1] == {
+        "id": "internal-relationship",
+        "version": STIX_VERSION_2_0,
+    }
+
+
+@pytest.mark.parametrize(
+    "client_name, field",
+    [
+        ("stix_core_relationship", "stixCoreRelationship"),
+        ("stix_sighting_relationship", "stixSightingRelationship"),
+    ],
+)
+def test_relationship_to_stix_returns_none_when_not_found(client_name, field):
+    client = _fake_client()
+    with patch.object(client, "query", return_value={"data": {field: None}}):
+        assert getattr(client, client_name).to_stix(id="internal-relationship") is None
 
 
 # --- StixCoreObject.to_stix -------------------------------------------------
