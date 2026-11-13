@@ -2893,7 +2893,31 @@ a click on it does not toggle the switch.
 
 ---
 
-## 77. A clearable `Select` with a value is narrower than its own trigger, so a flex row overlaps it
+## 77. The number stepper throws on `step="any"`, so a free decimal field has dead arrows
+
+**Needed.** A decimal custom field (`CustomFieldsInput.tsx` on the entity forms,
+`EntitySettingCustomFields.tsx` for its default value) accepts any number, as the
+EPSS score does: `0.125` or `0.005` must be valid. Only `step="any"` lets the
+browser accept every value: with `step="0.01"`, `0.125` is a step mismatch, and a
+form submitted natively (`CoverageDetailsStep.tsx`) refuses `0.005`.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.4.0,
+`components/input/Input.mjs`): the stepper buttons and ArrowUp / ArrowDown call
+the native `node.stepUp()` / `node.stepDown()`. The HTML spec makes both throw an
+`InvalidStateError` when the element has no allowed value step, which is the case
+of `step="any"` (checked in Chrome: `stepUp()` throws, the value is unchanged).
+
+**What the product did.** Nothing is worked around. Both decimal inputs use
+`step="any"`: typing a value works, the arrows do nothing and log the error.
+
+**Ask.** With `step="any"`, step the value by hand (by 1, the native default
+increment) instead of calling `stepUp()` / `stepDown()`, or catch the error and
+do so.
+
+**Removal test.** On a decimal custom field holding `0.125`, a click on the up
+arrow sets `1.125` and logs no error.
+
+## 78. A clearable `Select` with a value is narrower than its own trigger, so a flex row overlaps it
 
 **Where it bit.** The dashboard preset selector (`DashboardPresetSelector.tsx`)
 is a clearable `Select` followed, in a flex row, by the *Save as preset* button

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { getServedPublicManifest, sanitizePublicDashboardUriKey } from '../../../../src/modules/publicDashboard/publicDashboard-utils';
-import { ENABLED_FEATURE_FLAGS, TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../../../src/config/conf';
+import { ENABLED_FEATURE_FLAGS } from '../../../../src/config/conf';
 import { fromB64, toB64 } from '../../../../src/utils/base64';
 
 const UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -18,7 +18,6 @@ describe('sanitizePublicDashboardUriKey', () => {
 });
 
 describe('getServedPublicManifest', () => {
-  const previousEnabledFeatureFlags = [...ENABLED_FEATURE_FLAGS];
   const breakdown = { breakdownBy: 'objectLabel', breakdownLimit: 5, breakdownOrder: 'asc', breakdownOther: true };
   const reports = { mode: 'and', filters: [{ key: ['entity_type'], values: ['Report'], operator: 'eq', mode: 'or' }], filterGroups: [] };
   // The private manifest keeps the filters of the datasets, the public one strips them
@@ -46,6 +45,8 @@ describe('getServedPublicManifest', () => {
   };
   const withoutBreakdown = { ...publicWidgets['widget-1'], parameters: { title: 'Reports', interval: 'week' } };
 
+  const previousEnabledFeatureFlags = [...ENABLED_FEATURE_FLAGS];
+
   afterEach(() => {
     ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...previousEnabledFeatureFlags);
   });
@@ -59,29 +60,18 @@ describe('getServedPublicManifest', () => {
     expect(fromB64(getServedPublicManifest(dashboard) as string)).toEqual({ widgets: served, config: { refresh_interval: 0 } });
   });
 
-  it('should serve the stored manifest with the time series breakdown flag, its widgets can be broken down', () => {
-    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, TIME_SERIES_BREAKDOWN_FEATURE_FLAG);
+  it('should serve the stored manifest when its widgets can be broken down', () => {
     const dashboard = publicDashboard();
     expect(getServedPublicManifest(dashboard)).toBe(dashboard.public_manifest);
   });
 
-  it('should serve the widgets without their breakdown without the flag, keeping everything else', () => {
-    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
-    expect(fromB64(getServedPublicManifest(publicDashboard()) as string)).toEqual({
-      widgets: { ...publicWidgets, 'widget-1': withoutBreakdown },
-      config: { refresh_interval: 0 },
-    });
-  });
-
-  it('should serve a manifest without breakdown as it is stored, without the flag', () => {
-    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
+  it('should serve a manifest without breakdown as it is stored', () => {
     const dashboard = publicDashboard({ 'widget-2': storedWidgets['widget-2'] }, { 'widget-2': publicWidgets['widget-2'] });
     expect(getServedPublicManifest(dashboard)).toBe(dashboard.public_manifest);
     expect(getServedPublicManifest({ public_manifest: null as unknown as string, private_manifest: dashboard.private_manifest })).toBeNull();
   });
 
   it('should serve without their breakdown the widgets that cannot be broken down, as the dashboards draw them', () => {
-    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, TIME_SERIES_BREAKDOWN_FEATURE_FLAG);
     const stored = storedWidgets['widget-1'];
     const [dataset] = stored.dataSelection;
     const drafts = { mode: 'and', filters: [{ key: ['entity_type'], values: ['DraftWorkspace'], operator: 'eq', mode: 'or' }], filterGroups: [] };
@@ -106,7 +96,6 @@ describe('getServedPublicManifest', () => {
   });
 
   it('should keep the breakdown of every widget that can be broken down', () => {
-    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, TIME_SERIES_BREAKDOWN_FEATURE_FLAG);
     const stored = storedWidgets['widget-1'];
     const canBreakDown = [
       ...['vertical-bar', 'line', 'area', 'heatmap'].map((type) => ({ ...stored, type })),

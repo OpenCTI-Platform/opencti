@@ -34,5 +34,6 @@ export const convertGroupingToStix_2_0 = (instance: StoreEntityGrouping): Stix2G
     description: instance.description,
     context: instance.context,
     object_refs: convertObjectReferences(instance),
+    x_opencti_aliases: instance.x_opencti_aliases ?? [],
   };
 };

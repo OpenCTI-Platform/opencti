@@ -311,6 +311,10 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   if (input.some((i) => i.key === PLATFORM_BOOTSTRAP_STATUS_KEY)) {
     throw ForbiddenAccess('The platform bootstrap status cannot be edited');
   }
+  // Only updateLocalAuth writes it: it checks the bounds and removes the hashes no longer needed
+  if (input.some((i) => i.key === 'password_policy_history_count')) {
+    throw FunctionalError('The password history count can only be changed with the local authentication settings');
+  }
   const hasBypassCapability = isUserHasCapability(user, BYPASS);
   const hasSetXTMHubCapability = isUserHasCapability(user, SETTINGS_SETMANAGEXTMHUB) || hasBypassCapability;
   const allowedKeys = buildAuthorizedSettingsKeys(user);

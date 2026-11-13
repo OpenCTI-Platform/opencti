@@ -96,6 +96,18 @@ describe('toGraphqlIngestionHealthSettings', () => {
     ]);
   });
 
+  it('should not list the last run failed check when the INGESTION_HEALTH feature flag is disabled', () => {
+    isFeatureEnabledMock.mockImplementation((flag: string) => flag !== 'INGESTION_HEALTH');
+    try {
+      const codes = toGraphqlIngestionHealthSettings(undefined).health_checks.map((check) => check.health_check_code);
+      expect(codes).not.toContain(HEALTH_CHECK_LAST_RUN_FAILED);
+      expect(codes).toContain(HEALTH_CHECK_HEARTBEAT_MISSING);
+    } finally {
+      isFeatureEnabledMock.mockReset();
+      isFeatureEnabledMock.mockReturnValue(true);
+    }
+  });
+
   it('should mark the disabled checks only', () => {
     const settings = { disabled_health_checks: [HEALTH_CHECK_HEARTBEAT_MISSING] as HealthCheckCode[] };
     const enabledByCode = Object.fromEntries(toGraphqlIngestionHealthSettings(settings).health_checks.map((check) => [check.health_check_code, check.enabled]));
@@ -165,9 +177,9 @@ describe('validateIngestionHealthSettingsInput', () => {
     await expect(validate({ disabled_health_checks: disabled })).rejects.toThrow('Invalid disabled health checks');
   });
 
-  it('should reject a valid input when the feature is disabled', async () => {
+  it('should accept a valid input when the INGESTION_HEALTH feature flag is disabled', async () => {
     isFeatureEnabledMock.mockReturnValueOnce(false);
-    await expect(validate({ notification_delay: DEFAULT_HEALTH_NOTIFICATION_DELAY_MS })).rejects.toThrow('Feature is disabled');
+    await expect(validate({ notification_delay: DEFAULT_HEALTH_NOTIFICATION_DELAY_MS })).resolves.toBeUndefined();
   });
 
   describe('in community edition', () => {

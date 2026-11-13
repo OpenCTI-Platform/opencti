@@ -495,9 +495,10 @@ export const getQueueConsumersByType = async (context, user) => {
 };
 export const getBestBackgroundConnectorId = async (context, user) => {
   const stats = await getCachedRabbitmqMetrics(context, user);
-  // Find the least used push queue
   const targetQueues = stats.queues.filter((queue) => queue.name.startsWith(`${RABBIT_QUEUE_PREFIX}push_background-task`));
-  const bestQueue = targetQueues.sort((a, b) => (a.messages ?? 0) - (b.messages ?? 0))[0];
+  const fewestMessages = Math.min(...targetQueues.map((queue) => queue.messages ?? 0));
+  const leastUsedQueues = targetQueues.filter((queue) => (queue.messages ?? 0) === fewestMessages);
+  const bestQueue = leastUsedQueues[Math.floor(Math.random() * leastUsedQueues.length)];
   return bestQueue.name.substring(`${RABBIT_QUEUE_PREFIX}push_`.length);
 };
 

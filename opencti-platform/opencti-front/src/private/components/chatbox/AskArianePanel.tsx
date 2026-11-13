@@ -137,8 +137,21 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
   useEffect(() => {
     if (container) {
       container.className = isDarkMode ? 'dark' : '';
+      // The design system controls inside the panel (icon highlight, Button,
+      // Chip focus ring) paint from the host's brand family, which is the
+      // OpenCTI blue. Ask Ariane is an AI surface: its brand family is the AI
+      // purple, as in XTM One mode. Declared on the portal itself because the
+      // `dark` class re-declares the family on this element. The dark hover
+      // step lightens (purple-200) to keep AA under the dark label (F18).
+      container.style.setProperty('--color-filigran-brand-primary', accentColor);
+      container.style.setProperty('--color-filigran-brand-secondary', 'var(--color-filigran-ia-secondary)');
+      container.style.setProperty(
+        '--color-filigran-brand-tertiary',
+        isDarkMode ? 'var(--purple-200)' : 'var(--color-filigran-ia-tertiary)',
+      );
+      container.style.setProperty('--icon-highlight', accentColor);
     }
-  }, [isDarkMode, container]);
+  }, [isDarkMode, accentColor, container]);
 
   if (!container) {
     return null;

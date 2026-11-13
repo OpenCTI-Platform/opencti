@@ -27,15 +27,38 @@ describe('log-redaction - redactSensitiveData', () => {
     expect(redactSensitiveData(data)).toEqual({ secret: R });
   });
 
-  it('should support cycles', () => {
+  it('should support cycles, unrolled until the limit', () => {
     const data: Record<string, unknown> = { secret: 'v' };
     data.self = data;
     const list: unknown[] = [];
     list.push(list);
     const redacted = redactSensitiveData(data);
     expect(redacted.secret).toBe(R);
-    expect(redacted.self).toBe(redacted);
-    expect(redactSensitiveData(list)[0]).toBeInstanceOf(Array);
+    expect(redacted.self).toEqual(expect.objectContaining({ secret: R }));
+    expect(() => JSON.stringify(redacted)).not.toThrow();
+    let current: unknown = redacted;
+    for (let i = 0; i <= MAX_REDACTION_DEPTH; i += 1) current = (current as { self: unknown }).self;
+    expect(current).toBe(R);
+    expect(() => JSON.stringify(redactSensitiveData(list))).not.toThrow();
+  });
+
+  it('should keep the depth of the copy bounded with shared references', () => {
+    const shared = { secret: 'v' };
+    const redacted = redactSensitiveData({ a: shared, b: shared });
+    expect(redacted.a).toEqual({ secret: R });
+    expect(redacted.a).toBe(redacted.b);
+    // Siblings linked to each other, in both directions
+    const length = 20_000;
+    const forward = Array.from({ length }, () => ({ next: null as unknown }));
+    forward.forEach((item, index) => {
+      item.next = forward[index + 1] ?? null;
+    });
+    const backward = Array.from({ length }, () => ({ previous: null as unknown }));
+    backward.forEach((item, index) => {
+      item.previous = backward[index - 1] ?? null;
+    });
+    expect(() => JSON.stringify(redactSensitiveData(forward))).not.toThrow();
+    expect(() => JSON.stringify(redactSensitiveData(backward))).not.toThrow();
   });
 
   it('should return a copy, without modifying the data', () => {
@@ -44,24 +67,21 @@ describe('log-redaction - redactSensitiveData', () => {
     expect(data.secret).toBe('v');
   });
 
-  it('should replace data nested deeper than the limit, without overflowing the stack', () => {
+  it('should replace data nested deeper than the limit, so that the copy can always be serialized', () => {
     const build = (depth: number) => {
-      let data: unknown = 'v';
+      let data: unknown = { secret: 'v', name: 'n' };
       for (let i = 0; i < depth; i += 1) data = i % 2 ? [data] : { a: data };
       return data;
     };
-    const depthOf = (data: unknown) => {
-      let depth = 0;
+    const leafOf = (data: unknown, depth: number) => {
       let current = data;
-      while (current !== null && typeof current === 'object') {
-        current = Array.isArray(current) ? current[0] : (current as { a: unknown }).a;
-        depth += 1;
-      }
-      return { depth, leaf: current };
+      for (let i = 0; i < depth; i += 1) current = Array.isArray(current) ? current[0] : (current as { a: unknown }).a;
+      return current;
     };
-    expect(depthOf(redactSensitiveData(build(MAX_REDACTION_DEPTH + 1)))).toEqual({ depth: MAX_REDACTION_DEPTH + 1, leaf: 'v' });
-    expect(depthOf(redactSensitiveData(build(MAX_REDACTION_DEPTH + 2)))).toEqual({ depth: MAX_REDACTION_DEPTH + 1, leaf: R });
-    expect(() => redactSensitiveData(build(100_000))).not.toThrow();
+    expect(leafOf(redactSensitiveData(build(MAX_REDACTION_DEPTH)), MAX_REDACTION_DEPTH)).toEqual({ secret: R, name: 'n' });
+    expect(leafOf(redactSensitiveData(build(MAX_REDACTION_DEPTH + 1)), MAX_REDACTION_DEPTH + 1)).toBe(R);
+    const veryDeep = redactSensitiveData(build(100_000));
+    expect(() => JSON.stringify(veryDeep)).not.toThrow();
   });
 
   it('should redact the platform registration tokens', () => {
@@ -99,6 +119,13 @@ describe('log-redaction - analyzeRequestSensitivity', () => {
     const withFragments = 'mutation M { ...A ...A } fragment A on Mutation { ...B } fragment B on Mutation { otpLogin(input: $input) }';
     expect(analyzeRequestSensitivity(parse(withFragments)).hideQuery).toBe(true);
     expect(analyzeRequestSensitivity(parse('mutation M { ...Unknown }')).hideQuery).toBe(false);
+  });
+
+  it('should follow a long chain of fragments, without overflowing the stack', () => {
+    const length = 20_000;
+    let query = 'mutation M { ...F0 }';
+    for (let i = 0; i < length; i += 1) query += ` fragment F${i} on Mutation { ${i === length - 1 ? 'otpLogin(input: $input)' : `...F${i + 1}`} }`;
+    expect(analyzeRequestSensitivity(parse(query)).hideQuery).toBe(true);
   });
 
   it('should read the root fields of every operation type', () => {

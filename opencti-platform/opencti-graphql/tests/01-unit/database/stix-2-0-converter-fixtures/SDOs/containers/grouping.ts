@@ -8,6 +8,7 @@ export const GROUPING_INSTANCE = {
   description: 'description',
   content: '<p>some content : Paradise Ransomware</p>',
   context: 'malware-analysis',
+  x_opencti_aliases: ['grouping-alias'],
   confidence: 100,
   created: '2025-06-26T14:59:43.780Z',
   modified: '2025-06-26T15:14:12.529Z',
@@ -48,6 +49,7 @@ export const EXPECTED_GROUPING = {
   name: 'grouping STIX 2.0',
   description: 'description',
   context: 'malware-analysis',
+  x_opencti_aliases: ['grouping-alias'],
   labels: [
     'ryuk',
   ],

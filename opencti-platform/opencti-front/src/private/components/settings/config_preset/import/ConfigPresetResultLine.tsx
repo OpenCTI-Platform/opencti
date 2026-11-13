@@ -40,13 +40,20 @@ export const CODE_UNCHANGED = 'unchanged';
 type Translate = ReturnType<typeof useFormatter>['t_i18n'];
 
 // The reasons are sentences of the backend (the API exposes them as text), so they are matched here to be translated
-const translateReason = (t_i18n: Translate, reason: string) => {
+const translateKnownReason = (t_i18n: Translate, reason: string): string | undefined => {
   switch (reason) {
     case 'Already exists': return t_i18n('Already exists');
     case 'Already up to date': return t_i18n('Already up to date');
     case 'Nothing to import': return t_i18n('Nothing to import');
     case 'Unexpected item id': return t_i18n('Unexpected item id');
     case 'Unknown message': return t_i18n('Unknown message');
+    case 'Several case templates have this name': return t_i18n('Several case templates have this name');
+    case 'The standard id of the label does not match its value': return t_i18n('The standard id of the label does not match its value');
+    case 'The standard id of the kill chain phase does not match its names': return t_i18n('The standard id of the kill chain phase does not match its names');
+    case 'The standard id of the status template does not match its name': return t_i18n('The standard id of the status template does not match its name');
+    case 'The id of the vocabulary category does not match its category': return t_i18n('The id of the vocabulary category does not match its category');
+    case 'This vocabulary category is closed, new values cannot be added': return t_i18n('This vocabulary category is closed, new values cannot be added');
+    case 'Vocabulary entries already exist': return t_i18n('Vocabulary entries already exist');
     case 'The standard id of the theme does not match its id': return t_i18n('The standard id of the theme does not match its id');
     case 'The standard id of the theme is required to overwrite it': return t_i18n('The standard id of the theme is required to overwrite it');
     case 'Built-in theme': return t_i18n('Built-in theme');
@@ -77,6 +84,13 @@ const translateReason = (t_i18n: Translate, reason: string) => {
     case 'Requires Enterprise Edition': return t_i18n('Requires Enterprise Edition');
     case 'The password policy cannot be satisfied: its maximum length is below what its other rules require':
       return t_i18n('The password policy cannot be satisfied: its maximum length is below what its other rules require');
+    case 'Connector already exists': return t_i18n('Connector already exists');
+    case 'A connector that is not managed by the platform has this name': return t_i18n('A connector that is not managed by the platform has this name');
+    case 'Connector name already exists': return t_i18n('Connector name already exists');
+    case 'There is no connector manager configured': return t_i18n('There is no connector manager configured');
+    case 'You have not defined a default group for ingestion users': return t_i18n('You have not defined a default group for ingestion users');
+    case 'Service account not found': return t_i18n('Service account not found');
+    case 'The confidence level of the service account is not changed': return t_i18n('The confidence level of the service account is not changed');
     default: break;
   }
   const mainOrganization = reason.match(/^Sets the main organization: (.+)$/)?.[1];
@@ -94,6 +108,14 @@ const translateReason = (t_i18n: Translate, reason: string) => {
   const missingMarkings = reason.match(/^Markings not found: (.+)$/)?.[1];
   if (missingMarkings) {
     return t_i18n('Markings not found: {markings}', { values: { markings: missingMarkings } });
+  }
+  const missingCredentials = reason.match(/^Configuration to provide: (.+)$/)?.[1];
+  if (missingCredentials) {
+    return t_i18n('Configuration to provide: {keys}', { values: { keys: missingCredentials } });
+  }
+  const unavailableConnector = reason.match(/^Connector not available on this platform: (.+)$/)?.[1];
+  if (unavailableConnector) {
+    return t_i18n('Connector not available on this platform: {image}', { values: { image: unavailableConnector } });
   }
   const removedRoles = reason.match(/^Roles removed: (.+)$/)?.[1];
   if (removedRoles) {
@@ -127,6 +149,14 @@ const translateReason = (t_i18n: Translate, reason: string) => {
   if (removedDraftCapabilities) {
     return t_i18n('Capabilities in draft removed: {capabilities}', { values: { capabilities: removedDraftCapabilities } });
   }
+  const aliasOwner = reason.match(/^The name is an alias of the vocabulary entry (.+)$/)?.[1];
+  if (aliasOwner) {
+    return t_i18n('The name is an alias of the vocabulary entry {name}', { values: { name: aliasOwner } });
+  }
+  const takenAlias = reason.match(/^The alias (.+) belongs to another vocabulary entry$/)?.[1];
+  if (takenAlias) {
+    return t_i18n('The alias {alias} belongs to another vocabulary entry', { values: { alias: takenAlias } });
+  }
   const copyName = reason.match(/^Added as "(.+)"$/)?.[1];
   if (copyName) {
     return t_i18n('Added as "{name}"', { values: { name: copyName } });
@@ -142,6 +172,22 @@ const translateReason = (t_i18n: Translate, reason: string) => {
   const defaultThemeName = reason.match(/^Default theme (.+) could not be imported$/)?.[1];
   if (defaultThemeName) {
     return t_i18n('Default theme {name} could not be imported', { values: { name: defaultThemeName } });
+  }
+  return undefined;
+};
+
+// A vocabulary category that fails says which entry failed: `<entry>: <reason>`. An entry name can hold ': ' itself, so the reason is the
+// part after the first ': ' that is a reason the front knows. What is not known is shown as is.
+const translateReason = (t_i18n: Translate, reason: string) => {
+  const known = translateKnownReason(t_i18n, reason);
+  if (known !== undefined) {
+    return known;
+  }
+  for (let separator = reason.indexOf(': '); separator >= 0; separator = reason.indexOf(': ', separator + 1)) {
+    const translated = translateKnownReason(t_i18n, reason.slice(separator + 2));
+    if (translated !== undefined) {
+      return `${reason.slice(0, separator)}: ${translated}`;
+    }
   }
   return reason;
 };

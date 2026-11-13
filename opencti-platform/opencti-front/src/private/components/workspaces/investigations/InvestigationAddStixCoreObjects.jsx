@@ -24,10 +24,15 @@ const InvestigationAddStixCoreObjects = (props) => {
     handleClose,
     mapping,
     workspaceStixCoreObjects,
+    open: controlledOpen,
+    onOpenChange,
   } = props;
   const { t_i18n } = useFormatter();
   const { stixDomainObjectTypes, stixCyberObservableTypes } = useAttributes();
-  const [open, setOpen] = useState(false);
+  // The graph controls the drawer when it can be opened from elsewhere than this button (the empty state).
+  const [localOpen, setLocalOpen] = useState(false);
+  const open = controlledOpen ?? localOpen;
+  const setOpen = onOpenChange ?? setLocalOpen;
 
   const isTypeDomainObject = (types) => {
     return !types

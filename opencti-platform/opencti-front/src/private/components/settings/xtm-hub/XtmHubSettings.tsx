@@ -227,7 +227,15 @@ const XtmHubSettings: React.FC = () => {
     return <Loader variant={LoaderVariant.inElement} />;
   }
 
-  return <XtmHubSettingsComponent />;
+  // XtmHubSettingsComponent suspends (network-only query). Without a local
+  // boundary, the closest one is the page-level Suspense of the Experience
+  // page, which would hide the whole page (including the Enterprise Edition
+  // card) behind a full loader as soon as the connectivity check completes.
+  return (
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <XtmHubSettingsComponent />
+    </React.Suspense>
+  );
 };
 
 export default XtmHubSettings;

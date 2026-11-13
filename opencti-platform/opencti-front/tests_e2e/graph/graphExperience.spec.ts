@@ -159,6 +159,7 @@ test.describe('Graph experience', { tag: ['@ce'] }, () => {
     await graph.arrangeInMiddle([fixture.intrusionSet.id, fixture.ipv4.id]);
     await graph.waitForGraph(5);
     await graph.clickNode(fixture.intrusionSet.id);
+    await expect(graph.getSelectionSummary(1)).toBeVisible();
     await graph.clickNode(fixture.ipv4.id, ['Shift']);
     await expect(graph.getSelectionSummary(2)).toBeVisible();
     await graph.runToolbarAction('Highlight shortest path between the two selected nodes');

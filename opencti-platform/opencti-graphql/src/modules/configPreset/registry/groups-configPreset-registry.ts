@@ -57,6 +57,9 @@ const groupsImporter: ConfigPresetImporter = {
     if (result.status === 'created' && !result.exists) {
       plan.created.add(configPresetPlanKey(GROUPS_FAMILY_ID, item.id));
     }
+    if ((result.status === 'created' || result.status === 'overwritten') && result.configuration?.auto_integration_assignation?.includes('global')) {
+      plan.ingestionGroupPlanned = true;
+    }
     return toComputedItem(label, result);
   },
   apply: async (context, user, item, computed, mode, plan) => {
