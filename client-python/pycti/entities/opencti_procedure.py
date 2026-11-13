@@ -2,7 +2,26 @@
 
 import json
 
+from pycti.utils.opencti_procedure_utils import MITRE_ATTACK_KILL_CHAIN
 from pycti.utils.opencti_stix2_utils import build_custom_field_values_input
+
+# Relationship type stored by the platform -> procedure property exported from it
+_RELATIONSHIP_EXPORT_PROPERTIES = (
+    ("implements-technique", "x_technique_refs"),
+    ("exploits", "x_vulnerability_refs"),
+)
+
+_RELATIONSHIP_TARGET_PROPERTIES = """
+    id
+    to {
+        ... on BasicObject {
+            id
+        }
+        ... on StixObject {
+            standard_id
+        }
+    }
+"""
 
 
 class Procedure:
@@ -528,3 +547,78 @@ class Procedure:
             embedded=extras.get("embedded", None),
             upsert_operations=stix_object.get("opencti_upsert_operations", None),
         )
+
+    def _list_relationship_target_ids(self, entity_id, relationship_type):
+        """Standard ids of the targets of the relationships of a procedure.
+
+        Targets the user cannot read are skipped. Order is kept, duplicates removed.
+        """
+        relationships = self.opencti.stix_core_relationship.list(
+            fromId=entity_id,
+            relationship_type=relationship_type,
+            customAttributes=_RELATIONSHIP_TARGET_PROPERTIES,
+            getAll=True,
+        )
+        target_ids = []
+        for relationship in relationships:
+            target_id = (relationship.get("to") or {}).get("standard_id")
+            if target_id is not None and target_id not in target_ids:
+                target_ids.append(target_id)
+        return target_ids
+
+    def _list_report_ids(self, entity_id):
+        """Standard ids of the reports that contain a procedure."""
+        reports = self.opencti.report.list(
+            filters={
+                "mode": "and",
+                "filters": [{"key": "objects", "values": [entity_id]}],
+                "filterGroups": [],
+            },
+            customAttributes="id standard_id",
+            getAll=True,
+        )
+        return [report["standard_id"] for report in reports]
+
+    def to_stix_export(self, entity_id):
+        """Export a procedure with the links the platform stores once.
+
+        The platform ``toStix`` output has no technique, vulnerability, tactic
+        or report property: they are ``implements-technique`` and ``exploits``
+        relationships, ``mitre-attack`` kill chain phases and report
+        containment. They are expanded here into ``x_technique_refs``,
+        ``x_vulnerability_refs``, ``tactics`` and report entries of
+        ``x_source_refs``. Kill chain phases of other chains stay in
+        ``kill_chain_phases`` only. An empty expansion is not exported.
+
+        :param entity_id: the internal id of the Procedure
+        :type entity_id: str
+        :return: STIX ``x-opencti-procedure`` object
+        :rtype: dict
+        :raises ValueError: if the platform returns no payload
+        """
+        stix = self.opencti.stix_core_object.to_stix(id=entity_id)
+        if stix is None:
+            raise ValueError(
+                f"Backend STIX conversion returned no payload for Procedure {entity_id!r}"
+            )
+        for relationship_type, stix_property in _RELATIONSHIP_EXPORT_PROPERTIES:
+            target_ids = self._list_relationship_target_ids(
+                entity_id, relationship_type
+            )
+            if len(target_ids) > 0:
+                stix[stix_property] = target_ids
+        tactics = []
+        for phase in stix.get("kill_chain_phases") or []:
+            if (
+                phase.get("kill_chain_name") == MITRE_ATTACK_KILL_CHAIN
+                and phase["phase_name"] not in tactics
+            ):
+                tactics.append(phase["phase_name"])
+        if len(tactics) > 0:
+            stix["tactics"] = tactics
+        source_refs = list(stix.get("x_source_refs") or [])
+        for report_id in self._list_report_ids(entity_id):
+            if report_id not in source_refs:
+                source_refs.append(report_id)
+        stix["x_source_refs"] = source_refs
+        return stix

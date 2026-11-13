@@ -2611,6 +2611,50 @@ class OpenCTIStix2:
                 backend_stix[key] = entity[key]
         return backend_stix
 
+    def _generate_procedure_export(
+        self,
+        entity: Dict,
+        no_custom_attributes: bool = False,
+        excluded_marking_ids: Optional[set] = None,
+    ) -> Dict:
+        """Get the STIX representation of a procedure.
+
+        The procedure is serialized by ``Procedure.to_stix_export``, which
+        expands the techniques, vulnerabilities, tactics and report sources
+        the platform stores as relationships, kill chain phases and containment.
+        As for the backend STIX 2.0 export, the raw GraphQL keys of
+        ``_STIX_2_0_PRESERVED_KEYS`` are kept so that ``prepare_export`` can add
+        the related objects to the bundle, and external references are rebuilt
+        with the legacy rules.
+
+        :param entity: OpenCTI procedure dictionary, as returned by the reader
+        :type entity: Dict
+        :param no_custom_attributes: Whether to exclude custom attributes, defaults to False
+        :type no_custom_attributes: bool, optional
+        :param excluded_marking_ids: Internal ids of the markings excluded by the
+            export access filter, defaults to None (no exclusion)
+        :type excluded_marking_ids: set, optional
+        :return: STIX entity dictionary
+        :rtype: Dict
+        """
+        stix = self.opencti.procedure.to_stix_export(entity["id"])
+        for key in _STIX_2_0_REBUILT_KEYS:
+            stix.pop(key, None)
+        stix.pop("external_references", None)
+        if no_custom_attributes:
+            stix.pop("extensions", None)
+        elif entity.get("externalReferences"):
+            stix["external_references"] = self._convert_external_references(
+                entity["externalReferences"], excluded_marking_ids or set()
+            )
+        for key in _STIX_2_0_PRESERVED_KEYS:
+            if key in entity and self.opencti.not_empty(entity[key]):
+                stix[key] = entity[key]
+        stix["x_opencti_id"] = entity["id"]
+        if not no_custom_attributes:
+            stix["x_opencti_type"] = entity["entity_type"]
+        return {k: v for k, v in stix.items() if self.opencti.not_empty(v)}
+
     def generate_export(
         self,
         entity: Dict,
@@ -2634,6 +2678,10 @@ class OpenCTIStix2:
         :rtype: Dict
         """
         excluded_marking_ids = self._get_excluded_marking_ids(access_filter)
+        if entity["entity_type"] == "Procedure":
+            return self._generate_procedure_export(
+                entity, no_custom_attributes, excluded_marking_ids
+            )
         dispatch_type = self._stix_2_0_dispatch_type(
             entity["entity_type"], entity.get("parent_types")
         )
