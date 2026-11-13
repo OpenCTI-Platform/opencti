@@ -4901,7 +4901,6 @@
   "Set as dashboard defaults": "Establecer como valores por defecto del panel",
   "Set as default": "Establecer como predeterminada",
   "Set as default custom view": "Establecer como vista personalizada por defecto",
-  "Set as default values": "Establecer como valores por defecto",
   "Set custom filters": "Configurar filtros personalizados",
   "Set full screen": "Pantalla completa",
   "Sets the main organization: {name}": "Define la organización principal: {name}",
@@ -5312,7 +5311,6 @@
   "The connector works have been cleared": "Se han borrado las tareas del conector.",
   "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions": "La métrica de resultado de cobertura muestra en qué medida una entidad específica estuvo implicada en la ejecución del escenario AEV.\\n La cobertura puede ser parcial si no se ejecutaron algunas inyecciones, si no se resolvieron marcadores de posición o si la plataforma no admite determinadas acciones",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "El fichero CSV se ha generado con los parámetros de la vista y está preparado para ser descargado.",
-  "The current values and time range differ from this preset: save them into it": "Los valores y el rango de fechas actuales difieren de este preajuste: guardarlos en él",
   "The current values of the variables and the time range are saved together, to be restored in one click.": "Los valores actuales de las variables y el rango de fechas se guardan juntos, para restaurarlos con un clic.",
   "The custom view {name} is currently set as default. Do you want to replace it?": "La vista personalizada {name} está configurada actualmente como predeterminada. ¿Quieres sustituirla?",
   "The custom view has been duplicated. You can manage it": "La vista personalizada ha sido duplicada. Puede gestionarla",
@@ -5371,6 +5369,7 @@
   "The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.": "La plataforma utiliza actualmente la configuración SMTP del archivo app-config. Activa la opción anterior para utilizar en su lugar la configuración que aparece a continuación.",
   "The platform keeps its current default theme.": "La plataforma conserva su tema predeterminado actual.",
   "The public dashboard is disabled": "El panel público está desactivado",
+  "The published values of the selected dashboard are still loading": "Los valores publicados del dashboard seleccionado todavía se están cargando",
   "The relations attached to selected entities will be copied to the merged entity.": "Las relaciones adjuntadas a las entidades seleccionadas serán copiadas a la entidad fusionada.",
   "The relationship filter is applied only to the entities found in the first stage. If you do not set a source filter or a target filter, the relationship filter applies to all data in the platform.": "El filtro de relación se aplica únicamente a las entidades encontradas en la primera etapa. Si no se configura un filtro de origen ni un filtro de destino, el filtro de relación se aplica a todos los datos de la plataforma.",
   "The relationship type to apply to all created relationships.": "El tipo de relación que se aplicará a todas las relaciones creadas.",
@@ -6366,6 +6365,5 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "su usuario pertenecerá a la organización de la plataforma principal, además de a cualquier organización a la que pertenezca el usuario actual",
   "Zoom": "Zoom",
   "Zoom in": "Ampliar",
-  "Zoom out": "Alejar",
-  "The published values of the selected dashboard are still loading": "Los valores publicados del dashboard seleccionado todavía se están cargando"
+  "Zoom out": "Alejar"
 }

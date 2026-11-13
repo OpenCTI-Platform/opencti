@@ -4901,7 +4901,6 @@
   "Set as dashboard defaults": "ダッシュボードのデフォルトとして設定",
   "Set as default": "デフォルトに設定",
   "Set as default custom view": "カスタムビューのデフォルト設定",
-  "Set as default values": "デフォルト値として設定",
   "Set custom filters": "カスタムフィルターを設定する",
   "Set full screen": "全画面表示",
   "Sets the main organization: {name}": "メイン組織を設定します: {name}",
@@ -5312,7 +5311,6 @@
   "The connector works have been cleared": "コネクタの処理がクリアされました",
   "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions": "カバレッジ結果メトリクスは、特定のエンティティがAEVシナリオの実行にどの程度関与したかを示し ます。",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "指定されたパラメータでCSVが生成され、ダウンロードできるようになりました。",
-  "The current values and time range differ from this preset: save them into it": "現在の値と期間はこのプリセットと異なります。プリセットに保存します",
   "The current values of the variables and the time range are saved together, to be restored in one click.": "変数の現在の値と期間を一緒に保存し、ワンクリックで復元できます。",
   "The custom view {name} is currently set as default. Do you want to replace it?": "現在、カスタムビュー {name} がデフォルトとして設定されています。これを置き換えますか？",
   "The custom view has been duplicated. You can manage it": "カスタムビューが複製されました。管理できるよ",
@@ -5371,6 +5369,7 @@
   "The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.": "プラットフォームは現在、app-config ファイルの SMTP 設定を使用しています。代わりに以下の設定を使用するには、上記のオプションを有効にしてください。",
   "The platform keeps its current default theme.": "プラットフォームは現在のデフォルトテーマを維持します。",
   "The public dashboard is disabled": "公開ダッシュボードは無効",
+  "The published values of the selected dashboard are still loading": "選択したダッシュボードの公開値はまだ読み込み中です",
   "The relations attached to selected entities will be copied to the merged entity.": "選択されたエンティティに付属するリレーションは、マージされたエンティティにコピーされます。",
   "The relationship filter is applied only to the entities found in the first stage. If you do not set a source filter or a target filter, the relationship filter applies to all data in the platform.": "リレーションシップ・フィルターは、第1段階で検出されたエンティティにのみ適用されます。ソース・フィルターまたはターゲット・フィルターを設定しない場合、リレーションシップ・フィルターはプラットフォーム内のすべてのデータに適用されます。",
   "The relationship type to apply to all created relationships.": "作成されたすべての関係に適用する関係タイプ。",
@@ -6366,6 +6365,5 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "現在のユーザーが所属している組織に加え、メインプラットフォームの組織にも所属することになります。",
   "Zoom": "ズーム",
   "Zoom in": "ズームイン",
-  "Zoom out": "ズームアウト",
-  "The published values of the selected dashboard are still loading": "選択したダッシュボードの公開値はまだ読み込み中です"
+  "Zoom out": "ズームアウト"
 }

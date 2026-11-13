@@ -4901,7 +4901,6 @@
   "Set as dashboard defaults": "Установить как значения дашборда по умолчанию",
   "Set as default": "Установить по умолчанию",
   "Set as default custom view": "Установить пользовательское представление по умолчанию",
-  "Set as default values": "Установить как значения по умолчанию",
   "Set custom filters": "Настроить пользовательские фильтры",
   "Set full screen": "Полный экран",
   "Sets the main organization: {name}": "Задаёт основную организацию: {name}",
@@ -5312,7 +5311,6 @@
   "The connector works have been cleared": "Действия коннектора были очищены",
   "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions": "Метрика результата покрытия показывает, насколько конкретная сущность была задействована в выполнении сценария AEV.\\n Покрытие может быть частичным, если некоторые инжекты не были выполнены, если не были решены placeholders, или если платформа не поддерживает определенные действия",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "CSV-файл был создан с параметрами представления и готов к загрузке.",
-  "The current values and time range differ from this preset: save them into it": "Текущие значения и период отличаются от этого пресета: сохранить их в него",
   "The current values of the variables and the time range are saved together, to be restored in one click.": "Текущие значения переменных и период сохраняются вместе, чтобы восстановить их одним кликом.",
   "The custom view {name} is currently set as default. Do you want to replace it?": "В настоящее время в качестве вида по умолчанию установлен пользовательский вид {name}. Хотите его заменить?",
   "The custom view has been duplicated. You can manage it": "Пользовательское представление было продублировано. Вы можете управлять ею",
@@ -5371,6 +5369,7 @@
   "The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.": "В настоящее время платформа использует настройки SMTP из файла app-config. Включите опцию выше, чтобы вместо этого использовать приведенные ниже настройки.",
   "The platform keeps its current default theme.": "Платформа сохранит текущую тему по умолчанию.",
   "The public dashboard is disabled": "Публичнаый дашборд отключена",
+  "The published values of the selected dashboard are still loading": "Опубликованные значения выбранного дашборда ещё загружаются",
   "The relations attached to selected entities will be copied to the merged entity.": "Отношения, привязанные к выбранным сущностям, будут скопированы в объединенную сущность.",
   "The relationship filter is applied only to the entities found in the first stage. If you do not set a source filter or a target filter, the relationship filter applies to all data in the platform.": "Фильтр отношений применяется только к сущностям, найденным на первом этапе. Если вы не зададите ни исходный, ни целевой фильтр, фильтр отношений будет применяться ко всем данным на платформе.",
   "The relationship type to apply to all created relationships.": "Тип отношений, который будет применяться ко всем созданным отношениям.",
@@ -6366,6 +6365,5 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "ваш пользователь будет относиться к основной организации платформы в дополнение к любой организации, к которой принадлежит текущий пользователь",
   "Zoom": "Zoom",
   "Zoom in": "Увеличить",
-  "Zoom out": "Уменьшить масштаб",
-  "The published values of the selected dashboard are still loading": "Опубликованные значения выбранного дашборда ещё загружаются"
+  "Zoom out": "Уменьшить масштаб"
 }
