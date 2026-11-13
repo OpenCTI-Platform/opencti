@@ -587,6 +587,8 @@
   "Attributed to this region": "Dieser Region zuzuordnen",
   "Attributes": "Attribute",
   "Attributes of the instance": "Attribute des {type}",
+  "Attributes of the lock": "Attribute der Sperre",
+  "Attributes of the locked user": "Attribute des gesperrten Benutzers",
   "Attributes of the platform": "Attribute der Plattform",
   "Attributes of the user": "Attribute des Benutzers",
   "Attribution": "Zuschreibung",
