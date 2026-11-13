@@ -282,10 +282,13 @@ const SettingsOrganizationEdition = ({
                 <>
                   <DashboardField
                     onChange={(name, value) => {
-                      // Another dashboard: its presets are other ones, both keys go in one patch.
+                      // Another dashboard: its presets are other ones, both keys go in one patch. With references
+                      // enforced, the submit of the form carries both with the commit message, as for every field.
                       if (values.default_dashboard_preset) {
                         setFieldValue('default_dashboard_preset', null);
-                        editor.fieldPatch({ variables: { id: organization.id, input: [{ key: name, value: value || '' }, { key: 'default_dashboard_preset', value: '' }] } });
+                        if (!enableReferences) {
+                          editor.fieldPatch({ variables: { id: organization.id, input: [{ key: name, value: value || '' }, { key: 'default_dashboard_preset', value: '' }] } });
+                        }
                       } else {
                         editor.changeField(name, value);
                       }
