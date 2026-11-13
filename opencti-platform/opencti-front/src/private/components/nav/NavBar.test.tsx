@@ -5,7 +5,7 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import testRender from '../../../utils/tests/test-render';
 import MadeByFiligran from './MadeByFiligran';
-import { findSectionToOpen, isRouteSelected, NavBarView, NavBarViewProps, openSection } from './NavBar';
+import { findSectionToOpen, isRouteSelected, isSubItemSelected, NavBarView, NavBarViewProps, openSection } from './NavBar';
 import { NavGroup } from './useNavMenu';
 
 const groups: NavGroup[] = [
@@ -22,8 +22,8 @@ const groups: NavGroup[] = [
         icon: null,
         link: '/dashboard/threats',
         subItems: [
-          { type: 'Threat-Actor-Group', link: '/dashboard/threats/threat_actors_group', label: 'Threat actors (group)' },
-          { type: 'Campaign', link: '/dashboard/threats/campaigns', label: 'Campaigns' },
+          { link: '/dashboard/threats/threat_actors_group', label: 'Threat actors (group)' },
+          { link: '/dashboard/threats/campaigns', label: 'Campaigns' },
         ],
       },
     ],
@@ -75,6 +75,13 @@ describe('NavBarView', () => {
     expect(isRouteSelected('/dashboard/data/import/draft/abc', '/dashboard/data')).toBe(false);
     expect(isRouteSelected('/dashboard/data/entities', '/dashboard/data')).toBe(true);
     expect(isRouteSelected('/dashboard/workspaces/dashboards_public', '/dashboard/workspaces/dashboards', true)).toBe(false);
+  });
+
+  it('selects a row standing for several pages on any of them, not only the one it leads to', () => {
+    const row = { link: '/dashboard/data/import/files', label: 'Import', paths: ['/dashboard/data/import/files', '/dashboard/data/import/draft'] };
+    expect(isSubItemSelected('/dashboard/data/import/draft/abc', row)).toBe(true);
+    expect(isSubItemSelected('/dashboard/data/processing/tasks', row)).toBe(false);
+    expect(isSubItemSelected('/dashboard/analyses/reports/abc', { link: '/dashboard/analyses/reports', label: 'Reports' })).toBe(true);
   });
 
   it('renders submenu entries as real links too', () => {

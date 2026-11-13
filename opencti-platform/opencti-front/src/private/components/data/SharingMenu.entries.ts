@@ -2,7 +2,7 @@ import type { MenuEntry } from '../common/menus/menuEntry';
 import { TAXIIAPI } from '../../../utils/hooks/capabilities';
 
 // Pure data (no component import): collected by the pages search through its `*.entries.ts(x)` name.
-export const menuEntries: MenuEntry[] = [
+const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/data/sharing/streams',
     label: 'Live streams',
@@ -22,3 +22,5 @@ export const menuEntries: MenuEntry[] = [
     requiredCapabilities: [TAXIIAPI],
   },
 ];
+
+export default menuEntries;

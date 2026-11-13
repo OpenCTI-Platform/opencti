@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { testRenderHook } from '../../../utils/tests/test-render';
 import useNavSearch from './useNavSearch';
+import { allMenuEntries } from './menuEntries';
 import type { NavGroup, NavSubItem } from './useNavMenu';
 
 let subItems: NavSubItem[] = [];
@@ -17,8 +18,14 @@ const search = (keyword: string) => testRenderHook(() => useNavSearch(keyword)).
 
 describe('Hook: useNavSearch', () => {
   const parameters = { link: '/dashboard/settings', label: 'Parameters', exact: true };
-  const customization = { link: '/dashboard/settings/customization', label: 'Customization' };
-  const taxonomies = { link: '/dashboard/settings/vocabularies', label: 'Taxonomies' };
+  // A sub-section row as the left bar builds it: covers the declared pages under its prefix.
+  const section = (link: string, label: string): NavSubItem => ({
+    link,
+    label,
+    paths: allMenuEntries.map(({ path }) => path).filter((path) => path.startsWith(`${link}/`)),
+  });
+  const customization = section('/dashboard/settings/customization', 'Customization');
+  const taxonomies = section('/dashboard/settings/vocabularies', 'Taxonomies');
 
   it('indexes an entry whose subsection is visible, with the subsection in the breadcrumb', () => {
     subItems = [parameters, customization];

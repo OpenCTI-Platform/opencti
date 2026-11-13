@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { allMenuEntries, capabilitiesOf } from './menuEntries';
+import { allMenuEntries, capabilitiesOf, entriesModules } from './menuEntries';
 
 describe('allMenuEntries', () => {
+  it('collects every *.entries.ts(x) file: each one must default-export its MenuEntry[]', () => {
+    const withoutEntries = Object.entries(entriesModules).filter(([, entries]) => !Array.isArray(entries)).map(([file]) => file);
+    expect(withoutEntries).toEqual([]);
+  });
+
   it('declares each page once: the pages search keeps one node per path, so a twin would silently replace the other', () => {
     const paths = allMenuEntries.map(({ path }) => path);
     const duplicates = paths.filter((path, index) => paths.indexOf(path) !== index);

@@ -32,15 +32,12 @@ const useNavSearch = (keyword?: string | null): NavSearchResult[] => {
     ...(item.subItems ?? []).map((sub) => ({ path: sub.link, label: sub.label, parents: [item.label], keywords: sub.keywords ?? [] })),
   ])).filter((node) => node.path !== '/dashboard');
 
-  // Page entries must live under a visible left bar subsection (its own permission, hidden in draft, etc.):
-  // the deepest one also gives the breadcrumb. No visible subsection = the entry is not reachable, so not indexed.
-  // Top-level items and `exact` sub-items (Parameters = `/dashboard/settings`) are too broad to own an entry.
+  // Page entries must belong to a visible left bar subsection (its own permission, hidden in draft, etc.): it also
+  // gives the breadcrumb. No visible subsection = the entry is not reachable, so not indexed.
   const sectionNodes = navGroups.flatMap((group) => group.items.flatMap((item) => (
-    (item.subItems ?? []).filter((sub) => !sub.exact).map((sub) => ({ path: sub.link, label: sub.label, parents: [item.label] }))
+    (item.subItems ?? []).flatMap((sub) => (sub.paths ? [{ paths: sub.paths, label: sub.label, parents: [item.label] }] : []))
   )));
-  const sectionOf = (path: string) => sectionNodes
-    .filter((n) => path.startsWith(`${n.path}/`))
-    .sort((a, b) => b.path.length - a.path.length)[0];
+  const sectionOf = (path: string) => sectionNodes.find((n) => n.paths.includes(path));
   const entryNodes: Node[] = entries.flatMap((entry) => {
     if (entry.standaloneParents) {
       return [{ path: entry.path, label: t_i18n(entry.label), parents: entry.standaloneParents.map((p) => t_i18n(p)), keywords: entry.keywords ?? [] }];

@@ -13,6 +13,8 @@ export interface MenuEntry {
   keywords?: string[];
   /** Page reached outside the left bar (top bar icons...): indexed in the main search without a left bar subsection, with this breadcrumb. */
   standaloneParents?: string[];
+  /** Left bar entry active only on this exact path (not on its sub-routes). */
+  exact?: boolean;
   /** Entry hidden if the user has none of these capabilities: ANY one is enough (never "all of"). */
   requiredCapabilities?: string[];
   /** Also granted if the user has one of these capabilities in a draft (see `useGranted` options). */
@@ -25,3 +27,38 @@ export interface MenuEntry {
    */
   availableInDraft?: boolean;
 }
+
+/** Pages grouped under one left bar row (Import, Security...), leading to the first visible one. Visible if one is. */
+export interface NavSubSection {
+  label: string;
+  entries: MenuEntry[];
+}
+
+/**
+ * Sub-item of a left bar section: a page (its `MenuEntry` owns the label, icon and access rules), or a sub-section.
+ * Sections reference the entries themselves, not their paths.
+ */
+export type NavSectionItem = MenuEntry | NavSubSection;
+
+interface NavSectionBase {
+  id: string;
+  /** Left bar block it belongs to. Blocks and sections keep the order of `navSections`. */
+  group: string;
+}
+
+/** Top-level item without sub-items: a single page, its `MenuEntry` gives the label, icon and access rules. */
+export interface NavPageSection extends NavSectionBase {
+  page: MenuEntry;
+}
+
+/**
+ * Top-level item opening sub-items. Visible if at least one of them is, and leads to the first visible one: it has no
+ * access rule nor path of its own.
+ */
+export interface NavContainerSection extends NavSectionBase {
+  label: string;
+  icon: ReactElement;
+  items: NavSectionItem[];
+}
+
+export type NavSection = NavPageSection | NavContainerSection;

@@ -2,7 +2,7 @@ import type { MenuEntry } from '../../common/menus/menuEntry';
 import { BYPASS } from '../../../../utils/hooks/capabilities';
 
 // Pure data (no component import): collected by the pages search through its `*.entries.ts(x)` name.
-export const menuEntries: MenuEntry[] = [
+const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/data/restriction/restricted',
     label: 'Restricted entities',
@@ -18,3 +18,5 @@ export const menuEntries: MenuEntry[] = [
     requiredCapabilities: [BYPASS],
   },
 ];
+
+export default menuEntries;

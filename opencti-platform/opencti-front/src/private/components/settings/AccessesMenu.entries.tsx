@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   AccountBalanceOutlined,
   AlternateEmailOutlined,
@@ -16,7 +15,7 @@ import type { MenuEntry } from '../common/menus/menuEntry';
 import { SETTINGS_SETACCESSES, SETTINGS_SETAUTH, SETTINGS_SETDISSEMINATION, SETTINGS_SETMARKINGS, VIRTUAL_ORGANIZATION_ADMIN } from '../../../utils/hooks/capabilities';
 
 // Pure data (no component import): collected by the pages search through its `*.entries.ts(x)` name.
-export const menuEntries: MenuEntry[] = [
+const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/settings/accesses/users',
     label: 'Users',
@@ -98,3 +97,5 @@ export const menuEntries: MenuEntry[] = [
     requiredCapabilities: [SETTINGS_SETACCESSES],
   },
 ];
+
+export default menuEntries;

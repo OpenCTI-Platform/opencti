@@ -41,10 +41,15 @@ export const isRouteSelected = (pathname: string, link: string, exact?: boolean)
   return pathname === link || pathname.startsWith(`${link}/`);
 };
 
+/** A row standing for several pages (a sub-section) is selected on any of them. */
+export const isSubItemSelected = (pathname: string, sub: NavSubItem): boolean => (
+  (sub.paths ?? [sub.link]).some((path) => isRouteSelected(pathname, path, sub.exact))
+);
+
 /** Id of the menu section holding the page being shown, if any. Same test as the selected row. */
 export const findSectionToOpen = (groups: NavGroup[], pathname: string): string | undefined => groups
   .flatMap((group) => group.items)
-  .find((item) => item.subItems?.some((sub) => isRouteSelected(pathname, sub.link, sub.exact)))?.id;
+  .find((item) => item.subItems?.some((sub) => isSubItemSelected(pathname, sub)))?.id;
 
 /** `menus` with `id` open: alone when sections auto collapse, next to the others otherwise. */
 export const openSection = (menus: string[], id: string, autoCollapse: boolean): string[] => (
@@ -108,7 +113,7 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
       to={sub.link}
       linkComponent={Link}
       icon={sub.icon}
-      aria-current={isRouteSelected(pathname, sub.link, sub.exact) ? 'page' : undefined}
+      aria-current={isSubItemSelected(pathname, sub) ? 'page' : undefined}
     >
       {sub.label}
     </NavbarSubmenuItem>

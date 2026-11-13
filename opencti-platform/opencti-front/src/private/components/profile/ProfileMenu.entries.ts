@@ -20,7 +20,7 @@ export const notificationCenterEntry: MenuEntry = {
   requiredCapabilities: [KNOWLEDGE],
 };
 
-export const menuEntries: MenuEntry[] = [
+const menuEntries: MenuEntry[] = [
   profileEntry,
   notificationCenterEntry,
   {
@@ -31,3 +31,5 @@ export const menuEntries: MenuEntry[] = [
     requiredCapabilities: [KNOWLEDGE],
   },
 ];
+
+export default menuEntries;

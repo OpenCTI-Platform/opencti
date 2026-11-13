@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router';
 import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../components/i18n';
-import { menuEntries } from './ImportMenu.entries';
+import menuEntries from './ImportMenu.entries';
 import useVisibleEntries from '../common/menus/useVisibleEntries';
 
 const ImportMenu = () => {
