@@ -168,7 +168,7 @@ describe('applyPresetToPublishedValues', () => {
 
 describe('applyPublishedVariableChange', () => {
   const marking: DashboardVariable = { id: 'marking', name: 'Marking', type: 'marking', restriction: { mode: 'none' }, defaultValue: 'tlp-green-id' };
-  const noDefault: DashboardVariable = { id: 'entity', name: 'Entity', type: 'entity', restriction: { mode: 'none' } };
+  const noDefault: DashboardVariable = { id: 'entity', name: 'Entity', type: 'entity', entityTypes: ['Malware'], restriction: { mode: 'none' }, defaultValue: '' };
   const text: DashboardVariable = { id: 'text', name: 'Text', type: 'text', restriction: { mode: 'none' }, defaultValue: 'x' };
   const textSelection: DashboardVariable = { id: 'choice', name: 'Choice', type: 'text', restriction: { mode: 'selection', values: ['a', 'b'] }, defaultValue: 'a' };
 
