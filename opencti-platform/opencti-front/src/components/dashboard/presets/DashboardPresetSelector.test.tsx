@@ -20,8 +20,10 @@ describe('DashboardPresetSelector', () => {
     await user.click(screen.getByTestId('dashboard-preset-trigger'));
     expect(await screen.findByTestId('dashboard-preset-option-finance')).toHaveTextContent('FinanceDefault');
     expect(screen.getByTestId('dashboard-preset-option-energy')).not.toHaveTextContent('Default');
-    // No preset is offered with a default preset too: it shows the defaults of the dashboard.
+    // No preset is offered with a default preset too, first, before the presets: it shows the defaults of the dashboard.
     expect(screen.getByTestId('dashboard-preset-none')).toHaveTextContent('No preset');
+    const rows = screen.getAllByRole('menuitem').map((row) => row.getAttribute('data-testid'));
+    expect(rows).toEqual(['dashboard-preset-none', 'dashboard-preset-option-energy', 'dashboard-preset-option-finance']);
     // A viewer gets no management entry.
     expect(screen.queryByTestId('dashboard-preset-rename')).not.toBeInTheDocument();
     expect(screen.queryByTestId('dashboard-preset-delete')).not.toBeInTheDocument();
@@ -54,12 +56,12 @@ describe('DashboardPresetSelector', () => {
     );
     await user.click(screen.getByTestId('dashboard-preset-trigger'));
     const rename = await screen.findByTestId('dashboard-preset-rename');
-    expect(rename).toHaveTextContent('Rename “Energy”');
+    expect(rename).toHaveTextContent('Rename preset');
     await user.click(rename);
     expect(onRename).toHaveBeenCalledExactlyOnceWith(presets[0]);
     await user.click(screen.getByTestId('dashboard-preset-trigger'));
     const remove = await screen.findByTestId('dashboard-preset-delete');
-    expect(remove).toHaveTextContent('Delete “Energy”');
+    expect(remove).toHaveTextContent('Delete preset');
     await user.click(remove);
     expect(onDelete).toHaveBeenCalledExactlyOnceWith(presets[0]);
   });

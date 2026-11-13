@@ -1,8 +1,8 @@
 import { type ReactNode, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
-import { Menu, MenuContent, MenuGroup, MenuItem, MenuLabel, MenuSeparator, MenuTrigger, Text } from '@filigran/design-system';
-import { ArrowDropDownOutlined, ArrowDropUpOutlined } from '@mui/icons-material';
+import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger, Text } from '@filigran/design-system';
+import { AddOutlined, ArrowDropDownOutlined, ArrowDropUpOutlined, DashboardCustomizeOutlined, SaveOutlined } from '@mui/icons-material';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
 import { EXPORT_REMOVE_CLASS } from '../../utils/Image';
@@ -42,44 +42,48 @@ const DashboardSaveMenu = ({
     setOpen(false);
     action?.();
   };
-  const withSubtitle = (label: string, subtitle: string): ReactNode => (
-    <span style={{ display: 'flex', flexDirection: 'column' }}>
+  // Each entry says for whom it writes, under its action: no group label (its narrower inset would not line up).
+  const withAudience = (label: string, audience: string): ReactNode => (
+    <span style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '4px 0' }}>
       <span>{label}</span>
-      <Text variant="content-caption" as="span" style={{ color: theme.palette.text.secondary }}>{subtitle}</Text>
+      <Text variant="content-compact" as="span" style={{ color: theme.palette.text.secondary }}>{audience}</Text>
     </span>
   );
-  const groups: ReactNode[] = [];
+  const entries: ReactNode[] = [];
   if (activePresetName !== undefined && onUpdatePreset) {
-    groups.push(
-      <MenuGroup key="preset">
-        <MenuLabel>{t_i18n('Everyone using this preset')}</MenuLabel>
-        <MenuItem data-testid="dashboard-preset-update" disabled={!canUpdatePreset} onSelect={closeThen(onUpdatePreset)}>
-          {withSubtitle(t_i18n('Update “{name}”', { values: { name: activePresetName } }), t_i18n('Replace its values and time range'))}
-        </MenuItem>
-      </MenuGroup>,
+    entries.push(
+      <MenuItem
+        key="preset"
+        data-testid="dashboard-preset-update"
+        startIcon={<SaveOutlined fontSize="small" />}
+        disabled={!canUpdatePreset}
+        onSelect={closeThen(onUpdatePreset)}
+      >
+        {withAudience(t_i18n('Update “{name}”', { values: { name: activePresetName } }), t_i18n('For everyone using this preset'))}
+      </MenuItem>,
     );
   }
   if (onSavePresetAs) {
-    groups.push(
-      <MenuGroup key="new">
-        <MenuLabel>{t_i18n('New')}</MenuLabel>
-        <MenuItem data-testid="dashboard-preset-save-as" onSelect={closeThen(onSavePresetAs)}>
-          {t_i18n('Save as new preset…')}
-        </MenuItem>
-      </MenuGroup>,
+    entries.push(
+      <MenuItem key="new" data-testid="dashboard-preset-save-as" startIcon={<AddOutlined fontSize="small" />} onSelect={closeThen(onSavePresetAs)}>
+        {withAudience(t_i18n('Save as new preset…'), t_i18n('Under a new name, for anyone to pick'))}
+      </MenuItem>,
     );
   }
   if (onSetAsDefaults) {
-    groups.push(
-      <MenuGroup key="defaults">
-        <MenuLabel>{t_i18n('Everyone, without a preset')}</MenuLabel>
-        <MenuItem data-testid="dashboard-set-as-defaults" disabled={!canSetAsDefaults} onSelect={closeThen(onSetAsDefaults)}>
-          {withSubtitle(t_i18n('Set as dashboard defaults'), t_i18n('What the dashboard shows with no preset'))}
-        </MenuItem>
-      </MenuGroup>,
+    entries.push(
+      <MenuItem
+        key="defaults"
+        data-testid="dashboard-set-as-defaults"
+        startIcon={<DashboardCustomizeOutlined fontSize="small" />}
+        disabled={!canSetAsDefaults}
+        onSelect={closeThen(onSetAsDefaults)}
+      >
+        {withAudience(t_i18n('Set as dashboard defaults'), t_i18n('For everyone without a preset'))}
+      </MenuItem>,
     );
   }
-  if (groups.length === 0) return null;
+  if (entries.length === 0) return null;
   return (
     <Menu open={open && !disabled} onOpenChange={setOpen} modal={false}>
       <MenuTrigger asChild>
@@ -94,8 +98,8 @@ const DashboardSaveMenu = ({
           {t_i18n('Save')}
         </Button>
       </MenuTrigger>
-      <MenuContent align="end" sideOffset={6} style={{ minWidth: 260 }}>
-        {groups.flatMap((group, index) => (index === 0 ? [group] : [<MenuSeparator key={`separator-${index}`} />, group]))}
+      <MenuContent align="end" sideOffset={6} style={{ minWidth: 280 }}>
+        {entries.flatMap((entry, index) => (index === 0 ? [entry] : [<MenuSeparator key={`separator-${index}`} />, entry]))}
       </MenuContent>
     </Menu>
   );
