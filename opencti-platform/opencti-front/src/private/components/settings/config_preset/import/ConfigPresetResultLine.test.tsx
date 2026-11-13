@@ -81,6 +81,12 @@ describe('ConfigPresetResultLine', () => {
     ['The confidence level of the service account is not changed', 'The confidence level of the service account is not changed'],
     ['Configuration to provide: MITRE_API_KEY', 'Configuration to provide: MITRE_API_KEY'],
     ['Connector not available on this platform: opencti/connector-mitre', 'Connector not available on this platform: opencti/connector-mitre'],
+    ['Feed already exists', 'Feed already exists'],
+    ['Feed name already exists', 'Feed name already exists'],
+    ['Several feeds have this name: import it as a copy', 'Several feeds have this name: import it as a copy'],
+    ['Author not found: Filigran', 'Author not found: Filigran'],
+    ['JSON mapper created: Vendor mapper', 'JSON mapper created: Vendor mapper'],
+    ['Mapper default values not found: createdBy', 'Mapper default values not found: createdBy'],
   ])('translates the reason %s', (reason, text) => {
     testRender(<ConfigPresetResultLine label="Theme" status="SKIPPED" reason={reason} />);
     expect(screen.getByText(text)).toBeInTheDocument();

@@ -7,10 +7,14 @@ import Button from '@common/button/Button';
 import { useFormatter } from '../../../../../../components/i18n';
 import type { Theme } from '../../../../../../components/Theme';
 import useApiMutation from '../../../../../../utils/hooks/useApiMutation';
+import type { FieldOption } from '../../../../../../utils/field';
 import { type ConfigImportMode, isConfigImportMode } from '../../configImportMode';
 import ConfigPresetBundleFileSelect from '../ConfigPresetBundleFileSelect';
 import ConfigPresetImportModeSelect from '../ConfigPresetImportModeSelect';
 import ConfigPresetResultLine from '../ConfigPresetResultLine';
+import ConfigPresetCredentialsDialog from '../ConfigPresetCredentialsDialog';
+import ConfigPresetCredentialsItemRow from '../ConfigPresetCredentialsItemRow';
+import ConfigPresetServiceAccountDialog from '../ConfigPresetServiceAccountDialog';
 import { toConfigPresetSummaryCounts } from '../ConfigPresetImportResult';
 import { ConfigPresetLockedTypeRow } from '../../ConfigPresetSelectionAccordion';
 import useConfigPresetLockedTypes from '../../useConfigPresetLockedTypes';
@@ -42,6 +46,15 @@ const configPresetPartialImportPreviewMutation = graphql`
           translatable
           exists
           conflict
+          serviceAccountRequired
+          credentials {
+            key
+            description
+            required
+            stored
+            secret
+            type
+          }
         }
       }
     }
@@ -49,8 +62,15 @@ const configPresetPartialImportPreviewMutation = graphql`
 `;
 
 const configPresetPartialImportMutation = graphql`
-  mutation ConfigPresetPartialImportMutation($file: Upload!, $type: ID!, $items: [ID!]!, $item_modes: [ConfigPresetItemModeInput!]) {
-    configPresetPartialImport(file: $file, type: $type, items: $items, item_modes: $item_modes) {
+  mutation ConfigPresetPartialImportMutation(
+    $file: Upload!
+    $type: ID!
+    $items: [ID!]!
+    $item_modes: [ConfigPresetItemModeInput!]
+    $credentials: [ConfigPresetItemCredentialsInput!]
+    $service_accounts: [ConfigPresetItemServiceAccountInput!]
+  ) {
+    configPresetPartialImport(file: $file, type: $type, items: $items, item_modes: $item_modes, credentials: $credentials, service_accounts: $service_accounts) {
       results {
         type
         key
@@ -71,6 +91,7 @@ const configPresetPartialImportMutation = graphql`
 `;
 
 type Preview = ConfigPresetPartialImportPreviewMutation$data['configPresetPartialImportPreview'];
+type PreviewItem = NonNullable<Preview['type']>['items'][number];
 type Output = ConfigPresetPartialImportMutation$data['configPresetPartialImport'];
 
 interface ConfigPresetPartialImportProps {
@@ -100,6 +121,11 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [modes, setModes] = useState<Record<string, ConfigImportMode>>({});
   const [output, setOutput] = useState<Output | null>(null);
+  // Held in memory and sent with the import only, never saved
+  const [credentials, setCredentials] = useState<Record<string, Record<string, string>>>({});
+  const [credentialsItem, setCredentialsItem] = useState<PreviewItem | null>(null);
+  const [serviceAccounts, setServiceAccounts] = useState<Record<string, FieldOption>>({});
+  const [serviceAccountItem, setServiceAccountItem] = useState<PreviewItem | null>(null);
   const [commitPreview, previewing] = useApiMutation<ConfigPresetPartialImportPreviewMutation>(configPresetPartialImportPreviewMutation);
   const [commitImport, importing] = useApiMutation<ConfigPresetPartialImportMutation>(configPresetPartialImportMutation);
   const busy = previewing || importing;
@@ -111,8 +137,23 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
 
   const items = preview?.type?.items ?? [];
   const defaultMode = isConfigImportMode(preview?.default_mode ?? '') ? preview?.default_mode as ConfigImportMode : null;
-  const conflictKeys = partialImportConflictKeys(items, selected);
   const itemLabel = (item: { label: string; translatable: boolean }) => (item.translatable ? t_i18n(item.label) : item.label);
+  const modeOf = (item: PreviewItem) => modes[item.key] ?? defaultMode;
+  // A secret stored on the platform is kept on overwrite, never on a copy
+  const requiredCredentials = (item: PreviewItem) => {
+    return item.credentials.map((credential) => ({ ...credential, required: credential.required && (modeOf(item) === 'COPY' || !credential.stored) }));
+  };
+  // An item whose required secrets are not entered cannot be imported: it stays unchecked until they are
+  const isCredentialsLocked = (item: PreviewItem) => {
+    return requiredCredentials(item).some(({ key, required }) => required && (credentials[item.key]?.[key] ?? '') === '');
+  };
+  const isImported = (item: PreviewItem) => selected.has(item.key) && !isCredentialsLocked(item);
+  const importedItems = items.filter(isImported);
+  const importedKeys = new Set(importedItems.map(({ key }) => key));
+  // Created (a new item, or a copy), the item writes with a service account the user chooses when the platform has no default group for them
+  const needsServiceAccount = (item: PreviewItem) => item.serviceAccountRequired && isImported(item) && (!item.exists || modeOf(item) === 'COPY');
+  const isServiceAccountMissing = importedItems.some((item) => needsServiceAccount(item) && !serviceAccounts[item.key]);
+  const conflictKeys = partialImportConflictKeys(items, importedKeys);
 
   // The preview of the file, every item selected
   const loadPreview = (value: File) => {
@@ -131,6 +172,8 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
     setFile(value);
     setPreview(null);
     setModes({});
+    setCredentials({});
+    setServiceAccounts({});
     loadPreview(value);
   };
 
@@ -144,13 +187,22 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
 
   const handleImport = () => {
     if (!file) return;
-    const selectedItems = items.filter(({ key }) => selected.has(key));
     commitImport({
       variables: {
         file,
         type,
-        items: selectedItems.map(({ key }) => key),
-        item_modes: defaultMode ? partialImportItemModes(selectedItems, modes, defaultMode) : [],
+        items: importedItems.map(({ key }) => key),
+        item_modes: defaultMode ? partialImportItemModes(importedItems, modes, defaultMode) : [],
+        credentials: importedItems
+          .map((item) => ({
+            type,
+            key: item.key,
+            values: item.credentials.map(({ key }) => ({ key, secret: credentials[item.key]?.[key] ?? '' })).filter(({ secret }) => secret !== ''),
+          }))
+          .filter(({ values }) => values.length > 0),
+        service_accounts: importedItems
+          .filter((item) => needsServiceAccount(item) && serviceAccounts[item.key])
+          .map((item) => ({ type, key: item.key, user_id: serviceAccounts[item.key].value })),
       },
       onCompleted: (data) => {
         setOutput(data.configPresetPartialImport);
@@ -230,27 +282,50 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
             </div>
             {/* Only the list scrolls: the stepper, the file and the actions stay in view, however many items the bundle holds */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1), maxHeight: '40vh', overflowY: 'auto' }} data-testid="config-preset-partial-import-items">
-              {items.map((item) => (
-                <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1) }}>
-                  <Checkbox
-                    label={itemLabel(item)}
-                    description={item.conflict ? t_i18n('Already exists') : undefined}
-                    checked={selected.has(item.key)}
+              {items.map((item) => {
+                const modeSelect = item.conflict && defaultMode && (
+                  <ConfigPresetImportModeSelect
+                    subject={itemLabel(item)}
+                    modes={preview?.type?.modes ?? []}
+                    value={modes[item.key] ?? defaultMode}
+                    purpose="When it already exists"
                     disabled={importing}
-                    onCheckedChange={() => setSelected(toggleSelectedKey(selected, item.key))}
+                    onChange={(mode) => setModes({ ...modes, [item.key]: mode })}
                   />
-                  {item.conflict && defaultMode && selected.has(item.key) && (
-                    <ConfigPresetImportModeSelect
-                      subject={itemLabel(item)}
-                      modes={preview?.type?.modes ?? []}
-                      value={modes[item.key] ?? defaultMode}
-                      purpose="When it already exists"
+                );
+                if (isCredentialsLocked(item)) {
+                  return (
+                    <ConfigPresetCredentialsItemRow key={item.key} label={itemLabel(item)} actions={modeSelect} onOpen={() => setCredentialsItem(item)} />
+                  );
+                }
+                const serviceAccount = serviceAccounts[item.key];
+                return (
+                  <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1) }}>
+                    <Checkbox
+                      label={itemLabel(item)}
+                      description={item.conflict ? t_i18n('Already exists') : undefined}
+                      checked={isImported(item)}
                       disabled={importing}
-                      onChange={(mode) => setModes({ ...modes, [item.key]: mode })}
+                      onCheckedChange={() => setSelected(toggleSelectedKey(selected, item.key))}
                     />
-                  )}
-                </div>
-              ))}
+                    {isImported(item) && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
+                        {needsServiceAccount(item) && (
+                          <Button variant="secondary" size="small" disabled={importing} onClick={() => setServiceAccountItem(item)}>
+                            {serviceAccount ? serviceAccount.label : t_i18n('Choose a service account')}
+                          </Button>
+                        )}
+                        {item.credentials.length > 0 && (
+                          <Button variant="secondary" size="small" disabled={importing} onClick={() => setCredentialsItem(item)}>
+                            {t_i18n('Configuration')}
+                          </Button>
+                        )}
+                        {modeSelect}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -260,12 +335,39 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
         {onBack && <Button variant="secondary" onClick={onBack} disabled={busy}>{t_i18n('Back')}</Button>}
         <Button
           onClick={handleImport}
-          disabled={!file || selected.size === 0 || previewing || importing}
+          disabled={!file || importedItems.length === 0 || isServiceAccountMissing || previewing || importing}
           data-testid="config-preset-partial-import-submit"
         >
           {t_i18n('Import')}
         </Button>
       </DialogActions>
+      {serviceAccountItem && (
+        <ConfigPresetServiceAccountDialog
+          open
+          itemLabel={itemLabel(serviceAccountItem)}
+          value={serviceAccounts[serviceAccountItem.key] ?? null}
+          onClose={() => setServiceAccountItem(null)}
+          onSubmit={(account) => {
+            setServiceAccounts({ ...serviceAccounts, [serviceAccountItem.key]: account });
+            setServiceAccountItem(null);
+          }}
+        />
+      )}
+      {credentialsItem && (
+        <ConfigPresetCredentialsDialog
+          open
+          itemLabel={itemLabel(credentialsItem)}
+          credentials={requiredCredentials(credentialsItem)}
+          values={credentials[credentialsItem.key] ?? {}}
+          onClose={() => setCredentialsItem(null)}
+          onSubmit={(values) => {
+            setCredentials({ ...credentials, [credentialsItem.key]: values });
+            // An item its secrets unlock comes selected
+            setSelected(new Set([...selected, credentialsItem.key]));
+            setCredentialsItem(null);
+          }}
+        />
+      )}
     </>
   );
 };

@@ -78,6 +78,8 @@ type ConfigPresetImportItem {
     conflict: Boolean!
     fields: [ConfigPresetImportField!]!
     credentials: [ConfigPresetImportCredential!]!
+    # Created (a new item, or a copy), the item writes with a service account to choose: the platform has no default group for the service accounts.
+    serviceAccountRequired: Boolean!
     # A setting that is on or off: whether the bundle turns it on, shown under its label. Null for an item that is not one, or a setting the bundle does not set.
     isEnabled: Boolean
     # Items imported with this one, whatever the selection.
@@ -316,5 +318,13 @@ extend type Mutation {
     # The preview reads only: the items of the type in the bundle.
     configPresetPartialImportPreview(file: Upload!, type: ID!): ConfigPresetPartialImportPreview! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # Imports the given items of the type, and the items of the same type they depend on; an item without mode takes the default_mode of the preview.
-    configPresetPartialImport(file: Upload!, type: ID!, items: [ID!]!, item_modes: [ConfigPresetItemModeInput!]): ConfigPresetPartialImportOutput! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # The credentials and the service accounts are the ones of the wizard import: never stored, only given to the items they name.
+    configPresetPartialImport(
+        file: Upload!
+        type: ID!
+        items: [ID!]!
+        item_modes: [ConfigPresetItemModeInput!]
+        credentials: [ConfigPresetItemCredentialsInput!]
+        service_accounts: [ConfigPresetItemServiceAccountInput!]
+    ): ConfigPresetPartialImportOutput! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
 }

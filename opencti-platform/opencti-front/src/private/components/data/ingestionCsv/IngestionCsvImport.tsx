@@ -1,5 +1,7 @@
 import React, { BaseSyntheticEvent, FunctionComponent, useRef, useState } from 'react';
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
+import IngestionFeedImportDialog from '@components/data/IngestionFeedImportDialog';
+import useConfigPresetPartialImportAccess from '@components/settings/config_preset/import/partial/useConfigPresetPartialImportAccess';
 import { graphql } from 'react-relay';
 import { IngestionCsvCreationContainer } from '@components/data/ingestionCsv/IngestionCsvCreation';
 import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
@@ -69,11 +71,15 @@ interface IngestionCsvImportProps {
   hideTrigger?: boolean;
   // Called when the prefilled creation drawer closes (creation or cancel).
   onClose?: () => void;
+  // Called after feeds are imported from a configuration bundle.
+  onBundleImported?: () => void;
 }
-const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ paginationOptions, hideTrigger, onClose }) => {
+const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ paginationOptions, hideTrigger, onClose, onBundleImported }) => {
   const { fileId, serviceInstanceId } = useParams();
   const navigate = useNavigate();
   const inputFileRef = useRef<HTMLInputElement>(null);
+  const canImportFromBundle = useConfigPresetPartialImportAccess();
+  const [bundleImportOpen, setBundleImportOpen] = useState(false);
   const [open, setOpen] = useState<boolean>(false);
   const [ingestCSVData, setIngestCSVData] = useState<IngestionCsvImportQuery$data['csvFeedAddInputFromImport'] | undefined>(undefined);
   const { t_i18n } = useFormatter();
@@ -134,7 +140,7 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
           size="small"
           sx={{ marginLeft: 1 }}
           title={t_i18n('Import a CSV Feed')}
-          onClick={() => inputFileRef?.current?.click()}
+          onClick={() => (canImportFromBundle ? setBundleImportOpen(true) : inputFileRef?.current?.click())}
         >
           <FileUploadOutlined fontSize="small" color="primary" />
         </ToggleButton>
@@ -145,6 +151,17 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
         accept="application/JSON"
         onChange={fileImport}
       />
+      {canImportFromBundle && (
+        <IngestionFeedImportDialog
+          open={bundleImportOpen}
+          onClose={() => setBundleImportOpen(false)}
+          title={t_i18n('Import a CSV Feed')}
+          type="csvFeeds"
+          itemsLabel={t_i18n('CSV feeds')}
+          fileInputRef={inputFileRef}
+          onImported={onBundleImported}
+        />
+      )}
       <IngestionCsvCreationContainer
         ingestionCsvData={{
           ...ingestCSVData,

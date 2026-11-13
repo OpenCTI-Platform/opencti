@@ -43,9 +43,10 @@ const previewOf = (items: unknown[]) => ({
   default_mode: 'COPY',
   type: { key: 'branding', label: 'Branding', description: 'Themes, colors, logos', lockedByEnterpriseEdition: false, modes: ['OVERWRITE', 'COPY'], items },
 });
+const noAccount = { serviceAccountRequired: false, credentials: [] };
 const themes = [
-  { key: 'theme--a', label: 'Night', translatable: false, exists: false, conflict: false },
-  { key: 'theme--b', label: 'Day', translatable: false, exists: true, conflict: true },
+  { key: 'theme--a', label: 'Night', translatable: false, exists: false, conflict: false, ...noAccount },
+  { key: 'theme--b', label: 'Day', translatable: false, exists: true, conflict: true, ...noAccount },
 ];
 
 // The partial import is for BYPASS users: the locked row of a type opens the license dialog
@@ -118,7 +119,7 @@ describe('ConfigPresetPartialImport', () => {
             description: '',
             lockedByEnterpriseEdition: false,
             modes: ['OVERWRITE'],
-            items: [{ key: 'whitemark', label: 'Remove Filigran logos', translatable: true, exists: true, conflict: false }],
+            items: [{ key: 'whitemark', label: 'Remove Filigran logos', translatable: true, exists: true, conflict: false, ...noAccount }],
           },
         }),
       }));
@@ -153,7 +154,7 @@ describe('ConfigPresetPartialImport', () => {
   it('offers the same mode for all the selected items in conflict from two of them, and applies it to each', async () => {
     const conflicts = [
       ...themes,
-      { key: 'theme--c', label: 'Dusk', translatable: false, exists: true, conflict: true },
+      { key: 'theme--c', label: 'Dusk', translatable: false, exists: true, conflict: true, ...noAccount },
     ];
     const rendered = await renderWithPreview(previewOf(conflicts));
     const applyToAll = () => screen.getByRole('combobox', { name: 'themes: Apply to all' });
@@ -189,6 +190,8 @@ describe('ConfigPresetPartialImport', () => {
       type: 'branding',
       items: ['theme--b'],
       item_modes: [{ key: 'theme--b', mode: 'COPY' }],
+      credentials: [],
+      service_accounts: [],
     });
     await resolve(rendered, 'ConfigPresetPartialImportMutation', {
       ConfigPresetPartialImportOutput: () => ({
@@ -201,5 +204,86 @@ describe('ConfigPresetPartialImport', () => {
     expect(rendered.onImported).toHaveBeenCalledTimes(1);
     await rendered.user.click(screen.getByRole('button', { name: 'Close' }));
     expect(rendered.onClose).toHaveBeenCalledTimes(1);
+  });
+
+  describe('items that need credentials or a service account (feeds)', () => {
+    const basic = { description: '', secret: true, type: 'string' };
+    const feedsPreviewOf = (items: unknown[]) => ({
+      bundle_name: null,
+      default_mode: 'COPY',
+      type: { key: 'taxiiFeeds', label: 'TAXII feeds', description: '', lockedByEnterpriseEdition: false, modes: ['OVERWRITE', 'COPY'], items },
+    });
+    const renderFeeds = async (items: unknown[]) => {
+      const rendered = testRender(<ConfigPresetPartialImport type="taxiiFeeds" itemsLabel="TAXII feeds" onClose={vi.fn()} />, { userContext });
+      const file = new File(['zip'], 'bundle.zip', { type: 'application/zip' });
+      await rendered.user.upload(screen.getByTestId('config-preset-partial-import-file'), file);
+      await resolve(rendered, 'ConfigPresetPartialImportPreviewMutation', { ConfigPresetPartialImportPreview: () => feedsPreviewOf(items) });
+      return rendered;
+    };
+
+    it('keeps an item unchecked until its required credentials are entered, then imports it with them', async () => {
+      const rendered = await renderFeeds([
+        {
+          key: 'Partner',
+          label: 'Partner',
+          translatable: false,
+          exists: false,
+          conflict: false,
+          serviceAccountRequired: false,
+          credentials: [{ key: 'username', required: true, stored: false, ...basic }, { key: 'password', required: true, stored: false, ...basic }],
+        },
+      ]);
+      expect(screen.getByRole('checkbox', { name: 'Partner' })).toHaveAttribute('data-state', 'unchecked');
+      expect(screen.getByTestId('config-preset-partial-import-submit')).toBeDisabled();
+      await rendered.user.click(screen.getByRole('button', { name: 'Enter the configuration of Partner' }));
+      await rendered.user.type(screen.getByLabelText(/username/), 'reader');
+      await rendered.user.type(screen.getByLabelText(/password/), 's3cret');
+      await rendered.user.click(screen.getByRole('button', { name: 'Save' }));
+      expect(screen.getByRole('checkbox', { name: 'Partner' })).toHaveAttribute('data-state', 'checked');
+      await rendered.user.click(screen.getByTestId('config-preset-partial-import-submit'));
+      expect(operation(rendered, 'ConfigPresetPartialImportMutation').request.variables).toMatchObject({
+        items: ['Partner'],
+        credentials: [{ type: 'taxiiFeeds', key: 'Partner', values: [{ key: 'username', secret: 'reader' }, { key: 'password', secret: 's3cret' }] }],
+        service_accounts: [],
+      });
+    });
+
+    it('asks again for a stored secret on a copy, never on an overwrite', async () => {
+      const rendered = await renderFeeds([
+        {
+          key: 'Partner',
+          label: 'Partner',
+          translatable: false,
+          exists: true,
+          conflict: true,
+          serviceAccountRequired: false,
+          credentials: [{ key: 'token', required: true, stored: true, ...basic }],
+        },
+      ]);
+      // A copy by default: the secret of the existing feed is not kept
+      expect(screen.getByRole('checkbox', { name: 'Partner' })).toHaveAttribute('data-state', 'unchecked');
+      await rendered.user.click(screen.getByRole('combobox', { name: 'Partner: When it already exists' }));
+      await rendered.user.click(await screen.findByRole('option', { name: 'Overwrite' }));
+      expect(screen.getByRole('checkbox', { name: 'Partner' })).toHaveAttribute('data-state', 'checked');
+      expect(screen.getByTestId('config-preset-partial-import-submit')).toBeEnabled();
+    });
+
+    it('asks for a service account for a created item when the platform has no default group, not for an overwritten one', async () => {
+      const rendered = await renderFeeds([
+        { key: 'News', label: 'News', translatable: false, exists: false, conflict: false, serviceAccountRequired: true, credentials: [] },
+        { key: 'Partner', label: 'Partner', translatable: false, exists: true, conflict: true, serviceAccountRequired: true, credentials: [] },
+      ]);
+      expect(screen.getAllByRole('button', { name: 'Choose a service account' })).toHaveLength(2);
+      expect(screen.getByTestId('config-preset-partial-import-submit')).toBeDisabled();
+      // The existing one overwritten keeps its user; the new one still needs a choice
+      await rendered.user.click(screen.getByRole('combobox', { name: 'Partner: When it already exists' }));
+      await rendered.user.click(await screen.findByRole('option', { name: 'Overwrite' }));
+      expect(screen.getAllByRole('button', { name: 'Choose a service account' })).toHaveLength(1);
+      expect(screen.getByTestId('config-preset-partial-import-submit')).toBeDisabled();
+      // Left out, nothing needs a choice any more
+      await rendered.user.click(screen.getByRole('checkbox', { name: 'News' }));
+      expect(screen.queryByRole('button', { name: 'Choose a service account' })).not.toBeInTheDocument();
+      expect(screen.getByTestId('config-preset-partial-import-submit')).toBeEnabled();
+    });
   });
 });

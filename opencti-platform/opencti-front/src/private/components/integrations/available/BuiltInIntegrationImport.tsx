@@ -38,31 +38,33 @@ interface BuiltInIntegrationImportProps {
   kind: BuiltInIntegrationKind;
   hideTrigger?: boolean;
   onClose?: () => void;
+  onBundleImported?: () => void;
 }
 
 // Configuration import (JSON file upload, or XTM Hub deep link download) for a
 // built-in ingestion method: reuses the per-kind import components, which open
 // the matching creation drawer prefilled with the parsed configuration.
-export const BuiltInIntegrationImport = ({ kind, hideTrigger, onClose }: BuiltInIntegrationImportProps) => {
+export const BuiltInIntegrationImport = ({ kind, hideTrigger, onClose, onBundleImported }: BuiltInIntegrationImportProps) => {
   switch (kind) {
     case 'sync':
       return <SyncImport paginationOptions={{}} hideTrigger={hideTrigger} onClose={onClose} />;
     case 'taxii':
-      return <IngestionTaxiiImport paginationOptions={{}} hideTrigger={hideTrigger} onClose={onClose} />;
+      return <IngestionTaxiiImport paginationOptions={{}} hideTrigger={hideTrigger} onClose={onClose} onBundleImported={onBundleImported} />;
     case 'rss':
       return (
         <IngestionRssImport
           paginationOptions={{ count: 25 } as IngestionRssLinesDataTableQuery$variables}
           hideTrigger={hideTrigger}
           onClose={onClose}
+          onBundleImported={onBundleImported}
         />
       );
     case 'csv':
-      return <IngestionCsvImport hideTrigger={hideTrigger} onClose={onClose} />;
+      return <IngestionCsvImport hideTrigger={hideTrigger} onClose={onClose} onBundleImported={onBundleImported} />;
     case 'taxii-push':
       return <IngestionTaxiiCollectionImport hideTrigger={hideTrigger} onClose={onClose} />;
     case 'json':
-      return <IngestionJsonImport hideTrigger={hideTrigger} onClose={onClose} />;
+      return <IngestionJsonImport hideTrigger={hideTrigger} onClose={onClose} onBundleImported={onBundleImported} />;
     case 'form':
       return <FormImport hideTrigger={hideTrigger} onClose={onClose} />;
     default:
