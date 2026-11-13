@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
 import AppIntlProvider from '../../../../components/AppIntlProvider';
 import ThemeDark from '../../../../components/ThemeDark';
-import { LoginContextProvider } from '../loginContext';
+import { LoginContextProvider, useLoginContext } from '../loginContext';
 import OtpValidation from '../OtpValidation';
 import AlertMfa from '../AlertMfa';
 
@@ -19,6 +19,13 @@ const PERMANENT_LOCK_MESSAGE = 'Your account has been locked for security reason
 
 type MutationConfig = { variables: unknown; onError?: (error: unknown) => void; onCompleted?: () => void };
 
+// Exposes the lock message kept in the login context, as an attribute so that its text is not shown twice:
+// once the error is cleared, the alert no longer shows it
+const LockMessageProbe = () => {
+  const { mfaLockMessage } = useLoginContext();
+  return <div data-testid="mfa-lock-message" data-message={mfaLockMessage ?? ''} />;
+};
+
 const renderOtpValidation = (variant: 'login' | 'resetPassword') => {
   const user = userEvent.setup({ delay: null });
   render(
@@ -26,6 +33,7 @@ const renderOtpValidation = (variant: 'login' | 'resetPassword') => {
       <ThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
         <LoginContextProvider>
           <AlertMfa forceDisplay />
+          <LockMessageProbe />
           <OtpValidation variant={variant} transactionId="transaction-id" onCompleted={() => {}} />
         </LoginContextProvider>
       </ThemeProvider>
@@ -89,6 +97,18 @@ describe.each(['login', 'resetPassword'] as const)('OtpValidation, %s', (variant
     expect(await screen.findByText('Your account has been locked for security reasons. Please try again in 1 minute.')).toBeInTheDocument();
     await refuse(await sendCode(user), wrongCode);
     expect(await screen.findByText(WRONG_CODE_MESSAGE)).toBeInTheDocument();
+  });
+
+  it('clears the lock message once a valid code is accepted', async () => {
+    const { user } = renderOtpValidation(variant);
+    await refuse(await sendCode(user), temporaryLock(1));
+    expect(screen.getByTestId('mfa-lock-message')).toHaveAttribute('data-message', expect.stringContaining('Please try again in 1 minute.'));
+    const config = await sendCode(user);
+    act(() => {
+      config.onCompleted?.();
+    });
+    expect(screen.getByTestId('mfa-lock-message')).toHaveAttribute('data-message', '');
+    expect(screen.getByText('You need to validate your two-factor authentication. Please type the code generated in your application.')).toBeInTheDocument();
   });
 
   it('sends the code with the transaction of the forgotten password flow only', async () => {
