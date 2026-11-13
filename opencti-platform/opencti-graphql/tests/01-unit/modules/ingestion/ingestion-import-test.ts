@@ -366,11 +366,11 @@ describe('importConfigPresetFeed review fixes', () => {
     expect(result.credentials?.map(({ key, stored }) => [key, stored])).toEqual([['username', false], ['password', false]]);
   });
 
-  it('accepts any TAXII collection the creation form accepts, a short one included', async () => {
+  it('accepts the TAXII collections the creation API accepts, of five characters at least', async () => {
     vi.mocked(findAllTaxiiIngestion).mockResolvedValue([] as never);
-    const configuration = taxiiConfiguration({ collection: 'ioc', authentication_type: 'none' });
+    const configuration = taxiiConfiguration({ collection: 'iocs1', authentication_type: 'none' });
     expect(await importConfigPresetFeed(context, user, taxii, configuration, { ...copy, dryRun: true })).toMatchObject({ status: 'created' });
-    expect(await importConfigPresetFeed(context, user, taxii, taxiiConfiguration({ collection: '' }), { ...copy, dryRun: true })).toMatchObject({ status: 'failed', code: 'invalid' });
+    expect(await importConfigPresetFeed(context, user, taxii, taxiiConfiguration({ collection: 'ioc' }), { ...copy, dryRun: true })).toMatchObject({ status: 'failed', code: 'invalid' });
   });
 
   it('accepts the HTTP verbs of the JSON feed forms, and an empty sub page verb', async () => {

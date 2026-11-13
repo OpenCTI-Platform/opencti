@@ -76,7 +76,8 @@ export const taxiiFeedImportSchema = z.strictObject({
   ...feedFields,
   ...authenticationFields,
   version: z.enum(TaxiiVersion),
-  collection: z.string().min(1),
+  // The same constraint as the creation API (IngestionTaxiiAddInput)
+  collection: z.string().min(5),
   added_after_start: z.string().nullable().optional(),
   confidence_to_score: z.boolean().nullable().optional(),
 });
