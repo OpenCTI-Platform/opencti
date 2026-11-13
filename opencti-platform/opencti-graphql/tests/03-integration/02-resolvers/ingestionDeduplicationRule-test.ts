@@ -5,7 +5,7 @@ import { getUserIdByEmail, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../.
 import { ENABLED_FEATURE_FLAGS } from '../../../src/config/conf';
 
 const RULES_QUERY = gql`
-  query ingestionDeduplicationRules($userId: ID) {
+  query ingestionDeduplicationRules($userId: ID!) {
     ingestionDeduplicationRules(userId: $userId) {
       id
       user_id
