@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadEntity, updateAttribute } from '../../../src/database/middleware';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { findByType } from '../../../src/modules/entitySetting/entitySetting-domain';
@@ -8,6 +8,7 @@ import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
 import { validateDataBeforeIndexing } from '../../../src/schema/schema-attributes';
 import { validateUserAccessOperation } from '../../../src/utils/access';
+import { getDraftContext } from '../../../src/utils/draftContext';
 import '../../../src/modules/draftWorkspace/draftWorkspace';
 import '../../../src/modules/workflow/storage/workflow-instance-entity';
 
@@ -36,6 +37,11 @@ vi.mock('../../../src/modules/workflow/domain/workflow-projection', () => ({
 vi.mock('../../../src/utils/access', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../src/utils/access')>(),
   validateUserAccessOperation: vi.fn().mockReturnValue(true),
+}));
+
+vi.mock('../../../src/utils/confidence-level', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../src/utils/confidence-level')>(),
+  controlUserConfidenceAgainstElement: vi.fn().mockReturnValue(true),
 }));
 
 describe('Terminal workflow persistence', () => {
@@ -117,6 +123,30 @@ describe('Terminal workflow persistence', () => {
     vi.mocked(validateUserAccessOperation).mockReturnValueOnce(false);
     await expect(triggerWorkflowEvent(context, user, entity.id, 'Validate')).rejects.toThrow('You are not allowed to do this');
     expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  describe('from a draft', () => {
+    afterEach(() => {
+      vi.mocked(getDraftContext).mockReturnValue(undefined);
+      vi.mocked(validateUserAccessOperation).mockReturnValue(true);
+    });
+
+    it.each(['draft', 'live'])('refuses a transition from a draft when the user cannot edit the %s entity', async (forbidden) => {
+      const versions: Record<string, any> = { draft: { ...entity, version: 'draft' }, live: { ...entity, version: 'live' } };
+      vi.mocked(getDraftContext).mockReturnValue('draft-id');
+      vi.mocked(storeLoadById).mockImplementation(async (_ctx, loadUser: any, id) => {
+        if (id === entity.id) return loadUser.draft_context ? versions.draft : versions.live;
+        if (id === 'workflow-id') return { id, published_version: { content: JSON.stringify(definition) } };
+        return null;
+      });
+      vi.mocked(validateUserAccessOperation).mockImplementation((_user, element: any) => element.version !== forbidden);
+
+      // The user of a draft request carries the draft context: the live entity is loaded without it
+      const draftUser = { ...user, draft_context: 'draft-id' };
+      expect(await getAllowedTransitions(context, draftUser, entity.id)).toEqual([]);
+      await expect(triggerWorkflowEvent(context, draftUser, entity.id, 'Validate')).rejects.toThrow('You are not allowed to do this');
+      expect(updateAttribute).not.toHaveBeenCalled();
+    });
   });
 
   it('does not complete or persist a terminal transition whose side effect fails', async () => {

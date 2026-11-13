@@ -50,4 +50,5 @@ export interface Stix2Grouping extends Stix2Container {
   name: string;
   description: string;
   context: string;
+  x_opencti_aliases: Array<string>;
 }

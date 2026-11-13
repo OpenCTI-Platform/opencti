@@ -29,6 +29,7 @@ class Task:
                 field_id
                 field_name
                 int_value
+                float_value
                 string_value
                 boolean_value
                 date_value
@@ -122,6 +123,17 @@ class Task:
                                     metaData {
                                         mimetype
                                         version
+                                    }
+                                    objectMarking {
+                                        id
+                                        standard_id
+                                        entity_type
+                                        definition_type
+                                        definition
+                                        created
+                                        modified
+                                        x_opencti_order
+                                        x_opencti_color
                                     }
                                 }
                             }

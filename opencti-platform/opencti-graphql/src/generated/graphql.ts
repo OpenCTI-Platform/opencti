@@ -4615,6 +4615,11 @@ export enum ConfigImportMode {
   Overwrite = 'OVERWRITE'
 }
 
+export type ConfigPresetCredentialInput = {
+  key: Scalars['String']['input'];
+  secret: Scalars['String']['input'];
+};
+
 export type ConfigPresetExportableGroup = {
   __typename?: 'ConfigPresetExportableGroup';
   key: Scalars['String']['output'];
@@ -4662,6 +4667,16 @@ export type ConfigPresetImportCounts = {
   skipped: Scalars['Int']['output'];
 };
 
+export type ConfigPresetImportCredential = {
+  __typename?: 'ConfigPresetImportCredential';
+  description: Scalars['String']['output'];
+  key: Scalars['String']['output'];
+  required: Scalars['Boolean']['output'];
+  secret: Scalars['Boolean']['output'];
+  stored: Scalars['Boolean']['output'];
+  type: Scalars['String']['output'];
+};
+
 export type ConfigPresetImportField = {
   __typename?: 'ConfigPresetImportField';
   key: Scalars['String']['output'];
@@ -4671,6 +4686,7 @@ export type ConfigPresetImportField = {
 export type ConfigPresetImportItem = {
   __typename?: 'ConfigPresetImportItem';
   conflict: Scalars['Boolean']['output'];
+  credentials: Array<ConfigPresetImportCredential>;
   dependsOn: Array<ConfigPresetItemReference>;
   exists: Scalars['Boolean']['output'];
   fields: Array<ConfigPresetImportField>;
@@ -4792,6 +4808,12 @@ export type ConfigPresetImportType = {
   modes: Array<ConfigImportMode>;
 };
 
+export type ConfigPresetItemCredentialsInput = {
+  key: Scalars['ID']['input'];
+  type: Scalars['ID']['input'];
+  values: Array<ConfigPresetCredentialInput>;
+};
+
 export type ConfigPresetItemMode = {
   __typename?: 'ConfigPresetItemMode';
   key: Scalars['ID']['output'];
@@ -4807,6 +4829,27 @@ export type ConfigPresetItemReference = {
   __typename?: 'ConfigPresetItemReference';
   key: Scalars['String']['output'];
   type: Scalars['String']['output'];
+};
+
+export type ConfigPresetItemServiceAccountInput = {
+  key: Scalars['ID']['input'];
+  type: Scalars['ID']['input'];
+  user_id: Scalars['ID']['input'];
+};
+
+export type ConfigPresetPartialImportOutput = {
+  __typename?: 'ConfigPresetPartialImportOutput';
+  counts: ConfigPresetImportCounts;
+  results: Array<ConfigPresetImportResult>;
+};
+
+export type ConfigPresetPartialImportPreview = {
+  __typename?: 'ConfigPresetPartialImportPreview';
+  bundle_name?: Maybe<Scalars['String']['output']>;
+  default_mode: ConfigImportMode;
+  generated_at: Scalars['String']['output'];
+  openCTI_version: Scalars['String']['output'];
+  type?: Maybe<ConfigPresetImportType>;
 };
 
 export type ConfigPresetSelectionInput = {
@@ -6828,6 +6871,7 @@ export type CustomFieldValue = {
   date_value?: Maybe<Scalars['DateTime']['output']>;
   field_id: Scalars['ID']['output'];
   field_name: Scalars['String']['output'];
+  float_value?: Maybe<Scalars['Float']['output']>;
   int_value?: Maybe<Scalars['Int']['output']>;
   select_value?: Maybe<Scalars['String']['output']>;
   select_values?: Maybe<Array<Scalars['String']['output']>>;
@@ -10602,6 +10646,28 @@ export enum FormsOrdering {
   CreatedAt = 'created_at',
   Name = 'name',
   UpdatedAt = 'updated_at'
+}
+
+export type FrontendLogExceptionInput = {
+  message?: InputMaybe<Scalars['String']['input']>;
+  stacktrace?: InputMaybe<Scalars['String']['input']>;
+  type?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type FrontendLogInput = {
+  data?: InputMaybe<Scalars['JSON']['input']>;
+  eventName: Scalars['String']['input'];
+  exception?: InputMaybe<FrontendLogExceptionInput>;
+  level: FrontendLogLevel;
+  message: Scalars['String']['input'];
+  timestamp: Scalars['DateTime']['input'];
+};
+
+export enum FrontendLogLevel {
+  Debug = 'DEBUG',
+  Error = 'ERROR',
+  Info = 'INFO',
+  Warn = 'WARN'
 }
 
 export type GetMetrics = {
@@ -14407,6 +14473,37 @@ export enum IngestionCsvOrdering {
   Uri = 'uri'
 }
 
+export type IngestionDeduplicationRule = BasicObject & InternalObject & {
+  __typename?: 'IngestionDeduplicationRule';
+  created_at: Scalars['DateTime']['output'];
+  entity_type: Scalars['String']['output'];
+  excluded_fields: Array<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
+  standard_id: Scalars['String']['output'];
+  target_type: Scalars['String']['output'];
+  ttl?: Maybe<Scalars['Int']['output']>;
+  updated_at: Scalars['DateTime']['output'];
+  user?: Maybe<Creator>;
+  user_id: Scalars['String']['output'];
+};
+
+export type IngestionDeduplicationRuleAddInput = {
+  excluded_fields?: InputMaybe<Array<Scalars['String']['input']>>;
+  target_type: Scalars['String']['input'];
+  ttl?: InputMaybe<Scalars['Int']['input']>;
+  user_id: Scalars['ID']['input'];
+};
+
+export type IngestionDeduplicationUsage = {
+  __typename?: 'IngestionDeduplicationUsage';
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+};
+
 export type IngestionEntry = {
   __typename?: 'IngestionEntry';
   identifier: Scalars['String']['output'];
@@ -15860,6 +15957,7 @@ export type LocalAuthConfigInput = {
   local_auth_lockout_final_action?: InputMaybe<LocalAuthLockoutFinalAction>;
   local_auth_lockout_max_attempts?: InputMaybe<Scalars['Int']['input']>;
   local_auth_lockout_window?: InputMaybe<Scalars['Int']['input']>;
+  password_policy_history_count?: InputMaybe<Scalars['Int']['input']>;
   password_policy_max_length?: InputMaybe<Scalars['Int']['input']>;
   password_policy_min_length?: InputMaybe<Scalars['Int']['input']>;
   password_policy_min_lowercase?: InputMaybe<Scalars['Int']['input']>;
@@ -17819,6 +17917,8 @@ export type Mutation = {
   configPresetImportSessionClear: Scalars['Boolean']['output'];
   configPresetImportSessionSave: ConfigPresetImportSession;
   configPresetImportUpload: File;
+  configPresetPartialImport: ConfigPresetPartialImportOutput;
+  configPresetPartialImportPreview: ConfigPresetPartialImportPreview;
   connectorJWT: Scalars['String']['output'];
   connectorMigrateToManaged: ManagedConnector;
   contactUsXtmHub: Success;
@@ -17920,7 +18020,9 @@ export type Mutation = {
   formFieldPatch?: Maybe<Form>;
   formImport?: Maybe<Form>;
   formSubmit?: Maybe<FormSubmissionResponse>;
+  /** @deprecated Replaced by frontendLogsAdd (#17400) */
   frontendErrorLog?: Maybe<Scalars['Boolean']['output']>;
+  frontendLogsAdd?: Maybe<Scalars['Boolean']['output']>;
   groupAdd?: Maybe<Group>;
   groupEdit?: Maybe<GroupEditMutations>;
   groupingAdd?: Maybe<Grouping>;
@@ -17951,6 +18053,9 @@ export type Mutation = {
   ingestionCsvFieldPatch?: Maybe<IngestionCsv>;
   ingestionCsvResetState?: Maybe<IngestionCsv>;
   ingestionCsvTester?: Maybe<CsvMapperTestResult>;
+  ingestionDeduplicationRuleAdd?: Maybe<IngestionDeduplicationRule>;
+  ingestionDeduplicationRuleDelete?: Maybe<Scalars['ID']['output']>;
+  ingestionDeduplicationRuleFieldPatch?: Maybe<IngestionDeduplicationRule>;
   ingestionHealthSettingsEdit?: Maybe<IngestionHealthSettings>;
   ingestionJsonAdd?: Maybe<IngestionJson>;
   ingestionJsonAddInputFromImport: IngestionJsonAddInputFromImport;
@@ -18627,9 +18732,11 @@ export type MutationConfigPresetExportArgs = {
 
 
 export type MutationConfigPresetImportArgs = {
+  credentials?: InputMaybe<Array<ConfigPresetItemCredentialsInput>>;
   dry_run?: InputMaybe<Scalars['Boolean']['input']>;
   file_id: Scalars['ID']['input'];
   selections: Array<ConfigPresetSelectionInput>;
+  service_accounts?: InputMaybe<Array<ConfigPresetItemServiceAccountInput>>;
 };
 
 
@@ -18647,6 +18754,20 @@ export type MutationConfigPresetImportSessionSaveArgs = {
 
 export type MutationConfigPresetImportUploadArgs = {
   file: Scalars['Upload']['input'];
+};
+
+
+export type MutationConfigPresetPartialImportArgs = {
+  file: Scalars['Upload']['input'];
+  item_modes?: InputMaybe<Array<ConfigPresetItemModeInput>>;
+  items: Array<Scalars['ID']['input']>;
+  type: Scalars['ID']['input'];
+};
+
+
+export type MutationConfigPresetPartialImportPreviewArgs = {
+  file: Scalars['Upload']['input'];
+  type: Scalars['ID']['input'];
 };
 
 
@@ -19225,6 +19346,11 @@ export type MutationFrontendErrorLogArgs = {
 };
 
 
+export type MutationFrontendLogsAddArgs = {
+  logs: Array<FrontendLogInput>;
+};
+
+
 export type MutationGroupAddArgs = {
   input: GroupAddInput;
 };
@@ -19388,6 +19514,22 @@ export type MutationIngestionCsvResetStateArgs = {
 
 export type MutationIngestionCsvTesterArgs = {
   input: IngestionCsvAddInput;
+};
+
+
+export type MutationIngestionDeduplicationRuleAddArgs = {
+  input: IngestionDeduplicationRuleAddInput;
+};
+
+
+export type MutationIngestionDeduplicationRuleDeleteArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationIngestionDeduplicationRuleFieldPatchArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<EditInput>;
 };
 
 
@@ -25368,6 +25510,7 @@ export type PublicSettings = IntlSettings & ThemeSettings & {
   __typename?: 'PublicSettings';
   id: Scalars['ID']['output'];
   metrics_definition?: Maybe<Array<MetricDefinition>>;
+  password_policy_history_count?: Maybe<Scalars['Int']['output']>;
   password_policy_max_length?: Maybe<Scalars['Int']['output']>;
   password_policy_min_length?: Maybe<Scalars['Int']['output']>;
   password_policy_min_lowercase?: Maybe<Scalars['Int']['output']>;
@@ -25578,6 +25721,12 @@ export type Query = {
   ingestionCsv?: Maybe<IngestionCsv>;
   ingestionCsvLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestionCsvs?: Maybe<IngestionCsvConnection>;
+  ingestionDeduplicationAllowedTypes: Array<Scalars['String']['output']>;
+  ingestionDeduplicationDefaultExcludedFields: Array<Scalars['String']['output']>;
+  ingestionDeduplicationDefaultTtl: Scalars['Int']['output'];
+  ingestionDeduplicationFields: Array<Scalars['String']['output']>;
+  ingestionDeduplicationRules: Array<IngestionDeduplicationRule>;
+  ingestionDeduplicationUserUsages: Array<IngestionDeduplicationUsage>;
   ingestionHealthSettings?: Maybe<IngestionHealthSettings>;
   ingestionJson?: Maybe<IngestionJson>;
   ingestionJsonLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
@@ -25815,6 +25964,16 @@ export type Query = {
   threatActors?: Maybe<ThreatActorConnection>;
   threatActorsGroup?: Maybe<ThreatActorGroupConnection>;
   threatActorsIndividuals?: Maybe<ThreatActorIndividualConnection>;
+  /**
+   * Keys of the fields a time series widget of the perspective can be broken down by, for the types its dataset is
+   * restricted to (at most 1,000, duplicates ignored), as the widget editor lists them. Without types, the ones the
+   * breakdown queries default to: Stix-Core-Object, stix-relationship. Each field listed is accepted by the breakdown
+   * query of the perspective for these types. The type itself (entity_type, relationship_type), which these queries
+   * accept whatever the types, is only listed when it makes several series: several types, an abstract type, or none.
+   * The relationships perspective lists no field when a type is not a relationship, as its breakdown refuses such a
+   * dataset. The audits perspective lists the fields of the logs whatever the types.
+   */
+  timeSeriesBreakdownFields: Array<Scalars['String']['output']>;
   tool?: Maybe<Tool>;
   tools?: Maybe<ToolConnection>;
   triggerActivity?: Maybe<Trigger>;
@@ -27042,6 +27201,22 @@ export type QueryIngestionCsvsArgs = {
   orderBy?: InputMaybe<IngestionCsvOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryIngestionDeduplicationFieldsArgs = {
+  entityType: Scalars['String']['input'];
+};
+
+
+export type QueryIngestionDeduplicationRulesArgs = {
+  userId?: InputMaybe<Scalars['ID']['input']>;
+};
+
+
+export type QueryIngestionDeduplicationUserUsagesArgs = {
+  excludeConnectorId?: InputMaybe<Scalars['ID']['input']>;
+  userId: Scalars['ID']['input'];
 };
 
 
@@ -29006,6 +29181,12 @@ export type QueryThreatActorsIndividualsArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   toStix?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QueryTimeSeriesBreakdownFieldsArgs = {
+  perspective: WidgetPerspective;
+  types?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 
@@ -31994,6 +32175,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   metrics_definition?: Maybe<Array<MetricDefinition>>;
   otp_mandatory?: Maybe<Scalars['Boolean']['output']>;
   parent_types: Array<Scalars['String']['output']>;
+  password_policy_history_count?: Maybe<Scalars['Int']['output']>;
   password_policy_max_length?: Maybe<Scalars['Int']['output']>;
   password_policy_min_length?: Maybe<Scalars['Int']['output']>;
   password_policy_min_lowercase?: Maybe<Scalars['Int']['output']>;
@@ -41061,6 +41243,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( Omit<Individual, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'organizations' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'workflowInstance' | 'x_opencti_inferences'> & { avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, organizations?: Maybe<_RefType['OrganizationConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, workflowInstance?: Maybe<_RefType['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<Infrastructure, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'killChainPhases' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'workflowInstance' | 'x_opencti_inferences'> & { avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, killChainPhases?: Maybe<Array<_RefType['KillChainPhase']>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, workflowInstance?: Maybe<_RefType['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( BasicStoreEntityIngestionCsv )
+    | ( Omit<IngestionDeduplicationRule, 'user'> & { user?: Maybe<_RefType['Creator']> } )
     | ( BasicStoreEntityIngestionJson )
     | ( BasicStoreEntityIngestionRss )
     | ( BasicStoreEntityIngestionTaxii )
@@ -41190,6 +41373,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicStoreEntityForm )
     | ( BasicGroupEntity )
     | ( BasicStoreEntityIngestionCsv )
+    | ( Omit<IngestionDeduplicationRule, 'user'> & { user?: Maybe<_RefType['Creator']> } )
     | ( BasicStoreEntityIngestionJson )
     | ( BasicStoreEntityIngestionRss )
     | ( BasicStoreEntityIngestionTaxii )
@@ -41653,12 +41837,14 @@ export type ResolversTypes = ResolversObject<{
   ConfidenceLevelOverride: ResolverTypeWrapper<ConfidenceLevelOverride>;
   ConfidenceLevelOverrideInput: ConfidenceLevelOverrideInput;
   ConfigImportMode: ConfigImportMode;
+  ConfigPresetCredentialInput: ConfigPresetCredentialInput;
   ConfigPresetExportableGroup: ResolverTypeWrapper<ConfigPresetExportableGroup>;
   ConfigPresetExportableItem: ResolverTypeWrapper<ConfigPresetExportableItem>;
   ConfigPresetExportableItemConnection: ResolverTypeWrapper<ConfigPresetExportableItemConnection>;
   ConfigPresetExportableItemEdge: ResolverTypeWrapper<ConfigPresetExportableItemEdge>;
   ConfigPresetExportableType: ResolverTypeWrapper<ConfigPresetExportableType>;
   ConfigPresetImportCounts: ResolverTypeWrapper<ConfigPresetImportCounts>;
+  ConfigPresetImportCredential: ResolverTypeWrapper<ConfigPresetImportCredential>;
   ConfigPresetImportField: ResolverTypeWrapper<ConfigPresetImportField>;
   ConfigPresetImportItem: ResolverTypeWrapper<ConfigPresetImportItem>;
   ConfigPresetImportOutcome: ConfigPresetImportOutcome;
@@ -41673,9 +41859,13 @@ export type ResolversTypes = ResolversObject<{
   ConfigPresetImportSessionSelection: ResolverTypeWrapper<ConfigPresetImportSessionSelection>;
   ConfigPresetImportSessionStatus: ConfigPresetImportSessionStatus;
   ConfigPresetImportType: ResolverTypeWrapper<ConfigPresetImportType>;
+  ConfigPresetItemCredentialsInput: ConfigPresetItemCredentialsInput;
   ConfigPresetItemMode: ResolverTypeWrapper<ConfigPresetItemMode>;
   ConfigPresetItemModeInput: ConfigPresetItemModeInput;
   ConfigPresetItemReference: ResolverTypeWrapper<ConfigPresetItemReference>;
+  ConfigPresetItemServiceAccountInput: ConfigPresetItemServiceAccountInput;
+  ConfigPresetPartialImportOutput: ResolverTypeWrapper<Omit<ConfigPresetPartialImportOutput, 'results'> & { results: Array<ResolversTypes['ConfigPresetImportResult']> }>;
+  ConfigPresetPartialImportPreview: ResolverTypeWrapper<ConfigPresetPartialImportPreview>;
   ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: ResolverTypeWrapper<BasicStoreEntityConnector>;
   ConnectorConfig: ResolverTypeWrapper<ConnectorConfig>;
@@ -41946,6 +42136,9 @@ export type ResolversTypes = ResolversObject<{
   FormSubmissionResponse: ResolverTypeWrapper<FormSubmissionResponse>;
   Format: Format;
   FormsOrdering: FormsOrdering;
+  FrontendLogExceptionInput: FrontendLogExceptionInput;
+  FrontendLogInput: FrontendLogInput;
+  FrontendLogLevel: FrontendLogLevel;
   GetMetrics: ResolverTypeWrapper<GetMetrics>;
   Group: ResolverTypeWrapper<BasicGroupEntity>;
   GroupAddInput: GroupAddInput;
@@ -42032,6 +42225,9 @@ export type ResolversTypes = ResolversObject<{
   IngestionCsvEdge: ResolverTypeWrapper<Omit<IngestionCsvEdge, 'node'> & { node: ResolversTypes['IngestionCsv'] }>;
   IngestionCsvMapperType: IngestionCsvMapperType;
   IngestionCsvOrdering: IngestionCsvOrdering;
+  IngestionDeduplicationRule: ResolverTypeWrapper<Omit<IngestionDeduplicationRule, 'user'> & { user?: Maybe<ResolversTypes['Creator']> }>;
+  IngestionDeduplicationRuleAddInput: IngestionDeduplicationRuleAddInput;
+  IngestionDeduplicationUsage: ResolverTypeWrapper<IngestionDeduplicationUsage>;
   IngestionEntry: ResolverTypeWrapper<IngestionEntry>;
   IngestionHeader: ResolverTypeWrapper<IngestionHeader>;
   IngestionHealth: ResolverTypeWrapper<IngestionHealth>;
@@ -42884,12 +43080,14 @@ export type ResolversParentTypes = ResolversObject<{
   ConfidenceLevelInput: ConfidenceLevelInput;
   ConfidenceLevelOverride: ConfidenceLevelOverride;
   ConfidenceLevelOverrideInput: ConfidenceLevelOverrideInput;
+  ConfigPresetCredentialInput: ConfigPresetCredentialInput;
   ConfigPresetExportableGroup: ConfigPresetExportableGroup;
   ConfigPresetExportableItem: ConfigPresetExportableItem;
   ConfigPresetExportableItemConnection: ConfigPresetExportableItemConnection;
   ConfigPresetExportableItemEdge: ConfigPresetExportableItemEdge;
   ConfigPresetExportableType: ConfigPresetExportableType;
   ConfigPresetImportCounts: ConfigPresetImportCounts;
+  ConfigPresetImportCredential: ConfigPresetImportCredential;
   ConfigPresetImportField: ConfigPresetImportField;
   ConfigPresetImportItem: ConfigPresetImportItem;
   ConfigPresetImportOutput: Omit<ConfigPresetImportOutput, 'entity_settings' | 'results' | 'settings'> & { entity_settings?: Maybe<Array<ResolversParentTypes['EntitySetting']>>, results: Array<ResolversParentTypes['ConfigPresetImportResult']>, settings?: Maybe<ResolversParentTypes['Settings']> };
@@ -42900,9 +43098,13 @@ export type ResolversParentTypes = ResolversObject<{
   ConfigPresetImportSession: ConfigPresetImportGraphqlSession;
   ConfigPresetImportSessionSelection: ConfigPresetImportSessionSelection;
   ConfigPresetImportType: ConfigPresetImportType;
+  ConfigPresetItemCredentialsInput: ConfigPresetItemCredentialsInput;
   ConfigPresetItemMode: ConfigPresetItemMode;
   ConfigPresetItemModeInput: ConfigPresetItemModeInput;
   ConfigPresetItemReference: ConfigPresetItemReference;
+  ConfigPresetItemServiceAccountInput: ConfigPresetItemServiceAccountInput;
+  ConfigPresetPartialImportOutput: Omit<ConfigPresetPartialImportOutput, 'results'> & { results: Array<ResolversParentTypes['ConfigPresetImportResult']> };
+  ConfigPresetPartialImportPreview: ConfigPresetPartialImportPreview;
   ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: BasicStoreEntityConnector;
   ConnectorConfig: ConnectorConfig;
@@ -43130,6 +43332,8 @@ export type ResolversParentTypes = ResolversObject<{
   FormEdge: Omit<FormEdge, 'node'> & { node: ResolversParentTypes['Form'] };
   FormSubmissionInput: FormSubmissionInput;
   FormSubmissionResponse: FormSubmissionResponse;
+  FrontendLogExceptionInput: FrontendLogExceptionInput;
+  FrontendLogInput: FrontendLogInput;
   GetMetrics: GetMetrics;
   Group: BasicGroupEntity;
   GroupAddInput: GroupAddInput;
@@ -43203,6 +43407,9 @@ export type ResolversParentTypes = ResolversObject<{
   IngestionCsvAddInput: IngestionCsvAddInput;
   IngestionCsvConnection: Omit<IngestionCsvConnection, 'edges'> & { edges: Array<ResolversParentTypes['IngestionCsvEdge']> };
   IngestionCsvEdge: Omit<IngestionCsvEdge, 'node'> & { node: ResolversParentTypes['IngestionCsv'] };
+  IngestionDeduplicationRule: Omit<IngestionDeduplicationRule, 'user'> & { user?: Maybe<ResolversParentTypes['Creator']> };
+  IngestionDeduplicationRuleAddInput: IngestionDeduplicationRuleAddInput;
+  IngestionDeduplicationUsage: IngestionDeduplicationUsage;
   IngestionEntry: IngestionEntry;
   IngestionHeader: IngestionHeader;
   IngestionHealth: IngestionHealth;
@@ -44554,7 +44761,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type BasicObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['BasicObject'] = ResolversParentTypes['BasicObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AuthenticationProvider' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DataComponent' | 'DataSource' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'NewsFeedItem' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AuthenticationProvider' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DataComponent' | 'DataSource' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionDeduplicationRule' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'NewsFeedItem' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -45347,6 +45554,15 @@ export type ConfigPresetImportCountsResolvers<ContextType = any, ParentType exte
   skipped?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
+export type ConfigPresetImportCredentialResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportCredential'] = ResolversParentTypes['ConfigPresetImportCredential']> = ResolversObject<{
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  required?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  secret?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  stored?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type ConfigPresetImportFieldResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportField'] = ResolversParentTypes['ConfigPresetImportField']> = ResolversObject<{
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -45354,6 +45570,7 @@ export type ConfigPresetImportFieldResolvers<ContextType = any, ParentType exten
 
 export type ConfigPresetImportItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportItem'] = ResolversParentTypes['ConfigPresetImportItem']> = ResolversObject<{
   conflict?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  credentials?: Resolver<Array<ResolversTypes['ConfigPresetImportCredential']>, ParentType, ContextType>;
   dependsOn?: Resolver<Array<ResolversTypes['ConfigPresetItemReference']>, ParentType, ContextType>;
   exists?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   fields?: Resolver<Array<ResolversTypes['ConfigPresetImportField']>, ParentType, ContextType>;
@@ -45444,6 +45661,19 @@ export type ConfigPresetItemModeResolvers<ContextType = any, ParentType extends 
 export type ConfigPresetItemReferenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetItemReference'] = ResolversParentTypes['ConfigPresetItemReference']> = ResolversObject<{
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetPartialImportOutputResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetPartialImportOutput'] = ResolversParentTypes['ConfigPresetPartialImportOutput']> = ResolversObject<{
+  counts?: Resolver<ResolversTypes['ConfigPresetImportCounts'], ParentType, ContextType>;
+  results?: Resolver<Array<ResolversTypes['ConfigPresetImportResult']>, ParentType, ContextType>;
+}>;
+
+export type ConfigPresetPartialImportPreviewResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetPartialImportPreview'] = ResolversParentTypes['ConfigPresetPartialImportPreview']> = ResolversObject<{
+  bundle_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  default_mode?: Resolver<ResolversTypes['ConfigImportMode'], ParentType, ContextType>;
+  generated_at?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  openCTI_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  type?: Resolver<Maybe<ResolversTypes['ConfigPresetImportType']>, ParentType, ContextType>;
 }>;
 
 export type ConnectorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Connector'] = ResolversParentTypes['Connector']> = ResolversObject<{
@@ -46163,6 +46393,7 @@ export type CustomFieldValueResolvers<ContextType = any, ParentType extends Reso
   date_value?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   field_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   field_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  float_value?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   int_value?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   select_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   select_values?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -48662,6 +48893,29 @@ export type IngestionCsvEdgeResolvers<ContextType = any, ParentType extends Reso
   node?: Resolver<ResolversTypes['IngestionCsv'], ParentType, ContextType>;
 }>;
 
+export type IngestionDeduplicationRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionDeduplicationRule'] = ResolversParentTypes['IngestionDeduplicationRule']> = ResolversObject<{
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  excluded_fields?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  target_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  ttl?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  user_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type IngestionDeduplicationUsageResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionDeduplicationUsage'] = ResolversParentTypes['IngestionDeduplicationUsage']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type IngestionEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionEntry'] = ResolversParentTypes['IngestionEntry']> = ResolversObject<{
   identifier?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   level?: Resolver<ResolversTypes['IngestionLogLevel'], ParentType, ContextType>;
@@ -48915,7 +49169,7 @@ export type IngestionTaxiiEdgeResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type InternalObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['InternalObject'] = ResolversParentTypes['InternalObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'NewsFeedItem' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionDeduplicationRule' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'NewsFeedItem' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -50134,6 +50388,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   configPresetImportSessionClear?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, Partial<MutationConfigPresetImportSessionClearArgs>>;
   configPresetImportSessionSave?: Resolver<ResolversTypes['ConfigPresetImportSession'], ParentType, ContextType, RequireFields<MutationConfigPresetImportSessionSaveArgs, 'file_id' | 'revision' | 'selections'>>;
   configPresetImportUpload?: Resolver<ResolversTypes['File'], ParentType, ContextType, RequireFields<MutationConfigPresetImportUploadArgs, 'file'>>;
+  configPresetPartialImport?: Resolver<ResolversTypes['ConfigPresetPartialImportOutput'], ParentType, ContextType, RequireFields<MutationConfigPresetPartialImportArgs, 'file' | 'items' | 'type'>>;
+  configPresetPartialImportPreview?: Resolver<ResolversTypes['ConfigPresetPartialImportPreview'], ParentType, ContextType, RequireFields<MutationConfigPresetPartialImportPreviewArgs, 'file' | 'type'>>;
   connectorJWT?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   connectorMigrateToManaged?: Resolver<ResolversTypes['ManagedConnector'], ParentType, ContextType, RequireFields<MutationConnectorMigrateToManagedArgs, 'input'>>;
   contactUsXtmHub?: Resolver<ResolversTypes['Success'], ParentType, ContextType, RequireFields<MutationContactUsXtmHubArgs, 'message'>>;
@@ -50236,6 +50492,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   formImport?: Resolver<Maybe<ResolversTypes['Form']>, ParentType, ContextType, RequireFields<MutationFormImportArgs, 'file'>>;
   formSubmit?: Resolver<Maybe<ResolversTypes['FormSubmissionResponse']>, ParentType, ContextType, RequireFields<MutationFormSubmitArgs, 'input' | 'isDraft'>>;
   frontendErrorLog?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationFrontendErrorLogArgs, 'message'>>;
+  frontendLogsAdd?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationFrontendLogsAddArgs, 'logs'>>;
   groupAdd?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<MutationGroupAddArgs, 'input'>>;
   groupEdit?: Resolver<Maybe<ResolversTypes['GroupEditMutations']>, ParentType, ContextType, RequireFields<MutationGroupEditArgs, 'id'>>;
   groupingAdd?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingAddArgs, 'input'>>;
@@ -50266,6 +50523,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ingestionCsvFieldPatch?: Resolver<Maybe<ResolversTypes['IngestionCsv']>, ParentType, ContextType, RequireFields<MutationIngestionCsvFieldPatchArgs, 'id' | 'input'>>;
   ingestionCsvResetState?: Resolver<Maybe<ResolversTypes['IngestionCsv']>, ParentType, ContextType, RequireFields<MutationIngestionCsvResetStateArgs, 'id'>>;
   ingestionCsvTester?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<MutationIngestionCsvTesterArgs, 'input'>>;
+  ingestionDeduplicationRuleAdd?: Resolver<Maybe<ResolversTypes['IngestionDeduplicationRule']>, ParentType, ContextType, RequireFields<MutationIngestionDeduplicationRuleAddArgs, 'input'>>;
+  ingestionDeduplicationRuleDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIngestionDeduplicationRuleDeleteArgs, 'id'>>;
+  ingestionDeduplicationRuleFieldPatch?: Resolver<Maybe<ResolversTypes['IngestionDeduplicationRule']>, ParentType, ContextType, RequireFields<MutationIngestionDeduplicationRuleFieldPatchArgs, 'id' | 'input'>>;
   ingestionHealthSettingsEdit?: Resolver<Maybe<ResolversTypes['IngestionHealthSettings']>, ParentType, ContextType, RequireFields<MutationIngestionHealthSettingsEditArgs, 'input'>>;
   ingestionJsonAdd?: Resolver<Maybe<ResolversTypes['IngestionJson']>, ParentType, ContextType, RequireFields<MutationIngestionJsonAddArgs, 'input'>>;
   ingestionJsonAddInputFromImport?: Resolver<ResolversTypes['IngestionJsonAddInputFromImport'], ParentType, ContextType, RequireFields<MutationIngestionJsonAddInputFromImportArgs, 'file'>>;
@@ -51977,6 +52237,7 @@ export type PublicProviderResolvers<ContextType = any, ParentType extends Resolv
 export type PublicSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicSettings'] = ResolversParentTypes['PublicSettings']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics_definition?: Resolver<Maybe<Array<ResolversTypes['MetricDefinition']>>, ParentType, ContextType>;
+  password_policy_history_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_max_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_lowercase?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -52183,6 +52444,12 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   ingestionCsv?: Resolver<Maybe<ResolversTypes['IngestionCsv']>, ParentType, ContextType, RequireFields<QueryIngestionCsvArgs, 'id'>>;
   ingestionCsvLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType, RequireFields<QueryIngestionCsvLogsArgs, 'id'>>;
   ingestionCsvs?: Resolver<Maybe<ResolversTypes['IngestionCsvConnection']>, ParentType, ContextType, Partial<QueryIngestionCsvsArgs>>;
+  ingestionDeduplicationAllowedTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  ingestionDeduplicationDefaultExcludedFields?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  ingestionDeduplicationDefaultTtl?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  ingestionDeduplicationFields?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryIngestionDeduplicationFieldsArgs, 'entityType'>>;
+  ingestionDeduplicationRules?: Resolver<Array<ResolversTypes['IngestionDeduplicationRule']>, ParentType, ContextType, Partial<QueryIngestionDeduplicationRulesArgs>>;
+  ingestionDeduplicationUserUsages?: Resolver<Array<ResolversTypes['IngestionDeduplicationUsage']>, ParentType, ContextType, RequireFields<QueryIngestionDeduplicationUserUsagesArgs, 'userId'>>;
   ingestionHealthSettings?: Resolver<Maybe<ResolversTypes['IngestionHealthSettings']>, ParentType, ContextType>;
   ingestionJson?: Resolver<Maybe<ResolversTypes['IngestionJson']>, ParentType, ContextType, RequireFields<QueryIngestionJsonArgs, 'id'>>;
   ingestionJsonLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType, RequireFields<QueryIngestionJsonLogsArgs, 'id'>>;
@@ -52420,6 +52687,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   threatActors?: Resolver<Maybe<ResolversTypes['ThreatActorConnection']>, ParentType, ContextType, Partial<QueryThreatActorsArgs>>;
   threatActorsGroup?: Resolver<Maybe<ResolversTypes['ThreatActorGroupConnection']>, ParentType, ContextType, Partial<QueryThreatActorsGroupArgs>>;
   threatActorsIndividuals?: Resolver<Maybe<ResolversTypes['ThreatActorIndividualConnection']>, ParentType, ContextType, Partial<QueryThreatActorsIndividualsArgs>>;
+  timeSeriesBreakdownFields?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryTimeSeriesBreakdownFieldsArgs, 'perspective'>>;
   tool?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, Partial<QueryToolArgs>>;
   tools?: Resolver<Maybe<ResolversTypes['ToolConnection']>, ParentType, ContextType, Partial<QueryToolsArgs>>;
   triggerActivity?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<QueryTriggerActivityArgs, 'id'>>;
@@ -53393,6 +53661,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   metrics_definition?: Resolver<Maybe<Array<ResolversTypes['MetricDefinition']>>, ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  password_policy_history_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_max_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_lowercase?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -56451,6 +56720,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ConfigPresetExportableItemEdge?: ConfigPresetExportableItemEdgeResolvers<ContextType>;
   ConfigPresetExportableType?: ConfigPresetExportableTypeResolvers<ContextType>;
   ConfigPresetImportCounts?: ConfigPresetImportCountsResolvers<ContextType>;
+  ConfigPresetImportCredential?: ConfigPresetImportCredentialResolvers<ContextType>;
   ConfigPresetImportField?: ConfigPresetImportFieldResolvers<ContextType>;
   ConfigPresetImportItem?: ConfigPresetImportItemResolvers<ContextType>;
   ConfigPresetImportOutput?: ConfigPresetImportOutputResolvers<ContextType>;
@@ -56463,6 +56733,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ConfigPresetImportType?: ConfigPresetImportTypeResolvers<ContextType>;
   ConfigPresetItemMode?: ConfigPresetItemModeResolvers<ContextType>;
   ConfigPresetItemReference?: ConfigPresetItemReferenceResolvers<ContextType>;
+  ConfigPresetPartialImportOutput?: ConfigPresetPartialImportOutputResolvers<ContextType>;
+  ConfigPresetPartialImportPreview?: ConfigPresetPartialImportPreviewResolvers<ContextType>;
   Connector?: ConnectorResolvers<ContextType>;
   ConnectorConfig?: ConnectorConfigResolvers<ContextType>;
   ConnectorConfiguration?: ConnectorConfigurationResolvers<ContextType>;
@@ -56677,6 +56949,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IngestionCsv?: IngestionCsvResolvers<ContextType>;
   IngestionCsvConnection?: IngestionCsvConnectionResolvers<ContextType>;
   IngestionCsvEdge?: IngestionCsvEdgeResolvers<ContextType>;
+  IngestionDeduplicationRule?: IngestionDeduplicationRuleResolvers<ContextType>;
+  IngestionDeduplicationUsage?: IngestionDeduplicationUsageResolvers<ContextType>;
   IngestionEntry?: IngestionEntryResolvers<ContextType>;
   IngestionHeader?: IngestionHeaderResolvers<ContextType>;
   IngestionHealth?: IngestionHealthResolvers<ContextType>;

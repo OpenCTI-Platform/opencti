@@ -26,6 +26,7 @@ import useDeletion from '../../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import { useQueryLoadingWithLoadQuery } from '../../../../../utils/hooks/useQueryLoading';
 import { CUSTOM_FIELD_NOW_TOKEN } from '../../../../../utils/customFieldDefaults';
+import { getCustomFieldValueError } from '../../../../../utils/customFields';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import EntitySettingCustomFieldsAddDialog from './EntitySettingCustomFieldsAddDialog';
 import { EntitySettingCustomFieldsQuery, EntitySettingCustomFieldsQuery$data } from './__generated__/EntitySettingCustomFieldsQuery.graphql';
@@ -43,6 +44,8 @@ export const entitySettingCustomFieldsQuery = graphql`
           label
           field_type
           select_options
+          min_value
+          max_value
           entity_types
           entity_type_settings {
             entity_type
@@ -85,6 +88,8 @@ export const getCustomFieldTypeLabel = (fieldType: string, t_i18n: (s: string) =
   switch (fieldType) {
     case 'integer':
       return t_i18n('Integer');
+    case 'decimal':
+      return t_i18n('Decimal');
     case 'boolean':
       return t_i18n('Boolean');
     case 'date':
@@ -154,6 +159,9 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
     });
   };
 
+  // As the standard attributes, an invalid default value is refused: the creation of the entities would ignore it
+  const defaultValueError = getCustomFieldValueError(customField, defaultValue, t_i18n);
+
   const renderDefaultValueField = () => {
     switch (customField.field_type) {
       case 'boolean':
@@ -188,13 +196,16 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
           </MuiTextField>
         );
       case 'integer':
+      case 'decimal':
         return (
           <Input
             // `isTypeNumber` (library #190) forces type="number" and suppresses the browser's
             // own spinners, so the field carries the designed stepper instead of the UA's.
             isTypeNumber
+            step={customField.field_type === 'decimal' ? 'any' : undefined}
             label={t_i18n('Default value')}
             value={defaultValue}
+            error={defaultValueError}
             onChange={(event) => setDefaultValue(event.target.value)}
             className="mt-5"
           />
@@ -268,7 +279,7 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
           {t_i18n('Cancel')}
         </Button>
         {/* In Community Edition, nothing can be saved until the custom field is made optional */}
-        <Button onClick={handleSubmit} disabled={submitting || (canOnlyMakeOptional && mandatory)}>
+        <Button onClick={handleSubmit} disabled={submitting || !!defaultValueError || (canOnlyMakeOptional && mandatory)}>
           {t_i18n('Update')}
         </Button>
       </DialogActions>

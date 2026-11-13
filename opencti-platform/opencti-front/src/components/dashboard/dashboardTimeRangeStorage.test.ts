@@ -23,6 +23,7 @@ describe('dashboard time range storage', () => {
     '{"relativeDate":"weeks-2","startDate":null,"endDate":null}',
     '{"relativeDate":"days-7","startDate":"2024-01-01T00:00:00Z","endDate":null}',
     '{"relativeDate":null,"startDate":"2024/01/01","endDate":null}',
+    '{"relativeDate":null,"startDate":"2024-02-01T00:00:00Z","endDate":"2024-01-01T00:00:00Z"}',
   ])('ignores the stored value %s', (raw) => {
     window.localStorage.setItem(key, raw);
     expect(readStoredTimeRange(key)).toBeNull();
@@ -53,7 +54,19 @@ describe('dashboard time range storage', () => {
     expect(parseTimeRangeParam(window.location.search)).toEqual({ startDate: null, endDate: null, relativeDate });
   });
 
-  it.each(['?timeRange=weeks-2', '?timeRange=2024/01/01..', '?timeRange=', '?other=1'])('ignores %s', (search) => {
+  it('accepts an absolute range whose bounds are the same instant', () => {
+    const range = { startDate: '2024-01-01T00:00:00Z', endDate: '2024-01-01T01:00:00+01:00', relativeDate: null };
+    writeTimeRangeParam(range);
+    expect(parseTimeRangeParam(window.location.search)).toEqual(range);
+  });
+
+  it.each([
+    '?timeRange=weeks-2',
+    '?timeRange=2024/01/01..',
+    '?timeRange=2024-02-01T00:00:00Z..2024-01-01T00:00:00Z',
+    '?timeRange=',
+    '?other=1',
+  ])('ignores %s', (search) => {
     expect(parseTimeRangeParam(search)).toBeNull();
   });
 });

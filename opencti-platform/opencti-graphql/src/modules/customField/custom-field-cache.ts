@@ -83,6 +83,8 @@ export const getCustomFieldValueField = (fieldType: CustomFieldType): string => 
   switch (fieldType) {
     case 'integer':
       return 'int_value';
+    case 'decimal':
+      return 'float_value';
     case 'string':
     case 'markdown':
       return 'string_value';
@@ -108,7 +110,7 @@ export const getDynamicTypeAttributeForEntityType = async (
   const resultAttributes = [];
   for (const cfDef of customFieldDefs) {
     let attributeType: AttributeDefinition['type'] = 'string';
-    if (cfDef.field_type === 'integer') attributeType = 'numeric';
+    if (cfDef.field_type === 'integer' || cfDef.field_type === 'decimal') attributeType = 'numeric';
     else if (cfDef.field_type === 'boolean') attributeType = 'boolean';
     else if (cfDef.field_type === 'date') attributeType = 'date';
 

@@ -11,6 +11,8 @@ export const platformSettingsGroup = { id: 'platformSettings', label: 'Platform 
 export const dataModelGroup = { id: 'dataModel', label: 'Data model' };
 export const securityAccessGroup = { id: 'securityAccess', label: 'Security & Access' };
 export const taxonomyGroup = { id: 'taxonomy', label: 'Taxonomy' };
+export const customizationGroup = { id: 'customization', label: 'Customization' };
+export const integrationsGroup = { id: 'integrations', label: 'Integrations' };
 
 // The families the items of another family depend on (the roles of a group, the default theme of the platform):
 // their ids are shared here, so that registries do not import each other
@@ -63,6 +65,13 @@ export const buildConfigPresetConnection = <T>(
   return { ...connection, pageInfo: { ...connection.pageInfo, hasNextPage } };
 };
 
+// A page of items that are all in memory, paged on their ids (the cursor of an item is its id)
+export const pageConfigPresetItems = (items: ConfigPresetItemDefinition[], args: ConfigPresetListItemsArgs) => {
+  const start = args.after ? items.findIndex((item) => item.id === args.after) + 1 : 0;
+  const page = args.first ? items.slice(start, start + args.first) : items.slice(start);
+  return buildConfigPresetConnection(args, page.map((node) => ({ node, cursor: node.id })), items.length, start + page.length < items.length);
+};
+
 // A category of static items (one for a singleton), paged on their ids
 export const staticFamily = (
   family: Pick<ConfigPresetFamilyDefinition, 'id' | 'label' | 'description' | 'group' | 'directory'>,
@@ -70,10 +79,7 @@ export const staticFamily = (
 ): ConfigPresetFamilyDefinition => ({
   ...family,
   listItems: async (context, user, args) => {
-    const items = (await getItems(context, user)).filter((item) => matchesListArgs(item, args));
-    const start = args.after ? items.findIndex((item) => item.id === args.after) + 1 : 0;
-    const page = args.first ? items.slice(start, start + args.first) : items.slice(start);
-    return buildConfigPresetConnection(args, page.map((node) => ({ node, cursor: node.id })), items.length, start + page.length < items.length);
+    return pageConfigPresetItems((await getItems(context, user)).filter((item) => matchesListArgs(item, args)), args);
   },
   resolveItems: async (context, user, ids, excludedIds) => {
     return (await getItems(context, user)).filter((item) => matchesListArgs(item, { ids, excludedIds }));

@@ -1,0 +1,44 @@
+type IngestionDeduplicationRule implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  representative: Representative!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  # IngestionDeduplicationRule
+  user_id: String!
+  user: Creator
+  target_type: String!
+  excluded_fields: [String!]!
+  ttl: Int
+}
+
+type IngestionDeduplicationUsage {
+  id: ID!
+  name: String!
+  entity_type: String!
+}
+
+type Query {
+  ingestionDeduplicationRules(userId: ID): [IngestionDeduplicationRule!]! @auth(for: [INGESTION]) @ff(flags: ["INGESTION_DEDUPLICATION"], softFail: true, defaultValue: "[]")
+  ingestionDeduplicationAllowedTypes: [String!]! @auth(for: [INGESTION]) @ff(flags: ["INGESTION_DEDUPLICATION"], softFail: true, defaultValue: "[]")
+  ingestionDeduplicationDefaultTtl: Int! @auth(for: [INGESTION]) @ff(flags: ["INGESTION_DEDUPLICATION"], softFail: true, defaultValue: "0")
+  ingestionDeduplicationDefaultExcludedFields: [String!]! @auth(for: [INGESTION]) @ff(flags: ["INGESTION_DEDUPLICATION"], softFail: true, defaultValue: "[]")
+  ingestionDeduplicationFields(entityType: String!): [String!]! @auth(for: [INGESTION]) @ff(flags: ["INGESTION_DEDUPLICATION"], softFail: true, defaultValue: "[]")
+  ingestionDeduplicationUserUsages(userId: ID!, excludeConnectorId: ID): [IngestionDeduplicationUsage!]! @auth(for: [INGESTION]) @ff(flags: ["INGESTION_DEDUPLICATION"], softFail: true, defaultValue: "[]")
+}
+
+input IngestionDeduplicationRuleAddInput {
+  user_id: ID!
+  target_type: String!
+  excluded_fields: [String!]
+  ttl: Int
+}
+
+type Mutation {
+  ingestionDeduplicationRuleAdd(input: IngestionDeduplicationRuleAddInput!): IngestionDeduplicationRule @auth(for: [SETTINGS_SETACCESSES, INGESTION_SETINGESTIONS], and: true) @ff(flags: ["INGESTION_DEDUPLICATION"])
+  ingestionDeduplicationRuleFieldPatch(id: ID!, input: [EditInput!]!): IngestionDeduplicationRule @auth(for: [SETTINGS_SETACCESSES, INGESTION_SETINGESTIONS], and: true) @ff(flags: ["INGESTION_DEDUPLICATION"])
+  ingestionDeduplicationRuleDelete(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES, INGESTION_SETINGESTIONS], and: true) @ff(flags: ["INGESTION_DEDUPLICATION"])
+}

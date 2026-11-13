@@ -10,12 +10,14 @@ import { CONFIG_PRESET_FAMILIES, configPresetFamilyType } from '../configPreset-
 import {
   CONFIG_PRESET_REASON_BUNDLE_REFUSED,
   type ConfigPresetBundle,
+  type ConfigPresetBundleAttachment,
   type ConfigPresetBundleItem,
   type ConfigPresetBundleMetadata,
   configPresetPlanKey,
 } from './configPreset-import-types';
 
 // Limits of a bundle, enforced on the bytes really read and never on the sizes declared in the zip
+// The front checks the same zip limit before the upload (CONFIG_PRESET_MAX_ZIP_SIZE in ConfigPresetBundleFileSelect.tsx): change both together
 export const CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE = 50 * 1024 * 1024;
 export const CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE = 5 * 1024 * 1024;
 export const CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE = 50 * 1024 * 1024;
@@ -58,7 +60,7 @@ const metadataSchema = z.object({
   bundle_name: z.string().nullish().transform((name) => name ?? null),
 });
 const dependenciesSchema = z.record(z.string(), z.record(z.string(), z.record(z.string(), z.string())));
-const itemFileSchema = z.object({ type: z.string(), id: z.string(), configuration: z.record(z.string(), z.unknown()) });
+const itemFileSchema = z.object({ type: z.string(), id: z.string(), configuration: z.record(z.string(), z.unknown()), attachment: z.string().optional() });
 
 // A bundle from a more recent platform is refused; a -dev or -rc suffix is ignored and an unreadable version is refused.
 // Not isCompatibleVersionWithMinimal: it has no coerce and throws on a non-semver string.
@@ -89,6 +91,37 @@ const findItemFamily = (type: string) => {
   return family && configPresetFamilyType(family) === type ? family : undefined;
 };
 
+// The attachments are read when an importer asks for them: what they add to the extracted size counts against the same limit as the JSON
+// files. An attachment is counted the first time it is read only: an item reads it to be computed and again to be applied, and nothing
+// is kept of it between the two, so the memory stays bounded by one attachment.
+const toBundleAttachment = (path: string, entry: { stream: () => AsyncIterable<Buffer | string> }, extracted: { size: number }): ConfigPresetBundleAttachment => {
+  let counted = false;
+  return {
+    path,
+    read: async (limit) => {
+      const tooLarge = new Error('too large');
+      let content: Buffer | null;
+      try {
+        content = await readStreamWithLimit(entry.stream(), limit, () => tooLarge);
+      } catch (err) {
+        if (err !== tooLarge) {
+          throw err;
+        }
+        content = null;
+      }
+      if (!counted) {
+        counted = true;
+        // A refused file was read up to the limit: it counts for that much, or a bundle of such files is never stopped
+        extracted.size += content ? content.length : limit;
+        if (extracted.size > CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE) {
+          throw bundleRefused('The configuration bundle is too large once extracted');
+        }
+      }
+      return content;
+    },
+  };
+};
+
 // Reads a zip in memory, nothing is written to disk and entry names are never used as paths
 export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetBundle> => {
   let directory;
@@ -101,18 +134,21 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
   let dependencies: ConfigPresetBundle['dependencies'] = {};
   const items: ConfigPresetBundleItem[] = [];
   const ignored: string[] = [];
-  let totalSize = 0;
+  // The entries that are not JSON, by path: the attachment an item points to is read when its importer asks for it
+  const otherEntries = new Map<string, { stream: () => AsyncIterable<Buffer | string>; uncompressedSize: number }>();
+  const attachmentPaths = new Map<string, string>();
+  const extracted = { size: 0 };
   for (let i = 0; i < directory.files.length; i += 1) {
     const entry = directory.files[i];
     if (entry.type !== 'Directory') {
       if (!entry.path.endsWith('.json')) {
-        ignored.push(entry.path);
+        otherEntries.set(entry.path, entry);
       } else {
         const content = await readStreamWithLimit(entry.stream(), CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE, () => {
           return bundleRefused('A file of the configuration bundle is too large', { path: entry.path });
         });
-        totalSize += content.length;
-        if (totalSize > CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE) {
+        extracted.size += content.length;
+        if (extracted.size > CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE) {
           throw bundleRefused('The configuration bundle is too large once extracted');
         }
         const json = parseJson(entry.path, content);
@@ -141,6 +177,9 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
               throw bundleRefused('The configuration bundle holds the same item twice', { type: parsed.data.type, id: parsed.data.id });
             }
             items.push({ type: family.id, id: parsed.data.id, path: entry.path, configuration: parsed.data.configuration });
+            if (parsed.data.attachment) {
+              attachmentPaths.set(entry.path, parsed.data.attachment);
+            }
           }
         }
       }
@@ -150,6 +189,29 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
     throw bundleRefused(`The configuration bundle has no valid ${CONFIG_PRESET_METADATA_FILE}`);
   }
   checkBundleVersion(metadata.openCTI_version);
+  // The attachment of an item is the entry of the zip at the path its JSON gives, never a path of the disk. A path that is no entry gives no
+  // attachment, and an entry serves one item only.
+  const claimed = new Set<string>();
+  let declaredSize = 0;
+  for (let i = 0; i < items.length; i += 1) {
+    const attachmentPath = attachmentPaths.get(items[i].path);
+    const entry = attachmentPath ? otherEntries.get(attachmentPath) : undefined;
+    if (attachmentPath && entry && !claimed.has(attachmentPath)) {
+      claimed.add(attachmentPath);
+      // The size the zip declares cannot be trusted, the bytes really read are the limit: it only refuses at once a bundle that cannot be
+      // read to the end, instead of failing in the middle of an import, after some of its items were written
+      declaredSize += entry.uncompressedSize;
+      if (extracted.size + declaredSize > CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE) {
+        throw bundleRefused('The configuration bundle is too large once extracted');
+      }
+      items[i].attachment = toBundleAttachment(attachmentPath, entry, extracted);
+    }
+  }
+  otherEntries.forEach((_entry, path) => {
+    if (!claimed.has(path)) {
+      ignored.push(path);
+    }
+  });
   return { metadata, items, dependencies, ignored };
 };
 

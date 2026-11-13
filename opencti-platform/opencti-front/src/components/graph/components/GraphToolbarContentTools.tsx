@@ -56,7 +56,7 @@ const GraphToolbarContentTools = ({
 
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
 
-  const { setIsAddRelationOpen } = useGraphInteractions();
+  const { setIsAddRelationOpen, setIsAddEntitiesOpen } = useGraphInteractions();
 
   const {
     graphData,
@@ -66,6 +66,7 @@ const GraphToolbarContentTools = ({
       selectedNodes: rawSelectedNodes,
       selectedLinks: rawSelectedLinks,
       isAddRelationOpen,
+      isAddEntitiesOpen,
     },
   } = useGraphContext();
 
@@ -173,6 +174,8 @@ const GraphToolbarContentTools = ({
             targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
             onAdd={addNode}
             onDelete={removeFromAddPanel}
+            open={isAddEntitiesOpen}
+            onOpenChange={setIsAddEntitiesOpen}
           />
 
           <Security needs={[KNOWLEDGE]}>
