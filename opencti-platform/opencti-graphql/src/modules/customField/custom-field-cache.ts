@@ -120,6 +120,7 @@ export const getDynamicTypeAttributeForEntityType = async (
       name: cfDef.name,
       type: attributeType,
       label: cfDef.label,
+      description: cfDef.description || null,
       mandatory: isMandatory,
       mandatoryType: isMandatory ? 'external' : 'no',
       editDefault: true,
