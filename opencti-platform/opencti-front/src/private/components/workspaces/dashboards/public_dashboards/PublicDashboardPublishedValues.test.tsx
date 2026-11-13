@@ -86,6 +86,16 @@ describe('PublicDashboardPublishedValues', () => {
     expect(await screen.findByDisplayValue('Finance')).toBeDefined();
     expect(screen.getByText('Last month')).toBeDefined();
   });
+
+  it('should say under an emptied typed field that the default value is published', async () => {
+    const { user } = renderSection(dashboard('dashboard-1', 'Finance'));
+    const input = await screen.findByDisplayValue('Finance');
+    expect(screen.queryByTestId(`public-dashboard-published-default-${SECTOR}`)).toBeNull();
+    await user.clear(input);
+    expect(screen.getByTestId(`public-dashboard-published-default-${SECTOR}`).textContent).toContain('Finance');
+    await user.type(input, 'Health');
+    expect(screen.queryByTestId(`public-dashboard-published-default-${SECTOR}`)).toBeNull();
+  });
 });
 
 // The loader clears the fields as soon as another dashboard is selected, before its data arrives: a submission made

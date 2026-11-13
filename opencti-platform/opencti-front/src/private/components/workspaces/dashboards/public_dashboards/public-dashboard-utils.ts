@@ -145,6 +145,27 @@ export const applyPresetToPublishedValues = (
 };
 
 /**
+ * Whether the value of a variable is typed in the publication form (free text or number): emptying it is a step of
+ * the typing, not a choice of the author. The other inputs pick a value, and empty them is a deliberate clear.
+ */
+export const isTypedPublishedVariable = (variable: Pick<DashboardVariable, 'type' | 'restriction'>) => (
+  variable.restriction.mode !== 'selection' && (variable.type === 'text' || variable.type === 'numeric')
+);
+
+/**
+ * The value a field of the publication form takes on change. An empty value publishes the default of the variable:
+ * a cleared picker shows that default again, so that the form never shows an empty field for a filtered value. A typed
+ * field keeps its empty draft while the author types, and says that the default applies.
+ */
+export const applyPublishedVariableChange = (
+  variable: DashboardVariable,
+  value: string,
+): string => {
+  if (value !== '' || isTypedPublishedVariable(variable)) return value;
+  return buildDefaultVariableValues([variable]).get(variable.id) ?? '';
+};
+
+/**
  * Same rule as the time filters of a dashboard: `none` empties the field, a relative date clears the absolute ones.
  */
 export const applyPublishedTimeRangeChange = (
