@@ -3,11 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DashboardConfig } from './dashboard-types';
 import { dashboardTimeRangeStorageKey } from './dashboardTimeRangeStorage';
 
-const mocks = vi.hoisted(() => ({ userId: 'user-1', flags: ['DASHBOARD_VARIABLES'] as string[] }));
+const mocks = vi.hoisted(() => ({ userId: 'user-1' }));
 vi.mock('../../utils/hooks/useAuth', () => ({ default: () => ({ me: { id: mocks.userId } }) }));
-vi.mock('../../utils/hooks/useHelper', () => ({
-  default: () => ({ isFeatureEnable: (f: string) => mocks.flags.includes(f) }),
-}));
 
 import { useDashboardTimeRange } from './useDashboardTimeRange';
 
@@ -24,7 +21,6 @@ describe('useDashboardTimeRange', () => {
     window.localStorage.clear();
     window.history.replaceState(null, '', '/');
     mocks.userId = 'user-1';
-    mocks.flags = ['DASHBOARD_VARIABLES'];
   });
 
   it('starts from the manifest range', () => {
@@ -88,16 +84,6 @@ describe('useDashboardTimeRange', () => {
     expect(result.current.range.relativeDate).toBe('days-7');
     expect(timeRangeParam()).toBe('years-1');
     expect(window.localStorage.getItem(dashboardTimeRangeStorageKey('user-1', 'ws-1'))).toBe(JSON.stringify(relative('months-1')));
-  });
-
-  it('reads and writes nothing when the flag is off', () => {
-    mocks.flags = [];
-    store('user-1', 'ws-1', 'months-1');
-    const { result } = renderHook(() => useDashboardTimeRange('ws-1', config));
-    expect(result.current.range.relativeDate).toBe('days-7');
-    act(() => result.current.setDate('relativeDate', 'months-6'));
-    expect(result.current.range.relativeDate).toBe('days-7');
-    expect(timeRangeParam()).toBeNull();
   });
 
   it('resetRange drops the submitted range only, and keeps a range changed since', () => {

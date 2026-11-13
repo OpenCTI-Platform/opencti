@@ -11,7 +11,6 @@ import {
   queryAsUserWithSuccess,
 } from '../../utils/testQueryHelper';
 import { fromB64, toB64 } from '../../../src/utils/base64';
-import { ENABLED_FEATURE_FLAGS } from '../../../src/config/conf';
 import { MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 
 const CREATE = gql`
@@ -156,18 +155,6 @@ describe('Dashboard variables API', () => {
     await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: DELETE_VARIABLE, variables: { id: viewDashboardId, variableId: viewVariable.id } });
     const { data } = await queryAsUserWithSuccess(USER_EDITOR, { query: UPSERT, variables: { id: editDashboardId, input: { name: 'Allowed', type: 'text', defaultValue: 'x' } } });
     expect(data?.workspaceVariableUpsert.variables).toHaveLength(1);
-  });
-
-  it('should hide the API when the feature flag is disabled', async () => {
-    const previous = [...ENABLED_FEATURE_FLAGS];
-    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
-    try {
-      const result = await queryAsAdmin({ query: UPSERT, variables: { id: dashboardId, input: { name: 'Flag off', type: 'text', defaultValue: 'x' } } });
-      expect(result.errors?.[0].message).toEqual('Feature is disabled');
-      expect((await readWorkspace(dashboardId)).variables).toEqual([]);
-    } finally {
-      ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...previous);
-    }
   });
 
   it('should keep both variables when two upserts run concurrently', async () => {

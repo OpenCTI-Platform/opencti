@@ -20,8 +20,6 @@ import useAuth from '../../../../../utils/hooks/useAuth';
 import { ME_FILTER_VALUE } from '../../../../../utils/filters/filtersUtils';
 import { fromB64 } from '../../../../../utils/String';
 import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
-import useHelper from '../../../../../utils/hooks/useHelper';
-import { DASHBOARD_VARIABLES_FEATURE_FLAG } from '../../../../../components/dashboard/dashboardVariablesFeatureFlag';
 import {
   buildPublicationInput,
   EMPTY_PUBLISHED_TIME_RANGE,
@@ -74,8 +72,6 @@ const PublicDashboardCreationFormComponent = ({
 }: PublicDashboardCreationFormComponentProps) => {
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
-  const { isFeatureEnable } = useHelper();
-  const isVariablesEnabled = isFeatureEnable(DASHBOARD_VARIABLES_FEATURE_FLAG);
   const publicDashboardCreatorName = me.name;
   const [commitCreateMutation] = useApiMutation(publicDashboardCreateMutation);
 
@@ -100,20 +96,20 @@ const PublicDashboardCreationFormComponent = ({
     // The published values must be those of the selected dashboard: no submission, by button or by keyboard,
     // while they load.
     published_for: Yup.string().nullable().test('published-values-loaded', t_i18n('The published values of the selected dashboard are still loading'), function isLoaded(value) {
-      return !isVariablesEnabled || !this.parent.dashboard_id || value === this.parent.dashboard_id;
+      return !this.parent.dashboard_id || value === this.parent.dashboard_id;
     }),
     // Checked here too, so that the author sees it on the field instead of the refusal of the server
     time_range: Yup.object().test('ordered-range', t_i18n("The end date can't be before start date"), (range) => (
-      !isVariablesEnabled || !range || isOrderedPublishedTimeRange(range as PublishedTimeRange)
+      !range || isOrderedPublishedTimeRange(range as PublishedTimeRange)
     )),
     // A refused date is shown in its picker but never reaches the range: publishing would freeze another range
-    time_range_invalid: Yup.boolean().test('valid-dates', t_i18n('A date of the time range is not valid'), (invalid) => !isVariablesEnabled || !invalid),
+    time_range_invalid: Yup.boolean().test('valid-dates', t_i18n('A date of the time range is not valid'), (invalid) => !invalid),
   });
 
   const onSubmit: FormikConfig<PublicDashboardCreationFormData>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     commitCreateMutation({
       variables: {
-        input: buildPublicationInput(values, isVariablesEnabled),
+        input: buildPublicationInput(values),
       },
       updater: (store) => updater?.(store, 'publicDashboardAdd'),
       onCompleted: () => {
@@ -222,9 +218,7 @@ const PublicDashboardCreationFormComponent = ({
           </Alert>
 
           {/* Another dashboard starts the published values again, the date pickers and what they refused included */}
-          {isVariablesEnabled && (
-            <PublicDashboardPublishedValuesLoader key={values.dashboard_id} dashboardId={values.dashboard_id} />
-          )}
+          <PublicDashboardPublishedValuesLoader key={values.dashboard_id} dashboardId={values.dashboard_id} />
 
           <FormButtonContainer>
             <Button

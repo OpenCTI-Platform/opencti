@@ -154,7 +154,7 @@ type MeUser implements BasicObject & InternalObject {
   ): GroupConnection
   default_dashboards: [Workspace!]!
   default_dashboard: Workspace
-  default_dashboard_preset: String @ff(flags: ["DASHBOARD_VARIABLES"], softFail: true)
+  default_dashboard_preset: String
   default_time_field: String
   account_status: String!
   account_lock_after_date: DateTime

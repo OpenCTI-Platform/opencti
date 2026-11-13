@@ -3,11 +3,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Select, SelectContent, SelectHelperText, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import useHelper from '../../../../utils/hooks/useHelper';
-import { DASHBOARD_VARIABLES_FEATURE_FLAG } from '../../../../components/dashboard/dashboardVariablesFeatureFlag';
 import { DashboardPresetFieldQuery } from './__generated__/DashboardPresetFieldQuery.graphql';
-
-const NO_PRESET = '__no_preset__';
 
 const presetsQuery = graphql`
   query DashboardPresetFieldQuery($id: String!) {
@@ -41,20 +37,22 @@ const DashboardPresetFieldComponent = ({ queryRef, value, onChange, label, helpe
   const presets = workspace?.presets ?? [];
   const fieldLabel = label ?? t_i18n('Default preset');
   // A preset that no longer exists is shown as none.
-  const selected = value && presets.some((preset) => preset.id === value) ? value : NO_PRESET;
+  const selected = value && presets.some((preset) => preset.id === value) ? value : '';
   return (
     <div style={style} data-testid="dashboard-preset-field">
       <Select
         value={selected}
-        onValueChange={(next) => onChange(next === NO_PRESET ? null : next)}
+        // The clear control of the trigger empties the selection: the dashboard opens on its default values.
+        onValueChange={(next) => onChange(next === '' ? null : next)}
+        clearable
+        clearLabel={t_i18n('No preset')}
         name="default_dashboard_preset"
       >
         <SelectLabel>{fieldLabel}</SelectLabel>
         <SelectTrigger className="w-full">
-          <SelectValue placeholder={fieldLabel} />
+          <SelectValue placeholder={t_i18n('No preset (default values of the dashboard)')} />
         </SelectTrigger>
         <SelectContent aria-label={fieldLabel}>
-          <SelectItem value={NO_PRESET}><em>{t_i18n('No preset (default values of the dashboard)')}</em></SelectItem>
           {presets.map((preset) => (
             <SelectItem key={preset.id} value={preset.id}>{preset.name}</SelectItem>
           ))}
@@ -67,7 +65,7 @@ const DashboardPresetFieldComponent = ({ queryRef, value, onChange, label, helpe
 
 /**
  * The preset a dashboard opens on, among the presets of the selected dashboard. Used wherever a default dashboard is
- * chosen (user, group, organization). Nothing without the feature or without a dashboard.
+ * chosen (user, group, organization). Nothing without a dashboard.
  */
 const DashboardPresetFieldLoader = (props: DashboardPresetFieldProps & { dashboardId: string }) => {
   const queryRef = useQueryLoading<DashboardPresetFieldQuery>(presetsQuery, { id: props.dashboardId });
@@ -80,9 +78,8 @@ const DashboardPresetFieldLoader = (props: DashboardPresetFieldProps & { dashboa
 };
 
 const DashboardPresetField = (props: DashboardPresetFieldProps) => {
-  const { isFeatureEnable } = useHelper();
   const { dashboardId } = props;
-  if (!isFeatureEnable(DASHBOARD_VARIABLES_FEATURE_FLAG) || !dashboardId) return null;
+  if (!dashboardId) return null;
   return <DashboardPresetFieldLoader {...props} dashboardId={dashboardId} />;
 };
 

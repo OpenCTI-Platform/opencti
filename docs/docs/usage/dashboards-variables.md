@@ -1,0 +1,110 @@
+# Dashboard variables and presets
+
+A custom dashboard can be *verticalized*: instead of maintaining one copy of the dashboard per client, per sector or per team, you define **variables** once, reference them in the filters of your widgets, and switch their values in one click. A **preset** saves a set of values, time range included, so a whole view of the dashboard is restored at once.
+
+!!! note "Who can do what"
+
+    Creating, editing and deleting variables and presets requires the *Create / Update dashboards* capability and an edit right on the dashboard. Viewers only get the controls the dashboard editor opens for them (see [Viewer permissions](#viewer-permissions)).
+
+## Variables
+
+### Create a variable
+
+On the page of a dashboard, the variables bar sits below the time filters. Click **+ Variable** to open the *Create variable* dialog:
+
+- **Name**: unique within the dashboard.
+- **Type**: entity (restricted to one or several entity types), label, marking, user, group, status, kill chain phase, vocabulary (of a given category), entity type, text, number, boolean or date.
+- **Restriction** (for the types that support it): *No restriction*, *Manual selection* (a closed list of values, up to 200) or, for entity variables, *By filter* (only the entities matching a filter can be picked).
+- **Default value**: mandatory. It is the value every user sees until they pick another one.
+
+A dashboard holds up to 50 variables; names are limited to 200 characters.
+
+The type of a variable cannot be changed once created; its name, restriction and default value can.
+
+### Use a variable in a widget
+
+When you edit the filters of a widget on a dashboard that holds variables, the value list of a filter starts with a **Variables** group listing the variables compatible with that filter. For date, number and text filters, a *Fixed value / Variable* switch lets you pick a variable instead of typing a value. The filter chip then shows the name of the variable.
+
+A widget that uses at least one variable shows a small marker in its header; its tooltip lists the variables used.
+
+### Change a value
+
+Click the chip of a variable in the bar to change its value. The widgets using it reload at once. The values you pick are **personal**: they are kept in your browser, for this dashboard, and reflected in the address bar so that a shared link opens the same view. Other users keep their own values, and the dashboard itself is not modified.
+
+The bar tells you when you depart from what you started from (the selected preset or, without one, the defaults of the dashboard):
+
+- a **Modified** badge appears next to the preset selector as soon as a value or the time range differs;
+- a dot marks the chip of each variable whose value differs.
+
+On the right of the bar:
+
+- **Reset to "<preset>"** brings every value, and the time range, back to your default preset (see [Default preset](#default-preset)); without one, the button reads **Reset to defaults** and brings back the defaults of the dashboard. It shows only when there is something to reset.
+- **Save** (editors only) opens a menu where each entry says who it affects; see [Save menu](#save-menu).
+
+A variable no widget uses is shown muted. If a variable is deleted while widgets still use it, those widgets show *No data has been found* rather than ignoring the filter: edit their filters to pick another variable or a fixed value. The values the presets held for that variable are dropped.
+
+### Time range
+
+Changing the time range of a dashboard no longer modifies the dashboard: like the variable values, the range is personal and kept in your browser. A changed range counts as a modification: it lights the **Modified** badge and is restored by **Reset**. Editors promote their range from the **Save** menu, with **Set as dashboard defaults** or by updating a preset.
+
+!!! warning "Behaviour change"
+
+    Before this feature, changing the time range of a dashboard was saved immediately and applied to every user. It is now a personal setting: your other browsers and the other users keep the defaults of the dashboard, or their default preset, and the home dashboard opens on them too. The JSON export holds the dashboard as saved, without your personal range; the image and PDF exports capture the page as you see it, your range included. Use **Save** > **Set as dashboard defaults** to change the range the dashboard shows to everyone without a preset: users on a preset (picked or default) and users who changed the range themselves keep theirs.
+
+## Presets
+
+A preset is a named snapshot of the values of all the variables and of the time range. The preset selector is the first element of the variables bar, labelled **Preset** and showing the name of the selected preset, or *No preset*. It appears once the dashboard holds at least one preset.
+
+Open the selector to:
+
+- select *No preset*, first in the list, to view the defaults of the dashboard, also when a default preset applies to you: this choice is kept like a preset (the address then holds `preset=none`), and **Reset** brings you back to your default preset;
+- select a preset: its values and its time range are restored at once. The default preset of the dashboard for you (see [Default preset](#default-preset)) is captioned *Default*;
+- **Rename preset** or **Delete preset**, for the selected preset (editors only).
+
+The selected preset is personal, like the values: it is kept in your browser and in the address bar, so sharing the address opens the same view. A value changed on top of a preset is kept apart from it and lights the **Modified** badge: **Reset** drops it and goes back to your default preset, or to the defaults of the dashboard.
+
+### Save menu
+
+Editors save from a single **Save** button at the end of the bar. Each entry of its menu says, under its name, who it affects:
+
+| Entry | Affects | Effect |
+|---|---|---|
+| **Update "<preset>"** | For everyone using this preset | Replaces the values and time range of the selected preset with yours. Shown when a preset is selected; available when you departed from it. |
+| **Save as new preset…** | Under a new name, for anyone to pick | Saves your current values and time range under a new name. A dashboard holds up to 50 presets; names are limited to 200 characters. |
+| **Set as dashboard defaults** | For everyone without a preset | Saves your current values and time range as the defaults of the dashboard, what it shows with no preset. |
+
+The first preset of a dashboard is created with **Save as new preset…**: the selector appears once it exists.
+
+### Default preset
+
+A dashboard can open on a preset for a given population. Wherever a default dashboard is chosen, a **Default preset** field lists the presets of that dashboard:
+
+- in your own settings (*Custom dashboard* of the home page);
+- in the settings of a group;
+- in the settings of an organization (reserved, with the default dashboard, to the users whose role grants the *Manage credentials* capability).
+
+The members then see the home dashboard, and the page of the dashboard, with the values and time range of that preset as their defaults. **Reset** brings them back to this preset. If the preset is deleted, the defaults of the dashboard apply.
+
+When several of these settings point to the same dashboard, the first one found decides, with or without a preset: your own settings first, then your organizations, then your groups. A user who chose this dashboard with *No preset* is not caught up by the preset of their group. When several organizations, or several groups, point to the dashboard with different presets, the first one in the user's list of organizations or groups applies; this order cannot be chosen, so prefer one default preset per dashboard across the organizations and groups of a user.
+
+## Viewer permissions
+
+In the edition drawer of a dashboard, three switches decide what a user who can only view the dashboard may change for themselves. None of them grants any right to modify the dashboard.
+
+| Switch | Effect for a viewer |
+|---|---|
+| Allow viewers to edit time filters | Shows the time filters; the range is personal |
+| Allow viewers to change variable values | Shows the variables bar; the values are personal |
+| Allow viewers to switch presets | Shows the preset selector; the selected preset is personal |
+
+All three are on by default: a viewer may change the values, the time range and the preset for themselves unless the editor closes a switch. Behind a closed switch, the viewer sees the dashboard with its defaults for that part; with *Allow viewers to switch presets* closed, a viewer to whom a default preset applies still opens on it, only their own pick is ignored.
+
+## Public dashboards
+
+The publication form shows a **Published values** section: the time range and, for each variable used by a widget, the value to freeze in the public dashboard. The section starts from what you see on the dashboard: your selected preset (or your default preset), with the values and the time range you changed on top of it, else the defaults of the dashboard. **Load a preset** fills it from another preset. The published values are frozen at publication: the public dashboard is a snapshot, later changes of the variables or presets do not affect it. Publish the same dashboard several times to get one public dashboard per vertical.
+
+The time filters of the public page show the published range and stay read only, as before: the viewer switches of a dashboard do not apply to its public dashboards.
+
+## Export, import and duplication
+
+Duplicating a dashboard copies its variables and presets with it. Variables and presets are part of the dashboard export. Their entity references are converted like the ones of the widget filters, so an import on another platform resolves them when the entities exist there. Importing a single widget that uses variables into another dashboard keeps its references: a warning tells how many variables are missing, and the widget shows no data until variables with the same identifiers exist. Custom views cannot hold variables: importing such a widget into a custom view is refused.
