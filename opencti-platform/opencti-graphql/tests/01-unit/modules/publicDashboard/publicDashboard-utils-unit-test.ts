@@ -1,6 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { getServedPublicManifest, omitViewerSwitches, sanitizePublicDashboardUriKey } from '../../../../src/modules/publicDashboard/publicDashboard-utils';
-import { ENABLED_FEATURE_FLAGS } from '../../../../src/config/conf';
 import { fromB64, toB64 } from '../../../../src/utils/base64';
 
 const UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -57,12 +56,6 @@ describe('getServedPublicManifest', () => {
     return fromB64(getServedPublicManifest(dashboard) as string).widgets[widgetId];
   };
   const withoutBreakdown = { ...publicWidgets['widget-1'], parameters: { title: 'Reports', interval: 'week' } };
-
-  const previousEnabledFeatureFlags = [...ENABLED_FEATURE_FLAGS];
-
-  afterEach(() => {
-    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...previousEnabledFeatureFlags);
-  });
 
   it('should never serve the viewer switches of the dashboard: the public time filters stay read only', () => {
     const served = { 'widget-2': publicWidgets['widget-2'] };
