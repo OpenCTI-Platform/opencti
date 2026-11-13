@@ -357,6 +357,21 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
       expect(removed.operations).toEqual([{ key: attribute, value: [first], operation: 'remove' }]);
     });
 
+    it.each(TYPE_FIELDS)('should add $attribute on $entityType when the entity has none yet', async ({ entityType, attribute, first }) => {
+      const id: `${string}--${string}` = `${entityType.toLowerCase()}--09bd862a-f030-55f2-920a-900c4913d9cc`;
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: id,
+        bundleObjects: [testBundleObject<StixDomainObject>({ id, type: entityType })],
+        configuration: {
+          applyToElements: 'only-main',
+          actions: [{ op: 'add', attribute, value: [{ label: first, value: first, patch_value: first }] }],
+        },
+      }));
+      const element = result.bundle.objects.find((o) => o.id === id) as Record<string, any>;
+      expect(element[attribute]).toEqual([first]);
+      expect(element.extensions[STIX_EXT_OCTI].opencti_upsert_operations).toEqual([{ key: attribute, value: [first], operation: 'add' }]);
+    });
+
     it('should leave an entity without the attribute unchanged', async () => {
       const result = await run('Malware', 'report_types', 'add', ['threat-report'], []);
       expect(result.values).toEqual([]);
