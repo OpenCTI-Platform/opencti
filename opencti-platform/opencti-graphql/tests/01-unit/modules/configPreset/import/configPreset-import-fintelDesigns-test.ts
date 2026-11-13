@@ -22,7 +22,8 @@ import { exportFintelDesign } from '../../../../../src/modules/fintelDesign/fint
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'user-id' } as AuthUser;
 const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'fintelDesigns')!;
-const plan: ConfigPresetImportPlan = { created: new Set() };
+// The plan of the preview, which reserves the names of the earlier items; the one of a real import has none
+const plan: ConfigPresetImportPlan = { created: new Set(), fintelDesignNames: new Set(), renamedFintelDesignIds: new Set() };
 const bundleId = defaultFintelDesign.standard_id;
 const configuration = exportFintelDesign(defaultFintelDesign);
 const attachment = { path: `customization/fintel_designs/${bundleId}.logo`, read: vi.fn() };
@@ -48,14 +49,22 @@ describe('Fintel designs import (registry)', () => {
     expect(family.directory).toBe('customization/fintel_designs');
   });
 
+  it('reserves nothing during a real import: an item that fails leaves no name to the next ones, which read the platform', async () => {
+    vi.mocked(importFintelDesign).mockResolvedValue({ status: 'created', exists: true });
+    const realImportPlan: ConfigPresetImportPlan = { created: new Set(), targets: new Map() };
+    await family.importer!.compute(context, user, item(configuration), realImportPlan, ConfigImportMode.Copy);
+    expect(vi.mocked(importFintelDesign).mock.calls[0][4]).toMatchObject({ reservedNames: undefined, renamedIds: undefined });
+    expect(realImportPlan).toEqual({ created: new Set(), targets: new Map() });
+  });
+
   it('computes the item with a dry run of the module, with the logo of the item, named by its name and marked as the default it is', async () => {
     vi.mocked(importFintelDesign).mockResolvedValue({ status: 'overwritten', exists: true });
     const result = await family.importer!.compute(context, user, item(configuration), plan, ConfigImportMode.Overwrite);
     expect(importFintelDesign).toHaveBeenCalledWith(context, user, configuration, attachment, {
       mode: ConfigImportMode.Overwrite,
       dryRun: true,
-      reservedNames: expect.any(Set),
-      renamedIds: expect.any(Set),
+      reservedNames: plan.fintelDesignNames,
+      renamedIds: plan.renamedFintelDesignIds,
     });
     expect(result).toMatchObject({ label: 'Filigran report', translatable: false, isDefault: true, status: 'overwritten', exists: true, conflict: true });
     vi.mocked(importFintelDesign).mockResolvedValue({ status: 'created', exists: false });

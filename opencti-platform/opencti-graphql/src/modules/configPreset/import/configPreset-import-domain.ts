@@ -172,6 +172,8 @@ export const computeConfigPresetItems = async (
     plannedMarkings: new Map(),
     targets: new Map(),
     connectorNames: new Set(),
+    fintelDesignNames: new Set(),
+    renamedFintelDesignIds: new Set(),
     credentials,
     serviceAccounts,
   };
