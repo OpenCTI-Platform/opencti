@@ -13529,6 +13529,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | StixRefRelationship
   | Task
   | DataComponent
+  | Procedure
   | DataSource
   | CaseIncident
   | CaseRfi
@@ -13627,6 +13628,7 @@ union StixObjectOrStixRelationship =
   | StixSightingRelationship
   | StixRefRelationship
   | DataComponent
+  | Procedure
   | DataSource
   | CaseIncident
   | CaseRfi
@@ -13717,6 +13719,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | Persona
   | StixCoreRelationship
   | DataComponent
+  | Procedure
   | DataSource
   | CaseIncident
   | CaseRfi

@@ -1,0 +1,245 @@
+type Procedure implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+    # Basic Object
+    id: ID! # internal_id
+    standard_id: String!
+    entity_type: String!
+    parent_types: [String!]!
+    metrics:[Metric]
+    # Stix Object
+    representative: Representative!
+    x_opencti_stix_ids: [StixId]
+    is_inferred: Boolean!
+    spec_version: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+    x_opencti_modified_at: DateTime
+    refreshed_at: DateTime
+    draftVersion: DraftVersion
+    # inferences
+    x_opencti_inferences: [Inference]
+    # StixCoreObject
+    createdBy: Identity
+    currentUserAccessRight: String
+    numberOfConnectedElement: Int!
+    objectMarking: [MarkingDefinition!]
+    objectOrganization: [Organization!]
+    objectLabel: [Label!]
+    externalReferences(first: Int): ExternalReferenceConnection
+    containersNumber: Number
+    containers(first: Int, entityTypes: [String!]): ContainerConnection
+    reports(first: Int): ReportConnection
+    notes(first: Int): NoteConnection
+    opinions(first: Int): OpinionConnection
+    observedData(first: Int): ObservedDataConnection
+    groupings(first: Int): GroupingConnection
+    cases(first: Int): CaseConnection
+    stixCoreRelationships(
+        first: Int
+        after: ID
+        orderBy: StixCoreRelationshipsOrdering
+        orderMode: OrderingMode
+        fromId: StixRef
+        toId: StixRef
+        fromTypes: [String]
+        toTypes: [String]
+        relationship_type: String
+        startTimeStart: DateTime
+        startTimeStop: DateTime
+        stopTimeStart: DateTime
+        stopTimeStop: DateTime
+        firstSeenStart: DateTime
+        firstSeenStop: DateTime
+        lastSeenStart: DateTime
+        lastSeenStop: DateTime
+        confidences: [Int]
+        search: String
+        filters: FilterGroup
+    ): StixCoreRelationshipConnection
+    stixCoreObjectsDistribution(
+        relationship_type: [String]
+        toTypes: [String]
+        field: String!
+        startDate: DateTime
+        endDate: DateTime
+        dateAttribute: String
+        operation: StatsOperation!
+        limit: Int
+        order: String
+        types: [String]
+        filters: FilterGroup
+        search: String
+    ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+    stixCoreRelationshipsDistribution(
+        field: String!
+        operation: StatsOperation!
+        startDate: DateTime
+        endDate: DateTime
+        dateAttribute: String
+        isTo: Boolean
+        limit: Int
+        order: String
+        elementWithTargetTypes: [String]
+        fromId: [String]
+        fromRole: String
+        fromTypes: [String]
+        toId: [String]
+        toRole: String
+        toTypes: [String]
+        relationship_type: [String]
+        confidences: [Int]
+        search: String
+        filters: FilterGroup
+    ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+    opinions_metrics: OpinionsMetrics
+    # Stix Domain Object
+    revoked: Boolean!
+    confidence: Int
+    lang: String
+    created: DateTime
+    modified: DateTime
+    x_opencti_graph_data: String
+    objectAssignee: [Assignee!]
+    objectParticipant: [Participant!]
+    avatar: OpenCtiFile
+    fintelTemplates: [FintelTemplate!]
+    filesFromTemplate(
+        first: Int
+        prefixMimeType: String
+        after: ID
+        orderBy: FileOrdering
+        orderMode: OrderingMode
+        search: String
+        filters: FilterGroup
+    ): FileConnection
+    # Technical
+    creators: [Creator!]
+    toStix(version: Version): String
+    importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
+    pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
+    exportFiles(first: Int): FileConnection
+    editContext: [EditUserContext!]
+    connectors(onlyAlive: Boolean): [Connector]
+    jobs(first: Int): [Work]
+    status: Status
+    workflowEnabled: Boolean
+    workflowInstance: WorkflowInstance
+    x_opencti_closing_reason: String
+    pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+    customFieldValues: [CustomFieldValue!]
+    # Procedure
+    name: String!
+    description: String
+    x_procedure_type: String
+    x_mitre_platforms: [String!]
+    first_observed: DateTime
+    last_observed: DateTime
+    x_execution_start: DateTime
+    x_execution_end: DateTime
+    x_fingerprint: String
+    killChainPhases: [KillChainPhase!]
+    procedureObservables(first: Int, after: ID): StixCyberObservableConnection
+    procedureCommand: StixCyberObservable
+    procedureSources: [Identity]
+}
+
+# Ordering
+enum ProceduresOrdering {
+    name
+    created
+    modified
+    created_at
+    updated_at
+    x_opencti_workflow_id
+    confidence
+    _score
+}
+
+# Relay connections
+type ProcedureConnection {
+    pageInfo: PageInfo!
+    edges: [ProcedureEdge]
+}
+type ProcedureEdge {
+    cursor: String!
+    node: Procedure!
+}
+
+# Queries
+type Query {
+    procedure(id: String!): Procedure @auth(for: [KNOWLEDGE])
+    procedures(
+        first: Int
+        after: ID
+        orderBy: ProceduresOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): ProcedureConnection @auth(for: [KNOWLEDGE])
+}
+
+# Mutations
+input ProcedureAddInput {
+    stix_id: StixId
+    x_opencti_stix_ids: [StixId]
+    confidence: Int
+    revoked: Boolean
+    lang: String
+    createdBy: String
+    objectMarking: [String]
+    objectLabel: [String]
+    objectOrganization: [String]
+    externalReferences: [String]
+    created: DateTime
+    modified: DateTime
+    clientMutationId: String
+    update: Boolean
+    name: String! @constraint(minLength: 2, format: "not-blank")
+    description: String
+    x_procedure_type: String
+    x_mitre_platforms: [String]
+    first_observed: DateTime
+    last_observed: DateTime
+    x_execution_start: DateTime
+    x_execution_end: DateTime
+    x_fingerprint: String
+    killChainPhases: [String]
+    procedureObservables: [String]
+    procedureCommand: String
+    procedureSources: [String]
+    techniques: [String]
+    file: Upload
+    fileMarkings: [String]
+    files: [Upload]
+    filesMarkings: [[String]]
+    noTriggerImport: [Boolean]
+    embedded: [Boolean]
+    x_opencti_workflow_id: String
+    x_opencti_modified_at: DateTime
+    upsertOperations: [EditInput!]
+    customFieldValues: [CustomFieldValueAddInput!]
+}
+
+type Mutation {
+    procedureAdd(input: ProcedureAddInput!): Procedure @auth(for: [KNOWLEDGE_KNUPDATE])
+    procedureDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+    procedureFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Procedure @auth(for: [KNOWLEDGE_KNUPDATE])
+    procedureContextPatch(id: ID!, input: EditContext!): Procedure @auth(for: [KNOWLEDGE_KNUPDATE])
+    procedureContextClean(id: ID!): Procedure @auth(for: [KNOWLEDGE_KNUPDATE])
+    procedureRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+    procedureRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Procedure @auth(for: [KNOWLEDGE_KNUPDATE])
+}
