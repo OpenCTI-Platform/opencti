@@ -101,12 +101,22 @@ describe('PublicDashboardPublishedValues', () => {
     expect((await screen.findByTestId('public-dashboard-published-range-error')).textContent).toBe("The end date can't be before start date");
   });
 
+  it('should say under an empty field without default that a value is required', async () => {
+    const { user } = renderSection(dashboard('dashboard-1', ''));
+    const input = await screen.findByLabelText('Sector name');
+    expect((await screen.findByTestId(`public-dashboard-published-missing-${SECTOR}`)).textContent).toBe('This field is required');
+    await user.type(input, 'Health');
+    expect(screen.queryByTestId(`public-dashboard-published-missing-${SECTOR}`)).toBeNull();
+  });
+
   it('should say under an emptied typed field that the default value is published', async () => {
     const { user } = renderSection(dashboard('dashboard-1', 'Finance'));
     const input = await screen.findByDisplayValue('Finance');
     expect(screen.queryByTestId(`public-dashboard-published-default-${SECTOR}`)).toBeNull();
     await user.clear(input);
     expect(screen.getByTestId(`public-dashboard-published-default-${SECTOR}`).textContent).toContain('Finance');
+    // A default is published: nothing is missing
+    expect(screen.queryByTestId(`public-dashboard-published-missing-${SECTOR}`)).toBeNull();
     await user.type(input, 'Health');
     expect(screen.queryByTestId(`public-dashboard-published-default-${SECTOR}`)).toBeNull();
   });

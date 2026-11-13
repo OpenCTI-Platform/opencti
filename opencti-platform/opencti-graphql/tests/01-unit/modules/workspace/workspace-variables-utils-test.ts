@@ -204,6 +204,10 @@ describe('sanitizeCustomViewManifest', () => {
   it('should refuse a widget using a dashboard variable', () => {
     expect(() => sanitizeCustomViewManifest(toB64({ widgets: { a: tokenWidget } }))).toThrow('A widget using dashboard variables cannot be used in a custom view');
   });
+  it('should name the refused widgets, by their title else by their id', () => {
+    const widgets = { a: tokenWidget, b: { ...tokenWidget, parameters: { title: ' Malware by sector ' } }, c: { dataSelection: [{ filters: FILTERS }] } };
+    expect(() => sanitizeCustomViewManifest(toB64({ widgets }))).toThrow('cannot be used in a custom view: a, Malware by sector');
+  });
   it('should strip the server-owned keys of an accepted manifest', () => {
     const result = sanitizeCustomViewManifest(toB64({ widgets: { a: { dataSelection: [{ filters: FILTERS }] } }, variables: [{ id: VAR_ID }], presets: [] }));
     expect(fromB64(result as string)).toEqual({ widgets: { a: { dataSelection: [{ filters: FILTERS }] } } });
