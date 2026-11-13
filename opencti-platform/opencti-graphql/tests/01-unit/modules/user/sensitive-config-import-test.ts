@@ -16,6 +16,7 @@ const protection = (enabled: boolean, typeEnabled = true) => (({
   roles: { enabled: typeEnabled, protected_ids: [PROTECTED_ROLE] },
   groups: { enabled: typeEnabled, protected_ids: [] },
   platform_organization: { enabled: typeEnabled, protected_ids: [] },
+  rules: { enabled: typeEnabled, protected_ids: [] },
 }) as unknown as Awaited<ReturnType<typeof getProtectedSensitiveConfig>>);
 
 beforeEach(() => {
@@ -34,6 +35,13 @@ describe('isConfigImportSensitiveChangeAllowed', () => {
 
   it('protects the main organization as a whole', async () => {
     expect(await isConfigImportSensitiveChangeAllowed(context, userWith(false), 'platform_organization')).toBe(false);
+  });
+
+  it('protects the rules as a whole, as the rules screen does', async () => {
+    expect(await isConfigImportSensitiveChangeAllowed(context, userWith(false), 'rules')).toBe(false);
+    expect(await isConfigImportSensitiveChangeAllowed(context, userWith(true), 'rules')).toBe(true);
+    vi.mocked(getProtectedSensitiveConfig).mockResolvedValue(protection(true, false));
+    expect(await isConfigImportSensitiveChangeAllowed(context, userWith(false), 'rules')).toBe(true);
   });
 
   it('allows everything to a user who can manage the sensitive configuration, and to the platform administrator', async () => {

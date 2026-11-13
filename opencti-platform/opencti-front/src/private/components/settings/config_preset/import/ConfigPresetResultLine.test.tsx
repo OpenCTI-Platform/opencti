@@ -16,11 +16,21 @@ describe('ConfigPresetResultLine', () => {
     expect(screen.getByText('name: Too small')).toBeInTheDocument();
   });
 
+  it('leaves the reason to the row that shows it under its label', () => {
+    testRender(<ConfigPresetResultLine status="FAILED" reason="Theme already exists" withoutReason />);
+    expect(screen.getByText('Failed')).toBeInTheDocument();
+    expect(screen.queryByText('Theme already exists')).not.toBeInTheDocument();
+  });
+
   it.each([
     ['Already exists', 'Already exists'],
     ['Nothing to import', 'Nothing to import'],
     ['Unexpected item id', 'Unexpected item id'],
     ['Unknown message', 'Unknown message'],
+    ['Unknown rule', 'Unknown rule'],
+    ['Activating the rule starts a scan of the knowledge base', 'Activating the rule starts a scan of the knowledge base'],
+    ['Deactivating the rule starts a scan that deletes what it inferred', 'Deactivating the rule starts a scan that deletes what it inferred'],
+    ['The rule engine is disabled', 'The rule engine is disabled'],
     ['The standard id of the theme does not match its id', 'The standard id of the theme does not match its id'],
     ['The standard id of the theme is required to overwrite it', 'The standard id of the theme is required to overwrite it'],
     ['Requires Enterprise Edition', 'Requires Enterprise Edition'],

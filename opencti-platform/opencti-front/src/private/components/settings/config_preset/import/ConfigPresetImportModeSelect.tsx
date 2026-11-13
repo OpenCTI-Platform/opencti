@@ -1,6 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../../components/i18n';
+import type { Theme } from '../../../../../components/Theme';
 import { CONFIG_IMPORT_MODE_LABELS, ConfigImportMode, isConfigImportMode } from '../configImportMode';
 
 interface ConfigPresetImportModeSelectProps {
@@ -27,6 +29,7 @@ const ConfigPresetImportModeSelect: FunctionComponent<ConfigPresetImportModeSele
   onChange,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const supported = modes.filter(isConfigImportMode);
   if (supported.length < 2) {
     return null;
@@ -34,7 +37,8 @@ const ConfigPresetImportModeSelect: FunctionComponent<ConfigPresetImportModeSele
   const label = `${subject}: ${t_i18n(purpose)}`;
   return (
     <Select value={value ?? ''} disabled={disabled} onValueChange={(mode) => onChange(mode as ConfigImportMode)}>
-      <SelectTrigger aria-label={label}>
+      {/* The same width on every row, so that the selects line up whatever the mode or the status next to them */}
+      <SelectTrigger aria-label={label} style={{ width: theme.spacing(28) }}>
         <SelectValue placeholder={t_i18n('Mixed')}>{value ? t_i18n(CONFIG_IMPORT_MODE_LABELS[value]) : null}</SelectValue>
       </SelectTrigger>
       <SelectContent aria-label={label}>

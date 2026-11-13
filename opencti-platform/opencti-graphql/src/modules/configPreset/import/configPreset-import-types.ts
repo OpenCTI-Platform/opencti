@@ -126,7 +126,8 @@ export interface ConfigPresetImporter {
   compute: (context: AuthContext, user: AuthUser, item: ConfigPresetBundleItem, plan: ConfigPresetImportPlan, mode: ConfigImportMode) => Promise<ConfigPresetComputedItem>;
   // Writes the item, with one domain call when it can: an importer that needs several (the hidden entity types hide, then show) can leave
   // its item half written, and the error then makes it failed.
-  // Returns the status when it differs from the computed one (a theme created by another import since compute is overwritten).
+  // Returns the status when it differs from the computed one (a theme created by another import since compute is overwritten),
+  // with its own reason when the one of compute no longer applies (a rule skipped because the rule engine was disabled since).
   // The plan is the one compute recorded this item and the earlier ones in (the role a group gets)
   apply: (
     context: AuthContext,
@@ -135,7 +136,12 @@ export interface ConfigPresetImporter {
     computed: ConfigPresetComputedItem,
     mode: ConfigImportMode,
     plan: ConfigPresetImportPlan,
-  ) => Promise<ConfigImportStatus | void>;
+  ) => Promise<ConfigImportStatus | ConfigPresetAppliedItem | void>;
+}
+
+export interface ConfigPresetAppliedItem {
+  status: ConfigImportStatus;
+  reason?: string;
 }
 
 // Content of metadata.json
