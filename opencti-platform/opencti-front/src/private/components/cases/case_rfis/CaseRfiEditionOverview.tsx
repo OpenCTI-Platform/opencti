@@ -27,7 +27,6 @@ import { CaseRfiEditionOverview_case$key } from './__generated__/CaseRfiEditionO
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { StatusScopeEnum } from '../../../../utils/statusConstants';
-import { isWorkflowDrivenRequestAccess } from '../CaseUtils';
 
 export const caseRfiMutationFieldPatch = graphql`
   mutation CaseRfiEditionOverviewCaseFieldPatchMutation(
@@ -115,9 +114,8 @@ const caseRfiEditionOverviewFragment = graphql`
       entity_type
     }
     x_opencti_request_access
-    workflowInstance {
-      id
-      scope
+    requestAccessConfiguration {
+      isWorkflowDriven
     }
   }
 `;
@@ -210,7 +208,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
   };
   const editor = useFormEditor(caseData as GenericData, enableReferences, queries, validator);
   // A workflow-driven request access RFI changes status through its workflow transitions only
-  const isStatusEditable = caseData.workflowEnabled && !isWorkflowDrivenRequestAccess(caseData);
+  const isStatusEditable = caseData.workflowEnabled && !caseData.requestAccessConfiguration?.isWorkflowDriven;
 
   const onSubmit: FormikConfig<CaseRfiEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     const { message, references, x_opencti_workflow_id, ...otherValues } = values;

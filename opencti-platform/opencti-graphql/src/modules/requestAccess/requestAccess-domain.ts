@@ -64,7 +64,7 @@ import {
   type RequestAccessOutcome,
   type RequestAccessWorkflowState,
 } from '../workflow/domain/workflow-request-access';
-import { REQUEST_ACCESS_MAX_LENGTH } from '../workflow/domain/workflow-domain';
+import { REQUEST_ACCESS_MAX_LENGTH, resolveRequestAccessWorkflowState } from '../workflow/domain/workflow-domain';
 
 // having an id is required for Relay
 const REQUEST_ACCESS_CONFIGURATION_ID = '7059b2f9-86d4-419b-9fde-adf825090820';
@@ -315,9 +315,12 @@ export const getRfiAccessConfiguration = async (
   const rfiEntitySettings = await getRfiEntitySettings(context, user);
   const requestAccessConfiguration = await getRequestAccessConfiguration(context, user, rfiEntitySettings);
   const isUserCanAction = await isUserCanActionRequestAccess(context, user, rfi);
+  // Same rule as the engine: a valid request on an RFI that runs the published request access workflow
+  const isWorkflowDriven = !!await resolveRequestAccessWorkflowState(context, rfi);
   return {
     configuration: requestAccessConfiguration,
     isUserCanAction,
+    isWorkflowDriven,
   };
 };
 

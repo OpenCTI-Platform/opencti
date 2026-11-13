@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@common/button/Button';
 import Divider from '@mui/material/Divider';
 import React from 'react';
-import { declineRequestAccessMutation, isWorkflowDrivenRequestAccess, validateRequestAccessMutation } from '@components/cases/CaseUtils';
+import { declineRequestAccessMutation, validateRequestAccessMutation } from '@components/cases/CaseUtils';
 import ItemStatus from '../../../../components/ItemStatus';
 import { useFormatter } from '../../../../components/i18n';
 import { CaseRfi_caseRfi$data } from './__generated__/CaseRfi_caseRfi.graphql';
@@ -205,7 +205,7 @@ const LegacyProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewPr
 
 const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) => {
   const { isFeatureEnable } = useHelper();
-  const isWorkflowDriven = isWorkflowUiEnabledForType(data.entity_type, isFeatureEnable) && isWorkflowDrivenRequestAccess(data);
+  const isWorkflowDriven = isWorkflowUiEnabledForType(data.entity_type, isFeatureEnable) && !!data.requestAccessConfiguration?.isWorkflowDriven;
   return isWorkflowDriven ? <WorkflowProcessingStatusOverview data={data} /> : <LegacyProcessingStatusOverview data={data} />;
 };
 

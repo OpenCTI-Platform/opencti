@@ -12934,6 +12934,7 @@ enum RetentionUnit {
 type RfiRequestAccessConfiguration {
   configuration: RequestAccessConfiguration
   isUserCanAction: Boolean!
+  isWorkflowDriven: Boolean!
 }
 
 type Role implements BasicObject & InternalObject {

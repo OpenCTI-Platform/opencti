@@ -1,26 +1,6 @@
 import { graphql, ConnectionHandler, Variables } from 'react-relay';
-import { StatusScopeEnum } from '../../../utils/statusConstants';
 
 export const generateConnectionId = ({ recordId, key, params }: { recordId?: string; key: string; params?: Variables }) => ConnectionHandler.getConnectionID(recordId ?? 'root', key, params ?? {});
-
-// A request access RFI is decided through its workflow once its instance runs the request access definition.
-// A plain RFI on a request access status carries no request: it keeps its usual status field.
-// Same test as the backend: the request record must be a JSON object of bounded size.
-export const REQUEST_ACCESS_MAX_LENGTH = 100_000;
-
-export const isWorkflowDrivenRequestAccess = (rfi: {
-  readonly x_opencti_request_access?: string | null;
-  readonly workflowInstance?: { readonly scope?: string | null } | null;
-}) => {
-  if (!rfi.x_opencti_request_access || rfi.workflowInstance?.scope !== StatusScopeEnum.REQUEST_ACCESS) return false;
-  if (rfi.x_opencti_request_access.length > REQUEST_ACCESS_MAX_LENGTH) return false;
-  try {
-    const requestAccess = JSON.parse(rfi.x_opencti_request_access);
-    return !!requestAccess && typeof requestAccess === 'object';
-  } catch {
-    return false;
-  }
-};
 
 export const CaseTaskFragment = graphql`
   fragment CaseUtilsTasksLine_data on Task {

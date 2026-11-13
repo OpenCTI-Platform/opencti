@@ -30302,6 +30302,7 @@ export type RfiRequestAccessConfiguration = {
   __typename?: 'RfiRequestAccessConfiguration';
   configuration?: Maybe<RequestAccessConfiguration>;
   isUserCanAction: Scalars['Boolean']['output'];
+  isWorkflowDriven: Scalars['Boolean']['output'];
 };
 
 export type Role = BasicObject & InternalObject & {
@@ -53023,6 +53024,7 @@ export type RetentionRuleEditMutationsResolvers<ContextType = any, ParentType ex
 export type RfiRequestAccessConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['RfiRequestAccessConfiguration'] = ResolversParentTypes['RfiRequestAccessConfiguration']> = ResolversObject<{
   configuration?: Resolver<Maybe<ResolversTypes['RequestAccessConfiguration']>, ParentType, ContextType>;
   isUserCanAction?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  isWorkflowDriven?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
 export type RoleResolvers<ContextType = any, ParentType extends ResolversParentTypes['Role'] = ResolversParentTypes['Role']> = ResolversObject<{

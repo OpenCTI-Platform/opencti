@@ -33,6 +33,7 @@ const makeRfi = ({ transitions = decisionTransitions, isUserCanAction = true, wo
   x_opencti_request_access: JSON.stringify({ entities, members: ['org-1'], status: 'NEW' }),
   requestAccessConfiguration: {
     isUserCanAction,
+    isWorkflowDriven: workflowDriven,
     // The configured statuses never decide which transitions are outcomes: Escalated is configured as approved on purpose
     configuration: {
       approved_status: { id: 'status-Escalated', template: { color: '#00ff00' } },

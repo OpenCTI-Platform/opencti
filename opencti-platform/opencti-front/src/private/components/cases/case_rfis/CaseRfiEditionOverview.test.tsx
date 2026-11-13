@@ -29,29 +29,29 @@ vi.mock('@components/common/custom_fields/CustomFieldValuesEdition', () => ({ de
 vi.mock('../../../../components/fields/markdownField/MarkdownField', () => ({ default: () => null }));
 vi.mock('../../../../components/DateTimePickerField', () => ({ default: () => null }));
 
-const makeRfi = (requestAccess: string | null, scope: string | null) => ({
+const makeRfi = (requestAccess: string | null, workflowDriven: boolean) => ({
   id: 'rfi-1', name: 'Request Access for entity', revoked: false, description: '', confidence: 50, entity_type: 'Case-Rfi',
   created: '2026-01-01T00:00:00.000Z', information_types: [], severity: null, priority: null, creators: [], x_opencti_stix_ids: [],
   createdBy: null, status: { id: 'status-1', order: 1, template: { name: 'New', color: '#ff0000' } }, workflowEnabled: true,
   objectMarking: [], objectAssignee: [], objectParticipant: [], x_opencti_request_access: requestAccess,
-  workflowInstance: scope ? { id: 'instance-1', scope } : null,
+  requestAccessConfiguration: { isWorkflowDriven: workflowDriven },
 }) as unknown as CaseRfiEditionOverview_case$key;
 
 const requestAccess = JSON.stringify({ entities: ['entity-1'], members: ['org-1'], status: 'NEW' });
 
 describe('CaseRfiEditionOverview', () => {
-  it('hides the Status field when workflowInstance scope is REQUEST_ACCESS', () => {
-    testRender(<CaseRfiEditionOverview caseRef={makeRfi(requestAccess, 'REQUEST_ACCESS')} handleClose={vi.fn()} />);
+  it('hides the Status field when the RFI is workflow-driven', () => {
+    testRender(<CaseRfiEditionOverview caseRef={makeRfi(requestAccess, true)} handleClose={vi.fn()} />);
     expect(screen.queryByText(/Status field/)).toBeNull();
   });
 
   it('keeps it for legacy request-access RFIs', () => {
-    testRender(<CaseRfiEditionOverview caseRef={makeRfi(requestAccess, null)} handleClose={vi.fn()} />);
+    testRender(<CaseRfiEditionOverview caseRef={makeRfi(requestAccess, false)} handleClose={vi.fn()} />);
     expect(screen.getByText('Status field REQUEST_ACCESS')).toBeVisible();
   });
 
   it('keeps it for ordinary RFIs', () => {
-    testRender(<CaseRfiEditionOverview caseRef={makeRfi(null, 'GLOBAL')} handleClose={vi.fn()} />);
+    testRender(<CaseRfiEditionOverview caseRef={makeRfi(null, false)} handleClose={vi.fn()} />);
     expect(screen.getByText('Status field GLOBAL')).toBeVisible();
   });
 });

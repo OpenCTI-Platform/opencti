@@ -61,6 +61,17 @@ export const CREATE_REQUEST_ACCESS_QUERY = gql`
     }
 `;
 
+export const READ_RFI_WORKFLOW_DRIVEN_QUERY = gql`
+    query caseRfiWorkflowDriven($id: String!) {
+        caseRfi(id: $id) {
+            id
+            requestAccessConfiguration {
+                isWorkflowDriven
+            }
+        }
+    }
+`;
+
 export const CREATE_MALWARE_QUERY = gql`
     mutation MalwareAdd($input: MalwareAddInput!) {
         malwareAdd(input: $input) {
@@ -1299,6 +1310,19 @@ describe('Request access decided through workflow transitions', async () => {
       .rejects.toThrow('RequestAccess workflow bypass is not supported');
     expect(share).not.toHaveBeenCalled();
     expect(approvedCount).not.toHaveBeenCalled();
+  });
+
+  it('exposes whether the request of an RFI is decided through the workflow', async () => {
+    const rfiId = await requestAccess();
+    const plainRfi = await addCaseRfi(testContext, ADMIN_USER, { name: `Plain RFI on a request access status ${suffix} (flag)`, x_opencti_workflow_id: await statusIdOf(templateIds.pending) });
+    createdRfiIds.push(plainRfi.id);
+
+    const workflowDriven = await queryAsAdminWithSuccess({ query: READ_RFI_WORKFLOW_DRIVEN_QUERY, variables: { id: rfiId } });
+    const plain = await queryAsAdminWithSuccess({ query: READ_RFI_WORKFLOW_DRIVEN_QUERY, variables: { id: plainRfi.id } });
+
+    expect(workflowDriven.data?.caseRfi.requestAccessConfiguration.isWorkflowDriven).toBe(true);
+    // A plain RFI carries no request: it keeps the legacy flow even on a request access status
+    expect(plain.data?.caseRfi.requestAccessConfiguration.isWorkflowDriven).toBe(false);
   });
 
   describe('a request record forged by a knowledge editor', () => {
