@@ -7,7 +7,7 @@ import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } f
 import { CONFIG_IMPORT_UNCHANGED_REASON, configImportReasonValue, configImportValidationReason, freeConfigImportName } from '../configImport/configImport-utils';
 import { addFintelDesign, fintelDesignEditField } from './fintelDesign-domain';
 import { FINTEL_DESIGN_NAME_MAX_LENGTH, type FintelDesignImportConfiguration, fintelDesignImportSchema } from './fintelDesign-import-schema';
-import { FINTEL_DESIGN_LOGO_MAX_SIZE, fintelDesignLogoExtension, fintelDesignLogoStorageKey, readFintelDesignLogo } from './fintelDesign-logo';
+import { FINTEL_DESIGN_LOGO_MAX_SIZE, fintelDesignLogoExtension, fintelDesignLogoStorageKey, isCompleteFintelDesignLogo, readFintelDesignLogo } from './fintelDesign-logo';
 import { type BasicStoreEntityFintelDesign, ENTITY_TYPE_FINTEL_DESIGN } from './fintelDesign-types';
 
 export type FintelDesignImportCode = 'invalid' | 'exists' | 'name_conflict' | 'unchanged' | 'logo_too_large' | 'logo_invalid';
@@ -116,8 +116,10 @@ export const importFintelDesign = async (
     if (!content) {
       return refused('failed', 'logo_too_large', 'The logo of the fintel design is too large', !!existing, parsed.data);
     }
+    // The format is recognized from the first bytes, and the logo must go on to the end of it: a logo cut short is stored, but a browser
+    // cannot show it, and the reports of the design cannot be generated
     const extension = fintelDesignLogoExtension(content);
-    if (!extension) {
+    if (!extension || !isCompleteFintelDesignLogo(content, extension)) {
       return refused('failed', 'logo_invalid', 'The logo of the fintel design is not a supported image', !!existing, parsed.data);
     }
     logo = { content, extension };

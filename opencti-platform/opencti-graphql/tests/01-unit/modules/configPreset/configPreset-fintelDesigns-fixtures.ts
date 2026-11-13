@@ -33,5 +33,5 @@ export const nightFintelDesign = {
 
 export const ALL_FINTEL_DESIGNS = [defaultFintelDesign, nightFintelDesign];
 
-// A PNG signature followed by some bytes: what the format of a logo is recognized from
-export const PNG_LOGO = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.from('png-logo-bytes')]);
+// A complete PNG of one pixel: the import checks that a logo goes on to the end of its format
+export const PNG_LOGO = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
