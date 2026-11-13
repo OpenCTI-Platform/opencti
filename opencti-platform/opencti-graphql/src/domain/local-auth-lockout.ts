@@ -15,11 +15,9 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { ENTITY_TYPE_USER } from '../modules/user/user-types';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
-import { BYPASS, executionContext, SYSTEM_USER } from '../utils/access';
+import { BYPASS, executionContext, SETTINGS_SETACCESSES, SETTINGS_SETAUTH, SETTINGS_SETPARAMETERS, SYSTEM_USER } from '../utils/access';
 import { normalizeEmail } from '../utils/email';
 import { hashSHA256 } from '../utils/hash';
-
-const SETTINGS = 'SETTINGS';
 
 // Values returned for the local authentication lockout policy when the settings hold none.
 // Thresholds and window follow NIST SP 800-53 AC-7: 3 attempts for administrative accounts, 10 for the other users, within 15 minutes
@@ -63,9 +61,13 @@ export const isLocalAuthLockedError = (error: unknown) => {
   return data?.lock !== undefined;
 };
 
-// An administrative account holds BYPASS or any SETTINGS capability (access to the administration)
+// An administrative account holds a capability that gives control over the platform, as validated by Security:
+// BYPASS, the users, groups and roles (any right can be granted to oneself), the authentication (including this lockout)
+// and the platform parameters. The other SETTINGS capabilities (labels, vocabularies...) and the access to the
+// administration alone (SETTINGS) keep the users threshold
+const ADMINISTRATIVE_CAPABILITIES = [BYPASS, SETTINGS_SETACCESSES, SETTINGS_SETAUTH, SETTINGS_SETPARAMETERS];
 export const isAdministrativeAccount = (user: Pick<AuthUser, 'capabilities'>) => {
-  return (user.capabilities ?? []).some(({ name }) => name === BYPASS || name === SETTINGS || name.startsWith(`${SETTINGS}_`));
+  return (user.capabilities ?? []).some(({ name }) => ADMINISTRATIVE_CAPABILITIES.includes(name));
 };
 
 // Unknown emails get the users threshold, so that a lock never reveals whether an account exists

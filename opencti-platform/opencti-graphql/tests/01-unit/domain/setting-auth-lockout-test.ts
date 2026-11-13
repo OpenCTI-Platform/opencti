@@ -189,8 +189,9 @@ describe('isAdministrativeAccount - lockout threshold', () => {
 
   it.each([
     ['BYPASS', ['BYPASS']],
-    ['the SETTINGS capability', ['SETTINGS']],
-    ['a SETTINGS sub capability', ['KNOWLEDGE', 'SETTINGS_SETACCESSES']],
+    ['the users, groups and roles management', ['KNOWLEDGE', 'SETTINGS', 'SETTINGS_SETACCESSES']],
+    ['the authentication management', ['SETTINGS', 'SETTINGS_SETAUTH']],
+    ['the platform parameters management', ['SETTINGS', 'SETTINGS_SETPARAMETERS']],
   ])('should be true with %s', (_, names) => {
     expect(isAdministrativeAccount(accountWith(...names))).toBe(true);
   });
@@ -198,6 +199,13 @@ describe('isAdministrativeAccount - lockout threshold', () => {
   it.each([
     ['no capability', []],
     ['knowledge capabilities only', ['KNOWLEDGE', 'KNOWLEDGE_KNUPDATE_KNDELETE', 'APIACCESS_USEBASICAUTH']],
+    ['the access to the administration only', ['SETTINGS']],
+    ['the labels and vocabularies management', ['SETTINGS', 'SETTINGS_SETLABELS', 'SETTINGS_SETVOCABULARIES']],
+    ['the other administration capabilities', [
+      'SETTINGS', 'SETTINGS_SETMARKINGS', 'SETTINGS_SETDISSEMINATION', 'SETTINGS_SETCUSTOMIZATION', 'SETTINGS_SETCASETEMPLATES',
+      'SETTINGS_SETSTATUSTEMPLATES', 'SETTINGS_SETKILLCHAINPHASES', 'SETTINGS_SETMANAGEXTMHUB', 'SETTINGS_SECURITYACTIVITY',
+      'SETTINGS_FILEINDEXING', 'SETTINGS_SUPPORT',
+    ]],
   ])('should be false with %s', (_, names) => {
     expect(isAdministrativeAccount(accountWith(...names))).toBe(false);
   });

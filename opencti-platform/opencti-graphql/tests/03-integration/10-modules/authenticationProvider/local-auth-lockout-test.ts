@@ -3,7 +3,16 @@ import bcrypt from 'bcryptjs';
 import passport from 'passport';
 import { v4 as uuid } from 'uuid';
 import type Express from 'express';
-import { ADMIN_USER, AMBER_GROUP, API_EMAIL, API_PASSWORD, getGroupIdByName, PLATFORM_ADMIN_GROUP, testContext } from '../../../utils/testQuery';
+import {
+  ADMIN_USER,
+  AMBER_GROUP,
+  API_EMAIL,
+  API_PASSWORD,
+  getGroupIdByName,
+  GREEN_DISINFORMATION_ANALYST_GROUP,
+  PLATFORM_ADMIN_GROUP,
+  testContext,
+} from '../../../utils/testQuery';
 import * as conf from '../../../../src/config/conf';
 import * as cache from '../../../../src/database/cache';
 import { getClientBase, localAuthLockoutKeys, redisRecordLocalAuthAttempt, redisReleaseLocalAuthAttempt, redisSetForgotPasswordOtp } from '../../../../src/database/redis';
@@ -64,14 +73,16 @@ const MFA_USER = { email: 'lockout-mfa@opencti.io', password: 'lockout-password'
 const EXTERNAL_USER = { email: 'lockout-external@opencti.io', password: 'lockout-password' };
 // A user allowed to use Basic auth and API tokens
 const API_USER = { email: 'lockout-api@opencti.io', password: 'lockout-password' };
-// An administrative account: SETTINGS capabilities, through the platform admin group
+// An administrative account: users and platform parameters management, through the platform admin group
 const ADMIN_ACCOUNT = { email: 'lockout-admin@opencti.io', password: 'lockout-password' };
+// Not an administrative account: only the labels management, through the disinformation analyst group
+const LABEL_MANAGER = { email: 'lockout-label-manager@opencti.io', password: 'lockout-password' };
 const SERVICE_ACCOUNT_EMAIL = 'lockout-service-account@opencti.io';
 const UNKNOWN_EMAIL = 'lockout-unknown@opencti.io';
 const WRONG_PASSWORD = 'wrong-password';
 const ALL_EMAILS = [
   LOCKOUT_USER.email, INACTIVE_USER.email, EXPIRED_USER.email, MFA_USER.email, EXTERNAL_USER.email, API_USER.email, ADMIN_ACCOUNT.email,
-  SERVICE_ACCOUNT_EMAIL, UNKNOWN_EMAIL, API_EMAIL,
+  LABEL_MANAGER.email, SERVICE_ACCOUNT_EMAIL, UNKNOWN_EMAIL, API_EMAIL,
 ];
 
 // region helpers
@@ -192,7 +203,11 @@ describe('Local authentication lockout', () => {
     const adminAccount = await addUser(testContext, ADMIN_USER, {
       user_email: ADMIN_ACCOUNT.email, name: ADMIN_ACCOUNT.email, password: ADMIN_ACCOUNT.password, groups: [platformAdminGroupId],
     });
-    createdUserIds.push(externalUser.id, serviceAccount.id, apiUserId, adminAccount.id);
+    const labelManagerGroupId = await getGroupIdByName(GREEN_DISINFORMATION_ANALYST_GROUP.name);
+    const labelManager = await addUser(testContext, ADMIN_USER, {
+      user_email: LABEL_MANAGER.email, name: LABEL_MANAGER.email, password: LABEL_MANAGER.password, groups: [labelManagerGroupId],
+    });
+    createdUserIds.push(externalUser.id, serviceAccount.id, apiUserId, adminAccount.id, labelManager.id);
     await userEditField(testContext, ADMIN_USER, createdUserIds[1], [{ key: 'account_status', value: ['Inactive'] }]);
     await userEditField(testContext, ADMIN_USER, createdUserIds[2], [{ key: 'account_lock_after_date', value: ['2020-01-01T00:00:00.000Z'] }]);
     mfaSecret = totp.generateSecret();
@@ -601,7 +616,7 @@ describe('Local authentication lockout', () => {
       await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_max_attempts: 5, local_auth_lockout_admin_max_attempts: 2 });
     });
 
-    it('should apply the administrators threshold to an account with SETTINGS capabilities', async () => {
+    it('should apply the administrators threshold to an account that manages the users and the platform parameters', async () => {
       await failLogin(ADMIN_ACCOUNT.email, 1);
       await expectLocked(login(ADMIN_ACCOUNT.email, WRONG_PASSWORD));
     });
@@ -609,6 +624,11 @@ describe('Local authentication lockout', () => {
     it('should apply the users threshold to the other accounts', async () => {
       await failLogin(LOCKOUT_USER.email, 4);
       await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD));
+    });
+
+    it('should apply the users threshold to an account that only manages the labels', async () => {
+      await failLogin(LABEL_MANAGER.email, 4);
+      await expectLocked(login(LABEL_MANAGER.email, WRONG_PASSWORD));
     });
 
     it('should apply the users threshold to an unknown email', async () => {
