@@ -18,7 +18,13 @@ vi.mock('../../../../src/modules/fintelDesign/fintelDesign-logo', async (importO
 
 import { fullEntitiesList, storeLoadById } from '../../../../src/database/middleware-loader';
 import { addFintelDesign, fintelDesignEditField } from '../../../../src/modules/fintelDesign/fintelDesign-domain';
-import { FINTEL_DESIGN_LOGO_MAX_SIZE, fintelDesignLogoExtension, limitFintelDesignLogoStream, readFintelDesignLogo } from '../../../../src/modules/fintelDesign/fintelDesign-logo';
+import {
+  FINTEL_DESIGN_LOGO_MAX_SIZE,
+  fintelDesignLogoExtension,
+  isCompleteFintelDesignLogo,
+  limitFintelDesignLogoStream,
+  readFintelDesignLogo,
+} from '../../../../src/modules/fintelDesign/fintelDesign-logo';
 import { exportFintelDesign } from '../../../../src/modules/fintelDesign/fintelDesign-export';
 import { importFintelDesign } from '../../../../src/modules/fintelDesign/fintelDesign-import';
 import { fintelDesignImportSchema } from '../../../../src/modules/fintelDesign/fintelDesign-import-schema';
@@ -105,6 +111,45 @@ describe('Fintel design logo format', () => {
     // A prolog never closed, or nothing after it
     expect(fintelDesignLogoExtension(Buffer.from(`<!-- ${svg}`))).toBeUndefined();
     expect(fintelDesignLogoExtension(Buffer.from('<?xml version="1.0"?>\n'))).toBeUndefined();
+  });
+});
+
+describe('Fintel design logo completeness', () => {
+  it('accepts a logo that goes on to the end of its format, data after it included, and refuses one cut short', () => {
+    const jpg = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0xff, 0xd9]);
+    const gif = Buffer.concat([Buffer.from('GIF89a'), Buffer.alloc(13), Buffer.from([0x3b])]);
+    const webp = Buffer.concat([Buffer.from('RIFF'), Buffer.from([12, 0, 0, 0]), Buffer.from('WEBPVP8 ....')]);
+    const complete: [Buffer, string][] = [
+      [PNG_LOGO, 'png'], [Buffer.concat([PNG_LOGO, Buffer.from('trailing')]), 'png'],
+      [jpg, 'jpg'], [Buffer.concat([jpg, Buffer.from([0x00])]), 'jpg'],
+      [gif, 'gif'],
+      [webp, 'webp'],
+      [Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0"/></svg>\n'), 'svg'], [Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>'), 'svg'],
+    ];
+    complete.forEach(([content, extension]) => {
+      expect(fintelDesignLogoExtension(content)).toBe(extension);
+      expect(isCompleteFintelDesignLogo(content, extension)).toBe(true);
+    });
+    // The signature alone, or a logo whose end is missing
+    const truncated: [Buffer, string][] = [
+      [PNG_LOGO.subarray(0, 8), 'png'], [PNG_LOGO.subarray(0, PNG_LOGO.length - 4), 'png'],
+      [Buffer.from([0xff, 0xd8, 0xff]), 'jpg'], [jpg.subarray(0, jpg.length - 1), 'jpg'],
+      [Buffer.from('GIF89a'), 'gif'], [gif.subarray(0, gif.length - 1), 'gif'],
+      [webp.subarray(0, webp.length - 1), 'webp'],
+      [Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0"/>'), 'svg'],
+    ];
+    truncated.forEach(([content, extension]) => {
+      expect(fintelDesignLogoExtension(content)).toBe(extension);
+      expect(isCompleteFintelDesignLogo(content, extension)).toBe(false);
+    });
+  });
+
+  it('refuses at the import a logo cut short, whatever the mode, and writes nothing', async () => {
+    const truncated = logoOf(Buffer.from([0xff, 0xd8, 0xff]));
+    expect(await importFintelDesign(context, user, configuration, truncated, overwrite)).toMatchObject({ status: 'failed', code: 'logo_invalid' });
+    expect(await importFintelDesign(context, user, configuration, truncated, copy)).toMatchObject({ status: 'failed', code: 'logo_invalid' });
+    expect(addFintelDesign).not.toHaveBeenCalled();
+    expect(fintelDesignEditField).not.toHaveBeenCalled();
   });
 });
 

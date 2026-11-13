@@ -101,6 +101,30 @@ export const fintelDesignLogoExtension = (content: Buffer): string | undefined =
   return undefined;
 };
 
+// Whether the logo goes on to the end its format sets, so that a browser can show it: a logo cut short (a signature alone, a download
+// interrupted) is refused. The structure is checked, not every byte decoded. Data after the end is tolerated, as the browsers do.
+// PNG: the IHDR chunk first and the IEND chunk with its CRC. JPEG: an end-of-image marker. GIF: the trailer as the last byte.
+// WEBP: the RIFF size within the file. SVG: the closing tag of the svg element, or the element closed on itself.
+const PNG_END = [0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82];
+export const isCompleteFintelDesignLogo = (content: Buffer, extension: string) => {
+  switch (extension) {
+    case 'png':
+      return startsWith(content, ascii('IHDR'), 12) && content.includes(Buffer.from(PNG_END), 16);
+    case 'jpg':
+      return content.lastIndexOf(Buffer.from([0xff, 0xd9])) >= 3;
+    case 'gif':
+      return content.length > 13 && content[content.length - 1] === 0x3b;
+    case 'webp':
+      return content.length >= 12 && content.readUInt32LE(4) >= 4 && content.readUInt32LE(4) + 8 <= content.length;
+    case 'svg': {
+      const text = content.toString('utf8');
+      return text.includes('</svg>') || /<svg[^>]*\/>/.test(text);
+    }
+    default:
+      return false;
+  }
+};
+
 // The logo of a design as the platform stores it, byte for byte. null when the design has no logo.
 // Only the design's own key is read: `file_id` points at what the export would write, read by a user who may not read another file.
 // A logo missing from the storage, or not its own, is an error: the export would silently lose it.

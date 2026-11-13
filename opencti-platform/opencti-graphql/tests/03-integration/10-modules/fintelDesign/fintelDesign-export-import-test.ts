@@ -20,7 +20,8 @@ import { type BasicStoreEntityFintelDesign, ENTITY_TYPE_FINTEL_DESIGN } from '..
 const DEFAULT_NAME = 'Config preset round trip default design';
 const OTHER_NAME = 'Config preset round trip design';
 const TARGET_DEFAULT_NAME = 'Config preset round trip target default design';
-const LOGO = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.from('config-preset-round-trip-logo')]);
+// A complete PNG of one pixel: the import refuses a logo cut short
+const LOGO = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
 
 const UPLOAD_MUTATION = gql`mutation FintelDesignRoundTripUpload($file: Upload!) { configPresetImportUpload(file: $file) { id } }`;
 const EXPORT_MUTATION = gql`mutation FintelDesignRoundTripExport($selections: [ConfigPresetSelectionInput!]!) { configPresetExport(selections: $selections) { id } }`;
