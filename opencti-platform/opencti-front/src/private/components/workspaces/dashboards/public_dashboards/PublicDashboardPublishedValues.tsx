@@ -39,6 +39,10 @@ const PublicDashboardPublishedValues = ({ dashboard }: PublicDashboardPublishedV
   const { me } = useAuth();
   const { values, setFieldValue } = useFormikContext<PublicDashboardCreationFormData>();
 
+  // A cleared picker is given its default back: when that default is the value it held, the form value does not change
+  // and the picker would keep its emptied text. Remounting it shows the value again.
+  const [revisions, setRevisions] = useState<Record<string, number>>({});
+
   const dashboardId = dashboard?.id;
   // The preset the author started from: a convenience, the fields keep the truth (a snapshot, never a link).
   const [loadedPresetId, setLoadedPresetId] = useState('');
@@ -103,10 +107,15 @@ const PublicDashboardPublishedValues = ({ dashboard }: PublicDashboardPublishedV
         return (
           <div key={variable.id} style={{ marginTop: 16 }}>
             <DashboardVariableValueInput
+              key={revisions[variable.id] ?? 0}
               variable={variable}
               label={variable.name}
               value={value}
-              onChange={(next) => setFieldValue('variable_values', { ...values.variable_values, [variable.id]: applyPublishedVariableChange(variable, next) })}
+              onChange={(next) => {
+                const applied = applyPublishedVariableChange(variable, next);
+                setFieldValue('variable_values', { ...values.variable_values, [variable.id]: applied });
+                if (applied !== next) setRevisions((current) => ({ ...current, [variable.id]: (current[variable.id] ?? 0) + 1 }));
+              }}
             />
             {showsDefault && (
               <Text
