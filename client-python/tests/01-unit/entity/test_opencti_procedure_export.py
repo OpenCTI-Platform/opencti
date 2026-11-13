@@ -290,3 +290,73 @@ def test_prepare_export_of_a_procedure_adds_author_and_marking_objects(
     assert procedure["created_by_ref"] == IDENTITY
     assert procedure["object_marking_refs"] == [tlp_clear]
     assert procedure["x_technique_refs"] == [AP1]
+
+
+ACCESS_FILTER = {
+    "mode": "and",
+    "filters": [
+        {"key": "objectMarking", "operator": "not_eq", "values": ["restricted"]}
+    ],
+    "filterGroups": [],
+}
+
+
+def test_export_sends_access_filter_with_relationship_and_report_lookups(
+    procedure_api_mocks,
+):
+    procedure_api_mocks.client.procedure.to_stix_export(
+        PROCEDURE_INTERNAL_ID, access_filter=ACCESS_FILTER
+    )
+    calls = procedure_api_mocks.platform.calls
+    relationship_calls = [
+        variables
+        for operation, variables in calls
+        if operation == "StixCoreRelationships"
+    ]
+    assert len(relationship_calls) == 2
+    for variables in relationship_calls:
+        assert variables["filters"] == ACCESS_FILTER
+    report_calls = [
+        variables for operation, variables in calls if operation == "Reports"
+    ]
+    assert len(report_calls) == 1
+    assert report_calls[0]["filters"] == {
+        "mode": "and",
+        "filters": [],
+        "filterGroups": [
+            {
+                "mode": "and",
+                "filters": [{"key": "objects", "values": [PROCEDURE_INTERNAL_ID]}],
+                "filterGroups": [],
+            },
+            ACCESS_FILTER,
+        ],
+    }
+
+
+def test_generate_export_passes_access_filter_to_the_links(procedure_api_mocks):
+    opencti_stix2 = OpenCTIStix2(procedure_api_mocks.client)
+    entity = {
+        "id": PROCEDURE_INTERNAL_ID,
+        "standard_id": PROCEDURE_STANDARD_ID,
+        "entity_type": "Procedure",
+        "parent_types": [],
+        "name": "Dump credentials from memory",
+    }
+
+    opencti_stix2.generate_export(entity, access_filter=ACCESS_FILTER)
+
+    link_lookups = [
+        variables["filters"]
+        for operation, variables in procedure_api_mocks.platform.calls
+        if operation == "StixCoreRelationships"
+    ]
+    assert link_lookups == [ACCESS_FILTER, ACCESS_FILTER]
+
+
+def test_export_omits_x_source_refs_when_empty():
+    payload = _to_stix_payload()
+    del payload["x_source_refs"]
+    mocks = _make_mocks(stix=payload, reports=[])
+    stix = mocks.client.procedure.to_stix_export(PROCEDURE_INTERNAL_ID)
+    assert "x_source_refs" not in stix
