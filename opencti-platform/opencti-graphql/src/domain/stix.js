@@ -264,7 +264,7 @@ export const exportTransformFilters = async (context, user, filteringArgs, order
 };
 
 // workflowLink ties the task to a workflow async action, so its completion is reported to the workflow instance.
-export const createSharingTask = async (context, type, containerId, organizationId, workflowLink = undefined) => {
+export const createSharingTask = async (context, type, containerId, organizationId, workflowLink) => {
   const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
   const organizations = await internalFindByIds(context, context.user, organizationIds, { baseData: true, baseFields: ['name'] });
   const organizationNames = organizations.map((o) => o.name).join('|');

@@ -850,7 +850,7 @@ describe('reportWorkflowAsyncActionResult', () => {
         { key: 'pendingStatus', value: ['error'] },
         { key: 'pendingError', value: ['share task failed'] },
       ]));
-      expect(JSON.parse(patches.find((patch: any) => patch.key === 'pendingTransition').value[0]).requestAccessDirectGrants).toEqual([]);
+      expect(JSON.parse(patches.find((patch: any) => patch.key === 'pendingTransition')?.value[0]).requestAccessDirectGrants).toEqual([]);
       expect(recordRequestAccessDecision).not.toHaveBeenCalled();
     });
 
@@ -870,9 +870,9 @@ describe('reportWorkflowAsyncActionResult', () => {
       await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'share-slot', 'failed', 'share task failed');
 
       const [, , , , patches] = vi.mocked(updateAttribute).mock.calls[0];
-      expect(JSON.parse(patches.find((patch: any) => patch.key === 'pendingTransition').value[0]).requestAccessDirectGrants)
+      expect(JSON.parse(patches.find((patch: any) => patch.key === 'pendingTransition')?.value[0]).requestAccessDirectGrants)
         .toEqual([{ entityId: 'malware-2', organizationIds: ['org-author'] }]);
-      expect(patches.find((patch: any) => patch.key === 'pendingError').value[0]).toMatch(/^share task failed \(the organizations shared directly on 1 entities could not be revoked/);
+      expect(patches.find((patch: any) => patch.key === 'pendingError')?.value[0]).toMatch(/^share task failed \(the organizations shared directly on 1 entities could not be revoked/);
     });
 
     it('suspends again when an onEnter action hands a container share to a background task', async () => {
