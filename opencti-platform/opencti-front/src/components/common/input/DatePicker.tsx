@@ -3,6 +3,7 @@ import { DatePicker as MuiDatePicker, DatePickerProps } from '@mui/x-date-picker
 import { useTheme } from '@mui/material/styles';
 import { PickersTextFieldProps } from '@mui/x-date-pickers/PickersTextField';
 import { Theme } from '../../Theme';
+import useFieldSectionSelection from '../../../utils/hooks/useFieldSectionSelection';
 
 // Narrowed to the object form, so the wrapper can merge its own field props in.
 type FieldDatePickerProps = Omit<DatePickerProps, 'slotProps'> & {
@@ -17,10 +18,12 @@ const DatePicker: React.FC<FieldDatePickerProps> = ({
 }) => {
   const theme = useTheme<Theme>();
   const { value } = datePickerProps;
+  const sectionSelection = useFieldSectionSelection(value);
 
   return (
     <MuiDatePicker
       {...datePickerProps}
+      {...sectionSelection}
       slotProps={{
         ...slotProps,
         textField: {
