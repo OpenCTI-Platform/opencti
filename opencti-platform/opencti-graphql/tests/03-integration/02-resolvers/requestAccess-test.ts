@@ -1336,8 +1336,9 @@ describe('Request access decided through workflow transitions', async () => {
       status: ActionStatus.NEW,
       executionDate: new Date().toISOString(),
     });
+    // An explicit author keeps the creation from adding an Individual for the editor, which no cleanup removes
     const addRfiAsEditor = async (input: Record<string, unknown>) => {
-      const result = await queryAsUser(USER_EDITOR, { query: RFI_ADD_QUERY, variables: { input } });
+      const result = await queryAsUser(USER_EDITOR, { query: RFI_ADD_QUERY, variables: { input: { createdBy: testOrganizationId, ...input } } });
       if (result.data?.caseRfiAdd?.id) createdRfiIds.push(result.data.caseRfiAdd.id);
       return result;
     };
