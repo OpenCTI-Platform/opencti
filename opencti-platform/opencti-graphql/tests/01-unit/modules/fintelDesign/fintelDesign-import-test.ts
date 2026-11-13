@@ -191,6 +191,38 @@ describe('Fintel design import', () => {
     expect(fintelDesignEditField).toHaveBeenCalledTimes(1);
   });
 
+  it('gives a copy the name the real import will give it, after a design an earlier item of the dry run creates or renames', async () => {
+    const reservedNames = new Set<string>();
+    const renamedIds = new Set<string>();
+    const dryRun = { dryRun: true, reservedNames, renamedIds };
+    // A new design takes the name "Filigran report (1)": the copy of the existing "Filigran report" after it cannot take it
+    withDesignsNamed(defaultFintelDesign);
+    expect(await importFintelDesign(context, user, { ...exportFintelDesign(nightFintelDesign), name: 'Filigran report (1)' }, undefined, { ...overwrite, ...dryRun }))
+      .toMatchObject({ status: 'created' });
+    withExisting(defaultFintelDesign);
+    expect(await importFintelDesign(context, user, configuration, undefined, { ...copy, ...dryRun })).toMatchObject({ copyName: 'Filigran report (2)' });
+
+    // An existing design renamed by an earlier item no longer holds its name, and its new name is taken
+    reservedNames.clear();
+    withExisting(nightFintelDesign);
+    withDesignsNamed(nightFintelDesign);
+    expect(await importFintelDesign(context, user, { ...exportFintelDesign(nightFintelDesign), name: 'Morning briefing' }, undefined, { ...overwrite, ...dryRun }))
+      .toMatchObject({ status: 'overwritten' });
+    expect(renamedIds).toEqual(new Set([nightFintelDesign.id]));
+    withExisting(defaultFintelDesign);
+    const nightCopy = { ...configuration, name: 'Night briefing' };
+    expect(await importFintelDesign(context, user, nightCopy, undefined, { ...copy, ...dryRun })).toMatchObject({ copyName: 'Night briefing', reason: undefined });
+    expect(await importFintelDesign(context, user, { ...configuration, name: 'Morning briefing' }, undefined, { ...copy, ...dryRun }))
+      .toMatchObject({ copyName: 'Morning briefing (1)' });
+
+    // Another design with the same name keeps it: a rename frees the name of the renamed design only
+    reservedNames.clear();
+    withDesignsNamed(nightFintelDesign, { ...defaultFintelDesign, name: 'Night briefing' } as BasicStoreEntityFintelDesign);
+    expect(await importFintelDesign(context, user, nightCopy, undefined, { ...copy, ...dryRun })).toMatchObject({ copyName: 'Night briefing (1)' });
+    expect(addFintelDesign).not.toHaveBeenCalled();
+    expect(fintelDesignEditField).not.toHaveBeenCalled();
+  });
+
   it('copies a design that does not exist under its own name and standard id', async () => {
     withDesignsNamed(defaultFintelDesign);
     expect(await importFintelDesign(context, user, configuration, undefined, copy)).toMatchObject({ status: 'created', exists: false, copyName: 'Filigran report', reason: undefined });
