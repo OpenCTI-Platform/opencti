@@ -3046,6 +3046,8 @@ type UpdateAttributeMetaResolvedOpts = EventOpts & {
   // Set by the workflow projection: its own write is not synced back as an external write,
   // and it is the only non-bypass writer of the closing reason
   workflowInternalWrite?: boolean;
+  // Set by the workflow projection: the transition stands for the external references that an enforced status change asks for
+  skipReferenceEnforcement?: boolean;
 };
 export const updateAttributeMetaResolved = async <T extends StoreObject>(
   context: AuthContext,
@@ -3130,7 +3132,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   const keys = R.map((t) => t.key, attributes);
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
     const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
-    const isAllowedToByPass = isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE);
+    const isAllowedToByPass = opts.skipReferenceEnforcement || isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE);
     if (!isAllowedToByPass && entitySetting?.enforce_reference) {
       const isNoReferenceKey = keys.length === 1 && noReferenceAttributes.includes(keys[0]);
       if (!isNoReferenceKey && isEmptyField(opts.references)) {
