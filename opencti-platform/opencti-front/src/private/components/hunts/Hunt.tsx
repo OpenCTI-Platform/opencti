@@ -81,43 +81,43 @@ const Hunt = ({ data, canEdit }: HuntProps) => {
           switch (key) {
             case 'details':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={width}>
                   <HuntDetails data={hunt} />
                 </Grid>
               );
             case 'basicInformation':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={width}>
                   <StixDomainObjectOverview stixDomainObject={hunt} />
                 </Grid>
               );
             case 'huntStatistics':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={width}>
                   <HuntStatistics huntId={hunt.id} />
                 </Grid>
               );
             case 'latestRuns':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={width}>
                   <HuntLatestRuns huntId={hunt.id} canEdit={canEdit} />
                 </Grid>
               );
             case 'externalReferences':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={width}>
                   <StixCoreObjectExternalReferences stixCoreObjectId={hunt.id} />
                 </Grid>
               );
             case 'mostRecentHistory':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={width}>
                   <StixCoreObjectLatestHistory stixCoreObjectId={hunt.id} />
                 </Grid>
               );
             case 'notes':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={width}>
                   <StixCoreObjectOrStixCoreRelationshipNotes
                     stixCoreObjectOrStixCoreRelationshipId={hunt.id}
                     defaultMarkings={hunt.objectMarking ?? []}

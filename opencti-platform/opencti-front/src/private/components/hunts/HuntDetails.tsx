@@ -124,15 +124,15 @@ const HuntDetails = ({ data }: HuntDetailsProps) => {
     <div style={{ height: '100%' }} data-testid="hunt-details">
       <Card title={t_i18n('Details')}>
         <Grid container spacing={2}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>{t_i18n('Hypothesis')}</Label>
             <ExpandableMarkdown source={hunt.hypothesis} limit={400} />
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>{t_i18n('Description')}</Label>
             <ExpandableMarkdown source={hunt.description} limit={400} />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>{t_i18n('Status')}</Label>
             <HuntStatusChip value={hunt.hunt_status} />
             <Label sx={{ marginTop: 2 }}>{t_i18n('Hunt type')}</Label>
@@ -142,7 +142,7 @@ const HuntDetails = ({ data }: HuntDetailsProps) => {
             <Label sx={{ marginTop: 2 }}>{t_i18n('Schedule')}</Label>
             <Text variant="content-compact">{scheduleText(hunt.hunt_schedule)}</Text>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>{t_i18n('Last run')}</Label>
             {hunt.last_run_at ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
@@ -184,26 +184,26 @@ const HuntDetails = ({ data }: HuntDetailsProps) => {
             <Label sx={{ marginTop: 2 }}>{t_i18n('Maximum results per run')}</Label>
             <Text variant="content-compact">{hunt.hunt_max_results ? n(hunt.hunt_max_results) : t_i18n('Platform default')}</Text>
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>{t_i18n('Scope')}</Label>
             {advancedScope && <Text variant="content-compact">{t_i18n('Advanced scope filters')}</Text>}
             {!advancedScope && scopeItems.length === 0 && <Text variant="content-compact">{t_i18n('Every hunt-capable security platform')}</Text>}
             {!advancedScope && scopeItems.length > 0 && <EntityChips items={scopeItems} testId="hunt-scope-platforms" />}
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <Label>{t_i18n('Targets')}</Label>
             <EntityChips items={targets} testId="hunt-targets" />
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <Label>{t_i18n('Techniques')}</Label>
             <EntityChips items={techniques} testId="hunt-techniques" />
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <Label>{t_i18n('Sources')}</Label>
             <EntityChips items={sources} testId="hunt-sources" />
           </Grid>
           {huntExtractsObservables(hunt.hunt_type) && (
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Label>{t_i18n('Observables to extract from hits')}</Label>
               {(hunt.expected_observables ?? []).length > 0 ? textList((hunt.expected_observables ?? []).map((type) => t_i18n(`entity_${type}`))) : (
                 <Text variant="content-compact" data-testid="hunt-default-observables">
@@ -212,7 +212,7 @@ const HuntDetails = ({ data }: HuntDetailsProps) => {
               )}
             </Grid>
           )}
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>{t_i18n('Benign patterns')}</Label>
             {textList(hunt.benign_patterns)}
           </Grid>

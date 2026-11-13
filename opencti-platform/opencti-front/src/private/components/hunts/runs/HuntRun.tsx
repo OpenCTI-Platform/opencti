@@ -231,7 +231,7 @@ interface DetailRow {
 const DetailGrid = ({ rows, testId, columns }: { rows: DetailRow[]; testId: string; columns: 2 | 4 }) => (
   <Grid container spacing={2} data-testid={testId} data-columns={columns}>
     {rows.filter((row) => row.value !== null && row.value !== undefined && row.value !== '').map((row) => (
-      <Grid item xs={6} md={columns === 4 ? 3 : 6} key={row.key}>
+      <Grid size={{ xs: 6, md: columns === 4 ? 3 : 6 }} key={row.key}>
         <Label>{row.label}</Label>
         <Text variant="content-compact">{row.value}</Text>
       </Grid>

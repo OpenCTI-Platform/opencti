@@ -221,7 +221,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
                   primary={t_i18n(capability.description)}
                   // The tree nests the capabilities by name: this one sits beside the update of the knowledge it needs
                   secondary={capability.name === KNOWLEDGE_KNHUNT ? t_i18n('Works together with Create / Update knowledge') : undefined}
-                  secondaryTypographyProps={{ variant: 'caption' }}
+                  slotProps={{ secondary: { variant: 'caption' } }}
                 />
               </ListItem>
             );

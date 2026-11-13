@@ -120,7 +120,7 @@ const Indicator: React.FC<IndicatorProps> = ({
             defaultMarkings={indicator.objectMarking ?? []}
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <HuntsOfEntity entityId={indicator.id} viewAllLink={`${resolveLink('Indicator')}/${indicator.id}/defense`} />
         </Grid>
       </Grid>

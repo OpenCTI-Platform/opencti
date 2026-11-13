@@ -239,7 +239,8 @@ describe('Hunt run page', () => {
     renderRun();
     const summary = screen.getByTestId('hunt-run-summary');
     expect(summary).toHaveAttribute('data-columns', '2');
-    expect(summary.style.gridTemplateColumns).toBe('repeat(2, minmax(0, 1fr))');
+    // jsdom normalises the zero length of minmax() to 0px
+    expect(summary.style.gridTemplateColumns).toMatch(/^repeat\(2, minmax\(0(px)?, 1fr\)\)$/);
     const cells = Array.from(summary.children) as HTMLElement[];
     expect(cells.map((cell) => cell.dataset.testid)).toEqual([
       'hunt-run-summary-verdict',

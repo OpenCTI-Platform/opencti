@@ -401,7 +401,7 @@ const DetectionRuleLogic = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: b
                 {saveBar('hunt-logic-save-top')}
               </div>
               <Grid container spacing={3}>
-                <Grid item xs={12} lg={7}>
+                <Grid size={{ xs: 12, lg: 7 }}>
                   <Card title={t_i18n('Sigma rules')} action={<HuntLearnMore href={HUNT_DOCS.createHunt} testId="hunt-logic-sigma-learn-more" />}>
                     <ReadOnlyLogicCaption canEdit={canEdit} />
                     <HuntSigmaRulesField
@@ -415,7 +415,7 @@ const DetectionRuleLogic = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: b
                     />
                   </Card>
                 </Grid>
-                <Grid item xs={12} lg={5}>
+                <Grid size={{ xs: 12, lg: 5 }}>
                   <Card title={t_i18n('Query preview')} action={<HuntLearnMore href={HUNT_DOCS.runHunt} />}>
                     <HuntTranslations hunt={hunt} />
                     <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
@@ -431,7 +431,7 @@ const DetectionRuleLogic = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: b
                     <LogicReadinessNotes hunt={hunt} canEdit={canEdit} />
                   </Card>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Card title={t_i18n('Native queries')} action={<HuntLearnMore href={HUNT_DOCS.createHunt} />}>
                     <HuntNativeQueriesField disabled={!canEdit} ruleOptions={ruleOptions} />
                   </Card>
@@ -643,7 +643,7 @@ const IndicatorLogicForm = ({ hunt, canEdit, onDiscard }: { hunt: HuntLogicData;
               )}
             </div>
             <Grid container spacing={3}>
-              <Grid item xs={12} lg={7}>
+              <Grid size={{ xs: 12, lg: 7 }}>
                 <Card title={t_i18n('What to look for')} action={<HuntLearnMore href={HUNT_DOCS.indicatorSources} testId="hunt-ioc-learn-more" />}>
                   <ReadOnlyLogicCaption canEdit={canEdit} />
                   <HuntIocFields
@@ -675,7 +675,7 @@ const IndicatorLogicForm = ({ hunt, canEdit, onDiscard }: { hunt: HuntLogicData;
                   </Security>
                 </Card>
               </Grid>
-              <Grid item xs={12} lg={5}>
+              <Grid size={{ xs: 12, lg: 5 }}>
                 <Card title={t_i18n('Time window')} action={<HuntLearnMore href={HUNT_DOCS.indicatorHunts} />}>
                   <Select value={String(hunt.time_window_hours)} onValueChange={changeTimeWindow} disabled={!canEdit}>
                     <SelectTrigger aria-label={t_i18n('Time window')} style={{ minWidth: 240 }} data-testid="hunt-ioc-time-window">
@@ -698,7 +698,7 @@ const IndicatorLogicForm = ({ hunt, canEdit, onDiscard }: { hunt: HuntLogicData;
                   <LogicReadinessNotes hunt={hunt} canEdit={canEdit} />
                 </Card>
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Card title={t_i18n('Values the next run looks for')} action={<HuntLearnMore href={HUNT_DOCS.indicatorSources} />}>
                   <IocValuesTable hunt={hunt} />
                 </Card>

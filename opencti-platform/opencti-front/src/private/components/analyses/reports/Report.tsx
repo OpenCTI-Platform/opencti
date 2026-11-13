@@ -140,7 +140,7 @@ const Report: React.FC<ReportComponentProps> = ({ reportFragment }) => {
                 );
               case 'hunts':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <HuntsOfEntity entityId={report.id} viewAllLink={`${resolveLink('Report')}/${report.id}/defense`} />
                   </Grid>
                 );

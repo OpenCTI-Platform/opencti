@@ -138,28 +138,28 @@ const HuntStatisticsComponent = ({ queryRef, interval, showWidgets }: HuntStatis
   return (
     <>
       <Grid container spacing={3} sx={{ marginBottom: showWidgets ? 3 : 0 }} data-testid="hunt-statistics-kpis">
-        <Grid item xs={6} md={2}>
+        <Grid size={{ xs: 6, md: 2 }}>
           <CardStatistic label={t_i18n('Runs')} value={n(statistics.runs_count)} />
         </Grid>
-        <Grid item xs={6} md={2}>
+        <Grid size={{ xs: 6, md: 2 }}>
           <CardStatistic label={t_i18n('Hits')} value={n(statistics.hits_total)} />
         </Grid>
-        <Grid item xs={6} md={2}>
+        <Grid size={{ xs: 6, md: 2 }}>
           <CardStatistic label={t_i18n('True positives')} value={n(statistics.true_positive_count)} />
         </Grid>
-        <Grid item xs={6} md={2}>
+        <Grid size={{ xs: 6, md: 2 }}>
           <CardStatistic label={t_i18n('True positive rate')} value={truePositiveRate === null ? '-' : `${truePositiveRate}%`} />
         </Grid>
-        <Grid item xs={6} md={2}>
+        <Grid size={{ xs: 6, md: 2 }}>
           <CardStatistic label={t_i18n('Autonomous runs')} value={autonomousRate === null ? '-' : `${autonomousRate}%`} />
         </Grid>
-        <Grid item xs={6} md={2}>
+        <Grid size={{ xs: 6, md: 2 }}>
           <CardStatistic label={t_i18n('Failed runs')} value={n(statistics.failed_runs_count)} />
         </Grid>
       </Grid>
       {showWidgets && (
         <Grid container spacing={3} data-testid="hunt-statistics-widgets">
-          <Grid item xs={12} md={5}>
+          <Grid size={{ xs: 12, md: 5 }}>
             <WidgetContainer title={t_i18n('Hits over time')} variant="inLine">
               <div style={{ height: WIDGET_HEIGHT }}>
                 {hasTimeSeries ? (
@@ -168,7 +168,7 @@ const HuntStatisticsComponent = ({ queryRef, interval, showWidgets }: HuntStatis
               </div>
             </WidgetContainer>
           </Grid>
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <WidgetContainer title={t_i18n('Runs per platform')} variant="inLine">
               <div style={{ height: WIDGET_HEIGHT }}>
                 {statistics.runs_per_platform.length > 0 ? <WidgetHorizontalBars series={platformSeries} distributed /> : <WidgetNoData />}
@@ -176,7 +176,7 @@ const HuntStatisticsComponent = ({ queryRef, interval, showWidgets }: HuntStatis
             </WidgetContainer>
           </Grid>
           {/* Wide enough for the four verdicts of the legend on one line */}
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <WidgetContainer title={t_i18n('Verdict distribution')} variant="inLine">
               <div style={{ height: WIDGET_HEIGHT }}>
                 {verdicts.length > 0 ? <WidgetDonut data={verdicts} groupBy="verdict" /> : <WidgetNoData />}

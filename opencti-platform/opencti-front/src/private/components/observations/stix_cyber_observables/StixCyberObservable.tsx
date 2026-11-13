@@ -106,7 +106,7 @@ const StixCyberObservable: React.FC<StixCyberObservableProps> = ({
             defaultMarkings={stixCyberObservable.objectMarking ?? []}
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <HuntsOfEntity entityId={stixCyberObservable.id} />
         </Grid>
       </Grid>
