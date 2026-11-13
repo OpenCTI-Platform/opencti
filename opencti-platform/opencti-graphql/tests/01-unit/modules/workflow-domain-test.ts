@@ -4957,9 +4957,47 @@ describe('attachWorkflowStatusIds', () => {
       { statusId: 'tpl-a', workflowStatusId: 'status-a' },
       { statusId: 'tpl-new', workflowStatusId: null },
     ]);
+    expect(fullEntitiesList).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      ['Status'],
+      expect.objectContaining({ filters: expect.objectContaining({ filters: expect.arrayContaining([{ key: ['type'], values: ['Case-Incident'] }]) }) }),
+    );
   });
 
-  it('returns states unchanged with null ids when the definition has no states', async () => {
+  it('ignores a Status marked for deletion, so a state re-added in the draft shows no id', async () => {
+    vi.mocked(fullEntitiesList).mockResolvedValue([
+      { entity_type: 'Status', type: 'Case-Incident', scope: 'GLOBAL', template_id: 'tpl-a', id: 'status-a', order: 1, to_be_deleted_at: '2026-11-13T10:00:00.000Z' },
+      { entity_type: 'Status', type: 'Case-Incident', scope: 'GLOBAL', template_id: 'tpl-b', id: 'status-b', order: 2, to_be_deleted_at: null },
+    ] as any);
+    const definition = {
+      initialState: 'tpl-a',
+      states: [{ statusId: 'tpl-a' }, { statusId: 'tpl-b' }],
+      transitions: [],
+      published: true,
+    } as any;
+
+    const result = await attachWorkflowStatusIds(mockContext, mockUser, 'Case-Incident', definition);
+
+    expect(result.states).toEqual([
+      { statusId: 'tpl-a', workflowStatusId: null },
+      { statusId: 'tpl-b', workflowStatusId: 'status-b' },
+    ]);
+  });
+
+  it('ignores a Status of another scope or another type with the same template', async () => {
+    vi.mocked(fullEntitiesList).mockResolvedValue([
+      { entity_type: 'Status', type: 'Case-Incident', scope: 'REQUEST_ACCESS', template_id: 'tpl-a', id: 'status-other-scope', order: 1 },
+      { entity_type: 'Status', type: 'Report', scope: 'GLOBAL', template_id: 'tpl-a', id: 'status-other-type', order: 2 },
+    ] as any);
+    const definition = { initialState: 'tpl-a', states: [{ statusId: 'tpl-a' }], transitions: [], published: true } as any;
+
+    const result = await attachWorkflowStatusIds(mockContext, mockUser, 'Case-Incident', definition);
+
+    expect(result.states).toEqual([{ statusId: 'tpl-a', workflowStatusId: null }]);
+  });
+
+  it('returns no states and does not query the Statuses when the definition has no states', async () => {
     const definition = { initialState: '*', states: [], transitions: [], published: false } as any;
 
     const result = await attachWorkflowStatusIds(mockContext, mockUser, 'Case-Incident', definition);

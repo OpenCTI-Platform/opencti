@@ -1,6 +1,6 @@
 import React from 'react';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { Formik, Form } from 'formik';
 import StatusForm from './StatusForm';
 import testRender from '../../../../../utils/tests/test-render';
@@ -271,7 +271,7 @@ describe('StatusForm – Status ID', () => {
   it('shows the Status ID of the selected template with a copy button', () => {
     renderForm({ statusTemplate, onEnter: [], onExit: [] }, vi.fn(), 'DraftWorkspace', { 'tpl-a': 'status-a' });
     expect(screen.getByText('Status ID')).toBeDefined();
-    expect(screen.getByText('status-a')).toBeDefined();
+    expect(within(screen.getByTestId('workflow-status-id')).getByText('status-a')).toBeDefined();
     expect(screen.getByRole('button', { name: /copy/i })).toBeDefined();
   });
 
@@ -290,6 +290,7 @@ describe('StatusForm – Status ID', () => {
 
   it('renders nothing for the Status ID when no template is selected', () => {
     renderForm({ onEnter: [], onExit: [] }, vi.fn(), 'DraftWorkspace', { 'tpl-a': 'status-a' });
+    expect(screen.queryByTestId('workflow-status-id')).toBeNull();
     expect(screen.queryByText('Status ID')).toBeNull();
   });
 });

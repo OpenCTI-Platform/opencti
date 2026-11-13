@@ -1896,7 +1896,8 @@ export const attachWorkflowStatusIds = async (
 ): Promise<WorkflowDefinitionResponse> => {
   if (definition.states.length === 0) return definition;
   const statuses = await findWorkflowMappedStatuses(bypassDraftContext(context), bypassDraftUser(user), entityType, StatusScope.Global, definition);
-  const statusIdByTemplateId = new Map(statuses.map((status) => [status.template_id, status.id]));
+  // A status marked for deletion (removed from the published workflow, not purged yet) is not a usable id
+  const statusIdByTemplateId = new Map(statuses.filter((status) => !status.to_be_deleted_at).map((status) => [status.template_id, status.id]));
   return {
     ...definition,
     states: definition.states.map((state) => ({ ...state, workflowStatusId: statusIdByTemplateId.get(state.statusId) ?? null })),

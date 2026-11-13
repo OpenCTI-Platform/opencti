@@ -327,6 +327,8 @@ const Workflow = ({
           hasPublishedVersion: true,
           validationErrors: [],
         });
+        // The mutation returns no states: refetch to get the status ids the publish just created
+        onRefetch();
       },
       onError: (error) => {
         type PublishErrorData = { removedStates?: string[]; entityType?: string; errors?: WorkflowValidationError[] };
