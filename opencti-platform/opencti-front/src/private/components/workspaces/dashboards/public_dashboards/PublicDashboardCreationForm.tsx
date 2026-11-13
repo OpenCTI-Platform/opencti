@@ -123,6 +123,7 @@ const PublicDashboardCreationFormComponent = ({
         max_markings: [],
         variable_values: {},
         time_range: EMPTY_PUBLISHED_TIME_RANGE,
+        published_for: null,
       }}
       onSubmit={onSubmit}
     >
@@ -217,7 +218,8 @@ const PublicDashboardCreationFormComponent = ({
               {t_i18n('Cancel')}
             </Button>
             <Button
-              disabled={isSubmitting || !isValid || !dirty}
+              // The published values must be those of the selected dashboard: no publication while they load.
+              disabled={isSubmitting || !isValid || !dirty || (isVariablesEnabled && !!values.dashboard_id && values.published_for !== values.dashboard_id)}
               onClick={submitForm}
             >
               {t_i18n('Create')}

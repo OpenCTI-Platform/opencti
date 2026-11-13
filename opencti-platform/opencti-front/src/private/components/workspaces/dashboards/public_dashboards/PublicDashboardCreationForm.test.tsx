@@ -30,7 +30,7 @@ const MANIFEST = toB64(JSON.stringify({
 
 const LOADER_QUERY = 'PublicDashboardPublishedValuesQuery';
 
-const renderForm = async (flags: string[]) => {
+const renderForm = async (flags: string[], { resolveLoader = true } = {}) => {
   const rendered = testRender(<PublicDashboardCreationForm dashboard_id="dashboard-1" />, {
     userContext: createMockUserContext({
       me: { id: 'user-1', name: 'admin' },
@@ -45,6 +45,7 @@ const renderForm = async (flags: string[]) => {
   if (flags.includes('DASHBOARD_VARIABLES')) {
     // The published values section loads the selected dashboard, with its variables and presets, on its own.
     await waitFor(() => expect(rendered.relayEnv.mock.getAllOperations().some((op) => op.request.node.operation.name === LOADER_QUERY)).toBe(true));
+    if (!resolveLoader) return rendered;
     act(() => {
       rendered.relayEnv.mock.resolveMostRecentOperation({
         data: { workspace: { id: 'dashboard-1', manifest: MANIFEST, variables: [{ id: SECTOR, usedInWidgetIds: ['widget-1'] }], presets: [] } },
@@ -86,6 +87,20 @@ describe('PublicDashboardCreationForm', () => {
       time_range: { relative_date: 'months-1', start_date: null, end_date: null },
       time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     });
+  });
+
+  it('keeps Create disabled until the published values of the selected dashboard are loaded', async () => {
+    const { user, relayEnv } = await renderForm(['DASHBOARD_VARIABLES'], { resolveLoader: false });
+    await user.type(screen.getByLabelText('Name'), 'Finance view');
+    await user.click(screen.getByRole('button', { name: 'Pick a marking' }));
+    const create = screen.getByRole('button', { name: 'Create' });
+    expect(create).toBeDisabled();
+    act(() => {
+      relayEnv.mock.resolveMostRecentOperation({
+        data: { workspace: { id: 'dashboard-1', manifest: MANIFEST, variables: [{ id: SECTOR, usedInWidgetIds: ['widget-1'] }], presets: [] } },
+      });
+    });
+    await waitFor(() => expect(create).toBeEnabled());
   });
 
   it('should neither show the section nor send its values without the feature flag', async () => {

@@ -41,6 +41,7 @@ const PublicDashboardPublishedValues = ({ dashboard }: PublicDashboardPublishedV
     const state = buildPublishedValuesState(dashboard, me.id);
     setFieldValue('variable_values', state.variable_values);
     setFieldValue('time_range', state.time_range);
+    setFieldValue('published_for', dashboardId ?? null);
     setLoadedPresetId('');
     // Only another dashboard resets the values: a refetch of the same one keeps what the author changed.
   }, [dashboardId]);
@@ -147,6 +148,7 @@ const PublicDashboardPublishedValuesFetcher = ({ dashboardId }: { dashboardId: s
   useEffect(() => {
     setFieldValue('variable_values', {});
     setFieldValue('time_range', EMPTY_PUBLISHED_TIME_RANGE);
+    setFieldValue('published_for', null);
   }, [dashboardId]);
   if (!queryRef) return null;
   return (

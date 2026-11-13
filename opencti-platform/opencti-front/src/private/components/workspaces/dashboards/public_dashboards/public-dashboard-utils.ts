@@ -40,6 +40,9 @@ export interface PublicDashboardCreationFormData {
   // Frozen in the public dashboard, keyed by variable id
   variable_values: Record<string, string>;
   time_range: PublishedTimeRange;
+  // The dashboard the published values were built for: null while they load, so the form cannot publish an
+  // incomplete snapshot under another dashboard id.
+  published_for: string | null;
 }
 
 // A dashboard as the creation form loads it: the manifest holds the definitions, `variables` their usage,

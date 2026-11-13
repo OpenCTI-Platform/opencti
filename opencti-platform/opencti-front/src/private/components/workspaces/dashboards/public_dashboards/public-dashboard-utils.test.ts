@@ -34,6 +34,7 @@ const formValues = {
   uri_key: 'public',
   max_markings: [{ value: 'marking-id', label: 'TLP:GREEN' }],
   dashboard_id: 'dashboard-1',
+  published_for: 'dashboard-1',
   variable_values: { [USED]: 'y', [SELECTION]: '' },
   time_range: { relativeDate: 'days-7', startDate: null, endDate: null },
 };
