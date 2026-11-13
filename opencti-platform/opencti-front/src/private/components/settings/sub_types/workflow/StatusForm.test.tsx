@@ -30,11 +30,16 @@ vi.mock('../../../common/entreprise_edition/EEChip', () => ({
 // ---------------------------------------------------------------------------
 // Helper
 // ---------------------------------------------------------------------------
-const renderForm = (initialValues: Partial<WorkflowEditionFormValues>, onSubmit = vi.fn(), entityType = 'DraftWorkspace') => {
+const renderForm = (
+  initialValues: Partial<WorkflowEditionFormValues>,
+  onSubmit = vi.fn(),
+  entityType = 'DraftWorkspace',
+  workflowStatusIds?: Record<string, string>,
+) => {
   return testRender(
     <Formik initialValues={initialValues as WorkflowEditionFormValues} onSubmit={onSubmit}>
       <Form>
-        <StatusForm entityType={entityType} />
+        <StatusForm entityType={entityType} workflowStatusIds={workflowStatusIds} />
       </Form>
     </Formik>,
   );
@@ -253,5 +258,38 @@ describe('StatusForm – reset authorized members', () => {
     await user.click(screen.getByRole('switch', { name: /reset authorized members on enter/i }));
     const values = await submittedValues(onSubmit);
     expect(values.onEnter).toEqual([]);
+  });
+});
+
+describe('StatusForm – Status ID', () => {
+  const statusTemplate = { id: 'tpl-a', name: 'A', color: '#fff' };
+
+  beforeEach(() => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+  });
+
+  it('shows the Status ID of the selected template with a copy button', () => {
+    renderForm({ statusTemplate, onEnter: [], onExit: [] }, vi.fn(), 'DraftWorkspace', { 'tpl-a': 'status-a' });
+    expect(screen.getByText('Status ID')).toBeDefined();
+    expect(screen.getByText('status-a')).toBeDefined();
+    expect(screen.getByRole('button', { name: /copy/i })).toBeDefined();
+  });
+
+  it('shows a hint when the selected template has no Status yet', () => {
+    renderForm({ statusTemplate, onEnter: [], onExit: [] }, vi.fn(), 'DraftWorkspace', {});
+    expect(screen.getByText('Status ID')).toBeDefined();
+    expect(screen.getByText('Available after publish')).toBeDefined();
+    expect(screen.queryByText('status-a')).toBeNull();
+  });
+
+  it('does not show a stale id belonging to another template', () => {
+    renderForm({ statusTemplate, onEnter: [], onExit: [] }, vi.fn(), 'DraftWorkspace', { 'tpl-b': 'status-b' });
+    expect(screen.getByText('Available after publish')).toBeDefined();
+    expect(screen.queryByText('status-b')).toBeNull();
+  });
+
+  it('renders nothing for the Status ID when no template is selected', () => {
+    renderForm({ onEnter: [], onExit: [] }, vi.fn(), 'DraftWorkspace', { 'tpl-a': 'status-a' });
+    expect(screen.queryByText('Status ID')).toBeNull();
   });
 });

@@ -161,6 +161,15 @@ const Workflow = ({
     depsQueryRef,
   );
 
+  // Status ids (value of x_opencti_workflow_id) keyed by status template id; only published states have one
+  const workflowStatusIds = useMemo(() => {
+    const ids: Record<string, string> = {};
+    (workflowDefinition?.states ?? []).forEach((state) => {
+      if (state.workflowStatusId) ids[state.statusId] = state.workflowStatusId;
+    });
+    return ids;
+  }, [workflowDefinition]);
+
   // 1. Get initial edges and nodes from workflow definition
   const { initialNodes, initialEdges } = useWorkflowInitialElements(workflowDefinition, statusTemplates, members);
 
@@ -512,6 +521,7 @@ const Workflow = ({
         open={open}
         selectedElement={selectedElement}
         entityType={entityType}
+        workflowStatusIds={workflowStatusIds}
         onClose={() => {
           setSelectedElement(emptyElement);
           setOpen(false);

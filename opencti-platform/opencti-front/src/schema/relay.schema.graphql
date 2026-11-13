@@ -18121,6 +18121,7 @@ type WorkflowSerializedState {
   onExit: [WorkflowActionConfig!]
   order: Int
   statusId: String!
+  workflowStatusId: String
 }
 
 type WorkflowSerializedTransition {
