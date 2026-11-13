@@ -48,7 +48,7 @@ vi.mock('../../../../../src/modules/configPreset/import/configPreset-import-sess
 import { resolveUserByIdFromCache } from '../../../../../src/modules/user/user-domain';
 import { importRole, roleStandardId } from '../../../../../src/modules/user/role-import';
 import { groupStandardId } from '../../../../../src/modules/user/group-import';
-import { readConfigPresetBundle } from '../../../../../src/modules/configPreset/import/configPreset-import-bundle';
+import { bundleRefused, readConfigPresetBundle } from '../../../../../src/modules/configPreset/import/configPreset-import-bundle';
 import { readConfigPresetImportSession } from '../../../../../src/modules/configPreset/import/configPreset-import-session-domain';
 import { configPresetImport } from '../../../../../src/modules/configPreset/import/configPreset-import-engine';
 import type { ConfigPresetBundle, ConfigPresetBundleItem } from '../../../../../src/modules/configPreset/import/configPreset-import-types';
@@ -120,5 +120,26 @@ describe('Config preset real import of a role in COPY and a group that depends o
       ['groups', 'FAILED', 'Roles could not be imported: Analyst'],
     ]);
     expect(importRole).not.toHaveBeenCalled();
+  });
+});
+
+describe('Config preset real import of a bundle that cannot be read to the end', () => {
+  const named = (name: string): ConfigPresetBundleItem => ({ type: 'roles', id: roleStandardId(name), path: `security_access/roles/${name}.json`, configuration: { name } });
+
+  it('stops at the item that refuses the bundle, and fails the next ones with the same reason without reading them', async () => {
+    withBundle([named('Analyst'), named('Hunter'), named('Responder')]);
+    vi.mocked(importRole).mockImplementation(async (_context, _user, configuration) => {
+      if ((configuration as { name: string }).name === 'Hunter') {
+        throw bundleRefused('The configuration bundle is too large once extracted');
+      }
+      return { status: 'created', exists: false, grantsSensitiveRights: false };
+    });
+    const { results } = await configPresetImport(context, user, FILE_ID, [{ type: 'roles' }], false);
+    expect(results.map(({ status, reason }) => [status, reason])).toEqual([
+      ['CREATED', null],
+      ['FAILED', 'The configuration bundle is too large once extracted'],
+      ['FAILED', 'The configuration bundle is too large once extracted'],
+    ]);
+    expect(vi.mocked(importRole).mock.calls.some(([, , configuration]) => (configuration as { name: string }).name === 'Responder')).toBe(false);
   });
 });

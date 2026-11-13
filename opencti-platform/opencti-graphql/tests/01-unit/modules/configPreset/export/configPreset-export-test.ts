@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { Writable } from 'node:stream';
+import { Readable, Writable } from 'node:stream';
 import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 // @ts-expect-error unzipper ships no type declarations
 import unzipper from 'unzipper';
@@ -11,6 +11,11 @@ const enterpriseEdition = vi.hoisted(() => ({ enabled: true }));
 vi.mock('../../../../../src/enterprise-edition/ee', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../../src/enterprise-edition/ee')>()),
   isEnterpriseEditionUpToDate: vi.fn(async () => enterpriseEdition.enabled),
+}));
+// The values of an exclusion list are a file of the storage
+vi.mock('../../../../../src/database/raw-file-storage', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/database/raw-file-storage')>()),
+  downloadFile: vi.fn(),
 }));
 vi.mock('../../../../../src/database/middleware-loader', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../../src/database/middleware-loader')>()),
@@ -35,6 +40,7 @@ vi.mock('../../../../../src/manager/telemetryManager', async (importOriginal) =>
 
 import { fullEntitiesList, topEntitiesList } from '../../../../../src/database/middleware-loader';
 import { uploadToStorage } from '../../../../../src/database/file-storage';
+import { downloadFile } from '../../../../../src/database/raw-file-storage';
 import { publishUserAction, type UserConfigPresetExportActionContextData } from '../../../../../src/listener/UserActionListener';
 import { addConfigPresetExportCount } from '../../../../../src/manager/telemetryManager';
 import { PLATFORM_VERSION } from '../../../../../src/config/conf';
@@ -53,6 +59,7 @@ import type { ConfigPresetItemDefinition } from '../../../../../src/modules/conf
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
 import { builtInTheme, customTheme, otherCustomTheme } from '../configPreset-themes-fixtures';
 import { mockConfigPresetLoaders } from '../configPreset-loaders-fixtures';
+import { dnsExclusionList, retiredExclusionList } from '../configPreset-exclusionLists-fixtures';
 
 const context = { source: 'test' } as AuthContext;
 const draftContext = { source: 'test', draft_context: 'draft-id' } as AuthContext;
@@ -353,8 +360,9 @@ describe('Config preset export', () => {
   });
 
   it('does not hang when the output fails while the archive is written, and removes the temporary zip', async () => {
-    // Incompressible content larger than the stream buffers: once the output fails, the archive is no longer drained
-    const largeSettings = { ...storedSettings, platform_title: crypto.randomBytes(4 * 1024 * 1024).toString('base64') };
+    // Incompressible content larger than the stream buffers, and under the 5 MB the import reads in a JSON file (3 MB become 4 MB in base64):
+    // once the output fails, the archive is no longer drained
+    const largeSettings = { ...storedSettings, platform_title: crypto.randomBytes(3 * 1024 * 1024).toString('base64') };
     vi.mocked(topEntitiesList).mockResolvedValue([largeSettings] as never);
     createWriteStreamSpy.mockImplementation(((p: fs.PathLike, options?: Parameters<typeof fs.createWriteStream>[1]) => {
       if (!String(p).includes(TMP_ZIP_MARKER)) {
@@ -437,6 +445,111 @@ describe('Config preset export', () => {
     vi.mocked(fullEntitiesList).mockResolvedValue([] as never);
     await expect(configPresetExport(context, bypassUser, [{ type: 'platform' }])).rejects.toThrow('A configuration preset dependency cannot be exported');
     expectNothingWritten();
+  });
+
+  describe('the attachment of an item', () => {
+    const readEntries = async (zip: Buffer) => {
+      const directory = await unzipper.Open.buffer(zip);
+      const entries: Record<string, Buffer> = {};
+      for (let i = 0; i < directory.files.length; i += 1) {
+        entries[directory.files[i].path] = await directory.files[i].buffer();
+      }
+      return entries;
+    };
+    const jsonPath = (list: { standard_id: string }) => `customization/exclusion_lists/${list.standard_id}.json`;
+    const txtPath = (list: { standard_id: string }) => `customization/exclusion_lists/${list.standard_id}.txt`;
+
+    it('writes the values of an exclusion list as they are stored, next to its JSON that points to them', async () => {
+      const bytes = Buffer.from('8.8.8.8\r\n1.1.1.1\n\u00e9\n');
+      vi.mocked(downloadFile).mockResolvedValue(Readable.from([bytes]) as never);
+      await configPresetExport(context, bypassUser, [{ type: 'exclusionLists', items: [dnsExclusionList.standard_id] }]);
+      const entries = await readEntries(uploadedZip!);
+      expect(Object.keys(entries).sort()).toEqual([jsonPath(dnsExclusionList), txtPath(dnsExclusionList), 'dependencies.json', 'metadata.json']);
+      expect(entries[txtPath(dnsExclusionList)]).toEqual(bytes);
+      expect(JSON.parse(entries[jsonPath(dnsExclusionList)].toString('utf8'))).toMatchObject({
+        type: 'customization.exclusionLists',
+        id: dnsExclusionList.standard_id,
+        attachment: txtPath(dnsExclusionList),
+      });
+      expect(downloadFile).toHaveBeenCalledWith(dnsExclusionList.file_id);
+      // The file is not an item: it is counted with its list
+      expect(publishedSummary()).toMatchObject({ entity_types: ['exclusionLists'], counts: { exclusionLists: 1 }, items: { exclusionLists: [dnsExclusionList.standard_id] } });
+    });
+
+    it('writes one file for each exclusion list, each under the name of its list', async () => {
+      vi.mocked(downloadFile).mockImplementation(async (id) => Readable.from([Buffer.from(`values of ${id}\n`)]) as never);
+      await configPresetExport(context, bypassUser, [{ type: 'exclusionLists' }]);
+      const entries = await readEntries(uploadedZip!);
+      expect(entries[txtPath(dnsExclusionList)].toString('utf8')).toBe(`values of ${dnsExclusionList.file_id}\n`);
+      expect(entries[txtPath(retiredExclusionList)].toString('utf8')).toBe(`values of ${retiredExclusionList.file_id}\n`);
+    });
+
+    it('refuses the export of a list whose file is missing from the storage, and uploads nothing', async () => {
+      vi.mocked(downloadFile).mockResolvedValue(null);
+      await expect(configPresetExport(context, bypassUser, [{ type: 'exclusionLists', items: [dnsExclusionList.standard_id] }]))
+        .rejects.toThrow('The file of the values of an exclusion list is missing from the storage');
+      // The zip was being written: it is removed, nothing is stored and nothing is audited
+      expect(uploadToStorage).not.toHaveBeenCalled();
+      expect(publishUserAction).not.toHaveBeenCalled();
+      tmpZipPaths().forEach((zipPath) => expect(fs.existsSync(zipPath)).toBe(false));
+    });
+
+    it('refuses an export the import could not read back, because its entries add up to more than the extracted limit, and uploads nothing', async () => {
+      // Six lists of 9 MB, each one within the size of a list, are 54 MB for the 50 MB the import accepts
+      const lists = Array.from({ length: 6 }, (_, i) => ({
+        ...dnsExclusionList,
+        id: `big-list-${i}`,
+        internal_id: `big-list-${i}`,
+        standard_id: `3f1d0c4e-7a52-4b8e-9f3a-1c2d3e4f5a0${i}`,
+        name: `Big list ${i}`,
+        file_id: `exclusionLists/big-list-${i}.txt`,
+      }));
+      vi.mocked(fullEntitiesList).mockResolvedValue(lists as never);
+      vi.mocked(downloadFile).mockImplementation(async () => Readable.from([Buffer.alloc(9_000_000, 'a')]) as never);
+      await expect(configPresetExport(context, bypassUser, [{ type: 'exclusionLists' }])).rejects.toThrow('The export is too large to be imported back');
+      expect(uploadToStorage).not.toHaveBeenCalled();
+      expect(publishUserAction).not.toHaveBeenCalled();
+      tmpZipPaths().forEach((zipPath) => expect(fs.existsSync(zipPath)).toBe(false));
+      // Within the limit, the same lists are exported
+      vi.mocked(fullEntitiesList).mockResolvedValue(lists.slice(0, 5) as never);
+      await configPresetExport(context, bypassUser, [{ type: 'exclusionLists' }]);
+      expect(uploadToStorage).toHaveBeenCalledTimes(1);
+    });
+
+    it('refuses an export whose zip is larger than the import accepts, and uploads nothing', async () => {
+      // The values of a list can hardly be compressed: the entries are within the extracted limit, the zip is not
+      const realStat = fs.promises.stat;
+      vi.spyOn(fs.promises, 'stat').mockImplementation(async (p, ...args) => {
+        const stats = await realStat(p, ...(args as []));
+        return String(p).includes(TMP_ZIP_MARKER) ? { ...stats, size: 50 * 1024 * 1024 + 1 } : stats;
+      });
+      vi.mocked(downloadFile).mockResolvedValue(Readable.from([Buffer.from('8.8.8.8\n')]) as never);
+      await expect(configPresetExport(context, bypassUser, [{ type: 'exclusionLists', items: [dnsExclusionList.standard_id] }]))
+        .rejects.toThrow('The export is too large to be imported back');
+      expect(uploadToStorage).not.toHaveBeenCalled();
+      tmpZipPaths().forEach((zipPath) => expect(fs.existsSync(zipPath)).toBe(false));
+    });
+
+    it('refuses an export with a JSON file larger than the import reads, however small the bundle is, and uploads nothing', async () => {
+      vi.mocked(downloadFile).mockResolvedValue(Readable.from([Buffer.from('8.8.8.8\n')]) as never);
+      // The import reads a JSON file up to 5 MB: this one is a few bytes more
+      vi.mocked(fullEntitiesList).mockResolvedValue([{ ...dnsExclusionList, description: 'a'.repeat(5 * 1024 * 1024) }] as never);
+      await expect(configPresetExport(context, bypassUser, [{ type: 'exclusionLists' }])).rejects.toThrow('The export is too large to be imported back');
+      expect(uploadToStorage).not.toHaveBeenCalled();
+      expect(publishUserAction).not.toHaveBeenCalled();
+      tmpZipPaths().forEach((zipPath) => expect(fs.existsSync(zipPath)).toBe(false));
+      // Under the limit, the same list is exported
+      vi.mocked(downloadFile).mockResolvedValue(Readable.from([Buffer.from('8.8.8.8\n')]) as never);
+      vi.mocked(fullEntitiesList).mockResolvedValue([{ ...dnsExclusionList, description: 'a'.repeat(1024 * 1024) }] as never);
+      await configPresetExport(context, bypassUser, [{ type: 'exclusionLists' }]);
+      expect(uploadToStorage).toHaveBeenCalledTimes(1);
+    });
+
+    it('fails with the error of the storage when it cannot be read, it is not a missing file', async () => {
+      vi.mocked(downloadFile).mockRejectedValue(new Error('s3 down'));
+      await expect(configPresetExport(context, bypassUser, [{ type: 'exclusionLists', items: [dnsExclusionList.standard_id] }])).rejects.toThrow('s3 down');
+      expect(uploadToStorage).not.toHaveBeenCalled();
+    });
   });
 
   it('refuses a user without BYPASS', async () => {

@@ -6,6 +6,7 @@ export const NOTE_INSTANCE = {
   entity_type: 'Note',
   attribute_abstract: 'this is a new note',
   content: 'with description:',
+  authors: ['John Doe'],
   note_types: ['analysis'],
   likelihood: 50,
   confidence: 100,
@@ -44,6 +45,7 @@ export const EXPECTED_NOTE = {
   created: '2025-06-26T15:32:23.000Z',
   modified: '2025-06-26T15:33:21.426Z',
   content: 'with description:',
+  authors: ['John Doe'],
   note_types: [
     'analysis',
   ],

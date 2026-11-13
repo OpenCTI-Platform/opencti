@@ -33,6 +33,7 @@ const localStrategyFormQuery = graphql`
       password_policy_min_lowercase
       password_policy_min_uppercase
       password_policy_validity_days
+      password_policy_history_count
       local_auth_lockout_enabled
       local_auth_lockout_max_attempts
       local_auth_lockout_admin_max_attempts
@@ -73,6 +74,7 @@ const localStrategyFormMutation = graphql`
         password_policy_min_lowercase
         password_policy_min_uppercase
         password_policy_validity_days
+        password_policy_history_count
         local_auth_lockout_enabled
         local_auth_lockout_max_attempts
         local_auth_lockout_admin_max_attempts
@@ -83,6 +85,9 @@ const localStrategyFormMutation = graphql`
     }
   }
 `;
+
+// Same bounds as the server, which counts the current password and keeps at most 23 previous ones
+const PASSWORD_HISTORY_MAX_COUNT = 24;
 
 type Translate = (message: string, options?: { values: Record<string, number> }) => string;
 
@@ -118,6 +123,10 @@ const localStrategyValidation = (t_i18n: Translate) => Yup.object().shape({
   password_policy_min_lowercase: Yup.number(),
   password_policy_min_uppercase: Yup.number(),
   password_policy_validity_days: Yup.number(),
+  password_policy_history_count: Yup.number()
+    .integer(t_i18n('Must be an integer between 0 and 24'))
+    .min(0, t_i18n('Must be an integer between 0 and 24'))
+    .max(PASSWORD_HISTORY_MAX_COUNT, t_i18n('Must be an integer between 0 and 24')),
   local_auth_lockout_enabled: Yup.boolean(),
   local_auth_lockout_max_attempts: lockoutNumberSchema(t_i18n, LOCKOUT_MAX_ATTEMPTS_LIMIT),
   local_auth_lockout_admin_max_attempts: lockoutNumberSchema(t_i18n, LOCKOUT_MAX_ATTEMPTS_LIMIT),
@@ -166,6 +175,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
     password_policy_min_lowercase: settings.password_policy_min_lowercase ?? 0,
     password_policy_min_uppercase: settings.password_policy_min_uppercase ?? 0,
     password_policy_validity_days: settings.password_policy_validity_days ?? 0,
+    password_policy_history_count: settings.password_policy_history_count ?? 0,
     local_auth_lockout_enabled: settings.local_auth_lockout_enabled ?? false,
     // The back end always returns a value, falling back to its own defaults
     local_auth_lockout_max_attempts: settings.local_auth_lockout_max_attempts ?? '',
@@ -204,6 +214,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           password_policy_min_lowercase: Number(values.password_policy_min_lowercase) || 0,
           password_policy_min_uppercase: Number(values.password_policy_min_uppercase) || 0,
           password_policy_validity_days: Number(values.password_policy_validity_days) || 0,
+          password_policy_history_count: Number(values.password_policy_history_count) || 0,
           ...(isLockoutFeatureEnabled && lockoutInput),
         },
       },
@@ -324,6 +335,18 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
             className="mt-5"
             name="password_policy_validity_days"
             label={`${t_i18n('Password validity duration in days')} (${t_i18n('0 equals unlimited')})`}
+            fullWidth
+          />
+          <Field
+            component={TextField}
+            type="number"
+            variant="outlined"
+            className="mt-5"
+            name="password_policy_history_count"
+            label={`${t_i18n('Number of recent passwords that cannot be reused')} (${t_i18n('0 equals disabled')})`}
+            min={0}
+            max={PASSWORD_HISTORY_MAX_COUNT}
+            step={1}
             fullWidth
           />
           {isLockoutFeatureEnabled && (

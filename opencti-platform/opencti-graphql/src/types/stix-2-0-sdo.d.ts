@@ -147,12 +147,14 @@ export interface StixReport extends StixContainer {
   description: string;
   report_types: Array<string>;
   published: StixDate;
+  content: string;
   x_opencti_reliability: string;
 }
 
 export interface StixNote extends StixContainer {
   abstract: string;
   content: string;
+  authors: Array<string>; // optional
   note_types: Array<string>;
   likelihood: number;
 }
@@ -165,6 +167,7 @@ export interface StixObservedData extends StixContainer {
 
 export interface StixOpinion extends StixContainer {
   explanation: string; // optional
+  authors: Array<string>; // optional
   opinion: 'strongly-disagree' | 'disagree' | 'neutral' | 'agree' | 'strongly-agree';
 }
 

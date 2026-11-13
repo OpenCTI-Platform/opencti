@@ -53,9 +53,10 @@ describe('buildCustomFieldsTelemetryItems', () => {
       { value: 1, attributes: { entity_type: 'Case-Incident' } },
     ]));
     expect(byEntityType).toHaveLength(2);
-    expect(byFieldType).toHaveLength(7);
+    expect(byFieldType).toHaveLength(8);
     expect(byFieldType).toEqual(expect.arrayContaining([
       { value: 1, attributes: { field_type: 'integer' } },
+      { value: 0, attributes: { field_type: 'decimal' } },
       { value: 1, attributes: { field_type: 'select' } },
       { value: 0, attributes: { field_type: 'date' } },
     ]));

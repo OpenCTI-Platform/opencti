@@ -646,6 +646,27 @@ type Log {
   user_metadata: JSON
 }
 
+############## Frontend logs
+enum FrontendLogLevel {
+  DEBUG
+  INFO
+  WARN
+  ERROR
+}
+input FrontendLogExceptionInput {
+  type: String
+  message: String
+  stacktrace: String
+}
+input FrontendLogInput {
+  timestamp: DateTime!
+  level: FrontendLogLevel!
+  message: String!
+  eventName: String!
+  data: JSON
+  exception: FrontendLogExceptionInput
+}
+
 ############## Attributes
 type AttributesMap {
   type: String!
@@ -786,7 +807,7 @@ type Synchronizer {
   queue_messages: Int!
   toConfigurationExport: String!
   consumer_metrics: StreamCollectionConsumer
-  ingestionHealth: IngestionHealth @ff(flags: ["INGESTION_HEALTH"], softFail: true)
+  ingestionHealth: IngestionHealth
 }
 
 type SynchronizerEdge {
@@ -1384,6 +1405,7 @@ type PublicSettings implements IntlSettings & ThemeSettings {
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
   password_policy_validity_days: Int
+  password_policy_history_count: Int
 }
 
 type MetricAttributes {
@@ -1441,6 +1463,7 @@ input LocalAuthConfigInput {
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
   password_policy_validity_days: Int
+  password_policy_history_count: Int
   local_auth_lockout_enabled: Boolean
   local_auth_lockout_max_attempts: Int
   local_auth_lockout_admin_max_attempts: Int
@@ -1533,6 +1556,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
   password_policy_validity_days: Int
+  password_policy_history_count: Int
   local_auth_lockout_enabled: Boolean @ff(flags: ["LOCAL_AUTH_LOCKOUT"], softFail: true, defaultValue: "false")
   local_auth_lockout_max_attempts: Int @ff(flags: ["LOCAL_AUTH_LOCKOUT"], softFail: true, defaultValue: "10")
   local_auth_lockout_admin_max_attempts: Int @ff(flags: ["LOCAL_AUTH_LOCKOUT"], softFail: true, defaultValue: "3")
@@ -14220,7 +14244,7 @@ type Query {
     types: [String]
     filters: FilterGroup
     search: String
-  ): TimeSeriesBreakdown @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]) @ff(flags: ["TIME_SERIES_BREAKDOWN"])
+  ): TimeSeriesBreakdown @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   subType(id: String!): SubType @auth
   subTypes(
     first: Int
@@ -14479,7 +14503,17 @@ type Query {
     types: [String]
     filters: FilterGroup
     search: String
-  ): TimeSeriesBreakdown @auth(for: [KNOWLEDGE, EXPLORE]) @ff(flags: ["TIME_SERIES_BREAKDOWN"])
+  ): TimeSeriesBreakdown @auth(for: [KNOWLEDGE, EXPLORE])
+  """
+  Keys of the fields a time series widget of the perspective can be broken down by, for the types its dataset is
+  restricted to (at most 1,000, duplicates ignored), as the widget editor lists them. Without types, the ones the
+  breakdown queries default to: Stix-Core-Object, stix-relationship. Each field listed is accepted by the breakdown
+  query of the perspective for these types. The type itself (entity_type, relationship_type), which these queries
+  accept whatever the types, is only listed when it makes several series: several types, an abstract type, or none.
+  The relationships perspective lists no field when a type is not a relationship, as its breakdown refuses such a
+  dataset. The audits perspective lists the fields of the logs whatever the types.
+  """
+  timeSeriesBreakdownFields(perspective: WidgetPerspective!, types: [String!]): [String!]! @auth
   stixCoreObjectsNumber(
     dateAttribute: String
     types: [String]
@@ -15088,7 +15122,7 @@ type Query {
     dynamicFrom: FilterGroup
     dynamicTo: FilterGroup
     search: String
-  ): TimeSeriesBreakdown @auth(for: [KNOWLEDGE, EXPLORE]) @ff(flags: ["TIME_SERIES_BREAKDOWN"])
+  ): TimeSeriesBreakdown @auth(for: [KNOWLEDGE, EXPLORE])
   stixRelationshipsDistribution(
     field: String!
     operation: StatsOperation!
@@ -15891,7 +15925,8 @@ type Mutation {
   rulesRescanAsync(elementId: ID!, executionId: ID!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## INTERNAL OBJECT ENTITIES
-  frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean @auth
+  frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean @auth @deprecated(reason: "Replaced by frontendLogsAdd (#17400)")
+  frontendLogsAdd(logs: [FrontendLogInput!]!): Boolean @auth
   connectorJWT: String! @auth(for: [SETTINGS_SETACCESSES])
   settingsEdit(id: ID!): SettingsEditMutations @auth
   setupEnterpriseLicense(input: LicenseActivationInput!): Settings @auth(for: [SETTINGS_SETPARAMETERS, SETTINGS_SETMANAGEXTMHUB]) @allowUnlicensedLTS

@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Mock } from 'vitest';
 import { act, waitFor } from '@testing-library/react';
-import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
+import testRender from '../../../../utils/tests/test-render';
 import type { Widget, WidgetDataSelection } from '../../../../utils/widget/widget';
-import type { FilterDefinition } from '../../../../utils/hooks/useAuth';
 import { daysAgo, monthsAgo } from '../../../../utils/Time';
 import { loadDashboardViz } from '../../../../utils/tests/dashboardVizMock';
 import { itemColor } from '../../../../utils/Colors';
@@ -34,10 +33,10 @@ vi.mock('react-relay', async (importOriginal) => ({
 vi.mock('../../../../components/dashboard/useDashboardViz', async () => ({
   default: (await import('../../../../utils/tests/dashboardVizMock')).mockDashboardViz(mocks),
 }));
-// The guards pass: a loader waits for the query, unless none is run on purpose
+// The guards pass: a loader waits for the query
 vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
-  default: ({ children, queryRef, isQuerySkipped }: { children: React.ReactNode; queryRef?: unknown; isQuerySkipped?: boolean }) => (
-    queryRef || isQuerySkipped ? <>{children}</> : <div data-testid="loader" />
+  default: ({ children, queryRef }: { children: React.ReactNode; queryRef?: unknown }) => (
+    queryRef ? <>{children}</> : <div data-testid="loader" />
   ),
 }));
 vi.mock('../../../../components/dashboard/WidgetContainer', () => ({
@@ -113,20 +112,8 @@ const makeWidget = (type: string, parameters: Widget['parameters'], dataSelectio
   parameters,
 });
 
-const definition = (filterKey: string, subEntityTypes: string[]): FilterDefinition => ({
-  filterKey, type: 'id', label: filterKey, multiple: true, subEntityTypes, elementsForFilterValuesSearch: [],
-});
-const filterKeysSchema = new Map<string, Map<string, FilterDefinition>>([
-  ['Report', new Map([
-    ['objectAssignee', definition('objectAssignee', ['Report'])],
-    ['objectLabel', definition('objectLabel', ['Report'])],
-    ['objectMarking', definition('objectMarking', ['Report'])],
-    ['creator_id', definition('creator_id', ['Report'])],
-  ])],
-  // the abstract type has no assignee
-  ['Stix-Core-Object', new Map([['objectLabel', definition('objectLabel', ['Stix-Core-Object', 'Report'])]])],
-]);
-const userContext = createMockUserContext({ schema: { filterKeysSchema } });
+// The API refuses a field the types of the dataset do not support
+const unsupportedField = { res: { errors: [{ message: 'Refused', extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'unsupported_field' } } }] } };
 
 const dailyValues = (days: number) => Array.from({ length: days }, (_, i) => i % 3);
 
@@ -140,7 +127,6 @@ const respond = (series: SerieFixture[], truncated = false) => {
 
 const render = (widget: Widget) => testRender(
   <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} popover={editorMenu} />,
-  { userContext },
 );
 
 // The first draw of a chart can wait for the charts drawn just before it
@@ -457,7 +443,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
       return <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} popover={editorMenu} />;
     };
     respond([{ label: 'Report', entity: null, values: [1, 2, 3] }]);
-    testRender(<RefreshedWidget />, { userContext });
+    testRender(<RefreshedWidget />);
     const { series } = await drawn(mocks.lines);
 
     // a refresh hands a new breakdown, with the same values
@@ -482,7 +468,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
       edit = setParameters;
       return <StixCoreObjectsTimeSeriesBreakdown widget={makeWidget('vertical-bar', parameters, multiTypesSelection)} config={config} host={host} popover={editorMenu} />;
     };
-    const { getByTestId } = testRender(<EditedWidget />, { userContext });
+    const { getByTestId } = testRender(<EditedWidget />);
     expect((await drawn(mocks.bars)).interval).toEqual('week');
     const warning = getByTestId('widget-warning').textContent;
     expect(warning).toContain('Interval adjusted to Week');
@@ -536,17 +522,17 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     vi.mocked(console.error).mockRestore();
   });
 
-  it('only says why the breakdown is refused, or its field not available, to the users who cannot edit the widget', () => {
+  it('only says why the breakdown is refused, its field included, to the users who cannot edit the widget', () => {
     // React logs the errors its boundaries catch
     vi.spyOn(console, 'error').mockImplementation(() => {});
     mocks.error = { res: { errors: [{ message: 'Refused', extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'too_large' } } }] } };
-    const refused = testRender(<StixCoreObjectsTimeSeriesBreakdown widget={makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection)} config={config} host={host} />, { userContext });
+    const refused = testRender(<StixCoreObjectsTimeSeriesBreakdown widget={makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection)} config={config} host={host} />);
     expect(refused.container.textContent).toEqual('This breakdown has too many points for the selected period.');
     refused.unmount();
 
-    mocks.error = null;
-    const unsupported = testRender(<StixCoreObjectsTimeSeriesBreakdown widget={makeWidget('line', { breakdownBy: 'objectAssignee' }, noTypeSelection)} config={config} host={host} />, { userContext });
-    expect(unsupported.container.textContent).toEqual('This breakdown field is not available for the dataset of this widget.');
+    mocks.error = unsupportedField;
+    const unsupported = testRender(<StixCoreObjectsTimeSeriesBreakdown widget={makeWidget('line', { breakdownBy: 'objectAssignee' }, noTypeSelection)} config={config} host={host} />);
+    expect(unsupported.container.textContent).toEqual('The breakdown field of this widget does not apply to its data.');
     vi.mocked(console.error).mockRestore();
   });
 
@@ -562,7 +548,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     };
     const tooLarge = 'This breakdown has too many points for the selected period. Shorten the period, choose a coarser interval or reduce the number of series.';
     mocks.error = { res: { errors: [{ message: 'Refused', extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'too_large' } } }] } };
-    const { getByText, queryByText } = testRender(<RenderedWidget />, { userContext });
+    const { getByText, queryByText } = testRender(<RenderedWidget />);
     expect(getByText(tooLarge)).toBeTruthy();
 
     // The same query: the refusal stays, nothing is queried or drawn again
@@ -592,7 +578,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     // The chart says it is mounted once drawn
     const mountChart = () => act(() => mocks.lines.mock.lastCall?.[0].onMounted({}));
     respond([{ label: 'Report', entity: null, values: [1, 2, 3] }]);
-    const { queryByTestId, getByText } = testRender(<RefreshedWidget />, { userContext });
+    const { queryByTestId, getByText } = testRender(<RefreshedWidget />);
     await drawn(mocks.lines);
     mountChart();
     expect(queryByTestId('widget-export')).not.toBeNull();
@@ -627,15 +613,19 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     expect(getByTestId('widget-warning').textContent).toContain('Only the 5 lowest values are displayed.');
   });
 
-  it('does not query a breakdown field the dataset does not support, and says so', () => {
+  it('queries any breakdown field, and says so when the API refuses it for the dataset', () => {
+    // React logs the errors its boundaries catch
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    mocks.error = unsupportedField;
     const { getByText } = render(makeWidget('line', { breakdownBy: 'objectAssignee' }, noTypeSelection));
     const { buildQueryVariables, dataSelection, parameters } = mocks.dashboardViz.mock.lastCall?.[0] ?? {};
-    expect(buildQueryVariables(dataSelection, config, parameters)).toBeNull();
-    expect(getByText('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')).toBeTruthy();
+    expect(buildQueryVariables(dataSelection, config, parameters)).toMatchObject({ field: 'objectAssignee', types: ['Stix-Core-Object'] });
+    expect(getByText('The breakdown field of this widget does not apply to its data. Edit the widget to choose another field.')).toBeTruthy();
     expect(mocks.lines).not.toHaveBeenCalled();
+    vi.mocked(console.error).mockRestore();
   });
 
-  it('checks the field on the dataset its saved filters and variables resolve to, as it is queried', async () => {
+  it('queries the field on the dataset its saved filters and variables resolve to, for the API to check it', async () => {
     // The type is a dashboard variable: only the resolved dataset says it is a report, which has assignees
     const variableSelection = {
       ...selection,
@@ -648,41 +638,45 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     expect(buildQueryVariables([selection], config, parameters)).toMatchObject({ field: 'objectAssignee', types: ['Report'] });
     await drawn(mocks.lines);
 
-    // A dataset whose saved filter resolves to any entity: the same field is refused, without query
+    // A dataset whose saved filter resolves to any entity: the same field is queried for any entity
     mocks.resolvedDataSelection = [noTypeSelection];
-    const { getByText } = render(makeWidget('line', { breakdownBy: 'objectAssignee' }, { ...selection, filters_id: 'saved-filter' } as WidgetDataSelection));
-    expect(mocks.dashboardViz.mock.lastCall?.[0].buildQueryVariables([noTypeSelection], config, parameters)).toBeNull();
-    expect(getByText('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')).toBeTruthy();
+    render(makeWidget('line', { breakdownBy: 'objectAssignee' }, { ...selection, filters_id: 'saved-filter' } as WidgetDataSelection));
+    expect(mocks.dashboardViz.mock.lastCall?.[0].buildQueryVariables([noTypeSelection], config, parameters))
+      .toMatchObject({ field: 'objectAssignee', types: ['Stix-Core-Object'] });
   });
 
-  it('says a field is not available only once the dataset it is checked on is resolved', () => {
-    // Edited to read another dataset, whose saved filter is still being read: the field is not checked
-    // on the dataset resolved before, nothing is queried and the widget waits
+  it('waits for the dataset to be resolved, and then says the API refused its field', () => {
+    // React logs the errors its boundaries catch
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    // Edited to read another dataset, whose saved filter is still being read: nothing is queried and the widget waits
     mocks.isResolving = true;
+    mocks.error = unsupportedField;
     let rerender = () => {};
     const ResolvedWidget = () => {
       const [, setRenderCount] = useState(0);
       rerender = () => setRenderCount((count) => count + 1);
       return <StixCoreObjectsTimeSeriesBreakdown widget={makeWidget('line', { breakdownBy: 'objectAssignee' }, noTypeSelection)} config={config} host={host} popover={editorMenu} />;
     };
-    const notAvailable = 'This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.';
-    const { queryByText, queryByTestId } = testRender(<ResolvedWidget />, { userContext });
-    expect(queryByText(notAvailable)).toBeNull();
+    const unsupported = 'The breakdown field of this widget does not apply to its data. Edit the widget to choose another field.';
+    const { queryByText, queryByTestId } = testRender(<ResolvedWidget />);
+    expect(queryByText(unsupported)).toBeNull();
     expect(queryByTestId('loader')).not.toBeNull();
-    expect(mocks.lines).not.toHaveBeenCalled();
 
     // Resolved to any entity, which has no assignee
     mocks.isResolving = false;
     act(() => rerender());
-    expect(queryByText(notAvailable)).toBeTruthy();
+    expect(queryByText(unsupported)).toBeTruthy();
     expect(mocks.lines).not.toHaveBeenCalled();
+    vi.mocked(console.error).mockRestore();
   });
 
-  it('accepts the entity type for a dataset resolved to a single type, a type variable may hold one', () => {
-    respond([]);
+  it('draws a stored field the editor does not list, the type of a single type, when the API accepts it', async () => {
+    // An imported widget, or one written through the API: a single series
+    respond([{ label: 'Report', entity: null, values: dailyValues(3) }]);
     render(makeWidget('line', { breakdownBy: 'entity_type' }, selection));
     const { buildQueryVariables, dataSelection, parameters } = mocks.dashboardViz.mock.lastCall?.[0] ?? {};
     expect(buildQueryVariables(dataSelection, config, parameters)).toMatchObject({ field: 'entity_type', types: ['Report'] });
+    expect((await drawn(mocks.lines)).series).toHaveLength(1);
   });
 
   it('shows the no data state without any series', () => {

@@ -112,8 +112,7 @@ export const describeFeedAndSyncExecutionFailure = ({ http_status, http_status_t
 // region reported errors (connector and work errors)
 
 // A connector reports its errors with a criticity (higher is worse): from this one the most critical error is blocking, below it is advisory
-// ponytail: arbitrary default, tune it once real connectors report errors
-export const CONNECTOR_ERROR_BLOCKING_CRITICITY = 2;
+export const CONNECTOR_ERROR_BLOCKING_CRITICITY = 40;
 
 // A work error can quote the url called, with its query string or its user and password: they may hold a secret,
 // and the error is shown to every reader of the connector, and written in the activity log.

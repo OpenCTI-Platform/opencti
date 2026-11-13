@@ -8,6 +8,7 @@ import { daysAgo, monthsAgo } from '../../../../utils/Time';
 
 const mocks = vi.hoisted(() => ({
   response: {} as Record<string, unknown>,
+  error: null as unknown,
   dashboardViz: vi.fn(),
   resolvedDataSelection: null as unknown[] | null,
   lines: vi.fn(),
@@ -19,7 +20,10 @@ const mocks = vi.hoisted(() => ({
 vi.mock('../../../../utils/hooks/useResizeObserver', () => ({ default: () => ({ width: 1200, height: 400 }) }));
 vi.mock('react-relay', async (importOriginal) => ({
   ...(await importOriginal<typeof import('react-relay')>()),
-  usePreloadedQuery: () => mocks.response,
+  usePreloadedQuery: () => {
+    if (mocks.error) throw mocks.error;
+    return mocks.response;
+  },
 }));
 // Resolved as is, unless the test sets what its saved filters and variables resolve to. The query is kept until a load.
 vi.mock('../../../../components/dashboard/useDashboardViz', async () => ({
@@ -102,9 +106,17 @@ const queryVariables = (widget: Widget, dashboardConfig: Record<string, unknown>
 describe('AuditsTimeSeriesBreakdown', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.error = null;
     mocks.isGranted = true;
     mocks.isEnterpriseEdition = true;
   });
+
+  // The API refuses a field the logs cannot be broken down by
+  const refuseField = () => {
+    // React logs the errors its boundaries catch
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    mocks.error = { res: { errors: [{ message: 'Refused', extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'unsupported_field' } } }] } };
+  };
 
   it('queries the logs breakdown with the dataset filters, the timestamp and the series settings', () => {
     respond([]);
@@ -207,23 +219,29 @@ describe('AuditsTimeSeriesBreakdown', () => {
     expect(mocks.lines).not.toHaveBeenCalled();
   });
 
-  it('does not query a field the logs cannot be broken down by, and says so', () => {
+  it('queries a field the logs cannot be broken down by, and says so when the API refuses it', () => {
+    refuseField();
     const { getByText } = render(makeWidget('line', { breakdownBy: 'context_data.id' }));
     const { buildQueryVariables, dataSelection, parameters } = mocks.dashboardViz.mock.lastCall?.[0] ?? {};
-    expect(buildQueryVariables(dataSelection, config, parameters)).toBeNull();
-    expect(getByText('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')).toBeTruthy();
+    expect(buildQueryVariables(dataSelection, config, parameters)).toMatchObject({ field: 'context_data.id' });
+    expect(getByText('The breakdown field of this widget does not apply to its data. Edit the widget to choose another field.')).toBeTruthy();
+    vi.mocked(console.error).mockRestore();
   });
 
   it('tells a user without access so before anything about the field', () => {
+    refuseField();
     mocks.isGranted = false;
     const { getByText, queryByText } = render(makeWidget('line', { breakdownBy: 'context_data.id' }));
     expect(getByText('You are not authorized to see this data.')).toBeTruthy();
-    expect(queryByText(/This breakdown field is not available/)).toBeNull();
+    expect(queryByText(/The breakdown field of this widget/)).toBeNull();
+    vi.mocked(console.error).mockRestore();
   });
 
   it('gives no advice to edit the widget to the users who cannot', () => {
+    refuseField();
     const { container } = testRender(<AuditsTimeSeriesBreakdown widget={makeWidget('line', { breakdownBy: 'context_data.id' })} config={config} host={host} />);
-    expect(container.textContent).toContain('This breakdown field is not available for the dataset of this widget.');
+    expect(container.textContent).toContain('The breakdown field of this widget does not apply to its data.');
     expect(container.textContent).not.toContain('Edit the widget');
+    vi.mocked(console.error).mockRestore();
   });
 });

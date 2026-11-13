@@ -20,6 +20,36 @@ const getFetchHeaders = () => {
   return headersEnv ? JSON.parse(headersEnv) : {};
 };
 
+const MAX_ATTEMPTS = 5;
+const RETRY_DELAY_MS = 2000;
+const RETRYABLE_STATUSES = new Set([408, 429, 500, 502, 503, 504]);
+
+const sleep = (ms: number) => new Promise((resolve) => {
+  setTimeout(resolve, ms);
+});
+
+// A transient network reset or a 5xx from GitHub must not fail the build: retry
+// those, fail at once on any other HTTP error.
+const fetchManifest = async (url: string): Promise<string> => {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+    try {
+      const res = await fetch(url, { headers: getFetchHeaders() });
+      if (res.ok) return await res.text();
+      lastError = new Error(`HTTP ${res.status}`);
+      if (!RETRYABLE_STATUSES.has(res.status)) throw lastError;
+    } catch (err) {
+      if (err === lastError) throw err;
+      lastError = err;
+    }
+    if (attempt < MAX_ATTEMPTS) {
+      console.warn(`⚠️ Attempt ${attempt}/${MAX_ATTEMPTS} failed (${lastError instanceof Error ? lastError.message : String(lastError)}), retrying`);
+      await sleep(RETRY_DELAY_MS * attempt);
+    }
+  }
+  throw lastError;
+};
+
 const OUTPUT_DIR = '../src/__generated__';
 const OUTPUT_FILE = 'opencti-manifest.json';
 
@@ -29,11 +59,7 @@ const getConnectorManifest = async () => {
   try {
     // fetch file
     console.info(`➡️ Fetching manifest from: ${schemaUrl}`);
-    const res = await fetch(schemaUrl, {
-      headers: getFetchHeaders(),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.text();
+    const data = await fetchManifest(schemaUrl);
 
     // try to parse as json
     console.info('➡️ Parsing manifest...');

@@ -173,6 +173,16 @@ describe('Handler registry', () => {
     expect(() => registerUserMergeHandler(disable)).toThrow('user identity fields');
   });
 
+  // The hashes of the previous passwords: rewritten on the target, they would let it reuse them.
+  it('should reject a handler other than the deactivation one writing the password history', () => {
+    expect(() => registerUserMergeHandler(mockHandler({ writes: ['User.password_history'] }))).toThrow('user identity fields');
+  });
+
+  it('should accept the deactivation handler emptying the password history', () => {
+    const disable = mockHandler({ identifier: USER_MERGE_SOURCE_DISABLE_HANDLER, writes: ['User.account_status', 'User.password_history'] });
+    expect(() => registerUserMergeHandler(disable)).not.toThrow();
+  });
+
   it('should accept a handler writing a user field that carries no identity', () => {
     expect(() => registerUserMergeHandler(mockHandler({ writes: ['User.personal_notifiers'] }))).not.toThrow();
   });

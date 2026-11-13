@@ -1,4 +1,4 @@
-import conf, { BUS_TOPICS, INGESTION_HEALTH_FEATURE_FLAG, booleanConf, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, booleanConf, logApp } from '../config/conf';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../database/cache';
 import { patchAttribute } from '../database/middleware';
 import { fullEntitiesList } from '../database/middleware-loader';
@@ -44,9 +44,9 @@ const INGESTION_HEALTH_MANAGER_ENABLED = booleanConf('ingestion_health_manager:e
 const INGESTION_HEALTH_MANAGER_KEY = conf.get('ingestion_health_manager:lock_key') || 'ingestion_health_manager_lock';
 const SCHEDULE_TIME = conf.get('ingestion_health_manager:interval') || 60000; // 1 minute
 
-type IngestionElement = BasicStoreEntity & IngestionHealthFields;
+export type IngestionElement = BasicStoreEntity & IngestionHealthFields;
 
-interface IngestionSource<T extends IngestionElement> {
+export interface IngestionSource<T extends IngestionElement> {
   entityType: string;
   load: (context: AuthContext) => Promise<T[]>;
 }
@@ -69,7 +69,7 @@ const feedOrSyncSource = (entityType: string): IngestionSource<IngestionElement 
   load: (context) => fullEntitiesList(context, INGESTION_HEALTH_MANAGER_USER, [entityType]),
 });
 
-const INGESTION_SOURCES: IngestionSource<IngestionElement>[] = [
+export const INGESTION_SOURCES: IngestionSource<IngestionElement>[] = [
   connectorSource,
   feedOrSyncSource(ENTITY_TYPE_INGESTION_RSS),
   feedOrSyncSource(ENTITY_TYPE_INGESTION_CSV),
@@ -301,6 +301,4 @@ const INGESTION_HEALTH_MANAGER_DEFINITION: ManagerDefinition = {
   },
 };
 
-if (isFeatureEnabled(INGESTION_HEALTH_FEATURE_FLAG)) {
-  registerManager(INGESTION_HEALTH_MANAGER_DEFINITION);
-}
+registerManager(INGESTION_HEALTH_MANAGER_DEFINITION);

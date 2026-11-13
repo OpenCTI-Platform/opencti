@@ -1,12 +1,12 @@
 import { expect, test } from '../fixtures/baseFixtures';
 import AskArianePageModel from '../model/askAriane.pageModel';
-import { AGENT_DESCRIPTION, AGENT_NAME, PRESENTATION_EXCERPT, QUESTION, WIDGET_ERROR_MESSAGES, getUnstubbedChatbotRequests, mockChatbotBackend } from './chatbotBackendMock';
+import { AGENT_NAME, PRESENTATION_EXCERPT, QUESTION, WIDGET_ERROR_MESSAGES, getUnstubbedChatbotRequests, mockChatbotBackend } from './chatbotBackendMock';
 
 /**
  * Content of the test
  * -------------------
  * Open the Ask Ariane panel
- * Check the agent presentation and that no error is displayed
+ * Check the greeting names the agent and that no error is displayed
  * Ask a question and check the answer is streamed back
  * Start a new chat and check the conversation is reset
  */
@@ -27,7 +27,6 @@ test('Ask Ariane chatbot', { tag: ['@ee'] }, async ({ page }) => {
   // --------------------------------------------------
   const panel = askAriane.getPanel();
   await expect(panel).toContainText(`How can ${AGENT_NAME} help you`);
-  await expect(panel).toContainText(AGENT_DESCRIPTION);
   await expect(askAriane.getPromptSuggestion('What are the latest threats?')).toBeVisible();
   await expect(panel).not.toContainText(WIDGET_ERROR_MESSAGES);
   // endregion

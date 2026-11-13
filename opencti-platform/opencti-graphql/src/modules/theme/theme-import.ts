@@ -7,7 +7,7 @@ import { configImportReasonValue, configImportValidationReason, freeConfigImport
 import { extractContentFrom } from '../../utils/fileToContent';
 import { BUILT_IN_THEME_STANDARD_IDS } from './theme-constants';
 import { addTheme, checkExistingTheme, fieldPatchTheme, findById } from './theme-domain';
-import { THEME_NAME_MAX_LENGTH, type ThemeImportConfiguration, themeImportSchema } from './theme-import-schema';
+import { THEME_NAME_MAX_LENGTH, THEME_STANDARD_ID_PATTERN, type ThemeImportConfiguration, themeImportSchema } from './theme-import-schema';
 
 // A dry run writes nothing: the names the earlier items of the same dry run would take are reserved for the next ones
 export interface ThemeImportOptions extends ConfigImportOptions {
@@ -23,6 +23,8 @@ export type ThemeImportCode = 'invalid' | 'standard_id_required' | 'exists' | 'n
 export type ThemeImportResult = ConfigImportResult<ThemeImportConfiguration, ThemeImportCode> & {
   // The theme written, absent on a dry run
   theme?: Awaited<ReturnType<typeof addTheme>>;
+  // The name of a copy: the one of the configuration, or the free one it takes when that name is taken
+  copyName?: string;
 };
 
 const refused = (status: 'failed' | 'skipped', code: ThemeImportCode, reason: string, exists: boolean, configuration?: ThemeImportConfiguration): ThemeImportResult => {
@@ -80,7 +82,7 @@ export const importTheme = async (
     if (!name) {
       return refused('failed', 'name_conflict', 'Theme name already exists', !!existing, parsed.data);
     }
-    const copy: ThemeImportResult = { status: 'created', exists: !!existing, configuration: parsed.data, reason: name === theme.name ? undefined : `Added as "${configImportReasonValue(name)}"` };
+    const copy: ThemeImportResult = { status: 'created', exists: !!existing, configuration: parsed.data, copyName: name, reason: name === theme.name ? undefined : `Added as "${configImportReasonValue(name)}"` };
     if (dryRun) {
       reservedNames?.add(name);
       return copy;
@@ -120,9 +122,26 @@ const importError = ({ code, reason }: ThemeImportResult, name?: string) => {
   }
 };
 
-// The import of a theme file: the theme must not exist yet
+// A theme file keeps its standard id when it is free, so that the theme stays the same one on the platforms it is imported to.
+// The id is dropped when it is a built-in one or the one of a theme of the platform: the file is then a new theme (a renamed export,
+// a theme started from a built-in one), and the platform gives it its own id. An id that is not a theme standard id is kept: the
+// validation refuses it.
+const withFreeStandardId = async (context: AuthContext, user: AuthUser, content: unknown) => {
+  if (!content || typeof content !== 'object') {
+    return content;
+  }
+  const { standard_id: standardId, ...theme } = content as Record<string, unknown>;
+  if (typeof standardId !== 'string' || !THEME_STANDARD_ID_PATTERN.test(standardId)) {
+    return content;
+  }
+  const taken = Object.values(BUILT_IN_THEME_STANDARD_IDS).includes(standardId) || !!(await findById(context, user, standardId));
+  return taken ? theme : content;
+};
+
+// The import of a theme file: always a new theme, under its own name (a name that another theme uses is refused, as before the
+// standard id was exported), and under its standard id when it is free
 export const themeImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
-  const content = await extractContentFrom(file);
+  const content = await withFreeStandardId(context, user, await extractContentFrom(file));
   const result = await importTheme(context, user, content, { mode: ConfigImportMode.Add });
   if (result.status !== 'created') {
     throw importError(result, result.configuration?.name);

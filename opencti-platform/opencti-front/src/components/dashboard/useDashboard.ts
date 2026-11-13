@@ -1,17 +1,34 @@
 import { v4 as uuid } from 'uuid';
 import * as R from 'ramda';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import fileDownload from 'js-file-download';
 import type { Widget, WidgetLayout } from '../../utils/widget/widget';
 import { deserializeDashboardManifestForFrontend, prepareManifest, serializeDashboardManifestForBackend } from './dashboard-utils';
-import type { DashboardLike, DashboardManifest, DashboardWidget } from './dashboard-types';
+import type { DashboardConfig, DashboardLike, DashboardManifest, DashboardWidget } from './dashboard-types';
 import useDebounceCallback from '../../utils/hooks/useDebounceCallback';
+import { applyDateChange, type DashboardDateField } from './dashboardTimeRange';
 
 const LAYOUT_SAVE_DEBOUNCE_MS = 300;
 
+// One write of the manifest, built when it is sent: from the last manifest sent, so that it keeps what the writes
+// before it changed, with the current layouts.
+interface ManifestWrite {
+  update: (base: DashboardManifest) => DashboardManifest;
+  noRefresh: boolean;
+  onCompleted?: () => void;
+  onError?: (error: Error) => void;
+}
+
 interface useDashboardProps {
   entity: DashboardLike | undefined | null;
-  onSave?: (entityId: string, newSerializedManifest: string, noRefresh: boolean, onCompleted: () => void) => void;
+  // Must call onCompleted or onError in every case: the next write waits for it.
+  onSave?: (
+    entityId: string,
+    newSerializedManifest: string,
+    noRefresh: boolean,
+    onCompleted: () => void,
+    onError: (error: Error) => void,
+  ) => void;
   onImportWidget?: (entityId: string, widgetConfigFile: File, serializedManifest: string) => void;
   onExportWidget?: (entityId: string, widget: { id: string; type: string }) => Promise<string | null>;
 }
@@ -53,64 +70,107 @@ function useDashboard({
   // or dimension of widgets.
   const [widgetsLayouts, setWidgetsLayouts] = useState<Record<string, WidgetLayout>>({});
 
+  // The writes are sent one at a time: each one carries the whole manifest, so two of them in flight would let the
+  // last one to reach the server undo the other (a layout save sent while a config save is pending, for instance).
+  const latest = useRef({ manifest, serializedManifest, layouts: widgetsLayouts });
+  const writes = useRef<{ busy: boolean; waiting: ManifestWrite[]; lastSent: { manifest: DashboardManifest; encoded: string } | null }>({
+    busy: false,
+    waiting: [],
+    lastSent: null,
+  });
   useEffect(() => {
-    setWidgetsLayouts(
-      widgetsArray.reduce((res, widget) => {
-        res[widget.id] = widget.layout;
-        return res;
-      }, {} as Record<string, WidgetLayout>),
-    );
+    latest.current.manifest = manifest;
+    latest.current.serializedManifest = serializedManifest;
+    // Once idle, the store is the reference again: it holds the last write, and any change made elsewhere.
+    if (!writes.current.busy) writes.current.lastSent = null;
+  }, [manifest, serializedManifest]);
+
+  useEffect(() => {
+    const layouts = widgetsArray.reduce((res, widget) => {
+      res[widget.id] = widget.layout;
+      return res;
+    }, {} as Record<string, WidgetLayout>);
+    setWidgetsLayouts(layouts);
+    latest.current.layouts = layouts;
   }, [widgetsArray]);
 
-  const saveManifest = (newManifest: DashboardManifest, opts = { layouts: widgetsLayouts, noRefresh: false }) => {
-    const { layouts, noRefresh } = opts;
-    const preparedManifest = prepareManifest(newManifest, layouts);
-    const newManifestEncoded = serializeDashboardManifestForBackend(preparedManifest);
-    // Sometimes (in case of layout adjustment) we do not want to re-fetch
-    // all the manifest because widgets data is still the same, and it's costly
-    // in performance.
-    if (serializedManifest !== newManifestEncoded) {
-      onSave?.(entity?.id ?? '', newManifestEncoded, noRefresh, () => {
-        setDeleting(false);
-      });
+  const sendNextWrite = () => {
+    const queue = writes.current;
+    const write = queue.waiting.shift();
+    if (!write) {
+      queue.busy = false;
+      return;
     }
+    queue.busy = true;
+    const base = queue.lastSent?.manifest ?? latest.current.manifest;
+    const baseEncoded = queue.lastSent?.encoded ?? latest.current.serializedManifest;
+    const newManifest = prepareManifest(write.update(base), latest.current.layouts);
+    const newManifestEncoded = serializeDashboardManifestForBackend(newManifest);
+    if (!onSave || baseEncoded === newManifestEncoded) {
+      write.onCompleted?.();
+      sendNextWrite();
+      return;
+    }
+    onSave(entity?.id ?? '', newManifestEncoded, write.noRefresh, () => {
+      // A layout write does not refresh the store, so nothing would ever drop it as the base: the next write starts
+      // again from the store (which may have changed meanwhile) and re-applies the current layouts anyway.
+      if (!write.noRefresh) queue.lastSent = { manifest: newManifest, encoded: newManifestEncoded };
+      setDeleting(false);
+      write.onCompleted?.();
+      // The queue may have been replaced (another dashboard): its own writes are not sent from here.
+      if (writes.current === queue) sendNextWrite();
+    }, (error) => {
+      // Not saved: the next write builds on what the server has, not on this one.
+      setDeleting(false);
+      write.onError?.(error);
+      if (writes.current === queue) sendNextWrite();
+    });
   };
 
+  const saveManifest = (write: ManifestWrite) => {
+    writes.current.waiting.push(write);
+    if (!writes.current.busy) sendNextWrite();
+  };
+
+  // Sometimes (in case of layout adjustment) we do not want to re-fetch
+  // all the manifest because widgets data is still the same, and it's costly
+  // in performance.
   const debouncedSaveLayout = useDebounceCallback(
-    (currentManifest: DashboardManifest, layouts: Record<string, WidgetLayout>) => {
-      saveManifest(currentManifest, { layouts, noRefresh: true });
-    },
+    () => saveManifest({ update: (base) => base, noRefresh: true }),
     LAYOUT_SAVE_DEBOUNCE_MS,
   );
 
+  // Another dashboard: its writes start from its own manifest; a write of the previous one still in flight is not
+  // followed by the ones waiting here, and a layout save of it still pending is dropped.
+  const entityId = entity?.id;
+  useEffect(() => {
+    debouncedSaveLayout.cancel();
+    writes.current = { busy: false, waiting: [], lastSent: null };
+    // The cancel of the debounced save is stable: only the dashboard matters here.
+  }, [entityId]);
+
+  // Any other write carries the current layouts.
   const cancelPendingLayoutSave = () => {
     debouncedSaveLayout.cancel();
   };
 
-  const handleDateChange = (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => {
+  const handleDateChange = (type: DashboardDateField, value: string | null) => {
     cancelPendingLayoutSave();
-    let newManifest = {
-      ...manifest,
-      config: {
-        ...manifest.config,
-        [type]: value === 'none' ? null : value,
-      },
-    } satisfies DashboardManifest;
-    if (type === 'relativeDate' && value !== 'none') {
-      newManifest = {
-        ...newManifest,
-        config: {
-          ...newManifest.config,
-          startDate: null,
-          endDate: null,
-        },
-      } satisfies DashboardManifest;
-    }
-    saveManifest(newManifest);
+    saveManifest({ update: (base) => ({ ...base, config: applyDateChange(base.config, type, value) }), noRefresh: false });
   };
 
-  const getNextRow = () => {
-    return widgetsArray.reduce((max, { layout }) => {
+  const handleConfigChange = (patch: Partial<DashboardConfig>) => new Promise<void>((resolve, reject) => {
+    cancelPendingLayoutSave();
+    saveManifest({
+      update: (base) => ({ ...base, config: { ...base.config, ...patch } }),
+      noRefresh: false,
+      onCompleted: resolve,
+      onError: reject,
+    });
+  });
+
+  const getNextRow = (widgets: DashboardManifest['widgets']) => {
+    return Object.values(widgets).reduce((max, { layout }) => {
       const widgetEndRow = layout.y + layout.h;
       return widgetEndRow > max ? widgetEndRow : max;
     }, 0);
@@ -146,42 +206,46 @@ function useDashboard({
   const handleAddWidget = (widgetConfig: Widget) => {
     cancelPendingLayoutSave();
     saveManifest({
-      ...manifest,
-      widgets: {
-        ...manifest.widgets,
-        [widgetConfig.id]: {
-          ...widgetConfig,
-          layout: {
-            i: widgetConfig.id,
-            x: 0,
-            y: getNextRow(),
-            w: 4,
-            h: 2,
-            moved: false,
-            static: false,
+      update: (base) => ({
+        ...base,
+        widgets: {
+          ...base.widgets,
+          [widgetConfig.id]: {
+            ...widgetConfig,
+            layout: {
+              i: widgetConfig.id,
+              x: 0,
+              y: getNextRow(base.widgets),
+              w: 4,
+              h: 2,
+              moved: false,
+              static: false,
+            },
           },
         },
-      },
+      }),
+      noRefresh: false,
     });
   };
 
   const handleUpdateWidget = (widgetManifest: DashboardWidget) => {
     cancelPendingLayoutSave();
-    const newManifest = {
-      ...manifest,
-      widgets: { ...manifest.widgets, [widgetManifest.id]: widgetManifest },
-    };
-    saveManifest(newManifest);
+    saveManifest({
+      update: (base) => ({ ...base, widgets: { ...base.widgets, [widgetManifest.id]: widgetManifest } }),
+      noRefresh: false,
+    });
   };
 
   const handleDeleteWidget = (widgetId: string) => {
     cancelPendingLayoutSave();
     setDeleting(true);
-    const newWidgets = { ...manifest.widgets };
-    delete newWidgets[widgetId];
     saveManifest({
-      ...manifest,
-      widgets: newWidgets,
+      update: (base) => {
+        const newWidgets = { ...base.widgets };
+        delete newWidgets[widgetId];
+        return { ...base, widgets: newWidgets };
+      },
+      noRefresh: false,
     });
   };
 
@@ -203,7 +267,8 @@ function useDashboard({
     if (R.equals(newLayouts, widgetsLayouts)) return;
 
     setWidgetsLayouts(newLayouts);
-    debouncedSaveLayout(manifest, newLayouts);
+    latest.current.layouts = newLayouts;
+    debouncedSaveLayout();
   };
 
   const config = manifest.config;
@@ -211,6 +276,7 @@ function useDashboard({
   return {
     handleAddWidget,
     handleDateChange,
+    handleConfigChange,
     handleUpdateWidget,
     handleDeleteWidget,
     handleDuplicateWidget,

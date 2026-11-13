@@ -5,7 +5,6 @@ import { HEADER_TEMPLATE } from '../../utils/emailTemplates/header';
 import { FOOTER_TEMPLATE } from '../../utils/emailTemplates/footer';
 import { LOGO_TEMPLATE } from '../../utils/emailTemplates/logo';
 import { ABSTRACT_BASIC_OBJECT, ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { INGESTION_HEALTH_FEATURE_FLAG, isFeatureEnabled } from '../../config/conf';
 
 // region Notifier User interface
 export const NOTIFIER_CONNECTOR_UI = 'f39b8ab2c-8f5c-4167-a249-229f34d9442b';
@@ -667,7 +666,7 @@ ${HEADER_TEMPLATE}
       `,
     }),
   },
-  ...(isFeatureEnabled(INGESTION_HEALTH_FEATURE_FLAG) ? [STATIC_HEALTH_EMAIL_NOTIFIER] : []),
+  STATIC_HEALTH_EMAIL_NOTIFIER,
 ];
 
 export const SIMPLIFIED_EMAIL_TEMPLATE = `

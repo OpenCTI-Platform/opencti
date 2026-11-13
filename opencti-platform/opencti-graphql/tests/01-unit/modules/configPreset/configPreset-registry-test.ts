@@ -2,6 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // The Settings entity is read through topEntitiesList (loadEntity), the entity settings and the themes through
 // fullEntitiesList, a page of themes through pageEntitiesConnection, a theme through storeLoadById
+// The values of an exclusion list are a file of the storage
+vi.mock('../../../../src/database/raw-file-storage', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/raw-file-storage')>()),
+  downloadFile: vi.fn(),
+}));
 vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
   topEntitiesList: vi.fn(),
@@ -15,10 +20,12 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
 vi.mock('../../../../src/database/cache', async (importOriginal) => {
   const original = await importOriginal<typeof import('../../../../src/database/cache')>();
   const { ALL_MARKINGS } = await import('./configPreset-markings-fixtures');
+  const { mitreConnectorUser } = await import('./configPreset-connectors-fixtures');
   const markings = new Map(ALL_MARKINGS.flatMap((marking) => [[marking.id, marking], [marking.standard_id, marking]]));
+  const cached: Record<string, Map<string, unknown>> = { 'Marking-Definition': markings, User: new Map([[mitreConnectorUser.id, mitreConnectorUser]]) };
   return {
     ...original,
-    getEntitiesMapFromCache: vi.fn(async (ctx, usr, type) => (type === 'Marking-Definition' ? markings : original.getEntitiesMapFromCache(ctx, usr, type))),
+    getEntitiesMapFromCache: vi.fn(async (ctx, usr, type) => cached[type] ?? original.getEntitiesMapFromCache(ctx, usr, type)),
   };
 });
 // The capabilities of a role are read through its relations
@@ -28,7 +35,11 @@ vi.mock('../../../../src/modules/user/user-domain', async (importOriginal) => ({
 }));
 
 import { fullEntitiesList, fullRelationsList, pageEntitiesConnection, storeLoadById, topEntitiesList } from '../../../../src/database/middleware-loader';
+import { Readable } from 'node:stream';
+import { downloadFile } from '../../../../src/database/raw-file-storage';
 import { PLATFORM_VERSION } from '../../../../src/config/conf';
+import { buildRefRelationKey } from '../../../../src/schema/general';
+import { TEMPLATE_TASK_RELATION } from '../../../../src/modules/case/case-template/case-template-types';
 import { CONFIG_PRESET_FAMILIES, configPresetItemFilePath, exportConfigPresetItem } from '../../../../src/modules/configPreset/configPreset-registry';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import { builtInTheme, customTheme, otherCustomTheme, THEME_FILE_FIELDS } from './configPreset-themes-fixtures';
@@ -39,6 +50,13 @@ import { ALL_MARKINGS, customMarking, papRed, tlpAmber } from './configPreset-ma
 import { BUILT_IN_MARKING_STANDARD_IDS } from '../../../../src/modules/markingDefinition/marking-import';
 import { roleCapabilities } from '../../../../src/modules/user/user-domain';
 import { customLabel, otherLabel } from './configPreset-labels-fixtures';
+import { dnsExclusionList, retiredExclusionList } from './configPreset-exclusionLists-fixtures';
+import { disarmKillChainPhase, killChainPhase, otherKillChainPhase } from './configPreset-killChainPhases-fixtures';
+import { customVocabulary, modifiedVocabulary } from './configPreset-vocabularies-fixtures';
+import { customStatusTemplate, defaultStatusTemplate } from './configPreset-statusTemplates-fixtures';
+import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemplates-fixtures';
+import { mitreConnector } from './configPreset-connectors-fixtures';
+import { exportConnector } from '../../../../src/modules/connector/connector-export';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'admin-id', capabilities: [{ name: 'BYPASS' }] } as AuthUser;
@@ -138,14 +156,55 @@ describe('Config preset registry', () => {
       { id: 'policies', label: 'Policies', description: 'Password policy, users visibility and main organization', group: 'securityAccess', itemIds: ['policies'] },
       // The labels by value
       { id: 'labels', label: 'Labels', description: 'Labels and their colors', group: 'taxonomy', itemIds: [otherLabel.standard_id, customLabel.standard_id] },
+      // The exclusion lists by name, in their own group
+      {
+        id: 'exclusionLists',
+        label: 'Exclusion lists',
+        description: 'Exclusion lists and their values',
+        group: 'customization',
+        itemIds: [dnsExclusionList.standard_id, retiredExclusionList.standard_id],
+      },
+      // By kill chain, then by order in the kill chain
+      {
+        id: 'killChainPhases',
+        label: 'Kill chain phases',
+        description: 'Kill chains, their phases and their order',
+        group: 'taxonomy',
+        itemIds: [disarmKillChainPhase.standard_id, otherKillChainPhase.standard_id, killChainPhase.standard_id],
+      },
+      // All the categories, by category
+      {
+        id: 'vocabularies',
+        label: 'Vocabularies',
+        description: 'Vocabulary categories and their entries',
+        group: 'taxonomy',
+        itemIds: ['case_severity_ov', 'incident_type_ov', 'integrity_level_ov', 'report_types_ov'],
+      },
+      // The status templates by name, the ones of the platform included
+      {
+        id: 'statusTemplates',
+        label: 'Status templates',
+        description: 'Status templates and their colors',
+        group: 'taxonomy',
+        itemIds: [customStatusTemplate.standard_id, defaultStatusTemplate.standard_id],
+      },
+      // The case templates by name
+      {
+        id: 'caseTemplates',
+        label: 'Case templates',
+        description: 'Case templates and their tasks',
+        group: 'taxonomy',
+        itemIds: [fraudCaseTemplate.standard_id, phishingCaseTemplate.standard_id],
+      },
+      { id: 'connectors', label: 'Connectors', description: 'Managed connectors and their parameters, without their secrets', group: 'integrations', itemIds: ['mitre'] },
     ]);
   });
 
   it('marks as requiring the Enterprise Edition the families of an Enterprise Edition setting only', () => {
-    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark']);
+    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark', 'connectors']);
   });
 
-  it('translates the static labels only, never a theme name or a label value', async () => {
+  it('translates the static labels only, never a theme name, a label value, an exclusion list name, a phase name, a vocabulary entry, a status template or a case template name', async () => {
     const items = await resolveAllItems();
     expect(items.map((item) => [item.label, item.translatable])).toEqual([
       ['Platform configuration', true],
@@ -166,10 +225,24 @@ describe('Config preset registry', () => {
       ['Policies', true],
       ['APT', false],
       ['tlp:amber', false],
+      ['Public DNS resolvers', false],
+      ['Retired partners', false],
+      ['disarm: plan-strategy', false],
+      ['mitre-attack: initial-access', false],
+      ['mitre-attack: execution', false],
+      ['case_severity_ov', false],
+      ['incident_type_ov', false],
+      ['integrity_level_ov', false],
+      ['report_types_ov', false],
+      ['Escalated', false],
+      ['IN_PROGRESS', false],
+      ['Fraud investigation', false],
+      ['Phishing triage', false],
+      ['MITRE', false],
     ]);
   });
 
-  it('writes one distinct JSON file per item, in the folder of its category, a theme or a label by its standard id', async () => {
+  it('writes one distinct JSON file per item, in the folder of its category, a theme, a label, an exclusion list, a phase, a status template or a case template by its standard id, a vocabulary category by its name', async () => {
     const paths = (await Promise.all(CONFIG_PRESET_FAMILIES.map(async (family) => {
       const items = await family.resolveItems(context, user, null, []);
       return items.map((item) => configPresetItemFilePath(family, item));
@@ -193,6 +266,20 @@ describe('Config preset registry', () => {
       'security_access/policies.json',
       `taxonomy/labels/${otherLabel.standard_id}.json`,
       `taxonomy/labels/${customLabel.standard_id}.json`,
+      `customization/exclusion_lists/${dnsExclusionList.standard_id}.json`,
+      `customization/exclusion_lists/${retiredExclusionList.standard_id}.json`,
+      `taxonomy/kill_chain_phases/${disarmKillChainPhase.standard_id}.json`,
+      `taxonomy/kill_chain_phases/${otherKillChainPhase.standard_id}.json`,
+      `taxonomy/kill_chain_phases/${killChainPhase.standard_id}.json`,
+      'taxonomy/vocabularies/case_severity_ov.json',
+      'taxonomy/vocabularies/incident_type_ov.json',
+      'taxonomy/vocabularies/integrity_level_ov.json',
+      'taxonomy/vocabularies/report_types_ov.json',
+      `taxonomy/status_templates/${customStatusTemplate.standard_id}.json`,
+      `taxonomy/status_templates/${defaultStatusTemplate.standard_id}.json`,
+      `taxonomy/case_templates/${fraudCaseTemplate.standard_id}.json`,
+      `taxonomy/case_templates/${phishingCaseTemplate.standard_id}.json`,
+      'integrations/connectors/mitre.json',
     ]);
     expect(new Set(paths).size).toBe(paths.length);
   });
@@ -241,6 +328,43 @@ describe('Config preset registry', () => {
         expect(item.dependsOn).toEqual([]);
         expect(await item.exporter(context, user)).toEqual({ platform_title: 'Only title', platform_favicon: null, platform_language: null, default_theme: null });
       }
+    });
+  });
+
+  describe('connectors', () => {
+    const connectors = findFamily('connectors');
+
+    it('exports a managed connector without its secrets, its runtime variables nor its state, and lists the secrets it needs', async () => {
+      const file = await exportConfigPresetItem(context, user, connectors, await findItem('connectors', 'mitre'));
+      expect(file).toMatchObject({ type: 'integrations.connectors', id: 'mitre' });
+      expect(file.configuration).toEqual({
+        name: 'MITRE',
+        catalog_id: 'filigran-catalog',
+        manager_contract_image: 'opencti/connector-mitre',
+        confidence_level: 75,
+        manager_contract_configuration: [{ key: 'MITRE_INTERVAL', value: '7' }],
+        required_at_import: ['MITRE_API_KEY'],
+      });
+      expect(JSON.stringify(file)).not.toMatch(/encrypted-secret|runtime-token|last_run|started|mitre-user-id|mitre-connector-id/);
+    });
+
+    it('never exports a secret only known by its name, nor a parameter its contract does not have', async () => {
+      const manager_contract_configuration = [
+        ...mitreConnector.manager_contract_configuration,
+        { key: 'MITRE_PROXY_TOKEN', value: 'plain-proxy-token' },
+        { key: 'MITRE_REMOVED_PARAMETER', value: 'removed-value' },
+      ];
+      const configuration = await exportConnector(context, { ...mitreConnector, manager_contract_configuration } as never);
+      expect(configuration.manager_contract_configuration).toEqual([{ key: 'MITRE_INTERVAL', value: '7' }]);
+      expect(configuration.required_at_import).toEqual(['MITRE_API_KEY', 'MITRE_PROXY_TOKEN']);
+      expect(JSON.stringify(configuration)).not.toMatch(/plain-proxy-token|removed-value/);
+    });
+
+    it('lists the managed connectors only, by name', async () => {
+      const ids = async (args: Parameters<typeof connectors.listItems>[2]) => (await connectors.listItems(context, user, args)).edges.map(({ node }) => node.id);
+      expect(await ids({})).toEqual(['mitre']);
+      expect(await ids({ excludedIds: ['mitre'] })).toEqual([]);
+      expect(await ids({ ids: ['external'] })).toEqual([]);
     });
   });
 
@@ -384,6 +508,326 @@ describe('Config preset registry', () => {
       expect(await ids(null, [])).toEqual([otherLabel.standard_id, customLabel.standard_id]);
       expect(await ids(null, [otherLabel.standard_id])).toEqual([customLabel.standard_id]);
       expect(await ids([customLabel.standard_id], [])).toEqual([customLabel.standard_id]);
+      vi.mocked(fullEntitiesList).mockClear();
+      expect(await ids([], [])).toEqual([]);
+      expect(fullEntitiesList).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('exclusion lists', () => {
+    const lists = findFamily('exclusionLists');
+    const pageIds = async (args: Parameters<typeof lists.listItems>[2]) => (await lists.listItems(context, user, args)).edges.map(({ node }) => node.id);
+
+    it('exports an exclusion list in the import format only, and points to its values file next to it', async () => {
+      const file = await exportConfigPresetItem(context, user, lists, await findItem('exclusionLists', dnsExclusionList.standard_id));
+      expect(file).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'customization.exclusionLists',
+        id: dnsExclusionList.standard_id,
+        configuration: { name: 'Public DNS resolvers', description: 'Well-known resolvers', enabled: true, exclusion_list_entity_types: ['IPv4-Addr'] },
+        attachment: `customization/exclusion_lists/${dnsExclusionList.standard_id}.txt`,
+      });
+      expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|dns-exclusion-list-id|exclusionLists\/|values_count|file_size/);
+    });
+
+    it('exports a disabled list without description with its state and its types', async () => {
+      const file = await exportConfigPresetItem(context, user, lists, await findItem('exclusionLists', retiredExclusionList.standard_id));
+      expect(file.configuration).toEqual({ name: 'Retired partners', enabled: false, exclusion_list_entity_types: ['Domain-Name', 'Hostname'] });
+    });
+
+    it('reads the values of a list byte for byte from the storage, by the file of the list', async () => {
+      const bytes = Buffer.from('8.8.8.8\r\n1.1.1.1\n\u00e9\n');
+      vi.mocked(downloadFile).mockResolvedValue(Readable.from([bytes.subarray(0, 5), bytes.subarray(5)]) as never);
+      const item = await findItem('exclusionLists', dnsExclusionList.standard_id);
+      expect(item.attachment?.name).toBe(`${dnsExclusionList.standard_id}.txt`);
+      expect(await item.attachment!.read(context, user)).toEqual(bytes);
+      expect(downloadFile).toHaveBeenCalledWith(dnsExclusionList.file_id);
+    });
+
+    it('refuses to export a list whose file is missing from the storage, instead of exporting it without its values', async () => {
+      vi.mocked(downloadFile).mockResolvedValue(null);
+      const item = await findItem('exclusionLists', dnsExclusionList.standard_id);
+      await expect(item.attachment!.read(context, user)).rejects.toThrow('The file of the values of an exclusion list is missing from the storage');
+    });
+
+    it('opens the first page with the exclusion lists by name, and counts them', async () => {
+      const page = await lists.listItems(context, user, { first: 1 });
+      expect(pageEntitiesConnection).toHaveBeenCalledWith(context, user, ['ExclusionList'], {
+        first: 1,
+        after: undefined,
+        search: undefined,
+        orderBy: 'name',
+        orderMode: 'asc',
+        filters: { mode: 'and', filters: [], filterGroups: [] },
+      });
+      expect(page.edges.map(({ node }) => [node.id, node.label, node.translatable])).toEqual([[dnsExclusionList.standard_id, 'Public DNS resolvers', false]]);
+      expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: page.edges[0].cursor, globalCount: 2 });
+    });
+
+    it('applies search, ids and excluded ids to the exclusion lists', async () => {
+      expect(await pageIds({ search: 'retired' })).toEqual([retiredExclusionList.standard_id]);
+      expect(await pageIds({ ids: [dnsExclusionList.standard_id] })).toEqual([dnsExclusionList.standard_id]);
+      expect(await pageIds({ excludedIds: [dnsExclusionList.standard_id] })).toEqual([retiredExclusionList.standard_id]);
+      vi.mocked(pageEntitiesConnection).mockClear();
+      // No ids: no query, whose empty filter would match every list
+      expect(await pageIds({ ids: [] })).toEqual([]);
+      expect(pageEntitiesConnection).not.toHaveBeenCalled();
+    });
+
+    it('resolves the exclusion lists to export, with the same rules as the listing', async () => {
+      const ids = async (selected: string[] | null, excluded: string[]) => (await lists.resolveItems(context, user, selected, excluded)).map((item) => item.id);
+      expect(await ids(null, [])).toEqual([dnsExclusionList.standard_id, retiredExclusionList.standard_id]);
+      expect(await ids(null, [dnsExclusionList.standard_id])).toEqual([retiredExclusionList.standard_id]);
+      vi.mocked(fullEntitiesList).mockClear();
+      expect(await ids([], [])).toEqual([]);
+      expect(fullEntitiesList).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('kill chain phases', () => {
+    const phases = findFamily('killChainPhases');
+    const pageIds = async (args: Parameters<typeof phases.listItems>[2]) => (await phases.listItems(context, user, args)).edges.map(({ node }) => node.id);
+
+    it('exports a phase in the phase import format only: its names and its order', async () => {
+      const file = await exportConfigPresetItem(context, user, phases, await findItem('killChainPhases', killChainPhase.standard_id));
+      expect(file).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'taxonomy.killChainPhases',
+        id: killChainPhase.standard_id,
+        configuration: { kill_chain_name: 'mitre-attack', phase_name: 'execution', x_opencti_order: 2 },
+      });
+      expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|phase-id"/);
+    });
+
+    it('exports an order of 0, which is an order, and leaves a missing one out', async () => {
+      const [first] = await phases.resolveItems(context, user, [disarmKillChainPhase.standard_id], []);
+      expect(await first.exporter(context, user)).toEqual({ kill_chain_name: 'disarm', phase_name: 'plan-strategy', x_opencti_order: 0 });
+      vi.mocked(fullEntitiesList).mockResolvedValueOnce([{ ...killChainPhase, x_opencti_order: null }] as never);
+      const [second] = await phases.resolveItems(context, user, [killChainPhase.standard_id], []);
+      expect(await second.exporter(context, user)).toEqual({ kill_chain_name: 'mitre-attack', phase_name: 'execution' });
+    });
+
+    it('opens the first page with the phases by kill chain then by order, and counts them', async () => {
+      const page = await phases.listItems(context, user, { first: 2 });
+      expect(pageEntitiesConnection).toHaveBeenCalledWith(context, user, ['Kill-Chain-Phase'], {
+        first: 2,
+        after: undefined,
+        search: undefined,
+        orderBy: ['kill_chain_name', 'x_opencti_order'],
+        orderMode: 'asc',
+        filters: { mode: 'and', filters: [], filterGroups: [] },
+      });
+      expect(page.edges.map(({ node }) => [node.id, node.label, node.translatable])).toEqual([
+        [disarmKillChainPhase.standard_id, 'disarm: plan-strategy', false],
+        [otherKillChainPhase.standard_id, 'mitre-attack: initial-access', false],
+      ]);
+      expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: page.edges[1].cursor, globalCount: 3 });
+    });
+
+    it('applies search, ids and excluded ids to the phases', async () => {
+      expect(await pageIds({ search: 'execution' })).toEqual([killChainPhase.standard_id]);
+      expect(await pageIds({ ids: [otherKillChainPhase.standard_id] })).toEqual([otherKillChainPhase.standard_id]);
+      expect(await pageIds({ excludedIds: [disarmKillChainPhase.standard_id, killChainPhase.standard_id] })).toEqual([otherKillChainPhase.standard_id]);
+      vi.mocked(pageEntitiesConnection).mockClear();
+      // No ids: no phase query, whose empty filter would match every phase
+      expect(await pageIds({ ids: [] })).toEqual([]);
+      expect(pageEntitiesConnection).not.toHaveBeenCalled();
+    });
+
+    it('resolves the phases to export, with the same rules as the listing', async () => {
+      const ids = async (selected: string[] | null, excluded: string[]) => (await phases.resolveItems(context, user, selected, excluded)).map((item) => item.id);
+      expect(await ids(null, [])).toEqual([disarmKillChainPhase.standard_id, otherKillChainPhase.standard_id, killChainPhase.standard_id]);
+      expect(await ids(null, [disarmKillChainPhase.standard_id])).toEqual([otherKillChainPhase.standard_id, killChainPhase.standard_id]);
+      vi.mocked(fullEntitiesList).mockClear();
+      expect(await ids([], [])).toEqual([]);
+      expect(fullEntitiesList).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('vocabularies', () => {
+    const vocabularies = findFamily('vocabularies');
+    const pageIds = async (args: Parameters<typeof vocabularies.listItems>[2]) => (await vocabularies.listItems(context, user, args)).edges.map(({ node }) => node.id);
+
+    it('exports a category with all its entries, in the vocabulary import format only', async () => {
+      const file = await exportConfigPresetItem(context, user, vocabularies, await findItem('vocabularies', 'report_types_ov'));
+      // The entry of the platform nobody modified (threat-report) is in it, the category of the entries is the one of the file
+      expect(file).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'taxonomy.vocabularies',
+        id: 'report_types_ov',
+        configuration: {
+          category: 'report_types_ov',
+          entries: [
+            { name: 'threat-report', description: '', aliases: [], order: 0 },
+            { name: 'fimi-report', description: 'Foreign information manipulation', aliases: ['fimi'], order: 5 },
+          ],
+        },
+      });
+      expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|builtIn|custom-vocabulary-id|vocabulary--/);
+    });
+
+    it('exports an entry of the platform that was modified, with its values', async () => {
+      const [category] = await vocabularies.resolveItems(context, user, ['integrity_level_ov'], []);
+      expect(await category.exporter(context, user)).toEqual({
+        category: 'integrity_level_ov',
+        entries: [{ name: 'high', description: 'Our own description of a high integrity', aliases: ['elevated'], order: 3 }],
+      });
+    });
+
+    it('exports an empty description, no aliases and an order of 0, which are values, and leaves a missing one out', async () => {
+      const [category] = await vocabularies.resolveItems(context, user, ['case_severity_ov'], []);
+      expect(await category.exporter(context, user)).toEqual({ category: 'case_severity_ov', entries: [{ name: 'sev-x', description: '', aliases: [], order: 0 }] });
+      vi.mocked(fullEntitiesList).mockResolvedValueOnce([{ ...customVocabulary, description: null, order: undefined }] as never);
+      const [missing] = await vocabularies.resolveItems(context, user, ['report_types_ov'], []);
+      expect(await missing.exporter(context, user)).toEqual({ category: 'report_types_ov', entries: [{ name: 'fimi-report', aliases: ['fimi'] }] });
+    });
+
+    it('lists all the categories, by name, and counts them', async () => {
+      const page = await vocabularies.listItems(context, user, { first: 2 });
+      expect(fullEntitiesList).toHaveBeenCalledWith(context, user, ['Vocabulary'], { orderBy: ['category', 'order', 'name'], orderMode: 'asc' });
+      expect(page.edges.map(({ node }) => [node.id, node.label, node.translatable])).toEqual([
+        ['case_severity_ov', 'case_severity_ov', false],
+        ['incident_type_ov', 'incident_type_ov', false],
+      ]);
+      // The category of the entry nobody modified (incident_type_ov) is listed and counted like the others
+      expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: 'incident_type_ov', globalCount: 4 });
+      const next = await vocabularies.listItems(context, user, { first: 2, after: page.pageInfo.endCursor });
+      expect(next.edges.map(({ node }) => node.id)).toEqual(['integrity_level_ov', 'report_types_ov']);
+      expect(next.pageInfo).toMatchObject({ hasNextPage: false, globalCount: 4 });
+    });
+
+    it('lists a category once, whatever its number of entries', async () => {
+      vi.mocked(fullEntitiesList).mockResolvedValueOnce([modifiedVocabulary, customVocabulary, { ...customVocabulary, name: 'second-custom' }] as never);
+      expect(await pageIds({})).toEqual(['integrity_level_ov', 'report_types_ov']);
+    });
+
+    it('applies search, ids and excluded ids to the categories', async () => {
+      expect(await pageIds({ search: 'REPORT' })).toEqual(['report_types_ov']);
+      expect(await pageIds({ search: 'integrity' })).toEqual(['integrity_level_ov']);
+      // A category without entry is not an item, even when it is asked for
+      expect(await pageIds({ ids: ['incident_type_ov', 'report_types_ov', 'opinion_ov'] })).toEqual(['incident_type_ov', 'report_types_ov']);
+      expect(await pageIds({ excludedIds: ['report_types_ov', 'case_severity_ov'] })).toEqual(['incident_type_ov', 'integrity_level_ov']);
+      expect(await pageIds({ ids: [] })).toEqual([]);
+    });
+
+    it('resolves the categories to export, with the same rules as the listing', async () => {
+      const ids = async (selected: string[] | null, excluded: string[]) => (await vocabularies.resolveItems(context, user, selected, excluded)).map((item) => item.id);
+      expect(await ids(null, [])).toEqual(['case_severity_ov', 'incident_type_ov', 'integrity_level_ov', 'report_types_ov']);
+      expect(await ids(null, ['integrity_level_ov'])).toEqual(['case_severity_ov', 'incident_type_ov', 'report_types_ov']);
+      expect(await ids(['report_types_ov', 'incident_type_ov', 'opinion_ov'], [])).toEqual(['incident_type_ov', 'report_types_ov']);
+      expect(await ids([], [])).toEqual([]);
+    });
+  });
+
+  describe('status templates', () => {
+    const templates = findFamily('statusTemplates');
+    const pageIds = async (args: Parameters<typeof templates.listItems>[2]) => (await templates.listItems(context, user, args)).edges.map(({ node }) => node.id);
+
+    it('exports a status template in the import format only: its name and its color', async () => {
+      const file = await exportConfigPresetItem(context, user, templates, await findItem('statusTemplates', customStatusTemplate.standard_id));
+      expect(file).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'taxonomy.statusTemplates',
+        id: customStatusTemplate.standard_id,
+        configuration: { name: 'Escalated', color: '#e91e63' },
+      });
+      expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|escalated-template-id/);
+    });
+
+    it('opens the first page with the status templates by name, the ones of the platform included, and counts them', async () => {
+      const page = await templates.listItems(context, user, { first: 1 });
+      expect(pageEntitiesConnection).toHaveBeenCalledWith(context, user, ['StatusTemplate'], {
+        first: 1,
+        after: undefined,
+        search: undefined,
+        orderBy: 'name',
+        orderMode: 'asc',
+        filters: { mode: 'and', filters: [], filterGroups: [] },
+      });
+      expect(page.edges.map(({ node }) => [node.id, node.label, node.translatable])).toEqual([[customStatusTemplate.standard_id, 'Escalated', false]]);
+      expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: page.edges[0].cursor, globalCount: 2 });
+    });
+
+    it('applies search, ids and excluded ids to the status templates', async () => {
+      expect(await pageIds({ search: 'progress' })).toEqual([defaultStatusTemplate.standard_id]);
+      expect(await pageIds({ ids: [customStatusTemplate.standard_id] })).toEqual([customStatusTemplate.standard_id]);
+      expect(await pageIds({ excludedIds: [customStatusTemplate.standard_id] })).toEqual([defaultStatusTemplate.standard_id]);
+      vi.mocked(pageEntitiesConnection).mockClear();
+      // No ids: no query, whose empty filter would match every template
+      expect(await pageIds({ ids: [] })).toEqual([]);
+      expect(pageEntitiesConnection).not.toHaveBeenCalled();
+    });
+
+    it('resolves the status templates to export, with the same rules as the listing', async () => {
+      const ids = async (selected: string[] | null, excluded: string[]) => (await templates.resolveItems(context, user, selected, excluded)).map((item) => item.id);
+      expect(await ids(null, [])).toEqual([customStatusTemplate.standard_id, defaultStatusTemplate.standard_id]);
+      expect(await ids(null, [customStatusTemplate.standard_id])).toEqual([defaultStatusTemplate.standard_id]);
+      vi.mocked(fullEntitiesList).mockClear();
+      expect(await ids([], [])).toEqual([]);
+      expect(fullEntitiesList).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('case templates', () => {
+    const templates = findFamily('caseTemplates');
+    const pageIds = async (args: Parameters<typeof templates.listItems>[2]) => (await templates.listItems(context, user, args)).edges.map(({ node }) => node.id);
+
+    it('exports a case template with its tasks by name, in the import format only, and takes its random id as the id of the item', async () => {
+      const file = await exportConfigPresetItem(context, user, templates, await findItem('caseTemplates', phishingCaseTemplate.standard_id));
+      expect(file).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'taxonomy.caseTemplates',
+        id: phishingCaseTemplate.standard_id,
+        configuration: {
+          name: 'Phishing triage',
+          description: 'Triage of a phishing report',
+          // By name, and a task without description has none
+          tasks: [{ name: 'Block sender', description: 'Block the sender domain' }, { name: 'Notify users' }],
+        },
+      });
+      expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|case-template-id|task-id|task-template--/);
+    });
+
+    it('exports a case template without description and without task as a name and an empty list of tasks', async () => {
+      const file = await exportConfigPresetItem(context, user, templates, await findItem('caseTemplates', fraudCaseTemplate.standard_id));
+      expect(file.configuration).toEqual({ name: 'Fraud investigation', tasks: [] });
+    });
+
+    it('reads the tasks of the template the way the platform reads them to create the tasks of a case', async () => {
+      await exportConfigPresetItem(context, user, templates, await findItem('caseTemplates', phishingCaseTemplate.standard_id));
+      expect(fullEntitiesList).toHaveBeenCalledWith(context, user, ['Task-Template'], {
+        filters: { mode: 'and', filters: [{ key: [buildRefRelationKey(TEMPLATE_TASK_RELATION)], values: [phishingCaseTemplate.id] }], filterGroups: [] },
+      });
+    });
+
+    it('opens the first page with the case templates by name, and counts them', async () => {
+      const page = await templates.listItems(context, user, { first: 1 });
+      expect(pageEntitiesConnection).toHaveBeenCalledWith(context, user, ['Case-Template'], {
+        first: 1,
+        after: undefined,
+        search: undefined,
+        orderBy: 'name',
+        orderMode: 'asc',
+        filters: { mode: 'and', filters: [], filterGroups: [] },
+      });
+      expect(page.edges.map(({ node }) => [node.id, node.label, node.translatable])).toEqual([[fraudCaseTemplate.standard_id, 'Fraud investigation', false]]);
+      expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: page.edges[0].cursor, globalCount: 2 });
+    });
+
+    it('applies search, ids and excluded ids to the case templates', async () => {
+      expect(await pageIds({ search: 'phishing' })).toEqual([phishingCaseTemplate.standard_id]);
+      expect(await pageIds({ ids: [fraudCaseTemplate.standard_id] })).toEqual([fraudCaseTemplate.standard_id]);
+      expect(await pageIds({ excludedIds: [fraudCaseTemplate.standard_id] })).toEqual([phishingCaseTemplate.standard_id]);
+      vi.mocked(pageEntitiesConnection).mockClear();
+      // No ids: no query, whose empty filter would match every template
+      expect(await pageIds({ ids: [] })).toEqual([]);
+      expect(pageEntitiesConnection).not.toHaveBeenCalled();
+    });
+
+    it('resolves the case templates to export, with the same rules as the listing', async () => {
+      const ids = async (selected: string[] | null, excluded: string[]) => (await templates.resolveItems(context, user, selected, excluded)).map((item) => item.id);
+      expect(await ids(null, [])).toEqual([fraudCaseTemplate.standard_id, phishingCaseTemplate.standard_id]);
+      expect(await ids(null, [fraudCaseTemplate.standard_id])).toEqual([phishingCaseTemplate.standard_id]);
       vi.mocked(fullEntitiesList).mockClear();
       expect(await ids([], [])).toEqual([]);
       expect(fullEntitiesList).not.toHaveBeenCalled();

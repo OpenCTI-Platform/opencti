@@ -7,8 +7,8 @@ const authResolvers: Resolvers = {
     askSendOtp: (_, { input }, context) => {
       return askSendOtp(context, input);
     },
-    verifyOtp: (_, { input }) => {
-      return verifyOtp(input);
+    verifyOtp: (_, { input }, context) => {
+      return verifyOtp(context, input);
     },
     verifyMfa: (_, { input }, context) => {
       return verifyMfa(context, input);

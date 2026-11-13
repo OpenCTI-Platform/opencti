@@ -18,6 +18,8 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import { ENTITY_TYPE_USER } from '../modules/user/user-types';
+import { withoutUserSecrets } from '../modules/user/user-secrets';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -358,7 +360,9 @@ export const notify = async (topic: string, instance: any, user: AuthUser) => {
 
 export const removeResolvedRefs = (instance: any) => {
   const refInputNames = new Set([INPUT_OBJECTS, ...schemaRelationsRefDefinition.getAllInputNames()]);
-  return Object.fromEntries(Object.entries(instance).filter(([k]) => !refInputNames.has(k)));
+  const data = Object.fromEntries(Object.entries(instance).filter(([k]) => !refInputNames.has(k)));
+  // Password hashes never travel between nodes
+  return instance.entity_type === ENTITY_TYPE_USER ? withoutUserSecrets(data) : data;
 };
 
 // region user context (clientContext)
@@ -867,6 +871,40 @@ export const redisDelForgotPassword = async (id: string, email: string) => {
 
 // endregion - forgot password handling
 
+// region - password change throttling
+
+// Only a positive integer is usable: 0 attempts would refuse every change, and a 0 second window never throttles
+export const readPasswordChangeLimit = (key: string, value: unknown, defaultValue: number): number => {
+  if (value === undefined || value === null) {
+    return defaultValue;
+  }
+  const limit = Number(value);
+  if (!Number.isInteger(limit) || limit < 1) {
+    logApp.warn('[PASSWORD_HISTORY] Ignoring an invalid password change limit, using the default', { key, value, default: defaultValue });
+    return defaultValue;
+  }
+  return limit;
+};
+
+const PASSWORD_CHANGE_MAX_ATTEMPTS = readPasswordChangeLimit('app:password_change:max_attempts', conf.get('app:password_change:max_attempts'), 5);
+const PASSWORD_CHANGE_WINDOW_SECONDS = readPasswordChangeLimit('app:password_change:window_seconds', conf.get('app:password_change:window_seconds'), 900);
+
+// Counts one password change attempt on this account by this submitter and tells whether it is still within
+// the limit. One counter per submitter: whoever uses up their attempts on an account never blocks the others,
+// such as an administrator resetting the password of a compromised account.
+// The window starts with the first attempt and a success never resets it.
+export const redisConsumePasswordChangeAttempt = async (targetUserId: string, submitterId: string): Promise<boolean> => {
+  const keyName = `password_change_attempts_${targetUserId}_${submitterId}`;
+  const attempts = await getClientBase().incr(keyName);
+  // Also set when a previous expire was lost, so the counter can never stay forever
+  if (attempts === 1 || await getClientBase().ttl(keyName) < 0) {
+    await getClientBase().expire(keyName, PASSWORD_CHANGE_WINDOW_SECONDS);
+  }
+  return attempts <= PASSWORD_CHANGE_MAX_ATTEMPTS;
+};
+
+// endregion - password change throttling
+
 // region - telemetry gauges
 const TELEMETRY_EVENT_KEY = 'telemetry_events';
 /**
@@ -1309,3 +1347,26 @@ export const redisGetConfigPresetImportLastFinished = async (): Promise<string |
   return getClientBase().get(CONFIG_PRESET_IMPORT_LAST_FINISHED_KEY);
 };
 // endregion - config preset import session
+
+// region - ingestion deduplication
+// dedup:${standardId}:${userId} => hash of the last content this user imported for the entity, and the entity's updated_at right after, each key with its own TTL
+const ingestionDeduplicationKey = (standardId: string, userId: string) => `dedup:${standardId}:${userId}`;
+
+export interface IngestionRecord {
+  hash: string;
+  updatedAt: number;
+}
+
+export const redisGetIngestionRecord = async (standardId: string, userId: string): Promise<IngestionRecord | null> => {
+  const record = await getClientBase().get(ingestionDeduplicationKey(standardId, userId));
+  return record ? JSON.parse(record) : null;
+};
+
+export const redisSetIngestionRecord = async (standardId: string, userId: string, record: IngestionRecord, ttl: number) => {
+  await getClientBase().set(ingestionDeduplicationKey(standardId, userId), JSON.stringify(record), 'EX', ttl);
+};
+
+export const redisDeleteIngestionRecord = async (standardId: string, userId: string) => {
+  await getClientBase().del(ingestionDeduplicationKey(standardId, userId));
+};
+// endregion - ingestion deduplication

@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
+import type { GraphQLError } from 'graphql';
 
 // ── Infrastructure stubs ─────────────────────────────────────────────────────
 
@@ -49,9 +50,16 @@ import {
   resolveRelationshipBreakdownField,
   timeSeriesBreakdownEntities,
   timeSeriesBreakdownHistory,
+  TIME_SERIES_BREAKDOWN_FIELDS_MAX_TYPES,
+  timeSeriesBreakdownFields,
   timeSeriesBreakdownRelations,
 } from '../../../src/database/middleware';
 import { stixRelationshipsMultiTimeSeries, stixRelationshipsTimeSeriesBreakdown } from '../../../src/domain/stixRelationship';
+import { stixCoreObjectsTimeSeriesBreakdown } from '../../../src/domain/stixCoreObject';
+import { auditsTimeSeriesBreakdown } from '../../../src/domain/log';
+import { generateFilterKeysSchema } from '../../../src/domain/filterKeysSchema';
+import * as customFieldCache from '../../../src/modules/customField/custom-field-cache';
+import { WidgetPerspective } from '../../../src/generated/graphql';
 import { BREAKDOWN_REFUSAL_REASONS, INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_HISTORY, READ_INDEX_STIX_META_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../../../src/database/utils';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
@@ -1454,5 +1462,197 @@ describe('stixRelationshipsTimeSeriesBreakdown', () => {
     await expect(stixRelationshipsTimeSeriesBreakdown(mockContext, accessModule.SYSTEM_USER, {
       field: 'relationship_type', startDate, endDate, interval: 'day', relationship_type: ['Malware'],
     })).rejects.toThrow('relationship_type is not a stix-relationship');
+  });
+});
+
+describe('timeSeriesBreakdownFields', () => {
+  // On the registered schema, not the stubs of the other tests
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    // An accepted breakdown finds no value
+    vi.mocked(engine.elAggregationRanking).mockResolvedValue(ranking([]));
+    vi.mocked(engine.elConnectionTypesRanking).mockResolvedValue(ranking([]));
+  });
+
+  // Whether the breakdown query of the perspective accepts the field for the raw types, through its own entry point,
+  // which reads the types as it does (extractStixCoreObjectTypesFromArgs, buildRelationshipTypes, computeAuditTypes)
+  const breakdownArgs = { startDate, endDate, interval: 'day' };
+  const { SYSTEM_USER } = accessModule;
+  const breakDown: Record<WidgetPerspective, (types: string[] | null, field: string) => Promise<unknown>> = {
+    [WidgetPerspective.Entities]: (types, field) => stixCoreObjectsTimeSeriesBreakdown(mockContext, SYSTEM_USER, { ...breakdownArgs, types, field }),
+    [WidgetPerspective.Relationships]: (types, field) => stixRelationshipsTimeSeriesBreakdown(mockContext, SYSTEM_USER, { ...breakdownArgs, relationship_type: types, field }),
+    [WidgetPerspective.Audits]: (types, field) => auditsTimeSeriesBreakdown(mockContext, SYSTEM_USER, { ...breakdownArgs, types, field }),
+  };
+  const isAcceptedByBreakdown = async (perspective: WidgetPerspective, types: string[] | null, field: string) => {
+    try {
+      await breakDown[perspective](types, field);
+      return true;
+    } catch (error) {
+      const { extensions } = error as GraphQLError;
+      // The field refused for the types, or the types refused by the relationships breakdown: any other error is a failure
+      if ((extensions?.data as { reason?: string } | undefined)?.reason === BREAKDOWN_REFUSAL_REASONS.UNSUPPORTED_FIELD || extensions?.code === 'BAD_USER_INPUT') {
+        return false;
+      }
+      throw error;
+    }
+  };
+
+  // Candidate fields from a source independent of the code under test: the filter keys of the types, as the filters
+  // of the editor read them (generateFilterKeysSchema), the abstract types holding the keys of all their subtypes
+  let filterKeysOf: (types: string[]) => string[] = () => [];
+  beforeAll(async () => {
+    vi.restoreAllMocks();
+    vi.spyOn(customFieldCache, 'getCustomFieldDefinitionsForEntityType').mockResolvedValue([]);
+    const filterKeysSchema = await generateFilterKeysSchema();
+    vi.restoreAllMocks();
+    const keysByType = new Map(filterKeysSchema.map(({ entity_type, filters_schema }) => [entity_type, filters_schema.map(({ filterKey }) => filterKey)]));
+    filterKeysOf = (types) => types.flatMap((type) => keysByType.get(type) ?? []);
+  });
+
+  type FieldsCase = { name: string; types: string[] | null; typeFieldListed: boolean };
+  /**
+   * A field is listed for the raw types if and only if the breakdown accepts it for the same raw types, among the
+   * candidates and the fields listed. The type itself (`typeField`) is accepted whatever the types: it is only listed
+   * when the case says it makes several series.
+   */
+  const expectListedIffAccepted = async (perspective: WidgetPerspective, { types, typeFieldListed }: FieldsCase, typeField: string | null, candidates: string[]) => {
+    const listed = timeSeriesBreakdownFields(perspective, types);
+    const fields = Array.from(new Set([...candidates, ...listed]));
+    const mismatches: string[] = [];
+    for (const field of fields) {
+      const accepted = await isAcceptedByBreakdown(perspective, types, field);
+      const expectedListed = accepted && (field !== typeField || typeFieldListed);
+      if (listed.includes(field) !== expectedListed) {
+        mismatches.push(`${field}: ${accepted ? 'accepted' : 'refused'} but ${listed.includes(field) ? 'listed' : 'not listed'}`);
+      }
+    }
+    expect(mismatches).toEqual([]);
+    return listed;
+  };
+
+  const ENTITIES_CASES: FieldsCase[] = [
+    { name: 'no type', types: [], typeFieldListed: true },
+    { name: 'null', types: null, typeFieldListed: true },
+    { name: 'an unknown type, read as none', types: ['not-a-type'], typeFieldListed: true },
+    { name: 'a relationship type, read as none', types: ['uses'], typeFieldListed: true },
+    { name: 'a single type', types: ['Report'], typeFieldListed: false },
+    { name: 'a single type and an unknown one', types: ['Report', 'not-a-type'], typeFieldListed: false },
+    { name: 'a single type twice', types: ['Report', 'Report'], typeFieldListed: false },
+    { name: 'several types', types: ['Report', 'Malware'], typeFieldListed: true },
+    { name: 'an abstract type', types: ['Stix-Domain-Object'], typeFieldListed: true },
+    { name: 'an abstract type with concrete subtypes', types: ['Threat-Actor'], typeFieldListed: true },
+  ];
+  it.each(ENTITIES_CASES)('should list a field of the entities of $name if and only if their breakdown accepts it', async (fieldsCase) => {
+    const candidates = [...filterKeysOf([...(fieldsCase.types ?? []), 'Stix-Core-Object']), 'entity_type'];
+    const listed = await expectListedIffAccepted(WidgetPerspective.Entities, fieldsCase, 'entity_type', candidates);
+    expect(listed.length).toBeGreaterThan(0);
+  });
+
+  const RELATIONSHIPS_CASES: FieldsCase[] = [
+    { name: 'no type', types: [], typeFieldListed: true },
+    { name: 'null', types: null, typeFieldListed: true },
+    { name: 'a single type', types: ['uses'], typeFieldListed: false },
+    { name: 'a single type twice', types: ['uses', 'uses'], typeFieldListed: false },
+    { name: 'several types', types: ['uses', 'targets'], typeFieldListed: true },
+    { name: 'an abstract type', types: ['stix-core-relationship'], typeFieldListed: true },
+  ];
+  // Datasets the relationships breakdown refuses (buildRelationshipTypes): no field is accepted, none is listed
+  const REFUSED_RELATIONSHIPS_CASES: FieldsCase[] = [
+    { name: 'an entity type', types: ['Report'], typeFieldListed: false },
+    { name: 'a relationship type and an entity type', types: ['uses', 'Report'], typeFieldListed: false },
+    { name: 'an unknown type', types: ['not-a-type'], typeFieldListed: false },
+  ];
+  const relationshipsCandidates = (types: string[] | null) => [
+    ...filterKeysOf([...(types ?? []), 'stix-core-relationship', 'stix-sighting-relationship']),
+    'relationship_type',
+    'fromTypes',
+    'toTypes',
+  ];
+  it.each(RELATIONSHIPS_CASES)('should list a field of the relationships of $name if and only if their breakdown accepts it', async (fieldsCase) => {
+    const listed = await expectListedIffAccepted(WidgetPerspective.Relationships, fieldsCase, 'relationship_type', relationshipsCandidates(fieldsCase.types));
+    expect(listed.length).toBeGreaterThan(0);
+  });
+  it.each(REFUSED_RELATIONSHIPS_CASES)('should list no field of the relationships of $name, which their breakdown refuses', async (fieldsCase) => {
+    const listed = await expectListedIffAccepted(WidgetPerspective.Relationships, fieldsCase, 'relationship_type', relationshipsCandidates(fieldsCase.types));
+    expect(listed).toEqual([]);
+  });
+
+  const AUDITS_CASES: FieldsCase[] = [
+    { name: 'no type', types: [], typeFieldListed: true },
+    { name: 'null', types: null, typeFieldListed: true },
+    { name: 'the history', types: ['History'], typeFieldListed: true },
+    { name: 'the history and the activity', types: ['History', 'Activity'], typeFieldListed: true },
+  ];
+  it.each(AUDITS_CASES)('should list a field of the logs of $name if and only if their breakdown accepts it', async (fieldsCase) => {
+    // The type of the logs is a field like the others
+    const listed = await expectListedIffAccepted(WidgetPerspective.Audits, fieldsCase, null, filterKeysOf(['History', 'Activity']));
+    expect(listed).toEqual(timeSeriesBreakdownFields(WidgetPerspective.Audits, []));
+  });
+
+  it('should list the fields of a single entity type, without the type itself', () => {
+    // Compared sorted: their order follows the order the attributes are registered in, and the editor sorts them.
+    // The closing reason is behind the ENTITIES_WORKFLOW feature flag, which config/test.json enables with every dev feature.
+    expect([...timeSeriesBreakdownFields(WidgetPerspective.Entities, ['Report'])].sort()).toEqual([
+      'createdBy', 'creator_id', 'objectAssignee', 'objectLabel', 'objectMarking', 'objectParticipant', 'report_types', 'x_opencti_closing_reason',
+    ]);
+    expect(timeSeriesBreakdownFields(WidgetPerspective.Entities, ['Incident'])).toEqual(expect.arrayContaining(['incident_type', 'severity']));
+  });
+
+  it('should list the fields every type carries, and the type itself, for several types, an abstract type or none', () => {
+    const shared = timeSeriesBreakdownFields(WidgetPerspective.Entities, ['Report', 'Malware']);
+    expect(shared).toContain('entity_type');
+    expect(shared).not.toContain('report_types');
+    expect(shared).not.toContain('objectAssignee');
+    expect(timeSeriesBreakdownFields(WidgetPerspective.Entities, ['Threat-Actor'])).toContain('entity_type');
+    expect(timeSeriesBreakdownFields(WidgetPerspective.Entities, ['Stix-Domain-Object'])).toContain('entity_type');
+    // Without types, or with types that are not entities, the default ones of the breakdown query
+    const stixCoreObjectFields = timeSeriesBreakdownFields(WidgetPerspective.Entities, ['Stix-Core-Object']);
+    expect(timeSeriesBreakdownFields(WidgetPerspective.Entities, [])).toEqual(stixCoreObjectFields);
+    expect(timeSeriesBreakdownFields(WidgetPerspective.Entities, null)).toEqual(stixCoreObjectFields);
+    expect(timeSeriesBreakdownFields(WidgetPerspective.Entities, ['not-a-type'])).toEqual(stixCoreObjectFields);
+  });
+
+  it('should never list free texts, dates, numbers, computed filter keys or relation refs outside the allowlist', () => {
+    const fields = [['Report'], ['Malware'], ['Incident'], ['Report', 'Malware'], []]
+      .flatMap((types) => timeSeriesBreakdownFields(WidgetPerspective.Entities, types));
+    ['name', 'description', 'created', 'created_at', 'confidence', 'x_opencti_score', 'computed_reliability', 'objects', 'externalReferences', 'killChainPhases']
+      .forEach((field) => expect(fields).not.toContain(field));
+  });
+
+  it('should list the relationships fields, the relationship type only for several types or none', () => {
+    const uses = timeSeriesBreakdownFields(WidgetPerspective.Relationships, ['uses']);
+    expect(uses).toEqual(expect.arrayContaining(['createdBy', 'objectLabel', 'objectMarking', 'creator_id', 'fromTypes', 'toTypes']));
+    expect(uses).not.toContain('relationship_type');
+    expect(timeSeriesBreakdownFields(WidgetPerspective.Relationships, ['targets', 'uses'])).toContain('relationship_type');
+    expect(timeSeriesBreakdownFields(WidgetPerspective.Relationships, [])).toContain('relationship_type');
+  });
+
+  it('should list the fields of the logs, in their order, whatever the types', () => {
+    expect(timeSeriesBreakdownFields(WidgetPerspective.Audits, ['Activity'])).toEqual(HISTORY_BREAKDOWN_ALLOWED_FIELDS);
+  });
+
+  it('should read duplicated types once', () => {
+    // A single type: its own type makes a single series
+    expect(timeSeriesBreakdownFields(WidgetPerspective.Entities, ['Report', 'Report'])).toEqual(timeSeriesBreakdownFields(WidgetPerspective.Entities, ['Report']));
+    expect(timeSeriesBreakdownFields(WidgetPerspective.Relationships, ['uses', 'uses'])).toEqual(timeSeriesBreakdownFields(WidgetPerspective.Relationships, ['uses']));
+    // As many as the bound, once deduplicated
+    const repeated = Array.from({ length: TIME_SERIES_BREAKDOWN_FIELDS_MAX_TYPES * 10 }, () => 'Report');
+    expect(timeSeriesBreakdownFields(WidgetPerspective.Entities, repeated)).toEqual(timeSeriesBreakdownFields(WidgetPerspective.Entities, ['Report']));
+  });
+
+  it('should refuse more distinct types than the bound, whatever the perspective', () => {
+    const typesUpTo = (count: number) => Array.from({ length: count }, (_, index) => `type-${index}`);
+    expect(timeSeriesBreakdownFields(WidgetPerspective.Entities, typesUpTo(TIME_SERIES_BREAKDOWN_FIELDS_MAX_TYPES)))
+      .toEqual(timeSeriesBreakdownFields(WidgetPerspective.Entities, []));
+    for (const perspective of [WidgetPerspective.Entities, WidgetPerspective.Relationships, WidgetPerspective.Audits]) {
+      let refusal: GraphQLError | undefined;
+      try {
+        timeSeriesBreakdownFields(perspective, typesUpTo(TIME_SERIES_BREAKDOWN_FIELDS_MAX_TYPES + 1));
+      } catch (error) {
+        refusal = error as GraphQLError;
+      }
+      expect(refusal?.message).toEqual('Too many types to list the time series breakdown fields of');
+      expect(refusal?.extensions).toMatchObject({ code: 'FUNCTIONAL_ERROR', data: { max: TIME_SERIES_BREAKDOWN_FIELDS_MAX_TYPES, typesCount: TIME_SERIES_BREAKDOWN_FIELDS_MAX_TYPES + 1 } });
+    }
   });
 });

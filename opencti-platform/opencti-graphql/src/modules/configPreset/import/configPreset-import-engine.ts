@@ -1,16 +1,22 @@
 import { logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
 import { getSettings, setPlatformBootstrapStatus } from '../../../domain/settings';
-import { publishUserAction } from '../../../listener/UserActionListener';
 import { findAllEntitySettings } from '../../entitySetting/entitySetting-domain';
 import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySetting-types';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { ConfigImportMode, ConfigImportStatus } from '../../configImport/configImport-types';
-import type { ConfigPresetSelectionInput, ResolversTypes } from '../../../generated/graphql';
-import { resolveUserByIdFromCache } from '../../user/user-domain';
-import { BYPASS, isUserHasCapability } from '../../../utils/access';
+import type { ConfigPresetItemCredentialsInput, ConfigPresetItemServiceAccountInput, ConfigPresetSelectionInput, ResolversTypes } from '../../../generated/graphql';
 import { CONFIG_PRESET_FAMILIES } from '../configPreset-registry';
-import { checkConfigPresetImportAccess, configPresetImportMode, configPresetImportModes } from './configPreset-import-utils';
+import {
+  checkConfigPresetImportAccess,
+  checkConfigPresetItemModes,
+  configPresetImportMode,
+  configPresetImportModes,
+  findConfigPresetFamily,
+  pickConfigPresetTypeItems,
+  publishConfigPresetImportAction,
+  reloadConfigPresetImportUser,
+} from './configPreset-import-utils';
 import { computeConfigPresetItem, computeConfigPresetItems, loadConfigPresetImportZip } from './configPreset-import-domain';
 import { readConfigPresetBundle, resolveBundleDependencies } from './configPreset-import-bundle';
 import { writeConfigPresetImportReport } from './configPreset-import-report';
@@ -19,11 +25,13 @@ import { endConfigPresetImportRunning, findConfigPresetImportRunning, startConfi
 import { applyConfigPresetImportEvent, applyConfigPresetImportRunEvent, readConfigPresetImportSession, toSessionSelections } from './configPreset-import-session-domain';
 import type { ConfigPresetImportCounts, ConfigPresetImportItemResult, ConfigPresetImportResultStatus } from './configPreset-import-session';
 import {
-  CONFIG_PRESET_DEFAULT_IMPORT_MODE,
+  CONFIG_PRESET_REASON_BUNDLE_REFUSED,
   CONFIG_PRESET_REASON_FILE_MISSING,
   type ConfigPresetBundle,
   type ConfigPresetBundleItem,
   type ConfigPresetComputedItem,
+  type ConfigPresetImportCredentials,
+  type ConfigPresetItemOptions,
   type ConfigPresetImportPlan,
   configPresetPlanKey,
 } from './configPreset-import-types';
@@ -43,7 +51,8 @@ const RESULT_STATUSES: Record<ConfigImportStatus, ConfigPresetImportResultStatus
   failed: 'FAILED',
 };
 
-const toResult = (
+// The result of an item, as the import and the session store it; a failed one without naming is named after its key
+export const toConfigPresetImportResult = (
   item: ConfigPresetBundleItem,
   status: ConfigImportStatus,
   reason?: string,
@@ -58,6 +67,42 @@ const toResult = (
   translatable: naming?.translatable ?? false,
 });
 
+// Computes then writes one item of the bundle and returns its result. An item of a family the platform cannot apply (Enterprise Edition)
+// is skipped, so it never reaches apply. An error of the item, whether it is read or written, fails this item and is not thrown: the
+// next items go on. Only a refused bundle is thrown, it stops the import. Shared by every import that writes items of a bundle
+// (the wizard, the partial import).
+export const importConfigPresetItem = async (
+  context: AuthContext,
+  user: AuthUser,
+  item: ConfigPresetBundleItem,
+  plan: ConfigPresetImportPlan,
+  mode: ConfigImportMode,
+): Promise<ConfigPresetImportItemResult> => {
+  const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === item.type)!;
+  let computed: ConfigPresetComputedItem | undefined;
+  try {
+    computed = await computeConfigPresetItem(context, user, family, item, plan, mode);
+    if (computed.status === 'failed' || computed.status === 'skipped') {
+      return toConfigPresetImportResult(item, computed.status, computed.reason, computed);
+    }
+    const applied = await family.importer!.apply(context, user, item, computed, mode, plan);
+    return toConfigPresetImportResult(item, applied || computed.status, computed.reason, computed);
+  } catch (err) {
+    // A bundle that cannot be read to the end (an attachment above the extracted size limit) stops the import: the next items would be
+    // read the same way. Thrown to the caller, which stops: the wizard fails the remaining items, a partial import too
+    if ((err as { extensions?: { data?: { reason?: string } } }).extensions?.data?.reason === CONFIG_PRESET_REASON_BUNDLE_REFUSED) {
+      throw err;
+    }
+    // The item was not written (a theme, a role): the items that depend on it fail with it
+    const key = configPresetPlanKey(item.type, item.id);
+    plan.created.delete(key);
+    if (plan.targets?.has(key)) {
+      plan.targets.set(key, null);
+    }
+    return toConfigPresetImportResult(item, 'failed', err instanceof Error ? err.message : String(err), computed);
+  }
+};
+
 const COUNT_KEYS: Record<ConfigPresetImportResultStatus, keyof ConfigPresetImportCounts> = {
   CREATED: 'created',
   OVERWRITTEN: 'overwritten',
@@ -65,7 +110,7 @@ const COUNT_KEYS: Record<ConfigPresetImportResultStatus, keyof ConfigPresetImpor
   FAILED: 'failed',
 };
 
-const countResults = (results: ConfigPresetImportItemResult[]): ConfigPresetImportCounts => {
+export const countConfigPresetImportResults = (results: ConfigPresetImportItemResult[]): ConfigPresetImportCounts => {
   const counts: ConfigPresetImportCounts = { created: 0, overwritten: 0, skipped: 0, failed: 0 };
   results.forEach(({ status }) => {
     counts[COUNT_KEYS[status]] += 1;
@@ -78,22 +123,9 @@ const countResults = (results: ConfigPresetImportItemResult[]): ConfigPresetImpo
 const resolveImportItems = (bundle: ConfigPresetBundle, selections: ConfigPresetSelectionInput[]): ConfigPresetBundleItem[] => {
   const selected: ConfigPresetBundleItem[] = [];
   selections.forEach(({ type, items, excluded_items: excluded, item_modes: itemModes }) => {
-    const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === type);
-    if (!family) {
-      throw FunctionalError('Unknown configuration preset type', { type });
-    }
-    (itemModes ?? []).forEach(({ key, mode }) => {
-      if (!(family.importModes ?? [CONFIG_PRESET_DEFAULT_IMPORT_MODE]).includes(mode)) {
-        throw FunctionalError('Unsupported import mode for this configuration preset type', { type, item: key, mode });
-      }
-    });
-    const available = bundle.items.filter((item) => item.type === type);
-    const picked = items
-      ? items.map((id) => available.find((item) => item.id === id) ?? (() => {
-          throw FunctionalError('Unknown configuration preset item', { type, item: id });
-        })())
-      : available.filter((item) => !(excluded ?? []).includes(item.id));
-    picked.forEach((item) => {
+    const family = findConfigPresetFamily(type);
+    checkConfigPresetItemModes(family, itemModes);
+    pickConfigPresetTypeItems(bundle, type, items, excluded).forEach((item) => {
       if (!selected.includes(item)) {
         selected.push(item);
       }
@@ -106,7 +138,7 @@ const resolveImportItems = (bundle: ConfigPresetBundle, selections: ConfigPreset
 };
 
 const toOutput = (results: { item: ConfigPresetBundleItem; computed: ConfigPresetComputedItem }[]) => {
-  return results.map(({ item, computed }) => toResult(item, computed.status, computed.reason, computed));
+  return results.map(({ item, computed }) => toConfigPresetImportResult(item, computed.status, computed.reason, computed));
 };
 
 // Reads only: what the import would do, nothing is written, no session change, no audit event
@@ -115,8 +147,9 @@ const dryRun = async (
   user: AuthUser,
   items: ConfigPresetBundleItem[],
   modes: Map<string, ConfigImportMode>,
+  itemOptions: ConfigPresetItemOptions,
 ): Promise<ConfigPresetImportOutput> => {
-  return { results: toOutput(await computeConfigPresetItems(context, user, items, { modes })), report_id: null, settings: null, entity_settings: null };
+  return { results: toOutput(await computeConfigPresetItems(context, user, items, { modes, ...itemOptions })), report_id: null, settings: null, entity_settings: null };
 };
 
 const realImport = async (
@@ -127,6 +160,7 @@ const realImport = async (
   bundle: ConfigPresetBundle,
   items: ConfigPresetBundleItem[],
   selections: ConfigPresetSelectionInput[],
+  itemOptions: ConfigPresetItemOptions,
 ): Promise<ConfigPresetImportOutput> => {
   const session = await readConfigPresetImportSession(context, user);
   // The import is on the pending zip of the session: another upload since (another tab) made this file missing
@@ -157,7 +191,7 @@ const realImport = async (
   }
   logApp.info('[CONFIG PRESET] Import started', { user_id: user.id, file_id: fileId, total: items.length });
   const importContext = context;
-  const plan: ConfigPresetImportPlan = { created: new Set(), targets: new Map() };
+  const plan: ConfigPresetImportPlan = { created: new Set(), targets: new Map(), ...itemOptions };
   const modes = configPresetImportModes(selections);
   const results: ConfigPresetImportItemResult[] = [];
   // Why the import stopped before the end, when it did: a lost lock, or an unexpected error between two items
@@ -169,41 +203,9 @@ const realImport = async (
       if (lock.signal.aborted) {
         stopReason = 'Import stopped: lock lost';
       } else {
-        // Re-read before each item: the rights of the user may have changed; the origin is kept for the audit.
-        // The domain functions of the importers check no capability, so BYPASS is checked here: losing it stops the import.
-        const cachedUser = await resolveUserByIdFromCache(importContext, user.id);
-        if (!cachedUser) {
-          throw FunctionalError('The user who started the import no longer exists');
-        }
-        if (!isUserHasCapability(cachedUser, BYPASS)) {
-          throw FunctionalError('The user who started the import no longer has the right to import');
-        }
-        const runUser = { ...cachedUser, origin: user.origin } as AuthUser;
-        const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === item.type)!;
-        const importer = family.importer!;
-        const mode = configPresetImportMode(modes, item.type, item.id);
-        let computed: ConfigPresetComputedItem | undefined;
-        let result: ConfigPresetImportItemResult;
-        // An error of the item, whether it is read or written, fails this item and never the next ones
-        try {
-          // An item of a family the platform cannot apply is skipped here, so it never reaches apply
-          computed = await computeConfigPresetItem(importContext, runUser, family, item, plan, mode);
-          result = toResult(item, computed.status, computed.reason, computed);
-          if (computed.status !== 'failed' && computed.status !== 'skipped') {
-            const applied = await importer.apply(importContext, runUser, item, computed, mode, plan);
-            if (applied) {
-              result = toResult(item, applied, computed.reason, computed);
-            }
-          }
-        } catch (err) {
-          // The item was not written (a theme, a role): the items that depend on it fail with it
-          const key = configPresetPlanKey(item.type, item.id);
-          plan.created.delete(key);
-          if (plan.targets?.has(key)) {
-            plan.targets.set(key, null);
-          }
-          result = toResult(item, 'failed', err instanceof Error ? err.message : String(err), computed);
-        }
+        // Re-read before each item: losing BYPASS, or the account, stops the import
+        const runUser = await reloadConfigPresetImportUser(importContext, user);
+        const result = await importConfigPresetItem(importContext, runUser, item, plan, configPresetImportMode(modes, item.type, item.id));
         results.push(result);
         await applyConfigPresetImportRunEvent(importContext, user, startedAt, 'ITEM_PROCESSED', { result });
         await updateConfigPresetImportRunning(user, startedAt, results.length);
@@ -223,7 +225,7 @@ const realImport = async (
   if (stopReason) {
     // The remaining items are failed with the reason, in the results and, best effort, in the session
     for (let i = results.length; i < items.length; i += 1) {
-      const result = toResult(items[i], 'failed', stopReason);
+      const result = toConfigPresetImportResult(items[i], 'failed', stopReason);
       results.push(result);
       await applyConfigPresetImportRunEvent(importContext, user, startedAt, 'ITEM_PROCESSED', { result })
         .catch((writeErr) => logApp.warn('[CONFIG PRESET] The result of a stopped item could not be written in the session', { cause: writeErr }));
@@ -241,7 +243,7 @@ const realImport = async (
       logApp.warn('[CONFIG PRESET] The platform bootstrap status could not be set to completed', { cause: err });
     }
   }
-  const counts = countResults(results);
+  const counts = countConfigPresetImportResults(results);
   const report = await writeConfigPresetImportReport(importContext, user, fileId, {
     user_id: user.id,
     started_at: startedAt,
@@ -256,19 +258,8 @@ const realImport = async (
     .catch((finishErr) => logApp.error('[CONFIG PRESET] The end of the import could not be written in the session', { cause: finishErr }));
   // Then the record is deleted and last_finished_at written, then the caller releases the lock
   await endConfigPresetImportRunning(user, startedAt, true);
-  // The settings were written whether the report was or not: the import is audited either way, with a file only when there is one.
-  // The listeners run in a Promise.all: a failing one never fails the import
-  try {
-    await publishUserAction({
-      user,
-      event_type: 'command',
-      event_access: 'administration',
-      event_scope: 'import',
-      context_data: { file_id: report.reportId, path: report.folder, file_name: report.fileName, input: { counts } },
-    });
-  } catch (err) {
-    logApp.warn('[CONFIG PRESET] The activity event of the import could not be published', { cause: err });
-  }
+  // The settings were written whether the report was or not: the import is audited either way, with a file only when there is one
+  await publishConfigPresetImportAction(user, { file_id: report.reportId, path: report.folder, file_name: report.fileName, input: { counts } });
   logApp.info('[CONFIG PRESET] Import finished', { user_id: user.id, file_id: fileId, outcome, counts });
   // The import is over and audited: failing to read what it wrote must not fail it. The front store then learns the values with the next read.
   try {
@@ -289,8 +280,16 @@ export const configPresetImport = async (
   fileId: string,
   selections: ConfigPresetSelectionInput[],
   isDryRun: boolean,
+  itemCredentials: ConfigPresetItemCredentialsInput[] = [],
+  itemServiceAccounts: ConfigPresetItemServiceAccountInput[] = [],
 ): Promise<ConfigPresetImportOutput> => {
   checkConfigPresetImportAccess(context, user);
+  const credentials: ConfigPresetImportCredentials = new Map(itemCredentials.map(({ type, key, values }) => [
+    configPresetPlanKey(type, key),
+    Object.fromEntries(values.map((credential) => [credential.key, credential.secret])),
+  ]));
+  const serviceAccounts = new Map(itemServiceAccounts.map(({ type, key, user_id: userId }) => [configPresetPlanKey(type, key), userId]));
+  const itemOptions: ConfigPresetItemOptions = { credentials, serviceAccounts };
   // A real import goes on if the browser disconnects: its context is detached from the request
   const engineContext: AuthContext = isDryRun ? context : { ...context, requestAbortSignal: undefined };
   const prepare = async () => {
@@ -299,11 +298,11 @@ export const configPresetImport = async (
   };
   if (isDryRun) {
     // No lock: a dry run writes nothing and runs even while an import is in progress
-    return dryRun(engineContext, user, (await prepare()).items, configPresetImportModes(selections));
+    return dryRun(engineContext, user, (await prepare()).items, configPresetImportModes(selections), itemOptions);
   }
   // The lock is taken first, before the zip is read and before any session read: a second import is refused at once
   return withConfigPresetImportLock(engineContext, async (lock) => {
     const { bundle, items } = await prepare();
-    return realImport(engineContext, user, lock, fileId, bundle, items, selections);
+    return realImport(engineContext, user, lock, fileId, bundle, items, selections, itemOptions);
   }, async (ctx) => (await findConfigPresetImportRunning(ctx, user)).running?.name);
 };

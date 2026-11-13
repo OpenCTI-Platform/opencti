@@ -1,7 +1,7 @@
 import React from 'react';
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import { useFormatter } from 'src/components/i18n';
-import { enabledFilters } from './utils/enabledFilters';
+import { useDecayFilterKeys } from './utils/enabledFilters';
 import * as Yup from 'yup';
 import { fieldSpacingContainerStyle } from 'src/utils/field';
 import Button from '@common/button/Button';
@@ -54,6 +54,7 @@ const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: Decay
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const [commit] = useApiMutation(decayExclusionRuleCreationFormAddMutation);
+  const decayFilterKeys = useDecayFilterKeys();
   const [filters, filterHelpers] = useFiltersState(emptyFilterGroup);
   const onSubmit: FormikConfig<DecayExclusionRuleCreationFormData>['onSubmit'] = (
     values,
@@ -136,7 +137,7 @@ const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: Decay
             }}
             >
               <Filters
-                availableFilterKeys={enabledFilters}
+                availableFilterKeys={decayFilterKeys}
                 helpers={filterHelpers}
                 searchContext={{ entityTypes: ['Indicator'] }}
               />

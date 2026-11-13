@@ -1,7 +1,7 @@
 services:
   opencti-dev-redis:
     container_name: opencti-dev-redis
-    image: redis:8.6.8@sha256:3d89f7d15768840f509ecc050347868c8b9f5768625eae14ed7633e039ded7fb
+    image: redis:8.6.8@sha256:8b30009c0de4fdb3fb67deb8afab050fe454e9b233c6a2c142ec34fcc51fa7f5
     restart: unless-stopped
     ports:
       - 6379:6379
