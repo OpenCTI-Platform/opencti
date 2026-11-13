@@ -1,5 +1,9 @@
 export const PRESET_PARAM = 'preset';
 
+// The explicit choice of no preset, kept like a preset id: it overrides the default preset of the user, so that a user
+// with a default preset can still view the defaults of the dashboard. Preset ids are uuids: it cannot collide.
+export const NO_PRESET_ID = 'none';
+
 export const dashboardPresetStorageKey = (userId: string, workspaceId: string) => `dashboard-preset-${userId}-${workspaceId}`;
 
 export const readStoredPresetId = (key: string): string | null => {

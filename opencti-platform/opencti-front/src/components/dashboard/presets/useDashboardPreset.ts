@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import useAuth from '../../../utils/hooks/useAuth';
 import type { DashboardPreset } from '../dashboard-types';
-import { dashboardPresetStorageKey, parsePresetParam, readStoredPresetId, writePresetParam, writeStoredPresetId } from './dashboardPresetStorage';
+import { dashboardPresetStorageKey, NO_PRESET_ID, parsePresetParam, readStoredPresetId, writePresetParam, writeStoredPresetId } from './dashboardPresetStorage';
 import { dashboardVariablesStorageKey, writeStoredVariableValues } from '../dashboardVariablesStorage';
 import { dashboardTimeRangeStorageKey, writeStoredTimeRange } from '../dashboardTimeRangeStorage';
 
@@ -16,7 +16,7 @@ interface UseDashboardPresetOptions {
 /**
  * The preset selected by the current user on a dashboard: the one of the URL, else the one kept in this browser,
  * else the default preset of the user (own choice, group or organization), else none. Kept per user and dashboard.
- * A preset that no longer exists is ignored.
+ * A preset that no longer exists is ignored. "No preset" chosen explicitly (NO_PRESET_ID) overrides the default preset.
  */
 export const useDashboardPreset = (
   workspaceId: string,
@@ -34,7 +34,7 @@ export const useDashboardPreset = (
     // Only for a preset the dashboard holds: a deleted or mistyped one, or one not loaded yet, drops nothing.
     // The preset of the address becomes the one kept in this browser: the changes made on it are kept with it, and the
     // dashboard opened later from the menu shows the same view.
-    if (fromUrl && fromUrl !== stored && presets.some((preset) => preset.id === fromUrl)) {
+    if (fromUrl && fromUrl !== stored && (fromUrl === NO_PRESET_ID || presets.some((preset) => preset.id === fromUrl))) {
       writeStoredVariableValues(dashboardVariablesStorageKey(me.id, workspaceId), {});
       writeStoredTimeRange(dashboardTimeRangeStorageKey(me.id, workspaceId), null);
       writeStoredPresetId(key, fromUrl);
@@ -51,8 +51,10 @@ export const useDashboardPreset = (
 
   const presetIds = presets.map((preset) => preset.id).join();
   const effectiveDefaultId = enabled && defaultPresetId && presets.some((preset) => preset.id === defaultPresetId) ? defaultPresetId : null;
-  // A stored preset that was deleted meanwhile falls back to the default one.
-  const activeId = stored && presets.some((preset) => preset.id === stored) ? stored : effectiveDefaultId;
+  // A stored preset that was deleted meanwhile falls back to the default one; no preset chosen explicitly does not.
+  let activeId: string | null = effectiveDefaultId;
+  if (stored === NO_PRESET_ID) activeId = null;
+  else if (stored && presets.some((preset) => preset.id === stored)) activeId = stored;
   const activePreset = useMemo(
     () => (activeId ? presets.find((preset) => preset.id === activeId) ?? null : null),
     [activeId, presetIds, presets],
@@ -71,7 +73,7 @@ export const useDashboardPreset = (
     if (!enabled) return;
     if (!ignoreLocalValues) {
       if (!stored) writePresetParam(null);
-      else if (presets.some((preset) => preset.id === stored)) writePresetParam(stored);
+      else if (stored === NO_PRESET_ID || presets.some((preset) => preset.id === stored)) writePresetParam(stored);
     } else if (parsePresetParam(window.location.search)) writePresetParam(null);
   }, [stored, ignoreLocalValues, enabled, presetIds]);
 
@@ -87,5 +89,11 @@ export const useDashboardPreset = (
     commit(presetId === effectiveDefaultId ? null : presetId);
   }, [commit, ignoreLocalValues, enabled, effectiveDefaultId]);
 
-  return { activePreset, defaultPreset, select };
+  // Selects no preset: the defaults of the dashboard, also for a user with a default preset.
+  const selectNone = useCallback(() => {
+    if (ignoreLocalValues || !enabled) return;
+    commit(effectiveDefaultId ? NO_PRESET_ID : null);
+  }, [commit, ignoreLocalValues, enabled, effectiveDefaultId]);
+
+  return { activePreset, defaultPreset, select, selectNone };
 };

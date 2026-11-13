@@ -7,7 +7,7 @@ import { deserializeDashboardManifestForFrontend } from '../../../../../componen
 import { buildDefaultVariableValues, isValidVariableValue, widgetVariableIds } from '../../../../../components/dashboard/dashboardVariablesResolution';
 import { dashboardVariablesStorageKey, parseVariablesParam, readStoredVariableValues } from '../../../../../components/dashboard/dashboardVariablesStorage';
 import { dashboardTimeRangeStorageKey, parseTimeRangeParam, readStoredTimeRange } from '../../../../../components/dashboard/dashboardTimeRangeStorage';
-import { dashboardPresetStorageKey, parsePresetParam, readStoredPresetId } from '../../../../../components/dashboard/presets/dashboardPresetStorage';
+import { dashboardPresetStorageKey, NO_PRESET_ID, parsePresetParam, readStoredPresetId } from '../../../../../components/dashboard/presets/dashboardPresetStorage';
 import { presetFromGraphql, type GraphqlDashboardPreset } from '../../../../../components/dashboard/presets/dashboardPresets';
 
 /**
@@ -125,11 +125,11 @@ export const buildPublishedValuesState = (
   const presets = (dashboard.presets ?? []).map(presetFromGraphql);
   // As on the page, a preset of the address replaces the one kept in this browser even when the dashboard does not
   // hold it: the page then shows the default preset, and so does the form.
+  // No preset chosen explicitly overrides the default preset, as on the page.
   const fromUrl = onPage ? parsePresetParam(search) : null;
-  const activePreset = [
-    fromUrl ?? readStoredPresetId(dashboardPresetStorageKey(userId, dashboard.id)),
-    dashboard.currentUserDefaultPresetId ?? null,
-  ].map((presetId) => presets.find((preset) => preset.id === presetId)).find((preset) => preset !== undefined);
+  const chosen = fromUrl ?? readStoredPresetId(dashboardPresetStorageKey(userId, dashboard.id));
+  const activePreset = chosen === NO_PRESET_ID ? undefined : [chosen, dashboard.currentUserDefaultPresetId ?? null]
+    .map((presetId) => presets.find((preset) => preset.id === presetId)).find((preset) => preset !== undefined);
   const stored = {
     ...(activePreset?.values ?? {}),
     ...readStoredVariableValues(dashboardVariablesStorageKey(userId, dashboard.id)),

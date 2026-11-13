@@ -121,6 +121,34 @@ describe('useDashboardPreset', () => {
     expect(renderHook(() => useDashboardPreset('ws-1', presets)).result.current.activePreset).toBeNull();
   });
 
+  it('lets a user with a default preset choose no preset, kept in this browser and in the address', () => {
+    const { result } = renderHook(() => useDashboardPreset('ws-1', presets, { defaultPresetId: 'finance' }));
+    expect(result.current.activePreset?.id).toBe('finance');
+    act(() => result.current.selectNone());
+    expect(result.current.activePreset).toBeNull();
+    expect(window.localStorage.getItem(dashboardPresetStorageKey('user-1', 'ws-1'))).toBe('none');
+    expect(presetParam()).toBe('none');
+    // Opened again, or from the shared address, the dashboard shows no preset
+    window.history.replaceState(null, '', '/');
+    expect(renderHook(() => useDashboardPreset('ws-1', presets, { defaultPresetId: 'finance' })).result.current.activePreset).toBeNull();
+    window.localStorage.clear();
+    window.history.replaceState(null, '', '/?preset=none');
+    expect(renderHook(() => useDashboardPreset('ws-1', presets, { defaultPresetId: 'finance' })).result.current.activePreset).toBeNull();
+    // Back to the default preset (Reset) forgets the choice
+    act(() => result.current.select(null));
+    expect(result.current.activePreset?.id).toBe('finance');
+    expect(window.localStorage.getItem(dashboardPresetStorageKey('user-1', 'ws-1'))).toBeNull();
+  });
+
+  it('keeps nothing for no preset without a default preset', () => {
+    window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'ws-1'), 'energy');
+    const { result } = renderHook(() => useDashboardPreset('ws-1', presets));
+    act(() => result.current.selectNone());
+    expect(result.current.activePreset).toBeNull();
+    expect(window.localStorage.getItem(dashboardPresetStorageKey('user-1', 'ws-1'))).toBeNull();
+    expect(presetParam()).toBeNull();
+  });
+
   it('selecting the default preset or none keeps nothing local', () => {
     const { result } = renderHook(() => useDashboardPreset('ws-1', presets, { defaultPresetId: 'finance' }));
     act(() => result.current.select('energy'));
