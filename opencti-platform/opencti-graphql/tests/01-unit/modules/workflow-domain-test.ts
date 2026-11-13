@@ -62,7 +62,7 @@ import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
 import { createListTask } from '../../../src/domain/backgroundTask-common';
 import type { BasicStoreEntity } from '../../../src/types/store';
-import { reportWorkflowAsyncActionResult, revokeRequestAccessDirectGrants } from '../../../src/modules/workflow/domain/workflow-async-completion';
+import { cancelPendingContainerTasks, reportWorkflowAsyncActionResult, revokeRequestAccessDirectGrants } from '../../../src/modules/workflow/domain/workflow-async-completion';
 import { isUserCanActionRequestAccess, notifyRequestAccessResult } from '../../../src/modules/requestAccess/requestAccess-domain';
 import { publishUserAction } from '../../../src/listener/UserActionListener';
 
@@ -117,6 +117,7 @@ vi.mock('../../../src/modules/workflow/workflow-validation', async (importOrigin
 vi.mock('../../../src/modules/workflow/domain/workflow-async-completion', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/modules/workflow/domain/workflow-async-completion')>()),
   revokeRequestAccessDirectGrants: vi.fn().mockResolvedValue([]),
+  cancelPendingContainerTasks: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock('../../../src/modules/workflow/engine/workflow-factory', () => ({
@@ -4030,6 +4031,44 @@ describe('clearWorkflowPendingState', () => {
     const history = JSON.parse(patches.find((p: any) => p.key === 'history')?.value[0] ?? '[]');
     expect(history[history.length - 1].event).toBe('admin_clear_pending_state');
     expect(revokeRequestAccessDirectGrants).not.toHaveBeenCalled();
+  });
+
+  describe('with container share tasks queued by a request access share', () => {
+    const slots = [{ id: 's1', workId: 'w1', type: 'shareRequestedEntities', status: 'pending', taskId: 'task-1' }];
+    beforeEach(() => {
+      (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => (
+        Promise.resolve(id === 'entity-id' ? { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Case-Rfi' } : null)
+      ));
+      (loadEntity as any).mockResolvedValue({
+        id: 'inst-id',
+        internal_id: 'inst-id',
+        currentState: 'review',
+        history: '[]',
+        pendingStatus: 'pending',
+        pendingTransition: JSON.stringify({ event: 'approve', toState: 'approved', triggeredBy: 'decider-id', asyncActions: slots, syncActions: [] }),
+      });
+      (updateAttribute as any).mockResolvedValue({ element: {} });
+    });
+
+    it('deletes them before clearing the pending state', async () => {
+      vi.mocked(cancelPendingContainerTasks).mockResolvedValueOnce([]);
+
+      await clearWorkflowPendingState(mockContext, mockUser, 'entity-id');
+
+      expect(cancelPendingContainerTasks).toHaveBeenCalledWith(expect.anything(), slots, 'decider-id');
+      expect(updateAttribute).toHaveBeenCalledTimes(1);
+      const [, , , , patches] = (updateAttribute as any).mock.calls[0];
+      expect(patches.find((p: any) => p.key === 'pendingTransition')?.value[0]).toBeNull();
+    });
+
+    it('keeps the pending state untouched when a task cannot be deleted', async () => {
+      vi.mocked(cancelPendingContainerTasks).mockResolvedValueOnce(slots as any);
+
+      await expect(clearWorkflowPendingState(mockContext, mockUser, 'entity-id')).rejects.toThrow('could not all be deleted');
+
+      expect(updateAttribute).not.toHaveBeenCalled();
+      expect(revokeRequestAccessDirectGrants).not.toHaveBeenCalled();
+    });
   });
 
   describe('with direct grants recorded by a request access share', () => {

@@ -63,6 +63,7 @@ const resolveTriggeringUser = async (context: AuthContext, userId: string): Prom
  * Runs as the user who decided the request, as the share did, or as the system user when that user cannot be resolved.
  * An entity deleted since is skipped. Returns the grants that could not be revoked.
  * What a container share task already shared before it failed is not undone: only the direct grants are recorded.
+ * Known limitation: the revocation does not check whether another approved request still relies on the same grant.
  */
 export const revokeRequestAccessDirectGrants = async (
   context: AuthContext,
@@ -87,6 +88,34 @@ export const revokeRequestAccessDirectGrants = async (
   return remaining;
 };
 
+/**
+ * Deletes the background tasks still pending on a pending transition, so a cleared request access share cannot
+ * share a container afterwards. A task already deleted is skipped; a task the task manager already picked up
+ * keeps what it shared. Returns the slots whose task could not be deleted.
+ */
+export const cancelPendingContainerTasks = async (
+  context: AuthContext,
+  slots: AsyncActionSlot[] | undefined,
+  deciderId: string,
+): Promise<AsyncActionSlot[]> => {
+  const pendingSlots = (slots ?? []).filter((slot) => slot.status === 'pending' && !!slot.taskId);
+  if (pendingSlots.length === 0) return [];
+  const cancelUser = await resolveTriggeringUser(context, deciderId) ?? SYSTEM_USER;
+  const { deleteTask } = await import('../../../domain/backgroundTask');
+  const remaining: AsyncActionSlot[] = [];
+  for (const slot of pendingSlots) {
+    try {
+      // Already deleted (an earlier clear that failed later on): nothing left to cancel
+      if (!await internalLoadById(context, SYSTEM_USER, slot.taskId)) continue;
+      await deleteTask({ ...context, user: cancelUser }, cancelUser, slot.taskId);
+    } catch (error) {
+      logApp.error('[workflow-async-completion] Failed to delete a pending container share task', { cause: error, taskId: slot.taskId });
+      remaining.push(slot);
+    }
+  }
+  return remaining;
+};
+
 export const runWorkflowBypassActions = async (workflowContext: Context, pendingTransition: WorkflowPendingTransition): Promise<void> => {
   const slots: AsyncActionSlot[] = [];
   // A bypass waits for every background task its actions queue
@@ -100,7 +129,7 @@ export const runWorkflowBypassActions = async (workflowContext: Context, pending
     await actionFn(workflowContext, typeof action.params === 'string' ? JSON.parse(action.params) : action.params);
     pendingTransition.syncActions.shift();
     if (slots.length > 0) {
-      pendingTransition.asyncActions = slots.map(({ id, workId, type, status }) => ({ id, workId, type, status }));
+      pendingTransition.asyncActions = slots.map(({ id, workId, type, status, taskId }) => ({ id, workId, type, status, ...(taskId ? { taskId } : {}) }));
       if (workflowContext.requestAccessDirectGrants?.length) {
         pendingTransition.requestAccessDirectGrants = mergeRequestAccessDirectGrants(pendingTransition.requestAccessDirectGrants, workflowContext.requestAccessDirectGrants);
       }
@@ -316,7 +345,7 @@ const completeWorkflowAsyncActionResult = async (
       // The transition actions and the onEnter actions up to this one ran: only the remaining ones wait for the new tasks.
       pendingTransition.syncActions = [];
       pendingTransition.onEnterActions = onEnterActions.slice(index + 1);
-      pendingTransition.asyncActions = newSlots.map(({ id, workId, type }) => ({ id, workId, type, status: 'pending' as const }));
+      pendingTransition.asyncActions = newSlots.map(({ id, workId, type, taskId }) => ({ id, workId, type, status: 'pending' as const, ...(taskId ? { taskId } : {}) }));
       if (workflowContext.requestAccessDirectGrants?.length) {
         pendingTransition.requestAccessDirectGrants = mergeRequestAccessDirectGrants(pendingTransition.requestAccessDirectGrants, workflowContext.requestAccessDirectGrants);
       }

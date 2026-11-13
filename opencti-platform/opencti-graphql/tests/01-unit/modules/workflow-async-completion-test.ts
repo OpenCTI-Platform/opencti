@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { logApp } from '../../../src/config/conf';
 import {
   appendWorkflowHistoryEntry,
+  cancelPendingContainerTasks,
   reportWorkflowAsyncActionResult,
   revokeRequestAccessDirectGrants,
   runWorkflowBypassActions,
@@ -15,10 +16,12 @@ import { createListTask } from '../../../src/domain/backgroundTask-common';
 import { lockResources } from '../../../src/lock/master-lock';
 import { recordRequestAccessDecision } from '../../../src/modules/workflow/domain/workflow-request-access';
 import { resolveUserById } from '../../../src/modules/user/user-domain';
+import { deleteTask } from '../../../src/domain/backgroundTask';
 
 vi.mock('../../../src/domain/backgroundTask-common', () => ({ createListTask: vi.fn() }));
 vi.mock('../../../src/utils/access', () => ({ WORKFLOW_MANAGER_USER: { id: 'workflow-manager' }, SYSTEM_USER: { id: 'system-user' } }));
 vi.mock('../../../src/domain/stix', () => ({ removeOrganizationRestriction: vi.fn() }));
+vi.mock('../../../src/domain/backgroundTask', () => ({ deleteTask: vi.fn() }));
 vi.mock('../../../src/lock/master-lock', () => ({ lockResources: vi.fn().mockResolvedValue({ unlock: vi.fn() }) }));
 
 vi.mock('../../../src/database/middleware', () => ({
@@ -1198,6 +1201,61 @@ describe('revokeRequestAccessDirectGrants', () => {
     expect(remaining).toEqual([]);
     expect(removeOrganizationRestriction).toHaveBeenCalledTimes(1);
     expect(removeOrganizationRestriction).toHaveBeenCalledWith({ ...mockContext, user: { id: 'system-user' } }, { id: 'system-user' }, 'malware-1', ['org-a', 'org-b']);
+  });
+});
+
+describe('cancelPendingContainerTasks', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(deleteTask).mockResolvedValue(undefined as any);
+    vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => ({ id }) as any);
+  });
+
+  it('deletes nothing and resolves no user without a pending slot that has a task', async () => {
+    const slots = [
+      { id: 's1', workId: 'w1', type: 'shareRequestedEntities', status: 'pending' },
+      { id: 's2', workId: 'w2', type: 'shareRequestedEntities', status: 'success', taskId: 'task-done' },
+    ] as any;
+    await expect(cancelPendingContainerTasks(mockContext, slots, 'decider-id')).resolves.toEqual([]);
+    await expect(cancelPendingContainerTasks(mockContext, undefined, 'decider-id')).resolves.toEqual([]);
+    expect(resolveUserById).not.toHaveBeenCalled();
+    expect(deleteTask).not.toHaveBeenCalled();
+  });
+
+  it('deletes the pending tasks as the decider, and skips a task that is already deleted', async () => {
+    const decider = { id: 'decider-id' };
+    vi.mocked(resolveUserById).mockResolvedValue(decider as any);
+    vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => (id === 'task-gone' ? undefined : { id }) as any);
+
+    const remaining = await cancelPendingContainerTasks(mockContext, [
+      { id: 's1', workId: 'w1', type: 'shareRequestedEntities', status: 'pending', taskId: 'task-gone' },
+      { id: 's2', workId: 'w2', type: 'shareRequestedEntities', status: 'pending', taskId: 'task-1' },
+    ] as any, 'decider-id');
+
+    expect(remaining).toEqual([]);
+    expect(deleteTask).toHaveBeenCalledTimes(1);
+    expect(deleteTask).toHaveBeenCalledWith({ ...mockContext, user: decider }, decider, 'task-1');
+  });
+
+  it('deletes as the system user when the decider cannot be resolved', async () => {
+    vi.mocked(resolveUserById).mockResolvedValue(undefined as any);
+
+    await cancelPendingContainerTasks(mockContext, [
+      { id: 's1', workId: 'w1', type: 'shareRequestedEntities', status: 'pending', taskId: 'task-1' },
+    ] as any, 'decider-id');
+
+    expect(deleteTask).toHaveBeenCalledWith({ ...mockContext, user: { id: 'system-user' } }, { id: 'system-user' }, 'task-1');
+  });
+
+  it('returns the slots whose task could not be deleted and keeps going', async () => {
+    vi.mocked(deleteTask).mockRejectedValueOnce(new Error('boom'));
+    const failing = { id: 's1', workId: 'w1', type: 'shareRequestedEntities', status: 'pending', taskId: 'task-1' };
+    const ok = { id: 's2', workId: 'w2', type: 'shareRequestedEntities', status: 'pending', taskId: 'task-2' };
+
+    const remaining = await cancelPendingContainerTasks(mockContext, [failing, ok] as any, 'decider-id');
+
+    expect(remaining).toEqual([failing]);
+    expect(deleteTask).toHaveBeenCalledTimes(2);
   });
 });
 

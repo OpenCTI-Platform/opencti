@@ -70,6 +70,7 @@ import { findInstancesInStates, isStatusReferencedByEntity } from './workflow-st
 import { projectWorkflowState, resolveMappedStatusId, resolveProjectionScope } from './workflow-projection';
 import {
   appendWorkflowHistoryEntry,
+  cancelPendingContainerTasks,
   closingReasonNotWrittenError,
   isClosingReasonLost,
   revokeRequestAccessDirectGrants,
@@ -3154,10 +3155,11 @@ export const isStatusUsedInWorkflow = async (
 /**
  * Admin escape hatch: force-clear the pending state of a workflow instance.
  * Leaves currentState unchanged. Logs the intervention in history for audit.
- * Any still-running background tasks become orphaned (admin's conscious decision).
- * The organizations a request access share granted directly on plain entities are revoked first, so the undecided
- * request leaves no direct grant behind; what a container share task already shared stays. A failed revoke keeps the
- * pending state, so the clear can be retried.
+ * Any still-running background tasks become orphaned (admin's conscious decision), except the container share tasks of
+ * a request access: the queued ones are deleted first, so they cannot share a container after the clear.
+ * The organizations a request access share granted directly on plain entities are revoked next, so the undecided
+ * request leaves no direct grant behind; what a container share task already shared stays. A failed deletion or
+ * revoke keeps the pending state, so the clear can be retried.
  */
 export const clearWorkflowPendingState = async (
   context: AuthContext,
@@ -3191,6 +3193,15 @@ export const clearWorkflowPendingState = async (
 
     const instanceId = instanceEntity.internal_id || instanceEntity.id;
     const pendingTransition = parsePendingTransition(instanceEntity);
+    if (pendingTransition?.asyncActions?.some((slot) => slot.taskId)) {
+      // The container share tasks still queued are deleted first: they must not share anything once the state is cleared
+      const remainingSlots = await cancelPendingContainerTasks(executionContext, pendingTransition.asyncActions, pendingTransition.triggeredBy);
+      if (remainingSlots.length > 0) {
+        throw FunctionalError('The container share tasks of the request access could not all be deleted: the pending state is kept', {
+          taskIds: remainingSlots.map((slot) => slot.taskId),
+        });
+      }
+    }
     if (pendingTransition?.requestAccessDirectGrants?.length) {
       const remainingGrants = await revokeRequestAccessDirectGrants(executionContext, pendingTransition.requestAccessDirectGrants, pendingTransition.triggeredBy);
       if (remainingGrants.length > 0) {

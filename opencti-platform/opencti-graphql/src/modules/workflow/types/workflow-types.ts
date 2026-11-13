@@ -33,6 +33,7 @@ export interface AsyncActionSlot {
   workId: string; // The Work entity id for live progress lookup
   type: string; // e.g. 'asyncBulkAction'
   status: 'pending' | 'success' | 'failed';
+  taskId?: string; // The BackgroundTask id, when the action queued one the workflow may have to cancel (shareRequestedEntities)
 }
 
 /**

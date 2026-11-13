@@ -184,7 +184,7 @@ export const ActionRegistry: Record<string, ActionFunction> = {
             workflowInstanceId: __workflowInstanceId,
             workflowActionId: slotId,
           });
-          queuedTasks.push({ taskId: task.id, slot: { id: slotId, workId: task.work_id ?? '', type: 'shareRequestedEntities', status: 'pending' } });
+          queuedTasks.push({ taskId: task.id, slot: { id: slotId, workId: task.work_id ?? '', type: 'shareRequestedEntities', status: 'pending', taskId: task.id } });
           continue;
         }
         await addOrganizationRestriction(context, user, target.id, organizationIds);
