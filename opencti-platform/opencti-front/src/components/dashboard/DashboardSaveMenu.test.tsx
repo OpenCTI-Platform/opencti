@@ -67,7 +67,9 @@ describe('DashboardSaveMenu', () => {
     await user.click(screen.getByTestId('dashboard-save-menu'));
     await user.click(await screen.findByTestId('dashboard-set-as-defaults'));
     endSave();
-    await new Promise((resolve) => { setTimeout(resolve, 50); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
     expect(screen.queryByTestId('dashboard-set-as-defaults')).toBeNull();
   });
 

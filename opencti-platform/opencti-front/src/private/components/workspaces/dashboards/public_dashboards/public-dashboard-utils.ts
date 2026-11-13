@@ -123,9 +123,11 @@ export const buildPublishedValuesState = (
   const variables = buildPublishedVariables(manifest.variables ?? [], manifest.widgets);
   const onPage = isDashboardPage(pathname, dashboard.id);
   const presets = (dashboard.presets ?? []).map(presetFromGraphql);
+  // As on the page, a preset of the address replaces the one kept in this browser even when the dashboard does not
+  // hold it: the page then shows the default preset, and so does the form.
+  const fromUrl = onPage ? parsePresetParam(search) : null;
   const activePreset = [
-    onPage ? parsePresetParam(search) : null,
-    readStoredPresetId(dashboardPresetStorageKey(userId, dashboard.id)),
+    fromUrl ?? readStoredPresetId(dashboardPresetStorageKey(userId, dashboard.id)),
     dashboard.currentUserDefaultPresetId ?? null,
   ].map((presetId) => presets.find((preset) => preset.id === presetId)).find((preset) => preset !== undefined);
   const stored = {
