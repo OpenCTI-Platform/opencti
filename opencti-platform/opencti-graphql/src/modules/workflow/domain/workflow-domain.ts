@@ -1884,6 +1884,25 @@ const findWorkflowMappedStatuses = async (
     .sort((left, right) => left.order - right.order);
 };
 
+/**
+ * Adds to each state the id of the Status entity written to `x_opencti_workflow_id` (null while the
+ * state has not been published yet), as states only hold the id of their status template.
+ */
+export const attachWorkflowStatusIds = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  definition: WorkflowDefinitionResponse,
+): Promise<WorkflowDefinitionResponse> => {
+  if (definition.states.length === 0) return definition;
+  const statuses = await findWorkflowMappedStatuses(bypassDraftContext(context), bypassDraftUser(user), entityType, StatusScope.Global, definition);
+  const statusIdByTemplateId = new Map(statuses.map((status) => [status.template_id, status.id]));
+  return {
+    ...definition,
+    states: definition.states.map((state) => ({ ...state, workflowStatusId: statusIdByTemplateId.get(state.statusId) ?? null })),
+  };
+};
+
 export const getWorkflowBypassStatuses = async (context: AuthContext, user: AuthUser, entityId: string) => {
   const { entity, definitionData, currentState, scope, executionContext, executionUser } = await loadWorkflowBypass(context, user, entityId);
   if (!definitionData) return [];
