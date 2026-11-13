@@ -9,10 +9,13 @@ export let LOCAL_PROVIDER: ProviderConfiguration | undefined = undefined;
 
 export const registerLocalStrategy = async () => {
   logAuthInfo('Configuring local', EnvStrategyType.STRATEGY_LOCAL);
+  // The request gives the source IP, checked against the IP whitelist before the lockout counts the attempt,
+  // and whether the local auth is enabled: otherwise the attempt is not counted
+  type LocalLoginRequest = { ip?: string; isLocalAuthEnabled?: boolean };
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore as per document new LocalStrategy is the right way, not sure what to do.
-  const localStrategy = new LocalStrategy({}, (username: string, password: string, done: any) => {
-    return login(username, password).then((info) => {
+  const localStrategy = new LocalStrategy({ passReqToCallback: true }, (req: LocalLoginRequest, username: string, password: string, done: any) => {
+    return login(username, password, req.ip, { countsAttempt: req.isLocalAuthEnabled ?? true }).then((info) => {
       logAuthInfo('User found in database', EnvStrategyType.STRATEGY_LOCAL, { username });
       addUserLoginCount();
       return done(null, info);

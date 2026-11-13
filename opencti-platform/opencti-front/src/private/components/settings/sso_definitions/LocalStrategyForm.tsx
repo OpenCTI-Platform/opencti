@@ -14,6 +14,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useHelper from '../../../../utils/hooks/useHelper';
 import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
+import Alert from '../../../../components/Alert';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import type { LocalStrategyFormQuery } from './__generated__/LocalStrategyFormQuery.graphql';
 import type { LocalAuthLockoutFinalAction, LocalStrategyFormMutation } from './__generated__/LocalStrategyFormMutation.graphql';
@@ -131,7 +132,7 @@ const localStrategyValidation = (t_i18n: Translate) => Yup.object().shape({
   local_auth_lockout_max_attempts: lockoutNumberSchema(t_i18n, LOCKOUT_MAX_ATTEMPTS_LIMIT),
   local_auth_lockout_admin_max_attempts: lockoutNumberSchema(t_i18n, LOCKOUT_MAX_ATTEMPTS_LIMIT),
   local_auth_lockout_final_action: Yup.string().oneOf(LOCKOUT_FINAL_ACTIONS),
-  // A window of 0 disables it: failed login attempts are only reset by a successful login
+  // A window of 0 removes its time limit: failed login attempts are kept until a successful login or the end of a temporary lock
   local_auth_lockout_window: lockoutNumberSchema(t_i18n, LOCKOUT_WINDOW_LIMIT, 0),
   local_auth_lockout_duration: lockoutNumberSchema(t_i18n, LOCKOUT_DURATION_LIMIT),
 });
@@ -362,6 +363,10 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
               />
               {values.local_auth_lockout_enabled && (
                 <>
+                  {/* The built-in admin is the break-glass account: it is never locked, so it should be disabled once it is not needed */}
+                  <div className="mt-5">
+                    <Alert content={t_i18n('The built-in admin account is never locked: it is the account to unlock the other administrators. Once other administrators exist, disable it with APP__ADMIN__EXTERNALLY_MANAGED=true.')} />
+                  </div>
                   <Field
                     component={TextField}
                     type="number"
@@ -396,7 +401,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
                     variant="outlined"
                     className="mt-5"
                     name="local_auth_lockout_window"
-                    label={`${t_i18n('Failed login attempts counter reset after (minutes)')} (${t_i18n('0 = only reset by a successful login')})`}
+                    label={`${t_i18n('Failed login attempts counter reset after (minutes)')} (${t_i18n('0 = no time limit')})`}
                     fullWidth
                   />
                   {values.local_auth_lockout_final_action === 'temporary' && (

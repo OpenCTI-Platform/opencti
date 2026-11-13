@@ -9,8 +9,9 @@ vi.mock('../../../../../utils/hooks/useApiMutation', () => ({
   default: () => [commitFnMock, false],
 }));
 
+let lockoutFlag = false;
 vi.mock('../../../../../utils/hooks/useHelper', () => ({
-  default: () => ({ isFeatureEnable: () => false }),
+  default: () => ({ isFeatureEnable: (flag: string) => flag === 'LOCAL_AUTH_LOCKOUT' && lockoutFlag }),
 }));
 
 const mockUseLazyLoadQuery = vi.fn();
@@ -24,9 +25,15 @@ vi.mock('react-relay', async (importOriginal) => {
 
 const HISTORY_LABEL = 'Number of recent passwords that cannot be reused (0 equals disabled)';
 
-const renderForm = (historyCount: number | null = 3) => {
+const renderForm = (historyCount: number | null = 3, lockoutEnabled = false) => {
   mockUseLazyLoadQuery.mockReturnValue({
     settings: {
+      local_auth_lockout_enabled: lockoutEnabled,
+      local_auth_lockout_max_attempts: 10,
+      local_auth_lockout_admin_max_attempts: 3,
+      local_auth_lockout_final_action: 'temporary',
+      local_auth_lockout_window: 0,
+      local_auth_lockout_duration: 15,
       id: 'settings-id',
       local_auth: { enabled: true },
       password_policy_min_length: 8,
@@ -53,6 +60,7 @@ const historyInput = () => screen.getByRole('spinbutton', { name: HISTORY_LABEL 
 describe('LocalStrategyForm, password history', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    lockoutFlag = false;
   });
 
   it('shows the saved count, bounded from 0 to 24', () => {
@@ -101,5 +109,30 @@ describe('LocalStrategyForm, password history', () => {
       expect(await screen.findByText('Must be an integer between 0 and 24')).toBeDefined();
     }
     expect(commitFnMock).not.toHaveBeenCalled();
+  });
+});
+
+const ADMIN_HINT = 'The built-in admin account is never locked: it is the account to unlock the other administrators. Once other administrators exist, disable it with APP__ADMIN__EXTERNALLY_MANAGED=true.';
+
+describe('LocalStrategyForm, account lockout policy', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    lockoutFlag = true;
+  });
+
+  it('says that a window of 0 has no time limit', () => {
+    renderForm(3, true);
+    const windowInput = screen.getByRole('spinbutton', { name: 'Failed login attempts counter reset after (minutes) (0 = no time limit)' }) as HTMLInputElement;
+    expect(windowInput.value).toBe('0');
+  });
+
+  it('recommends disabling the built-in admin, never locked, once the lockout is enabled', () => {
+    renderForm(3, true);
+    expect(screen.getByText(ADMIN_HINT)).toBeInTheDocument();
+  });
+
+  it('shows no recommendation while the lockout is disabled', () => {
+    renderForm(3, false);
+    expect(screen.queryByText(ADMIN_HINT)).toBeNull();
   });
 });
