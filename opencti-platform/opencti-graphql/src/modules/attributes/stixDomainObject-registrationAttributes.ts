@@ -1,4 +1,6 @@
 import * as R from 'ramda';
+import { ENTITIES_WORKFLOW_FEATURE_FLAG } from '../../config/conf';
+
 import {
   aliases,
   type AttributeDefinition,
@@ -45,7 +47,7 @@ import {
 } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
-import { X_WORKFLOW_ID } from '../../schema/identifier';
+import { X_CLOSING_REASON, X_WORKFLOW_ID } from '../../schema/identifier';
 import { DefaultFormating } from '../../utils/humanize';
 import type { BasicWorkflowStatus } from '../../types/store';
 
@@ -70,6 +72,20 @@ export const workflowId: IdAttribute = {
   },
 };
 
+const closingReason: AttributeDefinition = {
+  name: X_CLOSING_REASON,
+  label: 'Closing reason',
+  type: 'string',
+  format: 'vocabulary',
+  vocabularyCategory: 'closing_reason_ov',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  isFilterable: true,
+  featureFlag: ENTITIES_WORKFLOW_FEATURE_FLAG,
+};
+
 const stixDomainObjectAttributes: Array<AttributeDefinition<any>> = [
   created,
   modified,
@@ -80,6 +96,7 @@ const stixDomainObjectAttributes: Array<AttributeDefinition<any>> = [
   files,
   { name: 'x_opencti_graph_data', label: 'Graph data', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   workflowId,
+  closingReason,
   {
     name: 'pir_information',
     label: 'PIR information',
@@ -158,8 +175,6 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>
     { name: 'number_observed', label: 'Number observed', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'number_seen', label: 'Number seen', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'max_distinct_count', label: 'Max distinct count', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    // Hunt run that observed the data (OpenCTI Hunts), the latest one when re-runs upsert it
-    { name: 'x_opencti_hunt_run_id', label: 'Hunt run', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'content', label: 'Content', type: 'string', format: 'short', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'content_mapping', label: 'Content mapping', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   ],

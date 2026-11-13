@@ -18,7 +18,6 @@ import { useState } from 'react';
 import { Stack } from '@mui/material';
 import Button from '@common/button/Button';
 import FormAuthorizedMembersDialog from '@components/common/form/FormAuthorizedMembersDialog';
-import HuntThisMenu from '@components/hunts/HuntThisMenu';
 import PirPopover from './PirPopover';
 import PirEdition from './pir_form/PirEdition';
 import { PirHeaderFragment$key } from './__generated__/PirHeaderFragment.graphql';
@@ -85,12 +84,17 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
     <>
       <Breadcrumbs elements={breadcrumb} />
 
-      <Stack direction="row" alignItems="center" gap={1} marginBottom={1}>
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: 'center',
+          gap: 1,
+          marginBottom: 1,
+        }}
+      >
         <TitleMainEntity sx={{ flex: 1 }}>
           {name}
         </TitleMainEntity>
-
-        <HuntThisMenu entity={{ id, name, entity_type: 'Pir' }} />
 
         <Security needs={[PIRAPI_PIRUPDATE]} hasAccess={canEdit}>
           <>
@@ -102,6 +106,8 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
                   mutation={pirHeaderEditAuthorizedMembersMutation}
                   authorizedMembers={authorizedMembersToOptions(authorizedMembers)}
                   canDeactivate={false}
+                  // PIRs are viewable by everyone by default, the line must stay visible to remove it
+                  showAllMembersLine
                   customInfoMessage={t_i18n('info_authorizedmembers_pir')}
                 />
               </Security>

@@ -47,7 +47,7 @@ const RETAIN = UserMergeDisposition.Retain;
 const OUT_OF_SCOPE = UserMergeDisposition.OutOfScope;
 
 export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
-  // --- transfer (43) ---------------------------------------------------------------------
+  // --- transfer (42) ---------------------------------------------------------------------
   row('activity.user-id', TRANSFER, 'Activity', 'user_id'),
   row('activity-history-pir-history.applicant-id', TRANSFER, 'Activity / History / PirHistory', 'applicant_id'),
   row('background-task-terminal.initiator-id', TRANSFER, 'BackgroundTask (done/failed/cancelled)', 'initiator_id'),
@@ -63,9 +63,8 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('history.context-data-attribution', TRANSFER, 'History', 'context_data.creator_ids[]'),
   row('history.context-data-payload', TRANSFER, 'History', 'context_data.history_changes / subject ids'),
   row('history.user-id', TRANSFER, 'History', 'user_id'),
-  row('hunt-run.connector-user-id', TRANSFER, 'Hunt-Run', 'connector_user_id'),
-  row('hunt-run.triggered-by', TRANSFER, 'Hunt-Run', 'triggered_by'),
   row('ingestion.user-id', TRANSFER, 'IngestionCsv / IngestionJson / IngestionRss / IngestionTaxii / IngestionTaxiiCollection', 'user_id'),
+  row('ingestion-deduplication-rule.user-id', TRANSFER, 'IngestionDeduplicationRule', 'user_id'),
   row('internal-file.metadata-creator-id', TRANSFER, 'InternalFile', 'metaData.creator_id'),
   row('news-feed-item.user-id', TRANSFER, 'NewsFeedItem', 'user_id'),
   row('notification-terminal.user-id', TRANSFER, 'Notification (read or terminal)', 'user_id'),
@@ -108,7 +107,7 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('session.key', INVALIDATE, 'User session', 'sess:{sessionId}'),
   row('session.platform-sessions', INVALIDATE, 'User session', 'platform_sessions'),
   row('sso.session-and-refresh-token', INVALIDATE, 'SSO session / refresh token', 'external subject, session, refresh token'),
-  row('user.password', INVALIDATE, 'User', 'password / password_valid_until'),
+  row('user.password', INVALIDATE, 'User', 'password / password_valid_until / password_history'),
   row('user.administration-fields', INVALIDATE, 'User', 'administrated_organizations / user_confidence_level / user_service_account'),
   row('user.account-status', INVALIDATE, 'User', 'account_status / account_lock_after_date'),
   row('user.otp', INVALIDATE, 'User', 'otp_secret / otp_qr / otp_activated'),
@@ -160,7 +159,7 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
    */
   row('user.email-and-sso-identifier', RETAIN, 'User', 'user_email / SSO identifier'),
   row('user.identity-fields', RETAIN, 'User', 'user_email / name / firstname / lastname / external / account_status'),
-  row('user.ui-preferences', RETAIN, 'User', 'theme / language / bookmarks / default_dashboard / default_time_field / unit_system / UI preferences'),
+  row('user.ui-preferences', RETAIN, 'User', 'theme / language / bookmarks / default_dashboard / default_time_field / unit_system / date_format / time_format / UI preferences'),
   row('user.personal-notifiers', RETAIN, 'User', 'personal_notifiers'),
   row('user-account.user-id', RETAIN, 'User-Account', 'user_id'),
 

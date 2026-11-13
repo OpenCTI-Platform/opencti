@@ -26,6 +26,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import pjson from '../../package.json';
 import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
+import { ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE } from '../modules/ingestionDeduplication/ingestionDeduplicationRule-types';
 import { ENTITY_TYPE_NOTIFICATION, ENTITY_TYPE_TRIGGER, NOTIFICATION_NUMBER } from '../modules/notification/notification-types';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
@@ -47,8 +48,6 @@ import { ENTITY_TYPE_AUTHENTICATION_PROVIDER } from '../modules/authenticationPr
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
 import { ENTITY_TYPE_NEWS_FEED_ITEM, NEWS_FEED_NUMBER } from '../modules/xtm/hub/news-feed/news-feed-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
-import { ENTITY_TYPE_HUNT } from '../modules/hunt/hunt-types';
-import { ENTITY_TYPE_HUNT_RUN } from '../modules/hunt/huntRun/huntRun-types';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -121,6 +120,11 @@ if (externalConfigurationFile) {
 
 nconf.file(environment, configurationFile);
 nconf.file('default', resolveEnvFile('default'));
+
+// Global TLS certificate verification, fallback for every outgoing TLS connection
+// that does not define its own reject_unauthorized option.
+// Disabled by default for now, it will be enabled by default in an upcoming version.
+export const TLS_REJECT_UNAUTHORIZED = booleanConf('tls:reject_unauthorized', false);
 
 // Setup SSO/SAML auth_payload_body_size
 // Default limit is '100kb' based on https://expressjs.com/en/resources/middleware/body-parser.html
@@ -321,6 +325,8 @@ export const logS3Debug = {
 
 export const logMigration = {
   info: (message) => migrationLogger.log('info', message),
+  warn: (message) => migrationLogger.log('warn', message),
+  error: (message) => migrationLogger.log('error', message),
 };
 
 export const logApp = {
@@ -355,10 +361,17 @@ export const logAudit = {
 
 export const logFrontend = {
   _log: (level, message, meta = {}) => {
-    const data = prepareLogMetadata(meta, { category: LOG_APP, source: 'frontend' });
-    appLogger.log(level, message, data);
-    supportLogger.log(level, message, data);
+    if (appLogTransports.length > 0 && appLogger.isLevelEnabled(level)) {
+      const data = prepareLogMetadata(meta, { category: LOG_APP, source: 'frontend' });
+      appLogger.log(level, message, data);
+      if (supportLogger.isLevelEnabled(level)) {
+        supportLogger.log(level, message, data);
+      }
+    }
   },
+  debug: (message, meta = {}) => logFrontend._log('debug', message, meta),
+  info: (message, meta = {}) => logFrontend._log('info', message, meta),
+  warn: (message, meta = {}) => logFrontend._log('warn', message, meta),
   error: (message, meta = {}) => logFrontend._log('error', message, meta),
 };
 
@@ -486,7 +499,7 @@ export const getPlatformHttpProxies = () => {
   if (https) {
     agents['https:'] = {
       build: () => new HttpsProxyAgent(https, {
-        rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', false),
+        rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', TLS_REJECT_UNAUTHORIZED),
         ...configureCA(proxyCA),
       }),
       isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
@@ -495,7 +508,7 @@ export const getPlatformHttpProxies = () => {
       build: () => new ProxyAgent({
         uri: https,
         proxyTls: {
-          rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', false),
+          rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', TLS_REJECT_UNAUTHORIZED),
           ...configureCA(proxyCA),
         },
       }),
@@ -533,11 +546,15 @@ export const getPlatformHttpProxyAgent = (uri, fetchDispatcher = false) => {
 export const ENABLED_API = booleanConf('app:enabled', true);
 export const ENABLED_UI = booleanConf('app:enabled_ui', true);
 
+// Global GraphQL hardening, fallback for the GraphQL protections that do not define their own option.
+// Disabled by default for now, it will be enabled by default in an upcoming version.
+export const GRAPHQL_SECURE_BY_DEFAULT = booleanConf('app:graphql:secure_by_default', false);
+
 // Playground
 export const ENABLED_DEMO_MODE = booleanConf('demo_mode', false);
 export const PLAYGROUND_INTROSPECTION_DISABLED = DEV_MODE ? false : (!ENABLED_UI || booleanConf('app:graphql:playground:force_disabled_introspection', true));
-export const PLAYGROUND_ENABLED = ENABLED_UI && booleanConf('app:graphql:playground:enabled', true);
-export const GRAPHQL_ARMOR_DISABLED = booleanConf('app:graphql:armor_protection:disabled', true);
+export const PLAYGROUND_ENABLED = ENABLED_UI && booleanConf('app:graphql:playground:enabled', !GRAPHQL_SECURE_BY_DEFAULT);
+export const GRAPHQL_ARMOR_DISABLED = booleanConf('app:graphql:armor_protection:disabled', !GRAPHQL_SECURE_BY_DEFAULT);
 
 // Default activated managers
 export const ENABLED_TRACING = booleanConf('app:telemetry:tracing:enabled', false);
@@ -595,11 +612,12 @@ export const ENABLED_FEATURE_FLAGS = nconf.get('app:enabled_dev_features') ?? []
 export const FEATURE_FLAG_ALL = '*';
 export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
 
-// Custom fields feature flag (use isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG) to check activation)
-export const CUSTOM_FIELDS_FEATURE_FLAG = 'CUSTOM_FIELDS';
+// Password history feature flag (use isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG) to check activation).
+// When disabled, local passwords can be reused as before and no password history is recorded.
+export const PASSWORD_HISTORY_FEATURE_FLAG = 'PASSWORD_HISTORY';
 
-// User merge feature flag (use isFeatureEnabled(MERGE_USERS_FEATURE_FLAG) to check activation)
-export const MERGE_USERS_FEATURE_FLAG = 'MERGE_USERS';
+// Local authentication lockout policy feature flag (use isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG) to check activation)
+export const LOCAL_AUTH_LOCKOUT_FEATURE_FLAG = 'LOCAL_AUTH_LOCKOUT';
 
 // Extended workflow engine/UI feature flag (use isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) to
 // check activation). When disabled, only DraftWorkspace uses the workflow engine and UI; other
@@ -617,6 +635,10 @@ export const INGESTION_HEALTH_FEATURE_FLAG = 'INGESTION_HEALTH';
 // Configuration presets: export of platform configuration bundles (use isFeatureEnabled(CONFIG_PRESET_FEATURE_FLAG)
 // to check activation)
 export const CONFIG_PRESET_FEATURE_FLAG = 'CONFIG_PRESET';
+
+// Skip the import of entities unchanged since the last import by the same user
+// (use isFeatureEnabled(INGESTION_DEDUPLICATION_FEATURE_FLAG) to check activation)
+export const INGESTION_DEDUPLICATION_FEATURE_FLAG = 'INGESTION_DEDUPLICATION';
 
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
@@ -750,14 +772,6 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: `${TOPIC_PREFIX}SECURITY_COVERAGE_RESULT_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}SECURITY_COVERAGE_RESULT_ADDED_TOPIC`,
   },
-  [ENTITY_TYPE_HUNT]: {
-    EDIT_TOPIC: `${TOPIC_PREFIX}HUNT_EDIT_TOPIC`,
-    ADDED_TOPIC: `${TOPIC_PREFIX}HUNT_ADDED_TOPIC`,
-  },
-  [ENTITY_TYPE_HUNT_RUN]: {
-    EDIT_TOPIC: `${TOPIC_PREFIX}HUNT_RUN_EDIT_TOPIC`,
-    ADDED_TOPIC: `${TOPIC_PREFIX}HUNT_RUN_ADDED_TOPIC`,
-  },
   [ENTITY_TYPE_DECAY_RULE]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_RULE_EDIT_TOPIC`,
     DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_RULE_DELETE_TOPIC`,
@@ -767,6 +781,11 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_EXCLUSION_RULE_EDIT_TOPIC`,
     DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_EXCLUSION_RULE_DELETE_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_EXCLUSION_RULE_ADDED_TOPIC`,
+  },
+  [ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE_EDIT_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE_DELETE_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE_ADDED_TOPIC`,
   },
   [ENTITY_TYPE_EXCLUSION_LIST]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_EXCLUSION_LIST_EDIT_TOPIC`,

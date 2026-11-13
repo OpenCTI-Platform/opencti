@@ -57,10 +57,10 @@ describe('Data initialization test', () => {
       'KNOWLEDGE_KNASKIMPORT',
       'KNOWLEDGE_KNDISSEMINATION',
       'KNOWLEDGE_KNENRICHMENT',
+      'KNOWLEDGE_KNFORMINTAKE',
       'KNOWLEDGE_KNFRONTENDEXPORT',
       'KNOWLEDGE_KNGETEXPORT',
       'KNOWLEDGE_KNGETEXPORT_KNASKEXPORT',
-      'KNOWLEDGE_KNHUNT',
       'KNOWLEDGE_KNPARTICIPATE',
       'KNOWLEDGE_KNSHAREFILTERS',
       'KNOWLEDGE_KNUPDATE',
@@ -81,6 +81,7 @@ describe('Data initialization test', () => {
       'SETTINGS_SETACCESSES',
       'SETTINGS_SETAUTH',
       'SETTINGS_SETCASETEMPLATES',
+      'SETTINGS_SETCUSTOMFIELDS',
       'SETTINGS_SETCUSTOMIZATION',
       'SETTINGS_SETDISSEMINATION',
       'SETTINGS_SETKILLCHAINPHASES',
@@ -121,8 +122,8 @@ describe('Data initialization test', () => {
     const connectorCapabilityNames = connectorCapabilities.map((capability) => capability.name);
 
     expect(connectorCapabilityNames).toContain('CONNECTORAPI');
-    // A connector updating the knowledge imports hunts as a role migrated from an earlier version does
-    expect(connectorCapabilityNames).toContain('KNOWLEDGE_KNHUNT');
+    // the form capability is granted with Create / Update knowledge, as the migration does on an upgraded platform
+    expect(connectorCapabilityNames).toContain('KNOWLEDGE_KNFORMINTAKE');
     expect(connectorCapabilityNames).not.toContain('INGESTION');
     expect(connectorCapabilityNames).not.toContain('INGESTION_SETINGESTIONS');
   });

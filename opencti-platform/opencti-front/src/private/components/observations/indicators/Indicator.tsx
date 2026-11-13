@@ -11,8 +11,6 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import HuntsOfEntity from '../../hunts/HuntsOfEntity';
-import { resolveLink } from '../../../../utils/Entity';
 
 const indicatorFragment = graphql`
   fragment Indicator_indicator on Indicator {
@@ -88,40 +86,37 @@ const Indicator: React.FC<IndicatorProps> = ({
         spacing={3}
         style={{ marginBottom: 20 }}
       >
-        <Grid item xs={6}>
+        <Grid size={6}>
           <IndicatorDetails indicator={indicator} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixDomainObjectOverview
             stixDomainObject={indicator}
             withPattern={true}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
             stixObjectOrStixRelationshipId={indicator.id}
             stixObjectOrStixRelationshipLink={`/dashboard/observations/indicators/${indicator.id}/knowledge`}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixCoreObjectOrStixRelationshipLastContainers
             stixCoreObjectOrStixRelationshipId={indicator.id}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixCoreObjectExternalReferences stixCoreObjectId={indicator.id} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixCoreObjectLatestHistory stixCoreObjectId={indicator.id} />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <StixCoreObjectOrStixCoreRelationshipNotes
             stixCoreObjectOrStixCoreRelationshipId={indicator.id}
             defaultMarkings={indicator.objectMarking ?? []}
           />
-        </Grid>
-        <Grid item xs={12}>
-          <HuntsOfEntity entityId={indicator.id} viewAllLink={`${resolveLink('Indicator')}/${indicator.id}/defense`} />
         </Grid>
       </Grid>
     </div>

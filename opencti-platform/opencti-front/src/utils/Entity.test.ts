@@ -28,10 +28,6 @@ describe('Function: resolveLink', () => {
   });
 
   // Threats
-  it('should return URL to hunts for Hunt type', () => {
-    expect(resolveLink('Hunt')).toEqual('/dashboard/defense/hunts');
-  });
-
   it('should return URL to campaigns for Campaign type', () => {
     expect(resolveLink('Campaign')).toEqual('/dashboard/threats/campaigns');
   });
@@ -264,6 +260,18 @@ describe('Function: resolveLink', () => {
   // Other
   it('should return URL to connectors for Connectors type', () => {
     expect(resolveLink('Connectors')).toEqual('/dashboard/integrations/connectors');
+  });
+
+  it.each([
+    ['Connector', '/dashboard/integrations/connectors'],
+    ['Sync', '/dashboard/integrations/feeds/sync'],
+    ['IngestionRss', '/dashboard/integrations/feeds/rss'],
+    ['IngestionTaxii', '/dashboard/integrations/feeds/taxii'],
+    ['IngestionTaxiiCollection', '/dashboard/integrations/feeds/taxii-push'],
+    ['IngestionCsv', '/dashboard/integrations/feeds/csv'],
+    ['IngestionJson', '/dashboard/integrations/feeds/json'],
+  ])('should return URL to the ingestion overview for %s type', (type, expected) => {
+    expect(resolveLink(type)).toEqual(expected);
   });
 
   it('should return URL to automation for Playbook type', () => {

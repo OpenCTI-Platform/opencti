@@ -5,6 +5,8 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.utils.opencti_stix2_utils import build_custom_field_values_input
+
 
 class StixSightingRelationship:
     """Main StixSightingRelationship class for OpenCTI
@@ -42,6 +44,7 @@ class StixSightingRelationship:
                 field_id
                 field_name
                 int_value
+                float_value
                 string_value
                 boolean_value
                 date_value
@@ -610,8 +613,6 @@ class StixSightingRelationship:
         :type count: int
         :param x_opencti_negative: (optional) whether this is a negative sighting
         :type x_opencti_negative: bool
-        :param x_opencti_hunt_run_id: (optional) the hunt run that found the sighting
-        :type x_opencti_hunt_run_id: str
         :param created: (optional) creation date
         :type created: str
         :param modified: (optional) modification date
@@ -647,7 +648,6 @@ class StixSightingRelationship:
         last_seen = kwargs.get("last_seen", None)
         count = kwargs.get("count", None)
         x_opencti_negative = kwargs.get("x_opencti_negative", False)
-        x_opencti_hunt_run_id = kwargs.get("x_opencti_hunt_run_id", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
         confidence = kwargs.get("confidence", None)
@@ -661,7 +661,11 @@ class StixSightingRelationship:
         granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
         upsert_operations = kwargs.get("upsert_operations", None)
-        custom_properties = kwargs.get("custom_properties", None)
+        custom_field_values = build_custom_field_values_input(
+            kwargs.get("custom_field_values", None),
+            kwargs.get("custom_properties", None),
+            self.opencti.app_logger,
+        )
 
         self.opencti.app_logger.info(
             "Creating stix_sighting", {"from_id": from_id, "to_id": to_id}
@@ -688,7 +692,6 @@ class StixSightingRelationship:
                     "last_seen": last_seen,
                     "attribute_count": count,
                     "x_opencti_negative": x_opencti_negative,
-                    "x_opencti_hunt_run_id": x_opencti_hunt_run_id,
                     "created": created,
                     "modified": modified,
                     "confidence": confidence,
@@ -702,7 +705,7 @@ class StixSightingRelationship:
                     "objectOrganization": granted_refs,
                     "update": update,
                     "upsertOperations": upsert_operations,
-                    "customFieldValues": custom_properties,
+                    "customFieldValues": custom_field_values,
                 }
             },
         )

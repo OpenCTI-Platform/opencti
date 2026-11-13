@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useIntl } from 'react-intl';
 import { ChatPanel, ChatMode } from '@filigran/chatbot';
 import { useLocation, useNavigate } from 'react-router';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
@@ -12,7 +12,6 @@ import { APP_BASE_PATH, MESSAGING$ } from '../../../relay/environment';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useTopBanner from '../../../utils/hooks/useTopBanner';
 import FiligranIcon from '@components/common/FiligranIcon';
-import { isHuntableEntityPath } from '@components/hunts/hunt-utils';
 
 const TOP_BAR_HEIGHT = 64;
 
@@ -84,12 +83,10 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
 
   const isDarkMode = theme.palette.mode === 'dark';
 
-  const isHuntablePage = isHuntableEntityPath(location.pathname);
   const promptSuggestions = [
     t_i18n('What are the latest threats?'),
     t_i18n('Show me recent reports'),
     t_i18n('Analyze this indicator'),
-    ...(isHuntablePage ? [t_i18n('Plan a hunt for this threat')] : []),
   ];
 
   const draftId = me.draftContext?.id;
@@ -140,8 +137,21 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
   useEffect(() => {
     if (container) {
       container.className = isDarkMode ? 'dark' : '';
+      // The design system controls inside the panel (icon highlight, Button,
+      // Chip focus ring) paint from the host's brand family, which is the
+      // OpenCTI blue. Ask Ariane is an AI surface: its brand family is the AI
+      // purple, as in XTM One mode. Declared on the portal itself because the
+      // `dark` class re-declares the family on this element. The dark hover
+      // step lightens (purple-200) to keep AA under the dark label (F18).
+      container.style.setProperty('--color-filigran-brand-primary', accentColor);
+      container.style.setProperty('--color-filigran-brand-secondary', 'var(--color-filigran-ia-secondary)');
+      container.style.setProperty(
+        '--color-filigran-brand-tertiary',
+        isDarkMode ? 'var(--purple-200)' : 'var(--color-filigran-ia-tertiary)',
+      );
+      container.style.setProperty('--icon-highlight', accentColor);
     }
-  }, [isDarkMode, container]);
+  }, [isDarkMode, accentColor, container]);
 
   if (!container) {
     return null;

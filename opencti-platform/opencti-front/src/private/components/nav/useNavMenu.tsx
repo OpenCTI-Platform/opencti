@@ -57,17 +57,14 @@ import {
   LockPattern,
   ProgressWrench,
   ServerNetwork,
-  ShieldCheckOutline,
   ShieldSearch,
   Timetable,
 } from 'mdi-material-ui';
 import React from 'react';
-import { DEFENSE_AREAS, PATH_DEFENSE, visibleDefenseAreas } from '@components/defense/defenseAreas';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useHiddenEntities, useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 import useGranted, {
-  isGrantedTo,
   AUTOMATION_AUTMANAGE,
   BYPASS,
   CSVMAPPERS,
@@ -86,6 +83,7 @@ import useGranted, {
   SETTINGS_SETACCESSES,
   SETTINGS_SETAUTH,
   SETTINGS_SETCASETEMPLATES,
+  SETTINGS_SETCUSTOMFIELDS,
   SETTINGS_SETCUSTOMIZATION,
   SETTINGS_SETDISSEMINATION,
   SETTINGS_SETKILLCHAINPHASES,
@@ -132,8 +130,7 @@ export interface RawNavGroup {
 
 const useNavMenu = (): NavGroup[] => {
   const { t_i18n } = useFormatter();
-  const { me } = useAuth();
-  const { draftContext } = me;
+  const { me: { draftContext } } = useAuth();
   const { isFeatureEnable, isTrashEnable } = useHelper();
   const { hasOnlyAccessToImportDraftTab } = useImportAccess();
   const hiddenEntities = useHiddenEntities();
@@ -149,11 +146,13 @@ const useNavMenu = (): NavGroup[] => {
   const isGrantedToKillChainPhases = useGranted([SETTINGS_SETKILLCHAINPHASES]);
   const isGrantedToCaseTemplates = useGranted([SETTINGS_SETCASETEMPLATES]);
   const isGrantedToStatusTemplates = useGranted([SETTINGS_SETSTATUSTEMPLATES]);
+  const isGrantedToCustomFields = useGranted([SETTINGS_SETCUSTOMFIELDS]);
   const isGrantedToTaxonomies = isGrantedToLabels
     || isGrantedToVocabularies
     || isGrantedToKillChainPhases
     || isGrantedToCaseTemplates
-    || isGrantedToStatusTemplates;
+    || isGrantedToStatusTemplates
+    || isGrantedToCustomFields;
   const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
   const isGrantedToExperience = useGranted([SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]);
   const isGrantedToDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
@@ -182,6 +181,7 @@ const useNavMenu = (): NavGroup[] => {
     SETTINGS_SETCASETEMPLATES,
     SETTINGS_SETSTATUSTEMPLATES,
     SETTINGS_SETKILLCHAINPHASES,
+    SETTINGS_SETCUSTOMFIELDS,
     SETTINGS_SECURITYACTIVITY,
     SETTINGS_FILEINDEXING,
     SETTINGS_SUPPORT,
@@ -199,7 +199,6 @@ const useNavMenu = (): NavGroup[] => {
   const hideLocations = useIsHiddenEntities('Region', 'Administrative-Area', 'Country', 'City', 'Position');
 
   const inDraft = !!draftContext;
-  const defenseAreas = visibleDefenseAreas(DEFENSE_AREAS, hiddenEntities.filter((e): e is string => !!e), (needs) => isGrantedTo(me, needs));
 
   const groups: (RawNavGroup | false)[] = [
     {
@@ -286,18 +285,6 @@ const useNavMenu = (): NavGroup[] => {
             { type: 'Indicator', link: '/dashboard/observations/indicators', label: t_i18n('Indicators'), icon: <ShieldSearch fontSize="small" /> },
             { type: 'Infrastructure', link: '/dashboard/observations/infrastructures', label: t_i18n('Infrastructures'), icon: <ServerNetwork fontSize="small" /> },
           ],
-        },
-        defenseAreas.length > 0 && {
-          id: 'defense',
-          label: t_i18n('Defense'),
-          icon: <ShieldCheckOutline />,
-          link: PATH_DEFENSE,
-          subItems: defenseAreas.map((area) => ({
-            type: area.entityType,
-            link: `${PATH_DEFENSE}/${area.path}`,
-            label: t_i18n(area.label),
-            icon: area.icon,
-          })),
         },
       ] : [],
     },

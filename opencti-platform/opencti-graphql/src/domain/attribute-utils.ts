@@ -27,7 +27,7 @@ import {
 
 export const IDS_ATTRIBUTES = [internalId.name, standardId.name, xOpenctiStixIds.name, iAliasedIds.name];
 
-export const KEYWORD_TERMS_ATTRIBUTES = ['contact_information'];
+export const KEYWORD_TERMS_ATTRIBUTES = ['contact_information', 'event_source_id', 'investigation_id'];
 
 export const INTERNAL_ATTRIBUTES = [
   // ID
@@ -77,14 +77,13 @@ export const INTERNAL_ATTRIBUTES = [
   'x_opencti_graph_data',
   // X - OpenCTI
   'x_opencti_workflow_id',
+  'x_opencti_closing_reason',
   'x_opencti_detection',
   'x_opencti_threat_hunting',
   'x_opencti_log_sources',
   'x_opencti_firstname',
   'x_opencti_lastname',
   'x_opencti_modified_at',
-  'x_opencti_hunted_at',
-  'x_opencti_hunt_matched_at',
   // CVSS 3
   'x_opencti_cvss_base_severity',
   'x_opencti_cvss_attack_vector',

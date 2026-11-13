@@ -70,7 +70,7 @@ export const SYNC_LIVE_START_REMOTE_URI = conf.get('app:sync_live_start_remote_u
 export const SYNC_DIRECT_START_REMOTE_URI = conf.get('app:sync_direct_start_remote_uri');
 export const SYNC_RESTORE_START_REMOTE_URI = conf.get('app:sync_restore_start_remote_uri');
 export const SYNC_TEST_REMOTE_URI = `http://api-tests:${PORT}`;
-export const SYNC_LIVE_EVENTS_SIZE = 631;
+export const SYNC_LIVE_EVENTS_SIZE = 635;
 
 export const PYTHON_PATH = './src/python/testing';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;
@@ -239,7 +239,6 @@ export const ROLE_EDITOR: Role = {
     'EXPLORE_EXUPDATE_PUBLISH',
     'TAXIIAPI_SETCOLLECTIONS',
     'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS',
-    'KNOWLEDGE_KNHUNT',
     'APIACCESS_USETOKEN',
     'APIACCESS_USEBASICAUTH',
   ],
@@ -326,6 +325,18 @@ export const ROLE_PLATFORM_ADMIN: Role = {
   ],
 };
 TESTING_ROLES.push(ROLE_PLATFORM_ADMIN);
+
+// Only the Form Intake capability: can submit forms, nothing else on knowledge.
+export const ROLE_FORM_INTAKE: Role = {
+  id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Form intake only' }),
+  name: 'Form intake only',
+  description: 'Create knowledge via Form Intake only',
+  capabilities: [
+    'KNOWLEDGE_KNFORMINTAKE',
+    'APIACCESS_USEBASICAUTH',
+  ],
+};
+TESTING_ROLES.push(ROLE_FORM_INTAKE);
 
 // Groups
 export interface GroupTestData {
@@ -416,6 +427,19 @@ export const PLATFORM_ADMIN_GROUP: GroupTestData = {
   max_shareable_markings: [],
 };
 TESTING_GROUPS.push(PLATFORM_ADMIN_GROUP);
+
+export const FORM_INTAKE_GROUP: GroupTestData = {
+  id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'FORM INTAKE GROUP' }),
+  name: 'FORM INTAKE GROUP',
+  markings: [MARKING_TLP_GREEN],
+  roles: [ROLE_FORM_INTAKE],
+  group_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
+  max_shareable_markings: [],
+};
+TESTING_GROUPS.push(FORM_INTAKE_GROUP);
 
 // Organization
 export interface OrganizationTestData {
@@ -534,6 +558,14 @@ export const USER_PLATFORM_ADMIN: UserTestData = {
   groups: [PLATFORM_ADMIN_GROUP],
 };
 TESTING_USERS.push(USER_PLATFORM_ADMIN);
+
+export const USER_FORM_INTAKE: UserTestData = {
+  id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'formintake@opencti.io' }),
+  email: 'formintake@opencti.io',
+  password: 'formintake',
+  groups: [FORM_INTAKE_GROUP],
+};
+TESTING_USERS.push(USER_FORM_INTAKE);
 
 // region group management
 const GROUP_CREATION_MUTATION = `

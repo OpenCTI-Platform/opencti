@@ -124,6 +124,7 @@ interface BasicStoreBase extends BasicStoreIdentifier {
   i_aliases_ids?: Array<string>;
   x_opencti_stix_ids?: Array<StixId>;
   x_opencti_workflow_id?: string;
+  x_opencti_closing_reason?: string;
   creator_id?: string | string[];
   type?: string;
   draft_ids?: string[];
@@ -240,8 +241,6 @@ interface StoreRawRelation extends StoreProxyRelation {
   // boolean
   revoked: boolean;
   x_opencti_negative: boolean;
-  x_opencti_hunt_run_id?: string; // optional, set on sightings found by a hunt run
-  x_opencti_hunt_id?: string; // optional, set on the sighting a hunt keeps up to date on a security platform
   is_inferred: boolean;
   // number
   confidence: number;
@@ -394,7 +393,6 @@ interface BasicStoreEntity extends BasicStoreCommon {
   number_observed: number;
   number_seen?: number; // optional, absent on legacy observed data
   max_distinct_count?: number; // optional, absent until a producer provides it
-  x_opencti_hunt_run_id?: string; // optional, set on observed data found by a hunt run
   confidence: number;
   latitude: string;
   longitude: string;
@@ -411,6 +409,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
     field_id: string;
     field_name: string;
     int_value?: number;
+    float_value?: number;
     string_value?: string;
     boolean_value?: boolean;
     date_value?: string;

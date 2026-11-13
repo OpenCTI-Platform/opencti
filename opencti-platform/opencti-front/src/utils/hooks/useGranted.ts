@@ -13,13 +13,13 @@ export const KNOWLEDGE_KNUPDATE_KNMERGE = 'KNOWLEDGE_KNUPDATE_KNMERGE';
 export const KNOWLEDGE_KNUPDATE_KNORGARESTRICT = 'KNOWLEDGE_KNUPDATE_KNORGARESTRICT';
 export const KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS = 'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS';
 export const KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS = 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS';
+export const KNOWLEDGE_KNFORMINTAKE = 'KNOWLEDGE_KNFORMINTAKE';
 export const KNOWLEDGE_KNUPLOAD = 'KNOWLEDGE_KNUPLOAD';
 export const KNOWLEDGE_KNASKIMPORT = 'KNOWLEDGE_KNASKIMPORT';
 export const KNOWLEDGE_KNGETEXPORT = 'KNOWLEDGE_KNGETEXPORT';
 export const KNOWLEDGE_KNGETEXPORT_KNASKEXPORT = 'KNOWLEDGE_KNGETEXPORT_KNASKEXPORT';
 export const KNOWLEDGE_KNENRICHMENT = 'KNOWLEDGE_KNENRICHMENT';
 export const KNOWLEDGE_KNDISSEMINATION = 'KNOWLEDGE_KNDISSEMINATION';
-export const KNOWLEDGE_KNHUNT = 'KNOWLEDGE_KNHUNT';
 export const KNOWLEDGE_KNSHAREFILTERS = 'KNOWLEDGE_KNSHAREFILTERS';
 export const EXPLORE = 'EXPLORE';
 export const EXPLORE_EXUPDATE = 'EXPLORE_EXUPDATE';
@@ -48,6 +48,7 @@ export const SETTINGS_SETAUTH = 'SETTINGS_SETAUTH';
 export const SETTINGS_SETMARKINGS = 'SETTINGS_SETMARKINGS';
 export const SETTINGS_SETDISSEMINATION = 'SETTINGS_SETDISSEMINATION';
 export const SETTINGS_SETCUSTOMIZATION = 'SETTINGS_SETCUSTOMIZATION';
+export const SETTINGS_SETCUSTOMFIELDS = 'SETTINGS_SETCUSTOMFIELDS';
 export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
 export const SETTINGS_SETVOCABULARIES = 'SETTINGS_SETVOCABULARIES';
 export const SETTINGS_SETCASETEMPLATES = 'SETTINGS_SETCASETEMPLATES';
@@ -88,34 +89,6 @@ const checkCapabilities = (capabilities: string[], userCapabilities: string[], m
   return matchAll ? capabilities.every(capabilityMatches) : capabilities.some(capabilityMatches);
 };
 
-interface GrantedUser {
-  id: string;
-  capabilities: readonly { name: string }[];
-  capabilitiesInDraft?: readonly { name: string }[] | null;
-  draftContext?: unknown;
-}
-
-/**
- * The rule of `useGranted` for a user already in hand, so a list of entries (menu areas, hub tabs)
- * can be checked in one render: bypass, then the base capabilities, then base and draft
- * capabilities together in a draft context.
- */
-export const isGrantedTo = (me: GrantedUser, capabilities: string[], matchAll = false): boolean => {
-  // Prevent use of the old SETTINGS capability for future uses
-  if (capabilities.includes(SETTINGS)) {
-    throw new Error('The SETTINGS capability should not be used');
-  }
-  if (isBypassUser(me)) {
-    return true;
-  }
-  const userBaseCapabilities = getCapabilitiesName(me.capabilities);
-  if (checkCapabilities(capabilities, userBaseCapabilities, matchAll)) {
-    return true;
-  }
-  return !!me.draftContext
-    && checkCapabilities(capabilities, [...userBaseCapabilities, ...getCapabilitiesName(me.capabilitiesInDraft ?? [])], matchAll);
-};
-
 const useGranted = (
   capabilities: string[],
   matchAll = false,
@@ -126,14 +99,33 @@ const useGranted = (
   const { me } = useAuth();
   const { capabilitiesInDraft } = options;
 
-  if (isGrantedTo(me, capabilities, matchAll)) {
+  // Prevent use of the old SETTINGS capability for future uses
+  if (capabilities.includes(SETTINGS)) {
+    throw new Error('The SETTINGS capability should not be used');
+  }
+
+  const userBaseCapabilities = getCapabilitiesName(me.capabilities);
+  const userCapabilitiesInDraft = getCapabilitiesName(me.capabilitiesInDraft);
+
+  if (isBypassUser(me)) {
     return true;
   }
 
+  // Check base capabilities
+  const baseGranted = checkCapabilities(capabilities, userBaseCapabilities, matchAll);
+
   // Check capabilities in Draft if provided
-  return capabilitiesInDraft?.length
-    ? checkCapabilities(capabilitiesInDraft, getCapabilitiesName(me.capabilitiesInDraft), matchAll)
+  const draftGranted = capabilitiesInDraft?.length
+    ? checkCapabilities(capabilitiesInDraft, userCapabilitiesInDraft, matchAll)
     : false;
+
+  // Check base and draft capabilities in draft context
+  const draftGrantedInDraftContext = me.draftContext
+    ? checkCapabilities(capabilities, [...userBaseCapabilities, ...userCapabilitiesInDraft], matchAll)
+    : false;
+
+  // Access is granted if EITHER check passes
+  return baseGranted || draftGranted || draftGrantedInDraftContext;
 };
 
 export default useGranted;

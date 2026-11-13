@@ -7,7 +7,6 @@ import { useFormatter } from '../../components/i18n';
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import type { filtersUtilsCustomFieldStixFilterKeysQuery } from './__generated__/filtersUtilsCustomFieldStixFilterKeysQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
-import useHelper from '../hooks/useHelper';
 import { fetchQuery } from '../../relay/environment';
 import { capitalizeFirstLetter, displayEntityTypeForTranslation, isValidDate } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
@@ -18,6 +17,7 @@ import { dateFiltersValueForDisplay } from '../Time';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../widget/widgetUtils';
 import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
 import { getVariableTokenLabel } from '../../components/dashboard/dashboardVariableTokenLabel';
+import { logger } from '../logging/logger';
 
 // ----------------------------------------------------------------------------------------------------------------------
 
@@ -240,6 +240,7 @@ const STATIC_STIX_FILTERS = [
   'x_opencti_ssvc_exploitation',
   'x_opencti_ssvc_automatable',
   'x_opencti_ssvc_technical_impact',
+  'x_opencti_closing_reason',
 ];
 const customFieldStixFilterKeysQuery = graphql`
   query filtersUtilsCustomFieldStixFilterKeysQuery($entityType: String) {
@@ -250,19 +251,12 @@ const customFieldStixFilterKeysQuery = graphql`
 /**
  * Centralizes the fetching of the custom fields filter keys usable in stix filtering
  * (streams, playbooks, triggers, connectors, ...), so that callers don't have to
- * each implement their own loading strategy (feature flag check, query, caching...).
- * Returns an empty array while loading, or if the CUSTOM_FIELDS feature flag is disabled
- * (the underlying query field would otherwise throw server-side).
+ * each implement their own loading strategy (query, caching...).
+ * Returns an empty array while loading.
  */
-const useCustomFieldStixFilterKeys = (entityType?: string): string[] => {
-  const { isFeatureEnable } = useHelper();
-  const isCustomFieldsEnabled = isFeatureEnable('CUSTOM_FIELDS');
+export const useCustomFieldStixFilterKeys = (entityType?: string): string[] => {
   const [customFieldFilterKeys, setCustomFieldFilterKeys] = useState<string[]>([]);
   useEffect(() => {
-    if (!isCustomFieldsEnabled) {
-      setCustomFieldFilterKeys([]);
-      return undefined;
-    }
     let isMounted = true;
     fetchQuery<filtersUtilsCustomFieldStixFilterKeysQuery>(
       customFieldStixFilterKeysQuery,
@@ -273,18 +267,23 @@ const useCustomFieldStixFilterKeys = (entityType?: string): string[] => {
         if (isMounted) {
           setCustomFieldFilterKeys([...(data?.customFieldStixFilterKeys ?? [])]);
         }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setCustomFieldFilterKeys([]);
+        }
       });
     return () => {
       isMounted = false;
     };
-  }, [isCustomFieldsEnabled, entityType]);
+  }, [entityType]);
   return customFieldFilterKeys;
 };
 
 /**
  * Returns the full list of filter keys usable in stix filtering (streams, playbooks, triggers,
  * connectors, ...): the static list of built-in keys, concatenated with the dynamic list of
- * custom fields filter keys (fetched and feature-flagged centrally by this hook).
+ * custom fields filter keys (fetched centrally by this hook).
  * This is the single entry point callers should use instead of hard-coding/duplicating
  * the custom fields loading logic.
  */
@@ -328,30 +327,6 @@ export const isDraftWorkspaceFilterGroup = (filters: FilterGroup | null | undefi
     const val = typeof v === 'string' ? v : (v?.value ?? v?.id);
     return val === 'DraftWorkspace';
   });
-};
-
-const entityTypeFilterValues = (filters: FilterGroup | null | undefined): string[] => {
-  const entityTypeFilter = filters?.filters.find((f) => f.key === 'entity_type');
-  return (entityTypeFilter?.values ?? []).map((v) => (typeof v === 'string' ? v : (v?.value ?? v?.id)));
-};
-
-// Internal objects the entity widgets of the dashboards count, chart and list when their type is selected
-export const WIDGET_INTERNAL_ENTITY_TYPES = ['Hunt-Run', 'Hunt-Hit-Record'];
-
-/**
- * The internal types selected in the entity type filter of a widget: the widget offers their filter keys.
- */
-export const widgetInternalEntityTypes = (filters: FilterGroup | null | undefined): string[] => {
-  const values = entityTypeFilterValues(filters);
-  return WIDGET_INTERNAL_ENTITY_TYPES.filter((type) => values.includes(type));
-};
-
-/**
- * True when the entity type filter of a widget selects hunt runs only.
- */
-export const isHuntRunFilterGroup = (filters: FilterGroup | null | undefined): boolean => {
-  const values = entityTypeFilterValues(filters);
-  return values.length > 0 && values.every((value) => value === 'Hunt-Run');
 };
 
 /**
@@ -718,7 +693,14 @@ export const filterValue = (
   }
 
   // Defensive check to prevent errors on string manipulation after this call
-  return typeof value === 'string' ? value : String(value);
+  if (typeof value !== 'string') {
+    logger.warn('Filter value is not a string', {
+      eventName: 'opencti.filter.value_not_string',
+      data: { filter: { key: filterKey, type: filterType, operator: filterOperator }, value: { type: typeof value } },
+    });
+    return String(value);
+  }
+  return value;
 };
 
 export const isFilterEditable = (filtersRestrictions: FiltersRestrictions | undefined, filterKey: string, filterValues: string[]) => {

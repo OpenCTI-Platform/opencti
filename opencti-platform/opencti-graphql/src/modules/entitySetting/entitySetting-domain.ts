@@ -104,15 +104,8 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
   return notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].EDIT_TOPIC, element, user);
 };
 
-// A layout saved before a widget joined the default layout of its type shows that widget last
 export const getOverviewLayoutCustomization = (entitySetting: BasicStoreEntityEntitySetting) => {
-  const defaultLayout = schemaOverviewLayoutCustomization.get(entitySetting.target_type);
-  const storedLayout = entitySetting.overview_layout_customization;
-  if (!storedLayout?.[0]) {
-    return defaultLayout;
-  }
-  const storedKeys = new Set(storedLayout.map(({ key }) => key));
-  return [...storedLayout, ...(defaultLayout ?? []).filter(({ key }) => !storedKeys.has(key))];
+  return entitySetting.overview_layout_customization?.[0] ? entitySetting.overview_layout_customization : schemaOverviewLayoutCustomization.get(entitySetting.target_type);
 };
 
 export const getTemplatesForSetting = async (
@@ -232,9 +225,13 @@ export const queryDefaultValuesAttributesForSetting = async (
   return defaultValuesAttributes;
 };
 
+export const findAllEntitySettings = async (context: AuthContext, user: AuthUser) => {
+  return fullEntitiesList<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING]);
+};
+
 // Entity types hidden for the whole platform (platform_hidden_type on their entity setting), sorted
 export const getPlatformHiddenEntityTypes = async (context: AuthContext, user: AuthUser): Promise<string[]> => {
-  const entitySettings = await fullEntitiesList<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING]);
+  const entitySettings = await findAllEntitySettings(context, user);
   return entitySettings
     .filter((entitySetting) => entitySetting.platform_hidden_type)
     .map((entitySetting) => entitySetting.target_type)

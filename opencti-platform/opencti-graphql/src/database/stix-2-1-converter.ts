@@ -201,6 +201,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     participant_ids: (instance[INPUT_PARTICIPANT] ?? []).map((m) => m.internal_id),
     authorized_members: instance.restricted_members ?? undefined,
     workflow_id: instance.x_opencti_workflow_id,
+    closing_reason: instance.x_opencti_closing_reason,
     labels_ids: (instance[INPUT_LABELS] ?? []).map((m) => m.internal_id).filter((id) => isNotEmptyField(id)),
     created_by_ref_id: instance[INPUT_CREATED_BY]?.internal_id,
     created_by_ref_type: instance[INPUT_CREATED_BY]?.entity_type,
@@ -243,7 +244,7 @@ export const buildKillChainPhases = (instance: StoreEntity | StoreRelation): Arr
     return cleanObject(data);
   });
 };
-const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalExternalReference> => {
+export const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalExternalReference> => {
   return (instance[INPUT_EXTERNAL_REFS] ?? []).map((e) => {
     const data: SMO.StixInternalExternalReference = {
       source_name: e.source_name,
@@ -382,8 +383,8 @@ export const convertLocationToStix = (instance: StoreEntity, type: string): SDO.
     ...location,
     name: instance.name,
     description: instance.description,
-    latitude: instance.latitude ? parseFloat(instance.latitude) : undefined,
-    longitude: instance.longitude ? parseFloat(instance.longitude) : undefined,
+    latitude: isNotEmptyField(instance.latitude) ? parseFloat(instance.latitude) : undefined,
+    longitude: isNotEmptyField(instance.longitude) ? parseFloat(instance.longitude) : undefined,
     precision: instance.precision,
     region: instance.entity_type === ENTITY_TYPE_LOCATION_REGION ? instance.name : undefined,
     country: instance.entity_type === ENTITY_TYPE_LOCATION_COUNTRY ? instance.name : undefined,
@@ -621,7 +622,6 @@ const convertObservedDataToStix = (instance: StoreEntity, type: string): SDO.Sti
         content_mapping: instance.content_mapping,
         number_seen: instance.number_seen,
         max_distinct_count: instance.max_distinct_count,
-        hunt_run_id: instance.x_opencti_hunt_run_id,
         object_refs_inferred: convertObjectReferences(instance, true),
       }),
     },
@@ -1334,8 +1334,6 @@ const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
         where_sighted_refs_object_marking_refs: resolvedTo[RELATION_OBJECT_MARKING] ?? [],
         where_sighted_refs_granted_refs: resolvedTo[RELATION_GRANTED_TO] ?? [],
         negative: instance.x_opencti_negative,
-        hunt_run_id: instance.x_opencti_hunt_run_id,
-        hunt_id: instance.x_opencti_hunt_id,
       }),
     },
   };

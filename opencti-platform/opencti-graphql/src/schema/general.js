@@ -9,9 +9,12 @@ export const KNOWLEDGE_UPDATE = 'KNUPDATE';
 export const KNOWLEDGE_FRONTEND_EXPORT = 'KNFRONTENDEXPORT';
 export const KNOWLEDGE_COLLABORATION = 'KNPARTICIPATE';
 export const KNOWLEDGE_SHARE_FILTERS = 'KNSHAREFILTERS';
+export const KNOWLEDGE_FORM_INTAKE = 'KNFORMINTAKE';
 
 export const ID_INTERNAL = 'internal_id';
 export const ID_INFERRED = 'inferred_id';
+// Fields of each denormalized rel_<relation> object
+export const REF_RELATION_ID_FIELDS = [ID_INTERNAL, ID_INFERRED];
 export const ID_STANDARD = 'standard_id';
 export const INTERNAL_IDS_ALIASES = 'i_aliases_ids';
 export const IDS_STIX = 'x_opencti_stix_ids';
@@ -50,7 +53,6 @@ export const CONNECTOR_INTERNAL_IMPORT_FILE = 'INTERNAL_IMPORT_FILE'; // Files m
 export const CONNECTOR_INTERNAL_ANALYSIS = 'INTERNAL_ANALYSIS'; // Analysis to support (fields, file ...) -> import-
 export const CONNECTOR_INTERNAL_EXPORT_FILE = 'INTERNAL_EXPORT_FILE'; // Files mime types to generate (application/pdf, ...) -> export-
 export const CONNECTOR_INTERNAL_NOTIFICATION = 'INTERNAL_NOTIFICATION'; // Notifier connectors -> notifier-
-export const CONNECTOR_INTERNAL_HUNT = 'INTERNAL_HUNT'; // Hunt platforms to support (splunk, microsoft-sentinel ...) -> hunt runs
 export const CONNECTOR_INTERNAL_INGESTION = 'INTERNAL_INGESTION'; // Currently only used for draft validation
 
 // General UUID

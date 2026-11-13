@@ -1,13 +1,9 @@
 import DrawerHeader from '@common/drawer/DrawerHeader';
-import Button from '@common/button/Button';
 import DrawerMUI from '@mui/material/Drawer';
-import { MenuBookOutlined } from '@mui/icons-material';
-import { createStyles, useTheme } from '@mui/styles';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled, useTheme } from '@mui/material/styles';
 import { fdsLayerClass, layerInputVars, SURFACE_LAYER } from '../../../../utils/fdsLayer';
 import React, { CSSProperties, forwardRef, isValidElement, useEffect, useState } from 'react';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
-import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { GenericContext } from '../model/GenericContextModel';
@@ -15,36 +11,13 @@ import { Stack, SxProps } from '@mui/material';
 
 export type DrawerSize = 'small' | 'medium' | 'large' | 'extraLarge';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => createStyles({
-  header: {
-    backgroundColor: theme.palette.mode === 'light' ? theme.palette.background.default : theme.palette.background.nav,
-    padding: '10px 0',
-    display: 'inline-flex',
-    alignItems: 'center',
-  },
-  container: {
-    padding: theme.spacing(3),
-    height: '100%',
-    overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(2),
-  },
-  mainButton: ({ bannerHeightNumber }) => ({
-    position: 'fixed',
-    bottom: `${bannerHeightNumber + 30}px`,
-  }),
-  withLargePanel: {
-    right: 280,
-  },
-  withPanel: {
-    right: 230,
-  },
-  noPanel: {
-    right: 30,
-  },
+const Container = styled('div')(({ theme }) => ({
+  padding: theme.spacing(3),
+  height: '100%',
+  overflowY: 'auto',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(2),
 }));
 
 export interface DrawerControlledDialProps {
@@ -63,8 +36,6 @@ interface DrawerProps {
   onClose?: () => void;
   context?: readonly (GenericContext | null)[] | null;
   header?: React.ReactElement;
-  /** The documentation of what the drawer creates or edits, linked from the header next to the close button */
-  learnMore?: { href: string; testId?: string };
   subHeader?: {
     right?: React.ReactElement[];
     left?: React.ReactElement[];
@@ -75,6 +46,9 @@ interface DrawerProps {
   size?: DrawerSize;
   sx?: SxProps;
   disableBackdropClose?: boolean;
+  // Lets the focus leave the drawer, for a design system (Radix) dialog opened from it: two focus traps
+  // pulling the focus back to their own content recurse until "Maximum call stack size exceeded".
+  disableEnforceFocus?: boolean;
 }
 
 const getDrawerWidth = (size: DrawerSize) => {
@@ -94,20 +68,18 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
   onClose,
   context,
   header,
-  learnMore,
   subHeader,
   controlledDial,
   containerStyle,
   size = 'large',
   disableBackdropClose = false,
+  disableEnforceFocus = false,
 }: DrawerProps, ref) => {
   const {
     bannerSettings: { bannerHeightNumber },
   } = useAuth();
 
   const theme = useTheme<Theme>();
-  const { t_i18n } = useFormatter();
-  const classes = useStyles({ bannerHeightNumber });
   const [open, setOpen] = useState(defaultOpen);
   useEffect(() => {
     if (open !== defaultOpen) {
@@ -141,11 +113,26 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
 
     if (subHeader.left && subHeader.right) {
       return (
-        <Stack direction="row" justifyContent="space-between">
-          <Stack direction="row" gap={1}>
+        <Stack
+          direction="row"
+          sx={{
+            justifyContent: 'space-between',
+          }}
+        >
+          <Stack
+            direction="row"
+            sx={{
+              gap: 1,
+            }}
+          >
             {subHeader.left}
           </Stack>
-          <Stack direction="row" gap={1}>
+          <Stack
+            direction="row"
+            sx={{
+              gap: 1,
+            }}
+          >
             {subHeader.right}
           </Stack>
         </Stack>
@@ -154,7 +141,12 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
 
     if (subHeader.left && !subHeader.right) {
       return (
-        <Stack direction="row" gap={1}>
+        <Stack
+          direction="row"
+          sx={{
+            gap: 1,
+          }}
+        >
           {subHeader.left}
         </Stack>
       );
@@ -162,7 +154,13 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
 
     if (!subHeader.left && subHeader.right) {
       return (
-        <Stack direction="row" gap={1} justifyContent="flex-end">
+        <Stack
+          direction="row"
+          sx={{
+            gap: 1,
+            justifyContent: 'flex-end',
+          }}
+        >
           {subHeader.right}
         </Stack>
       );
@@ -182,6 +180,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
         anchor="right"
         variant="temporary"
         elevation={1}
+        disableEnforceFocus={disableEnforceFocus}
         onClose={disableBackdropClose
           ? (_, reason) => {
               if (reason !== 'backdropClick') {
@@ -222,26 +221,12 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
             <>
               {context && <SubscriptionAvatars context={context} />}
               {header}
-              {learnMore && (
-                <Button
-                  variant="tertiary"
-                  size="small"
-                  startIcon={<MenuBookOutlined fontSize="small" />}
-                  href={learnMore.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-testid={learnMore.testId}
-                >
-                  {t_i18n('Learn more')}
-                </Button>
-              )}
             </>
           )}
           onClose={handleClose}
         />
 
-        <div
-          className={classes.container}
+        <Container
           style={{
             ...containerStyle,
             backgroundColor: 'var(--bg-elevation-default)',
@@ -249,7 +234,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
         >
           {renderSubHeader()}
           {component}
-        </div>
+        </Container>
       </DrawerMUI>
     </>
   );

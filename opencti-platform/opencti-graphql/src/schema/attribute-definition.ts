@@ -6,7 +6,7 @@ import type { BasicStoreIdentifier } from '../types/store';
 import type { AuthorizedMembers } from '../utils/authorizedMembers';
 import { DefaultFormating, type Formating, humanizeDate } from '../utils/humanize';
 import type { StixId, StixObject } from '../types/stix-2-1-common';
-import { CUSTOM_FIELDS_FEATURE_FLAG, TEST_MODE } from '../config/conf';
+import { INGESTION_HEALTH_FEATURE_FLAG, TEST_MODE } from '../config/conf';
 import type { OpenCTIFile } from '../modules/internal/document/document-types';
 
 export const shortMapping = {
@@ -74,7 +74,7 @@ export type BasicObjectDefinition<T extends BasicStoreAttribute = BasicStoreAttr
 };
 export type DateAttribute = { type: 'date' } & BasicDefinition;
 export type BooleanAttribute = { type: 'boolean' } & BasicDefinition;
-export type NumericAttribute = { type: 'numeric'; precision: 'integer' | 'long' | 'float'; scalable?: boolean } & BasicDefinition;
+export type NumericAttribute = { type: 'numeric'; precision: 'integer' | 'long' | 'float' | 'double'; scalable?: boolean } & BasicDefinition;
 export type IdAttribute = { type: 'string'; format: 'id'; entityTypes: string[]; attrRawIds?: GetRawIdsFn<string>; representative?: RepresentativeFn<string> } & BasicDefinition;
 export type TextAttribute = { type: 'string'; format: 'short' | 'text' } & BasicDefinition;
 export type EnumAttribute = { type: 'string'; format: 'enum'; values: string[] } & BasicDefinition;
@@ -274,7 +274,7 @@ export const files: ObjectAttribute<OpenCTIFile> = {
   },
 };
 
-export const changes: NestedObjectAttribute = {
+export const history_changes: NestedObjectAttribute = {
   name: 'history_changes',
   label: 'Detail changes',
   type: 'object',
@@ -316,6 +316,28 @@ export const changes: NestedObjectAttribute = {
         { name: 'translated', label: 'Translated', type: 'string', format: 'text', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: false },
       ],
     },
+  ],
+};
+
+// Context of an ingestion health event: the messages of the failing checks, the status reported by the previous event (absent for the first one),
+// and since when the current status lasts. Not in context_data.message: the history replaces it with the whole activity message
+export const ingestion_health_changes: NestedObjectAttribute = {
+  name: 'ingestion_health_changes',
+  label: 'Ingestion health changes',
+  type: 'object',
+  format: 'nested',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  isFilterable: false,
+  featureFlag: INGESTION_HEALTH_FEATURE_FLAG,
+  mappings: [
+    { name: 'message', label: 'Check messages', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+    { name: 'critical_messages', label: 'Critical check messages', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+    { name: 'advisory_messages', label: 'Advisory check messages', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+    { name: 'previous_status', label: 'Previous status', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+    { name: 'status_since', label: 'Status since', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
   ],
 };
 
@@ -597,30 +619,6 @@ export const xOpenctiModifiedAt: DateAttribute = {
   isFilterable: false,
 };
 
-// Written by the platform when a hunt run completes, on the indicators and observables it looked up: never by a user
-export const xOpenctiHuntedAt: DateAttribute = {
-  name: 'x_opencti_hunted_at',
-  label: 'Last hunted',
-  type: 'date',
-  update: false,
-  mandatoryType: 'no',
-  editDefault: false,
-  multiple: false,
-  upsert: false,
-  isFilterable: true,
-};
-export const xOpenctiHuntMatchedAt: DateAttribute = {
-  name: 'x_opencti_hunt_matched_at',
-  label: 'Last matched by a hunt',
-  type: 'date',
-  update: false,
-  mandatoryType: 'no',
-  editDefault: false,
-  multiple: false,
-  upsert: false,
-  isFilterable: true,
-};
-
 export const createdAt: DateAttribute = {
   name: 'created_at',
   label: 'Platform creation date',
@@ -722,7 +720,7 @@ export const humanizeCustomFieldValue = (item: any, format: Formating = DefaultF
   if (item.date_value) {
     return humanizeDate(item.date_value, format);
   }
-  const value = item.select_values ?? item.int_value ?? item.string_value ?? item.boolean_value ?? item.select_value;
+  const value = item.select_values ?? item.int_value ?? item.float_value ?? item.string_value ?? item.boolean_value ?? item.select_value;
   return Array.isArray(value) ? value.join(', ') : `${value}`;
 };
 
@@ -736,11 +734,11 @@ export const customFieldValues: NestedObjectAttribute = {
   multiple: true,
   upsert: true,
   isFilterable: false,
-  featureFlag: CUSTOM_FIELDS_FEATURE_FLAG,
   mappings: [
     { name: 'field_id', label: 'Field ID', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },
     { name: 'field_name', label: 'Field name', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },
     { name: 'int_value', label: 'Integer value', type: 'numeric', precision: 'integer', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+    { name: 'float_value', label: 'Decimal value', type: 'numeric', precision: 'double', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
     { name: 'string_value', label: 'String value', type: 'string', format: 'short', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
     { name: 'boolean_value', label: 'Boolean value', type: 'boolean', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
     { name: 'date_value', label: 'Date value', type: 'date', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },

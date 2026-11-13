@@ -31,10 +31,6 @@ Information from an uploaded file can be extracted and ingested into OpenCTI. Ex
 
 Information stored in OpenCTI can be extracted into different file formats like .csv or .json (STIX 2.1).
 
-### Internal hunt
-
-These connectors (type `INTERNAL_HUNT`) execute [hunts](../usage/hunts.md) against exactly one hunted platform: a SIEM, an EDR, an XDR or a data lake. Like enrichment connectors, they only act on the runs OpenCTI puts on their queue. They translate the Sigma rule of a hunt with pySigma (or run its native query), execute it on the platform within the run limits, and send back the observables and observed data found in the hits; OpenCTI then creates and updates the sightings of the hunt itself. Raw events never leave the hunted platform. They need read-only search access to the platform; the permissions each one needs are listed in the setup checklist of Defense > Hunts. See [Hunt connectors](../usage/hunt-connectors.md).
-
 ## Connector configuration
 
 ### Connector users and tokens
@@ -171,7 +167,7 @@ In this mode, the platform will use the workers to send the HTTP queries to the 
 
 | Parameter (yml)                           | Environment variable               | Default value | Description                                                      |
 |:------------------------------------------|:-----------------------------------|:--------------|:-----------------------------------------------------------------|
-| worker:listen_api_ssl_verify              | WORKER_LISTEN_API_SSL_VERIFY       |               | Verify SSL certificate when sending data to HTTP mode connectors |
+| worker:listen_api_ssl_verify              | WORKER_LISTEN_API_SSL_VERIFY       | Inherits `opencti:tls_reject_unauthorized` | Verify SSL certificate when sending data to HTTP mode connectors |
 | worker:listen_api_http_proxy              | WORKER_LISTEN_API_HTTP_PROXY       |               | Use a proxy to send the data to HTTP mode connectors             |
 | worker:listen_api_https_proxy             | WORKER_LISTEN_API_HTTPS_PROXY      |               | Use a proxy to send the data to HTTP mode connectors (SSL).      |
 

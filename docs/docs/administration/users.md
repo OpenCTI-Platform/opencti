@@ -29,12 +29,12 @@ The below capabilities are applicable to the whole application.
 | &nbsp;&nbsp;&nbsp;&nbsp;`Manage authorized members`     | Restrict the access to an entity to a user, group or organization.                            |
 | &nbsp;&nbsp;&nbsp;&nbsp;`Bypass enforced reference`     | If external references enforced in a type of entity, be able to bypass the enforcement.       |
 | &nbsp;&nbsp;&nbsp;&nbsp;`Bypass mandatory fields`       | Bypass any custom fields marked as mandatory in entity customization.                         |
+| &nbsp;&nbsp;`Create knowledge via Form Intake`          | Submit Form Intakes to create knowledge, without the general `Create / Update knowledge` capability. A submission does not update existing knowledge. See [Form Intake](../usage/form-intake.md). |
 | &nbsp;&nbsp;`Upload knowledge files`                    | Upload files in the `Data` and `Content` section of entities. Required to use Draft mode.     |
 | &nbsp;&nbsp;`Import knowledge`                          | Trigger the ingestion of an uploaded file. Required to use Draft mode.                        |
 | &nbsp;&nbsp;`Download knowledge export`                 | Download the exports generated in the entities (in the `Data` section).                       |
 | &nbsp;&nbsp;&nbsp;&nbsp;`Generate knowledge export`     | Trigger the export of the knowledge of an entity.                                             |
 | &nbsp;&nbsp;`Ask for knowledge enrichment`              | Trigger an enrichment for a given entity.                                                     |
-| &nbsp;&nbsp;`Launch hunts on security platforms`        | Create, change, run and triage hunts, with `Create / Update knowledge` (see [Hunts](../usage/hunts.md#required-capability)). |
 | &nbsp;&nbsp;`Disseminate files by email`                | Ability to send a PDF/HTML generated as a Fintel to a dissemination list.                     |
 | `Access dashboards`                                     | Access to existing custom dashboards.                                                         |
 | &nbsp;&nbsp;`Create / Update dashboards`                | Create and update custom dashboards.                                                          |
@@ -64,7 +64,8 @@ The below capabilities are applicable to the whole application.
 | &nbsp;&nbsp;`Manage authentication`                        | Define authentication strategies, the password policy & set up platform-wide authentication via 2FA when using basic auth.              |
 | &nbsp;&nbsp;`Manage marking definitions`                | Update and delete marking definitions.                                                        |
 | &nbsp;&nbsp;`Manage dissemination lists`                | Update and manage dissemination lists                                                         |
-| &nbsp;&nbsp;`Manage customization`                      | Customize entity types                                                                        |
+| &nbsp;&nbsp;`Manage customization`                      | Customize entity types, including attaching custom fields to them                             |
+| &nbsp;&nbsp;`Manage custom fields`                      | Manage custom fields (create/update/delete). See [Custom fields](custom-fields.md).           |
 | &nbsp;&nbsp;`Manage labels`                             | Manage labels (create/update/delete)                                                          |
 | &nbsp;&nbsp;`Manage vocabularies`                       | Manage vocabularies (create/update/delete)                                                    |
 | &nbsp;&nbsp;`Manage case templates`                     | Manage case templates (create/update/delete)                                                  |
@@ -96,6 +97,7 @@ The below capabilities are applicable to the draft mode only:
 | &nbsp;&nbsp;&nbsp;&nbsp;`Delete knowledge`              | Delete entities and relationships (and merge data): a user with this capability will be able to delete data within a draft.                                                                    |
 | &nbsp;&nbsp;&nbsp;&nbsp;`Bypass enforced reference`     | If external references are enforced in a type of entity, be able to bypass the enforcement within a draft.                                                                                     |
 | &nbsp;&nbsp;&nbsp;&nbsp;`Bypass mandatory fields`       | Bypass any custom fields marked as mandatory in entity customization in draft.                                                                                                                 |
+| &nbsp;&nbsp;`Create knowledge via Form Intake`          | Submit Form Intakes in draft. A user with this capability only in draft can submit forms, and the submission is always made in a draft.                                                          |
 | &nbsp;&nbsp;`Upload knowledge files`                    | Upload files in the `Data` and `Content` sections of entities in a draft.                                                                                                                       |
 | &nbsp;&nbsp;`Import knowledge`                          | Trigger the ingestion of an uploaded file. **Required capability to be able to create a draft from a file upload**                                                                               |
 | &nbsp;&nbsp;`Ask for knowledge enrichment`              | Trigger an enrichment for a given entity in a draft.                                                                                                                                           |
@@ -113,6 +115,8 @@ To clarify these two layers of capabilities, the table below provides an example
 | Create a draft manually            | From main context                                             | Access knowledge                                        | Access knowledge ; create/update knowledge                    | User is able to create a draft manually & create/edit data in it.     |
 | Create a draft via file upload     | From main context                                             | Access knowledge                                        | Access knowledge ; create/update knowledge                    | Cannot create a draft with file upload.                               |
 | Create a draft via file upload     | From main context                                             | Access knowledge                                        | Access knowledge ; create/update knowledge ; import knowledge | Allowed, only step-by-step or form intake are allowed, user is forced to draft. |
+| Submit a form intake               | From main context                                             | Access knowledge                                        | Access knowledge ; create knowledge via form intake           | Allowed, the submission is always made in a draft. Other import modes need import knowledge. |
+| Submit a form intake               | From main context                                             | Access knowledge ; create knowledge via form intake     | Access knowledge ; create/update knowledge                    | Allowed, in main or in a draft.                                                              |
 | Validate a draft                   | In draft mode                                                 | Access knowledge                                        | Access knowledge ; create/update knowledge ; delete knowledge | User is not able to validate the draft.                               |
 | Validate a draft                   | In draft mode                                                 | Access knowledge, Delete knowledge                      | Access knowledge ; create/update knowledge                    | User is able to validate the draft.                                   |
 | Manage authorized members on draft | In draft mode                                                 | Access knowledge, Delete knowledge, Manage authorized members | Access knowledge ; create/update knowledge ; Manage authorized members | User is able to manage authorized members.                             |
@@ -207,6 +211,10 @@ Account status can have four values:
 * Expired: an expired user will not be able to log in. A user can be in an expired state because an **Account Expiry Date** has been defined for this user, and we are past this date. It ensures automatically that the user will not be able to log in after that date.
 
 Only the expired status can be automatically set (given the account expiry date). The other statuses can be set manually or through mass operations within the user management screen. 
+
+### Merging users
+
+To merge a duplicate account into another one, for instance a local account into the account created by SSO, see [Merging users](users-merge.md).
 
 ## Groups
 

@@ -12,8 +12,6 @@ import {
   getEntityTypeThreeFirstLevelsFilterValues,
   getSelectedOptions,
   isDraftWorkspaceFilterGroup,
-  isHuntRunFilterGroup,
-  widgetInternalEntityTypes,
   isFilterGroupFormatCorrect,
   isFilterGroupNotEmpty,
   isRegardingOfFilterWarning,
@@ -1586,31 +1584,6 @@ describe('isDraftWorkspaceFilterGroup', () => {
   });
 });
 
-describe('widgetInternalEntityTypes', () => {
-  it('should return the hunt runs and hit records selected in the entity type filter', () => {
-    const filters: FilterGroup = { mode: 'and', filters: [{ key: 'entity_type', values: ['Report', 'Hunt-Hit-Record', { value: 'Hunt-Run' }] }], filterGroups: [] };
-    expect(widgetInternalEntityTypes(filters)).toEqual(['Hunt-Run', 'Hunt-Hit-Record']);
-  });
-
-  it('should return nothing for knowledge types or without an entity type filter', () => {
-    expect(widgetInternalEntityTypes(null)).toEqual([]);
-    expect(widgetInternalEntityTypes({ mode: 'and', filters: [{ key: 'entity_type', values: ['Report'] }], filterGroups: [] })).toEqual([]);
-  });
-});
-
-describe('isHuntRunFilterGroup', () => {
-  it('should be true when the entity type filter selects hunt runs only', () => {
-    expect(isHuntRunFilterGroup({ mode: 'and', filters: [{ key: 'entity_type', values: ['Hunt-Run'] }], filterGroups: [] })).toBe(true);
-    expect(isHuntRunFilterGroup({ mode: 'and', filters: [{ key: 'entity_type', values: [{ id: 'Hunt-Run' }] }], filterGroups: [] })).toBe(true);
-  });
-
-  it('should be false for other or mixed types', () => {
-    expect(isHuntRunFilterGroup(undefined)).toBe(false);
-    expect(isHuntRunFilterGroup({ mode: 'and', filters: [{ key: 'entity_type', values: [] }], filterGroups: [] })).toBe(false);
-    expect(isHuntRunFilterGroup({ mode: 'and', filters: [{ key: 'entity_type', values: ['Hunt-Run', 'Hunt-Hit-Record'] }], filterGroups: [] })).toBe(false);
-  });
-});
-
 describe('getStixFiltersDisplayedKeys', () => {
   const availableKeys = ['entity_type', 'x_opencti_cf_score'];
   const filterGroup = (keys: string[], nestedKeys: string[] = []): FilterGroup => ({
@@ -1643,6 +1616,14 @@ describe('useStixFilters', () => {
     expect(hook.result.current).toContain('x_opencti_ssvc_exploitation');
     expect(hook.result.current).toContain('x_opencti_ssvc_automatable');
     expect(hook.result.current).toContain('x_opencti_ssvc_technical_impact');
+  });
+
+  it('should include the closing reason filter key', () => {
+    const { hook } = testRenderHook(
+      () => useStixFilters(),
+      { userContext: createMockUserContext({ settings: { platform_feature_flags: [] } }) },
+    );
+    expect(hook.result.current).toContain('x_opencti_closing_reason');
   });
 });
 

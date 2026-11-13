@@ -31,6 +31,7 @@ import type { BasicConnection, BasicStoreIdentifier, BasicStoreCommon, BasicStor
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
 import { ID_SUBFILTER, INSTANCE_REGARDING_OF, RELATION_INFERRED_SUBFILTER, RELATION_TYPE_SUBFILTER } from './filtering/filtering-constants';
 import { pushAll } from './arrayUtil';
+import { utcDate } from './format';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -46,6 +47,7 @@ export const SETTINGS_SET_ACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SETPARAMETERS = 'SETTINGS_SETPARAMETERS';
 export const SETTINGS_SETMANAGEXTMHUB = 'SETTINGS_SETMANAGEXTMHUB';
 export const SETTINGS_SUPPORT = 'SETTINGS_SUPPORT';
+export const TAXIIAPI = 'TAXIIAPI';
 export const TAXIIAPI_SETCOLLECTIONS = 'TAXIIAPI_SETCOLLECTIONS';
 export const INGESTION_SETINGESTIONS = 'INGESTION_SETINGESTIONS';
 export const CSVMAPPERS = 'CSVMAPPERS';
@@ -56,18 +58,20 @@ export const KNOWLEDGE_ORGANIZATION_RESTRICT = 'KNOWLEDGE_KNUPDATE_KNORGARESTRIC
 export const KNOWLEDGE_KNUPDATE_KNDELETE = 'KNOWLEDGE_KNUPDATE_KNDELETE';
 export const KNOWLEDGE_KNUPDATE_KNMERGE = 'KNOWLEDGE_KNUPDATE_KNMERGE';
 export const KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS = 'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS';
+export const KNOWLEDGE_KNFORMINTAKE = 'KNOWLEDGE_KNFORMINTAKE';
 export const KNOWLEDGE_KNUPLOAD = 'KNOWLEDGE_KNUPLOAD';
 export const KNOWLEDGE_KNASKIMPORT = 'KNOWLEDGE_KNASKIMPORT';
 export const KNOWLEDGE_KNENRICHMENT = 'KNOWLEDGE_KNENRICHMENT';
 export const KNOWLEDGE_KNDISSEMINATION = 'KNOWLEDGE_KNDISSEMINATION';
-export const KNOWLEDGE_KNHUNT = 'KNOWLEDGE_KNHUNT';
 export const KNOWLEDGE_KNSHAREFILTERS = 'KNOWLEDGE_KNSHAREFILTERS';
 export const VIRTUAL_ORGANIZATION_ADMIN = 'VIRTUAL_ORGANIZATION_ADMIN';
 export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SETAUTH = 'SETTINGS_SETAUTH';
 export const SETTINGS_SECURITYACTIVITY = 'SETTINGS_SECURITYACTIVITY';
 export const SETTINGS_SETCUSTOMIZATION = 'SETTINGS_SETCUSTOMIZATION';
+export const SETTINGS_SETCUSTOMFIELDS = 'SETTINGS_SETCUSTOMFIELDS';
 export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
+export const SETTINGS_SETKILLCHAINPHASES = 'SETTINGS_SETKILLCHAINPHASES';
 export const PIRAPI = 'PIRAPI';
 export const AUTOMATION = 'AUTOMATION';
 export const AUTOMATION_AUTMANAGE = 'AUTOMATION_AUTMANAGE';
@@ -88,7 +92,6 @@ export const RESTRICTED_USER_UUID = '27d2b0af-4d1e-42ae-a50c-9691bf57f35d';
 const PIR_MANAGER_USER_UUID = '1e20b6e5-e0f7-46f2-bacb-c37e4f8707a2';
 const HUB_REGISTRATION_MANAGER_USER_UUID = 'e16d7175-17c7-4dae-bd3c-48c939f47dfb';
 const DATA_SANITY_MANAGER_USER_UUID = '4a25a566-017d-4455-811e-e8e1b3889390';
-export const HUNT_MANAGER_USER_UUID = 'a922ccf4-436b-40d2-b2d4-d2936433dc2c';
 const INGESTION_HEALTH_MANAGER_USER_UUID = 'c6efbb70-ae34-4677-8081-736578d87dab';
 
 export enum AccessOperation {
@@ -553,31 +556,6 @@ export const DATA_SANITY_MANAGER_USER: AuthUser = {
   restrict_delete: false,
 };
 
-export const HUNT_MANAGER_USER: AuthUser = {
-  entity_type: 'User',
-  id: HUNT_MANAGER_USER_UUID,
-  internal_id: HUNT_MANAGER_USER_UUID,
-  individual_id: undefined,
-  name: 'HUNT MANAGER',
-  user_email: 'HUNT MANAGER',
-  origin: { user_id: HUNT_MANAGER_USER_UUID, socket: 'internal' },
-  roles: [ADMINISTRATOR_ROLE],
-  groups: [],
-  capabilities: [{ name: BYPASS }],
-  organizations: [],
-  allowed_marking: [],
-  max_shareable_marking: [],
-  default_marking: [],
-  api_tokens: [],
-  account_lock_after_date: undefined,
-  account_status: ACCOUNT_STATUS_ACTIVE,
-  administrated_organizations: [],
-  effective_confidence_level: { max_confidence: 100, overrides: [] },
-  user_confidence_level: { max_confidence: 100, overrides: [] },
-  no_creators: false,
-  restrict_delete: false,
-};
-
 export const INGESTION_HEALTH_MANAGER_USER: AuthUser = {
   entity_type: ENTITY_TYPE_USER,
   id: INGESTION_HEALTH_MANAGER_USER_UUID,
@@ -680,7 +658,6 @@ export const INTERNAL_USERS = {
   [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER,
   [DATA_SANITY_MANAGER_USER.id]: DATA_SANITY_MANAGER_USER,
   [WORKFLOW_MANAGER_USER.id]: WORKFLOW_MANAGER_USER,
-  [HUNT_MANAGER_USER.id]: HUNT_MANAGER_USER,
   [INGESTION_HEALTH_MANAGER_USER.id]: INGESTION_HEALTH_MANAGER_USER,
 };
 
@@ -696,7 +673,6 @@ export const INTERNAL_USERS_WITHOUT_REDACTED = {
   [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER,
   [DATA_SANITY_MANAGER_USER.id]: DATA_SANITY_MANAGER_USER,
   [WORKFLOW_MANAGER_USER.id]: WORKFLOW_MANAGER_USER,
-  [HUNT_MANAGER_USER.id]: HUNT_MANAGER_USER,
   [INGESTION_HEALTH_MANAGER_USER.id]: INGESTION_HEALTH_MANAGER_USER,
 };
 
@@ -1143,6 +1119,18 @@ export const validateMarking = async (context: AuthContext, user: AuthUser, mark
   }
 };
 
+type UserAccount = Pick<AuthUser, 'account_status' | 'account_lock_after_date'>;
+
+// Whether the expiration date of the account has passed: the expiration manager only sets the Expired status later
+export const isUserAccountExpired = (user: UserAccount): boolean => {
+  return !!user.account_lock_after_date && utcDate().isAfter(utcDate(user.account_lock_after_date));
+};
+
+// Whether the platform lets the user authenticate: an account neither expired nor with a status other than active
+export const isUserAccountActive = (user: UserAccount): boolean => {
+  return !isUserAccountExpired(user) && user.account_status === ACCOUNT_STATUS_ACTIVE;
+};
+
 export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStoreSettings) => {
   if (isBypassUser(user)) {
     return true;
@@ -1391,6 +1379,7 @@ export const CAPABILITIES_IN_DRAFT_NAMES = [
   KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
   KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
+  KNOWLEDGE_KNFORMINTAKE,
   KNOWLEDGE_KNUPLOAD,
   KNOWLEDGE_KNASKIMPORT,
   KNOWLEDGE_KNENRICHMENT,

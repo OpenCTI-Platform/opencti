@@ -13,9 +13,11 @@ import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
-testCreatedCounter['attack-pattern'] = 29;
-testCreatedCounter.campaign = 7;
-testCreatedCounter['case-incident'] = 18;
+// 2 created by ingestionDeduplication-test (an import, then the same import after the deletion)
+testCreatedCounter['attack-pattern'] = 27;
+testCreatedCounter.campaign = 6;
+// 3 created by workflow-closing-reason-test merge and external status write cases
+testCreatedCounter['case-incident'] = 23;
 testCreatedCounter['case-rfi'] = 9;
 testCreatedCounter['case-rft'] = 1;
 testCreatedCounter.channel = 1;
@@ -24,86 +26,107 @@ testCreatedCounter.credential = 1;
 testCreatedCounter['data-component'] = 2;
 testCreatedCounter['data-source'] = 2;
 testCreatedCounter.directory = 3; // created and deleted by stixRefRelationships-test
-testCreatedCounter['domain-name'] = 1; // created and deleted by hunt-indicators-test
 testCreatedCounter['email-addr'] = 1;
 testCreatedCounter.event = 2;
 testCreatedCounter['external-reference'] = 17;
 testCreatedCounter.feedback = 2;
 testCreatedCounter.file = 11;
 testCreatedCounter.grouping = 2;
-testCreatedCounter.hostname = 1; // created and deleted by hunt-indicators-test
-testCreatedCounter.hunt = 20;
 testCreatedCounter.iccid = 4;
-testCreatedCounter.identity = 65;
+// Includes 1 created and deleted by stixCoreObject-test, 1 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown),
+// and 2 by ingestionDeduplication-domain-test (authors of imported malware)
+testCreatedCounter.identity = 63;
 testCreatedCounter.imei = 3;
 testCreatedCounter.imsi = 1;
-testCreatedCounter.incident = 8;
-testCreatedCounter.indicator = 65;
+testCreatedCounter.incident = 7;
+testCreatedCounter.indicator = 61;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['intrusion-set'] = 12;
-testCreatedCounter['ipv4-addr'] = 2;
-testCreatedCounter['kill-chain-phase'] = 3;
-testCreatedCounter.label = 15;
+// - 1 created and deleted by stixRelationship-test (time series breakdown)
+testCreatedCounter['intrusion-set'] = 55;
+testCreatedCounter['ipv4-addr'] = 1;
+// Counts for:
+// - 1 created and deleted by form-submission-test
+// - 3 created and deleted by killChainPhase-import-test
+// - 3 created by the data files the tests load (kill_chain_phases of their objects), never deleted
+testCreatedCounter['kill-chain-phase'] = 7;
+// Counts for:
+// - 3 created and deleted by investigation-enrichment-test
+// - 3 created and deleted by label-import-test
+// - 3 created and deleted by stixCoreObject-test (time series breakdown)
+testCreatedCounter.label = 24;
 testCreatedCounter.language = 1;
-testCreatedCounter.location = 22;
+testCreatedCounter.location = 23; // includes 1 created and deleted by publicDashboard-test (time series breakdown)
 testCreatedCounter['mac-addr'] = 1;
-testCreatedCounter.malware = 66;
+// Includes 2 created and deleted by form-submission-test (a verified form import, an existing one left as it is),
+// 2 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown), and 5 by ingestionDeduplication-domain-test
+testCreatedCounter.malware = 75;
 testCreatedCounter['malware-analysis'] = 3;
-testCreatedCounter['marking-definition'] = 24;
+testCreatedCounter['marking-definition'] = 29;
 testCreatedCounter.narrative = 1;
 testCreatedCounter['network-traffic'] = 1;
-testCreatedCounter.note = 6;
-// 1 in the dataset + 2 created by observedData-domain-test + 4 created by the hunt tests
-testCreatedCounter['observed-data'] = 7;
+testCreatedCounter.note = 7;
+// 1 in the dataset + 2 created by observedData-domain-test
+testCreatedCounter['observed-data'] = 3;
 testCreatedCounter.opinion = 5;
 testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
-// 2 created by the hunt test of an incident opened without a draft (related to its hunt and its security platform)
-testCreatedCounter.relationship = 159;
-testCreatedCounter.report = 61;
-testCreatedCounter.sighting = 9;
+// Includes 5 created and deleted by stixRelationship-test, and 1 created by publicDashboard-test, deleted with its target (time series breakdown)
+testCreatedCounter.relationship = 154;
+// Includes 8 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
+testCreatedCounter.report = 74;
+testCreatedCounter.sighting = 8; // 3 created and deleted by relations-deduplication-test
 testCreatedCounter.software = 2;
 testCreatedCounter.task = 1;
 testCreatedCounter['threat-actor'] = 33;
 testCreatedCounter.tool = 5;
 testCreatedCounter['tracking-number'] = 1;
-testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
-testCreatedCounter.vulnerability = 11;
+// Counts for:
+// - 3 created and deleted by vocabulary-import-test
+testCreatedCounter.vocabulary = VOCABULARY_NUMBERS + 3;
+// 1 created and deleted by ingestionDeduplication-test (a type outside the deduplication allowlist)
+testCreatedCounter.vulnerability = 12;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
 testCreatedCounter['security-coverage'] = 27;
 testCreatedCounter['security-coverage-result'] = 22;
 
 export const testUpdatedCounter: Record<string, number> = {};
-testUpdatedCounter['marking-definition'] = 2;
+testUpdatedCounter['marking-definition'] = 3;
 testUpdatedCounter.relationship = 9;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
-testUpdatedCounter.malware = 22;
+// 1 by ingestionDeduplication-domain-test (an edit in the platform)
+testUpdatedCounter.malware = 23;
 testUpdatedCounter.file = 27;
-testUpdatedCounter['intrusion-set'] = 5;
+testUpdatedCounter['intrusion-set'] = 18;
 testUpdatedCounter['data-component'] = 7;
 testUpdatedCounter.location = 14;
-testUpdatedCounter['attack-pattern'] = 3;
-testUpdatedCounter['case-incident'] = 18;
+// 3 by ingestionDeduplication-test (a change at the source, an edit in the platform, the source content applied again)
+testUpdatedCounter['attack-pattern'] = 6;
+// 5 by workflow-closing-reason-test merge (1) and external status write (4) cases
+testUpdatedCounter['case-incident'] = 28;
 testUpdatedCounter.feedback = 1;
-testUpdatedCounter.report = 28;
+testUpdatedCounter.report = 32; // includes 2 by audit-test (audits breakdown)
 testUpdatedCounter['course-of-action'] = 3;
 testUpdatedCounter['data-source'] = 1;
 testUpdatedCounter['external-reference'] = 1;
 testUpdatedCounter.grouping = 3;
-testUpdatedCounter.hunt = 16;
 testUpdatedCounter.incident = 4;
-testUpdatedCounter.indicator = 30;
-testUpdatedCounter.label = 1;
+testUpdatedCounter.indicator = 33;
+// Counts for:
+// - 3 updated by killChainPhase-import-test
+testUpdatedCounter['kill-chain-phase'] = 3;
+// Counts for:
+// - 1 updated by label-import-test
+testUpdatedCounter.label = 2;
 testUpdatedCounter['malware-analysis'] = 3;
 testUpdatedCounter.note = 3;
 // Observed data is imported twice by the loader test: the second import is an upsert that increments number_seen (1)
-// + 2 upserts in observedData-domain-test + 3 updates by the runs of the hunt tests
-testUpdatedCounter['observed-data'] = 6;
+// + 2 upserts in observedData-domain-test
+testUpdatedCounter['observed-data'] = 3;
 testUpdatedCounter.opinion = 6;
 testUpdatedCounter['email-addr'] = 1;
 testUpdatedCounter.event = 1;
@@ -112,9 +135,11 @@ testUpdatedCounter['ssh-key'] = 1;
 testUpdatedCounter['case-rfi'] = 5;
 testUpdatedCounter['ipv4-addr'] = 4;
 testUpdatedCounter.tool = 10;
-testUpdatedCounter.sighting = 8;
+testUpdatedCounter.sighting = 7; // 2 upserts in relations-deduplication-test
 testUpdatedCounter['threat-actor'] = 18;
-testUpdatedCounter.vocabulary = 3;
+// Counts for:
+// - 2 updated by vocabulary-import-test (the description of an entry of the platform, edited then restored)
+testUpdatedCounter.vocabulary = 3 + 2;
 testUpdatedCounter.vulnerability = 5;
 testUpdatedCounter.iccid = 1;
 testUpdatedCounter.imei = 1;
@@ -129,13 +154,16 @@ testMergedCounter.report = 3;
 testMergedCounter.file = 3;
 testMergedCounter.artifact = 1;
 testMergedCounter['attack-pattern'] = 1;
-testMergedCounter['case-incident'] = 1;
+testMergedCounter['case-incident'] = 2; // 1 by workflow-closing-reason-test merge case
+testMergedCounter['intrusion-set'] = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
-testDeletedCounter['attack-pattern'] = 24;
-testDeletedCounter.campaign = 3;
-testDeletedCounter['case-incident'] = 16;
+// 2 by ingestionDeduplication-test
+testDeletedCounter['attack-pattern'] = 22;
+testDeletedCounter.campaign = 2;
+// 2 by workflow-closing-reason-test merge and external status write cases, the merged source has no delete event
+testDeletedCounter['case-incident'] = 20;
 testDeletedCounter['case-rfi'] = 9;
 testDeletedCounter['case-rft'] = 1;
 testDeletedCounter.channel = 1;
@@ -143,45 +171,60 @@ testDeletedCounter['course-of-action'] = 2;
 testDeletedCounter['data-component'] = 2;
 testDeletedCounter['data-source'] = 2;
 testDeletedCounter.directory = 3; // created and deleted by stixRefRelationships-test
-testDeletedCounter['domain-name'] = 1; // created and deleted by hunt-indicators-test
 testDeletedCounter['email-addr'] = 1;
 testDeletedCounter.event = 2;
 testDeletedCounter['external-reference'] = 1;
 testDeletedCounter.feedback = 2;
 testDeletedCounter.file = 7;
 testDeletedCounter.grouping = 2;
-testDeletedCounter.hostname = 1; // created and deleted by hunt-indicators-test
-testDeletedCounter.hunt = 20;
-testDeletedCounter.identity = 48;
-testDeletedCounter.incident = 7;
-testDeletedCounter.indicator = 37;
+// Includes 1 created and deleted by stixCoreObject-test, 1 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown),
+// and 2 by ingestionDeduplication-domain-test
+testDeletedCounter.identity = 46;
+testDeletedCounter.incident = 6;
+testDeletedCounter.indicator = 33;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testDeletedCounter['intrusion-set'] = 11;
-testDeletedCounter['ipv4-addr'] = 2;
-testDeletedCounter.label = 2;
+// - 1 created and deleted by stixRelationship-test (time series breakdown)
+testDeletedCounter['intrusion-set'] = 53;
+testDeletedCounter['ipv4-addr'] = 1;
+// Counts for:
+// - 1 created and deleted by form-submission-test
+// - 3 deleted by killChainPhase-import-test
+testDeletedCounter['kill-chain-phase'] = 4;
+// Counts for:
+// - 3 created and deleted by investigation-enrichment-test
+// - 3 deleted by label-import-test
+// - 3 created and deleted by stixCoreObject-test (time series breakdown)
+testDeletedCounter.label = 11;
 testDeletedCounter.language = 1;
-testDeletedCounter.location = 17;
+testDeletedCounter.location = 18; // includes 1 created and deleted by publicDashboard-test (time series breakdown)
 testDeletedCounter['mac-addr'] = 1;
-testDeletedCounter.malware = 39;
+// Includes 2 created and deleted by form-submission-test, and 2 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown),
+// and 5 by ingestionDeduplication-domain-test
+testDeletedCounter.malware = 48;
 testDeletedCounter['malware-analysis'] = 2;
-testDeletedCounter['marking-definition'] = 13;
+testDeletedCounter['marking-definition'] = 18;
 testDeletedCounter.narrative = 1;
 testDeletedCounter['network-traffic'] = 1;
-testDeletedCounter.note = 5;
-testDeletedCounter['observed-data'] = 6; // created and deleted by observedData-domain-test and the hunt tests
+testDeletedCounter.note = 6;
+testDeletedCounter['observed-data'] = 2; // created and deleted by observedData-domain-test
 testDeletedCounter.opinion = 4;
 testDeletedCounter.persona = 1;
 testDeletedCounter['phone-number'] = 2;
-testDeletedCounter.relationship = 14;
-testDeletedCounter.report = 52;
-testDeletedCounter.sighting = 4;
+testDeletedCounter.relationship = 10; // includes 5 created and deleted by stixRelationship-test (time series breakdown)
+// Includes 8 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
+testDeletedCounter.report = 65;
+testDeletedCounter.sighting = 5; // 3 created and deleted by relations-deduplication-test
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;
 testDeletedCounter['threat-actor'] = 20;
 testDeletedCounter.tool = 5;
-testDeletedCounter.vulnerability = 5;
+// Counts for:
+// - 3 deleted by vocabulary-import-test
+testDeletedCounter.vocabulary = 3;
+// 1 by ingestionDeduplication-test
+testDeletedCounter.vulnerability = 6;
 testDeletedCounter.software = 1;
 testDeletedCounter.iccid = 4;
 testDeletedCounter.imei = 3;
