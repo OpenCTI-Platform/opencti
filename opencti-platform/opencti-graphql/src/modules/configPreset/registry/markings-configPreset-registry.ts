@@ -7,6 +7,7 @@ import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/c
 import { configPresetPlanKey } from '../import/configPreset-import-types';
 import { buildConfigPresetConnection, MARKINGS_FAMILY_ID, securityAccessGroup, standardIdListArgs, toAppliedStatus, toComputedItem } from './common-configPreset-registry';
 
+// Built-in markings are exported like any other: their color and order can be customized, and a deleted one is re-created with its fixed id
 const markingsArgs = (ids?: string[] | null, excludedIds?: string[] | null) => ({ orderBy: MarkingDefinitionsOrdering.Definition, ...standardIdListArgs(ids, excludedIds) });
 
 const toMarkingItem = (marking: BasicStoreEntityMarking): ConfigPresetItemDefinition => ({

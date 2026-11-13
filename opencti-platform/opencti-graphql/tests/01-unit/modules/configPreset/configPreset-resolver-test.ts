@@ -171,12 +171,12 @@ describe('Config preset exportable types query', () => {
         label: 'Groups',
         description: 'Groups with their roles, markings and confidence level',
         group: { key: 'securityAccess', label: 'Security & Access' },
-        // Each group depends on its roles and markings
-        items: ([[administratorsGroup, administratorRole, [tlpAmber]], [analystsGroup, analystRole, []]] as const).map(([group, role, groupMarkings]) => ({
+        // Each group depends on its roles, never on a built-in marking
+        items: [[administratorsGroup, administratorRole], [analystsGroup, analystRole]].map(([group, role]) => ({
           key: group.standard_id,
           label: group.name,
           translatable: false,
-          dependsOn: [{ type: 'roles', key: role.standard_id }, ...groupMarkings.map((marking) => ({ type: 'markings', key: marking.standard_id }))],
+          dependsOn: [{ type: 'roles', key: role.standard_id }],
           isDefault: false,
         })),
         itemsPageInfo: onePage(2),

@@ -58,9 +58,9 @@ describe('importMarking', () => {
   });
 
   it('overwrites the color and the order of a built-in marking like any other', async () => {
-    const tlpRed = { id: 'tlp-red-id', standard_id: markingStandardId('TLP', 'TLP:RED'), definition_type: 'TLP', definition: 'TLP:RED', x_opencti_color: '#c62828', x_opencti_order: 4 };
+    const tlpRed = { id: 'tlp-red-id', standard_id: markingStandardId('TLP', 'TLP:RED'), definition_type: 'TLP', definition: 'TLP:RED', x_opencti_color: '#c62828', x_opencti_order: 5 };
     vi.mocked(findById).mockResolvedValue(tlpRed as never);
-    const configuration = markingConfiguration({ definition_type: 'TLP', definition: 'TLP:RED', x_opencti_color: '#ff0000', x_opencti_order: 4 });
+    const configuration = markingConfiguration({ definition_type: 'TLP', definition: 'TLP:RED', x_opencti_color: '#ff0000', x_opencti_order: 5 });
     const result = await importMarking(context, user, configuration, overwrite);
     expect(result).toMatchObject({ status: 'overwritten', exists: true });
     expect(findById).toHaveBeenCalledWith(context, user, tlpRed.standard_id);
@@ -109,9 +109,23 @@ describe('importMarking', () => {
     vi.mocked(findById).mockResolvedValue(existing as never);
     expect(await importMarking(context, user, markingConfiguration(), { mode: ConfigImportMode.Add })).toMatchObject({ status: 'failed', code: 'exists' });
     vi.mocked(isConfigImportSensitiveChangeAllowed).mockResolvedValue(false);
-    const result = await importMarking(context, user, markingConfiguration(), overwrite);
+    const result = await importMarking(context, user, markingConfiguration({ x_opencti_color: '#654321' }), overwrite);
     expect(result).toMatchObject({ status: 'failed', code: 'sensitive_config', reason: 'Requires the right to manage the sensitive configuration' });
     expect(isConfigImportSensitiveChangeAllowed).toHaveBeenCalledWith(context, user, 'markings', existing.standard_id);
+    expectNothingWritten();
+  });
+
+  it('skips an unchanged marking without the right to manage the sensitive configuration, as nothing is written', async () => {
+    vi.mocked(findById).mockResolvedValue(existing as never);
+    vi.mocked(isConfigImportSensitiveChangeAllowed).mockResolvedValue(false);
+    expect(await importMarking(context, user, markingConfiguration(), overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
+    expect(isConfigImportSensitiveChangeAllowed).not.toHaveBeenCalled();
+    expectNothingWritten();
+  });
+
+  it('refuses to create a marking the user cannot change', async () => {
+    vi.mocked(isConfigImportSensitiveChangeAllowed).mockResolvedValue(false);
+    expect(await importMarking(context, user, markingConfiguration(), overwrite)).toMatchObject({ status: 'failed', code: 'sensitive_config', exists: false });
     expectNothingWritten();
   });
 });

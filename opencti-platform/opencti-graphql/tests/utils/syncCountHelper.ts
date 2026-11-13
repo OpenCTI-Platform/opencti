@@ -88,7 +88,8 @@ testCreatedCounter['security-coverage'] = 27;
 testCreatedCounter['security-coverage-result'] = 22;
 
 export const testUpdatedCounter: Record<string, number> = {};
-// 2 by configPreset-import-markings-test (a built-in marking changed then imported back)
+// Counts for:
+// - 2 by configPreset-import-markings-test (a built-in marking changed then imported back)
 testUpdatedCounter['marking-definition'] = 5;
 testUpdatedCounter.relationship = 9;
 testUpdatedCounter.campaign = 7;

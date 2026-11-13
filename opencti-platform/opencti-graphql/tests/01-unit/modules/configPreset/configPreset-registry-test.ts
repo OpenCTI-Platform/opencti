@@ -584,20 +584,20 @@ describe('Config preset registry', () => {
     it('depends on its roles, read once for the groups of a page, its markings too', async () => {
       const page = await groups.listItems(context, user, { first: 10 });
       expect(page.edges.map(({ node }) => [node.id, node.dependsOn])).toEqual([
-        [administratorsGroup.standard_id, [{ type: 'roles', id: administratorRole.standard_id }, { type: 'markings', id: tlpAmber.standard_id }]],
+        [administratorsGroup.standard_id, [{ type: 'roles', id: administratorRole.standard_id }]],
         [analystsGroup.standard_id, [{ type: 'roles', id: analystRole.standard_id }]],
       ]);
       expect(fullRelationsList).toHaveBeenCalledTimes(2);
       expect(fullEntitiesList).toHaveBeenCalledWith(context, user, ['Role'], { ids: [administratorRole.id, analystRole.id] });
     });
 
-    it('depends on the markings it refers to, built-in ones included', async () => {
+    it('depends on the markings it refers to that are not built-in', async () => {
       vi.mocked(fullRelationsList).mockImplementation(async (_ctx, _user, type) => {
         return (type === 'accesses-to' ? [{ fromId: analystsGroup.id, toId: customMarking.id }, { fromId: analystsGroup.id, toId: tlpAmber.id }] : []) as never;
       });
       const page = await groups.listItems(context, user, { first: 10 });
       const analysts = page.edges.find(({ node }) => node.id === analystsGroup.standard_id)!.node;
-      expect(analysts.dependsOn).toEqual([{ type: 'markings', id: customMarking.standard_id }, { type: 'markings', id: tlpAmber.standard_id }]);
+      expect(analysts.dependsOn).toEqual([{ type: 'markings', id: customMarking.standard_id }]);
     });
 
     it('applies search, ids and excluded ids to the groups', async () => {

@@ -131,7 +131,11 @@ describe('Config preset import: markings', () => {
       const imported = await findMarkingById(testContext, ADMIN_USER, tlpRedId) as BasicStoreEntityMarking;
       expect(exportMarking(imported)).toEqual(exportMarking(original));
     } finally {
-      await markingDefinitionEditField(testContext, ADMIN_USER, original.id, [{ key: 'x_opencti_color', value: [original.x_opencti_color] }]);
+      // Restored only when the import did not: an edit, even an identical one, would change the count of updates in syncCountHelper
+      const current = await findMarkingById(testContext, ADMIN_USER, tlpRedId) as BasicStoreEntityMarking;
+      if (current.x_opencti_color !== original.x_opencti_color) {
+        await markingDefinitionEditField(testContext, ADMIN_USER, original.id, [{ key: 'x_opencti_color', value: [original.x_opencti_color] }]);
+      }
     }
   });
 

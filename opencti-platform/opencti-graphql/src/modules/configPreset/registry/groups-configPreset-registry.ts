@@ -1,5 +1,6 @@
 import { GroupsOrdering } from '../../../generated/graphql';
 import { batchMarkingsForGroups, findAllGroups, findGroupPaginated } from '../../../domain/group';
+import { BUILT_IN_MARKING_STANDARD_IDS } from '../../markingDefinition/marking-import';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ConfigImportMode } from '../../configImport/configImport-types';
 import { batchRolesForGroups } from '../../user/user-domain';
@@ -35,7 +36,10 @@ const toGroupItems = async (context: AuthContext, user: AuthUser, groups: BasicS
     translatable: false,
     dependsOn: [
       ...groupsRoles[index].map((role) => ({ type: ROLES_FAMILY_ID, id: role.standard_id })),
-      ...groupsMarkings[index].map((marking) => ({ type: MARKINGS_FAMILY_ID, id: marking.standard_id })),
+      // A built-in marking exists on every platform: a group never forces its color and order on the target
+      ...groupsMarkings[index]
+        .filter(({ standard_id }) => !BUILT_IN_MARKING_STANDARD_IDS.includes(standard_id))
+        .map((marking) => ({ type: MARKINGS_FAMILY_ID, id: marking.standard_id })),
     ],
     exporter: async (ctx, usr) => exportGroup(ctx, usr, group, groupsRoles[index]),
   }));
