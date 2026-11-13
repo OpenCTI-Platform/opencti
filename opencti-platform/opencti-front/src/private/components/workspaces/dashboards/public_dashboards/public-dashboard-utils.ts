@@ -166,6 +166,14 @@ export const applyPublishedVariableChange = (
 };
 
 /**
+ * Whether the published absolute range is ordered, with the rule the server applies on publication: a start after
+ * its end is refused, an equal start and end is accepted, and a relative date overrides the absolute dates.
+ */
+export const isOrderedPublishedTimeRange = ({ relativeDate, startDate, endDate }: PublishedTimeRange) => (
+  relativeDate !== null || startDate === null || endDate === null || Date.parse(startDate) <= Date.parse(endDate)
+);
+
+/**
  * Same rule as the time filters of a dashboard: `none` empties the field, a relative date clears the absolute ones.
  */
 export const applyPublishedTimeRangeChange = (
