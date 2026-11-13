@@ -2,7 +2,10 @@ import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest'
 import { STIX_EXT_OCTI } from '../../../../../src/types/stix-2-1-extensions';
 import type { StixThreatActor } from '../../../../../src/types/stix-2-1-sdo';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../../../../../src/schema/general';
-import { ENTITY_TYPE_INCIDENT } from '../../../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INCIDENT } from '../../../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../../../src/modules/case/case-incident/case-incident-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../../../src/modules/case/case-rfi/case-rfi-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../../../../../src/modules/case/case-rft/case-rft-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../../src/modules/organization/organization-types';
 import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT, type ManipulateConfiguration } from '../../../../../src/modules/playbook/components/manipulate-knowledge-component';
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
@@ -316,6 +319,49 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
     expect(objectExtensions.opencti_upsert_operations[0].key).toBe('x_opencti_score');
     expect(objectExtensions.opencti_upsert_operations[0].value[0]).toBe('42');
     expect((organizationResult.extensions[STIX_EXT_OCTI] as any).score).toBe(42);
+  });
+
+  describe('Report and case types', () => {
+    const TYPE_FIELDS = [
+      { entityType: ENTITY_TYPE_CONTAINER_REPORT, attribute: 'report_types', first: 'internal-report', second: 'threat-report' },
+      { entityType: ENTITY_TYPE_CONTAINER_CASE_INCIDENT, attribute: 'response_types', first: 'ransomware', second: 'data-leak' },
+      { entityType: ENTITY_TYPE_CONTAINER_CASE_RFI, attribute: 'information_types', first: 'internal', second: 'external' },
+      { entityType: ENTITY_TYPE_CONTAINER_CASE_RFT, attribute: 'takedown_types', first: 'phishing', second: 'brand-abuse' },
+    ];
+
+    const run = async (entityType: string, attribute: string, op: 'add' | 'replace' | 'remove', values: string[], current: string[]) => {
+      const id: `${string}--${string}` = `${entityType.toLowerCase()}--09bd862a-f030-55f2-920a-900c4913d9bb`;
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: id,
+        bundleObjects: [testBundleObject<StixDomainObject>({ id, type: entityType, [attribute]: current })],
+        configuration: {
+          applyToElements: 'only-main',
+          actions: [{ op, attribute, value: values.map((v) => ({ label: v, value: v, patch_value: v })) }],
+        },
+      }));
+      const element = result.bundle.objects.find((o) => o.id === id) as Record<string, any>;
+      return { values: element[attribute], operations: element.extensions[STIX_EXT_OCTI].opencti_upsert_operations };
+    };
+
+    it.each(TYPE_FIELDS)('should add, replace and remove $attribute on $entityType', async ({ entityType, attribute, first, second }) => {
+      const added = await run(entityType, attribute, 'add', [second], [first]);
+      expect(added.values).toEqual([first, second]);
+      expect(added.operations).toEqual([{ key: attribute, value: [second], operation: 'add' }]);
+
+      const replaced = await run(entityType, attribute, 'replace', [second], [first]);
+      expect(replaced.values).toEqual([second]);
+      expect(replaced.operations).toEqual([{ key: attribute, value: [second], operation: 'replace' }]);
+
+      const removed = await run(entityType, attribute, 'remove', [first], [first, second]);
+      expect(removed.values).toEqual([second]);
+      expect(removed.operations).toEqual([{ key: attribute, value: [first], operation: 'remove' }]);
+    });
+
+    it('should leave an entity without the attribute unchanged', async () => {
+      const result = await run('Malware', 'report_types', 'add', ['threat-report'], []);
+      expect(result.values).toEqual([]);
+      expect(result.operations).toBeUndefined();
+    });
   });
 
   describe('Bundle scope', () => {
