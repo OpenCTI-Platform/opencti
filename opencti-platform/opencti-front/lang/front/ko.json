@@ -6364,5 +6364,6 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "사용자는 현재 사용자가 소속된 조직 외에 기본 플랫폼 조직과도 관련됩니다",
   "Zoom": "확대/축소",
   "Zoom in": "확대",
-  "Zoom out": "축소"
+  "Zoom out": "축소",
+  "The published values of the selected dashboard are still loading": "선택한 대시보드의 게시 값을 아직 불러오는 중입니다"
 }
