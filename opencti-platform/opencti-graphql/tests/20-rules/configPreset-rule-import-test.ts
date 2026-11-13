@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import LocationTargetsRule from '../../src/rules/location-targets/LocationTargetsRule';
 import { getRule } from '../../src/domain/rules';
 import { importConfigPresetRule, RULE_ACTIVATION_SCAN_REASON, RULE_DEACTIVATION_SCAN_REASON } from '../../src/modules/rule/rule-import';
@@ -12,12 +12,14 @@ import { getManagerInfo } from '../../src/manager/ruleManager';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { ADMIN_USER, FIVE_MINUTES, testContext } from '../utils/testQuery';
 import { awaitUntilCondition } from '../utils/testQueryHelper';
+import { awaitTaskWorkerReady, disableRule } from '../utils/rule-utils';
 
 const RULE_ID = LocationTargetsRule.id;
 const overwrite = { mode: ConfigImportMode.Overwrite };
 const isActivated = async () => (await getRule(testContext, ADMIN_USER, RULE_ID))?.activated === true;
 
 interface RuleTask {
+  id: string;
   type: string;
   rule: string;
   enable: boolean;
@@ -26,12 +28,19 @@ interface RuleTask {
   work_id?: string;
 }
 
-// The same wait as changeRule (rule-utils), after a switch made by the import instead of the mutation:
-// the rule task is done without error, then the rule manager has caught up with the stream
-const awaitRuleTask = async (active: boolean) => {
+const ruleTasksOf = async (active: boolean) => {
+  const tasks = (await topEntitiesList(testContext, SYSTEM_USER, [ENTITY_TYPE_BACKGROUND_TASK])) as unknown as RuleTask[];
+  return tasks.filter((task) => task.type === TASK_TYPE_RULE && task.rule === RULE_ID && task.enable === active);
+};
+
+// The same wait as changeRule (rule-utils), after a switch made by the import instead of the mutation: the import created a rule task
+// (one that was not there before it), done without error, then the rule manager has caught up with the stream
+const awaitRuleTask = async (active: boolean, before: string[]) => {
   await awaitUntilCondition(async () => {
-    const tasks = (await topEntitiesList(testContext, SYSTEM_USER, [ENTITY_TYPE_BACKGROUND_TASK])) as unknown as RuleTask[];
-    const ruleTasks = tasks.filter((task) => task.type === TASK_TYPE_RULE && task.rule === RULE_ID && task.enable === active);
+    const ruleTasks = await ruleTasksOf(active);
+    if (!ruleTasks.some(({ id }) => !before.includes(id))) {
+      return false;
+    }
     ruleTasks.forEach((task) => expect(task.errors.length).toBe(0));
     const workIds = ruleTasks.map((task) => task.work_id).filter((workId): workId is string => isNotEmptyField(workId));
     const works = (await internalFindByIds(testContext, SYSTEM_USER, workIds, { indices: [READ_INDEX_HISTORY] })) as unknown as { status: string; errors: unknown[] }[];
@@ -53,18 +62,29 @@ const awaitRuleTask = async (active: boolean) => {
 };
 
 describe('Config preset import of a rule', () => {
+  // A failure after the rule is switched on must not leave it active for the next files, which assert on inferred relationships
+  afterAll(async () => {
+    if (await isActivated()) {
+      await disableRule(RULE_ID);
+    }
+  }, FIVE_MINUTES);
+
   it('switches the rule on then off through its rule task, then finds it up to date', async () => {
     expect(await isActivated()).toBe(false);
+    // The import creates a rule task: a worker must consume it, as changeRule waits for
+    await awaitTaskWorkerReady();
 
+    const activationTasks = (await ruleTasksOf(true)).map(({ id }) => id);
     expect(await importConfigPresetRule(testContext, ADMIN_USER, RULE_ID, { active: true }, overwrite))
       .toEqual({ status: 'overwritten', exists: true, configuration: { active: true }, reason: RULE_ACTIVATION_SCAN_REASON });
-    await awaitRuleTask(true);
+    await awaitRuleTask(true, activationTasks);
     expect(await isActivated()).toBe(true);
     expect(await importConfigPresetRule(testContext, ADMIN_USER, RULE_ID, { active: true }, overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
 
+    const deactivationTasks = (await ruleTasksOf(false)).map(({ id }) => id);
     expect(await importConfigPresetRule(testContext, ADMIN_USER, RULE_ID, { active: false }, overwrite))
       .toEqual({ status: 'overwritten', exists: true, configuration: { active: false }, reason: RULE_DEACTIVATION_SCAN_REASON });
-    await awaitRuleTask(false);
+    await awaitRuleTask(false, deactivationTasks);
     expect(await isActivated()).toBe(false);
   }, FIVE_MINUTES);
 });

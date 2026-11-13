@@ -162,4 +162,15 @@ describe('Config preset real import of an item whose status changes between comp
     const { results } = await configPresetImport(context, user, FILE_ID, [{ type: 'ruleEngine' }], false);
     expect(results.map(({ type, status, reason }) => [type, status, reason])).toEqual([['ruleEngine', 'SKIPPED', RULE_ENGINE_DISABLED_REASON]]);
   });
+
+  it('keeps the reason of the preview when the module only gives a new status', async () => {
+    const id = roleStandardId('Analyst');
+    withBundle([roleItem(id)]);
+    // Another import created the role between the preview and the write: the module returns a status, no reason
+    vi.mocked(importRole).mockImplementation(async (_context, _user, _configuration, { dryRun }) => (dryRun
+      ? { status: 'created', exists: false, reason: 'Preview reason', targetId: id, grantsSensitiveRights: false }
+      : { status: 'overwritten', exists: true, reason: 'Write reason', targetId: id, grantsSensitiveRights: false }));
+    const { results } = await configPresetImport(context, user, FILE_ID, [{ type: 'roles' }], false);
+    expect(results.map(({ type, status, reason }) => [type, status, reason])).toEqual([['roles', 'OVERWRITTEN', 'Preview reason']]);
+  });
 });
