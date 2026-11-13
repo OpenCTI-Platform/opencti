@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Button from '@common/button/Button';
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogTitle, Input, Text } from '@filigran/design-system';
 import { useFormatter } from '../../i18n';
@@ -32,8 +32,11 @@ const DashboardPresetNameDialog = ({ open, existingPresets, preset, onConfirm, o
     error = t_i18n('A preset with this name already exists');
   }
 
+  // Read synchronously: a second Enter can come before the state of the first one is rendered.
+  const submittingRef = useRef(false);
   const handleConfirm = async () => {
-    if (error) return;
+    if (error || submittingRef.current) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
     try {
       await onConfirm(trimmed);
@@ -41,6 +44,7 @@ const DashboardPresetNameDialog = ({ open, existingPresets, preset, onConfirm, o
     } catch {
       // The mutation hook already notified the user: the dialog stays open so they can retry or cancel.
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   };

@@ -894,6 +894,53 @@ describe('CustomDashboard presets', () => {
     expect(JSON.parse(fromB64(manifestCall.value[0])).config).toMatchObject({ relativeDate: 'months-1' });
   });
 
+  it('keeps the view on the active preset after Set as dashboard defaults', async () => {
+    captured.commit.mockImplementation((args) => args.onCompleted?.({}));
+    const { user } = testRender(<CustomDashboard data={withPresets() as never} />, { userContext: flagOn() });
+    await pickFinance(user);
+    act(() => captured.onSetValue?.(SECTOR_ID, 'Retail'));
+    await setAsDefaults(user);
+    // The preset stays the base of the view: the value written as the dashboard default is still the one shown
+    await waitFor(() => expect(captured.commit).toHaveBeenCalled());
+    expect(captured.values?.get(SECTOR_ID)).toBe('Retail');
+    expect(new URLSearchParams(window.location.search).get('preset')).toBe('p1');
+  });
+
+  it('renames a preset with its name alone, so the server keeps its stored values and range', async () => {
+    captured.commit.mockImplementation((args) => args.onCompleted?.({ workspacePresetUpsert: { presets: [{ id: 'p1', name: 'Finance 2' }] } }));
+    const { user } = testRender(<CustomDashboard data={withPresets() as never} />, { userContext: flagOn() });
+    await pickFinance(user);
+    await user.click(screen.getByTestId('dashboard-preset-trigger'));
+    await user.click(await screen.findByTestId('dashboard-preset-rename'));
+    const name = await screen.findByLabelText(/Preset name/);
+    await user.clear(name);
+    await user.type(name, 'Finance 2');
+    await user.click(screen.getByTestId('dashboard-preset-name-confirm'));
+    await waitFor(() => expect(captured.commit).toHaveBeenCalled());
+    expect(captured.commit.mock.calls[0][0].variables.input).toEqual({ id: 'p1', name: 'Finance 2' });
+  });
+
+  it('drops the local values once they are saved as a new preset', async () => {
+    captured.commit.mockImplementation((args) => args.onCompleted?.({ workspacePresetUpsert: { presets: [{ id: 'p9', name: 'Retail view' }] } }));
+    const { user } = testRender(<CustomDashboard data={withPresets() as never} />, { userContext: flagOn() });
+    act(() => captured.onSetValue?.(SECTOR_ID, 'Retail'));
+    expect(new URLSearchParams(window.location.search).get('variables')).not.toBeNull();
+    await user.click(saveMenu());
+    await user.click(await screen.findByTestId('dashboard-preset-save-as'));
+    await user.type(await screen.findByLabelText(/Preset name/), 'Retail view');
+    await user.click(screen.getByTestId('dashboard-preset-name-confirm'));
+    await waitFor(() => expect(captured.commit).toHaveBeenCalled());
+    await waitFor(() => expect(new URLSearchParams(window.location.search).get('variables')).toBeNull());
+    expect(window.localStorage.getItem(dashboardVariablesStorageKey('user-1', 'ws-1'))).toBeNull();
+  });
+
+  it('starts the bar with the chips, without a lone divider, before the first preset', () => {
+    testRender(<CustomDashboard data={withPresets({ presets: [] }) as never} />, { userContext: flagOn() });
+    const bar = screen.getByTestId('dashboard-variables-bar');
+    expect(within(bar).queryByRole('separator')).toBeNull();
+    expect(selector()).not.toBeInTheDocument();
+  });
+
   it('drops the values and the range of the active preset when it is deleted', async () => {
     captured.commit.mockImplementation((args) => args.onCompleted?.({}));
     const { user } = testRender(<CustomDashboard data={withPresets() as never} />, { userContext: flagOn() });
