@@ -612,10 +612,6 @@ export const ENABLED_FEATURE_FLAGS = nconf.get('app:enabled_dev_features') ?? []
 export const FEATURE_FLAG_ALL = '*';
 export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
 
-// Password history feature flag (use isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG) to check activation).
-// When disabled, local passwords can be reused as before and no password history is recorded.
-export const PASSWORD_HISTORY_FEATURE_FLAG = 'PASSWORD_HISTORY';
-
 // Local authentication lockout policy feature flag (use isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG) to check activation)
 export const LOCAL_AUTH_LOCKOUT_FEATURE_FLAG = 'LOCAL_AUTH_LOCKOUT';
 

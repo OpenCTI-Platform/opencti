@@ -9,9 +9,8 @@ vi.mock('../../../../../utils/hooks/useApiMutation', () => ({
   default: () => [commitFnMock, false],
 }));
 
-let passwordHistoryFlag = true;
 vi.mock('../../../../../utils/hooks/useHelper', () => ({
-  default: () => ({ isFeatureEnable: (flag: string) => flag === 'PASSWORD_HISTORY' && passwordHistoryFlag }),
+  default: () => ({ isFeatureEnable: () => false }),
 }));
 
 const mockUseLazyLoadQuery = vi.fn();
@@ -54,7 +53,6 @@ const historyInput = () => screen.getByRole('spinbutton', { name: HISTORY_LABEL 
 describe('LocalStrategyForm, password history', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    passwordHistoryFlag = true;
   });
 
   it('shows the saved count, bounded from 0 to 24', () => {
@@ -64,10 +62,9 @@ describe('LocalStrategyForm, password history', () => {
     expect(historyInput()).toHaveAttribute('max', '24');
   });
 
-  it('hides the field when the feature flag is off', () => {
-    passwordHistoryFlag = false;
-    renderForm(0);
-    expect(screen.queryByRole('spinbutton', { name: HISTORY_LABEL })).toBeNull();
+  it('shows 0 when no count is saved', () => {
+    renderForm(null);
+    expect(historyInput().value).toBe('0');
   });
 
   it('sends the count with the other policies', async () => {
@@ -82,9 +79,8 @@ describe('LocalStrategyForm, password history', () => {
     expect(input.password_policy_min_length).toBe(8);
   });
 
-  it('does not send the count when the feature flag is off', async () => {
-    passwordHistoryFlag = false;
-    const { user } = renderForm(0);
+  it('sends the saved count unchanged when another policy is edited', async () => {
+    const { user } = renderForm(3);
     const minLength = screen.getByRole('spinbutton', { name: 'Number of chars must be greater or equals to' });
     await user.clear(minLength);
     await user.type(minLength, '10');
@@ -92,7 +88,8 @@ describe('LocalStrategyForm, password history', () => {
 
     await waitFor(() => expect(commitFnMock).toHaveBeenCalled());
     const { input } = (commitFnMock as Mock).mock.calls[0][0].variables;
-    expect(input).not.toHaveProperty('password_policy_history_count');
+    expect(input.password_policy_history_count).toBe(3);
+    expect(input.password_policy_min_length).toBe(10);
   });
 
   it('refuses a count out of range or not an integer', async () => {

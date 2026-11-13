@@ -20,7 +20,7 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
 import { notify } from '../database/redis';
-import { BUS_TOPICS, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG, PASSWORD_HISTORY_FEATURE_FLAG } from '../config/conf';
+import { BUS_TOPICS, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { type CertAuthConfigInput, type HeadersAuthConfigInput, type LocalAuthConfigInput, LocalAuthLockoutFinalAction } from '../generated/graphql';
 import { getEntityFromCache } from '../database/cache';
@@ -28,17 +28,10 @@ import { SYSTEM_USER } from '../utils/access';
 import { propagatePasswordValidityChange } from '../modules/user/user-domain';
 import { isValidPasswordHistoryCount, PASSWORD_HISTORY_MAX_COUNT, readPasswordHistoryCount, trimAllUsersPasswordHistory } from '../modules/user/user-password-history';
 
-// The password history count sent with the local settings, once validated; undefined when it must not be saved.
-// With the feature flag off, the hidden form field still sends 0: that is ignored, any other value refused.
+// The password history count sent with the local settings, once validated; undefined when it is not sent.
 export const resolvePasswordHistoryCount = (input: Pick<LocalAuthConfigInput, 'password_policy_history_count'>): number | undefined => {
   const value = input.password_policy_history_count;
   if (value === undefined || value === null) {
-    return undefined;
-  }
-  if (!isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG)) {
-    if (value !== 0) {
-      throw FunctionalError('Password history is not available on this platform');
-    }
     return undefined;
   }
   if (!isValidPasswordHistoryCount(value)) {

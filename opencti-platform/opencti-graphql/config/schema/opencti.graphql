@@ -1405,7 +1405,7 @@ type PublicSettings implements IntlSettings & ThemeSettings {
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
   password_policy_validity_days: Int
-  password_policy_history_count: Int @ff(flags: ["PASSWORD_HISTORY"], softFail: true, defaultValue: "0")
+  password_policy_history_count: Int
 }
 
 type MetricAttributes {
@@ -1556,7 +1556,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
   password_policy_validity_days: Int
-  password_policy_history_count: Int @ff(flags: ["PASSWORD_HISTORY"], softFail: true, defaultValue: "0")
+  password_policy_history_count: Int
   local_auth_lockout_enabled: Boolean @ff(flags: ["LOCAL_AUTH_LOCKOUT"], softFail: true, defaultValue: "false")
   local_auth_lockout_max_attempts: Int @ff(flags: ["LOCAL_AUTH_LOCKOUT"], softFail: true, defaultValue: "10")
   local_auth_lockout_admin_max_attempts: Int @ff(flags: ["LOCAL_AUTH_LOCKOUT"], softFail: true, defaultValue: "3")
