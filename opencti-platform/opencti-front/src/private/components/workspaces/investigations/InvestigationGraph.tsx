@@ -1,5 +1,5 @@
 import { graphql, PreloadedQuery, useFragment } from 'react-relay';
-import React, { CSSProperties, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { CSSProperties, Suspense, useEffect, useMemo, useRef } from 'react';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { useTheme } from '@mui/material/styles';
 import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
@@ -29,7 +29,7 @@ import { ObjectToParse } from '../../../../components/graph/utils/useGraphParser
 import { useFormatter } from '../../../../components/i18n';
 import InvestigationViewSwitcher, { INVESTIGATION_MATRIX_EXPORT_ID, useInvestigationView } from './InvestigationViewSwitcher';
 import InvestigationMatrix from './matrix/InvestigationMatrix';
-import { DEFAULT_INVESTIGATION_MATRIX_SETTINGS, InvestigationMatrixSettings } from './matrix/investigationMatrixSettings';
+import { useInvestigationMatrixSettings } from './matrix/investigationMatrixSettings';
 import prepareMatrixCapture from './matrix/prepareMatrixCapture';
 
 const investigationGraphDataFragment = graphql`
@@ -454,12 +454,6 @@ const InvestigationGraphComponent = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const view = useInvestigationView();
-  // Held here, not in the matrix, which unmounts on the graph view: the toolbar settings survive a view switch.
-  const [matrixSettings, setMatrixSettings] = useState<InvestigationMatrixSettings>(DEFAULT_INVESTIGATION_MATRIX_SETTINGS);
-  const changeMatrixSettings = useCallback(
-    (change: Partial<InvestigationMatrixSettings>) => setMatrixSettings((current) => ({ ...current, ...change })),
-    [],
-  );
   const bannerHeight = useSettingsMessagesBannerHeight();
   const { rawObjects } = useGraphContext();
 
@@ -471,6 +465,9 @@ const InvestigationGraphComponent = ({
   } = useGraphInteractions();
 
   const investigation = useFragment(investigationGraphFragment, dataInvestigation);
+
+  // Held here, not in the matrix, which unmounts on the graph view: the toolbar settings survive a view switch.
+  const [matrixSettings, changeMatrixSettings] = useInvestigationMatrixSettings(investigation.id);
 
   const {
     addInvestigationOpInStack,

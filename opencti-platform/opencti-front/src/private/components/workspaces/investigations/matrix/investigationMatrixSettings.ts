@@ -1,3 +1,4 @@
+import { useCallback, useState } from 'react';
 import type { EntityOption } from '@components/common/form/EntitySelect';
 
 /**
@@ -19,4 +20,21 @@ export const DEFAULT_INVESTIGATION_MATRIX_SETTINGS: InvestigationMatrixSettings 
   onlyUsed: false,
   heatmap: false,
   securityPlatforms: [],
+};
+
+/**
+ * The matrix settings of one investigation. The graph component is reused when the user opens another
+ * investigation: that one starts from the defaults instead of inheriting the previous kill chain, heatmap
+ * or security platforms.
+ */
+export const useInvestigationMatrixSettings = (
+  investigationId: string,
+): [InvestigationMatrixSettings, InvestigationMatrixSettingsChange] => {
+  const [state, setState] = useState({ investigationId, settings: DEFAULT_INVESTIGATION_MATRIX_SETTINGS });
+  const settings = state.investigationId === investigationId ? state.settings : DEFAULT_INVESTIGATION_MATRIX_SETTINGS;
+  const change = useCallback<InvestigationMatrixSettingsChange>((update) => setState((current) => ({
+    investigationId,
+    settings: { ...(current.investigationId === investigationId ? current.settings : DEFAULT_INVESTIGATION_MATRIX_SETTINGS), ...update },
+  })), [investigationId]);
+  return [settings, change];
 };
