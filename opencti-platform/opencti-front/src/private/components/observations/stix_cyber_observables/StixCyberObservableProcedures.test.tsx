@@ -1,5 +1,32 @@
-import { describe, expect, it } from 'vitest';
-import { buildObservableProceduresFilters } from './StixCyberObservableProcedures';
+import React from 'react';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
+import testRender from '../../../../utils/tests/test-render';
+import StixCyberObservableProcedures, { buildObservableProceduresFilters } from './StixCyberObservableProcedures';
+
+const mocks = vi.hoisted(() => ({
+  useQueryLoading: vi.fn(),
+  paginationOptions: {} as Record<string, unknown>,
+}));
+
+vi.mock('../../../../utils/hooks/useQueryLoading', () => ({
+  default: mocks.useQueryLoading,
+}));
+
+vi.mock('../../../../utils/hooks/useLocalStorage', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../utils/hooks/useLocalStorage')>();
+  return {
+    ...actual,
+    usePaginationLocalStorage: () => ({
+      viewStorage: {},
+      helpers: { handleSetNumberOfElements: vi.fn() },
+      paginationOptions: mocks.paginationOptions,
+    }),
+  };
+});
+
+vi.mock('../../../../components/dataGrid/DataTable', () => ({
+  default: () => null,
+}));
 
 describe('buildObservableProceduresFilters', () => {
   it('filters procedures by observable or command ref', () => {
@@ -11,5 +38,26 @@ describe('buildObservableProceduresFilters', () => {
         { key: ['procedureCommand'], values: ['obs-1'], operator: 'eq', mode: 'or' },
       ],
     });
+  });
+});
+
+describe('StixCyberObservableProcedures', () => {
+  beforeEach(() => {
+    mocks.useQueryLoading.mockReset();
+    mocks.useQueryLoading.mockReturnValue(null);
+  });
+
+  it('queries with the stored sort and always applies the observable filter', () => {
+    mocks.paginationOptions = {
+      count: 25,
+      orderBy: 'created',
+      orderMode: 'desc',
+      filters: { mode: 'and', filters: [], filterGroups: [] },
+    };
+    testRender(<StixCyberObservableProcedures observableId="obs-1" />);
+    const variables = mocks.useQueryLoading.mock.calls[0][1];
+    expect(variables.orderBy).toBe('created');
+    expect(variables.orderMode).toBe('desc');
+    expect(variables.filters).toEqual(buildObservableProceduresFilters('obs-1'));
   });
 });

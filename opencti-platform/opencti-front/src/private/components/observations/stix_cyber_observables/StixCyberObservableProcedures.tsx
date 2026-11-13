@@ -94,16 +94,19 @@ const StixCyberObservableProcedures: FunctionComponent<StixCyberObservableProced
     searchTerm: '',
     sortBy: 'name',
     orderAsc: true,
-    numberOfElements: { number: 0, symbol: '' },
   };
-  const { helpers } = usePaginationLocalStorage<StixCyberObservableProceduresPaginationQuery$variables>(
+  const { helpers, paginationOptions } = usePaginationLocalStorage<StixCyberObservableProceduresPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
-  const filters = buildObservableProceduresFilters(observableId);
+  // The observable filter always applies; the stored sort and page size drive the query.
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: buildObservableProceduresFilters(observableId),
+  } as unknown as StixCyberObservableProceduresPaginationQuery$variables;
   const queryRef = useQueryLoading<StixCyberObservableProceduresPaginationQuery>(
     stixCyberObservableProceduresQuery,
-    { count: 25, orderBy: 'name', orderMode: 'asc', filters },
+    queryPaginationOptions,
   );
   const preloadedPaginationProps = {
     linesQuery: stixCyberObservableProceduresQuery,
