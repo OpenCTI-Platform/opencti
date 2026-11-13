@@ -16,7 +16,7 @@ import { ResetPasswordAskSendOtpMutation } from './__generated__/ResetPasswordAs
 import { ResetPasswordChangePasswordMutation } from './__generated__/ResetPasswordChangePasswordMutation.graphql';
 import { useLoginContext } from './loginContext';
 import PasswordPoliciesAlert, { PasswordPolicies } from '../../../components/PasswordPoliciesAlert';
-import { PASSWORD_REUSED, passwordChangeErrorCode, passwordChangeErrorMessages } from '../../../utils/passwordChangeErrors';
+import { PASSWORD_REUSED, passwordChangeErrorCode, passwordChangeErrorMessages, showPasswordFieldError } from '../../../utils/passwordChangeErrors';
 
 interface InternalFormProps extends PropsWithChildren {
   action?: ReactNode;
@@ -225,7 +225,7 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
 
   const onSubmitValidatePassword: FormikConfig<ResetPasswordFormValues>['onSubmit'] = (
     values,
-    { resetForm, setErrors, setSubmitting },
+    { resetForm, setErrors, setSubmitting, setFieldValue, setFieldTouched, setFieldError },
   ) => {
     changePasswordCommitMutation({
       variables: {
@@ -244,10 +244,12 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
         const errorCode = passwordChangeErrorCode(error);
         if (errorCode === PASSWORD_REUSED) {
           // Same step and same code: the user only has to pick another password
-          resetForm({
-            errors: { password: passwordChangeErrorMessages(t_i18n)[PASSWORD_REUSED] },
-            touched: { password: true },
-          });
+          showPasswordFieldError(
+            { setFieldValue, setFieldTouched, setFieldError },
+            passwordChangeErrorMessages(t_i18n)[PASSWORD_REUSED],
+            'password',
+            ['password', 'password_validation'],
+          );
         } else {
           handleErrorInForm(error, setErrors);
         }
@@ -426,6 +428,8 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
                 label={t_i18n('Password')}
                 type="password"
                 fullWidth={true}
+                // Room for the label, which moves up onto the field's border once focused or filled
+                className={hasPasswordPolicies ? 'mt-4' : undefined}
               />
               <Field
                 component={TextField}

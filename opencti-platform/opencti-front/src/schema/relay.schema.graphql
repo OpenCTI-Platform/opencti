@@ -2241,6 +2241,11 @@ enum ConfigImportMode {
   OVERWRITE
 }
 
+input ConfigPresetCredentialInput {
+  key: String!
+  secret: String!
+}
+
 type ConfigPresetExportableGroup {
   key: String!
   label: String!
@@ -2282,6 +2287,15 @@ type ConfigPresetImportCounts {
   skipped: Int!
 }
 
+type ConfigPresetImportCredential {
+  description: String!
+  key: String!
+  required: Boolean!
+  secret: Boolean!
+  stored: Boolean!
+  type: String!
+}
+
 type ConfigPresetImportField {
   key: String!
   value: String
@@ -2289,6 +2303,7 @@ type ConfigPresetImportField {
 
 type ConfigPresetImportItem {
   conflict: Boolean!
+  credentials: [ConfigPresetImportCredential!]!
   dependsOn: [ConfigPresetItemReference!]!
   exists: Boolean!
   fields: [ConfigPresetImportField!]!
@@ -2402,6 +2417,12 @@ type ConfigPresetImportType {
   modes: [ConfigImportMode!]!
 }
 
+input ConfigPresetItemCredentialsInput {
+  key: ID!
+  type: ID!
+  values: [ConfigPresetCredentialInput!]!
+}
+
 type ConfigPresetItemMode {
   key: ID!
   mode: ConfigImportMode!
@@ -2415,6 +2436,12 @@ input ConfigPresetItemModeInput {
 type ConfigPresetItemReference {
   key: String!
   type: String!
+}
+
+input ConfigPresetItemServiceAccountInput {
+  key: ID!
+  type: ID!
+  user_id: ID!
 }
 
 type ConfigPresetPartialImportOutput {
@@ -9296,7 +9323,7 @@ type Mutation {
   cityEdit(id: ID!): CityEditMutations
   clearWorkflowPendingState(entityId: String!): WorkflowInstance!
   configPresetExport(bundle_name: String, selections: [ConfigPresetSelectionInput!]!): File!
-  configPresetImport(dry_run: Boolean, file_id: ID!, selections: [ConfigPresetSelectionInput!]!): ConfigPresetImportOutput!
+  configPresetImport(credentials: [ConfigPresetItemCredentialsInput!], dry_run: Boolean, file_id: ID!, selections: [ConfigPresetSelectionInput!]!, service_accounts: [ConfigPresetItemServiceAccountInput!]): ConfigPresetImportOutput!
   configPresetImportSessionBackToSelection: ConfigPresetImportSession!
   configPresetImportSessionClear(delete_file: Boolean): Boolean!
   configPresetImportSessionSave(file_id: ID!, revision: Int!, selections: [ConfigPresetSelectionInput!]!): ConfigPresetImportSession!

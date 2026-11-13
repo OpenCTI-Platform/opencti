@@ -93,7 +93,7 @@ export const projectWorkflowState = async (
       inputs.push({ key: 'x_opencti_closing_reason', value: [closingReason] });
     }
     if (inputs.length > 0) {
-      await updateAttribute(executionContext, executionUser, entityId, entityType, inputs, { workflowInternalWrite: true });
+      await updateAttribute(executionContext, executionUser, entityId, entityType, inputs, { workflowInternalWrite: true, skipReferenceEnforcement: true });
     }
     return true;
   } catch (error) {
