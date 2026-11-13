@@ -143,3 +143,39 @@ export const staleDedupSearches = (
   });
   return { stale, changedKeys: changed.size };
 };
+
+// task 0040 partial acquire: when the batch lock is refused, the groups one of whose own keys another
+// platform holds are carried to the next batch with every group depending on them (dependsOn,
+// transitively; producers come first in the order), the others apply now under a lock on their own
+// keys only. The kept groups get their dependsOn positions remapped. Nothing is carried when nothing
+// is held, when every group would be, or when a conflicting group was already carried `carryLimit`
+// times (no starvation: the batch then waits for the whole lock as before).
+export const splitPlanOnHeldKeys = <G extends { leader: { replans?: number }; dependsOn?: number[] }>(
+  order: G[],
+  ownKeysOf: (group: G) => string[],
+  held: Set<string>,
+  carryLimit: number,
+): { kept: G[]; carried: G[] } => {
+  if (held.size === 0) return { kept: order, carried: [] };
+  const carriedAt: boolean[] = [];
+  let starving = false;
+  order.forEach((group, i) => {
+    const conflict = ownKeysOf(group).some((key) => held.has(key));
+    if (conflict && (group.leader.replans ?? 0) >= carryLimit) starving = true;
+    carriedAt[i] = conflict || (group.dependsOn ?? []).some((d) => carriedAt[d]);
+  });
+  const carriedCount = carriedAt.filter(Boolean).length;
+  if (starving || carriedCount === 0 || carriedCount === order.length) return { kept: order, carried: [] };
+  const newIndex: number[] = [];
+  const kept: G[] = [];
+  const carried: G[] = [];
+  order.forEach((group, i) => {
+    if (carriedAt[i]) {
+      carried.push(group);
+    } else {
+      newIndex[i] = kept.length;
+      kept.push(group.dependsOn ? { ...group, dependsOn: group.dependsOn.map((d) => newIndex[d]) } : group);
+    }
+  });
+  return { kept, carried };
+};

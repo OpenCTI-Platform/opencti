@@ -122,6 +122,7 @@
       "contention_diag": false,
       "batch_lock_retry_delay_ms": 0,
       "dedup_before_lock": false,
+      "partial_acquire": false,
       "noop_memo": false,
       "noop_memo_size": 50000,
       "origin": "worker"

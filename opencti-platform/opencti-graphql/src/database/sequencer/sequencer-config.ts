@@ -70,6 +70,9 @@ export interface SequencerConfig {
   // task 0040 step B2 (multi_writer): the relation dedup searches run before the batch lock; under it
   // only those whose relation-dedup key another platform stamped since are searched again
   dedupBeforeLock: boolean;
+  // task 0040 (multi_writer): a refused batch lock carries the groups whose own keys another platform
+  // holds to the next batch and locks the rest (splitPlanOnHeldKeys) instead of waiting for all of it
+  partialAcquire: boolean;
 }
 
 const readConfig = (): SequencerConfig => {
@@ -147,6 +150,7 @@ const readConfig = (): SequencerConfig => {
     contentionDiag: booleanConf('app:ingestion_sequencer:contention_diag', false),
     batchLockRetryDelayMs: Math.max(0, Math.floor(Number(conf.get('app:ingestion_sequencer:batch_lock_retry_delay_ms') ?? 0))),
     dedupBeforeLock: booleanConf('app:ingestion_sequencer:dedup_before_lock', false),
+    partialAcquire: booleanConf('app:ingestion_sequencer:partial_acquire', false),
   };
 };
 

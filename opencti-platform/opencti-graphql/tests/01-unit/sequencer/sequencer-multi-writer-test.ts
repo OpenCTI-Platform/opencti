@@ -7,6 +7,7 @@ import {
   ownedPendingQuery,
   recordOwner,
   relationBasisContext,
+  splitPlanOnHeldKeys,
   staleDedupSearches,
 } from '../../../src/database/sequencer/sequencer-multi-writer';
 import { deferIntents, deferOperation, initPendingIntents, registerPendingIntentsEsOps } from '../../../src/database/sequencer/sequencer-pending-intents';
@@ -184,5 +185,33 @@ describe('step B2: dedup searches made before the batch lock', () => {
     const before = new Map([['relation-dedup:targets:a:b', 'x']]);
     expect(staleDedupSearches(keyOf, before, new Map(before)).stale).toEqual(['s2']);
     expect(staleDedupSearches(keyOf, before, new Map()).stale).toEqual(['s1', 's2', 's3']);
+  });
+});
+
+describe('partial acquire: groups carried when another platform holds one of their keys', () => {
+  const group = (name: string, keys: string[], dependsOn?: number[], replans = 0) => ({ name, keys, leader: { replans }, dependsOn });
+  const keysOf = (g: { keys: string[] }) => g.keys;
+
+  it('should carry the conflicting group and its dependents, keep the rest with remapped dependencies', () => {
+    const order = [
+      group('author', ['identity--nvd']),
+      group('vuln', ['vulnerability--1']),
+      group('rel-on-author', ['relation-dedup:x'], [0]),
+      group('rel-on-vuln', ['relation-dedup:y'], [1]),
+      group('chained', ['report--1'], [2]),
+    ];
+    const { kept, carried } = splitPlanOnHeldKeys(order, keysOf, new Set(['identity--nvd']), 3);
+    expect(carried.map((g) => g.name)).toEqual(['author', 'rel-on-author', 'chained']);
+    expect(kept.map((g) => g.name)).toEqual(['vuln', 'rel-on-vuln']);
+    expect(kept[1].dependsOn).toEqual([0]);
+    expect(order[3].dependsOn).toEqual([1]); // the plan's groups are not mutated
+  });
+
+  it('should carry nothing when nothing is held, when every group conflicts, or when a conflicting group was carried enough', () => {
+    const order = [group('a', ['k1']), group('b', ['k2'], [0])];
+    expect(splitPlanOnHeldKeys(order, keysOf, new Set(), 3).carried).toEqual([]);
+    expect(splitPlanOnHeldKeys(order, keysOf, new Set(['k1']), 3).carried).toEqual([]); // b depends on a: every group
+    const starving = [group('a', ['k1'], undefined, 3), group('b', ['k2'])];
+    expect(splitPlanOnHeldKeys(starving, keysOf, new Set(['k1']), 3)).toEqual({ kept: starving, carried: [] });
   });
 });

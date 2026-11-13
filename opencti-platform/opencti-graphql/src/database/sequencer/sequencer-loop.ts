@@ -30,6 +30,7 @@ import {
   isLockError,
   lockErrorKeys,
   relationDedupLockKey,
+  splitPlanOnHeldKeys,
   staleDedupSearches,
 } from './sequencer-multi-writer';
 import { buildPendingRecords, fireReconcile, initPendingRefs, matchCreatedElement, persistPendingRecords, registerPendingRefsEsOps } from './sequencer-pending-refs';
@@ -127,6 +128,9 @@ const acquireBatchLock = async (keys: string[]) => {
 // s9.9: batches a group may be skipped for a failed in-batch producer before it applies
 // through today's path anyway
 const FAILED_PRODUCER_DEFER_LIMIT = 2;
+// task 0040 partial acquire: batches a group may be carried for a held key before its batch waits
+// for the whole lock again
+const PARTIAL_CARRY_LIMIT = 3;
 
 // task 0040 no-op memo (sequencer-noop-memo.ts): the recorded no-ops, the keys of the intents of
 // the running batch, and the entity types an apply already ended as a no-op
@@ -1223,18 +1227,45 @@ const runBatchLoop = async () => {
     }
     // 4. one batch lock over the predicted key set; multi_writer: Redis locks the batch's own
     // keys only, the batch holds the full set (heldKeys below)
-    const heldKeys = batchLockKeys(plan.order);
-    const lockKeys = SEQUENCER_CONFIG.multiWriter ? ownLockKeys(plan.order) : heldKeys;
+    let heldKeys = batchLockKeys(plan.order);
+    let lockKeys = SEQUENCER_CONFIG.multiWriter ? ownLockKeys(plan.order) : heldKeys;
+    // task 0040 partial acquire: the groups carried to the next batch because another platform held one
+    // of their keys (first of the next batch, before the replanned and lock-refused ones)
+    const partialCarried: SequencerIntent[] = [];
     // task 0040 multi_writer: the planned intents start a new cycle (first of the next batch)
     const replanNext = () => {
-      carried = plan.order.flatMap(({ leader, absorbed }) => [leader, ...absorbed]);
-      carried.forEach((intent) => {
+      const planned = plan.order.flatMap(({ leader, absorbed }) => [leader, ...absorbed]);
+      planned.forEach((intent) => {
         intent.replans = (intent.replans ?? 0) + 1;
       });
+      carried = [...partialCarried, ...planned];
+    };
+    // partial acquire: one try on the whole set; refused, the held keys tell which groups to carry and
+    // the rest is locked with the usual wait (a key taken in between is waited for as before)
+    const acquirePartial = async () => {
+      try {
+        return await lockResources(lockKeys, { ...batchLockArgs(), retryCount: 0 });
+      } catch (err) {
+        if (!isLockError(err)) throw err;
+      }
+      const held = new Set(await lockedResources(lockKeys).catch(() => [] as string[]));
+      const { kept, carried: carriedGroups } = splitPlanOnHeldKeys(plan.order, (group) => ownLockKeys([group]), held, PARTIAL_CARRY_LIMIT);
+      if (carriedGroups.length > 0) {
+        carriedGroups.forEach(({ leader, absorbed }) => [leader, ...absorbed].forEach((intent) => {
+          intent.replans = (intent.replans ?? 0) + 1;
+          partialCarried.push(intent);
+        }));
+        plan.order = kept;
+        heldKeys = batchLockKeys(plan.order);
+        lockKeys = ownLockKeys(plan.order);
+        sequencerMetrics.mapEvent('partial_acquire');
+        sequencerMetrics.mapEvent('partial_carried_groups', carriedGroups.length);
+      }
+      return acquireBatchLock(lockKeys);
     };
     let lock;
     try {
-      lock = await acquireBatchLock(lockKeys);
+      lock = SEQUENCER_CONFIG.multiWriter && SEQUENCER_CONFIG.partialAcquire ? await acquirePartial() : await acquireBatchLock(lockKeys);
     } catch (err: any) {
       // multi_writer: another platform held a key past the lock's retry budget, the batch waits
       // its turn again instead of failing its intents (the workers' clients would retry them)
@@ -1252,6 +1283,7 @@ const runBatchLoop = async () => {
           a.reject(err);
         });
       });
+      carried = partialCarried;
       await settleDeferrals();
       continue;
     }
@@ -1536,6 +1568,7 @@ const runBatchLoop = async () => {
       // id this batch wrote is wiped right after the warm completed.
       if (aheadGrab) carried = await aheadGrab;
       if (lockReplans.length > 0) carried = [...lockReplans, ...carried];
+      if (partialCarried.length > 0) carried = [...partialCarried, ...carried];
       setCurrentWriteBuffer(null);
       setCurrentBatchLock(null);
       if (writtenIds.length > 0) sequencerIdentityMap.evict(writtenIds, 'write');
