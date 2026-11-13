@@ -152,3 +152,19 @@ export const readFintelDesignLogo = async (design: Pick<BasicStoreEntityFintelDe
   }
   return Buffer.concat(chunks);
 };
+
+// The logo uploaded for a design, read whole before anything is stored: within the limit, in a format recognized from its bytes and going
+// on to the end of it. Every logo stored is then one a browser can show and one the import of a configuration bundle takes back:
+// the import checks the same, and refuses what the export would carry otherwise
+export const readFintelDesignLogoUpload = async (source: Readable): Promise<Buffer> => {
+  const chunks: Buffer[] = [];
+  for await (const chunk of limitFintelDesignLogoStream(source)) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+  const content = Buffer.concat(chunks);
+  const extension = fintelDesignLogoExtension(content);
+  if (!extension || !isCompleteFintelDesignLogo(content, extension)) {
+    throw FunctionalError('The logo of the fintel design is not a supported image');
+  }
+  return content;
+};
