@@ -4,20 +4,20 @@ A custom dashboard can be *verticalized*: instead of maintaining one copy of the
 
 !!! note "Who can do what"
 
-    Creating, editing and deleting variables and presets requires the *Create / update dashboards* capability and an edit right on the dashboard. Viewers only get the controls the dashboard editor opens for them (see [Viewer permissions](#viewer-permissions)).
+    Creating, editing and deleting variables and presets requires the *Create / Update dashboards* capability and an edit right on the dashboard. Viewers only get the controls the dashboard editor opens for them (see [Viewer permissions](#viewer-permissions)).
 
 ## Variables
 
 ### Create a variable
 
-On the page of a dashboard, the variables bar sits below the time filters. Click **Create variable** to open the creation dialog:
+On the page of a dashboard, the variables bar sits below the time filters. Click **+ Variable** to open the *Create variable* dialog:
 
 - **Name**: unique within the dashboard.
 - **Type**: entity (restricted to one or several entity types), label, marking, user, group, status, kill chain phase, vocabulary (of a given category), entity type, text, number, boolean or date.
 - **Restriction** (for the types that support it): *No restriction*, *Manual selection* (a closed list of values, up to 200) or, for entity variables, *By filter* (only the entities matching a filter can be picked).
+- **Default value**: mandatory. It is the value every user sees until they pick another one.
 
 A dashboard holds up to 50 variables; names are limited to 200 characters.
-- **Default value**: mandatory. It is the value every user sees until they pick another one.
 
 The type of a variable cannot be changed once created; its name, restriction and default value can.
 
@@ -49,7 +49,7 @@ Changing the time range of a dashboard no longer modifies the dashboard: like th
 
 !!! warning "Behaviour change"
 
-    Before this feature, changing the time range of a dashboard was saved immediately and applied to every user. It is now a personal setting: the home dashboard, the dashboard export and your other browsers keep the defaults of the dashboard (or your default preset); the publication form starts from the range you see. Use **Save** > **Set as dashboard defaults** to change the range of the dashboard for everyone.
+    Before this feature, changing the time range of a dashboard was saved immediately and applied to every user. It is now a personal setting: your other browsers and the other users keep the defaults of the dashboard, or their default preset, and the home dashboard opens on them too. The JSON export holds the dashboard as saved, without your personal range; the image and PDF exports capture the page as you see it, your range included. Use **Save** > **Set as dashboard defaults** to change the range the dashboard shows to everyone without a preset: users on a preset (picked or default) and users who changed the range themselves keep theirs.
 
 ## Presets
 
@@ -81,11 +81,11 @@ A dashboard can open on a preset for a given population. Wherever a default dash
 
 - in your own settings (*Custom dashboard* of the home page);
 - in the settings of a group;
-- in the settings of an organization (reserved, with the default dashboard, to the users who may manage the accesses).
+- in the settings of an organization (reserved, with the default dashboard, to the users whose role grants the *Manage credentials* capability).
 
 The members then see the home dashboard, and the page of the dashboard, with the values and time range of that preset as their defaults. **Reset** brings them back to this preset. If the preset is deleted, the defaults of the dashboard apply.
 
-When several of these settings point to the same dashboard, the first one found decides, with or without a preset: your own settings first, then your organizations, then your groups. A user who chose this dashboard with *No preset* is not caught up by the preset of their group.
+When several of these settings point to the same dashboard, the first one found decides, with or without a preset: your own settings first, then your organizations, then your groups. A user who chose this dashboard with *No preset* is not caught up by the preset of their group. When several organizations, or several groups, point to the dashboard with different presets, the first one in the user's list of organizations or groups applies; this order cannot be chosen, so prefer one default preset per dashboard across the organizations and groups of a user.
 
 ## Viewer permissions
 
@@ -97,11 +97,11 @@ In the edition drawer of a dashboard, three switches decide what a user who can 
 | Allow viewers to change variable values | Shows the variables bar; the values are personal |
 | Allow viewers to switch presets | Shows the preset selector; the selected preset is personal |
 
-All three are on by default: a viewer may change the values, the time range and the preset for themselves unless the editor closes a switch. Behind a closed switch, the viewer sees the dashboard with its defaults for that part.
+All three are on by default: a viewer may change the values, the time range and the preset for themselves unless the editor closes a switch. Behind a closed switch, the viewer sees the dashboard with its defaults for that part; with *Allow viewers to switch presets* closed, a viewer to whom a default preset applies still opens on it, only their own pick is ignored.
 
 ## Public dashboards
 
-The publication form shows a **Published values** section: the time range and, for each variable used by a widget, the value to freeze in the public dashboard. The section starts from the values you see on the dashboard; **Load a preset** fills it from a preset. The published values are frozen at publication: the public dashboard is a snapshot, later changes of the variables or presets do not affect it. Publish the same dashboard several times to get one public dashboard per vertical.
+The publication form shows a **Published values** section: the time range and, for each variable used by a widget, the value to freeze in the public dashboard. The section starts from what you see on the dashboard: your selected preset (or your default preset), with the values and the time range you changed on top of it, else the defaults of the dashboard. **Load a preset** fills it from another preset. The published values are frozen at publication: the public dashboard is a snapshot, later changes of the variables or presets do not affect it. Publish the same dashboard several times to get one public dashboard per vertical.
 
 The time filters of the public page show the published range and stay read only, as before: the viewer switches of a dashboard do not apply to its public dashboards.
 
