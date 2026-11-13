@@ -67,6 +67,12 @@ export interface Context {
   context?: any;
   /** Mutable accumulator: asyncBulkAction pushes slots here; engine reads them after phase 1. */
   pendingAsyncSlots?: AsyncActionSlot[];
+  /**
+   * Opt-in accumulator for onEnter actions: an action whose background tasks the transition must wait for
+   * (only shareRequestedEntities) pushes its slots here, and the transition suspends after that action.
+   * asyncBulkAction never pushes here, so in onEnter it fires its task and the transition completes.
+   */
+  suspendingAsyncSlots?: AsyncActionSlot[];
   [key: string]: any;
 }
 

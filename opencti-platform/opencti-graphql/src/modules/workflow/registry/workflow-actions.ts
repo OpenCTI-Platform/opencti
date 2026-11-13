@@ -168,10 +168,10 @@ export const ActionRegistry: Record<string, ActionFunction> = {
     }
     // Containers are shared by a background task that cannot be rolled back: they go last, once every direct share succeeded.
     const orderedTargets = [...targets.filter((target) => !target.isContainer), ...targets.filter((target) => target.isContainer)];
-    // Inside a workflow transition, each container task is tracked as an async slot: the transition, and the decision record,
+    // Inside a workflow transition, each container task is tracked as a suspending slot: the transition, and the decision record,
     // only complete once the task finished. Outside one (no slot accumulator), the task is enqueued untracked.
-    const { pendingAsyncSlots, __workflowInstanceId } = executionContext as any;
-    const tracksContainerTasks = Array.isArray(pendingAsyncSlots) && !!__workflowInstanceId;
+    const { suspendingAsyncSlots, __workflowInstanceId } = executionContext as any;
+    const tracksContainerTasks = Array.isArray(suspendingAsyncSlots) && !!__workflowInstanceId;
     const directlyShared: typeof targets = [];
     const queuedTasks: { taskId: string; slot: AsyncActionSlot }[] = [];
     try {
@@ -217,7 +217,7 @@ export const ActionRegistry: Record<string, ActionFunction> = {
     }
     // Registered once every task is queued: a refused share registers no slot
     if (queuedTasks.length > 0) {
-      pendingAsyncSlots.push(...queuedTasks.map(({ slot }) => slot));
+      suspendingAsyncSlots.push(...queuedTasks.map(({ slot }) => slot));
     }
   },
   /**

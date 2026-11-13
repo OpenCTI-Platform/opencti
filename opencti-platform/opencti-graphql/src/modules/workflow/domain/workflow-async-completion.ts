@@ -53,7 +53,9 @@ const resolveTriggeringUser = async (context: AuthContext, userId: string): Prom
 
 export const runWorkflowBypassActions = async (workflowContext: Context, pendingTransition: WorkflowPendingTransition): Promise<void> => {
   const slots: AsyncActionSlot[] = [];
+  // A bypass waits for every background task its actions queue
   workflowContext.pendingAsyncSlots = slots;
+  workflowContext.suspendingAsyncSlots = slots;
   workflowContext.__asyncActionSlots = slots;
   while (pendingTransition.syncActions.length > 0) {
     const action = pendingTransition.syncActions[0];
@@ -234,10 +236,8 @@ const completeWorkflowAsyncActionResult = async (
   // A terminal transition has no target state to enter.
   const onEnterActions = pendingTransition.completesWorkflow ? [] : pendingTransition.onEnterActions ?? [];
   if (onEnterActions.length > 0) {
-    // As in the engine, an onEnter action handing its work to background tasks suspends the transition again.
-    const { createListTask } = await import('../../../domain/backgroundTask-common');
-    workflowContext.pendingAsyncSlots = [];
-    workflowContext.__createListTask = createListTask;
+    // As in the engine, an onEnter action that opts in to wait for its background tasks suspends the transition again.
+    workflowContext.suspendingAsyncSlots = [];
     workflowContext.__workflowInstanceId = workflowInstanceId;
   }
   for (const [index, actionConfig] of onEnterActions.entries()) {
@@ -263,7 +263,7 @@ const completeWorkflowAsyncActionResult = async (
       ]);
       return;
     }
-    const newSlots = workflowContext.pendingAsyncSlots ?? [];
+    const newSlots = workflowContext.suspendingAsyncSlots ?? [];
     if (newSlots.length > 0) {
       // The transition actions and the onEnter actions up to this one ran: only the remaining ones wait for the new tasks.
       pendingTransition.syncActions = [];

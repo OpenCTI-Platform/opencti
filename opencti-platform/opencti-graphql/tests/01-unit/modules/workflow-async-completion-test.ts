@@ -836,9 +836,9 @@ describe('reportWorkflowAsyncActionResult', () => {
       const transitionSync = vi.fn();
       const afterShare = vi.fn();
       const shareContainer = vi.fn(async (ctx: any) => {
-        expect(ctx.__createListTask).toBe(createListTask);
+        expect(ctx.__createListTask).toBeUndefined();
         expect(ctx.__workflowInstanceId).toBe('instance-id');
-        ctx.pendingAsyncSlots.push({ id: 'share-slot', workId: 'work-share', type: 'shareRequestedEntities', status: 'pending' });
+        ctx.suspendingAsyncSlots.push({ id: 'share-slot', workId: 'work-share', type: 'shareRequestedEntities', status: 'pending' });
       });
       Object.assign(ActionRegistry, { transitionSync, shareContainer, afterShare });
 

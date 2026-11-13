@@ -843,7 +843,7 @@ describe('ActionRegistry.shareRequestedEntities', () => {
   describe('container share as a background task', () => {
     const makeTrackedCtx = () => ({
       ...makeRfiCtx(),
-      pendingAsyncSlots: [] as any[],
+      suspendingAsyncSlots: [] as any[],
       __workflowInstanceId: 'instance-id',
     });
 
@@ -867,7 +867,7 @@ describe('ActionRegistry.shareRequestedEntities', () => {
         ['org-extra'],
         { workflowInstanceId: 'instance-id', workflowActionId: 'generated-slot-id' },
       );
-      expect(ctx.pendingAsyncSlots).toEqual([{ id: 'generated-slot-id', workId: 'work-share', type: 'shareRequestedEntities', status: 'pending' }]);
+      expect(ctx.suspendingAsyncSlots).toEqual([{ id: 'generated-slot-id', workId: 'work-share', type: 'shareRequestedEntities', status: 'pending' }]);
     });
 
     it('deletes the tasks already queued and undoes the direct grants when a later task cannot be queued', async () => {
@@ -877,25 +877,34 @@ describe('ActionRegistry.shareRequestedEntities', () => {
       vi.mocked(createSharingTask)
         .mockResolvedValueOnce({ id: 'task-a', work_id: 'work-a' } as any)
         .mockRejectedValueOnce(new Error('task store unavailable'));
-      const tracked = { ...makeRfiCtx({ entities: ['report-a', 'malware-1', 'report-b'], members: ['org-author'] }), pendingAsyncSlots: [] as any[], __workflowInstanceId: 'instance-id' };
+      const tracked = { ...makeRfiCtx({ entities: ['report-a', 'malware-1', 'report-b'], members: ['org-author'] }), suspendingAsyncSlots: [] as any[], __workflowInstanceId: 'instance-id' };
 
       await expect(ActionRegistry.shareRequestedEntities(tracked, { organizations: ['AUTHOR'] })).rejects.toThrow('task store unavailable');
 
       expect(deleteTask).toHaveBeenCalledTimes(1);
       expect(deleteTask).toHaveBeenCalledWith({ ...tracked.context, user: tracked.triggeringUser }, tracked.triggeringUser, 'task-a');
       expect(removeOrganizationRestriction).toHaveBeenCalledWith(tracked.context, tracked.triggeringUser, 'malware-1', ['org-author']);
-      expect(tracked.pendingAsyncSlots).toEqual([]);
+      expect(tracked.suspendingAsyncSlots).toEqual([]);
     });
 
     it('queues no task for a container already shared with every organization', async () => {
       const ctx = makeTrackedCtx();
       await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });
       expect(createSharingTask).not.toHaveBeenCalled();
-      expect(ctx.pendingAsyncSlots).toEqual([]);
+      expect(ctx.suspendingAsyncSlots).toEqual([]);
     });
 
     it('shares the container directly when the context cannot track background tasks', async () => {
       const ctx = { ...makeTrackedCtx(), __workflowInstanceId: undefined };
+      await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR', 'org-extra'] });
+      expect(createSharingTask).not.toHaveBeenCalled();
+      expect(vi.mocked(addOrganizationRestriction).mock.calls.map((call) => call[2])).toEqual(['entity-2', 'entity-1']);
+      expect(ctx.suspendingAsyncSlots).toEqual([]);
+    });
+
+    it('shares the container directly when only the asyncBulkAction slot list is present', async () => {
+      const { suspendingAsyncSlots: _omitted, ...rest } = makeTrackedCtx();
+      const ctx = { ...rest, pendingAsyncSlots: [] as any[] };
       await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR', 'org-extra'] });
       expect(createSharingTask).not.toHaveBeenCalled();
       expect(vi.mocked(addOrganizationRestriction).mock.calls.map((call) => call[2])).toEqual(['entity-2', 'entity-1']);
