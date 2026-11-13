@@ -55,8 +55,17 @@ describe('useDashboardPreset', () => {
     window.history.replaceState(null, '', '/?preset=finance');
     const { result, rerender } = renderHook((current: DashboardPreset[]) => useDashboardPreset('ws-1', current), { initialProps: [] as DashboardPreset[] });
     expect(result.current.activePreset).toBeNull();
+    // Meanwhile the address keeps it, so the publication form, which reads it, starts from the same view as the page
+    expect(presetParam()).toBe('finance');
     rerender(presets);
     expect(result.current.activePreset?.id).toBe('finance');
+  });
+
+  it('shows the default preset for a preset of the address the dashboard does not hold, and leaves the address', () => {
+    window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'ws-1'), 'energy');
+    window.history.replaceState(null, '', '/?preset=gone');
+    expect(renderHook(() => useDashboardPreset('ws-1', presets, { defaultPresetId: 'finance' })).result.current.activePreset?.id).toBe('finance');
+    expect(presetParam()).toBe('gone');
   });
 
   it('falls back to the default preset when the stored preset was deleted', () => {
