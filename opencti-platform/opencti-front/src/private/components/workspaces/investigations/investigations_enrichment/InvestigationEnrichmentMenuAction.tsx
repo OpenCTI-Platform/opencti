@@ -66,6 +66,7 @@ const InvestigationEnrichmentMenuAction = ({
       label: (t_i18n) => t_i18n('Enrichment'),
       isAvailable: (_, context) => context === 'investigation',
       disabledReason: (_, t_i18n) => {
+        if (processing) return t_i18n('Sending…');
         if (enrichmentType && !connectors) return t_i18n('Loading');
         if (!connectors || connectors.length === 0) return t_i18n('No connector available for the selected entities.');
         return undefined;
@@ -75,7 +76,7 @@ const InvestigationEnrichmentMenuAction = ({
         onSelect: (key) => setConnector(connectors?.find((c) => c.id === key)),
       }),
     });
-  }, [canLaunch, enrichmentType, connectors]);
+  }, [canLaunch, enrichmentType, connectors, processing]);
 
   return (
     <BackgroundTaskLaunch

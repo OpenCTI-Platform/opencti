@@ -96,6 +96,23 @@ describe('InvestigationEnrichmentLaunch', () => {
     expect(lastLaunchProps()).toMatchObject({ display: false, processing: false });
   });
 
+  it('cannot be clicked again while the enrichment is being sent, so that no other choice is silently dropped', () => {
+    renderForm();
+    const enrich = () => screen.getByRole('button', { name: 'Enrich' });
+    fireEvent.click(enrich());
+    act(() => lastLaunchProps().onLaunch());
+    expect(enrich()).toBeDisabled();
+
+    act(() => lastLaunchProps().onClose());
+    expect(enrich()).toBeEnabled();
+
+    fireEvent.click(enrich());
+    act(() => lastLaunchProps().onLaunch());
+    act(() => lastLaunchProps().onCompleted());
+    fireEvent.click(screen.getByText('select connector'));
+    expect(enrich()).toBeEnabled();
+  });
+
   it('reports the enrichment once the API accepted it, so that the button shows it is sending', () => {
     const onCompleted = vi.fn();
     renderForm({ onCompleted });

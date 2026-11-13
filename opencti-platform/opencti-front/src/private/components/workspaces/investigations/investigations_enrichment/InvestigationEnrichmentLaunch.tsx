@@ -61,7 +61,7 @@ const InvestigationEnrichmentLaunch = ({
         <CardFooter className="justify-end">
           <Button
             onClick={() => setShowValidation(true)}
-            disabled={selectedConnectors.length === 0}
+            disabled={selectedConnectors.length === 0 || processing}
             startIcon={isSending ? <Spinner size="sm" tone="inherit" /> : undefined}
             aria-busy={isSending || undefined}
           >

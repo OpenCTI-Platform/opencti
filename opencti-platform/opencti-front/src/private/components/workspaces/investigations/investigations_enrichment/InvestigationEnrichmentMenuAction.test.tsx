@@ -218,4 +218,23 @@ describe('InvestigationEnrichmentMenuAction', () => {
     expect(lastLaunchProps()).toMatchObject({ display: false, processing: false });
     expect(onLaunched).toHaveBeenCalledTimes(1);
   });
+
+  it('cannot be chosen again while the enrichment is being sent, so that no other pick is silently dropped', async () => {
+    mocks.selectedNodes = [ip];
+    const query = answerConnectors();
+    view = renderAction();
+    await query.resolve(['Coucou Enrichment']);
+    act(() => enrichmentAction()?.options?.onSelect('connector-1'));
+
+    act(() => lastLaunchProps().onLaunch());
+    expect(enrichmentAction()?.disabledReason).toBe('Sending…');
+
+    act(() => lastLaunchProps().onClose());
+    expect(enrichmentAction()?.disabledReason).toBeUndefined();
+
+    act(() => enrichmentAction()?.options?.onSelect('connector-1'));
+    act(() => lastLaunchProps().onLaunch());
+    act(() => lastLaunchProps().onCompleted());
+    expect(enrichmentAction()?.disabledReason).toBeUndefined();
+  });
 });
