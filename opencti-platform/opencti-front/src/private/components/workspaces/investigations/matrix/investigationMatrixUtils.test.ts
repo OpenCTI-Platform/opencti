@@ -90,6 +90,7 @@ describe('hasActiveGraphFilters', () => {
     ['disabled entity types', { disabledEntityTypes: ['Report'] }],
     ['disabled creators', { disabledCreators: ['creator-1'] }],
     ['disabled markings', { disabledMarkings: ['marking-1'] }],
+    ['disabled relationship types', { disabledRelationshipTypes: ['uses'] }],
     ['a selected time range', { selectedTimeRangeInterval: [new Date(0), new Date(1)] }],
   ])('is true with %s', (_label, filter) => {
     expect(hasActiveGraphFilters({ ...DEFAULT_GRAPH_STATE, ...filter } as GraphState)).toBe(true);
