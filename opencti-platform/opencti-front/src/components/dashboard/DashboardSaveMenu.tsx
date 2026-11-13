@@ -36,6 +36,12 @@ const DashboardSaveMenu = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [open, setOpen] = useState(false);
+  // An entry closes the menu itself: it starts a save that disables the menu, and a menu closed only by being
+  // disabled would open again once the save is done.
+  const closeThen = (action?: () => void) => () => {
+    setOpen(false);
+    action?.();
+  };
   const withSubtitle = (label: string, subtitle: string): ReactNode => (
     <span style={{ display: 'flex', flexDirection: 'column' }}>
       <span>{label}</span>
@@ -47,7 +53,7 @@ const DashboardSaveMenu = ({
     groups.push(
       <MenuGroup key="preset">
         <MenuLabel>{t_i18n('Everyone using this preset')}</MenuLabel>
-        <MenuItem data-testid="dashboard-preset-update" disabled={!canUpdatePreset} onSelect={onUpdatePreset}>
+        <MenuItem data-testid="dashboard-preset-update" disabled={!canUpdatePreset} onSelect={closeThen(onUpdatePreset)}>
           {withSubtitle(t_i18n('Update “{name}”', { values: { name: activePresetName } }), t_i18n('Replace its values and time range'))}
         </MenuItem>
       </MenuGroup>,
@@ -57,7 +63,7 @@ const DashboardSaveMenu = ({
     groups.push(
       <MenuGroup key="new">
         <MenuLabel>{t_i18n('New')}</MenuLabel>
-        <MenuItem data-testid="dashboard-preset-save-as" onSelect={onSavePresetAs}>
+        <MenuItem data-testid="dashboard-preset-save-as" onSelect={closeThen(onSavePresetAs)}>
           {t_i18n('Save as new preset…')}
         </MenuItem>
       </MenuGroup>,
@@ -67,7 +73,7 @@ const DashboardSaveMenu = ({
     groups.push(
       <MenuGroup key="defaults">
         <MenuLabel>{t_i18n('Everyone, without a preset')}</MenuLabel>
-        <MenuItem data-testid="dashboard-set-as-defaults" disabled={!canSetAsDefaults} onSelect={onSetAsDefaults}>
+        <MenuItem data-testid="dashboard-set-as-defaults" disabled={!canSetAsDefaults} onSelect={closeThen(onSetAsDefaults)}>
           {withSubtitle(t_i18n('Set as dashboard defaults'), t_i18n('What the dashboard shows with no preset'))}
         </MenuItem>
       </MenuGroup>,

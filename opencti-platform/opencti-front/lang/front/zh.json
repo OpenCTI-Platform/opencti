@@ -128,6 +128,7 @@
   "A connector that is not managed by the platform has this name": "有一个不由平台管理的连接器使用此名称",
   "A connector with this name already exists. Please choose a different name.": "已存在使用此名称的连接器。请选择其他名称。",
   "A dashboard cannot hold more than 50 variables": "一个仪表板最多只能包含 50 个变量",
+  "A date of the time range is not valid": "时间范围中的日期无效",
   "A field will be created with appropriate type based on the attribute.": "将根据属性创建相应类型的字段。",
   "A filter cannot reference another variable": "过滤器不能引用其他变量",
   "A FINTEL export will contain extra information like markings and creation date": "FINTEL 导出将包含额外信息，如标记和创建日期",
@@ -4900,7 +4901,6 @@
   "Set as dashboard defaults": "设为仪表板默认值",
   "Set as default": "设为默认",
   "Set as default custom view": "设置为默认自定义视图",
-  "Set as default values": "设为默认值",
   "Set custom filters": "设置自定义筛选条件",
   "Set full screen": "设置全屏",
   "Sets the main organization: {name}": "设置主组织：{name}",
@@ -5312,7 +5312,6 @@
   "The connector works have been cleared": "连接器任务已被清除",
   "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions": "覆盖率结果度量显示了特定实体在 AEV 场景执行中的参与程度。如果某些注入未执行、占位符未解析或平台不支持某些操作，则覆盖率可能是部分的",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "CSV文件已使用视图的参数生成，并已准备好下载。",
-  "The current values and time range differ from this preset: save them into it": "当前值和时间范围与此预设不同：保存到预设中",
   "The current values of the variables and the time range are saved together, to be restored in one click.": "变量的当前值和时间范围将一起保存，可一键恢复。",
   "The custom view {name} is currently set as default. Do you want to replace it?": "自定义视图 {name} 目前被设为默认。您要替换它吗？",
   "The custom view has been duplicated. You can manage it": "自定义视图已被复制。你可以管理它",
@@ -5371,6 +5370,7 @@
   "The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.": "平台当前使用 app-config 文件中的 SMTP 配置。启用上方选项可改用下方的配置。",
   "The platform keeps its current default theme.": "平台将保留当前的默认主题。",
   "The public dashboard is disabled": "公共仪表板已禁用",
+  "The published values of the selected dashboard are still loading": "所选仪表板的发布值仍在加载中",
   "The relations attached to selected entities will be copied to the merged entity.": "附加到选定实体的关系将复制到归并的实体中。",
   "The relationship filter is applied only to the entities found in the first stage. If you do not set a source filter or a target filter, the relationship filter applies to all data in the platform.": "关系筛选器仅应用于第一阶段找到的实体。如果您未设置源筛选器或目标筛选器，则关系筛选器将应用于平台中的所有数据。",
   "The relationship type to apply to all created relationships.": "要应用于所有已创建关系的关系类型。",
@@ -6367,6 +6367,5 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "除了当前用户所属的任何组织外，您的用户还将与主平台组织有关",
   "Zoom": "放大",
   "Zoom in": "放大",
-  "Zoom out": "缩小",
-  "The published values of the selected dashboard are still loading": "所选仪表板的发布值仍在加载中"
+  "Zoom out": "缩小"
 }

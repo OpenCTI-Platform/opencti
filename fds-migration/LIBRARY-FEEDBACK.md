@@ -2938,7 +2938,7 @@ cleared.
 
 **What the product did.** The `Select` sits in an `inline-flex` span that pads
 its right by 32px exactly when the library shows the clear control (a value,
-not disabled), mirroring `canClear`. Marker `FDS-WORKAROUND #77` on the span;
+not disabled), mirroring `canClear`. Marker `FDS-WORKAROUND #78` on the span;
 `DashboardPresetSelector.test.tsx` locks the padding in the three states.
 
 **Asked.** Keep the clear control inside the trigger's box so the wrapper hugs

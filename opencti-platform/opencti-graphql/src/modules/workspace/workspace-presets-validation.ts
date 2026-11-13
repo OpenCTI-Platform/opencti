@@ -42,7 +42,12 @@ const buildPresetValues = (
     if (variableId in values) throw FunctionalError('Duplicated dashboard preset value', { variableId });
     if (value.trim() === '') return;
     // A value is never resolved further than one level: a token-shaped value would leave a token in the filter.
-    if (containsDashboardVariableToken(value) || !isValidDashboardVariableValue(variable.type, value)) {
+    // Imported or duplicated, the value is dropped and the preset kept, like a value for an unknown variable.
+    if (containsDashboardVariableToken(value)) {
+      if (dropUnknownVariables) return;
+      throw FunctionalError('Invalid dashboard preset value', { variableId });
+    }
+    if (!isValidDashboardVariableValue(variable.type, value)) {
       throw FunctionalError('Invalid dashboard preset value', { variableId });
     }
     // A selection restriction is a closed list: a preset cannot restore a value the chip could not offer.
@@ -80,8 +85,10 @@ export const buildDashboardPreset = (
   const isDuplicatedName = existingPresets.some((preset) => preset.id !== current?.id
     && preset.name.trim().toLowerCase() === name.toLowerCase());
   if (isDuplicatedName) throw FunctionalError('A dashboard preset with this name already exists', { name });
-  const values = buildPresetValues(input, variables, dropUnknownVariables);
-  const config = buildDashboardTimeRange(input.config, 'Invalid dashboard preset time range');
+  // On an update, an omitted field keeps what is stored: a rename sends the name alone, and never writes back a stale
+  // copy of the values or of the range another editor changed in the meantime.
+  const values = current && input.values == null ? current.values : buildPresetValues(input, variables, dropUnknownVariables);
+  const config = current && input.config == null ? current.config : buildDashboardTimeRange(input.config, 'Invalid dashboard preset time range');
   return { id: input.id ?? uuidv4(), name, values, config };
 };
 

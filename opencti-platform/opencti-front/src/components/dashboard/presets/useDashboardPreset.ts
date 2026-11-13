@@ -31,9 +31,12 @@ export const useDashboardPreset = (
     // A shared address opens the view of its preset: the values and range this user had kept on another preset are
     // dropped, the ones of the address (variables=, timeRange=) still apply as the hooks read them after this one.
     // Only for a preset the dashboard holds: a deleted or mistyped one, or one not loaded yet, drops nothing.
+    // The preset of the address becomes the one kept in this browser: the changes made on it are kept with it, and the
+    // dashboard opened later from the menu shows the same view.
     if (fromUrl && fromUrl !== stored && presets.some((preset) => preset.id === fromUrl)) {
       writeStoredVariableValues(dashboardVariablesStorageKey(me.id, workspaceId), {});
       writeStoredTimeRange(dashboardTimeRangeStorageKey(me.id, workspaceId), null);
+      writeStoredPresetId(key, fromUrl);
     }
     // The preset of the address is kept even when unknown: it applies once the presets of the dashboard hold it.
     return fromUrl ?? stored;
@@ -59,8 +62,10 @@ export const useDashboardPreset = (
   );
 
   // The URL shows the preset in use, also when it was restored from this browser: a shared address opens the same view.
+  // A user who may not switch presets gets none from the address, and none is left in it for a link they would copy.
   useEffect(() => {
     if (!ignoreLocalValues) writePresetParam(stored && presets.some((preset) => preset.id === stored) ? stored : null);
+    else if (parsePresetParam(window.location.search)) writePresetParam(null);
   }, [stored, ignoreLocalValues, presetIds]);
 
   const commit = useCallback((next: string | null) => {
