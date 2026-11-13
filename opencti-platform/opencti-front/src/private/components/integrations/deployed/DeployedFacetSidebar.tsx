@@ -54,7 +54,6 @@ interface DeployedFacetSidebarProps {
   hasActiveFilters: boolean;
   onClearAll: () => void;
   showUpdateAvailableFacet: boolean;
-  showHealthFacet: boolean;
   facets: {
     types: string[];
     typeCounts: Record<string, number>;
@@ -71,7 +70,6 @@ const DeployedFacetSidebar = ({
   hasActiveFilters,
   onClearAll,
   showUpdateAvailableFacet,
-  showHealthFacet,
   facets,
 }: DeployedFacetSidebarProps) => {
   const { t_i18n } = useFormatter();
@@ -193,27 +191,25 @@ const DeployedFacetSidebar = ({
           ))}
         </Box>
 
-        {showHealthFacet && (
-          <Box sx={dividedGroupSx}>
-            <FacetGroupLabel>{t_i18n('Health status')}</FacetGroupLabel>
-            {DEPLOYED_HEALTH_FACETS.map((health) => (
-              <FacetCheckbox
-                key={health}
-                checked={filters.healthStatuses.includes(health)}
-                count={facets.healthCounts[health] ?? 0}
-                adornment={(
-                  <Box
-                    component="span"
-                    aria-hidden
-                    sx={{ width: 10, height: 10, flexShrink: 0, borderRadius: '50%', backgroundColor: healthColor(health) }}
-                  />
-                )}
-                label={t_i18n(capitalizeFirstLetter(health))}
-                onToggle={() => onFiltersChange((prev) => ({ ...prev, healthStatuses: toggleValue(prev.healthStatuses, health) }))}
-              />
-            ))}
-          </Box>
-        )}
+        <Box sx={dividedGroupSx}>
+          <FacetGroupLabel>{t_i18n('Health status')}</FacetGroupLabel>
+          {DEPLOYED_HEALTH_FACETS.map((health) => (
+            <FacetCheckbox
+              key={health}
+              checked={filters.healthStatuses.includes(health)}
+              count={facets.healthCounts[health] ?? 0}
+              adornment={(
+                <Box
+                  component="span"
+                  aria-hidden
+                  sx={{ width: 10, height: 10, flexShrink: 0, borderRadius: '50%', backgroundColor: healthColor(health) }}
+                />
+              )}
+              label={t_i18n(capitalizeFirstLetter(health))}
+              onToggle={() => onFiltersChange((prev) => ({ ...prev, healthStatuses: toggleValue(prev.healthStatuses, health) }))}
+            />
+          ))}
+        </Box>
 
         {showUpdateAvailableFacet && (
           <Box sx={dividedGroupSx}>
