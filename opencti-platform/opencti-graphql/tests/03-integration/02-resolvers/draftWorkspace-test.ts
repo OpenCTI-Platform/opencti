@@ -23,6 +23,7 @@ import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from '../../../src/modules/draftWorkspace/draftStatuses';
 import { WORKFLOW_FILTER, WORKFLOW_INSTANCE_STATUS_FILTER } from '../../../src/utils/filtering/filtering-constants';
 import { isRuntimeSortEnable } from '../../../src/database/engine';
+import { createStatusTemplate } from '../../../src/domain/status';
 
 const CREATE_DRAFT_WORKSPACE_QUERY = gql`
     mutation DraftWorkspaceAdd($input: DraftWorkspaceAddInput!) {
@@ -240,6 +241,41 @@ const DRAFT_WORKSPACE_RELATION_DELETE_QUERY = gql`
           }
         }
       }
+    }
+  }
+`;
+
+const WORKFLOW_DEFINITION_SET_MUTATION = gql`
+  mutation WorkflowDefinitionSet($entityType: String!, $definition: String!) {
+    workflowDefinitionSet(entityType: $entityType, definition: $definition) {
+      id
+      target_type
+    }
+  }
+`;
+
+const WORKFLOW_DEFINITION_PUBLISH_MUTATION = gql`
+  mutation WorkflowDefinitionPublish($entityType: String!) {
+    workflowDefinitionPublish(entityType: $entityType) {
+      id
+      published
+    }
+  }
+`;
+
+const WORKFLOW_DEFINITION_DELETE_MUTATION = gql`
+  mutation WorkflowDefinitionDelete($entityType: String!) {
+    workflowDefinitionDelete(entityType: $entityType) {
+      id
+    }
+  }
+`;
+
+const TRIGGER_WORKFLOW_EVENT_MUTATION = gql`
+  mutation TriggerWorkflowEvent($entityId: String!, $eventName: String!) {
+    triggerWorkflowEvent(entityId: $entityId, eventName: $eventName) {
+      success
+      newState
     }
   }
 `;
@@ -720,6 +756,18 @@ describe('Drafts workspace resolver testing', () => {
       expect(result.data?.draftWorkspaceFieldPatch.name).toEqual(newName);
     });
 
+    it('should refuse to write the workflow status of a draft, it only changes through a transition', async () => {
+      const result = await queryAsAdmin({
+        query: DRAFT_WORKSPACE_FIELD_PATCH_QUERY,
+        variables: {
+          id: fieldPatchDraftId,
+          input: [{ key: 'x_opencti_workflow_id', value: ['some-status-id'] }],
+        },
+      });
+      expect(result.errors).toBeDefined();
+      expect(result.errors?.[0].message).toContain('workflow transition');
+    });
+
     it('should update the description of a draft', async () => {
       const newDescription = 'Updated Draft Description';
       const result = await queryAsAdmin({
@@ -1172,6 +1220,66 @@ describe('Drafts workspace resolver testing', () => {
       });
       expect(result.errors).toBeUndefined();
       expect(result.data?.draftWorkspacesNumber.total).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should filter drafts by the workflow status they reached, at any nesting level', async () => {
+      const initialTemplate = await createStatusTemplate(testContext, ADMIN_USER, { name: `Draft initial ${Date.now()}`, color: '#000000' });
+      const reachedTemplate = await createStatusTemplate(testContext, ADMIN_USER, { name: `Draft reached ${Date.now()}`, color: '#ffffff' });
+      const finalTemplate = await createStatusTemplate(testContext, ADMIN_USER, { name: `Draft final ${Date.now()}`, color: '#ff0000' });
+      const definition = JSON.stringify({
+        id: 'draft-status-filter-workflow',
+        name: 'Draft status filter workflow',
+        initialState: initialTemplate.id,
+        states: [{ statusId: initialTemplate.id }, { statusId: reachedTemplate.id }, { statusId: finalTemplate.id }],
+        transitions: [
+          { from: initialTemplate.id, to: reachedTemplate.id, event: 'reach_event' },
+          { from: reachedTemplate.id, to: finalTemplate.id, event: 'validate_event', syncActions: [{ type: 'validateDraft' }] },
+        ],
+      });
+      const draft = await queryAsAdmin({
+        query: CREATE_DRAFT_WORKSPACE_QUERY,
+        variables: { input: { name: 'workflowStatusFilterDraft' } },
+      });
+      const draftId = draft.data?.draftWorkspaceAdd.id;
+      try {
+        const setResult = await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_SET_MUTATION,
+          variables: { entityType: 'DraftWorkspace', definition },
+        });
+        expect(setResult.errors).toBeUndefined();
+        const publishResult = await queryAsAdmin({ query: WORKFLOW_DEFINITION_PUBLISH_MUTATION, variables: { entityType: 'DraftWorkspace' } });
+        expect(publishResult.errors).toBeUndefined();
+
+        const countByStatus = async (templateId: string, nested: boolean) => {
+          const statusFilter = { key: WORKFLOW_FILTER, values: [templateId], operator: 'eq', mode: 'or' };
+          // Other drafts of the file are in the initial state too: restrict the count to the draft under test.
+          const draftFilter = { key: 'id', values: [draftId], operator: 'eq', mode: 'or' };
+          const filters = nested
+            ? { mode: 'and', filters: [draftFilter], filterGroups: [{ mode: 'or', filters: [statusFilter], filterGroups: [] }] }
+            : { mode: 'and', filters: [draftFilter, statusFilter], filterGroups: [] };
+          const result = await queryAsAdmin({ query: DRAFT_WORKSPACES_NUMBER_QUERY, variables: { filters } });
+          expect(result.errors).toBeUndefined();
+          return result.data?.draftWorkspacesNumber.count;
+        };
+
+        // The draft existed before the workflow was published: publishing projected its initial state.
+        expect(await countByStatus(initialTemplate.id, false)).toEqual(1);
+        expect(await countByStatus(initialTemplate.id, true)).toEqual(1);
+
+        const transition = await queryAsAdmin({
+          query: TRIGGER_WORKFLOW_EVENT_MUTATION,
+          variables: { entityId: draftId, eventName: 'reach_event' },
+        });
+        expect(transition.data?.triggerWorkflowEvent.success).toBe(true);
+
+        for (const nested of [false, true]) {
+          expect(await countByStatus(reachedTemplate.id, nested)).toEqual(1);
+          expect(await countByStatus(initialTemplate.id, nested)).toEqual(0);
+        }
+      } finally {
+        await queryAsAdmin({ query: WORKFLOW_DEFINITION_DELETE_MUTATION, variables: { entityType: 'DraftWorkspace' } });
+        await queryAsAdmin({ query: DELETE_DRAFT_WORKSPACE_QUERY, variables: { id: draftId } });
+      }
     });
 
     it('should return empty count when filtering by a workflow status no draft is in, at any nesting level', async () => {

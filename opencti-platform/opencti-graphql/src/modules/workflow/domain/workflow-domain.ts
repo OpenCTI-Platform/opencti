@@ -8,8 +8,8 @@ import { extractEntityRepresentativeName } from '../../../database/entity-repres
 import { loadAssignees, loadParticipants } from '../../../database/members';
 import { createEntity, createRelation, deleteElementById, idVocabulary, loadEntity, updateAttribute } from '../../../database/middleware';
 import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../database/middleware-loader';
-import { READ_DATA_INDICES, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY } from '../../../database/utils';
-import { elAggregationCount, ES_MAX_CONCURRENCY } from '../../../database/engine';
+import { READ_DATA_INDICES, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
+import { elAggregationCount, elRawUpdateByQuery, ES_MAX_CONCURRENCY } from '../../../database/engine';
 import { createListTask } from '../../../domain/backgroundTask-common';
 import { resolveUserById } from '../../user/user-domain';
 import { createStatus, findByType as findStatusesByType } from '../../../domain/status';
@@ -62,6 +62,7 @@ import { extractCanonicalStateIds, findInstancesBlockingStateRemoval, validateWo
 import { computeStateOrder, findStatesWithOutgoingTransitions } from './workflow-ordering';
 import { isStatusReferencedByEntity } from './workflow-status-usage';
 import { projectWorkflowState, resolveMappedStatusId, resolveProjectionScope } from './workflow-projection';
+import { projectDraftWorkflowStatuses } from './workflow-draft-projection';
 import { appendWorkflowHistoryEntry, closingReasonNotWrittenError, isClosingReasonLost, runWorkflowBypassActions } from './workflow-async-completion';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
@@ -885,6 +886,7 @@ export const publishWorkflowDefinition = async (
   // mapping and the publication update below. Without it, cleanup could check a Status, a republish
   // here could clear its deletion mark and recreate its mapping, and cleanup would still delete it
   // based on its now-stale check — clearing `to_be_deleted_at` does not cancel a deletion in progress.
+  let publishedInitialState: string | null = null;
   const lock = await lockResources([getWorkflowStatusLockKey(entityType)]);
   try {
     // Re-check at publish time: ensure the draft does not remove non-ending states that still have
@@ -979,6 +981,7 @@ export const publishWorkflowDefinition = async (
       // Malformed content will already have failed validation earlier; nothing to reconcile here.
     }
     if (publishedDefinitionData) {
+      publishedInitialState = publishedDefinitionData.initialState && publishedDefinitionData.initialState !== '*' ? publishedDefinitionData.initialState : null;
       await ensureFullStatusMapping(executionContext, executionUser, entityType, publishedDefinitionData);
     }
 
@@ -1002,6 +1005,21 @@ export const publishWorkflowDefinition = async (
   ) as WorkflowDefinitionEntity;
   // Validate consistency after update
   validateVersionConsistency(updatedWorkflow);
+
+  // Drafts hold a status only once it is projected: those created before the workflow was published are
+  // in its initial state. Best-effort, a draft left without status is projected when its instance is read.
+  if (entityType === 'DraftWorkspace') {
+    try {
+      await projectDraftWorkflowStatuses(
+        executionContext,
+        executionUser,
+        publishedInitialState,
+        (body) => elRawUpdateByQuery({ index: READ_INDEX_INTERNAL_OBJECTS, refresh: true, conflicts: 'proceed', body }),
+      );
+    } catch (error) {
+      logApp.warn('[OPENCTI-MODULE] Failed to project the published workflow state onto existing drafts', { cause: error });
+    }
+  }
 
   addWorkflowPublishCount();
 
