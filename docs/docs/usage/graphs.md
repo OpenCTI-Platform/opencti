@@ -115,7 +115,7 @@ From left to right:
 | View | Zoom in and out, **Fit the whole graph**, fit the selection, locate the selection, full screen. |
 | Layout | 3D mode, hierarchical layouts (top to bottom, left to right), layered layout (by entity category), radial layout, force-directed layout (see [Layouts](#layouts)). |
 | Selection | Box and lasso selection, adding the neighbours to the selection, the shortest path between two entities (see [Select](#select)). |
-| Creation and removal | Add entities, edit the selected item, create a relationship, a nested relationship or a sighting, remove the selection; in investigations, expand the selection and roll the last expansion back. |
+| Creation and removal | Add entities, edit the selected item, create a relationship, a nested relationship or a sighting, remove the selection; in investigations, expand the selection, roll the last expansion back and open the **Enrichment** panel (see [Enrich from the graph](pivoting.md#enrich-from-the-graph)). |
 | Filters | Filter by type (entity and relationship types, the same filters as the legend), by marking and by author, the time range selector, and **Clear all filters**; in correlation graphs, show every correlated entity or only the observables and indicators. A number on a filter tells how many choices are in use. Each filter opens a menu of its choices, grouped under headings and checked when in use; the menu stays open so that several choices can be made in a row. |
 | Export and help | The high-resolution image export, the keyboard shortcuts. |
 
@@ -135,7 +135,7 @@ Hovering an entity or a relationship, or selecting it, keeps it and its direct n
 
 After a short moment on an element, a **hover card** previews its key facts: type, name, date, author, confidence, markings, relationship counts, every badge with what it means and, in investigations, the number of relationships not drawn yet. The card only reads; what you can do with the element is in its context menu.
 
-![Hover card of the Copper Lantern intrusion set, with its facts, markings and relationship counts](assets/graph-hover-card.png)
+![Hover card of the apt28 malware, with its facts, markings, relationship counts and a hint to right-click for its actions](assets/graph-hover-card.png)
 
 ## Context menu
 
@@ -170,7 +170,8 @@ When the time range selector of the toolbar is open, the legend moves up so that
 
 The graph says why it is empty and offers the next step:
 
-- a container or an investigation without any entity yet explains how to add some, with a link to this page;
+- an empty container explains how to add entities and links to this page;
+- an empty investigation offers **Add entities**, which opens the same panel as the + in the toolbar, and **Read the documentation**, which opens this page;
 - when the filters of the toolbar leave no entity, **Clear filters** restores the graph;
 - when every entity is hidden from the view, **Show the hidden entities** brings them back.
 

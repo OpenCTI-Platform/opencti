@@ -72,6 +72,15 @@ describe('ConfigPresetResultLine', () => {
     ['Vocabulary entries already exist', 'Vocabulary entries already exist'],
     ['The name is an alias of the vocabulary entry fimi-report', 'The name is an alias of the vocabulary entry fimi-report'],
     ['The alias taken belongs to another vocabulary entry', 'The alias taken belongs to another vocabulary entry'],
+    ['Connector already exists', 'Connector already exists'],
+    ['A connector that is not managed by the platform has this name', 'A connector that is not managed by the platform has this name'],
+    ['Connector name already exists', 'Connector name already exists'],
+    ['There is no connector manager configured', 'There is no connector manager configured'],
+    ['You have not defined a default group for ingestion users', 'You have not defined a default group for ingestion users'],
+    ['Service account not found', 'Service account not found'],
+    ['The confidence level of the service account is not changed', 'The confidence level of the service account is not changed'],
+    ['Configuration to provide: MITRE_API_KEY', 'Configuration to provide: MITRE_API_KEY'],
+    ['Connector not available on this platform: opencti/connector-mitre', 'Connector not available on this platform: opencti/connector-mitre'],
   ])('translates the reason %s', (reason, text) => {
     testRender(<ConfigPresetResultLine label="Theme" status="SKIPPED" reason={reason} />);
     expect(screen.getByText(text)).toBeInTheDocument();

@@ -135,8 +135,22 @@ describe('GraphEmptyState', () => {
     expect(onShowHidden).toHaveBeenCalled();
     hidden.unmount();
     testRender(<GraphEmptyState kind="empty" context="investigation" onClearFilters={onClearFilters} onShowHidden={onShowHidden} />);
-    expect(screen.getByRole('status')).toHaveTextContent('Add entities to this investigation from the toolbar');
+    expect(screen.getByRole('status')).toHaveTextContent('Add entities to this investigation, then expand them');
     expect(screen.getByRole('link', { name: 'Read the documentation' })).toHaveAttribute('href', 'https://docs.opencti.io/latest/usage/graphs/');
+  });
+
+  it('offers to add entities on first use when the graph can take them', async () => {
+    const onAddEntities = vi.fn();
+    const { user, unmount } = testRender(
+      <GraphEmptyState kind="empty" context="investigation" onClearFilters={vi.fn()} onShowHidden={vi.fn()} onAddEntities={onAddEntities} />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Add entities' }));
+    expect(onAddEntities).toHaveBeenCalled();
+    expect(screen.getByRole('link', { name: 'Read the documentation' })).toBeInTheDocument();
+    unmount();
+    // A container graph takes its entities from elsewhere: only the documentation is offered.
+    testRender(<GraphEmptyState kind="empty" onClearFilters={vi.fn()} onShowHidden={vi.fn()} />);
+    expect(screen.queryByRole('button', { name: 'Add entities' })).not.toBeInTheDocument();
   });
 });
 

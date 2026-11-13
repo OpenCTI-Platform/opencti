@@ -11,6 +11,7 @@ import { rolesFamily } from './registry/roles-configPreset-registry';
 import { groupsFamily } from './registry/groups-configPreset-registry';
 import { policiesFamily } from './registry/policies-configPreset-registry';
 import { labelsFamily } from './registry/labels-configPreset-registry';
+import { connectorsFamily } from './registry/connectors-configPreset-registry';
 import { isEnterpriseEditionUpToDate } from '../../enterprise-edition/ee';
 import { exclusionListsFamily } from './registry/exclusionLists-configPreset-registry';
 import { killChainPhasesFamily } from './registry/killChainPhases-configPreset-registry';
@@ -21,7 +22,7 @@ import { caseTemplatesFamily } from './registry/caseTemplates-configPreset-regis
 export { BRANDING_FAMILY_ID } from './registry/common-configPreset-registry';
 
 // In registry order, the categories of the spec table: Platform settings (platform, branding, messages, whitemark), then Data model, then Security & Access,
-// then Taxonomy, then Customization.
+// then Taxonomy, then Customization, then Integrations.
 // Each family is defined in its own file under registry/.
 export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   platformFamily,
@@ -39,6 +40,7 @@ export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   vocabulariesFamily,
   statusTemplatesFamily,
   caseTemplatesFamily,
+  connectorsFamily,
 ];
 
 // How the result of an item is shown next to its family: the name of its type, its place in the registry and its group.

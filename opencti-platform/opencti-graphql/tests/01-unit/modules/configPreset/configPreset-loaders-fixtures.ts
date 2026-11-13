@@ -11,6 +11,7 @@ import { ALL_KILL_CHAIN_PHASES } from './configPreset-killChainPhases-fixtures';
 import { ALL_VOCABULARIES } from './configPreset-vocabularies-fixtures';
 import { ALL_STATUS_TEMPLATES } from './configPreset-statusTemplates-fixtures';
 import { ALL_CASE_TEMPLATES, ALL_TASK_TEMPLATES } from './configPreset-caseTemplates-fixtures';
+import { ALL_CONNECTORS } from './configPreset-connectors-fixtures';
 
 interface ListingArgs {
   search?: string | null;
@@ -30,6 +31,7 @@ const FIXTURE_ENTITIES: Record<string, { id: string; name?: string; definition?:
   StatusTemplate: ALL_STATUS_TEMPLATES,
   'Case-Template': ALL_CASE_TEMPLATES,
   'Task-Template': ALL_TASK_TEMPLATES,
+  Connector: ALL_CONNECTORS,
 };
 const labelOf = (entity: { name?: string; definition?: string; value?: string }) => entity.name ?? entity.definition ?? entity.value ?? '';
 
@@ -60,7 +62,8 @@ const listLikeTheEngine = (type: string | undefined, args: ListingArgs = {}) => 
   };
   return entities
     ?.filter((entity) => (args.filters?.filters ?? []).every(({ key, values, operator }) => {
-      const matches = values.map(String).includes(String((entity as unknown as Record<string, unknown>)[key[0]]));
+      const value = (entity as unknown as Record<string, unknown>)[key[0]];
+      const matches = values.includes('EXISTS') ? value !== undefined && value !== null : values.map(String).includes(String(value));
       return operator === 'not_eq' ? !matches : matches;
     }))
     .filter((entity) => !args.search || matchesSearch(entity, args.search.toLowerCase()))
