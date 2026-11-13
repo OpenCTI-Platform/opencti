@@ -159,14 +159,22 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> => {
  * Whether a widget uses a dashboard variable in its filters, as counted in the usage of the variables.
  * The widgets may come from a client or a file: a malformed one counts as using none.
  */
-export const hasDashboardVariableWidget = (widgets: unknown) => {
-  if (!isPlainObject(widgets)) return false;
+export const findDashboardVariableWidgets = (widgets: unknown): string[] => {
+  if (!isPlainObject(widgets)) return [];
   const selections = Object.fromEntries(Object.entries(widgets).map(([widgetId, widget]) => {
     const dataSelection = isPlainObject(widget) && Array.isArray(widget.dataSelection) ? widget.dataSelection.filter(isPlainObject) : [];
     return [widgetId, { dataSelection }];
   }));
-  return computeDashboardVariablesUsage(selections).size > 0;
+  const widgetIds = new Set([...computeDashboardVariablesUsage(selections).values()].flat());
+  // Named as the user sees them: the title of the widget, else its id.
+  return [...widgetIds].map((widgetId) => {
+    const widget = widgets[widgetId];
+    const title = isPlainObject(widget) && isPlainObject(widget.parameters) ? widget.parameters.title : undefined;
+    return typeof title === 'string' && title.trim() !== '' ? title.trim() : widgetId;
+  });
 };
+
+export const hasDashboardVariableWidget = (widgets: unknown) => findDashboardVariableWidgets(widgets).length > 0;
 
 /**
  * The manifest of a custom view, on every way in (creation, edition, duplication, configuration and widget import):
@@ -174,8 +182,11 @@ export const hasDashboardVariableWidget = (widgets: unknown) => {
  * server-owned keys are removed (see stripServerOwnedManifestKeys). Nothing is refused without the feature.
  */
 export const sanitizeCustomViewManifest = (encoded: string | null | undefined) => {
-  if (encoded && isFeatureEnabled('DASHBOARD_VARIABLES') && hasDashboardVariableWidget(parseManifestObject(encoded)?.widgets)) {
-    throw FunctionalError('A widget using dashboard variables cannot be used in a custom view');
+  const refusedWidgets = encoded && isFeatureEnabled('DASHBOARD_VARIABLES') ? findDashboardVariableWidgets(parseManifestObject(encoded)?.widgets) : [];
+  if (refusedWidgets.length > 0) {
+    // Named in the message, the one the user is shown: a view saved before the refusal is refused on any change until
+    // these widgets are removed or changed.
+    throw FunctionalError(`A widget using dashboard variables cannot be used in a custom view: ${refusedWidgets.join(', ')}`, { widgets: refusedWidgets });
   }
   return stripServerOwnedManifestKeys(encoded);
 };

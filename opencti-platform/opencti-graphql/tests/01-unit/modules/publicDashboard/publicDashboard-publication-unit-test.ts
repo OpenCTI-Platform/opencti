@@ -113,4 +113,9 @@ describe('toPublicationTimeZone', () => {
   it('should refuse an unsupported time zone rather than silently counting in UTC', () => {
     expect(() => toPublicationTimeZone('Mars/Olympus')).toThrow('Invalid public dashboard time zone');
   });
+
+  it('should not check the time zone when no date variable uses it', () => {
+    expect(toPublicationTimeZone('Mars/Olympus', false)).toBeUndefined();
+    expect(toPublicationTimeZone('Europe/Paris', false)).toBeUndefined();
+  });
 });

@@ -66,9 +66,11 @@ export const applyPublicationTimeRange = (
 /**
  * Time zone of the author, used to shift the date variables exactly as they were shown to them.
  * Missing: undefined, the resolution then counts in UTC. Unsupported: refused, rather than silently counting in UTC.
+ * Without a date variable the zone is never used: it is not checked, so a browser reporting a zone unknown to the
+ * server can still publish.
  */
-export const toPublicationTimeZone = (timeZone: string | null | undefined) => {
-  if (!timeZone) return undefined;
+export const toPublicationTimeZone = (timeZone: string | null | undefined, hasDateVariable = true) => {
+  if (!timeZone || !hasDateVariable) return undefined;
   if (!isValidTimeZone(timeZone)) throw FunctionalError('Invalid public dashboard time zone', { timeZone });
   return timeZone;
 };

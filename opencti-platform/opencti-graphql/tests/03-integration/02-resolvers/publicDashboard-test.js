@@ -2017,6 +2017,12 @@ describe('Public dashboards and dashboard variables', () => {
 
   it('should refuse an unsupported time zone rather than counting the dates in UTC', async () => {
     const dashboardId = await createDashboardWithVariableWidget('Dashboard variables time zone', 'eq', true);
+    // Without a date variable the zone is never used: it is not checked
+    const accepted = await publish(dashboardId, 'public-dashboard-variables-time-zone-unused', { time_zone: 'Mars/Olympus' });
+    expect(accepted.errors).toBeUndefined();
+    extraPublicDashboardIds.push(accepted.data.publicDashboardAdd.id);
+    const upsert = await queryAsAdmin({ query: UPSERT_VARIABLE_QUERY, variables: { id: dashboardId, input: { name: 'Since', type: 'date', defaultValue: '2026-01-01' } } });
+    expect(upsert.errors).toBeUndefined();
     const refused = await publish(dashboardId, 'public-dashboard-variables-time-zone', { time_zone: 'Mars/Olympus' });
     if (refused.data?.publicDashboardAdd) extraPublicDashboardIds.push(refused.data.publicDashboardAdd.id);
     expect(refused.errors?.[0].message).toEqual('Invalid public dashboard time zone');

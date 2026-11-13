@@ -127,35 +127,46 @@ const replaceWidgetsIds = (widgetDefinitions: any[], idsMap: IdsMap, from: 'inte
 };
 
 // Only the variables whose type references entities hold ids: a text value shaped like an id stays as is.
-const idVariablesOf = (variables: StoreDashboardVariable[]) => variables.filter((variable) => DASHBOARD_VARIABLE_ID_TYPES.has(variable.type));
+// The stored manifest is read as it is (a custom view export does not sanitize it): a malformed variable holds no id.
+// Filtered, never copied: the ids are replaced in place.
+const idVariablesOf = (variables: StoreDashboardVariable[]) => (Array.isArray(variables) ? variables : [])
+  .filter((variable) => typeof variable === 'object' && variable !== null && DASHBOARD_VARIABLE_ID_TYPES.has(variable.type));
+const selectionValuesOf = (variable: StoreDashboardVariable) => {
+  const { restriction } = variable;
+  return restriction?.mode === 'selection' && Array.isArray(restriction.values) ? restriction : null;
+};
+const restrictionFiltersOf = (variable: StoreDashboardVariable) => {
+  const { restriction } = variable;
+  return restriction?.mode === 'filters' && isFilterGroupNotEmpty(restriction.filters) ? restriction : null;
+};
 
 const extractDashboardVariablesIds = (variables: StoreDashboardVariable[], from: 'internal' | 'stix') => {
   const resolvingIds: string[] = [];
   const isConvertible = (value: string) => (from === 'internal' ? isInternalId(value) : isStixId(value));
   idVariablesOf(variables).forEach((variable) => {
-    const { defaultValue, restriction } = variable;
-    if (defaultValue && isConvertible(defaultValue)) resolvingIds.push(defaultValue);
-    if (restriction.mode === 'selection') pushAll(resolvingIds, restriction.values.filter(isConvertible));
-    if (restriction.mode === 'filters' && isFilterGroupNotEmpty(restriction.filters)) {
-      pushAll(resolvingIds, extractFiltersIds(restriction.filters, from));
-    }
+    const { defaultValue } = variable;
+    if (typeof defaultValue === 'string' && defaultValue && isConvertible(defaultValue)) resolvingIds.push(defaultValue);
+    const selection = selectionValuesOf(variable);
+    if (selection) pushAll(resolvingIds, selection.values.filter((value) => typeof value === 'string' && isConvertible(value)));
+    const filters = restrictionFiltersOf(variable);
+    if (filters) pushAll(resolvingIds, extractFiltersIds(filters.filters, from));
   });
   return resolvingIds;
 };
 
 const replaceDashboardVariablesIds = (variables: StoreDashboardVariable[], idsMap: IdsMap, from: 'internal' | 'stix') => {
   idVariablesOf(variables).forEach((variable) => {
-    const { restriction } = variable;
-    if (variable.defaultValue) {
+    if (typeof variable.defaultValue === 'string' && variable.defaultValue) {
       [variable.defaultValue] = idsValuesRemap([variable.defaultValue], idsMap, from);
     }
-    if (restriction.mode === 'selection') {
+    const selection = selectionValuesOf(variable);
+    if (selection) {
       // Two ids may resolve to one entity (merged entity, STIX id alias): a selection never holds a value twice.
-      restriction.values = R.uniq(idsValuesRemap(restriction.values, idsMap, from));
+      // A value that is not a string (malformed manifest) is kept as it is.
+      selection.values = R.uniq(selection.values.map((value) => (typeof value === 'string' ? idsValuesRemap([value], idsMap, from)[0] : value)));
     }
-    if (restriction.mode === 'filters' && isFilterGroupNotEmpty(restriction.filters)) {
-      replaceFiltersIds(restriction.filters, idsMap, from);
-    }
+    const filters = restrictionFiltersOf(variable);
+    if (filters) replaceFiltersIds(filters.filters, idsMap, from);
   });
 };
 

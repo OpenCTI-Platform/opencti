@@ -32,7 +32,7 @@ const PublicDashboardPublishedValues = ({ dashboard }: PublicDashboardPublishedV
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const { me } = useAuth();
-  const { values, errors, setFieldValue } = useFormikContext<PublicDashboardCreationFormData>();
+  const { values, errors, setFieldValue, setValues } = useFormikContext<PublicDashboardCreationFormData>();
 
   // A cleared picker is given its default back: when that default is the value it held, the form value does not change
   // and the picker would keep its emptied text. Remounting it shows the value again.
@@ -43,13 +43,14 @@ const PublicDashboardPublishedValues = ({ dashboard }: PublicDashboardPublishedV
   const hasInvalidDate = values.time_range.relativeDate === null && Object.values(invalidDates).some(Boolean);
   useEffect(() => {
     if (hasInvalidDate !== !!values.time_range_invalid) setFieldValue('time_range_invalid', hasInvalidDate);
-  }, [hasInvalidDate]);
+  }, [hasInvalidDate, values.time_range_invalid]);
 
   const dashboardId = dashboard?.id;
   useEffect(() => {
     const state = buildPublishedValuesState(dashboard, me.id);
-    setFieldValue('variable_values', state.variable_values);
-    setFieldValue('time_range', state.time_range);
+    // One update: each setFieldValue validates the values of the last render, so a second one would validate them
+    // without the first. A refused date of the previous dashboard no longer counts (the pickers start again).
+    setValues((current) => ({ ...current, ...state, time_range_invalid: false }));
     // Only another dashboard resets the values: a refetch of the same one keeps what the author changed.
   }, [dashboardId]);
 
@@ -68,8 +69,6 @@ const PublicDashboardPublishedValues = ({ dashboard }: PublicDashboardPublishedV
       </Alert>
       <div style={{ marginTop: 16 }}>
         <DashboardTimeFilters
-          // Another dashboard starts the pickers again: a refused date typed for the previous one does not stay shown.
-          key={dashboardId}
           config={values.time_range}
           handleDateChange={(type, value) => setFieldValue('time_range', applyPublishedTimeRangeChange(values.time_range, type, value))}
           onInvalidDateChange={(type, invalid) => setInvalidDates((current) => (current[type] === invalid ? current : { ...current, [type]: invalid }))}
@@ -101,6 +100,8 @@ const PublicDashboardPublishedValues = ({ dashboard }: PublicDashboardPublishedV
         const value = values.variable_values[variable.id] ?? '';
         // An empty typed field publishes the default of the variable: said under the field, as the author types.
         const showsDefault = value === '' && isTypedPublishedVariable(variable) && !!variable.defaultValue;
+        // Without a default there is nothing to publish for an empty field, and a widget uses the variable.
+        const isMissing = value === '' && !variable.defaultValue;
         return (
           <div key={variable.id} style={{ marginTop: 16 }}>
             <DashboardVariableValueInput
@@ -122,6 +123,17 @@ const PublicDashboardPublishedValues = ({ dashboard }: PublicDashboardPublishedV
                 data-testid={`public-dashboard-published-default-${variable.id}`}
               >
                 {t_i18n('Empty: the default value {value} is published', { values: { value: variable.defaultValue } })}
+              </Text>
+            )}
+            {isMissing && (
+              <Text
+                variant="content-caption"
+                as="p"
+                role="alert"
+                style={{ color: theme.palette.error.main, marginTop: 4 }}
+                data-testid={`public-dashboard-published-missing-${variable.id}`}
+              >
+                {t_i18n('This field is required')}
               </Text>
             )}
           </div>

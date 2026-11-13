@@ -118,6 +118,41 @@ describe('PublicDashboardCreationForm', () => {
     expect(captured.commit).not.toHaveBeenCalled();
   });
 
+  it('should not keep a date refused on another dashboard', async () => {
+    const absolute = JSON.stringify({ relativeDate: null, startDate: null, endDate: null });
+    localStorage.setItem('dashboard-time-range-user-1-dashboard-1', absolute);
+    localStorage.setItem('dashboard-time-range-user-1-dashboard-2', absolute);
+    const rendered = testRender(<PublicDashboardCreationForm />, {
+      userContext: createMockUserContext({
+        me: { id: 'user-1', name: 'admin' },
+        settings: { platform_feature_flags: [{ id: 'DASHBOARD_VARIABLES', enable: true }] },
+      }),
+    });
+    act(() => {
+      rendered.relayEnv.mock.resolveMostRecentOperation({
+        data: { workspaces: { edges: [
+          { node: { id: 'dashboard-1', name: 'First dashboard', currentUserAccessRight: 'admin', manifest: MANIFEST } },
+          { node: { id: 'dashboard-2', name: 'Second dashboard', currentUserAccessRight: 'admin', manifest: MANIFEST } },
+        ] } },
+      });
+    });
+    const { user } = rendered;
+    const pick = async (name: string) => {
+      await user.click(await screen.findByRole('combobox', { name: /Custom dashboard/ }));
+      await user.click(await screen.findByRole('option', { name }));
+    };
+    await pick('First dashboard');
+    await screen.findByDisplayValue('Finance');
+    await user.type(screen.getByLabelText('Name'), 'Finance view');
+    await user.click(screen.getByRole('button', { name: 'Pick a marking' }));
+    const create = screen.getByRole('button', { name: 'Create' });
+    await user.click(screen.getByRole('button', { name: 'Type a refused start date' }));
+    await waitFor(() => expect(create).toBeDisabled());
+    await pick('Second dashboard');
+    await waitFor(() => expect(create).toBeEnabled());
+    expect(screen.queryByTestId('public-dashboard-published-date-error')).toBeNull();
+  });
+
   it('should neither show the section nor send its values without the feature flag', async () => {
     const { user } = renderForm([]);
     await screen.findByLabelText('Name');

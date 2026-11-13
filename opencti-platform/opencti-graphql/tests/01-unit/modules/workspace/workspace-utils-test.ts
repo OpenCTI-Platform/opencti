@@ -52,6 +52,21 @@ describe('convertDashboardIds', () => {
     expect(variables[2].defaultValue).toEqual(SECTOR_ID);
   });
 
+  it('should skip a malformed variable of a stored manifest instead of failing', async () => {
+    // A custom view export reads the stored manifest as it is: a legacy variables key may hold anything
+    const variables = [
+      null,
+      'x',
+      { id: 'v1', type: 'entity' },
+      { id: 'v2', type: 'entity', restriction: { mode: 'selection' }, defaultValue: SECTOR_ID },
+      { id: 'v3', type: 'entity', restriction: { mode: 'selection', values: [SECTOR_ID, 7] } },
+    ] as unknown as StoreDashboardVariable[];
+    await expect(convertDashboardIds(context, user, [], variables, 'internal')).resolves.not.toThrow();
+    expect((variables[3] as StoreDashboardVariable).defaultValue).toEqual(SECTOR_STIX);
+    expect(((variables[4] as StoreDashboardVariable).restriction as { values: unknown[] }).values).toEqual([SECTOR_STIX, 7]);
+    await expect(convertDashboardIds(context, user, [], 'not a list' as never, 'internal')).resolves.not.toThrow();
+  });
+
   it('should never keep a value twice in a selection once converted on import', async () => {
     const variables: StoreDashboardVariable[] = [
       { id: 'v1', name: 'Sector', type: 'entity', entityTypes: ['Sector'], restriction: { mode: 'selection', values: [SECTOR_STIX, MERGED_STIX] }, defaultValue: MERGED_STIX },
