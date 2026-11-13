@@ -435,7 +435,14 @@ const Workflow = ({
   const onNodeMouseLeave: NodeMouseHandler = useCallback(() => setHoveredId(null), []);
   const highlight = useMemo(() => getHoverHighlight(hoveredId, nodes, edges), [hoveredId, nodes, edges]);
   return (
-    <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden' }}>
+    <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      {isRequestAccessScopeAvailable && (
+        // Above the canvas, not in a React Flow Panel: fitView knows nothing of a panel and would put the initial node under it
+        <div data-testid="workflow-scope-toolbar" style={{ display: 'flex', alignItems: 'flex-end', gap: 12, padding: 12, flexShrink: 0 }}>
+          <WorkflowScopeSwitch scope={scope} onScopeChange={(nextScope) => onScopeChange?.(nextScope)} />
+          {scope === 'REQUEST_ACCESS' && <RequestAccessValidatorGroup />}
+        </div>
+      )}
       <WorkflowEdgeActionsContext.Provider value={edgeActions}>
         <HoverHighlightContext.Provider value={highlight}>
           <ReactFlow
@@ -460,13 +467,9 @@ const Workflow = ({
             deleteKeyCode={null}
             zoomOnDoubleClick={false}
             proOptions={proOptions}
+            // Takes what the toolbar above leaves
+            style={{ flex: 1, minHeight: 0 }}
           >
-            {isRequestAccessScopeAvailable && (
-              <Panel position="top-left" style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
-                <WorkflowScopeSwitch scope={scope} onScopeChange={(nextScope) => onScopeChange?.(nextScope)} />
-                {scope === 'REQUEST_ACCESS' && <RequestAccessValidatorGroup />}
-              </Panel>
-            )}
             {nodes.length ? (
               <Panel position="top-right" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <PublishButton

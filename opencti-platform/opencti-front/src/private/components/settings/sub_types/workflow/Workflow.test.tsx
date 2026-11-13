@@ -889,6 +889,16 @@ describe('Workflow Component', () => {
       expect(screen.queryByTestId('validator-group-field')).not.toBeInTheDocument();
     });
 
+    it('renders the scope switch and the validator group above the canvas, not over it', () => {
+      renderRfi({ scope: 'REQUEST_ACCESS' });
+      const toolbar = screen.getByTestId('workflow-scope-toolbar');
+      expect(toolbar).toContainElement(screen.getByRole('radiogroup', { name: 'Workflow scope' }));
+      expect(toolbar).toContainElement(screen.getByTestId('validator-group-field'));
+      // A React Flow panel would sit on top of the nodes that fitView places
+      expect(toolbar.closest('.react-flow')).toBeNull();
+      expect(toolbar.querySelector('.react-flow__panel')).toBeNull();
+    });
+
     describe('migration entry point', () => {
       beforeEach(() => {
         mockNodes = [];
