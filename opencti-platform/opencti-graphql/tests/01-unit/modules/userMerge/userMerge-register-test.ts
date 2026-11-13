@@ -13,7 +13,7 @@ import { findRegisterRow, registerRowsByDisposition, USER_MERGE_REGISTER, UserMe
  * transfer row of its own, answered by the handler that keeps the target rule on a conflict.
  */
 const V7_DISTRIBUTION: Record<UserMergeDisposition, number> = {
-  [UserMergeDisposition.Transfer]: 42,
+  [UserMergeDisposition.Transfer]: 44,
   [UserMergeDisposition.Invalidate]: 20,
   [UserMergeDisposition.Conditional]: 21,
   [UserMergeDisposition.Retain]: 12,
@@ -28,7 +28,7 @@ describe('User merge register', () => {
     });
   });
 
-  it('should hold exactly 101 rows, and no row outside the known dispositions', () => {
+  it('should hold exactly 103 rows, and no row outside the known dispositions', () => {
     const total = Object.values(V7_DISTRIBUTION).reduce((acc, count) => acc + count, 0);
     expect(USER_MERGE_REGISTER.length).toBe(total);
   });
