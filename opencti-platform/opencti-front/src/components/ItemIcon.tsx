@@ -12,6 +12,7 @@ import {
   CampaignOutlined,
   CastConnectedOutlined,
   CenterFocusStrongOutlined,
+  ChecklistOutlined,
   CircleOutlined,
   DashboardCustomizeOutlined,
   DescriptionOutlined,
@@ -343,6 +344,8 @@ const iconSelector = (
       return <StreamOutlined style={style} fontSize={fontSize} role="img" aria-label={type} />;
     case 'data-component':
       return <SourceOutlined style={style} fontSize={fontSize} role="img" aria-label={type} />;
+    case 'procedure':
+      return <ChecklistOutlined style={style} fontSize={fontSize} role="img" aria-label={type} />;
     case 'kill-chain-phase':
       return <RouteOutlined style={style} fontSize={fontSize} role="img" aria-label={type} />;
     case 'artifact':

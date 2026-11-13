@@ -1445,6 +1445,42 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       </FieldOrEmpty>
     ),
   },
+  x_mitre_platforms: {
+    id: 'x_mitre_platforms',
+    label: 'Platforms',
+    percentWidth: 15,
+    isSortable: false,
+    render: ({ x_mitre_platforms }) => (
+      <FieldOrEmpty source={x_mitre_platforms}>
+        <TagsOverflow
+          items={x_mitre_platforms ?? []}
+          getKey={(platform: string) => platform}
+          renderTag={(platform: string) => (<Tag label={platform} />)}
+        />
+      </FieldOrEmpty>
+    ),
+  },
+  x_procedure_type: {
+    id: 'x_procedure_type',
+    label: 'Procedure type',
+    percentWidth: 12,
+    isSortable: false,
+    render: (
+      { x_procedure_type },
+      { storageHelpers: { handleAddFilter } },
+    ) => (
+      <FieldOrEmpty source={x_procedure_type}>
+        <Tag
+          label={x_procedure_type}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleAddFilter('x_procedure_type', x_procedure_type ?? null, 'eq');
+          }}
+        />
+      </FieldOrEmpty>
+    ),
+  },
   x_opencti_color: {
     id: 'x_opencti_color',
     label: 'Color',

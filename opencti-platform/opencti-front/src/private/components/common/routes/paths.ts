@@ -9,6 +9,8 @@ export const PATH_DATA_COMPONENTS = `${PATH_DASHBOARD}/techniques/data_component
 export const PATH_DATA_COMPONENT = (dataComponentId: string) => `${PATH_DATA_COMPONENTS}/${dataComponentId}`;
 export const PATH_DATA_SOURCES = `${PATH_DASHBOARD}/techniques/data_sources`;
 export const PATH_DATA_SOURCE = (dataSourceId: string) => `${PATH_DATA_SOURCES}/${dataSourceId}`;
+export const PATH_PROCEDURES = `${PATH_DASHBOARD}/techniques/procedures`;
+export const PATH_PROCEDURE = (procedureId: string) => `${PATH_PROCEDURES}/${procedureId}`;
 export const PATH_COURSES_OF_ACTION = `${PATH_DASHBOARD}/techniques/courses_of_action`;
 export const PATH_COURSE_OF_ACTION = (courseOfActionId: string) => `${PATH_COURSES_OF_ACTION}/${courseOfActionId}`;
 

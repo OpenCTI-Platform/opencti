@@ -9654,6 +9654,13 @@ type Mutation {
   playbookUpdatePositions(id: ID!, positions: String!): ID
   positionAdd(input: PositionAddInput!): Position
   positionEdit(id: ID!): PositionEditMutations
+  procedureAdd(input: ProcedureAddInput!): Procedure
+  procedureContextClean(id: ID!): Procedure
+  procedureContextPatch(id: ID!, input: EditContext!): Procedure
+  procedureDelete(id: ID!): ID
+  procedureFieldPatch(commitMessage: String, id: ID!, input: [EditInput]!, references: [String]): Procedure
+  procedureRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+  procedureRelationDelete(id: ID!, relationship_type: String!, toId: StixRef!): Procedure
   publicDashboardAdd(input: PublicDashboardAddInput!): PublicDashboard
   publicDashboardDelete(id: ID!): ID
   publicDashboardFieldPatch(id: ID!, input: [EditInput!]!): PublicDashboard
@@ -11734,6 +11741,145 @@ enum PositionsOrdering {
   x_opencti_workflow_id
 }
 
+type Procedure implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
+  avatar: OpenCtiFile
+  cases(first: Int): CaseConnection
+  confidence: Int
+  connectors(onlyAlive: Boolean): [Connector]
+  containers(entityTypes: [String!], first: Int): ContainerConnection
+  containersNumber: Number
+  created: DateTime
+  createdBy: Identity
+  created_at: DateTime!
+  creators: [Creator!]
+  currentUserAccessRight: String
+  customFieldValues: [CustomFieldValue!]
+  description: String
+  draftVersion: DraftVersion
+  editContext: [EditUserContext!]
+  entity_type: String!
+  exportFiles(first: Int): FileConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  filesFromTemplate(after: ID, filters: FilterGroup, first: Int, orderBy: FileOrdering, orderMode: OrderingMode, prefixMimeType: String, search: String): FileConnection
+  fintelTemplates: [FintelTemplate!]
+  first_observed: DateTime
+  groupings(first: Int): GroupingConnection
+  id: ID!
+  importFiles(after: ID, filters: FilterGroup, first: Int, orderBy: FileOrdering, orderMode: OrderingMode, prefixMimeType: String, search: String): FileConnection
+  is_inferred: Boolean!
+  jobs(first: Int): [Work]
+  killChainPhases: [KillChainPhase!]
+  lang: String
+  last_observed: DateTime
+  metrics: [Metric]
+  modified: DateTime
+  name: String!
+  notes(first: Int): NoteConnection
+  numberOfConnectedElement: Int!
+  objectAssignee: [Assignee!]
+  objectLabel: [Label!]
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectParticipant: [Participant!]
+  observedData(first: Int): ObservedDataConnection
+  opinions(first: Int): OpinionConnection
+  opinions_metrics: OpinionsMetrics
+  parent_types: [String!]!
+  pendingFiles(after: ID, filters: FilterGroup, first: Int, orderBy: FileOrdering, orderMode: OrderingMode, search: String): FileConnection
+  pirInformation(pirId: ID!): PirInformation
+  procedureCommand: StixCyberObservable
+  procedureObservables(after: ID, first: Int): StixCyberObservableConnection
+  procedureSources: [Identity]
+  refreshed_at: DateTime
+  reports(first: Int): ReportConnection
+  representative: Representative!
+  revoked: Boolean!
+  spec_version: String!
+  standard_id: String!
+  status: Status
+  stixCoreObjectsDistribution(dateAttribute: String, endDate: DateTime, field: String!, filters: FilterGroup, limit: Int, operation: StatsOperation!, order: String, relationship_type: [String], search: String, startDate: DateTime, toTypes: [String], types: [String]): [Distribution]
+  stixCoreRelationships(after: ID, confidences: [Int], filters: FilterGroup, first: Int, firstSeenStart: DateTime, firstSeenStop: DateTime, fromId: StixRef, fromTypes: [String], lastSeenStart: DateTime, lastSeenStop: DateTime, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, relationship_type: String, search: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, toId: StixRef, toTypes: [String]): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(confidences: [Int], dateAttribute: String, elementWithTargetTypes: [String], endDate: DateTime, field: String!, filters: FilterGroup, fromId: [String], fromRole: String, fromTypes: [String], isTo: Boolean, limit: Int, operation: StatsOperation!, order: String, relationship_type: [String], search: String, startDate: DateTime, toId: [String], toRole: String, toTypes: [String]): [Distribution]
+  toStix(version: Version): String
+  updated_at: DateTime!
+  workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
+  x_execution_end: DateTime
+  x_execution_start: DateTime
+  x_fingerprint: String
+  x_mitre_platforms: [String!]
+  x_opencti_closing_reason: String
+  x_opencti_graph_data: String
+  x_opencti_inferences: [Inference]
+  x_opencti_modified_at: DateTime
+  x_opencti_stix_ids: [StixId]
+  x_procedure_type: String
+}
+
+input ProcedureAddInput {
+  clientMutationId: String
+  confidence: Int
+  created: DateTime
+  createdBy: String
+  customFieldValues: [CustomFieldValueAddInput!]
+  description: String
+  embedded: [Boolean]
+  externalReferences: [String]
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  first_observed: DateTime
+  killChainPhases: [String]
+  lang: String
+  last_observed: DateTime
+  modified: DateTime
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  noTriggerImport: [Boolean]
+  objectLabel: [String]
+  objectMarking: [String]
+  objectOrganization: [String]
+  procedureCommand: String
+  procedureObservables: [String]
+  procedureSources: [String]
+  revoked: Boolean
+  stix_id: StixId
+  techniques: [String]
+  update: Boolean
+  upsertOperations: [EditInput!]
+  x_execution_end: DateTime
+  x_execution_start: DateTime
+  x_fingerprint: String
+  x_mitre_platforms: [String]
+  x_opencti_modified_at: DateTime
+  x_opencti_stix_ids: [StixId]
+  x_opencti_workflow_id: String
+  x_procedure_type: String
+}
+
+type ProcedureConnection {
+  edges: [ProcedureEdge]
+  pageInfo: PageInfo!
+}
+
+type ProcedureEdge {
+  cursor: String!
+  node: Procedure!
+}
+
+enum ProceduresOrdering {
+  _score
+  confidence
+  created
+  created_at
+  modified
+  name
+  updated_at
+  x_opencti_workflow_id
+}
+
 type Process implements BasicObject & StixCoreObject & StixCyberObservable & StixObject {
   aslr_enabled: Boolean
   cases(first: Int): CaseConnection
@@ -12255,6 +12401,8 @@ type Query {
   playbooksForEntity(id: String!): [Playbook]
   position(id: String!): Position
   positions(after: ID, filters: FilterGroup, first: Int, orderBy: PositionsOrdering, orderMode: OrderingMode, search: String, toStix: Boolean): PositionConnection
+  procedure(id: String!): Procedure
+  procedures(after: ID, filters: FilterGroup, first: Int, orderBy: ProceduresOrdering, orderMode: OrderingMode, search: String): ProcedureConnection
   publicBookmarks(uriKey: String!, widgetId: String!): StixDomainObjectConnection
   publicDashboard(id: String!): PublicDashboard
   publicDashboardByUriKey(uri_key: String!): PublicDashboard
@@ -14352,7 +14500,7 @@ type StixCoreObjectEditMutations {
   uploadAndAskJobImport(connectors: [ConnectorWithConfig!], draftId: String, file: Upload!, fileMarkings: [String!], noTriggerImport: Boolean, validationMode: ValidationMode): File
 }
 
-union StixCoreObjectOrStixCoreRelationship = AIPrompt | AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | CaseRfi | CaseRft | CaseTemplate | Channel | City | Country | CourseOfAction | Credential | CryptocurrencyWallet | CryptographicKey | CustomView | DataComponent | DataSource | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | Feedback | Grouping | Hostname | ICCID | IMEI | IMSI | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | Language | MacAddr | Malware | MalwareAnalysis | ManagerConfiguration | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | Persona | PhoneNumber | Position | Process | PublicDashboard | Region | Report | SSHKey | Sector | SecurityPlatform | Software | StixCoreRelationship | StixFile | Task | Text | Theme | ThreatActorGroup | ThreatActorIndividual | Tool | TrackingNumber | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | Workspace | X509Certificate
+union StixCoreObjectOrStixCoreRelationship = AIPrompt | AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | CaseRfi | CaseRft | CaseTemplate | Channel | City | Country | CourseOfAction | Credential | CryptocurrencyWallet | CryptographicKey | CustomView | DataComponent | DataSource | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | Feedback | Grouping | Hostname | ICCID | IMEI | IMSI | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | Language | MacAddr | Malware | MalwareAnalysis | ManagerConfiguration | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | Persona | PhoneNumber | Position | Procedure | Process | PublicDashboard | Region | Report | SSHKey | Sector | SecurityPlatform | Software | StixCoreRelationship | StixFile | Task | Text | Theme | ThreatActorGroup | ThreatActorIndividual | Tool | TrackingNumber | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | Workspace | X509Certificate
 
 input StixCoreObjectsDistributionParameters {
   filters: FilterGroup
@@ -15036,7 +15184,7 @@ interface StixObject {
   x_opencti_stix_ids: [StixId]
 }
 
-union StixObjectOrStixRelationship = AIPrompt | AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | CaseRfi | CaseRft | CaseTemplate | Channel | City | Country | CourseOfAction | Credential | CryptocurrencyWallet | CryptographicKey | CsvMapper | CustomView | DataComponent | DataSource | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | ExternalReference | Feedback | Grouping | Hostname | ICCID | IMEI | IMSI | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | Language | MacAddr | Malware | MalwareAnalysis | ManagerConfiguration | MarkingDefinition | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | Persona | PhoneNumber | Pir | Position | Process | PublicDashboard | Region | Report | SSHKey | SavedFilter | Sector | SecurityCoverage | SecurityCoverageResult | SecurityPlatform | Software | StixCoreRelationship | StixFile | StixRefRelationship | StixSightingRelationship | System | Task | Text | ThreatActorGroup | ThreatActorIndividual | Tool | TrackingNumber | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | Workspace | X509Certificate
+union StixObjectOrStixRelationship = AIPrompt | AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | CaseRfi | CaseRft | CaseTemplate | Channel | City | Country | CourseOfAction | Credential | CryptocurrencyWallet | CryptographicKey | CsvMapper | CustomView | DataComponent | DataSource | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | ExternalReference | Feedback | Grouping | Hostname | ICCID | IMEI | IMSI | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | Language | MacAddr | Malware | MalwareAnalysis | ManagerConfiguration | MarkingDefinition | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | Persona | PhoneNumber | Pir | Position | Procedure | Process | PublicDashboard | Region | Report | SSHKey | SavedFilter | Sector | SecurityCoverage | SecurityCoverageResult | SecurityPlatform | Software | StixCoreRelationship | StixFile | StixRefRelationship | StixSightingRelationship | System | Task | Text | ThreatActorGroup | ThreatActorIndividual | Tool | TrackingNumber | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | Workspace | X509Certificate
 
 type StixObjectOrStixRelationshipConnection {
   edges: [StixObjectOrStixRelationshipEdge]
@@ -15048,7 +15196,7 @@ type StixObjectOrStixRelationshipEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = AIPrompt | AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | CaseRfi | CaseRft | CaseTemplate | Channel | City | Country | CourseOfAction | Creator | Credential | CryptocurrencyWallet | CryptographicKey | CsvMapper | CustomView | DataComponent | DataSource | Directory | DomainName | DraftWorkspace | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | ExternalReference | Feedback | Group | Grouping | Hostname | ICCID | IMEI | IMSI | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | Language | MacAddr | Malware | MalwareAnalysis | ManagerConfiguration | MarkingDefinition | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | Persona | PhoneNumber | Pir | Position | Process | PublicDashboard | Region | Report | SSHKey | SavedFilter | Sector | SecurityCoverage | SecurityCoverageResult | SecurityPlatform | Software | Status | StixCoreRelationship | StixFile | StixRefRelationship | StixSightingRelationship | System | Task | Text | Theme | ThreatActorGroup | ThreatActorIndividual | Tool | TrackingNumber | Url | UserAccount | UserAgent | Vocabulary | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | Workspace | X509Certificate
+union StixObjectOrStixRelationshipOrCreator = AIPrompt | AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | CaseRfi | CaseRft | CaseTemplate | Channel | City | Country | CourseOfAction | Creator | Credential | CryptocurrencyWallet | CryptographicKey | CsvMapper | CustomView | DataComponent | DataSource | Directory | DomainName | DraftWorkspace | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | ExternalReference | Feedback | Group | Grouping | Hostname | ICCID | IMEI | IMSI | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | Language | MacAddr | Malware | MalwareAnalysis | ManagerConfiguration | MarkingDefinition | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | Persona | PhoneNumber | Pir | Position | Procedure | Process | PublicDashboard | Region | Report | SSHKey | SavedFilter | Sector | SecurityCoverage | SecurityCoverageResult | SecurityPlatform | Software | Status | StixCoreRelationship | StixFile | StixRefRelationship | StixSightingRelationship | System | Task | Text | Theme | ThreatActorGroup | ThreatActorIndividual | Tool | TrackingNumber | Url | UserAccount | UserAgent | Vocabulary | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | Workspace | X509Certificate
 
 type StixObjectOrStixRelationshipRefConnection {
   edges: [StixObjectOrStixRelationshipRefEdge]
@@ -17610,6 +17758,7 @@ enum VocabularyCategory {
   permissions_ov
   persona_type_ov
   platforms_ov
+  procedure_type_ov
   processor_architecture_ov
   reliability_ov
   report_types_ov

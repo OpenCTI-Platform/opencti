@@ -46,6 +46,13 @@ const menuEntries: MenuEntry[] = [
     keywords: ['telemetry', 'Logs', 'mitre', 'Visibility'],
     ...knowledge,
   },
+  {
+    path: '/dashboard/techniques/procedures',
+    label: 'Procedures',
+    entityType: 'Procedure',
+    icon: <Icon name="list-checks" size={16} />,
+    ...knowledge,
+  },
 ];
 
 export default menuEntries;
