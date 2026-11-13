@@ -7,10 +7,10 @@ import { editAuthorizedMembers } from '../../../utils/authorizedMembers';
 import type { MemberAccessInput } from '../../../generated/graphql';
 import { isInternalUser, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../utils/access';
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../../schema/stixRefRelationship';
-import { addOrganizationRestriction, removeOrganizationRestriction } from '../../../domain/stix';
+import { addOrganizationRestriction, createSharingTask, removeOrganizationRestriction } from '../../../domain/stix';
 import { buildRefRelationKey } from '../../../schema/general';
 import { controlUserConfidenceAgainstElement } from '../../../utils/confidence-level';
-import { internalFindByIds, internalLoadById } from '../../../database/middleware-loader';
+import { internalLoadById } from '../../../database/middleware-loader';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../case/case-rfi/case-rfi-types';
 import { UnsupportedError } from '../../../config/errors';
 
@@ -170,23 +170,18 @@ export const ActionRegistry: Record<string, ActionFunction> = {
     const orderedTargets = [...targets.filter((target) => !target.isContainer), ...targets.filter((target) => target.isContainer)];
     // Inside a workflow transition, each container task is tracked as an async slot: the transition, and the decision record,
     // only complete once the task finished. Outside one (no slot accumulator), the task is enqueued untracked.
-    const { pendingAsyncSlots, __createListTask, __workflowInstanceId } = executionContext as any;
-    const tracksContainerTasks = Array.isArray(pendingAsyncSlots) && typeof __createListTask === 'function' && !!__workflowInstanceId;
+    const { pendingAsyncSlots, __workflowInstanceId } = executionContext as any;
+    const tracksContainerTasks = Array.isArray(pendingAsyncSlots) && !!__workflowInstanceId;
     const directlyShared: typeof targets = [];
     try {
       for (const target of orderedTargets) {
         if (target.isContainer && tracksContainerTasks) {
           if (target.newOrganizationIds.length === 0) continue;
           const slotId = generateInternalId();
-          const organizations = await internalFindByIds<any>(context, user, target.newOrganizationIds, { baseData: true, baseFields: ['name'] });
-          const task = await __createListTask(context, user, {
-            description: `SHARE with organization ${organizations.map((organization: { name: string }) => organization.name).join('|')}`,
-            ids: [target.id],
-            actions: [{ type: 'SHARE', context: { values: target.newOrganizationIds }, containerId: target.id }],
-            scope: 'KNOWLEDGE',
-            orderMode: 'asc',
-            workflow_instance_id: __workflowInstanceId,
-            workflow_action_id: slotId,
+          // The same task as a manual container share, created as the approver and tied to the workflow instance
+          const task = await createSharingTask({ ...context, user }, 'SHARE', target.id, target.newOrganizationIds, {
+            workflowInstanceId: __workflowInstanceId,
+            workflowActionId: slotId,
           });
           pendingAsyncSlots.push({ id: slotId, workId: task.work_id ?? '', type: 'shareRequestedEntities', status: 'pending' } satisfies AsyncActionSlot);
           continue;

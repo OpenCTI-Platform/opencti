@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ActionDefinitions, ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
-import { addOrganizationRestriction, removeOrganizationRestriction } from '../../../src/domain/stix';
+import { addOrganizationRestriction, createSharingTask, removeOrganizationRestriction } from '../../../src/domain/stix';
 import { controlUserConfidenceAgainstElement } from '../../../src/utils/confidence-level';
-import { internalFindByIds, internalLoadById } from '../../../src/database/middleware-loader';
+import { internalLoadById } from '../../../src/database/middleware-loader';
 
 vi.mock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
   validateDraftWorkspace: vi.fn(),
@@ -51,11 +51,11 @@ vi.mock('../../../src/utils/access', () => ({
 
 vi.mock('../../../src/domain/stix', () => ({
   addOrganizationRestriction: vi.fn(),
+  createSharingTask: vi.fn(),
   removeOrganizationRestriction: vi.fn(),
 }));
 
 vi.mock('../../../src/database/middleware-loader', () => ({
-  internalFindByIds: vi.fn(),
   internalLoadById: vi.fn(),
 }));
 
@@ -839,7 +839,6 @@ describe('ActionRegistry.shareRequestedEntities', () => {
     const makeTrackedCtx = () => ({
       ...makeRfiCtx(),
       pendingAsyncSlots: [] as any[],
-      __createListTask: vi.fn().mockResolvedValue({ id: 'task-id', work_id: 'work-share' }),
       __workflowInstanceId: 'instance-id',
     });
 
@@ -847,36 +846,36 @@ describe('ActionRegistry.shareRequestedEntities', () => {
       vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => (
         { id, internal_id: id, entity_type: id === 'entity-1' ? 'Report' : 'Malware', ...(id === 'entity-1' ? { 'rel_granted.internal_id': ['org-author'] } : {}) }
       ) as any);
-      vi.mocked(internalFindByIds).mockResolvedValue([{ name: 'Extra' }] as any);
+      vi.mocked(createSharingTask).mockResolvedValue({ id: 'task-id', work_id: 'work-share' } as any);
     });
 
-    it('queues a share task tied to the workflow instance and registers a pending slot', async () => {
+    it('queues the manual container share task, tied to the workflow instance, and registers a pending slot', async () => {
       const ctx = makeTrackedCtx();
       await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR', 'org-extra'] });
 
       expect(vi.mocked(addOrganizationRestriction).mock.calls.map((call) => call[2])).toEqual(['entity-2']);
-      expect(ctx.__createListTask).toHaveBeenCalledTimes(1);
-      expect(ctx.__createListTask).toHaveBeenCalledWith(ctx.context, ctx.triggeringUser, expect.objectContaining({
-        ids: ['entity-1'],
-        actions: [{ type: 'SHARE', context: { values: ['org-extra'] }, containerId: 'entity-1' }],
-        scope: 'KNOWLEDGE',
-        workflow_instance_id: 'instance-id',
-        workflow_action_id: 'generated-slot-id',
-      }));
+      expect(createSharingTask).toHaveBeenCalledTimes(1);
+      expect(createSharingTask).toHaveBeenCalledWith(
+        { ...ctx.context, user: ctx.triggeringUser },
+        'SHARE',
+        'entity-1',
+        ['org-extra'],
+        { workflowInstanceId: 'instance-id', workflowActionId: 'generated-slot-id' },
+      );
       expect(ctx.pendingAsyncSlots).toEqual([{ id: 'generated-slot-id', workId: 'work-share', type: 'shareRequestedEntities', status: 'pending' }]);
     });
 
     it('queues no task for a container already shared with every organization', async () => {
       const ctx = makeTrackedCtx();
       await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });
-      expect(ctx.__createListTask).not.toHaveBeenCalled();
+      expect(createSharingTask).not.toHaveBeenCalled();
       expect(ctx.pendingAsyncSlots).toEqual([]);
     });
 
     it('shares the container directly when the context cannot track background tasks', async () => {
       const ctx = { ...makeTrackedCtx(), __workflowInstanceId: undefined };
       await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR', 'org-extra'] });
-      expect(ctx.__createListTask).not.toHaveBeenCalled();
+      expect(createSharingTask).not.toHaveBeenCalled();
       expect(vi.mocked(addOrganizationRestriction).mock.calls.map((call) => call[2])).toEqual(['entity-2', 'entity-1']);
       expect(ctx.pendingAsyncSlots).toEqual([]);
     });

@@ -263,7 +263,8 @@ export const exportTransformFilters = async (context, user, filteringArgs, order
   };
 };
 
-const createSharingTask = async (context, type, containerId, organizationId) => {
+// workflowLink ties the task to a workflow async action, so its completion is reported to the workflow instance.
+export const createSharingTask = async (context, type, containerId, organizationId, workflowLink = undefined) => {
   const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
   const organizations = await internalFindByIds(context, context.user, organizationIds, { baseData: true, baseFields: ['name'] });
   const organizationNames = organizations.map((o) => o.name).join('|');
@@ -277,8 +278,9 @@ const createSharingTask = async (context, type, containerId, organizationId) => 
     actions: [{ type, context: { values: organizationIds }, containerId }],
     scope: 'KNOWLEDGE',
     orderMode: 'asc',
+    ...(workflowLink ? { workflow_instance_id: workflowLink.workflowInstanceId, workflow_action_id: workflowLink.workflowActionId } : {}),
   };
-  await createListTask(context, context.user, input);
+  return createListTask(context, context.user, input);
 };
 
 export const addOrganizationRestriction = async (context, user, fromId, organizationId, directContainerSharing) => {
