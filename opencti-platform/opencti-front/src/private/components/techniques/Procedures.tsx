@@ -2,6 +2,9 @@ import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { ProceduresLinesPaginationQuery, ProceduresLinesPaginationQuery$variables } from '@components/techniques/__generated__/ProceduresLinesPaginationQuery.graphql';
 import { ProceduresLines_data$data } from '@components/techniques/__generated__/ProceduresLines_data.graphql';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import ProcedureCreation from './procedures/ProcedureCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
@@ -168,6 +171,11 @@ const Procedures: FunctionComponent = () => {
           resolvePath={(data: ProceduresLines_data$data) => data.procedures?.edges?.map((n) => n?.node)}
           lineFragment={procedureFragment}
           exportContext={{ entity_type: 'Procedure' }}
+          createButton={(
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <ProcedureCreation paginationOptions={queryPaginationOptions} />
+            </Security>
+          )}
         />
       )}
     </div>
