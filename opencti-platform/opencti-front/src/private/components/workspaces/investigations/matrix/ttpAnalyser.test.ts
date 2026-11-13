@@ -176,6 +176,25 @@ describe('analyseTechniqueUsage', () => {
     expect(analyseTechniqueUsage(objects).size).toBe(0);
   });
 
+  it('leaves out an entity the user cannot read, and a technique the user cannot read', () => {
+    // The API gives an unreadable object as a placeholder named and identified "Restricted".
+    const restricted = (id: string, entityType: string) => (
+      { id, entity_type: entityType, name: 'Restricted', standard_id: 'Restricted', parent_types: [] } as unknown as ObjectToParse
+    );
+    const usage = analyseTechniqueUsage([
+      ap('ap1'),
+      restricted('ap-hidden', 'Attack-Pattern'),
+      IS_A,
+      restricted('is-hidden', 'Intrusion-Set'),
+      rel('r1', 'uses', 'is-a', 'ap1', 'Intrusion-Set', 'Attack-Pattern'),
+      rel('r2', 'uses', 'is-hidden', 'ap1', 'Intrusion-Set', 'Attack-Pattern'),
+      rel('r3', 'uses', 'is-a', 'ap-hidden', 'Intrusion-Set', 'Attack-Pattern'),
+    ]);
+    expect(usage.get('ap1')?.score).toBe(1);
+    expect(usage.get('ap1')?.linkedEntities.map(({ id }) => id)).toEqual(['is-a']);
+    expect(usage.has('ap-hidden')).toBe(false);
+  });
+
   it('uses the observable value when an entity has no name', () => {
     const observable = { id: 'obs', entity_type: 'IPv4-Addr', observable_value: '1.2.3.4', parent_types: [] } as unknown as ObjectToParse;
     const usage = analyseTechniqueUsage([

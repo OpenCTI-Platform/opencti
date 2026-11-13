@@ -1,4 +1,4 @@
-import type { ObjectToParse } from '../../../../../components/graph/utils/useGraphParser';
+import { isRestrictedObject, type ObjectToParse } from '../../../../../components/graph/utils/useGraphParser';
 import { getMainRepresentative } from '../../../../../utils/defaultRepresentatives';
 import type { LinkedEntity } from '@components/techniques/attack_patterns/attack_patterns_matrix/attackPatternsMatrixCellDecoration';
 import type { TechniqueUsage } from './matrixTypes';
@@ -42,6 +42,8 @@ export const analyseTechniqueUsage = (rawObjects: ObjectToParse[]): Map<string, 
     // Both ends must be in the investigation, and neither may be a relationship.
     if (!from || !to || isRelationship(from) || isRelationship(to)) return;
     getScoringEnds(relationship, from, to).forEach(({ attackPattern, entity }) => {
+      // An entity the user cannot read neither scores nor appears in a hover list: its link to a technique stays hidden.
+      if (isRestrictedObject(attackPattern) || isRestrictedObject(entity)) return;
       let entities = entitiesByTechnique.get(attackPattern.id);
       if (!entities) {
         entities = new Map();
