@@ -901,7 +901,8 @@ export const migrateWorkflowFromStatuses = async (
         throw error;
       }
     }
-    if (scope === StatusScope.RequestAccess) {
+    // A draft run is no migration yet: the one that publishes counts, so draft then publish counts once
+    if (publish && scope === StatusScope.RequestAccess) {
       addWorkflowRequestAccessMigrationCount();
     }
     return result;

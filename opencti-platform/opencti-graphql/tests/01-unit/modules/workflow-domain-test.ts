@@ -6162,7 +6162,7 @@ describe('migrateWorkflowFromStatuses', () => {
       expect(createEntity).not.toHaveBeenCalled();
     });
 
-    it('migrate with RequestAccess writes workflow_definition_id and counts once', async () => {
+    it('migrate with RequestAccess writes workflow_definition_id and does not count a draft run', async () => {
       (findByType as any).mockResolvedValue(rfiSetting);
 
       await migrateWorkflowFromStatuses(mockContext, mockUser, 'Case-Rfi', false, false, StatusScope.RequestAccess);
@@ -6178,7 +6178,7 @@ describe('migrateWorkflowFromStatuses', () => {
       expect(links[0][4]).toEqual([{ key: 'request_access_workflow', value: [{ ...requestAccessConfiguration, workflow_definition_id: 'workflow-id' }] }]);
       expect((updateAttribute as any).mock.calls.some((call: any[]) => call[4].some((i: any) => i.key === 'workflow_id'))).toBe(false);
       expect(ee.checkEnterpriseEdition).toHaveBeenCalledWith(mockContext);
-      expect(telemetryManager.addWorkflowRequestAccessMigrationCount).toHaveBeenCalledOnce();
+      expect(telemetryManager.addWorkflowRequestAccessMigrationCount).not.toHaveBeenCalled();
     });
 
     it('refuses the request access migration without an enterprise edition, and persists nothing', async () => {
