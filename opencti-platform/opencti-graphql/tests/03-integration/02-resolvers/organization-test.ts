@@ -307,6 +307,20 @@ describe('Organization default_dashboard user cache refresh', () => {
       query: ORGANIZATION_FIELD_PATCH_QUERY,
       variables: { id: testOrganizationId, input: [{ key: 'default_dashboard_preset', value: [''] }] },
     });
+    // The generic edition of a Stix-Domain-Object reaches the same organization: it is refused too
+    const SDO_FIELD_PATCH_QUERY = gql`
+      mutation StixDomainObjectFieldPatch($id: ID!, $input: [EditInput]!) {
+        stixDomainObjectEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+          }
+        }
+      }
+    `;
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: SDO_FIELD_PATCH_QUERY,
+      variables: { id: testOrganizationId, input: [{ key: 'default_dashboard', value: [dashboardId] }, { key: 'default_dashboard_preset', value: [''] }] },
+    });
   });
 
   const ME_DEFAULT_DASHBOARDS_QUERY = gql`
