@@ -5,7 +5,7 @@
 // The permanent lock lasts until an administrator sets the account back to Active, or until a login with another provider.
 
 import { v4 as uuid } from 'uuid';
-import { ACCOUNT_STATUSES, ENABLED_DEMO_MODE, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG } from '../config/conf';
+import { ACCOUNT_STATUSES, ENABLED_DEMO_MODE, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG, logApp } from '../config/conf';
 import { AuthenticationFailure } from '../config/errors';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { type LocalAuthLockoutTimings, type LocalAuthLockType, redisClearLocalAuthLockout, redisRecordLocalAuthAttempt, redisReleaseLocalAuthAttempt } from '../database/redis';
@@ -125,20 +125,26 @@ const publishLocalAuthLock = async (user: AuthUser, timings: LocalAuthLockoutTim
     organization_ids: user.organizations?.map((o) => o.internal_id) ?? [],
   };
   const isPermanent = timings.finalAction === LocalAuthLockoutFinalAction.Permanent;
-  await publishUserAction({
-    user: { ...user, origin },
-    event_type: 'authentication',
-    event_scope: 'lock',
-    event_access: 'administration',
-    status: 'error',
-    context_data: {
-      username: ENABLED_DEMO_MODE ? REDACTED_USER.name : user.user_email,
-      lock_type: isPermanent ? 'permanent' : 'temporary',
-      ...(!isPermanent && { lock_duration: timings.finalLockMs / MINUTE_MS }),
-      max_attempts: timings.maxAttempts,
-      source,
-    },
-  });
+  // Best effort: the lock is already applied, so a failure to publish its event is only logged,
+  // and the user still gets the lock error, which says to wait or to contact an administrator
+  try {
+    await publishUserAction({
+      user: { ...user, origin },
+      event_type: 'authentication',
+      event_scope: 'lock',
+      event_access: 'administration',
+      status: 'error',
+      context_data: {
+        username: ENABLED_DEMO_MODE ? REDACTED_USER.name : user.user_email,
+        lock_type: isPermanent ? 'permanent' : 'temporary',
+        ...(!isPermanent && { lock_duration: timings.finalLockMs / MINUTE_MS }),
+        max_attempts: timings.maxAttempts,
+        source,
+      },
+    });
+  } catch (error) {
+    logApp.error('Local authentication lockout: the activity event of a lock cannot be published', { cause: error, user_id: user.id, source });
+  }
 };
 
 // Returns undefined when the lockout is disabled, so that the login keeps its previous behavior.

@@ -965,6 +965,18 @@ describe('Local authentication lockout', () => {
       });
     });
 
+    it('should still return the lock error when the lock event cannot be published', async () => {
+      vi.spyOn(userActionListener, 'publishUserAction').mockRejectedValue(new Error('Activity stream unavailable'));
+      // The login form and Basic auth (login)
+      await failLogin(LOCKOUT_USER.email, 2);
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD));
+      // The MFA code
+      const otpLogin = async () => otpUserLogin({ session: { user: {}, save: () => {}, session_provider: 'local' } }, mfaUser(), { code: await wrongCode() });
+      await expectBadCredentials(otpLogin());
+      await expectBadCredentials(otpLogin());
+      await expectLocked(otpLogin());
+    });
+
     it('should publish the forgotten password flow as the source of the lock', async () => {
       const transactionId = uuid();
       await redisSetForgotPasswordOtp(transactionId, { email: MFA_USER.email, hashedOtp: bcrypt.hashSync('12345678'), mfa_activated: true, mfa_validated: false, userId: mfaUserId });
