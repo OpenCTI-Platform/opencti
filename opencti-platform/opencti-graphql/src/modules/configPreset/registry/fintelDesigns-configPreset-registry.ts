@@ -65,8 +65,7 @@ const fintelDesignsImporter: ConfigPresetImporter = {
     if (!FINTEL_DESIGN_STANDARD_ID_PATTERN.test(item.id) || item.configuration.standard_id !== item.id) {
       return { ...base, exists: false, conflict: false, status: 'failed', reason: 'The standard id of the fintel design does not match its id' };
     }
-    plan.fintelDesignNames ??= new Set();
-    plan.renamedFintelDesignIds ??= new Set();
+    // The names of the earlier items are reserved in the preview only, whose plan holds them: a real import reads the platform
     const result = await importFintelDesign(context, user, item.configuration, item.attachment, {
       mode,
       dryRun: true,
