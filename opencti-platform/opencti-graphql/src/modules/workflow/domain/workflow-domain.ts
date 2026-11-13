@@ -1010,9 +1010,10 @@ export const publishWorkflowDefinition = async (
   // in its initial state. Best-effort, a draft left without status is projected when its instance is read.
   if (entityType === 'DraftWorkspace') {
     try {
+      // System identity: restricted drafts must be projected whatever the publisher can see.
       await projectDraftWorkflowStatuses(
         executionContext,
-        executionUser,
+        SYSTEM_USER,
         publishedInitialState,
         (body) => elRawUpdateByQuery({ index: READ_INDEX_INTERNAL_OBJECTS, refresh: true, conflicts: 'proceed', body }),
       );
