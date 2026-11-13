@@ -24,6 +24,8 @@ export interface EngineDecision {
   // Empty when the client was not detected (forced or AWS): the server was not read
   version?: string;
   source: 'configuration' | 'aws' | 'detection';
+  // Only known when the server was read; checkEngineReachable answers it for the other sources
+  serverless: boolean;
 }
 
 export interface EngineConnection {
@@ -43,12 +45,19 @@ export interface EngineConnection {
 //     recommends recognizing it by `build_flavor`;
 //   - Elasticsearch 9 and later get the 9.x client. Every other answer, Elasticsearch 8, 7 or an
 //     unreadable version, keeps the 8.x client, as the platform always did.
+// Elastic Serverless, recognized by build_flavor as Elastic recommends. The answer reaches us either
+// as the body itself (Elasticsearch client) or wrapped in one (OpenSearch client).
+export const isServerlessInfo = (info: unknown): boolean => {
+  const body = (info as { body?: EngineInfo })?.body ?? (info as EngineInfo);
+  return body?.version?.build_flavor === 'serverless';
+};
+
 export const decideEngineClient = (info: EngineInfo): EngineClient => {
   const distribution = info.version?.distribution;
   if (distribution === 'opensearch' || info.tagline?.includes('OpenSearch')) {
     return 'opensearch';
   }
-  if (info.version?.build_flavor === 'serverless') {
+  if (isServerlessInfo(info)) {
     return 'elasticsearch9';
   }
   const major = semver.coerce(info.version?.number ?? '')?.major ?? 8;
@@ -117,26 +126,27 @@ export const resolveEngineClient = async (
     if (awsRegion && forced !== 'opensearch') {
       throw ConfigurationError('elasticsearch:engine_client must be opensearch with AWS SigV4 (opensearch:region)', { configured: forced });
     }
-    return { client: forced as EngineClient, source: 'configuration' };
+    return { client: forced as EngineClient, source: 'configuration', serverless: false };
   }
   if (awsRegion) {
-    return { client: 'opensearch', source: 'aws' };
+    return { client: 'opensearch', source: 'aws', serverless: false };
   }
   const info = await probe();
-  return { client: decideEngineClient(info), version: info.version?.number, source: 'detection' };
+  return { client: decideEngineClient(info), version: info.version?.number, source: 'detection', serverless: isServerlessInfo(info) };
 };
 
 // A client chosen without reading the server (forced or AWS) must still find an engine that answers:
 // the platform does not start without it. Any HTTP answer below 500 proves it, a 401 or a 403 included,
 // since a forced client is also the way to run where GET / is blocked (proxy, account without the privilege).
-export const checkEngineReachable = async (ping: () => Promise<unknown>): Promise<void> => {
+// Returns what the engine answered, when it answered: the caller reads the flavor from it.
+export const checkEngineReachable = async (ping: () => Promise<unknown>): Promise<unknown> => {
   try {
-    await ping();
+    return await ping();
   } catch (cause) {
     const error = cause as { meta?: { statusCode?: number | null }; statusCode?: number | null };
     const status = error?.meta?.statusCode ?? error?.statusCode;
     if (typeof status === 'number' && status > 0 && status < 500) {
-      return;
+      return undefined;
     }
     throw ConfigurationError('Search engine seems down', { cause });
   }

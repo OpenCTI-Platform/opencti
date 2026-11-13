@@ -639,6 +639,11 @@ export const INGESTION_DEDUPLICATION_FEATURE_FLAG = 'INGESTION_DEDUPLICATION';
 // (use isFeatureEnabled(SESSION_PRESENCE_FEATURE_FLAG) to check activation)
 export const SESSION_PRESENCE_FEATURE_FLAG = 'SESSION_PRESENCE';
 
+// Opt out of the asynchronous translog durability of the platform indices (use
+// isFeatureEnabled(ES_TRANSLOG_REQUEST_FEATURE_FLAG) to check activation): restores the Elasticsearch
+// default 'request', which fsyncs the translog before acknowledging a write. Elasticsearch only.
+export const ES_TRANSLOG_REQUEST_FEATURE_FLAG = 'ES_TRANSLOG_REQUEST';
+
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
 export const TOPIC_CONTEXT_PREFIX = `${REDIS_PREFIX}_OPENCTI_CONTEXT_`;

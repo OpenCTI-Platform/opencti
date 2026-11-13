@@ -2,7 +2,7 @@ import type { GraphQLError } from 'graphql';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { Client as ElkClient } from '@elastic/elasticsearch';
 import { Client as Elk9Client } from '@elastic/elasticsearch-v9';
-import { checkEngineReachable, ENGINE_CLIENT_AUTO, probeEngine, resolveEngineClient } from './engine-detection';
+import { checkEngineReachable, ENGINE_CLIENT_AUTO, isServerlessInfo, probeEngine, resolveEngineClient } from './engine-detection';
 import { Client as OpenClient } from '@opensearch-project/opensearch';
 import { AwsSigv4Signer } from '@opensearch-project/opensearch/aws';
 import { Promise as BluePromise } from 'bluebird';
@@ -204,7 +204,7 @@ import { pushAll, unshiftAll } from '../utils/arrayUtil';
 import { getRoleAssumerWithWebIdentity } from '../utils/awsSdk';
 import { elConvertHits, elConvertHitsToMap, INNER_HITS_WINDOWS_SIZE } from './engine-data-converter';
 import { engineMappingGenerator, getRetroCompatibleMappings } from './engine-mapping-generator';
-import { isEsScriptFilterEnabled } from './engine-config';
+import { getTranslogDurability, isEsScriptFilterEnabled, isTranslogRequestForced } from './engine-config';
 import { AbortError } from 'node-fetch';
 import { RELATION_RESULT_OF } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 
@@ -293,6 +293,7 @@ export const isImpactedRole = (type: string, fromType: string, toType: string, r
 
 export let engine: ElkClient | OpenClient;
 let engineIsElk = false;
+let engineIsServerless = false;
 let isRuntimeSortingEnable = false;
 let attachmentProcessorEnabled = false;
 
@@ -306,6 +307,10 @@ const setEngine = (client: ElkClient | OpenClient, isElk: boolean) => {
 // is a distinct class, typed as ElkClient at creation because it exposes the same API
 // surface for every call OpenCTI makes (both majors compile against the 8.x types).
 export const isElkEngine = (_e: ElkClient | OpenClient = engine): _e is ElkClient => engineIsElk;
+
+// True when the engine is Elastic Serverless, which answers to the Elasticsearch client but only
+// accepts the index settings it exposes: anything else is rejected with an illegal_argument_exception.
+export const isServerlessEngine = () => engineIsServerless;
 
 export const isAttachmentProcessorEnabled = () => {
   return attachmentProcessorEnabled;
@@ -502,9 +507,19 @@ export const searchEngineInit = async (): Promise<boolean> => {
     configuration: 'forced by elasticsearch:engine_client',
   }[decision.source];
   logApp.info(`[SEARCH] Search engine client ${decision.client} selected, ${origin}`);
+  // The durability is only set on Elasticsearch: an OpenSearch cluster may not support 'async'
+  if (enginePlatform === OPENSEARCH_ENGINE && isTranslogRequestForced()) {
+    logApp.warn('[SEARCH] ES_TRANSLOG_REQUEST only applies to Elasticsearch and is ignored: the translog durability of the platform indices is left untouched, '
+      + 'and the OpenSearch default is already the requested \'request\'');
+  }
+  engineIsServerless = decision.serverless;
   // The server was not read to choose the client: it must still answer, or the platform does not start
   if (decision.source !== 'detection') {
-    await checkEngineReachable(() => (engine as OpenClient).info());
+    const info = await checkEngineReachable(() => (engine as OpenClient).info());
+    engineIsServerless = isServerlessInfo(info);
+  }
+  if (engineIsServerless) {
+    logApp.info('[SEARCH] Elastic Serverless detected: the translog durability of the platform indices is left to the service');
   }
   // Announced only when the server was read: a forced client says nothing about the server version
   if (decision.source === 'detection' && decision.client === 'elasticsearch8') {
@@ -1252,6 +1267,10 @@ const computeIndexSettings = (rolloverAlias: string | null | undefined): any => 
             limit: ES_MAX_MAPPINGS,
           },
         },
+        // Settings of the platform indices are re-applied at every start, to the templates and to
+        // every existing index: the durability changes without reindex nor downtime. Elastic Serverless
+        // does not expose it and rejects the whole request, so it is left out there.
+        ...(engineIsServerless ? {} : { translog: { durability: getTranslogDurability() } }),
         ...cycle,
       },
     };
