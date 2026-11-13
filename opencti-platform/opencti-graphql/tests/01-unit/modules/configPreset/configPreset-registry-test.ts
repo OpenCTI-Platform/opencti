@@ -47,7 +47,6 @@ import { mockConfigPresetLoaders } from './configPreset-loaders-fixtures';
 import { administratorRole, analystRole, ROLE_CAPABILITIES } from './configPreset-roles-fixtures';
 import { administratorsGroup, analystsGroup } from './configPreset-groups-fixtures';
 import { ALL_MARKINGS, customMarking, papRed, tlpAmber } from './configPreset-markings-fixtures';
-import { BUILT_IN_MARKING_STANDARD_IDS } from '../../../../src/modules/markingDefinition/marking-import';
 import { roleCapabilities } from '../../../../src/modules/user/user-domain';
 import { customLabel, otherLabel } from './configPreset-labels-fixtures';
 import { dnsExclusionList, retiredExclusionList } from './configPreset-exclusionLists-fixtures';
@@ -126,14 +125,13 @@ describe('Config preset registry', () => {
       { id: 'messages', label: 'Messages', description: 'Banner, login and consent messages', group: 'platformSettings', itemIds: ['banner', 'login', 'consent', 'noAccess'] },
       { id: 'whitemark', label: 'Remove Filigran logos', description: '', group: 'platformSettings', itemIds: ['whitemark'] },
       { id: 'hiddenEntityTypes', label: 'Hidden entity types', description: 'Entity types hidden in the platform', group: 'dataModel', itemIds: ['hiddenEntityTypes'] },
-      // The markings by definition, without the built-in ones
+      // The markings by definition, built-in ones included
       {
         id: 'markings',
         label: 'Markings',
         description: 'Marking definitions, their colors and orders',
         group: 'securityAccess',
-        itemIds: ALL_MARKINGS
-          .filter(({ standard_id }) => !BUILT_IN_MARKING_STANDARD_IDS.includes(standard_id))
+        itemIds: [...ALL_MARKINGS]
           .sort((a, b) => a.definition.localeCompare(b.definition))
           .map(({ standard_id }) => standard_id),
       },
@@ -218,6 +216,7 @@ describe('Config preset registry', () => {
       ['Hidden entity types', true],
       ['INTERNAL:SOC', false],
       ['PAP:RED', false],
+      ['TLP:AMBER', false],
       ['Administrator', false],
       ['Analyst', false],
       ['Administrators', false],
@@ -259,6 +258,7 @@ describe('Config preset registry', () => {
       'data_model/hidden_entity_types.json',
       `security_access/markings/${customMarking.standard_id}.json`,
       `security_access/markings/${papRed.standard_id}.json`,
+      `security_access/markings/${tlpAmber.standard_id}.json`,
       `security_access/roles/${administratorRole.standard_id}.json`,
       `security_access/roles/${analystRole.standard_id}.json`,
       `security_access/groups/${administratorsGroup.standard_id}.json`,
@@ -967,11 +967,17 @@ describe('Config preset registry', () => {
       expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|custom-marking-id/);
     });
 
-    it('never lists nor resolves a built-in marking', async () => {
+    it('lists, resolves and exports a built-in marking like any other', async () => {
       const listed = (await markings.listItems(context, user, { first: 10 })).edges.map(({ node }) => node.id);
-      expect(listed).toContain(customMarking.standard_id);
-      expect(listed).not.toContain(tlpAmber.standard_id);
-      expect(await markings.resolveItems(context, user, [tlpAmber.standard_id], [])).toEqual([]);
+      expect(listed).toEqual([customMarking.standard_id, papRed.standard_id, tlpAmber.standard_id]);
+      const [item] = await markings.resolveItems(context, user, [tlpAmber.standard_id], []);
+      expect(item.id).toEqual(tlpAmber.standard_id);
+      expect((await exportConfigPresetItem(context, user, markings, item)).configuration).toEqual({
+        definition_type: 'TLP',
+        definition: 'TLP:AMBER',
+        x_opencti_color: null,
+        x_opencti_order: 0,
+      });
     });
   });
 

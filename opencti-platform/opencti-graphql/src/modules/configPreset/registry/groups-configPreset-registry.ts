@@ -36,6 +36,7 @@ const toGroupItems = async (context: AuthContext, user: AuthUser, groups: BasicS
     translatable: false,
     dependsOn: [
       ...groupsRoles[index].map((role) => ({ type: ROLES_FAMILY_ID, id: role.standard_id })),
+      // A built-in marking exists on every platform: a group never forces its color and order on the target
       ...groupsMarkings[index]
         .filter(({ standard_id }) => !BUILT_IN_MARKING_STANDARD_IDS.includes(standard_id))
         .map((marking) => ({ type: MARKINGS_FAMILY_ID, id: marking.standard_id })),

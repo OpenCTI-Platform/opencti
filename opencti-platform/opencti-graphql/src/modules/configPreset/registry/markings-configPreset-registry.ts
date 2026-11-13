@@ -1,17 +1,14 @@
-import { FilterOperator, MarkingDefinitionsOrdering } from '../../../generated/graphql';
+import { MarkingDefinitionsOrdering } from '../../../generated/graphql';
 import { findAllMarkings, findMarkingsPaginated } from '../../../domain/markingDefinition';
 import { type BasicStoreEntityMarking, exportMarking } from '../../markingDefinition/marking-export';
-import { BUILT_IN_MARKING_STANDARD_IDS, importMarking, markingStandardId } from '../../markingDefinition/marking-import';
+import { importMarking, markingStandardId } from '../../markingDefinition/marking-import';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
 import { configPresetPlanKey } from '../import/configPreset-import-types';
 import { buildConfigPresetConnection, MARKINGS_FAMILY_ID, securityAccessGroup, standardIdListArgs, toAppliedStatus, toComputedItem } from './common-configPreset-registry';
 
-// The built-in markings are neither listed nor exported: they are the same on every platform, and an import never writes them
-const markingsArgs = (ids?: string[] | null, excludedIds?: string[] | null) => ({
-  orderBy: MarkingDefinitionsOrdering.Definition,
-  ...standardIdListArgs(ids, excludedIds, [{ key: ['standard_id'], values: BUILT_IN_MARKING_STANDARD_IDS, operator: FilterOperator.NotEq }]),
-});
+// Built-in markings are exported like any other: their color and order can be customized, and a deleted one is re-created with its fixed id
+const markingsArgs = (ids?: string[] | null, excludedIds?: string[] | null) => ({ orderBy: MarkingDefinitionsOrdering.Definition, ...standardIdListArgs(ids, excludedIds) });
 
 const toMarkingItem = (marking: BasicStoreEntityMarking): ConfigPresetItemDefinition => ({
   id: marking.standard_id,
