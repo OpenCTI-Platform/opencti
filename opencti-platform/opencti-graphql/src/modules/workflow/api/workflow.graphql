@@ -200,8 +200,8 @@ extend type DraftWorkspace {
 
 extend type Query {
     workflowDefinition(entityType: String!, allowDraft: Boolean, scope: StatusScope): WorkflowSchema @auth(for: [SETTINGS_SETCUSTOMIZATION])
-    workflowDefinitionPublished(entityType: String!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
-    workflowStatuses(entityType: String!): [Status!]! @auth(for: [KNOWLEDGE_KNUPDATE]) @ff(flags: ["ENTITIES_WORKFLOW"], softFail: true, defaultValue: "[]")
+    workflowDefinitionPublished(entityType: String!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE])
+    workflowStatuses(entityType: String!): [Status!]! @auth(for: [KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE]) @ff(flags: ["ENTITIES_WORKFLOW"], softFail: true, defaultValue: "[]")
     workflowMassTransitions(entityType: String!, entityIds: [String!], filters: String, search: String, excludedIds: [String!]): [WorkflowTransition!]! @auth(for: [KNOWLEDGE_KNUPDATE]) @ff(flags: ["ENTITIES_WORKFLOW"], softFail: true, defaultValue: "[]")
     workflowMigrationPreview(entityType: String!): WorkflowMigrationPreview @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowInstance(entityId: String!): WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE], forDraft: [KNOWLEDGE_KNUPDATE])
