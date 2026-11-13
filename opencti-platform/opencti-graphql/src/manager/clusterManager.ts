@@ -64,7 +64,10 @@ const initClusterManager = () => {
     },
     start: async () => {
       logApp.info('[OPENCTI-MODULE] Starting cluster manager');
+      // The starting registration is renewed until the first heartbeat is written, however long it takes
+      await clusterHandler(PLATFORM_INSTANCE_ID);
       await stopStartingScheduler();
+      // A renewal running meanwhile may have written the starting registration back over it
       await clusterHandler(PLATFORM_INSTANCE_ID);
       // receive information from the managers every 30s
       scheduler = setIntervalAsync(async () => {
