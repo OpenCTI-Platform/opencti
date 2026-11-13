@@ -232,10 +232,11 @@ export interface UserLockAction extends BasicUserAction {
   context_data: {
     username: string;
     lock_type: 'temporary' | 'permanent';
-    // In minutes, only for a temporary lock: a permanent lock lasts until an administrator unlocks the account
+    // In minutes, only for a temporary lock: a permanent lock lasts until an administrator unlocks the account.
+    // The lock of an unknown email is always temporary: there is no account to unlock
     lock_duration?: number;
     max_attempts: number;
-    source: UserLockSource;
+    lock_source: UserLockSource;
   };
 }
 // endregion

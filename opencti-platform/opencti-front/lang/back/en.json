@@ -672,6 +672,7 @@
   "Locations propagation in reports": "Locations propagation in reports",
   "lock": "lock",
   "Lock duration in minutes": "Lock duration in minutes",
+  "Lock source": "Lock source",
   "Lock type": "Lock type",
   "Log sources": "Log sources",
   "login": "login",

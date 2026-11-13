@@ -672,6 +672,7 @@
   "Locations propagation in reports": "Распространение местоположений в отчетах",
   "lock": "блокировка",
   "Lock duration in minutes": "Длительность блокировки в минутах",
+  "Lock source": "Источник блокировки",
   "Lock type": "Тип блокировки",
   "Log sources": "Источники журналов",
   "login": "вход",

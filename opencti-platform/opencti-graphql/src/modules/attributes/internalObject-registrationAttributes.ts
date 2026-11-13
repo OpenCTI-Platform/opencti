@@ -155,7 +155,7 @@ const HistoryDefinition: AttributeDefinition[] = [
       { name: 'lock_type', label: 'Lock type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
       { name: 'lock_duration', label: 'Lock duration in minutes', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
       { name: 'max_attempts', label: 'Max attempts', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
-      { name: 'source', label: 'Source', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
+      { name: 'lock_source', label: 'Lock source', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
       history_changes,
       ingestion_health_changes,
     ],

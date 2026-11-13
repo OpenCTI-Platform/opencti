@@ -903,7 +903,7 @@ describe('Local authentication lockout', () => {
         event_access: 'administration',
         status: 'error',
         user: { id: lockoutUserId, origin: { socket: 'query', ip: '10.0.0.7', user_id: lockoutUserId } },
-        context_data: { username: LOCKOUT_USER.email, lock_type: 'temporary', lock_duration: LOCK_MINUTES, max_attempts: 3, source: 'form' },
+        context_data: { username: LOCKOUT_USER.email, lock_type: 'temporary', lock_duration: LOCK_MINUTES, max_attempts: 3, lock_source: 'form' },
       });
     });
 
@@ -921,9 +921,27 @@ describe('Local authentication lockout', () => {
       expect(lockActions).toHaveLength(2);
     });
 
-    it('should publish nothing for an unknown email', async () => {
-      await reachMaxAttempts(UNKNOWN_EMAIL);
-      expect(lockActions).toHaveLength(0);
+    it('should publish the lock of an unknown email, attributed to the system user', async () => {
+      await failLogin(UNKNOWN_EMAIL, 2);
+      await expectLocked(login(UNKNOWN_EMAIL, WRONG_PASSWORD, '10.0.0.9'));
+      expect(lockActions).toHaveLength(1);
+      expect(lockActions[0]).toMatchObject({
+        event_type: 'authentication',
+        event_scope: 'lock',
+        event_access: 'administration',
+        status: 'error',
+        user: { id: SYSTEM_USER.id, origin: { socket: 'query', ip: '10.0.0.9', user_id: SYSTEM_USER.id } },
+        context_data: { username: UNKNOWN_EMAIL, lock_type: 'temporary', lock_duration: LOCK_MINUTES, max_attempts: 3, lock_source: 'form' },
+      });
+    });
+
+    it('should publish the permanent lock of an unknown email as the temporary lock of a day that it really is', async () => {
+      await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_final_action: 'permanent' });
+      await failLogin(UNKNOWN_EMAIL, 2);
+      // The user gets the same message as for an existing account
+      await expectPermanentlyLocked(login(UNKNOWN_EMAIL, WRONG_PASSWORD));
+      expect(lockActions).toHaveLength(1);
+      expect(lockActions[0].context_data).toEqual({ username: UNKNOWN_EMAIL, lock_type: 'temporary', lock_duration: 24 * 60, max_attempts: 3, lock_source: 'form' });
     });
 
     it('should publish a permanent lock without any duration', async () => {
@@ -932,7 +950,7 @@ describe('Local authentication lockout', () => {
         await failLogin(LOCKOUT_USER.email, 2);
         await expectPermanentlyLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD));
         expect(lockActions).toHaveLength(1);
-        expect(lockActions[0].context_data).toEqual({ username: LOCKOUT_USER.email, lock_type: 'permanent', max_attempts: 3, source: 'form' });
+        expect(lockActions[0].context_data).toEqual({ username: LOCKOUT_USER.email, lock_type: 'permanent', max_attempts: 3, lock_source: 'form' });
       } finally {
         await userEditField(testContext, ADMIN_USER, lockoutUserId, [{ key: 'account_status', value: ['Active'] }]);
       }
@@ -950,7 +968,7 @@ describe('Local authentication lockout', () => {
         await basicAuth().catch(() => undefined);
       }
       expect(lockActions).toHaveLength(1);
-      expect(lockActions[0]).toMatchObject({ user: { origin: { ip: '127.0.0.1' } }, context_data: { source: 'basic_auth' } });
+      expect(lockActions[0]).toMatchObject({ user: { origin: { ip: '127.0.0.1' } }, context_data: { lock_source: 'basic_auth' } });
     });
 
     it('should publish the MFA code as the source of the lock', async () => {
@@ -961,7 +979,7 @@ describe('Local authentication lockout', () => {
       expect(lockActions).toHaveLength(1);
       expect(lockActions[0]).toMatchObject({
         user: { id: mfaUserId, origin: { ip: '10.0.0.8' } },
-        context_data: { username: MFA_USER.email, source: 'mfa' },
+        context_data: { username: MFA_USER.email, lock_source: 'mfa' },
       });
     });
 
@@ -984,7 +1002,7 @@ describe('Local authentication lockout', () => {
       await expectBadCredentials(verifyMfa(testContext, { transactionId, code: await wrongCode() }));
       await expectLocked(verifyMfa(testContext, { transactionId, code: await wrongCode() }));
       expect(lockActions).toHaveLength(1);
-      expect(lockActions[0].context_data.source).toEqual('forgot_password');
+      expect(lockActions[0].context_data.lock_source).toEqual('forgot_password');
     });
 
     // The context data is strictly mapped: a field missing from its mappings would fail the indexing of the whole event
@@ -1018,12 +1036,12 @@ describe('Local authentication lockout', () => {
             entity_type: ENTITY_TYPE_ACTIVITY,
             event_scope: 'lock',
             user_id: lockoutUserId,
-            context_data: expect.objectContaining({ username: LOCKOUT_USER.email, lock_type: 'temporary', lock_duration: LOCK_MINUTES, max_attempts: 3, source: 'form' }),
+            context_data: expect.objectContaining({ username: LOCKOUT_USER.email, lock_type: 'temporary', lock_duration: LOCK_MINUTES, max_attempts: 3, lock_source: 'form' }),
           }),
           expect.objectContaining({
             entity_type: ENTITY_TYPE_ACTIVITY,
             event_scope: 'lock',
-            context_data: expect.objectContaining({ username: EXTERNAL_USER.email, lock_type: 'permanent', max_attempts: 3, source: 'form' }),
+            context_data: expect.objectContaining({ username: EXTERNAL_USER.email, lock_type: 'permanent', max_attempts: 3, lock_source: 'form' }),
           }),
         ]);
       } finally {

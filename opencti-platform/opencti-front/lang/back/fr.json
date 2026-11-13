@@ -672,6 +672,7 @@
   "Locations propagation in reports": "Propagation de l'emplacement dans les rapports",
   "lock": "verrouillage",
   "Lock duration in minutes": "Durée de verrouillage en minutes",
+  "Lock source": "Source du verrouillage",
   "Lock type": "Type de verrouillage",
   "Log sources": "Sources de logs",
   "login": "connexion",

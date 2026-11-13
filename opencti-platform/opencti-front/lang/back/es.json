@@ -672,6 +672,7 @@
   "Locations propagation in reports": "Propagación de localizaciones en informes",
   "lock": "bloqueo",
   "Lock duration in minutes": "Duración del bloqueo en minutos",
+  "Lock source": "Origen del bloqueo",
   "Lock type": "Tipo de bloqueo",
   "Log sources": "Fuentes de registro",
   "login": "iniciar sesión",

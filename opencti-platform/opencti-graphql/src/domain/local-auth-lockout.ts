@@ -114,36 +114,39 @@ const getLockoutPolicy = async (userId?: string): Promise<{ timings: LocalAuthLo
 // Where the failed attempt comes from, and its source IP, for the activity event of a lock
 export type LocalAuthAttemptOrigin = { source: UserLockSource; ip?: string };
 
-// One activity event per lock, for an existing account only: an unknown email has no user to attribute it to.
-// The event is attributed to the locked user, from the source IP of the attempt that locked it
-const publishLocalAuthLock = async (user: AuthUser, timings: LocalAuthLockoutTimings, { source, ip }: LocalAuthAttemptOrigin) => {
+// One activity event per lock, from the source IP of the attempt that locked it. The event is attributed to the locked user,
+// or to the system user for an unknown email: the activity is for administrators only, so it reveals nothing to the attacker,
+// and many locks on unknown emails is what a credential stuffing looks like.
+// An unknown email has no account to unlock: its permanent lock expires after a day, so its event is a temporary lock
+const publishLocalAuthLock = async (email: string, user: AuthUser | undefined, timings: LocalAuthLockoutTimings, { source, ip }: LocalAuthAttemptOrigin) => {
+  const actor = user ?? SYSTEM_USER;
   const origin = {
     socket: 'query',
     ip,
-    user_id: user.id,
-    group_ids: user.groups?.map((g) => g.internal_id) ?? [],
-    organization_ids: user.organizations?.map((o) => o.internal_id) ?? [],
+    user_id: actor.id,
+    group_ids: actor.groups?.map((g) => g.internal_id) ?? [],
+    organization_ids: actor.organizations?.map((o) => o.internal_id) ?? [],
   };
-  const isPermanent = timings.finalAction === LocalAuthLockoutFinalAction.Permanent;
+  const isPermanent = !!user && timings.finalAction === LocalAuthLockoutFinalAction.Permanent;
   // Best effort: the lock is already applied, so a failure to publish its event is only logged,
   // and the user still gets the lock error, which says to wait or to contact an administrator
   try {
     await publishUserAction({
-      user: { ...user, origin },
+      user: { ...actor, origin },
       event_type: 'authentication',
       event_scope: 'lock',
       event_access: 'administration',
       status: 'error',
       context_data: {
-        username: ENABLED_DEMO_MODE ? REDACTED_USER.name : user.user_email,
+        username: ENABLED_DEMO_MODE ? REDACTED_USER.name : (user?.user_email ?? email),
         lock_type: isPermanent ? 'permanent' : 'temporary',
         ...(!isPermanent && { lock_duration: timings.finalLockMs / MINUTE_MS }),
         max_attempts: timings.maxAttempts,
-        source,
+        lock_source: source,
       },
     });
   } catch (error) {
-    logApp.error('Local authentication lockout: the activity event of a lock cannot be published', { cause: error, user_id: user.id, source });
+    logApp.error('Local authentication lockout: the activity event of a lock cannot be published', { cause: error, user_id: user?.id, source });
   }
 };
 
@@ -181,9 +184,7 @@ export const loadLocalAuthLockout = async (email: string, userId?: string) => {
           if (!isFinal) {
             return AuthenticationFailure();
           }
-          if (user) {
-            await publishLocalAuthLock(user, timings, origin);
-          }
+          await publishLocalAuthLock(email, user, timings, origin);
           return LocalAuthLocked(lockType, remainingMs);
         },
         release: () => redisReleaseLocalAuthAttempt(emailHash, { attemptToken, windowId }),

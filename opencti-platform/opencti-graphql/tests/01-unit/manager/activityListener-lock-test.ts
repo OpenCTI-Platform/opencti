@@ -38,7 +38,7 @@ describe('Activity listener: local authentication lock', () => {
   });
 
   it('logs a temporary lock with its duration and the max attempts', async () => {
-    await publishUserAction(lockAction({ username: 'user@opencti.io', lock_type: 'temporary', lock_duration: 15, max_attempts: 10, source: 'form' }));
+    await publishUserAction(lockAction({ username: 'user@opencti.io', lock_type: 'temporary', lock_duration: 15, max_attempts: 10, lock_source: 'form' }));
     expect(storeActivityEvent).toHaveBeenCalledTimes(1);
     expect(storeActivityEvent).toHaveBeenCalledWith(expect.objectContaining({
       type: 'authentication',
@@ -47,12 +47,12 @@ describe('Activity listener: local authentication lock', () => {
       status: 'error',
       origin: user.origin,
       message: 'detects `account lock` for `user@opencti.io`: locked for `15 minutes` after `10` failed authentication attempts',
-      data: { username: 'user@opencti.io', lock_type: 'temporary', lock_duration: 15, max_attempts: 10, source: 'form' },
+      data: { username: 'user@opencti.io', lock_type: 'temporary', lock_duration: 15, max_attempts: 10, lock_source: 'form' },
     }));
   });
 
   it('logs a permanent lock until an administrator unlocks the account', async () => {
-    await publishUserAction(lockAction({ username: 'admin@opencti.io', lock_type: 'permanent', max_attempts: 3, source: 'mfa' }));
+    await publishUserAction(lockAction({ username: 'admin@opencti.io', lock_type: 'permanent', max_attempts: 3, lock_source: 'mfa' }));
     expect(storeActivityEvent).toHaveBeenCalledWith(expect.objectContaining({
       event_scope: 'lock',
       message: 'detects `account lock` for `admin@opencti.io`: locked until an administrator unlocks it after `3` failed authentication attempts',
@@ -61,7 +61,7 @@ describe('Activity listener: local authentication lock', () => {
 
   it('logs nothing when the enterprise edition is not active', async () => {
     vi.mocked(getEntityFromCache).mockResolvedValue({ valid_enterprise_edition: false } as never);
-    await publishUserAction(lockAction({ username: 'user@opencti.io', lock_type: 'temporary', lock_duration: 15, max_attempts: 10, source: 'form' }));
+    await publishUserAction(lockAction({ username: 'user@opencti.io', lock_type: 'temporary', lock_duration: 15, max_attempts: 10, lock_source: 'form' }));
     expect(storeActivityEvent).not.toHaveBeenCalled();
   });
 });

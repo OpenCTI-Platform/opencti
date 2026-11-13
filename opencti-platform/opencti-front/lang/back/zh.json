@@ -672,6 +672,7 @@
   "Locations propagation in reports": "报告中的位置传播",
   "lock": "锁定",
   "Lock duration in minutes": "锁定时长（分钟）",
+  "Lock source": "锁定来源",
   "Lock type": "锁定类型",
   "Log sources": "日志来源",
   "login": "登录",

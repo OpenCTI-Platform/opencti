@@ -672,6 +672,7 @@
   "Locations propagation in reports": "보고서 내 위치 전파",
   "lock": "잠금",
   "Lock duration in minutes": "잠금 시간(분)",
+  "Lock source": "잠금 출처",
   "Lock type": "잠금 유형",
   "Log sources": "로그 소스",
   "login": "로그인",

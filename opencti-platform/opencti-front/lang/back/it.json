@@ -672,6 +672,7 @@
   "Locations propagation in reports": "Propagazione della posizione nei rapporti",
   "lock": "blocco",
   "Lock duration in minutes": "Durata del blocco in minuti",
+  "Lock source": "Origine del blocco",
   "Lock type": "Tipo di blocco",
   "Log sources": "Fonti di log",
   "login": "accesso",
