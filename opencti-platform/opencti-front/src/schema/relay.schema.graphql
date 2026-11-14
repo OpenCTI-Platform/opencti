@@ -17416,6 +17416,7 @@ type Vocabulary implements BasicObject & StixMetaObject & StixObject {
   aliases: [String!]
   builtIn: Boolean
   category: VocabularyDefinition!
+  color: String
   created: DateTime
   created_at: DateTime!
   creators: [Creator!]
@@ -17444,6 +17445,7 @@ type Vocabulary implements BasicObject & StixMetaObject & StixObject {
 input VocabularyAddInput {
   aliases: [String!]
   category: VocabularyCategory!
+  color: String
   created: DateTime
   description: String
   modified: DateTime

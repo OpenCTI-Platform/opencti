@@ -51,6 +51,21 @@ describe('System asset vocabularies', () => {
     });
   });
 
+  it('should seed a colour on every value of the scales the overview colours', () => {
+    ['system_category_ov', 'system_criticality_ov', 'system_environment_ov', 'system_internet_facing_ov'].forEach((category) => {
+      openVocabularies[category as keyof typeof openVocabularies].forEach(({ key, color }) => {
+        expect(color, `${category}.${key}`).toMatch(/^#[0-9a-f]{6}$/);
+      });
+    });
+    // The scale reads from the most to the least severe: the top of each scale is never the neutral grey
+    const colorOf = (category: keyof typeof openVocabularies, key: string) => openVocabularies[category].find((v) => v.key === key)?.color;
+    expect(colorOf('system_criticality_ov', 'VERY_HIGH')).not.toEqual(colorOf('system_criticality_ov', 'UNKNOWN'));
+    expect(colorOf('system_internet_facing_ov', 'yes')).not.toEqual(colorOf('system_internet_facing_ov', 'no'));
+    // Each category is told apart by its colour
+    const categoryColors = openVocabularies.system_category_ov.map(({ color }) => color);
+    expect(new Set(categoryColors).size).toEqual(categoryColors.length);
+  });
+
   it('should end every subcategory description with an existing category, which the form narrows on', () => {
     const categories = openVocabularies.system_category_ov.map(({ key }) => key);
     openVocabularies.system_subcategory_ov.forEach(({ key, description }) => {

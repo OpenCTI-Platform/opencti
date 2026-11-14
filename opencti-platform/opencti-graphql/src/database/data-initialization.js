@@ -92,13 +92,14 @@ const createVocabularies = async (context) => {
     const category = categories[index];
     const vocabularies = openVocabularies[category] ?? [];
     for (let i = 0; i < vocabularies.length; i += 1) {
-      const { key, description, aliases, order } = vocabularies[i];
+      const { key, description, aliases, order, color } = vocabularies[i];
       const data = {
         name: key,
         description: description ?? '',
         aliases: aliases ?? [],
         category,
         order,
+        ...(color ? { color } : {}),
         builtIn: builtInOv.includes(category),
       };
       await addVocabulary(context, SYSTEM_USER, data);
