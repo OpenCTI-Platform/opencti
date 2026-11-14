@@ -455,6 +455,26 @@ describe('Playbook resolver standard behavior', () => {
       expect(node.description).toBeUndefined();
     });
 
+    it('should refuse a non-entry node without a parent on an empty playbook', async () => {
+      await clearPlaybook(playbookId);
+      const addNodeInput: PlaybookAddNodeInput = {
+        component_id: PLAYBOOK_MATCHING_COMPONENT.id,
+        configuration: JSON.stringify({ filters: EMPTY_STRING_FILTERS }),
+        name: 'orphan-first-node',
+        position: { x: 5, y: 5 },
+      };
+      await queryAsAdminWithError(
+        {
+          query: ADD_NODE_PLAYBOOK,
+          variables: { id: playbookId, input: addNodeInput },
+        },
+        'Playbook node needs a parent: only the entry point has none, give parentNodeId and parentPortId',
+        FUNCTIONAL_ERROR,
+      );
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      expect(playbookDef.nodes.length).toEqual(0);
+    });
+
     it('should refuse a non-entry node without a parent', async () => {
       await clearPlaybook(playbookId);
       entryNodeId = await addEntryNode(playbookId);
@@ -566,6 +586,25 @@ describe('Playbook resolver standard behavior', () => {
         'Playbook related component not found',
         UNSUPPORTED_ERROR,
       );
+    });
+
+    it('should not replace the entry point with a non-entry component', async () => {
+      const replaceNodeInput: PlaybookAddNodeInput = {
+        component_id: PLAYBOOK_MATCHING_COMPONENT.id,
+        configuration: JSON.stringify({ filters: EMPTY_STRING_FILTERS }),
+        name: 'non-entry-root',
+        position: { x: 1, y: 1 },
+      };
+      await queryAsAdminWithError(
+        {
+          query: REPLACE_NODE_PLAYBOOK,
+          variables: { id: playbookId, nodeId: entryNodeId, input: replaceNodeInput },
+        },
+        'Playbook root must be an entry point component',
+        FUNCTIONAL_ERROR,
+      );
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      expect(playbookDef.nodes[0].component_id).toEqual(PLAYBOOK_INTERNAL_DATA_CRON.id);
     });
 
     it('should not replace a node with incorrect filters', async () => {

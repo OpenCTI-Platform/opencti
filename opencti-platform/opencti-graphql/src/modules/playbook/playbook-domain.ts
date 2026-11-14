@@ -221,9 +221,20 @@ export const assertPlaybookDefinitionIsValid = (definition: ComponentDefinition)
   });
   const linkTargets = new Set(links.map((l) => l.to.id));
   const roots = nodes.filter((n) => !linkTargets.has(n.id));
-  if (roots.length > 1) {
+  if (roots.length > 1 || (nodes.length > 0 && roots.length === 0)) {
     throw FunctionalError('Playbook must have a single entry point: every other node needs a parent', { root_ids: roots.map((n) => n.id) });
   }
+  // The sole root is the node the playbook starts from: it must be an entry
+  // point component, and an entry point component is never reached by a link.
+  const [root] = roots;
+  if (root && !PLAYBOOK_COMPONENTS[root.component_id]?.is_entry_point) {
+    throw FunctionalError('Playbook root must be an entry point component', { node_id: root.id, component_id: root.component_id });
+  }
+  nodes.forEach((n) => {
+    if (PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point && linkTargets.has(n.id)) {
+      throw FunctionalError('Playbook entry point cannot have a parent', { node_id: n.id });
+    }
+  });
 };
 
 const assertPlaybookDefinitionStringIsValid = (rawDefinition: string | null | undefined) => {
@@ -260,7 +271,7 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
   if (relatedComponent.is_entry_point && parentNodeId) {
     throw FunctionalError('Playbook entry point cannot have a parent', { parentNodeId });
   }
-  if (!relatedComponent.is_entry_point && !parentNodeId && existingEntryPoint) {
+  if (!relatedComponent.is_entry_point && !parentNodeId) {
     throw FunctionalError('Playbook node needs a parent: only the entry point has none, give parentNodeId and parentPortId', { component_id: input.component_id });
   }
   const nodeId = uuidv4();
