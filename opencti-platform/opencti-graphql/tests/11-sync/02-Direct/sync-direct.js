@@ -1,0 +1,47 @@
+import { expect } from 'vitest';
+import * as R from 'ramda';
+import { ADMIN_API_TOKEN, ADMIN_USER, createHttpClient, DATA_FILE_TEST, executeExternalQuery, SYNC_DIRECT_START_REMOTE_URI, SYNC_TEST_REMOTE_URI } from '../../utils/testQuery';
+import { checkPostSyncContent, checkPreSyncContent, REPORT_QUERY, SYNC_CREATION_QUERY, SYNC_START_QUERY, UPLOADED_FILE_SIZE, waitForRemoteSync } from '../sync-utils';
+
+export const syncDirect = async () => {
+  const client = createHttpClient();
+  // Pre check
+  const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
+  // The report file is uploaded once before all the syncs, see uploadReportFile in sync-utils.js
+  // Need to create the synchronizer on the remote host
+  const SYNC_CREATE = {
+    input: {
+      name: 'SYNC',
+      uri: SYNC_TEST_REMOTE_URI,
+      listen_deletion: true,
+      no_dependencies: false,
+      stream_id: 'live',
+      token: ADMIN_API_TOKEN,
+      user_id: ADMIN_USER.id,
+      automatic_user: false,
+    },
+  };
+  const synchronizer = await executeExternalQuery(client, SYNC_DIRECT_START_REMOTE_URI, SYNC_CREATION_QUERY, SYNC_CREATE);
+  // Start the sync
+  const syncId = synchronizer.synchronizerAdd.id;
+  await executeExternalQuery(client, SYNC_DIRECT_START_REMOTE_URI, SYNC_START_QUERY, { id: syncId });
+  // Wait for the sync to consume all the stream, the uploaded file being the last change
+  const isReportFileSynced = async () => {
+    const remoteReport = await executeExternalQuery(client, SYNC_DIRECT_START_REMOTE_URI, REPORT_QUERY, {
+      id: 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7',
+    });
+    return (remoteReport?.report?.importFiles?.edges?.length ?? 0) > 0;
+  };
+  await waitForRemoteSync(SYNC_DIRECT_START_REMOTE_URI, objectMap, relMap, isReportFileSynced);
+  // Post check
+  await checkPostSyncContent(SYNC_DIRECT_START_REMOTE_URI, objectMap, relMap, initStixReport);
+  // Check file availability
+  const reportData = await executeExternalQuery(client, SYNC_DIRECT_START_REMOTE_URI, REPORT_QUERY, {
+    id: 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7',
+  });
+  const files = reportData.report.importFiles.edges;
+  expect(files.length).toEqual(1);
+  const uploadedFile = R.head(files).node;
+  expect(uploadedFile.name).toEqual(DATA_FILE_TEST);
+  expect(uploadedFile.size).toEqual(UPLOADED_FILE_SIZE);
+};
