@@ -588,6 +588,8 @@
   "Attributed to this region": "이 지역에 귀속됨",
   "Attributes": "속성",
   "Attributes of the instance": "{type}의 속성",
+  "Attributes of the lock": "잠금 속성",
+  "Attributes of the locked user": "잠긴 사용자 속성",
   "Attributes of the platform": "플랫폼의 속성",
   "Attributes of the user": "사용자 속성",
   "Attribution": "귀속",

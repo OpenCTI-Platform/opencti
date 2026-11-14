@@ -8,33 +8,105 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { renderWidgetIcon } from '../../../../utils/widget/widgetUtils';
 import { MESSAGING$ } from '../../../../relay/environment';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 export const EMAIL_TEMPLATE_SIDEBAR_WIDTH = 350;
 
-const EmailTemplateAttributesSidebar = () => {
+type TemplateAttribute = { variableName: string; label: string };
+
+const userAttributes: TemplateAttribute[] = [
+  { variableName: 'user.firstname', label: 'First name' },
+  { variableName: 'user.lastname', label: 'Last name' },
+  { variableName: 'user.name', label: 'Name' },
+  { variableName: 'user.token_user', label: 'New generated token' },
+  { variableName: 'user.user_email', label: 'Email' },
+  { variableName: 'user.account_status', label: 'Status' },
+  { variableName: 'user.objectOrganization', label: 'Organizations' },
+  { variableName: 'user.account_lock_after_date', label: 'Expire Date' },
+];
+const platformAttributes: TemplateAttribute[] = [
+  { variableName: 'settings.platform_url', label: 'Platform URL' },
+];
+// The account locked by the local authentication lockout, for the email sent to the administrators: $user is the recipient
+const lockedUserAttributes: TemplateAttribute[] = [
+  { variableName: 'locked_user.firstname', label: 'First name' },
+  { variableName: 'locked_user.lastname', label: 'Last name' },
+  { variableName: 'locked_user.name', label: 'Name' },
+  { variableName: 'locked_user.user_email', label: 'Email' },
+];
+const lockAttributes: TemplateAttribute[] = [
+  { variableName: 'lock.date', label: 'Date of the lock' },
+  { variableName: 'lock.attempts', label: 'Failed attempts' },
+  { variableName: 'lock.type', label: 'Temporary or permanent' },
+  { variableName: 'lock.end_date', label: 'End of a temporary lock' },
+  { variableName: 'lock.unlock', label: 'When the account is unlocked' },
+];
+
+const AttributesSection = ({ title, attributes, isFirst = false }: { title: string; attributes: TemplateAttribute[]; isFirst?: boolean }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
-  const attributesOfTheUserTitle = t_i18n('Attributes of the user');
-  const attributesOfThePlatformTitle = t_i18n('Attributes of the platform');
-  const userAttributes = [
-    { variableName: 'user.firstname', label: 'First name' },
-    { variableName: 'user.lastname', label: 'Last name' },
-    { variableName: 'user.name', label: 'Name' },
-    { variableName: 'user.token_user', label: 'New generated token' },
-    { variableName: 'user.user_email', label: 'Email' },
-    { variableName: 'user.account_status', label: 'Status' },
-    { variableName: 'user.objectOrganization', label: 'Organizations' },
-    { variableName: 'user.account_lock_after_date', label: 'Expire Date' },
-  ];
-  const platformAttributes = [
-    { variableName: 'settings.platform_url', label: 'Platform URL' },
-  ];
 
   const copyAttributeToClipboard = async (varName: string) => {
     await navigator.clipboard.writeText(`$${varName}`);
     MESSAGING$.notifySuccess(t_i18n('Attribute copied to clipboard'));
   };
+
+  return (
+    <ListItem
+      value={title}
+      sx={{
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        paddingRight: 1,
+        ...(isFirst && { paddingTop: 0 }),
+        gap: 0,
+        flexDirection: 'column',
+        alignItems: 'stretch',
+      }}
+    >
+      <div style={{ display: 'flex', flex: 1, alignItems: 'center', gap: theme.spacing(1) }}>
+        <Tooltip title="attribute">
+          {renderWidgetIcon('attribute', 'small')}
+        </Tooltip>
+
+        <Typography style={{ fontStyle: 'italic', flex: 1 }} variant="body2">
+          {title}
+        </Typography>
+
+        <div style={{ height: 36 }}></div>
+      </div>
+
+      <div style={{ paddingLeft: theme.spacing(3.5) }}>
+        {attributes.map((column) => {
+          return (
+            <div
+              key={column.variableName}
+              style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}
+            >
+              <ListItemText secondary={`$${column.variableName} (${column.label})`} />
+
+              <Tooltip title={t_i18n('Copy attribute name to clipboard')}>
+                <IconButton
+                  variant="default"
+                  priority="tertiary"
+                  aria-label={t_i18n('Copy attribute name to clipboard')}
+                  aria-haspopup="true"
+                  onClick={() => copyAttributeToClipboard(column.variableName)}
+                  icon={<ContentCopy fontSize="small" />}
+                />
+              </Tooltip>
+            </div>
+          );
+        })}
+      </div>
+    </ListItem>
+  );
+};
+
+const EmailTemplateAttributesSidebar = () => {
+  const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
   const paperStyle: SxProps = {
     '.MuiDrawer-paper': {
@@ -58,103 +130,14 @@ const EmailTemplateAttributesSidebar = () => {
             {t_i18n('Use these variables in your template.')}
           </Typography>
         </Alert>
-        <ListItem
-          key={attributesOfTheUserTitle}
-          value={attributesOfTheUserTitle}
-          sx={{
-            borderBottom: `1px solid ${theme.palette.divider}`,
-            paddingRight: 1,
-            paddingTop: 0,
-            gap: 0,
-            flexDirection: 'column',
-            alignItems: 'stretch',
-          }}
-        >
-          <div style={{ display: 'flex', flex: 1, alignItems: 'center', gap: theme.spacing(1) }}>
-            <Tooltip title="attribute">
-              {renderWidgetIcon('attribute', 'small')}
-            </Tooltip>
-
-            <Typography style={{ fontStyle: 'italic', flex: 1 }} variant="body2">
-              {attributesOfTheUserTitle}
-            </Typography>
-
-            <div style={{ height: 36 }}></div>
-
-          </div>
-
-          <div style={{ paddingLeft: theme.spacing(3.5) }}>
-            {userAttributes.map((column) => {
-              return (
-                <div
-                  key={column.variableName}
-                  style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}
-                >
-                  <ListItemText secondary={`$${column.variableName} (${column.label})`} />
-
-                  <Tooltip title={t_i18n('Copy attribute name to clipboard')}>
-                    <IconButton
-                      variant="default"
-                      priority="tertiary"
-                      aria-label={t_i18n('Copy attribute name to clipboard')}
-                      aria-haspopup="true"
-                      onClick={() => copyAttributeToClipboard(column.variableName ?? '')}
-                      icon={<ContentCopy fontSize="small" />}
-                    />
-                  </Tooltip>
-                </div>
-              );
-            })}
-          </div>
-        </ListItem>
-        <ListItem
-          key={attributesOfThePlatformTitle}
-          value={attributesOfThePlatformTitle}
-          sx={{
-            borderBottom: `1px solid ${theme.palette.divider}`,
-            paddingRight: 1,
-            gap: 0,
-            flexDirection: 'column',
-            alignItems: 'stretch',
-          }}
-        >
-          <div style={{ display: 'flex', flex: 1, alignItems: 'center', gap: theme.spacing(1) }}>
-            <Tooltip title="attribute">
-              {renderWidgetIcon('attribute', 'small')}
-            </Tooltip>
-
-            <Typography style={{ fontStyle: 'italic', flex: 1 }} variant="body2">
-              {attributesOfThePlatformTitle}
-            </Typography>
-
-            <div style={{ height: 36 }}>
-            </div>
-          </div>
-
-          <div style={{ paddingLeft: theme.spacing(3.5) }}>
-            {platformAttributes.map((column) => {
-              return (
-                <div
-                  key={column.variableName}
-                  style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}
-                >
-                  <ListItemText secondary={`$${column.variableName} (${column.label})`} />
-
-                  <Tooltip title={t_i18n('Copy attribute name to clipboard')}>
-                    <IconButton
-                      variant="default"
-                      priority="tertiary"
-                      aria-label={t_i18n('Copy attribute name to clipboard')}
-                      aria-haspopup="true"
-                      onClick={() => copyAttributeToClipboard(column.variableName ?? '')}
-                      icon={<ContentCopy fontSize="small" />}
-                    />
-                  </Tooltip>
-                </div>
-              );
-            })}
-          </div>
-        </ListItem>
+        <AttributesSection title={t_i18n('Attributes of the user')} attributes={userAttributes} isFirst />
+        <AttributesSection title={t_i18n('Attributes of the platform')} attributes={platformAttributes} />
+        {isFeatureEnable('LOCAL_AUTH_LOCKOUT') && (
+          <>
+            <AttributesSection title={t_i18n('Attributes of the locked user')} attributes={lockedUserAttributes} />
+            <AttributesSection title={t_i18n('Attributes of the lock')} attributes={lockAttributes} />
+          </>
+        )}
       </Drawer>
 
     </>

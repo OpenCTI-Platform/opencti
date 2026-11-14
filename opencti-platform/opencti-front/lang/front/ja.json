@@ -588,6 +588,8 @@
   "Attributed to this region": "この地域に帰属するもの",
   "Attributes": "属性",
   "Attributes of the instance": "{type}の属性",
+  "Attributes of the lock": "ロックの属性",
+  "Attributes of the locked user": "ロックされたユーザーの属性",
   "Attributes of the platform": "プラットフォームの属性",
   "Attributes of the user": "ユーザーの属性",
   "Attribution": "アトリビューション",

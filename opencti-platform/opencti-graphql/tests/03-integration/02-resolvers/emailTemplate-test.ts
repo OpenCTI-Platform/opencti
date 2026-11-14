@@ -141,7 +141,8 @@ describe('Email template resolver standard behavior', () => {
 
       const emailTemplates = listResult.data?.emailTemplates.edges;
       expect(emailTemplates).not.toBeNull();
-      expect(emailTemplates.length).toEqual(3);
+      // The 2 built-in templates (onboarding and locked users) and the 2 created by this test
+      expect(emailTemplates.length).toEqual(4);
     });
   });
 

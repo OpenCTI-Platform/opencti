@@ -17,6 +17,7 @@ import { initManagerConfigurations } from './modules/managerConfiguration/manage
 import { initializeData, patchPlatformId } from './database/data-initialization';
 import { initExclusionListCache } from './database/exclusionListCache';
 import { initFintelTemplates } from './modules/fintelTemplate/fintelTemplate-domain';
+import { initLockedUserEmailTemplate } from './modules/emailTemplate/emailTemplate-domain';
 import { lockResources } from './lock/master-lock';
 import { loadEntityMetricsConfiguration } from './modules/metrics/metrics-utils';
 import { initializeStreamStack } from './database/stream/stream-handler';
@@ -133,6 +134,8 @@ const platformInit = async (withMarkings = true) => {
       await initManagerConfigurations(context, SYSTEM_USER);
       await initDecayRules(context, SYSTEM_USER);
     }
+    // New and existing platforms: the built-in template exists only behind the feature flag of the local authentication lockout
+    await initLockedUserEmailTemplate(context);
     await initExclusionListCache();
 
     // Authentication

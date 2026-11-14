@@ -169,7 +169,7 @@ import { doYield } from '../../utils/eventloop-utils';
 import { disablePublicSharingForDeletedUser } from '../dataSharing/dataSharing-utils';
 import { deleteAllIngestionDeduplicationRulesForUser } from '../ingestionDeduplication/ingestionDeduplicationRule-domain';
 import { sanitizeUser } from '../../utils/templateContextSanitizer';
-import { safeRender } from '../../utils/safeEjs.client';
+import { type LockedUserEmailData, renderEmailTemplate } from '../emailTemplate/emailTemplate-render';
 import { totp } from '../../utils/totp';
 import { pushAll } from '../../utils/arrayUtil';
 import { USER_MERGED_INTO_FIELD } from '../userMerge/userMerge-types';
@@ -1019,7 +1019,8 @@ type MailTargetUser = Omit<AuthUser, 'organizations' | 'account_lock_after_date'
   account_lock_after_date: string | undefined;
 };
 
-export const sendEmailToUser = async (context: AuthContext, user: AuthUser, input: SendUserMailInput) => {
+// lockedUserData: the account locked by the local authentication lockout, for its $locked_user and $lock variables
+export const sendEmailToUser = async (context: AuthContext, user: AuthUser, input: SendUserMailInput, lockedUserData?: LockedUserEmailData) => {
   await checkEnterpriseEdition(context);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
 
@@ -1051,21 +1052,11 @@ export const sendEmailToUser = async (context: AuthContext, user: AuthUser, inpu
     templateUser.api_token = token.plaintext_token;
   }
 
-  const preprocessedTemplate = emailTemplate.template_body
-    .replace(/\$user\.firstname/g, '<%= user.firstname %>')
-    .replace(/\$user\.lastname/g, '<%= user.lastname %>')
-    .replace(/\$user\.name/g, '<%= user.name %>')
-    .replace(/\$user\.user_email/g, '<%= user.user_email %>')
-    .replace(/\$user\.api_token/g, '<%= user.api_token %>')
-    .replace(/\$user\.account_status/g, '<%= user.account_status %>')
-    .replace(/\$user\.objectOrganization/g, '<%= organizationNames.join(", ") %>')
-    .replace(/\$user\.account_lock_after_date/g, '<%= user.account_lock_after_date %>')
-    .replace(/\$settings\.platform_url/g, '<%= platformUrl %>');
-
-  const renderedHtml = await safeRender(preprocessedTemplate, {
+  const renderedHtml = await renderEmailTemplate(emailTemplate.template_body, {
     platformUrl: settings.platform_url,
     user: templateUser,
     organizationNames,
+    lockedUserData,
   });
 
   const sendMailArgs = {
