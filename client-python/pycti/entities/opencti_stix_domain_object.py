@@ -78,6 +78,15 @@ class StixDomainObject:
                     x_opencti_firstname
                     x_opencti_lastname
                 }
+                ... on System {
+                    x_opencti_system_category
+                    x_opencti_system_subcategory
+                    x_opencti_internet_facing
+                    x_opencti_criticality
+                    x_opencti_environment
+                    x_opencti_owner
+                    x_opencti_platform
+                }
             }
             objectMarking {
                 id
@@ -631,6 +640,15 @@ class StixDomainObject:
                 ... on Individual {
                     x_opencti_firstname
                     x_opencti_lastname
+                }
+                ... on System {
+                    x_opencti_system_category
+                    x_opencti_system_subcategory
+                    x_opencti_internet_facing
+                    x_opencti_criticality
+                    x_opencti_environment
+                    x_opencti_owner
+                    x_opencti_platform
                 }
             }
             objectMarking {
