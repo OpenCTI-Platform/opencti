@@ -1,5 +1,5 @@
 # Filigran
-boto3>=1.38.27,<1.44
+boto3>=1.44,<1.45
 datefinder~=0.7.3
 pika~=1.4.4
 python_json_logger~=4.0.0
