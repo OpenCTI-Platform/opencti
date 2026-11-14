@@ -35372,8 +35372,8 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  x_opencti_asset_category?: Maybe<Scalars['String']['output']>;
-  x_opencti_asset_subcategory?: Maybe<Scalars['String']['output']>;
+  x_opencti_system_category?: Maybe<Scalars['String']['output']>;
+  x_opencti_system_subcategory?: Maybe<Scalars['String']['output']>;
   x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_criticality?: Maybe<Scalars['String']['output']>;
   x_opencti_environment?: Maybe<Scalars['String']['output']>;
@@ -35577,8 +35577,8 @@ export type SystemAddInput = {
   update?: InputMaybe<Scalars['Boolean']['input']>;
   upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  x_opencti_asset_category?: InputMaybe<Scalars['String']['input']>;
-  x_opencti_asset_subcategory?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_system_category?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_system_subcategory?: InputMaybe<Scalars['String']['input']>;
   x_opencti_criticality?: InputMaybe<Scalars['String']['input']>;
   x_opencti_environment?: InputMaybe<Scalars['String']['input']>;
   x_opencti_firstname?: InputMaybe<Scalars['String']['input']>;
@@ -39090,12 +39090,6 @@ export type VocabularyAddInput = {
 
 export enum VocabularyCategory {
   AccountTypeOv = 'account_type_ov',
-  AssetCategoryOv = 'asset_category_ov',
-  AssetCriticalityOv = 'asset_criticality_ov',
-  AssetEnvironmentOv = 'asset_environment_ov',
-  AssetInternetFacingOv = 'asset_internet_facing_ov',
-  AssetPlatformOv = 'asset_platform_ov',
-  AssetSubcategoryOv = 'asset_subcategory_ov',
   AttackMotivationOv = 'attack_motivation_ov',
   AttackResourceLevelOv = 'attack_resource_level_ov',
   CasePriorityOv = 'case_priority_ov',
@@ -39137,6 +39131,12 @@ export enum VocabularyCategory {
   ServiceStatusOv = 'service_status_ov',
   ServiceTypeOv = 'service_type_ov',
   StartTypeOv = 'start_type_ov',
+  SystemCategoryOv = 'system_category_ov',
+  SystemCriticalityOv = 'system_criticality_ov',
+  SystemEnvironmentOv = 'system_environment_ov',
+  SystemInternetFacingOv = 'system_internet_facing_ov',
+  SystemPlatformOv = 'system_platform_ov',
+  SystemSubcategoryOv = 'system_subcategory_ov',
   ThreatActorGroupRoleOv = 'threat_actor_group_role_ov',
   ThreatActorGroupSophisticationOv = 'threat_actor_group_sophistication_ov',
   ThreatActorGroupTypeOv = 'threat_actor_group_type_ov',
@@ -54730,8 +54730,8 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  x_opencti_asset_category?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_asset_subcategory?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_system_category?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_system_subcategory?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_criticality?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_environment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
