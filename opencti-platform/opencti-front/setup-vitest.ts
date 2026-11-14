@@ -11,9 +11,9 @@ import { expect, afterEach, vi } from 'vitest';
 // keeps mocked modules, and so do module-level caches in node_modules: either
 // would hold every previous file's module graph alive, ~14 MB a file, enough
 // to exhaust the CI runner's memory over the suite.
-type ModuleNode = { importers: Set<string>; meta?: object };
+type ModuleNode = { importers: Set<string>; meta?: object; file: string; evaluated: boolean; promise?: Promise<unknown> };
 const vitestGlobals = globalThis as {
-  __vitest_mocker__?: { reset: () => void };
+  __vitest_mocker__?: { reset: () => void; moduleRunner?: { concurrentModuleNodePromises: Map<string, Promise<unknown>> } };
   __vitest_worker__?: {
     evaluatedModules?: { idToModuleMap: Map<string, ModuleNode>; invalidateModule: (node: ModuleNode) => void };
   };
@@ -23,11 +23,31 @@ const vitestGlobals = globalThis as {
 // files and worker memory would grow until the run is killed.
 const { __vitest_mocker__: mocker, __vitest_worker__: worker } = vitestGlobals;
 const evaluatedModules = worker?.evaluatedModules;
-if (!mocker || !evaluatedModules) {
+if (!mocker?.moduleRunner || !evaluatedModules) {
   throw new Error(
-    `setup-vitest.ts: vitest internal "${mocker ? '__vitest_worker__.evaluatedModules' : '__vitest_mocker__'}" is missing. `
+    `setup-vitest.ts: vitest internal "${mocker?.moduleRunner ? '__vitest_worker__.evaluatedModules' : '__vitest_mocker__.moduleRunner'}" is missing. `
     + 'The per-file reset was written against vitest 5.0.4; adapt it to the installed version.',
   );
+}
+// A file can end while an import it started is still running: a React.lazy
+// route it rendered and never awaited (settings/Root.test.tsx). That import
+// would go on in this file, and the module runner hands a module it is still
+// evaluating, its exports not assigned yet, to an importer it takes for a
+// circular one: MarkdownField got MarkdownFieldBase as undefined that way.
+// Let it finish before anything is reset or imported: its fetches first, then
+// the evaluations they start, a macrotask apart. Real timers, or a fake
+// setTimeout left by the previous file would never fire.
+vi.useRealTimers();
+const { concurrentModuleNodePromises: fetching } = mocker.moduleRunner;
+const inFlight = () => [
+  ...fetching.values(),
+  ...[...evaluatedModules.idToModuleMap.values()]
+    .filter((node) => node.promise && !node.evaluated && node.file !== import.meta.filename)
+    .map((node) => node.promise),
+];
+for (let pending = inFlight(); pending.length; pending = inFlight()) {
+  await Promise.allSettled(pending);
+  await new Promise((resolve) => setTimeout(resolve));
 }
 mocker.reset();
 vi.resetModules();
@@ -39,7 +59,6 @@ evaluatedModules.idToModuleMap.forEach((node, id) => {
 vi.restoreAllMocks();
 vi.unstubAllGlobals();
 vi.unstubAllEnvs();
-vi.useRealTimers();
 localStorage.clear();
 sessionStorage.clear();
 window.history.replaceState(null, '', '/');
