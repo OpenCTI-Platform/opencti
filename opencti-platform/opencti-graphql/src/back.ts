@@ -44,6 +44,12 @@ if (ENABLED_TRACING) {
       ],
     });
     trace.setGlobalTracerProvider(provider);
+    if (isOtlpExporterSetUp) {
+      logApp.info('[OPENCTI] [TELEMETRY] OTLP tracing exporter initialized', { url: otlpUri });
+    }
+    if (isZipKinExporterSetUp) {
+      logApp.info('[OPENCTI] [TELEMETRY] Zipkin tracing exporter initialized', { url: zipKinUri });
+    }
     const contextManager = new AsyncLocalStorageContextManager();
     contextManager.enable();
     context.setGlobalContextManager(contextManager);
