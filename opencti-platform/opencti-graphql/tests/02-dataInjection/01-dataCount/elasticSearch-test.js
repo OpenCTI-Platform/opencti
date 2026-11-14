@@ -40,7 +40,7 @@ import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/sch
 import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { buildAggregationRelationFilter } from '../../../src/database/middleware-loader';
 import { mapCountPerEntityType, mapEdgesCountPerEntityType } from '../../utils/domainQueryHelper';
-import { entitiesCounter, entitiesCounterTotal, relationsCounter } from './entityCountHelper';
+import { entitiesCounter, entitiesCounterTotal, relationsCounter, SEEDED_VOCABULARY_COLORS } from './entityCountHelper';
 import { elRebuildRelation } from '../../../src/database/engine-data-converter';
 
 const elWhiteUser = async () => {
