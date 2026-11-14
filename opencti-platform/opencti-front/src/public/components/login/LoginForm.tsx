@@ -9,6 +9,7 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { Stack } from '@mui/material';
 import { useLoginContext } from './loginContext';
 import { ResetPwdStep } from './ResetPassword';
+import { type LocalAuthLockError, localAuthLockMessage } from '../../../utils/localAuthLockErrors';
 
 const loginMutation = graphql`
   mutation LoginFormMutation($input: UserLoginInput!) {
@@ -23,15 +24,11 @@ interface LoginFormValues {
 
 interface RelayResponseError extends Error {
   res?: {
-    errors?: {
-      message?: string;
+    errors?: (LocalAuthLockError & {
       extensions?: {
         code?: string;
-        data?: {
-          remaining_minutes?: number;
-        };
       };
-    }[];
+    })[];
   };
 }
 
@@ -58,11 +55,8 @@ const LoginForm = () => {
           setSubmitting(false);
           return;
         }
-        // A locked account comes with the remaining lock time
-        const remainingMinutes = firstError?.extensions?.data?.remaining_minutes;
-        const errorMessage = remainingMinutes !== undefined
-          ? t_i18n('Your account has been locked for security reasons. Please try again in {minutes, plural, one {# minute} other {# minutes}}.', { values: { minutes: remainingMinutes } })
-          : t_i18n(firstError?.message ?? 'Unknown');
+        // A locked account comes with the type of lock and the remaining lock time
+        const errorMessage = localAuthLockMessage(t_i18n, firstError) ?? t_i18n(firstError?.message ?? 'Unknown');
         setErrors({ email: errorMessage });
         setSubmitting(false);
       },

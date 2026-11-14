@@ -3,6 +3,8 @@ import { graphql } from 'react-relay';
 import OtpInputField, { OTP_CODE_SIZE } from './OtpInputField';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { useLoginContext } from './loginContext';
+import { useFormatter } from '../../../components/i18n';
+import { relayLocalAuthLockMessage } from '../../../utils/localAuthLockErrors';
 
 interface OtpValidationProps {
   variant?: 'login' | 'resetPassword';
@@ -27,6 +29,7 @@ const OtpValidation: FunctionComponent<OtpValidationProps> = ({
   transactionId,
   onCompleted,
 }) => {
+  const { t_i18n } = useFormatter();
   const { setValue } = useLoginContext();
   const [code, setCode] = useState('');
   const [inputDisable, setInputDisable] = useState(false);
@@ -41,13 +44,16 @@ const OtpValidation: FunctionComponent<OtpValidationProps> = ({
       variables: {
         input: variant === 'login' ? { code } : { code, transactionId },
       },
-      onError: () => {
+      onError: (error) => {
         setInputDisable(false);
         setCode('');
         setValue('mfaInError', true);
+        // A failed MFA code counts like a failed password: once the account is locked, say so instead of a wrong code
+        setValue('mfaLockMessage', relayLocalAuthLockMessage(t_i18n, error));
       },
       onCompleted: () => {
         setValue('mfaInError', undefined);
+        setValue('mfaLockMessage', undefined);
         if (onCompleted) {
           onCompleted();
         } else {

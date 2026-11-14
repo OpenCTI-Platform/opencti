@@ -61,7 +61,7 @@ import {
   UPDATE_OPERATION_REPLACE,
 } from '../../database/utils';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
-import { publishUserAction } from '../../listener/UserActionListener';
+import { publishUserAction, type UserLockSource } from '../../listener/UserActionListener';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../../schema/general';
 import { generateStandardId, getInstanceIds } from '../../schema/identifier';
@@ -2063,7 +2063,13 @@ export const lockAccountAfterFailedAttempts = async (user: Pick<BasicStoreEntity
 
 // countsAttempt is false for the login form when the local auth is disabled: the password cannot log in,
 // so its attempts must neither be counted nor lock an account that logs in with another provider
-export const login = async (email: string, password: string, sourceIp?: string, { countsAttempt = true }: { countsAttempt?: boolean } = {}) => {
+// source tells where the attempt comes from (login form or Basic auth), for the activity event of a lock
+export const login = async (
+  email: string,
+  password: string,
+  sourceIp?: string,
+  { countsAttempt = true, source = 'form' }: { countsAttempt?: boolean; source?: UserLockSource } = {},
+) => {
   const user = await getUserByEmail(email);
   // Undefined when the local authentication lockout is disabled, and for the built-in admin
   const lockout = countsAttempt ? await loadLocalAuthLockout(email, user?.id) : undefined;
@@ -2083,7 +2089,7 @@ export const login = async (email: string, password: string, sourceIp?: string, 
     if (user && attempt?.locksAccount) {
       await lockAccountAfterFailedAttempts(user);
     }
-    throw attempt?.failure ?? AuthenticationFailure();
+    throw attempt ? await attempt.reject({ source, ip: sourceIp }) : AuthenticationFailure();
   }
   // A right password is not a failure: its attempt is undone, the other failures are kept.
   // The caller clears the lockout once the login is fully accepted (IP whitelist, local auth enabled, API access, MFA)
@@ -2116,7 +2122,7 @@ export const resolveUserIndividual = async (context: AuthContext, user: AuthUser
   return user.individual_id;
 };
 
-type OtpSessionRequest = { session: { user: { otp_validated?: boolean }; save: () => void; session_provider?: string } };
+type OtpSessionRequest = { ip?: string; session: { user: { otp_validated?: boolean }; save: () => void; session_provider?: string } };
 export const otpUserActivation = async (context: AuthContext & { req: OtpSessionRequest }, user: AuthUser, { secret, code }: UserOtpActivationInput) => {
   // User activation can only be done if otp is not already activated
   if (user.otp_activated) {
@@ -2257,7 +2263,7 @@ export const otpUserLogin = async (req: OtpSessionRequest, user: AuthUser, { cod
         await lockAccountAfterFailedAttempts(lockedUser);
       }
     }
-    throw attempt?.failure ?? AuthenticationFailure();
+    throw attempt ? await attempt.reject({ source: 'mfa', ip: req.ip }) : AuthenticationFailure();
   }
   // Also when the lockout is disabled, so that enabling it again never brings back an old lock
   await clearLocalAuthLockout(user.user_email);
@@ -2472,7 +2478,7 @@ export const resolveUserById = async (context: AuthContext, id: string) => {
 
 export const authenticateUserByBasicAuth = async (context: AuthContext, req: OriginRequest, basicAuth: { username: string; password: string }) => {
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const loggedUser = await login(basicAuth.username, basicAuth.password, req.ip);
+  const loggedUser = await login(basicAuth.username, basicAuth.password, req.ip, { source: 'basic_auth' });
   const user = platformUsers.get(loggedUser.id);
   if (user) {
     if (!isUserHasCapability(user, 'APIACCESS_USEBASICAUTH')) {
