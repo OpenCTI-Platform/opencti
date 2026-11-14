@@ -17,6 +17,8 @@ import type { Theme } from '../../../../components/Theme';
 import ExperienceCard, { ExperienceHeadline } from '../experience/ExperienceCard';
 import ExperienceDetailRow from '../experience/ExperienceDetailRow';
 import ExperienceFeatureTile from '../experience/ExperienceFeatureTile';
+import XtmHubSaasMetrics from './XtmHubSaasMetrics';
+import { buildXtmHubRegistrationUrl } from './xtm-hub-url';
 
 export const xtmHubSettingsQuery = graphql`
   query XtmHubSettingsQuery {
@@ -29,6 +31,7 @@ export const xtmHubSettingsQuery = graphql`
       xtm_hub_last_connectivity_check
       xtm_hub_backend_is_reachable
       xtm_hub_token
+      xtm_hub_commercial_model
     }
   }
 `;
@@ -55,6 +58,7 @@ const XtmHubSettingsComponent = () => {
   const accent = theme.palette.xtmhub?.main ?? '#00f1bd';
   const registrationStatus = xtmHubSettings.xtm_hub_registration_status ?? undefined;
   const isRegistered = registrationStatus === 'registered' || registrationStatus === 'lost_connectivity';
+  const isSaasConnected = registrationStatus === 'registered' && xtmHubSettings.xtm_hub_commercial_model === 'saas';
   const canInteract = isGrantedToXtmHub
     && isXTMHubAccessible
     && xtmHubSettings.xtm_hub_backend_is_reachable;
@@ -185,6 +189,9 @@ const XtmHubSettingsComponent = () => {
               </ExperienceDetailRow>
             )}
           </div>
+          {isSaasConnected && (
+            <XtmHubSaasMetrics metricsUrl={buildXtmHubRegistrationUrl(hubUrl, xtmHubSettings.id)} />
+          )}
         </>
       ) : (
         <>

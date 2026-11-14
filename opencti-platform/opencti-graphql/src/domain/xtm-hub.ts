@@ -31,7 +31,7 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
   }
   const platformContract: HubPlatformContract = getEnterpriseEditionInfo(settings).license_validated ? 'EE' : 'CE';
   const platformInformation = { platformId: settings.id, token: settings.xtm_hub_token, platformVersion: PLATFORM_VERSION, platformContract };
-  const status = await xtmHubClient.refreshRegistrationStatus(platformInformation);
+  const { status, commercialModel } = await xtmHubClient.refreshRegistrationStatus(platformInformation);
   if (status === 'not_found') {
     logApp.warn('[XTMH] Platform was not found on XTM Hub');
     await resetRegistration(context, user, settings);
@@ -52,6 +52,11 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
 
   if (isConnectivityActive) {
     attributeUpdates.push({ key: 'xtm_hub_last_connectivity_check', value: [new Date()] });
+  }
+
+  // An unreachable hub or an error returns no commercial model: keep the last known one.
+  if (commercialModel && commercialModel !== settings.xtm_hub_commercial_model) {
+    attributeUpdates.push({ key: 'xtm_hub_commercial_model', value: [commercialModel] });
   }
 
   if (attributeUpdates.length === 0) {
@@ -132,6 +137,10 @@ const resetRegistration = async (context: AuthContext, user: AuthUser, settings:
     },
     {
       key: 'xtm_hub_last_connectivity_check',
+      value: [],
+    },
+    {
+      key: 'xtm_hub_commercial_model',
       value: [],
     },
   ];
