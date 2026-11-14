@@ -1,19 +1,19 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { IconButton, Radio, RadioGroup } from '@filigran/design-system';
+import { IconButton, Radio, RadioGroup, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { Typography } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { InformationOutline } from 'mdi-material-ui';
-import Tooltip from '@mui/material/Tooltip';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import { FormikHelpers } from 'formik/dist/types';
 import CsvMapperRepresentationForm, { RepresentationFormEntityOption } from '@components/data/csvMapper/representations/CsvMapperRepresentationForm';
 import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
 import { formDataToCsvMapper } from '@components/data/csvMapper/CsvMapperUtils';
 import { CsvMapperProvider } from '@components/data/csvMapper/CsvMapperContext';
 import { useFormatter } from '../../../../components/i18n';
+import type { Theme } from '../../../../components/Theme';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -59,6 +59,7 @@ interface CsvMapperFormProps {
 
 const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSubmit, isDuplicated }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
 
   // accordion state
   const [open, setOpen] = useState(false);
@@ -172,28 +173,32 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                 label={t_i18n('Name')}
                 fullWidth
               />
-              <CenteredSection>
+              <CenteredSection style={{ gap: theme.spacing(0.5) }}>
                 <Field
                   component={SwitchField}
                   type="checkbox"
                   name="has_header"
                   label={t_i18n('My CSV file contains headers')}
                 />
-                <Tooltip
-                  title={t_i18n(
-                    'If this option is selected, we will skip the first line of your CSV file',
-                  )}
-                >
-                  <InformationOutline
-                    fontSize="small"
-                    color="primary"
-                    style={{ cursor: 'default' }}
-                  />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <InformationOutline
+                      fontSize="small"
+                      color="primary"
+                      style={{ cursor: 'default' }}
+                      sx={{ position: 'relative', top: '-4px' }}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t_i18n(
+                      'If this option is selected, we will skip the first line of your CSV file',
+                    )}
+                  </TooltipContent>
                 </Tooltip>
               </CenteredSection>
               <Section>
                 <Typography>{t_i18n('CSV separator')}</Typography>
-                <Centered>
+                <Centered style={{ marginTop: theme.spacing(1) }}>
                   <RadioGroup
                     aria-label="CSV separator"
                     name="separator"
@@ -207,25 +212,28 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   </RadioGroup>
                 </Centered>
               </Section>
-              <Section
-                style={{ display: 'flex', alignItems: 'end', gap: '8px' }}
-              >
+              <Section>
                 <Field
                   component={TextField}
                   name="skip_line_char"
                   label={t_i18n('Char to escape line')}
-                />
-                <Tooltip
-                  title={t_i18n(
-                    'Every line that begins with this character will be skipped during parsing (for example: #).',
+                  infoTooltip={(
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <InformationOutline
+                          fontSize="small"
+                          color="primary"
+                          style={{ cursor: 'default' }}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {t_i18n(
+                          'Every line that begins with this character will be skipped during parsing (for example: #).',
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
                   )}
-                >
-                  <InformationOutline
-                    fontSize="small"
-                    color="primary"
-                    style={{ cursor: 'default' }}
-                  />
-                </Tooltip>
+                />
               </Section>
 
               <CenteredSection>
