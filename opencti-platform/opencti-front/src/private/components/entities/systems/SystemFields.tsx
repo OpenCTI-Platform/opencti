@@ -55,19 +55,18 @@ const SystemFields: FunctionComponent<SystemFieldsProps> = ({
   editContext,
 }) => {
   const { t_i18n } = useFormatter();
+  // The group header is the human category label (AI target), never the key (AI_TARGET)
+  const groupByHumanCategory = (option: VocabFieldOption) => {
+    const subcategoryCategory = systemSubcategoryCategory(option.description);
+    return subcategoryCategory ? vocabularyValueLabel(subcategoryCategory, t_i18n) : t_i18n('Other');
+  };
   const isEdition = onSubmit !== undefined;
   const [{ value: category }] = useField<string | null | undefined>('x_opencti_system_category');
   const subcategoryProps = (name: string) => {
     if (name !== 'x_opencti_system_subcategory') return {};
     return {
       optionFilter: (option: VocabFieldOption) => fitsSystemCategory(category, option.description),
-      optionGroupBy: category
-        ? undefined
-        : (option: VocabFieldOption) => {
-          // The group header is the human category label (AI target), never the key (AI_TARGET)
-          const subcategoryCategory = systemSubcategoryCategory(option.description);
-          return subcategoryCategory ? vocabularyValueLabel(subcategoryCategory, t_i18n) : t_i18n('Other');
-        },
+      optionGroupBy: category ? undefined : groupByHumanCategory,
       optionFilterKey: category ?? '',
     };
   };
