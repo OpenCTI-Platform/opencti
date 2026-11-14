@@ -1,5 +1,5 @@
-import { Suspense } from 'react';
-import { Field } from 'formik';
+import { Suspense, useEffect, useRef } from 'react';
+import { Field, useField } from 'formik';
 import { Tooltip } from '@mui/material';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -35,7 +35,7 @@ export const vocabularyQuery = graphql`
   }
 `;
 
-interface VocabFieldOption extends FieldOption {
+export interface VocabFieldOption extends FieldOption {
   description?: string;
   category: string;
 }
@@ -54,6 +54,12 @@ interface OpenVocabFieldComponentProps {
   disabled?: boolean;
   multiple?: boolean;
   disabledOptions?: string[];
+  // Keeps only the options it accepts (a list narrowed by another field of the form)
+  optionFilter?: (option: VocabFieldOption) => boolean;
+  // Groups the options of a single vocabulary by the key it returns
+  optionGroupBy?: (option: VocabFieldOption) => string;
+  // Names what optionFilter depends on: when it changes, a value the new filter rejects is cleared
+  optionFilterKey?: string;
   // Narrowed to one argument: AutocompleteField called this as `onFocus?.(name)`,
   // so the second parameter was declared and never delivered.
   onFocus?: (name: string) => void;
@@ -76,8 +82,13 @@ const OpenVocabFieldComponent = ({
   queryRef,
   disabled = false,
   disabledOptions = [],
+  optionFilter,
+  optionGroupBy,
+  optionFilterKey,
 }: OpenVocabFieldComponentProps) => {
   const isEdition = variant === 'edit';
+  const [{ value: currentValue }] = useField<string | string[] | null | undefined>(name);
+  const previousFilterKey = useRef(optionFilterKey);
 
   const { vocabularies } = usePreloadedQuery(vocabularyQuery, queryRef);
   const openVocabList = (vocabularies?.edges ?? [])
@@ -88,8 +99,18 @@ const OpenVocabFieldComponent = ({
       description,
       category: category.key,
     }))
+    .filter((option) => !optionFilter || optionFilter(option))
     // Sort is  needed to make AutocompleteField.groupBy working correctly.
-    .sort((a, b) => a.category.localeCompare(b.category));
+    .sort((a, b) => (optionGroupBy
+      ? optionGroupBy(a).localeCompare(optionGroupBy(b))
+      : a.category.localeCompare(b.category)));
+
+  let groupBy: ((o: VocabFieldOption) => string) | undefined;
+  if (optionGroupBy) {
+    groupBy = optionGroupBy;
+  } else if (Array.isArray(type)) {
+    groupBy = (o: VocabFieldOption) => o.category;
+  }
 
   const internalOnChange = (v: VocabFieldValue) => {
     const values = Array.isArray(v)
@@ -100,6 +121,19 @@ const OpenVocabFieldComponent = ({
       onSubmit?.(name, values);
     }
   };
+
+  // Only a change of the filter clears the value, never the first render: opening a form writes nothing
+  useEffect(() => {
+    if (previousFilterKey.current === optionFilterKey) return;
+    previousFilterKey.current = optionFilterKey;
+    if (multiple || !currentValue || Array.isArray(currentValue)) return;
+    if (!openVocabList.some((option) => option.value === currentValue)) {
+      onChange?.(name, '');
+      if (isEdition) {
+        onSubmit?.(name, '');
+      }
+    }
+  }, [optionFilterKey]);
 
   const helperText = editContext
     ? <SubscriptionFocus context={editContext} fieldName={name} />
@@ -123,7 +157,7 @@ const OpenVocabFieldComponent = ({
           <span>{value}</span>
         </Tooltip>
       )}
-      groupBy={Array.isArray(type) ? (o: VocabFieldOption) => o.category : undefined}
+      groupBy={groupBy}
       isOptionDisabled={(o: VocabFieldOption) => disabledOptions.includes(o.value)}
       // No custom identity here on purpose.
       label={label}

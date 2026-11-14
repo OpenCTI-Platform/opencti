@@ -42,6 +42,24 @@ describe('System asset vocabularies', () => {
     const subcategories = openVocabularies.system_subcategory_ov.map(({ key }) => key);
     expect(new Set(subcategories).size).toEqual(subcategories.length);
   });
+
+  it('should give every option a one-line meaning', () => {
+    Object.values(SYSTEM_ASSET_FIELDS).forEach((category) => {
+      openVocabularies[category as keyof typeof openVocabularies].forEach(({ key, description }) => {
+        expect(description, `${category}.${key}`).toBeTruthy();
+      });
+    });
+  });
+
+  it('should end every subcategory description with an existing category, which the form narrows on', () => {
+    const categories = openVocabularies.system_category_ov.map(({ key }) => key);
+    openVocabularies.system_subcategory_ov.forEach(({ key, description }) => {
+      const category = description?.match(/\(category: ([A-Z_]+)\)$/)?.[1];
+      expect(categories, key).toContain(category);
+      // The meaning comes before the category, never the category alone
+      expect(description?.replace(/\(category: [A-Z_]+\)$/, '').trim().length, key).toBeGreaterThan(5);
+    });
+  });
 });
 
 describe('System asset attributes', () => {
