@@ -69,16 +69,16 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     }],
   },
   // Asset fields of System, aligned on the OpenAEV asset taxonomy so a System maps to an OpenAEV or XTM One asset
-  asset_category_ov: {
+  system_category_ov: {
     description: 'The category of an asset (level 1 of the OpenAEV asset taxonomy).',
     entity_types: [ENTITY_TYPE_IDENTITY_SYSTEM],
     fields: [{
-      key: 'x_opencti_asset_category',
+      key: 'x_opencti_system_category',
       required: false,
       multiple: false,
     }],
   },
-  asset_criticality_ov: {
+  system_criticality_ov: {
     description: 'The business criticality of an asset, on the OpenAEV scale.',
     closed: true,
     entity_types: [ENTITY_TYPE_IDENTITY_SYSTEM],
@@ -88,7 +88,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: false,
     }],
   },
-  asset_environment_ov: {
+  system_environment_ov: {
     description: 'The environment an asset runs in.',
     entity_types: [ENTITY_TYPE_IDENTITY_SYSTEM],
     fields: [{
@@ -97,7 +97,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: false,
     }],
   },
-  asset_internet_facing_ov: {
+  system_internet_facing_ov: {
     description: 'Whether an asset is reachable from the internet.',
     closed: true,
     entity_types: [ENTITY_TYPE_IDENTITY_SYSTEM],
@@ -107,7 +107,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: false,
     }],
   },
-  asset_platform_ov: {
+  system_platform_ov: {
     description: 'The operating system or platform of an asset (OpenAEV endpoint platforms).',
     entity_types: [ENTITY_TYPE_IDENTITY_SYSTEM],
     fields: [{
@@ -116,11 +116,11 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: false,
     }],
   },
-  asset_subcategory_ov: {
+  system_subcategory_ov: {
     description: 'The subcategory of an asset (level 2 of the OpenAEV asset taxonomy); the description of each value names its category.',
     entity_types: [ENTITY_TYPE_IDENTITY_SYSTEM],
     fields: [{
-      key: 'x_opencti_asset_subcategory',
+      key: 'x_opencti_system_subcategory',
       required: false,
       multiple: false,
     }],

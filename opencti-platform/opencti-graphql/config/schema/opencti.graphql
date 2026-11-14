@@ -5244,8 +5244,8 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # System
   x_opencti_firstname: String
   x_opencti_lastname: String
-  x_opencti_asset_category: String
-  x_opencti_asset_subcategory: String
+  x_opencti_system_category: String
+  x_opencti_system_subcategory: String
   x_opencti_internet_facing: String
   x_opencti_criticality: String
   x_opencti_environment: String
@@ -5294,8 +5294,8 @@ input SystemAddInput {
   x_opencti_firstname: String
   x_opencti_lastname: String
   x_opencti_reliability: String
-  x_opencti_asset_category: String
-  x_opencti_asset_subcategory: String
+  x_opencti_system_category: String
+  x_opencti_system_subcategory: String
   x_opencti_internet_facing: String
   x_opencti_criticality: String
   x_opencti_environment: String

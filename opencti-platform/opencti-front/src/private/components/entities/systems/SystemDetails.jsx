@@ -11,7 +11,7 @@ import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import Label from '../../../../components/common/label/Label';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import { SYSTEM_ASSET_VOCABULARY_FIELDS } from './SystemAssetFields';
+import { SYSTEM_VOCABULARY_FIELDS } from './SystemFields';
 
 class SystemDetailsComponent extends Component {
   render() {
@@ -45,7 +45,7 @@ class SystemDetailsComponent extends Component {
               />
             </Grid>
             <Grid size={6}>
-              {SYSTEM_ASSET_VOCABULARY_FIELDS.map(({ name, type, label }, index) => (
+              {SYSTEM_VOCABULARY_FIELDS.map(({ name, type, label }, index) => (
                 <React.Fragment key={name}>
                   <Label sx={index > 0 ? { marginTop: 2 } : undefined}>
                     {t(label)}
@@ -89,8 +89,8 @@ const SystemDetails = createFragmentContainer(SystemDetailsComponent, {
       contact_information
       description
       x_opencti_reliability
-      x_opencti_asset_category
-      x_opencti_asset_subcategory
+      x_opencti_system_category
+      x_opencti_system_subcategory
       x_opencti_internet_facing
       x_opencti_criticality
       x_opencti_environment

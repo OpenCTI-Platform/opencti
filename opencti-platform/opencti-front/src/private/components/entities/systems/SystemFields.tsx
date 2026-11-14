@@ -7,21 +7,21 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 // Asset fields of a System, aligned on the OpenAEV asset model so a System maps to an OpenAEV or XTM One asset
-export const SYSTEM_ASSET_VOCABULARY_FIELDS = [
-  { name: 'x_opencti_asset_category', type: 'asset_category_ov', label: 'Asset category' },
-  { name: 'x_opencti_asset_subcategory', type: 'asset_subcategory_ov', label: 'Asset subcategory' },
-  { name: 'x_opencti_internet_facing', type: 'asset_internet_facing_ov', label: 'Internet facing' },
-  { name: 'x_opencti_criticality', type: 'asset_criticality_ov', label: 'Criticality' },
-  { name: 'x_opencti_environment', type: 'asset_environment_ov', label: 'Environment' },
-  { name: 'x_opencti_platform', type: 'asset_platform_ov', label: 'Platform' },
+export const SYSTEM_VOCABULARY_FIELDS = [
+  { name: 'x_opencti_system_category', type: 'system_category_ov', label: 'System category' },
+  { name: 'x_opencti_system_subcategory', type: 'system_subcategory_ov', label: 'System subcategory' },
+  { name: 'x_opencti_internet_facing', type: 'system_internet_facing_ov', label: 'Internet facing' },
+  { name: 'x_opencti_criticality', type: 'system_criticality_ov', label: 'Criticality' },
+  { name: 'x_opencti_environment', type: 'system_environment_ov', label: 'Environment' },
+  { name: 'x_opencti_platform', type: 'system_platform_ov', label: 'Platform' },
 ] as const;
 
-export const SYSTEM_ASSET_FIELD_NAMES = [
-  ...SYSTEM_ASSET_VOCABULARY_FIELDS.map(({ name }) => name),
+export const SYSTEM_FIELD_NAMES = [
+  ...SYSTEM_VOCABULARY_FIELDS.map(({ name }) => name),
   'x_opencti_owner',
 ] as const;
 
-interface SystemAssetFieldsProps {
+interface SystemFieldsProps {
   mandatoryAttributes: string[];
   setFieldValue: (name: string, value: string | string[]) => void;
   // Edition only: each field is saved on its own when it changes
@@ -30,7 +30,7 @@ interface SystemAssetFieldsProps {
   editContext?: unknown;
 }
 
-const SystemAssetFields: FunctionComponent<SystemAssetFieldsProps> = ({
+const SystemFields: FunctionComponent<SystemFieldsProps> = ({
   mandatoryAttributes,
   setFieldValue,
   onFocus,
@@ -41,7 +41,7 @@ const SystemAssetFields: FunctionComponent<SystemAssetFieldsProps> = ({
   const isEdition = onSubmit !== undefined;
   return (
     <>
-      {SYSTEM_ASSET_VOCABULARY_FIELDS.map(({ name, type, label }) => (
+      {SYSTEM_VOCABULARY_FIELDS.map(({ name, type, label }) => (
         <OpenVocabField
           key={name}
           label={t_i18n(label)}
@@ -75,4 +75,4 @@ const SystemAssetFields: FunctionComponent<SystemAssetFieldsProps> = ({
   );
 };
 
-export default SystemAssetFields;
+export default SystemFields;

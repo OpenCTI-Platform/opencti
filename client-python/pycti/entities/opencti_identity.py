@@ -9,9 +9,9 @@ from pycti.utils.constants import IdentityTypes
 from pycti.utils.opencti_stix2_utils import build_custom_field_values_input
 
 # Asset fields of a System, aligned on the OpenAEV asset model
-SYSTEM_ASSET_FIELDS = (
-    "x_opencti_asset_category",
-    "x_opencti_asset_subcategory",
+SYSTEM_FIELDS = (
+    "x_opencti_system_category",
+    "x_opencti_system_subcategory",
     "x_opencti_internet_facing",
     "x_opencti_criticality",
     "x_opencti_environment",
@@ -160,8 +160,8 @@ class Identity:
                 security_platform_type
             }
             ... on System {
-                x_opencti_asset_category
-                x_opencti_asset_subcategory
+                x_opencti_system_category
+                x_opencti_system_subcategory
                 x_opencti_internet_facing
                 x_opencti_criticality
                 x_opencti_environment
@@ -317,8 +317,8 @@ class Identity:
                 security_platform_type
             }
             ... on System {
-                x_opencti_asset_category
-                x_opencti_asset_subcategory
+                x_opencti_system_category
+                x_opencti_system_subcategory
                 x_opencti_internet_facing
                 x_opencti_criticality
                 x_opencti_environment
@@ -560,8 +560,8 @@ class Identity:
         :param x_opencti_score: (optional) score
         :param x_opencti_firstname: (optional) first name for individuals
         :param x_opencti_lastname: (optional) last name for individuals
-        :param x_opencti_asset_category: (optional) asset category of a system (OpenAEV taxonomy)
-        :param x_opencti_asset_subcategory: (optional) asset subcategory of a system (OpenAEV taxonomy)
+        :param x_opencti_system_category: (optional) category of a system (OpenAEV taxonomy)
+        :param x_opencti_system_subcategory: (optional) subcategory of a system (OpenAEV taxonomy)
         :param x_opencti_internet_facing: (optional) whether a system is internet facing (yes, no, unknown)
         :param x_opencti_criticality: (optional) business criticality of a system (OpenAEV scale)
         :param x_opencti_environment: (optional) environment of a system
@@ -610,7 +610,7 @@ class Identity:
         x_opencti_firstname = kwargs.get("x_opencti_firstname", None)
         x_opencti_lastname = kwargs.get("x_opencti_lastname", None)
         system_asset_fields = {
-            field: kwargs.get(field, None) for field in SYSTEM_ASSET_FIELDS
+            field: kwargs.get(field, None) for field in SYSTEM_FIELDS
         }
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         granted_refs = kwargs.get("objectOrganization", None)
@@ -808,7 +808,7 @@ class Identity:
                 stix_object["x_opencti_lastname"] = (
                     self.opencti.get_attribute_in_extension("lastname", stix_object)
                 )
-            for field in SYSTEM_ASSET_FIELDS:
+            for field in SYSTEM_FIELDS:
                 if field not in stix_object:
                     stix_object[field] = self.opencti.get_attribute_in_extension(
                         field.replace("x_opencti_", "", 1), stix_object
@@ -907,7 +907,7 @@ class Identity:
                     if "x_opencti_lastname" in stix_object
                     else None
                 ),
-                **{field: stix_object.get(field) for field in SYSTEM_ASSET_FIELDS},
+                **{field: stix_object.get(field) for field in SYSTEM_FIELDS},
                 x_opencti_stix_ids=(
                     stix_object["x_opencti_stix_ids"]
                     if "x_opencti_stix_ids" in stix_object

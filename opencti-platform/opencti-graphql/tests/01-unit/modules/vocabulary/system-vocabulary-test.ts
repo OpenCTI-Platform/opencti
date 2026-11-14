@@ -5,12 +5,12 @@ import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SYSTEM } from '..
 import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
 
 const SYSTEM_ASSET_FIELDS: Record<string, string> = {
-  x_opencti_asset_category: 'asset_category_ov',
-  x_opencti_asset_subcategory: 'asset_subcategory_ov',
-  x_opencti_internet_facing: 'asset_internet_facing_ov',
-  x_opencti_criticality: 'asset_criticality_ov',
-  x_opencti_environment: 'asset_environment_ov',
-  x_opencti_platform: 'asset_platform_ov',
+  x_opencti_system_category: 'system_category_ov',
+  x_opencti_system_subcategory: 'system_subcategory_ov',
+  x_opencti_internet_facing: 'system_internet_facing_ov',
+  x_opencti_criticality: 'system_criticality_ov',
+  x_opencti_environment: 'system_environment_ov',
+  x_opencti_platform: 'system_platform_ov',
 };
 
 describe('System asset vocabularies', () => {
@@ -25,21 +25,21 @@ describe('System asset vocabularies', () => {
   it('should list the asset categories, internet facing and criticality as closed only where the scale is fixed', () => {
     const categories = getVocabulariesCategories();
     const closedOf = (key: string) => categories.find((c) => c.key === key)?.closed;
-    expect(closedOf('asset_internet_facing_ov')).toBe(true);
-    expect(closedOf('asset_criticality_ov')).toBe(true);
-    expect(closedOf('asset_category_ov')).toBe(false);
-    expect(closedOf('asset_subcategory_ov')).toBe(false);
+    expect(closedOf('system_internet_facing_ov')).toBe(true);
+    expect(closedOf('system_criticality_ov')).toBe(true);
+    expect(closedOf('system_category_ov')).toBe(false);
+    expect(closedOf('system_subcategory_ov')).toBe(false);
   });
 
   it('should ship the OpenAEV asset taxonomy values', () => {
-    expect(openVocabularies.asset_category_ov.map(({ key }) => key)).toEqual([
+    expect(openVocabularies.system_category_ov.map(({ key }) => key)).toEqual([
       'HOST', 'CONTAINER_WORKLOAD', 'CLOUD_RESOURCE', 'WEB_APPLICATION', 'NETWORK_DEVICE', 'MOBILE_DEVICE',
       'IOT_OT_DEVICE', 'IDENTITY', 'SAAS_APPLICATION', 'AI_TARGET', 'SECURITY_PLATFORM', 'GENERIC_ASSET',
     ]);
-    expect(openVocabularies.asset_criticality_ov.map(({ key }) => key)).toEqual(['VERY_HIGH', 'HIGH', 'MEDIUM', 'LOW', 'UNKNOWN']);
-    expect(openVocabularies.asset_internet_facing_ov.map(({ key }) => key)).toEqual(['yes', 'no', 'unknown']);
-    expect(openVocabularies.asset_subcategory_ov).toHaveLength(80);
-    const subcategories = openVocabularies.asset_subcategory_ov.map(({ key }) => key);
+    expect(openVocabularies.system_criticality_ov.map(({ key }) => key)).toEqual(['VERY_HIGH', 'HIGH', 'MEDIUM', 'LOW', 'UNKNOWN']);
+    expect(openVocabularies.system_internet_facing_ov.map(({ key }) => key)).toEqual(['yes', 'no', 'unknown']);
+    expect(openVocabularies.system_subcategory_ov).toHaveLength(80);
+    const subcategories = openVocabularies.system_subcategory_ov.map(({ key }) => key);
     expect(new Set(subcategories).size).toEqual(subcategories.length);
   });
 });
@@ -50,6 +50,6 @@ describe('System asset attributes', () => {
       const attribute = schemaAttributesDefinition.getAttribute(ENTITY_TYPE_IDENTITY_SYSTEM, field);
       expect(attribute).toMatchObject({ type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true, isFilterable: true });
     });
-    expect(schemaAttributesDefinition.getAttribute(ENTITY_TYPE_IDENTITY_INDIVIDUAL, 'x_opencti_asset_category')).toBeUndefined();
+    expect(schemaAttributesDefinition.getAttribute(ENTITY_TYPE_IDENTITY_INDIVIDUAL, 'x_opencti_system_category')).toBeUndefined();
   });
 });

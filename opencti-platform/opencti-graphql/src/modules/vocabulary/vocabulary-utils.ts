@@ -33,7 +33,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     { key: 'windows-domain', description: 'Specifies a Windows domain account' },
   ],
   // Asset vocabularies of System: the values are the OpenAEV asset enums (AssetCategory, AssetSubCategory, AssetCriticality, endpoint platforms)
-  asset_category_ov: [
+  system_category_ov: [
     { key: 'HOST', description: 'Physical or virtual machine, server or workstation.', order: 1 },
     { key: 'CONTAINER_WORKLOAD', description: 'Container, image, Kubernetes object or serverless function.', order: 2 },
     { key: 'CLOUD_RESOURCE', description: 'Compute, storage, database, network or serverless cloud resource.', order: 3 },
@@ -47,26 +47,26 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     { key: 'SECURITY_PLATFORM', description: 'Defensive security platform: EDR, XDR, SIEM, SOAR, NDR or similar.', order: 11 },
     { key: 'GENERIC_ASSET', description: 'Anything that does not fit another category yet.', order: 12 },
   ],
-  asset_criticality_ov: [
+  system_criticality_ov: [
     { key: 'VERY_HIGH', description: 'Very high business criticality', order: 1 },
     { key: 'HIGH', description: 'High business criticality', order: 2 },
     { key: 'MEDIUM', description: 'Medium business criticality', order: 3 },
     { key: 'LOW', description: 'Low business criticality', order: 4 },
     { key: 'UNKNOWN', description: 'Business criticality not assessed', order: 5 },
   ],
-  asset_environment_ov: [
+  system_environment_ov: [
     { key: 'production', order: 1 },
     { key: 'staging', order: 2 },
     { key: 'development', order: 3 },
     { key: 'test', order: 4 },
     { key: 'other', order: 5 },
   ],
-  asset_internet_facing_ov: [
+  system_internet_facing_ov: [
     { key: 'yes', description: 'Reachable from the internet', order: 1 },
     { key: 'no', description: 'Not reachable from the internet', order: 2 },
     { key: 'unknown', description: 'Exposure not assessed', order: 3 },
   ],
-  asset_platform_ov: [
+  system_platform_ov: [
     { key: 'Linux' },
     { key: 'Windows' },
     { key: 'MacOS' },
@@ -78,7 +78,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     { key: 'Internal' },
     { key: 'Unknown' },
   ],
-  asset_subcategory_ov: [
+  system_subcategory_ov: [
     { key: 'SERVER', description: 'Host' },
     { key: 'WORKSTATION', description: 'Host' },
     { key: 'LAPTOP', description: 'Host' },

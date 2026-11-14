@@ -4,16 +4,16 @@ import { addVocabulary } from '../modules/vocabulary/vocabulary-domain';
 import { builtInOv, openVocabularies } from '../modules/vocabulary/vocabulary-utils';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 
-const message = '[MIGRATION] Vocabulary add the System asset vocabularies';
+const message = '[MIGRATION] Vocabulary add the System vocabularies';
 
-// The asset fields of System are optional: existing Systems keep empty values, only the vocabularies are created
+// The new fields of System are optional: existing Systems keep empty values, only the vocabularies are created
 const categories = [
-  VocabularyCategory.AssetCategoryOv,
-  VocabularyCategory.AssetSubcategoryOv,
-  VocabularyCategory.AssetInternetFacingOv,
-  VocabularyCategory.AssetCriticalityOv,
-  VocabularyCategory.AssetEnvironmentOv,
-  VocabularyCategory.AssetPlatformOv,
+  VocabularyCategory.SystemCategoryOv,
+  VocabularyCategory.SystemSubcategoryOv,
+  VocabularyCategory.SystemInternetFacingOv,
+  VocabularyCategory.SystemCriticalityOv,
+  VocabularyCategory.SystemEnvironmentOv,
+  VocabularyCategory.SystemPlatformOv,
 ];
 
 export const up = async (next: () => void) => {

@@ -341,8 +341,8 @@ interface BasicStoreEntity extends BasicStoreCommon {
   x_opencti_lastname: string;
   x_opencti_firstname: string;
   // System asset fields
-  x_opencti_asset_category: string;
-  x_opencti_asset_subcategory: string;
+  x_opencti_system_category: string;
+  x_opencti_system_subcategory: string;
   x_opencti_internet_facing: string;
   x_opencti_criticality: string;
   x_opencti_environment: string;

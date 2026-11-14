@@ -54,8 +54,8 @@ export interface StixIdentityExtension extends StixOpenctiExtension {
   reliability: string;
   score: number;
   // System asset fields
-  asset_category: string;
-  asset_subcategory: string;
+  system_category: string;
+  system_subcategory: string;
   internet_facing: string;
   criticality: string;
   environment: string;

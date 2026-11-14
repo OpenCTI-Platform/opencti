@@ -12,13 +12,13 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from pycti import OpenCTIApiClient, OpenCTIStix2
-from pycti.entities.opencti_identity import SYSTEM_ASSET_FIELDS, Identity
+from pycti.entities.opencti_identity import SYSTEM_FIELDS, Identity
 
 OCTI_EXTENSION_ID = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
 
 ASSET_VALUES = {
-    "x_opencti_asset_category": "endpoint",
-    "x_opencti_asset_subcategory": "server",
+    "x_opencti_system_category": "endpoint",
+    "x_opencti_system_subcategory": "server",
     "x_opencti_internet_facing": "yes",
     "x_opencti_criticality": "high",
     "x_opencti_environment": "production",
@@ -68,7 +68,7 @@ def _sent_input(opencti_stix2, call):
 
 
 def test_system_asset_fields_list():
-    assert set(SYSTEM_ASSET_FIELDS) == set(ASSET_VALUES)
+    assert set(SYSTEM_FIELDS) == set(ASSET_VALUES)
 
 
 def test_create_system_forwards_asset_fields(opencti_stix2: OpenCTIStix2):
@@ -132,5 +132,5 @@ def test_import_system_without_asset_fields_sends_none(
         opencti_stix2,
         lambda identity: identity.import_from_stix2(stixObject=stix_object, extras={}),
     )
-    for field in SYSTEM_ASSET_FIELDS:
+    for field in SYSTEM_FIELDS:
         assert sent_input[field] is None
