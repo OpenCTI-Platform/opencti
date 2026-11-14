@@ -28,7 +28,7 @@ describe('commitSubmission', () => {
 
   it('creates a work item and pushes the bundle without a draft when finalIsDraft is false', async () => {
     const plan: any = {
-      bundle: { id: 'bundle--1', objects: [] },
+      bundle: { id: 'bundle--1', objects: [{ id: 'malware--1' }] },
       mainEntityStixId: 'stix-1',
       finalIsDraft: false,
       draftPlan: null,
@@ -56,7 +56,7 @@ describe('commitSubmission', () => {
   });
 
   it('never lets a submission without Create / Update knowledge in its destination update existing objects', async () => {
-    const plan: any = { bundle: { id: 'bundle--1', objects: [] }, mainEntityStixId: 'stix-1', finalIsDraft: false, draftPlan: null };
+    const plan: any = { bundle: { id: 'bundle--1', objects: [{ id: 'malware--1' }] }, mainEntityStixId: 'stix-1', finalIsDraft: false, draftPlan: null };
     const formOnly = { id: 'user-1', capabilities: [{ name: 'KNOWLEDGE_KNFORMINTAKE' }], capabilitiesInDraft: [{ name: 'KNOWLEDGE_KNUPDATE' }] };
     await commitSubmission(mockContext, formOnly as any, 'form-1', plan);
     expect(vi.mocked(rabbitmq.pushBundleToWorker).mock.calls[0][3]).toMatchObject({ draft_id: '', update: false });
@@ -69,7 +69,7 @@ describe('commitSubmission', () => {
   });
 
   it('binds a submission without a draft to the current draft and never deletes it on a failure', async () => {
-    const plan: any = { bundle: { id: 'bundle--3', objects: [] }, mainEntityStixId: 'stix-1', finalIsDraft: false, draftPlan: null };
+    const plan: any = { bundle: { id: 'bundle--3', objects: [{ id: 'malware--1' }] }, mainEntityStixId: 'stix-1', finalIsDraft: false, draftPlan: null };
     vi.mocked(rabbitmq.pushBundleToWorker).mockRejectedValueOnce(new Error('broker down'));
 
     await expect(commitSubmission({ draft_context: 'draft-current' } as any, mockUser, 'form-1', plan)).rejects.toThrow('Failed to process form submission');
@@ -80,7 +80,7 @@ describe('commitSubmission', () => {
 
   it('creates a draft workspace and patches its creator_id when finalIsDraft is true', async () => {
     const plan: any = {
-      bundle: { id: 'bundle--2', objects: [] },
+      bundle: { id: 'bundle--2', objects: [{ id: 'malware--1' }] },
       mainEntityStixId: undefined,
       finalIsDraft: true,
       draftPlan: { draftInput: { name: 'My Draft', bypassMandatoryAttributes: true } },

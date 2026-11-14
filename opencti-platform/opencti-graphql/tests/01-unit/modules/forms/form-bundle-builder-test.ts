@@ -129,10 +129,12 @@ describe('buildMainStixEntities', () => {
       vi.mocked(loadFormEntity).mockResolvedValue({ standard_id: 'malware--00000000-0000-0000-0000-000000000001', name: 'Emotet' } as any);
       const values = { mainEntityLookup: 'entity-id-1' };
 
-      const { mainStixEntities, mainEntityStixId } = await buildMainStixEntities(context, user, schema, values, 'Malware');
+      const result = await buildMainStixEntities(context, user, schema, values, 'Malware');
+      const { mainStixEntities, mainEntityStixId } = result;
       expect(loadFormEntity).toHaveBeenCalledWith(context, user, 'entity-id-1', 'Malware');
       expect(mainStixEntities).toHaveLength(1);
       expect(mainEntityStixId).toBe('malware--00000000-0000-0000-0000-000000000001');
+      expect(result.existingMainStixIds).toEqual(['malware--00000000-0000-0000-0000-000000000001']);
     });
 
     it('should handle an array of lookup ids', async () => {
@@ -227,10 +229,11 @@ describe('buildMainStixEntities', () => {
         ],
       };
 
-      const { mainStixEntities } = await buildMainStixEntities(context, user, schema, values, 'Intrusion-Set');
+      const { mainStixEntities, existingMainStixIds } = await buildMainStixEntities(context, user, schema, values, 'Intrusion-Set');
 
       expect(loadFormEntity).toHaveBeenCalledTimes(1);
       expect(mainStixEntities).toHaveLength(2);
+      expect(existingMainStixIds).toEqual(['intrusion-set--existing']);
     });
 
     it('should map an observable pending creation from its flat variable format', async () => {
@@ -565,9 +568,9 @@ describe('buildAdditionalEntities', () => {
   });
 
   describe('lookup', () => {
-    it('should load entity by id and push it to the bundle', async () => {
+    // An existing entity is only referenced by its id: sent as an object, it would be re-created from an entity loaded without its refs
+    it('should load entity by id and map its id without pushing it to the bundle', async () => {
       vi.mocked(loadFormEntity).mockResolvedValue({ standard_id: 'identity--abc' } as any);
-      vi.mocked(convertStoreToStix_2_1).mockReturnValue({ id: 'identity--abc' } as any);
 
       const schema = makeSchema({
         additionalEntities: [{ id: 'victim', lookup: true, entityType: 'Identity' }],
@@ -577,13 +580,14 @@ describe('buildAdditionalEntities', () => {
 
       const result = await buildAdditionalEntities(context, user, schema, values, bundle);
 
-      expect(bundle.objects).toHaveLength(1);
+      expect(bundle.objects).toHaveLength(0);
       expect(result.victim).toEqual(['identity--abc']);
     });
 
     it('should handle an array of lookup ids', async () => {
-      vi.mocked(loadFormEntity).mockResolvedValue({ standard_id: 'identity--abc' } as any);
-      vi.mocked(convertStoreToStix_2_1).mockReturnValue({ id: 'identity--abc' } as any);
+      vi.mocked(loadFormEntity)
+        .mockResolvedValueOnce({ standard_id: 'identity--abc' } as any)
+        .mockResolvedValueOnce({ standard_id: 'identity--def' } as any);
 
       const schema = makeSchema({
         additionalEntities: [{ id: 'victim', lookup: true, entityType: 'Identity' }],
@@ -593,8 +597,8 @@ describe('buildAdditionalEntities', () => {
 
       const result = await buildAdditionalEntities(context, user, schema, values, bundle);
 
-      expect(bundle.objects).toHaveLength(2);
-      expect(result.victim).toHaveLength(2);
+      expect(bundle.objects).toHaveLength(0);
+      expect(result.victim).toEqual(['identity--abc', 'identity--def']);
     });
 
     it('should skip when lookup value is empty', async () => {
@@ -635,7 +639,6 @@ describe('buildAdditionalEntities', () => {
 
     it('should combine existing lookup entities with pending creations in the same field', async () => {
       vi.mocked(loadFormEntity).mockResolvedValue({ standard_id: 'malware--existing' } as any);
-      vi.mocked(convertStoreToStix_2_1).mockReturnValueOnce({ id: 'malware--existing' } as any);
 
       const schema = makeSchema({
         additionalEntities: [{ id: 'threat', lookup: true, entityType: 'Malware' }],
@@ -651,8 +654,9 @@ describe('buildAdditionalEntities', () => {
       const result = await buildAdditionalEntities(context, user, schema, values, bundle);
 
       expect(loadFormEntity).toHaveBeenCalledTimes(1);
-      expect(bundle.objects).toHaveLength(2);
-      expect(result.threat).toHaveLength(2);
+      // Only the pending creation is sent, the existing entity is referenced
+      expect(bundle.objects).toHaveLength(1);
+      expect(result.threat).toEqual(['malware--existing', bundle.objects[0].id]);
     });
   });
 
@@ -1189,6 +1193,48 @@ describe('wrapInContainerOrPush', () => {
 
     const container = bundle.objects[0];
     expect(container.object_refs).toEqual([]);
+  });
+
+  it('should not push an existing main entity that is not a container', () => {
+    vi.mocked(isStixDomainObjectContainer).mockReturnValue(false);
+
+    const bundle = { objects: [{ id: 'relationship--1' }] as unknown as StixObject[] };
+    const mainStixEntities = [{ id: 'observed-data--existing' }, { id: 'observed-data--new' }];
+
+    wrapInContainerOrPush('Observed-Data', mainStixEntities, bundle, false, {}, ['observed-data--existing']);
+
+    expect(bundle.objects.map((o) => o.id)).toEqual(['relationship--1', 'observed-data--new']);
+  });
+
+  it('should not push an existing container when there is nothing to add into it', () => {
+    vi.mocked(isStixDomainObjectContainer).mockReturnValue(true);
+
+    const bundle = makeBundle();
+
+    wrapInContainerOrPush('Report', [{ id: 'report--existing' }], bundle, true, {}, ['report--existing']);
+
+    expect(bundle.objects).toHaveLength(0);
+  });
+
+  it('should push an existing container to add the submitted and existing additional entities into it', () => {
+    vi.mocked(isStixDomainObjectContainer).mockReturnValue(true);
+
+    const bundle = { objects: [{ id: 'malware--new' }] as unknown as StixObject[] };
+
+    wrapInContainerOrPush('Report', [{ id: 'report--existing' }], bundle, true, { threat: ['malware--new', 'malware--existing'] }, ['report--existing']);
+
+    expect(bundle.objects.map((o) => o.id)).toEqual(['malware--new', 'report--existing']);
+    expect(bundle.objects[1].object_refs).toEqual(['malware--new', 'malware--existing']);
+  });
+
+  it('should reference the existing additional entities in a new container, without duplicates', () => {
+    vi.mocked(isStixDomainObjectContainer).mockReturnValue(true);
+
+    const bundle = { objects: [{ id: 'malware--new' }] as unknown as StixObject[] };
+
+    wrapInContainerOrPush('Report', [{ id: 'report--new' }], bundle, true, { threat: ['malware--new', 'malware--existing'], obs: ['observed-data--existing'] });
+
+    expect(bundle.objects[1].object_refs).toEqual(['malware--new', 'malware--existing', 'observed-data--existing']);
   });
 
   it('should handle empty mainStixEntities without throwing', () => {
