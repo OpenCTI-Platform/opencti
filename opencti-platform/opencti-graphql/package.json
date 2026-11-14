@@ -51,7 +51,7 @@
     "node": ">= 22.18.0"
   },
   "dependencies": {
-    "@apollo/server": "5.5.1",
+    "@apollo/server": "5.5.2",
     "@as-integrations/express5": "1.1.2",
     "@aws-sdk/client-s3": "3.1163.0",
     "@aws-sdk/client-sts": "3.1163.0",
