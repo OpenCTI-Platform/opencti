@@ -31,20 +31,25 @@ export const layoutNodes = (nodes: Node[], edges: Edge[]): Node[] => {
   });
   const rootCount = nodes.filter((n) => !parentOf.has(n.id)).length;
   const virtual = rootCount > 1;
+  // The virtual root id must not be the id of a node of the playbook.
+  let virtualRootId = VIRTUAL_ROOT_ID;
+  while (ids.has(virtualRootId)) {
+    virtualRootId = `${virtualRootId}_`;
+  }
   const data: Node[] = virtual
-    ? [{ id: VIRTUAL_ROOT_ID, position: { x: 0, y: 0 }, data: {} }, ...nodes]
+    ? [{ id: virtualRootId, position: { x: 0, y: 0 }, data: {} }, ...nodes]
     : nodes;
   const hierarchy = stratify<Node>()
     .id((d) => d.id)
     .parentId((d) => {
-      if (d.id === VIRTUAL_ROOT_ID) return undefined;
-      return parentOf.get(d.id) ?? (virtual ? VIRTUAL_ROOT_ID : undefined);
+      if (virtual && d.id === virtualRootId) return undefined;
+      return parentOf.get(d.id) ?? (virtual ? virtualRootId : undefined);
     })(data);
   const root = layout(hierarchy);
   const offset = virtual ? NODE_HEIGHT : 0;
   return root
     .descendants()
-    .filter((d) => d.data.id !== VIRTUAL_ROOT_ID)
+    .filter((d) => !virtual || d.data.id !== virtualRootId)
     .map((d) => ({ ...d.data, position: { x: d.x, y: d.y - offset } }));
 };
 
