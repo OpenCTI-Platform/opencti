@@ -1,5 +1,6 @@
 import json
 import uuid
+from collections import deque
 from typing import Tuple
 
 from typing_extensions import deprecated
@@ -240,14 +241,128 @@ class OpenCTIStix2Splitter:
 
         return nb_deps
 
+    def _ordered_dependencies(self, element):
+        """Dependency ids of ``element`` with relationship/sighting endpoints first.
+
+        A relationship may also carry secondary refs (``created_by_ref``, markings); put
+        the endpoints (``source_ref``/``target_ref``/``sighting_of_ref``/
+        ``where_sighted_refs``) ahead of them so a tight ``max_group_size`` keeps a
+        relationship with both endpoints before pulling its secondary refs.
+        """
+        refs = self.cache_refs.get(element["id"], [])
+        # Only relationships/sightings have endpoints to prioritise; for an entity the ref
+        # order (created_by/markings) doesn't affect grouping, so skip the reordering.
+        if len(refs) <= 1 or element.get("type") not in ("relationship", "sighting"):
+            return refs
+        ref_set = set(refs)
+        ordered = []
+        seen = set()
+        endpoints = [
+            element.get("source_ref"),
+            element.get("target_ref"),
+            element.get("sighting_of_ref"),
+            *(element.get("where_sighted_refs") or []),
+        ]
+        for value in endpoints:
+            if value in ref_set and value not in seen:
+                ordered.append(value)
+                seen.add(value)
+        for value in refs:
+            if value not in seen:
+                ordered.append(value)
+                seen.add(value)
+        return ordered
+
+    def _group_by_dependencies(self, max_group_size):
+        """Group each element with the objects it depends on into one sub-bundle.
+
+        A relationship is grouped with its source/target first and then, breadth-first,
+        the refs those depend on (e.g. their author/markings), up to ``max_group_size`` --
+        direct refs are taken before transitive ones, so a small cap still keeps a
+        relationship with both endpoints. Sent no_split, a group is processed by a single
+        worker in one request, in dependency order, so objects that reference each other
+        do not race across workers on the same entity ("too many concurrent call on the
+        same entities") and their shared refs resolve once instead of per object.
+        Independent elements still land in separate groups, preserving cross-worker
+        parallelism.
+
+        Groups are emitted in build order (heaviest root first). With a normal
+        ``max_group_size`` a shared dependency is pulled into its highest-``nb_deps``
+        referencer's group, which is emitted before any later group that only references
+        it. This cross-group ordering is best-effort, not a guarantee: a very small cap can
+        leave an element separated from a dependency (``max_group_size=1`` emits a
+        relationship before its endpoints), and concurrent workers may process groups out
+        of order -- both cases fall back to the platform's existing MISSING_REFERENCE
+        retry. Grouping removes the within-group races entirely.
+
+        ``self.cache_refs`` holds each element's dependency ids (built by
+        ``enlist_element``); a ref may be a STIX id or an OpenCTI internal id, so the
+        lookup is indexed by both. This only partitions the already-sorted elements, every
+        element ending up in exactly one group so the expectation count is unchanged.
+
+        :param max_group_size: maximum objects per group (oversized dependency chains fall
+            back to smaller groups); coerced to at least 1
+        :type max_group_size: int
+        :return: list of ``{"nb_deps": int, "elements": list}`` groups
+        :rtype: list
+        """
+        max_group_size = max(1, int(max_group_size))
+        # Index by STIX id and internal ids: a _ref may be expressed either way.
+        by_id = {}
+        for element in self.elements:
+            by_id[element["id"]] = element
+            for internal_id in self.get_internal_ids_in_extension(element):
+                by_id[internal_id] = element
+        emitted = set()
+        groups = []
+        # self.elements is already sorted ascending by nb_deps in the caller; iterate in
+        # reverse for heaviest roots first (relationships before their endpoints) without
+        # re-sorting. Each root pulls the refs it depends on into its group up to the cap,
+        # breadth-first so direct refs (a relationship's source/target) win over
+        # transitive ones.
+        for root in reversed(self.elements):
+            if root["id"] in emitted:
+                continue
+            group_ids = []
+            queue = deque([root])
+            while queue and len(group_ids) < max_group_size:
+                current = queue.popleft()
+                if current["id"] in emitted:
+                    continue
+                emitted.add(current["id"])
+                group_ids.append(current["id"])
+                for dependency_id in self._ordered_dependencies(current):
+                    dependency = by_id.get(dependency_id)
+                    if dependency is not None and dependency["id"] not in emitted:
+                        queue.append(dependency)
+            # dependencies first so referenced entities precede their relationships
+            elements = sorted(
+                (by_id[element_id] for element_id in group_ids),
+                key=lambda e: e["nb_deps"],
+            )
+            # elements is sorted ascending, so the last carries the group's max nb_deps
+            groups.append({"nb_deps": elements[-1]["nb_deps"], "elements": elements})
+        # Keep build order: re-sorting here could place a group before the group that
+        # holds one of its (de-duplicated) cross-boundary dependencies, reintroducing the
+        # MISSING_REFERENCE race this feature removes.
+        return groups
+
     def split_bundle_with_expectations(
         self,
         bundle,
         use_json=True,
         event_version=None,
         cleanup_inconsistent_bundle=False,
+        group_by_deps=False,
+        max_group_size=50,
     ) -> Tuple[int, list, list]:
         """Split a valid STIX2 bundle into a list of bundles.
+
+        When ``group_by_deps`` is True, each emitted bundle contains an element together
+        with the objects it depends on (instead of exactly one object), so it can be sent
+        ``no_split`` and processed atomically by one worker -- avoiding the cross-worker
+        lock contention and MISSING_REFERENCE retries that one-object-per-bundle splitting
+        causes for dependency-heavy data.
 
         :param bundle: the STIX2 bundle to split
         :type bundle: str or dict
@@ -257,9 +372,21 @@ class OpenCTIStix2Splitter:
         :type event_version: str or None
         :param cleanup_inconsistent_bundle: whether to cleanup inconsistent references
         :type cleanup_inconsistent_bundle: bool
+        :param group_by_deps: group each element with the objects it depends on into one
+            bundle (sent no_split) instead of one object per bundle
+        :type group_by_deps: bool
+        :param max_group_size: maximum objects per group when group_by_deps is set
+        :type max_group_size: int
         :return: tuple of (number of expectations, incompatible items, list of bundles)
         :rtype: Tuple[int, list, list]
         """
+        # Reset per-call state so a reused splitter instance does not leak objects
+        # between bundles.
+        self.cache_index = {}
+        self.cache_refs = {}
+        self.elements = []
+        self.incompatible_items = []
+
         if use_json:
             try:
                 bundle_data = json.loads(bundle)
@@ -298,9 +425,25 @@ class OpenCTIStix2Splitter:
 
         self.elements.sort(key=by_dep_size)
 
-        elements_with_deps = list(
-            map(lambda e: {"nb_deps": e["nb_deps"], "elements": [e]}, self.elements)
-        )
+        # enlist_element can append the same object twice when it is first reached via an
+        # internal id (e.g. a created_by_ref expressed as an OpenCTI UUID) and then again
+        # via its STIX id in the top-level loop. De-duplicate by canonical id so both the
+        # grouped and non-grouped paths emit each object exactly once with the same
+        # expectation count.
+        seen_ids = set()
+        unique_elements = []
+        for element in self.elements:
+            if element["id"] not in seen_ids:
+                seen_ids.add(element["id"])
+                unique_elements.append(element)
+        self.elements = unique_elements
+
+        if group_by_deps:
+            elements_with_deps = self._group_by_dependencies(max_group_size)
+        else:
+            elements_with_deps = list(
+                map(lambda e: {"nb_deps": e["nb_deps"], "elements": [e]}, self.elements)
+            )
 
         number_expectations = 0
         for entity in elements_with_deps:
