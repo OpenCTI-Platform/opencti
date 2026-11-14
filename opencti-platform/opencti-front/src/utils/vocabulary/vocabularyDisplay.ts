@@ -4,6 +4,7 @@
 // Words kept as written when a key is turned into a label
 const ACRONYMS: Record<string, string> = {
   ai: 'AI',
+  ap: 'AP',
   api: 'API',
   dhcp: 'DHCP',
   dns: 'DNS',
@@ -14,6 +15,7 @@ const ACRONYMS: Record<string, string> = {
   iam: 'IAM',
   ios: 'iOS',
   iot: 'IoT',
+  ip: 'IP',
   ispm: 'ISPM',
   llm: 'LLM',
   macos: 'macOS',
@@ -35,6 +37,18 @@ const ACRONYMS: Record<string, string> = {
   xdr: 'XDR',
 };
 
+// Keys whose word-by-word reading is not the label a person writes (a slash, a hyphen, a word order)
+const LABEL_OVERRIDES: Record<string, string> = {
+  AI_ML_SERVICE: 'AI / ML service',
+  CLOUD_OTHER: 'Other cloud resource',
+  NETWORK_OTHER: 'Other network device',
+  NON_HUMAN_IDENTITY: 'Non-human identity',
+  PRINTER_PERIPHERAL: 'Printer or peripheral',
+  SAN_NAS: 'SAN / NAS',
+  SECRETS_KEY_MGMT: 'Secrets and key management',
+  SINGLE_PAGE_APP: 'Single-page app',
+};
+
 /**
  * Turns a vocabulary key into a sentence-case label: AI_AGENT -> "AI agent", VERY_HIGH -> "Very high",
  * NETWORK_DEVICE -> "Network device", production -> "Production".
@@ -42,6 +56,7 @@ const ACRONYMS: Record<string, string> = {
  */
 export const humanizeVocabularyKey = (key: string): string => {
   if (!key) return key;
+  if (LABEL_OVERRIDES[key]) return LABEL_OVERRIDES[key];
   const isMachineKey = /^[A-Za-z0-9]+(?:[_-][A-Za-z0-9]+)*$/.test(key) && (key.includes('_') || key === key.toUpperCase() || key === key.toLowerCase());
   if (!isMachineKey) return key;
   const words = key.split(/[_-]/).filter((w) => w.length > 0).map((word, index) => {
@@ -59,6 +74,22 @@ export const humanizeVocabularyKey = (key: string): string => {
  */
 export const vocabularyValueLabel = (value: string, translate: (message: string) => string): string => {
   return translate(humanizeVocabularyKey(value));
+};
+
+/**
+ * The label of a combobox value: an option object carries its own label; a stored key (the form value of a
+ * single field, or a key the current filter hides) is looked up in the options, else humanized and translated.
+ * Without it the field shows the key (VERY_HIGH) once a value is picked or when an edition form opens.
+ */
+export const vocabularyOptionLabel = (
+  option: { value: string; label: string } | string | null | undefined,
+  options: { value: string; label: string }[],
+  translate: (message: string) => string,
+): string => {
+  if (option === null || option === undefined) return '';
+  if (typeof option === 'object') return option.label;
+  const known = options.find(({ value }) => value === option);
+  return known ? known.label : vocabularyValueLabel(option, translate);
 };
 
 // Machine suffixes some descriptions carry for the forms (the subcategory names its category: "(category: AI_TARGET)")

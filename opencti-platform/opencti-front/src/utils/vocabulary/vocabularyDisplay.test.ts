@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { humanizeVocabularyKey, vocabularyColor, vocabularyDescriptionForDisplay, vocabularyValueLabel } from './vocabularyDisplay';
+import { humanizeVocabularyKey, vocabularyColor, vocabularyDescriptionForDisplay, vocabularyOptionLabel, vocabularyValueLabel } from './vocabularyDisplay';
 
 describe('humanizeVocabularyKey', () => {
   it('turns machine keys into sentence-case labels', () => {
@@ -16,6 +16,15 @@ describe('humanizeVocabularyKey', () => {
     expect(humanizeVocabularyKey('SAAS_APPLICATION')).toEqual('SaaS application');
     expect(humanizeVocabularyKey('MCP_SERVER')).toEqual('MCP server');
     expect(humanizeVocabularyKey('EDR')).toEqual('EDR');
+    expect(humanizeVocabularyKey('WIRELESS_AP')).toEqual('Wireless AP');
+    expect(humanizeVocabularyKey('IP_CAMERA')).toEqual('IP camera');
+  });
+
+  it('writes the keys a word-by-word reading gets wrong as a person would', () => {
+    expect(humanizeVocabularyKey('NON_HUMAN_IDENTITY')).toEqual('Non-human identity');
+    expect(humanizeVocabularyKey('SAN_NAS')).toEqual('SAN / NAS');
+    expect(humanizeVocabularyKey('AI_ML_SERVICE')).toEqual('AI / ML service');
+    expect(humanizeVocabularyKey('CLOUD_OTHER')).toEqual('Other cloud resource');
   });
 
   it('leaves a value already written as a label untouched', () => {
@@ -31,6 +40,26 @@ describe('vocabularyValueLabel', () => {
     const translate = (message: string) => catalog[message] ?? message;
     expect(vocabularyValueLabel('VERY_HIGH', translate)).toEqual('Très élevée');
     expect(vocabularyValueLabel('AI_AGENT', translate)).toEqual('AI agent');
+  });
+});
+
+describe('vocabularyOptionLabel, the label a combobox shows for its value', () => {
+  const catalog: Record<string, string> = { 'Very high': 'Très élevée', 'AI agent': 'Agent IA' };
+  const translate = (message: string) => catalog[message] ?? message;
+  const options = [{ value: 'VERY_HIGH', label: 'Très élevée' }];
+
+  it('shows the human label of a stored key, never the key, once picked or loaded by an edition form', () => {
+    expect(vocabularyOptionLabel('VERY_HIGH', options, translate)).toEqual('Très élevée');
+    expect(vocabularyOptionLabel({ value: 'VERY_HIGH', label: 'Très élevée' }, options, translate)).toEqual('Très élevée');
+  });
+
+  it('labels a key the current options do not hold (a subcategory filtered out by its category)', () => {
+    expect(vocabularyOptionLabel('AI_AGENT', options, translate)).toEqual('Agent IA');
+  });
+
+  it('answers an empty label for no value', () => {
+    expect(vocabularyOptionLabel(null, options, translate)).toEqual('');
+    expect(vocabularyOptionLabel(undefined, options, translate)).toEqual('');
   });
 });
 

@@ -9,7 +9,7 @@ import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { FieldOption } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
-import { vocabularyColor, vocabularyDescriptionForDisplay, vocabularyValueLabel } from '../../../../utils/vocabulary/vocabularyDisplay';
+import { vocabularyColor, vocabularyDescriptionForDisplay, vocabularyOptionLabel, vocabularyValueLabel } from '../../../../utils/vocabulary/vocabularyDisplay';
 
 export const vocabularyQuery = graphql`
   query OpenVocabFieldQuery(
@@ -182,6 +182,10 @@ const OpenVocabFieldComponent = ({
         </Tooltip>
       )}
       groupBy={groupBy}
+      // The form value is the stored key: the field shows its human label, picked or loaded by an edition form
+      getOptionLabel={humanLabels
+        ? (option: VocabFieldOption | string) => vocabularyOptionLabel(option, openVocabList, t_i18n)
+        : undefined}
       isOptionDisabled={(o: VocabFieldOption) => disabledOptions.includes(o.value)}
       // No custom identity here on purpose.
       label={label}
