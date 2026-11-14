@@ -42,7 +42,7 @@ const Systems = () => {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '16%',
+        width: '18%',
         isSortable: true,
       },
       // Not sortable: the keys sort alphabetically (HIGH, LOW, MEDIUM), not on the scale
@@ -63,12 +63,12 @@ const Systems = () => {
       },
       created: {
         label: 'Original creation date',
-        width: '19%',
+        width: '18%',
         isSortable: true,
       },
       modified: {
         label: 'Modification date',
-        width: '17%',
+        width: '16%',
         isSortable: true,
       },
     };
