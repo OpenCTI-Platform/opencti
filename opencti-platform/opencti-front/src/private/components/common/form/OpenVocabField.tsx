@@ -88,7 +88,9 @@ const OpenVocabFieldComponent = ({
 }: OpenVocabFieldComponentProps) => {
   const isEdition = variant === 'edit';
   const [{ value: currentValue }] = useField<string | string[] | null | undefined>(name);
-  const previousFilterKey = useRef(optionFilterKey);
+  // Creation starts with no key, so configured defaults the filter rejects are cleared on the first render;
+  // edition starts with the current key, so opening an existing entity never writes
+  const previousFilterKey = useRef(isEdition ? optionFilterKey : undefined);
 
   const { vocabularies } = usePreloadedQuery(vocabularyQuery, queryRef);
   const openVocabList = (vocabularies?.edges ?? [])
@@ -122,7 +124,7 @@ const OpenVocabFieldComponent = ({
     }
   };
 
-  // Only a change of the filter clears the value, never the first render: opening a form writes nothing
+  // A change of the filter clears a value it rejects (in creation, the first render counts as a change)
   useEffect(() => {
     if (previousFilterKey.current === optionFilterKey) return;
     previousFilterKey.current = optionFilterKey;
