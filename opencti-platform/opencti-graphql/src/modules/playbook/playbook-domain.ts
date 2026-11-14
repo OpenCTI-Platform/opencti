@@ -197,6 +197,45 @@ const validateNodeRunAs = async (context: AuthContext, user: AuthUser, configura
   await assertRunAsUserAllowed(context, user, parsed.run_as);
 };
 
+// A playbook runs from a single entry point: its definition holds at most one
+// parentless node (the entry point), and every link joins two existing nodes,
+// leaving an out port of its source. A definition with several roots cannot
+// run and cannot be laid out by the editor, so no write may store one: every
+// mutation that writes playbook_definition checks the result here first.
+export const assertPlaybookDefinitionIsValid = (definition: ComponentDefinition) => {
+  const nodes = definition.nodes ?? [];
+  const links = definition.links ?? [];
+  const nodeById = new Map(nodes.map((n) => [n.id, n]));
+  links.forEach((link) => {
+    const source = nodeById.get(link.from?.id);
+    if (!source || !nodeById.has(link.to?.id)) {
+      throw FunctionalError('Playbook link must connect existing nodes', { link_id: link.id });
+    }
+    const sourceComponent = PLAYBOOK_COMPONENTS[source.component_id];
+    if (sourceComponent && !sourceComponent.ports.some((p) => p.id === link.from.port && p.type === 'out')) {
+      throw FunctionalError('Playbook link must leave an out port of its source node', { link_id: link.id, port: link.from.port });
+    }
+  });
+  const linkTargets = new Set(links.map((l) => l.to.id));
+  const roots = nodes.filter((n) => !linkTargets.has(n.id));
+  if (roots.length > 1) {
+    throw FunctionalError('Playbook must have a single entry point: every other node needs a parent', { root_ids: roots.map((n) => n.id) });
+  }
+};
+
+const assertPlaybookDefinitionStringIsValid = (rawDefinition: string | null | undefined) => {
+  if (!rawDefinition) {
+    return;
+  }
+  let definition: ComponentDefinition;
+  try {
+    definition = JSON.parse(rawDefinition) as ComponentDefinition;
+  } catch {
+    throw FunctionalError('Playbook definition is not valid JSON');
+  }
+  assertPlaybookDefinitionIsValid(definition);
+};
+
 export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddNodeInput) => {
   await checkEnterpriseEdition(context);
   const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
@@ -211,6 +250,16 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
   if (relatedComponent.is_entry_point && existingEntryPoint) {
     throw UnsupportedError('Playbook multiple entrypoint is not supported', { input });
   }
+  const { parentNodeId, parentPortId } = input;
+  if (Boolean(parentNodeId) !== Boolean(parentPortId)) {
+    throw FunctionalError('Playbook node parent needs both parentNodeId and parentPortId', { parentNodeId, parentPortId });
+  }
+  if (relatedComponent.is_entry_point && parentNodeId) {
+    throw FunctionalError('Playbook entry point cannot have a parent', { parentNodeId });
+  }
+  if (!relatedComponent.is_entry_point && !parentNodeId && existingEntryPoint) {
+    throw FunctionalError('Playbook node needs a parent: only the entry point has none, give parentNodeId and parentPortId', { component_id: input.component_id });
+  }
   const nodeId = uuidv4();
   definition.nodes.push({
     id: nodeId,
@@ -220,6 +269,16 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
     configuration, // TODO Check valid json
     description: input.description || undefined,
   });
+  // The node and the link to its parent are written in the same patch, so the
+  // playbook never holds the node without its parent.
+  if (parentNodeId && parentPortId) {
+    definition.links.push({
+      id: uuidv4(),
+      from: { id: parentNodeId, port: parentPortId },
+      to: { id: nodeId },
+    });
+  }
+  assertPlaybookDefinitionIsValid(definition);
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   if (relatedComponent.is_entry_point) {
     patch.playbook_start = nodeId;
@@ -297,6 +356,7 @@ export const playbookReplaceNode = async (
     }
     return n;
   });
+  assertPlaybookDefinitionIsValid(definition);
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user).then(() => nodeId);
@@ -386,6 +446,7 @@ export const playbookInsertNode = async (
     definition.nodes = result.nodes;
     definition.links = result.links;
   }
+  assertPlaybookDefinitionIsValid(definition);
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user).then(() => ({ nodeId, linkId }));
@@ -403,6 +464,7 @@ export const playbookDeleteNode = async (context: AuthContext, user: AuthUser, i
   const result = deleteLinksAndAllChildren(definition, linksToDelete);
   definition.nodes = result.nodes;
   definition.links = result.links;
+  assertPlaybookDefinitionIsValid(definition);
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
@@ -443,6 +505,7 @@ export const playbookAddLink = async (context: AuthContext, user: AuthUser, id: 
       id: input.to_node,
     },
   });
+  assertPlaybookDefinitionIsValid(definition);
   const patch = { playbook_definition: JSON.stringify(definition) };
   const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user).then(() => linkId);
@@ -452,7 +515,17 @@ export const playbookDeleteLink = async (context: AuthContext, user: AuthUser, i
   await checkEnterpriseEdition(context);
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+  const linkToDelete = definition.links.find((n) => n.id === linkId);
   definition.links = definition.links.filter((n) => n.id !== linkId);
+  // A link is refused when it is the last one reaching its target: the node
+  // would become a second root. Deleting the node removes it with its subtree.
+  if (linkToDelete && !definition.links.some((n) => n.to.id === linkToDelete.to.id)) {
+    throw FunctionalError('Playbook link cannot be deleted: its target node would be left without a parent, delete the node instead', {
+      link_id: linkId,
+      node_id: linkToDelete.to.id,
+    });
+  }
+  assertPlaybookDefinitionIsValid(definition);
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
@@ -497,6 +570,7 @@ export const playbookEdit = async (context: AuthContext, user: AuthUser, id: str
   const definitionInput = input.find((editInput) => editInput.key === 'playbook_definition');
   if (definitionInput) {
     await assertDefinitionRunAsAllowed(context, user, definitionInput.value?.[0]);
+    assertPlaybookDefinitionStringIsValid(definitionInput.value?.[0]);
   }
   const { element: updatedElem } = await updateAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, input);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
@@ -535,6 +609,7 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
   // disallowed AI-agent run_as to the importing user so the import cannot set
   // up an impersonation, without hard-failing on now-unknown foreign ids.
   config.playbook_definition = await sanitizeDefinitionRunAs(context, user, updatedPlaybookDefinition);
+  assertPlaybookDefinitionStringIsValid(config.playbook_definition);
 
   const importData = {
     name: config.name,
@@ -567,6 +642,7 @@ export const playbookDuplicate = async (context: AuthContext, user: AuthUser, id
   // disallowed run_as to the user performing the duplication so the copy
   // cannot be used to keep impersonating that user.
   const playbook_definition = (await sanitizeDefinitionRunAs(context, user, playbook.playbook_definition)) ?? undefined;
+  assertPlaybookDefinitionStringIsValid(playbook_definition);
   const newPlaybook = {
     name: `${playbook.name} - copy`,
     description: playbook.description,

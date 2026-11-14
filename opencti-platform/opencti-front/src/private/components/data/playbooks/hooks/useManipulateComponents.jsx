@@ -22,15 +22,6 @@ export const useManipulateComponentsAddNodeMutation = graphql`
   }
 `;
 
-export const useManipulateComponentsAddLinkMutation = graphql`
-  mutation useManipulateComponentsAddLinkMutation(
-    $id: ID!
-    $input: PlaybookAddLinkInput!
-  ) {
-    playbookAddLink(id: $id, input: $input)
-  }
-`;
-
 export const useManipulateComponentsReplaceNodeMutation = graphql`
   mutation useManipulateComponentsReplaceNodeMutation(
     $id: ID!
@@ -596,6 +587,14 @@ const useManipulateComponents = (playbook) => {
       x: selectedNode.position.x,
       y: selectedNode.position.y,
     };
+    const placeholderEdge = getEdges()
+      .filter((o) => o.target === selectedNode.id)
+      ?.at(0);
+    const parentNode = getNodes()
+      .filter((n) => n.id === placeholderEdge?.source)
+      ?.at(0);
+    // The node and the link to its parent are created by one mutation: the
+    // backend refuses a node without parent unless it is the entry point.
     commitMutation({
       mutation: useManipulateComponentsAddNodeMutation,
       variables: {
@@ -606,49 +605,21 @@ const useManipulateComponents = (playbook) => {
           position,
           configuration: jsonConfig,
           description,
+          ...(parentNode ? { parentNodeId: parentNode.id, parentPortId: placeholderEdge.sourceHandle } : {}),
         },
       },
       onCompleted: (nodeResult) => {
-        const placeholderEdge = getEdges()
-          .filter((o) => o.target === selectedNode.id)
-          ?.at(0);
-        const parentNode = getNodes()
-          .filter((n) => n.id === placeholderEdge?.source)
-          ?.at(0);
-        // This is an entry point
-        if (!parentNode) {
-          applyAddNodeFromPlaceholder(
-            { nodeId: nodeResult.playbookAddNode },
-            component,
-            name,
-            config,
-            description,
-          );
-        } else {
-          commitMutation({
-            mutation: useManipulateComponentsAddLinkMutation,
-            variables: {
-              id: playbook.id,
-              input: {
-                from_node: parentNode.id,
-                from_port: placeholderEdge.sourceHandle,
-                to_node: nodeResult.playbookAddNode,
-              },
-            },
-            onCompleted: (linkResult) => {
-              applyAddNodeFromPlaceholder(
-                {
-                  nodeId: nodeResult.playbookAddNode,
-                  linkId: linkResult.playbookAddLink,
-                },
-                component,
-                name,
-                config,
-                description,
-              );
-            },
-          });
-        }
+        const nodeId = nodeResult.playbookAddNode;
+        applyAddNodeFromPlaceholder(
+          {
+            nodeId,
+            linkId: parentNode ? `${parentNode.id}-${placeholderEdge.sourceHandle}-${nodeId}` : undefined,
+          },
+          component,
+          name,
+          config,
+          description,
+        );
         setSelectedNode(null);
         setAction(null);
       },
@@ -660,6 +631,19 @@ const useManipulateComponents = (playbook) => {
       x: selectedNode.position.x,
       y: selectedNode.position.y,
     };
+    const originEdge = getEdges()
+      .filter((o) => o.target === selectedNode.id)
+      ?.at(0);
+    const parentNode = getNodes()
+      .filter((n) => n.id === originEdge?.source)
+      ?.at(0);
+    // A sibling shares the parent of the selected node; the entry point has
+    // none, so no sibling can be added to it.
+    if (!originEdge || !parentNode) {
+      setSelectedNode(null);
+      setAction(null);
+      return;
+    }
     commitMutation({
       mutation: useManipulateComponentsAddNodeMutation,
       variables: {
@@ -670,41 +654,23 @@ const useManipulateComponents = (playbook) => {
           position,
           configuration: jsonConfig,
           description,
+          parentNodeId: parentNode.id,
+          parentPortId: originEdge.sourceHandle,
         },
       },
       onCompleted: (nodeResult) => {
-        const originEdge = getEdges()
-          .filter((o) => o.target === selectedNode.id)
-          ?.at(0);
-        const parentNode = getNodes()
-          .filter((n) => n.id === originEdge?.source)
-          ?.at(0);
-        if (originEdge) {
-          commitMutation({
-            mutation: useManipulateComponentsAddLinkMutation,
-            variables: {
-              id: playbook.id,
-              input: {
-                from_node: parentNode.id,
-                from_port: originEdge.sourceHandle,
-                to_node: nodeResult.playbookAddNode,
-              },
-            },
-            onCompleted: (linkResult) => {
-              applyAddNode(
-                {
-                  nodeId: nodeResult.playbookAddNode,
-                  linkId: linkResult.playbookAddLink,
-                },
-                component,
-                name,
-                config,
-                originEdge,
-                description,
-              );
-            },
-          });
-        }
+        const nodeId = nodeResult.playbookAddNode;
+        applyAddNode(
+          {
+            nodeId,
+            linkId: `${parentNode.id}-${originEdge.sourceHandle}-${nodeId}`,
+          },
+          component,
+          name,
+          config,
+          originEdge,
+          description,
+        );
         setSelectedNode(null);
         setAction(null);
       },

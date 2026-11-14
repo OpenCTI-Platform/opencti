@@ -24705,6 +24705,8 @@ export type PlaybookAddNodeInput = {
   configuration?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
+  parentNodeId?: InputMaybe<Scalars['ID']['input']>;
+  parentPortId?: InputMaybe<Scalars['ID']['input']>;
   position: PositionInput;
 };
 

@@ -131,6 +131,10 @@ input PlaybookAddNodeInput {
     position: PositionInput!
     configuration: String
     description: String
+    "Node this node is linked from: required for every node but the entry point, given with parentPortId."
+    parentNodeId: ID
+    "Out port of parentNodeId the link leaves from."
+    parentPortId: ID
 }
 
 input PlaybookAddLinkInput {

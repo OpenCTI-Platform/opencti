@@ -4,7 +4,7 @@ import gql from 'graphql-tag';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import type { PlaybookAddLinkInput, PlaybookAddNodeInput } from '../../../src/generated/graphql';
 import { PLAYBOOK_INTERNAL_DATA_CRON, PLAYBOOK_MATCHING_COMPONENT } from '../../../src/modules/playbook/playbook-components';
-import { BAD_USER_INPUT_ERROR, UNSUPPORTED_ERROR } from '../../../src/config/errors';
+import { BAD_USER_INPUT_ERROR, FUNCTIONAL_ERROR, UNSUPPORTED_ERROR } from '../../../src/config/errors';
 import { getUserIdByEmail, USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
 
 const LIST_PLAYBOOKS = gql`
@@ -169,12 +169,15 @@ const addEntryNode = async (playbookId: string, name = 'entry-node'): Promise<st
   return result.data?.playbookAddNode;
 };
 
-const addMatchingNode = async (playbookId: string, name = 'matching-node'): Promise<string> => {
+// Every node but the entry point needs a parent: the node and its link are created together.
+const addMatchingNode = async (playbookId: string, parentNodeId: string, name = 'matching-node', parentPortId = 'out'): Promise<string> => {
   const addNodeInput: PlaybookAddNodeInput = {
     component_id: PLAYBOOK_MATCHING_COMPONENT.id,
     configuration: JSON.stringify({ filters: EMPTY_STRING_FILTERS }),
     name,
     position: { x: 5, y: 5 },
+    parentNodeId,
+    parentPortId,
   };
   const result = await queryAsAdminWithSuccess({
     query: ADD_NODE_PLAYBOOK,
@@ -201,17 +204,19 @@ const readPlaybookDefinition = async (playbookId: string) => {
   return JSON.parse(result.data?.playbook.playbook_definition);
 };
 
-const clearPlaybook = async (playbookId: string) => {
+const findLinkId = async (playbookId: string, fromNode: string, toNode: string, fromPort = 'out'): Promise<string> => {
   const playbookDef = await readPlaybookDefinition(playbookId);
-  // Delete all links first
-  for (const link of playbookDef.links) {
-    await queryAsAdminWithSuccess({
-      query: DELETE_LINK_PLAYBOOK,
-      variables: { id: playbookId, linkId: link.id },
-    });
-  }
-  // Then delete all nodes
-  for (const node of playbookDef.nodes) {
+  return playbookDef.links.find((l: { from: { id: string; port: string }; to: { id: string } }) => {
+    return l.from.id === fromNode && l.from.port === fromPort && l.to.id === toNode;
+  })?.id;
+};
+
+const clearPlaybook = async (playbookId: string) => {
+  // A link cannot be deleted when it would orphan its target: deleting the
+  // root node removes its whole subtree with its links.
+  const playbookDef = await readPlaybookDefinition(playbookId);
+  const targets = new Set(playbookDef.links.map((l: { to: { id: string } }) => l.to.id));
+  for (const node of playbookDef.nodes.filter((n: { id: string }) => !targets.has(n.id))) {
     await queryAsAdminWithSuccess({
       query: DELETE_NODE_PLAYBOOK,
       variables: { id: playbookId, nodeId: node.id },
@@ -449,6 +454,72 @@ describe('Playbook resolver standard behavior', () => {
       const node = playbookDef.nodes[0];
       expect(node.description).toBeUndefined();
     });
+
+    it('should refuse a non-entry node without a parent', async () => {
+      await clearPlaybook(playbookId);
+      entryNodeId = await addEntryNode(playbookId);
+      const addNodeInput: PlaybookAddNodeInput = {
+        component_id: PLAYBOOK_MATCHING_COMPONENT.id,
+        configuration: JSON.stringify({ filters: EMPTY_STRING_FILTERS }),
+        name: 'orphan-node',
+        position: { x: 5, y: 5 },
+      };
+      await queryAsAdminWithError(
+        {
+          query: ADD_NODE_PLAYBOOK,
+          variables: { id: playbookId, input: addNodeInput },
+        },
+        'Playbook node needs a parent: only the entry point has none, give parentNodeId and parentPortId',
+        FUNCTIONAL_ERROR,
+      );
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      expect(playbookDef.nodes.length).toEqual(1);
+    });
+
+    it('should add a node with its parent link in one write', async () => {
+      matchingNodeId = await addMatchingNode(playbookId, entryNodeId);
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      expect(playbookDef.nodes.length).toEqual(2);
+      expect(playbookDef.links.length).toEqual(1);
+      expect(playbookDef.links[0].from).toEqual({ id: entryNodeId, port: 'out' });
+      expect(playbookDef.links[0].to.id).toEqual(matchingNodeId);
+    });
+
+    it('should refuse a parent port that is not an out port of the parent', async () => {
+      const addNodeInput: PlaybookAddNodeInput = {
+        component_id: PLAYBOOK_MATCHING_COMPONENT.id,
+        configuration: JSON.stringify({ filters: EMPTY_STRING_FILTERS }),
+        name: 'bad-port-node',
+        position: { x: 5, y: 5 },
+        parentNodeId: entryNodeId,
+        parentPortId: 'fake-port',
+      };
+      await queryAsAdminWithError(
+        {
+          query: ADD_NODE_PLAYBOOK,
+          variables: { id: playbookId, input: addNodeInput },
+        },
+        'Playbook link must leave an out port of its source node',
+        FUNCTIONAL_ERROR,
+      );
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      expect(playbookDef.nodes.length).toEqual(2);
+    });
+
+    it('should refuse a crafted definition with two roots through the field patch', async () => {
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      const twoRoots = { nodes: playbookDef.nodes, links: [] };
+      await queryAsAdminWithError(
+        {
+          query: UPDATE_PLAYBOOK,
+          variables: { id: playbookId, input: [{ key: 'playbook_definition', value: [JSON.stringify(twoRoots)] }] },
+        },
+        'Playbook must have a single entry point: every other node needs a parent',
+        FUNCTIONAL_ERROR,
+      );
+      const storedDef = await readPlaybookDefinition(playbookId);
+      expect(storedDef.links.length).toEqual(1);
+    });
   });
 
   describe('playbookReplaceNode', () => {
@@ -554,8 +625,8 @@ describe('Playbook resolver standard behavior', () => {
     beforeAll(async () => {
       await clearPlaybook(playbookId);
       entryNodeId = await addEntryNode(playbookId);
-      matchingNodeId = await addMatchingNode(playbookId);
-      linkId = await addLink(playbookId, entryNodeId, matchingNodeId);
+      matchingNodeId = await addMatchingNode(playbookId, entryNodeId);
+      linkId = await findLinkId(playbookId, entryNodeId, matchingNodeId);
     });
 
     it('should persist description when inserting a node', async () => {
@@ -587,8 +658,8 @@ describe('Playbook resolver standard behavior', () => {
     it('should not set description on inserted node when omitted', async () => {
       await clearPlaybook(playbookId);
       entryNodeId = await addEntryNode(playbookId);
-      matchingNodeId = await addMatchingNode(playbookId);
-      linkId = await addLink(playbookId, entryNodeId, matchingNodeId);
+      matchingNodeId = await addMatchingNode(playbookId, entryNodeId);
+      linkId = await findLinkId(playbookId, entryNodeId, matchingNodeId);
 
       const insertNodeInput: PlaybookAddNodeInput = {
         component_id: PLAYBOOK_MATCHING_COMPONENT.id,
@@ -616,31 +687,28 @@ describe('Playbook resolver standard behavior', () => {
   });
 
   describe('playbookAddLink', () => {
+    let secondMatchingNodeId = '';
+
     beforeAll(async () => {
       await clearPlaybook(playbookId);
       entryNodeId = await addEntryNode(playbookId);
-      matchingNodeId = await addMatchingNode(playbookId);
+      matchingNodeId = await addMatchingNode(playbookId, entryNodeId);
+      secondMatchingNodeId = await addMatchingNode(playbookId, matchingNodeId, 'second-matching-node');
     });
 
     it('should add a link between two nodes', async () => {
-      linkId = await addLink(playbookId, entryNodeId, matchingNodeId);
+      linkId = await addLink(playbookId, matchingNodeId, secondMatchingNodeId, 'no-match');
       expect(linkId).toBeDefined();
 
       const playbookDef = await readPlaybookDefinition(playbookId);
-      expect(playbookDef.links.length).toEqual(1);
-      const link = playbookDef.links[0];
-      expect(link.id).toEqual(linkId);
-      expect(link.from.id).toEqual(entryNodeId);
-      expect(link.from.port).toEqual('out');
-      expect(link.to.id).toEqual(matchingNodeId);
+      expect(playbookDef.links.length).toEqual(3);
+      const link = playbookDef.links.find((l: { id: string }) => l.id === linkId);
+      expect(link.from.id).toEqual(matchingNodeId);
+      expect(link.from.port).toEqual('no-match');
+      expect(link.to.id).toEqual(secondMatchingNodeId);
     });
 
     it('should not add a duplicate link', async () => {
-      // Ensure a link exists first
-      const playbookDef = await readPlaybookDefinition(playbookId);
-      if (playbookDef.links.length === 0) {
-        await addLink(playbookId, entryNodeId, matchingNodeId);
-      }
       const addLinkInput: PlaybookAddLinkInput = {
         from_node: entryNodeId,
         from_port: 'out',
@@ -718,11 +786,16 @@ describe('Playbook resolver standard behavior', () => {
   });
 
   describe('playbookDeleteLink', () => {
+    let secondMatchingNodeId = '';
+    let extraLinkId = '';
+
     beforeAll(async () => {
       await clearPlaybook(playbookId);
       entryNodeId = await addEntryNode(playbookId);
-      matchingNodeId = await addMatchingNode(playbookId);
-      linkId = await addLink(playbookId, entryNodeId, matchingNodeId);
+      matchingNodeId = await addMatchingNode(playbookId, entryNodeId);
+      linkId = await findLinkId(playbookId, entryNodeId, matchingNodeId);
+      secondMatchingNodeId = await addMatchingNode(playbookId, matchingNodeId, 'second-matching-node');
+      extraLinkId = await addLink(playbookId, matchingNodeId, secondMatchingNodeId, 'no-match');
     });
 
     it('should not delete a link if no Manage Playbooks capability', async () => {
@@ -732,16 +805,29 @@ describe('Playbook resolver standard behavior', () => {
       });
     });
 
-    it('should delete an existing link and keep nodes', async () => {
+    it('should delete a link whose target keeps another parent and keep nodes', async () => {
       const deleteResult = await queryAsAdminWithSuccess({
         query: DELETE_LINK_PLAYBOOK,
-        variables: { id: playbookId, linkId },
+        variables: { id: playbookId, linkId: extraLinkId },
       });
       expect(deleteResult.data?.playbookDeleteLink.id).toBeDefined();
 
       const playbookDef = await readPlaybookDefinition(playbookId);
-      expect(playbookDef.links.length).toEqual(0);
-      expect(playbookDef.nodes.length).toEqual(2);
+      expect(playbookDef.links.length).toEqual(2);
+      expect(playbookDef.nodes.length).toEqual(3);
+    });
+
+    it('should refuse to delete the last link reaching a node', async () => {
+      await queryAsAdminWithError(
+        {
+          query: DELETE_LINK_PLAYBOOK,
+          variables: { id: playbookId, linkId },
+        },
+        'Playbook link cannot be deleted: its target node would be left without a parent, delete the node instead',
+        FUNCTIONAL_ERROR,
+      );
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      expect(playbookDef.links.length).toEqual(2);
     });
 
     it('should handle deleting a non-existent link gracefully', async () => {
@@ -757,8 +843,7 @@ describe('Playbook resolver standard behavior', () => {
     beforeAll(async () => {
       await clearPlaybook(playbookId);
       entryNodeId = await addEntryNode(playbookId);
-      matchingNodeId = await addMatchingNode(playbookId);
-      await addLink(playbookId, entryNodeId, matchingNodeId);
+      matchingNodeId = await addMatchingNode(playbookId, entryNodeId);
     });
 
     it('should not delete a node if no Manage Playbooks capability', async () => {
