@@ -280,6 +280,13 @@ export const convertIdentityToStix = (instance: StoreEntity, type: string): SDO.
     x_opencti_organization_type: instance.x_opencti_organization_type,
     x_opencti_reliability: instance.x_opencti_reliability,
     x_opencti_score: instance.x_opencti_score,
+    x_opencti_asset_category: instance.x_opencti_asset_category,
+    x_opencti_asset_subcategory: instance.x_opencti_asset_subcategory,
+    x_opencti_internet_facing: instance.x_opencti_internet_facing,
+    x_opencti_criticality: instance.x_opencti_criticality,
+    x_opencti_environment: instance.x_opencti_environment,
+    x_opencti_owner: instance.x_opencti_owner,
+    x_opencti_platform: instance.x_opencti_platform,
   };
 };
 

@@ -1329,5 +1329,11 @@
   "XTM Hub Token": "XTM-Hub-Token",
   "XTM One intent": "XTM Eine Absicht",
   "XTM One registration manager": "XTM One Registrierungsmanager",
-  "XTM1 CGU acceptance status": "XTM1 CGU-Annahmestatus"
+  "XTM1 CGU acceptance status": "XTM1 CGU-Annahmestatus",
+  "Asset category": "Asset-Kategorie",
+  "Asset subcategory": "Asset-Unterkategorie",
+  "Internet facing": "Aus dem Internet erreichbar",
+  "Criticality": "Kritikalität",
+  "Environment": "Umgebung",
+  "Platform": "Plattform"
 }

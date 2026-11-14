@@ -53,6 +53,14 @@ export interface StixIdentityExtension extends StixOpenctiExtension {
   organization_type: string;
   reliability: string;
   score: number;
+  // System asset fields
+  asset_category: string;
+  asset_subcategory: string;
+  internet_facing: string;
+  criticality: string;
+  environment: string;
+  owner: string;
+  platform: string;
 }
 // name, description, roles, identity_class, sectors, contact_information
 export interface StixIdentity extends StixDomainObject {

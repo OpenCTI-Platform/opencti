@@ -68,6 +68,63 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: false,
     }],
   },
+  // Asset fields of System, aligned on the OpenAEV asset taxonomy so a System maps to an OpenAEV or XTM One asset
+  asset_category_ov: {
+    description: 'The category of an asset (level 1 of the OpenAEV asset taxonomy).',
+    entity_types: [ENTITY_TYPE_IDENTITY_SYSTEM],
+    fields: [{
+      key: 'x_opencti_asset_category',
+      required: false,
+      multiple: false,
+    }],
+  },
+  asset_criticality_ov: {
+    description: 'The business criticality of an asset, on the OpenAEV scale.',
+    closed: true,
+    entity_types: [ENTITY_TYPE_IDENTITY_SYSTEM],
+    fields: [{
+      key: 'x_opencti_criticality',
+      required: false,
+      multiple: false,
+    }],
+  },
+  asset_environment_ov: {
+    description: 'The environment an asset runs in.',
+    entity_types: [ENTITY_TYPE_IDENTITY_SYSTEM],
+    fields: [{
+      key: 'x_opencti_environment',
+      required: false,
+      multiple: false,
+    }],
+  },
+  asset_internet_facing_ov: {
+    description: 'Whether an asset is reachable from the internet.',
+    closed: true,
+    entity_types: [ENTITY_TYPE_IDENTITY_SYSTEM],
+    fields: [{
+      key: 'x_opencti_internet_facing',
+      required: false,
+      multiple: false,
+    }],
+  },
+  asset_platform_ov: {
+    description: 'The operating system or platform of an asset (OpenAEV endpoint platforms).',
+    entity_types: [ENTITY_TYPE_IDENTITY_SYSTEM],
+    fields: [{
+      key: 'x_opencti_platform',
+      required: false,
+      multiple: false,
+    }],
+  },
+  asset_subcategory_ov: {
+    description: 'The subcategory of an asset (level 2 of the OpenAEV asset taxonomy); the description of each value names its category.',
+    entity_types: [ENTITY_TYPE_IDENTITY_SYSTEM],
+    fields: [{
+      key: 'x_opencti_asset_subcategory',
+      required: false,
+      multiple: false,
+    }],
+  },
   attack_motivation_ov: {
     description: `Knowing a Threat Actor or Intrusion Set's motivation may allow an analyst or defender to better understand likely targets and behaviors.
       Motivation shapes the intensity and the persistence of an attack. Threat Actors and Intrusion Sets usually act in a manner that reflects their underlying emotion or situation, and this informs defenders of the manner of attack. For example, a spy motivated by nationalism (ideology) likely has the patience to achieve long-term goals and work quietly for years, whereas a cyber-vandal out for notoriety can create an intense and attention-grabbing attack but may quickly lose interest and move on. Understanding these differences allows defenders to implement controls tailored to each type of attack for greatest efficiency`,

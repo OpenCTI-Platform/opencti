@@ -122,6 +122,13 @@ export interface StixIdentity extends StixDomainObject {
   x_opencti_organization_type: string;
   x_opencti_reliability: string;
   x_opencti_score: number;
+  x_opencti_asset_category: string;
+  x_opencti_asset_subcategory: string;
+  x_opencti_internet_facing: string;
+  x_opencti_criticality: string;
+  x_opencti_environment: string;
+  x_opencti_owner: string;
+  x_opencti_platform: string;
 }
 
 export interface StixIncident extends StixDomainObject {

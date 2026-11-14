@@ -6333,5 +6333,10 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "il vostro utente apparterrà all'organizzazione principale della piattaforma, oltre a qualsiasi organizzazione a cui appartiene l'utente corrente",
   "Zoom": "Zoom",
   "Zoom in": "Ingrandisci",
-  "Zoom out": "Riduci"
+  "Zoom out": "Riduci",
+  "Asset category": "Categoria dell'asset",
+  "Asset subcategory": "Sottocategoria dell'asset",
+  "Internet facing": "Esposto a Internet",
+  "Criticality": "Criticità",
+  "Environment": "Ambiente"
 }

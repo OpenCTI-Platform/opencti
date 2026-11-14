@@ -370,6 +370,13 @@ export const convertIdentityToStix = (instance: StoreEntityIdentity, type: strin
         organization_type: instance.x_opencti_organization_type,
         reliability: instance.x_opencti_reliability,
         score: instance.x_opencti_score,
+        asset_category: instance.x_opencti_asset_category,
+        asset_subcategory: instance.x_opencti_asset_subcategory,
+        internet_facing: instance.x_opencti_internet_facing,
+        criticality: instance.x_opencti_criticality,
+        environment: instance.x_opencti_environment,
+        owner: instance.x_opencti_owner,
+        platform: instance.x_opencti_platform,
       }),
     },
   };
