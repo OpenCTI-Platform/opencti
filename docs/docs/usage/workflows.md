@@ -7,6 +7,8 @@ Efficiently manage and organize your work within the OpenCTI platform by leverag
 
 Workflows are designed to trace the status of objects in the system. They are represented by the "Processing status" field embedded in each object. By default, this field is disabled for most objects but can be activated through the platform settings. For details on activating and configuring workflows, refer to the [dedicated documentation page](../administration/entities.md#workflow-section).
 
+To go further and enforce a process (ordered statuses, who can take each transition, automatic actions, closing reasons), see [Entities workflow](entities-workflow.md).
+
 Enabling workflows enhances visibility into the progress and status of different objects, providing a comprehensive view for effective management.
 
 ![Processing status](assets/processing-status.png)
