@@ -1,30 +1,11 @@
 import { useEffect, useRef } from 'react';
-import { useReactFlow, useStore, Node, Edge, ReactFlowState } from 'reactflow';
-import { stratify, tree } from 'd3-hierarchy';
+import { useReactFlow, useStore, ReactFlowState } from 'reactflow';
 import { timer } from 'd3-timer';
+import { layoutNodes } from './layoutNodes';
 import { commitMutation } from '../../../../../relay/environment';
 import { useManipulateComponentsPlaybookUpdatePositionsMutation } from './useManipulateComponents';
 
-const layout = tree<Node>()
-  .nodeSize([250, 175])
-  .separation(() => 1);
-
 const options = { duration: 300 };
-
-const layoutNodes = (nodes: Node[], edges: Edge[]): Node[] => {
-  if (nodes.length === 0) {
-    return [];
-  }
-  const hierarchy = stratify<Node>()
-    .id((d) => d.id)
-    .parentId((d: Node) => edges.find((e: Edge) => e.target === d.id)?.source)(
-      nodes,
-    );
-  const root = layout(hierarchy);
-  return root
-    .descendants()
-    .map((d) => ({ ...d.data, position: { x: d.x, y: d.y } }));
-};
 
 const nodeCountSelector = (state: ReactFlowState) => state.nodeInternals.size;
 
