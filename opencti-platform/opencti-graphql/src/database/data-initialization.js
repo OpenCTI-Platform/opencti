@@ -7,7 +7,7 @@ import { initManagerConfigurations } from '../modules/managerConfiguration/manag
 import { createStatus, createStatusTemplate } from '../domain/status';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { StatusScope, VocabularyCategory } from '../generated/graphql';
-import { builtInOv, openVocabularies } from '../modules/vocabulary/vocabulary-utils';
+import { openVocabularies, seedVocabularyInput } from '../modules/vocabulary/vocabulary-utils';
 import { addVocabulary } from '../modules/vocabulary/vocabulary-domain';
 import { addAllowedMarkingDefinition } from '../domain/markingDefinition';
 import { addCapability, addGroup, addRole } from '../domain/grant';
@@ -92,17 +92,7 @@ const createVocabularies = async (context) => {
     const category = categories[index];
     const vocabularies = openVocabularies[category] ?? [];
     for (let i = 0; i < vocabularies.length; i += 1) {
-      const { key, description, aliases, order, color } = vocabularies[i];
-      const data = {
-        name: key,
-        description: description ?? '',
-        aliases: aliases ?? [],
-        category,
-        order,
-        ...(color ? { color } : {}),
-        builtIn: builtInOv.includes(category),
-      };
-      await addVocabulary(context, SYSTEM_USER, data);
+      await addVocabulary(context, SYSTEM_USER, seedVocabularyInput(category, vocabularies[i]));
     }
   }
 };

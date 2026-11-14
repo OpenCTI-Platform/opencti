@@ -1365,6 +1365,20 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
   ],
 };
 
+// The input the platform seeds for a built-in vocabulary entry; the colour is only set when the entry carries one.
+export const seedVocabularyInput = (category: VocabularyCategory, entry: typeof openVocabularies[VocabularyCategory][number]) => {
+  const { key, description, aliases, order, color } = entry;
+  return {
+    name: key,
+    description: description ?? '',
+    aliases: aliases ?? [],
+    category,
+    order,
+    ...(color ? { color } : {}),
+    builtIn: builtInOv.includes(category),
+  };
+};
+
 const toVocabularyDefinition = (key: string, value: typeof vocabularyDefinitions[VocabularyCategory]): VocabularyDefinition => {
   return { key: key as VocabularyCategory, ...value, closed: value.closed ?? false };
 };
