@@ -201,7 +201,9 @@ const validateNodeRunAs = async (context: AuthContext, user: AuthUser, configura
 // parentless node (the entry point), and every link joins two existing nodes,
 // leaving an out port of its source. A definition with several roots cannot
 // run and cannot be laid out by the editor, so no write may store one: every
-// mutation that writes playbook_definition checks the result here first.
+// mutation that changes nodes or links checks the result here first.
+// playbookUpdatePositions is the one exception: it only moves nodes, so it
+// cannot create a root, and a legacy definition stays movable while it is repaired.
 export const assertPlaybookDefinitionIsValid = (definition: ComponentDefinition) => {
   const nodes = definition.nodes ?? [];
   const links = definition.links ?? [];
@@ -306,6 +308,9 @@ export const playbookUpdatePositions = async (context: AuthContext, user: AuthUs
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   const nodesPositions = JSON.parse(positions);
+  // Positions only: nodes and links are kept as stored, so the topology
+  // invariant (assertPlaybookDefinitionIsValid) cannot be broken here and is
+  // not re-checked, which keeps a legacy multi-root playbook movable.
   definition.nodes = definition.nodes.map((n) => {
     const position = nodesPositions.filter((o: { id: string; position: PositionInput }) => o.id === n.id).at(0);
     if (position) {
