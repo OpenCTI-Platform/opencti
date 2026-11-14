@@ -3,7 +3,7 @@ import { fullEntitiesList, storeLoadById } from '../database/middleware-loader';
 import { completeConnector } from '../modules/connector/connector-domain';
 import { notify } from '../database/redis';
 import { isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { ConnectorCatalogIdentitySource } from '../generated/graphql';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -250,9 +250,20 @@ export const loadCatalogIdentityIndex = async () => {
 
 const needsCatalog = (connector: IdentityConnector) => !isManagedConnector(connector) && !connector.built_in;
 
+// Index used when the catalog cannot be listed: every connector without a composer contract keeps
+// the generic icon of its type instead of failing the query that reads it.
+const loadCatalogIdentityIndexOrEmpty = async () => {
+  try {
+    return await loadCatalogIdentityIndex();
+  } catch (err: any) {
+    logApp.warn('[CONNECTOR] Catalog unavailable, connectors are shown without catalog identity', { cause: err?.message });
+    return buildCatalogIdentityIndex([]);
+  }
+};
+
 // Batch function of the per-request loader: one catalog index for every connector of the request.
 export const batchConnectorCatalogIdentities = async (_context: AuthContext, _user: AuthUser, connectors: IdentityConnector[]) => {
-  const index = connectors.some(needsCatalog) ? await loadCatalogIdentityIndex() : buildCatalogIdentityIndex([]);
+  const index = connectors.some(needsCatalog) ? await loadCatalogIdentityIndexOrEmpty() : buildCatalogIdentityIndex([]);
   return connectors.map((connector) => resolveConnectorCatalogIdentity(connector, index));
 };
 

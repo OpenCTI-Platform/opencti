@@ -355,10 +355,10 @@ describe('Connector catalog identity - loading', () => {
     expect(listContext.draft_context).toBeUndefined();
   });
 
-  it('should list the catalog again after a failed listing', async () => {
+  it('should keep the generic identity when the catalog cannot be listed, and list it again next time', async () => {
     vi.mocked(fullEntitiesList).mockRejectedValueOnce(new Error('search engine unavailable'));
     const connector = { ...baseConnector, name: 'Abuse.ch URLhaus' };
-    await expect(batchConnectorCatalogIdentities(testContext, testUser, [connector])).rejects.toThrow('search engine unavailable');
+    await expect(batchConnectorCatalogIdentities(testContext, testUser, [connector, { ...baseConnector, built_in: true }])).resolves.toEqual([null, null]);
     vi.mocked(fullEntitiesList).mockResolvedValueOnce([storedContract('urlhaus', 'URLhaus', '6.9.0', '/logo/urlhaus.png')] as never);
     const [identity] = await batchConnectorCatalogIdentities(testContext, testUser, [connector]);
     expect(identity).toMatchObject({ slug: 'urlhaus', source: ConnectorCatalogIdentitySource.Name });
@@ -388,6 +388,11 @@ describe('Connector catalog identity - loading', () => {
     vi.mocked(fullEntitiesList).mockResolvedValue([storedContract('urlhaus', 'URLhaus', '6.9.0', '/logo/urlhaus.png')] as never);
     const identity = await connectorCatalogIdentity(testContext, testUser, { ...baseConnector, name: 'Abuse.ch URLhaus' });
     expect(identity).toMatchObject({ slug: 'urlhaus', logo: '/logo/urlhaus.png', source: ConnectorCatalogIdentitySource.Name });
+  });
+
+  it('should fail the catalog options when the catalog cannot be listed', async () => {
+    vi.mocked(fullEntitiesList).mockRejectedValueOnce(new Error('search engine unavailable'));
+    await expect(connectorCatalogIdentityOptions(testContext)).rejects.toThrow('search engine unavailable');
   });
 
   it('should list the catalog entries as options sorted by title', async () => {
