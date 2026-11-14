@@ -1,7 +1,6 @@
 import Button from '@common/button/Button';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
-import Box from '@mui/material/Box';
 import CoreForm from '@rjsf/core';
 import JsonForm from '@rjsf/mui';
 import { Field, Form, Formik } from 'formik';
@@ -22,7 +21,7 @@ import ObjectMembersField from '../../common/form/ObjectMembersField';
 import { NotifiersLinesPaginationQuery$variables } from './__generated__/NotifiersLinesPaginationQuery.graphql';
 import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery.graphql';
 import NotifierTestDialog, { notifierTestQuery } from './NotifierTestDialog';
-import { uiSchema } from './NotifierUtils';
+import { buildNotifierUiSchema, NotifierConnectorFields, variableHelperTemplates, variableHelperWidgets } from './NotifierUtils';
 import notifierValidator from './NotifierValidator';
 
 const notifierMutation = graphql`
@@ -166,23 +165,11 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
             name="authorized_members"
           />
           {connector && (
-            <Box
-              sx={{
-                paddingLeft: '15px',
-                '& .MuiGrid-root': {
-                  flexDirection: 'column',
-                  paddingTop: '16px',
-                },
-                '& .MuiGrid-container': {
-                  paddingTop: '10px',
-                },
-              }}
-            >
+            <NotifierConnectorFields>
               <JsonForm
-                uiSchema={{
-                  ...JSON.parse(connector.ui_schema ?? ' {}'),
-                  ...uiSchema,
-                }}
+                uiSchema={buildNotifierUiSchema(connector.ui_schema)}
+                templates={variableHelperTemplates}
+                widgets={variableHelperWidgets}
                 ref={formRef}
                 tagName="div"
                 showErrorList={false}
@@ -198,7 +185,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
               >
                 <></>
               </JsonForm>
-            </Box>
+            </NotifierConnectorFields>
           )}
           <FormButtonContainer>
             <Button

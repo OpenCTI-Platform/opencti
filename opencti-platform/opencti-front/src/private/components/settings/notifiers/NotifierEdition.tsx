@@ -17,7 +17,7 @@ import { NotifierEdition_edition$key } from './__generated__/NotifierEdition_edi
 import { NotifierEditionQuery } from './__generated__/NotifierEditionQuery.graphql';
 import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery.graphql';
 import NotifierTestDialog, { notifierTestQuery } from './NotifierTestDialog';
-import { uiSchema } from './NotifierUtils';
+import { buildNotifierUiSchema, NotifierConnectorFields, variableHelperTemplates, variableHelperWidgets } from './NotifierUtils';
 import notifierValidator from './NotifierValidator';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
@@ -176,23 +176,11 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
               multiple={true}
               name="restricted_members"
             />
-            <Box
-              sx={{
-                paddingLeft: '15px',
-                '& .MuiGrid-root': {
-                  flexDirection: 'column',
-                  paddingTop: '16px',
-                },
-                '& .MuiGrid-container': {
-                  paddingTop: '10px',
-                },
-              }}
-            >
+            <NotifierConnectorFields>
               <JsonForm
-                uiSchema={{
-                  ...JSON.parse(data?.notifier_connector?.connector_schema_ui ?? ' {}'),
-                  ...uiSchema,
-                }}
+                uiSchema={buildNotifierUiSchema(data?.notifier_connector?.connector_schema_ui)}
+                templates={variableHelperTemplates}
+                widgets={variableHelperWidgets}
                 ref={formRef}
                 tagName="div"
                 showErrorList={false}
@@ -206,7 +194,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
               >
                 <></>
               </JsonForm>
-            </Box>
+            </NotifierConnectorFields>
             <Box sx={{ marginTop: '20px', textAlign: 'right' }}>
               <Button
                 onClick={() => {

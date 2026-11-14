@@ -133,7 +133,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
       onReset={onReset}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, errors }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form style={{ margin: '0 0 20px 0' }}>
           <Field
             component={TextField}
             name="name"
