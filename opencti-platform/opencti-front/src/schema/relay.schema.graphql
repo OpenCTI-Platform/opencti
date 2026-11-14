@@ -15633,8 +15633,8 @@ type System implements BasicObject & Identity & StixCoreObject & StixDomainObjec
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   x_opencti_aliases: [String]
-  x_opencti_asset_category: String
-  x_opencti_asset_subcategory: String
+  x_opencti_system_category: String
+  x_opencti_system_subcategory: String
   x_opencti_closing_reason: String
   x_opencti_criticality: String
   x_opencti_environment: String
@@ -15679,8 +15679,8 @@ input SystemAddInput {
   update: Boolean
   upsertOperations: [EditInput!]
   x_opencti_aliases: [String]
-  x_opencti_asset_category: String
-  x_opencti_asset_subcategory: String
+  x_opencti_system_category: String
+  x_opencti_system_subcategory: String
   x_opencti_criticality: String
   x_opencti_environment: String
   x_opencti_firstname: String
@@ -17458,12 +17458,6 @@ input VocabularyAddInput {
 
 enum VocabularyCategory {
   account_type_ov
-  asset_category_ov
-  asset_criticality_ov
-  asset_environment_ov
-  asset_internet_facing_ov
-  asset_platform_ov
-  asset_subcategory_ov
   attack_motivation_ov
   attack_resource_level_ov
   case_priority_ov
@@ -17505,6 +17499,12 @@ enum VocabularyCategory {
   service_status_ov
   service_type_ov
   start_type_ov
+  system_category_ov
+  system_criticality_ov
+  system_environment_ov
+  system_internet_facing_ov
+  system_platform_ov
+  system_subcategory_ov
   threat_actor_group_role_ov
   threat_actor_group_sophistication_ov
   threat_actor_group_type_ov
