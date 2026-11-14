@@ -15,7 +15,8 @@ import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { meterManager } from '../config/tracing';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { chunkIntakeQueue, consumeChunkIntakeQueue, registerChunkIntakeQueue } from '../database/rabbitmq';
+import { chunkIntakeQueue, consumeChunkIntakeQueue, queueDepths, registerChunkIntakeQueue } from '../database/rabbitmq';
+import { redisQueueLeaseStore } from '../database/redis';
 import { executeChunkOperation, executeInProcessRead, substituteEchoIds, type ChunkOperation } from '../graphql/chunk-executor';
 import { splitEchoIds } from './chunkIntakeEchoes';
 import { PreLoopGate } from './chunkIntakePreLoop';
@@ -36,7 +37,8 @@ import {
 } from '../database/sequencer/sequencer-pending-intents';
 import { DatabaseError, DRAFT_LOCKED_ERROR, EngineShardsError, MISSING_REF_ERROR, SEQUENCER_DEFERRED_ERROR, WORK_NOT_ALIVE_ERROR } from '../config/errors';
 import { createIntakeContext } from '../intake/intake-context';
-import { consumePushQueues } from '../intake/workerless/push-consumer';
+import { consumePushQueues, type PushConsumer } from '../intake/workerless/push-consumer';
+import { createQueueLease, type ConsumerView, type QueueLease } from '../intake/workerless/queue-lease';
 import { createLimiter, PushRefusedError } from '../intake/workerless/push-intake';
 import { createReleaseScheduler, type ReleaseScheduler } from '../intake/workerless/release-scheduler';
 import { createImportContext, type ImportContext } from '../intake/stix-import/context';
@@ -100,6 +102,13 @@ const PUSH_RELEASE_QUANTUM = Number(conf.get('chunk_intake_manager:push_release_
 const PUSH_TRANSFORM_CONCURRENCY = Number(conf.get('chunk_intake_manager:push_transform_concurrency') ?? 16);
 // task 0040 queue affinity test (multi_writer): connector groups, one per platform (push-queues.ts); empty = off
 const PUSH_QUEUE_PARTITION = parseQueuePartition(conf.get('chunk_intake_manager:push_queue_partition'));
+// task 0040 dynamic queue lease (multi_writer, queue-lease.ts): replaces the partition when on
+const PUSH_QUEUE_LEASE = booleanConf('chunk_intake_manager:push_queue_lease', false);
+const PUSH_QUEUE_LEASE_OPTIONS = {
+  ttlMs: Number(conf.get('chunk_intake_manager:push_queue_lease_ttl_ms') ?? 30000),
+  stealBacklogMin: Number(conf.get('chunk_intake_manager:push_queue_steal_backlog_min') ?? 100),
+  releaseIdleTicks: Number(conf.get('chunk_intake_manager:push_queue_release_idle_ticks') ?? 2),
+};
 // Per-OPERATION transient policy (depth campaign v2, 2026-09-14: a 240-rejection burst of the
 // ES search pool cost 34 indicators at prefetch 48, where pycti's ladder retried them on
 // HTTP). A transient engine error inside one operation (rejected execution, circuit breaker,
@@ -792,6 +801,7 @@ const readsClientFor = (envelope: IntakeEnvelope): ImportClient => {
 };
 
 let pushMessagesCounter: Counter | null = null;
+let queueLeaseCounter: Counter | null = null;
 // The scheduler of the running consumer, read by the gauge registered once (a re-election builds a new one)
 let workerlessScheduler: ReleaseScheduler | null = null;
 let workerlessGaugeRegistered = false;
@@ -819,11 +829,35 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
     ? createOrderedQueuesLeadership(() => lockResources([CHUNK_INTAKE_MANAGER_KEY], { retryCount: 0 })
         .catch((e: any) => (e?.name === TYPE_LOCK_ERROR ? null : Promise.reject(e))))
     : null;
-  const partition = SEQUENCER_CONFIG.multiWriter && PUSH_QUEUE_PARTITION.length > 0
+  queueLeaseCounter = meterManager.meterProvider.getMeter('opencti-chunk-intake').createCounter('opencti_workerless_queue_lease_total', {
+    valueType: ValueType.INT,
+    description: 'Push queue lease events of the worker-less intake (taken, released, lost, steal_start, steal_stop)',
+  });
+  const lease = SEQUENCER_CONFIG.multiWriter && PUSH_QUEUE_LEASE
+    ? createQueueLease(SEQUENCER_CONFIG.nodeId, redisQueueLeaseStore, queueDepths, PUSH_QUEUE_LEASE_OPTIONS, (event) => queueLeaseCounter?.add(1, { event }))
+    : null;
+  // Bound once the consumer is started: the first tick of the lease takes no queue
+  let consumerView: ConsumerView = { isOrdered: () => false, isConsuming: () => false };
+  const partition = !lease && SEQUENCER_CONFIG.multiWriter && PUSH_QUEUE_PARTITION.length > 0
     ? createPartitionSlot(PUSH_QUEUE_PARTITION.length, (slot) => lockResources([`${CHUNK_INTAKE_MANAGER_KEY}_partition_${slot}`], { retryCount: 0 })
         .catch((e: any) => (e?.name === TYPE_LOCK_ERROR ? null : Promise.reject(e))))
     : null;
+  const orderedQueues = async (context: AuthContext) => {
+    const syncs = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_SYNC]);
+    return new Set([connectorConfig('sync').push, ...syncs.map((sync) => connectorConfig(sync.internal_id).push)]);
+  };
+  // The leases renewed first: a failed read below takes no new decision but keeps them
+  const leasedQueues = async (context: AuthContext, queueLease: QueueLease, queues: string[]) => {
+    const ordered = await orderedQueues(context);
+    const candidates = consumedPushQueues(queues, ordered, false);
+    const leased = await queueLease.assign(candidates, consumerView).catch((cause) => {
+      logApp.warn('[OPENCTI-MODULE] Worker-less intake: queue lease not assigned, current queues kept', { cause });
+      return queueLease.current();
+    });
+    return !leadership || await leadership.refresh() ? [...leased, ...queues.filter((queue) => ordered.has(queue))] : leased;
+  };
   const listQueues = async () => {
+    await lease?.renew();
     const context = executionContext(CHUNK_INTAKE_MANAGER_CONTEXT);
     const pushConnectors = (await connectorsForWorker(context, SYSTEM_USER))
       .map((connector: any) => ({ name: connector.name, queue: connector.config?.push }))
@@ -832,10 +866,9 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
     const queues = partition
       ? partitionedPushQueues(pushConnectors, PUSH_QUEUE_PARTITION, await partition.refresh())
       : [...new Set(pushConnectors.map(({ queue }) => queue))];
+    if (lease) return leasedQueues(context, lease, queues);
     if (!leadership || await leadership.refresh()) return queues;
-    const syncs = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_SYNC]);
-    const ordered = new Set([connectorConfig('sync').push, ...syncs.map((sync) => connectorConfig(sync.internal_id).push)]);
-    return consumedPushQueues(queues, ordered, false);
+    return consumedPushQueues(queues, await orderedQueues(context), false);
   };
   // The operations are released against the sequencer's queue: R* = factor x max batch
   const setPoint = Math.max(1, Math.round(PUSH_READY_DEPTH_FACTOR * SEQUENCER_CONFIG.maxBatchSize));
@@ -874,7 +907,7 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
     objectsCounter?.add(new Set(operations.map((operation) => operation.object_id).filter((id) => !!id)).size);
   };
   logApp.info('[OPENCTI-MODULE] Worker-less intake: operations released against the sequencer queue', { set_point: setPoint, factor: PUSH_READY_DEPTH_FACTOR });
-  const consumer = await consumePushQueues(
+  const consumer: PushConsumer = await consumePushQueues(
     listQueues,
     {
       scheduler,
@@ -889,6 +922,7 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
     { prefetch: PUSH_PREFETCH, maxInFlightBytes: PUSH_MAX_IN_FLIGHT_BYTES },
     (outcome) => pushMessagesCounter?.add(1, { outcome: outcome.reason }),
   );
+  consumerView = consumer;
   return {
     ...consumer,
     alive: () => consumer.alive() && !leadership?.lost() && !partition?.lost(),
@@ -897,6 +931,7 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
       await consumer.close();
       await leadership?.release();
       await partition?.release();
+      await lease?.release();
     },
   };
 };

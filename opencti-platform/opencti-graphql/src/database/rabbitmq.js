@@ -465,6 +465,14 @@ export const metrics = async (context, user) => {
   }, metricApi);
 };
 
+// task 0040 dynamic queue lease: the messages ready and unacked of each queue
+export const queueDepths = async () => {
+  const httpClient = await rabbitmqManagementClient();
+  const columns = 'name,messages_ready,messages_unacknowledged';
+  const queues = await httpClient.get(`/api/queues${rabbitmqVhostPath}?columns=${columns}`, { timeout: 5000 }).then((response) => response.data);
+  return new Map(queues.map((q) => [q.name, { ready: q.messages_ready ?? 0, unacked: q.messages_unacknowledged ?? 0 }]));
+};
+
 const metricsCache = new LRUCache({ ttl: 15000, max: 1 }); // 15 seconds cache
 export const getCachedRabbitmqMetrics = async (context, user) => {
   let stats = metricsCache.get('cached_metrics');

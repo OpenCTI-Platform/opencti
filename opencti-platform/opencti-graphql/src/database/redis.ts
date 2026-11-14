@@ -493,6 +493,66 @@ export const bumpLockStamps = async (ids: string[], ttlS: number): Promise<void>
   await pipeline.exec();
 };
 
+// task 0040 dynamic queue lease (intake/workerless/queue-lease.ts), in the {intake} slot. The scripts
+// take the lease key as KEYS[1]: ioredis prefixes the key arguments only.
+const QUEUE_LEASE_RENEW_SCRIPT = `
+local holder = redis.call('get', KEYS[1])
+if holder == ARGV[1] then return redis.call('pexpire', KEYS[1], ARGV[2]) end
+if not holder then redis.call('set', KEYS[1], ARGV[1], 'PX', ARGV[2]) return 1 end
+return 0
+`;
+const QUEUE_LEASE_RELEASE_SCRIPT = `
+if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) end
+return 0
+`;
+const QUEUE_LEASE_NODES_KEY = '{intake}:nodes';
+const ORDERED_QUEUE_TTL_S = 86400;
+const buildQueueLeaseKey = (queue: string) => `{intake}:lease:${queue}`;
+const buildOrderedQueueKey = (queue: string) => `{intake}:ordered:${queue}`;
+export const redisQueueLeaseStore = {
+  renew: async (queue: string, token: string, ttlMs: number) => {
+    return (await getClientBase().eval(QUEUE_LEASE_RENEW_SCRIPT, 1, buildQueueLeaseKey(queue), token, String(ttlMs))) === 1;
+  },
+  acquire: async (queue: string, token: string, ttlMs: number) => {
+    return (await getClientBase().set(buildQueueLeaseKey(queue), token, 'PX', ttlMs, 'NX')) === 'OK';
+  },
+  release: async (queue: string, token: string) => {
+    return (await getClientBase().eval(QUEUE_LEASE_RELEASE_SCRIPT, 1, buildQueueLeaseKey(queue), token)) === 1;
+  },
+  holders: async (queues: string[]) => {
+    const holders = new Map<string, string | null>();
+    if (queues.length === 0) return holders;
+    const values = await getClientBase().mget(queues.map(buildQueueLeaseKey));
+    queues.forEach((queue, i) => holders.set(queue, values[i] ?? null));
+    return holders;
+  },
+  // One field per platform run: `<backlog>:<published at>`
+  publishBacklog: async (token: string, backlog: number) => {
+    await getClientBase().hset(QUEUE_LEASE_NODES_KEY, token, `${backlog}:${Date.now()}`);
+  },
+  liveBacklogs: async (ttlMs: number) => {
+    const fields = await getClientBase().hgetall(QUEUE_LEASE_NODES_KEY);
+    const live = new Map<string, number>();
+    const dead: string[] = [];
+    Object.entries(fields).forEach(([token, value]) => {
+      const [backlog, at] = value.split(':').map(Number);
+      if (Date.now() - at <= ttlMs) live.set(token, backlog);
+      else if (Date.now() - at > 10 * ttlMs) dead.push(token);
+    });
+    if (dead.length > 0) await getClientBase().hdel(QUEUE_LEASE_NODES_KEY, ...dead);
+    return live;
+  },
+  markOrdered: async (queues: string[]) => {
+    const pipeline = getClientBase().pipeline();
+    queues.forEach((queue) => pipeline.set(buildOrderedQueueKey(queue), '1', 'EX', ORDERED_QUEUE_TTL_S));
+    await pipeline.exec();
+  },
+  ordered: async (queues: string[]) => {
+    const values = await getClientBase().mget(queues.map(buildOrderedQueueKey));
+    return new Set(queues.filter((_, i) => values[i] !== null));
+  },
+};
+
 export const lockResource = async (resources: Array<string>, opts: LockOptions = defaultLockOpts): Promise<LockHandle> => {
   let timeout: NodeJS.Timeout | undefined;
   let extension: undefined | Promise<void>;
