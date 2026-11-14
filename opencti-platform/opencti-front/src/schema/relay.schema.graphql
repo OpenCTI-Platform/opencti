@@ -12199,7 +12199,7 @@ type Query {
   savedFilter(id: ID!): SavedFilter
   savedFilters(after: ID, filters: FilterGroup, first: Int, orderBy: SavedFilterOrdering, orderMode: OrderingMode, search: String): SavedFilterConnection
   schemaAttributeNames(elementType: [String]!): AttributeConnection
-  schemaAttributes: [AttributesMap]
+  schemaAttributes(entityType: String): [AttributesMap]
   schemaRelationsRefTypesMapping: [StixRelationshipRefSchema!]!
   schemaRelationsTypesMapping: [StixRelationshipSchema!]!
   sector(id: String): Sector
@@ -16871,6 +16871,7 @@ enum TriggersOrdering {
 
 type TypeAttribute {
   defaultValues: [DefaultValue!]
+  description: String
   editDefault: Boolean!
   label: String
   mandatory: Boolean!

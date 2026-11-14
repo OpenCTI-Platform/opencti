@@ -14322,7 +14322,7 @@ type Query {
     attributeName: String!
   ): AttributeConnection @auth(for: [KNOWLEDGE])
   schemaAttributeNames(elementType: [String]!) : AttributeConnection @auth(for: [KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS])
-  schemaAttributes: [AttributesMap] @auth(for: [KNOWLEDGE])
+  schemaAttributes(entityType: String): [AttributesMap] @auth(for: [KNOWLEDGE])
   statusTemplate(id: String!): StatusTemplate @auth
   statusTemplates(
     first: Int

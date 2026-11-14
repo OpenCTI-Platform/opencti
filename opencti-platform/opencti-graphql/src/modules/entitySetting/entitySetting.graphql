@@ -12,6 +12,7 @@ type TypeAttribute {
   multiple: Boolean
   upsert: Boolean!
   label: String
+  description: String
   defaultValues: [DefaultValue!]
   scale: String
 }
