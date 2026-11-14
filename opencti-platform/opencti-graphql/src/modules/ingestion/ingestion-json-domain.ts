@@ -47,6 +47,8 @@ const MINIMAL_JSON_FEED_COMPATIBLE_VERSION = '7.260722.0';
 interface JsonQueryFetchOpts {
   maxResults?: number;
   timeout?: number;
+  // Checked before each sub page is fetched: when it answers true, the pagination stops and the result is marked aborted.
+  isStopped?: () => Promise<boolean>;
 }
 
 const getValueFromPath = (path: string, json: any) => {
@@ -135,7 +137,8 @@ const filterVariablesForAttributes = (attributes: Array<DataParam>, variables: R
 };
 
 export const executeJsonQuery = async (context: AuthContext, ingestion: BasicStoreEntityIngestionJson, opts: JsonQueryFetchOpts = {}) => {
-  const { maxResults = 0, timeout = FEED_REQUEST_TIMEOUT } = opts;
+  const { maxResults = 0, timeout = FEED_REQUEST_TIMEOUT, isStopped } = opts;
+  let aborted = false;
   let certificates;
   const headers = new OpenCTIHeaders();
   headers.Accept = 'application/json';
@@ -207,6 +210,11 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   if (ingestion.pagination_with_sub_page && isNotEmptyField(ingestion.pagination_with_sub_page_attribute_path)) {
     let url = toUrlString(await getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, requestData));
     while (isNotEmptyField(url) && (maxResults === 0 || objects.length < maxResults)) {
+      if (isStopped && await isStopped()) {
+        logApp.info('> Sub query stopped: the feed is no longer running');
+        aborted = true;
+        break;
+      }
       verifyIngestionUri(url);
       logApp.info(`> Sub query: ${url}`);
       await wait(100); // Wait 100 ms between 2 calls
@@ -230,7 +238,7 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   if (maxResults > 0) {
     objects = objects.slice(0, maxResults);
   }
-  return { objects, variables, nextExecutionState };
+  return { objects, variables, nextExecutionState, aborted };
 };
 
 export const findById = async (context: AuthContext, user: AuthUser, ingestionId: string) => {

@@ -211,4 +211,39 @@ describe('Ingestion domain timeout options', () => {
     expect(getHttpClientMock).toHaveBeenNthCalledWith(1, expect.objectContaining({ rejectUnauthorized: true }));
     expect(getHttpClientMock).toHaveBeenNthCalledWith(2, expect.objectContaining({ rejectUnauthorized: false }));
   });
+
+  it('should stop the json sub page pagination and mark the result aborted once the feed is stopped', async () => {
+    httpRequestMock.mockResolvedValue({
+      data: { items: [], next: 'http://localhost/json?page=2' },
+      headers: {},
+    });
+    findJsonMapperByIdMock.mockResolvedValue({
+      representations: '[]',
+      variables: '[]',
+    });
+    getEntitiesMapFromCacheMock.mockResolvedValue(new Map());
+    jsonMappingExecutionMock.mockResolvedValue([]);
+    const isStopped = vi.fn().mockResolvedValue(true);
+
+    const ingestion = {
+      headers: [],
+      ingestion_json_state: null,
+      query_attributes: [],
+      authentication_type: 'none',
+      uri: 'http://localhost/json',
+      body: '{}',
+      verb: 'GET',
+      json_mapper_id: 'json-mapper--1',
+      user_id: null,
+      pagination_with_sub_page: true,
+      pagination_with_sub_page_attribute_path: '$.next',
+    } as any;
+
+    const result = await executeJsonQuery({} as any, ingestion, { isStopped });
+
+    expect(result.aborted).toBe(true);
+    expect(isStopped).toHaveBeenCalledTimes(1);
+    // Only the main query ran: the next page was not fetched
+    expect(httpRequestMock).toHaveBeenCalledTimes(1);
+  });
 });
