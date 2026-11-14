@@ -834,7 +834,10 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
     description: 'Push queue lease events of the worker-less intake (taken, released, lost, steal_start, steal_stop)',
   });
   const lease = SEQUENCER_CONFIG.multiWriter && PUSH_QUEUE_LEASE
-    ? createQueueLease(SEQUENCER_CONFIG.nodeId, redisQueueLeaseStore, queueDepths, PUSH_QUEUE_LEASE_OPTIONS, (event) => queueLeaseCounter?.add(1, { event }))
+    ? createQueueLease(SEQUENCER_CONFIG.nodeId, redisQueueLeaseStore, queueDepths, PUSH_QUEUE_LEASE_OPTIONS, (event, queue, detail) => {
+        queueLeaseCounter?.add(1, { event });
+        logApp.info(`[OPENCTI-MODULE] Worker-less intake: queue lease ${event}`, { queue, node_id: SEQUENCER_CONFIG.nodeId, ...detail });
+      })
     : null;
   // Bound once the consumer is started: the first tick of the lease takes no queue
   let consumerView: ConsumerView = { isOrdered: () => false, isConsuming: () => false };

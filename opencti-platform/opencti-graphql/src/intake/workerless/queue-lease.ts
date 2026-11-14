@@ -38,6 +38,8 @@ export interface ConsumerView {
 }
 
 export type LeaseEvent = 'taken' | 'released' | 'lost' | 'steal_start' | 'steal_stop';
+// The figures behind a decision (taken: the queue's backlog, the platform's own backlog before it, its share, the live platforms; steal_start: the queue's messages ready)
+export type LeaseEventDetail = Record<string, number>;
 
 export interface QueueLeaseOptions {
   ttlMs: number;
@@ -60,7 +62,7 @@ export const createQueueLease = (
   store: LeaseStore,
   readDepths: () => Promise<Map<string, QueueDepth>>,
   options: QueueLeaseOptions,
-  onEvent: (event: LeaseEvent, queue: string) => void,
+  onEvent: (event: LeaseEvent, queue: string, detail?: LeaseEventDetail) => void,
 ): QueueLease => {
   // A restarted platform keeps its node id but never renews the leases of its previous run
   const token = `${nodeId}:${uuidv4()}`;
@@ -130,8 +132,8 @@ export const createQueueLease = (
         if (own > 0 && own >= share && own > minOther) break;
         if (await store.acquire(queue, token, options.ttlMs)) {
           held.add(queue);
+          onEvent('taken', queue, { backlog: backlog(queue), own, share: Math.round(share), live: live.size });
           own += backlog(queue);
-          onEvent('taken', queue);
         }
       }
       await store.publishBacklog(token, own);
@@ -149,7 +151,7 @@ export const createQueueLease = (
       }
       if (target !== stealing) {
         if (stealing) onEvent('steal_stop', stealing);
-        if (target) onEvent('steal_start', target);
+        if (target) onEvent('steal_start', target, { ready: ready(target) });
         stealing = target;
       }
       return current();
