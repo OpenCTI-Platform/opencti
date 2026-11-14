@@ -212,7 +212,10 @@ export const assertPlaybookDefinitionIsValid = (definition: ComponentDefinition)
       throw FunctionalError('Playbook link must connect existing nodes', { link_id: link.id });
     }
     const sourceComponent = PLAYBOOK_COMPONENTS[source.component_id];
-    if (sourceComponent && !sourceComponent.ports.some((p) => p.id === link.from.port && p.type === 'out')) {
+    if (!sourceComponent) {
+      throw FunctionalError('Playbook link source component not found', { link_id: link.id, component_id: source.component_id });
+    }
+    if (!sourceComponent.ports.some((p) => p.id === link.from.port && p.type === 'out')) {
       throw FunctionalError('Playbook link must leave an out port of its source node', { link_id: link.id, port: link.from.port });
     }
   });
