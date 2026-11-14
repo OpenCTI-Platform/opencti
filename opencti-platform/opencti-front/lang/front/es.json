@@ -6339,5 +6339,22 @@
   "Internet facing": "Expuesto a Internet",
   "Criticality": "Criticidad",
   "Environment": "Entorno",
-  "Asset owner": "Propietario del activo"
+  "Asset owner": "Propietario del activo",
+  "Very high": "Muy alta",
+  "Medium": "Media",
+  "Production": "Producción",
+  "Staging": "Preproducción",
+  "Development": "Desarrollo",
+  "Container workload": "Carga de contenedores",
+  "Cloud resource": "Recurso en la nube",
+  "Web application": "Aplicación web",
+  "Network device": "Dispositivo de red",
+  "Mobile device": "Dispositivo móvil",
+  "IoT OT device": "Dispositivo IoT / OT",
+  "SaaS application": "Aplicación SaaS",
+  "AI target": "Objetivo de IA",
+  "Generic asset": "Activo genérico",
+  "The value must be a hex color, for example #e53935": "El valor debe ser un color hexadecimal, por ejemplo #e53935",
+  "Color of the value wherever it is shown as a tag. Empty: the neutral tag.": "Color del valor allí donde se muestra como etiqueta. Vacío: la etiqueta neutra.",
+  "{count, plural, one {# asset field not set} other {# asset fields not set}}": "{count, plural, one {# campo de activo sin definir} other {# campos de activo sin definir}}"
 }

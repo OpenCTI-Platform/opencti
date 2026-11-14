@@ -6339,5 +6339,22 @@
   "Internet facing": "面向互联网",
   "Criticality": "关键性",
   "Environment": "环境",
-  "Asset owner": "资产负责人"
+  "Asset owner": "资产负责人",
+  "Very high": "非常高",
+  "Medium": "中",
+  "Production": "生产",
+  "Staging": "预发布",
+  "Development": "开发",
+  "Container workload": "容器工作负载",
+  "Cloud resource": "云资源",
+  "Web application": "Web 应用",
+  "Network device": "网络设备",
+  "Mobile device": "移动设备",
+  "IoT OT device": "IoT / OT 设备",
+  "SaaS application": "SaaS 应用",
+  "AI target": "AI 目标",
+  "Generic asset": "通用资产",
+  "The value must be a hex color, for example #e53935": "该值必须是十六进制颜色，例如 #e53935",
+  "Color of the value wherever it is shown as a tag. Empty: the neutral tag.": "该值以标签显示时的颜色。留空：中性标签。",
+  "{count, plural, one {# asset field not set} other {# asset fields not set}}": "{count, plural, other {# 个资产字段未设置}}"
 }

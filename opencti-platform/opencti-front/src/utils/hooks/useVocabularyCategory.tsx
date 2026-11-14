@@ -42,6 +42,7 @@ export const vocabFragment = graphql`
     builtIn
     order
     is_hidden
+    color
     category {
       key
       closed

@@ -6339,5 +6339,22 @@
   "Internet facing": "Доступен из интернета",
   "Criticality": "Критичность",
   "Environment": "Среда",
-  "Asset owner": "Владелец актива"
+  "Asset owner": "Владелец актива",
+  "Very high": "Очень высокая",
+  "Medium": "Средняя",
+  "Production": "Продакшн",
+  "Staging": "Предпродакшн",
+  "Development": "Разработка",
+  "Container workload": "Контейнерная нагрузка",
+  "Cloud resource": "Облачный ресурс",
+  "Web application": "Веб-приложение",
+  "Network device": "Сетевое устройство",
+  "Mobile device": "Мобильное устройство",
+  "IoT OT device": "Устройство IoT / OT",
+  "SaaS application": "SaaS-приложение",
+  "AI target": "Цель ИИ",
+  "Generic asset": "Общий актив",
+  "The value must be a hex color, for example #e53935": "Значение должно быть шестнадцатеричным цветом, например #e53935",
+  "Color of the value wherever it is shown as a tag. Empty: the neutral tag.": "Цвет значения везде, где оно показано как тег. Пусто: нейтральный тег.",
+  "{count, plural, one {# asset field not set} other {# asset fields not set}}": "{count, plural, one {# поле актива не задано} few {# поля актива не заданы} many {# полей актива не задано} other {# поля актива не задано}}"
 }

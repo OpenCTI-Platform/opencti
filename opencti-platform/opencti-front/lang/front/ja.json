@@ -6339,5 +6339,22 @@
   "Internet facing": "インターネット公開",
   "Criticality": "重要度",
   "Environment": "環境",
-  "Asset owner": "アセット所有者"
+  "Asset owner": "アセット所有者",
+  "Very high": "非常に高い",
+  "Medium": "中",
+  "Production": "本番",
+  "Staging": "ステージング",
+  "Development": "開発",
+  "Container workload": "コンテナワークロード",
+  "Cloud resource": "クラウドリソース",
+  "Web application": "Web アプリケーション",
+  "Network device": "ネットワーク機器",
+  "Mobile device": "モバイルデバイス",
+  "IoT OT device": "IoT / OT デバイス",
+  "SaaS application": "SaaS アプリケーション",
+  "AI target": "AI ターゲット",
+  "Generic asset": "汎用資産",
+  "The value must be a hex color, for example #e53935": "値は 16 進数の色である必要があります（例: #e53935）",
+  "Color of the value wherever it is shown as a tag. Empty: the neutral tag.": "タグとして表示される値の色。空欄: ニュートラルなタグ。",
+  "{count, plural, one {# asset field not set} other {# asset fields not set}}": "{count, plural, other {未設定の資産フィールド # 件}}"
 }

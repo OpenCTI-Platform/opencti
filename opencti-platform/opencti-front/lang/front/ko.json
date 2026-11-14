@@ -6339,5 +6339,22 @@
   "Internet facing": "인터넷 노출",
   "Criticality": "중요도",
   "Environment": "환경",
-  "Asset owner": "자산 소유자"
+  "Asset owner": "자산 소유자",
+  "Very high": "매우 높음",
+  "Medium": "중간",
+  "Production": "운영",
+  "Staging": "스테이징",
+  "Development": "개발",
+  "Container workload": "컨테이너 워크로드",
+  "Cloud resource": "클라우드 리소스",
+  "Web application": "웹 애플리케이션",
+  "Network device": "네트워크 장치",
+  "Mobile device": "모바일 장치",
+  "IoT OT device": "IoT / OT 장치",
+  "SaaS application": "SaaS 애플리케이션",
+  "AI target": "AI 대상",
+  "Generic asset": "일반 자산",
+  "The value must be a hex color, for example #e53935": "값은 16진수 색상이어야 합니다(예: #e53935)",
+  "Color of the value wherever it is shown as a tag. Empty: the neutral tag.": "값이 태그로 표시되는 모든 곳의 색상입니다. 비워 두면 중립 태그입니다.",
+  "{count, plural, one {# asset field not set} other {# asset fields not set}}": "{count, plural, other {설정되지 않은 자산 필드 #개}}"
 }

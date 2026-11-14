@@ -14,6 +14,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import ColorPickerField from '../../../../components/ColorPickerField';
 
 interface VocabularyCreationProps {
   paginationOptions: VocabulariesLinesPaginationQuery$variables;
@@ -42,6 +43,7 @@ const vocabularyAdd = graphql`
 const labelValidation = (t: (v: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   order: Yup.number().nullable(),
+  color: Yup.string().nullable().matches(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, t('The value must be a hex color, for example #e53935')),
 });
 
 const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
@@ -57,6 +59,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
     description: string;
     aliases: { value: string }[];
     order: number;
+    color: string;
   }
 
   const onSubmit: FormikConfig<FormInterface>['onSubmit'] = (
@@ -68,6 +71,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
       description: values.description,
       aliases: values.aliases.map((a) => a.value),
       order: parseInt(String(values.order), 10),
+      ...(values.color ? { color: values.color } : {}),
       category,
     };
     addVocab({
@@ -102,6 +106,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
             description: '',
             aliases: [] as { value: string }[],
             order: 0,
+            color: '',
           }}
           validationSchema={labelValidation(t_i18n)}
           onSubmit={(values, formikHelpers) => {
@@ -148,6 +153,15 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                 label={t_i18n('Order')}
                 fullWidth={true}
                 type="number"
+                className="mt-5"
+              />
+              <Field
+                component={ColorPickerField}
+                variant="outlined"
+                name="color"
+                label={t_i18n('Color')}
+                helperText={t_i18n('Color of the value wherever it is shown as a tag. Empty: the neutral tag.')}
+                fullWidth={true}
                 className="mt-5"
               />
               <Buttons>
