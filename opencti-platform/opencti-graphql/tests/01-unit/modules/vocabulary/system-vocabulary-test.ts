@@ -58,7 +58,7 @@ describe('System asset vocabularies', () => {
       });
     });
     // The scale reads from the most to the least severe: the top of each scale is never the neutral grey
-    const colorOf = (category: keyof typeof openVocabularies, key: string) => openVocabularies[category].find((v) => v.key === key)?.color;
+    const colorOf = (category: string, key: string) => openVocabularies[category as keyof typeof openVocabularies].find((v) => v.key === key)?.color;
     expect(colorOf('system_criticality_ov', 'VERY_HIGH')).not.toEqual(colorOf('system_criticality_ov', 'UNKNOWN'));
     expect(colorOf('system_internet_facing_ov', 'yes')).not.toEqual(colorOf('system_internet_facing_ov', 'no'));
     // Each category is told apart by its colour
