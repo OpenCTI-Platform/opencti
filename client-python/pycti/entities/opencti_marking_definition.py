@@ -5,6 +5,8 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.utils.opencti_stix2_utils import query_to_stix
+
 
 class MarkingDefinition:
     """Main MarkingDefinition class for OpenCTI
@@ -298,6 +300,21 @@ class MarkingDefinition:
                 "[opencti_marking_definition] Missing parameters: id and input"
             )
             return None
+
+    def to_stix(self, **kwargs):
+        """Get the STIX representation of a Marking-Definition from the backend.
+
+        :param id: the id of the Marking-Definition
+        :type id: str
+        :param version: the STIX version (``stix_2_0`` or ``stix_2_1``),
+            defaults to the backend default (``stix_2_1``)
+        :type version: str
+        :return: STIX object, or ``None`` if not found
+        :rtype: dict or None
+        """
+        return query_to_stix(
+            self.opencti, "markingDefinition", kwargs.get("id"), kwargs.get("version")
+        )
 
     def import_from_stix2(self, **kwargs):
         """Import a Marking Definition object from a STIX2 object.

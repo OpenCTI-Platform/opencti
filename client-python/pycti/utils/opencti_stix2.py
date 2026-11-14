@@ -1,4 +1,5 @@
 import base64
+import copy
 import datetime
 import json
 import math
@@ -94,7 +95,8 @@ STIX_VERSION_2_0: str = "stix_2_0"
 # Only used when the caller opts in with ``stix_version=STIX_VERSION_2_0``.
 # Every SDO is migrated, containers included, except the types without a
 # backend STIX 2.0 converter (Language, Security-Coverage,
-# Security-Coverage-Result).
+# Security-Coverage-Result). Relationships are listed by their abstract type,
+# see `_stix_2_0_dispatch_type`.
 # TODO(stix-2-0-migration): once every type is covered, drop this set and the
 # legacy code path in `generate_export` / `prepare_export`.
 _STIX_2_0_BACKEND_ENTITY_TYPES = frozenset(
@@ -179,13 +181,26 @@ _STIX_2_0_BACKEND_ENTITY_TYPES = frozenset(
         "Windows-Registry-Key",
         "Windows-Registry-Value-Type",
         "X509-Certificate",
+        # Relationships and sightings
+        "stix-core-relationship",
+        "stix-sighting-relationship",
     }
 )
 
+# STIX type of the relationships produced by the backend STIX 2.0 converter,
+# mapped to the abstract type listed in `_STIX_2_0_BACKEND_ENTITY_TYPES`.
+_STIX_2_0_RELATIONSHIP_TYPES = {
+    "relationship": "stix-core-relationship",
+    "sighting": "stix-sighting-relationship",
+}
+
 # Raw GraphQL keys kept on the backend payload so that `prepare_export` can
 # still add the related objects (author, markings, files, contained objects,
-# data source) to the bundle.
-# TODO(stix-2-0-migration): DELETE once the backend produces these objects.
+# data source, relationship source and target) to the bundle.
+# TODO(stix-2-0-migration): DELETE once the backend produces these objects,
+# except `from` / `to`: they also leave out the source and target refs that
+# the export access filter excludes, which the backend converter does not do.
+# MOVE that rule to the backend first, do not delete them before.
 _STIX_2_0_PRESERVED_KEYS = (
     "createdBy",
     "createdById",
@@ -198,13 +213,17 @@ _STIX_2_0_PRESERVED_KEYS = (
     "objectsIds",
     "dataSource",
     "dataSourceId",
+    "from",
+    "to",
 )
 
 # Backend keys dropped because `prepare_export` rebuilds them from the
 # preserved raw keys above, with the legacy rules (restricted author,
 # no_custom_attributes, empty lists, embedded file content, contained objects
-# filtered per container type).
-# TODO(stix-2-0-migration): DELETE together with `_STIX_2_0_PRESERVED_KEYS`.
+# filtered per container type, relationship source and target checked against
+# the export access filter).
+# TODO(stix-2-0-migration): DELETE together with `_STIX_2_0_PRESERVED_KEYS`
+# (see the `from` / `to` exception there).
 _STIX_2_0_REBUILT_KEYS = (
     "created_by_ref",
     "object_marking_refs",
@@ -213,6 +232,10 @@ _STIX_2_0_REBUILT_KEYS = (
     "object_refs",
     "x_mitre_data_source_ref",
     "x_opencti_created_by_ref",
+    "source_ref",
+    "target_ref",
+    "sighting_of_ref",
+    "where_sighted_refs",
 )
 
 # Nested refs that the backend outputs with another key or shape than the
@@ -365,8 +388,12 @@ class OpenCTIStix2:
         self.stix2_update = OpenCTIStix2Update(opencti)
         self.mapping_cache = LRUCache(maxsize=50000)
         self.mapping_cache_permanent = {}
-        # STIX marking definitions of the exported external reference files, by id
+        # Markings of the exported external reference files, as read from the
+        # API, by STIX id
         self.export_file_marking_definitions = {}
+        # STIX 2.0 marking definitions from the backend, by marking id and
+        # modification date: the same markings are on most exported objects.
+        self.stix_2_0_marking_definitions = LRUCache(maxsize=1000)
 
     def get_in_cache(self, data_id):
         """Get an item from the cache.
@@ -2156,7 +2183,10 @@ class OpenCTIStix2:
     def _is_backend_stix_2_0(entity_type: str, stix_version: Optional[str]) -> bool:
         """Tell whether the backend STIX 2.0 converter is used for this type.
 
-        :param entity_type: OpenCTI entity type (e.g. ``Malware``)
+        :param entity_type: Type looked up in ``_STIX_2_0_BACKEND_ENTITY_TYPES``:
+            an OpenCTI entity type (e.g. ``Malware``), or the abstract type of a
+            relationship (see ``_stix_2_0_dispatch_type``), never its
+            relationship type (``uses``)
         :type entity_type: str
         :param stix_version: STIX version requested by the caller
         :type stix_version: str, optional
@@ -2167,6 +2197,27 @@ class OpenCTIStix2:
             stix_version == STIX_VERSION_2_0
             and entity_type in _STIX_2_0_BACKEND_ENTITY_TYPES
         )
+
+    @staticmethod
+    def _stix_2_0_dispatch_type(
+        entity_type: str, parent_types: Optional[List[str]]
+    ) -> str:
+        """Type of a raw GraphQL entity, as listed in ``_STIX_2_0_BACKEND_ENTITY_TYPES``.
+
+        The ``entity_type`` of a core relationship is its relationship type
+        (e.g. ``uses``), so it is listed by its abstract type.
+
+        :param entity_type: OpenCTI entity type (e.g. ``Malware``, ``uses``)
+        :type entity_type: str
+        :param parent_types: OpenCTI parent types of the entity
+        :type parent_types: List[str], optional
+        :return: ``stix-core-relationship`` for a core relationship, else the
+            entity type
+        :rtype: str
+        """
+        if "stix-core-relationship" in (parent_types or []):
+            return "stix-core-relationship"
+        return entity_type
 
     @staticmethod
     def _nested_ref_key_prefix(relationship_type: str) -> str:
@@ -2359,13 +2410,12 @@ class OpenCTIStix2:
                     if "objectMarking" in file:
                         x_opencti_file["object_marking_refs"] = []
                         for file_marking in file["objectMarking"]:
-                            marking_definition = self._marking_to_stix(file_marking)
                             # Kept so prepare_export adds it to the bundle
                             self.export_file_marking_definitions[
-                                marking_definition["id"]
-                            ] = marking_definition
+                                file_marking["standard_id"]
+                            ] = file_marking
                             x_opencti_file["object_marking_refs"].append(
-                                marking_definition["id"]
+                                file_marking["standard_id"]
                             )
                     external_reference["x_opencti_files"].append(x_opencti_file)
             result.append(external_reference)
@@ -2374,6 +2424,7 @@ class OpenCTIStix2:
     def _generate_backend_stix_2_0_export(
         self,
         entity: Dict,
+        dispatch_type: str,
         no_custom_attributes: bool = False,
         excluded_marking_ids: Optional[set] = None,
     ) -> Dict:
@@ -2387,6 +2438,9 @@ class OpenCTIStix2:
 
         :param entity: OpenCTI entity dictionary, as returned by a reader
         :type entity: Dict
+        :param dispatch_type: Type of the entity, as returned by
+            ``_stix_2_0_dispatch_type``
+        :type dispatch_type: str
         :param no_custom_attributes: Whether to exclude custom attributes, defaults to False
         :type no_custom_attributes: bool, optional
         :param excluded_marking_ids: Internal ids of the markings excluded by the
@@ -2396,9 +2450,12 @@ class OpenCTIStix2:
         :rtype: Dict
         :raises ValueError: if the backend returns no payload
         """
-        backend_stix = self.opencti.stix_core_object.to_stix(
-            id=entity["id"], version=STIX_VERSION_2_0
-        )
+        # `stixCoreObject` does not return the relationships.
+        to_stix = {
+            "stix-core-relationship": self.opencti.stix_core_relationship.to_stix,
+            "stix-sighting-relationship": self.opencti.stix_sighting_relationship.to_stix,
+        }.get(dispatch_type, self.opencti.stix_core_object.to_stix)
+        backend_stix = to_stix(id=entity["id"], version=STIX_VERSION_2_0)
         if backend_stix is None:
             raise ValueError(
                 f"Backend STIX 2.0 conversion returned no payload for "
@@ -2455,9 +2512,12 @@ class OpenCTIStix2:
         :rtype: Dict
         """
         excluded_marking_ids = self._get_excluded_marking_ids(access_filter)
-        if self._is_backend_stix_2_0(entity["entity_type"], stix_version):
+        dispatch_type = self._stix_2_0_dispatch_type(
+            entity["entity_type"], entity.get("parent_types")
+        )
+        if self._is_backend_stix_2_0(dispatch_type, stix_version):
             return self._generate_backend_stix_2_0_export(
-                entity, no_custom_attributes, excluded_marking_ids
+                entity, dispatch_type, no_custom_attributes, excluded_marking_ids
             )
 
         # Handle model deviation
@@ -2763,6 +2823,62 @@ class OpenCTIStix2:
             },
         }
 
+    def _export_marking_definition(
+        self,
+        marking: Dict,
+        is_backend_stix_2_0: bool,
+        no_custom_attributes: bool = False,
+    ) -> Dict:
+        """Get the STIX marking definition of a marking read with an exported object.
+
+        An object exported by the backend STIX 2.0 converter gets its markings
+        from the same converter. They are cached by marking id and modification
+        date, so a marking updated since is read again (unless an upsert kept
+        its modification date). A marking the backend cannot convert, or read
+        without its id, is built client-side with the legacy rules instead, so
+        that it does not fail the whole export.
+
+        An object that is not migrated (e.g. Language) keeps legacy markings:
+        in a bundle mixing both, the first copy of a shared marking is kept.
+
+        :param marking: Marking definition as returned by the API
+            (``objectMarking`` entry)
+        :type marking: Dict
+        :param is_backend_stix_2_0: Whether the object carrying the marking is
+            exported by the backend STIX 2.0 converter
+        :type is_backend_stix_2_0: bool
+        :param no_custom_attributes: Whether to exclude custom attributes, defaults to False
+        :type no_custom_attributes: bool, optional
+        :return: STIX marking definition, a copy the caller can edit
+        :rtype: Dict
+        """
+        # TODO(stix-2-0-migration): DELETE the legacy branch once every entity is migrated.
+        if not is_backend_stix_2_0:
+            return self._marking_to_stix(marking)
+        marking_id = marking.get("id")
+        cache_key = (marking_id, marking.get("modified"))
+        marking_definition = self.stix_2_0_marking_definitions.get(cache_key)
+        if marking_definition is None and marking_id is not None:
+            marking_definition = self.opencti.marking_definition.to_stix(
+                id=marking_id, version=STIX_VERSION_2_0
+            )
+            if marking_definition is not None and marking.get("modified") is not None:
+                self.stix_2_0_marking_definitions[cache_key] = marking_definition
+        if marking_definition is None:
+            self.opencti.app_logger.warning(
+                "Backend STIX 2.0 conversion unavailable for a marking definition, "
+                "built client-side",
+                {"id": marking_id, "standard_id": marking.get("standard_id")},
+            )
+            marking_definition = self._marking_to_stix(marking, "2.0")
+        if no_custom_attributes:
+            marking_definition = {
+                key: value
+                for key, value in marking_definition.items()
+                if not key.startswith("x_")
+            }
+        return copy.deepcopy(marking_definition)
+
     @staticmethod
     def _append_marking_definition(result: List, marking_definition: Dict) -> None:
         """Add a marking definition to the export objects, once."""
@@ -2800,15 +2916,19 @@ class OpenCTIStix2:
         self._rewrite_embedded_image_uris_for_export(entity)
 
         # Entities produced by the backend STIX 2.0 converter already carry
-        # their nested refs, and the objects generated below (marking
-        # definitions) must use the same spec_version. Keyed on the opt-in and
-        # the type, not on `spec_version`: legacy entities also carry the
-        # stored `spec_version`, which may be "2.0".
+        # their nested refs, and their marking definitions come from the same
+        # converter. Keyed on the opt-in and the type, not on `spec_version`:
+        # legacy entities also carry the stored `spec_version`, which may be
+        # "2.0". The backend relationships carry their relationship type as
+        # `x_opencti_type` (e.g. `uses`), so they are recognized by their STIX
+        # type.
         # TODO(stix-2-0-migration): DELETE once every entity is migrated.
         is_backend_stix_2_0 = self._is_backend_stix_2_0(
-            entity.get("x_opencti_type"), stix_version
+            _STIX_2_0_RELATIONSHIP_TYPES.get(
+                entity["type"], entity.get("x_opencti_type")
+            ),
+            stix_version,
         )
-        related_objects_spec_version = "2.0" if is_backend_stix_2_0 else SPEC_VERSION
 
         # CreatedByRef
         if (
@@ -2907,26 +3027,9 @@ class OpenCTIStix2:
         ):
             entity["object_marking_refs"] = []
             for entity_marking_definition in entity["objectMarking"]:
-                if entity_marking_definition["definition_type"] == "TLP":
-                    created = "2017-01-20T00:00:00.000Z"
-                else:
-                    created = entity_marking_definition["created"]
-                marking_definition = {
-                    "type": "marking-definition",
-                    "spec_version": related_objects_spec_version,
-                    "id": entity_marking_definition["standard_id"],
-                    "created": created,
-                    "definition_type": entity_marking_definition[
-                        "definition_type"
-                    ].lower(),
-                    "name": entity_marking_definition["definition"],
-                    "definition": {
-                        entity_marking_definition["definition_type"]
-                        .lower(): entity_marking_definition["definition"]
-                        .lower()
-                        .replace("tlp:", "")
-                    },
-                }
+                marking_definition = self._export_marking_definition(
+                    entity_marking_definition, is_backend_stix_2_0
+                )
                 result.append(marking_definition)
                 entity["object_marking_refs"].append(marking_definition["id"])
         if "objectMarking" in entity:
@@ -3014,38 +3117,41 @@ class OpenCTIStix2:
         if "objects" in entity:
             del entity["objects"]
             del entity["objectsIds"]
-        # Stix Sighting Relationship
-        if entity["type"] == "stix-sighting-relationship":
+        # Stix Sighting Relationship (`sighting` when produced by the backend
+        # STIX 2.0 converter, which already outputs `count`)
+        if entity["type"] in ("stix-sighting-relationship", "sighting"):
             entity["type"] = "sighting"
-            entity["count"] = entity["attribute_count"]
-            del entity["attribute_count"]
-            from_to_check = entity["from"]["id"]
-            relationships_from_filter = self.prepare_id_filters_export(
-                entity_id=from_to_check, access_filter=access_filter
-            )
-            x = self.opencti.opencti_stix_object_or_stix_relationship.list(
-                filters=relationships_from_filter
-            )
-            if len(x) > 0:
-                entity["sighting_of_ref"] = entity["from"]["standard_id"]
-                # handle from and to separately like Stix Core Relationship and call 2 requests
-                objects_to_get.append(
-                    entity["from"]
-                )  # what happen with unauthorized objects ?
-
-            to_to_check = [entity["to"]["id"]]
-            relationships_to_filter = self.prepare_id_filters_export(
-                entity_id=to_to_check, access_filter=access_filter
-            )
-            y = self.opencti.opencti_stix_object_or_stix_relationship.list(
-                filters=relationships_to_filter
-            )
-            if len(y) > 0:
-                entity["where_sighted_refs"] = [entity["to"]["standard_id"]]
-                objects_to_get.append(entity["to"])
-
-            del entity["from"]
-            del entity["to"]
+            if "attribute_count" in entity:
+                entity["count"] = entity.pop("attribute_count")
+            # An endpoint the user cannot read is null, and left out of the
+            # entity: no ref to it, as for a Stix Core Relationship.
+            if "from" in entity:
+                from_to_check = entity["from"]["id"]
+                relationships_from_filter = self.prepare_id_filters_export(
+                    entity_id=from_to_check, access_filter=access_filter
+                )
+                x = self.opencti.opencti_stix_object_or_stix_relationship.list(
+                    filters=relationships_from_filter
+                )
+                if len(x) > 0:
+                    entity["sighting_of_ref"] = entity["from"]["standard_id"]
+                    # handle from and to separately like Stix Core Relationship and call 2 requests
+                    objects_to_get.append(
+                        entity["from"]
+                    )  # what happen with unauthorized objects ?
+                del entity["from"]
+            if "to" in entity:
+                to_to_check = [entity["to"]["id"]]
+                relationships_to_filter = self.prepare_id_filters_export(
+                    entity_id=to_to_check, access_filter=access_filter
+                )
+                y = self.opencti.opencti_stix_object_or_stix_relationship.list(
+                    filters=relationships_to_filter
+                )
+                if len(y) > 0:
+                    entity["where_sighted_refs"] = [entity["to"]["standard_id"]]
+                    objects_to_get.append(entity["to"])
+                del entity["to"]
         # Stix Core Relationship
         if "from" in entity or "to" in entity:
             entity["type"] = "relationship"
@@ -3124,8 +3230,10 @@ class OpenCTIStix2:
                     "object_marking_refs": [],
                 }
                 for file_marking_definition in file.get("objectMarking") or []:
-                    marking_definition = self._marking_to_stix(
-                        file_marking_definition, related_objects_spec_version
+                    marking_definition = self._export_marking_definition(
+                        file_marking_definition,
+                        is_backend_stix_2_0,
+                        no_custom_attributes,
                     )
                     self._append_marking_definition(result, marking_definition)
                     x_opencti_file["object_marking_refs"].append(
@@ -3142,10 +3250,11 @@ class OpenCTIStix2:
                     if marking_id in self.export_file_marking_definitions:
                         self._append_marking_definition(
                             result,
-                            {
-                                **self.export_file_marking_definitions[marking_id],
-                                "spec_version": related_objects_spec_version,
-                            },
+                            self._export_marking_definition(
+                                self.export_file_marking_definitions[marking_id],
+                                is_backend_stix_2_0,
+                                no_custom_attributes,
+                            ),
                         )
 
         # StixRefRelationship
@@ -3158,7 +3267,12 @@ class OpenCTIStix2:
                     fromId=entity["x_opencti_id"], filters=access_filter, getAll=True
                 )
                 self._rebuild_legacy_nested_refs(entity, allowed_nested_refs)
-            if access_filter is not None:
+            # Relationships and sightings have no nested refs: their source
+            # and target refs are already checked against the access filter.
+            if (
+                access_filter is not None
+                and entity["type"] not in _STIX_2_0_RELATIONSHIP_TYPES
+            ):
                 self._remove_nested_refs_excluded_by_filter(
                     entity, access_filter, allowed_nested_refs
                 )

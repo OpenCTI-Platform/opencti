@@ -1,6 +1,8 @@
 # coding: utf-8
 import json
 
+from pycti.utils.opencti_stix2_utils import query_to_stix
+
 
 class StixCoreObject:
     """Main StixCoreObject class for OpenCTI
@@ -1683,28 +1685,9 @@ class StixCoreObject:
         :return: STIX object, or ``None`` if not found
         :rtype: dict or None
         """
-        id = kwargs.get("id", None)
-        version = kwargs.get("version", None)
-        if id is None:
-            self.opencti.app_logger.error(
-                "[opencti_stix_core_object] to_stix: missing parameter: id"
-            )
-            return None
-        self.opencti.app_logger.info(
-            "Fetching Stix-Core-Object STIX", {"id": id, "version": version}
+        return query_to_stix(
+            self.opencti, "stixCoreObject", kwargs.get("id"), kwargs.get("version")
         )
-        query = """
-            query StixCoreObjectToStix($id: String!, $version: Version) {
-                stixCoreObject(id: $id) {
-                    toStix(version: $version)
-                }
-            }
-        """
-        result = self.opencti.query(query, {"id": id, "version": version})
-        stix_core_object = (result.get("data") or {}).get("stixCoreObject")
-        if stix_core_object is None or stix_core_object.get("toStix") is None:
-            return None
-        return json.loads(stix_core_object["toStix"])
 
     def list_files(self, **kwargs):
         """List files of a Stix-Core-Object.
