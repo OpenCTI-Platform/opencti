@@ -76,7 +76,7 @@
     "formik-mui": "5.0.0-alpha.1",
     "formik-mui-lab": "1.0.0",
     "graphiql": "6.0.1",
-    "graphql-ws": "6.4.1",
+    "graphql-ws": "6.4.2",
     "html-react-parser": "6.1.9",
     "html-to-image": "1.11.13",
     "html-to-pdfmake": "2.5.36",
