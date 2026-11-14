@@ -12,7 +12,7 @@ import ObjectOrganizationField from '../../../common/form/ObjectOrganizationFiel
 import WorkflowConditionFilters from './WorkflowConditionFilters';
 import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import WorkflowFieldList from './WorkflowFieldList';
-import { CommentMode, CommentModeType, FEATURE_NAME, type TargetStatusExits, WorkflowActionType, WorkflowDataType } from './utils';
+import { AUTHORIZED_MEMBERS_EXCLUSIVE_ACTIONS, CommentMode, CommentModeType, FEATURE_NAME, type TargetStatusExits, WorkflowActionType, WorkflowDataType } from './utils';
 import { AUTHORIZED_MEMBERS_ENTITY_TYPES } from '../../../../../utils/authorizedMembers';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import useHelper from '../../../../../utils/hooks/useHelper';
@@ -26,6 +26,7 @@ const TransitionForm = ({ entityType, targetStatusExits }: { entityType: string;
   const { isFeatureEnable } = useHelper();
   const showClosingReason = isClosingReasonEnabledForType(entityType, isFeatureEnable, schema.sdos);
   const hasUpdateAuthorizedMembers = values.syncActions?.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
+  const hasResetAuthorizedMembers = values.syncActions?.some((a) => a.type === WorkflowActionType.resetAuthorizedMembers);
   const hasValidateDraft = values.syncActions?.some((a) => a.type === WorkflowActionType.validateDraft);
   const hasShare = values.asyncActions?.some((a) => a.type === WorkflowActionType.shareWithOrganizations);
   const hasUnshare = values.asyncActions?.some((a) => a.type === WorkflowActionType.unshareFromOrganizations);
@@ -57,7 +58,10 @@ const TransitionForm = ({ entityType, targetStatusExits }: { entityType: string;
       const newAction = actionType === WorkflowActionType.updateAuthorizedMembers
         ? { type: actionType, params: { authorized_members: [{ label: 'Creators', type: 'Dynamic options', value: 'CREATORS', accessRight: 'admin' as const, groupsRestriction: [] }] } }
         : { type: actionType };
-      setFieldValue('syncActions', [...currentActions, newAction]);
+      // Update and reset of authorized members contradict each other: turning one on turns the other off
+      const exclusiveType = AUTHORIZED_MEMBERS_EXCLUSIVE_ACTIONS[actionType];
+      const keptActions = exclusiveType ? currentActions.filter((a) => a.type !== exclusiveType) : currentActions;
+      setFieldValue('syncActions', [...keptActions, newAction]);
     } else {
       setFieldValue('syncActions', currentActions.filter((a) => a.type !== actionType));
     }
@@ -159,6 +163,17 @@ const TransitionForm = ({ entityType, targetStatusExits }: { entityType: string;
                 />
               )}
               label={t_i18n('Update authorized members')}
+            />
+            <FormControlLabel
+              control={(
+                <Switch
+                  checked={hasResetAuthorizedMembers}
+                  disabled={!isEnterpriseEdition}
+                  onChange={(e) => handleToggleAction(WorkflowActionType.resetAuthorizedMembers, e.target.checked)}
+                  data-testid="workflow-transition-reset-authorized-members-toggle"
+                />
+              )}
+              label={t_i18n('Reset authorized members')}
             />
             {values.syncActions && (
               <Box style={disabledEEStyle}>

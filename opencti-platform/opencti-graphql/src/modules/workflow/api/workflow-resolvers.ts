@@ -3,6 +3,7 @@ import type { AuthContext } from '../../../types/user';
 import type { QueryWorkflowMassTransitionsArgs } from '../../../generated/graphql';
 import { reportWorkflowAsyncActionResult } from '../domain/workflow-async-completion';
 import {
+  attachWorkflowStatusIds,
   clearWorkflowPendingState,
   deleteWorkflowDefinition,
   getAllowedTransitions,
@@ -25,8 +26,9 @@ const NON_STATE_CHANGING_EVENTS = new Set(['event_external_ignored', 'event_exte
 
 const workflowResolvers = {
   Query: {
-    workflowDefinition: (_: any, { entityType, allowDraft = false }: { entityType: string; allowDraft?: boolean }, context: AuthContext) => {
-      return getWorkflowDefinition(context, context.user!, entityType, allowDraft);
+    workflowDefinition: async (_: any, { entityType, allowDraft = false }: { entityType: string; allowDraft?: boolean }, context: AuthContext) => {
+      const definition = await getWorkflowDefinition(context, context.user!, entityType, allowDraft);
+      return definition ? attachWorkflowStatusIds(context, context.user!, entityType, definition) : definition;
     },
     workflowDefinitionPublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return hasPublishedWorkflowDefinition(context, context.user!, entityType);

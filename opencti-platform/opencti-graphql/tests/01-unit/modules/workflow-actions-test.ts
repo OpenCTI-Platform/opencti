@@ -627,3 +627,63 @@ describe('ActionRegistry.updateAuthorizedMembers (skipAdminValidation)', () => {
     );
   });
 });
+
+describe('ActionRegistry.resetAuthorizedMembers', () => {
+  let freshRegistry: Record<string, (ctx: any, params?: any) => Promise<void>>;
+  let mockEditAuthorizedMembers: ReturnType<typeof vi.fn>;
+  let mockDraftWorkspaceEditAuthorizedMembers: ReturnType<typeof vi.fn>;
+
+  beforeEach(async () => {
+    vi.resetModules();
+    mockEditAuthorizedMembers = vi.fn().mockResolvedValue(undefined);
+    mockDraftWorkspaceEditAuthorizedMembers = vi.fn().mockResolvedValue(undefined);
+    vi.doMock('../../../src/utils/authorizedMembers', () => ({ editAuthorizedMembers: mockEditAuthorizedMembers }));
+    vi.doMock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
+      validateDraftWorkspace: vi.fn(),
+      draftWorkspaceEditAuthorizedMembers: mockDraftWorkspaceEditAuthorizedMembers,
+    }));
+    vi.doMock('../../../src/config/conf', async () => {
+      const actual = await import('../../../src/config/conf');
+      return { ...actual, logApp: { info: vi.fn(), error: vi.fn(), warn: vi.fn() } };
+    });
+    vi.doMock('../../../src/schema/identifier', () => ({ generateInternalId: vi.fn() }));
+    vi.doMock('../../../src/utils/access', () => ({ KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS: 'KNMANAGEAUTHMEMBERS' }));
+    vi.doMock('../../../src/schema/stixRefRelationship', () => ({
+      RELATION_CREATED_BY: 'created-by',
+      RELATION_OBJECT_ASSIGNEE: 'object-assignee',
+      RELATION_OBJECT_PARTICIPANT: 'object-participant',
+    }));
+    const mod = await import('../../../src/modules/workflow/registry/workflow-actions');
+    freshRegistry = mod.ActionRegistry as any;
+  });
+
+  afterEach(() => {
+    vi.resetModules();
+    vi.restoreAllMocks();
+  });
+
+  it('clears the authorized members of an entity', async () => {
+    const ctx = {
+      user: { id: 'user-id' },
+      entity: { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Report' },
+      context: {},
+    };
+    await freshRegistry.resetAuthorizedMembers(ctx);
+    expect(mockEditAuthorizedMembers).toHaveBeenCalledWith(
+      ctx.context, ctx.user,
+      { entityId: 'entity-id', input: null, requiredCapabilities: ['KNMANAGEAUTHMEMBERS'], entityType: 'Report' },
+    );
+    expect(mockDraftWorkspaceEditAuthorizedMembers).not.toHaveBeenCalled();
+  });
+
+  it('clears the authorized members of a draft workspace', async () => {
+    const ctx = {
+      user: { id: 'user-id' },
+      entity: { id: 'draft-id', internal_id: 'draft-id', entity_type: 'DraftWorkspace' },
+      context: {},
+    };
+    await freshRegistry.resetAuthorizedMembers(ctx);
+    expect(mockDraftWorkspaceEditAuthorizedMembers).toHaveBeenCalledWith(ctx.context, ctx.user, 'draft-id', null);
+    expect(mockEditAuthorizedMembers).not.toHaveBeenCalled();
+  });
+});

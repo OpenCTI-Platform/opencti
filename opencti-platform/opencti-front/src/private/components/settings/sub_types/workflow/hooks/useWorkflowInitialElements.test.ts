@@ -53,6 +53,7 @@ describe('useWorkflowInitialElements', () => {
     states: [
       {
         statusId: 'status-open',
+        workflowStatusId: null,
         order: 0,
         onEnter: [
           {
@@ -159,6 +160,7 @@ describe('useWorkflowInitialElements', () => {
       states: [
         {
           statusId: 'status-open',
+          workflowStatusId: null,
           order: 0,
           onEnter: [
             {

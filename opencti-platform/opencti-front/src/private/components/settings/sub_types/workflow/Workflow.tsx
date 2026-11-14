@@ -161,6 +161,15 @@ const Workflow = ({
     depsQueryRef,
   );
 
+  // Status ids (value of x_opencti_workflow_id) keyed by status template id; only published states have one
+  const workflowStatusIds = useMemo(() => {
+    const ids: Record<string, string> = {};
+    (workflowDefinition?.states ?? []).forEach((state) => {
+      if (state.workflowStatusId) ids[state.statusId] = state.workflowStatusId;
+    });
+    return ids;
+  }, [workflowDefinition]);
+
   // 1. Get initial edges and nodes from workflow definition
   const { initialNodes, initialEdges } = useWorkflowInitialElements(workflowDefinition, statusTemplates, members);
 
@@ -306,13 +315,9 @@ const Workflow = ({
   };
 
   // Handle publish action
+  // Always ask the server: the errors stored at save time may no longer hold (e.g. the entities
+  // left a removed status since), and publish re-validates the draft against the live data.
   const handlePublish = () => {
-    if (workflowDefinitionStatus.validationErrors.length > 0) {
-      MESSAGING$.notifyError(
-        <WorkflowValidationErrorsToastContent errors={workflowDefinitionStatus.validationErrors} t_i18n={t_i18n} />,
-      );
-      return;
-    }
     commitPublish({
       variables: { entityType },
       onCompleted: () => {
@@ -322,11 +327,23 @@ const Workflow = ({
           hasPublishedVersion: true,
           validationErrors: [],
         });
+        // The mutation returns no states: refetch to get the status ids the publish just created
+        onRefetch();
       },
       onError: (error) => {
-        const firstError = (error as { res?: { errors?: Array<{ message?: string; extensions?: { data?: { removedStates?: string[]; entityType?: string } } }> } })
+        type PublishErrorData = { removedStates?: string[]; entityType?: string; errors?: WorkflowValidationError[] };
+        const firstError = (error as { res?: { errors?: Array<{ message?: string; extensions?: { data?: PublishErrorData } }> } })
           ?.res?.errors?.[0];
         const data = firstError?.extensions?.data;
+        // A refusal on validation carries the fresh errors: they replace the ones stored at save time
+        if (data?.errors && data.errors.length > 0) {
+          const freshErrors = [...data.errors];
+          setWorkflowDefinitionStatus((prev) => ({ ...prev, validationErrors: freshErrors }));
+          MESSAGING$.notifyError(
+            <WorkflowValidationErrorsToastContent errors={freshErrors} t_i18n={t_i18n} statusTemplates={statusTemplates} />,
+          );
+          return;
+        }
         const publishErrors: WorkflowValidationError[] = [{
           type: 'PUBLISH_ERROR',
           message: firstError?.message ?? t_i18n('An error occurred while publishing the workflow'),
@@ -506,6 +523,7 @@ const Workflow = ({
         open={open}
         selectedElement={selectedElement}
         entityType={entityType}
+        workflowStatusIds={workflowStatusIds}
         onClose={() => {
           setSelectedElement(emptyElement);
           setOpen(false);

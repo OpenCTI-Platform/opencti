@@ -27,6 +27,8 @@ export interface PlaybookUpdateAction {
       phase_name: string;
     };
   }[];
+  // Only for a status: the entity type whose workflow holds the status
+  entity_type?: string;
 }
 
 export interface PlaybookUpdateActionsForm {
@@ -63,5 +65,8 @@ export const toCustomFieldActionValue = (value: CustomFieldValue): NonNullable<P
 export const isPlaybookUpdateActionValid = (action: PlaybookUpdateAction) => {
   if (action.attribute === 'x_opencti_detection') return true;
   if (isCustomFieldAttribute(action.attribute) && action.op === 'remove') return Array.isArray(action.value);
+  // A status belongs to the workflow of one entity type: a new status needs the type first,
+  // a status saved before the type existed stays valid and keeps applying to every element
+  if (action.attribute === 'x_opencti_workflow_id' && action.op === 'replace' && !action.entity_type && !action.value?.length) return false;
   return !!(action.op && action.attribute && action.value && action.value.length > 0);
 };

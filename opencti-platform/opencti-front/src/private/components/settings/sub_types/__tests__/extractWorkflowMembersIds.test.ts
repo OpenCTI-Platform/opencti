@@ -34,6 +34,7 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          workflowStatusId: null,
           order: 0,
           onEnter: [{
             type: 'updateAuthorizedMembers',
@@ -50,6 +51,7 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          workflowStatusId: null,
           order: 0,
           onEnter: [],
           onExit: [{
@@ -66,6 +68,7 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          workflowStatusId: null,
           order: 0,
           onEnter: [{
             type: 'updateAuthorizedMembers',
@@ -157,6 +160,7 @@ describe('extractWorkflowMembersIds', () => {
         states: [
           {
             statusId: 's1',
+            workflowStatusId: null,
             order: 0,
             onEnter: [{
               type: 'updateAuthorizedMembers',
@@ -166,6 +170,7 @@ describe('extractWorkflowMembersIds', () => {
           },
           {
             statusId: 's2',
+            workflowStatusId: null,
             order: 1,
             onEnter: [{
               type: 'updateAuthorizedMembers',
@@ -183,6 +188,7 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          workflowStatusId: null,
           order: 0,
           onEnter: [{
             type: 'updateAuthorizedMembers',
@@ -204,6 +210,7 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          workflowStatusId: null,
           order: 0,
           onEnter: [{
             type: 'updateAuthorizedMembers',

@@ -128,7 +128,7 @@ describe('Workflow utils', () => {
               params: { authorized_members: [{ value: 'user-1', accessRight: 'edit', groupsRestriction: [{ value: 'group-1' }] }] },
             },
           ],
-          onExit: [{ type: WorkflowActionType.validateDraft }],
+          onExit: [{ type: WorkflowActionType.validateDraft }, { type: WorkflowActionType.resetAuthorizedMembers, params: { ignored: true } }],
         },
         position: { x: 0, y: 0 },
       },
@@ -140,7 +140,7 @@ describe('Workflow utils', () => {
         params: { authorized_members: [{ id: 'user-1', access_right: 'edit', groups_restriction_ids: ['group-1'] }] },
       },
     ]);
-    expect(result.states[0].onExit).toEqual([{ type: 'validateDraft' }]);
+    expect(result.states[0].onExit).toEqual([{ type: 'validateDraft' }, { type: 'resetAuthorizedMembers' }]);
   });
 
   it('should fan out multiple-source transitions into one entry per source state', () => {

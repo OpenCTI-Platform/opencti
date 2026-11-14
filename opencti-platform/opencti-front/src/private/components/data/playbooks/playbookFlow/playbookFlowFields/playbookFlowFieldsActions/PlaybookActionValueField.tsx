@@ -27,7 +27,7 @@ import ObjectLabelField from '../../../../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../../../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../../../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../../../../common/form/OpenVocabField';
-import StatusField from '../../../../../common/form/StatusField';
+import PlaybookStatusValueField from './PlaybookStatusValueField';
 import { isCustomFieldAttribute, PlaybookUpdateAction, PlaybookUpdateActionsForm, toCustomFieldActionValue } from './playbookAction-types';
 import TextField from '../../../../../../../components/TextField';
 import useAttributes from '../../../../../../../utils/hooks/useAttributes';
@@ -163,22 +163,7 @@ const PlaybookActionValueField = ({
         />
       );
     case 'x_opencti_workflow_id':
-      return (
-        <StatusField
-          name={formValueName}
-          disabled={disabled}
-          onChange={(_: string, workflow: FieldOption) => {
-            setFieldValue(
-              valueName,
-              [{
-                label: workflow.label,
-                value: workflow.value,
-                patch_value: workflow.value,
-              }],
-            );
-          }}
-        />
-      );
+      return <PlaybookStatusValueField action={action} index={index} disabled={disabled} />;
     case 'x_opencti_detection':
       return (
         <Field

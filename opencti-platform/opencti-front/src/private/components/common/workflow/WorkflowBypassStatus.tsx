@@ -166,6 +166,7 @@ export const WorkflowBypassStatus = ({ data, entityType, refreshing = false, onC
   const actionLabels = (actions: WorkflowStatusBypassStatusesQuery['response']['workflowBypassStatuses'][number]['onExit']): string[] => {
     const labels: Record<string, string> = {
       updateAuthorizedMembers: t_i18n('Update authorized members'),
+      resetAuthorizedMembers: t_i18n('Reset authorized members'),
       validateDraft: t_i18n('Validate draft'),
       SHARE: t_i18n('Share with organizations'),
       UNSHARE: t_i18n('Unshare from organizations'),

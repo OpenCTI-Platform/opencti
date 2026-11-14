@@ -25,6 +25,8 @@ const AutocompleteFreeSoloField = (props) => {
     renderOption,
     textfieldprops = {},
     createLabel,
+    style,
+    className,
   } = props;
   const [, meta] = useField(name);
 
@@ -58,7 +60,7 @@ const AutocompleteFreeSoloField = (props) => {
 
   const error = !isNil(meta.error);
   const helperText = meta.error || textfieldprops.helperText;
-  return (
+  const combobox = (
     <Combobox
       multiple={multiple}
       options={options}
@@ -69,6 +71,7 @@ const AutocompleteFreeSoloField = (props) => {
       createOptionLabel={createLabel ? (input) => `${createLabel} "${input}"` : undefined}
       renderOption={renderOption}
       error={error}
+      className={className}
     >
       {textfieldprops.label && (
         <ComboboxLabel>{textfieldprops.label}</ComboboxLabel>
@@ -90,6 +93,9 @@ const AutocompleteFreeSoloField = (props) => {
       {helperText && <ComboboxHelperText>{helperText}</ComboboxHelperText>}
     </Combobox>
   );
+  // FDS-WORKAROUND #78: the spacing a form passes as `style` goes on a wrapper, Combobox takes no style — see fds-migration/LIBRARY-FEEDBACK.md #78
+  if (!style) return combobox;
+  return <div style={style}>{combobox}</div>;
 };
 
 export default AutocompleteFreeSoloField;

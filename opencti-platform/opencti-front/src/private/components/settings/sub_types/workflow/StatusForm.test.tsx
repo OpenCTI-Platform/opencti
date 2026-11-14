@@ -1,6 +1,6 @@
 import React from 'react';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { Formik, Form } from 'formik';
 import StatusForm from './StatusForm';
 import testRender from '../../../../../utils/tests/test-render';
@@ -30,11 +30,16 @@ vi.mock('../../../common/entreprise_edition/EEChip', () => ({
 // ---------------------------------------------------------------------------
 // Helper
 // ---------------------------------------------------------------------------
-const renderForm = (initialValues: Partial<WorkflowEditionFormValues>, onSubmit = vi.fn(), entityType = 'DraftWorkspace') => {
+const renderForm = (
+  initialValues: Partial<WorkflowEditionFormValues>,
+  onSubmit = vi.fn(),
+  entityType = 'DraftWorkspace',
+  workflowStatusIds?: Record<string, string>,
+) => {
   return testRender(
     <Formik initialValues={initialValues as WorkflowEditionFormValues} onSubmit={onSubmit}>
       <Form>
-        <StatusForm entityType={entityType} />
+        <StatusForm entityType={entityType} workflowStatusIds={workflowStatusIds} />
       </Form>
     </Formik>,
   );
@@ -70,7 +75,7 @@ describe('StatusForm – EE / CE gating', () => {
       expect(screen.getByText(/on enter actions/i)).toBeDefined();
       expect(screen.getByText(/on exit actions/i)).toBeDefined();
       // The switches must remain disabled
-      expect((screen.getByRole('switch', { name: /on enter/i }) as HTMLInputElement).disabled).toBe(true);
+      screen.getAllByRole('switch', { name: /on enter/i }).forEach((sw) => expect((sw as HTMLInputElement).disabled).toBe(true));
     });
   });
 
@@ -195,5 +200,97 @@ describe('StatusForm – entityType-based section visibility', () => {
     renderForm({ onEnter: [], onExit: [] }, vi.fn(), 'Report');
     expect(screen.queryByText(/on enter actions/i)).not.toBeNull();
     expect(screen.queryByText(/on exit actions/i)).not.toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Reset authorized members
+// ---------------------------------------------------------------------------
+describe('StatusForm – reset authorized members', () => {
+  beforeEach(() => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+  });
+
+  const submittedValues = async (onSubmit: ReturnType<typeof vi.fn>) => {
+    document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+    return onSubmit.mock.calls[0][0] as WorkflowEditionFormValues;
+  };
+
+  it('disables the reset switches in Community Edition', () => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(false);
+    renderForm({ onEnter: [], onExit: [] });
+    expect((screen.getByRole('switch', { name: /reset authorized members on enter/i }) as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByRole('switch', { name: /reset authorized members on exit/i }) as HTMLInputElement).disabled).toBe(true);
+  });
+
+  it('toggling "Reset authorized members on enter" ON adds a reset action without params', async () => {
+    const onSubmit = vi.fn();
+    const { user } = renderForm({ onEnter: [], onExit: [] }, onSubmit);
+    await user.click(screen.getByRole('switch', { name: /reset authorized members on enter/i }));
+    const values = await submittedValues(onSubmit);
+    expect(values.onEnter).toEqual([{ type: WorkflowActionType.resetAuthorizedMembers }]);
+    expect(values.onExit).toEqual([]);
+  });
+
+  it('toggling reset ON replaces an update action on the same side', async () => {
+    const onSubmit = vi.fn();
+    const { user } = renderForm({
+      onEnter: [],
+      onExit: [{ type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [] } }],
+    }, onSubmit);
+    await user.click(screen.getByRole('switch', { name: /reset authorized members on exit/i }));
+    const values = await submittedValues(onSubmit);
+    expect(values.onExit).toEqual([{ type: WorkflowActionType.resetAuthorizedMembers }]);
+  });
+
+  it('toggling update ON replaces a reset action on the same side', async () => {
+    const onSubmit = vi.fn();
+    const { user } = renderForm({ onEnter: [{ type: WorkflowActionType.resetAuthorizedMembers }], onExit: [] }, onSubmit);
+    await user.click(screen.getByRole('switch', { name: /update authorized members on enter/i }));
+    const values = await submittedValues(onSubmit);
+    expect(values.onEnter?.map((a) => a.type)).toEqual([WorkflowActionType.updateAuthorizedMembers]);
+  });
+
+  it('toggling reset OFF removes the reset action', async () => {
+    const onSubmit = vi.fn();
+    const { user } = renderForm({ onEnter: [{ type: WorkflowActionType.resetAuthorizedMembers }], onExit: [] }, onSubmit);
+    await user.click(screen.getByRole('switch', { name: /reset authorized members on enter/i }));
+    const values = await submittedValues(onSubmit);
+    expect(values.onEnter).toEqual([]);
+  });
+});
+
+describe('StatusForm – Status ID', () => {
+  const statusTemplate = { id: 'tpl-a', name: 'A', color: '#fff' };
+
+  beforeEach(() => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+  });
+
+  it('shows the Status ID of the selected template with a copy button', () => {
+    renderForm({ statusTemplate, onEnter: [], onExit: [] }, vi.fn(), 'DraftWorkspace', { 'tpl-a': 'status-a' });
+    expect(screen.getByText('Status ID')).toBeDefined();
+    expect(within(screen.getByTestId('workflow-status-id')).getByText('status-a')).toBeDefined();
+    expect(screen.getByRole('button', { name: /copy/i })).toBeDefined();
+  });
+
+  it('shows a hint when the selected template has no Status yet', () => {
+    renderForm({ statusTemplate, onEnter: [], onExit: [] }, vi.fn(), 'DraftWorkspace', {});
+    expect(screen.getByText('Status ID')).toBeDefined();
+    expect(screen.getByText('Available after publish')).toBeDefined();
+    expect(screen.queryByText('status-a')).toBeNull();
+  });
+
+  it('does not show a stale id belonging to another template', () => {
+    renderForm({ statusTemplate, onEnter: [], onExit: [] }, vi.fn(), 'DraftWorkspace', { 'tpl-b': 'status-b' });
+    expect(screen.getByText('Available after publish')).toBeDefined();
+    expect(screen.queryByText('status-b')).toBeNull();
+  });
+
+  it('renders nothing for the Status ID when no template is selected', () => {
+    renderForm({ onEnter: [], onExit: [] }, vi.fn(), 'DraftWorkspace', { 'tpl-a': 'status-a' });
+    expect(screen.queryByTestId('workflow-status-id')).toBeNull();
+    expect(screen.queryByText('Status ID')).toBeNull();
   });
 });

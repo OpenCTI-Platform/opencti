@@ -38,6 +38,7 @@ import { now } from '../../../utils/format';
 import { controlUserConfidenceAgainstElement } from '../../../utils/confidence-level';
 import { addFilter } from '../../../utils/filtering/filtering-utils';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_UPDATE_LINKED } from '../../draftWorkspace/draftOperations';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../../draftWorkspace/draftWorkspace-types';
 import { findByType as findEntitySettingByType } from '../../entitySetting/entitySetting-domain';
 import { validateSetting } from '../../entitySetting/entitySetting-validators';
 import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySetting-types';
@@ -67,7 +68,7 @@ import { appendWorkflowHistoryEntry, closingReasonNotWrittenError, isClosingReas
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
-const EE_ONLY_ACTION_TYPES = new Set<WorkflowActionConfig['type']>(['updateAuthorizedMembers', 'shareWithOrganizations', 'unshareFromOrganizations', 'asyncBulkAction']);
+const EE_ONLY_ACTION_TYPES = new Set<WorkflowActionConfig['type']>(['updateAuthorizedMembers', 'resetAuthorizedMembers', 'shareWithOrganizations', 'unshareFromOrganizations', 'asyncBulkAction']);
 const hasEEActions = (actions?: WorkflowActionConfig[]) => (actions ?? []).some((a) => EE_ONLY_ACTION_TYPES.has(a.type));
 const hasConditions = (conditions?: WorkflowSerializedTransition['conditions']) => Array.isArray(conditions?.filters) && conditions.filters.length > 0;
 
@@ -76,6 +77,19 @@ const hasConditions = (conditions?: WorkflowSerializedTransition['conditions']) 
 // argument instead). Always derive the execution user from the explicit `user` parameter,
 // mirroring the draft_context stripping that bypassDraftContext applies to the context itself.
 const bypassDraftUser = (user: AuthUser): AuthUser => ({ ...user, draft_context: undefined });
+
+// Inside a draft, only the draft's own workflow can move. An entity workflow writes to the live
+// entity (see bypassDraftContext above), so running it from a draft would approve or transition
+// knowledge that the draft has not published yet.
+const isEntityWorkflowLockedByDraft = (context: AuthContext, user: AuthUser, entityType: string) => {
+  return Boolean(getDraftContext(context, user)) && entityType !== ENTITY_TYPE_DRAFT_WORKSPACE;
+};
+
+const assertEntityWorkflowNotInDraft = (context: AuthContext, user: AuthUser, entity: BasicStoreCommon) => {
+  if (isEntityWorkflowLockedByDraft(context, user, entity.entity_type)) {
+    throw FunctionalError('Workflow transitions cannot be applied to an entity while in a draft', { entityId: entity.id });
+  }
+};
 
 // Domain-specific types
 interface WorkflowVersion {
@@ -876,9 +890,11 @@ export const publishWorkflowDefinition = async (
     entitySetting.workflow_id,
   );
   if (freshValidationErrors.length > 0) {
+    // The fresh errors travel with the refusal: the ones stored at save time may no longer hold
     throw FunctionalError('Cannot publish workflow with validation errors', {
       entityType,
       errorCount: freshValidationErrors.length,
+      errors: freshValidationErrors,
     });
   }
 
@@ -921,10 +937,8 @@ export const publishWorkflowDefinition = async (
           );
         }
 
-        // Same guard as validation's STATUS_IN_USE, re-checked here against the correct baseline
-        // (published_version, not draftVersion): validateWorkflowDefinitionData above compares the
-        // draft against itself at publish time (its own DB lookup still finds draft_version, since
-        // it hasn't been cleared yet), so it can never catch a status removed by this same draft.
+        // Same guard as validation's STATUS_IN_USE, re-checked here under the status lock: entities may
+        // have moved into a removed status between the validation above and this point.
         const oldStatusIds = extractCanonicalStateIds(oldDef as Parameters<typeof extractCanonicalStateIds>[0]);
         const newStatusIds = extractCanonicalStateIds(newDef as Parameters<typeof extractCanonicalStateIds>[0]);
         const removedStatusIds = [...oldStatusIds].filter((sid) => !newStatusIds.has(sid));
@@ -986,7 +1000,8 @@ export const publishWorkflowDefinition = async (
     // CONSISTENCY GUARANTEE: published_version will be in all_versions (already there via draft)
     // Copy draft_version to published_version and clear the draft (no more unpublished changes).
     const updates: EditInput[] = [
-      { key: 'published_version', value: [draftVersion] },
+      // Fresh validation passed above: the errors stored at save time no longer hold
+      { key: 'published_version', value: [{ ...draftVersion, validation_errors: [] }] },
       { key: 'draft_version', value: [] },
     ];
 
@@ -1352,6 +1367,10 @@ export const getAllowedTransitions = async (
     return [];
   }
 
+  if (isEntityWorkflowLockedByDraft(context, user, entity.entity_type)) {
+    return [];
+  }
+
   const entitySetting = options?.entitySetting ?? await getWorkflowConfig(context, user, entity.entity_type);
   const definitionData = options?.definitionData ?? await getDefinitionData(context, user, entitySetting);
 
@@ -1448,6 +1467,7 @@ export const getMassWorkflowTransitions = async (
   target: { entityIds?: string[] | null; filters?: string | null; search?: string | null; excludedIds?: string[] | null },
 ): Promise<AllowedTransition[]> => {
   if (entityType !== 'DraftWorkspace' && !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) return [];
+  if (isEntityWorkflowLockedByDraft(context, user, entityType)) return [];
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   const definitionData = await getDefinitionData(context, user, entitySetting);
   if (!definitionData) return [];
@@ -1558,6 +1578,8 @@ export const triggerWorkflowEvent = async (
   if (!entity) {
     throw FunctionalError('Entity not found', { entityId });
   }
+
+  assertEntityWorkflowNotInDraft(context, user, entity);
 
   // 2. Fetch its EntitySetting to get the workflow configuration
   const entitySetting = await getWorkflowConfig(context, user, entity.entity_type);
@@ -1862,6 +1884,26 @@ const findWorkflowMappedStatuses = async (
     .sort((left, right) => left.order - right.order);
 };
 
+/**
+ * Adds to each state the id of the Status entity written to `x_opencti_workflow_id` (null while the
+ * state has not been published yet), as states only hold the id of their status template.
+ */
+export const attachWorkflowStatusIds = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  definition: WorkflowDefinitionResponse,
+): Promise<WorkflowDefinitionResponse> => {
+  if (definition.states.length === 0) return definition;
+  const statuses = await findWorkflowMappedStatuses(bypassDraftContext(context), bypassDraftUser(user), entityType, StatusScope.Global, definition);
+  // A status marked for deletion (removed from the published workflow, not purged yet) is not a usable id
+  const statusIdByTemplateId = new Map(statuses.filter((status) => !status.to_be_deleted_at).map((status) => [status.template_id, status.id]));
+  return {
+    ...definition,
+    states: definition.states.map((state) => ({ ...state, workflowStatusId: statusIdByTemplateId.get(state.statusId) ?? null })),
+  };
+};
+
 export const getWorkflowBypassStatuses = async (context: AuthContext, user: AuthUser, entityId: string) => {
   const { entity, definitionData, currentState, scope, executionContext, executionUser } = await loadWorkflowBypass(context, user, entityId);
   if (!definitionData) return [];
@@ -2010,6 +2052,7 @@ export const setWorkflowStatus = async (
   if (!isBypassUser(user)) throw FunctionalError('BYPASS permission is required');
   const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) throw FunctionalError('Entity not found', { entityId });
+  assertEntityWorkflowNotInDraft(context, user, entity);
   const lock = await lockResources([`workflow-mutation-${entity.internal_id || entity.id}`]);
   let result: TriggerResult;
   try {
@@ -2359,6 +2402,7 @@ export const clearWorkflowPendingState = async (
 ): Promise<any> => {
   const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) throw FunctionalError('Entity not found', { entityId });
+  assertEntityWorkflowNotInDraft(context, user, entity);
 
   const executionContext = bypassDraftContext(context);
   const executionUser = bypassDraftUser(user);

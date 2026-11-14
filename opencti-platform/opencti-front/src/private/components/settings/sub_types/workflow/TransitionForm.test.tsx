@@ -250,6 +250,69 @@ describe('TransitionForm – action toggles', () => {
     });
   });
 
+  it('"Reset authorized members" switch is checked when action is present', () => {
+    renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [{ type: WorkflowActionType.resetAuthorizedMembers }] });
+    const resetSwitch = screen.getByRole('switch', { name: /reset authorized members/i });
+    expect((resetSwitch as HTMLInputElement).checked).toBe(true);
+  });
+
+  it('toggling "Reset authorized members" ON adds a reset action without params', async () => {
+    const onSubmit = vi.fn();
+    const { user } = renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, onSubmit);
+
+    await user.click(screen.getByRole('switch', { name: /reset authorized members/i }));
+
+    document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
+
+    await waitFor(() => {
+      expect(onSubmit.mock.calls[0][0].syncActions).toEqual([{ type: WorkflowActionType.resetAuthorizedMembers }]);
+    });
+  });
+
+  it('toggling "Reset authorized members" ON replaces "Update authorized members" but keeps other actions', async () => {
+    const onSubmit = vi.fn();
+    const { user } = renderForm({
+      event: 'approve',
+      comment: CommentMode.disabled,
+      syncActions: [
+        { type: WorkflowActionType.validateDraft },
+        { type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [] } },
+      ],
+    }, onSubmit);
+
+    await user.click(screen.getByRole('switch', { name: /reset authorized members/i }));
+
+    document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
+
+    await waitFor(() => {
+      const types = (onSubmit.mock.calls[0][0].syncActions as { type: string }[]).map((a) => a.type);
+      expect(types).toEqual([WorkflowActionType.validateDraft, WorkflowActionType.resetAuthorizedMembers]);
+    });
+  });
+
+  it('toggling "Update authorized members" ON replaces "Reset authorized members"', async () => {
+    const onSubmit = vi.fn();
+    const { user } = renderForm({
+      event: 'approve',
+      comment: CommentMode.disabled,
+      syncActions: [{ type: WorkflowActionType.resetAuthorizedMembers }],
+    }, onSubmit);
+
+    await user.click(screen.getByRole('switch', { name: /update authorized members/i }));
+
+    document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
+
+    await waitFor(() => {
+      const types = (onSubmit.mock.calls[0][0].syncActions as { type: string }[]).map((a) => a.type);
+      expect(types).toEqual([WorkflowActionType.updateAuthorizedMembers]);
+    });
+  });
+
+  it('hides "Reset authorized members" for an entity type without authorized members', () => {
+    renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, vi.fn(), 'Malware');
+    expect(screen.queryByRole('switch', { name: /reset authorized members/i })).toBeNull();
+  });
+
   it('"Validate draft" switch is unchecked when action is absent', () => {
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] });
     const vdSwitch = screen.getByRole('switch', { name: /validate draft/i });
