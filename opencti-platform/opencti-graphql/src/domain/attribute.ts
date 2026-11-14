@@ -1,11 +1,16 @@
 import * as R from 'ramda';
 import { elAttributeValues } from '../database/engine';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { buildPagination } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { Attribute, QueryRuntimeAttributesArgs, TypeAttribute } from '../generated/graphql';
 import { INTERNAL_ATTRIBUTES } from './attribute-utils';
 import { getCustomFieldDefinitionsForEntityType, getDynamicTypeAttributeForEntityType } from '../modules/customField/custom-field-cache';
+import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import { getEntitySettingSchemaAttributes } from '../modules/entitySetting/entitySetting-attributeUtils';
+import { UNSUPPORTED_ERROR } from '../config/errors';
+import type { RefAttribute } from '../schema/attribute-definition';
 
 export interface DefaultValue {
   id: string;
@@ -47,24 +52,61 @@ export const getSchemaAttributes = async (context: AuthContext, user: AuthUser, 
     const attributes = schemaAttributesDefinition.getAttributes(type);
     const attributesArray = Array.from(attributes.values());
 
+    // The effective mandatory status and default values, as configured in Entity Settings
+    // for this type: same logic as entitySettingByType, reused so the two stay consistent
+    // (US.2). A type without entity settings (e.g. an internal type) keeps the raw schema
+    // mandatoryType and no default values, as before this chunk.
+    const entitySetting = await getEntitySettingFromCache(context, type);
+    const effectiveAttributes = await getEntitySettingSchemaAttributes(context, user, entitySetting);
+    const effectiveByName = new Map(effectiveAttributes.map((effective) => [effective.name, effective]));
+
     // Map attributes to TypeAttribute format
     const typeAttributes = attributesArray
       .filter((attr) => !INTERNAL_ATTRIBUTES.includes(attr.name))
-      .map((attr) => ({
-        name: attr.name,
-        type: attr.type,
-        label: attr.label || attr.name,
-        description: attr.description ?? null,
-        mandatory: attr.mandatoryType === 'external',
-        mandatoryType: attr.mandatoryType,
-        editDefault: attr.editDefault,
-        multiple: attr.multiple || false,
-        upsert: attr.upsert || false,
-        // For numeric attributes with scalable property
-        scale: attr.type === 'numeric' && (attr as any).scalable ? 'default' : undefined,
-        // Default values would need to be fetched from entity settings if needed
-        defaultValues: undefined,
-      } as TypeAttribute));
+      .map((attr) => {
+        const effective = effectiveByName.get(attr.name);
+        return ({
+          name: attr.name,
+          type: attr.type,
+          label: attr.label || attr.name,
+          description: attr.description ?? null,
+          mandatory: effective ? effective.mandatory : attr.mandatoryType === 'external',
+          mandatoryType: attr.mandatoryType,
+          editDefault: attr.editDefault,
+          multiple: attr.multiple || false,
+          upsert: attr.upsert || false,
+          // For numeric attributes with scalable property
+          scale: attr.type === 'numeric' && (attr as any).scalable ? 'default' : undefined,
+          defaultValues: effective?.defaultValues ?? undefined,
+        } as TypeAttribute);
+      });
+
+    // Add the refs (createdBy, objectMarking, objectLabel…): a type with no ref registered
+    // at all (e.g. an internal type) throws instead of returning an empty list.
+    let refs: RefAttribute[];
+    try {
+      refs = schemaRelationsRefDefinition.getRelationsRef(type);
+    } catch (error) {
+      const code = (error as { extensions?: { code?: string } })?.extensions?.code;
+      if (code !== UNSUPPORTED_ERROR) throw error;
+      refs = [];
+    }
+    for (const ref of refs) {
+      const effective = effectiveByName.get(ref.name);
+      typeAttributes.push({
+        name: ref.name,
+        type: 'ref',
+        label: ref.label || ref.name,
+        description: ref.description ?? null,
+        mandatory: effective ? effective.mandatory : ref.mandatoryType === 'external',
+        mandatoryType: ref.mandatoryType,
+        editDefault: ref.editDefault,
+        multiple: ref.multiple || false,
+        upsert: ref.upsert || false,
+        scale: undefined,
+        defaultValues: effective?.defaultValues ?? undefined,
+      } as TypeAttribute);
+    }
 
     // Inject custom field attributes dynamically
     const customFieldAttributes = await getDynamicTypeAttributeForEntityType(context, user, type);

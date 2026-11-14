@@ -22,7 +22,7 @@ import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../ut
 export const getEntitySettingSchemaAttributes = async (
   context: AuthContext,
   user: AuthUser,
-  entitySetting: BasicStoreEntityEntitySetting,
+  entitySetting: BasicStoreEntityEntitySetting | undefined,
 ): Promise<EntitySettingSchemaAttribute[]> => {
   return telemetry(context, user, 'ATTRIBUTES', {
     [ATTR_DB_NAMESPACE]: 'attributes_domain',
