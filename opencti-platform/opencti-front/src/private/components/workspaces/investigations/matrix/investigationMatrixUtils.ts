@@ -10,8 +10,6 @@ export interface InvestigationAttackPattern {
   name: string;
 }
 
-type Translate = (message: string, options?: { values?: Record<string, string | number> }) => string;
-
 const DEFAULT_KILL_CHAIN = 'mitre-attack';
 
 export const getInvestigationAttackPatterns = (rawObjects: ObjectToParse[]): InvestigationAttackPattern[] => {
@@ -53,10 +51,4 @@ export const hasActiveGraphFilters = (graphState: GraphState): boolean => {
     || graphState.disabledMarkings.length > 0
     || (graphState.disabledRelationshipTypes?.length ?? 0) > 0
     || !!graphState.selectedTimeRangeInterval;
-};
-
-export const formatNameList = (names: string[], max: number, t: Translate): string => {
-  const shown = names.slice(0, max).join(', ');
-  const rest = names.length - max;
-  return rest > 0 ? `${shown} ${t('and {count} more', { values: { count: rest } })}` : shown;
 };

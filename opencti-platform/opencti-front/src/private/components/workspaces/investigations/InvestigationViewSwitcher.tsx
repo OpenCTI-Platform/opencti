@@ -67,13 +67,13 @@ const InvestigationViewSwitcher = ({ investigationId }: { investigationId: strin
             <ButtonGroupItem
               asChild
               value="matrix"
-              aria-label={t_i18n('Tactics matrix view')}
+              aria-label={t_i18n('Matrix view')}
               icon={<ViewColumnOutlined sx={{ fontSize: 16 }} />}
             >
               <Link to={`${link}/matrix`} />
             </ButtonGroupItem>
           </TooltipTrigger>
-          <TooltipContent>{t_i18n('Tactics matrix view')}</TooltipContent>
+          <TooltipContent>{t_i18n('Matrix view')}</TooltipContent>
         </Tooltip>
       </ButtonGroup>
     </div>

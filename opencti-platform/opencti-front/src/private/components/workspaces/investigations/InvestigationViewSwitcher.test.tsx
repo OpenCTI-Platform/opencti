@@ -29,7 +29,7 @@ describe('InvestigationViewSwitcher', () => {
 
     expect(screen.getByTestId('current-view')).toHaveTextContent('graph');
     const graphLink = screen.getByRole('radio', { name: 'Graph view' });
-    const matrixLink = screen.getByRole('radio', { name: 'Tactics matrix view' });
+    const matrixLink = screen.getByRole('radio', { name: 'Matrix view' });
     expect(graphLink).toHaveAttribute('href', '/dashboard/workspaces/investigations/abc');
     expect(matrixLink.getAttribute('href')).toMatch(/\/dashboard\/workspaces\/investigations\/abc\/matrix$/);
     expect(graphLink).toHaveAttribute('aria-checked', 'true');
@@ -40,7 +40,7 @@ describe('InvestigationViewSwitcher', () => {
     renderAt('/dashboard/workspaces/investigations/abc/matrix');
 
     expect(screen.getByTestId('current-view')).toHaveTextContent('matrix');
-    expect(screen.getByRole('radio', { name: 'Tactics matrix view' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('radio', { name: 'Matrix view' })).toHaveAttribute('aria-checked', 'true');
     expect(screen.getByRole('radio', { name: 'Graph view' })).toHaveAttribute('aria-checked', 'false');
   });
 

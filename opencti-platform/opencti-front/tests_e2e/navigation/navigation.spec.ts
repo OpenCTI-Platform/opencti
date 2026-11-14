@@ -208,7 +208,7 @@ const navigateGroupings = async (page: Page) => {
   await groupingsDetailsPage.tabs.goToKnowledgeTab();
   await expect(page.getByTestId('groupings-knowledge')).toBeVisible();
   await page.getByLabel('Correlation view').click();
-  await page.getByLabel('Tactics matrix view').click();
+  await page.getByLabel('Matrix view').click();
   await page.getByLabel('Graph view').click();
 
   // -- Content
@@ -268,7 +268,7 @@ const navigateReports = async (page: Page) => {
   await expect(page.getByTestId('report-knowledge')).toBeVisible();
   await page.getByLabel('TimeLine view').click();
   await page.getByLabel('Correlation view').click();
-  await page.getByLabel('Tactics matrix view').click();
+  await page.getByLabel('Matrix view').click();
   await page.getByLabel('Graph view').click();
 
   // -- Content
@@ -319,7 +319,7 @@ const navigateIncidentResponse = async (page: Page) => {
   await expect(page.getByTestId('incident-response-knowledge')).toBeVisible();
   await page.getByLabel('TimeLine view').click();
   await page.getByLabel('Correlation view').click();
-  await page.getByLabel('Tactics matrix view').click();
+  await page.getByLabel('Matrix view').click();
   await page.getByLabel('Graph view').click();
 
   // -- Content
@@ -370,7 +370,7 @@ const navigateRfi = async (page: Page) => {
   await expect(page.getByTestId('case-rfi-knowledge')).toBeVisible();
   await page.getByLabel('TimeLine view').click();
   await page.getByLabel('Correlation view').click();
-  await page.getByLabel('Tactics matrix view').click();
+  await page.getByLabel('Matrix view').click();
   await page.getByLabel('Graph view').click();
 
   // -- Content
@@ -421,7 +421,7 @@ const navigateRft = async (page: Page) => {
   await expect(page.getByTestId('case-rft-knowledge')).toBeVisible();
   await page.getByLabel('TimeLine view').click();
   await page.getByLabel('Correlation view').click();
-  await page.getByLabel('Tactics matrix view').click();
+  await page.getByLabel('Matrix view').click();
   await page.getByLabel('Graph view').click();
 
   // -- Content

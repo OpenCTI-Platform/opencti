@@ -13,6 +13,8 @@ export interface MatrixConfig {
   keyboardCells: boolean;
   // When false, sub-techniques keep the order the API returns.
   sortSubTechniques: boolean;
+  // When true, the matrix fills its parent instead of sizing itself from the viewport and the page margins.
+  fillParent: boolean;
 }
 
 const MITRE_ID_REGEX = /^T(\d+)(?:\.(\d+))?$/i;
@@ -44,15 +46,18 @@ const defaultConfig = (isCoverage: boolean): MatrixConfig => ({
   canAdd: !isCoverage,
   keyboardCells: false,
   sortSubTechniques: false,
+  fillParent: false,
 });
 
 const investigationConfig: MatrixConfig = {
   formatLabel: (ap) => (ap.x_mitre_id ? `${ap.x_mitre_id} - ${ap.name}` : ap.name),
   compareTechniques: compareByMitreId,
-  badgeColors: { color: 'var(--black-800)', textColor: 'var(--gray-100)' },
+  // FDS-WORKAROUND #81: --black-800 is not compiled into dist/index.css — see fds-migration/LIBRARY-FEEDBACK.md #81
+  badgeColors: { color: 'var(--gray-800)', textColor: 'var(--gray-100)' },
   canAdd: false,
   keyboardCells: true,
   sortSubTechniques: true,
+  fillParent: true,
 };
 
 export const getMatrixConfig = (variant: MatrixVariant | undefined, isCoverage: boolean): MatrixConfig => {

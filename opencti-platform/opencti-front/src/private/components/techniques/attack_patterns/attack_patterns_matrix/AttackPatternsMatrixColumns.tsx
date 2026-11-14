@@ -21,6 +21,7 @@ import { hexToRGB } from '../../../../../utils/Colors';
 import type { Theme } from '../../../../../components/Theme';
 import { containerTypes } from '../../../../../utils/hooks/useAttributes';
 import { MatrixConfig } from './attackPatternsMatrixConfig';
+import type { CellDecoration } from './attackPatternsMatrixCellDecoration';
 
 export type AttackPatternsOfPhase = NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number];
 export type AttackPattern = NonNullable<AttackPatternsOfPhase['attackPatterns']>[number];
@@ -144,6 +145,18 @@ export const getBoxStyles = ({
   };
 };
 
+// A decoration overrides the base styles only for the keys it sets.
+export const applyCellDecoration = (
+  styles: { border: string; backgroundColor: string },
+  decoration?: CellDecoration,
+) => ({
+  border: styles.border,
+  borderColor: decoration?.border,
+  backgroundColor: decoration?.fill ?? styles.backgroundColor,
+  // FDS-WORKAROUND #81: --black-900 is not compiled into dist/index.css — see fds-migration/LIBRARY-FEEDBACK.md #81
+  labelColor: decoration?.textTone === 'dark' ? 'var(--black-1000)' : undefined,
+});
+
 const AttackPatternsMatrixColumns = ({
   queryRef,
   attackPatterns,
@@ -159,6 +172,7 @@ const AttackPatternsMatrixColumns = ({
   coverageMap,
   entityId,
   config,
+  cellDecorations,
 }: AttackPatternsMatrixColumnsProps) => {
   const theme = useTheme<Theme>();
   const [anchorEl, setAnchorEl] = useState<EventTarget & Element | null>(null);
@@ -255,13 +269,14 @@ const AttackPatternsMatrixColumns = ({
         return (
           <Box
             sx={{
-              width: `calc(100vw - ${matrixWidth}px)`,
-              height: `calc(100vh - ${matrixHeight}px)`,
+              // A screen that sizes the matrix itself (the investigation) lets it fill the space it gets.
+              width: config.fillParent ? '100%' : `calc(100vw - ${matrixWidth}px)`,
+              height: config.fillParent ? '100%' : `calc(100vh - ${matrixHeight}px)`,
               overflowX: 'auto',
               whiteSpace: 'nowrap',
               paddingBottom: 2,
               position: 'relative',
-              marginBlockStart: 3,
+              marginBlockStart: config.fillParent ? 0 : 3,
             }}
           >
             <Box
@@ -326,6 +341,8 @@ const AttackPatternsMatrixColumns = ({
                               <AccordionAttackPattern
                                 attackPattern={ap}
                                 config={config}
+                                decoration={cellDecorations?.get(ap.attack_pattern_id)}
+                                cellDecorations={cellDecorations}
                                 handleOpen={handleOpen}
                                 attackPatternIdsToOverlap={attackPatternIdsToOverlap}
                                 isSecurityPlatform={isSecurityPlatform}
@@ -342,6 +359,7 @@ const AttackPatternsMatrixColumns = ({
                           key={ap.attack_pattern_id}
                           attackPattern={ap}
                           config={config}
+                          decoration={cellDecorations?.get(ap.attack_pattern_id)}
                           handleOpen={handleOpen}
                           attackPatternIdsToOverlap={attackPatternIdsToOverlap}
                           isSecurityPlatform={isSecurityPlatform}
