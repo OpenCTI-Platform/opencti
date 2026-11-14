@@ -22,7 +22,10 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../schema/stixMetaObject';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../../case/case-types';
 import { ENTITY_TYPE_INDICATOR } from '../../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../organization/organization-types';
-import { ENTITY_TYPE_INCIDENT } from '../../../schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INCIDENT } from '../../../schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../case/case-incident/case-incident-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../case/case-rfi/case-rfi-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../../case/case-rft/case-rft-types';
 import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
 import { AUTOMATION_MANAGER_USER, executionContext } from '../../../utils/access';
 import { getParentTypes } from '../../../schema/schemaUtils';
@@ -83,6 +86,18 @@ const attributePathMapping: any = {
   },
   indicator_types: {
     [ENTITY_TYPE_INDICATOR]: '/indicator_types',
+  },
+  report_types: {
+    [ENTITY_TYPE_CONTAINER_REPORT]: '/report_types',
+  },
+  response_types: {
+    [ENTITY_TYPE_CONTAINER_CASE_INCIDENT]: '/response_types',
+  },
+  information_types: {
+    [ENTITY_TYPE_CONTAINER_CASE_RFI]: '/information_types',
+  },
+  takedown_types: {
+    [ENTITY_TYPE_CONTAINER_CASE_RFT]: '/takedown_types',
   },
   [INPUT_KILLCHAIN]: {
     [ENTITY_TYPE_INDICATOR]: '/kill_chain_phases',

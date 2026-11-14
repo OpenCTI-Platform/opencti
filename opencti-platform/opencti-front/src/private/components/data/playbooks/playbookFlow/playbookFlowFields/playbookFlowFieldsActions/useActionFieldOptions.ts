@@ -31,6 +31,10 @@ const useActionFieldOptions = (customFieldDefinitions: CustomFieldDefinition[] =
         { label: t_i18n('Participants'), value: 'objectParticipant' },
         { label: t_i18n('Kill chains'), value: 'killChainPhases' },
         { label: t_i18n('Indicator types'), value: 'indicator_types' },
+        { label: t_i18n('Report types'), value: 'report_types' },
+        { label: t_i18n('Incident response type'), value: 'response_types' },
+        { label: t_i18n('Request for information types'), value: 'information_types' },
+        { label: t_i18n('Request for takedown types'), value: 'takedown_types' },
         { label: t_i18n('Platforms'), value: 'x_mitre_platforms' },
       ];
     } else if (action.op === 'replace') {
@@ -46,6 +50,10 @@ const useActionFieldOptions = (customFieldDefinitions: CustomFieldDefinition[] =
         { label: t_i18n('Priority'), value: 'priority' },
         { label: t_i18n('Kill chains'), value: 'killChainPhases' },
         { label: t_i18n('Indicator types'), value: 'indicator_types' },
+        { label: t_i18n('Report types'), value: 'report_types' },
+        { label: t_i18n('Incident response type'), value: 'response_types' },
+        { label: t_i18n('Request for information types'), value: 'information_types' },
+        { label: t_i18n('Request for takedown types'), value: 'takedown_types' },
         { label: t_i18n('Platforms'), value: 'x_mitre_platforms' },
         { label: t_i18n('Detection'), value: 'x_opencti_detection' },
         { label: t_i18n('Status'), value: 'x_opencti_workflow_id' },
@@ -58,6 +66,10 @@ const useActionFieldOptions = (customFieldDefinitions: CustomFieldDefinition[] =
         { label: t_i18n('Participants'), value: 'objectParticipant' },
         { label: t_i18n('Kill chains'), value: 'killChainPhases' },
         { label: t_i18n('Indicator types'), value: 'indicator_types' },
+        { label: t_i18n('Report types'), value: 'report_types' },
+        { label: t_i18n('Incident response type'), value: 'response_types' },
+        { label: t_i18n('Request for information types'), value: 'information_types' },
+        { label: t_i18n('Request for takedown types'), value: 'takedown_types' },
         { label: t_i18n('Platforms'), value: 'x_mitre_platforms' },
       ];
     }

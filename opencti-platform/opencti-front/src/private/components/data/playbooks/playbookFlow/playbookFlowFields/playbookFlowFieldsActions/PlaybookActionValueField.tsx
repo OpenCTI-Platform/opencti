@@ -39,6 +39,14 @@ interface PlaybookActionValueFieldProps {
   customFieldDefinitions?: CustomFieldDefinition[];
 }
 
+// The report and case types, each an open vocabulary of several values
+const typeVocabularies: Record<string, string> = {
+  report_types: 'report_types_ov',
+  response_types: 'incident_response_types_ov',
+  information_types: 'request_for_information_types_ov',
+  takedown_types: 'request_for_takedown_types_ov',
+};
+
 const PlaybookActionValueField = ({
   action,
   index,
@@ -228,6 +236,28 @@ const PlaybookActionValueField = ({
             setFieldValue(
               valueName,
               (indicatorTypes as string[]).map((type) => ({
+                label: type,
+                value: type,
+                patch_value: type,
+              })),
+            );
+          }}
+        />
+      );
+    case 'report_types':
+    case 'response_types':
+    case 'information_types':
+    case 'takedown_types':
+      return (
+        <OpenVocabField
+          name={formValueName}
+          type={typeVocabularies[action.attribute]}
+          label={t_i18n('Types')}
+          multiple
+          onChange={(_, types) => {
+            setFieldValue(
+              valueName,
+              (types as string[]).map((type) => ({
                 label: type,
                 value: type,
                 patch_value: type,
