@@ -43,6 +43,7 @@ import {
   TYPE_FILTER,
   USER_SERVICE_ACCOUNT_FILTER,
   WORKFLOW_FILTER,
+  WORKFLOW_INSTANCE_STATUS_FILTER,
   X_OPENCTI_WORKFLOW_ID,
 } from './filtering-constants';
 import { ForbiddenAccess, FunctionalError, ResourceNotFoundError, UnsupportedError } from '../../config/errors';
@@ -271,14 +272,31 @@ const adaptFilterToEntityTypeFilterKey = (filter: any) => {
   return { newFilter, newFilterGroup };
 };
 
-const adaptFilterToWorkflowFilterKey = async (context: AuthContext, user: AuthUser, filter: Filter) => {
+const WORKFLOW_STATUS_FILTER_KEYS = [WORKFLOW_FILTER, X_OPENCTI_WORKFLOW_ID, WORKFLOW_INSTANCE_STATUS_FILTER];
+
+// The deprecated key keeps the semantics of the resolver it replaces: a draft is in a single state, so
+// only_eq_to/not_only_eq_to are eq/not_eq, and the values match "any of them" (eq) or "none of them" (not_eq)
+// whatever the filter's mode. Without values, a comparison matches no state (eq) or every state (not_eq),
+// where an empty filter group would put no constraint at all.
+const normalizeLegacyWorkflowStatusFilter = (filter: Filter): Filter => {
+  let operator = filter.operator ?? FilterOperator.Eq;
+  if (operator === FilterOperator.OnlyEqTo) operator = FilterOperator.Eq;
+  if (operator === FilterOperator.NotOnlyEqTo) operator = FilterOperator.NotEq;
+  const isComparison = operator === FilterOperator.Eq || operator === FilterOperator.NotEq;
+  const values = isComparison && filter.values.length === 0 ? ['<no-status-matching-filter>'] : filter.values;
+  return { ...filter, values, operator, mode: operator === FilterOperator.NotEq ? FilterMode.And : FilterMode.Or };
+};
+
+export const adaptFilterToWorkflowFilterKey = async (context: AuthContext, user: AuthUser, inputFilter: Filter) => {
+  const inputKeys = Array.isArray(inputFilter.key) ? inputFilter.key : [inputFilter.key];
+  const filter = inputKeys.length === 1 && inputKeys[0] === WORKFLOW_INSTANCE_STATUS_FILTER ? normalizeLegacyWorkflowStatusFilter(inputFilter) : inputFilter;
   // workflow_id filter values can be both status ids and status templates ids
   const { key, mode = FilterMode.Or, operator = FilterOperator.Eq, values } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
   if (arrayKeys.length > 1) {
     throw UnsupportedError(`A filter with these multiple keys is not supported : ${arrayKeys}`);
   }
-  if (![WORKFLOW_FILTER, X_OPENCTI_WORKFLOW_ID].includes(arrayKeys[0])) {
+  if (!WORKFLOW_STATUS_FILTER_KEYS.includes(arrayKeys[0])) {
     throw UnsupportedError('The key is not correct', { keys: arrayKeys });
   }
   let newFilterGroup: FilterGroup | undefined;
@@ -877,7 +895,7 @@ export const completeSpecialFilterKeys = async (
           finalFilterGroups.push(newFilterGroup);
         }
       }
-      if (filterKey === WORKFLOW_FILTER || filterKey === X_OPENCTI_WORKFLOW_ID) {
+      if (WORKFLOW_STATUS_FILTER_KEYS.includes(filterKey)) {
         // in case we want to filter by status template (template of a workflow status) or status
         // we need to find all statuses filtered by status template and filter on these statuses
         const { newFilter, newFilterGroup } = await adaptFilterToWorkflowFilterKey(context, user, filter);

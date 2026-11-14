@@ -40,7 +40,8 @@ import indicatorFilterKeys from '../../data/filter-keys-schema/indicatorFilterKe
 
 import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../src/modules/draftWorkspace/draftWorkspace-types';
-import { WORKFLOW_INSTANCE_STATUS_FILTER } from '../../../src/utils/filtering/filtering-constants';
+import { WORKFLOW_FILTER, WORKFLOW_INSTANCE_STATUS_FILTER, X_OPENCTI_WORKFLOW_ID } from '../../../src/utils/filtering/filtering-constants';
+import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/grouping-types';
 import { ENTITY_TYPE_VULNERABILITY } from '../../../src/modules/vulnerability/vulnerability-types';
 
@@ -253,15 +254,18 @@ describe('Filter keys schema generation testing', async () => {
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_OBJECT)?.get('indicator_types');
     expect(filterDefinition?.type).toEqual('vocabulary');
   });
-  it('should construct correct filter definition for DraftWorkspace workflow instance status', () => {
-    const filterDefinition = filterKeysSchema.get(ENTITY_TYPE_DRAFT_WORKSPACE)?.get(WORKFLOW_INSTANCE_STATUS_FILTER);
-    expect(filterDefinition?.filterKey).toEqual(WORKFLOW_INSTANCE_STATUS_FILTER);
+  it('should construct correct filter definition for DraftWorkspace workflow status', () => {
+    expect(filterKeysSchema.get(ENTITY_TYPE_DRAFT_WORKSPACE)?.get(WORKFLOW_INSTANCE_STATUS_FILTER)).toBeUndefined();
+    const filterDefinition = filterKeysSchema.get(ENTITY_TYPE_DRAFT_WORKSPACE)?.get(WORKFLOW_FILTER);
+    expect(filterDefinition?.filterKey).toEqual(WORKFLOW_FILTER);
     expect(filterDefinition?.type).toEqual('id');
     expect(filterDefinition?.label).toEqual('Workflow status');
-    expect(filterDefinition?.multiple).toEqual(true);
+    expect(filterDefinition?.multiple).toEqual(false);
     expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(1);
     expect(filterDefinition?.elementsForFilterValuesSearch[0]).toEqual(ENTITY_TYPE_STATUS_TEMPLATE);
     expect(filterDefinition?.subEntityTypes.length).toEqual(1);
     expect(filterDefinition?.subEntityTypes[0]).toEqual(ENTITY_TYPE_DRAFT_WORKSPACE);
+    // workflow_id is resolved natively: drafts must carry the projected status like any entity with a workflow
+    expect(schemaAttributesDefinition.getAttribute(ENTITY_TYPE_DRAFT_WORKSPACE, X_OPENCTI_WORKFLOW_ID)).toBeDefined();
   });
 });

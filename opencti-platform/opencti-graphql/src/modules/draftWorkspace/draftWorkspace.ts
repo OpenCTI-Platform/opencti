@@ -7,6 +7,7 @@ import convertDraftWorkspaceToStix from './draftWorkspace-converter';
 import { getDraftStatuses } from './draftStatuses';
 import { ENTITY_TYPE_WORK } from '../../schema/internalObject';
 import { createdBy, objectAssignee, objectParticipant } from '../../schema/stixRefRelationship';
+import { workflowId } from '../attributes/stixDomainObject-registrationAttributes';
 
 const DRAFT_WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityDraftWorkspace, StixDraftWorkspace> = {
   type: {
@@ -37,6 +38,8 @@ const DRAFT_WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityDraftWorkspace, St
     authorizedMembersActivationDate,
     updatedAt,
     { ...refreshedAt, isFilterable: false },
+    // Projected from the WorkflowInstance, as on any entity with a workflow: drafts filter on workflow_id natively
+    workflowId,
   ],
   relations: [],
   relationsRefs: [createdBy, objectAssignee, objectParticipant],
