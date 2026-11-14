@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { AbortError } from 'node-fetch';
 import { errors as openSearchErrors } from '@opensearch-project/opensearch';
 import { elExecuteWithAbortSignal, wrapEngineError } from '../../../src/database/engine';
-import { CLIENT_ABORT_ERROR, DATABASE_ERROR } from '../../../src/config/errors';
+import { CLIENT_ABORT_ERROR, ClientAbortError, DATABASE_ERROR, DatabaseError } from '../../../src/config/errors';
 
 // wrapEngineError is the single, shared classification point used by every
 // call site that catches an error from an abort-signal-aware engine
@@ -64,6 +64,24 @@ describe('wrapEngineError testing', () => {
 
     expect(wrapped.extensions?.code).toBe(CLIENT_ABORT_ERROR);
     expect(wrapped.extensions?.code).not.toBe(DATABASE_ERROR);
+  });
+
+  it('should keep an abort already classified by a nested engine call as CLIENT_ABORT_ERROR (#19586)', () => {
+    // elPaginate wraps the error of its regardingOf post filtering, which already is a CLIENT_ABORT_ERROR
+    const innerAbort = ClientAbortError('Fail to execute engine pagination', { cause: new AbortError('aborted') });
+
+    const wrapped = wrapEngineError('Fail to execute engine pagination', innerAbort, { query: '{}' });
+
+    expect(wrapped.extensions?.code).toBe(CLIENT_ABORT_ERROR);
+    expect((wrapped.extensions?.data as Record<string, any>).cause).toBe(innerAbort);
+  });
+
+  it('should keep a nested DATABASE_ERROR a DATABASE_ERROR', () => {
+    const innerFailure = DatabaseError('Fail to execute engine pagination', { cause: new Error('circuit_breaking_exception') });
+
+    const wrapped = wrapEngineError('Fail to execute engine pagination', innerFailure, {});
+
+    expect(wrapped.extensions?.code).toBe(DATABASE_ERROR);
   });
 });
 
