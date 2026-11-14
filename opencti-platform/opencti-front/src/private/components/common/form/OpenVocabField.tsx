@@ -95,10 +95,10 @@ const OpenVocabFieldComponent = ({
   const { vocabularies } = usePreloadedQuery(vocabularyQuery, queryRef);
   const openVocabList = (vocabularies?.edges ?? [])
     .filter(({ node }) => node.is_hidden !== true)
-    .map(({ node: { name: value, description, category } }) => ({
+    .map(({ node: { name: value, description, category } }): VocabFieldOption => ({
       value,
       label: value,
-      description,
+      description: description ?? undefined,
       category: category.key,
     }))
     .filter((option) => !optionFilter || optionFilter(option))
