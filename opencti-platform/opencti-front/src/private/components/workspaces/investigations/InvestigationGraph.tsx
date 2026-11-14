@@ -1,11 +1,12 @@
 import { graphql, PreloadedQuery, useFragment } from 'react-relay';
-import React, { CSSProperties, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import React, { CSSProperties, Suspense, useEffect, useMemo, useRef } from 'react';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { useTheme } from '@mui/material/styles';
 import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
 import fetchMetaObjectsCount from '@components/workspaces/investigations/utils/fetchMetaObjectsCount';
 import WorkspaceHeader from '@components/workspaces/workspaceHeader/WorkspaceHeader';
 import { useInvestigationState } from '@components/workspaces/investigations/utils/useInvestigationState';
+import useInvestigationObjects from '@components/workspaces/investigations/utils/useInvestigationObjects';
 import { InvestigationGraphObjectsQuery } from './__generated__/InvestigationGraphObjectsQuery.graphql';
 import { InvestigationGraphObjects_fragment$key } from './__generated__/InvestigationGraphObjects_fragment.graphql';
 import { InvestigationGraphQuery$data } from './__generated__/InvestigationGraphQuery.graphql';
@@ -16,7 +17,6 @@ import { InvestigationGraph_fragment$key } from './__generated__/InvestigationGr
 import type { Theme } from '../../../../components/Theme';
 import Graph from '../../../../components/graph/Graph';
 import { OctiGraphPositions } from '../../../../components/graph/graph.types';
-import { getObjectsToParse } from '../../../../components/graph/utils/graphUtils';
 import { GraphProvider, useGraphContext } from '../../../../components/graph/GraphContext';
 import GraphToolbar, { GraphToolbarProps } from '../../../../components/graph/GraphToolbar';
 import { deserializeObjectB64, serializeObjectB64 } from '../../../../utils/object';
@@ -26,6 +26,9 @@ import useDebounceCallback from '../../../../utils/hooks/useDebounceCallback';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
 import { ObjectToParse } from '../../../../components/graph/utils/useGraphParser';
+import { useFormatter } from '../../../../components/i18n';
+import InvestigationViewSwitcher, { INVESTIGATION_MATRIX_EXPORT_ID, useInvestigationView } from './InvestigationViewSwitcher';
+import InvestigationMatrix from './matrix/InvestigationMatrix';
 
 const investigationGraphDataFragment = graphql`
   fragment InvestigationGraphData_fragment on Workspace {
@@ -446,6 +449,8 @@ const InvestigationGraphComponent = ({
 }: InvestigationGraphComponentProps) => {
   const ref = useRef(null);
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
+  const view = useInvestigationView();
   const bannerHeight = useSettingsMessagesBannerHeight();
   const { rawObjects } = useGraphContext();
 
@@ -479,6 +484,7 @@ const InvestigationGraphComponent = ({
   const graphContainerStyle: CSSProperties = {
     margin: `0 -${theme.spacing(3)}`,
     height: `calc(100vh - ${totalHeight}px)`,
+    position: 'relative',
   };
 
   const savePositions = (positions: OctiGraphPositions) => {
@@ -586,20 +592,34 @@ const InvestigationGraphComponent = ({
         variant="investigation"
         handleAddWidget={undefined}
         adjust={undefined}
+        exportElementId={view === 'matrix' ? INVESTIGATION_MATRIX_EXPORT_ID : undefined}
+        exportName={view === 'matrix' ? `${investigation.name} - ${t_i18n('Tactics matrix')}` : undefined}
+        viewSwitcher={<InvestigationViewSwitcher investigationId={investigation.id} />}
       />
       <div style={graphContainerStyle} ref={ref}>
-        <Graph parentRef={ref} onPositionsChanged={savePositions}>
-          <GraphToolbar
-            onUnfixNodes={() => savePositions({})}
-            stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
-            relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
-            entity={investigation}
-            onAddRelation={addRelation}
-            onRemove={remove}
-            onInvestigationExpand={expand}
-            onInvestigationRollback={rollback}
-          />
-        </Graph>
+        {/* The graph is never unmounted: hiding it keeps zoom, positions and selection. */}
+        <div style={{ visibility: view === 'matrix' ? 'hidden' : 'visible', height: '100%' }}>
+          <Graph parentRef={ref} onPositionsChanged={savePositions}>
+            <GraphToolbar
+              onUnfixNodes={() => savePositions({})}
+              stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
+              relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
+              entity={investigation}
+              onAddRelation={addRelation}
+              onRemove={remove}
+              onInvestigationExpand={expand}
+              onInvestigationRollback={rollback}
+            />
+          </Graph>
+        </div>
+        {view === 'matrix' && (
+          <div style={{ position: 'absolute', inset: 0, overflow: 'auto' }}>
+            <InvestigationMatrix
+              investigationId={investigation.id}
+              investigationName={investigation.name}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -623,7 +643,6 @@ const InvestigationGraphLoader = ({
   ...otherProps
 }: InvestigationGraphLoaderProps) => {
   const localStorageKey = `investigation-graph-${investigationId}`;
-  const [dataLoaded, setDataLoaded] = useState(0);
 
   const {
     data: { workspace },
@@ -653,24 +672,10 @@ const InvestigationGraphLoader = ({
     }
   }, [isLoadingMore(), hasMore()]);
 
-  useEffect(() => {
-    setDataLoaded(workspace?.objects?.edges?.length ?? 0);
-  }, [workspace]);
-
   const { graph_data } = useFragment(investigationGraphDataFragment, dataPositions);
 
-  // The graph keeps its own objects once loaded: an expand saves its ids without updating the connection,
-  // so the objects are set again only when a page adds ids. Watching the whole workspace would reset the
-  // graph, and drop the expanded objects, whenever a query writes a field of an object already loaded.
-  const loadedIdsKey = (workspace?.objects?.edges ?? []).map((edge) => edge?.node?.id).join(',');
-  const [objects, setObjects] = useState<ObjectToParse[]>([]);
-  useEffect(() => {
-    const workspaceObjects = workspace ? getObjectsToParse(workspace) : [];
-    async function fetchCounts() {
-      setObjects(await fetchMetaObjectsCount(workspaceObjects));
-    }
-    fetchCounts();
-  }, [loadedIdsKey]);
+  // The loaded count only moves once the matching objects are published.
+  const { objects, loadedCount: dataLoaded } = useInvestigationObjects(workspace);
 
   const positions = useMemo(() => deserializeObjectB64(graph_data), [graph_data]);
 
