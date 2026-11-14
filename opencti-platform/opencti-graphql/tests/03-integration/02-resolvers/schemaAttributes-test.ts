@@ -3,6 +3,7 @@ import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
+import { ATTRIBUTE_DESCRIPTIONS, ATTRIBUTE_DESCRIPTIONS_BY_TYPE } from '../../../src/schema/attribute-descriptions';
 
 const SCHEMA_ATTRIBUTES = gql`
   query SchemaAttributesTest($entityType: String) {
@@ -123,13 +124,20 @@ describe('schemaAttributes', () => {
     expect(schemaAttributes).toEqual([]);
   });
 
-  it('should describe the custom fields and return null for an undescribed native attribute', async () => {
+  it('should describe the custom fields, the native attributes and the refs', async () => {
     const [malware] = await querySchemaAttributes(ENTITY_TYPE_MALWARE);
     const riskLevel = malware.attributes.find((attribute) => attribute.name === RISK_LEVEL);
     expect(riskLevel).toEqual({ name: RISK_LEVEL, label: 'Risk level', description: 'Risk level assessed by the analysts', mandatory: true, defaultValues: null });
-    // The native attributes are described in a next step: until then, their description is null
     const name = malware.attributes.find((attribute) => attribute.name === 'name');
-    expect(name?.description).toBeNull();
+    expect(name?.description).toEqual(ATTRIBUTE_DESCRIPTIONS.name);
+    const createdBy = malware.attributes.find((attribute) => attribute.name === 'createdBy');
+    expect(createdBy?.description).toEqual(ATTRIBUTE_DESCRIPTIONS.createdBy);
+  });
+
+  it('should describe an attribute with the override of its type', async () => {
+    const [note] = await querySchemaAttributes(ENTITY_TYPE_CONTAINER_NOTE);
+    const content = note.attributes.find((attribute) => attribute.name === 'content');
+    expect(content?.description).toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_TYPE_CONTAINER_NOTE].content);
   });
 
   it('should report the effective mandatory status and default value set in Entity Settings', async () => {
