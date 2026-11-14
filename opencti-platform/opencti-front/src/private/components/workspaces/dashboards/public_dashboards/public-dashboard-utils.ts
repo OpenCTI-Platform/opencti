@@ -1,6 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
 import { copyToClipboard } from '../../../../../utils/utils';
 import { APP_BASE_PATH } from '../../../../../relay/environment';
+import type { FieldOption } from '../../../../../utils/field';
+import type { DashboardConfig, DashboardVariable } from '../../../../../components/dashboard/dashboard-types';
+import { deserializeDashboardManifestForFrontend } from '../../../../../components/dashboard/dashboard-utils';
+import { buildDefaultVariableValues, isValidVariableValue, widgetVariableIds } from '../../../../../components/dashboard/dashboardVariablesResolution';
+import { dashboardVariablesStorageKey, parseVariablesParam, readStoredVariableValues } from '../../../../../components/dashboard/dashboardVariablesStorage';
+import { dashboardTimeRangeStorageKey, parseTimeRangeParam, readStoredTimeRange } from '../../../../../components/dashboard/dashboardTimeRangeStorage';
 
 /**
  * Generates a URI key slug from a dashboard name.
@@ -17,4 +23,179 @@ export const copyPublicDashboardLinkUrl = (t: (text: string) => string, uriKey: 
     t,
     `${window.location.origin}${APP_BASE_PATH}/public/dashboard/${uriKey.toLowerCase()}`,
   );
+};
+
+export type PublishedDateField = 'startDate' | 'endDate' | 'relativeDate';
+
+// The time range of a dashboard config, every field present (null when empty).
+export type PublishedTimeRange = Required<Pick<DashboardConfig, PublishedDateField>>;
+
+export interface PublicDashboardCreationFormData {
+  name: string;
+  enabled: boolean;
+  uri_key: string;
+  max_markings: FieldOption[];
+  dashboard_id: string;
+  // Frozen in the public dashboard (dashboard variables feature), keyed by variable id
+  variable_values: Record<string, string>;
+  time_range: PublishedTimeRange;
+  // A date picker of the range shows a date it refuses (malformed, or in the future), which the range does not hold
+  time_range_invalid?: boolean;
+}
+
+// A dashboard as the creation form loads it: the manifest holds the widgets and the variables.
+export interface PublishableDashboard {
+  id: string;
+  manifest?: string | null;
+}
+
+export const EMPTY_PUBLISHED_TIME_RANGE: PublishedTimeRange = { startDate: null, endDate: null, relativeDate: null };
+
+export const pickPublishedTimeRange = (config: DashboardConfig | undefined): PublishedTimeRange => ({
+  startDate: config?.startDate ?? null,
+  endDate: config?.endDate ?? null,
+  relativeDate: config?.relativeDate ?? null,
+});
+
+export const isSamePublishedTimeRange = (a: PublishedTimeRange, b: PublishedTimeRange) => (
+  a.startDate === b.startDate && a.endDate === b.endDate && a.relativeDate === b.relativeDate
+);
+
+/**
+ * The variables offered when publishing: only those used by a widget, the others having no effect on the published
+ * dashboard. In the manifest order. The usage is read from the widgets of the manifest the form already holds.
+ */
+export const buildPublishedVariables = (
+  variables: readonly DashboardVariable[],
+  widgets: Record<string, unknown> | undefined,
+): DashboardVariable[] => {
+  const used = new Set(Object.values(widgets ?? {}).flatMap(widgetVariableIds));
+  return variables.filter((variable) => used.has(variable.id));
+};
+
+/**
+ * Value of each variable: the one the user sees on the dashboard (stored locally) when still valid, else its default.
+ */
+export const buildPublishedVariableValues = (variables: DashboardVariable[], stored: Record<string, string>): Record<string, string> => {
+  const values = Object.fromEntries(buildDefaultVariableValues(variables));
+  variables.forEach((variable) => {
+    const value = stored[variable.id];
+    if (value !== undefined && isValidVariableValue(variable, value)) values[variable.id] = value;
+  });
+  return values;
+};
+
+/**
+ * Whether `pathname` is the page of the dashboard `dashboardId`.
+ */
+const isDashboardPage = (pathname: string, dashboardId: string) => {
+  const segments = pathname.split('/');
+  return segments.some((segment, index) => segment === dashboardId && segments[index - 1] === 'dashboards');
+};
+
+/**
+ * Values the form starts from for the selected dashboard, and starts again from when another one is selected: what
+ * the author sees on the dashboard, with the same precedence as the page (URL, then this browser, then the default).
+ * The URL only speaks for the dashboard it shows: it is read for the dashboard of the page, never for another one.
+ * The time range follows the same precedence: the one of the address on the page, else the one kept in this browser,
+ * else the one of the dashboard.
+ */
+export const buildPublishedValuesState = (
+  dashboard: PublishableDashboard | undefined,
+  userId: string,
+  search: string = window.location.search,
+  pathname: string = window.location.pathname,
+): Pick<PublicDashboardCreationFormData, 'variable_values' | 'time_range'> => {
+  if (!dashboard) return { variable_values: {}, time_range: EMPTY_PUBLISHED_TIME_RANGE };
+  const manifest = deserializeDashboardManifestForFrontend(dashboard.manifest);
+  const variables = buildPublishedVariables(manifest.variables ?? [], manifest.widgets);
+  const onPage = isDashboardPage(pathname, dashboard.id);
+  const stored = {
+    ...readStoredVariableValues(dashboardVariablesStorageKey(userId, dashboard.id)),
+    ...(onPage ? parseVariablesParam(search) : {}),
+  };
+  const localRange = (onPage ? parseTimeRangeParam(search) : null) ?? readStoredTimeRange(dashboardTimeRangeStorageKey(userId, dashboard.id));
+  return {
+    variable_values: buildPublishedVariableValues(variables, stored),
+    time_range: pickPublishedTimeRange(localRange ?? manifest.config),
+  };
+};
+
+/**
+ * Whether the value of a variable is typed in the publication form (free text or number): emptying it is a step of
+ * the typing, not a choice of the author. The other inputs pick a value, and empty them is a deliberate clear.
+ */
+export const isTypedPublishedVariable = (variable: Pick<DashboardVariable, 'type' | 'restriction'>) => (
+  variable.restriction.mode !== 'selection' && (variable.type === 'text' || variable.type === 'numeric')
+);
+
+/**
+ * The value a field of the publication form takes on change. An empty value publishes the default of the variable:
+ * a cleared picker shows that default again, so that the form never shows an empty field for a filtered value. A typed
+ * field keeps its empty draft while the author types, and says that the default applies.
+ */
+export const applyPublishedVariableChange = (
+  variable: DashboardVariable,
+  value: string,
+): string => {
+  if (value !== '' || isTypedPublishedVariable(variable)) return value;
+  return buildDefaultVariableValues([variable]).get(variable.id) ?? '';
+};
+
+/**
+ * Whether the published absolute range is ordered, with the rule the server applies on publication: a start after
+ * its end is refused, an equal start and end is accepted, and a relative date overrides the absolute dates.
+ */
+export const isOrderedPublishedTimeRange = ({ relativeDate, startDate, endDate }: PublishedTimeRange) => (
+  relativeDate !== null || startDate === null || endDate === null || Date.parse(startDate) <= Date.parse(endDate)
+);
+
+/**
+ * Same rule as the time filters of a dashboard: `none` empties the field, a relative date clears the absolute ones.
+ */
+export const applyPublishedTimeRangeChange = (
+  range: PublishedTimeRange,
+  type: PublishedDateField,
+  value: string | null,
+): PublishedTimeRange => {
+  const next = { ...range, [type]: value === 'none' ? null : value };
+  return type === 'relativeDate' && value !== 'none' ? { ...next, startDate: null, endDate: null } : next;
+};
+
+/**
+ * Input of the creation mutation. The published values are only sent with the dashboard variables feature:
+ * without it, the input is exactly the one of before.
+ */
+export interface PublicDashboardPublicationInput {
+  name: string;
+  enabled: boolean;
+  uri_key: string;
+  dashboard_id: string;
+  allowed_markings_ids: string[];
+  variable_values?: { variable_id: string; value: string }[];
+  time_range?: { relative_date: string | null; start_date: string | null; end_date: string | null };
+  time_zone?: string;
+}
+
+export const buildPublicationInput = (values: PublicDashboardCreationFormData, isVariablesEnabled: boolean): PublicDashboardPublicationInput => {
+  const input = {
+    name: values.name,
+    enabled: values.enabled,
+    uri_key: values.uri_key,
+    dashboard_id: values.dashboard_id,
+    allowed_markings_ids: values.max_markings.map((marking) => marking.value),
+  };
+  if (!isVariablesEnabled) return input;
+  return {
+    ...input,
+    variable_values: Object.entries(values.variable_values)
+      .filter(([, value]) => value !== '')
+      .map(([variableId, value]) => ({ variable_id: variableId, value })),
+    time_range: {
+      relative_date: values.time_range.relativeDate,
+      start_date: values.time_range.startDate,
+      end_date: values.time_range.endDate,
+    },
+    time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  };
 };

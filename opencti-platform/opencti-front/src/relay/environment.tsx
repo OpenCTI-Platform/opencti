@@ -51,6 +51,7 @@ export const MESSAGING$ = {
     MESSENGER$.next(messages);
   },
   notifySuccess: (text: unknown) => MESSENGER$.next([{ type: 'message', text }]),
+  notifyWarning: (text: unknown) => MESSENGER$.next([{ type: 'warning', text }]),
   notifyNLQ: (text: unknown) => MESSENGER$.next([{ type: 'nlq', text }]),
   toggleNav: new Subject(),
   redirect: new Subject(),
