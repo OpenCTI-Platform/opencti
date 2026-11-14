@@ -480,7 +480,7 @@ describe('Elasticsearch pagination', () => {
       first: ES_MAX_PAGINATION,
     });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(2);
+    expect(data.edges.length).toEqual(5);
   });
   it('should entity paginate domain objects sort by published', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
