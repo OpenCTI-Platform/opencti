@@ -2469,6 +2469,8 @@ type Connector implements BasicObject & InternalObject {
   auto: Boolean
   auto_update: Boolean
   built_in: Boolean
+  catalog_identity: ConnectorCatalogIdentity
+  catalog_slug_manual: String
   config: ConnectorConfig
   configurations: [ConnectorConfiguration!]
   connector_info: ConnectorInfo
@@ -2519,6 +2521,29 @@ type Connector implements BasicObject & InternalObject {
   version: String
   works(status: String): [Work]
   xtm_one_intent: String
+}
+
+type ConnectorCatalogIdentity {
+  logo: String
+  short_description: String
+  slug: String!
+  source: ConnectorCatalogIdentitySource!
+  title: String!
+}
+
+type ConnectorCatalogIdentityOption {
+  connector_type: String
+  logo: String
+  short_description: String
+  slug: String!
+  title: String!
+}
+
+enum ConnectorCatalogIdentitySource {
+  composer
+  manual
+  name
+  reported
 }
 
 type ConnectorConfig {
@@ -9729,6 +9754,7 @@ type Mutation {
   triggerKnowledgeFieldPatch(id: ID!, input: [EditInput!]!): Trigger
   triggerKnowledgeLiveAdd(input: TriggerLiveAddInput!): Trigger
   triggerWorkflowEvent(closingReason: String, comment: String, entityId: String!, eventName: String!, runtimeParams: JSON): WorkflowTriggerResult!
+  updateConnectorCatalogIdentity(id: ID!, slug: String): Connector
   updateConnectorCurrentStatus(input: CurrentConnectorStatusInput!): ManagedConnector
   updateConnectorHealth(input: HealthConnectorStatusInput!): ID!
   updateConnectorLogs(input: LogsConnectorStatusInput!): ID!
@@ -11943,6 +11969,7 @@ type Query {
   configPresetImportRunning: ConfigPresetImportRunning!
   configPresetImportSession: ConfigPresetImportSession
   connector(id: String!): Connector
+  connectorCatalogIdentityOptions: [ConnectorCatalogIdentityOption!]!
   connectorManager(managerId: ID!): ConnectorManager!
   connectorManagers: [ConnectorManager!]!
   connectorMigrationAssessment(configuration: [ContractConfigInput!], connectorId: ID!, containerImage: String!): MigrationAssessment!
