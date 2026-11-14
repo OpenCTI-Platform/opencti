@@ -6338,5 +6338,6 @@
   "Asset subcategory": "자산 하위 범주",
   "Internet facing": "인터넷 노출",
   "Criticality": "중요도",
-  "Environment": "환경"
+  "Environment": "환경",
+  "Asset owner": "자산 소유자"
 }

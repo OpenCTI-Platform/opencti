@@ -58,7 +58,7 @@ class SystemDetailsComponent extends Component {
                 </React.Fragment>
               ))}
               <Label sx={{ marginTop: 2 }}>
-                {t('Owner')}
+                {t('Asset owner')}
               </Label>
               <FieldOrEmpty source={system.x_opencti_owner}>
                 {system.x_opencti_owner}

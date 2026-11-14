@@ -6338,5 +6338,6 @@
   "Asset subcategory": "Subcategoría de activo",
   "Internet facing": "Expuesto a Internet",
   "Criticality": "Criticidad",
-  "Environment": "Entorno"
+  "Environment": "Entorno",
+  "Asset owner": "Propietario del activo"
 }

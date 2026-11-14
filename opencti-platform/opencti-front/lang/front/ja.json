@@ -6338,5 +6338,6 @@
   "Asset subcategory": "アセットサブカテゴリ",
   "Internet facing": "インターネット公開",
   "Criticality": "重要度",
-  "Environment": "環境"
+  "Environment": "環境",
+  "Asset owner": "アセット所有者"
 }

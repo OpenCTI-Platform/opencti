@@ -1335,5 +1335,6 @@
   "Internet facing": "Esposto a Internet",
   "Criticality": "Criticità",
   "Environment": "Ambiente",
-  "Platform": "Piattaforma"
+  "Platform": "Piattaforma",
+  "Asset owner": "Proprietario dell'asset"
 }

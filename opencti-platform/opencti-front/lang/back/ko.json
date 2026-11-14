@@ -1335,5 +1335,6 @@
   "Internet facing": "인터넷 노출",
   "Criticality": "중요도",
   "Environment": "환경",
-  "Platform": "플랫폼"
+  "Platform": "플랫폼",
+  "Asset owner": "자산 소유자"
 }

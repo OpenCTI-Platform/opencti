@@ -1335,5 +1335,6 @@
   "Internet facing": "Доступен из интернета",
   "Criticality": "Критичность",
   "Environment": "Среда",
-  "Platform": "Платформа"
+  "Platform": "Платформа",
+  "Asset owner": "Владелец актива"
 }

@@ -6338,5 +6338,6 @@
   "Asset subcategory": "Подкатегория актива",
   "Internet facing": "Доступен из интернета",
   "Criticality": "Критичность",
-  "Environment": "Среда"
+  "Environment": "Среда",
+  "Asset owner": "Владелец актива"
 }

@@ -1335,5 +1335,6 @@
   "Internet facing": "インターネット公開",
   "Criticality": "重要度",
   "Environment": "環境",
-  "Platform": "プラットフォーム"
+  "Platform": "プラットフォーム",
+  "Asset owner": "アセット所有者"
 }
