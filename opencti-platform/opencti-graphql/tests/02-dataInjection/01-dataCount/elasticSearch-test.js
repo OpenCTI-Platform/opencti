@@ -480,7 +480,7 @@ describe('Elasticsearch pagination', () => {
       first: ES_MAX_PAGINATION,
     });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(2);
+    expect(data.edges.length).toEqual(3);
   });
   it('should entity paginate domain objects sort by published', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
@@ -539,7 +539,7 @@ describe('Elasticsearch pagination', () => {
     let data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: 'malicious' });
     expect(data.edges.length).toEqual(28);
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: 'with malicious' });
-    expect(data.edges.length).toEqual(61);
+    expect(data.edges.length).toEqual(64); // 61 + 3 System asset vocabulary descriptions with "with"
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: '"with malicious"' });
     expect(data.edges.length).toEqual(2);
   });
