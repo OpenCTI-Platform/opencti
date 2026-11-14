@@ -12,10 +12,10 @@ vi.mock('reactflow', () => ({
 }));
 
 // hover: 'lit' when this node is in the hovered neighbourhood, 'dimmed' when another one is hovered.
-const render = (color?: string, hover?: 'lit' | 'dimmed') => testRender(
+const render = (color?: string, hover?: 'lit' | 'dimmed', requestAccessOutcome?: 'APPROVED' | 'DECLINED') => testRender(
   <HoverHighlightContext.Provider value={hover ? { nodeIds: new Set([hover === 'lit' ? 'n1' : 'other']), edgeIds: new Set() } : null}>
     <StatusNode
-      {...({ id: 'n1', data: { statusTemplate: { name: 'in_progress', color } } } as unknown as NodeProps)}
+      {...({ id: 'n1', data: { statusTemplate: { name: 'in_progress', color }, requestAccessOutcome } } as unknown as NodeProps)}
     />
   </HoverHighlightContext.Provider>,
 );
@@ -65,5 +65,22 @@ describe('StatusNode', () => {
   it('fades while another node is hovered', () => {
     const { container } = render('#ff9800', 'dimmed');
     expect(container.querySelector<HTMLElement>('.workflow-status-node')!.style.opacity).toBe('0.3');
+  });
+
+  it('renders an Approved badge', () => {
+    render('#ff9800', undefined, 'APPROVED');
+    expect(screen.getByText('Approved')).toBeInTheDocument();
+    expect(screen.getByText('In progress')).toBeInTheDocument();
+  });
+
+  it('renders a Declined badge', () => {
+    render('#ff9800', undefined, 'DECLINED');
+    expect(screen.getByText('Declined')).toBeInTheDocument();
+  });
+
+  it('renders no badge on a state without outcome', () => {
+    render('#ff9800');
+    expect(screen.queryByText('Approved')).toBeNull();
+    expect(screen.queryByText('Declined')).toBeNull();
   });
 });

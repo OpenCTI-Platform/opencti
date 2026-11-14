@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
+import { ActionDefinitions, ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
+import { addOrganizationRestriction, createSharingTask, removeOrganizationRestriction } from '../../../src/domain/stix';
+import { controlUserConfidenceAgainstElement } from '../../../src/utils/confidence-level';
+import { internalLoadById } from '../../../src/database/middleware-loader';
+import { deleteTask } from '../../../src/domain/backgroundTask';
 
 vi.mock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
   validateDraftWorkspace: vi.fn(),
@@ -20,14 +24,44 @@ vi.mock('../../../src/schema/stixRefRelationship', () => ({
   RELATION_CREATED_BY: 'created-by',
   RELATION_OBJECT_ASSIGNEE: 'object-assignee',
   RELATION_OBJECT_PARTICIPANT: 'object-participant',
+  RELATION_GRANTED_TO: 'granted',
+}));
+
+// The real schema module pulls the attribute definitions, which need the full conf
+vi.mock('../../../src/schema/stixDomainObject', () => ({
+  isStixDomainObjectShareableContainer: (type: string) => type === 'Report',
+}));
+
+vi.mock('../../../src/utils/confidence-level', () => ({
+  controlUserConfidenceAgainstElement: vi.fn(),
 }));
 
 vi.mock('../../../src/utils/authorizedMembers', () => ({
   editAuthorizedMembers: vi.fn(),
 }));
 
+const { SYSTEM_USER_ID, WORKFLOW_MANAGER_USER_ID } = vi.hoisted(() => ({
+  SYSTEM_USER_ID: '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505',
+  WORKFLOW_MANAGER_USER_ID: '0a9592ed-0e00-4585-a4e8-219e33f4db48',
+}));
+
 vi.mock('../../../src/utils/access', () => ({
   KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS: 'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS',
+  isInternalUser: (user: { id: string }) => [SYSTEM_USER_ID, WORKFLOW_MANAGER_USER_ID].includes(user.id),
+}));
+
+vi.mock('../../../src/domain/stix', () => ({
+  addOrganizationRestriction: vi.fn(),
+  createSharingTask: vi.fn(),
+  removeOrganizationRestriction: vi.fn(),
+}));
+
+vi.mock('../../../src/domain/backgroundTask', () => ({
+  deleteTask: vi.fn(),
+}));
+
+vi.mock('../../../src/database/middleware-loader', () => ({
+  internalLoadById: vi.fn(),
 }));
 
 // ---------------------------------------------------------------------------
@@ -186,6 +220,8 @@ describe('ActionRegistry.updateAuthorizedMembers (AUTHOR)', () => {
 
   beforeEach(async () => {
     vi.resetModules();
+    // The real conf loaded below pulls the vocabulary definitions, which need the real schema constants.
+    vi.doMock('../../../src/schema/stixDomainObject', async (importOriginal) => importOriginal());
     vi.doMock('../../../src/utils/authorizedMembers', () => ({ editAuthorizedMembers: vi.fn() }));
     vi.doMock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
       validateDraftWorkspace: vi.fn(),
@@ -270,6 +306,8 @@ describe('ActionRegistry.updateAuthorizedMembers (CREATORS)', () => {
 
   beforeEach(async () => {
     vi.resetModules();
+    // The real conf loaded below pulls the vocabulary definitions, which need the real schema constants.
+    vi.doMock('../../../src/schema/stixDomainObject', async (importOriginal) => importOriginal());
     vi.doMock('../../../src/utils/authorizedMembers', () => ({ editAuthorizedMembers: vi.fn() }));
     vi.doMock('../../../src/schema/stixRefRelationship', () => ({ RELATION_CREATED_BY: 'created-by', RELATION_OBJECT_ASSIGNEE: 'object-assignee', RELATION_OBJECT_PARTICIPANT: 'object-participant' }));
     vi.doMock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
@@ -350,6 +388,8 @@ describe('ActionRegistry.updateAuthorizedMembers (ASSIGNEES)', () => {
 
   beforeEach(async () => {
     vi.resetModules();
+    // The real conf loaded below pulls the vocabulary definitions, which need the real schema constants.
+    vi.doMock('../../../src/schema/stixDomainObject', async (importOriginal) => importOriginal());
     vi.doMock('../../../src/utils/authorizedMembers', () => ({ editAuthorizedMembers: vi.fn() }));
     vi.doMock('../../../src/schema/stixRefRelationship', () => ({ RELATION_CREATED_BY: 'created-by', RELATION_OBJECT_ASSIGNEE: 'object-assignee', RELATION_OBJECT_PARTICIPANT: 'object-participant' }));
     vi.doMock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
@@ -431,6 +471,8 @@ describe('ActionRegistry.updateAuthorizedMembers (PARTICIPANTS)', () => {
 
   beforeEach(async () => {
     vi.resetModules();
+    // The real conf loaded below pulls the vocabulary definitions, which need the real schema constants.
+    vi.doMock('../../../src/schema/stixDomainObject', async (importOriginal) => importOriginal());
     vi.doMock('../../../src/utils/authorizedMembers', () => ({ editAuthorizedMembers: vi.fn() }));
     vi.doMock('../../../src/schema/stixRefRelationship', () => ({ RELATION_CREATED_BY: 'created-by', RELATION_OBJECT_ASSIGNEE: 'object-assignee', RELATION_OBJECT_PARTICIPANT: 'object-participant' }));
     vi.doMock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
@@ -514,6 +556,8 @@ describe('ActionRegistry.validateDraft', () => {
 
   beforeEach(async () => {
     vi.resetModules();
+    // The real conf loaded below pulls the vocabulary definitions, which need the real schema constants.
+    vi.doMock('../../../src/schema/stixDomainObject', async (importOriginal) => importOriginal());
     mockValidateDraftWorkspace = vi.fn().mockResolvedValue(undefined);
     vi.doMock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
       validateDraftWorkspace: mockValidateDraftWorkspace,
@@ -568,6 +612,8 @@ describe('ActionRegistry.updateAuthorizedMembers (skipAdminValidation)', () => {
 
   beforeEach(async () => {
     vi.resetModules();
+    // The real conf loaded below pulls the vocabulary definitions, which need the real schema constants.
+    vi.doMock('../../../src/schema/stixDomainObject', async (importOriginal) => importOriginal());
     mockEditAuthorizedMembers = vi.fn().mockResolvedValue(undefined);
     mockDraftWorkspaceEditAuthorizedMembers = vi.fn().mockResolvedValue(undefined);
     vi.doMock('../../../src/utils/authorizedMembers', () => ({ editAuthorizedMembers: mockEditAuthorizedMembers }));
@@ -625,5 +671,264 @@ describe('ActionRegistry.updateAuthorizedMembers (skipAdminValidation)', () => {
       expect.any(Array),
       { skipAdminValidation: true },
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// shareRequestedEntities
+// ---------------------------------------------------------------------------
+
+describe('ActionRegistry.shareRequestedEntities', () => {
+  const makeRfiCtx = (
+    // The form records the requesting organization and sets it as the RFI author at creation
+    requestAccess: Record<string, unknown> | null = { entities: ['entity-1', 'entity-2'], members: ['org-author'] },
+    entityOverrides: Record<string, unknown> = {},
+  ) => ({
+    user: { id: 'workflow-manager-id' },
+    triggeringUser: { id: 'approver-id' },
+    context: { user: { id: 'approver-id' } },
+    entity: {
+      id: 'rfi-id',
+      internal_id: 'rfi-id',
+      entity_type: 'Case-Rfi',
+      'created-by': 'org-author',
+      ...(requestAccess ? { x_opencti_request_access: JSON.stringify(requestAccess) } : {}),
+      ...entityOverrides,
+    },
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => ({ id, internal_id: id }) as any);
+  });
+
+  it('is a sync-only action requiring at least one organization', () => {
+    const definition = ActionDefinitions.shareRequestedEntities;
+    expect(definition.allowedModes).toEqual(['sync']);
+    expect(definition.paramsSchema?.safeParse({ organizations: ['AUTHOR'] }).success).toBe(true);
+    expect(definition.paramsSchema?.safeParse({ organizations: [] }).success).toBe(false);
+  });
+
+  it('shares every requested entity with each resolved organization', async () => {
+    const ctx = makeRfiCtx();
+    await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR', 'org-extra'] });
+    expect(addOrganizationRestriction).toHaveBeenCalledTimes(2);
+    expect(addOrganizationRestriction).toHaveBeenNthCalledWith(1, ctx.context, ctx.triggeringUser, 'entity-1', ['org-author', 'org-extra']);
+    expect(addOrganizationRestriction).toHaveBeenNthCalledWith(2, ctx.context, ctx.triggeringUser, 'entity-2', ['org-author', 'org-extra']);
+  });
+
+  it('loads and shares with the triggering user, never the workflow manager', async () => {
+    const ctx = makeRfiCtx();
+    await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });
+    const usersUsed = [
+      ...vi.mocked(internalLoadById).mock.calls.map((call) => call[1]),
+      ...vi.mocked(addOrganizationRestriction).mock.calls.map((call) => call[1]),
+    ];
+    expect(usersUsed).toHaveLength(4);
+    expect(usersUsed.every((u) => u === ctx.triggeringUser)).toBe(true);
+  });
+
+  it('refuses to share when there is no triggering user', async () => {
+    const ctx = { ...makeRfiCtx(), triggeringUser: undefined };
+    await expect(ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] })).rejects.toThrow();
+    expect(internalLoadById).not.toHaveBeenCalled();
+    expect(addOrganizationRestriction).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['the system user', SYSTEM_USER_ID],
+    ['the workflow manager', WORKFLOW_MANAGER_USER_ID],
+  ])('refuses to share when the triggering user is %s', async (_label, internalUserId) => {
+    const ctx = { ...makeRfiCtx(), triggeringUser: { id: internalUserId } };
+    await expect(ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] })).rejects.toThrow();
+    expect(internalLoadById).not.toHaveBeenCalled();
+    expect(addOrganizationRestriction).not.toHaveBeenCalled();
+  });
+
+  it('resolves AUTHOR to the organization recorded on the request, never the RFI author', async () => {
+    const ctx = makeRfiCtx({ entities: ['entity-1'], members: ['org-requester'] }, { 'created-by': 'org-changed-by-an-editor' });
+    await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });
+    expect(addOrganizationRestriction).toHaveBeenCalledWith(ctx.context, ctx.triggeringUser, 'entity-1', ['org-requester']);
+  });
+
+  it('resolves AUTHOR to the first recorded member only, the organization validated at creation', async () => {
+    const ctx = makeRfiCtx({ entities: ['entity-1'], members: ['org-requester', 'org-smuggled'] });
+    await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });
+    expect(addOrganizationRestriction).toHaveBeenCalledWith(ctx.context, ctx.triggeringUser, 'entity-1', ['org-requester']);
+  });
+
+  it('throws before sharing anything when one target has restricted_members', async () => {
+    vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => (
+      { id, internal_id: id, ...(id === 'entity-2' ? { restricted_members: [{ id: 'member-1' }] } : {}) }
+    ) as any);
+    const ctx = makeRfiCtx();
+    await expect(ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] })).rejects.toThrow();
+    expect(addOrganizationRestriction).not.toHaveBeenCalled();
+  });
+
+  it('throws before sharing anything when a target cannot be loaded', async () => {
+    vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => (
+      id === 'entity-2' ? undefined : { id, internal_id: id }
+    ) as any);
+    const ctx = makeRfiCtx();
+    await expect(ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] })).rejects.toThrow();
+    expect(addOrganizationRestriction).not.toHaveBeenCalled();
+  });
+
+  it('throws when the entity is not a request-access RFI', async () => {
+    const notRfi = makeRfiCtx({ entities: ['entity-1'] }, { entity_type: 'Incident' });
+    await expect(ActionRegistry.shareRequestedEntities(notRfi, { organizations: ['AUTHOR'] })).rejects.toThrow();
+    const noRequest = makeRfiCtx(null);
+    await expect(ActionRegistry.shareRequestedEntities(noRequest, { organizations: ['AUTHOR'] })).rejects.toThrow();
+    expect(addOrganizationRestriction).not.toHaveBeenCalled();
+  });
+
+  it('throws a clear error when the request access data is malformed', async () => {
+    const invalidJson = makeRfiCtx(null, { x_opencti_request_access: '{not json' });
+    await expect(ActionRegistry.shareRequestedEntities(invalidJson, { organizations: ['AUTHOR'] })).rejects.toThrow('This RFI is not compatible');
+    const noEntities = makeRfiCtx({ members: ['org-requester'] });
+    await expect(ActionRegistry.shareRequestedEntities(noEntities, { organizations: ['AUTHOR'] })).rejects.toThrow('This RFI is not compatible');
+    const notAnObject = makeRfiCtx(null, { x_opencti_request_access: 'null' });
+    await expect(ActionRegistry.shareRequestedEntities(notAnObject, { organizations: ['AUTHOR'] })).rejects.toThrow('This RFI is not compatible');
+    expect(addOrganizationRestriction).not.toHaveBeenCalled();
+  });
+
+  it('throws when no organization can be resolved', async () => {
+    const ctx = makeRfiCtx({ entities: ['entity-1'] });
+    await expect(ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] })).rejects.toThrow();
+    expect(addOrganizationRestriction).not.toHaveBeenCalled();
+  });
+
+  it('resolves AUTHOR to the recorded organization on a request without RFI author', async () => {
+    const ctx = makeRfiCtx({ entities: ['entity-1'], members: ['org-requester'] }, { 'created-by': undefined });
+    await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR', 'org-extra'] });
+    expect(addOrganizationRestriction).toHaveBeenCalledWith(ctx.context, ctx.triggeringUser, 'entity-1', ['org-requester', 'org-extra']);
+  });
+
+  it('throws before sharing anything when the approver confidence is too low for one target', async () => {
+    vi.mocked(controlUserConfidenceAgainstElement).mockImplementation((_user: any, element: any) => {
+      if (element.id === 'entity-2') throw new Error('confidence');
+      return true;
+    });
+    const ctx = makeRfiCtx();
+    await expect(ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] })).rejects.toThrow('confidence');
+    expect(addOrganizationRestriction).not.toHaveBeenCalled();
+    vi.mocked(controlUserConfidenceAgainstElement).mockReset();
+  });
+
+  it('undoes the grants it added when a later share fails', async () => {
+    vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => (
+      { id, internal_id: id, entity_type: 'Malware', ...(id === 'entity-1' ? { 'rel_granted.internal_id': ['org-extra'] } : {}) }
+    ) as any);
+    vi.mocked(addOrganizationRestriction).mockImplementation(async (_context: any, _user: any, id: any) => {
+      if (id === 'entity-2') throw new Error('share refused');
+      return {} as any;
+    });
+    const ctx = makeRfiCtx();
+    await expect(ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR', 'org-extra'] })).rejects.toThrow('share refused');
+    expect(removeOrganizationRestriction).toHaveBeenCalledTimes(1);
+    expect(removeOrganizationRestriction).toHaveBeenCalledWith(ctx.context, ctx.triggeringUser, 'entity-1', ['org-author']);
+    vi.mocked(addOrganizationRestriction).mockReset();
+  });
+
+  it('shares containers last, after every direct share', async () => {
+    vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => (
+      { id, internal_id: id, entity_type: id === 'entity-1' ? 'Report' : 'Malware' }
+    ) as any);
+    const ctx = makeRfiCtx();
+    await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });
+    expect(vi.mocked(addOrganizationRestriction).mock.calls.map((call) => call[2])).toEqual(['entity-2', 'entity-1']);
+  });
+
+  describe('container share as a background task', () => {
+    const makeTrackedCtx = () => ({
+      ...makeRfiCtx(),
+      suspendingAsyncSlots: [] as any[],
+      __workflowInstanceId: 'instance-id',
+    });
+
+    beforeEach(() => {
+      vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => (
+        { id, internal_id: id, entity_type: id === 'entity-1' ? 'Report' : 'Malware', ...(id === 'entity-1' ? { 'rel_granted.internal_id': ['org-author'] } : {}) }
+      ) as any);
+      vi.mocked(createSharingTask).mockResolvedValue({ id: 'task-id', work_id: 'work-share' } as any);
+    });
+
+    it('queues the manual container share task, tied to the workflow instance, and registers a pending slot', async () => {
+      const ctx = makeTrackedCtx();
+      await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR', 'org-extra'] });
+
+      expect(vi.mocked(addOrganizationRestriction).mock.calls.map((call) => call[2])).toEqual(['entity-2']);
+      expect(createSharingTask).toHaveBeenCalledTimes(1);
+      expect(createSharingTask).toHaveBeenCalledWith(
+        { ...ctx.context, user: ctx.triggeringUser },
+        'SHARE',
+        'entity-1',
+        ['org-extra'],
+        { workflowInstanceId: 'instance-id', workflowActionId: 'generated-slot-id' },
+      );
+      expect(ctx.suspendingAsyncSlots).toEqual([{ id: 'generated-slot-id', workId: 'work-share', type: 'shareRequestedEntities', status: 'pending' }]);
+    });
+
+    it('records only the organizations it newly granted on plain entities while a container task runs', async () => {
+      vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => (
+        id === 'entity-1'
+          ? { id, internal_id: id, entity_type: 'Report' }
+          : { id, internal_id: id, entity_type: 'Malware', 'rel_granted.internal_id': ['org-author'] }
+      ) as any);
+      const ctx: any = makeTrackedCtx();
+      await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR', 'org-extra'] });
+
+      expect(ctx.requestAccessDirectGrants).toEqual([{ entityId: 'entity-2', organizationIds: ['org-extra'] }]);
+    });
+
+    it('records no direct grant when no container task is queued', async () => {
+      const ctx: any = makeTrackedCtx();
+      await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });
+
+      expect(createSharingTask).not.toHaveBeenCalled();
+      expect(ctx.requestAccessDirectGrants).toBeUndefined();
+    });
+
+    it('deletes the tasks already queued and undoes the direct grants when a later task cannot be queued', async () => {
+      vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => (
+        { id, internal_id: id, entity_type: id === 'malware-1' ? 'Malware' : 'Report' }
+      ) as any);
+      vi.mocked(createSharingTask)
+        .mockResolvedValueOnce({ id: 'task-a', work_id: 'work-a' } as any)
+        .mockRejectedValueOnce(new Error('task store unavailable'));
+      const tracked = { ...makeRfiCtx({ entities: ['report-a', 'malware-1', 'report-b'], members: ['org-author'] }), suspendingAsyncSlots: [] as any[], __workflowInstanceId: 'instance-id' };
+
+      await expect(ActionRegistry.shareRequestedEntities(tracked, { organizations: ['AUTHOR'] })).rejects.toThrow('task store unavailable');
+
+      expect(deleteTask).toHaveBeenCalledTimes(1);
+      expect(deleteTask).toHaveBeenCalledWith({ ...tracked.context, user: tracked.triggeringUser }, tracked.triggeringUser, 'task-a');
+      expect(removeOrganizationRestriction).toHaveBeenCalledWith(tracked.context, tracked.triggeringUser, 'malware-1', ['org-author']);
+      expect(tracked.suspendingAsyncSlots).toEqual([]);
+    });
+
+    it('queues no task for a container already shared with every organization', async () => {
+      const ctx = makeTrackedCtx();
+      await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });
+      expect(createSharingTask).not.toHaveBeenCalled();
+      expect(ctx.suspendingAsyncSlots).toEqual([]);
+    });
+
+    it('shares the container directly when the context cannot track background tasks', async () => {
+      const ctx = { ...makeTrackedCtx(), __workflowInstanceId: undefined };
+      await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR', 'org-extra'] });
+      expect(createSharingTask).not.toHaveBeenCalled();
+      expect(vi.mocked(addOrganizationRestriction).mock.calls.map((call) => call[2])).toEqual(['entity-2', 'entity-1']);
+      expect(ctx.suspendingAsyncSlots).toEqual([]);
+    });
+
+    it('shares the container directly when only the asyncBulkAction slot list is present', async () => {
+      const { suspendingAsyncSlots: _omitted, ...rest } = makeTrackedCtx();
+      const ctx = { ...rest, pendingAsyncSlots: [] as any[] };
+      await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR', 'org-extra'] });
+      expect(createSharingTask).not.toHaveBeenCalled();
+      expect(vi.mocked(addOrganizationRestriction).mock.calls.map((call) => call[2])).toEqual(['entity-2', 'entity-1']);
+      expect(ctx.pendingAsyncSlots).toEqual([]);
+    });
   });
 });

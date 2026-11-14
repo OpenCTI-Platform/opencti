@@ -1,9 +1,14 @@
 import React from 'react';
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import { Formik, Form } from 'formik';
 import testRender from '../../../../utils/tests/test-render';
 import ObjectOrganizationField from './ObjectOrganizationField';
+
+vi.mock('../../../../relay/environment', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../relay/environment')>()),
+  fetchQuery: () => ({ toPromise: () => Promise.resolve({ organizations: { edges: [] } }) }),
+}));
 
 const renderField = () => testRender(
   <Formik initialValues={{ objectOrganization: [] }} onSubmit={() => {}}>
@@ -49,5 +54,25 @@ describe('ObjectOrganizationField', () => {
       expect(getComputedStyle(node).overflow).not.toBe('hidden');
       node = node.parentElement;
     }
+  });
+
+  it('offers the extra options before the organizations, under the label the caller gives them', async () => {
+    const { user } = testRender(
+      <Formik initialValues={{ objectOrganization: [] }} onSubmit={() => {}}>
+        <Form>
+          <ObjectOrganizationField
+            name="objectOrganization"
+            label="Organization"
+            alert={false}
+            outlined={false}
+            extraOptions={[{ value: 'AUTHOR', label: 'AUTHOR' }]}
+            getOptionLabel={(option: { value: string; label: string }) => (option.value === 'AUTHOR' ? 'Author (requesting organization)' : option.label)}
+          />
+        </Form>
+      </Formik>,
+    );
+
+    await user.click(screen.getByRole('combobox'));
+    expect(await screen.findByRole('option', { name: /Author \(requesting organization\)/ })).toBeInTheDocument();
   });
 });

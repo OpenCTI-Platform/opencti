@@ -9760,10 +9760,11 @@ type Mutation {
   workDelete(connectorId: String!): Boolean
   workEdit(id: ID!): WorkEditMutations
   workInvestigationStatusEdit(status: WorkInvestigationStatus!, workId: ID!): Work
-  workflowDefinitionDelete(entityType: String!): EntitySetting
-  workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult
-  workflowDefinitionRestorePublished(entityType: String!): WorkflowDefinitionMutationResult
-  workflowDefinitionSet(definition: String!, entityType: String!): WorkflowDefinitionMutationResult
+  workflowDefinitionDelete(entityType: String!, scope: StatusScope): EntitySetting
+  workflowDefinitionPublish(entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult
+  workflowDefinitionRestorePublished(entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult
+  workflowDefinitionSet(definition: String!, entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult
+  workflowMigrate(entityType: String!, overwrite: Boolean = false, publish: Boolean = false, scope: StatusScope): WorkflowDefinitionMutationResult
   workspaceAdd(input: WorkspaceAddInput!): Workspace
   workspaceConfigurationImport(file: Upload!): String!
   workspaceContextClean(id: ID!): Workspace
@@ -12389,10 +12390,11 @@ type Query {
   vulnerability(id: String): Vulnerability
   work(id: ID!): Work
   workflowBypassStatuses(entityId: String!): [WorkflowBypassStatus!]!
-  workflowDefinition(allowDraft: Boolean, entityType: String!): WorkflowSchema
+  workflowDefinition(allowDraft: Boolean, entityType: String!, scope: StatusScope): WorkflowSchema
   workflowDefinitionPublished(entityType: String!): Boolean
   workflowInstance(entityId: String!): WorkflowInstance
   workflowMassTransitions(entityIds: [String!], entityType: String!, excludedIds: [String!], filters: String, search: String): [WorkflowTransition!]!
+  workflowMigrationPreview(entityType: String!): WorkflowMigrationPreview
   workflowStatuses(entityType: String!): [Status!]!
   works(after: ID, filters: FilterGroup, first: Int, orderBy: WorksOrdering, orderMode: OrderingMode, search: String): WorkConnection
   workspace(id: String!): Workspace
@@ -12849,6 +12851,7 @@ type RequestAccessWorkflow {
   approval_admin: [ID]
   approved_workflow_id: String
   declined_workflow_id: String
+  workflow_definition_id: String
 }
 
 input RequestConnectorStatusInput {
@@ -12931,6 +12934,7 @@ enum RetentionUnit {
 type RfiRequestAccessConfiguration {
   configuration: RequestAccessConfiguration
   isUserCanAction: Boolean!
+  isWorkflowDriven: Boolean!
 }
 
 type Role implements BasicObject & InternalObject {
@@ -18085,6 +18089,43 @@ type WorkflowLastHistoryEntry {
   user_id: String!
 }
 
+type WorkflowMigrationDiagnostic {
+  legacyStatusId: String
+  message: String!
+  templateId: String
+  type: WorkflowMigrationDiagnosticType!
+}
+
+enum WorkflowMigrationDiagnosticType {
+  DUPLICATE_ORDER
+  DUPLICATE_TEMPLATE
+  EXISTING_WORKFLOW
+  MISSING_ORDER
+  MISSING_TEMPLATE
+  NAME_CONFLICT
+  REQUEST_ACCESS_OUTCOME_INVALID
+}
+
+type WorkflowMigrationPreview {
+  entityType: String!
+  results: [WorkflowMigrationScopeResult!]!
+}
+
+type WorkflowMigrationScopeResult {
+  diagnostics: [WorkflowMigrationDiagnostic!]!
+  hasPublishedVersion: Boolean!
+  initialState: String!
+  scope: StatusScope!
+  states: [WorkflowMigrationState!]!
+  transitions: [WorkflowSerializedTransition!]!
+}
+
+type WorkflowMigrationState {
+  order: Int!
+  requestAccessOutcome: WorkflowRequestAccessOutcome
+  statusId: String!
+}
+
 type WorkflowPendingAsyncAction {
   errors: [WorkflowActionError!]
   expectedCount: Int
@@ -18105,6 +18146,11 @@ type WorkflowPendingTransition {
   triggeredAt: DateTime!
 }
 
+enum WorkflowRequestAccessOutcome {
+  APPROVED
+  DECLINED
+}
+
 type WorkflowSchema {
   errors: [WorkflowValidationError!]
   hasPublishedVersion: Boolean!
@@ -18120,6 +18166,7 @@ type WorkflowSerializedState {
   onEnter: [WorkflowActionConfig!]
   onExit: [WorkflowActionConfig!]
   order: Int
+  requestAccessOutcome: WorkflowRequestAccessOutcome
   statusId: String!
 }
 
@@ -18139,6 +18186,7 @@ type WorkflowTransition {
   closingReason: String
   comment: String
   event: String!
+  requestAccessOutcome: WorkflowRequestAccessOutcome
   requiresShareOrganizationInput: Boolean
   requiresUnshareOrganizationInput: Boolean
   toState: String

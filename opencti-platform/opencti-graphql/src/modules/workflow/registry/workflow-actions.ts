@@ -1,12 +1,18 @@
 import { logApp } from '../../../config/conf';
 import { draftWorkspaceEditAuthorizedMembers, validateDraftWorkspace } from '../../draftWorkspace/draftWorkspace-domain';
-import type { AsyncActionSlot, Context } from '../types/workflow-types';
+import { type AsyncActionSlot, type Context, mergeRequestAccessDirectGrants } from '../types/workflow-types';
 import { generateInternalId } from '../../../schema/identifier';
 import { z } from 'zod';
 import { editAuthorizedMembers } from '../../../utils/authorizedMembers';
 import type { MemberAccessInput } from '../../../generated/graphql';
-import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../utils/access';
-import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../../schema/stixRefRelationship';
+import { isInternalUser, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../utils/access';
+import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../../schema/stixRefRelationship';
+import { addOrganizationRestriction, createSharingTask, removeOrganizationRestriction } from '../../../domain/stix';
+import { buildRefRelationKey } from '../../../schema/general';
+import { controlUserConfidenceAgainstElement } from '../../../utils/confidence-level';
+import { internalLoadById } from '../../../database/middleware-loader';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../case/case-rfi/case-rfi-types';
+import { UnsupportedError } from '../../../config/errors';
 
 /**
  * Resolves dynamic authorized member keys (AUTHOR, CREATORS, ASSIGNEES, PARTICIPANTS)
@@ -103,6 +109,122 @@ export const ActionRegistry: Record<string, ActionFunction> = {
       });
     }
   },
+  shareRequestedEntities: async (executionContext, params) => {
+    const { entity, context } = executionContext;
+    // Actions run as the workflow manager; sharing must use the rights of the user who fired the transition.
+    const user = (executionContext as any).triggeringUser;
+    if (!user || isInternalUser(user)) {
+      throw UnsupportedError('shareRequestedEntities requires the user who decided the request', { id: entity?.id });
+    }
+    if (entity?.entity_type !== ENTITY_TYPE_CONTAINER_CASE_RFI || !entity.x_opencti_request_access) {
+      throw UnsupportedError('shareRequestedEntities is only available on request access RFIs', { id: entity?.id });
+    }
+    let requestAccess: { entities?: unknown; members?: unknown } | undefined;
+    try {
+      requestAccess = JSON.parse(entity.x_opencti_request_access);
+    } catch {
+      requestAccess = undefined;
+    }
+    if (!requestAccess || typeof requestAccess !== 'object' || !Array.isArray(requestAccess.entities)) {
+      throw UnsupportedError('This RFI is not compatible', { id: entity.id });
+    }
+    const requestedEntityIds = requestAccess.entities as string[];
+    // AUTHOR is the requesting organization recorded on the request at creation, which only the workflow can write.
+    // The RFI author is not used: any editor of the RFI can change it, and with it who receives the entities.
+    // Only the first member is the organization validated at creation and named on the RFI, as the legacy approval shares.
+    const requestedOrganizations: string[] = params?.organizations ?? [];
+    const requestingOrganizations = requestedOrganizations.includes('AUTHOR') && Array.isArray(requestAccess.members)
+      ? (requestAccess.members as unknown[]).slice(0, 1).filter((member): member is string => typeof member === 'string' && member.length > 0)
+      : [];
+    // Other keys reuse the dynamic key resolution of authorized members; the access right is irrelevant here.
+    const resolvedOrganizationIds = resolveDynamicAuthorizedMembers(
+      entity,
+      requestedOrganizations.filter((id) => id !== 'AUTHOR').map((id: string) => ({ id, access_right: 'view' })),
+    ).map((member) => member.id);
+    const organizationIds = [...new Set([...requestingOrganizations, ...resolvedOrganizationIds])];
+    if (requestedEntityIds.length === 0 || organizationIds.length === 0) {
+      throw UnsupportedError('Nothing to share: no requested entity or no organization resolved', { id: entity.id });
+    }
+    // Loaded lazily: the schema module pulls the attribute definitions, which the registry does not need otherwise
+    const { isStixDomainObjectShareableContainer } = await import('../../../schema/stixDomainObject');
+    // Every target is checked against the sharing requirements before the first share, so a refused target leaves nothing shared.
+    const targets: { id: string; isContainer: boolean; newOrganizationIds: string[] }[] = [];
+    for (const targetId of requestedEntityIds) {
+      const target = await internalLoadById<any>(context, user, targetId);
+      if (!target) {
+        throw UnsupportedError('You cant share the requested element (restrictions or markings)', { targetId });
+      }
+      if (target.restricted_members?.length) {
+        throw UnsupportedError('Element is not sharable at the moment (restricted)', { targetId });
+      }
+      // The sharing write enforces the confidence of the approver over the target
+      controlUserConfidenceAgainstElement(user, target);
+      const currentGrants: string[] = target[buildRefRelationKey(RELATION_GRANTED_TO)] ?? [];
+      targets.push({
+        id: targetId,
+        isContainer: isStixDomainObjectShareableContainer(target.entity_type),
+        newOrganizationIds: organizationIds.filter((organizationId) => !currentGrants.includes(organizationId)),
+      });
+    }
+    // Containers are shared by a background task that cannot be rolled back: they go last, once every direct share succeeded.
+    const orderedTargets = [...targets.filter((target) => !target.isContainer), ...targets.filter((target) => target.isContainer)];
+    // Inside a workflow transition, each container task is tracked as a suspending slot: the transition, and the decision record,
+    // only complete once the task finished. Outside one (no slot accumulator), the task is enqueued untracked.
+    const { suspendingAsyncSlots, __workflowInstanceId } = executionContext as any;
+    const tracksContainerTasks = Array.isArray(suspendingAsyncSlots) && !!__workflowInstanceId;
+    const directlyShared: typeof targets = [];
+    const queuedTasks: { taskId: string; slot: AsyncActionSlot }[] = [];
+    try {
+      for (const target of orderedTargets) {
+        if (target.isContainer && tracksContainerTasks) {
+          if (target.newOrganizationIds.length === 0) continue;
+          const slotId = generateInternalId();
+          // The same task as a manual container share, created as the approver and tied to the workflow instance
+          const task = await createSharingTask({ ...context, user }, 'SHARE', target.id, target.newOrganizationIds, {
+            workflowInstanceId: __workflowInstanceId,
+            workflowActionId: slotId,
+          });
+          queuedTasks.push({ taskId: task.id, slot: { id: slotId, workId: task.work_id ?? '', type: 'shareRequestedEntities', status: 'pending', taskId: task.id } });
+          continue;
+        }
+        await addOrganizationRestriction(context, user, target.id, organizationIds);
+        if (!target.isContainer && target.newOrganizationIds.length > 0) {
+          directlyShared.push(target);
+        }
+      }
+    } catch (error) {
+      // Undo what this action did, so a refused decision leaves the targets as they were:
+      // delete the container tasks already queued (a task the task manager already started keeps what it shared),
+      if (queuedTasks.length > 0) {
+        const { deleteTask } = await import('../../../domain/backgroundTask');
+        for (const { taskId } of queuedTasks) {
+          try {
+            await deleteTask({ ...context, user }, user, taskId);
+          } catch (rollbackError) {
+            logApp.error('[shareRequestedEntities] Failed to delete a queued share task after a refused share', { cause: rollbackError, taskId });
+          }
+        }
+      }
+      // then remove the grants added directly.
+      for (const target of directlyShared) {
+        try {
+          await removeOrganizationRestriction(context, user, target.id, target.newOrganizationIds);
+        } catch (rollbackError) {
+          logApp.error('[shareRequestedEntities] Failed to undo a grant after a refused share', { cause: rollbackError, targetId: target.id });
+        }
+      }
+      throw error;
+    }
+    // Registered once every task is queued: a refused share registers no slot
+    if (queuedTasks.length > 0) {
+      suspendingAsyncSlots.push(...queuedTasks.map(({ slot }) => slot));
+      // Kept on the pending transition, so a failed container task revokes the grants this share added directly
+      executionContext.requestAccessDirectGrants = mergeRequestAccessDirectGrants(
+        executionContext.requestAccessDirectGrants,
+        directlyShared.map((target) => ({ entityId: target.id, organizationIds: target.newOrganizationIds })),
+      );
+    }
+  },
   /**
    * asyncBulkAction: spawns a BackgroundTask + Work via createListTask.
    * The slot is pushed onto ctx.pendingAsyncSlots (mutable accumulator).
@@ -194,6 +316,11 @@ export const ActionDefinitions: Record<string, ActionDefinition> = {
       })).optional(),
     }).optional(),
     allowedModes: ['sync', 'async'],
+  },
+  shareRequestedEntities: {
+    fn: ActionRegistry.shareRequestedEntities,
+    paramsSchema: z.object({ organizations: z.array(z.string()).min(1) }),
+    allowedModes: ['sync'],
   },
   asyncBulkAction: {
     fn: ActionRegistry.asyncBulkAction,

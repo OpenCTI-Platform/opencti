@@ -21,17 +21,18 @@ vi.mock('../workflow/WorkflowTransitions', () => ({
 vi.mock('../../analyses/opinions/StixCoreObjectOpinions', () => ({ default: () => null }));
 vi.mock('../../cases/case_rfis/ProcessingStatusOverview', () => ({ default: () => <span>Request access status</span> }));
 
-const makeEntity = (entityType = 'Report', requestAccess = false) => ({
+const makeEntity = (entityType = 'Report', requestAccess = false, scope: string | null = null) => ({
   id: 'entity-1', entity_type: entityType, standard_id: 'report--1', x_opencti_stix_ids: [],
   objectMarking: [], createdBy: null, x_opencti_reliability: null, confidence: 50,
   created: '2024-01-01T00:00:00.000Z', modified: '2024-01-01T00:00:00.000Z', created_at: '2024-01-01T00:00:00.000Z',
   status: { id: 'legacy-1', template: { name: 'Legacy status', color: '#ff0000' } }, workflowEnabled: true,
   objectAssignee: [], objectParticipant: [], revoked: false, objectLabel: [], creators: [],
-  x_opencti_request_access: requestAccess, __fragments: { WorkflowStatusStixDomainObject_data: {} },
+  x_opencti_request_access: requestAccess, workflowInstance: scope ? { id: 'instance-1', scope } : null,
+  __fragments: { WorkflowStatusStixDomainObject_data: {} },
 });
 
-const renderOverview = ({ enabled = true, configured = true, capabilities = ['KNOWLEDGE_KNUPDATE'], entityType = 'Report', requestAccess = false, currentUserAccessRight = 'edit' } = {}) => {
-  const entity = { ...makeEntity(entityType, requestAccess), currentUserAccessRight };
+const renderOverview = ({ enabled = true, configured = true, capabilities = ['KNOWLEDGE_KNUPDATE'], entityType = 'Report', requestAccess = false, scope = null as string | null, currentUserAccessRight = 'edit' } = {}) => {
+  const entity = { ...makeEntity(entityType, requestAccess, scope), currentUserAccessRight };
   const resolved = {
     id: entity.id, entity_type: entityType, currentUserAccessRight,
     workflowInstance: configured ? {
@@ -94,8 +95,12 @@ describe('StixDomainObjectOverview workflow', () => {
     expect(transitions).not.toHaveBeenCalled();
   });
 
-  it('preserves the RequestAccess exclusion', () => {
-    renderOverview({ entityType: 'Case-Rfi', requestAccess: true, capabilities: ['BYPASS'] });
+  it.each([
+    ['without workflow instance', null],
+    ['with a Global workflow instance', 'GLOBAL'],
+    ['with a request access workflow instance', 'REQUEST_ACCESS'],
+  ])('shows request access processing in the banner only, %s', (_case, scope) => {
+    renderOverview({ entityType: 'Case-Rfi', requestAccess: true, scope, capabilities: ['BYPASS'] });
     expect(screen.getByText('Request access status')).toBeVisible();
     expect(screen.queryByText('Processing status')).toBeNull();
     expect(readFragment).not.toHaveBeenCalled();

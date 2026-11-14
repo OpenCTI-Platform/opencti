@@ -114,6 +114,49 @@ describe('PublishButton', () => {
     });
   });
 
+  describe('Request access errors', () => {
+    const requestAccessErrors = [
+      { type: 'REQUEST_ACCESS_OUTCOME_COUNT', message: 'Request access workflow must have exactly one Approved state, but found 0', path: null },
+      { type: 'MISSING_REQUEST_ACCESS_SHARE_ACTION', message: "Approved state 'approved' must have a shareRequestedEntities action on enter", path: null },
+    ];
+
+    it('PublishButton lists REQUEST_ACCESS_* errors with their messages', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(
+        <PublishButton
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors: requestAccessErrors }}
+          onPublish={mockOnPublish}
+          onReset={mockOnReset}
+          onRestore={mockOnRestore}
+          hasPublishedVersion={true}
+        />,
+      );
+
+      await user.hover(screen.getByRole('button', { name: /Publish/i }));
+
+      const list = await screen.findByTestId('workflow-publish-errors');
+      expect(list).toHaveTextContent('Request access workflow must have exactly one Approved state, but found 0');
+      expect(list).toHaveTextContent("Approved state 'approved' must have a shareRequestedEntities action on enter");
+    });
+
+    it('lists no errors when the workflow is valid', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(
+        <PublishButton
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors: [] }}
+          onPublish={mockOnPublish}
+          onReset={mockOnReset}
+          onRestore={mockOnRestore}
+          hasPublishedVersion={true}
+        />,
+      );
+
+      await user.hover(screen.getByRole('button', { name: /Publish/i }));
+      await screen.findByText('Click to publish this workflow version');
+      expect(screen.queryByTestId('workflow-publish-errors')).toBeNull();
+    });
+  });
+
   describe('Unpublished without errors (orange)', () => {
     it('should render enabled button when not published and no errors', () => {
       renderWithTheme(

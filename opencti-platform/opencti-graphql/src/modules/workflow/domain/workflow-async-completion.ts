@@ -10,13 +10,20 @@
 import { logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
 import { updateAttribute } from '../../../database/middleware';
-import { storeLoadById } from '../../../database/middleware-loader';
+import { internalLoadById, storeLoadById } from '../../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { bypassDraftContext } from '../../../utils/draftContext';
-import { WORKFLOW_MANAGER_USER } from '../../../utils/access';
+import { SYSTEM_USER, WORKFLOW_MANAGER_USER } from '../../../utils/access';
 import { lockResources } from '../../../lock/master-lock';
 import { ActionRegistry } from '../registry/workflow-actions';
-import { ENTITY_TYPE_WORKFLOW_INSTANCE, type AsyncActionSlot, type Context, type WorkflowPendingTransition } from '../types/workflow-types';
+import {
+  ENTITY_TYPE_WORKFLOW_INSTANCE,
+  type AsyncActionSlot,
+  type Context,
+  mergeRequestAccessDirectGrants,
+  type RequestAccessDirectGrant,
+  type WorkflowPendingTransition,
+} from '../types/workflow-types';
 import { projectWorkflowState, resolveProjectionScope } from './workflow-projection';
 
 // history is rewritten as a whole on each append, so keep only the latest entries.
@@ -40,9 +47,80 @@ export const appendWorkflowHistoryEntry = (history: any[], entry: any): any[] =>
   return [...history, entry].slice(-MAX_WORKFLOW_HISTORY_ENTRIES);
 };
 
+const resolveTriggeringUser = async (context: AuthContext, userId: string): Promise<AuthUser | undefined> => {
+  try {
+    const { resolveUserById } = await import('../../user/user-domain');
+    const user = await resolveUserById(context, userId);
+    if (user) return { ...user, draft_context: undefined };
+  } catch (error) {
+    logApp.warn('[workflow-async-completion] Failed to resolve the triggering user', { userId, cause: error });
+  }
+  return undefined;
+};
+
+/**
+ * Revokes the organizations a request access share granted directly on plain entities while its container tasks ran.
+ * Runs as the user who decided the request, as the share did, or as the system user when that user cannot be resolved.
+ * An entity deleted since is skipped. Returns the grants that could not be revoked.
+ * What a container share task already shared before it failed is not undone: only the direct grants are recorded.
+ * Known limitation: the revocation does not check whether another approved request still relies on the same grant.
+ */
+export const revokeRequestAccessDirectGrants = async (
+  context: AuthContext,
+  grants: RequestAccessDirectGrant[] | undefined,
+  deciderId: string,
+): Promise<RequestAccessDirectGrant[]> => {
+  if (!grants || grants.length === 0) return [];
+  const revokingUser = await resolveTriggeringUser(context, deciderId) ?? SYSTEM_USER;
+  const revokeContext = { ...context, user: revokingUser };
+  const { removeOrganizationRestriction } = await import('../../../domain/stix');
+  const remaining: RequestAccessDirectGrant[] = [];
+  for (const grant of grants) {
+    try {
+      const target = await internalLoadById(revokeContext, SYSTEM_USER, grant.entityId);
+      if (!target) continue;
+      await removeOrganizationRestriction(revokeContext, revokingUser, grant.entityId, grant.organizationIds);
+    } catch (error) {
+      logApp.error('[workflow-async-completion] Failed to revoke a request access direct grant', { cause: error, entityId: grant.entityId });
+      remaining.push(grant);
+    }
+  }
+  return remaining;
+};
+
+/**
+ * Deletes the background tasks still pending on a pending transition, so a cleared request access share cannot
+ * share a container afterwards. A task already deleted is skipped; a task the task manager already picked up
+ * keeps what it shared. Returns the slots whose task could not be deleted.
+ */
+export const cancelPendingContainerTasks = async (
+  context: AuthContext,
+  slots: AsyncActionSlot[] | undefined,
+  deciderId: string,
+): Promise<AsyncActionSlot[]> => {
+  const pendingSlots = (slots ?? []).filter((slot) => slot.status === 'pending' && !!slot.taskId);
+  if (pendingSlots.length === 0) return [];
+  const cancelUser = await resolveTriggeringUser(context, deciderId) ?? SYSTEM_USER;
+  const { deleteTask } = await import('../../../domain/backgroundTask');
+  const remaining: AsyncActionSlot[] = [];
+  for (const slot of pendingSlots) {
+    try {
+      // Already deleted (an earlier clear that failed later on): nothing left to cancel
+      if (!await internalLoadById(context, SYSTEM_USER, slot.taskId)) continue;
+      await deleteTask({ ...context, user: cancelUser }, cancelUser, slot.taskId);
+    } catch (error) {
+      logApp.error('[workflow-async-completion] Failed to delete a pending container share task', { cause: error, taskId: slot.taskId });
+      remaining.push(slot);
+    }
+  }
+  return remaining;
+};
+
 export const runWorkflowBypassActions = async (workflowContext: Context, pendingTransition: WorkflowPendingTransition): Promise<void> => {
   const slots: AsyncActionSlot[] = [];
+  // A bypass waits for every background task its actions queue
   workflowContext.pendingAsyncSlots = slots;
+  workflowContext.suspendingAsyncSlots = slots;
   workflowContext.__asyncActionSlots = slots;
   while (pendingTransition.syncActions.length > 0) {
     const action = pendingTransition.syncActions[0];
@@ -51,7 +129,10 @@ export const runWorkflowBypassActions = async (workflowContext: Context, pending
     await actionFn(workflowContext, typeof action.params === 'string' ? JSON.parse(action.params) : action.params);
     pendingTransition.syncActions.shift();
     if (slots.length > 0) {
-      pendingTransition.asyncActions = slots.map(({ id, workId, type, status }) => ({ id, workId, type, status }));
+      pendingTransition.asyncActions = slots.map(({ id, workId, type, status, taskId }) => ({ id, workId, type, status, ...(taskId ? { taskId } : {}) }));
+      if (workflowContext.requestAccessDirectGrants?.length) {
+        pendingTransition.requestAccessDirectGrants = mergeRequestAccessDirectGrants(pendingTransition.requestAccessDirectGrants, workflowContext.requestAccessDirectGrants);
+      }
       return;
     }
   }
@@ -124,11 +205,20 @@ const completeWorkflowAsyncActionResult = async (
   }
 
   if (anyFailed) {
-    // At least one async task failed — surface the error, keep state unchanged
+    // At least one async task failed — surface the error, keep state unchanged.
+    // A request access share revokes the grants it added directly: a retry grants them again.
+    let failureError = error ?? 'One or more async workflow actions failed';
+    if (pendingTransition.requestAccessDirectGrants?.length) {
+      const remainingGrants = await revokeRequestAccessDirectGrants(executionContext, pendingTransition.requestAccessDirectGrants, pendingTransition.triggeredBy);
+      pendingTransition.requestAccessDirectGrants = remainingGrants;
+      if (remainingGrants.length > 0) {
+        failureError = `${failureError} (the organizations shared directly on ${remainingGrants.length} entities could not be revoked: clearing the pending state retries)`;
+      }
+    }
     await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
       { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
       { key: 'pendingStatus', value: ['error'] },
-      { key: 'pendingError', value: [error ?? 'One or more async workflow actions failed'] },
+      { key: 'pendingError', value: [failureError] },
     ]);
     logApp.warn('[workflow-async-completion] Async actions failed', { workflowInstanceId, error });
     return;
@@ -142,10 +232,28 @@ const completeWorkflowAsyncActionResult = async (
       logApp.warn('[workflow-async-completion] Failed to load full entity, falling back to stub', { entityId: instanceEntity.entity_id, error: err });
       return null;
     });
-  const workflowContext = {
+  // An access request is decided with the rights of the user who fired the transition, never the completion
+  // caller's (usually a platform admin): without that user, nothing runs.
+  let requestAccessDecider: AuthUser | undefined;
+  if (pendingTransition.requestAccessOutcome) {
+    requestAccessDecider = await resolveTriggeringUser(executionContext, pendingTransition.triggeredBy);
+    if (!requestAccessDecider) {
+      await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+        { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
+        { key: 'pendingStatus', value: ['error'] },
+        { key: 'pendingError', value: [`The user who decided this access request (${pendingTransition.triggeredBy}) cannot be resolved: the decision is not applied`] },
+      ]);
+      logApp.warn('[workflow-async-completion] Request access decider not resolved', { workflowInstanceId, userId: pendingTransition.triggeredBy });
+      return;
+    }
+  }
+  // Sharing tasks and the decision record are created as the decider, not as the completion caller.
+  const actionContext = requestAccessDecider ? { ...executionContext, user: requestAccessDecider } : executionContext;
+  const workflowContext: Context = {
     user: executionUser,
+    ...(requestAccessDecider ? { triggeringUser: requestAccessDecider } : {}),
     entity: fullEntity ?? { id: instanceEntity.entity_id },
-    context: executionContext,
+    context: actionContext,
     runtimeParams: pendingTransition.runtimeParams ?? {},
   };
 
@@ -203,7 +311,13 @@ const completeWorkflowAsyncActionResult = async (
 
   // Run onEnter actions of the target state (phase 2 equivalent of engine's onEnter block).
   // A terminal transition has no target state to enter.
-  for (const actionConfig of (pendingTransition.completesWorkflow ? [] : pendingTransition.onEnterActions ?? [])) {
+  const onEnterActions = pendingTransition.completesWorkflow ? [] : pendingTransition.onEnterActions ?? [];
+  if (onEnterActions.length > 0) {
+    // As in the engine, an onEnter action that opts in to wait for its background tasks suspends the transition again.
+    workflowContext.suspendingAsyncSlots = [];
+    workflowContext.__workflowInstanceId = workflowInstanceId;
+  }
+  for (const [index, actionConfig] of onEnterActions.entries()) {
     const actionFn = ActionRegistry[actionConfig.type];
     if (!actionFn) {
       logApp.error('[workflow-async-completion] Unknown onEnter action type', { type: actionConfig.type });
@@ -223,6 +337,20 @@ const completeWorkflowAsyncActionResult = async (
         { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
         { key: 'pendingStatus', value: ['error'] },
         { key: 'pendingError', value: [`onEnter action '${actionConfig.type}' failed: ${onEnterErrorMsg}`] },
+      ]);
+      return;
+    }
+    const newSlots = workflowContext.suspendingAsyncSlots ?? [];
+    if (newSlots.length > 0) {
+      // The transition actions and the onEnter actions up to this one ran: only the remaining ones wait for the new tasks.
+      pendingTransition.syncActions = [];
+      pendingTransition.onEnterActions = onEnterActions.slice(index + 1);
+      pendingTransition.asyncActions = newSlots.map(({ id, workId, type, taskId }) => ({ id, workId, type, status: 'pending' as const, ...(taskId ? { taskId } : {}) }));
+      if (workflowContext.requestAccessDirectGrants?.length) {
+        pendingTransition.requestAccessDirectGrants = mergeRequestAccessDirectGrants(pendingTransition.requestAccessDirectGrants, workflowContext.requestAccessDirectGrants);
+      }
+      await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+        { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
       ]);
       return;
     }
@@ -269,6 +397,15 @@ const completeWorkflowAsyncActionResult = async (
     await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
       { key: 'pendingError', value: [closingReasonNotWrittenError(pendingTransition.closingReason ?? null)] },
     ]);
+  }
+
+  if (pendingTransition.requestAccessOutcome && requestAccessDecider && fullEntity) {
+    // Flags the instance when the decision cannot be recorded, as the synchronous path does
+    const { recordRequestAccessDecision } = await import('./workflow-request-access');
+    await recordRequestAccessDecision(actionContext, requestAccessDecider, fullEntity, pendingTransition.requestAccessOutcome, workflowInstanceId);
+  } else if (pendingTransition.requestAccessStatus && fullEntity) {
+    const { mirrorRequestAccessStatus } = await import('./workflow-request-access');
+    await mirrorRequestAccessStatus(executionContext, executionUser, instanceEntity.entity_id, pendingTransition.requestAccessStatus);
   }
 
   logApp.info('[workflow-async-completion] Transition completed', {

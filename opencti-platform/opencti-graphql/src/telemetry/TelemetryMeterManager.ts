@@ -247,6 +247,14 @@ export class TelemetryMeterManager {
 
   workflowPublishCount = 0;
 
+  workflowRequestAccessPublishCount = 0;
+
+  workflowRequestAccessMigrationCount = 0;
+
+  requestAccessApprovedCount = 0;
+
+  requestAccessDeclinedCount = 0;
+
   configPresetExportCount = 0;
 
   // endregion providers usage
@@ -582,6 +590,22 @@ export class TelemetryMeterManager {
     this.workflowPublishCount = n;
   }
 
+  setWorkflowRequestAccessPublishCount(n: number) {
+    this.workflowRequestAccessPublishCount = n;
+  }
+
+  setWorkflowRequestAccessMigrationCount(n: number) {
+    this.workflowRequestAccessMigrationCount = n;
+  }
+
+  setRequestAccessApprovedCount(n: number) {
+    this.requestAccessApprovedCount = n;
+  }
+
+  setRequestAccessDeclinedCount(n: number) {
+    this.requestAccessDeclinedCount = n;
+  }
+
   setConfigPresetExportCount(n: number) {
     this.configPresetExportCount = n;
   }
@@ -815,6 +839,10 @@ export class TelemetryMeterManager {
     this.registerGauge('shared_saved_filters_count', 'Number of saved filters shared with at least one other member (non-creator)', 'sharedSavedFiltersCount');
     this.registerGauge('shared_saved_filters_permission_changes', 'Number of access restriction updates on shared saved filters', 'sharedSavedFiltersPermissionChangesCount');
     this.registerGauge('workflow_publish_count', 'Number of workflow definitions published', 'workflowPublishCount');
+    this.registerGauge('workflow_request_access_publish_count', 'Number of request-access workflow definitions published', 'workflowRequestAccessPublishCount');
+    this.registerGauge('workflow_request_access_migration_count', 'Number of request-access workflow migrations', 'workflowRequestAccessMigrationCount');
+    this.registerGauge('request_access_approved_count', 'Number of access requests approved', 'requestAccessApprovedCount');
+    this.registerGauge('request_access_declined_count', 'Number of access requests declined', 'requestAccessDeclinedCount');
     this.registerGauge('config_preset_export_count', 'Number of configuration preset bundles exported', 'configPresetExportCount');
     // region AI usage (backend-agnostic counters, see telemetryManager)
     this.registerGauge('chatbot_message_count', 'Number of chatbot messages sent (legacy and XTM One combined)', 'chatbotMessageCount');

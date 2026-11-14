@@ -84,6 +84,7 @@ const caseRfiFragment = graphql`
     x_opencti_request_access
     requestAccessConfiguration {
       isUserCanAction
+      isWorkflowDriven
       configuration {
         approved_status {
           id

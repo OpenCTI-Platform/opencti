@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { transformToWorkflowDefinition, isElementStatus, isNewElementStatus, WorkflowNodeType, WorkflowActionType, findTargetStatusExits } from './utils';
+import { transformToWorkflowDefinition, isElementStatus, isNewElementStatus, WorkflowNodeType, WorkflowActionType, findTargetStatusExits, withShareRequestedEntitiesLast } from './utils';
 import type { Node, Edge } from 'reactflow';
 import { SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
 
@@ -178,6 +178,27 @@ describe('Workflow utils', () => {
     expect(isNewElementStatus(placeholderNode)).toBe(true);
     expect(isNewElementStatus(transitionNode)).toBe(false);
   });
+
+  describe('request access', () => {
+    const status = (id: string, data: Record<string, unknown> = {}): Node => ({ id, type: WorkflowNodeType.status, data: { statusTemplate: { id, name: id, color: '#ffffff' }, ...data }, position: { x: 0, y: 0 } });
+
+    it('serializes requestAccessOutcome only on marked states', () => {
+      const nodes = [status('NEW'), status('APPROVED_ID', { requestAccessOutcome: 'APPROVED' }), status('DECLINED_ID', { requestAccessOutcome: 'DECLINED' })];
+      const { states } = transformToWorkflowDefinition(nodes, [], mockWorkflowDefinition);
+      expect(states.find((s) => s.statusId === 'NEW')).not.toHaveProperty('requestAccessOutcome');
+      expect(states.find((s) => s.statusId === 'APPROVED_ID')?.requestAccessOutcome).toBe('APPROVED');
+      expect(states.find((s) => s.statusId === 'DECLINED_ID')?.requestAccessOutcome).toBe('DECLINED');
+    });
+
+    it('serializes a shareRequestedEntities action to organization ids', () => {
+      const nodes = [status('APPROVED_ID', {
+        requestAccessOutcome: 'APPROVED',
+        onEnter: [{ type: WorkflowActionType.shareRequestedEntities, params: { organizations: [{ value: 'AUTHOR', label: 'Author' }, 'org-2'] } }],
+      })];
+      const { states } = transformToWorkflowDefinition(nodes, [], mockWorkflowDefinition);
+      expect(states[0].onEnter).toEqual([{ type: 'shareRequestedEntities', params: { organizations: ['AUTHOR', 'org-2'] } }]);
+    });
+  });
 });
 
 describe('findTargetStatusExits', () => {
@@ -205,5 +226,19 @@ describe('findTargetStatusExits', () => {
 
   it('returns nothing for a transition without a target status', () => {
     expect(findTargetStatusExits('t-close', nodes, [edge('open', 't-close')])).toBeUndefined();
+  });
+});
+
+describe('withShareRequestedEntitiesLast', () => {
+  const share = { type: WorkflowActionType.shareRequestedEntities, params: {} } as never;
+  const members = { type: WorkflowActionType.updateAuthorizedMembers, params: {} } as never;
+
+  it('moves the share action after the other actions', () => {
+    expect(withShareRequestedEntitiesLast([share, members])).toEqual([members, share]);
+  });
+
+  it('keeps a list without share unchanged', () => {
+    expect(withShareRequestedEntitiesLast([members])).toEqual([members]);
+    expect(withShareRequestedEntitiesLast(undefined)).toEqual([]);
   });
 });

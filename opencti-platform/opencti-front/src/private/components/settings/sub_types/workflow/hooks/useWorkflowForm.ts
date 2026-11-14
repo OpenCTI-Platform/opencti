@@ -5,18 +5,53 @@ import { useFormatter } from '../../../../../../components/i18n';
 import useAddStatus from './useAddStatus';
 import useDeleteElement from './useDeleteElement';
 import { WorkflowEditionFormValues } from '../WorkflowEditionDrawer';
-import { WorkflowNodeType } from '../utils';
+import { withoutShareRequestedEntities, WorkflowActionType, WorkflowNodeType } from '../utils';
 
 // Validation Factory
 const getValidationSchema = (isStatus: boolean, t: (s: string) => string) => {
   if (isStatus) {
     return Yup.object().shape({
       statusTemplate: Yup.object().required(t('This field is required')),
+      // The backend refuses a share action without organization.
+      onEnter: Yup.array().of(Yup.object().shape({
+        params: Yup.object().when('type', {
+          is: WorkflowActionType.shareRequestedEntities,
+          then: (schema) => schema.shape({ organizations: Yup.array().min(1, t('This field is required')) }),
+        }),
+      })),
     });
   }
   return Yup.object().shape({
     event: Yup.string().required(t('This field is required')),
   });
+};
+
+// An outcome marks one state: setting it on a state takes it off the state that held it, along with
+// its share action.
+const moveOutcomeMarker = (nodes: Node[], ownerId: string, outcome: WorkflowEditionFormValues['requestAccessOutcome']) => {
+  if (!outcome) return nodes;
+  return nodes.map((node) => (
+    node.type === WorkflowNodeType.status && node.id !== ownerId && node.data?.requestAccessOutcome === outcome
+      ? {
+          ...node,
+          data: {
+            ...node.data,
+            requestAccessOutcome: null,
+            ...(outcome === 'APPROVED' ? { onEnter: withoutShareRequestedEntities(node.data.onEnter) } : {}),
+          },
+        }
+      : node
+  ));
+};
+
+// Only the Approved state may share the requested entities.
+const withShareOnlyWhenApproved = (values: WorkflowEditionFormValues): WorkflowEditionFormValues => {
+  if (values.requestAccessOutcome === 'APPROVED') return values;
+  return {
+    ...values,
+    ...(values.onEnter ? { onEnter: withoutShareRequestedEntities(values.onEnter) } : {}),
+    ...(values.onExit ? { onExit: withoutShareRequestedEntities(values.onExit) } : {}),
+  };
 };
 
 export const useWorkflowForm = (selectedElement: Node | Edge, onClose: () => void) => {
@@ -42,12 +77,16 @@ export const useWorkflowForm = (selectedElement: Node | Edge, onClose: () => voi
   );
 
   // 3. Handlers
-  const onSubmit = (values: WorkflowEditionFormValues) => {
+  const onSubmit = (submittedValues: WorkflowEditionFormValues) => {
+    const values = isStatus ? withShareOnlyWhenApproved(submittedValues) : submittedValues;
     if (isNewStatus) {
       addStatus(values);
+      if (values.requestAccessOutcome) {
+        setNodes((nodes) => moveOutcomeMarker(nodes, values.statusTemplate.id, values.requestAccessOutcome));
+      }
     } else {
       setNodes((nodes) =>
-        nodes.map((node) =>
+        moveOutcomeMarker(nodes, selectedElement.id, values.requestAccessOutcome).map((node) =>
           node.id === selectedElement.id
             ? { ...node, data: { ...node.data, ...values } }
             : node,

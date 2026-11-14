@@ -35,6 +35,7 @@ describe('extractWorkflowMembersIds', () => {
         states: [{
           statusId: 's1',
           order: 0,
+          requestAccessOutcome: null,
           onEnter: [{
             type: 'updateAuthorizedMembers',
             params: { authorized_members: [{ id: 'user-1', access_right: 'view' }] },
@@ -51,6 +52,7 @@ describe('extractWorkflowMembersIds', () => {
         states: [{
           statusId: 's1',
           order: 0,
+          requestAccessOutcome: null,
           onEnter: [],
           onExit: [{
             type: 'updateAuthorizedMembers',
@@ -67,6 +69,7 @@ describe('extractWorkflowMembersIds', () => {
         states: [{
           statusId: 's1',
           order: 0,
+          requestAccessOutcome: null,
           onEnter: [{
             type: 'updateAuthorizedMembers',
             params: {
@@ -102,6 +105,25 @@ describe('extractWorkflowMembersIds', () => {
       });
 
       expect(extractWorkflowMembersIds(def)).toEqual(['user-3']);
+    });
+  });
+
+  describe('shareRequestedEntities', () => {
+    it('extracts organization ids and leaves the AUTHOR dynamic key out', () => {
+      const def = emptyDef({
+        states: [{
+          statusId: 's1',
+          order: 0,
+          requestAccessOutcome: null,
+          onEnter: [{
+            type: 'shareRequestedEntities',
+            params: { organizations: ['AUTHOR', 'org-1'] },
+          }],
+          onExit: [],
+        }],
+      });
+
+      expect(extractWorkflowMembersIds(def)).toEqual(['org-1']);
     });
   });
 
@@ -158,6 +180,7 @@ describe('extractWorkflowMembersIds', () => {
           {
             statusId: 's1',
             order: 0,
+            requestAccessOutcome: null,
             onEnter: [{
               type: 'updateAuthorizedMembers',
               params: { authorized_members: [{ id: 'user-1', access_right: 'view' }] },
@@ -167,6 +190,7 @@ describe('extractWorkflowMembersIds', () => {
           {
             statusId: 's2',
             order: 1,
+            requestAccessOutcome: null,
             onEnter: [{
               type: 'updateAuthorizedMembers',
               params: { authorized_members: [{ id: 'user-1', access_right: 'admin' }] },
@@ -184,6 +208,7 @@ describe('extractWorkflowMembersIds', () => {
         states: [{
           statusId: 's1',
           order: 0,
+          requestAccessOutcome: null,
           onEnter: [{
             type: 'updateAuthorizedMembers',
             params: {
@@ -205,6 +230,7 @@ describe('extractWorkflowMembersIds', () => {
         states: [{
           statusId: 's1',
           order: 0,
+          requestAccessOutcome: null,
           onEnter: [{
             type: 'updateAuthorizedMembers',
             params: { authorized_members: [{ id: 'user-1', access_right: 'view' }] },

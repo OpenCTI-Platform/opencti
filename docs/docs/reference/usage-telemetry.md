@@ -170,6 +170,10 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 ### Workflows
 
 - The number of workflow definitions published
+- The number of request-access workflow definitions published
+- The number of request-access workflow migrations
+- The number of access requests approved
+- The number of access requests declined
 
 ### Configuration presets
 

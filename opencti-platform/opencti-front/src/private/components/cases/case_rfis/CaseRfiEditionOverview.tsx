@@ -114,6 +114,9 @@ const caseRfiEditionOverviewFragment = graphql`
       entity_type
     }
     x_opencti_request_access
+    requestAccessConfiguration {
+      isWorkflowDriven
+    }
   }
 `;
 
@@ -204,15 +207,18 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
     editionFocus: caseRfiEditionOverviewFocus,
   };
   const editor = useFormEditor(caseData as GenericData, enableReferences, queries, validator);
+  // A workflow-driven request access RFI changes status through its workflow transitions only
+  const isStatusEditable = caseData.workflowEnabled && !caseData.requestAccessConfiguration?.isWorkflowDriven;
 
   const onSubmit: FormikConfig<CaseRfiEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
-    const { message, references, ...otherValues } = values;
+    const { message, references, x_opencti_workflow_id, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
     const inputValues = Object.entries({
       ...otherValues,
       createdBy: values.createdBy?.value,
-      x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
+      // The status field is hidden on a workflow-driven RFI: never send its stale value as a status change
+      ...(isStatusEditable ? { x_opencti_workflow_id: x_opencti_workflow_id?.value } : {}),
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
       objectAssignee: (values.objectAssignee ?? []).map(({ value }) => value),
       objectParticipant: (values.objectParticipant ?? []).map(({ value }) => value),
@@ -397,7 +403,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             style={fieldSpacingContainerStyle}
             onChange={editor.changeParticipant}
           />
-          {caseData.workflowEnabled && (
+          {isStatusEditable && (
             <StatusField
               name="x_opencti_workflow_id"
               type="Case-Rfi"
