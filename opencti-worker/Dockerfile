@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.28
+# syntax=docker/dockerfile:1.29
 FROM python:3.12-alpine
 
 COPY opencti-worker/src /opt/opencti-worker
