@@ -100,6 +100,15 @@ class Identity:
                 ... on SecurityPlatform {
                     security_platform_type
                 }
+                ... on System {
+                    x_opencti_system_category
+                    x_opencti_system_subcategory
+                    x_opencti_internet_facing
+                    x_opencti_criticality
+                    x_opencti_environment
+                    x_opencti_owner
+                    x_opencti_platform
+                }
             }
             objectMarking {
                 id
@@ -232,6 +241,15 @@ class Identity:
                 }
                 ... on SecurityPlatform {
                     security_platform_type
+                }
+                ... on System {
+                    x_opencti_system_category
+                    x_opencti_system_subcategory
+                    x_opencti_internet_facing
+                    x_opencti_criticality
+                    x_opencti_environment
+                    x_opencti_owner
+                    x_opencti_platform
                 }
             }
             objectMarking {
