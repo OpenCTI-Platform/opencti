@@ -1329,5 +1329,12 @@
   "XTM Hub Token": "XTM 허브 토큰",
   "XTM One intent": "XTM One 의도",
   "XTM One registration manager": "XTM One 등록 관리자",
-  "XTM1 CGU acceptance status": "XTM1 CGU 승인 상태"
+  "XTM1 CGU acceptance status": "XTM1 CGU 승인 상태",
+  "Asset category": "자산 범주",
+  "Asset subcategory": "자산 하위 범주",
+  "Internet facing": "인터넷 노출",
+  "Criticality": "중요도",
+  "Environment": "환경",
+  "Platform": "플랫폼",
+  "Asset owner": "자산 소유자"
 }

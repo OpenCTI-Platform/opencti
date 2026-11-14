@@ -6333,5 +6333,11 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "除了当前用户所属的任何组织外，您的用户还将与主平台组织有关",
   "Zoom": "放大",
   "Zoom in": "放大",
-  "Zoom out": "缩小"
+  "Zoom out": "缩小",
+  "Asset category": "资产类别",
+  "Asset subcategory": "资产子类别",
+  "Internet facing": "面向互联网",
+  "Criticality": "关键性",
+  "Environment": "环境",
+  "Asset owner": "资产负责人"
 }

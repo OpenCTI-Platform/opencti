@@ -1,5 +1,11 @@
 enum VocabularyCategory {
   account_type_ov
+  asset_category_ov
+  asset_criticality_ov
+  asset_environment_ov
+  asset_internet_facing_ov
+  asset_platform_ov
+  asset_subcategory_ov
   attack_motivation_ov
   attack_resource_level_ov
   case_severity_ov

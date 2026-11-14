@@ -10,6 +10,8 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import Label from '../../../../components/common/label/Label';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import { SYSTEM_ASSET_VOCABULARY_FIELDS } from './SystemAssetFields';
 
 class SystemDetailsComponent extends Component {
   render() {
@@ -42,6 +44,26 @@ class SystemDetailsComponent extends Component {
                 commonmark={true}
               />
             </Grid>
+            <Grid size={6}>
+              {SYSTEM_ASSET_VOCABULARY_FIELDS.map(({ name, type, label }, index) => (
+                <React.Fragment key={name}>
+                  <Label sx={index > 0 ? { marginTop: 2 } : undefined}>
+                    {t(label)}
+                  </Label>
+                  <ItemOpenVocab
+                    displayMode="chip"
+                    type={type}
+                    value={system[name]}
+                  />
+                </React.Fragment>
+              ))}
+              <Label sx={{ marginTop: 2 }}>
+                {t('Asset owner')}
+              </Label>
+              <FieldOrEmpty source={system.x_opencti_owner}>
+                {system.x_opencti_owner}
+              </FieldOrEmpty>
+            </Grid>
             <CustomFieldValuesDisplay entityType={system.entity_type} values={system.customFieldValues ?? []} />
           </Grid>
         </Card>
@@ -67,6 +89,13 @@ const SystemDetails = createFragmentContainer(SystemDetailsComponent, {
       contact_information
       description
       x_opencti_reliability
+      x_opencti_asset_category
+      x_opencti_asset_subcategory
+      x_opencti_internet_facing
+      x_opencti_criticality
+      x_opencti_environment
+      x_opencti_owner
+      x_opencti_platform
     }
   `,
 });

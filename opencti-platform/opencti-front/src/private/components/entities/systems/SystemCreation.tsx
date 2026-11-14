@@ -35,6 +35,7 @@ import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextF
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
+import SystemAssetFields from './SystemAssetFields';
 
 const systemMutation = graphql`
   mutation SystemCreationMutation($input: SystemAddInput!) {
@@ -61,6 +62,13 @@ interface SystemAddInput {
   description: string;
   confidence: number | null;
   x_opencti_reliability: string | undefined;
+  x_opencti_asset_category: string | undefined;
+  x_opencti_asset_subcategory: string | undefined;
+  x_opencti_internet_facing: string | undefined;
+  x_opencti_criticality: string | undefined;
+  x_opencti_environment: string | undefined;
+  x_opencti_owner: string | undefined;
+  x_opencti_platform: string | undefined;
   createdBy: FieldOption | undefined;
   objectMarking: FieldOption[];
   objectLabel: FieldOption[];
@@ -99,6 +107,13 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
     confidence: Yup.number().nullable(),
     x_opencti_reliability: Yup.string()
       .nullable(),
+    x_opencti_asset_category: Yup.string().nullable(),
+    x_opencti_asset_subcategory: Yup.string().nullable(),
+    x_opencti_internet_facing: Yup.string().nullable(),
+    x_opencti_criticality: Yup.string().nullable(),
+    x_opencti_environment: Yup.string().nullable(),
+    x_opencti_owner: Yup.string().nullable(),
+    x_opencti_platform: Yup.string().nullable(),
     createdBy: Yup.object().nullable(),
     objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
@@ -147,6 +162,13 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
         name,
         description: values.description,
         x_opencti_reliability: values.x_opencti_reliability,
+        x_opencti_asset_category: values.x_opencti_asset_category,
+        x_opencti_asset_subcategory: values.x_opencti_asset_subcategory,
+        x_opencti_internet_facing: values.x_opencti_internet_facing,
+        x_opencti_criticality: values.x_opencti_criticality,
+        x_opencti_environment: values.x_opencti_environment,
+        x_opencti_owner: values.x_opencti_owner,
+        x_opencti_platform: values.x_opencti_platform,
         createdBy: values.createdBy?.value,
         confidence: parseInt(String(values.confidence), 10),
         objectMarking: values.objectMarking.map((v) => v.value),
@@ -177,6 +199,13 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
       description: '',
       confidence: null,
       x_opencti_reliability: undefined,
+      x_opencti_asset_category: undefined,
+      x_opencti_asset_subcategory: undefined,
+      x_opencti_internet_facing: undefined,
+      x_opencti_criticality: undefined,
+      x_opencti_environment: undefined,
+      x_opencti_owner: undefined,
+      x_opencti_platform: undefined,
       createdBy: defaultCreatedBy ?? undefined, // undefined for Require Fields Flagging, if Configured Mandatory Field
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
@@ -264,6 +293,10 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
               containerStyle={fieldSpacingContainerStyle}
               multiple={false}
               onChange={setFieldValue}
+            />
+            <SystemAssetFields
+              mandatoryAttributes={mandatoryAttributes}
+              setFieldValue={setFieldValue}
             />
             <CreatedByField
               name="createdBy"

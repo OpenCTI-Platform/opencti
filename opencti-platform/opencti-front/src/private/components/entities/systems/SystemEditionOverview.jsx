@@ -21,6 +21,7 @@ import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFie
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import TextareaField from '../../../../components/TextareaField';
+import SystemAssetFields, { SYSTEM_ASSET_FIELD_NAMES } from './SystemAssetFields';
 
 const systemMutationFieldPatch = graphql`
   mutation SystemEditionOverviewFieldPatchMutation(
@@ -93,6 +94,13 @@ const SystemEditionOverviewComponent = (props) => {
     confidence: Yup.number().nullable(),
     contact_information: Yup.string().nullable(),
     x_opencti_reliability: Yup.string().nullable(),
+    x_opencti_asset_category: Yup.string().nullable(),
+    x_opencti_asset_subcategory: Yup.string().nullable(),
+    x_opencti_internet_facing: Yup.string().nullable(),
+    x_opencti_criticality: Yup.string().nullable(),
+    x_opencti_environment: Yup.string().nullable(),
+    x_opencti_owner: Yup.string().nullable(),
+    x_opencti_platform: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
     createdBy: Yup.object().nullable(),
@@ -168,6 +176,7 @@ const SystemEditionOverviewComponent = (props) => {
       'description',
       'contact_information',
       'x_opencti_reliability',
+      ...SYSTEM_ASSET_FIELD_NAMES,
       'createdBy',
       'objectMarking',
       'confidence',
@@ -257,6 +266,13 @@ const SystemEditionOverviewComponent = (props) => {
             variant="edit"
             containerStyle={fieldSpacingContainerStyle}
           />
+          <SystemAssetFields
+            mandatoryAttributes={mandatoryAttributes}
+            setFieldValue={setFieldValue}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            editContext={context}
+          />
           {system.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
@@ -324,6 +340,13 @@ export default createFragmentContainer(SystemEditionOverviewComponent, {
         entity_type
         contact_information
         x_opencti_reliability
+        x_opencti_asset_category
+        x_opencti_asset_subcategory
+        x_opencti_internet_facing
+        x_opencti_criticality
+        x_opencti_environment
+        x_opencti_owner
+        x_opencti_platform
         createdBy {
           ... on Identity {
             id

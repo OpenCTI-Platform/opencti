@@ -15633,12 +15633,19 @@ type System implements BasicObject & Identity & StixCoreObject & StixDomainObjec
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   x_opencti_aliases: [String]
+  x_opencti_asset_category: String
+  x_opencti_asset_subcategory: String
   x_opencti_closing_reason: String
+  x_opencti_criticality: String
+  x_opencti_environment: String
   x_opencti_firstname: String
   x_opencti_graph_data: String
   x_opencti_inferences: [Inference]
+  x_opencti_internet_facing: String
   x_opencti_lastname: String
   x_opencti_modified_at: DateTime
+  x_opencti_owner: String
+  x_opencti_platform: String
   x_opencti_reliability: String
   x_opencti_stix_ids: [StixId]
 }
@@ -15672,9 +15679,16 @@ input SystemAddInput {
   update: Boolean
   upsertOperations: [EditInput!]
   x_opencti_aliases: [String]
+  x_opencti_asset_category: String
+  x_opencti_asset_subcategory: String
+  x_opencti_criticality: String
+  x_opencti_environment: String
   x_opencti_firstname: String
+  x_opencti_internet_facing: String
   x_opencti_lastname: String
   x_opencti_modified_at: DateTime
+  x_opencti_owner: String
+  x_opencti_platform: String
   x_opencti_reliability: String
   x_opencti_stix_ids: [StixId]
   x_opencti_workflow_id: String
@@ -17444,6 +17458,12 @@ input VocabularyAddInput {
 
 enum VocabularyCategory {
   account_type_ov
+  asset_category_ov
+  asset_criticality_ov
+  asset_environment_ov
+  asset_internet_facing_ov
+  asset_platform_ov
+  asset_subcategory_ov
   attack_motivation_ov
   attack_resource_level_ov
   case_priority_ov

@@ -1329,5 +1329,12 @@
   "XTM Hub Token": "XTM 中枢令牌",
   "XTM One intent": "XTM 一个意图",
   "XTM One registration manager": "XTM One 注册管理器",
-  "XTM1 CGU acceptance status": "XTM1 CGU 验收状态"
+  "XTM1 CGU acceptance status": "XTM1 CGU 验收状态",
+  "Asset category": "资产类别",
+  "Asset subcategory": "资产子类别",
+  "Internet facing": "面向互联网",
+  "Criticality": "关键性",
+  "Environment": "环境",
+  "Platform": "平台",
+  "Asset owner": "资产负责人"
 }

@@ -6333,5 +6333,11 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "現在のユーザーが所属している組織に加え、メインプラットフォームの組織にも所属することになります。",
   "Zoom": "ズーム",
   "Zoom in": "ズームイン",
-  "Zoom out": "ズームアウト"
+  "Zoom out": "ズームアウト",
+  "Asset category": "アセットカテゴリ",
+  "Asset subcategory": "アセットサブカテゴリ",
+  "Internet facing": "インターネット公開",
+  "Criticality": "重要度",
+  "Environment": "環境",
+  "Asset owner": "アセット所有者"
 }
