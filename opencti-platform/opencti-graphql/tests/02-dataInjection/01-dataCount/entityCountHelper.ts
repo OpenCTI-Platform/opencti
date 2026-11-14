@@ -43,7 +43,7 @@ export const entitiesCounter = {
   ThreatActorIndividual: 2,
   TrackingNumber: 1,
   User: TESTING_USERS.length + 1,
-  Vocabulary: 360,
+  Vocabulary: 475, // 360 + 115 System asset vocabularies
   EmailTemplate: 1,
   RetentionRule: 4,
   SecurityCoverage: 1,
