@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getSeriesMaxValue, simpleLabelTooltip, withCompactLegend, withIntegerYAxis } from './Charts';
+import { areaChartOptions, getSeriesMaxValue, lineChartOptions, pointXTooltipFormatter, simpleLabelTooltip, withCompactLegend, withIntegerYAxis } from './Charts';
 
 interface ThemeOverrides {
   background?: { nav?: unknown };
@@ -84,6 +84,43 @@ describe('Charts utils', () => {
     it('should not throw when theme color values are undefined', () => {
       const theme = buildTheme({ background: { nav: undefined }, text: { primary: undefined } });
       expect(() => simpleLabelTooltip(theme)({ seriesIndex: 0, w: { config: { labels: ['label'] } } })).not.toThrow();
+    });
+  });
+
+  describe('Function: pointXTooltipFormatter()', () => {
+    const july = new Date('2025-07-01T00:00:00.000Z');
+    const august = new Date('2025-08-01T00:00:00.000Z');
+    const w = { config: { series: [{ name: 'serie', data: [{ x: july, y: 3 }, { x: august, y: 5 }] }] } };
+    const isoFormatter = (date: Date) => date.toISOString().slice(0, 7);
+
+    it('should format the date of the hovered point, not the index given on a category axis', () => {
+      // On a category axis ApexCharts passes the point index (1) as the value:
+      // formatted as a date it would be the epoch on every point (issue #17917).
+      expect(pointXTooltipFormatter(isoFormatter)(1, { seriesIndex: 0, dataPointIndex: 1, w })).toEqual('2025-08');
+      expect(pointXTooltipFormatter(isoFormatter)(0, { seriesIndex: 0, dataPointIndex: 0, w })).toEqual('2025-07');
+    });
+
+    it('should fall back to the given value when the point cannot be found', () => {
+      const value = july.getTime();
+      expect(pointXTooltipFormatter((v: number) => `v${v}`)(value, { seriesIndex: 3, dataPointIndex: 0, w })).toEqual(`v${value}`);
+      expect(pointXTooltipFormatter((v: number) => `v${v}`)(value)).toEqual(`v${value}`);
+    });
+
+    it('should return the raw x value without a formatter', () => {
+      expect(pointXTooltipFormatter(null)(0, { seriesIndex: 0, dataPointIndex: 0, w })).toEqual(july);
+    });
+
+    it('should be the tooltip header formatter of the line and area charts', () => {
+      const theme = { palette: { mode: 'dark', background: { paper: '#000000' }, text: { secondary: '#ffffff' }, primary: { main: '#0fbcff' } } };
+      [lineChartOptions(theme, false, isoFormatter), areaChartOptions(theme, false, isoFormatter)].forEach((options) => {
+        expect(options.tooltip.x?.formatter(1, { seriesIndex: 0, dataPointIndex: 1, w })).toEqual('2025-08');
+      });
+    });
+
+    it('should keep the default tooltip header of the line and area charts without a formatter', () => {
+      const theme = { palette: { mode: 'dark', background: { paper: '#000000' }, text: { secondary: '#ffffff' }, primary: { main: '#0fbcff' } } };
+      expect(lineChartOptions(theme, true).tooltip).toEqual({ theme: 'dark' });
+      expect(areaChartOptions(theme, true).tooltip).toEqual({ theme: 'dark' });
     });
   });
 
