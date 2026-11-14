@@ -14,7 +14,7 @@ import Loader, { LoaderVariant } from '../../components/Loader';
 import useAuth, { UserContext } from '../../utils/hooks/useAuth';
 import { EXPLORE, KNOWLEDGE } from '../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
-import { computeLevel } from '../../utils/Number';
+import { computeLogLevel } from '../../utils/Number';
 import Security from '../../utils/Security';
 import { lastDayOfThePreviousMonth, monthsAgo, yearsAgo } from '../../utils/Time';
 import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
@@ -94,7 +94,7 @@ const TargetedCountriesComponent = ({ queryRef }) => {
   const countries = map(
     (x) => assoc(
       'level',
-      computeLevel(x.value, last(values), head(values) + 1),
+      computeLogLevel(x.value, last(values), head(values) + 1),
       x.entity,
     ),
     data.stixCoreRelationshipsDistribution,

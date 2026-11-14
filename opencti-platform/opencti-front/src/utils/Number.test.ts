@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { bytesFormat, computeLevel, numberFormat, setNumberOfElements, simpleNumberFormat } from './Number';
+import { bytesFormat, computeLevel, computeLogLevel, numberFormat, setNumberOfElements, simpleNumberFormat } from './Number';
 
 describe('Function: numberFormat', () => {
   it('should format a number with the appropriate SI symbol', () => {
@@ -72,5 +72,35 @@ describe('Function: computeLevel', () => {
   it('should correctly map zero as a valid value instead of treating it as falsy', () => {
     expect(computeLevel(0, 0, 100)).toBe(0);
     expect(computeLevel(0, -50, 50, 0, 9)).toBe(4);
+  });
+});
+
+describe('Function: computeLogLevel', () => {
+  it('keeps skewed counts on distinct levels (issue #17961)', () => {
+    // One outlier (1000) and small counts: the linear scale puts 10 and 50 on level 0 with 1.
+    expect(computeLevel(10, 1, 1001)).toBe(0);
+    expect(computeLevel(50, 1, 1001)).toBe(0);
+    const low = computeLogLevel(1, 1, 1001);
+    const small = computeLogLevel(10, 1, 1001);
+    const medium = computeLogLevel(50, 1, 1001);
+    const outlier = computeLogLevel(1000, 1, 1001);
+    expect(low).toBe(0);
+    expect(small).toBeGreaterThan(low);
+    expect(medium).toBeGreaterThan(small);
+    expect(outlier).toBeGreaterThan(medium);
+    expect(outlier).toBe(8);
+  });
+
+  it('stays within the allowed range', () => {
+    expect(computeLogLevel(1001, 1, 1001)).toBe(9);
+    expect(computeLogLevel(5000, 1, 1001)).toBe(9);
+    expect(computeLogLevel(0, 1, 1001)).toBe(0);
+    expect(computeLogLevel(1001, 1, 1001, 2, 6)).toBe(6);
+  });
+
+  it('returns minAllowed for a missing value or an empty range', () => {
+    expect(computeLogLevel(null, 0, 100)).toBe(0);
+    expect(computeLogLevel(undefined, 0, 100, 3, 9)).toBe(3);
+    expect(computeLogLevel(5, 5, 5)).toBe(0);
   });
 });

@@ -116,3 +116,26 @@ export const computeLevel = (
     ((maxAllowed - minAllowed) * (value - min)) / (max - min) + minAllowed,
   );
 };
+
+/**
+ * Maps a count `value` from the range [min, max] to a discrete integer level in
+ * [minAllowed, maxAllowed] (defaults to 0..9) on a logarithmic scale.
+ * Used by the choropleth maps: relationship counts are often skewed (one
+ * country with 100x the others), and the linear scale of `computeLevel`
+ * would put every country but the outlier on the lowest level.
+ */
+export const computeLogLevel = (
+  value: number | null | undefined,
+  min: number,
+  max: number,
+  minAllowed = 0,
+  maxAllowed = 9,
+): number => {
+  if (value === null || value === undefined || max <= min) return minAllowed;
+  const clamped = Math.min(Math.max(value, min), max);
+  const ratio = Math.log1p(clamped - min) / Math.log1p(max - min);
+  return Math.min(
+    maxAllowed,
+    Math.trunc((maxAllowed - minAllowed) * ratio + minAllowed),
+  );
+};
