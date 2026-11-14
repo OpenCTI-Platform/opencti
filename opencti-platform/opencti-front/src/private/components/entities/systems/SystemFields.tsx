@@ -17,7 +17,8 @@ export const SYSTEM_VOCABULARY_FIELDS = [
 ] as const;
 
 // Each system_subcategory_ov description ends with "(category: <system_category_ov key>)"
-const SUBCATEGORY_CATEGORY_PATTERN = /\(category: ([A-Z_]+)\)\s*$/;
+// Open vocabulary: a custom category key may hold any character (CUSTOM-HOST)
+const SUBCATEGORY_CATEGORY_PATTERN = /\(category: (.+)\)\s*$/;
 
 export const systemSubcategoryCategory = (description?: string | null): string | undefined => {
   return description?.match(SUBCATEGORY_CATEGORY_PATTERN)?.[1];
