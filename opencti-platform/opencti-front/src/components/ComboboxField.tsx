@@ -54,6 +54,10 @@ export type ComboboxFieldProps<Value extends PossibleValue = FieldOption>
       getChipColor?: (option: Value) => string | undefined;
       filterOptions?: (options: Value[], inputValue: string) => Value[];
       renderOption?: (option: Value, state: { selected: boolean; active: boolean }) => ReactNode;
+      /** Declares a row as the library's two-line option (48px) instead of a one-line one. */
+      isOptionTwoLine?: (option: Value) => boolean;
+      /** Class of the scrolling list, e.g. a taller panel than the library's default five rows. */
+      listClassName?: string;
       noOptionsText?: ReactNode;
       loadingText?: ReactNode;
       inputValue?: string;
@@ -103,6 +107,8 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
   getChipColor,
   filterOptions,
   renderOption,
+  isOptionTwoLine,
+  listClassName,
   noOptionsText,
   loadingText,
   inputValue,
@@ -174,6 +180,7 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
         getChipColor={getChipColor}
         filterOptions={filterOptions}
         renderOption={renderOption}
+        isOptionTwoLine={isOptionTwoLine}
         inputValue={inputValue}
         onInputChange={onInputChange}
         onOpenChange={onOpenChange}
@@ -226,6 +233,7 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
         <ComboboxContent
           emptyMessage={noOptionsText}
           loadingMessage={loadingText}
+          listClassName={listClassName}
           // Named after its own field: ComboboxContent otherwise defaults to
           // the untranslated literal "Suggestions" on every panel.
           listAriaLabel={typeof label === 'string' ? label : undefined}
