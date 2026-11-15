@@ -48,3 +48,4 @@ opencti-platform/opencti-graphql/config/development.json
 opencti-platform/opencti-graphql/config/production.json
 opencti-platform/opencti-graphql/config/local.json
 opencti-platform/opencti-graphql/logs
+opencti-worker/src/config.yml
