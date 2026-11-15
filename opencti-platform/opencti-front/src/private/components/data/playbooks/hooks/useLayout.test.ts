@@ -24,7 +24,9 @@ describe('useLayout layoutNodes', () => {
   it('gives the same picture whatever the order of the store (the d3 tree picked the first link as parent)', () => {
     const reference = picture(layoutNodes(NODES, EDGES));
     expect(picture(layoutNodes(NODES.slice().reverse(), EDGES.slice().reverse()))).toBe(reference);
-    expect(picture(layoutNodes([NODES[3], NODES[0], NODES[6], NODES[2], NODES[5], NODES[1], NODES[4]], [EDGES[4], EDGES[2], EDGES[6], EDGES[0], EDGES[3], EDGES[5], EDGES[1]]))).toBe(reference);
+    const shuffledNodes = [NODES[3], NODES[0], NODES[6], NODES[2], NODES[5], NODES[1], NODES[4]];
+    const shuffledEdges = [EDGES[4], EDGES[2], EDGES[6], EDGES[0], EDGES[3], EDGES[5], EDGES[1]];
+    expect(picture(layoutNodes(shuffledNodes, shuffledEdges))).toBe(reference);
   });
 
   it('places a node joined from two branches below both of them', () => {
