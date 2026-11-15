@@ -153,6 +153,42 @@ test.describe('Playbook editor', { tag: ['@ee'] }, () => {
     await expect.poll(below).toBe(true);
   });
 
+  test('answers F, V and H every time, the steps kept inside the canvas after each layout change', async ({ page }) => {
+    await openEditor(page);
+    const pane = page.locator('.react-flow');
+    const viewport = page.locator('.react-flow__viewport');
+    const checked = (name: string) => layoutItem(page, name);
+    const insidePane = async () => {
+      const box = await pane.boundingBox();
+      if (!box) return false;
+      const cards = await steps(page).all();
+      for (const card of cards) {
+        const c = await card.boundingBox();
+        if (!c || c.x < box.x || c.y < box.y || c.x + c.width > box.x + box.width || c.y + c.height > box.y + box.height) return false;
+      }
+      return true;
+    };
+    // A toolbar button had the focus last: the shortcuts still answer from the page body.
+    await toolbarButton(page, 'Zoom in').click();
+    await page.locator('body').focus();
+    for (let round = 0; round < 2; round += 1) {
+      await page.keyboard.press('h');
+      await expect(checked('Horizontal layout')).toHaveAttribute('aria-checked', 'true');
+      await expect.poll(insidePane).toBe(true);
+      await page.keyboard.press('v');
+      await expect(checked('Vertical layout')).toHaveAttribute('aria-checked', 'true');
+      await expect.poll(insidePane).toBe(true);
+      const before = await viewport.getAttribute('style');
+      await page.keyboard.press('+');
+      await expect.poll(() => viewport.getAttribute('style')).not.toBe(before);
+      await page.keyboard.press('f');
+      await expect.poll(insidePane).toBe(true);
+    }
+    // The canvas fills the window under the header: the page itself does not scroll.
+    const scrolls = await page.evaluate(() => document.documentElement.scrollHeight > window.innerHeight);
+    expect(scrolls).toBe(false);
+  });
+
   test('lists the shortcuts in the cheat sheet', async ({ page }) => {
     await openEditor(page);
     await toolbarButton(page, 'Keyboard shortcuts').click();

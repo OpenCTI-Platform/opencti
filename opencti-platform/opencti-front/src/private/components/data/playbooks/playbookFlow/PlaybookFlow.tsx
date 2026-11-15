@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { type ReactNode, useEffect, useMemo, useRef } from 'react';
+import { type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import ReactFlow, { Background, BackgroundVariant, MiniMap, useReactFlow } from 'reactflow';
 import { useTheme } from '@mui/material/styles';
 import { graphql, useFragment, useRefetchableFragment } from 'react-relay';
@@ -40,6 +40,26 @@ import { PlaybookFlow_playbook$key } from './__generated__/PlaybookFlow_playbook
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 const proOptions = { account: 'paid-pro', hideAttribution: true };
 const fitViewOptions = { padding: 0.2 };
+// The smallest canvas height, for a window too short to hold the header and a usable canvas.
+const MIN_CANVAS_HEIGHT = 320;
+
+// The canvas takes the height left under the page header, down to the bottom padding of the page,
+// so the page never scrolls and the minimap and the bottom of the canvas stay on screen.
+const useCanvasHeight = (bottomPadding: number) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    const measure = () => {
+      if (!ref.current) return;
+      const top = ref.current.getBoundingClientRect().top + window.scrollY;
+      setHeight(Math.max(MIN_CANVAS_HEIGHT, Math.floor(window.innerHeight - top - bottomPadding)));
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [bottomPadding]);
+  return { ref, height };
+};
 
 const playbookFragment = graphql`
   fragment PlaybookFlow_playbook on Playbook {
@@ -97,6 +117,7 @@ interface PlaybookFlowProps {
 
 const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProps) => {
   const theme = useTheme<Theme>();
+  const canvas = useCanvasHeight(Number.parseInt(theme.spacing(3), 10) || 24);
   const playbook = useFragment(playbookFragment, dataPlaybook);
   const { direction, setDirection } = usePlaybookLayoutMode(playbook.id);
   const [{ playbookComponents }, refetchComponents] = useRefetchableFragment(
@@ -188,7 +209,7 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
 
   return (
     <PlaybookCanvasContexts direction={direction} lastExecutions={lastExecutions}>
-      <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden' }}>
+      <div ref={canvas.ref} style={{ width: '100%', height: canvas.height ?? '100%', margin: 0, overflow: 'hidden' }}>
         <svg style={{ position: 'absolute', width: 0, height: 0 }} aria-hidden="true">
           <defs>
             <marker
