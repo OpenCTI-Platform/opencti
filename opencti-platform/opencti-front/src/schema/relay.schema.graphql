@@ -9583,8 +9583,6 @@ type Mutation {
   playbookFieldPatch(commitMessage: String, id: ID!, input: [EditInput!]!, references: [String]): Playbook
   playbookImport(file: Upload!): String!
   playbookInsertNode(childNodeId: ID!, id: ID!, input: PlaybookAddNodeInput!, parentNodeId: ID!, parentPortId: ID!): PlaybookInsertResult!
-  playbookMoveNode(id: ID!, nodeId: ID!, parentNodeId: ID!, parentPortId: ID!): String!
-  playbookRelink(fromNodeId: ID, fromPortId: ID, id: ID!, linkId: ID!, toNodeId: ID!): String!
   playbookReplaceNode(id: ID!, input: PlaybookAddNodeInput!, nodeId: ID!): String!
   playbookStepExecution(bundle: String!, data_instance_id: ID!, event_id: ID!, execution_id: ID!, execution_start: DateTime!, playbook_id: ID!, previous_bundle: String!, previous_step_id: ID!, step_id: ID!): Boolean
   playbookUpdatePositions(id: ID!, positions: String!): ID
@@ -11454,12 +11452,6 @@ input PlaybookAddNodeInput {
 
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
-
-  "Node this node is linked from: required for every node but the entry point, given with parentPortId."
-  parentNodeId: ID
-
-  "Out port of parentNodeId the link leaves from."
-  parentPortId: ID
   position: PositionInput!
 }
 
@@ -15641,12 +15633,19 @@ type System implements BasicObject & Identity & StixCoreObject & StixDomainObjec
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   x_opencti_aliases: [String]
+  x_opencti_system_category: String
+  x_opencti_system_subcategory: String
   x_opencti_closing_reason: String
+  x_opencti_criticality: String
+  x_opencti_environment: String
   x_opencti_firstname: String
   x_opencti_graph_data: String
   x_opencti_inferences: [Inference]
+  x_opencti_internet_facing: String
   x_opencti_lastname: String
   x_opencti_modified_at: DateTime
+  x_opencti_owner: String
+  x_opencti_platform: String
   x_opencti_reliability: String
   x_opencti_stix_ids: [StixId]
 }
@@ -15680,9 +15679,16 @@ input SystemAddInput {
   update: Boolean
   upsertOperations: [EditInput!]
   x_opencti_aliases: [String]
+  x_opencti_system_category: String
+  x_opencti_system_subcategory: String
+  x_opencti_criticality: String
+  x_opencti_environment: String
   x_opencti_firstname: String
+  x_opencti_internet_facing: String
   x_opencti_lastname: String
   x_opencti_modified_at: DateTime
+  x_opencti_owner: String
+  x_opencti_platform: String
   x_opencti_reliability: String
   x_opencti_stix_ids: [StixId]
   x_opencti_workflow_id: String
@@ -17410,6 +17416,7 @@ type Vocabulary implements BasicObject & StixMetaObject & StixObject {
   aliases: [String!]
   builtIn: Boolean
   category: VocabularyDefinition!
+  color: String
   created: DateTime
   created_at: DateTime!
   creators: [Creator!]
@@ -17438,6 +17445,7 @@ type Vocabulary implements BasicObject & StixMetaObject & StixObject {
 input VocabularyAddInput {
   aliases: [String!]
   category: VocabularyCategory!
+  color: String
   created: DateTime
   description: String
   modified: DateTime
@@ -17493,6 +17501,12 @@ enum VocabularyCategory {
   service_status_ov
   service_type_ov
   start_type_ov
+  system_category_ov
+  system_criticality_ov
+  system_environment_ov
+  system_internet_facing_ov
+  system_platform_ov
+  system_subcategory_ov
   threat_actor_group_role_ov
   threat_actor_group_sophistication_ov
   threat_actor_group_type_ov
