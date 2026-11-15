@@ -145,9 +145,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apollo/server@npm:5.5.1":
-  version: 5.5.1
-  resolution: "@apollo/server@npm:5.5.1"
+"@apollo/server@npm:5.5.2":
+  version: 5.5.2
+  resolution: "@apollo/server@npm:5.5.2"
   dependencies:
     "@apollo/cache-control-types": "npm:^1.0.3"
     "@apollo/server-gateway-interface": "npm:^2.0.0"
@@ -159,7 +159,9 @@ __metadata:
     "@apollo/utils.logger": "npm:^3.0.0"
     "@apollo/utils.usagereporting": "npm:^2.1.0"
     "@apollo/utils.withrequired": "npm:^3.0.0"
-    "@graphql-tools/schema": "npm:^10.0.0"
+    "@graphql-tools/merge": "npm:^9.1.1 <9.2.5"
+    "@graphql-tools/schema": "npm:^10.0.0 <10.1.2"
+    "@graphql-tools/utils": "npm:^10.9.1 || ^11.0.0 || >=12.0.0 <12.0.2"
     async-retry: "npm:^1.2.1"
     body-parser: "npm:^2.2.2"
     content-type: "npm:^1.0.5"
@@ -171,7 +173,7 @@ __metadata:
     whatwg-mimetype: "npm:^4.0.0"
   peerDependencies:
     graphql: ^16.11.0
-  checksum: 10c0/05cd54d9c3ef9f0dee583f5150e18cf78d39a9f06282e8df27ff7496347bb96c55df159f8dbd60b78c9e1e8c6d82c8b098f4675f61c9fe37e8cfcaf8dced37c3
+  checksum: 10c0/0cfb746bb654b1716ec9f9bab88c14665def6269cd0715bda953cb650f33363c70c80c0a251fdc602c72a9d28ad532a5ffe80b30517b74ead22f94a897dbed37
   languageName: node
   linkType: hard
 
@@ -2806,7 +2808,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/merge@npm:^9.2.8":
+"@graphql-tools/merge@npm:^9.1.1 <9.2.5":
+  version: 9.2.4
+  resolution: "@graphql-tools/merge@npm:9.2.4"
+  dependencies:
+    "@graphql-tools/utils": "npm:^12.0.1"
+    tslib: "npm:^2.4.0"
+  peerDependencies:
+    graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
+  checksum: 10c0/92b90adcbe22768fe1672813d06cf850dd46e7bcf9559d0105bfe4f97b404044a3c5d52910d63ae1b5d0b1a7206c230bac0b74c91503996cc9d5085ed93d7f54
+  languageName: node
+  linkType: hard
+
+"@graphql-tools/merge@npm:^9.2.4, @graphql-tools/merge@npm:^9.2.8":
   version: 9.2.8
   resolution: "@graphql-tools/merge@npm:9.2.8"
   dependencies:
@@ -2852,6 +2866,19 @@ __metadata:
   peerDependencies:
     graphql: ^16.0.0 || ^17.0.0
   checksum: 10c0/f713b5f0aa9c3ab87bc51f22f7e7ae5e7502a70a7a1f0eb476836cb38ff58997e8b69366d352388d1739d07d8dc0d00a882a9c78c2dd89cc07251e826d88f20f
+  languageName: node
+  linkType: hard
+
+"@graphql-tools/schema@npm:^10.0.0 <10.1.2":
+  version: 10.1.1
+  resolution: "@graphql-tools/schema@npm:10.1.1"
+  dependencies:
+    "@graphql-tools/merge": "npm:^9.2.4"
+    "@graphql-tools/utils": "npm:^12.0.1"
+    tslib: "npm:^2.4.0"
+  peerDependencies:
+    graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
+  checksum: 10c0/ccbfcba82cdcd20049981a229933df43bb927a0502287eb1c5e4d75619c69aa08b4b0960df7155b88cb78211153a9589d49a313ebfde2e7bc2db9fafb306da14
   languageName: node
   linkType: hard
 
@@ -2914,6 +2941,20 @@ __metadata:
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
   checksum: 10c0/73459332c199d8f3aa698bdee4ac6ce802274dba95cc7eff1f0219b6fe6e3a8f314d2e824168e296df8f5ce18f6dbd23ca14406b71890a41ce80b7548e8ccd6d
+  languageName: node
+  linkType: hard
+
+"@graphql-tools/utils@npm:^10.9.1 || ^11.0.0 || >=12.0.0 <12.0.2":
+  version: 12.0.1
+  resolution: "@graphql-tools/utils@npm:12.0.1"
+  dependencies:
+    "@graphql-typed-document-node/core": "npm:^3.1.1"
+    "@whatwg-node/promise-helpers": "npm:^1.0.0"
+    cross-inspect: "npm:1.0.1"
+    tslib: "npm:^2.4.0"
+  peerDependencies:
+    graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
+  checksum: 10c0/46a8878618090524241fd434c5e08d5f2885c7c8d8ec762b3828eff064f74fd446d03c1379d1bce80039e7d4f730fa9a3cfd6e005d3c70b852c712cdb6139f7a
   languageName: node
   linkType: hard
 
@@ -18391,7 +18432,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "opencti-graphql@workspace:opencti-platform/opencti-graphql"
   dependencies:
-    "@apollo/server": "npm:5.5.1"
+    "@apollo/server": "npm:5.5.2"
     "@as-integrations/express5": "npm:1.1.2"
     "@aws-sdk/client-s3": "npm:3.1163.0"
     "@aws-sdk/client-sts": "npm:3.1163.0"
