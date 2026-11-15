@@ -9583,6 +9583,8 @@ type Mutation {
   playbookFieldPatch(commitMessage: String, id: ID!, input: [EditInput!]!, references: [String]): Playbook
   playbookImport(file: Upload!): String!
   playbookInsertNode(childNodeId: ID!, id: ID!, input: PlaybookAddNodeInput!, parentNodeId: ID!, parentPortId: ID!): PlaybookInsertResult!
+  playbookMoveNode(id: ID!, nodeId: ID!, parentNodeId: ID!, parentPortId: ID!): String!
+  playbookRelink(fromNodeId: ID, fromPortId: ID, id: ID!, linkId: ID!, toNodeId: ID!): String!
   playbookReplaceNode(id: ID!, input: PlaybookAddNodeInput!, nodeId: ID!): String!
   playbookStepExecution(bundle: String!, data_instance_id: ID!, event_id: ID!, execution_id: ID!, execution_start: DateTime!, playbook_id: ID!, previous_bundle: String!, previous_step_id: ID!, step_id: ID!): Boolean
   playbookUpdatePositions(id: ID!, positions: String!): ID
@@ -11452,6 +11454,12 @@ input PlaybookAddNodeInput {
 
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
+
+  "Node this node is linked from: required for every node but the entry point, given with parentPortId."
+  parentNodeId: ID
+
+  "Out port of parentNodeId the link leaves from."
+  parentPortId: ID
   position: PositionInput!
 }
 
