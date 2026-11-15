@@ -100,6 +100,18 @@ const ADD_LINK_PLAYBOOK = gql`
     }
 `;
 
+const RELINK_PLAYBOOK = gql`
+    mutation playbookRelink($id: ID!, $linkId: ID!, $toNodeId: ID!, $fromNodeId: ID, $fromPortId: ID) {
+        playbookRelink(id: $id, linkId: $linkId, toNodeId: $toNodeId, fromNodeId: $fromNodeId, fromPortId: $fromPortId)
+    }
+`;
+
+const MOVE_NODE_PLAYBOOK = gql`
+    mutation playbookMoveNode($id: ID!, $nodeId: ID!, $parentNodeId: ID!, $parentPortId: ID!) {
+        playbookMoveNode(id: $id, nodeId: $nodeId, parentNodeId: $parentNodeId, parentPortId: $parentPortId)
+    }
+`;
+
 const DELETE_NODE_PLAYBOOK = gql`
     mutation playbookDeleteNode($id: ID!, $nodeId: ID!) {
         playbookDeleteNode(id: $id, nodeId: $nodeId) {
@@ -820,6 +832,105 @@ describe('Playbook resolver standard behavior', () => {
       await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
         query: ADD_LINK_PLAYBOOK,
         variables: { id: playbookId, input: addLinkInput },
+      });
+    });
+  });
+
+  describe('playbookRelink and playbookMoveNode (rewiring without deleting a branch)', () => {
+    // entry -> a (matching: out, no-match) ; a.out -> b ; b.out -> c
+    let rewireId = '';
+    let entry = '';
+    let a = '';
+    let b = '';
+    let c = '';
+
+    beforeAll(async () => {
+      const playbook = await createPlaybook('Playbook rewiring');
+      rewireId = playbook.id;
+      entry = await addEntryNode(rewireId);
+      a = await addMatchingNode(rewireId, entry, 'a');
+      b = await addMatchingNode(rewireId, a, 'b');
+      c = await addMatchingNode(rewireId, b, 'c');
+    });
+
+    afterAll(async () => {
+      await deletePlaybook(rewireId).catch(() => {});
+    });
+
+    it('should move a node and its branch under another out port in one write', async () => {
+      const result = await queryAsAdminWithSuccess({
+        query: MOVE_NODE_PLAYBOOK,
+        variables: { id: rewireId, nodeId: b, parentNodeId: a, parentPortId: 'no-match' },
+      });
+      const newLinkId = result.data?.playbookMoveNode;
+      const def = await readPlaybookDefinition(rewireId);
+      const into = def.links.filter((l: { to: { id: string } }) => l.to.id === b);
+      expect(into).toHaveLength(1);
+      expect(into[0]).toEqual({ id: newLinkId, from: { id: a, port: 'no-match' }, to: { id: b } });
+      // The branch below b moved with it.
+      expect(await findLinkId(rewireId, b, c)).toBeDefined();
+      expect(def.nodes).toHaveLength(4);
+    });
+
+    it('should re-point a link to another target and port in one write', async () => {
+      const linkId = await findLinkId(rewireId, b, c);
+      await queryAsAdminWithSuccess({
+        query: RELINK_PLAYBOOK,
+        variables: { id: rewireId, linkId, toNodeId: c, fromNodeId: a, fromPortId: 'out' },
+      });
+      const def = await readPlaybookDefinition(rewireId);
+      expect(def.links.find((l: { id: string }) => l.id === linkId)).toEqual({ id: linkId, from: { id: a, port: 'out' }, to: { id: c } });
+    });
+
+    it('should refuse a move that creates a cycle', async () => {
+      // c is now a child of a; moving a under c would loop.
+      await queryAsAdminWithError(
+        { query: MOVE_NODE_PLAYBOOK, variables: { id: rewireId, nodeId: a, parentNodeId: c, parentPortId: 'out' } },
+        'Playbook links cannot form a cycle',
+        FUNCTIONAL_ERROR,
+      );
+    });
+
+    it('should refuse a relink onto the source itself', async () => {
+      const linkId = await findLinkId(rewireId, a, c);
+      await queryAsAdminWithError(
+        { query: RELINK_PLAYBOOK, variables: { id: rewireId, linkId, toNodeId: a } },
+        'Playbook links cannot form a cycle',
+        FUNCTIONAL_ERROR,
+      );
+    });
+
+    it('should refuse a relink that leaves its old target without a parent', async () => {
+      // b has a single parent link (a.no-match): sending it to c orphans b.
+      const linkId = await findLinkId(rewireId, a, b, 'no-match');
+      await queryAsAdminWithError(
+        { query: RELINK_PLAYBOOK, variables: { id: rewireId, linkId, toNodeId: c } },
+        'Playbook must have a single entry point: every other node needs a parent',
+        FUNCTIONAL_ERROR,
+      );
+    });
+
+    it('should refuse an in port or an unknown port as the new source', async () => {
+      const linkId = await findLinkId(rewireId, a, c);
+      await queryAsAdminWithError(
+        { query: RELINK_PLAYBOOK, variables: { id: rewireId, linkId, toNodeId: c, fromNodeId: b, fromPortId: 'unknown' } },
+        'Playbook link must leave an out port of its source node',
+        FUNCTIONAL_ERROR,
+      );
+    });
+
+    it('should refuse to give the entry point a parent', async () => {
+      await queryAsAdminWithError(
+        { query: MOVE_NODE_PLAYBOOK, variables: { id: rewireId, nodeId: entry, parentNodeId: a, parentPortId: 'out' } },
+        'Playbook entry point cannot have a parent',
+        FUNCTIONAL_ERROR,
+      );
+    });
+
+    it('should refuse rewiring without Manage Playbooks capability', async () => {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+        query: MOVE_NODE_PLAYBOOK,
+        variables: { id: rewireId, nodeId: b, parentNodeId: a, parentPortId: 'out' },
       });
     });
   });

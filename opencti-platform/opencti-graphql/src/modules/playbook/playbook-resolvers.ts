@@ -25,6 +25,8 @@ import {
   playbookInsertNode,
   playbookReplaceNode,
   playbookAddLink,
+  playbookRelink,
+  playbookMoveNode,
   playbookDeleteNode,
   playbookDeleteLink,
   playbookUpdatePositions,
@@ -74,6 +76,12 @@ const playbookResolvers: Resolvers = {
     playbookAdd: (_, { input }, context) => playbookAdd(context, context.user, input),
     playbookAddNode: (_, { id, input }, context) => playbookAddNode(context, context.user, id, input),
     playbookAddLink: (_, { id, input }, context) => playbookAddLink(context, context.user, id, input),
+    playbookRelink: (_, { id, linkId, toNodeId, fromNodeId, fromPortId }, context) => {
+      return playbookRelink(context, context.user, id, linkId, toNodeId, fromNodeId, fromPortId);
+    },
+    playbookMoveNode: (_, { id, nodeId, parentNodeId, parentPortId }, context) => {
+      return playbookMoveNode(context, context.user, id, nodeId, parentNodeId, parentPortId);
+    },
     playbookReplaceNode: (_, { id, nodeId, input }, context) => playbookReplaceNode(context, context.user, id, nodeId, input),
     playbookInsertNode: (_, { id, parentNodeId, parentPortId, childNodeId, input }, context) => {
       return playbookInsertNode(context, context.user, id, parentNodeId, parentPortId, childNodeId, input);

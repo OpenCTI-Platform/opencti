@@ -530,6 +530,155 @@ export const playbookAddLink = async (context: AuthContext, user: AuthUser, id: 
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user).then(() => linkId);
 };
 
+// Rewiring writes (playbookRelink, playbookMoveNode) change the topology without adding or
+// removing nodes: on top of the single-root invariant, the result must stay acyclic and every
+// node must stay reachable from the entry point.
+export const assertPlaybookDefinitionIsAcyclicAndReachable = (definition: ComponentDefinition) => {
+  const nodes = definition.nodes ?? [];
+  const links = definition.links ?? [];
+  const children = new Map<string, string[]>();
+  links.forEach((l) => {
+    if (!children.has(l.from.id)) children.set(l.from.id, []);
+    children.get(l.from.id)!.push(l.to.id);
+  });
+  const state = new Map<string, 'open' | 'done'>();
+  nodes.forEach((start) => {
+    if (state.has(start.id)) return;
+    const stack = [{ id: start.id, next: 0 }];
+    state.set(start.id, 'open');
+    while (stack.length) {
+      const frame = stack[stack.length - 1];
+      const out = children.get(frame.id) ?? [];
+      if (frame.next < out.length) {
+        const target = out[frame.next];
+        frame.next += 1;
+        const s = state.get(target);
+        if (s === 'open') {
+          throw FunctionalError('Playbook links cannot form a cycle', { node_id: target });
+        }
+        if (!s) {
+          state.set(target, 'open');
+          stack.push({ id: target, next: 0 });
+        }
+      } else {
+        state.set(frame.id, 'done');
+        stack.pop();
+      }
+    }
+  });
+  const linkTargets = new Set(links.map((l) => l.to.id));
+  const root = nodes.find((n) => !linkTargets.has(n.id));
+  if (!root) return;
+  const reached = new Set([root.id]);
+  const queue = [root.id];
+  while (queue.length) {
+    const current = queue.shift()!;
+    (children.get(current) ?? []).forEach((child) => {
+      if (!reached.has(child)) {
+        reached.add(child);
+        queue.push(child);
+      }
+    });
+  }
+  const orphans = nodes.filter((n) => !reached.has(n.id)).map((n) => n.id);
+  if (orphans.length > 0) {
+    throw FunctionalError('Playbook nodes must stay reachable from the entry point', { node_ids: orphans });
+  }
+};
+
+const assertOutPort = (definition: ComponentDefinition, nodeId: string, portId: string) => {
+  const node = definition.nodes.find((n) => n.id === nodeId);
+  if (!node) {
+    throw FunctionalError('Playbook node not found', { node_id: nodeId });
+  }
+  const port = PLAYBOOK_COMPONENTS[node.component_id]?.ports.find((p) => p.id === portId);
+  if (!port || port.type !== 'out') {
+    throw FunctionalError('Playbook link must leave an out port of its source node', { node_id: nodeId, port: portId });
+  }
+};
+
+const writeRewiredDefinition = async (context: AuthContext, user: AuthUser, id: string, definition: ComponentDefinition) => {
+  assertPlaybookDefinitionIsValid(definition);
+  assertPlaybookDefinitionIsAcyclicAndReachable(definition);
+  const patch = { playbook_definition: JSON.stringify(definition) };
+  const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
+};
+
+// Re-point one link in a single write: its target, and optionally its source node and out port.
+export const playbookRelink = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  linkId: string,
+  toNodeId: string,
+  fromNodeId?: string | null,
+  fromPortId?: string | null,
+) => {
+  await checkEnterpriseEdition(context);
+  if (Boolean(fromNodeId) !== Boolean(fromPortId)) {
+    throw FunctionalError('Playbook relink needs both fromNodeId and fromPortId to change the source', { fromNodeId, fromPortId });
+  }
+  const playbook = await findById(context, user, id);
+  const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
+  definition.nodes = definition.nodes ?? [];
+  definition.links = definition.links ?? [];
+  const link = definition.links.find((l) => l.id === linkId);
+  if (!link) {
+    throw FunctionalError('Playbook link not found', { link_id: linkId });
+  }
+  const from = { id: fromNodeId ?? link.from.id, port: fromPortId ?? link.from.port };
+  assertOutPort(definition, from.id, from.port);
+  if (!definition.nodes.some((n) => n.id === toNodeId)) {
+    throw FunctionalError('Playbook node not found', { node_id: toNodeId });
+  }
+  if (from.id === toNodeId) {
+    throw FunctionalError('Playbook links cannot form a cycle', { node_id: toNodeId });
+  }
+  const duplicate = definition.links.some((l) => l.id !== linkId && l.from.id === from.id && l.from.port === from.port && l.to.id === toNodeId);
+  if (duplicate) {
+    throw FunctionalError('Playbook link duplication is not possible', { link_id: linkId });
+  }
+  definition.links = definition.links.map((l) => (l.id === linkId ? { ...l, from, to: { id: toNodeId } } : l));
+  await writeRewiredDefinition(context, user, id, definition);
+  return linkId;
+};
+
+// Move a node and its branch under another out port in a single write: every link reaching the
+// node is replaced by one link from the new parent port. Links leaving the node are kept.
+export const playbookMoveNode = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  nodeId: string,
+  parentNodeId: string,
+  parentPortId: string,
+) => {
+  await checkEnterpriseEdition(context);
+  const playbook = await findById(context, user, id);
+  const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
+  definition.nodes = definition.nodes ?? [];
+  definition.links = definition.links ?? [];
+  const node = definition.nodes.find((n) => n.id === nodeId);
+  if (!node) {
+    throw FunctionalError('Playbook node not found', { node_id: nodeId });
+  }
+  if (PLAYBOOK_COMPONENTS[node.component_id]?.is_entry_point) {
+    throw FunctionalError('Playbook entry point cannot have a parent', { node_id: nodeId });
+  }
+  assertOutPort(definition, parentNodeId, parentPortId);
+  if (parentNodeId === nodeId) {
+    throw FunctionalError('Playbook links cannot form a cycle', { node_id: nodeId });
+  }
+  const linkId = uuidv4();
+  definition.links = [
+    ...definition.links.filter((l) => l.to.id !== nodeId),
+    { id: linkId, from: { id: parentNodeId, port: parentPortId }, to: { id: nodeId } },
+  ];
+  await writeRewiredDefinition(context, user, id, definition);
+  return linkId;
+};
+
 export const playbookDeleteLink = async (context: AuthContext, user: AuthUser, id: string, linkId: string) => {
   await checkEnterpriseEdition(context);
   const playbook = await findById(context, user, id);
