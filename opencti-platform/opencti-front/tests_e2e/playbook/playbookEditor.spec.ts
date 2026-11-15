@@ -99,6 +99,13 @@ test.describe('Playbook editor', { tag: ['@ee'] }, () => {
   const toolbarButton = (page: Page, name: string) => page.getByRole('button', { name, exact: true });
   // The layout switch is a design-system button group: its items are found by their label, whatever their role.
   const layoutItem = (page: Page, name: string) => page.getByLabel(name, { exact: true });
+  // Gives the canvas the focus without touching a step: the centre of the pane can be a card, and a
+  // click on a card opens its configuration drawer, which keeps undo / redo to the browser. The top
+  // left corner is inside the fit padding (no card) and away from the toolbar and the minimap.
+  const clickEmptyCanvas = async (page: Page) => {
+    await page.locator('.react-flow__pane').click({ position: { x: 8, y: 8 } });
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+  };
 
   // The tests run in order on one playbook: each one opens it as the previous one left it.
   const openEditor = async (page: Page) => {
@@ -148,7 +155,7 @@ test.describe('Playbook editor', { tag: ['@ee'] }, () => {
     await expect(step(page, fixture.entryId)).toBeVisible();
     await expect.poll(right).toBe(true);
     // The keyboard shortcut switches back.
-    await page.locator('.react-flow__pane').click();
+    await clickEmptyCanvas(page);
     await page.keyboard.press('v');
     await expect.poll(below).toBe(true);
   });
@@ -216,7 +223,7 @@ test.describe('Playbook editor', { tag: ['@ee'] }, () => {
     await expect(steps(page)).toHaveCount(3);
     await expect(freePort(page, fixture.matchId, 'no-match')).toBeVisible();
 
-    await page.locator('.react-flow__pane').click();
+    await clickEmptyCanvas(page);
     await page.keyboard.press('Shift+ControlOrMeta+z');
     await expect(steps(page)).toHaveCount(4);
     await expect(page.getByText('Log the rejected bundle', { exact: true })).toBeVisible();
