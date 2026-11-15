@@ -84,13 +84,18 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
         width: PLAYBOOK_CARD.width,
         height: PLAYBOOK_CARD.height,
         cursor: 'pointer',
-        border: `1px solid ${hovered ? accent : theme.palette.divider}`,
-        transition: 'border-color 120ms',
-        borderLeft: `4px solid ${accent}`,
+        // The outline and the accent stripe are inset shadows, not borders: React Flow places the handles
+        // in the padding box, so a 4 px left border moved the target handle 1.5 px off the card centre.
+        border: 'none',
+        transition: 'box-shadow 120ms',
         borderRadius: isEntryPoint ? 16 : 6,
         backgroundColor: theme.palette.background.paper,
-        boxShadow: theme.shadows?.[1],
-        padding: '10px 32px 10px 12px',
+        boxShadow: [
+          `inset 4px 0 0 0 ${accent}`,
+          `inset 0 0 0 1px ${hovered ? accent : theme.palette.divider}`,
+          theme.shadows?.[1],
+        ].filter(Boolean).join(', '),
+        padding: '11px 33px 11px 16px',
         overflow: 'visible',
       }}
     >
