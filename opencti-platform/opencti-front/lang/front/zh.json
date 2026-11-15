@@ -6445,5 +6445,6 @@
   "Email security": "电子邮件安全",
   "LLM firewall": "LLM 防火墙",
   "AI gateway": "AI 网关",
-  "Vulnerability scanner": "漏洞扫描器"
+  "Vulnerability scanner": "漏洞扫描器",
+  "This link cannot go there: it would create a loop or leave a step without a parent": "此连接无法放在这里：会形成循环或使某个步骤失去父步骤"
 }

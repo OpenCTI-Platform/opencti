@@ -22,6 +22,8 @@ import PlaybookFlowDeleteNode from './PlaybookFlowDeleteNode';
 import useManipulateComponents from '../hooks/useManipulateComponents';
 import { addPlaceholders, computeEdges, computeNodes } from '../utils/playbook';
 import useLayout from '../hooks/useLayout';
+import usePlaybookRewiring from '../hooks/usePlaybookRewiring';
+import useGranted, { AUTOMATION_AUTMANAGE } from '../../../../../utils/hooks/useGranted';
 import { PlaybookLayoutDirectionContext, usePlaybookLayoutMode } from '../hooks/usePlaybookLayoutMode';
 import PlaybookFlowToolbar from './PlaybookFlowToolbar';
 import { categoryAccent, PLAYBOOK_ARROW_ID } from '../types/nodes/playbookNodeGeometry';
@@ -125,6 +127,15 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
   // Needs to be called after computing nodes and edges.
   useLayout(direction);
 
+  // Rewiring by drag: only for users who may change playbooks; the others get a read-only canvas.
+  const canManage = useGranted([AUTOMATION_AUTMANAGE]);
+  const { onConnect, onEdgeUpdate } = usePlaybookRewiring(
+    playbook.id,
+    setAction as React.Dispatch<React.SetStateAction<string | null>>,
+    setSelectedEdge as React.Dispatch<React.SetStateAction<string | null>>,
+    setSelectedNode as React.Dispatch<React.SetStateAction<string | null>>,
+  );
+
   return (
     <PlaybookLayoutDirectionContext.Provider value={direction}>
       <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden' }}>
@@ -153,7 +164,10 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
           fitView={true}
           fitViewOptions={fitViewOptions}
           nodesDraggable={false}
-          nodesConnectable={false}
+          nodesConnectable={canManage}
+          edgesUpdatable={canManage}
+          onConnect={canManage ? onConnect : undefined}
+          onEdgeUpdate={canManage ? onEdgeUpdate : undefined}
           zoomOnDoubleClick={false}
           proOptions={proOptions}
         >

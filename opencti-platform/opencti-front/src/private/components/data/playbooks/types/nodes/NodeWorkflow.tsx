@@ -136,7 +136,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
         </div>
       )}
       {!isEntryPoint && (
-        <Handle type="target" position={target} isConnectable={false} style={{ background: accent, border: 'none' }} />
+        <Handle type="target" position={target} style={{ background: accent, border: 'none' }} />
       )}
       {ports.map((port, index) => {
         const anchor = portAnchor(index, ports.length, direction);
@@ -146,7 +146,6 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
               id={port.id}
               type="source"
               position={source}
-              isConnectable={false}
               style={{ ...(direction === 'horizontal' ? { top: anchor.y } : { left: anchor.x }), background: accent, border: 'none' }}
             />
             {(ports.length > 1 || port.id !== 'out') && (

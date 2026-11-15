@@ -6445,5 +6445,6 @@
   "Email security": "E-Mail-Sicherheit",
   "LLM firewall": "LLM-Firewall",
   "AI gateway": "KI-Gateway",
-  "Vulnerability scanner": "Schwachstellenscanner"
+  "Vulnerability scanner": "Schwachstellenscanner",
+  "This link cannot go there: it would create a loop or leave a step without a parent": "Diese Verbindung ist hier nicht möglich: Sie würde eine Schleife erzeugen oder einen Schritt ohne übergeordneten Schritt lassen"
 }

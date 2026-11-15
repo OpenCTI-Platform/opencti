@@ -6445,5 +6445,6 @@
   "Email security": "Защита электронной почты",
   "LLM firewall": "Межсетевой экран LLM",
   "AI gateway": "ИИ-шлюз",
-  "Vulnerability scanner": "Сканер уязвимостей"
+  "Vulnerability scanner": "Сканер уязвимостей",
+  "This link cannot go there: it would create a loop or leave a step without a parent": "Эту связь нельзя провести сюда: она создаст цикл или оставит шаг без родителя"
 }

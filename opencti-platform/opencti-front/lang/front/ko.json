@@ -6445,5 +6445,6 @@
   "Email security": "이메일 보안",
   "LLM firewall": "LLM 방화벽",
   "AI gateway": "AI 게이트웨이",
-  "Vulnerability scanner": "취약점 스캐너"
+  "Vulnerability scanner": "취약점 스캐너",
+  "This link cannot go there: it would create a loop or leave a step without a parent": "이 링크는 여기에 연결할 수 없습니다: 루프가 생기거나 상위 단계가 없는 단계가 남습니다"
 }

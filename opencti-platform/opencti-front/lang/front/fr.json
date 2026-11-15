@@ -6445,5 +6445,6 @@
   "Email security": "Sécurité de la messagerie",
   "LLM firewall": "Pare-feu LLM",
   "AI gateway": "Passerelle IA",
-  "Vulnerability scanner": "Scanner de vulnérabilités"
+  "Vulnerability scanner": "Scanner de vulnérabilités",
+  "This link cannot go there: it would create a loop or leave a step without a parent": "Ce lien ne peut pas aller ici : il créerait une boucle ou laisserait une étape sans parent"
 }
