@@ -59,12 +59,14 @@ const RemoteStreamField: FunctionComponent<RemoteStreamFieldProps> = ({
   const renderOption = (option: RemoteStreamOption | string) => {
     if (typeof option === 'string') return option;
     const filterCount = countRemoteStreamFilters(option.filters);
+    const description = option.description || t_i18n('No description');
+    // Rows truncate with an ellipsis: the full text stays reachable on hover.
     return (
       <span style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minWidth: 0 }}>
         <span style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
-          <span style={oneLine}>{grouped ? splitStreamName(option.name).title : option.name}</span>
-          <span style={{ ...oneLine, ...secondaryText }}>
-            {option.description || t_i18n('No description')}
+          <span style={oneLine} title={option.name}>{grouped ? splitStreamName(option.name).title : option.name}</span>
+          <span style={{ ...oneLine, ...secondaryText }} title={description}>
+            {description}
           </span>
         </span>
         <span style={{ ...secondaryText, flexShrink: 0, whiteSpace: 'nowrap' }}>
