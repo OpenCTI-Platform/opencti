@@ -170,8 +170,8 @@ test.describe('Playbook editor', { tag: ['@ee'] }, () => {
     await expect(steps(page)).toHaveCount(3);
     await expect(toolbarButton(page, 'Undo')).toBeDisabled();
     await freePort(page, fixture.matchId, 'no-match').getByRole('button', { name: 'Add component' }).click();
-    // The palette is searchable.
-    await page.getByRole('textbox', { name: 'Search components' }).fill('log data');
+    // The palette is searchable (the design-system SearchField is an input of type search: role searchbox).
+    await page.getByRole('searchbox', { name: 'Search components' }).fill('log data');
     await createStep(page, 'Log data in standard output', 'Log the rejected bundle');
     await expect(steps(page)).toHaveCount(4);
     await expect(freePort(page, fixture.matchId, 'no-match')).toHaveCount(0);
