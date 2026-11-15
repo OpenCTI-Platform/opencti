@@ -109,7 +109,7 @@ const usePlaybookHistory = (
       nodes?: PlaybookDefinitionNode[];
       links?: PlaybookDefinitionEdge[];
     };
-    const nodes = computeNodes(definition.nodes ?? [], playbookComponents, setAction, setSelectedNode);
+    const nodes = computeNodes(definition.nodes ?? [], playbookComponents, setAction, setSelectedNode, definition.links ?? []);
     const edges = computeEdges(definition.links ?? [], setAction, setSelectedEdge);
     const next = addPlaceholders(nodes, edges, setAction, setSelectedNode);
     setNodes(next.nodes as PlaybookNode[]);

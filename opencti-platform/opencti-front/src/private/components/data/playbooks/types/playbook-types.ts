@@ -49,6 +49,8 @@ export interface PlaybookNodeData {
   description?: string;
   configuration?: PlaybookConfig;
   component?: PlaybookComponent;
+  // Only when the component is not in the catalog: the out ports its stored links leave from.
+  linkedPorts?: string[];
   openConfig: (node: PlaybookNode) => void;
   openReplace: (node: PlaybookNode) => void;
   openAddSibling: (node: PlaybookNode) => void;

@@ -53,6 +53,9 @@ const compareStrings = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 const portIndex = (components: Map<string, PlaybookLayoutComponent>, node: PlaybookLayoutNode | undefined, port: string) => {
   const ports = (node && components.get(node.component_id)?.ports) || [];
   const outs = ports.filter((p) => p.type === 'out');
+  // A component not in the catalog has no port list: 'out' first, the other ports after it
+  // (then by name, below), the order its card draws them in.
+  if (outs.length === 0) return port === 'out' ? 0 : 1;
   const index = outs.findIndex((p) => p.id === port);
   return index === -1 ? outs.length : index;
 };
@@ -69,6 +72,7 @@ export const canonicalOrder = (
   const validLinks = links.filter((l) => byId.has(l.from?.id) && byId.has(l.to?.id));
   const sortedLinks = validLinks.slice().sort((a, b) => compareStrings(a.from.id, b.from.id)
     || portIndex(components, byId.get(a.from.id), a.from.port) - portIndex(components, byId.get(b.from.id), b.from.port)
+    || compareStrings(a.from.port, b.from.port)
     || compareStrings(a.to.id, b.to.id)
     || compareStrings(a.id, b.id));
   const outgoing = new Map<string, PlaybookLayoutLink[]>();
@@ -103,6 +107,7 @@ export const canonicalOrder = (
   const rankOf = new Map(order.map((id, i) => [id, i]));
   const orderedLinks = sortedLinks.slice().sort((a, b) => rankOf.get(a.from.id)! - rankOf.get(b.from.id)!
     || portIndex(components, byId.get(a.from.id), a.from.port) - portIndex(components, byId.get(b.from.id), b.from.port)
+    || compareStrings(a.from.port, b.from.port)
     || rankOf.get(a.to.id)! - rankOf.get(b.to.id)!
     || compareStrings(a.id, b.id));
   return { nodes: order.map((id) => byId.get(id)!), links: orderedLinks };

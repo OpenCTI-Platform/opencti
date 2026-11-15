@@ -33,7 +33,10 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
   const component = data.component;
   const accent = categoryAccent(theme, component?.category);
   const displayDescription = data.description || component?.description;
-  const ports = outPorts(component?.ports);
+  // A step whose component is not in the catalog keeps a handle on each port its links leave from.
+  const ports: { id: string; type: string }[] = component
+    ? outPorts(component.ports)
+    : (data.linkedPorts ?? []).map((portId: string) => ({ id: portId, type: 'out' }));
   const isEntryPoint = Boolean(component?.is_entry_point);
   const isEnd = ports.length === 0;
   // A step whose component is not in the catalog (an AI agent component without XTM One, a removed

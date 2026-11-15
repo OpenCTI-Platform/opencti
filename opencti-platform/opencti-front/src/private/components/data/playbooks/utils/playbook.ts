@@ -14,11 +14,20 @@ import type {
 export const placeholderIdOf = (nodeId: string, portId: string) => `${nodeId}-${portId}-PLACEHOLDER`;
 export const placeholderEdgeIdOf = (nodeId: string, portId: string) => `${nodeId}-${portId}-${placeholderIdOf(nodeId, portId)}`;
 
+// The out ports a step's stored links leave from, 'out' first then by name. A step whose component
+// is not in the catalog (an AI agent component without XTM One, a removed connector) has no port
+// list: its card draws these instead, so its links stay attached to it.
+export const linkedOutPorts = (nodeId: string, links: PlaybookDefinitionEdge[]): string[] => {
+  const ports = new Set(links.filter((link) => link.from?.id === nodeId && link.from.port).map((link) => link.from.port));
+  return [...ports].sort((a, b) => (a === 'out' ? -1 : b === 'out' ? 1 : a < b ? -1 : a > b ? 1 : 0));
+};
+
 export const computeNodes = (
   playbookNodes: PlaybookDefinitionNode[],
   playbookComponents: PlaybookComponents,
   setAction: SetPlaybookAction,
   setSelectedNode: SetSelectedPlaybookNode,
+  playbookLinks: PlaybookDefinitionEdge[] = [],
 ): PlaybookNode[] => {
   return playbookNodes.map((node) => {
     const component = playbookComponents.find((playbookComponent) => {
@@ -34,6 +43,7 @@ export const computeNodes = (
         description: node.description,
         configuration: node.configuration ? JSON.parse(node.configuration) : undefined,
         component,
+        linkedPorts: component ? undefined : linkedOutPorts(node.id, playbookLinks),
         openConfig: (node: PlaybookNode) => {
           setSelectedNode(node);
           setAction('config');

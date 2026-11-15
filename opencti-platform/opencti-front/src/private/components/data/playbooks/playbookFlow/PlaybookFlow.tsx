@@ -170,6 +170,7 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
     playbookComponents,
     setAction,
     setSelectedNode,
+    definition.links ?? [],
   );
   const initialEdges = computeEdges(
     definition.links ?? [],

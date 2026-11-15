@@ -182,6 +182,20 @@ describe('layoutPlaybook', () => {
     expect(result.positions.get('f-extract')!.x).toBeLessThan(result.positions.get('g-rejected')!.x);
   });
 
+  it('keeps out first and draws no crossing when a step\'s component is not in the catalog (AI agent without XTM One)', () => {
+    const withoutAi = COMPONENTS.filter((c) => c.id !== 'AI');
+    // Node ids that would put the unmodified branch first if ports were ordered by target id.
+    const nodes = REPORT_PIPELINE.nodes.map((n) => (n.id === 'd-status' ? node('z-status', 'MATCH') : n));
+    const links = REPORT_PIPELINE.links.map((l) => (l.to.id === 'd-status' ? link(l.from.id, l.from.port, 'z-status')
+      : l.from.id === 'd-status' ? link('z-status', l.from.port, l.to.id) : l));
+    MODES.forEach((mode) => {
+      const result = layoutPlaybook(nodes, links, withoutAi, { mode });
+      expect(result.crossings).toBe(0);
+    });
+    const vertical = layoutPlaybook(nodes, links, withoutAi, { mode: 'vertical' });
+    expect(vertical.positions.get('z-status')!.x).toBeLessThan(vertical.positions.get('e-log')!.x);
+  });
+
   it('keeps the saved positions in manual mode and lays out a node without one', () => {
     const nodes = REPORT_PIPELINE.nodes.map((n, i) => (i === 3 ? { ...n, position: null } : { ...n, position: { x: i * 10, y: i * 20 } }));
     const result = layoutPlaybook(nodes, REPORT_PIPELINE.links, COMPONENTS, { mode: 'manual' });
