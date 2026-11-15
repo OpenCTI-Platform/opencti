@@ -1,11 +1,19 @@
-import { Dispatch, SetStateAction } from 'react';
-import { PlaybookComponents, PlaybookDefinitionEdge, PlaybookDefinitionNode, PlaybookEdge, PlaybookNode } from '../types/playbook-types';
+import type {
+  PlaybookComponents,
+  PlaybookDefinitionEdge,
+  PlaybookDefinitionNode,
+  PlaybookEdge,
+  PlaybookNode,
+  SetPlaybookAction,
+  SetSelectedPlaybookEdge,
+  SetSelectedPlaybookNode,
+} from '../types/playbook-types';
 
 export const computeNodes = (
   playbookNodes: PlaybookDefinitionNode[],
   playbookComponents: PlaybookComponents,
-  setAction: Dispatch<SetStateAction<string | null>>,
-  setSelectedNode: Dispatch<SetStateAction<string | null>>,
+  setAction: SetPlaybookAction,
+  setSelectedNode: SetSelectedPlaybookNode,
 ): PlaybookNode[] => {
   return playbookNodes.map((node) => {
     const component = playbookComponents.find((playbookComponent) => {
@@ -21,20 +29,20 @@ export const computeNodes = (
         description: node.description,
         configuration: node.configuration ? JSON.parse(node.configuration) : undefined,
         component,
-        openConfig: (nodeId: string) => {
-          setSelectedNode(nodeId);
+        openConfig: (node: PlaybookNode) => {
+          setSelectedNode(node);
           setAction('config');
         },
-        openReplace: (nodeId: string) => {
-          setSelectedNode(nodeId);
+        openReplace: (node: PlaybookNode) => {
+          setSelectedNode(node);
           setAction('replace');
         },
-        openAddSibling: (nodeId: string) => {
-          setSelectedNode(nodeId);
+        openAddSibling: (node: PlaybookNode) => {
+          setSelectedNode(node);
           setAction('add');
         },
-        openDelete: (nodeId: string) => {
-          setSelectedNode(nodeId);
+        openDelete: (node: PlaybookNode) => {
+          setSelectedNode(node);
           setAction('delete');
         },
       },
@@ -44,8 +52,8 @@ export const computeNodes = (
 
 export const computeEdges = (
   playbookEdges: PlaybookDefinitionEdge[],
-  setAction: Dispatch<SetStateAction<string | null>>,
-  setSelectedEdge: Dispatch<SetStateAction<string | null>>,
+  setAction: SetPlaybookAction,
+  setSelectedEdge: SetSelectedPlaybookEdge,
 ): PlaybookEdge[] => {
   return playbookEdges.map((edge) => {
     return {
@@ -55,8 +63,8 @@ export const computeEdges = (
       sourceHandle: edge.from.port,
       target: edge.to.id,
       data: {
-        openConfig: (edgeId: string) => {
-          setSelectedEdge(edgeId);
+        openConfig: (edge: PlaybookEdge) => {
+          setSelectedEdge(edge);
           setAction('config');
         },
       },
@@ -67,8 +75,8 @@ export const computeEdges = (
 export const addPlaceholders = (
   nodes: PlaybookNode[],
   edges: PlaybookEdge[],
-  setAction: Dispatch<SetStateAction<string | null>>,
-  setSelectedNode: Dispatch<SetStateAction<string | null>>,
+  setAction: SetPlaybookAction,
+  setSelectedNode: SetSelectedPlaybookNode,
 ) => {
   if (nodes.length === 0) {
     return {
@@ -81,8 +89,8 @@ export const addPlaceholders = (
             name: '+',
             configuration: null,
             component: { is_entry_point: true },
-            openConfig: (nodeId: string) => {
-              setSelectedNode(nodeId);
+            openConfig: (node: PlaybookNode) => {
+              setSelectedNode(node);
               setAction('config');
             },
           },
@@ -112,8 +120,8 @@ export const addPlaceholders = (
         name: '+',
         configuration: null,
         component: { is_entry_point: false },
-        openConfig: (nodeId: string) => {
-          setSelectedNode(nodeId);
+        openConfig: (node: PlaybookNode) => {
+          setSelectedNode(node);
           setAction('config');
         },
       },

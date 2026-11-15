@@ -18,12 +18,13 @@ import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import { useFormatter } from '../../../../../components/i18n';
+import type { PlaybookAction, PlaybookNode, SetPlaybookAction, SetSelectedPlaybookNode } from '../types/playbook-types';
 
 interface PlaybookFlowDeleteNodeProps {
-  action: string | null;
-  setAction: (val: null) => void;
-  selectedNode: unknown;
-  setSelectedNode: (val: null) => void;
+  action: PlaybookAction | null;
+  setAction: SetPlaybookAction;
+  selectedNode: PlaybookNode | null;
+  setSelectedNode: SetSelectedPlaybookNode;
   deleteNode: () => void;
 }
 

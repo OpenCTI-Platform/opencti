@@ -26,7 +26,15 @@ import { parse } from '../../../../../utils/Time';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../../utils/filters/useFiltersState';
-import type { PlaybookBundleElementsToApply, PlaybookComponentConfigSchema, PlaybookComponents, PlaybookConfig, PlaybookNode } from '../types/playbook-types';
+import type {
+  PlaybookAction,
+  PlaybookBundleElementsToApply,
+  PlaybookComponentConfigSchema,
+  PlaybookComponents,
+  PlaybookConfig,
+  PlaybookConfigHandler,
+  PlaybookNode,
+} from '../types/playbook-types';
 import PlaybookFlowFieldAccessRestrictions from './playbookFlowFields/PlaybookFlowFieldAccessRestrictions';
 import PlaybookFlowFieldArray, { PlaybookFlowFieldArrayProps } from './playbookFlowFields/PlaybookFlowFieldArray';
 import PlaybookFlowFieldAuthorizedMembers from './playbookFlowFields/PlaybookFlowFieldAuthorizedMembers';
@@ -66,12 +74,12 @@ export type PlaybookFlowFormData
     };
 
 interface PlaybookFlowFormProps {
-  action: string | null;
+  action: PlaybookAction | null;
   selectedNode: PlaybookNode | null;
   playbookComponents: PlaybookComponents;
   componentId: string | null;
-  onConfigAdd: (component: unknown, name: string, config: unknown, description?: string) => void;
-  onConfigReplace: (component: unknown, name: string, config: unknown, description?: string) => void;
+  onConfigAdd: PlaybookConfigHandler;
+  onConfigReplace: PlaybookConfigHandler;
   handleClose: () => void;
 }
 

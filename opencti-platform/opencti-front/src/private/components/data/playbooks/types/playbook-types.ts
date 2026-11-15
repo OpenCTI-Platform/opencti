@@ -1,3 +1,4 @@
+import type { Dispatch, SetStateAction } from 'react';
 import { Edge, Node, XYPosition } from 'reactflow';
 import { PlaybookFlow_playbookComponents$data } from '../playbookFlow/__generated__/PlaybookFlow_playbookComponents.graphql';
 import { PlaybookUpdateAction } from '../playbookFlow/playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
@@ -39,20 +40,40 @@ export interface PlaybookDefinitionEdge {
   };
 }
 
-export type PlaybookNode = Node<{
+// What the canvas is doing with the selected step or link: the panel or dialog it opens.
+export type PlaybookAction = 'config' | 'replace' | 'add' | 'delete';
+
+// The node cards hand the node or link itself (getNode / getEdge) to these callbacks.
+export interface PlaybookNodeData {
   name?: string;
   description?: string;
   configuration?: PlaybookConfig;
   component?: PlaybookComponent;
-  openConfig: (nodeId: string) => void;
-  openReplace: (nodeId: string) => void;
-  openAddSibling: (nodeId: string) => void;
-  openDelete: (nodeId: string) => void;
-}>;
+  openConfig: (node: PlaybookNode) => void;
+  openReplace: (node: PlaybookNode) => void;
+  openAddSibling: (node: PlaybookNode) => void;
+  openDelete: (node: PlaybookNode) => void;
+}
 
-export type PlaybookEdge = Edge<{
-  openConfig: (edgeId: string) => void;
-}>;
+export type PlaybookNode = Node<PlaybookNodeData>;
+
+export interface PlaybookEdgeData {
+  openConfig: (edge: PlaybookEdge) => void;
+}
+
+export type PlaybookEdge = Edge<PlaybookEdgeData>;
+
+export type SetPlaybookAction = Dispatch<SetStateAction<PlaybookAction | null>>;
+export type SetSelectedPlaybookNode = Dispatch<SetStateAction<PlaybookNode | null>>;
+export type SetSelectedPlaybookEdge = Dispatch<SetStateAction<PlaybookEdge | null>>;
+
+// The add / replace form hands back the component chosen, the step name, its configuration and description.
+export type PlaybookConfigHandler = (
+  component: PlaybookComponent | null | undefined,
+  name: string,
+  config: PlaybookConfig | null,
+  description?: string,
+) => void;
 
 export type PlaybookComponentConfigSchema = {
   type: string;

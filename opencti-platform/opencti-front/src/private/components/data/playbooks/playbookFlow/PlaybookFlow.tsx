@@ -147,19 +147,19 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
   const initialNodes = computeNodes(
     definition.nodes ?? [],
     playbookComponents,
-    setAction as React.Dispatch<React.SetStateAction<string | null>>, // TODO : remove set casts when useManipulateComponents is in ts
-    setSelectedNode as React.Dispatch<React.SetStateAction<string | null>>,
+    setAction,
+    setSelectedNode,
   );
   const initialEdges = computeEdges(
     definition.links ?? [],
-    setAction as React.Dispatch<React.SetStateAction<string | null>>,
-    setSelectedEdge as React.Dispatch<React.SetStateAction<string | null>>,
+    setAction,
+    setSelectedEdge,
   );
   const { nodes: flowNodes, edges: flowEdges } = addPlaceholders(
     initialNodes,
     initialEdges,
-    setAction as React.Dispatch<React.SetStateAction<string | null>>,
-    setSelectedNode as React.Dispatch<React.SetStateAction<string | null>>,
+    setAction,
+    setSelectedNode,
   );
 
   // Needs to be called after computing nodes and edges.
@@ -169,18 +169,18 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
   const canManage = useGranted([AUTOMATION_AUTMANAGE]);
   const { onConnect, onEdgeUpdate } = usePlaybookRewiring(
     playbook.id,
-    setAction as React.Dispatch<React.SetStateAction<string | null>>,
-    setSelectedEdge as React.Dispatch<React.SetStateAction<string | null>>,
-    setSelectedNode as React.Dispatch<React.SetStateAction<string | null>>,
+    setAction,
+    setSelectedEdge,
+    setSelectedNode,
     historyRecorder,
   );
   // Undo / redo of the session (Ctrl/Cmd+Z, Shift+Ctrl/Cmd+Z), through inverse operations.
   const history = usePlaybookHistory(
     playbook.id,
     playbookComponents,
-    setAction as React.Dispatch<React.SetStateAction<string | null>>,
-    setSelectedNode as React.Dispatch<React.SetStateAction<string | null>>,
-    setSelectedEdge as React.Dispatch<React.SetStateAction<string | null>>,
+    setAction,
+    setSelectedNode,
+    setSelectedEdge,
   );
   useEffect(() => {
     historyRef.current = history;

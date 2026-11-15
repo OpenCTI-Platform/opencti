@@ -1,11 +1,11 @@
-import { Dispatch, SetStateAction, useCallback } from 'react';
+import { useCallback } from 'react';
 import { Connection, Edge, useReactFlow } from 'reactflow';
 import { graphql } from 'react-relay';
 import { commitMutation, MESSAGING$ } from '../../../../../relay/environment';
 import { useFormatter } from '../../../../../components/i18n';
 import { applyRewire, planConnect, planEdgeUpdate, PlaybookRewire, toDefinitionLinks } from '../utils/playbookRewiring';
 import { addPlaceholders } from '../utils/playbook';
-import type { PlaybookEdge, PlaybookNode } from '../types/playbook-types';
+import type { PlaybookEdge, PlaybookNode, SetPlaybookAction, SetSelectedPlaybookEdge, SetSelectedPlaybookNode } from '../types/playbook-types';
 import type { PlaybookHistoryControls } from './usePlaybookHistory';
 
 type PlaybookHistoryRecorder = Pick<PlaybookHistoryControls, 'record' | 'snapshot'>;
@@ -22,16 +22,14 @@ export const usePlaybookRewiringMoveNodeMutation = graphql`
   }
 `;
 
-type SetString = Dispatch<SetStateAction<string | null>>;
-
 // Drag a link end to another step, or draw a connection from an out port to a step: one write
 // (playbookRelink or playbookMoveNode), nothing deleted. A drop the plan refuses (a cycle, a step
 // left without a parent, the entry point as a target) does nothing and says why.
 const usePlaybookRewiring = (
   playbookId: string,
-  setAction: SetString,
-  setSelectedEdge: SetString,
-  setSelectedNode: SetString,
+  setAction: SetPlaybookAction,
+  setSelectedEdge: SetSelectedPlaybookEdge,
+  setSelectedNode: SetSelectedPlaybookNode,
   history?: PlaybookHistoryRecorder,
 ) => {
   const { t_i18n } = useFormatter();
@@ -48,8 +46,8 @@ const usePlaybookRewiring = (
       sourceHandle: l.from.port,
       target: l.to.id,
       data: {
-        openConfig: (edgeId: string) => {
-          setSelectedEdge(edgeId);
+        openConfig: (edge: PlaybookEdge) => {
+          setSelectedEdge(edge);
           setAction('config');
         },
       },

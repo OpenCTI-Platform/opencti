@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { Dispatch, SetStateAction, useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Edge, useReactFlow } from 'reactflow';
 import { graphql } from 'react-relay';
 import { commitMutation, fetchQuery } from '../../../../../relay/environment';
@@ -34,7 +34,15 @@ import {
 } from '../utils/playbookHistory';
 import { addPlaceholders, computeEdges, computeNodes } from '../utils/playbook';
 import { outPorts } from '../types/nodes/playbookNodeGeometry';
-import type { PlaybookComponents, PlaybookDefinitionEdge, PlaybookDefinitionNode, PlaybookNode } from '../types/playbook-types';
+import type {
+  PlaybookComponents,
+  PlaybookDefinitionEdge,
+  PlaybookDefinitionNode,
+  PlaybookNode,
+  SetPlaybookAction,
+  SetSelectedPlaybookEdge,
+  SetSelectedPlaybookNode,
+} from '../types/playbook-types';
 
 export const usePlaybookHistoryDefinitionQuery = graphql`
   query usePlaybookHistoryDefinitionQuery($id: String!) {
@@ -44,8 +52,6 @@ export const usePlaybookHistoryDefinitionQuery = graphql`
     }
   }
 `;
-
-type SetString = Dispatch<SetStateAction<string | null>>;
 
 interface DefinitionResponse {
   playbook?: { playbook_definition?: string | null } | null;
@@ -69,9 +75,9 @@ export interface PlaybookHistoryControls {
 const usePlaybookHistory = (
   playbookId: string,
   playbookComponents: PlaybookComponents,
-  setAction: SetString,
-  setSelectedNode: SetString,
-  setSelectedEdge: SetString,
+  setAction: SetPlaybookAction,
+  setSelectedNode: SetSelectedPlaybookNode,
+  setSelectedEdge: SetSelectedPlaybookEdge,
 ): PlaybookHistoryControls => {
   const { getNodes, getEdges, setNodes, setEdges } = useReactFlow();
   const [history, setHistory] = useState<PlaybookHistory>(emptyHistory);
