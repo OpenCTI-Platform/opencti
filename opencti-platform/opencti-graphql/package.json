@@ -184,8 +184,8 @@
     "@eslint/js": "10.0.1",
     "@graphql-codegen/cli": "8.0.0",
     "@graphql-codegen/introspection": "7.0.0",
-    "@graphql-codegen/typescript": "7.0.0",
-    "@graphql-codegen/typescript-resolvers": "7.0.0",
+    "@graphql-codegen/typescript": "7.0.1",
+    "@graphql-codegen/typescript-resolvers": "7.0.1",
     "@luckycatfactory/esbuild-graphql-loader": "3.8.1",
     "@rollup/plugin-graphql": "3.0.0",
     "@stylistic/eslint-plugin": "5.10.0",
@@ -222,13 +222,13 @@
     "globals": "17.14.0",
     "graphql-tag": "2.12.7",
     "jiti": "2.7.0",
-    "knip": "6.44.1",
+    "knip": "6.45.1",
     "license-checker-rseidelsohn": "5.0.1",
     "node-gyp-build": "4.8.4",
     "tough-cookie": "6.1.0",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.72.1",
-    "vite": "8.3.6",
+    "typescript-eslint": "8.72.2",
+    "vite": "8.3.8",
     "vitest": "5.1.0"
   }
 }
