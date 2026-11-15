@@ -43,7 +43,7 @@ const vocabularyAdd = graphql`
 const labelValidation = (t: (v: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   order: Yup.number().nullable(),
-  color: Yup.string().nullable().matches(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, t('The value must be a hex color, for example #e53935')),
+  color: Yup.string().nullable().matches(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, { excludeEmptyString: true, message: t('The value must be a hex color, for example #e53935') }),
 });
 
 const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({

@@ -35,7 +35,7 @@ const attributeValidation = (t: (s: string) => string) => Yup.object().shape({
   description: Yup.string().nullable(),
   order: Yup.number().nullable().integer(t('The value must be a number')),
   is_hidden: Yup.boolean().nullable(),
-  color: Yup.string().nullable().matches(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, t('The value must be a hex color, for example #e53935')),
+  color: Yup.string().nullable().matches(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, { excludeEmptyString: true, message: t('The value must be a hex color, for example #e53935') }),
 });
 
 interface VocabularyEditionFormikValues {

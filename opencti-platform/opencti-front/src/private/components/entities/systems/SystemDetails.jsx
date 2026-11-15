@@ -23,6 +23,7 @@ const POSTURE_FIELDS = [
 export const systemFieldsNotSet = (system) => [
   ...POSTURE_FIELDS.map(({ name, label }) => ({ name, label })),
   { name: 'x_opencti_system_category', label: 'System category' },
+  { name: 'x_opencti_system_subcategory', label: 'System subcategory' },
   { name: 'x_opencti_platform', label: 'Platform' },
   { name: 'x_opencti_owner', label: 'Asset owner' },
 ].filter(({ name }) => !system[name]);
@@ -31,7 +32,8 @@ const SystemDetailsComponent = ({ system }) => {
   const { t_i18n } = useFormatter();
   const posture = POSTURE_FIELDS.filter(({ name }) => system[name]);
   const notSet = systemFieldsNotSet(system);
-  const hasClassification = system.x_opencti_system_category || system.x_opencti_platform || system.x_opencti_owner;
+  const hasType = system.x_opencti_system_category || system.x_opencti_system_subcategory;
+  const hasClassification = hasType || system.x_opencti_platform || system.x_opencti_owner;
   return (
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
@@ -51,11 +53,13 @@ const SystemDetailsComponent = ({ system }) => {
           {hasClassification && (
             <Grid size={12} data-testid="system-classification">
               <Grid container={true} spacing={3}>
-                {system.x_opencti_system_category && (
+                {hasType && (
                   <Grid size={{ xs: 12, md: 4 }}>
                     <Label>{t_i18n('Type')}</Label>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                      <ItemOpenVocab displayMode="chip" humanLabel={true} type="system_category_ov" value={system.x_opencti_system_category} />
+                      {system.x_opencti_system_category && (
+                        <ItemOpenVocab displayMode="chip" humanLabel={true} type="system_category_ov" value={system.x_opencti_system_category} />
+                      )}
                       {system.x_opencti_system_subcategory && (
                         <Typography variant="body2" component="span">
                           {vocabularyValueLabel(system.x_opencti_system_subcategory, t_i18n)}
