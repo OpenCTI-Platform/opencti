@@ -1,97 +1,70 @@
 import { useEffect, useRef } from 'react';
 import { useReactFlow, useStore, Node, Edge, ReactFlowState } from 'reactflow';
-import { stratify, tree } from 'd3-hierarchy';
 import { timer } from 'd3-timer';
-import { commitMutation } from '../../../../../relay/environment';
-import { useManipulateComponentsPlaybookUpdatePositionsMutation } from './useManipulateComponents';
+import { layoutPlaybook, PlaybookLayoutComponent, PlaybookLayoutLink, PlaybookLayoutMode, PlaybookLayoutNode } from '../layout/layoutPlaybook';
 
-const layout = tree<Node>()
-  .nodeSize([250, 175])
-  .separation(() => 1);
+// Sibling pitch 250 px and rank pitch 175 px, the spacing of the previous tree layout.
+const NODE_SIZE = { width: 220, height: 80 };
+const SPACING: [number, number] = [30, 95];
+const PLACEHOLDER_COMPONENT = '__placeholder';
 
 const options = { duration: 300 };
 
-const layoutNodes = (nodes: Node[], edges: Edge[]): Node[] => {
+// Same input, same picture: the positions come from the pure layout of the playbook structure
+// (nodes, links and the ports of their components), never from the array order of the store,
+// and opening or refreshing a playbook writes nothing.
+export const layoutNodes = (nodes: Node[], edges: Edge[], mode: PlaybookLayoutMode = 'vertical'): Node[] => {
   if (nodes.length === 0) {
     return [];
   }
-  const hierarchy = stratify<Node>()
-    .id((d) => d.id)
-    .parentId((d: Node) => edges.find((e: Edge) => e.target === d.id)?.source)(
-      nodes,
-    );
-  const root = layout(hierarchy);
-  return root
-    .descendants()
-    .map((d) => ({ ...d.data, position: { x: d.x, y: d.y } }));
+  const components = new Map<string, PlaybookLayoutComponent>();
+  const layoutNodesInput: PlaybookLayoutNode[] = nodes.map((node) => {
+    const component = node.data?.component as PlaybookLayoutComponent | undefined;
+    if (node.type !== 'placeholder' && component?.id) {
+      components.set(component.id, component);
+      return { id: node.id, component_id: component.id, position: node.position };
+    }
+    return { id: node.id, component_id: PLACEHOLDER_COMPONENT, position: node.position };
+  });
+  const links: PlaybookLayoutLink[] = edges.map((edge) => ({
+    id: edge.id,
+    from: { id: edge.source, port: edge.sourceHandle ?? 'out' },
+    to: { id: edge.target },
+  }));
+  const result = layoutPlaybook(layoutNodesInput, links, [...components.values()], { mode, nodeSize: NODE_SIZE, spacing: SPACING });
+  return nodes.map((node) => ({ ...node, position: result.positions.get(node.id) ?? node.position }));
 };
 
-const nodeCountSelector = (state: ReactFlowState) => state.nodeInternals.size;
+// The structure the layout depends on: a change of a name or a configuration does not move anything.
+const structureSelector = (state: ReactFlowState) => {
+  const nodeIds = [...state.nodeInternals.keys()].sort().join(',');
+  const edgeIds = state.edges.map((e) => `${e.source}:${e.sourceHandle ?? ''}>${e.target}`).sort().join(',');
+  return `${nodeIds}|${edgeIds}`;
+};
 
-const useLayout = (playbookId: string) => {
+const useLayout = () => {
   const initial = useRef(true);
-  const nodeCount = useStore(nodeCountSelector);
-  const { getNodes, getNode, setNodes, setEdges, getEdges, fitView } = useReactFlow();
+  const structure = useStore(structureSelector);
+  const { getNodes, getNode, setNodes, getEdges, fitView } = useReactFlow();
   useEffect(() => {
     const nodes = getNodes();
     const edges = getEdges();
     const targetNodes = layoutNodes(nodes, edges);
-    const transitions = targetNodes.map((node) => {
-      return {
-        id: node.id,
-        // this is where the node currently is placed
-        from: getNode(node.id)?.position || node.position,
-        // this is where we want the node to be placed
-        to: node.position,
-        node,
-      };
-    });
+    const transitions = targetNodes.map((node) => ({
+      node,
+      // where the node is now, and where the layout places it
+      from: getNode(node.id)?.position || node.position,
+      to: node.position,
+    }));
     const t = timer((elapsed: number) => {
-      const s = elapsed / options.duration;
-      const currNodes = transitions.map(({ node, from, to }) => {
-        return {
-          id: node.id,
-          position: {
-            // simple linear interpolation
-            x: from.x + (to.x - from.x) * s,
-            y: from.y + (to.y - from.y) * s,
-          },
-          data: { ...node.data },
-          type: node.type,
-        };
-      });
-      setNodes(currNodes);
+      const s = Math.min(1, elapsed / options.duration);
+      setNodes(transitions.map(({ node, from, to }) => ({
+        id: node.id,
+        position: { x: from.x + (to.x - from.x) * s, y: from.y + (to.y - from.y) * s },
+        data: { ...node.data },
+        type: node.type,
+      })));
       if (elapsed > options.duration) {
-        const finalNodes = transitions.map(({ node, to }) => {
-          return {
-            id: node.id,
-            position: {
-              x: to.x,
-              y: to.y,
-            },
-            data: { ...node.data },
-            type: node.type,
-          };
-        });
-        setNodes(finalNodes);
-        commitMutation({
-          mutation: useManipulateComponentsPlaybookUpdatePositionsMutation,
-          variables: {
-            id: playbookId,
-            positions: JSON.stringify(
-              finalNodes.map((n) => ({
-                id: n.id,
-                position: n.position,
-              })),
-            ),
-          },
-          updater: undefined,
-          optimisticUpdater: undefined,
-          optimisticResponse: undefined,
-          onCompleted: undefined,
-          onError: undefined,
-          setSubmitting: undefined,
-        });
         t.stop();
         if (!initial.current) {
           fitView({ duration: 200, padding: 0.2 });
@@ -102,7 +75,7 @@ const useLayout = (playbookId: string) => {
     return () => {
       t.stop();
     };
-  }, [nodeCount, getEdges, getNodes, getNode, setNodes, fitView, setEdges]);
+  }, [structure, getEdges, getNodes, getNode, setNodes, fitView]);
 };
 
 export default useLayout;

@@ -116,7 +116,7 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
   );
 
   // Needs to be called after computing nodes and edges.
-  useLayout(playbook.id);
+  useLayout();
 
   return (
     <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden' }}>
