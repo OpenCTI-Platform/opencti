@@ -27,6 +27,7 @@
   "(no output)": "（出力なし）",
   "[Preview] Ask Ariane": "[プレビュー】アリアンに訊く",
   "{agent} has finished": "{agent} が完了しました",
+  "{count, plural, one {# action} other {# actions}}": "{count, plural, other {# 件のアクション}}",
   "{count, plural, one {# entity} other {# entities}}": "{count, plural, other {# 件のエンティティ}}",
   "{count, plural, one {# filter} other {# filters}}": "{count, plural, other {# 件のフィルター}}",
   "{count, plural, one {# in use} other {# in use}}": "{count, plural, other {# 件使用中}}",

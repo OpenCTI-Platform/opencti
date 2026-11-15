@@ -27,6 +27,7 @@
   "(no output)": "(출력 없음)",
   "[Preview] Ask Ariane": "[미리 보기] 아리안에게 물어보세요",
   "{agent} has finished": "{agent} 작업이 완료되었습니다",
+  "{count, plural, one {# action} other {# actions}}": "{count, plural, other {작업 #개}}",
   "{count, plural, one {# entity} other {# entities}}": "{count, plural, other {엔터티 #개}}",
   "{count, plural, one {# filter} other {# filters}}": "{count, plural, other {필터 #개}}",
   "{count, plural, one {# in use} other {# in use}}": "{count, plural, other {#개 사용 중}}",

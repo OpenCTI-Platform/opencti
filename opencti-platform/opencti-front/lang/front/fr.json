@@ -27,6 +27,7 @@
   "(no output)": "(pas de sortie)",
   "[Preview] Ask Ariane": "[Avant-première] Ariane IA",
   "{agent} has finished": "{agent} a terminé",
+  "{count, plural, one {# action} other {# actions}}": "{count, plural, one {# action} other {# actions}}",
   "{count, plural, one {# entity} other {# entities}}": "{count, plural, one {# entité} other {# entités}}",
   "{count, plural, one {# filter} other {# filters}}": "{count, plural, one {# filtre} other {# filtres}}",
   "{count, plural, one {# in use} other {# in use}}": "{count, plural, one {# utilisé} other {# utilisés}}",

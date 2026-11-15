@@ -27,6 +27,7 @@
   "(no output)": "(keine Ausgabe)",
   "[Preview] Ask Ariane": "[Vorschau] Fragen Sie Ariane",
   "{agent} has finished": "{agent} ist fertig",
+  "{count, plural, one {# action} other {# actions}}": "{count, plural, one {# Aktion} other {# Aktionen}}",
   "{count, plural, one {# entity} other {# entities}}": "{count, plural, one {# Entität} other {# Entitäten}}",
   "{count, plural, one {# filter} other {# filters}}": "{count, plural, one {# Filter} other {# Filter}}",
   "{count, plural, one {# in use} other {# in use}}": "{count, plural, one {# aktiv} other {# aktiv}}",

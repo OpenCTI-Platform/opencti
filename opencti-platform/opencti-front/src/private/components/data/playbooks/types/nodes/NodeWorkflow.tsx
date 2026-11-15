@@ -5,7 +5,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import { MoreVert, CheckCircleOutlined, ErrorOutlined } from '@mui/icons-material';
+import { MoreVert, CheckCircleOutlined, ErrorOutlined, WarningAmberOutlined } from '@mui/icons-material';
 import ItemIcon from '../../../../../../components/ItemIcon';
 import { useFormatter } from '../../../../../../components/i18n';
 import { truncate } from '../../../../../../utils/String';
@@ -14,6 +14,7 @@ import { usePlaybookHandlePositions } from '../../hooks/usePlaybookLayoutMode';
 import { categoryAccent, outPorts, PLAYBOOK_CARD, portAnchor } from './playbookNodeGeometry';
 import { usePlaybookNodeLastExecution } from '../../hooks/usePlaybookLastExecution';
 import { formatStepDuration } from '../../utils/playbookLastExecution';
+import { playbookNodeSummary, type PlaybookNodeSummary } from '../../utils/playbookNodeSummary';
 
 // The menu opens from the three dots, or at the pointer on a right click.
 type MenuAnchor = { element: Element } | { top: number; left: number };
@@ -37,6 +38,19 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
   const isEnd = ports.length === 0;
   const kind = isEntryPoint ? t_i18n('Trigger') : (isEnd ? t_i18n('End of playbook') : t_i18n(component?.category ?? ''));
   const muted = theme.palette.text?.secondary;
+  const summary = playbookNodeSummary(data.configuration as Record<string, unknown> | undefined, component?.configuration_schema);
+  const summaryText = (s: PlaybookNodeSummary): string => {
+    switch (s.kind) {
+      case 'missing':
+        return t_i18n('Configuration required');
+      case 'filters':
+        return t_i18n('{count, plural, one {# filter} other {# filters}}', { values: { count: s.count } });
+      case 'actions':
+        return t_i18n('{count, plural, one {# action} other {# actions}}', { values: { count: s.count } });
+      default:
+        return `${t_i18n('{count, plural, one {# filter} other {# filters}}', { values: { count: s.filters } })}, ${t_i18n('{count, plural, one {# action} other {# actions}}', { values: { count: s.actions } })}`;
+    }
+  };
   // The card itself opens its configuration (click, Enter or Space): no permanent button for it.
   const openConfiguration = () => data.openConfig(getNode(id));
   return (
@@ -94,7 +108,8 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
           lineHeight: '14px',
           color: muted,
           display: '-webkit-box',
-          WebkitLineClamp: 2,
+          // With a summary line, the description keeps one line so every card stays the same height.
+          WebkitLineClamp: summary ? 1 : 2,
           WebkitBoxOrient: 'vertical',
           overflow: 'hidden',
         }}
@@ -102,6 +117,28 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
           {t_i18n(displayDescription)}
         </div>
       </Tooltip>
+      {summary && (
+        <div
+          data-testid={`playbook-node-summary-${id}`}
+          style={{
+            marginTop: 4,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            fontSize: 11,
+            lineHeight: '14px',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            color: summary.kind === 'missing'
+              ? ((theme.palette.warning as { main?: string } | undefined)?.main ?? theme.palette.text?.primary)
+              : theme.palette.text?.primary,
+          }}
+        >
+          {summary.kind === 'missing' && <WarningAmberOutlined style={{ fontSize: 12 }} />}
+          {summaryText(summary)}
+        </div>
+      )}
       <div
         role="presentation"
         style={{ position: 'absolute', top: 4, right: 2 }}
