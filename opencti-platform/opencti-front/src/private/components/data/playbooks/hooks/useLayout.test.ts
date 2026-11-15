@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Edge, Node } from 'reactflow';
-import { layoutNodes } from './useLayout';
-import { PLAYBOOK_CARD } from '../types/nodes/playbookNodeGeometry';
+import { layoutNodes, PLAYBOOK_LAYOUT_SPACING } from './useLayout';
+import { PLAYBOOK_CARD, PLAYBOOK_PORT_ADD } from '../types/nodes/playbookNodeGeometry';
 
 const component = (id: string, outs: string[], is_entry_point = false) => ({
   id,
@@ -40,7 +40,7 @@ describe('useLayout layoutNodes', () => {
 
   it('puts every card one rank pitch below its parent on a chain', () => {
     const laid = new Map(layoutNodes(NODES, EDGES).map((n) => [n.id, n.position]));
-    expect(laid.get('b')!.y - laid.get('a')!.y).toBe(PLAYBOOK_CARD.height + 88);
+    expect(laid.get('b')!.y - laid.get('a')!.y).toBe(PLAYBOOK_CARD.height + PLAYBOOK_LAYOUT_SPACING[1]);
   });
 
   it('draws the add button of a free port next to that port, never as a step that moves the others', () => {
@@ -48,7 +48,17 @@ describe('useLayout layoutNodes', () => {
     const withoutButtons = new Map(layoutNodes(NODES.filter((n) => n.type !== 'placeholder'), EDGES.slice(0, 5)).map((n) => [n.id, n.position]));
     ['a', 'b', 'c', 'd', 'e'].forEach((id) => expect(laid.get(id)).toEqual(withoutButtons.get(id)));
     const e = laid.get('e')!;
-    expect(laid.get('p1')).toEqual({ x: e.x + PLAYBOOK_CARD.width / 2 - 14, y: e.y + PLAYBOOK_CARD.height + 36 });
+    expect(laid.get('p1')).toEqual({ x: e.x + PLAYBOOK_CARD.width / 2 - 14, y: e.y + PLAYBOOK_CARD.height + PLAYBOOK_PORT_ADD.gap });
+  });
+
+  it('keeps the add button of a free port clear of the line where a neighbour\'s links turn', () => {
+    // Links between two ranks turn on the middle line of the gap: a link from a neighbouring step
+    // to a card of the next rank must never run through the add button of a free port.
+    const laid = new Map(layoutNodes(NODES, EDGES).map((n) => [n.id, n.position]));
+    [['p1', 'e'], ['p2', 'a']].forEach(([button, card]) => {
+      const middleLine = laid.get(card)!.y + PLAYBOOK_CARD.height + PLAYBOOK_LAYOUT_SPACING[1] / 2;
+      expect(laid.get(button)!.y + PLAYBOOK_PORT_ADD.size).toBeLessThanOrEqual(middleLine - 8);
+    });
   });
 
   it('lays the same structure left to right in the horizontal direction', () => {

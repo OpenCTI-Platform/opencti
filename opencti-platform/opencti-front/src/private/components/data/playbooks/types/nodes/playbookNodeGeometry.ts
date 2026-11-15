@@ -22,8 +22,9 @@ export const PLAYBOOK_ARROW_ID = 'playbook-link-arrow';
 
 // One size for every step card: the layout reserves exactly the room the card draws.
 export const PLAYBOOK_CARD = { width: 264, height: 104 };
-// The add button of a free out port, drawn just past the port it extends.
-export const PLAYBOOK_PORT_ADD = { size: 28, gap: 36 };
+// The add button of a free out port, drawn just past the port it extends: close to the card, so it
+// stays clear of the middle line of the rank gap, where the links of a neighbouring step turn.
+export const PLAYBOOK_PORT_ADD = { size: 28, gap: 16 };
 
 type Port = { id: string; type: string };
 

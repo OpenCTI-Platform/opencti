@@ -5,8 +5,9 @@ import { layoutPlaybook, PlaybookLayoutComponent, PlaybookLayoutLink, PlaybookLa
 import type { PlaybookLayoutDirection } from './usePlaybookLayoutMode';
 import { outPorts, PLAYBOOK_CARD, portAddPosition } from '../types/nodes/playbookNodeGeometry';
 
-// [gap between siblings, gap between ranks]: room for the port pills and the add buttons.
-const SPACING: [number, number] = [56, 88];
+// [gap between siblings, gap between ranks]: room for the port pills and the add buttons. The
+// links turn on the middle line of the rank gap; the add button of a free port ends 8 px above it.
+export const PLAYBOOK_LAYOUT_SPACING: [number, number] = [56, 104];
 const ORIGIN_SIZE = { width: 240, height: 64 };
 
 const options = { duration: 300 };
@@ -34,7 +35,7 @@ export const layoutNodes = (nodes: Node[], edges: Edge[], direction: PlaybookLay
   const links: PlaybookLayoutLink[] = edges
     .filter((edge) => stepIds.has(edge.source) && stepIds.has(edge.target))
     .map((edge) => ({ id: edge.id, from: { id: edge.source, port: edge.sourceHandle ?? 'out' }, to: { id: edge.target } }));
-  const result = layoutPlaybook(layoutInput, links, [...components.values()], { mode: direction, nodeSize: PLAYBOOK_CARD, spacing: SPACING });
+  const result = layoutPlaybook(layoutInput, links, [...components.values()], { mode: direction, nodeSize: PLAYBOOK_CARD, spacing: PLAYBOOK_LAYOUT_SPACING });
 
   const parentOf = new Map<string, Edge>();
   edges.forEach((edge) => {
