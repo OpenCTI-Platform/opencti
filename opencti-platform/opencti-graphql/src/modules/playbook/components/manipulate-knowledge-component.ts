@@ -22,7 +22,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../schema/stixMetaObject';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../../case/case-types';
 import { ENTITY_TYPE_INDICATOR } from '../../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../organization/organization-types';
-import { ENTITY_TYPE_INCIDENT } from '../../../schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INCIDENT } from '../../../schema/stixDomainObject';
 import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
 import { AUTOMATION_MANAGER_USER, executionContext } from '../../../utils/access';
 import { getParentTypes } from '../../../schema/schemaUtils';
@@ -83,6 +83,9 @@ const attributePathMapping: any = {
   },
   indicator_types: {
     [ENTITY_TYPE_INDICATOR]: '/indicator_types',
+  },
+  report_types: {
+    [ENTITY_TYPE_CONTAINER_REPORT]: '/report_types',
   },
   [INPUT_KILLCHAIN]: {
     [ENTITY_TYPE_INDICATOR]: '/kill_chain_phases',

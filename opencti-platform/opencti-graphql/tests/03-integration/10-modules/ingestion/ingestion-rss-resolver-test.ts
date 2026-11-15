@@ -5,6 +5,8 @@ import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { queryAsAdmin } from '../../../utils/testQueryHelper';
 import { findById as findUserById } from '../../../../src/modules/user/user-domain';
 import { getClientBase, redisDeleteIngestionLogHistory, redisPushIngestionLog } from '../../../../src/database/redis';
+import { patchRssIngestion } from '../../../../src/modules/ingestion/ingestion-rss-domain';
+import { isMustExecuteIteration } from '../../../../src/manager/ingestionManager';
 
 const DELETE_USER_QUERY = gql`
     mutation userDelete($id: ID!) {
@@ -270,6 +272,11 @@ describe('RSS ingestion resolver standard behavior', () => {
       },
     });
     expect(new Date(setStateResult.data?.ingestionRssFieldPatch.current_state_date).toISOString()).toBe('2024-01-01T00:00:00.000Z');
+    // Simulate a previous run of the feed
+    await patchRssIngestion(testContext, ADMIN_USER, createdRssIngesterId, {
+      last_execution_date: new Date().toISOString(),
+      last_execution_status: 'success',
+    });
 
     const resetResult = await queryAsAdminWithSuccess({
       query: gql`
@@ -277,6 +284,9 @@ describe('RSS ingestion resolver standard behavior', () => {
           ingestionRssResetState(id: $id) {
             id
             current_state_date
+            last_execution_date
+            last_execution_status
+            scheduling_period
           }
         }
       `,
@@ -284,6 +294,10 @@ describe('RSS ingestion resolver standard behavior', () => {
     });
     expect(resetResult.data?.ingestionRssResetState.id).toBe(createdRssIngesterId);
     expect(resetResult.data?.ingestionRssResetState.current_state_date).toBeNull();
+    // The run bookkeeping is cleared too, so the next ingestion manager tick replays the feed at once
+    expect(resetResult.data?.ingestionRssResetState.last_execution_date).toBeNull();
+    expect(resetResult.data?.ingestionRssResetState.last_execution_status).toBeNull();
+    expect(isMustExecuteIteration(undefined, resetResult.data?.ingestionRssResetState.scheduling_period)).toBe(true);
   });
 
   it('should delete the RSS ingester', async () => {
