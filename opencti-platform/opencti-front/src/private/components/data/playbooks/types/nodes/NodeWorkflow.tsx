@@ -5,7 +5,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import { MoreVert, LoginOutlined, CheckCircleOutlined, ErrorOutlined } from '@mui/icons-material';
+import { MoreVert, CheckCircleOutlined, ErrorOutlined } from '@mui/icons-material';
 import ItemIcon from '../../../../../../components/ItemIcon';
 import { useFormatter } from '../../../../../../components/i18n';
 import { truncate } from '../../../../../../utils/String';
@@ -22,6 +22,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [anchor, setAnchor] = useState<MenuAnchor | null>(null);
+  const [hovered, setHovered] = useState(false);
   const setAnchorEl = (element: Element | null) => setAnchor(element ? { element } : null);
   const lastExecution = usePlaybookNodeLastExecution(id);
   const lastDuration = lastExecution ? formatStepDuration(lastExecution.duration) : null;
@@ -36,9 +37,23 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
   const isEnd = ports.length === 0;
   const kind = isEntryPoint ? t_i18n('Trigger') : (isEnd ? t_i18n('End of playbook') : t_i18n(component?.category ?? ''));
   const muted = theme.palette.text?.secondary;
+  // The card itself opens its configuration (click, Enter or Space): no permanent button for it.
+  const openConfiguration = () => data.openConfig(getNode(id));
   return (
     <div
       data-testid={`playbook-node-${id}`}
+      role="button"
+      tabIndex={0}
+      aria-label={`${t_i18n('Update')}: ${t_i18n(data.name)}`}
+      onClick={openConfiguration}
+      onKeyDown={(event) => {
+        if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault();
+          openConfiguration();
+        }
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       onContextMenu={(event) => {
         event.preventDefault();
         setAnchor({ top: event.clientY, left: event.clientX });
@@ -48,7 +63,9 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
         boxSizing: 'border-box',
         width: PLAYBOOK_CARD.width,
         height: PLAYBOOK_CARD.height,
-        border: `1px solid ${theme.palette.divider}`,
+        cursor: 'pointer',
+        border: `1px solid ${hovered ? accent : theme.palette.divider}`,
+        transition: 'border-color 120ms',
         borderLeft: `4px solid ${accent}`,
         borderRadius: isEntryPoint ? 16 : 6,
         backgroundColor: theme.palette.background.paper,
@@ -85,7 +102,13 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
           {t_i18n(displayDescription)}
         </div>
       </Tooltip>
-      <div style={{ position: 'absolute', top: 4, right: 2 }}>
+      <div
+        role="presentation"
+        style={{ position: 'absolute', top: 4, right: 2 }}
+        // The menu and its items act on their own: they never open the configuration as well.
+        onClick={(event) => event.stopPropagation()}
+        onKeyDown={(event) => event.stopPropagation()}
+      >
         <IconButton
           aria-label={t_i18n('Open menu')}
           onClick={(event) => setAnchorEl(event.currentTarget)}
@@ -165,19 +188,6 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
             {lastDuration ?? lastStatusLabel}
           </span>
         </Tooltip>
-      )}
-      {!isEntryPoint && (
-        <div style={{ position: 'absolute', bottom: 2, right: 2 }}>
-          <IconButton
-            onClick={() => data.openAddSibling(getNode(id))}
-            aria-haspopup="true"
-            size="small"
-            aria-label={t_i18n('Add a sibling node')}
-            tooltip={t_i18n('Add a new branch at the same level from the parent output')}
-          >
-            <LoginOutlined style={{ fontSize: 14 }} />
-          </IconButton>
-        </div>
       )}
       {!isEntryPoint && (
         <Handle type="target" position={target} style={{ background: accent, border: 'none' }} />

@@ -282,9 +282,10 @@ export const layoutPlaybook = (
   const x = placeX(ranked, ordering, gapSibling);
   const pitch = depth + gapRank;
   const toFlow = (cx: number, r: number, w: number, h: number): XYPosition => {
-    const along = r * pitch;
-    if (horizontal) return { x: along, y: cx - h / 2 };
-    return { x: cx - w / 2, y: along };
+    // Whole pixels: a card, its ports and the links that reach them share one integer line.
+    const along = Math.round(r * pitch);
+    if (horizontal) return { x: along, y: Math.round(cx - h / 2) };
+    return { x: Math.round(cx - w / 2), y: along };
   };
   nodes.forEach((n) => {
     result.positions.set(n.id, toFlow(x.get(n.id)!, rank.get(n.id)!, size.width, size.height));

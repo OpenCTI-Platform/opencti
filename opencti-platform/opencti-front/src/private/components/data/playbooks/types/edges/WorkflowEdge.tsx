@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { BaseEdge, EdgeLabelRenderer, EdgeProps, getSmoothStepPath, useReactFlow } from 'reactflow';
+import { BaseEdge, EdgeLabelRenderer, EdgeProps, useReactFlow } from 'reactflow';
 import { useTheme } from '@mui/material/styles';
 import { AddOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import { useFormatter } from 'src/components/i18n';
 import type { Theme } from '../../../../../../components/Theme';
 import { PLAYBOOK_ARROW_ID } from '../nodes/playbookNodeGeometry';
+import { playbookEdgePath } from './playbookEdgePath';
 
-// A link between two steps: a rounded orthogonal path with an arrowhead. The port it leaves
-// from is named on the pill of the source card, so nothing is written over the curve. The
-// "insert a step here" button shows on hover of the link, at its middle.
+// A link between two steps, on whole pixels: one straight segment when its ends are aligned, else
+// an orthogonal step with rounded corners, and an arrowhead. The port it leaves from is named on
+// the pill of the source card, so nothing is written over the link. The "insert a step here"
+// button shows on hover of the link, at its middle.
 export default function CustomEdge({
   id,
   sourceX,
@@ -17,7 +19,6 @@ export default function CustomEdge({
   targetX,
   targetY,
   sourcePosition,
-  targetPosition,
   markerEnd,
   data,
 }: EdgeProps) {
@@ -25,14 +26,12 @@ export default function CustomEdge({
   const { t_i18n } = useFormatter();
   const { getEdge } = useReactFlow();
   const [hover, setHover] = useState(false);
-  const [edgePath, centerX, centerY] = getSmoothStepPath({
+  const { path: edgePath, labelX: centerX, labelY: centerY } = playbookEdgePath({
     sourceX,
     sourceY,
-    sourcePosition,
     targetX,
     targetY,
-    targetPosition,
-    borderRadius: 12,
+    sourcePosition,
   });
   const stroke = hover ? theme.palette.primary.main : theme.palette.text?.secondary;
   return (
@@ -41,7 +40,7 @@ export default function CustomEdge({
         path={edgePath}
         markerEnd={markerEnd ?? `url(#${PLAYBOOK_ARROW_ID})`}
         interactionWidth={24}
-        style={{ stroke, strokeWidth: hover ? 2 : 1.5, fill: 'none' }}
+        style={{ stroke, strokeWidth: hover ? 2 : 1.5, fill: 'none', shapeRendering: 'geometricPrecision' }}
       />
       <EdgeLabelRenderer>
         <div
