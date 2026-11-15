@@ -6446,5 +6446,14 @@
   "LLM firewall": "Pare-feu LLM",
   "AI gateway": "Passerelle IA",
   "Vulnerability scanner": "Scanner de vulnérabilités",
-  "This link cannot go there: it would create a loop or leave a step without a parent": "Ce lien ne peut pas aller ici : il créerait une boucle ou laisserait une étape sans parent"
+  "This link cannot go there: it would create a loop or leave a step without a parent": "Ce lien ne peut pas aller ici : il créerait une boucle ou laisserait une étape sans parent",
+  "Components": "Composants",
+  "Search components": "Rechercher un composant",
+  "No component matches your search": "Aucun composant ne correspond à votre recherche",
+  "Right click on a step": "Clic droit sur une étape",
+  "Open the step menu": "Ouvrir le menu de l'étape",
+  "Drag the end of a link": "Glisser l'extrémité d'un lien",
+  "Reconnect the link": "Reconnecter le lien",
+  "Drag from an output to a step": "Glisser d'une sortie vers une étape",
+  "Move the step and its branch": "Déplacer l'étape et sa branche"
 }

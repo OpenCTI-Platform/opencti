@@ -6446,5 +6446,14 @@
   "LLM firewall": "LLM ファイアウォール",
   "AI gateway": "AI ゲートウェイ",
   "Vulnerability scanner": "脆弱性スキャナー",
-  "This link cannot go there: it would create a loop or leave a step without a parent": "このリンクはここに接続できません: ループが発生するか、親のないステップが残ります"
+  "This link cannot go there: it would create a loop or leave a step without a parent": "このリンクはここに接続できません: ループが発生するか、親のないステップが残ります",
+  "Components": "コンポーネント",
+  "Search components": "コンポーネントを検索",
+  "No component matches your search": "検索に一致するコンポーネントはありません",
+  "Right click on a step": "ステップを右クリック",
+  "Open the step menu": "ステップのメニューを開く",
+  "Drag the end of a link": "リンクの端をドラッグ",
+  "Reconnect the link": "リンクを再接続",
+  "Drag from an output to a step": "出力からステップへドラッグ",
+  "Move the step and its branch": "ステップとそのブランチを移動"
 }

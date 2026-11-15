@@ -6446,5 +6446,14 @@
   "LLM firewall": "Cortafuegos LLM",
   "AI gateway": "Puerta de enlace de IA",
   "Vulnerability scanner": "Escáner de vulnerabilidades",
-  "This link cannot go there: it would create a loop or leave a step without a parent": "Este enlace no puede ir ahí: crearía un bucle o dejaría un paso sin padre"
+  "This link cannot go there: it would create a loop or leave a step without a parent": "Este enlace no puede ir ahí: crearía un bucle o dejaría un paso sin padre",
+  "Components": "Componentes",
+  "Search components": "Buscar componentes",
+  "No component matches your search": "Ningún componente coincide con su búsqueda",
+  "Right click on a step": "Clic derecho en un paso",
+  "Open the step menu": "Abrir el menú del paso",
+  "Drag the end of a link": "Arrastrar el extremo de un enlace",
+  "Reconnect the link": "Reconectar el enlace",
+  "Drag from an output to a step": "Arrastrar de una salida a un paso",
+  "Move the step and its branch": "Mover el paso y su rama"
 }

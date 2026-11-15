@@ -6446,5 +6446,14 @@
   "LLM firewall": "Firewall LLM",
   "AI gateway": "Gateway IA",
   "Vulnerability scanner": "Scanner di vulnerabilità",
-  "This link cannot go there: it would create a loop or leave a step without a parent": "Questo collegamento non può andare qui: creerebbe un ciclo o lascerebbe un passaggio senza padre"
+  "This link cannot go there: it would create a loop or leave a step without a parent": "Questo collegamento non può andare qui: creerebbe un ciclo o lascerebbe un passaggio senza padre",
+  "Components": "Componenti",
+  "Search components": "Cerca componenti",
+  "No component matches your search": "Nessun componente corrisponde alla ricerca",
+  "Right click on a step": "Clic destro su un passaggio",
+  "Open the step menu": "Apri il menu del passaggio",
+  "Drag the end of a link": "Trascina l'estremità di un collegamento",
+  "Reconnect the link": "Ricollega il collegamento",
+  "Drag from an output to a step": "Trascina da un'uscita a un passaggio",
+  "Move the step and its branch": "Sposta il passaggio e il suo ramo"
 }

@@ -6446,5 +6446,14 @@
   "LLM firewall": "Межсетевой экран LLM",
   "AI gateway": "ИИ-шлюз",
   "Vulnerability scanner": "Сканер уязвимостей",
-  "This link cannot go there: it would create a loop or leave a step without a parent": "Эту связь нельзя провести сюда: она создаст цикл или оставит шаг без родителя"
+  "This link cannot go there: it would create a loop or leave a step without a parent": "Эту связь нельзя провести сюда: она создаст цикл или оставит шаг без родителя",
+  "Components": "Компоненты",
+  "Search components": "Поиск компонентов",
+  "No component matches your search": "Нет компонентов, соответствующих запросу",
+  "Right click on a step": "Щелчок правой кнопкой по шагу",
+  "Open the step menu": "Открыть меню шага",
+  "Drag the end of a link": "Перетащить конец связи",
+  "Reconnect the link": "Переподключить связь",
+  "Drag from an output to a step": "Перетащить от выхода к шагу",
+  "Move the step and its branch": "Переместить шаг и его ветвь"
 }

@@ -5,18 +5,27 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import { MoreVert, LoginOutlined } from '@mui/icons-material';
+import { MoreVert, LoginOutlined, CheckCircleOutlined, ErrorOutlined } from '@mui/icons-material';
 import ItemIcon from '../../../../../../components/ItemIcon';
 import { useFormatter } from '../../../../../../components/i18n';
 import { truncate } from '../../../../../../utils/String';
 import type { Theme } from '../../../../../../components/Theme';
 import { usePlaybookHandlePositions } from '../../hooks/usePlaybookLayoutMode';
 import { categoryAccent, outPorts, PLAYBOOK_CARD, portAnchor } from './playbookNodeGeometry';
+import { usePlaybookNodeLastExecution } from '../../hooks/usePlaybookLastExecution';
+import { formatStepDuration } from '../../utils/playbookLastExecution';
+
+// The menu opens from the three dots, or at the pointer on a right click.
+type MenuAnchor = { element: Element } | { top: number; left: number };
 
 const NodeWorkflow = ({ id, data }: NodeProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const [anchorEl, setAnchorEl] = useState<Element | null>(null);
+  const [anchor, setAnchor] = useState<MenuAnchor | null>(null);
+  const setAnchorEl = (element: Element | null) => setAnchor(element ? { element } : null);
+  const lastExecution = usePlaybookNodeLastExecution(id);
+  const lastDuration = lastExecution ? formatStepDuration(lastExecution.duration) : null;
+  const lastStatusLabel = lastExecution?.status === 'success' ? t_i18n('Success') : t_i18n('Error');
   const { getNode } = useReactFlow();
   const { direction, target, source } = usePlaybookHandlePositions();
   const component = data.component;
@@ -30,6 +39,10 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
   return (
     <div
       data-testid={`playbook-node-${id}`}
+      onContextMenu={(event) => {
+        event.preventDefault();
+        setAnchor({ top: event.clientY, left: event.clientX });
+      }}
       style={{
         position: 'relative',
         boxSizing: 'border-box',
@@ -82,8 +95,10 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
           <MoreVert style={{ fontSize: 16 }} />
         </IconButton>
         <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
+          anchorEl={anchor && 'element' in anchor ? anchor.element : null}
+          anchorReference={anchor && 'top' in anchor ? 'anchorPosition' : 'anchorEl'}
+          anchorPosition={anchor && 'top' in anchor ? anchor : undefined}
+          open={Boolean(anchor)}
           onClose={() => setAnchorEl(null)}
         >
           <MenuItem
@@ -122,6 +137,35 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
           </MenuItem>
         </Menu>
       </div>
+      {lastExecution && (
+        <Tooltip title={`${t_i18n('Last execution')}: ${lastStatusLabel}${lastDuration ? `, ${lastDuration}` : ''}`}>
+          <span
+            data-testid={`playbook-node-last-execution-${id}`}
+            aria-label={`${t_i18n('Last execution')}: ${lastStatusLabel}`}
+            style={{
+              position: 'absolute',
+              top: -10,
+              right: 28,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '1px 8px 1px 4px',
+              borderRadius: 10,
+              fontSize: 10,
+              lineHeight: '16px',
+              whiteSpace: 'nowrap',
+              color: theme.palette.text?.primary,
+              backgroundColor: theme.palette.background.default,
+              border: `1px solid ${lastExecution.status === 'success' ? theme.palette.success.main : theme.palette.error.main}`,
+            }}
+          >
+            {lastExecution.status === 'success'
+              ? <CheckCircleOutlined color="success" style={{ fontSize: 12 }} />
+              : <ErrorOutlined color="error" style={{ fontSize: 12 }} />}
+            {lastDuration ?? lastStatusLabel}
+          </span>
+        </Tooltip>
+      )}
       {!isEntryPoint && (
         <div style={{ position: 'absolute', bottom: 2, right: 2 }}>
           <IconButton

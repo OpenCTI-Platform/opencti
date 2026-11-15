@@ -6446,5 +6446,14 @@
   "LLM firewall": "LLM 방화벽",
   "AI gateway": "AI 게이트웨이",
   "Vulnerability scanner": "취약점 스캐너",
-  "This link cannot go there: it would create a loop or leave a step without a parent": "이 링크는 여기에 연결할 수 없습니다: 루프가 생기거나 상위 단계가 없는 단계가 남습니다"
+  "This link cannot go there: it would create a loop or leave a step without a parent": "이 링크는 여기에 연결할 수 없습니다: 루프가 생기거나 상위 단계가 없는 단계가 남습니다",
+  "Components": "구성 요소",
+  "Search components": "구성 요소 검색",
+  "No component matches your search": "검색과 일치하는 구성 요소가 없습니다",
+  "Right click on a step": "단계를 마우스 오른쪽 버튼으로 클릭",
+  "Open the step menu": "단계 메뉴 열기",
+  "Drag the end of a link": "링크 끝을 드래그",
+  "Reconnect the link": "링크 다시 연결",
+  "Drag from an output to a step": "출력에서 단계로 드래그",
+  "Move the step and its branch": "단계와 해당 분기 이동"
 }

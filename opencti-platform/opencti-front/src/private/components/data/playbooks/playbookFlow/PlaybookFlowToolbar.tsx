@@ -13,13 +13,15 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Panel, useReactFlow } from 'reactflow';
 import { ButtonGroup, ButtonGroupItem } from '@filigran/design-system';
-import { AccountTreeOutlined, CenterFocusStrongOutlined, ZoomInOutlined, ZoomOutOutlined } from '@mui/icons-material';
+import { AccountTreeOutlined, CenterFocusStrongOutlined, KeyboardOutlined, ZoomInOutlined, ZoomOutOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../../../components/i18n';
 import type { PlaybookLayoutDirection } from '../hooks/usePlaybookLayoutMode';
+import PlaybookFlowShortcutsDialog from './PlaybookFlowShortcutsDialog';
+import { playbookShortcutFor } from './playbookShortcuts';
 
 // The library item declares a 16x16 glyph.
 const GLYPH = { fontSize: 16 };
@@ -29,10 +31,29 @@ interface PlaybookFlowToolbarProps {
   onDirectionChange: (direction: PlaybookLayoutDirection) => void;
 }
 
-// Floating canvas toolbar: the layout direction, then zoom and fit.
+// Floating canvas toolbar: the layout direction, then zoom and fit, then the shortcuts cheat sheet.
+// The same actions answer the keyboard (see playbookShortcuts.ts) whenever no field has the focus.
 const PlaybookFlowToolbar = ({ direction, onDirectionChange }: PlaybookFlowToolbarProps) => {
   const { t_i18n } = useFormatter();
   const { zoomIn, zoomOut, fitView } = useReactFlow();
+  const [cheatSheetOpen, setCheatSheetOpen] = useState(false);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const action = playbookShortcutFor(event);
+      if (!action) return;
+      event.preventDefault();
+      if (action === 'zoomIn') zoomIn({ duration: 150 });
+      else if (action === 'zoomOut') zoomOut({ duration: 150 });
+      else if (action === 'fitView') fitView({ duration: 200, padding: 0.2 });
+      else if (action === 'verticalLayout') onDirectionChange('vertical');
+      else if (action === 'horizontalLayout') onDirectionChange('horizontal');
+      else setCheatSheetOpen(true);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [zoomIn, zoomOut, fitView, onDirectionChange]);
+
   return (
     <Panel position="top-right">
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -62,7 +83,15 @@ const PlaybookFlowToolbar = ({ direction, onDirectionChange }: PlaybookFlowToolb
         <IconButton aria-label={t_i18n('Fit view')} tooltip={t_i18n('Fit view')} onClick={() => fitView({ duration: 200, padding: 0.2 })}>
           <CenterFocusStrongOutlined style={GLYPH} />
         </IconButton>
+        <IconButton
+          aria-label={t_i18n('Keyboard shortcuts')}
+          tooltip={t_i18n('Keyboard shortcuts')}
+          onClick={() => setCheatSheetOpen(true)}
+        >
+          <KeyboardOutlined style={GLYPH} />
+        </IconButton>
       </div>
+      <PlaybookFlowShortcutsDialog open={cheatSheetOpen} onClose={() => setCheatSheetOpen(false)} />
     </Panel>
   );
 };

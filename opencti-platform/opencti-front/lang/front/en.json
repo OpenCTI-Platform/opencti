@@ -6446,5 +6446,14 @@
   "LLM firewall": "LLM firewall",
   "AI gateway": "AI gateway",
   "Vulnerability scanner": "Vulnerability scanner",
-  "This link cannot go there: it would create a loop or leave a step without a parent": "This link cannot go there: it would create a loop or leave a step without a parent"
+  "This link cannot go there: it would create a loop or leave a step without a parent": "This link cannot go there: it would create a loop or leave a step without a parent",
+  "Components": "Components",
+  "Search components": "Search components",
+  "No component matches your search": "No component matches your search",
+  "Right click on a step": "Right click on a step",
+  "Open the step menu": "Open the step menu",
+  "Drag the end of a link": "Drag the end of a link",
+  "Reconnect the link": "Reconnect the link",
+  "Drag from an output to a step": "Drag from an output to a step",
+  "Move the step and its branch": "Move the step and its branch"
 }

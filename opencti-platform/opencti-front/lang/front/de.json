@@ -6446,5 +6446,14 @@
   "LLM firewall": "LLM-Firewall",
   "AI gateway": "KI-Gateway",
   "Vulnerability scanner": "Schwachstellenscanner",
-  "This link cannot go there: it would create a loop or leave a step without a parent": "Diese Verbindung ist hier nicht möglich: Sie würde eine Schleife erzeugen oder einen Schritt ohne übergeordneten Schritt lassen"
+  "This link cannot go there: it would create a loop or leave a step without a parent": "Diese Verbindung ist hier nicht möglich: Sie würde eine Schleife erzeugen oder einen Schritt ohne übergeordneten Schritt lassen",
+  "Components": "Komponenten",
+  "Search components": "Komponenten suchen",
+  "No component matches your search": "Keine Komponente entspricht Ihrer Suche",
+  "Right click on a step": "Rechtsklick auf einen Schritt",
+  "Open the step menu": "Menü des Schritts öffnen",
+  "Drag the end of a link": "Ende einer Verbindung ziehen",
+  "Reconnect the link": "Verbindung neu verbinden",
+  "Drag from an output to a step": "Von einem Ausgang zu einem Schritt ziehen",
+  "Move the step and its branch": "Schritt und seinen Zweig verschieben"
 }

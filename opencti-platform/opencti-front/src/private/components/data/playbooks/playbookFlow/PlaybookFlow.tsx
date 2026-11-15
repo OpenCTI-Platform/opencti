@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { useEffect } from 'react';
+import { type ReactNode, useEffect, useMemo } from 'react';
 import ReactFlow, { Background, BackgroundVariant, MiniMap } from 'reactflow';
 import { useTheme } from '@mui/material/styles';
 import { graphql, useFragment, useRefetchableFragment } from 'react-relay';
@@ -24,9 +24,11 @@ import { addPlaceholders, computeEdges, computeNodes } from '../utils/playbook';
 import useLayout from '../hooks/useLayout';
 import usePlaybookRewiring from '../hooks/usePlaybookRewiring';
 import useGranted, { AUTOMATION_AUTMANAGE } from '../../../../../utils/hooks/useGranted';
-import { PlaybookLayoutDirectionContext, usePlaybookLayoutMode } from '../hooks/usePlaybookLayoutMode';
+import { type PlaybookLayoutDirection, PlaybookLayoutDirectionContext, usePlaybookLayoutMode } from '../hooks/usePlaybookLayoutMode';
 import PlaybookFlowToolbar from './PlaybookFlowToolbar';
 import { categoryAccent, PLAYBOOK_ARROW_ID } from '../types/nodes/playbookNodeGeometry';
+import { PlaybookLastExecutionContext } from '../hooks/usePlaybookLastExecution';
+import { lastExecutionByNode, type PlaybookNodeLastExecution } from '../utils/playbookLastExecution';
 import type { Theme } from '../../../../../components/Theme';
 import nodeTypes from '../types/nodes';
 import edgeTypes from '../types/edges';
@@ -41,6 +43,15 @@ const playbookFragment = graphql`
   fragment PlaybookFlow_playbook on Playbook {
     id
     playbook_definition
+    last_executions {
+      id
+      execution_start
+      steps {
+        id
+        status
+        duration
+      }
+    }
   }
 `;
 
@@ -64,6 +75,19 @@ const playbookComponentsFragment = graphql`
   }
 `;
 
+// What the node cards read from the canvas: the layout direction and the latest outcome of each step.
+const PlaybookCanvasContexts = ({ direction, lastExecutions, children }: {
+  direction: PlaybookLayoutDirection;
+  lastExecutions: Map<string, PlaybookNodeLastExecution>;
+  children: ReactNode;
+}) => (
+  <PlaybookLayoutDirectionContext.Provider value={direction}>
+    <PlaybookLastExecutionContext.Provider value={lastExecutions}>
+      {children}
+    </PlaybookLastExecutionContext.Provider>
+  </PlaybookLayoutDirectionContext.Provider>
+);
+
 interface PlaybookFlowProps {
   dataPlaybook: PlaybookFlow_playbook$key;
   dataPlaybookComponents: PlaybookFlow_playbookComponents$key;
@@ -78,6 +102,8 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
     dataPlaybookComponents,
   );
   const definition = JSON.parse(playbook.playbook_definition || '{}');
+  // The outcome of each step in its latest execution, shown as a badge on its card.
+  const lastExecutions = useMemo(() => lastExecutionByNode(playbook.last_executions), [playbook.last_executions]);
 
   const {
     action,
@@ -137,7 +163,7 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
   );
 
   return (
-    <PlaybookLayoutDirectionContext.Provider value={direction}>
+    <PlaybookCanvasContexts direction={direction} lastExecutions={lastExecutions}>
       <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden' }}>
         <svg style={{ position: 'absolute', width: 0, height: 0 }} aria-hidden="true">
           <defs>
@@ -200,7 +226,7 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
           deleteNode={deleteNode}
         />
       </div>
-    </PlaybookLayoutDirectionContext.Provider>
+    </PlaybookCanvasContexts>
   );
 };
 

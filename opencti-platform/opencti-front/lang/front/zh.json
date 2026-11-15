@@ -6446,5 +6446,14 @@
   "LLM firewall": "LLM 防火墙",
   "AI gateway": "AI 网关",
   "Vulnerability scanner": "漏洞扫描器",
-  "This link cannot go there: it would create a loop or leave a step without a parent": "此连接无法放在这里：会形成循环或使某个步骤失去父步骤"
+  "This link cannot go there: it would create a loop or leave a step without a parent": "此连接无法放在这里：会形成循环或使某个步骤失去父步骤",
+  "Components": "组件",
+  "Search components": "搜索组件",
+  "No component matches your search": "没有与搜索匹配的组件",
+  "Right click on a step": "右键单击步骤",
+  "Open the step menu": "打开步骤菜单",
+  "Drag the end of a link": "拖动链接的端点",
+  "Reconnect the link": "重新连接链接",
+  "Drag from an output to a step": "从输出拖动到步骤",
+  "Move the step and its branch": "移动步骤及其分支"
 }
