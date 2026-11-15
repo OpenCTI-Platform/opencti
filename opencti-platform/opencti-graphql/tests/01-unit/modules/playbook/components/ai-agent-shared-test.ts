@@ -93,8 +93,11 @@ describe('ai-agent-shared', () => {
 
   describe('AGENT_CALL_TIMEOUT_MS', () => {
     it('should be at least the chatbot proxy timeout to allow long agent runs', () => {
-      // 5 minutes; documented as "well above the default 2-minute httpClient cap".
+      // 10 minutes; documented as "well above the default 2-minute httpClient cap".
       expect(AGENT_CALL_TIMEOUT_MS).toBeGreaterThanOrEqual(2 * 60 * 1000);
+    });
+    it('should be 10 minutes', () => {
+      expect(AGENT_CALL_TIMEOUT_MS).toBe(10 * 60 * 1000);
     });
   });
 
