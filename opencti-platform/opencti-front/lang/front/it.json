@@ -6455,5 +6455,7 @@
   "Drag the end of a link": "Trascina l'estremità di un collegamento",
   "Reconnect the link": "Ricollega il collegamento",
   "Drag from an output to a step": "Trascina da un'uscita a un passaggio",
-  "Move the step and its branch": "Sposta il passaggio e il suo ramo"
+  "Move the step and its branch": "Sposta il passaggio e il suo ramo",
+  "Undo": "Annulla",
+  "Redo": "Ripristina"
 }

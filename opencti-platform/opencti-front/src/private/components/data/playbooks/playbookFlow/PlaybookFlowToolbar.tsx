@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React, { useEffect, useState } from 'react';
 import { Panel, useReactFlow } from 'reactflow';
 import { ButtonGroup, ButtonGroupItem } from '@filigran/design-system';
-import { AccountTreeOutlined, CenterFocusStrongOutlined, KeyboardOutlined, ZoomInOutlined, ZoomOutOutlined } from '@mui/icons-material';
+import { AccountTreeOutlined, CenterFocusStrongOutlined, KeyboardOutlined, RedoOutlined, UndoOutlined, ZoomInOutlined, ZoomOutOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../../../components/i18n';
 import type { PlaybookLayoutDirection } from '../hooks/usePlaybookLayoutMode';
@@ -29,11 +29,14 @@ const GLYPH = { fontSize: 16 };
 interface PlaybookFlowToolbarProps {
   direction: PlaybookLayoutDirection;
   onDirectionChange: (direction: PlaybookLayoutDirection) => void;
+  // Undo / redo of the session; absent on a read-only canvas.
+  history?: { undo: () => void; redo: () => void; canUndo: boolean; canRedo: boolean };
 }
 
-// Floating canvas toolbar: the layout direction, then zoom and fit, then the shortcuts cheat sheet.
-// The same actions answer the keyboard (see playbookShortcuts.ts) whenever no field has the focus.
-const PlaybookFlowToolbar = ({ direction, onDirectionChange }: PlaybookFlowToolbarProps) => {
+// Floating canvas toolbar: the layout direction, then undo and redo, then zoom and fit, then the
+// shortcuts cheat sheet. The same actions answer the keyboard (see playbookShortcuts.ts) whenever
+// no field has the focus.
+const PlaybookFlowToolbar = ({ direction, onDirectionChange, history }: PlaybookFlowToolbarProps) => {
   const { t_i18n } = useFormatter();
   const { zoomIn, zoomOut, fitView } = useReactFlow();
   const [cheatSheetOpen, setCheatSheetOpen] = useState(false);
@@ -42,7 +45,19 @@ const PlaybookFlowToolbar = ({ direction, onDirectionChange }: PlaybookFlowToolb
     const onKeyDown = (event: KeyboardEvent) => {
       const action = playbookShortcutFor(event);
       if (!action) return;
+      if (action === 'undo' || action === 'redo') {
+        // A read-only canvas, or a dialog or drawer open over it, keeps Ctrl/Cmd+Z to the browser.
+        if (!history || document.querySelector('[role="dialog"]')) return;
+      }
       event.preventDefault();
+      if (action === 'undo') {
+        if (history?.canUndo) history.undo();
+        return;
+      }
+      if (action === 'redo') {
+        if (history?.canRedo) history.redo();
+        return;
+      }
       if (action === 'zoomIn') zoomIn({ duration: 150 });
       else if (action === 'zoomOut') zoomOut({ duration: 150 });
       else if (action === 'fitView') fitView({ duration: 200, padding: 0.2 });
@@ -52,7 +67,7 @@ const PlaybookFlowToolbar = ({ direction, onDirectionChange }: PlaybookFlowToolb
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [zoomIn, zoomOut, fitView, onDirectionChange]);
+  }, [zoomIn, zoomOut, fitView, onDirectionChange, history]);
 
   return (
     <Panel position="top-right">
@@ -74,6 +89,16 @@ const PlaybookFlowToolbar = ({ direction, onDirectionChange }: PlaybookFlowToolb
             icon={<AccountTreeOutlined sx={GLYPH} />}
           />
         </ButtonGroup>
+        {history && (
+          <>
+            <IconButton aria-label={t_i18n('Undo')} tooltip={t_i18n('Undo')} disabled={!history.canUndo} onClick={history.undo}>
+              <UndoOutlined style={GLYPH} />
+            </IconButton>
+            <IconButton aria-label={t_i18n('Redo')} tooltip={t_i18n('Redo')} disabled={!history.canRedo} onClick={history.redo}>
+              <RedoOutlined style={GLYPH} />
+            </IconButton>
+          </>
+        )}
         <IconButton aria-label={t_i18n('Zoom out')} tooltip={t_i18n('Zoom out')} onClick={() => zoomOut({ duration: 150 })}>
           <ZoomOutOutlined style={GLYPH} />
         </IconButton>

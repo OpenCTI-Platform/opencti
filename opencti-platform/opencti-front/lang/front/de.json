@@ -6455,5 +6455,7 @@
   "Drag the end of a link": "Ende einer Verbindung ziehen",
   "Reconnect the link": "Verbindung neu verbinden",
   "Drag from an output to a step": "Von einem Ausgang zu einem Schritt ziehen",
-  "Move the step and its branch": "Schritt und seinen Zweig verschieben"
+  "Move the step and its branch": "Schritt und seinen Zweig verschieben",
+  "Undo": "Rückgängig",
+  "Redo": "Wiederholen"
 }

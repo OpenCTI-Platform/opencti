@@ -14,6 +14,17 @@ describe('playbookShortcutFor', () => {
     expect(playbookShortcutFor({ key: 'x' })).toBeNull();
   });
 
+  it('undoes with Ctrl/Cmd+Z and redoes with Shift+Ctrl/Cmd+Z or Ctrl+Y', () => {
+    expect(playbookShortcutFor({ key: 'z', ctrlKey: true })).toBe('undo');
+    expect(playbookShortcutFor({ key: 'z', metaKey: true })).toBe('undo');
+    expect(playbookShortcutFor({ key: 'Z', ctrlKey: true, shiftKey: true })).toBe('redo');
+    expect(playbookShortcutFor({ key: 'z', metaKey: true, shiftKey: true })).toBe('redo');
+    expect(playbookShortcutFor({ key: 'y', ctrlKey: true })).toBe('redo');
+    expect(playbookShortcutFor({ key: 'z' })).toBeNull();
+    expect(playbookShortcutFor({ key: 'z', ctrlKey: true, altKey: true })).toBeNull();
+    expect(playbookShortcutFor({ key: 'z', ctrlKey: true, target: { tagName: 'INPUT' } as unknown as EventTarget })).toBeNull();
+  });
+
   it('leaves the keys to the browser with a modifier', () => {
     expect(playbookShortcutFor({ key: '+', ctrlKey: true })).toBeNull();
     expect(playbookShortcutFor({ key: 'f', metaKey: true })).toBeNull();
@@ -30,6 +41,6 @@ describe('playbookShortcutFor', () => {
   it('lists every action once in the cheat sheet', () => {
     const actions = PLAYBOOK_SHORTCUTS.map((shortcut) => shortcut.action);
     expect(new Set(actions).size).toBe(actions.length);
-    expect(actions).toEqual(['zoomIn', 'zoomOut', 'fitView', 'verticalLayout', 'horizontalLayout', 'cheatSheet']);
+    expect(actions).toEqual(['zoomIn', 'zoomOut', 'fitView', 'verticalLayout', 'horizontalLayout', 'undo', 'redo', 'cheatSheet']);
   });
 });

@@ -13,8 +13,9 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import type { XYPosition } from 'reactflow';
+import type { Edge, Node, XYPosition } from 'reactflow';
 import type { PlaybookDefinitionEdge } from '../types/playbook-types';
+import { toDefinitionLinks } from './playbookRewiring';
 
 // Undo / redo of the editor session through inverse operations: every change made on the canvas
 // is recorded with the operation that cancels it, both expressed with the existing playbook
@@ -66,6 +67,19 @@ export interface PlaybookOperationResult {
 }
 
 export const PLAYBOOK_HISTORY_LIMIT = 50;
+
+// The playbook as the canvas shows it: its steps and the links between them, add buttons left out.
+export const canvasSnapshot = (nodes: Node[], edges: Edge[]): PlaybookSnapshot => ({
+  nodes: nodes.filter((n) => n.type !== 'placeholder').map((n) => ({
+    id: n.id,
+    component_id: n.data?.component?.id ?? '',
+    name: n.data?.name ?? '',
+    configuration: n.data?.configuration ? JSON.stringify(n.data.configuration) : null,
+    ...(n.data?.description ? { description: n.data.description } : {}),
+    position: n.position,
+  })),
+  links: toDefinitionLinks(nodes, edges),
+});
 
 export const emptyHistory = (): PlaybookHistory => ({ past: [], future: [] });
 

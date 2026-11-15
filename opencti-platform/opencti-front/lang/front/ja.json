@@ -6455,5 +6455,7 @@
   "Drag the end of a link": "リンクの端をドラッグ",
   "Reconnect the link": "リンクを再接続",
   "Drag from an output to a step": "出力からステップへドラッグ",
-  "Move the step and its branch": "ステップとそのブランチを移動"
+  "Move the step and its branch": "ステップとそのブランチを移動",
+  "Undo": "元に戻す",
+  "Redo": "やり直す"
 }

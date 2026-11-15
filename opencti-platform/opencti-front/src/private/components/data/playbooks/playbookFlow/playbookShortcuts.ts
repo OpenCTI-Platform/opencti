@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-export type PlaybookShortcutAction = 'zoomIn' | 'zoomOut' | 'fitView' | 'verticalLayout' | 'horizontalLayout' | 'cheatSheet';
+export type PlaybookShortcutAction = 'zoomIn' | 'zoomOut' | 'fitView' | 'verticalLayout' | 'horizontalLayout' | 'undo' | 'redo' | 'cheatSheet';
 
 export interface PlaybookShortcut {
   action: PlaybookShortcutAction;
@@ -28,6 +28,8 @@ export const PLAYBOOK_SHORTCUTS: PlaybookShortcut[] = [
   { action: 'fitView', keys: ['F'], label: 'Fit view' },
   { action: 'verticalLayout', keys: ['V'], label: 'Vertical layout' },
   { action: 'horizontalLayout', keys: ['H'], label: 'Horizontal layout' },
+  { action: 'undo', keys: ['Ctrl/Cmd', 'Z'], label: 'Undo' },
+  { action: 'redo', keys: ['Shift', 'Ctrl/Cmd', 'Z'], label: 'Redo' },
   { action: 'cheatSheet', keys: ['?'], label: 'Keyboard shortcuts' },
 ];
 
@@ -36,6 +38,7 @@ interface ShortcutKeyEvent {
   ctrlKey?: boolean;
   metaKey?: boolean;
   altKey?: boolean;
+  shiftKey?: boolean;
   target?: EventTarget | null;
 }
 
@@ -47,11 +50,17 @@ const isTypingTarget = (target: EventTarget | null | undefined) => {
   return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
 };
 
-// The shortcut a key press asks for, or null: never while typing in a field, never with a modifier
-// (the browser and the operating system keep theirs).
+// The shortcut a key press asks for, or null: never while typing in a field (the field keeps its own
+// undo), never with a modifier except Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z (Ctrl+Y too) for undo and redo.
 export const playbookShortcutFor = (event: ShortcutKeyEvent): PlaybookShortcutAction | null => {
-  if (event.ctrlKey || event.metaKey || event.altKey) return null;
   if (isTypingTarget(event.target)) return null;
+  if ((event.ctrlKey || event.metaKey) && !event.altKey) {
+    const key = event.key.toLowerCase();
+    if (key === 'z') return event.shiftKey ? 'redo' : 'undo';
+    if (key === 'y' && event.ctrlKey && !event.shiftKey) return 'redo';
+    return null;
+  }
+  if (event.ctrlKey || event.metaKey || event.altKey) return null;
   switch (event.key) {
     case '+':
     case '=':

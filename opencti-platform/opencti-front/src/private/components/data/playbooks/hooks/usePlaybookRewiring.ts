@@ -6,6 +6,9 @@ import { useFormatter } from '../../../../../components/i18n';
 import { applyRewire, planConnect, planEdgeUpdate, PlaybookRewire, toDefinitionLinks } from '../utils/playbookRewiring';
 import { addPlaceholders } from '../utils/playbook';
 import type { PlaybookEdge, PlaybookNode } from '../types/playbook-types';
+import type { PlaybookHistoryControls } from './usePlaybookHistory';
+
+type PlaybookHistoryRecorder = Pick<PlaybookHistoryControls, 'record' | 'snapshot'>;
 
 export const usePlaybookRewiringRelinkMutation = graphql`
   mutation usePlaybookRewiringRelinkMutation($id: ID!, $linkId: ID!, $toNodeId: ID!, $fromNodeId: ID, $fromPortId: ID) {
@@ -24,7 +27,13 @@ type SetString = Dispatch<SetStateAction<string | null>>;
 // Drag a link end to another step, or draw a connection from an out port to a step: one write
 // (playbookRelink or playbookMoveNode), nothing deleted. A drop the plan refuses (a cycle, a step
 // left without a parent, the entry point as a target) does nothing and says why.
-const usePlaybookRewiring = (playbookId: string, setAction: SetString, setSelectedEdge: SetString, setSelectedNode: SetString) => {
+const usePlaybookRewiring = (
+  playbookId: string,
+  setAction: SetString,
+  setSelectedEdge: SetString,
+  setSelectedNode: SetString,
+  history?: PlaybookHistoryRecorder,
+) => {
   const { t_i18n } = useFormatter();
   const { getNodes, getEdges, setNodes, setEdges } = useReactFlow();
 
@@ -55,20 +64,38 @@ const usePlaybookRewiring = (playbookId: string, setAction: SetString, setSelect
       MESSAGING$.notifyError(t_i18n('This link cannot go there: it would create a loop or leave a step without a parent'));
       return;
     }
+    const before = history?.snapshot();
     if (rewire.kind === 'relink') {
       commitMutation({
         mutation: usePlaybookRewiringRelinkMutation,
         variables: { id: playbookId, linkId: rewire.linkId, toNodeId: rewire.toNodeId, fromNodeId: rewire.fromNodeId, fromPortId: rewire.fromPortId },
-        onCompleted: () => apply(rewire, rewire.linkId),
+        onCompleted: () => {
+          const from = before?.links.find((l) => l.id === rewire.linkId)?.from;
+          const fromNodeId = rewire.fromNodeId ?? from?.id;
+          const fromPortId = rewire.fromPortId ?? from?.port;
+          if (history && before && fromNodeId && fromPortId) {
+            history.record({ kind: 'relink', linkId: rewire.linkId, toNodeId: rewire.toNodeId, fromNodeId, fromPortId }, before);
+          }
+          apply(rewire, rewire.linkId);
+        },
       });
       return;
     }
     commitMutation({
       mutation: usePlaybookRewiringMoveNodeMutation,
       variables: { id: playbookId, nodeId: rewire.nodeId, parentNodeId: rewire.parentNodeId, parentPortId: rewire.parentPortId },
-      onCompleted: (response: { playbookMoveNode: string }) => apply(rewire, response.playbookMoveNode),
+      onCompleted: (response: { playbookMoveNode: string }) => {
+        if (history && before) {
+          history.record(
+            { kind: 'move', nodeId: rewire.nodeId, parentNodeId: rewire.parentNodeId, parentPortId: rewire.parentPortId },
+            before,
+            { linkId: response.playbookMoveNode },
+          );
+        }
+        apply(rewire, response.playbookMoveNode);
+      },
     });
-  }, [playbookId, apply, t_i18n]);
+  }, [playbookId, apply, t_i18n, history]);
 
   const onConnect = useCallback((connection: Connection) => {
     commit(planConnect(getNodes(), getEdges(), connection));

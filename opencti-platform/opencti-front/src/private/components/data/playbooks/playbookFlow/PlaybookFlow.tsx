@@ -13,8 +13,8 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { type ReactNode, useEffect, useMemo } from 'react';
-import ReactFlow, { Background, BackgroundVariant, MiniMap } from 'reactflow';
+import { type ReactNode, useEffect, useMemo, useRef } from 'react';
+import ReactFlow, { Background, BackgroundVariant, MiniMap, useReactFlow } from 'reactflow';
 import { useTheme } from '@mui/material/styles';
 import { graphql, useFragment, useRefetchableFragment } from 'react-relay';
 import PlaybookFlowAddComponents from './PlaybookFlowAddComponents';
@@ -23,6 +23,8 @@ import useManipulateComponents from '../hooks/useManipulateComponents';
 import { addPlaceholders, computeEdges, computeNodes } from '../utils/playbook';
 import useLayout from '../hooks/useLayout';
 import usePlaybookRewiring from '../hooks/usePlaybookRewiring';
+import usePlaybookHistory, { type PlaybookHistoryControls } from '../hooks/usePlaybookHistory';
+import { canvasSnapshot, type PlaybookOperation, type PlaybookOperationResult, type PlaybookSnapshot } from '../utils/playbookHistory';
 import useGranted, { AUTOMATION_AUTMANAGE } from '../../../../../utils/hooks/useGranted';
 import { type PlaybookLayoutDirection, PlaybookLayoutDirectionContext, usePlaybookLayoutMode } from '../hooks/usePlaybookLayoutMode';
 import PlaybookFlowToolbar from './PlaybookFlowToolbar';
@@ -105,6 +107,16 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
   // The outcome of each step in its latest execution, shown as a badge on its card.
   const lastExecutions = useMemo(() => lastExecutionByNode(playbook.last_executions), [playbook.last_executions]);
 
+  // The session history is created after the selection state it clears, so the changes reach it
+  // through this stable recorder.
+  const { getNodes, getEdges } = useReactFlow();
+  const historyRef = useRef<PlaybookHistoryControls | null>(null);
+  const historyRecorder = useMemo(() => ({
+    snapshot: () => canvasSnapshot(getNodes(), getEdges()),
+    record: (op: PlaybookOperation, before: PlaybookSnapshot, result?: PlaybookOperationResult) => historyRef.current?.record(op, before, result),
+    reset: () => historyRef.current?.reset(),
+  }), [getNodes, getEdges]);
+
   const {
     action,
     setAction,
@@ -115,7 +127,7 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
     onConfigAdd,
     onConfigReplace,
     deleteNode,
-  } = useManipulateComponents(playbook);
+  } = useManipulateComponents(playbook, historyRecorder);
 
   // Some components (the XTM One AI agent nodes) expose a dynamic agent
   // picker whose options are resolved live from the XTM One intent catalog
@@ -160,7 +172,19 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
     setAction as React.Dispatch<React.SetStateAction<string | null>>,
     setSelectedEdge as React.Dispatch<React.SetStateAction<string | null>>,
     setSelectedNode as React.Dispatch<React.SetStateAction<string | null>>,
+    historyRecorder,
   );
+  // Undo / redo of the session (Ctrl/Cmd+Z, Shift+Ctrl/Cmd+Z), through inverse operations.
+  const history = usePlaybookHistory(
+    playbook.id,
+    playbookComponents,
+    setAction as React.Dispatch<React.SetStateAction<string | null>>,
+    setSelectedNode as React.Dispatch<React.SetStateAction<string | null>>,
+    setSelectedEdge as React.Dispatch<React.SetStateAction<string | null>>,
+  );
+  useEffect(() => {
+    historyRef.current = history;
+  }, [history]);
 
   return (
     <PlaybookCanvasContexts direction={direction} lastExecutions={lastExecutions}>
@@ -206,7 +230,7 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
             maskColor={theme.palette.action?.hover}
             style={{ backgroundColor: theme.palette.background.paper }}
           />
-          <PlaybookFlowToolbar direction={direction} onDirectionChange={setDirection} />
+          <PlaybookFlowToolbar direction={direction} onDirectionChange={setDirection} history={canManage ? history : undefined} />
         </ReactFlow>
         <PlaybookFlowAddComponents
           action={action}

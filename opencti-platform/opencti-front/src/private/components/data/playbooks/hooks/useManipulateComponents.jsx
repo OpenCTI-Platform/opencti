@@ -94,7 +94,9 @@ const deleteEdgesAndAllChildren = (definitionNodes, definitionEdges, edges) => {
   };
 };
 
-const useManipulateComponents = (playbook) => {
+// history: the undo / redo controls of usePlaybookHistory; every change made here is recorded
+// there with the playbook it was made on.
+const useManipulateComponents = (playbook, history) => {
   const [selectedNode, setSelectedNode] = useState(null);
   const [selectedEdge, setSelectedEdge] = useState(null);
   const [action, setAction] = useState(null);
@@ -593,6 +595,7 @@ const useManipulateComponents = (playbook) => {
     const parentNode = getNodes()
       .filter((n) => n.id === placeholderEdge?.source)
       ?.at(0);
+    const before = history?.snapshot();
     // The node and the link to its parent are created by one mutation: the
     // backend refuses a node without parent unless it is the entry point.
     commitMutation({
@@ -610,6 +613,12 @@ const useManipulateComponents = (playbook) => {
       },
       onCompleted: (nodeResult) => {
         const nodeId = nodeResult.playbookAddNode;
+        history?.record({
+          kind: 'add',
+          nodeId,
+          node: { name, component_id: component.id, position, configuration: jsonConfig, ...(description ? { description } : {}) },
+          ...(parentNode ? { parentNodeId: parentNode.id, parentPortId: placeholderEdge.sourceHandle } : {}),
+        }, before, { nodeId });
         applyAddNodeFromPlaceholder(
           {
             nodeId,
@@ -644,6 +653,7 @@ const useManipulateComponents = (playbook) => {
       setAction(null);
       return;
     }
+    const before = history?.snapshot();
     commitMutation({
       mutation: useManipulateComponentsAddNodeMutation,
       variables: {
@@ -660,6 +670,13 @@ const useManipulateComponents = (playbook) => {
       },
       onCompleted: (nodeResult) => {
         const nodeId = nodeResult.playbookAddNode;
+        history?.record({
+          kind: 'add',
+          nodeId,
+          node: { name, component_id: component.id, position, configuration: jsonConfig, ...(description ? { description } : {}) },
+          parentNodeId: parentNode.id,
+          parentPortId: originEdge.sourceHandle,
+        }, before, { nodeId });
         applyAddNode(
           {
             nodeId,
@@ -699,6 +716,8 @@ const useManipulateComponents = (playbook) => {
         },
       },
       onCompleted: (insertResult) => {
+        // An insertion on a link has no single inverse operation: the history ends here.
+        history?.reset();
         applyInsertNode(
           {
             nodeId: insertResult.playbookInsertNode.nodeId,
@@ -720,6 +739,8 @@ const useManipulateComponents = (playbook) => {
       y: selectedNode.position.y,
     };
     const jsonConfig = config ? JSON.stringify(config) : null;
+    const before = history?.snapshot();
+    const nodeId = selectedNode.id;
     commitMutation({
       mutation: useManipulateComponentsReplaceNodeMutation,
       variables: {
@@ -734,6 +755,11 @@ const useManipulateComponents = (playbook) => {
         },
       },
       onCompleted: () => {
+        history?.record({
+          kind: 'replace',
+          nodeId,
+          node: { name, component_id: component.id, position, configuration: jsonConfig, ...(description ? { description } : {}) },
+        }, before);
         applyReplaceNode(component, name, config, description);
         setSelectedNode(null);
         setAction(null);
@@ -741,6 +767,8 @@ const useManipulateComponents = (playbook) => {
     });
   };
   const deleteNode = () => {
+    const before = history?.snapshot();
+    const nodeId = selectedNode.id;
     commitMutation({
       mutation: useManipulateComponentsDeleteNodeMutation,
       variables: {
@@ -748,6 +776,8 @@ const useManipulateComponents = (playbook) => {
         nodeId: selectedNode.id,
       },
       onCompleted: () => {
+        // A step deleted with its branch has no inverse: recording it ends the history.
+        history?.record({ kind: 'delete', nodeId }, before);
         applyDeleteNode();
         setSelectedNode(null);
         setAction(null);

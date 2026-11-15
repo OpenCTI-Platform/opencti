@@ -4,6 +4,7 @@ import {
   afterUndo,
   canRedo,
   canUndo,
+  canvasSnapshot,
   emptyHistory,
   inverseOf,
   PLAYBOOK_HISTORY_LIMIT,
@@ -113,6 +114,25 @@ describe('history', () => {
     history = afterUndo(history, {}, moved);
     history = afterUndo(history, { linkId: 'l10' }, moved);
     expect(history.future[1].do).toMatchObject({ kind: 'relink', linkId: 'l10' });
+  });
+
+  it('reads the playbook off the canvas, add buttons left out', () => {
+    const nodes = [
+      { id: 'entry', type: 'workflow', position, data: { name: 'entry', component: { id: 'LISTEN' }, configuration: { filters: 'x' } } },
+      { id: 'a', type: 'workflow', position, data: { name: 'a', description: 'd', component: { id: 'LOG' } } },
+      { id: 'a-out-PLACEHOLDER', type: 'placeholder', position, data: { name: '+' } },
+    ];
+    const edges = [
+      { id: 'l1', type: 'workflow', source: 'entry', sourceHandle: 'out', target: 'a' },
+      { id: 'p1', type: 'placeholder', source: 'a', sourceHandle: 'out', target: 'a-out-PLACEHOLDER' },
+    ];
+    expect(canvasSnapshot(nodes, edges)).toEqual({
+      nodes: [
+        { id: 'entry', component_id: 'LISTEN', name: 'entry', configuration: '{"filters":"x"}', position },
+        { id: 'a', component_id: 'LOG', name: 'a', configuration: null, description: 'd', position },
+      ],
+      links: [link('l1', 'entry', 'out', 'a')],
+    });
   });
 
   it('keeps the newest entries only', () => {

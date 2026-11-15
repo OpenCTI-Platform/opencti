@@ -6455,5 +6455,7 @@
   "Drag the end of a link": "Drag the end of a link",
   "Reconnect the link": "Reconnect the link",
   "Drag from an output to a step": "Drag from an output to a step",
-  "Move the step and its branch": "Move the step and its branch"
+  "Move the step and its branch": "Move the step and its branch",
+  "Undo": "Undo",
+  "Redo": "Redo"
 }
