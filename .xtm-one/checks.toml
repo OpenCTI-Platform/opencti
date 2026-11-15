@@ -1,0 +1,56 @@
+# Services an agent starts from a checkout of this repository in an XTM One sandbox (sandbox_start_service).
+# This file declares services only: with no [check.NAME] table, XTM One keeps detecting the checks from this
+# repository's CI workflows and manifests, so nothing here restates or changes CI.
+#
+# [service.lab] is OpenCTI built from the checkout (the PR head): backend and front, seeded, every page signed in
+# as the lab admin, so a pull request can be rendered and captured before its review. The four store services
+# below are started first (depends_on). The script is .xtm-one/lab/opencti_lab.py (standard library only).
+# The checkout needs at least the paths `needs` lists. A PR adds its own seed in opencti-lab-seed.json at the
+# checkout's root. Theme: /lab/theme/dark or /lab/theme/light (?next=<path>). GraphQL: <preview>/graphql, signed in.
+# Heavy (the four store images and a full backend build): started only on purpose. Nothing here runs in CI.
+
+[service.lab]
+description = "OpenCTI's backend and front built from this checkout, seeded, every page signed in as the lab admin"
+argv = ["python", ".xtm-one/lab/opencti_lab.py"]
+port = 3500
+# OpenCTI's backend links a native module (node-calls-python) that node-gyp compiles with make and a C++ compiler,
+# which only the toolchain images carry.
+image = "toolchain-node"
+ready_path = "/lab/ready"
+ready_log = "lab up: "
+session_log = "seeded opencti page"
+needs = [".xtm-one/lab", "package.json", "yarn.lock", "opencti-platform/opencti-graphql", "opencti-platform/opencti-front"]
+timeout = 900
+lifetime = 7200
+depends_on = ["lab-search", "lab-broker", "lab-redis", "lab-s3"]
+
+[service.lab-search]
+description = "the search engine of the lab's OpenCTI"
+argv = ["sh", "-c", "exec /usr/share/opensearch/opensearch-docker-entrypoint.sh -Ediscovery.type=single-node"]
+port = 9200
+image = "opencti-search"
+timeout = 600
+env = { DISABLE_SECURITY_PLUGIN = "true", DISABLE_INSTALL_DEMO_CONFIG = "true", OPENSEARCH_JAVA_OPTS = "-Xms1g -Xmx1g" }
+
+[service.lab-broker]
+description = "the message broker of the lab's OpenCTI"
+argv = ["rabbitmq-server"]
+port = 5672
+image = "opencti-broker"
+timeout = 600
+
+[service.lab-redis]
+description = "the Redis of the lab's OpenCTI"
+# No persistence: the working directory is the read-only checkout, so an RDB snapshot fails and Redis then
+# refuses every write (MISCONF).
+argv = ["sh", "-c", "exec redis-server --port 6380 --bind 127.0.0.1 --save '' --appendonly no"]
+port = 6380
+image = "opencti-redis"
+
+[service.lab-s3]
+description = "the S3 store of the lab's OpenCTI"
+# The S3 binary is "silo" on pgsty/silo (the image OpenCTI's own compose runs) and "minio" on minio/minio.
+argv = ["sh", "-c", "exec \"$(command -v silo || command -v minio)\" server /tmp/opencti-s3 --address 127.0.0.1:9002 --console-address 127.0.0.1:9003"]
+port = 9002
+image = "opencti-s3"
+env = { MINIO_ROOT_USER = "opencti", MINIO_ROOT_PASSWORD = "lab-only-opencti-s3" }
