@@ -1,5 +1,5 @@
 import React, { memo, useState } from 'react';
-import { Handle, Position, NodeProps, useReactFlow } from 'reactflow';
+import { Handle, NodeProps, useReactFlow } from 'reactflow';
 import { useTheme } from '@mui/material/styles';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -9,69 +9,77 @@ import { MoreVert, LoginOutlined } from '@mui/icons-material';
 import ItemIcon from '../../../../../../components/ItemIcon';
 import { useFormatter } from '../../../../../../components/i18n';
 import { truncate } from '../../../../../../utils/String';
-
-type node = {
-  id: string;
-};
-
-const getHandlePositionStyle = (count: number, index: number, width = 220): React.CSSProperties | undefined => {
-  // we distribute evenly the output ports at the bottom using CSS
-  // we divide our width in N intervals, the N points being at the center of their interval
-  const interval = width / count;
-  const position = index * interval + (interval / 2);
-  return { left: position };
-};
+import type { Theme } from '../../../../../../components/Theme';
+import { usePlaybookHandlePositions } from '../../hooks/usePlaybookLayoutMode';
+import { categoryAccent, outPorts, PLAYBOOK_CARD, portAnchor } from './playbookNodeGeometry';
 
 const NodeWorkflow = ({ id, data }: NodeProps) => {
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const { getNode } = useReactFlow();
-  const displayDescription = data.description || data.component?.description;
+  const { direction, target, source } = usePlaybookHandlePositions();
+  const component = data.component;
+  const accent = categoryAccent(theme, component?.category);
+  const displayDescription = data.description || component?.description;
+  const ports = outPorts(component?.ports);
+  const isEntryPoint = Boolean(component?.is_entry_point);
+  const isEnd = ports.length === 0;
+  const kind = isEntryPoint ? t_i18n('Trigger') : (isEnd ? t_i18n('End of playbook') : t_i18n(component?.category ?? ''));
+  const muted = theme.palette.text?.secondary;
   return (
-    <div style={{
-      position: 'relative',
-      border: theme.palette.mode === 'dark'
-        ? '1px solid rgba(255, 255, 255, 0.12)'
-        : '1px solid rgba(0, 0, 0, 0.12)',
-      borderRadius: 4,
-      backgroundColor: theme.palette.background.paper,
-      width: 220,
-      minHeight: 50,
-      padding: '8px 5px 5px 5px',
-    }}
+    <div
+      data-testid={`playbook-node-${id}`}
+      style={{
+        position: 'relative',
+        boxSizing: 'border-box',
+        width: PLAYBOOK_CARD.width,
+        height: PLAYBOOK_CARD.height,
+        border: `1px solid ${theme.palette.divider}`,
+        borderLeft: `4px solid ${accent}`,
+        borderRadius: isEntryPoint ? 16 : 6,
+        backgroundColor: theme.palette.background.paper,
+        boxShadow: theme.shadows?.[1],
+        padding: '10px 32px 10px 12px',
+        overflow: 'visible',
+      }}
     >
-      <ItemIcon type={data.component.icon} variant="inline" />
-      <div style={{ float: 'left' }}>
-        <Tooltip title={t_i18n(data.name)}>
-          <div style={{ maxWidth: 160, fontSize: 10, wordBreak: 'break-word' }}>
-            {t_i18n(truncate(data.name, 100, false))}
-          </div>
-        </Tooltip>
-        <Tooltip title={t_i18n(displayDescription)}>
-          <div style={{
-            maxWidth: 160,
-            fontSize: 8,
-            color: theme.palette.mode === 'dark'
-              ? 'rgba(255, 255, 255, 0.5)'
-              : 'rgba(0, 0, 0, 0.5)',
-            wordBreak: 'break-word',
-          }}
-          >
-            {t_i18n(truncate(displayDescription, 150, false))}
-          </div>
-        </Tooltip>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ color: accent, display: 'inline-flex' }}>
+          <ItemIcon type={component?.icon} variant="inline" color={accent} />
+        </span>
+        <span style={{ fontSize: 10, letterSpacing: 0.4, textTransform: 'uppercase', color: muted }}>
+          {kind}
+        </span>
       </div>
-      <div className="clearfix" />
-      <div style={{ position: 'absolute', top: 0, right: 0 }}>
+      <Tooltip title={t_i18n(data.name)}>
+        <div style={{ marginTop: 4, fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {t_i18n(truncate(data.name, 60, false))}
+        </div>
+      </Tooltip>
+      <Tooltip title={t_i18n(displayDescription)}>
+        <div style={{
+          marginTop: 2,
+          fontSize: 11,
+          lineHeight: '14px',
+          color: muted,
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+        }}
+        >
+          {t_i18n(displayDescription)}
+        </div>
+      </Tooltip>
+      <div style={{ position: 'absolute', top: 4, right: 2 }}>
         <IconButton
           aria-label={t_i18n('Open menu')}
           onClick={(event) => setAnchorEl(event.currentTarget)}
           aria-haspopup="true"
           size="small"
-          color="primary"
         >
-          <MoreVert style={{ fontSize: 12 }} />
+          <MoreVert style={{ fontSize: 16 }} />
         </IconButton>
         <Menu
           anchorEl={anchorEl}
@@ -94,6 +102,16 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
           >
             {t_i18n('Replace')}
           </MenuItem>
+          {!isEntryPoint && (
+            <MenuItem
+              onClick={() => {
+                data.openAddSibling(getNode(id));
+                setAnchorEl(null);
+              }}
+            >
+              {t_i18n('Add a sibling node')}
+            </MenuItem>
+          )}
           <MenuItem
             onClick={() => {
               data.openDelete(getNode(id));
@@ -104,48 +122,58 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
           </MenuItem>
         </Menu>
       </div>
-      {!data.component?.is_entry_point && (
-        <div style={{ position: 'absolute', bottom: 0, right: 0 }}>
-          <Tooltip
-            title={t_i18n(
-              'Add a new branch at the same level from the parent output',
-            )}
+      {!isEntryPoint && (
+        <div style={{ position: 'absolute', bottom: 2, right: 2 }}>
+          <IconButton
+            onClick={() => data.openAddSibling(getNode(id))}
+            aria-haspopup="true"
+            size="small"
+            aria-label={t_i18n('Add a sibling node')}
+            tooltip={t_i18n('Add a new branch at the same level from the parent output')}
           >
-            <IconButton
-              onClick={() => data.openAddSibling(getNode(id))}
-              aria-haspopup="true"
-              size="small"
-              aria-label={t_i18n('Add a sibling node')}
-            >
-              <LoginOutlined style={{ fontSize: 12 }} />
-            </IconButton>
-          </Tooltip>
+            <LoginOutlined style={{ fontSize: 14 }} />
+          </IconButton>
         </div>
       )}
-      {!data.component?.is_entry_point && (
-        <Handle type="target" position={Position.Top} isConnectable={false} />
+      {!isEntryPoint && (
+        <Handle type="target" position={target} isConnectable={false} style={{ background: accent, border: 'none' }} />
       )}
-      <div style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-      >
-        {(data.component?.ports ?? []).map((n: node, index: number, array: node[]) => (
-          <Handle
-            key={n.id}
-            id={n.id}
-            type="source"
-            position={Position.Bottom}
-            isConnectable={false}
-            style={{ ...getHandlePositionStyle(array.length, index), position: 'absolute' }}
-          />
-        ))}
-      </div>
+      {ports.map((port, index) => {
+        const anchor = portAnchor(index, ports.length, direction);
+        return (
+          <React.Fragment key={port.id}>
+            <Handle
+              id={port.id}
+              type="source"
+              position={source}
+              isConnectable={false}
+              style={{ ...(direction === 'horizontal' ? { top: anchor.y } : { left: anchor.x }), background: accent, border: 'none' }}
+            />
+            {(ports.length > 1 || port.id !== 'out') && (
+              <span
+                className="nodrag nopan"
+                style={{
+                  position: 'absolute',
+                  left: anchor.x,
+                  top: anchor.y,
+                  transform: direction === 'horizontal' ? 'translate(6px, -50%)' : 'translate(-50%, 6px)',
+                  padding: '1px 8px',
+                  borderRadius: 10,
+                  fontSize: 10,
+                  lineHeight: '16px',
+                  whiteSpace: 'nowrap',
+                  color: theme.palette.text?.primary,
+                  backgroundColor: theme.palette.background.default,
+                  border: `1px solid ${accent}`,
+                  pointerEvents: 'none',
+                }}
+              >
+                {t_i18n(port.id)}
+              </span>
+            )}
+          </React.Fragment>
+        );
+      })}
     </div>
   );
 };

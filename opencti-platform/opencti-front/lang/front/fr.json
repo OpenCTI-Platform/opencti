@@ -6333,5 +6333,11 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "votre utilisateur appartiendra à l'organisation principale de la plate-forme en plus de toute organisation à laquelle l'utilisateur actuel appartient",
   "Zoom": "Zoom",
   "Zoom in": "Zoomer",
-  "Zoom out": "Zoom arrière"
+  "Zoom out": "Zoom arrière",
+  "Add an entry point": "Ajouter un point d'entrée",
+  "End of playbook": "Fin du playbook",
+  "Fit view": "Ajuster la vue",
+  "Horizontal layout": "Disposition horizontale",
+  "Insert a component on this link": "Insérer un composant sur ce lien",
+  "Vertical layout": "Disposition verticale"
 }

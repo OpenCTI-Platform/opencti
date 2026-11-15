@@ -6333,5 +6333,11 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "사용자는 현재 사용자가 소속된 조직 외에 기본 플랫폼 조직과도 관련됩니다",
   "Zoom": "확대/축소",
   "Zoom in": "확대",
-  "Zoom out": "축소"
+  "Zoom out": "축소",
+  "Add an entry point": "진입점 추가",
+  "End of playbook": "플레이북 종료",
+  "Fit view": "화면에 맞추기",
+  "Horizontal layout": "가로 레이아웃",
+  "Insert a component on this link": "이 링크에 구성 요소 삽입",
+  "Vertical layout": "세로 레이아웃"
 }

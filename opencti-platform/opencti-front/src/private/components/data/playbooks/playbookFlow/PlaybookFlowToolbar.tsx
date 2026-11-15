@@ -1,0 +1,70 @@
+/*
+Copyright (c) 2021-2025 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Enterprise Edition License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
+import React from 'react';
+import { Panel, useReactFlow } from 'reactflow';
+import { ButtonGroup, ButtonGroupItem } from '@filigran/design-system';
+import { AccountTreeOutlined, CenterFocusStrongOutlined, ZoomInOutlined, ZoomOutOutlined } from '@mui/icons-material';
+import IconButton from '@common/button/IconButton';
+import { useFormatter } from '../../../../../components/i18n';
+import type { PlaybookLayoutDirection } from '../hooks/usePlaybookLayoutMode';
+
+// The library item declares a 16x16 glyph.
+const GLYPH = { fontSize: 16 };
+
+interface PlaybookFlowToolbarProps {
+  direction: PlaybookLayoutDirection;
+  onDirectionChange: (direction: PlaybookLayoutDirection) => void;
+}
+
+// Floating canvas toolbar: the layout direction, then zoom and fit.
+const PlaybookFlowToolbar = ({ direction, onDirectionChange }: PlaybookFlowToolbarProps) => {
+  const { t_i18n } = useFormatter();
+  const { zoomIn, zoomOut, fitView } = useReactFlow();
+  return (
+    <Panel position="top-right">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <ButtonGroup
+          size="md"
+          value={direction}
+          onValueChange={(value: string) => onDirectionChange(value === 'horizontal' ? 'horizontal' : 'vertical')}
+          aria-label={t_i18n('Layout')}
+        >
+          <ButtonGroupItem
+            value="vertical"
+            aria-label={t_i18n('Vertical layout')}
+            icon={<AccountTreeOutlined sx={{ ...GLYPH, transform: 'rotate(90deg)' }} />}
+          />
+          <ButtonGroupItem
+            value="horizontal"
+            aria-label={t_i18n('Horizontal layout')}
+            icon={<AccountTreeOutlined sx={GLYPH} />}
+          />
+        </ButtonGroup>
+        <IconButton aria-label={t_i18n('Zoom out')} tooltip={t_i18n('Zoom out')} onClick={() => zoomOut({ duration: 150 })}>
+          <ZoomOutOutlined style={GLYPH} />
+        </IconButton>
+        <IconButton aria-label={t_i18n('Zoom in')} tooltip={t_i18n('Zoom in')} onClick={() => zoomIn({ duration: 150 })}>
+          <ZoomInOutlined style={GLYPH} />
+        </IconButton>
+        <IconButton aria-label={t_i18n('Fit view')} tooltip={t_i18n('Fit view')} onClick={() => fitView({ duration: 200, padding: 0.2 })}>
+          <CenterFocusStrongOutlined style={GLYPH} />
+        </IconButton>
+      </div>
+    </Panel>
+  );
+};
+
+export default PlaybookFlowToolbar;

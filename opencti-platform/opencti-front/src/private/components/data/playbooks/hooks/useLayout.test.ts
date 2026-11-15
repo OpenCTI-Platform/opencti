@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Edge, Node } from 'reactflow';
 import { layoutNodes } from './useLayout';
+import { PLAYBOOK_CARD } from '../types/nodes/playbookNodeGeometry';
 
 const component = (id: string, outs: string[], is_entry_point = false) => ({
   id,
@@ -37,9 +38,24 @@ describe('useLayout layoutNodes', () => {
     expect(laid.get('c')!.x).toBeLessThan(laid.get('d')!.x);
   });
 
-  it('keeps the 250 x 175 pitch of the previous layout on a chain', () => {
+  it('puts every card one rank pitch below its parent on a chain', () => {
     const laid = new Map(layoutNodes(NODES, EDGES).map((n) => [n.id, n.position]));
-    expect(laid.get('b')!.y - laid.get('a')!.y).toBe(175);
+    expect(laid.get('b')!.y - laid.get('a')!.y).toBe(PLAYBOOK_CARD.height + 88);
+  });
+
+  it('draws the add button of a free port next to that port, never as a step that moves the others', () => {
+    const laid = new Map(layoutNodes(NODES, EDGES).map((n) => [n.id, n.position]));
+    const withoutButtons = new Map(layoutNodes(NODES.filter((n) => n.type !== 'placeholder'), EDGES.slice(0, 5)).map((n) => [n.id, n.position]));
+    ['a', 'b', 'c', 'd', 'e'].forEach((id) => expect(laid.get(id)).toEqual(withoutButtons.get(id)));
+    const e = laid.get('e')!;
+    expect(laid.get('p1')).toEqual({ x: e.x + PLAYBOOK_CARD.width / 2 - 14, y: e.y + PLAYBOOK_CARD.height + 36 });
+  });
+
+  it('lays the same structure left to right in the horizontal direction', () => {
+    const laid = new Map(layoutNodes(NODES, EDGES, 'horizontal').map((n) => [n.id, n.position]));
+    expect(laid.get('b')!.x).toBeGreaterThan(laid.get('a')!.x);
+    expect(laid.get('e')!.x).toBeGreaterThan(laid.get('c')!.x);
+    expect(laid.get('c')!.y).toBeLessThan(laid.get('d')!.y);
   });
 
   it('lays out nothing for an empty playbook', () => {

@@ -14,13 +14,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { useEffect } from 'react';
-import ReactFlow from 'reactflow';
+import ReactFlow, { Background, BackgroundVariant, MiniMap } from 'reactflow';
+import { useTheme } from '@mui/material/styles';
 import { graphql, useFragment, useRefetchableFragment } from 'react-relay';
 import PlaybookFlowAddComponents from './PlaybookFlowAddComponents';
 import PlaybookFlowDeleteNode from './PlaybookFlowDeleteNode';
 import useManipulateComponents from '../hooks/useManipulateComponents';
 import { addPlaceholders, computeEdges, computeNodes } from '../utils/playbook';
 import useLayout from '../hooks/useLayout';
+import { PlaybookLayoutDirectionContext, usePlaybookLayoutMode } from '../hooks/usePlaybookLayoutMode';
+import PlaybookFlowToolbar from './PlaybookFlowToolbar';
+import { categoryAccent, PLAYBOOK_ARROW_ID } from '../types/nodes/playbookNodeGeometry';
+import type { Theme } from '../../../../../components/Theme';
 import nodeTypes from '../types/nodes';
 import edgeTypes from '../types/edges';
 import { PlaybookFlow_playbookComponents$key } from './__generated__/PlaybookFlow_playbookComponents.graphql';
@@ -28,7 +33,7 @@ import { PlaybookFlow_playbook$key } from './__generated__/PlaybookFlow_playbook
 
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 const proOptions = { account: 'paid-pro', hideAttribution: true };
-const fitViewOptions = { padding: 0.8 };
+const fitViewOptions = { padding: 0.2 };
 
 const playbookFragment = graphql`
   fragment PlaybookFlow_playbook on Playbook {
@@ -63,7 +68,9 @@ interface PlaybookFlowProps {
 }
 
 const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProps) => {
+  const theme = useTheme<Theme>();
   const playbook = useFragment(playbookFragment, dataPlaybook);
+  const { direction, setDirection } = usePlaybookLayoutMode(playbook.id);
   const [{ playbookComponents }, refetchComponents] = useRefetchableFragment(
     playbookComponentsFragment,
     dataPlaybookComponents,
@@ -116,42 +123,70 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
   );
 
   // Needs to be called after computing nodes and edges.
-  useLayout();
+  useLayout(direction);
 
   return (
-    <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden' }}>
-      <ReactFlow
-        defaultNodes={flowNodes}
-        defaultEdges={flowEdges}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        defaultViewport={defaultViewport}
-        minZoom={0.2}
-        fitView={true}
-        fitViewOptions={fitViewOptions}
-        nodesDraggable={false}
-        nodesConnectable={false}
-        zoomOnDoubleClick={false}
-        proOptions={proOptions}
-      />
-      <PlaybookFlowAddComponents
-        action={action}
-        setSelectedNode={setSelectedNode}
-        setSelectedEdge={setSelectedEdge}
-        selectedNode={selectedNode}
-        selectedEdge={selectedEdge}
-        onConfigAdd={onConfigAdd}
-        onConfigReplace={onConfigReplace}
-        playbookComponents={playbookComponents}
-      />
-      <PlaybookFlowDeleteNode
-        action={action}
-        setAction={setAction}
-        selectedNode={selectedNode}
-        setSelectedNode={setSelectedNode}
-        deleteNode={deleteNode}
-      />
-    </div>
+    <PlaybookLayoutDirectionContext.Provider value={direction}>
+      <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden' }}>
+        <svg style={{ position: 'absolute', width: 0, height: 0 }} aria-hidden="true">
+          <defs>
+            <marker
+              id={PLAYBOOK_ARROW_ID}
+              viewBox="0 0 10 10"
+              refX="9"
+              refY="5"
+              markerWidth="8"
+              markerHeight="8"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 0 L 10 5 L 0 10 z" fill={theme.palette.text?.secondary} />
+            </marker>
+          </defs>
+        </svg>
+        <ReactFlow
+          defaultNodes={flowNodes}
+          defaultEdges={flowEdges}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          defaultViewport={defaultViewport}
+          minZoom={0.2}
+          fitView={true}
+          fitViewOptions={fitViewOptions}
+          nodesDraggable={false}
+          nodesConnectable={false}
+          zoomOnDoubleClick={false}
+          proOptions={proOptions}
+        >
+          <Background variant={BackgroundVariant.Dots} gap={20} size={1} color={theme.palette.divider} />
+          <MiniMap
+            pannable
+            zoomable
+            ariaLabel={null}
+            nodeColor={(node) => (node.type === 'placeholder' ? 'transparent' : categoryAccent(theme, node.data?.component?.category))}
+            maskColor={theme.palette.action?.hover}
+            style={{ backgroundColor: theme.palette.background.paper }}
+          />
+          <PlaybookFlowToolbar direction={direction} onDirectionChange={setDirection} />
+        </ReactFlow>
+        <PlaybookFlowAddComponents
+          action={action}
+          setSelectedNode={setSelectedNode}
+          setSelectedEdge={setSelectedEdge}
+          selectedNode={selectedNode}
+          selectedEdge={selectedEdge}
+          onConfigAdd={onConfigAdd}
+          onConfigReplace={onConfigReplace}
+          playbookComponents={playbookComponents}
+        />
+        <PlaybookFlowDeleteNode
+          action={action}
+          setAction={setAction}
+          selectedNode={selectedNode}
+          setSelectedNode={setSelectedNode}
+          deleteNode={deleteNode}
+        />
+      </div>
+    </PlaybookLayoutDirectionContext.Provider>
   );
 };
 

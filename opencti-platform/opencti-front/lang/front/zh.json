@@ -6333,5 +6333,11 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "除了当前用户所属的任何组织外，您的用户还将与主平台组织有关",
   "Zoom": "放大",
   "Zoom in": "放大",
-  "Zoom out": "缩小"
+  "Zoom out": "缩小",
+  "Add an entry point": "添加入口点",
+  "End of playbook": "剧本结束",
+  "Fit view": "适应视图",
+  "Horizontal layout": "水平布局",
+  "Insert a component on this link": "在此链接上插入组件",
+  "Vertical layout": "垂直布局"
 }

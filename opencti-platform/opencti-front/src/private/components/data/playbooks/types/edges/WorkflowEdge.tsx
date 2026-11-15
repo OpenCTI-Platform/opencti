@@ -1,49 +1,15 @@
-import React from 'react';
-import { EdgeLabelRenderer, EdgeProps, getBezierPath, useReactFlow } from 'reactflow';
-import { styled } from '@mui/material/styles';
+import React, { useState } from 'react';
+import { BaseEdge, EdgeLabelRenderer, EdgeProps, getSmoothStepPath, useReactFlow } from 'reactflow';
+import { useTheme } from '@mui/material/styles';
+import { AddOutlined } from '@mui/icons-material';
+import IconButton from '@common/button/IconButton';
 import { useFormatter } from 'src/components/i18n';
+import type { Theme } from '../../../../../../components/Theme';
+import { PLAYBOOK_ARROW_ID } from '../nodes/playbookNodeGeometry';
 
-const EdgeButton = styled('rect')(({ theme }) => ({
-  cursor: 'pointer',
-  pointerEvents: 'all',
-  stroke: theme.palette.primary.main,
-  fill: theme.palette.background.default,
-  '&:hover': {
-    fill: theme.palette.background.paper,
-  },
-}));
-
-const EdgeButtonText = styled('text')(({ theme }) => ({
-  pointerEvents: 'none',
-  userSelect: 'none',
-  fill: theme.palette.primary.main,
-}));
-
-const EdgePath = styled('path')(({ theme }) => ({
-  fill: 'none',
-  stroke: theme.palette.primary.main,
-  strokeWidth: 1,
-}));
-
-function EdgeLabel({ transform, label }: { transform: string; label: string }) {
-  const { t_i18n } = useFormatter();
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        background: 'transparent',
-        padding: 8,
-        fontSize: 9,
-        transform,
-        fontFamily: 'Consolas',
-      }}
-      className="nodrag nopan"
-    >
-      {t_i18n(label)}
-    </div>
-  );
-}
-
+// A link between two steps: a rounded orthogonal path with an arrowhead. The port it leaves
+// from is named on the pill of the source card, so nothing is written over the curve. The
+// "insert a step here" button shows on hover of the link, at its middle.
 export default function CustomEdge({
   id,
   sourceX,
@@ -52,50 +18,60 @@ export default function CustomEdge({
   targetY,
   sourcePosition,
   targetPosition,
-  style,
   markerEnd,
   data,
-  sourceHandleId,
 }: EdgeProps) {
+  const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
   const { getEdge } = useReactFlow();
-  const [edgePath, edgeCenterX, edgeCenterY] = getBezierPath({
+  const [hover, setHover] = useState(false);
+  const [edgePath, centerX, centerY] = getSmoothStepPath({
     sourceX,
     sourceY,
     sourcePosition,
     targetX,
     targetY,
     targetPosition,
+    borderRadius: 12,
   });
+  const stroke = hover ? theme.palette.primary.main : theme.palette.text?.secondary;
   return (
-    <>
-      <EdgePath
-        id={id}
-        style={style}
-        d={edgePath}
-        markerEnd={markerEnd}
+    <g onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+      <BaseEdge
+        path={edgePath}
+        markerEnd={markerEnd ?? `url(#${PLAYBOOK_ARROW_ID})`}
+        interactionWidth={24}
+        style={{ stroke, strokeWidth: hover ? 2 : 1.5, fill: 'none' }}
       />
-      <g transform={`translate(${edgeCenterX}, ${edgeCenterY})`}>
-        <EdgeButton
-          onClick={() => data.openConfig(getEdge(id))}
-          x={-10}
-          y={-10}
-          width={20}
-          ry={4}
-          rx={4}
-          height={20}
-        />
-        <EdgeButtonText y={5} x={-4}>
-          +
-        </EdgeButtonText>
-      </g>
       <EdgeLabelRenderer>
-        {sourceHandleId && (
-          <EdgeLabel
-            transform={`translate(-50%, 0%) translate(${sourceX}px,${sourceY}px)`}
-            label={sourceHandleId}
-          />
-        )}
+        <div
+          className="nodrag nopan"
+          data-testid={`playbook-insert-${id}`}
+          onMouseEnter={() => setHover(true)}
+          onMouseLeave={() => setHover(false)}
+          onFocus={() => setHover(true)}
+          onBlur={() => setHover(false)}
+          style={{
+            position: 'absolute',
+            transform: `translate(-50%, -50%) translate(${centerX}px, ${centerY}px)`,
+            pointerEvents: 'all',
+            borderRadius: '50%',
+            opacity: hover ? 1 : 0,
+            transition: 'opacity 120ms',
+            backgroundColor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.primary.main}`,
+          }}
+        >
+          <IconButton
+            aria-label={t_i18n('Insert a component on this link')}
+            tooltip={t_i18n('Insert a component on this link')}
+            size="small"
+            onClick={() => data.openConfig(getEdge(id))}
+          >
+            <AddOutlined style={{ fontSize: 14 }} />
+          </IconButton>
+        </div>
       </EdgeLabelRenderer>
-    </>
+    </g>
   );
 }
