@@ -9,6 +9,11 @@ import type {
   SetSelectedPlaybookNode,
 } from '../types/playbook-types';
 
+// The "+" add button on a free out port of a step, and the dashed link leading to it: one per port,
+// so its id is derived from the step and the port, whether the canvas drew it on load or after an edit.
+export const placeholderIdOf = (nodeId: string, portId: string) => `${nodeId}-${portId}-PLACEHOLDER`;
+export const placeholderEdgeIdOf = (nodeId: string, portId: string) => `${nodeId}-${portId}-${placeholderIdOf(nodeId, portId)}`;
+
 export const computeNodes = (
   playbookNodes: PlaybookDefinitionNode[],
   playbookComponents: PlaybookComponents,
@@ -111,7 +116,7 @@ export const addPlaceholders = (
       .length === 0,
   );
   const placeholders = notConnectedNodesOutputs.map((notConnectedNodeOutput) => {
-    const childPlaceholderId = `${notConnectedNodeOutput?.id}-${notConnectedNodeOutput?.port_id}-PLACEHOLDER`;
+    const childPlaceholderId = placeholderIdOf(notConnectedNodeOutput.id, notConnectedNodeOutput.port_id);
     const childPlaceholderNode = {
       id: childPlaceholderId,
       position: { x: notConnectedNodeOutput?.position.x, y: notConnectedNodeOutput?.position.y },
@@ -127,7 +132,7 @@ export const addPlaceholders = (
       },
     };
     const childPlaceholderEdge = {
-      id: `${notConnectedNodeOutput?.id}-${notConnectedNodeOutput?.port_id}-${childPlaceholderId}`,
+      id: placeholderEdgeIdOf(notConnectedNodeOutput.id, notConnectedNodeOutput.port_id),
       type: 'placeholder',
       source: notConnectedNodeOutput?.id,
       sourceHandle: notConnectedNodeOutput?.port_id,

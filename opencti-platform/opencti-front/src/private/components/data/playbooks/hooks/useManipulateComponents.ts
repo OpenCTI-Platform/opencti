@@ -1,9 +1,9 @@
 import { useReactFlow, type Edge, type Node } from 'reactflow';
 import { useState } from 'react';
-import { v4 as uuid } from 'uuid';
 import { graphql } from 'react-relay';
 import { commitMutation } from '../../../../../relay/environment';
 import type { PlaybookHistoryControls } from './usePlaybookHistory';
+import { placeholderEdgeIdOf, placeholderIdOf } from '../utils/playbook';
 import type {
   PlaybookAction,
   PlaybookComponent,
@@ -162,29 +162,28 @@ const useManipulateComponents = (playbook: { id: string }, history?: HistoryReco
     openConfig: openNode('config'),
   });
   // An add button on each given out port of a step, at the step's place (the layout moves it).
+  // Its id is the one the canvas gives it when the playbook is loaded (placeholderIdOf), so a "+" keeps
+  // the same id whether it was drawn by an edit or by a reload.
   const placeholdersOn = (
     sourceId: string,
     ports: PlaybookComponent['ports'],
     position: { x: number; y: number },
-  ) => {
-    const childPlaceholderId = uuid();
-    return {
-      nodes: ports.map((n): Node<PlaceholderNodeData> => ({
-        id: `${childPlaceholderId}-${n.id}`,
-        position: { x: position.x, y: position.y },
-        type: 'placeholder',
-        data: placeholderData(),
-      })),
-      edges: ports.map((n): Edge => ({
-        id: `${sourceId}-${childPlaceholderId}-${n.id}`,
-        type: 'placeholder',
-        source: sourceId,
-        sourceHandle: n.id,
-        target: `${childPlaceholderId}-${n.id}`,
-        data: { openConfig: openNode('config') },
-      })),
-    };
-  };
+  ) => ({
+    nodes: ports.map((n): Node<PlaceholderNodeData> => ({
+      id: placeholderIdOf(sourceId, n.id),
+      position: { x: position.x, y: position.y },
+      type: 'placeholder',
+      data: placeholderData(),
+    })),
+    edges: ports.map((n): Edge => ({
+      id: placeholderEdgeIdOf(sourceId, n.id),
+      type: 'placeholder',
+      source: sourceId,
+      sourceHandle: n.id,
+      target: placeholderIdOf(sourceId, n.id),
+      data: { openConfig: openNode('config') },
+    })),
+  });
   // endregion
 
   // region local graph
@@ -333,11 +332,11 @@ const useManipulateComponents = (playbook: { id: string }, history?: HistoryReco
     const otherEdgesToParentNode = allEdges.filter(
       (o) => o.source === originEdge?.source && o.sourceHandle === originEdge?.sourceHandle,
     );
-    const childPlaceholderId = uuid();
+    const freedPortId = originEdge?.sourceHandle ?? 'out';
     if (originEdge && otherEdgesToParentNode.length === 1) {
       // inserting placeholder in place of the node
       newNodes.push({
-        id: `${childPlaceholderId}-${originEdge.sourceHandle}`,
+        id: placeholderIdOf(originEdge.source, freedPortId),
         position: { x: node.position.x, y: node.position.y },
         type: 'placeholder',
         data: placeholderData(),
@@ -355,11 +354,11 @@ const useManipulateComponents = (playbook: { id: string }, history?: HistoryReco
       // If the parent node is not the topmost node,
       // we need a placeholder edge that leads to the placeholder node
       newEdges.push({
-        id: `${parentNode.id}-${originEdge.sourceHandle}-${childPlaceholderId}`,
+        id: placeholderEdgeIdOf(parentNode.id, freedPortId),
         type: 'placeholder',
         source: parentNode.id,
         sourceHandle: originEdge.sourceHandle,
-        target: `${childPlaceholderId}-${originEdge.sourceHandle}`,
+        target: placeholderIdOf(parentNode.id, freedPortId),
         data: { openConfig: openNode('config') },
       });
     }
