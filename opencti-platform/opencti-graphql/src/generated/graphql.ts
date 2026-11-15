@@ -39050,6 +39050,7 @@ export type Vocabulary = BasicObject & StixMetaObject & StixObject & {
   aliases?: Maybe<Array<Scalars['String']['output']>>;
   builtIn?: Maybe<Scalars['Boolean']['output']>;
   category: VocabularyDefinition;
+  color?: Maybe<Scalars['String']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -39078,6 +39079,7 @@ export type Vocabulary = BasicObject & StixMetaObject & StixObject & {
 export type VocabularyAddInput = {
   aliases?: InputMaybe<Array<Scalars['String']['input']>>;
   category: VocabularyCategory;
+  color?: InputMaybe<Scalars['String']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
@@ -55863,6 +55865,7 @@ export type VocabularyResolvers<ContextType = any, ParentType extends ResolversP
   aliases?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   builtIn?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   category?: Resolver<ResolversTypes['VocabularyDefinition'], ParentType, ContextType>;
+  color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;

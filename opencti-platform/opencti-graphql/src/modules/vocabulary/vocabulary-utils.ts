@@ -17,7 +17,9 @@ export const builtInOv = [
   'pattern_type_ov',
 ];
 
-export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; description?: string; aliases?: string[]; order?: number }>> = {
+// color: optional display colour (hex) of the entry, seeded where the scale carries a meaning and editable in Settings > Taxonomies > Vocabularies.
+// The seeded colours are mid-tone so the tag (text in the colour on a tint of it) stays readable on the dark and the light theme.
+export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; description?: string; aliases?: string[]; order?: number; color?: string }>> = {
   // A
   account_type_ov: [
     { key: 'facebook', description: 'Specifies a Facebook account' },
@@ -34,37 +36,39 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
   ],
   // Asset vocabularies of System: the values are the OpenAEV asset enums (AssetCategory, AssetSubCategory, AssetCriticality, endpoint platforms)
   system_category_ov: [
-    { key: 'HOST', description: 'Physical or virtual machine, server or workstation.', order: 1 },
-    { key: 'CONTAINER_WORKLOAD', description: 'Container, image, Kubernetes object or serverless function.', order: 2 },
-    { key: 'CLOUD_RESOURCE', description: 'Compute, storage, database, network or serverless cloud resource.', order: 3 },
-    { key: 'WEB_APPLICATION', description: 'Website, web API or web service reachable over HTTP(S).', order: 4 },
-    { key: 'NETWORK_DEVICE', description: 'Router, switch, firewall, load balancer or other network gear.', order: 5 },
-    { key: 'MOBILE_DEVICE', description: 'Smartphone or tablet (iOS / Android).', order: 6 },
-    { key: 'IOT_OT_DEVICE', description: 'IoT sensor, camera, PLC, SCADA or other operational technology.', order: 7 },
-    { key: 'IDENTITY', description: 'User, service account, group or role.', order: 8 },
-    { key: 'SAAS_APPLICATION', description: 'Software-as-a-Service application or tenant.', order: 9 },
-    { key: 'AI_TARGET', description: 'LLM endpoint, AI agent, MCP server or RAG pipeline.', order: 10 },
-    { key: 'SECURITY_PLATFORM', description: 'Defensive security platform: EDR, XDR, SIEM, SOAR, NDR or similar.', order: 11 },
-    { key: 'GENERIC_ASSET', description: 'Anything that does not fit another category yet.', order: 12 },
+    { key: 'HOST', description: 'Physical or virtual machine, server or workstation.', order: 1, color: '#1e88e5' },
+    { key: 'CONTAINER_WORKLOAD', description: 'Container, image, Kubernetes object or serverless function.', order: 2, color: '#00897b' },
+    { key: 'CLOUD_RESOURCE', description: 'Compute, storage, database, network or serverless cloud resource.', order: 3, color: '#039be5' },
+    { key: 'WEB_APPLICATION', description: 'Website, web API or web service reachable over HTTP(S).', order: 4, color: '#5e35b1' },
+    { key: 'NETWORK_DEVICE', description: 'Router, switch, firewall, load balancer or other network gear.', order: 5, color: '#f4511e' },
+    { key: 'MOBILE_DEVICE', description: 'Smartphone or tablet (iOS / Android).', order: 6, color: '#3949ab' },
+    { key: 'IOT_OT_DEVICE', description: 'IoT sensor, camera, PLC, SCADA or other operational technology.', order: 7, color: '#8d6e63' },
+    { key: 'IDENTITY', description: 'User, service account, group or role.', order: 8, color: '#d81b60' },
+    { key: 'SAAS_APPLICATION', description: 'Software-as-a-Service application or tenant.', order: 9, color: '#00acc1' },
+    { key: 'AI_TARGET', description: 'LLM endpoint, AI agent, MCP server or RAG pipeline.', order: 10, color: '#8e24aa' },
+    { key: 'SECURITY_PLATFORM', description: 'Defensive security platform: EDR, XDR, SIEM, SOAR, NDR or similar.', order: 11, color: '#43a047' },
+    { key: 'GENERIC_ASSET', description: 'Anything that does not fit another category yet.', order: 12, color: '#78909c' },
   ],
+  // Criticality on the severity scale: very high critical, high, medium, low, unknown neutral
   system_criticality_ov: [
-    { key: 'VERY_HIGH', description: 'Very high business criticality', order: 1 },
-    { key: 'HIGH', description: 'High business criticality', order: 2 },
-    { key: 'MEDIUM', description: 'Medium business criticality', order: 3 },
-    { key: 'LOW', description: 'Low business criticality', order: 4 },
-    { key: 'UNKNOWN', description: 'Business criticality not assessed', order: 5 },
+    { key: 'VERY_HIGH', description: 'Very high business criticality', order: 1, color: '#e53935' },
+    { key: 'HIGH', description: 'High business criticality', order: 2, color: '#fb8c00' },
+    { key: 'MEDIUM', description: 'Medium business criticality', order: 3, color: '#f9a825' },
+    { key: 'LOW', description: 'Low business criticality', order: 4, color: '#43a047' },
+    { key: 'UNKNOWN', description: 'Business criticality not assessed', order: 5, color: '#78909c' },
   ],
   system_environment_ov: [
-    { key: 'production', description: 'Live environment serving real users and data', order: 1 },
-    { key: 'staging', description: 'Pre-production copy of production, used to validate releases', order: 2 },
-    { key: 'development', description: 'Environment where the system is built and changed', order: 3 },
-    { key: 'test', description: 'Environment dedicated to testing, with test data', order: 4 },
-    { key: 'other', description: 'Any other environment (lab, training, disaster recovery)', order: 5 },
+    { key: 'production', description: 'Live environment serving real users and data', order: 1, color: '#e53935' },
+    { key: 'staging', description: 'Pre-production copy of production, used to validate releases', order: 2, color: '#f9a825' },
+    { key: 'development', description: 'Environment where the system is built and changed', order: 3, color: '#1e88e5' },
+    { key: 'test', description: 'Environment dedicated to testing, with test data', order: 4, color: '#8e24aa' },
+    { key: 'other', description: 'Any other environment (lab, training, disaster recovery)', order: 5, color: '#78909c' },
   ],
+  // Exposure: reachable from the internet is the warning, not reachable the safe state
   system_internet_facing_ov: [
-    { key: 'yes', description: 'Reachable from the internet', order: 1 },
-    { key: 'no', description: 'Not reachable from the internet', order: 2 },
-    { key: 'unknown', description: 'Exposure not assessed', order: 3 },
+    { key: 'yes', description: 'Reachable from the internet', order: 1, color: '#fb8c00' },
+    { key: 'no', description: 'Not reachable from the internet', order: 2, color: '#43a047' },
+    { key: 'unknown', description: 'Exposure not assessed', order: 3, color: '#78909c' },
   ],
   system_platform_ov: [
     { key: 'Linux', description: 'Linux operating system' },
@@ -1359,6 +1363,20 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     { key: 'ed25519' },
     { key: 'dsa' },
   ],
+};
+
+// The input the platform seeds for a built-in vocabulary entry; the colour is only set when the entry carries one.
+export const seedVocabularyInput = (category: VocabularyCategory, entry: typeof openVocabularies[VocabularyCategory][number]) => {
+  const { key, description, aliases, order, color } = entry;
+  return {
+    name: key,
+    description: description ?? '',
+    aliases: aliases ?? [],
+    category,
+    order,
+    ...(color ? { color } : {}),
+    builtIn: builtInOv.includes(category),
+  };
 };
 
 const toVocabularyDefinition = (key: string, value: typeof vocabularyDefinitions[VocabularyCategory]): VocabularyDefinition => {

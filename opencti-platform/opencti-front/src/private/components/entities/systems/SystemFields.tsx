@@ -5,6 +5,7 @@ import OpenVocabField, { VocabFieldOption } from '../../common/form/OpenVocabFie
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { vocabularyValueLabel } from '../../../../utils/vocabulary/vocabularyDisplay';
 
 // Asset fields of a System, aligned on the OpenAEV asset model so a System maps to an OpenAEV or XTM One asset
 export const SYSTEM_VOCABULARY_FIELDS = [
@@ -54,15 +55,18 @@ const SystemFields: FunctionComponent<SystemFieldsProps> = ({
   editContext,
 }) => {
   const { t_i18n } = useFormatter();
+  // The group header is the human category label (AI target), never the key (AI_TARGET)
+  const groupByHumanCategory = (option: VocabFieldOption) => {
+    const subcategoryCategory = systemSubcategoryCategory(option.description);
+    return subcategoryCategory ? vocabularyValueLabel(subcategoryCategory, t_i18n) : t_i18n('Other');
+  };
   const isEdition = onSubmit !== undefined;
   const [{ value: category }] = useField<string | null | undefined>('x_opencti_system_category');
   const subcategoryProps = (name: string) => {
     if (name !== 'x_opencti_system_subcategory') return {};
     return {
       optionFilter: (option: VocabFieldOption) => fitsSystemCategory(category, option.description),
-      optionGroupBy: category
-        ? undefined
-        : (option: VocabFieldOption) => systemSubcategoryCategory(option.description) ?? t_i18n('Other'),
+      optionGroupBy: category ? undefined : groupByHumanCategory,
       optionFilterKey: category ?? '',
     };
   };
@@ -83,6 +87,7 @@ const SystemFields: FunctionComponent<SystemFieldsProps> = ({
           onSubmit={onSubmit}
           editContext={editContext}
           variant={isEdition ? 'edit' : undefined}
+          humanLabels={true}
         />
       ))}
       <Field

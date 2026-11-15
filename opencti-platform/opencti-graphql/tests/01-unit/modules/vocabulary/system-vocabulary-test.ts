@@ -1,8 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
-import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, openVocabularies } from '../../../../src/modules/vocabulary/vocabulary-utils';
+import {
+  getVocabulariesCategories,
+  getVocabularyCategoryForField,
+  isEntityFieldAnOpenVocabulary,
+  openVocabularies,
+  seedVocabularyInput,
+} from '../../../../src/modules/vocabulary/vocabulary-utils';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../../../src/schema/stixDomainObject';
 import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
+import { VocabularyCategory } from '../../../../src/generated/graphql';
 
 const SYSTEM_ASSET_FIELDS: Record<string, string> = {
   x_opencti_system_category: 'system_category_ov',
@@ -49,6 +56,32 @@ describe('System asset vocabularies', () => {
         expect(description, `${category}.${key}`).toBeTruthy();
       });
     });
+  });
+
+  it('should seed a colour on every value of the scales the overview colours', () => {
+    ['system_category_ov', 'system_criticality_ov', 'system_environment_ov', 'system_internet_facing_ov'].forEach((category) => {
+      openVocabularies[category as keyof typeof openVocabularies].forEach(({ key, color }) => {
+        expect(color, `${category}.${key}`).toMatch(/^#[0-9a-f]{6}$/);
+      });
+    });
+    // The scale reads from the most to the least severe: the top of each scale is never the neutral grey
+    const colorOf = (category: string, key: string) => openVocabularies[category as keyof typeof openVocabularies].find((v) => v.key === key)?.color;
+    expect(colorOf('system_criticality_ov', 'VERY_HIGH')).not.toEqual(colorOf('system_criticality_ov', 'UNKNOWN'));
+    expect(colorOf('system_internet_facing_ov', 'yes')).not.toEqual(colorOf('system_internet_facing_ov', 'no'));
+    // Each category is told apart by its colour
+    const categoryColors = openVocabularies.system_category_ov.map(({ color }) => color);
+    expect(new Set(categoryColors).size).toEqual(categoryColors.length);
+  });
+
+  it('should seed the colour of an entry only when the entry carries one', () => {
+    const critical = openVocabularies.system_criticality_ov.find(({ key }) => key === 'VERY_HIGH') ?? { key: 'VERY_HIGH' };
+    expect(critical.color).toMatch(/^#[0-9a-f]{6}$/);
+    expect(seedVocabularyInput(VocabularyCategory.SystemCriticalityOv, critical)).toMatchObject({
+      name: 'VERY_HIGH', category: 'system_criticality_ov', color: critical.color, builtIn: false,
+    });
+    const plain = seedVocabularyInput(VocabularyCategory.AccountTypeOv, { key: 'ldap' });
+    expect(plain).toEqual({ name: 'ldap', description: '', aliases: [], category: 'account_type_ov', order: undefined, builtIn: false });
+    expect(plain).not.toHaveProperty('color');
   });
 
   it('should end every subcategory description with an existing category, which the form narrows on', () => {
