@@ -3718,9 +3718,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maplibre/maplibre-gl-style-spec@npm:^26.5.1":
-  version: 26.5.1
-  resolution: "@maplibre/maplibre-gl-style-spec@npm:26.5.1"
+"@maplibre/maplibre-gl-style-spec@npm:^26.6.0":
+  version: 26.6.0
+  resolution: "@maplibre/maplibre-gl-style-spec@npm:26.6.0"
   dependencies:
     "@mapbox/jsonlint-lines-primitives": "npm:^2.0.3"
     "@mapbox/unitbezier": "npm:^1.0.0"
@@ -3732,7 +3732,7 @@ __metadata:
     gl-style-format: dist/gl-style-format.mjs
     gl-style-migrate: dist/gl-style-migrate.mjs
     gl-style-validate: dist/gl-style-validate.mjs
-  checksum: 10c0/9bdc861295f645109a486e64572d26f3f96f9416b7e44b7174bfe03bf15cb2c4540d83b49609dd5dfd110d395c6ebfb9ba1cfacad8ad10237adc6108fab75d18
+  checksum: 10c0/e304a9d0df81b82c11c07d467a0b081f52ae80dac3bde2b2375d2b61ee2d2b9340584685fb6fc41024a76bf7d2a736f890c6f63f39116a3eb361eb494cae44b2
   languageName: node
   linkType: hard
 
@@ -16404,16 +16404,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"maplibre-gl@npm:6.17.0":
-  version: 6.17.0
-  resolution: "maplibre-gl@npm:6.17.0"
+"maplibre-gl@npm:6.18.0":
+  version: 6.18.0
+  resolution: "maplibre-gl@npm:6.18.0"
   dependencies:
     "@mapbox/point-geometry": "npm:^1.1.0"
     "@mapbox/tiny-sdf": "npm:^2.3.0"
     "@mapbox/unitbezier": "npm:^1.0.0"
     "@mapbox/vector-tile": "npm:^3.0.0"
     "@maplibre/geojson-vt": "npm:^6.3.0"
-    "@maplibre/maplibre-gl-style-spec": "npm:^26.5.1"
+    "@maplibre/maplibre-gl-style-spec": "npm:^26.6.0"
     "@maplibre/mlt": "npm:^1.3.0"
     "@maplibre/vt-pbf": "npm:^4.3.3"
     "@types/geojson": "npm:^7946.0.16"
@@ -16426,7 +16426,7 @@ __metadata:
     potpack: "npm:^2.1.0"
     quickselect: "npm:^3.0.0"
     tinyqueue: "npm:^3.0.0"
-  checksum: 10c0/b9d8d2628a75b2468168d053ec7e41ea147ded26547e8e826e4bfb1d7b37ff10c1df6aa9144b6dc778305d619731751c6bcec3553ccbb93ceeef9fd347ac35cb
+  checksum: 10c0/abf00f74d21f56002d9fe08866c8f029125f6fd56b62abd5a36306e65762f17040d5a3279e8d87e7d37841356c6706a65fc0d37cb9acff4496c4e5bb27d35a0c
   languageName: node
   linkType: hard
 
@@ -18369,7 +18369,7 @@ __metadata:
     json5: "npm:2.2.3"
     knip: "npm:6.44.1"
     license-checker-rseidelsohn: "npm:5.0.1"
-    maplibre-gl: "npm:6.17.0"
+    maplibre-gl: "npm:6.18.0"
     markdown-to-jsx: "npm:9.10.6"
     marked: "npm:18.2.0"
     mdi-material-ui: "npm:8.0.0"
