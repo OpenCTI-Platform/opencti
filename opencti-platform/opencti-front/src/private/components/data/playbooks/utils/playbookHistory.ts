@@ -144,7 +144,7 @@ const remapOperation = (op: PlaybookOperation, ids: Map<string, string>): Playbo
     const value = next[field];
     if (typeof value === 'string' && ids.has(value)) next[field] = ids.get(value);
   });
-  return next as PlaybookOperation;
+  return next as unknown as PlaybookOperation;
 };
 
 const remapEntry = (entry: PlaybookHistoryEntry, ids: Map<string, string>): PlaybookHistoryEntry => ({
