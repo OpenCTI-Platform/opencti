@@ -18547,7 +18547,7 @@ __metadata:
     ramda: "npm:0.32.0"
     rate-limiter-flexible: "npm:11.4.0"
     re2: "npm:1.27.1"
-    sanitize-html: "npm:2.18.1"
+    sanitize-html: "npm:2.18.2"
     semver: "npm:7.8.6"
     set-interval-async: "npm:3.0.6"
     slug: "npm:12.0.1"
@@ -21193,9 +21193,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sanitize-html@npm:2.18.1":
-  version: 2.18.1
-  resolution: "sanitize-html@npm:2.18.1"
+"sanitize-html@npm:2.18.2":
+  version: 2.18.2
+  resolution: "sanitize-html@npm:2.18.2"
   dependencies:
     escape-string-regexp: "npm:^4.0.0"
     htmlparser2: "npm:^12.0.0"
@@ -21203,7 +21203,7 @@ __metadata:
     launder: "npm:^1.7.2"
     parse-srcset: "npm:^1.0.2"
     postcss: "npm:^8.5.27"
-  checksum: 10c0/a79474fbd6f4db7a3c54b2c7ac9de8b3046f77fcb951e3f229f456c0b9ef8903bc606e2c73bf35757f5a3bb1470bd75af051fbe6a906005b2251fd6bfbe5d952
+  checksum: 10c0/3ee90656d12f3e9c51caaf02e50b9a441477646e19ff74c9dc85c220b62f2c4322a6ca98e52cf6f2dc36f68bb922e2c28f273c193a9c48c89a6668724e2db83f
   languageName: node
   linkType: hard
 
@@ -24192,7 +24192,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:4.6.7, zod@npm:^3.25.0 || ^4.0.0, zod@npm:^3.25.76 || ^4, zod@npm:^4.0.0, zod@npm:^4.6.5, zod@npm:^4.6.6":
+"zod@npm:4.6.7, zod@npm:^3.25.0 || ^4.0.0, zod@npm:^4.0.0, zod@npm:^4.6.5, zod@npm:^4.6.6":
   version: 4.6.7
   resolution: "zod@npm:4.6.7"
   checksum: 10c0/4ce2eb14034317b7254e347ca37b5ad591cf8333147030cf05b9b5d31692d45073f7f2747aa50cf8c6b29012194d2b22978cecc89969cf34a0d18e89d0ee7d7b
