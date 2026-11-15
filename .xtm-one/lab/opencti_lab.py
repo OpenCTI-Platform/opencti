@@ -293,7 +293,8 @@ def set_theme(theme: str) -> bool:
 def lab_route(path: str) -> tuple[str, str] | None:
     """``(theme, next path)`` for ``/lab/theme/<dark|light>[?next=...]``, else ``None``.
 
-    ``next`` is kept only as a path of this origin (a full URL or ``//host`` falls back to the dashboard).
+    ``next`` is kept only as a path of this origin: a full URL, ``//host``, a backslash (``/\\host``, which browsers read
+    as ``//host``) or a control character (browsers strip tabs and newlines) falls back to the dashboard.
     """
     parts = urllib.parse.urlsplit(path)
     if not parts.path.startswith("/lab/theme/"):
@@ -302,7 +303,8 @@ def lab_route(path: str) -> tuple[str, str] | None:
     if theme not in THEMES:
         return None
     wanted = urllib.parse.parse_qs(parts.query).get("next", ["/dashboard"])[0]
-    if not wanted.startswith("/") or wanted.startswith("//"):
+    unsafe = "\\" in wanted or any(ord(char) < 0x20 or ord(char) == 0x7F for char in wanted)
+    if unsafe or not wanted.startswith("/") or wanted.startswith("//") or urllib.parse.urlsplit(wanted).netloc:
         wanted = "/dashboard"
     return theme, wanted
 
