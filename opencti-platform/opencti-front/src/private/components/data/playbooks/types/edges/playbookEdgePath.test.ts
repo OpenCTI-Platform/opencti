@@ -32,6 +32,23 @@ describe('playbookEdgePath', () => {
     expect(edge.labelY).toBe(Math.round((105 + 248) / 2));
   });
 
+  it('joins two ports of one step into the same target as one merge, never as crossing links', () => {
+    // out and unmodified of an AI step (anchors at a third and two thirds of the card) both go to the
+    // next step: the two links meet on the middle line and share the last straight segment.
+    const ends = { sourceY: PLAYBOOK_CARD.height, targetX: 132, targetY: 248, sourcePosition: Position.Bottom };
+    const out = playbookEdgePath({ ...ends, sourceX: portAnchor(0, 2, 'vertical').x });
+    const unmodified = playbookEdgePath({ ...ends, sourceX: portAnchor(1, 2, 'vertical').x });
+    const trunk = 'Q132,176 132,188 L132,248';
+    expect(out.path.endsWith(trunk)).toBe(true);
+    expect(unmodified.path.endsWith(trunk)).toBe(true);
+    // Each link keeps its own side until the merge point: the two never cross.
+    expect(out.path).toContain('L120,176');
+    expect(unmodified.path).toContain('L144,176');
+    // Their insert buttons stay apart, one on each side of the merge.
+    expect(out.labelX).toBeLessThan(132);
+    expect(unmodified.labelX).toBeGreaterThan(132);
+  });
+
   it('caps the corner radius when the bend has little room', () => {
     const edge = playbookEdgePath({ sourceX: 0, sourceY: 0, targetX: 10, targetY: 200, sourcePosition: Position.Bottom });
     // 10 px across: 5 px radius at most, the path never goes back on itself.

@@ -240,13 +240,17 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
               style={{ ...(direction === 'horizontal' ? { top: anchor.y } : { left: anchor.x }), background: accent, border: 'none' }}
             />
             {(ports.length > 1 || port.id !== 'out') && (
+              // The pill sits on the card edge, centred on its port: the link leaves from under it, so
+              // no label is ever drawn over a link.
               <span
                 className="nodrag nopan"
+                data-testid={`playbook-port-${id}-${port.id}`}
                 style={{
                   position: 'absolute',
                   left: anchor.x,
                   top: anchor.y,
-                  transform: direction === 'horizontal' ? 'translate(6px, -50%)' : 'translate(-50%, 6px)',
+                  zIndex: 1,
+                  transform: 'translate(-50%, -50%)',
                   padding: '1px 8px',
                   borderRadius: 10,
                   fontSize: 10,
