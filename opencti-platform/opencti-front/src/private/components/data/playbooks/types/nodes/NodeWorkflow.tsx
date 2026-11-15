@@ -36,7 +36,13 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
   const ports = outPorts(component?.ports);
   const isEntryPoint = Boolean(component?.is_entry_point);
   const isEnd = ports.length === 0;
-  const kind = isEntryPoint ? t_i18n('Trigger') : (isEnd ? t_i18n('End of playbook') : t_i18n(component?.category ?? ''));
+  // A step whose component is not in the catalog (an AI agent component without XTM One, a removed
+  // connector) still renders, flagged, instead of throwing on an empty translation id.
+  const translated = (value: string | null | undefined) => (value ? t_i18n(value) : '');
+  const isUnavailable = !component;
+  const kind = isUnavailable
+    ? t_i18n('Component unavailable')
+    : (isEntryPoint ? t_i18n('Trigger') : (isEnd ? t_i18n('End of playbook') : translated(component.category)));
   const muted = theme.palette.text?.secondary;
   const summary = playbookNodeSummary(data.configuration as Record<string, unknown> | undefined, component?.configuration_schema);
   const summaryText = (s: PlaybookNodeSummary): string => {
@@ -58,7 +64,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
       data-testid={`playbook-node-${id}`}
       role="button"
       tabIndex={0}
-      aria-label={`${t_i18n('Update')}: ${t_i18n(data.name)}`}
+      aria-label={`${t_i18n('Update')}: ${translated(data.name)}`}
       onClick={openConfiguration}
       onKeyDown={(event) => {
         if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
@@ -96,12 +102,12 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
           {kind}
         </span>
       </div>
-      <Tooltip title={t_i18n(data.name)}>
+      <Tooltip title={translated(data.name)}>
         <div style={{ marginTop: 4, fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {t_i18n(truncate(data.name, 60, false))}
+          {translated(truncate(data.name ?? '', 60, false))}
         </div>
       </Tooltip>
-      <Tooltip title={t_i18n(displayDescription)}>
+      <Tooltip title={translated(displayDescription)}>
         <div style={{
           marginTop: 2,
           fontSize: 11,
@@ -114,7 +120,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
           overflow: 'hidden',
         }}
         >
-          {t_i18n(displayDescription)}
+          {translated(displayDescription)}
         </div>
       </Tooltip>
       {summary && (

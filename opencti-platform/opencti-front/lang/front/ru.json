@@ -6458,5 +6458,6 @@
   "Drag from an output to a step": "Перетащить от выхода к шагу",
   "Move the step and its branch": "Переместить шаг и его ветвь",
   "Undo": "Отменить",
-  "Redo": "Повторить"
+  "Redo": "Повторить",
+  "Component unavailable": "Компонент недоступен"
 }

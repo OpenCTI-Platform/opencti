@@ -6458,5 +6458,6 @@
   "Drag from an output to a step": "Arrastrar de una salida a un paso",
   "Move the step and its branch": "Mover el paso y su rama",
   "Undo": "Deshacer",
-  "Redo": "Rehacer"
+  "Redo": "Rehacer",
+  "Component unavailable": "Componente no disponible"
 }

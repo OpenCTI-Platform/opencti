@@ -6458,5 +6458,6 @@
   "Drag from an output to a step": "出力からステップへドラッグ",
   "Move the step and its branch": "ステップとそのブランチを移動",
   "Undo": "元に戻す",
-  "Redo": "やり直す"
+  "Redo": "やり直す",
+  "Component unavailable": "コンポーネントは利用できません"
 }

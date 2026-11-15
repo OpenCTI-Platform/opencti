@@ -6458,5 +6458,6 @@
   "Drag from an output to a step": "从输出拖动到步骤",
   "Move the step and its branch": "移动步骤及其分支",
   "Undo": "撤销",
-  "Redo": "重做"
+  "Redo": "重做",
+  "Component unavailable": "组件不可用"
 }

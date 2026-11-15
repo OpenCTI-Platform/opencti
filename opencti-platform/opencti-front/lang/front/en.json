@@ -6458,5 +6458,6 @@
   "Drag from an output to a step": "Drag from an output to a step",
   "Move the step and its branch": "Move the step and its branch",
   "Undo": "Undo",
-  "Redo": "Redo"
+  "Redo": "Redo",
+  "Component unavailable": "Component unavailable"
 }
