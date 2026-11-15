@@ -41,10 +41,15 @@ const RemoteStreamField: FunctionComponent<RemoteStreamFieldProps> = ({
   const grouped = useMemo(() => shouldGroupRemoteStreams(options), [options]);
   const byId = useMemo(() => new Map(options.map((stream) => [stream.value, stream])), [options]);
   const selected = selectedId ? byId.get(selectedId) : undefined;
-  const selectedFilters = useMemo(
-    () => (selected?.filters ? deserializeFilterGroupForFrontend(selected.filters) : null),
-    [selected],
-  );
+  // The filters come from the remote platform: an unreadable value shows as no filter instead of breaking the drawer.
+  const selectedFilters = useMemo(() => {
+    if (!selected?.filters) return null;
+    try {
+      return deserializeFilterGroupForFrontend(selected.filters);
+    } catch {
+      return null;
+    }
+  }, [selected]);
 
   // The form holds the id string while the options are objects: both shapes reach these callbacks.
   const getOptionLabel = useCallback(
