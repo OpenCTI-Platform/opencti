@@ -87,6 +87,46 @@ const pathEnd = (d: string) => {
 
 const edgePaths = (page: Page) => page.locator('.react-flow__edge path.react-flow__edge-path');
 
+interface EdgeShot {
+  d: string;
+  box: { x: number; y: number; width: number; height: number };
+}
+
+/**
+ * The d attribute and the viewport box of every link, read in one pass of the DOM. React Flow
+ * re-renders the edge groups after the layout and the fit, so a locator kept across awaits can point
+ * at a detached node; one evaluateAll reads a consistent snapshot.
+ */
+const readEdges = (page: Page) => edgePaths(page).evaluateAll((nodes) => nodes.map((node) => {
+  const rect = node.getBoundingClientRect();
+  return { d: node.getAttribute('d') ?? '', box: { x: rect.x, y: rect.y, width: rect.width, height: rect.height } };
+}));
+
+/** The links once two reads in a row agree: the layout and the fit are done. */
+const settledEdges = async (page: Page): Promise<EdgeShot[]> => {
+  let previous = '';
+  let edges: EdgeShot[] = [];
+  await expect.poll(async () => {
+    edges = await readEdges(page);
+    const current = JSON.stringify(edges);
+    const stable = current === previous;
+    previous = current;
+    return stable;
+  }, { intervals: [250] }).toBe(true);
+  return edges;
+};
+
+/** A crop of the page around a link, padded so a straight segment of zero width still has an area. */
+const cropAround = (page: Page, box: EdgeShot['box']) => {
+  const pad = 12;
+  const viewport = page.viewportSize() ?? { width: 1440, height: 900 };
+  const x = Math.max(0, Math.floor(box.x - pad));
+  const y = Math.max(0, Math.floor(box.y - pad));
+  const width = Math.max(1, Math.min(viewport.width - x, Math.ceil(box.width + 2 * pad)));
+  const height = Math.max(1, Math.min(viewport.height - y, Math.ceil(box.height + 2 * pad)));
+  return page.screenshot({ clip: { x, y, width, height } });
+};
+
 for (const deviceScaleFactor of [1, 2]) {
   test.describe(`Playbook links at a device scale factor of ${deviceScaleFactor}`, { tag: ['@ee'] }, () => {
     test.use({ deviceScaleFactor, viewport: { width: 1440, height: 900 } });
@@ -109,24 +149,20 @@ for (const deviceScaleFactor of [1, 2]) {
 
     test('draws every link on whole pixels, aligned links as one straight segment', async ({ page }, testInfo) => {
       await openEditor(page);
-      const paths = await edgePaths(page).all();
-      for (const [index, path] of paths.entries()) {
-        const d = (await path.getAttribute('d')) ?? '';
+      const edges = await settledEdges(page);
+      expect(edges).toHaveLength(3);
+      for (const [index, { d, box }] of edges.entries()) {
         expect(d, `link ${index} has a path`).not.toBe('');
         for (const value of pathNumbers(d)) {
           expect(Number.isInteger(value), `link ${index} coordinate ${value} in "${d}"`).toBe(true);
         }
         await testInfo.attach(`link-${index}@${deviceScaleFactor}x.png`, {
-          body: await path.locator('xpath=..').screenshot(),
+          body: await cropAround(page, box),
           contentType: 'image/png',
         });
       }
       // The entry point has one out port and one child laid out under it: one straight segment, no bend.
-      const straight = [];
-      for (const path of paths) {
-        const d = (await path.getAttribute('d')) ?? '';
-        if (!d.includes('Q')) straight.push(d);
-      }
+      const straight = edges.map(({ d }) => d).filter((d) => !d.includes('Q'));
       expect(straight.length).toBeGreaterThanOrEqual(1);
       for (const d of straight) {
         const numbers = pathNumbers(d);
@@ -147,7 +183,7 @@ for (const deviceScaleFactor of [1, 2]) {
       // The target handle is centred on the card, to the CSS pixel.
       expect(Math.abs((handleBox.x + handleBox.width / 2) - (cardBox.x + cardBox.width / 2))).toBeLessThanOrEqual(0.5);
 
-      const ends = await Promise.all((await edgePaths(page).all()).map(async (path) => pathEnd((await path.getAttribute('d')) ?? '')));
+      const ends = (await settledEdges(page)).map(({ d }) => pathEnd(d));
       // The out and no-match links of the match step both end on the logger: one shared end point.
       const counts = new Map<string, number>();
       for (const end of ends) counts.set(`${end.x},${end.y}`, (counts.get(`${end.x},${end.y}`) ?? 0) + 1);
