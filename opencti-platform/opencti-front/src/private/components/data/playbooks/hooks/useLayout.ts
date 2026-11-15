@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useReactFlow, useStore, Node, Edge, ReactFlowState } from 'reactflow';
+import { useReactFlow, useStore, useNodesInitialized, Node, Edge, ReactFlowState } from 'reactflow';
 import { timer } from 'd3-timer';
 import { layoutPlaybook, PlaybookLayoutComponent, PlaybookLayoutLink, PlaybookLayoutNode } from '../layout/layoutPlaybook';
 import type { PlaybookLayoutDirection } from './usePlaybookLayoutMode';
@@ -10,6 +10,8 @@ const SPACING: [number, number] = [56, 88];
 const ORIGIN_SIZE = { width: 240, height: 64 };
 
 const options = { duration: 300 };
+// Opening a playbook fits it, never above 100%: a one-step playbook is not blown up.
+const INITIAL_FIT = { padding: 0.2, maxZoom: 1 };
 
 // Same input, same picture: the steps are placed by the pure layout of the playbook structure
 // (nodes, links and the ports of their components), never from the array order of the store,
@@ -62,12 +64,20 @@ const structureSelector = (state: ReactFlowState) => {
 
 const useLayout = (direction: PlaybookLayoutDirection = 'vertical') => {
   const initial = useRef(true);
+  const fitted = useRef(false);
   const structure = useStore(structureSelector);
+  const nodesInitialized = useNodesInitialized();
   const { getNodes, getNode, setNodes, getEdges, fitView } = useReactFlow();
   useEffect(() => {
     const nodes = getNodes();
     const edges = getEdges();
     const targetNodes = layoutNodes(nodes, edges, direction);
+    if (initial.current) {
+      // Opening a playbook: the steps stand at their place at once, no animation from the saved positions.
+      initial.current = false;
+      setNodes(targetNodes.map((node) => ({ id: node.id, position: node.position, data: { ...node.data }, type: node.type })));
+      return undefined;
+    }
     const transitions = targetNodes.map((node) => ({
       node,
       // where the node is now, and where the layout places it
@@ -84,14 +94,20 @@ const useLayout = (direction: PlaybookLayoutDirection = 'vertical') => {
       })));
       if (elapsed > options.duration) {
         t.stop();
-        fitView({ duration: initial.current ? 0 : 200, padding: 0.2 });
-        initial.current = false;
+        fitView({ duration: 200, padding: 0.2 });
       }
     });
     return () => {
       t.stop();
     };
   }, [structure, direction, getEdges, getNodes, getNode, setNodes, fitView]);
+  // A fit before the cards are measured has no bounds and leaves the default zoom: fit once they are.
+  useEffect(() => {
+    if (nodesInitialized && !fitted.current) {
+      fitted.current = true;
+      fitView(INITIAL_FIT);
+    }
+  }, [nodesInitialized, fitView]);
 };
 
 export default useLayout;
