@@ -3569,16 +3569,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/openai@npm:1.8.2":
-  version: 1.8.2
-  resolution: "@langchain/openai@npm:1.8.2"
+"@langchain/openai@npm:1.8.4":
+  version: 1.8.4
+  resolution: "@langchain/openai@npm:1.8.4"
   dependencies:
     js-tiktoken: "npm:^1.0.12"
     openai: "npm:^7.47.0"
-    zod: "npm:^3.25.76 || ^4"
+    zod: "npm:^4.6.6"
   peerDependencies:
-    "@langchain/core": ^1.3.5
-  checksum: 10c0/6e964f59f15600526788b56c3b3c91a1116ec6cf62670a605138842f24ccdc4334c3ff556a7ef5af9d310d9da4bf411b988c43bffea1e2b7761145b5067327f0
+    "@langchain/core": ^1.4.0
+  checksum: 10c0/19f9f90480985f29e7d12d43684daf9245d7931e4c531fa44cb0ec7ccd0bde0e8bd43f1a65b45ba8f6681e4bc98a6a0410ab49ad2970184089735d42988fb01e
   languageName: node
   linkType: hard
 
@@ -18412,7 +18412,7 @@ __metadata:
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
     "@langchain/core": "npm:1.4.0"
     "@langchain/mistralai": "npm:1.2.0"
-    "@langchain/openai": "npm:1.8.2"
+    "@langchain/openai": "npm:1.8.4"
     "@lezer/javascript": "npm:1.5.6"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
     "@mistralai/mistralai": "npm:2.7.0"
