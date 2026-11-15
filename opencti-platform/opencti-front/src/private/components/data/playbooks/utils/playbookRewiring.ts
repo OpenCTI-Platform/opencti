@@ -6,9 +6,9 @@ import type { PlaybookDefinitionEdge } from '../types/playbook-types';
 // The plan is computed here, pure and testable; the server checks the same invariants again
 // (one entry point, no cycle, every step reachable) and is the authority.
 
-export type PlaybookRewire
-  = | { kind: 'relink'; linkId: string; toNodeId: string; fromNodeId?: string; fromPortId?: string }
-  | { kind: 'move'; nodeId: string; parentNodeId: string; parentPortId: string };
+type PlaybookRelink = { kind: 'relink'; linkId: string; toNodeId: string; fromNodeId?: string; fromPortId?: string };
+type PlaybookMove = { kind: 'move'; nodeId: string; parentNodeId: string; parentPortId: string };
+export type PlaybookRewire = PlaybookRelink | PlaybookMove;
 
 const isStep = (node: Node | undefined): node is Node => Boolean(node && node.type !== 'placeholder');
 const isEntryPoint = (node: Node | undefined) => Boolean(node?.data?.component?.is_entry_point);
