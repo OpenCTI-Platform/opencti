@@ -44,9 +44,11 @@ When upgrading the platform, you replace the application files with the ones of 
 
     ```bash
     yarn install
-    yarn build
+    TAG_VERSION={RELEASE_VERSION} yarn build
     yarn serv
     ```
+
+    Replace `{RELEASE_VERSION}` with the version you install. `TAG_VERSION` makes `yarn build` fetch the connectors catalog of that release; without it, the build fetches the catalog of the connectors `master` branch.
 
     `yarn build` also reinstalls the Python modules of the platform (`src/python/requirements.txt`). They include the Python client (`pycti`), pinned to the version of the platform.
 

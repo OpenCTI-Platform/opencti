@@ -333,12 +333,14 @@ corepack --version
 #0.34.0
 ```
 
-Once Node.js is setup, you can build and run with (from inside the `opencti/opencti-platform/opencti-graphql` folder):
+Once Node.js is setup, you can build and run with (from inside the `opencti/opencti-platform/opencti-graphql` folder, replacing `{RELEASE_VERSION}` with the version you install):
 ```bash
 yarn install
-yarn build
+TAG_VERSION={RELEASE_VERSION} yarn build
 yarn serv
 ```
+
+`TAG_VERSION` makes `yarn build` fetch the connectors catalog of that release; without it, the build fetches the catalog of the connectors `master` branch.
 
 The default username and password are those you have put in the `config/production.json` file.
 
