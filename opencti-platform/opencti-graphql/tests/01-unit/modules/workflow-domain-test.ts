@@ -4045,7 +4045,12 @@ describe('triggerWorkflowEvent – async / pending / lock', () => {
 
     it('keeps the leftovers of an earlier failed share when a retry leaves new ones', async () => {
       setupAsyncPendingMocks(definitionContent);
-      failedWith({ asyncActions: [{ id: 'old-slot', workId: 'old-work', type: 'shareRequestedEntities', status: 'pending', taskId: 'old-task' }] });
+      failedWith({
+        asyncActions: [{ id: 'old-slot', workId: 'old-work', type: 'shareRequestedEntities', status: 'pending', taskId: 'old-task' }],
+        requestAccessOutcome: 'declined',
+        onEnterActions: [{ type: 'notify' }],
+        comment: 'old comment',
+      });
       (WorkflowFactory.getInstance as any).mockImplementation((_data: any, _definition: any, _state: any, workflowContext: any) => ({
         start: vi.fn(),
         trigger: vi.fn(async () => {
@@ -4062,6 +4067,9 @@ describe('triggerWorkflowEvent – async / pending / lock', () => {
       const input = vi.mocked(updateAttribute).mock.calls[0][4] as { key: string; value: unknown[] }[];
       const pending = JSON.parse(input.find((i) => i.key === 'pendingTransition')?.value[0] as string);
       expect(pending.asyncActions.map((slot: any) => slot.id)).toEqual(['old-slot', 'new-slot']);
+      expect(pending.requestAccessOutcome).toBeUndefined();
+      expect(pending.onEnterActions).toBeUndefined();
+      expect(pending.comment).toBeUndefined();
       expect(pending.requestAccessDirectGrants).toEqual(expect.arrayContaining([
         { entityId: 'malware-1', organizationIds: ['org-a'] },
         { entityId: 'malware-2', organizationIds: ['org-b'] },

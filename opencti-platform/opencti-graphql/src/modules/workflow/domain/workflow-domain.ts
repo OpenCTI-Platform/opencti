@@ -2182,15 +2182,16 @@ const recordUndeletedShareTasks = async (
     ...undoneSlots,
   ];
   const directGrants = mergeRequestAccessDirectGrants(previous?.requestAccessDirectGrants, undoneGrants);
+  // A cleanup record only: it never carries the earlier transition's business effects (actions, outcome, comment), so a
+  // leftover task that completes cannot replay them. A retry rebuilds those from the transition it fires.
   const pendingTransition: WorkflowPendingTransition = {
-    ...(previous ?? {}),
     event,
     toState,
     triggeredBy,
     triggeredAt: new Date().toISOString(),
-    runtimeParams: previous?.runtimeParams ?? {},
+    runtimeParams: {},
     asyncActions,
-    syncActions: previous?.syncActions ?? [],
+    syncActions: [],
     ...(directGrants.length > 0 ? { requestAccessDirectGrants: directGrants } : {}),
   };
   const attributes = [
