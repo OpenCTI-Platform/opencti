@@ -7682,7 +7682,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/d3-hierarchy@npm:*, @types/d3-hierarchy@npm:3.1.7":
+"@types/d3-hierarchy@npm:*":
   version: 3.1.7
   resolution: "@types/d3-hierarchy@npm:3.1.7"
   checksum: 10c0/873711737d6b8e7b6f1dda0bcd21294a48f75024909ae510c5d2c21fad2e72032e0958def4d9f68319d3aaac298ad09c49807f8bfc87a145a82693b5208613c7
@@ -11122,13 +11122,6 @@ __metadata:
   version: 3.1.2
   resolution: "d3-format@npm:3.1.2"
   checksum: 10c0/0de452ae07585238e7f01607a7e0066665c34609652188b6ac7dc9f424f69465a425e07d16d79bd0e5955202ac7f241c66d0c76f68a79fc6f4857c94cf420652
-  languageName: node
-  linkType: hard
-
-"d3-hierarchy@npm:3.1.3":
-  version: 3.1.3
-  resolution: "d3-hierarchy@npm:3.1.3"
-  checksum: 10c0/539382d5eabac5ef18b8f8c5b601511183e0496d9d42c15b802e7af37f76ae3bbe4f52326a686c21ff58e38f3fc0b0d4342640ddd5685243d5496da47c725561
   languageName: node
   linkType: hard
 
@@ -18342,7 +18335,6 @@ __metadata:
     "@testing-library/jest-dom": "npm:7.0.1"
     "@testing-library/react": "npm:16.3.3"
     "@testing-library/user-event": "npm:14.6.10"
-    "@types/d3-hierarchy": "npm:3.1.7"
     "@types/d3-timer": "npm:3.0.2"
     "@types/eslint-plugin-jsx-a11y": "npm:6.10.1"
     "@types/geojson": "npm:7946.0.16"
@@ -18364,7 +18356,6 @@ __metadata:
     apexcharts: "npm:4.7.0"
     babel-plugin-relay: "npm:21.0.1"
     convert: "npm:8.0.2"
-    d3-hierarchy: "npm:3.1.3"
     d3-scale: "npm:4.0.3"
     d3-timer: "npm:3.0.2"
     date-fns: "npm:4.4.0"
