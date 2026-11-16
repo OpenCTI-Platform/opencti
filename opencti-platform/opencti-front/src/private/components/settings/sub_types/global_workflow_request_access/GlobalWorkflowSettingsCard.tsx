@@ -5,18 +5,14 @@ import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import GlobalWorkflowSettings from './GlobalWorkflowSettings';
 import RequestAccessSettings from './RequestAccessSettings';
 import EntityStatusSyncSetting from './EntityStatusSyncSetting';
-import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
+import useRequestAccessConfiguration from './useRequestAccessConfiguration';
 
 const GlobalWorkflowSettingsCard = () => {
   const { t_i18n } = useFormatter();
 
   const { subType } = useSubTypeOutletContext();
-  const isEnterpriseEdition = useEnterpriseEdition();
-  const requestAccessConfiguration = subType.settings.requestAccessConfiguration;
-
-  const hasRequestAccessConfig = isEnterpriseEdition
-    && subType.settings.availableSettings.includes('request_access_workflow')
-    && !!requestAccessConfiguration;
+  const requestAccessConfiguration = useRequestAccessConfiguration();
+  const hasRequestAccessConfig = !!requestAccessConfiguration;
 
   return (
     <Card title={t_i18n('Workflow')}>
@@ -29,7 +25,7 @@ const GlobalWorkflowSettingsCard = () => {
           }
           <EntityStatusSyncSetting sx={{ marginTop: 4 }} />
         </Grid>
-        {hasRequestAccessConfig && requestAccessConfiguration && (
+        {requestAccessConfiguration && (
           <>
             <Grid>
               <Divider
