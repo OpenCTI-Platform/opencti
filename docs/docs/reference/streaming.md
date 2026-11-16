@@ -12,7 +12,7 @@ OpenCTI is currently using [REDIS Stream](https://redis.io/topics/streams-intro)
 
 ### SSE protocol
 
-In order to provide a really easy consuming protocol we decide to provide an [SSE (Server-Sent Events)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) HTTP URL linked to the standard login system of OpenCTI. Any user with the correct access rights can open and access http://opencti_instance/stream, and open an SSE connection to start receiving live events. You can of course consume directly the stream in Redis, but you will have to manage access and rights directly.
+In order to provide a really easy consuming protocol we decide to provide an [SSE (Server-Sent Events)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) HTTP URL linked to the standard login system of OpenCTI. Only users with the **Bypass all capabilities** capability can open http://opencti_instance/stream, the raw stream of the platform, and start receiving live events over an SSE connection. Other users consume [live streams](#live-stream) at `http://opencti_instance/stream/{STREAM_ID}`, according to their access rights. You can of course consume directly the stream in Redis, but you will have to manage access and rights directly.
 
 ## Events format
 
@@ -38,7 +38,7 @@ Data events use one of 4 event types: `create`, `update`, `merge` and `delete` (
 | `heartbeat` | Every 5 seconds by default, while nothing is waiting to be sent, to keep the connection open. The data is the date of the last event id. |
 | `consumer_metrics` | Right after each `heartbeat`. The data holds delivery and lag statistics for the connection. |
 | `no-recover` | Live streams only, when you use `recover` on a stream configured with origin filters: the platform skips the recovery from the database and sends only the events that come after the `recover` date (see [From and Recover](#from-and-recover)). |
-| `error` | Live streams only, when the processing of the stream fails. The data holds the error message. |
+| `error` | Live streams only, when the stream cannot be started, for example an invalid `recover` request or a failure during the recovery. The data holds the stream id and the error message. |
 
 The event id is the position of the event in the stream. To resume a stream after the last event you received, pass its id in the `from` query parameter, e.g. `http://opencti_instance/stream?from=1620249512318-0`. You can also pass it in the `from` or `Last-Event-ID` request header: SSE clients send `Last-Event-ID` automatically when they reconnect. The `from` query parameter takes precedence over the `from` header, which takes precedence over `Last-Event-ID`. The stream then sends the events that come after this id.
 
