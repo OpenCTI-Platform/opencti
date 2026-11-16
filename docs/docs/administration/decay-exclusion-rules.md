@@ -6,7 +6,7 @@ Multiple reasons explain the existence this feature:
 - Some IOCs, such as YARA rules, should not expire. Indeed, you always want detection rules to be enabled so that your detection system can always detect any threat.
 - Some IOCs are coming from some sources that already manage the IOCs lifecycle. Therefore, our own decay engine conflicts with the source's decay.
 
-Without this feature, the only way to avoid some IOCs to decay, the only solution was to disable the [decay manager](https://docs.opencti.io/latest/deployment/managers/?h=mana#indicator-decay-manager). But this would prevent any IOC for decaying, which was not a suitable solution.
+Without this feature, the only way to avoid some IOCs to decay, the only solution was to disable the [decay manager](../deployment/advanced/managers.md#indicator-decay-manager). But this would prevent any IOC for decaying, which was not a suitable solution.
 
 ## Configuration
 
