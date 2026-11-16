@@ -38,7 +38,7 @@ In some cases, the model has been extended to be able to:
 
 ### Diagram of types
 
-You can find below the digram of all types of entities and relationships available in OpenCTI.
+You can find below the diagram of all types of entities and relationships available in OpenCTI.
 
 <iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="800" height="450" src="https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Ffile%2FSrp4IQ9xAnzaS043epUZuJ%2FOpenCTI---Models%3Ftype%3Dwhiteboard%26node-id%3D0%253A1%26t%3DDeOZVWsFdJ13c05f-1" allowfullscreen></iframe>
 

@@ -142,7 +142,7 @@ To compute this value, OpenCTI uses the following strategy:
 
 The following diagram describes the different use-cases you can address with this system.
 
-<iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="800" height="450" src="https://www.figma.com/board/cecHM2dDyOPoviw6qbVYK4/Effective-Confidence-Level-Computation---Documentation?node-id=0-1&t=ZSJNGb93mPAQRPVh-1" allowfullscreen></iframe>
+<iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="800" height="450" src="https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fboard%2FcecHM2dDyOPoviw6qbVYK4%2FEffective-Confidence-Level-Computation---Documentation%3Fnode-id%3D0-1%26t%3DZSJNGb93mPAQRPVh-1" allowfullscreen></iframe>
 
 #### How to set a confidence level
 
