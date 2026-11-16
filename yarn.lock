@@ -18846,7 +18846,7 @@ __metadata:
     node-gyp-build: "npm:4.8.4"
     nodemailer: "npm:10.5.0"
     openai: "npm:7.56.0"
-    openid-client: "npm:6.8.9"
+    openid-client: "npm:6.9.0"
     openid-clientv5: "npm:openid-client@5.7.1"
     opentelemetry-node-metrics: "npm:3.0.0"
     otplib: "npm:13.6.0"
@@ -18923,13 +18923,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openid-client@npm:6.8.9":
-  version: 6.8.9
-  resolution: "openid-client@npm:6.8.9"
+"openid-client@npm:6.9.0":
+  version: 6.9.0
+  resolution: "openid-client@npm:6.9.0"
   dependencies:
     jose: "npm:^6.2.15"
     oauth4webapi: "npm:^3.8.8"
-  checksum: 10c0/6ec85b68a9a153acfa23b1fe2a2130ab829c1e2be43e6a270d93bb9e550a0d21eac8d3ae47ba75cac9adbbae1e4cb7a714bfc3a836649cfd4ba8392ce860be4e
+  checksum: 10c0/546f9404f869f8168ed6760ab764f4c7105d8a712879caa801c7a65da0d5c57166536700578df56638bbd701b73696439bdbff91c150ea3550d25e32c8ef5e9d
   languageName: node
   linkType: hard
 
