@@ -20,7 +20,8 @@ export const builtInOv = [
 // color: optional display colour (hex) of the entry, seeded where the scale carries a meaning and editable in Settings > Taxonomies > Vocabularies.
 // The seeded colours are mid-tone so the tag (text in the colour on a tint of it) stays readable on the dark and the light theme.
 // parent_name: the name of the entry of the parent category this entry belongs to (see VocabularyDefinition.parent).
-export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; description?: string; aliases?: string[]; order?: number; color?: string; parent_name?: string }>> = {
+interface OpenVocabularyEntry { key: string; description?: string; aliases?: string[]; order?: number; color?: string; parent_name?: string }
+export const openVocabularies: Record<VocabularyCategory, Array<OpenVocabularyEntry>> = {
   // A
   account_type_ov: [
     { key: 'facebook', description: 'Specifies a Facebook account' },
