@@ -2446,9 +2446,10 @@ class OpenCTIStix2:
         :param excluded_marking_ids: Internal ids of the markings excluded by the
             export access filter, defaults to None (no exclusion)
         :type excluded_marking_ids: set, optional
-        :return: STIX 2.0 entity dictionary
-        :rtype: Dict
-        :raises ValueError: if the backend returns no payload
+        :return: STIX 2.0 entity dictionary, or ``None`` for a relationship or
+            a sighting the backend cannot convert
+        :rtype: Dict or None
+        :raises ValueError: if the backend returns no payload for another type
         """
         # `stixCoreObject` does not return the relationships.
         to_stix = {
@@ -2457,6 +2458,11 @@ class OpenCTIStix2:
         }.get(dispatch_type, self.opencti.stix_core_object.to_stix)
         backend_stix = to_stix(id=entity["id"], version=STIX_VERSION_2_0)
         if backend_stix is None:
+            # The backend only converts a relationship whose source and target
+            # the user can read: `generate_export` falls back to the legacy
+            # converter, which exports it without the unreadable endpoint ref.
+            if dispatch_type in _STIX_2_0_RELATIONSHIP_TYPES.values():
+                return None
             raise ValueError(
                 f"Backend STIX 2.0 conversion returned no payload for "
                 f"{entity['entity_type']} {entity['id']!r}"
@@ -2516,8 +2522,15 @@ class OpenCTIStix2:
             entity["entity_type"], entity.get("parent_types")
         )
         if self._is_backend_stix_2_0(dispatch_type, stix_version):
-            return self._generate_backend_stix_2_0_export(
+            backend_stix = self._generate_backend_stix_2_0_export(
                 entity, dispatch_type, no_custom_attributes, excluded_marking_ids
+            )
+            if backend_stix is not None:
+                return backend_stix
+            self.opencti.app_logger.warning(
+                "Backend STIX 2.0 conversion unavailable for a relationship, "
+                "legacy converter used",
+                {"id": entity["id"], "entity_type": entity["entity_type"]},
             )
 
         # Handle model deviation

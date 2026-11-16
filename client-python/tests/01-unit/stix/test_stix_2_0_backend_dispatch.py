@@ -1512,6 +1512,43 @@ def test_prepare_export_sighting_with_unreadable_endpoint(stix_helper, stix_vers
     assert sighting["where_sighted_refs"] == [ORGANIZATION_ID]
 
 
+@pytest.mark.parametrize(
+    "raw_entity, client_name",
+    [
+        (_raw_relationship, "stix_core_relationship"),
+        (_raw_sighting, "stix_sighting_relationship"),
+    ],
+    ids=["relationship", "sighting"],
+)
+def test_stix_2_0_relationship_without_backend_payload_uses_legacy_converter(
+    stix_helper, raw_entity, client_name
+):
+    """The backend does not convert a relationship with an unreadable endpoint.
+
+    It is exported by the legacy converter instead, without that endpoint ref,
+    rather than failing the whole export.
+    """
+    getattr(stix_helper.opencti, client_name).to_stix.return_value = None
+    # The user cannot read the target of the relationship / the sighted object.
+    _readable_objects(stix_helper, {"internal-intrusion-set"})
+
+    with patch.object(stix_helper.opencti.app_logger, "warning") as warning:
+        prepared = stix_helper.generate_export(
+            raw_entity(), stix_version=STIX_VERSION_2_0
+        )
+    result = stix_helper.prepare_export(prepared, stix_version=STIX_VERSION_2_0)
+
+    warning.assert_called_once()
+    exported = result[-1]
+    assert exported["spec_version"] == "2.1"
+    assert exported["type"] in ("relationship", "sighting")
+    assert exported.get("source_ref", exported.get("sighting_of_ref")) == (
+        INTRUSION_SET_ID
+    )
+    assert "target_ref" not in exported
+    assert "where_sighted_refs" not in exported
+
+
 def test_generate_export_stix_2_0_ref_relationship_uses_legacy_converter(
     stix_helper,
 ):
@@ -1647,6 +1684,22 @@ def test_sub_client_to_stix_parses_backend_payload(client_name, field):
         "id": "internal-relationship",
         "version": STIX_VERSION_2_0,
     }
+
+
+def test_query_to_stix_returns_none_on_empty_payload():
+    """The backend returns an empty string when it cannot load the object."""
+    client = _fake_client()
+    with patch.object(
+        client,
+        "query",
+        return_value={"data": {"stixCoreRelationship": {"toStix": ""}}},
+    ):
+        assert (
+            client.stix_core_relationship.to_stix(
+                id="internal-relationship", version=STIX_VERSION_2_0
+            )
+            is None
+        )
 
 
 @pytest.mark.parametrize(

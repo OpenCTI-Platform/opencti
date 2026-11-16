@@ -61,6 +61,10 @@ PENDING_DIFFERENCES_BY_STIX_TYPE = {
     # from the nested refs, next to `x_mitre_data_source_ref`. The import only
     # reads it on a `data-component`, not on an `x-mitre-data-component`.
     "x-mitre-data-component": {"data_source_ref"},
+    # The legacy export leaks the raw GraphQL `coverage_information`
+    # (`coverage_name`, `coverage_score`). The import reads `coverage` (`name`,
+    # `score`), so the legacy value is never imported back.
+    "relationship": {"coverage_information"},
     # Only output by the backend converter. The import reads `x_opencti_order`
     # and `x_opencti_color` back, which the legacy export loses.
     "marking-definition": {
@@ -1333,6 +1337,9 @@ def rich_relationships(api_client, related_objects):
         stop_time=_LAST,
         lang="en",
         killChainPhases=related_objects["killChainPhases"],
+        coverage_information=[
+            {"coverage_name": "STIX 2.0 parity", "coverage_score": 50}
+        ],
         **common,
     )
     # A statement marking: both exports remove every `tlp:` from its value.
@@ -1441,6 +1448,15 @@ def test_rich_relationship_stix_2_0_export_matches_legacy_export(
     if option != "no_custom_attributes" or mode == "full":
         assert markings
     assert all("x_opencti_order" in marking for marking in markings)
+    # Only the legacy export leaks the raw coverage key (pending difference).
+    if case == "relationship":
+        legacy_relationship = {item["id"]: item for item in legacy_bundle["objects"]}[
+            relationship["standard_id"]
+        ]
+        assert legacy_relationship["coverage_information"] == [
+            {"coverage_name": "STIX 2.0 parity", "coverage_score": 50}
+        ]
+        assert "coverage_information" not in exported
     differences = _differences(legacy_bundle, stix_2_0_bundle)
     assert differences == {}, json.dumps(differences, indent=1, default=str)
 
