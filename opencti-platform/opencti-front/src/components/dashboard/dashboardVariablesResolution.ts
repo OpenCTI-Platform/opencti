@@ -164,6 +164,25 @@ export const resolveVariablesInFilterGroup = <T>(
   return { filters: resolveGroup(filterGroup) as T, unresolved };
 };
 
+const WIDGET_TOKEN_SELECTION_KEYS = ['filters', 'dynamicFrom', 'dynamicTo'] as const;
+
+/**
+ * Ids of the variables a widget uses in its filters, counted as the server counts them (computeDashboardVariablesUsage):
+ * the filters, dynamicFrom and dynamicTo of each data selection. A malformed widget uses none.
+ */
+export const widgetVariableIds = (widget: unknown): string[] => {
+  const ids = new Set<string>();
+  const dataSelection = typeof widget === 'object' && widget !== null ? (widget as { dataSelection?: unknown }).dataSelection : undefined;
+  (Array.isArray(dataSelection) ? dataSelection : []).forEach((selection: unknown) => {
+    if (typeof selection !== 'object' || selection === null) return;
+    WIDGET_TOKEN_SELECTION_KEYS.forEach((key) => {
+      // Resolved against no value: every token of the group is reported as unresolved
+      resolveVariablesInFilterGroup((selection as Record<string, unknown>)[key], new Map()).unresolved.forEach((id) => ids.add(id));
+    });
+  });
+  return [...ids];
+};
+
 // Strict ISO-8601 date: `YYYY-MM-DD`, or a date-time `YYYY-MM-DDTHH:mm`, `…:ss` or `…:ss.s` (1 to 3 digits) ending with
 // a time zone designator, `Z` or `±HH:mm`. Outside this format `Date.parse` depends on the JavaScript engine (V8 parses
 // `2024/01/01` or `March 7 2024`, Safari does not), and a date-time without designator is local time in some engines

@@ -38,6 +38,11 @@ export interface StoreDashboardManifest {
 // Keys only the typed GraphQL API may write: a full manifest sent by a client never overrides them.
 export const DASHBOARD_MANIFEST_SERVER_OWNED_KEYS = ['variables', 'presets'] as const;
 
+// Types whose values (default, selection, restriction filters) are entity ids: converted like the widget filters on export / import.
+export const DASHBOARD_VARIABLE_ID_TYPES: ReadonlySet<DashboardVariableTypeName> = new Set([
+  'entity', 'label', 'marking', 'user', 'group', 'status', 'killChainPhase',
+]);
+
 export const DASHBOARD_VARIABLES_MAX_COUNT = 50;
 export const DASHBOARD_VARIABLE_NAME_MAX_LENGTH = 200;
 export const DASHBOARD_VARIABLE_SELECTION_MAX_VALUES = 200;

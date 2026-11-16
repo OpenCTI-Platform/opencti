@@ -33,7 +33,7 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../pub
 import { createInternalObject, editInternalObject } from '../../domain/internalObject';
 import { checkDashboardConfigurationImport, convertDashboardManifestIds, exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
 import { withWorkspaceManifestLock } from './workspace-variables-domain';
-import { preserveServerOwnedManifestKeys, validateManifestVariables } from './workspace-variables-utils';
+import { preserveServerOwnedManifestKeys, stripServerOwnedManifestKeys, validateManifestVariables } from './workspace-variables-utils';
 
 export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
@@ -349,14 +349,16 @@ export const workspaceImportConfiguration = async (context: AuthContext, user: A
   checkDashboardConfigurationImport('dashboard', parsedData);
   const authorizedMembers = initializeAuthorizedMembers([], user);
   const { manifest } = parsedData.configuration;
-  // Manifest ids must be rewritten for filters
-  const generatedManifest = await convertDashboardManifestIds(context, user, manifest, 'stix');
+  // Dashboard variables of an imported file go through the same validation as the typed API, before any id
+  // is resolved: a malformed variable never reaches the conversion.
+  const validatedManifest = validateManifestVariables(manifest);
+  // Manifest ids must be rewritten for filters and variables
+  const generatedManifest = await convertDashboardManifestIds(context, user, validatedManifest, 'stix');
   const mappedData = {
     type: parsedData.type,
     openCTI_version: parsedData.openCTI_version,
     name: parsedData.configuration.name,
-    // Dashboard variables of an imported file go through the same validation as the typed API
-    manifest: validateManifestVariables(generatedManifest),
+    manifest: generatedManifest,
     restricted_members: authorizedMembers,
   };
   const importWorkspaceCreation = await createEntity(context, user, mappedData, ENTITY_TYPE_WORKSPACE);
@@ -381,8 +383,10 @@ export const workspaceImportConfiguration = async (context: AuthContext, user: A
 // Preserve the legacy metadata input until a separate change addresses API compatibility.
 export const duplicateWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceDuplicateInput) => {
   const authorizedMembers = initializeAuthorizedMembers([], user);
-  // The manifest comes from the client: its dashboard variables go through the same validation as the typed API
-  const workspaceToCreate = { ...input, manifest: validateManifestVariables(input.manifest), restricted_members: authorizedMembers };
+  // The manifest comes from the client: its dashboard variables go through the same validation as the typed API.
+  // Only a dashboard holds variables: duplicated into another kind of workspace, they are dropped.
+  const manifest = input.type === 'dashboard' ? validateManifestVariables(input.manifest) : stripServerOwnedManifestKeys(input.manifest);
+  const workspaceToCreate = { ...input, manifest, restricted_members: authorizedMembers };
   const created = await createEntity(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
   const sanitizeElement = { ...input, manifest: undefined };
   await publishUserAction({

@@ -11798,7 +11798,10 @@ input PublicDashboardAddInput {
 
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
+  time_range: PublicDashboardTimeRangeInput
+  time_zone: String
   uri_key: String!
+  variable_values: [PublicDashboardVariableValueInput!]
 }
 
 type PublicDashboardConnection {
@@ -11809,6 +11812,17 @@ type PublicDashboardConnection {
 type PublicDashboardEdge {
   cursor: String!
   node: PublicDashboard!
+}
+
+input PublicDashboardTimeRangeInput {
+  end_date: String
+  relative_date: String
+  start_date: String
+}
+
+input PublicDashboardVariableValueInput {
+  value: String!
+  variable_id: String!
 }
 
 enum PublicDashboardsOrdering {
