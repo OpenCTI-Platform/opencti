@@ -254,6 +254,10 @@ const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
                     name
                     description
                   }
+                  ... on Procedure {
+                    name
+                    description
+                  }
                   ... on Language {
                     name
                   }

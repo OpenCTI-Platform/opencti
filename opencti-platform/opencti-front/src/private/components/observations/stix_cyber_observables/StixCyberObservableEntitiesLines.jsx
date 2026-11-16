@@ -408,6 +408,10 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                   name
                   description
                 }
+                ... on Procedure {
+                  name
+                  description
+                }
                 ... on Language {
                   name
                 }
@@ -530,6 +534,10 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                       name
                       description
                     }
+                    ... on Procedure {
+                      name
+                      description
+                    }
                     ... on Language {
                       name
                     }
@@ -647,6 +655,10 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                       description
                     }
                     ... on Narrative {
+                      name
+                      description
+                    }
+                    ... on Procedure {
                       name
                       description
                     }
@@ -772,6 +784,10 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                   name
                   description
                 }
+                ... on Procedure {
+                  name
+                  description
+                }
                 ... on Language {
                   name
                 }
@@ -892,6 +908,9 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                     ... on Narrative {
                       name
                     }
+                    ... on Procedure {
+                      name
+                    }
                     ... on Language {
                       name
                     }
@@ -1007,6 +1026,9 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                       name
                     }
                     ... on Narrative {
+                      name
+                    }
+                    ... on Procedure {
                       name
                     }
                     ... on Language {

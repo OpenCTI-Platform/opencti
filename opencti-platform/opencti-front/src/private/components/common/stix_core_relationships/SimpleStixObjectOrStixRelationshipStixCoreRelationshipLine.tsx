@@ -205,6 +205,10 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = graph
         name
         description
       }
+      ... on Procedure {
+        name
+        description
+      }
       ... on Language {
         name
       }
@@ -460,6 +464,10 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = graph
         description
       }
       ... on Narrative {
+        name
+        description
+      }
+      ... on Procedure {
         name
         description
       }

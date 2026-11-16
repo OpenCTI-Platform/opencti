@@ -115,6 +115,9 @@ const relationShipFromAndToQuery = graphql`
       ... on Narrative {
         name
       }
+      ... on Procedure {
+        name
+      }
       ... on DataComponent {
         name
       }

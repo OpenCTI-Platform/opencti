@@ -367,6 +367,10 @@ const StixDomainObjectTimeline = createRefetchContainer(
                   name
                   description
                 }
+                ... on Procedure {
+                  name
+                  description
+                }
                 ... on Language {
                   name
                 }
@@ -531,6 +535,10 @@ const StixDomainObjectTimeline = createRefetchContainer(
                   description
                 }
                 ... on Narrative {
+                  name
+                  description
+                }
+                ... on Procedure {
                   name
                   description
                 }

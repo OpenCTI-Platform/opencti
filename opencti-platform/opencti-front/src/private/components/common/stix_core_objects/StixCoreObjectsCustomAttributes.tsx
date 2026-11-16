@@ -399,6 +399,12 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         modified
         updated_at
       }
+      ... on Procedure {
+        name
+        description
+        modified
+        updated_at
+      }
       ... on Sector {
         name
         description

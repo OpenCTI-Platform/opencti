@@ -187,6 +187,10 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
                 name
                 description
               }
+              ... on Procedure {
+                name
+                description
+              }
               ... on Language {
                 name
               }
@@ -326,6 +330,10 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
           description
         }
         ... on Narrative {
+          name
+          description
+        }
+        ... on Procedure {
           name
           description
         }

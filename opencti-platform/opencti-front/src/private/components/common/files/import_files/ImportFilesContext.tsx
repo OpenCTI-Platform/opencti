@@ -135,6 +135,9 @@ export const importFilesQuery = graphql`
       ... on Narrative {
         name
       }
+      ... on Procedure {
+        name
+      }
       ... on DataComponent {
         name
       }

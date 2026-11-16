@@ -294,6 +294,10 @@ const stixCoreObjectsAttributesQuery = graphql`
                 name
                 description
             }
+            ... on Procedure {
+                name
+                description
+            }
             ... on DataComponent {
                 name
                 description

@@ -277,6 +277,11 @@ const publicStixCoreObjectsListQuery = graphql`
             modified
             aliases
           }
+          ... on Procedure {
+            name
+            description
+            modified
+          }
           ... on Language {
             name
             modified

@@ -167,6 +167,9 @@ const securityCoverageResultLineFragment = graphql`
             ... on Narrative {
                 name
             }
+            ... on Procedure {
+                name
+            }
             ... on Language {
                 name
             }

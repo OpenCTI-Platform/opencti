@@ -185,6 +185,9 @@ const fragment = graphql`
             ... on Narrative {
               name
             }
+            ... on Procedure {
+              name
+            }
             ... on Language {
               name
             }
@@ -295,6 +298,9 @@ const fragment = graphql`
                   name
                 }
                 ... on Narrative {
+                  name
+                }
+                ... on Procedure {
                   name
                 }
                 ... on Language {
@@ -466,6 +472,10 @@ const fragment = graphql`
                           name
                           description
                         }
+                        ... on Procedure {
+                          name
+                          description
+                        }
                         ... on Language {
                           name
                         }
@@ -583,6 +593,9 @@ const fragment = graphql`
                     ... on Narrative {
                       name
                     }
+                    ... on Procedure {
+                      name
+                    }
                     ... on Language {
                       name
                     }
@@ -684,6 +697,9 @@ const fragment = graphql`
                       name
                     }
                     ... on Narrative {
+                      name
+                    }
+                    ... on Procedure {
                       name
                     }
                     ... on Language {
@@ -849,6 +865,10 @@ const fragment = graphql`
                               description
                             }
                             ... on Narrative {
+                              name
+                              description
+                            }
+                            ... on Procedure {
                               name
                               description
                             }
@@ -970,6 +990,9 @@ const fragment = graphql`
                 ... on Narrative {
                   name
                 }
+                ... on Procedure {
+                  name
+                }
                 ... on Language {
                   name
                 }
@@ -1139,6 +1162,10 @@ const fragment = graphql`
                           name
                           description
                         }
+                        ... on Procedure {
+                          name
+                          description
+                        }
                         ... on Language {
                           name
                         }
@@ -1258,6 +1285,9 @@ const fragment = graphql`
                     ... on Narrative {
                       name
                     }
+                    ... on Procedure {
+                      name
+                    }
                     ... on Language {
                       name
                     }
@@ -1424,6 +1454,10 @@ const fragment = graphql`
                               description
                             }
                             ... on Narrative {
+                              name
+                              description
+                            }
+                            ... on Procedure {
                               name
                               description
                             }
@@ -1540,6 +1574,9 @@ const fragment = graphql`
                     ... on Narrative {
                       name
                     }
+                    ... on Procedure {
+                      name
+                    }
                     ... on Language {
                       name
                     }
@@ -1705,6 +1742,10 @@ const fragment = graphql`
                               description
                             }
                             ... on Narrative {
+                              name
+                              description
+                            }
+                            ... on Procedure {
                               name
                               description
                             }
@@ -1830,6 +1871,9 @@ const fragment = graphql`
                 ... on Narrative {
                   name
                 }
+                ... on Procedure {
+                  name
+                }
                 ... on Language {
                   name
                 }
@@ -1999,6 +2043,10 @@ const fragment = graphql`
                           name
                           description
                         }
+                        ... on Procedure {
+                          name
+                          description
+                        }
                         ... on Language {
                           name
                         }
@@ -2116,6 +2164,9 @@ const fragment = graphql`
                     ... on Narrative {
                       name
                     }
+                    ... on Procedure {
+                      name
+                    }
                     ... on Language {
                       name
                     }
@@ -2217,6 +2268,9 @@ const fragment = graphql`
                       name
                     }
                     ... on Narrative {
+                      name
+                    }
+                    ... on Procedure {
                       name
                     }
                     ... on Language {
@@ -2382,6 +2436,10 @@ const fragment = graphql`
                               description
                             }
                             ... on Narrative {
+                              name
+                              description
+                            }
+                            ... on Procedure {
                               name
                               description
                             }
@@ -2503,6 +2561,9 @@ const fragment = graphql`
                 ... on Narrative {
                   name
                 }
+                ... on Procedure {
+                  name
+                }
                 ... on Language {
                   name
                 }
@@ -2672,6 +2733,10 @@ const fragment = graphql`
                           name
                           description
                         }
+                        ... on Procedure {
+                          name
+                          description
+                        }
                         ... on Language {
                           name
                         }
@@ -2791,6 +2856,9 @@ const fragment = graphql`
                     ... on Narrative {
                       name
                     }
+                    ... on Procedure {
+                      name
+                    }
                     ... on Language {
                       name
                     }
@@ -2957,6 +3025,10 @@ const fragment = graphql`
                               description
                             }
                             ... on Narrative {
+                              name
+                              description
+                            }
+                            ... on Procedure {
                               name
                               description
                             }
@@ -3073,6 +3145,9 @@ const fragment = graphql`
                     ... on Narrative {
                       name
                     }
+                    ... on Procedure {
+                      name
+                    }
                     ... on Language {
                       name
                     }
@@ -3239,6 +3314,10 @@ const fragment = graphql`
                               description
                             }
                             ... on Narrative {
+                              name
+                              description
+                            }
+                            ... on Procedure {
                               name
                               description
                             }
@@ -3398,6 +3477,9 @@ const fragment = graphql`
             name
           }
           ... on Narrative {
+            name
+          }
+          ... on Procedure {
             name
           }
           ... on Language {
@@ -3570,6 +3652,10 @@ const fragment = graphql`
                     name
                     description
                   }
+                  ... on Procedure {
+                    name
+                    description
+                  }
                   ... on Language {
                     name
                   }
@@ -3693,6 +3779,9 @@ const fragment = graphql`
               ... on Narrative {
                 name
               }
+              ... on Procedure {
+                name
+              }
               ... on Language {
                 name
               }
@@ -3800,6 +3889,9 @@ const fragment = graphql`
                 name
               }
               ... on Narrative {
+                name
+              }
+              ... on Procedure {
                 name
               }
               ... on Language {
@@ -3917,6 +4009,9 @@ const fragment = graphql`
             name
           }
           ... on Narrative {
+            name
+          }
+          ... on Procedure {
             name
           }
           ... on Language {
@@ -4085,6 +4180,9 @@ const fragment = graphql`
                   ... on Narrative {
                     name
                   }
+                  ... on Procedure {
+                    name
+                  }
                   ... on Language {
                     name
                   }
@@ -4195,6 +4293,9 @@ const fragment = graphql`
               ... on Narrative {
                 name
               }
+              ... on Procedure {
+                name
+              }
               ... on Language {
                 name
               }
@@ -4292,6 +4393,9 @@ const fragment = graphql`
                 name
               }
               ... on Narrative {
+                name
+              }
+              ... on Procedure {
                 name
               }
               ... on Language {
