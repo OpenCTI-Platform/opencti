@@ -46,6 +46,7 @@ const InvestigationEnrichmentWorkList = ({
   const {
     canEdit,
     canRefresh,
+    reviewDisabledReason,
   } = useInvestigationEnrichmentRights(investigation.currentUserAccessRight);
 
   const [commitEnrichment] = useApiMutation<InvestigationEnrichmentWorkListAskEnrichment>(askEnrichMutation);
@@ -136,6 +137,7 @@ const InvestigationEnrichmentWorkList = ({
                 onReview={worksType === 'toreview' ? review : undefined}
                 onReviewAddAll={worksType === 'toreview' ? addAll : undefined}
                 canEditInvestigation={canEdit}
+                reviewDisabledReason={reviewDisabledReason}
               />
             </AccordionDetails>
           </Accordion>

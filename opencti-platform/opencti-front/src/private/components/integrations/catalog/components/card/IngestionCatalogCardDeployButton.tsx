@@ -2,7 +2,7 @@ import { Stack } from '@mui/material';
 import Button from '@common/button/Button';
 import React from 'react';
 import { DeployedCountChip } from '@components/integrations/components/MarketplaceUi';
-import DisabledReasonTooltip from '@components/integrations/catalog/components/DisabledReasonTooltip';
+import DisabledReasonTooltip from '@common/tooltip/DisabledReasonTooltip';
 import { useFormatter } from '../../../../../../components/i18n';
 
 type IngestionCatalogCardDeployButtonProps = {

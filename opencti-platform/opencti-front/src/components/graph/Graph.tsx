@@ -132,6 +132,7 @@ const Graph = ({
     graphData,
     context,
     title,
+    editDisabledReason,
     rawPositions,
     isFullscreen,
     setIsFullscreen,
@@ -464,7 +465,8 @@ const Graph = ({
       }
       nodeClicked.current = isDoubleClick ? {} : { node, time: now };
       if (isDoubleClick && context === 'investigation') {
-        setIsExpandOpen(true);
+        // Without the right to expand, the double click keeps the selection of its first click.
+        if (!editDisabledReason) setIsExpandOpen(true);
         return;
       }
     }
@@ -820,6 +822,7 @@ const Graph = ({
         id: 'expand',
         label: t_i18n('Expand this entity'),
         icon: <AccountTreeOutlined {...MENU_ICON} />,
+        disabledReason: editDisabledReason,
         onSelect: () => {
           selectNodes([node]);
           setIsExpandOpen(true);
@@ -842,6 +845,7 @@ const Graph = ({
         id: 'relate-to-selection',
         label: t_i18n('Create a relationship from the selection'),
         icon: <LinkOutlined {...MENU_ICON} />,
+        disabledReason: editDisabledReason,
         onSelect: () => {
           selectNodes([other, node]);
           setIsAddRelationOpen(true);
@@ -902,6 +906,7 @@ const Graph = ({
       id: 'relate-selection',
       label: t_i18n('Create a relationship'),
       icon: <LinkOutlined {...MENU_ICON} />,
+      disabledReason: editDisabledReason,
       onSelect: () => setIsAddRelationOpen(true),
     },
     !!startInvestigation && context !== 'investigation' && selectedEntityNodes.length > 0 && {
@@ -1007,7 +1012,8 @@ const Graph = ({
             <RelationSelection
               width={width}
               height={height}
-              activated={!selectFree && !selectFreeRectangle}
+              // Drawing a relationship between two entities creates it: not for a member who cannot change the graph.
+              activated={!selectFree && !selectFreeRectangle && !editDisabledReason}
               graphDataNodes={(graphData?.nodes ?? []).filter(isNodeShown)}
               graph={graphRef2D}
               setSelectedNodes={(nodes) => {
@@ -1066,6 +1072,7 @@ const Graph = ({
             onClearFilters={resetFilters}
             onShowHidden={showHiddenNodes}
             onAddEntities={context === 'investigation' ? () => setIsAddEntitiesOpen(true) : undefined}
+            addEntitiesDisabledReason={editDisabledReason}
           />
         )}
         {!mode3D && shownNodes.length > 0 && (showLegend ? (

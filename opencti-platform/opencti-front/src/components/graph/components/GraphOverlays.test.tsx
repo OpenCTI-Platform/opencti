@@ -139,6 +139,29 @@ describe('GraphEmptyState', () => {
     expect(screen.getByRole('link', { name: 'Read the documentation' })).toHaveAttribute('href', 'https://docs.opencti.io/latest/usage/graphs/');
   });
 
+  it('disables adding entities for a member who cannot change the investigation, saying why', async () => {
+    const onAddEntities = vi.fn();
+    const { user } = testRender(
+      <GraphEmptyState
+        kind="empty"
+        context="investigation"
+        onClearFilters={vi.fn()}
+        onShowHidden={vi.fn()}
+        onAddEntities={onAddEntities}
+        addEntitiesDisabledReason="You have view access to this investigation"
+      />,
+    );
+    const add = screen.getByRole('button', { name: 'Add entities' });
+    expect(add).toHaveAttribute('aria-disabled', 'true');
+    expect(add).toHaveAccessibleDescription('You have view access to this investigation');
+    // After "Read the documentation", the disabled action stays in the keyboard path to say why.
+    await user.tab();
+    await user.tab();
+    expect(add).toHaveFocus();
+    await user.click(add);
+    expect(onAddEntities).not.toHaveBeenCalled();
+  });
+
   it('offers to add entities on first use when the graph can take them', async () => {
     const onAddEntities = vi.fn();
     const { user, unmount } = testRender(

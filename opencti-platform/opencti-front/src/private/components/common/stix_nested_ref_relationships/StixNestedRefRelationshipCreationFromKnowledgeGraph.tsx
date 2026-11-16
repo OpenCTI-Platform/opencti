@@ -15,6 +15,8 @@ interface StixNestedRefRelationshipCreationFromKnowledgeGraphProps {
   nestedRelationExist: boolean;
   openCreateNested: boolean;
   nestedEnabled: boolean;
+  /** Why the user cannot create a nested relationship here, whatever the selection. */
+  disabledReason?: string;
   relationFromObjects: NodeObject[];
   relationToObjects: NodeObject[];
   handleSetNestedRelationExist: (val: boolean) => void;
@@ -24,7 +26,7 @@ interface StixNestedRefRelationshipCreationFromKnowledgeGraphProps {
 type DisabledNestedRelationshipCause = 'selection' | 'loading' | 'creating';
 
 /** The tool while it cannot run, saying why: it stays in the keyboard path of the toolbar. */
-const DisabledNestedRelationshipButton = ({ cause }: { cause: DisabledNestedRelationshipCause }) => {
+const DisabledNestedRelationshipButton = ({ cause, reason }: { cause: DisabledNestedRelationshipCause; reason?: string }) => {
   const { t_i18n } = useFormatter();
   const reasons: Record<DisabledNestedRelationshipCause, string> = {
     selection: t_i18n('Select the entities to link first'),
@@ -36,7 +38,7 @@ const DisabledNestedRelationshipButton = ({ cause }: { cause: DisabledNestedRela
       title={t_i18n('Create a nested relationship')}
       color="primary"
       Icon={<ReadMoreOutlined />}
-      disabledReason={reasons[cause]}
+      disabledReason={reason ?? reasons[cause]}
     />
   );
 };
@@ -78,6 +80,7 @@ const StixNestedRefRelationshipCreationFromKnowledgeGraph = ({
   nestedRelationExist,
   openCreateNested,
   nestedEnabled,
+  disabledReason,
   relationFromObjects,
   relationToObjects,
   handleSetNestedRelationExist,
@@ -85,6 +88,7 @@ const StixNestedRefRelationshipCreationFromKnowledgeGraph = ({
 }: StixNestedRefRelationshipCreationFromKnowledgeGraphProps) => {
   const from = relationFromObjects[0];
   const to = relationToObjects[0];
+  if (disabledReason) return <DisabledNestedRelationshipButton cause="selection" reason={disabledReason} />;
   if (!nestedEnabled || !from || !to) return <DisabledNestedRelationshipButton cause="selection" />;
   if (openCreateNested) return <DisabledNestedRelationshipButton cause="creating" />;
   const fromId = from.id as string;

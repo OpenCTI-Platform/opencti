@@ -19,20 +19,26 @@ const renderRights = (capabilities: string[], accessRight: string) => {
   return hook.result.current;
 };
 
+const REVIEW_REASON = 'You need the Ask for knowledge enrichment and Create / Update investigations capabilities to review enrichment results.';
+
 describe('Hook: useInvestigationEnrichmentRights', () => {
-  it('lets an editor with every right launch and refresh', () => {
-    expect(renderRights([...ENRICHER, 'KNOWLEDGE_KNUPDATE_KNDELETE'], 'edit')).toEqual({ canEdit: true, canLaunch: true, canRefresh: true });
+  it('lets an editor with every right launch, refresh and review', () => {
+    expect(renderRights([...ENRICHER, 'KNOWLEDGE_KNUPDATE_KNDELETE'], 'edit')).toEqual({ canEdit: true, canLaunch: true, canRefresh: true, reviewDisabledReason: undefined });
   });
 
-  it('lets an editor without knowledge update refresh but not launch', () => {
-    expect(renderRights(ENRICHER, 'edit')).toEqual({ canEdit: true, canLaunch: false, canRefresh: true });
+  it('lets an editor without knowledge update refresh and review but not launch', () => {
+    expect(renderRights(ENRICHER, 'edit')).toEqual({ canEdit: true, canLaunch: false, canRefresh: true, reviewDisabledReason: undefined });
   });
 
-  it('refuses both actions without the enrichment capability', () => {
-    expect(renderRights(['INVESTIGATION_INUPDATE', 'KNOWLEDGE_KNUPDATE'], 'edit')).toEqual({ canEdit: true, canLaunch: false, canRefresh: false });
+  it('refuses both actions without the enrichment capability, and says why the results cannot be reviewed', () => {
+    expect(renderRights(['INVESTIGATION_INUPDATE', 'KNOWLEDGE_KNUPDATE'], 'edit')).toEqual({ canEdit: true, canLaunch: false, canRefresh: false, reviewDisabledReason: REVIEW_REASON });
   });
 
-  it('refuses both actions to a view only member', () => {
-    expect(renderRights([...ENRICHER, 'KNOWLEDGE_KNUPDATE'], 'view')).toEqual({ canEdit: false, canLaunch: false, canRefresh: false });
+  it('says why the results cannot be reviewed to an editor without the investigation update capability', () => {
+    expect(renderRights(['KNOWLEDGE_KNENRICHMENT'], 'admin').reviewDisabledReason).toBe(REVIEW_REASON);
+  });
+
+  it('refuses both actions to a view only member, whose review dialog tells about the view access instead', () => {
+    expect(renderRights([...ENRICHER, 'KNOWLEDGE_KNUPDATE'], 'view')).toEqual({ canEdit: false, canLaunch: false, canRefresh: false, reviewDisabledReason: undefined });
   });
 });

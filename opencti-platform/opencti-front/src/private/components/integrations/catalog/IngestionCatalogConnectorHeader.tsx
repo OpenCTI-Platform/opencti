@@ -8,7 +8,7 @@ import EnterpriseEditionButton from '@components/common/entreprise_edition/Enter
 import { getConnectorMetadata } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
 import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
 import useConnectorCompatibilityMessage from '@components/integrations/catalog/hooks/useConnectorCompatibilityMessage';
-import DisabledReasonTooltip from '@components/integrations/catalog/components/DisabledReasonTooltip';
+import DisabledReasonTooltip from '@common/tooltip/DisabledReasonTooltip';
 import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';

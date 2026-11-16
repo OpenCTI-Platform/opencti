@@ -62,6 +62,7 @@ const GraphToolbarContentTools = ({
     graphData,
     context,
     rawObjects,
+    editDisabledReason,
     graphState: {
       selectedNodes: rawSelectedNodes,
       selectedLinks: rawSelectedLinks,
@@ -123,9 +124,10 @@ const GraphToolbarContentTools = ({
   }
 
   const canAddRelation = objectsFrom.length > 0 && objectsTo.length > 0;
-  const linkDisabledReason = canAddRelation ? undefined : t_i18n('Select the entities to link first');
+  const linkDisabledReason = editDisabledReason ?? (canAddRelation ? undefined : t_i18n('Select the entities to link first'));
   let removeDisabledReason: string | undefined;
-  if (selectionContainsInferred) removeDisabledReason = t_i18n('Inferred knowledge cannot be removed');
+  if (editDisabledReason) removeDisabledReason = editDisabledReason;
+  else if (selectionContainsInferred) removeDisabledReason = t_i18n('Inferred knowledge cannot be removed');
   else if (!canDelete) removeDisabledReason = t_i18n('Select the elements to remove first');
 
   const removeFromAddPanel = (node: { id: string }) => {
@@ -176,6 +178,7 @@ const GraphToolbarContentTools = ({
             onDelete={removeFromAddPanel}
             open={isAddEntitiesOpen}
             onOpenChange={setIsAddEntitiesOpen}
+            disabledReason={editDisabledReason}
           />
 
           <Security needs={[KNOWLEDGE]}>
@@ -223,6 +226,7 @@ const GraphToolbarContentTools = ({
             nestedRelationExist={hasNested}
             openCreateNested={addNestedOpen}
             nestedEnabled={canAddRelation}
+            disabledReason={editDisabledReason}
             relationFromObjects={objectsFrom}
             relationToObjects={objectsTo}
             handleSetNestedRelationExist={setHasNested}

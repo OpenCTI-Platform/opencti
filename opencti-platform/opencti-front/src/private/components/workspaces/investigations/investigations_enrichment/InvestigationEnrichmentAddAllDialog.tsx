@@ -5,11 +5,13 @@ import { useFormatter } from '../../../../../components/i18n';
 import { getMainRepresentative } from '../../../../../utils/defaultRepresentatives';
 import { InvestigationEnrichmentWork } from './investigation-enrichment.types';
 import InvestigationEnrichmentExpandEmpty from './InvestigationEnrichmentExpandEmpty';
+import DisabledReasonTooltip from '@common/tooltip/DisabledReasonTooltip';
 
 interface InvestigationEnrichmentAddAllDialogProps {
   work?: InvestigationEnrichmentWork;
   nothingToAdd: boolean;
   canEdit: boolean;
+  reviewDisabledReason?: string;
   onConfirm: (work: InvestigationEnrichmentWork) => Promise<void>;
   onDismiss: (workId: string) => void;
   onClose: () => void;
@@ -19,6 +21,7 @@ const InvestigationEnrichmentAddAllDialog = ({
   work,
   nothingToAdd,
   canEdit,
+  reviewDisabledReason,
   onConfirm,
   onDismiss,
   onClose,
@@ -69,6 +72,7 @@ const InvestigationEnrichmentAddAllDialog = ({
             onClose={onClose}
             onDismiss={handleDismiss}
             canEdit={canEdit}
+            disabledReason={reviewDisabledReason}
           />
         ) : (
           <>
@@ -87,12 +91,14 @@ const InvestigationEnrichmentAddAllDialog = ({
               >
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={handleConfirm}
-                disabled={isSubmitting}
-              >
-                {t_i18n('Add')}
-              </Button>
+              <DisabledReasonTooltip reason={reviewDisabledReason ?? null} label={t_i18n('Add')}>
+                <Button
+                  onClick={handleConfirm}
+                  disabled={isSubmitting || !canEdit || !!reviewDisabledReason}
+                >
+                  {t_i18n('Add')}
+                </Button>
+              </DisabledReasonTooltip>
             </DialogFooter>
           </>
         )}

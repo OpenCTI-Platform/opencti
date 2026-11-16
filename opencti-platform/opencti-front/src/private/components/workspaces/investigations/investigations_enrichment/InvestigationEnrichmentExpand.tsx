@@ -14,6 +14,7 @@ import useGraphInteractions from '../../../../../components/graph/utils/useGraph
 interface InvestigationEnrichmentExpandProps {
   investigationId: string;
   canEdit: boolean;
+  reviewDisabledReason?: string;
   works: InvestigationEnrichmentWork[];
   onClose: () => void;
   onDismiss: (workIds: string[]) => void;
@@ -24,6 +25,7 @@ interface InvestigationEnrichmentExpandProps {
 const InvestigationEnrichmentExpand = ({
   investigationId,
   canEdit,
+  reviewDisabledReason,
   works,
   onClose,
   onDismiss,
@@ -130,6 +132,7 @@ const InvestigationEnrichmentExpand = ({
             // The expand of the graph needs an enriched entity to start from.
             onOpenGraphExpand={sourceNodes.length > 0 || sourceLinks.length > 0 ? openGraphExpand : undefined}
             canEdit={canEdit}
+            disabledReason={reviewDisabledReason}
           />
         ) : (
           <>
@@ -142,7 +145,8 @@ const InvestigationEnrichmentExpand = ({
               onDismiss={() => onDismiss(workIds)}
               targets={targets}
               relationships={relationships}
-              disabled={!canEdit}
+              disabled={!canEdit || !!reviewDisabledReason}
+              disabledReason={reviewDisabledReason}
             />
           </>
         )}

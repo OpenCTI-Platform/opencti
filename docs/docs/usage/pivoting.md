@@ -10,6 +10,10 @@ To access investigations, navigate to the top right corner of the toolbar:
 
     When an investigation is created, it is initially visible only to the creator, allowing them to work on the investigation before deciding to share it. The sharing mechanism is akin to that of dashboards. For further details, refer to the [Access control section](dashboards.md#access-control-section) in the dashboard documentation page.
 
+!!! note "View access"
+
+    With view access to an investigation, you can explore its graph (select, search, hide, lay out and export it) but not change it. Adding entities, expanding them, rolling back an expansion, removing elements and creating relationships, sightings or nested relationships stay visible but disabled, and their tooltip says **You have view access to this investigation**. A double click on an entity selects it without opening the expansion, and the entities you move keep their place in your view only.
+
 
 ## Perform investigation
 
@@ -110,7 +114,11 @@ Each enrichment of the **To review** tab offers:
 | Open the results of an enrichment, or delete it | The `Manage connector state` or `Connectors API usage` capability. |
 | Add results to the graph or mark them as reviewed | What opening the results needs, plus edit or manage access to the investigation and the `Create / Update investigations` and `Ask for knowledge enrichment` capabilities. |
 
-With view access to the investigation and the capability to open results, you can open the results of an enrichment but not add them or mark them as reviewed; the dialog says so. See [Access control](dashboards.md#access-control) for the levels of access and [Users and roles](../administration/users.md) for the capabilities.
+With view access to the investigation and the capability to open results, you can open the results of an enrichment but not add them or mark them as reviewed; the dialog says so.
+
+With edit access but without the `Ask for knowledge enrichment` or the `Create / Update investigations` capability, **Review all**, **Review results**, **Add all to graph** and **Mark as reviewed** stay visible but disabled, and their tooltip names the capabilities you need.
+
+See [Access control](dashboards.md#access-control) for the levels of access and [Users and roles](../administration/users.md) for the capabilities.
 
 
 ## Capitalize on an investigation

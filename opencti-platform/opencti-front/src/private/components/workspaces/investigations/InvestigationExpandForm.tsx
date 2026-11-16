@@ -5,6 +5,7 @@ import { useFormatter } from '../../../../components/i18n';
 import CheckboxesField from '../../../../components/CheckboxesField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { FieldOption } from '../../../../utils/field';
+import DisabledReasonTooltip from '@common/tooltip/DisabledReasonTooltip';
 
 type InvestigationExpandFormData = {
   entity_types: FieldOption[];
@@ -14,6 +15,8 @@ type InvestigationExpandFormData = {
 
 export interface InvestigationExpandFormProps {
   disabled?: boolean;
+  /** Said under the form and in the tooltip of its actions when it is disabled, instead of the view access message. */
+  disabledReason?: string;
   targets: FieldOption[];
   relationships: FieldOption[];
   onDismiss?: () => void;
@@ -31,6 +34,7 @@ const InvestigationExpandForm = ({
   onReset,
   onSubmit,
   disabled = false,
+  disabledReason,
 }: InvestigationExpandFormProps) => {
   const { t_i18n } = useFormatter();
 
@@ -80,7 +84,7 @@ const InvestigationExpandForm = ({
 
               {disabled && (
                 <Text variant="content-compact">
-                  {t_i18n('You have view access to this investigation: you can see the results but not add them or mark them as reviewed')}
+                  {disabledReason ?? t_i18n('You have view access to this investigation: you can see the results but not add them or mark them as reviewed')}
                 </Text>
               )}
             </Stack>
@@ -89,13 +93,15 @@ const InvestigationExpandForm = ({
           <DialogFooter>
             {onDismiss && (
               <>
-                <Button
-                  priority="tertiary"
-                  onClick={onDismiss}
-                  disabled={isSubmitting || disabled}
-                >
-                  {t_i18n('Mark as reviewed')}
-                </Button>
+                <DisabledReasonTooltip reason={disabled ? disabledReason ?? null : null} label={t_i18n('Mark as reviewed')}>
+                  <Button
+                    priority="tertiary"
+                    onClick={onDismiss}
+                    disabled={isSubmitting || disabled}
+                  >
+                    {t_i18n('Mark as reviewed')}
+                  </Button>
+                </DisabledReasonTooltip>
                 <div style={{ flex: 1 }} />
               </>
             )}
@@ -106,12 +112,14 @@ const InvestigationExpandForm = ({
             >
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting || disabled || (values.entity_types.length === 0 && values.relationship_types.length === 0)}
-            >
-              {t_i18n('Expand')}
-            </Button>
+            <DisabledReasonTooltip reason={disabled ? disabledReason ?? null : null} label={t_i18n('Expand')}>
+              <Button
+                onClick={submitForm}
+                disabled={isSubmitting || disabled || (values.entity_types.length === 0 && values.relationship_types.length === 0)}
+              >
+                {t_i18n('Expand')}
+              </Button>
+            </DisabledReasonTooltip>
           </DialogFooter>
         </Form>
       )}

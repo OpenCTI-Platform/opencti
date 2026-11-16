@@ -1,11 +1,14 @@
 import { Alert, Button, DialogBody, DialogFooter, Text } from '@filigran/design-system';
 import { useFormatter } from '../../../../../components/i18n';
+import DisabledReasonTooltip from '@common/tooltip/DisabledReasonTooltip';
 
 interface InvestigationEnrichmentExpandEmptyProps {
   onClose: () => void;
   onDismiss: () => void;
   onOpenGraphExpand?: () => void;
   canEdit: boolean;
+  /** Why an editor cannot review the results: disables the actions and says so in their tooltip. */
+  disabledReason?: string;
 }
 
 const InvestigationEnrichmentExpandEmpty = ({
@@ -13,8 +16,10 @@ const InvestigationEnrichmentExpandEmpty = ({
   onDismiss,
   onOpenGraphExpand,
   canEdit,
+  disabledReason,
 }: InvestigationEnrichmentExpandEmptyProps) => {
   const { t_i18n } = useFormatter();
+  const disabled = !canEdit || !!disabledReason;
 
   return (
     <>
@@ -30,14 +35,16 @@ const InvestigationEnrichmentExpandEmpty = ({
               title={t_i18n('Expand with data in the platform')}
               description={t_i18n('Select from the connected data already present in the platform')}
               action={(
-                <Button
-                  priority="secondary"
-                  size="sm"
-                  onClick={onOpenGraphExpand}
-                  disabled={!canEdit}
-                >
-                  {t_i18n('Expand')}
-                </Button>
+                <DisabledReasonTooltip reason={disabledReason ?? null} label={t_i18n('Expand')}>
+                  <Button
+                    priority="secondary"
+                    size="sm"
+                    onClick={onOpenGraphExpand}
+                    disabled={disabled}
+                  >
+                    {t_i18n('Expand')}
+                  </Button>
+                </DisabledReasonTooltip>
               )}
             />
           )}
@@ -51,13 +58,15 @@ const InvestigationEnrichmentExpandEmpty = ({
         >
           {t_i18n('Cancel')}
         </Button>
-        <Button
-          priority="primary"
-          onClick={onDismiss}
-          disabled={!canEdit}
-        >
-          {t_i18n('Mark as reviewed')}
-        </Button>
+        <DisabledReasonTooltip reason={disabledReason ?? null} label={t_i18n('Mark as reviewed')}>
+          <Button
+            priority="primary"
+            onClick={onDismiss}
+            disabled={disabled}
+          >
+            {t_i18n('Mark as reviewed')}
+          </Button>
+        </DisabledReasonTooltip>
       </DialogFooter>
     </>
   );

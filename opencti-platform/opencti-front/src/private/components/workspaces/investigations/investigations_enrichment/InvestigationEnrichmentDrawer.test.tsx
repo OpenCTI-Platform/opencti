@@ -1,5 +1,5 @@
 import React from 'react';
-import { act } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../../utils/tests/test-render';
 import InvestigationEnrichmentDrawer from './InvestigationEnrichmentDrawer';
@@ -7,6 +7,12 @@ import { Investigation, InvestigationWorkSorted } from './investigation-enrichme
 
 const mocks = vi.hoisted(() => ({
   launch: vi.fn(),
+  expand: vi.fn(),
+  rights: { canLaunch: true, canEdit: true, reviewDisabledReason: undefined as string | undefined },
+}));
+
+vi.mock('../../../../../utils/Security', () => ({
+  default: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('../../../common/drawer/Drawer', () => ({
@@ -22,7 +28,12 @@ vi.mock('./InvestigationEnrichmentLaunch', () => ({
 
 vi.mock('./InvestigationEnrichmentDrawerTabs', () => ({ default: () => null }));
 vi.mock('./InvestigationEnrichmentWorkList', () => ({ default: () => null }));
-vi.mock('./InvestigationEnrichmentExpand', () => ({ default: () => null }));
+vi.mock('./InvestigationEnrichmentExpand', () => ({
+  default: (props: Record<string, unknown>) => {
+    mocks.expand(props);
+    return null;
+  },
+}));
 vi.mock('./InvestigationEnrichmentAddAllDialog', () => ({ default: () => null }));
 
 vi.mock('./useInvestigationEnrichmentExpand', () => ({
@@ -30,7 +41,7 @@ vi.mock('./useInvestigationEnrichmentExpand', () => ({
 }));
 
 vi.mock('./useInvestigationEnrichmentRights', () => ({
-  default: () => ({ canLaunch: true, canEdit: true }),
+  default: () => mocks.rights,
 }));
 
 vi.mock('../../../../../utils/hooks/useApiMutation', () => ({
@@ -53,14 +64,14 @@ const lastLaunchProps = () => {
 
 const works: InvestigationWorkSorted = { ongoing: new Map(), done: new Map(), toreview: new Map() };
 
-const renderDrawer = (onLaunched: () => void, askRefresh: () => void) => testRender(
+const renderDrawer = (onLaunched: () => void, askRefresh: () => void, drawerWorks = works) => testRender(
   <InvestigationEnrichmentDrawer
     open
     onClose={() => {}}
     tab="toreview"
     onTabChange={() => {}}
     investigation={{ id: 'investigation-1', currentUserAccessRight: 'admin' } as Investigation}
-    works={works}
+    works={drawerWorks}
     isSending={false}
     onLaunched={onLaunched}
     askRefresh={askRefresh}
@@ -77,5 +88,28 @@ describe('InvestigationEnrichmentDrawer', () => {
 
     expect(onLaunched).toHaveBeenCalledTimes(1);
     expect(askRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('disables the review of all results for an editor who cannot review them, saying why', async () => {
+    mocks.rights = { canLaunch: false, canEdit: true, reviewDisabledReason: 'Missing capabilities' };
+    const toReview = new Map([['ip-1', [{ id: 'work-1', errors: [] } as never]]]);
+    const { user } = renderDrawer(vi.fn(), vi.fn(), { ...works, toreview: toReview });
+
+    const reviewAll = screen.getByRole('button', { name: 'Review all (1)' });
+    expect(reviewAll).toHaveAttribute('aria-disabled', 'true');
+    expect(reviewAll).toHaveAccessibleDescription('Missing capabilities');
+    await user.click(reviewAll);
+    expect(mocks.expand).not.toHaveBeenLastCalledWith(expect.objectContaining({ works: [expect.anything()] }));
+  });
+
+  it('opens the review of all results for an editor allowed to review them', async () => {
+    mocks.rights = { canLaunch: true, canEdit: true, reviewDisabledReason: undefined };
+    const work = { id: 'work-1', errors: [] } as never;
+    const { user } = renderDrawer(vi.fn(), vi.fn(), { ...works, toreview: new Map([['ip-1', [work]]]) });
+
+    await user.click(screen.getByRole('button', { name: 'Review all (1)' }));
+
+    const { calls } = mocks.expand.mock;
+    expect(calls[calls.length - 1][0]).toEqual(expect.objectContaining({ works: [work], canEdit: true, reviewDisabledReason: undefined }));
   });
 });

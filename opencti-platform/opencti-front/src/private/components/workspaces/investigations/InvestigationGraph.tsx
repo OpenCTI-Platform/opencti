@@ -26,6 +26,8 @@ import useDebounceCallback from '../../../../utils/hooks/useDebounceCallback';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
 import { ObjectToParse } from '../../../../components/graph/utils/useGraphParser';
+import { useFormatter } from '../../../../components/i18n';
+import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 const investigationGraphDataFragment = graphql`
   fragment InvestigationGraphData_fragment on Workspace {
@@ -447,7 +449,7 @@ const InvestigationGraphComponent = ({
   const ref = useRef(null);
   const theme = useTheme<Theme>();
   const bannerHeight = useSettingsMessagesBannerHeight();
-  const { rawObjects } = useGraphContext();
+  const { rawObjects, editDisabledReason } = useGraphContext();
 
   const {
     addLink,
@@ -482,6 +484,8 @@ const InvestigationGraphComponent = ({
   };
 
   const savePositions = (positions: OctiGraphPositions) => {
+    // The server refuses the positions of a member who cannot change the investigation: they stay in this view only.
+    if (editDisabledReason) return;
     commitEditPositions({
       variables: {
         id: investigation.id,
@@ -622,7 +626,10 @@ const InvestigationGraphLoader = ({
   pageSize,
   ...otherProps
 }: InvestigationGraphLoaderProps) => {
+  const { t_i18n } = useFormatter();
   const localStorageKey = `investigation-graph-${investigationId}`;
+  const { currentUserAccessRight } = useFragment(investigationGraphFragment, otherProps.dataInvestigation);
+  const { canEdit } = useGetCurrentUserAccessRight(currentUserAccessRight);
   const [dataLoaded, setDataLoaded] = useState(0);
 
   const {
@@ -680,6 +687,7 @@ const InvestigationGraphLoader = ({
       objects={objects}
       positions={positions}
       context="investigation"
+      editDisabledReason={canEdit ? undefined : t_i18n('You have view access to this investigation')}
     >
       <InvestigationGraphComponent
         currentData={dataLoaded}

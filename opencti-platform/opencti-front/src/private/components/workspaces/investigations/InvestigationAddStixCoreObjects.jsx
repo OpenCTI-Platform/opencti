@@ -1,7 +1,5 @@
 import React, { useRef, useState } from 'react';
-import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
-import Tooltip from '@mui/material/Tooltip';
 import InvestigationAddStixCoreObjectsLines, { investigationAddStixCoreObjectsLinesQuery } from './InvestigationAddStixCoreObjectsLines';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -12,6 +10,7 @@ import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import Drawer from '../../common/drawer/Drawer';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import StixDomainObjectCreation from '../../common/stix_domain_objects/StixDomainObjectCreation';
+import GraphToolbarItem from '../../../../components/graph/components/GraphToolbarItem';
 
 const InvestigationAddStixCoreObjects = (props) => {
   const {
@@ -26,6 +25,7 @@ const InvestigationAddStixCoreObjects = (props) => {
     workspaceStixCoreObjects,
     open: controlledOpen,
     onOpenChange,
+    disabledReason,
   } = props;
   const { t_i18n } = useFormatter();
   const { stixDomainObjectTypes, stixCyberObservableTypes } = useAttributes();
@@ -151,15 +151,13 @@ const InvestigationAddStixCoreObjects = (props) => {
   return (
     <>
       {!mapping && (
-        <Tooltip title={t_i18n('Add an entity to this investigation')}>
-          <IconButton
-            color="primary"
-            onClick={() => setOpen(true)}
-            aria-label={t_i18n('Add an entity to this investigation')}
-          >
-            <Add />
-          </IconButton>
-        </Tooltip>
+        <GraphToolbarItem
+          Icon={<Add />}
+          color="primary"
+          onClick={() => setOpen(true)}
+          title={t_i18n('Add an entity to this investigation')}
+          disabledReason={disabledReason}
+        />
       )}
       <Drawer
         open={mapping ? openDrawer : open}

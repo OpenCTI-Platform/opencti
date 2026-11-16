@@ -253,6 +253,7 @@ const GraphToolbarExpandTools = ({
   const {
     graphData,
     rawObjects,
+    editDisabledReason,
     graphState: {
       selectedNodes,
       selectedLinks,
@@ -322,7 +323,7 @@ const GraphToolbarExpandTools = ({
         color="primary"
         onClick={() => setRollBackOpen(true)}
         title={t_i18n('Restore the state of the graphic before the last expansion')}
-        disabledReason={containsExpandOp() ? undefined : t_i18n('No expansion to roll back yet')}
+        disabledReason={editDisabledReason ?? (containsExpandOp() ? undefined : t_i18n('No expansion to roll back yet'))}
       />
 
       <InvestigationRollBackExpandDialog
@@ -336,7 +337,7 @@ const GraphToolbarExpandTools = ({
         color="primary"
         onClick={() => setIsExpandOpen(true)}
         title={t_i18n('Expand the selected entities')}
-        disabledReason={selectedNodes.length === 0 ? t_i18n('Select entities first') : undefined}
+        disabledReason={editDisabledReason ?? (selectedNodes.length === 0 ? t_i18n('Select entities first') : undefined)}
       />
 
       <Dialog
