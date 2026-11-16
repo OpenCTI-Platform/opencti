@@ -9,12 +9,14 @@ export interface DashboardVariableDeleteDialogProps {
   variable: DashboardVariable;
   // The widgets using the variable: deleting it is never blocked, they only lose their data.
   widgets: readonly { id: string; title: string }[];
+  // The presets holding a value for the variable: that value goes with it.
+  presetCount?: number;
   // May reject: the caller already notified the user, the dialog then stays open.
   onConfirm: () => Promise<void>;
   onClose: () => void;
 }
 
-const DashboardVariableDeleteDialog = ({ open, variable, widgets, onConfirm, onClose }: DashboardVariableDeleteDialogProps) => {
+const DashboardVariableDeleteDialog = ({ open, variable, widgets, presetCount = 0, onConfirm, onClose }: DashboardVariableDeleteDialogProps) => {
   const { t_i18n } = useFormatter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -54,6 +56,11 @@ const DashboardVariableDeleteDialog = ({ open, variable, widgets, onConfirm, onC
                   {widgets.map(({ id, title }) => <Text key={id} as="li" variant="content-base">{title}</Text>)}
                 </ul>
               </>
+            )}
+            {presetCount > 0 && (
+              <Text variant="content-base" data-testid="dashboard-variable-delete-presets">
+                {t_i18n('Its value will also be removed from {count} preset(s).', { values: { count: presetCount } })}
+              </Text>
             )}
           </div>
         </DialogBody>

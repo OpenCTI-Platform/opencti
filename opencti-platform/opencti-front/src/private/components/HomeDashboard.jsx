@@ -542,6 +542,7 @@ const dashboardMeFragment = graphql`
     default_dashboard {
       id
     }
+    default_dashboard_preset
     default_time_field
   }
 `;

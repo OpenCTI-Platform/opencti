@@ -7,8 +7,9 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { AccessOperation, validateUserAccessOperation } from '../../utils/access';
 import { fromB64, toB64 } from '../../utils/base64';
 import { type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE, type StoreEntityWorkspace } from './workspace-types';
-import type { StoreDashboardManifest, StoreDashboardVariable } from './workspace-variables-types';
+import type { StoreDashboardManifest, StoreDashboardPreset, StoreDashboardVariable } from './workspace-variables-types';
 import { buildDashboardVariable } from './workspace-variables-validation';
+import { pruneInvalidPresetValues, removeVariableFromPresets } from './workspace-presets-validation';
 import { buildVariableAuditInput } from './workspace-variables-utils';
 
 const MANIFEST_LOCK_PREFIX = 'workspace-manifest';
@@ -32,7 +33,7 @@ export const withWorkspaceManifestLock = async <T>(workspaceId: string, callback
   }
 };
 
-const loadDashboardForVariableEdition = async (context: AuthContext, user: AuthUser, workspaceId: string) => {
+export const loadDashboardForVariableEdition = async (context: AuthContext, user: AuthUser, workspaceId: string) => {
   const workspace = await storeLoadById<BasicStoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE);
   if (!workspace) throw FunctionalError('Workspace cannot be found', { id: workspaceId });
   if (workspace.type !== 'dashboard') throw FunctionalError('Variables can only be defined on dashboards', { type: workspace.type });
@@ -47,8 +48,10 @@ const saveDashboardVariables = (
   manifest: StoreDashboardManifest,
   variables: StoreDashboardVariable[],
   auditInput: EditInput[],
+  presets?: StoreDashboardPreset[],
 ) => {
-  const input: EditInput[] = [{ key: 'manifest', value: [toB64({ ...manifest, variables })] }];
+  const next = presets ? { ...manifest, variables, presets } : { ...manifest, variables };
+  const input: EditInput[] = [{ key: 'manifest', value: [toB64(next)] }];
   return editInternalObject<StoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, input, {
     auditLogContextSanitizer: () => auditInput,
   });
@@ -62,7 +65,9 @@ export const workspaceVariableUpsert = async (context: AuthContext, user: AuthUs
     const variable = buildDashboardVariable(input, variables);
     const isUpdate = variables.some((v) => v.id === variable.id);
     const nextVariables = isUpdate ? variables.map((v) => (v.id === variable.id ? variable : v)) : [...variables, variable];
-    return saveDashboardVariables(context, user, workspaceId, manifest, nextVariables, buildVariableAuditInput('upsert', variable));
+    // A narrowed selection drops the preset values it no longer accepts, so every preset stays writable through the API.
+    const nextPresets = isUpdate && manifest.presets ? pruneInvalidPresetValues(manifest.presets, variable) : undefined;
+    return saveDashboardVariables(context, user, workspaceId, manifest, nextVariables, buildVariableAuditInput('upsert', variable), nextPresets);
   });
 };
 
@@ -75,6 +80,8 @@ export const workspaceVariableDelete = async (context: AuthContext, user: AuthUs
     if (!variable) throw FunctionalError('Dashboard variable not found', { variableId });
     // Tokens left in widgets become orphans on purpose: recreating the variable with the same id repairs them.
     const nextVariables = variables.filter((v) => v.id !== variableId);
-    return saveDashboardVariables(context, user, workspaceId, manifest, nextVariables, buildVariableAuditInput('delete', variable));
+    // The presets lose the value of this variable and keep the others: a recreated variable gets its default again.
+    const nextPresets = manifest.presets ? removeVariableFromPresets(manifest.presets, variableId) : undefined;
+    return saveDashboardVariables(context, user, workspaceId, manifest, nextVariables, buildVariableAuditInput('delete', variable), nextPresets);
   });
 };

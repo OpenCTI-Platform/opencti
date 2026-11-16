@@ -152,7 +152,7 @@ const PENDING_IGNORED_INPUT_FIELDS = new Set<string>([
 // Attributes the platform owns: a client can never set them on an object (on top of the ones that cannot be updated).
 const PENDING_INTERNAL_ATTRIBUTES = new Set<string>([
   'creator_id', 'x_opencti_stix_ids', 'restricted_members', 'authorized_members_activation_date', 'authorized_authorities', 'grantable_groups',
-  'default_dashboard', 'default_hidden_types', 'custom_field_values', 'pir_information', 'metrics', 'opinions_metrics', 'coverage_information',
+  'default_dashboard', 'default_dashboard_preset', 'default_hidden_types', 'custom_field_values', 'pir_information', 'metrics', 'opinions_metrics', 'coverage_information',
   'history_changes', 'errors', 'draft_context', 'lastEventId', 'x_opencti_graph_data',
 ]);
 

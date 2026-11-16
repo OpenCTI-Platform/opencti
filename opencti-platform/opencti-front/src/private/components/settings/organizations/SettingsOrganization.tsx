@@ -44,6 +44,7 @@ const settingsOrganizationFragment = graphql`
         member_id
       }
     }
+    default_dashboard_preset
     members {
       edges {
         node {
