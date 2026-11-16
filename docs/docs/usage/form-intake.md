@@ -5,7 +5,7 @@ The Form Intake allows administrators to design structured forms that analysts f
 
 ## Key features
 
-- Visual form designer with field configuration and reordering of 16 supported field types (text, date, select, toggle, lookup, vocabulary, etc.)
+- Visual form designer with field configuration and reordering of 15 supported field types (text, date and time, select, toggle, open vocabulary, files, etc.)
 - Field width control (full, half, third)
 - 4 entity creation modes: Single, Multiple, Parsed, and Lookup
 - Add additional entities and relationships in a single form
@@ -25,7 +25,7 @@ More details on our [Role-Based access control here](../administration/users.md)
 
 When draft creation is enforced, form submissions create entities in a draft workspace for review before publication to knowledge.
 Administrators can optionally allow users to skip draft mode per submission.
-The form intake Authorize Members choice is hidden when the user does not have 'Authorized Members update' rights in draft context. See [Override of capabilities in draft](https://docs.opencti.io/latest/administration/users/?h=capab#override-of-capabilities-in-draft) for details on controlling users capabilities in draft mode.
+The form intake Authorize Members choice is hidden when the user does not have 'Authorized Members update' rights in draft context. See [Control of Capabilities in Draft mode](../administration/users.md#control-of-capabilities-in-draft-mode) for details on controlling users capabilities in draft mode.
 
 
 ### Create knowledge via Form Intake
@@ -113,10 +113,10 @@ For each main entity, you can configure multiple fields:
 
 - **Entity Lookup** (disabled by default): if enabled, users will be forced to choose from existing entities. Another field will appear when you enable this field: **Disable on-the-fly entity creation**
 - **Disable on-the-fly entity creation** (disabled by default): Enable this If you want your users to only select an existing entity. 
-- **Allow multiple instancess of main entity** (disabled by default): Enable this if you want to allow your users to be able to enter the same entity multiple times.  When enabled **multiple instancess mode** will appear. 
+- **Allow multiple instances of main entity** (disabled by default): Enable this if you want to allow your users to be able to enter the same entity multiple times.  When enabled, the **Multiple Mode** option appears. 
 
 #### Multiple Mode for Main Entity
-When enabled multiple instancess of the same entity type can be created. 
+When enabled, multiple instances of the same entity type can be created. 
 You can choose between 'Multiple fields' or 'Parsed values'.
 
    - **Multiple fields** (default): users are presented with a button to create a new instance of the same type of entity.
@@ -163,22 +163,23 @@ Options for each field:
 
 We support the following field types: 
 
-|Field | Type |	Description|
-|:-----|:-----|:-----------|
-|Text |	Single-line |text input|
-|Text Area	|Multi-line text input|
-|Number	|Numeric input|
-|Date & Time|	Date and time picker|
-|Checkbox	|Boolean checkbox|
-|Toggle	|Boolean| on/off switch (respects defaultValue — e.g., Malware is_family)|
-|Select	|Single-value| dropdown with predefined options|
-|Multi-select|	Multi-value dropdown|
-|Open Vocabulary|	|Vocabulary-based field with predefined values from OpenCTI vocabularies (auto-detected based on entity type and attribute)|
-|Created By|	|Set the author/creator identity|
-|Object Marking	||Apply marking definitions (TLP, PAP)|
-|Object Label	||Apply labels to created entities|
-|External References|	|Add external references|
-|Files	| |Attach files|
+|Field type | Description|
+|:----------|:-----------|
+|Text | Single-line text input|
+|Text Area | Multi-line text input|
+|Number | Numeric input|
+|Date & Time | Date and time picker|
+|Checkbox | Boolean checkbox|
+|Toggle | Boolean on/off switch (respects defaultValue — e.g., Malware is_family)|
+|Select | Single-value dropdown with predefined options|
+|Multi-Select | Multi-value dropdown|
+|Open Vocabulary | Vocabulary-based field with predefined values from OpenCTI vocabularies (auto-detected based on entity type and attribute)|
+|Created By | Set the author/creator identity|
+|Object Marking | Apply marking definitions (TLP, PAP)|
+|Object Label | Apply labels to created entities|
+|External References | Add external references|
+|Files | Attach files|
+|Types | Observable type selector, applied automatically to the main observable type attribute of an Indicator|
 
 **Warning:** If you have defined additional mandatory fields for an entity (e.g. description) and your description is not added, your entity will not be created. 
 
@@ -192,8 +193,8 @@ Additional entities can be created of the same type.
 
 In addition to the various modes allowed to add additional entities, you have two other options: 
 
-- If you enable the option **"allow multiple instancess"**, then you can specify that this entity is optional by entering 0 in the minimum amount field. This means that you do not require an entity to be created.
-- If you disable the option **"allow multiple instancess"**, then another option is offered to you: **required**. This means that the entity must be provided to submit the form.
+- If you enable the option **"Allow multiple instances"**, then you can specify that this entity is optional by entering 0 in the minimum amount field. This means that you do not require an entity to be created.
+- If you disable the option **"Allow multiple instances"**, then another option is offered to you: **required**. This means that the entity must be provided to submit the form.
 
 The display **label for entity** allows you to set labels so that users who aren't experts in STIX 2.1 can  use the form. For example you can set a label to "attacker" to use in place of intrusion set.
 
