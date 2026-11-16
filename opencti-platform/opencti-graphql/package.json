@@ -65,7 +65,7 @@
     "@graphql-tools/schema": "11.0.9",
     "@graphql-tools/utils": "13.2.2",
     "@jorgeferrero/stream-to-buffer": "2.0.6",
-    "@langchain/core": "1.4.0",
+    "@langchain/core": "1.4.1",
     "@langchain/mistralai": "1.2.0",
     "@langchain/openai": "1.8.4",
     "@lezer/javascript": "1.5.6",
