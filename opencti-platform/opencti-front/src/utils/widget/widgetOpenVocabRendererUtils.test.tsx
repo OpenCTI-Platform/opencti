@@ -1,49 +1,43 @@
 import React from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import testRender from '../tests/test-render';
-import { isVocabularyCategory } from '../vocabulary/vocabularyCategories';
-import { NON_VOCABULARY_TYPES, openVocabListCategories, openVocabSingleCategories } from './widgetOpenVocabRendererUtils';
-import { THREAT_ACTOR_GROUP_SOPHISTICATION_CATEGORY, THREAT_ACTOR_INDIVIDUAL_SOPHISTICATION_CATEGORY } from './widgetCustomAttributesRendererUtils';
 import ItemOpenVocab from '../../components/ItemOpenVocab';
 
-describe('widget open vocabulary renderers', () => {
-  const categories = [
-    ...Object.values(openVocabSingleCategories),
-    ...Object.values(openVocabListCategories),
-    THREAT_ACTOR_GROUP_SOPHISTICATION_CATEGORY,
-    THREAT_ACTOR_INDIVIDUAL_SOPHISTICATION_CATEGORY,
-  ].filter((category) => !NON_VOCABULARY_TYPES.includes(category));
-
-  it.each(categories)('passes %s, a VocabularyCategory enum member', (category) => {
-    expect(isVocabularyCategory(category)).toBe(true);
-  });
+// The categories the backend serves (vocabularyCategories); this module otherwise preloads its query on the application environment at import time.
+vi.mock('../hooks/useVocabularyCategory', () => {
+  const categories = ['malware_type_ov', 'threat_actor_individual_sophistication_ov'];
+  return {
+    default: () => ({
+      findCategory: (type: string) => categories.find((c) => c === type.toLowerCase().replaceAll('-', '_')),
+    }),
+  };
 });
 
-describe('isVocabularyCategory', () => {
-  it('rejects names outside the enum', () => {
-    expect(isVocabularyCategory('threat-actor-individual-sophistication-ov')).toBe(false);
-    expect(isVocabularyCategory('observable_types_ov')).toBe(false);
-    expect(isVocabularyCategory('')).toBe(false);
-    expect(isVocabularyCategory(undefined)).toBe(false);
-  });
-});
-
-describe('ItemOpenVocab chip with a type outside the enum', () => {
-  it('renders the plain chip without sending a vocabulary query', () => {
+describe('ItemOpenVocab chip', () => {
+  it('renders the plain chip without sending a vocabulary query when no category matches the type', () => {
     const { relayEnv } = testRender(
-      <ItemOpenVocab displayMode="chip" type="threat-actor-individual-sophistication-ov" value="expert" />,
+      <ItemOpenVocab displayMode="chip" type="observable_types_ov" value="IPv4-Addr" />,
     );
-    expect(screen.getByText('expert')).toBeInTheDocument();
+    expect(screen.getByText('IPv4-Addr')).toBeInTheDocument();
     expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
   });
 
-  it('queries the vocabulary of an enum member', () => {
+  it('queries the vocabulary of a known category', () => {
     const { relayEnv } = testRender(
       <ItemOpenVocab displayMode="chip" type="threat_actor_individual_sophistication_ov" value="expert" />,
     );
     const operations = relayEnv.mock.getAllOperations();
     expect(operations).toHaveLength(1);
     expect(operations[0].request.variables).toEqual({ category: 'threat_actor_individual_sophistication_ov' });
+  });
+
+  it('queries the normalized category of a hyphenated type', () => {
+    const { relayEnv } = testRender(
+      <ItemOpenVocab displayMode="chip" type="malware-type-ov" value="ransomware" />,
+    );
+    const operations = relayEnv.mock.getAllOperations();
+    expect(operations).toHaveLength(1);
+    expect(operations[0].request.variables).toEqual({ category: 'malware_type_ov' });
   });
 });

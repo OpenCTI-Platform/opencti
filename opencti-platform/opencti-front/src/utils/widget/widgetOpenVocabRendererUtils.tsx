@@ -2,6 +2,7 @@ import React from 'react';
 import { Stack } from '@mui/material';
 import ItemOpenVocab from '../../components/ItemOpenVocab';
 import FieldOrEmpty from '../../components/FieldOrEmpty';
+import type { VocabularyCategory } from '../hooks/__generated__/useVocabularyEntriesQuery.graphql';
 
 const renderSingleOpenVocab = (
   data: Record<string, unknown>,
@@ -47,10 +48,10 @@ const renderOpenVocabList = (
 };
 
 // Observable types are entity types, not a vocabulary: no VocabularyCategory holds them, so their chip stays plain
-export const NON_VOCABULARY_TYPES = ['observable_types_ov'];
+type NonVocabularyType = 'observable_types_ov';
 
-// The vocabulary of each single-value attribute: a VocabularyCategory enum member (or a NON_VOCABULARY_TYPES entry)
-export const openVocabSingleCategories: Record<string, string> = {
+// The vocabulary of each single-value attribute: typed against the generated enum, so a name outside it fails the type check
+export const openVocabSingleCategories: Record<string, VocabularyCategory | NonVocabularyType> = {
   entity_type: 'observable_types_ov',
   priority: 'case_priority_ov',
   severity: 'case_severity_ov',
@@ -66,8 +67,8 @@ export const openVocabSingleCategories: Record<string, string> = {
   x_opencti_reliability: 'reliability_ov',
 };
 
-// The vocabulary of each multi-value attribute: a VocabularyCategory enum member (or a NON_VOCABULARY_TYPES entry)
-export const openVocabListCategories: Record<string, string> = {
+// The vocabulary of each multi-value attribute: typed against the generated enum, so a name outside it fails the type check
+export const openVocabListCategories: Record<string, VocabularyCategory | NonVocabularyType> = {
   threat_actor_types: 'threat_actor_group_type_ov',
   malware_types: 'malware_type_ov',
   channel_types: 'channel_types_ov',

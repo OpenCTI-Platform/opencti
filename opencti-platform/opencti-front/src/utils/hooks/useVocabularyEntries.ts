@@ -29,7 +29,7 @@ export interface VocabularyEntry {
  * The entries of one vocabulary, keyed by value, with the colour and the display description of each.
  * Read once per category from the store (store-or-network): every tag of the same category shares one request.
  * Suspends: render it under a Suspense boundary whose fallback is the neutral tag.
- * Takes an enum member only: check a free-form name with isVocabularyCategory first (a name outside the enum makes the request throw).
+ * Takes an enum member only: resolve a free-form name with useVocabularyCategory().findCategory first (a name outside the enum makes the request throw).
  */
 const useVocabularyEntries = (category: VocabularyCategory): Map<string, VocabularyEntry> => {
   const data = useLazyLoadQuery<useVocabularyEntriesQuery>(

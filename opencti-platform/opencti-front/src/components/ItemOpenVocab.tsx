@@ -7,7 +7,7 @@ import { EMPTY_VALUE } from '../utils/String';
 import { useFormatter } from './i18n';
 import useVocabularyEntries from '../utils/hooks/useVocabularyEntries';
 import { vocabularyValueLabel } from '../utils/vocabulary/vocabularyDisplay';
-import { isVocabularyCategory } from '../utils/vocabulary/vocabularyCategories';
+import useVocabularyCategory from '../utils/hooks/useVocabularyCategory';
 import type { VocabularyCategory } from '../utils/hooks/__generated__/useVocabularyEntriesQuery.graphql';
 
 interface ItemOpenVocabProps {
@@ -51,6 +51,16 @@ const ColoredVocabTag: FunctionComponent<VocabTagProps & { type: VocabularyCateg
   );
 };
 
+// The coloured tag when the type names a vocabulary category the platform knows (useVocabularyCategory, preloaded from the backend),
+// the plain tag otherwise: querying a name outside the VocabularyCategory enum would throw and take the whole view down
+const VocabTag: FunctionComponent<VocabTagProps> = ({ type, value, humanLabel, icon }) => {
+  const { findCategory } = useVocabularyCategory();
+  const category = findCategory(type);
+  return category
+    ? <ColoredVocabTag type={category} value={value} humanLabel={humanLabel} icon={icon} />
+    : <PlainVocabTag type={type} value={value} humanLabel={humanLabel} icon={icon} />;
+};
+
 const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({
   type,
   value,
@@ -73,12 +83,11 @@ const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({
       tag = <ItemSeverity label={value} severity={value} />;
     } else if (type === 'case_priority_ov') {
       tag = <ItemPriority label={value} priority={value} />;
-    } else if (isVocabularyCategory(type)) {
+    } else {
       // Every other vocabulary takes the colour of its entry when it has one (seeded or set in Settings > Taxonomies > Vocabularies).
-      // A type outside the VocabularyCategory enum keeps the plain tag: querying it would throw and take the whole view down.
       tag = (
         <Suspense fallback={tag}>
-          <ColoredVocabTag type={type} value={value} humanLabel={humanLabel} icon={icon} />
+          <VocabTag type={type} value={value} humanLabel={humanLabel} icon={icon} />
         </Suspense>
       );
     }
