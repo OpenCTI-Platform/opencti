@@ -237,6 +237,55 @@ describe('extractObservablesFromIndicatorPattern - string literal escapes', () =
     const observables = extractObservablesFromIndicatorPattern("[domain-name:value = 'example.com']");
     expect(observables).toEqual([{ type: 'Domain-Name', value: 'example.com' }]);
   });
+
+  it('should decode quoted path keys', () => {
+    expect(extractObservablesFromIndicatorPattern("[file:'name' = 'x.exe']")).toEqual([{ type: 'StixFile', name: 'x.exe' }]);
+    expect(extractObservablesFromIndicatorPattern("[file:hashes.'SHA-256' = 'abc123']")).toEqual([{ type: 'StixFile', hashes: { 'SHA-256': 'abc123' } }]);
+  });
+});
+
+describe('extractObservablesFromIndicatorPattern - prefixed literals', () => {
+  it('should drop the prefix and quotes of a hex literal', () => {
+    const observables = extractObservablesFromIndicatorPattern("[file:hashes.MD5 = h'd41d8cd98f00b204e9800998ecf8427e']");
+    expect(observables).toEqual([{ type: 'StixFile', hashes: { MD5: 'd41d8cd98f00b204e9800998ecf8427e' } }]);
+  });
+
+  it('should drop the prefix and quotes of a binary literal', () => {
+    const observables = extractObservablesFromIndicatorPattern("[file:name = b'aGVsbG8=']");
+    expect(observables).toEqual([{ type: 'StixFile', name: 'aGVsbG8=' }]);
+  });
+
+  it('should drop the prefix and quotes of a timestamp literal', () => {
+    const observables = extractObservablesFromIndicatorPattern("[file:name = t'2020-01-01T00:00:00Z']");
+    expect(observables).toEqual([{ type: 'StixFile', name: '2020-01-01T00:00:00Z' }]);
+  });
+});
+
+describe('extractObservablesFromIndicatorPattern - comparison operators', () => {
+  it.each([
+    "[domain-name:value != 'google.com']",
+    "[domain-name:value NOT = 'google.com']",
+  ])('should not create an observable from a negated comparison %s', (pattern) => {
+    expect(extractObservablesFromIndicatorPattern(pattern)).toEqual([]);
+  });
+
+  it('should treat NOT != as an equality', () => {
+    const observables = extractObservablesFromIndicatorPattern("[domain-name:value NOT != 'example.com']");
+    expect(observables).toEqual([{ type: 'Domain-Name', value: 'example.com' }]);
+  });
+
+  it('should not take the literals of an IN set after an equality as observables', () => {
+    const pattern = "[ipv4-addr:value = '9.9.9.9' OR ipv4-addr:value IN ('1.1.1.1', '2.2.2.2')]";
+    expect(extractObservablesFromIndicatorPattern(pattern)).toEqual([{ type: 'IPv4-Addr', value: '9.9.9.9' }]);
+  });
+
+  it('should keep every equality of a multi-comparison pattern', () => {
+    const pattern = "[domain-name:value = 'a.com' OR domain-name:value != 'b.com' OR domain-name:value = 'c.com']";
+    expect(extractObservablesFromIndicatorPattern(pattern)).toEqual([
+      { type: 'Domain-Name', value: 'a.com' },
+      { type: 'Domain-Name', value: 'c.com' },
+    ]);
+  });
 });
 
 describe('extractObservablesFromIndicatorPattern - prototype pollution', () => {

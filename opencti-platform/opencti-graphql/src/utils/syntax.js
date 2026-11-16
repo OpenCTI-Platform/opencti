@@ -37,18 +37,42 @@ const parsePattern = (pattern) => {
   return { parser, parsedPattern: parser.pattern() };
 };
 
-// A STIX StringLiteral token is single-quoted; prefixed literals (b'..', h'..', t'..') are not string literals.
-const isStringLiteral = (text) => text.length >= 2 && text.startsWith('\'') && text.endsWith('\'');
-
 // The STIX pattern grammar only allows two escape sequences in a StringLiteral: \' and \\.
 // Decode them so the extracted value is the real one, e.g. 'a=\'b\'' becomes a='b'.
 const decodeStringLiteral = (text) => text.slice(1, -1).replace(/\\(['\\])/g, '$1');
 
+// Path keys are either a bare identifier or a quoted StringLiteral, e.g. hashes.'SHA-256'.
+const decodePathKey = (ctx) => {
+  const stringLiteral = ctx.StringLiteral();
+  return stringLiteral ? decodeStringLiteral(stringLiteral.getText()) : ctx.IdentifierWithoutHyphen().getText();
+};
+
+const decodePrimitiveLiteral = (ctx) => {
+  const literal = ctx.orderableLiteral();
+  if (!literal) {
+    return ctx.getText(); // BoolLiteral
+  }
+  if (literal.StringLiteral()) {
+    return decodeStringLiteral(literal.getText());
+  }
+  if (literal.HexLiteral() || literal.BinaryLiteral() || literal.TimestampLiteral()) {
+    return literal.getText().slice(2, -1); // h'..', b'..' and t'..': drop the prefix and the quotes
+  }
+  return literal.getText(); // Numbers
+};
+
 export const extractObservablesFromIndicatorPattern = (pattern) => {
   const observables = [];
   class ObservableBuilder extends STIXPatternListener {
-    enterPropTestEqual() {
-      this.element = {};
+    enterPropTestEqual(ctx) {
+      // Only an equality describes an observable: `!=` and `NOT =` exclude the value instead (`NOT !=` is an equality).
+      const isEquality = Boolean(ctx.EQ()) !== Boolean(ctx.NOT());
+      this.element = isEquality ? {} : undefined;
+    }
+
+    exitPropTestEqual() {
+      // Reset so literals of a following comparison (e.g. an IN set) are not taken as observables.
+      this.element = undefined;
     }
 
     enterObjectType(ctx) {
@@ -71,8 +95,8 @@ export const extractObservablesFromIndicatorPattern = (pattern) => {
     }
 
     enterFirstPathComponent(ctx) {
-      const key = ctx.getText();
       if (this.element) {
+        const key = decodePathKey(ctx);
         const instance = { entity_type: this.element.type, base_type: BASE_TYPE_ENTITY };
         try {
           if (isFieldContributingToStandardId(instance, [key])) {
@@ -88,16 +112,14 @@ export const extractObservablesFromIndicatorPattern = (pattern) => {
     }
 
     enterKeyPathStep(ctx) {
-      const text = ctx.getText();
       if (this.element) {
-        this.element.component += text.replaceAll('\'', '');
+        this.element.component += `.${decodePathKey(ctx)}`;
       }
     }
 
     enterPrimitiveLiteral(ctx) {
       if (this.element) {
-        const text = ctx.getText();
-        const val = isStringLiteral(text) ? decodeStringLiteral(text) : text.replaceAll('\'', '');
+        const val = decodePrimitiveLiteral(ctx);
         const data = { type: this.element.type, [this.element.component]: val };
         const unflat = unflatten(data);
         observables.push(unflat);
