@@ -720,10 +720,21 @@ describe('Local authentication lockout', () => {
     const mfaUser = () => ({ id: mfaUserId, user_email: MFA_USER.email, otp_activated: true, otp_secret: mfaSecret }) as AuthUser;
     // The session of a local password login, waiting for its MFA code
     const otpLogin = (code: string, provider = 'local') => otpUserLogin({ session: { user: {}, save: () => {}, session_provider: provider } }, mfaUser(), { code });
-    const validCode = () => totp.generate({ secret: mfaSecret });
+    // A code is valid for its 30 seconds step only, without any tolerance: a code generated at the end of a step
+    // would be checked in the next one, and rejected. So when the step is about to end, the code of the next step is generated
+    const TOTP_STEP_MS = 30 * 1000;
+    const validCode = async () => {
+      const remainingMs = TOTP_STEP_MS - (Date.now() % TOTP_STEP_MS);
+      if (remainingMs < 2000) {
+        await new Promise((resolve) => {
+          setTimeout(resolve, remainingMs);
+        });
+      }
+      return totp.generate({ secret: mfaSecret });
+    };
     // Any other 6 digits code than the valid one
     const wrongCode = async () => {
-      const code = await validCode();
+      const code = await totp.generate({ secret: mfaSecret });
       return `${code.slice(0, 5)}${(Number(code[5]) + 1) % 10}`;
     };
 
