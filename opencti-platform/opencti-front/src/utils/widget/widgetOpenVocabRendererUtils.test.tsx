@@ -4,10 +4,7 @@ import { screen } from '@testing-library/react';
 import testRender from '../tests/test-render';
 import { isVocabularyCategory } from '../vocabulary/vocabularyCategories';
 import { NON_VOCABULARY_TYPES, openVocabListCategories, openVocabSingleCategories } from './widgetOpenVocabRendererUtils';
-import {
-  THREAT_ACTOR_GROUP_SOPHISTICATION_CATEGORY,
-  THREAT_ACTOR_INDIVIDUAL_SOPHISTICATION_CATEGORY,
-} from './widgetCustomAttributesRendererUtils';
+import { THREAT_ACTOR_GROUP_SOPHISTICATION_CATEGORY, THREAT_ACTOR_INDIVIDUAL_SOPHISTICATION_CATEGORY } from './widgetCustomAttributesRendererUtils';
 import ItemOpenVocab from '../../components/ItemOpenVocab';
 
 describe('widget open vocabulary renderers', () => {
