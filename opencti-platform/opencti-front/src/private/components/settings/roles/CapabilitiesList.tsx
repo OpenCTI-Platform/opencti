@@ -8,14 +8,22 @@ import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
 import { useFormatter } from '../../../../components/i18n';
 import { roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
-import { Role_role$data } from './__generated__/Role_role.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 import { Stack } from '@mui/material';
 
+type CapabilityRefs = ReadonlyArray<{ readonly name: string } | null | undefined> | null | undefined;
+
+/** A role, or a user (whose capabilities are those of all its roles). */
+interface CapabilitiesHolder {
+  readonly capabilities?: CapabilityRefs;
+  readonly capabilitiesInDraft?: CapabilityRefs;
+  readonly can_manage_sensitive_config?: boolean | null;
+}
+
 interface CapabilitiesListProps {
   queryRef: PreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>;
-  role: Role_role$data;
+  role: CapabilitiesHolder;
   isCapabilitiesInDraft?: boolean;
 }
 

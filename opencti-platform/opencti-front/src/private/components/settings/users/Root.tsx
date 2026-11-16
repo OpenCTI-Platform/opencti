@@ -22,6 +22,7 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import UserEdition from './UserEdition';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import UserHistoryTab from './UserHistoryTab';
+import UserCapabilitiesTab from './UserCapabilitiesTab';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
 
@@ -82,6 +83,7 @@ const userQuery = graphql`
       )
       ...UserAnalytics_user
       ...UserHistoryTab_user
+      ...UserCapabilitiesTab_user
     }
   }
 `;
@@ -185,6 +187,14 @@ const RootUserComponent = ({ queryRef, userId, refetch }: RootUserComponentProps
               <TabsTrigger value={`/dashboard/settings/accesses/users/${data.id}/history`} asChild>
                 <Link to={`/dashboard/settings/accesses/users/${data.id}/history`}>{t_i18n('History')}</Link>
               </TabsTrigger>
+              {hasSetAccess && (
+                <TabsTrigger
+                  value={`/dashboard/settings/accesses/users/${data.id}/capabilities`}
+                  asChild
+                >
+                  <Link to={`/dashboard/settings/accesses/users/${data.id}/capabilities`}>{t_i18n('Capabilities')}</Link>
+                </TabsTrigger>
+              )}
             </TabsList>
           </Tabs>
           <Routes>
@@ -204,6 +214,12 @@ const RootUserComponent = ({ queryRef, userId, refetch }: RootUserComponentProps
               path="/history"
               element={(
                 <UserHistoryTab data={data} />
+              )}
+            />
+            <Route
+              path="/capabilities"
+              element={(
+                <UserCapabilitiesTab data={data} />
               )}
             />
           </Routes>
