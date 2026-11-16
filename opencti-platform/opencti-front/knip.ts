@@ -13,5 +13,7 @@ export default defineConfig({
     // Must stay the copy react-pdf resolves: pdf.js throws when the worker and the API
     // differ in version. Declaring it would let the two drift apart.
     'pdfjs-dist',
+    // Run by scripts/lint-parity/sync.mjs (yarn lint:ox:sync) through its package manifest, which knip does not follow.
+    '@oxlint/migrate',
   ],
 });

@@ -1,0 +1,127 @@
+#!/usr/bin/env node
+import fs from 'node:fs';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
+import { oxlintConfigRules, toEslintRuleId } from './normalize.mjs';
+
+// Regenerates .oxlintrc.json from eslint.config.ts (run from a package dir) so that
+// oxlint runs exactly the rules ESLint enables, then reports what could not be carried over.
+
+const ESLINT_CONFIG = 'eslint.config.ts';
+const OXLINTRC = '.oxlintrc.json';
+// Every oxlint category: none may run by default, only the rules ESLint enables.
+const CATEGORIES = ['correctness', 'suspicious', 'pedantic', 'perf', 'style', 'restriction', 'nursery'];
+
+const packageDir = process.cwd();
+
+const fail = (message) => {
+  console.error(`lint-parity sync: ${message}`);
+  process.exit(2);
+};
+
+// The package declares the bin as "@oxlint/migrate", which yarn does not link into node_modules/.bin:
+// the entry point is read from the package manifest instead.
+const migrateEntryPoint = () => {
+  const manifestFile = path.join(packageDir, 'node_modules', '@oxlint', 'migrate', 'package.json');
+  if (!fs.existsSync(manifestFile)) fail(`@oxlint/migrate is not installed (${manifestFile} not found)`);
+  const { bin } = JSON.parse(fs.readFileSync(manifestFile, 'utf8'));
+  const entry = typeof bin === 'string' ? bin : Object.values(bin ?? {})[0];
+  if (!entry) fail('@oxlint/migrate declares no bin');
+  return path.resolve(path.dirname(manifestFile), entry);
+};
+
+const runMigrate = () => {
+  // The migration keeps an existing file as .oxlintrc.json.bak: the config is always regenerated from scratch.
+  fs.rmSync(path.join(packageDir, OXLINTRC), { force: true });
+  const run = spawnSync(
+    process.execPath,
+    // --js-plugins=false: no `jsPlugins`, rules oxlint lacks stay ESLint-only. No --type-aware.
+    [migrateEntryPoint(), ESLINT_CONFIG, '--js-plugins=false'],
+    { cwd: packageDir, encoding: 'utf8' },
+  );
+  if (run.error || run.status !== 0) {
+    fail(`oxlint-migrate failed (exit ${run.status}): ${run.error?.message ?? (run.stderr || run.stdout).trim()}`);
+  }
+};
+
+const loadEslintConfig = async () => {
+  const module = await import(pathToFileURL(path.join(packageDir, ESLINT_CONFIG)).href);
+  return module.default;
+};
+
+// A global ignore is a config object whose only keys are `ignores` and optionally `name`.
+// The .gitignore files are not copied: oxlint reads them itself.
+const globalIgnores = (eslintConfig) => eslintConfig
+  .filter((entry) => Object.keys(entry).every((key) => key === 'ignores' || key === 'name'))
+  .flatMap((entry) => entry.ignores ?? []);
+
+const settingLevel = (setting) => (Array.isArray(setting) ? setting[0] : setting);
+const settingOptions = (setting) => (Array.isArray(setting) ? setting.slice(1) : []);
+const isEnabled = (setting) => !['off', 'allow', 0].includes(settingLevel(setting));
+
+// Stable text for a set of options, whatever the key order.
+const canonical = (value) => JSON.stringify(value, (_key, nested) => (
+  nested && typeof nested === 'object' && !Array.isArray(nested)
+    ? Object.fromEntries(Object.entries(nested).sort(([a], [b]) => a.localeCompare(b)))
+    : nested
+));
+
+// rule id -> set of distinct option lists it is enabled with, across the given rule sets.
+const enabledOptions = (rulesets, toRuleId) => {
+  const byRule = new Map();
+  for (const rules of rulesets) {
+    for (const [key, setting] of Object.entries(rules)) {
+      if (!isEnabled(setting)) continue;
+      const id = toRuleId(key);
+      if (!byRule.has(id)) byRule.set(id, new Set());
+      byRule.get(id).add(canonical(settingOptions(setting)));
+    }
+  }
+  return byRule;
+};
+
+// oxlint validates the options of a rule even when it is off, and rejects options it does not know
+// (ESLint presets carry such options for rules they turn off). An off rule needs no options.
+const stripOffRuleOptions = (rules) => {
+  for (const [key, setting] of Object.entries(rules ?? {})) {
+    if (Array.isArray(setting) && !isEnabled(setting)) rules[key] = settingLevel(setting);
+  }
+};
+
+const printList = (title, items) => {
+  console.log(`${title} (${items.length})`);
+  items.forEach((item) => console.log(`  ${item}`));
+};
+
+const main = async () => {
+  if (!fs.existsSync(path.join(packageDir, ESLINT_CONFIG))) fail(`${ESLINT_CONFIG} not found in ${packageDir}`);
+  const eslintConfig = await loadEslintConfig();
+
+  runMigrate();
+  const oxlintrc = JSON.parse(fs.readFileSync(path.join(packageDir, OXLINTRC), 'utf8'));
+  oxlintrc.categories = Object.fromEntries(CATEGORIES.map((category) => [category, 'off']));
+  stripOffRuleOptions(oxlintrc.rules);
+  (oxlintrc.overrides ?? []).forEach((override) => stripOffRuleOptions(override.rules));
+  oxlintrc.ignorePatterns = [...new Set(globalIgnores(eslintConfig))];
+  fs.writeFileSync(path.join(packageDir, OXLINTRC), `${JSON.stringify(oxlintrc, null, 2)}\n`);
+
+  const eslintOptions = enabledOptions(eslintConfig.map((entry) => entry.rules ?? {}), (key) => key);
+  const oxlintOptions = enabledOptions(
+    [oxlintrc.rules ?? {}, ...(oxlintrc.overrides ?? []).map((override) => override.rules ?? {})],
+    toEslintRuleId,
+  );
+  const oxlintRules = oxlintConfigRules(oxlintrc);
+
+  const unsupported = [...eslintOptions.keys()].filter((id) => !oxlintRules.has(id)).sort();
+  const optionsDiffer = [...eslintOptions.keys()]
+    .filter((id) => oxlintOptions.has(id))
+    .filter((id) => [...eslintOptions.get(id)].sort().join('\n') !== [...oxlintOptions.get(id)].sort().join('\n'))
+    .sort();
+
+  console.log(`${OXLINTRC} written: ${oxlintRules.size} rules enabled, ${oxlintrc.ignorePatterns.length} ignore patterns`);
+  printList('ESLint-only, unsupported by oxlint', unsupported);
+  printList('options differ, check in triage', optionsDiffer);
+};
+
+main().catch((error) => fail(error.stack));
