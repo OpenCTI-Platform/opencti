@@ -72,11 +72,9 @@ The matrix view shows the attack patterns of your investigation on a tactics mat
 
 The matrix view displays only what is on the investigation graph and can be switched to from the header bar.
 
-![Investigation graph view with the view switch in the header](assets/investigation-matrix-graph-view.png)
-
 ### Read the matrix
 
-The matrix shows the techniques of one kill chain (e.g. MITRE ATT&CK 20), grouped in columns by tactic. The attack patterns of the investigation are highlighted. Graph filters don't apply to the matrix view.
+The matrix shows the techniques of one kill chain (e.g. MITRE ATT&CK 20), grouped in columns by tactic. The attack patterns of the investigation are highlighted, active Graph filters are ignored by the matrix view.
 
 Hover a technique, or focus it with the keyboard, to see the entities of the investigation linked to it, under **Linked entities**. The list shows the first 10 names.
 
@@ -92,7 +90,7 @@ Hover a technique, or focus it with the keyboard, to see the entities of the inv
 
 ### Read the heatmap
 
-The heatmap colours each technique by how many entities of the investigation are linked to it: the more entities, the warmer the colour.
+The heatmap colours each technique by how many entities of the investigation are linked to it: the more entities, the more red the colour.
 
 #### How a technique is scored
 
@@ -102,7 +100,7 @@ The score of a technique is the number of distinct entities of the investigation
 |:---|:---|
 | `uses`, in either direction | An intrusion set, threat actor, malware or campaign uses the attack pattern. |
 | `indicates`, towards the attack pattern | An indicator indicates the attack pattern. |
-| `contains` (the container's `object` reference), towards the attack pattern | A report, a grouping or a case contains the attack pattern. |
+| `contains` | A report, a grouping or a case contains the attack pattern. |
 
 - An entity counts once for a technique, even when several relationships link them.
 - Other relationship types, such as `related-to` or `mitigates`, do not count.
