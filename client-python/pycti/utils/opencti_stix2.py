@@ -28,6 +28,7 @@ from pycti.utils.constants import (
     StixCyberObservableTypes,
     ThreatActorTypes,
 )
+from pycti.utils.opencti_procedure_utils import PROCEDURE_STIX_TYPE
 from pycti.utils.opencti_stix2_markdown_embedded_file_utils import (
     rewrite_markdown_images,
 )
@@ -267,6 +268,17 @@ _STIX_2_0_LEGACY_NESTED_REF_KEYS = {
 # type (`object_covered_ref`), the backend uses the STIX key that the import
 # reads (`covered_ref`).
 _STIX_2_0_NESTED_REF_KEY_PREFIXES = {"object-covered": "covered"}
+
+# Procedure nested ref relationship type -> key prefix of its ref in the export.
+# `Procedure.to_stix_export` already carries these refs (`x_observable_refs`,
+# `x_command_ref`, `x_source_refs`), resolved with the user's rights only, so
+# `prepare_export` does not add the legacy keys but applies the export access
+# filter to them.
+_PROCEDURE_NESTED_REF_KEYS = {
+    "procedure-observable": "x_observable",
+    "procedure-command": "x_command",
+    "procedure-source": "x_source",
+}
 
 #: STIX Extension ID for OpenCTI custom Cyber Observables (SCO)
 STIX_EXT_OCTI_SCO: str = "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
@@ -2406,6 +2418,7 @@ class OpenCTIStix2:
         entity: Dict,
         access_filter: Dict,
         allowed_nested_refs: Optional[List[Dict]] = None,
+        key_prefixes: Optional[Dict[str, str]] = None,
     ) -> None:
         """Remove the nested refs that the export access filter excludes.
 
@@ -2426,13 +2439,19 @@ class OpenCTIStix2:
         :param allowed_nested_refs: Nested refs already read with the access
             filter, defaults to None (read here)
         :type allowed_nested_refs: List[Dict], optional
+        :param key_prefixes: Key prefix of the ref of a relationship type, when
+            it is not the default one (see ``_nested_ref_key_prefix``),
+            defaults to None
+        :type key_prefixes: Dict[str, str], optional
         """
+        key_prefixes = key_prefixes or {}
 
         def refs(nested_refs: List[Dict]) -> set:
             """(backend key prefix, target id) of each nested ref."""
             return {
                 (
-                    _STIX_2_0_NESTED_REF_KEY_PREFIXES.get(
+                    key_prefixes.get(nested_ref["relationship_type"])
+                    or _STIX_2_0_NESTED_REF_KEY_PREFIXES.get(
                         nested_ref["relationship_type"],
                         self._nested_ref_key_prefix(nested_ref["relationship_type"]),
                     ),
@@ -3456,6 +3475,12 @@ class OpenCTIStix2:
             ):
                 self._remove_nested_refs_excluded_by_filter(
                     entity, access_filter, allowed_nested_refs
+                )
+        elif entity["type"] == PROCEDURE_STIX_TYPE:
+            # The procedure refs are already exported under their own keys
+            if access_filter is not None:
+                self._remove_nested_refs_excluded_by_filter(
+                    entity, access_filter, key_prefixes=_PROCEDURE_NESTED_REF_KEYS
                 )
         else:
             self._add_legacy_nested_refs(

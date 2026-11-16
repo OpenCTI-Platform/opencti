@@ -360,3 +360,81 @@ def test_export_omits_x_source_refs_when_empty():
     mocks = _make_mocks(stix=payload, reports=[])
     stix = mocks.client.procedure.to_stix_export(PROCEDURE_INTERNAL_ID)
     assert "x_source_refs" not in stix
+
+
+OBSERVABLE_GREEN = "process--1b0f9f8e-6f0a-4d4e-9b1c-2f3a4b5c6d70"
+OBSERVABLE_RED = "process--2c1e8e7d-5e9b-4c3d-8a0b-1e2f3a4b5c60"
+COMMAND_RED = "process--3d2f7d6c-4d8a-4b2c-9f1a-0d1e2f3a4b50"
+
+
+def _nested_ref(relationship_type, standard_id):
+    return {
+        "id": "nested-" + relationship_type + "-" + standard_id,
+        "relationship_type": relationship_type,
+        "to": {"id": "id-" + standard_id, "standard_id": standard_id},
+    }
+
+
+ALL_NESTED_REFS = [
+    _nested_ref("procedure-observable", OBSERVABLE_GREEN),
+    _nested_ref("procedure-observable", OBSERVABLE_RED),
+    _nested_ref("procedure-command", COMMAND_RED),
+    _nested_ref("procedure-source", IDENTITY),
+]
+# The TLP:RED observables are excluded by the export access filter
+ALLOWED_NESTED_REFS = [ALL_NESTED_REFS[0], ALL_NESTED_REFS[3]]
+
+
+def _export_with_nested_refs(access_filter):
+    payload = _to_stix_payload()
+    payload["x_observable_refs"] = [OBSERVABLE_GREEN, OBSERVABLE_RED]
+    payload["x_command_ref"] = COMMAND_RED
+    mocks = _make_mocks(stix=payload)
+    original_query = mocks.client.query
+
+    def query(query_text, variables=None):
+        if "StixNestedRefRelationships" in query_text:
+            filtered = (variables or {}).get("filters") is not None
+            nested_refs = ALLOWED_NESTED_REFS if filtered else ALL_NESTED_REFS
+            return {"data": {"stixNestedRefRelationships": _edges(*nested_refs)}}
+        return original_query(query_text, variables)
+
+    mocks.client.query = query
+    opencti_stix2 = OpenCTIStix2(mocks.client)
+    entity = {
+        "id": PROCEDURE_INTERNAL_ID,
+        "standard_id": PROCEDURE_STANDARD_ID,
+        "entity_type": "Procedure",
+        "parent_types": [],
+        "name": "Dump credentials from memory",
+    }
+    objects = opencti_stix2.prepare_export(
+        opencti_stix2.generate_export(entity, access_filter=access_filter),
+        access_filter=access_filter,
+    )
+    return next(o for o in objects if o["id"] == PROCEDURE_STANDARD_ID)
+
+
+def test_prepare_export_of_a_procedure_adds_no_legacy_nested_ref_keys():
+    procedure = _export_with_nested_refs(access_filter=None)
+    for key in (
+        "procedure_observable_ref",
+        "procedure_command_ref",
+        "procedure_source_ref",
+        "procedure_observable_refs",
+        "procedure_command_refs",
+        "procedure_source_refs",
+    ):
+        assert key not in procedure
+    assert procedure["x_observable_refs"] == [OBSERVABLE_GREEN, OBSERVABLE_RED]
+    assert procedure["x_command_ref"] == COMMAND_RED
+    assert procedure["x_source_refs"] == [IDENTITY, REPORT]
+
+
+def test_prepare_export_of_a_procedure_removes_refs_excluded_by_the_access_filter():
+    procedure = _export_with_nested_refs(access_filter=ACCESS_FILTER)
+    assert "procedure_observable_ref" not in procedure
+    assert procedure["x_observable_refs"] == [OBSERVABLE_GREEN]
+    assert "x_command_ref" not in procedure
+    # Report sources come from the filtered report lookup, not from nested refs
+    assert procedure["x_source_refs"] == [IDENTITY, REPORT]
