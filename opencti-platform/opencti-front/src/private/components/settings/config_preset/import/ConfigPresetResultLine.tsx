@@ -18,6 +18,8 @@ interface ConfigPresetResultLineProps {
   code?: string | null;
   // The item went well: a tick leads the line
   isDone?: boolean;
+  // The reason is shown elsewhere (under the label of the row, in the preview)
+  withoutReason?: boolean;
 }
 
 const STATUS_LABELS: Record<ConfigPresetResultStatus, string> = {
@@ -54,6 +56,10 @@ const translateKnownReason = (t_i18n: Translate, reason: string): string | undef
     case 'The id of the vocabulary category does not match its category': return t_i18n('The id of the vocabulary category does not match its category');
     case 'This vocabulary category is closed, new values cannot be added': return t_i18n('This vocabulary category is closed, new values cannot be added');
     case 'Vocabulary entries already exist': return t_i18n('Vocabulary entries already exist');
+    case 'Unknown rule': return t_i18n('Unknown rule');
+    case 'Activating the rule starts a scan of the knowledge base': return t_i18n('Activating the rule starts a scan of the knowledge base');
+    case 'Deactivating the rule starts a scan that deletes what it inferred': return t_i18n('Deactivating the rule starts a scan that deletes what it inferred');
+    case 'The rule engine is disabled': return t_i18n('The rule engine is disabled');
     case 'The standard id of the theme does not match its id': return t_i18n('The standard id of the theme does not match its id');
     case 'The standard id of the theme is required to overwrite it': return t_i18n('The standard id of the theme is required to overwrite it');
     case 'Built-in theme': return t_i18n('Built-in theme');
@@ -192,10 +198,10 @@ const translateReason = (t_i18n: Translate, reason: string) => {
   return reason;
 };
 
-const translateReasons = (t_i18n: Translate, reason: string) => reason.split('\n').map((part) => translateReason(t_i18n, part)).join(' · ');
+export const translateReasons = (t_i18n: Translate, reason: string) => reason.split('\n').map((part) => translateReason(t_i18n, part)).join(' · ');
 
 // The result of an item of an import: its status and the reason
-const ConfigPresetResultLine: FunctionComponent<ConfigPresetResultLineProps> = ({ label, status, reason, code, isDone = false }) => {
+const ConfigPresetResultLine: FunctionComponent<ConfigPresetResultLineProps> = ({ label, status, reason, code, isDone = false, withoutReason = false }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const known = status in STATUS_LABELS;
@@ -209,7 +215,7 @@ const ConfigPresetResultLine: FunctionComponent<ConfigPresetResultLineProps> = (
           severity={known ? STATUS_SEVERITIES[status as ConfigPresetResultStatus] : 'neutral'}
         />
       )}
-      {reason && <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{translateReasons(t_i18n, reason)}</Text>}
+      {reason && !withoutReason && <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{translateReasons(t_i18n, reason)}</Text>}
     </div>
   );
 };

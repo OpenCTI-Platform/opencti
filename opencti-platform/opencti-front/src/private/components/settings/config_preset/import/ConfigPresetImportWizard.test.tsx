@@ -1054,7 +1054,8 @@ describe('ConfigPresetImportWizard', () => {
       expect(within(screen.getByTestId('config-preset-import-item-branding-theme--1')).queryByText(/Created|Overwritten|Skipped|Failed/)).not.toBeInTheDocument();
       const platform = screen.getByTestId('config-preset-import-item-platform-platform');
       expect(within(platform).getByText('Failed')).toBeInTheDocument();
-      expect(within(platform).getByText('Default theme Import theme could not be imported')).toBeInTheDocument();
+      // Under the label of the row, after what the item is
+      expect(within(platform).getByText(/Default theme Import theme could not be imported/)).toBeInTheDocument();
       // Not selected, not shown
       expect(within(screen.getByTestId('config-preset-import-item-messages-banner')).queryByText('Overwritten')).not.toBeInTheDocument();
     });
@@ -1378,7 +1379,8 @@ describe('ConfigPresetImportWizard', () => {
       await resolveSimulation(rendered, [{ type: 'branding', key: 'theme--2', status: 'CREATED', reason: 'Added as "Existing theme (1)"' }]);
       const row = screen.getByTestId('config-preset-import-item-branding-theme--2');
       expect(await within(row).findByText('Added as "Existing theme (1)"')).toBeInTheDocument();
-      expect(within(row).getByText('Created')).toBeInTheDocument();
+      // The reason says how it is created: no tag for a creation
+      expect(within(row).queryByText('Created')).not.toBeInTheDocument();
     });
 
     it('stays usable while the expected results are computed', async () => {

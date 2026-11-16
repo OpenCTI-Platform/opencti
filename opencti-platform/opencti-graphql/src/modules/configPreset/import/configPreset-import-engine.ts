@@ -86,7 +86,8 @@ export const importConfigPresetItem = async (
       return toConfigPresetImportResult(item, computed.status, computed.reason, computed);
     }
     const applied = await family.importer!.apply(context, user, item, computed, mode, plan);
-    return toConfigPresetImportResult(item, applied || computed.status, computed.reason, computed);
+    const { status, reason } = typeof applied === 'object' ? applied : { status: applied || computed.status, reason: computed.reason };
+    return toConfigPresetImportResult(item, status, reason, computed);
   } catch (err) {
     // A bundle that cannot be read to the end (an attachment above the extracted size limit) stops the import: the next items would be
     // read the same way. Thrown to the caller, which stops: the wizard fails the remaining items, a partial import too

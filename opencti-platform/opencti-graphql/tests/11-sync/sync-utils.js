@@ -63,7 +63,7 @@ export const SYNC_START_QUERY = `mutation SynchronizerStart($id: ID!) {
     }
   `;
 
-export const VOCABULARY_NUMBERS = 363;
+export const VOCABULARY_NUMBERS = 478; // 363 + 115 System asset vocabularies (12 categories, 80 subcategories, 5 criticality, 3 internet facing, 5 environments, 10 platforms)
 export const INDICATOR_NUMBERS = 28;
 export const MALWARE_NUMBERS = 27;
 export const LABEL_NUMBERS = 13;

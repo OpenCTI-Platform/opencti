@@ -13937,6 +13937,8 @@ type Settings implements BasicObject & InternalObject & IntlSettings & ThemeSett
   platform_reference_attachment: Boolean
   platform_session_idle_timeout: Int
   platform_session_max_concurrent: Int
+  platform_session_presence_enabled: Boolean!
+  platform_session_presence_supported: Boolean!
   platform_session_timeout: Int
   platform_theme: Theme
   platform_time_format: TimeFormat
@@ -13957,6 +13959,7 @@ type Settings implements BasicObject & InternalObject & IntlSettings & ThemeSett
   view_all_users: Boolean
   xtm_hub_available_news_feed_types: [String!]
   xtm_hub_backend_is_reachable: Boolean
+  xtm_hub_commercial_model: XTMHubCommercialModel
   xtm_hub_last_connectivity_check: DateTime
   xtm_hub_registration_date: DateTime
   xtm_hub_registration_status: XTMHubRegistrationStatus
@@ -15688,12 +15691,19 @@ type System implements BasicObject & Identity & StixCoreObject & StixDomainObjec
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   x_opencti_aliases: [String]
+  x_opencti_system_category: String
+  x_opencti_system_subcategory: String
   x_opencti_closing_reason: String
+  x_opencti_criticality: String
+  x_opencti_environment: String
   x_opencti_firstname: String
   x_opencti_graph_data: String
   x_opencti_inferences: [Inference]
+  x_opencti_internet_facing: String
   x_opencti_lastname: String
   x_opencti_modified_at: DateTime
+  x_opencti_owner: String
+  x_opencti_platform: String
   x_opencti_reliability: String
   x_opencti_stix_ids: [StixId]
 }
@@ -15727,9 +15737,16 @@ input SystemAddInput {
   update: Boolean
   upsertOperations: [EditInput!]
   x_opencti_aliases: [String]
+  x_opencti_system_category: String
+  x_opencti_system_subcategory: String
+  x_opencti_criticality: String
+  x_opencti_environment: String
   x_opencti_firstname: String
+  x_opencti_internet_facing: String
   x_opencti_lastname: String
   x_opencti_modified_at: DateTime
+  x_opencti_owner: String
+  x_opencti_platform: String
   x_opencti_reliability: String
   x_opencti_stix_ids: [StixId]
   x_opencti_workflow_id: String
@@ -17457,6 +17474,7 @@ type Vocabulary implements BasicObject & StixMetaObject & StixObject {
   aliases: [String!]
   builtIn: Boolean
   category: VocabularyDefinition!
+  color: String
   created: DateTime
   created_at: DateTime!
   creators: [Creator!]
@@ -17485,6 +17503,7 @@ type Vocabulary implements BasicObject & StixMetaObject & StixObject {
 input VocabularyAddInput {
   aliases: [String!]
   category: VocabularyCategory!
+  color: String
   created: DateTime
   description: String
   modified: DateTime
@@ -17540,6 +17559,12 @@ enum VocabularyCategory {
   service_status_ov
   service_type_ov
   start_type_ov
+  system_category_ov
+  system_criticality_ov
+  system_environment_ov
+  system_internet_facing_ov
+  system_platform_ov
+  system_subcategory_ov
   threat_actor_group_role_ov
   threat_actor_group_sophistication_ov
   threat_actor_group_type_ov
@@ -18410,6 +18435,11 @@ input X509CertificateAddInput {
   validity_not_after: DateTime
   validity_not_before: DateTime
   version: String
+}
+
+enum XTMHubCommercialModel {
+  other
+  saas
 }
 
 enum XTMHubRegistrationStatus {

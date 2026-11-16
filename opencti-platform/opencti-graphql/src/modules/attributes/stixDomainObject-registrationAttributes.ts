@@ -221,6 +221,14 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>
     xOpenctiAliases,
     iAliasedIds,
     xOpenctiReliability,
+    // Asset fields, aligned on the OpenAEV asset model (category, subcategory, exposure, criticality) and the XTM One asset (environment, owner)
+    { name: 'x_opencti_system_category', label: 'System category', type: 'string', format: 'vocabulary', vocabularyCategory: 'system_category_ov', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'x_opencti_system_subcategory', label: 'System subcategory', type: 'string', format: 'vocabulary', vocabularyCategory: 'system_subcategory_ov', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'x_opencti_internet_facing', label: 'Internet facing', type: 'string', format: 'vocabulary', vocabularyCategory: 'system_internet_facing_ov', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'x_opencti_criticality', label: 'Criticality', type: 'string', format: 'vocabulary', vocabularyCategory: 'system_criticality_ov', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'x_opencti_environment', label: 'Environment', type: 'string', format: 'vocabulary', vocabularyCategory: 'system_environment_ov', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'x_opencti_owner', label: 'Asset owner', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'x_opencti_platform', label: 'Platform', type: 'string', format: 'vocabulary', vocabularyCategory: 'system_platform_ov', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_TYPE_INFRASTRUCTURE]: [
     aliases,

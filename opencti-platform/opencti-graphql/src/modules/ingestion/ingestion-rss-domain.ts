@@ -116,7 +116,13 @@ export const ingestionRssResetState = async (context: AuthContext, user: AuthUse
   // Resetting the state replays the source under the ingestion identity, which must stay within the editing user rights.
   const storedIngestion = await findById(context, user, ingestionId);
   await validateStoredIngestionExecutionIdentity(context, user, storedIngestion);
-  await patchRssIngestion(context, user, ingestionId, { current_state_date: undefined });
+  // Clear the run bookkeeping with the cursor: a kept last_execution_date would hold the replay
+  // until the scheduling period (or the minimal interval) elapses, and the UI would still show the old last run.
+  await patchRssIngestion(context, user, ingestionId, {
+    current_state_date: undefined,
+    last_execution_date: undefined,
+    last_execution_status: undefined,
+  });
   const ingestionUpdated = await findById(context, user, ingestionId);
   await publishUserAction({
     user,

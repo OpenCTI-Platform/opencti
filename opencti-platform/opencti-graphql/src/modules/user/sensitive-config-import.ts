@@ -2,7 +2,7 @@ import { getProtectedSensitiveConfig } from '../../domain/settings';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { isSensitiveChangesAllowed } from './user-domain';
 
-export type ConfigImportSensitiveType = 'roles' | 'groups' | 'markings' | 'platform_organization';
+export type ConfigImportSensitiveType = 'roles' | 'groups' | 'markings' | 'platform_organization' | 'rules';
 
 export const CONFIG_IMPORT_SENSITIVE_REASON = 'Requires the right to manage the sensitive configuration';
 

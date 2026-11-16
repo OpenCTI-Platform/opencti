@@ -16,6 +16,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
+import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 
 const BodyItem = styled('div')(bodyItemStyle);
 
@@ -31,6 +32,8 @@ const systemLineFragment = graphql`
           name
           created
           modified
+          x_opencti_criticality
+          x_opencti_environment
           draftVersion {
               draft_id
               draft_operation
@@ -75,6 +78,16 @@ export const SystemLine: FunctionComponent<SystemLineProps> = ({
             >
               {data.name}
               {data.draftVersion && (<DraftChip />)}
+            </BodyItem>
+            <BodyItem
+              style={{ width: dataColumns.x_opencti_criticality.width }}
+            >
+              <ItemOpenVocab displayMode="chip" humanLabel={true} type="system_criticality_ov" value={data.x_opencti_criticality} />
+            </BodyItem>
+            <BodyItem
+              style={{ width: dataColumns.x_opencti_environment.width }}
+            >
+              <ItemOpenVocab displayMode="chip" humanLabel={true} type="system_environment_ov" value={data.x_opencti_environment} />
             </BodyItem>
             <BodyItem
               style={{ width: dataColumns.objectLabel.width }}
@@ -142,6 +155,16 @@ export const SystemLineDummy = ({
                 width="90%"
                 height="100%"
               />
+            </BodyItem>
+            <BodyItem
+              style={{ width: dataColumns.x_opencti_criticality.width }}
+            >
+              <Skeleton animation="wave" variant="rectangular" width="80%" height="100%" />
+            </BodyItem>
+            <BodyItem
+              style={{ width: dataColumns.x_opencti_environment.width }}
+            >
+              <Skeleton animation="wave" variant="rectangular" width="80%" height="100%" />
             </BodyItem>
             <BodyItem
               style={{ width: dataColumns.created.width }}

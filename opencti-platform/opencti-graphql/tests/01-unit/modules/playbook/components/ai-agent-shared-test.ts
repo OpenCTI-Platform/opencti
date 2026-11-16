@@ -62,6 +62,9 @@ import { internalLoadById } from '../../../../../src/database/middleware-loader'
 import { ENTITY_TYPE_USER } from '../../../../../src/schema/internalObject';
 import { OPENCTI_ADMIN_UUID } from '../../../../../src/schema/general';
 import {
+  AGENT_CALL_MAX_ATTEMPTS,
+  AGENT_CALL_RETRY_BASE_DELAY_MS,
+  AGENT_CALL_RETRY_MAX_DELAY_MS,
   AGENT_CALL_TIMEOUT_MS,
   assertDefinitionRunAsAllowed,
   assertRunAsUserAllowed,
@@ -69,12 +72,15 @@ import {
   buildAgentSlugOneOf,
   buildPlaybookAutomationContext,
   callXtmAgent,
+  computeAgentRetryDelayMs,
   isAgentBoundToIntent,
   isRunAsUserAllowed,
   isXtmOneConfigured,
+  requestXtmAgent,
   resolveAgentJwtUser,
   resolveRunAsUserId,
   sanitizeDefinitionRunAs,
+  XtmAgentCallError,
 } from '../../../../../src/modules/playbook/components/ai-agent-shared';
 import type { StixBundle } from '../../../../../src/types/stix-2-1-common';
 
@@ -93,8 +99,11 @@ describe('ai-agent-shared', () => {
 
   describe('AGENT_CALL_TIMEOUT_MS', () => {
     it('should be at least the chatbot proxy timeout to allow long agent runs', () => {
-      // 5 minutes; documented as "well above the default 2-minute httpClient cap".
+      // 10 minutes; documented as "well above the default 2-minute httpClient cap".
       expect(AGENT_CALL_TIMEOUT_MS).toBeGreaterThanOrEqual(2 * 60 * 1000);
+    });
+    it('should be 10 minutes', () => {
+      expect(AGENT_CALL_TIMEOUT_MS).toBe(10 * 60 * 1000);
     });
   });
 
@@ -570,13 +579,141 @@ describe('ai-agent-shared', () => {
       expect(result).toBeNull();
     });
 
-    it('should swallow network errors and return null instead of throwing (playbook stays alive)', async () => {
+    it('should retry a network error and throw XtmAgentCallError once the attempts are exhausted', async () => {
+      vi.spyOn(Math, 'random').mockReturnValue(0); // no backoff wait in the test
       const post = vi.fn().mockRejectedValue(new Error('ECONNREFUSED'));
       vi.mocked(getHttpClient).mockReturnValue({ post } as any);
 
-      const result = await callXtmAgent('agent-slug', 'content', ADMIN_JWT_USER);
+      await expect(callXtmAgent('agent-slug', 'content', ADMIN_JWT_USER)).rejects.toBeInstanceOf(XtmAgentCallError);
+      expect(post).toHaveBeenCalledTimes(AGENT_CALL_MAX_ATTEMPTS);
+    });
+  });
 
-      expect(result).toBeNull();
+  describe('requestXtmAgent', () => {
+    const ADMIN_JWT_USER = { id: OPENCTI_ADMIN_UUID, user_email: 'admin@opencti.io' };
+    const BUNDLE_CONTENT = JSON.stringify(baseBundle);
+    const httpError = (status: number, data: unknown, headers: Record<string, string> = {}) => ({
+      message: `Request failed with status code ${status}`,
+      response: { status, data, headers, message: `Request failed with status code ${status}` },
+    });
+
+    beforeEach(() => {
+      vi.mocked(issueXtmJwt).mockResolvedValue('signed.jwt');
+      vi.mocked(xtmOneClient.isConfigured).mockReturnValue(true);
+      vi.mocked(nconf.get).mockReturnValue('https://xtm-one.test');
+      vi.spyOn(Math, 'random').mockReturnValue(0); // no backoff wait in the tests
+    });
+
+    it('should retry a 503 and return the content of the next successful answer', async () => {
+      const post = vi.fn()
+        .mockRejectedValueOnce(httpError(503, { error_type: 'provider_unavailable', retryable: true, detail: 'All configured AI providers failed' }))
+        .mockResolvedValueOnce({ data: { content: BUNDLE_CONTENT } });
+      vi.mocked(getHttpClient).mockReturnValue({ post } as any);
+
+      const result = await requestXtmAgent('agent-slug', 'content', ADMIN_JWT_USER);
+
+      expect(result).toEqual({ status: 'ok', content: BUNDLE_CONTENT, attempts: 2 });
+      expect(post).toHaveBeenCalledTimes(2);
+    });
+
+    it('should return a typed failure with the XTM One error type after every attempt answered 503', async () => {
+      const post = vi.fn().mockRejectedValue(
+        httpError(503, { error_type: 'provider_unavailable', retryable: true, detail: 'All configured AI providers failed' }),
+      );
+      vi.mocked(getHttpClient).mockReturnValue({ post } as any);
+
+      const result = await requestXtmAgent('agent-slug', 'content', ADMIN_JWT_USER);
+
+      expect(result).toEqual({
+        status: 'failed',
+        httpStatus: 503,
+        errorType: 'provider_unavailable',
+        retryable: true,
+        detail: 'All configured AI providers failed',
+        attempts: AGENT_CALL_MAX_ATTEMPTS,
+      });
+      expect(post).toHaveBeenCalledTimes(AGENT_CALL_MAX_ATTEMPTS);
+    });
+
+    it('should not retry an error XTM One flags as not retryable', async () => {
+      const post = vi.fn().mockRejectedValue(
+        httpError(502, { error_type: 'provider_rejected', retryable: false, detail: 'credential rejected' }),
+      );
+      vi.mocked(getHttpClient).mockReturnValue({ post } as any);
+
+      const result = await requestXtmAgent('agent-slug', 'content', ADMIN_JWT_USER);
+
+      expect(result).toMatchObject({ status: 'failed', httpStatus: 502, retryable: false, attempts: 1 });
+      expect(post).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not retry a 4xx client error from an XTM One without the error body', async () => {
+      const post = vi.fn().mockRejectedValue(httpError(404, { detail: 'Agent not found' }));
+      vi.mocked(getHttpClient).mockReturnValue({ post } as any);
+
+      const result = await requestXtmAgent('agent-slug', 'content', ADMIN_JWT_USER);
+
+      expect(result).toMatchObject({ status: 'failed', httpStatus: 404, retryable: false, detail: 'Agent not found', attempts: 1 });
+    });
+
+    it('should retry a 5xx from an XTM One without the error body (older XTM One)', async () => {
+      const post = vi.fn()
+        .mockRejectedValueOnce(httpError(500, 'Internal Server Error'))
+        .mockResolvedValueOnce({ data: { content: 'ok' } });
+      vi.mocked(getHttpClient).mockReturnValue({ post } as any);
+
+      const result = await requestXtmAgent('agent-slug', 'content', ADMIN_JWT_USER);
+
+      expect(result).toEqual({ status: 'ok', content: 'ok', attempts: 2 });
+    });
+
+    it('should not retry a client timeout (the call already waited AGENT_CALL_TIMEOUT_MS)', async () => {
+      const timeout = Object.assign(new Error('timeout of 600000ms exceeded'), { code: 'ECONNABORTED' });
+      const post = vi.fn().mockRejectedValue(timeout);
+      vi.mocked(getHttpClient).mockReturnValue({ post } as any);
+
+      const result = await requestXtmAgent('agent-slug', 'content', ADMIN_JWT_USER);
+
+      expect(result).toMatchObject({ status: 'failed', retryable: false, attempts: 1 });
+      expect(post).toHaveBeenCalledTimes(1);
+    });
+
+    it('should answer skipped (no call) when XTM One is not configured or no identity was resolved', async () => {
+      const post = vi.fn();
+      vi.mocked(getHttpClient).mockReturnValue({ post } as any);
+
+      expect(await requestXtmAgent('agent-slug', 'content', null)).toMatchObject({ status: 'skipped' });
+      vi.mocked(xtmOneClient.isConfigured).mockReturnValue(false);
+      expect(await requestXtmAgent('agent-slug', 'content', ADMIN_JWT_USER)).toMatchObject({ status: 'skipped' });
+      expect(post).not.toHaveBeenCalled();
+    });
+
+    it('should make callXtmAgent throw an XtmAgentCallError carrying the reason', async () => {
+      const post = vi.fn().mockRejectedValue(
+        httpError(503, { error_type: 'provider_unavailable', retryable: true, detail: 'All configured AI providers failed' }),
+      );
+      vi.mocked(getHttpClient).mockReturnValue({ post } as any);
+
+      const call = callXtmAgent('agent-slug', 'content', ADMIN_JWT_USER);
+
+      await expect(call).rejects.toThrow(
+        `XTM One agent agent-slug call failed (HTTP 503, provider_unavailable) after ${AGENT_CALL_MAX_ATTEMPTS} attempts: All configured AI providers failed`,
+      );
+    });
+  });
+
+  describe('computeAgentRetryDelayMs', () => {
+    it('should honour Retry-After, capped at the maximum delay', () => {
+      expect(computeAgentRetryDelayMs(1, 5000)).toBe(5000);
+      expect(computeAgentRetryDelayMs(1, 10 * 60 * 1000)).toBe(AGENT_CALL_RETRY_MAX_DELAY_MS);
+    });
+
+    it('should draw a full-jitter delay within an exponential window', () => {
+      vi.spyOn(Math, 'random').mockReturnValue(0.999);
+      expect(computeAgentRetryDelayMs(1, null)).toBeLessThan(AGENT_CALL_RETRY_BASE_DELAY_MS);
+      expect(computeAgentRetryDelayMs(2, null)).toBeLessThan(AGENT_CALL_RETRY_BASE_DELAY_MS * 2);
+      expect(computeAgentRetryDelayMs(2, null)).toBeGreaterThanOrEqual(AGENT_CALL_RETRY_BASE_DELAY_MS);
+      expect(computeAgentRetryDelayMs(10, null)).toBeLessThan(AGENT_CALL_RETRY_MAX_DELAY_MS);
     });
   });
 });
