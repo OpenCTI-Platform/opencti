@@ -34,7 +34,7 @@ To start your new ingester, click on "Start", in the burger menu. The endpoint a
 
 ### Push data to the endpoint
 
-The endpoint follows this pattern, where `[domain]` is the URL of your platform (including its base path, if any) and `[ingester-id]` is the ID of the TAXII Push ingester:
+The endpoint follows this pattern, where `[domain]` is the host name of your platform, followed by its port and base path if any, without `https://` or a trailing slash (for example `opencti.example.com` or `opencti.example.com:8080/cti`), and `[ingester-id]` is the ID of the TAXII Push ingester:
 
 ```
 https://[domain]/taxii2/root/collections/[ingester-id]/objects/
