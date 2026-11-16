@@ -97,9 +97,9 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import type { FiltersWithNested } from './middleware-loader';
 import { pushAll } from '../utils/arrayUtil';
 import { INNER_HITS_WINDOWS_SIZE } from './engine-data-converter';
-import { isEsScriptFilterEnabled } from './engine-config';
+import { ES_DEFAULT_PAGINATION, ES_MAX_PAGINATION, isEsScriptFilterEnabled, MAX_RUNTIME_RESOLUTION_SIZE } from './engine-config';
 import { RELATION_RESULT_OF } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
-import { elFindByIds, elPaginate, elRawSearch, ES_DEFAULT_PAGINATION, ES_MAX_PAGINATION, isRuntimeSortEnable, MAX_RUNTIME_RESOLUTION_SIZE } from './engine';
+import { elFindByIds, elPaginate, elRawSearch, isRuntimeSortEnable } from './engine';
 
 const buildUserMemberAccessFilter = (user: AuthUser, opts: { includeAuthorities?: boolean | null; excludeEmptyAuthorizedMembers?: boolean }) => {
   const { includeAuthorities = false, excludeEmptyAuthorizedMembers = false } = opts;

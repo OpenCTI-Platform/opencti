@@ -112,6 +112,7 @@ import { pushAll, unshiftAll } from '../utils/arrayUtil';
 import { getRoleAssumerWithWebIdentity } from '../utils/awsSdk';
 import { elConvertHits, elConvertHitsToMap } from './engine-data-converter';
 import { engineMappingGenerator, getRetroCompatibleMappings } from './engine-mapping-generator';
+import { ES_DEFAULT_PAGINATION, ES_MAX_PAGINATION, MAX_RUNTIME_RESOLUTION_SIZE } from './engine-config';
 import { AbortError } from 'node-fetch';
 import {
   buildDataRestrictions,
@@ -136,10 +137,8 @@ export const ES_INIT_MAPPING_MIGRATION: string = conf.get('elasticsearch:interna
 export const ES_IS_OLD_MAPPING: boolean = ES_INIT_MAPPING_MIGRATION === 'old';
 export const ES_IS_INIT_MIGRATION: boolean = ES_INIT_MAPPING_MIGRATION === 'standard' || ES_IS_OLD_MAPPING;
 export const ES_MINIMUM_FIXED_PAGINATION: number = 20; // When really low pagination is better by default
-export const ES_DEFAULT_PAGINATION: number = conf.get('elasticsearch:default_pagination_result') || 500;
-export const ES_MAX_PAGINATION: number = conf.get('elasticsearch:max_pagination_result') || 5000;
+export { ES_DEFAULT_PAGINATION, ES_MAX_PAGINATION, MAX_RUNTIME_RESOLUTION_SIZE };
 export const MAX_BULK_OPERATIONS: number = conf.get('elasticsearch:max_bulk_operations') || 5000;
-export const MAX_RUNTIME_RESOLUTION_SIZE: number = conf.get('elasticsearch:max_runtime_resolutions') || 5000;
 export const MAX_RELATED_CONTAINER_RESOLUTION: number = conf.get('elasticsearch:max_container_resolutions') || 1000;
 export const MAX_RELATED_CONTAINER_OBJECT_RESOLUTION: number = conf.get('elasticsearch:max_container_object_resolutions') || 100000;
 export const ES_INDEX_PATTERN_SUFFIX: string = conf.get('elasticsearch:index_creation_pattern');
