@@ -51,6 +51,7 @@ export const MESSAGING$ = {
     MESSENGER$.next(messages);
   },
   notifySuccess: (text: unknown) => MESSENGER$.next([{ type: 'message', text }]),
+  notifyWarning: (text: unknown) => MESSENGER$.next([{ type: 'warning', text }]),
   notifyNLQ: (text: unknown) => MESSENGER$.next([{ type: 'nlq', text }]),
   toggleNav: new Subject(),
   redirect: new Subject(),
@@ -274,6 +275,7 @@ export const handleErrorInForm = (
       (e) => ({
         type: 'error',
         text: e?.data?.reason ?? e.message,
+        fullError: e,
       }));
     MESSAGING$.messages.next(messages);
   }
@@ -287,6 +289,7 @@ export const handleError = (error: any) => {
       (e) => ({
         type: 'error',
         text: e?.data?.message ?? e.message,
+        fullError: e,
       }));
     MESSAGING$.messages.next(messages);
   }

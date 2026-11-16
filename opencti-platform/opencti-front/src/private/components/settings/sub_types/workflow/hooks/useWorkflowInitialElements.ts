@@ -6,7 +6,7 @@ import { authorizedMembersToOptions } from '../../../../../../utils/authorizedMe
 import { Connection, getNodes } from '../../../../../../utils/connection';
 import { SubTypeWorkflowQuery$data } from '../../__generated__/SubTypeWorkflowQuery.graphql';
 import { SubTypeWorkflowDependenciesQuery$data } from '../../__generated__/SubTypeWorkflowDependenciesQuery.graphql';
-import { Action, CommentMode, CommentModeType, WorkflowNodeType } from '../utils';
+import { Action, CommentMode, CommentModeType, REQUEST_ACCESS_AUTHOR_KEY, WorkflowNodeType } from '../utils';
 
 type ReadOnlyAction = NonNullable<NonNullable<SubTypeWorkflowQuery$data['workflowDefinition']>['states'][0]['onEnter']>[0]
   | NonNullable<NonNullable<SubTypeWorkflowQuery$data['workflowDefinition']>['states'][0]['onExit']>[0]
@@ -80,19 +80,27 @@ export const useWorkflowInitialElements = (
             params: { organizations: orgIds.map((id) => ({ value: id, label: members[id]?.name ?? id })) },
           } as Action;
         }
+        if (action.type === 'shareRequestedEntities') {
+          const orgIds = (action?.params as { organizations?: string[] })?.organizations ?? [];
+          return {
+            type: action.type,
+            params: { organizations: orgIds.map((id) => ({ value: id, label: id === REQUEST_ACCESS_AUTHOR_KEY ? id : members[id]?.name ?? id })) },
+          } as Action;
+        }
         return { ...action } as Action;
       });
     };
 
     // 1. Map states to nodes
     const stateNodes: Node[] = workflowDefinition.states
-      .map(({ statusId, onEnter = [], onExit = [] }) => ({
+      .map(({ statusId, onEnter = [], onExit = [], requestAccessOutcome }) => ({
         id: statusId,
         type: WorkflowNodeType.status,
         data: {
           onEnter: parseActions(onEnter),
           onExit: parseActions(onExit),
-          statusTemplate: statusTemplates[statusId] },
+          statusTemplate: statusTemplates[statusId],
+          ...(requestAccessOutcome ? { requestAccessOutcome } : {}) },
         position: { x: 0, y: 0 },
       }));
 

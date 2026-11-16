@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
-import { getServedPublicManifest, sanitizePublicDashboardUriKey } from '../../../../src/modules/publicDashboard/publicDashboard-utils';
+import { afterEach, describe, expect, it } from 'vitest';
+import { getServedPublicManifest, omitViewerSwitches, sanitizePublicDashboardUriKey } from '../../../../src/modules/publicDashboard/publicDashboard-utils';
+import { ENABLED_FEATURE_FLAGS } from '../../../../src/config/conf';
 import { fromB64, toB64 } from '../../../../src/utils/base64';
 
 const UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -13,6 +14,19 @@ describe('sanitizePublicDashboardUriKey', () => {
     // Japanese name — all characters are stripped by the ASCII-only regex
     const result = sanitizePublicDashboardUriKey('私のダッシュボード');
     expect(result).toMatch(UUID_V4_REGEX);
+  });
+});
+
+describe('omitViewerSwitches', () => {
+  it('should remove the three viewer switches and keep the rest of the config', () => {
+    const config = { relativeDate: 'days-7', allowViewersToEditTimeFilters: true, allowViewersToChangeVariables: false, allowViewersToSwitchPresets: true };
+    expect(omitViewerSwitches(config)).toEqual({ relativeDate: 'days-7' });
+  });
+
+  it('should return the same config when it holds no switch', () => {
+    const config = { relativeDate: null };
+    expect(omitViewerSwitches(config)).toBe(config);
+    expect(omitViewerSwitches(undefined)).toBeUndefined();
   });
 });
 
@@ -43,6 +57,26 @@ describe('getServedPublicManifest', () => {
     return fromB64(getServedPublicManifest(dashboard) as string).widgets[widgetId];
   };
   const withoutBreakdown = { ...publicWidgets['widget-1'], parameters: { title: 'Reports', interval: 'week' } };
+
+  const previousEnabledFeatureFlags = [...ENABLED_FEATURE_FLAGS];
+
+  afterEach(() => {
+    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...previousEnabledFeatureFlags);
+  });
+
+  it('should never serve the viewer switches of the dashboard: the public time filters stay read only', () => {
+    const served = { 'widget-2': publicWidgets['widget-2'] };
+    const dashboard = {
+      // A public dashboard published before the switches were stripped at write time
+      public_manifest: toB64({
+        widgets: served,
+        config: { refresh_interval: 0, allowViewersToEditTimeFilters: true, allowViewersToChangeVariables: false, allowViewersToSwitchPresets: true },
+      }) as string,
+      private_manifest: toB64({ widgets: { 'widget-2': storedWidgets['widget-2'] }, config: { refresh_interval: 0 } }) as string,
+    };
+    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, 'DASHBOARD_VARIABLES');
+    expect(fromB64(getServedPublicManifest(dashboard) as string)).toEqual({ widgets: served, config: { refresh_interval: 0 } });
+  });
 
   it('should serve the stored manifest when its widgets can be broken down', () => {
     const dashboard = publicDashboard();

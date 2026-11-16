@@ -99,9 +99,9 @@ export interface PublicDashboardCached extends BasicStoreIdentifier {
   private_manifest: {
     widgets: Record<string, PublicDashboardCachedWidget>;
     config: {
-      startDate?: string;
-      endDate?: string;
-      relativeDate?: string;
+      startDate?: string | null;
+      endDate?: string | null;
+      relativeDate?: string | null;
       refresh_interval?: number | null;
     };
   };

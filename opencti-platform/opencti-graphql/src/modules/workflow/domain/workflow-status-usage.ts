@@ -1,7 +1,33 @@
 import { fullEntitiesList } from '../../../database/middleware-loader';
 import { READ_INDEX_DRAFT_OBJECTS } from '../../../database/utils';
-import { FilterMode } from '../../../generated/graphql';
+import { FilterMode, FilterOperator } from '../../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../../types/user';
+import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../types/workflow-types';
+
+/**
+ * Instances of the workflow `workflowDefinitionId` currently sitting in one of `states`, completed ones included.
+ *
+ * 'workflow_id' is a reserved special filter key (WORKFLOW_FILTER) in OpenCTI that maps to the entity
+ * workflow status (x_opencti_workflow_id), so it cannot be used as a raw ES filter key: filter by
+ * currentState in ES and post-filter by workflow_id.
+ */
+export const findInstancesInStates = async (
+  context: AuthContext,
+  user: AuthUser,
+  states: string[],
+  workflowDefinitionId: string,
+): Promise<any[]> => {
+  const instances = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['currentState'], values: states, operator: FilterOperator.Eq, mode: FilterMode.Or },
+      ],
+      filterGroups: [],
+    },
+  });
+  return instances.filter((instance: any) => instance.workflow_id === workflowDefinitionId);
+};
 
 /**
  * Entities of `entityType` whose legacy `x_opencti_workflow_id` field points at `statusId`,

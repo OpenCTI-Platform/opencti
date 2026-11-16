@@ -169,6 +169,7 @@ export const WorkflowBypassStatus = ({ data, entityType, refreshing = false, onC
       validateDraft: t_i18n('Validate draft'),
       SHARE: t_i18n('Share with organizations'),
       UNSHARE: t_i18n('Unshare from organizations'),
+      shareRequestedEntities: t_i18n('Share requested entities'),
       log: t_i18n('Log'),
     };
     return actions.flatMap((action) => {
