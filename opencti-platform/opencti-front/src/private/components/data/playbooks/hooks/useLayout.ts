@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useReactFlow, useStore, useNodesInitialized, Node, Edge, ReactFlowState } from 'reactflow';
+import { useReactFlow, useStore, useNodesInitialized, Node, Edge, ReactFlowState, Viewport } from 'reactflow';
 import { timer } from 'd3-timer';
 import { layoutPlaybook, PlaybookLayoutComponent, PlaybookLayoutLink, PlaybookLayoutNode } from '../layout/layoutPlaybook';
 import type { PlaybookLayoutDirection } from './usePlaybookLayoutMode';
@@ -59,6 +59,15 @@ export const layoutNodes = (nodes: Node[], edges: Edge[], direction: PlaybookLay
   });
 };
 
+// The landing of a playbook in a pane: the viewport it opens on (null: a fit) and whether the minimap
+// may be drawn there, both read on the positions the layout gives in this direction, never on the
+// positions the store holds at that moment (saved ones, or the other direction's on a first open).
+export const playbookLanding = (nodes: Node[], edges: Edge[], pane: { width: number; height: number }, direction: PlaybookLayoutDirection) => {
+  const laid = layoutNodes(nodes, edges, direction);
+  const viewport = playbookLandingViewport(laid, pane, direction);
+  return { laid, viewport, miniMapClear: (at: Viewport) => playbookMiniMapClear(laid, at, pane) };
+};
+
 // The structure the layout depends on: a change of a name or a configuration does not move anything.
 const structureSelector = (state: ReactFlowState) => {
   const nodeIds = [...state.nodeInternals.keys()].sort().join(',');
@@ -80,19 +89,26 @@ const useLayout = (direction: PlaybookLayoutDirection = 'vertical') => {
   // The minimap is drawn once a landing leaves every card clear of its box, or once the user pans or
   // zooms: a landing never hides a card or its menu under the minimap.
   const [miniMapShown, setMiniMapShown] = useState(false);
+  // Once the user moves the view, a pane resize no longer lands it again and the minimap stays.
+  const userMoved = useRef(false);
   const land = useRef<(duration?: number) => void>(() => undefined);
   land.current = (duration?: number) => {
     const pane = { width: paneWidth, height: paneHeight };
-    const viewport = playbookLandingViewport(getNodes(), pane, direction);
+    const { viewport, miniMapClear } = playbookLanding(getNodes(), getEdges(), pane, direction);
     if (viewport) setViewport(viewport, duration ? { duration } : undefined);
     else fitView(duration ? { ...INITIAL_FIT, duration } : INITIAL_FIT);
-    const settle = () => setMiniMapShown(playbookMiniMapClear(getNodes(), viewport ?? getViewport(), pane));
+    const settle = () => {
+      if (!userMoved.current) setMiniMapShown(miniMapClear(viewport ?? getViewport()));
+    };
     if (viewport || !duration) settle();
     else setTimeout(settle, duration + 20);
   };
   // Only a move the user starts (wheel, drag, pinch) carries an event; the landings carry none.
   const onMoveStart = useCallback((event: unknown) => {
-    if (event) setMiniMapShown(true);
+    if (event) {
+      userMoved.current = true;
+      setMiniMapShown(true);
+    }
   }, []);
   useEffect(() => {
     const nodes = getNodes();
@@ -132,15 +148,20 @@ const useLayout = (direction: PlaybookLayoutDirection = 'vertical') => {
   useEffect(() => {
     if (shownDirection.current === direction) return undefined;
     shownDirection.current = direction;
+    // A layout switch is a new landing: the minimap is checked again on the new picture.
+    userMoved.current = false;
     const timeout = setTimeout(() => land.current(200), DIRECTION_REFIT_DELAY);
     return () => clearTimeout(timeout);
   }, [direction]);
-  // A fit before the cards are measured has no bounds and leaves the default zoom: fit once they are.
+  // A fit before the cards are measured has no bounds and leaves the default zoom: land once they are.
+  // The canvas takes its height after the first frame and follows the window: until the user moves
+  // the view, every new pane size lands it again, so the entry point and the minimap check always
+  // use the pane as it is drawn (a horizontal landing is centred on the pane height).
   useEffect(() => {
-    if (nodesInitialized && paneWidth > 0 && paneHeight > 0 && !fitted.current) {
-      fitted.current = true;
-      land.current();
-    }
+    if (!nodesInitialized || paneWidth <= 0 || paneHeight <= 0) return;
+    if (fitted.current && userMoved.current) return;
+    fitted.current = true;
+    land.current();
   }, [nodesInitialized, paneWidth, paneHeight]);
   return { miniMapShown, onMoveStart };
 };
