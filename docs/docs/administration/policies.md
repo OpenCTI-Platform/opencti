@@ -18,7 +18,7 @@ Allow to set a main organization for the entire platform. Users belonging to the
 
 The authentication strategies section provides insights into the configured authentication methods. Additionally, an "Enforce Two-Factor Authentication" button is available, allowing administrators to mandate 2FA activation for users, enhancing overall account security.
 
-Please see the [Authentication section](../deployment/authentication.md) for further details on available authentication strategies.
+Please see the [Authentication section](../deployment/authentication.md) for further details on available authentication strategies, and [Manage authentication strategies via the graphical interface](authentication-via-ui.md) to configure them from the platform.
 
 ![Authentication strategies](./assets/authentication-strategies.png)
 

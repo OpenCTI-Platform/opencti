@@ -2,6 +2,8 @@
 
 Fintel design are used to customize and preview your own Fintel template. You can now create Fintel designs to produce finished intelligence documents matching your organization's brand guidelines.
 
+To create and manage the templates themselves, see [Fintel templates](entities.md#fintel-templates). To send the resulting documents to a list of recipients, see [Dissemination list](dissemination-list.md).
+
 ## Create a fintel design
 Fintel designs can be configured on the "Settings > Customization > Fintel designs" menu.
 
@@ -29,7 +31,7 @@ Now let's customize a little bit this template.
 
 As you can see now in the preview you can change the following data:
 - Logo: you can use png, jpg, svg files (even url are accepted)
-- Gradiant color
+- Background primary color and Background secondary color: the two colors of the background gradient
 - Text color
 
 ## Use a fintel design in preview

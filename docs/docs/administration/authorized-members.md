@@ -40,7 +40,7 @@ To define authorized members, you need to click on the '**Manage Access Restrict
 
 ![authorized-members-pop-up.png](assets%2Fauthorized-members-pop-up.png)
 
-If you grant access to users belonging to an Organization, it is possible since version 6.6 of OpenCTI to restrict access even more specifically to users belonging to one or more groups, in order to provide more granularity in access control.
+If you grant access to users belonging to an Organization, you can restrict access even more specifically to users belonging to one or more groups, in order to provide more granularity in access control.
 
 ![authorized-members-group-intersection.png](assets%2Fauthorized-members-group-intersection.png)
 
@@ -72,7 +72,8 @@ Once authorized members are activated for these entities, data segregation by or
 
 ### Specific case of Authorized Members on Organization in the context of Organization segregation.
 
-In the context of Organization segregation, sometimes, as a Platform Organization, you do not want users to see all the organizations that exist in your database. This is the reason, since the 6.7.X, the Authorized Members on Organizations have been introduced:
+In the context of Organization segregation, sometimes, as a Platform Organization, you do not want users to see all the organizations that exist in your database. For this reason, you can set Authorized Members on Organizations:
+
 - A user with Can View will be able to see the organization in the knowledge list & security view. As a result, if the organization is in the Author field of an entity, or in the shared organization that the entity is shared with, the user will see the organization.
 - A user with Can Edit will be able to edit the organization (and see the organization).
 - A user with Can Manage will be able to manage access restrictions on this organization.

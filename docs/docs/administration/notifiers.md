@@ -1,6 +1,6 @@
 # Custom notifiers
 
-Leveraging the platform's built-in connectors, users can create custom notifiers tailored to their unique needs, under Platform > Customization > Notifiers.
+Leveraging the platform's built-in connectors, users can create custom notifiers tailored to their unique needs, under Settings > Customization > Notifiers.
 OpenCTI features three built-in connectors:
 
 - a webhook connector,
@@ -60,5 +60,4 @@ Custom notifiers are manageable in the "Settings > Customization > Notifiers" wi
 
 For guidance on configuring notification triggers and exploring the usages of notifiers, refer to the [dedicated documentation page](../usage/notifications.md).
 
-For security reasons, the authorized methods that can be used in webhook template is limited, see [notifier_authorized_functions parameter](https://github.com/OpenCTI-Platform/opencti/blob/master/opencti-platform/opencti-graphql/config/default.json).
-If you need to extend this authorization, you can update `APP__NOTIFIER_AUTHORIZED_FUNCTIONS` with a custom list. The default managed list by OpenCTI is safe, please be aware that you extend this list at your own risk.
+For security reasons, webhook templates are rendered in a restricted sandbox: only a limited set of JavaScript globals is available, and access to sensitive properties such as `__proto__`, `prototype` or `constructor` is blocked.

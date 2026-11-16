@@ -2,7 +2,7 @@
 
 !!! tip "Enterprise edition"
 
-     Please read the information below. The ability to log in via SSO is covered by the [OpenCTI Enterprise Edition license](https://docs.opencti.io/latest/administration/enterprise/?h=ente).
+     Please read the information below. The ability to log in via SSO is covered by the [OpenCTI Enterprise Edition license](enterprise.md).
  
 All the configurations listed below require an Enterprise Edition to work, except the Local strategy.
 

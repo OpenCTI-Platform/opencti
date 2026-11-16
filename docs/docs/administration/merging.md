@@ -33,3 +33,4 @@ A common concern when merging entities lies in the potential loss of information
 
 - **Usefulness:** To understand the benefits of entity merger, refer to the [Merge objects](../usage/merging.md) page in the User Guide section of the documentation.
 - **Deduplication mechanism:** the platform is equipped with [deduplication processes](../usage/deduplication.md) that automatically merge data at creation (either manually or by importing data from different sources) if it meets certain conditions.
+- **User accounts:** user accounts are not merged with this feature. They follow a separate procedure, described in [Merging users](users-merge.md).

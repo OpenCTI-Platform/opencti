@@ -28,7 +28,7 @@ The **Configuration** card allows the administrator to edit the following settin
 
 - Platform title
 - Platform favicon URL
-- Sender email address: email address displayed as sender when sending notifications. The technical sender is defined in the [SMTP configuration](../deployment/configuration.md#smtp-service).
+- Sender email address: email address displayed as sender when sending notifications. The technical sender is defined in the [SMTP configuration](../deployment/configuration.md#smtp-service) (see also the [SMTP configuration page](smtp-configuration.md)).
 - Third-party analytics (see below)
 
 The **Appearance** card groups the settings that change what users see:

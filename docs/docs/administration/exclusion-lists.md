@@ -28,7 +28,7 @@ When creating a list, you can provide the following data:
 
 As said before, there are different indicator observable types possible :
 
-`Artifact`, `Domain-name`, `Email-Addr`, `Hostname`, `Ipv4-Addr`, `ipv6-Addr`, `StixFile`, `Url`
+`Artifact`, `Domain-Name`, `Email-Addr`, `Hostname`, `IPv4-Addr`, `IPv6-Addr`, `StixFile`, `Url`
 
 ![Exclusion lists creation drawer](./assets/exclusion-lists/exclusion-lists-creation-drawer.png)
 
@@ -46,7 +46,7 @@ There are several options available in your exclusion list:
 
 - delete: if you want to completely remove the list from the settings
 - activate/deactivate: this can be used to temporally pause the application of a list
-- edit: if you want to edit my current list
+- edit: if you want to edit your current list
 
 You can also download the raw file containing all of your exclusion list values.
 
@@ -54,7 +54,7 @@ You can also download the raw file containing all of your exclusion list values.
 
 ## Edit an exclusion list
 
-If you want to modify my list, you can open the edit drawer.
+To modify your list, open the edit drawer.
 Here the information can be changed and you can edit the contents of your file directly (if the file size is less than 1M).
 
 It is also possible to completely change the file, by toggling `Upload a file` .
@@ -66,7 +66,8 @@ It is also possible to completely change the file, by toggling `Upload a file` .
 From now on, when an indicator is about to be created, if its pattern contains an observable value belonging to an exclusion list, then this indicator will not be created, with an error message of `Indicator of type stix is contained in exclusion list`.
 This applies regardless of the source of ingestion: Manual, Connectors, Feed ingestors (CSV, RSS, TAXII) and also Playbook.
 
-> "Exclusion lists apply to Indicators, not Observables"
+!!! note "Exclusion lists apply to Indicators, not Observables"
+
     The check is only performed when an Indicator is created from a STIX pattern. A standalone Observable created directly (for instance by a connector or feed ingestor that does not generate an Indicator) is not filtered by exclusion lists.
 
 ![Exclusion lists indicator creation](./assets/exclusion-lists/exclusion-lists-indicator-creation.png)
