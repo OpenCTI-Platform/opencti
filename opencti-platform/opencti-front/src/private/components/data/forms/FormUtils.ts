@@ -456,8 +456,9 @@ export const buildEntityTypes = (
   const processEntityType = (s: { id: string; label?: string }) => {
     const settings = settingsMap.get(s.id);
 
-    // Use attributesDefinitions from the query which contains full attribute info
-    const attributesDefinitions = settings?.attributesDefinitions || [];
+    // Use attributesDefinitions from the query which contains full attribute info.
+    // The refs (createdBy, objectMarking…) are left out: the Form builder offers its own special fields for them.
+    const attributesDefinitions = (settings?.attributesDefinitions || []).filter((attr) => attr.type !== 'ref');
     const mandatoryAttrs = settings?.mandatoryAttributes || [];
 
     // Map attributesDefinitions to the format expected by the form

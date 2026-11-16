@@ -7,6 +7,7 @@ import {
   normalizeDraftAuthorizedMembersDefaults,
   removeFieldsSupersededByParsedMapping,
   validateFormSchemaMappings,
+  buildEntityTypes,
 } from './FormUtils';
 import type { FormBuilderData, FormFieldAttribute } from './Form.d';
 import type { AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
@@ -466,5 +467,28 @@ describe('removeFieldsSupersededByParsedMapping', () => {
     const result = removeFieldsSupersededByParsedMapping(fields, 'entity-1', undefined, 'content');
 
     expect(result).toEqual([makeField('main_entity', 'content')]);
+  });
+});
+
+describe('buildEntityTypes', () => {
+  const t_i18n = (key: string) => key;
+  const schema = { sdos: [{ id: 'Report', label: 'Report' }] };
+  const entitySettings = {
+    edges: [{
+      node: {
+        target_type: 'Report',
+        attributesDefinitions: [
+          { name: 'name', type: 'string', label: 'Name', mandatory: true, mandatoryType: 'external' },
+          { name: 'createdBy', type: 'ref', label: 'Author', mandatory: true, mandatoryType: 'customizable', defaultValues: [{ id: 'identity--a', name: 'A' }] },
+        ],
+      },
+    }],
+  };
+
+  it('should leave out the refs, offered by the Form builder as its own special fields', () => {
+    const [report] = buildEntityTypes(schema, entitySettings, t_i18n);
+    expect(report.attributes?.map((attribute) => attribute.name)).toEqual(['name']);
+    // A mandatory ref is not pre-added either: its field type would not exist in the Form builder
+    expect(getInitialMandatoryFields('Report', [report], t_i18n).map((field) => field.name)).toEqual(['name']);
   });
 });
