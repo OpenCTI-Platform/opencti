@@ -23,8 +23,19 @@ const buildProxiedFetch = (issuerUrl: URL): CustomFetch => {
 };
 
 // openid-client v6 ignores token_endpoint_auth_method in metadata and defaults to client_secret_post
-export const buildClientAuthentication = (extraConf: Record<string, unknown>, clientSecret: string): ClientAuth | undefined => {
-  return extraConf.token_endpoint_auth_method === 'client_secret_basic' ? ClientSecretBasic(clientSecret) : undefined;
+export const buildClientAuthentication = (
+  logger: AuthenticationProviderLogger,
+  extraConf: Record<string, unknown>,
+  clientSecret: string,
+): ClientAuth | undefined => {
+  const method = extraConf.token_endpoint_auth_method;
+  if (method === 'client_secret_basic') {
+    return ClientSecretBasic(clientSecret);
+  }
+  if (method !== undefined && method !== 'client_secret_post') {
+    logger.warn('Unsupported token_endpoint_auth_method, falling back to client_secret_post', { token_endpoint_auth_method: method });
+  }
+  return undefined;
 };
 
 export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger, meta: ProviderMeta, conf: OidcStoreConfiguration) => {
@@ -36,7 +47,7 @@ export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger,
 
   const issuer = new URL(conf.issuer);
   const customFetchImpl = conf.use_proxy ? buildProxiedFetch(issuer) : undefined;
-  const clientAuthentication = buildClientAuthentication(extraConf, client_secret);
+  const clientAuthentication = buildClientAuthentication(logger, extraConf, client_secret);
 
   const config = await oidcDiscovery(
     issuer,
