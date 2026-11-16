@@ -391,3 +391,107 @@ def test_import_from_stix2_maps_procedure_fields():
 
 def test_generate_id_from_data_returns_the_given_id():
     assert Procedure.generate_id_from_data({"id": OCTI_PROC}) == OCTI_PROC
+
+
+def test_tactics_are_normalised_to_mitre_phase_names():
+    p = procedure(
+        normalize_procedure_bundle(
+            bundle_with(tactics=["Defense Evasion", " Command_and_Control "])
+        )[0]
+    )
+    assert [phase["phase_name"] for phase in p["kill_chain_phases"]] == [
+        "defense-evasion",
+        "command-and-control",
+    ]
+
+
+def test_fingerprint_of_title_case_tactic_equals_the_phase_name_one():
+    title_case = procedure(
+        normalize_procedure_bundle(bundle_with(tactics=["Defense Evasion"]))[0]
+    )
+    phase_name = procedure(
+        normalize_procedure_bundle(bundle_with(tactics=["defense-evasion"]))[0]
+    )
+    assert title_case["x_fingerprint"] == phase_name["x_fingerprint"]
+    assert title_case["x_fingerprint"] == compute_procedure_fingerprint(
+        [], [], ["defense-evasion"]
+    )
+
+
+def test_scalar_list_values_are_wrapped_in_a_list():
+    out, warnings = normalize_procedure_bundle(
+        _bundle(
+            _procedure_object(
+                platforms="Windows",
+                tactics="Execution",
+                x_technique_refs=AP1,
+                x_vulnerability_refs=VULN,
+                x_source_refs=IDENTITY,
+                x_observable_refs="process--1",
+            )
+        )
+    )
+    p = procedure(out)
+    assert warnings == []
+    assert p["platforms"] == ["windows"]
+    assert p["kill_chain_phases"] == [
+        {"kill_chain_name": "mitre-attack", "phase_name": "execution"}
+    ]
+    assert {(r["relationship_type"], r["target_ref"]) for r in relationships(out)} == {
+        ("implements-technique", AP1),
+        ("exploits", VULN),
+    }
+    assert p["x_source_refs"] == [IDENTITY]
+    assert p["x_observable_refs"] == ["process--1"]
+
+
+def bundle_with_bad_values():
+    return _bundle(
+        _procedure_object(
+            platforms=["Windows", 3],
+            tactics=["execution", None],
+            kill_chain_phases=[
+                {"kill_chain_name": "mitre-attack"},
+                {"kill_chain_name": "mitre-attack", "phase_name": "persistence"},
+                "persistence",
+            ],
+            x_technique_refs=[AP1, {"id": AP2}],
+            x_vulnerability_refs=[7],
+            x_source_refs=[IDENTITY, None],
+            x_observable_refs=["process--1", 1],
+        )
+    )
+
+
+def test_bad_values_are_skipped_with_a_warning():
+    out, warnings = normalize_procedure_bundle(bundle_with_bad_values())
+    p = procedure(out)
+    assert p["platforms"] == ["windows"]
+    assert p["kill_chain_phases"] == [
+        {"kill_chain_name": "mitre-attack", "phase_name": "persistence"},
+        {"kill_chain_name": "mitre-attack", "phase_name": "execution"},
+    ]
+    assert [(r["relationship_type"], r["target_ref"]) for r in relationships(out)] == [
+        ("implements-technique", AP1)
+    ]
+    assert p["x_source_refs"] == [IDENTITY]
+    assert p["x_observable_refs"] == ["process--1"]
+    assert p["x_fingerprint"] == compute_procedure_fingerprint(
+        [AP1], ["windows"], ["persistence", "execution"]
+    )
+    # platforms, tactics, 2 kill chain phases, techniques, vulnerabilities,
+    # sources, observables
+    assert len(warnings) == 8
+    assert all(OCTI_PROC in warning for warning in warnings)
+
+
+def test_splitter_does_not_reject_a_bundle_with_bad_values():
+    logger = MagicMock()
+    splitter = OpenCTIStix2Splitter(logger=logger)
+    _, incompatible, bundles = splitter.split_bundle_with_expectations(
+        bundle_with_bad_values(), use_json=False
+    )
+    objects = [o for b in bundles for o in b["objects"]]
+    assert "x-opencti-procedure" in {o["type"] for o in objects}
+    assert incompatible == []
+    assert logger.warning.call_count == 8
