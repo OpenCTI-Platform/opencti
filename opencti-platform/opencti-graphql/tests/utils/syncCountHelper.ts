@@ -89,7 +89,8 @@ testCreatedCounter['tracking-number'] = 1;
 // - 3 created and deleted by vocabulary-import-test
 testCreatedCounter.vocabulary = VOCABULARY_NUMBERS + 3;
 // 1 created and deleted by ingestionDeduplication-test (a type outside the deduplication allowlist)
-testCreatedCounter.vulnerability = 12;
+// 3 created and deleted by filterGroup-test (nil / not_nil operators on numbers)
+testCreatedCounter.vulnerability = 15;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
 testCreatedCounter['security-coverage'] = 27;
@@ -231,7 +232,8 @@ testDeletedCounter.tool = 5;
 // - 3 deleted by vocabulary-import-test
 testDeletedCounter.vocabulary = 3;
 // 1 by ingestionDeduplication-test
-testDeletedCounter.vulnerability = 6;
+// 3 by filterGroup-test (nil / not_nil operators on numbers)
+testDeletedCounter.vulnerability = 9;
 testDeletedCounter.software = 1;
 testDeletedCounter.iccid = 4;
 testDeletedCounter.imei = 3;

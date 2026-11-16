@@ -866,6 +866,72 @@ describe('Complex filters combinations for elastic queries', () => {
     // 24 relationships - 8 with empty stop_time
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(16);
   });
+  it('should list entities according to filters: \'nil\' / \'not_nil\' operators on numbers', async () => {
+    const VULNERABILITY_CREATE_QUERY = gql`
+      mutation VulnerabilityAdd($input: VulnerabilityAddInput!) {
+        vulnerabilityAdd(input: $input) {
+          id
+        }
+      }
+    `;
+    const VULNERABILITY_DELETE_QUERY = gql`
+      mutation vulnerabilityDelete($id: ID!) {
+        vulnerabilityEdit(id: $id) {
+          delete
+        }
+      }
+    `;
+    const VULNERABILITY_LIST_QUERY = gql`
+      query vulnerabilities($filters: FilterGroup) {
+        vulnerabilities(filters: $filters) {
+          edges {
+            node {
+              id
+              name
+            }
+          }
+        }
+      }
+    `;
+    // a score of 0 is a value: it must not be considered as empty
+    const vulnerabilitiesToCreate = [
+      { name: 'NumericNilVulnerabilityWithScore', x_opencti_cvss_base_score: 7.5 },
+      { name: 'NumericNilVulnerabilityWithZeroScore', x_opencti_cvss_base_score: 0 },
+      { name: 'NumericNilVulnerabilityWithoutScore' },
+    ];
+    const vulnerabilityNames = vulnerabilitiesToCreate.map((v) => v.name);
+    const vulnerabilityIds = [];
+    const listVulnerabilityNames = async (operator) => {
+      const queryResult = await queryAsAdmin({
+        query: VULNERABILITY_LIST_QUERY,
+        variables: {
+          filters: {
+            mode: 'and',
+            filters: [
+              { key: 'name', operator: 'eq', values: vulnerabilityNames, mode: 'or' },
+              { key: 'x_opencti_cvss_base_score', operator, values: [], mode: 'or' },
+            ],
+            filterGroups: [],
+          },
+        },
+      });
+      return queryResult.data.vulnerabilities.edges.map((n) => n.node.name).sort();
+    };
+    try {
+      for (let i = 0; i < vulnerabilitiesToCreate.length; i += 1) {
+        const created = await queryAsAdmin({ query: VULNERABILITY_CREATE_QUERY, variables: { input: vulnerabilitiesToCreate[i] } });
+        vulnerabilityIds.push(created.data.vulnerabilityAdd.id);
+      }
+      // x_opencti_cvss_base_score is empty
+      expect(await listVulnerabilityNames('nil')).toEqual(['NumericNilVulnerabilityWithoutScore']);
+      // x_opencti_cvss_base_score is not empty
+      expect(await listVulnerabilityNames('not_nil')).toEqual(['NumericNilVulnerabilityWithScore', 'NumericNilVulnerabilityWithZeroScore']);
+    } finally {
+      for (let i = 0; i < vulnerabilityIds.length; i += 1) {
+        await queryAsAdmin({ query: VULNERABILITY_DELETE_QUERY, variables: { id: vulnerabilityIds[i] } });
+      }
+    }
+  });
   it('should list entities according to filters: aggregation with filters', async () => {
     // count the number of entities with each marking
     const distributionArgs = {
