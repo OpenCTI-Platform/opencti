@@ -22,7 +22,7 @@ To connect the platform to an AI endpoint, set these parameters (see [AI Service
 - `ai:token` (`AI__TOKEN`): the token of the endpoint. Without a token, the platform does not connect to the endpoint.
 - `ai:model` (`AI__MODEL`): the model used for text generation.
 - `ai:endpoint` (`AI__ENDPOINT`): the endpoint URL. For the MistralAI cloud service, set it to `https://api.mistral.ai`: with an empty endpoint, Ask AI works but natural language queries cannot reach the service. For the OpenAI cloud service, you can leave it empty. For a local or self-hosted endpoint, set its URL.
-- For AzureAI only: `ai:version` (`AI__VERSION`), `ai:ai_azure_instance` (`AI__AI_AZURE_INSTANCE`) and `ai:ai_azure_deployment` (`AI__AI_AZURE_DEPLOYMENT`).
+- For AzureAI only: `ai:version` (`AI__VERSION`), `ai:ai_azure_instance` (`AI__AI_AZURE_INSTANCE`) and `ai:ai_azure_deployment` (`AI__AI_AZURE_DEPLOYMENT`). For AzureAI, `ai:endpoint` (your Azure OpenAI endpoint URL) and `ai:version` are required.
 
 !!! info "Beta Feature"
     
