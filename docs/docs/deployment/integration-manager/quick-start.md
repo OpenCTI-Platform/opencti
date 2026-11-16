@@ -106,6 +106,7 @@ docker run -d \
   -v $(pwd)/config/production.yaml:/opt/xtm-composer/config/production.yaml \
   -v $(pwd)/private_key_4096.pem:/keys/private_key.pem \
   -e COMPOSER_ENV=production \
+  -e MANAGER__CREDENTIALS_KEY_FILEPATH=/keys/private_key.pem \
   filigran/xtm-composer:latest
 ```
 
