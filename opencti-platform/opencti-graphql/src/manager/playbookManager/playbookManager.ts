@@ -47,6 +47,7 @@ import { listenPirEvents } from './listenPirEventsUtils';
 import { isDebugPlaybook, isValidEventType } from './playbookManagerUtils';
 import { buildPlaybookEventContext } from '../../modules/playbook/playbook-utils';
 import { playbookExecutor } from './playbookExecutor';
+import { createEventWatermark, type EventWatermark, playbookTriggerScheduler } from './playbookTriggerScheduler';
 import type { BasicConnection, BasicStoreBase } from '../../types/store';
 import { InterruptibleTimer } from '../interruptible-timer';
 import { isModuleActivated } from '../../database/cluster-module';
@@ -83,7 +84,11 @@ export const getManagerInfo = async () => {
   };
 };
 
-const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEvent>>) => {
+// The executions of the stream and PIR triggers run in the playbook trigger scheduler: one lane per
+// playbook (its executions keep the event order), lanes in parallel. The handler never waits for an
+// execution, so a slow step (an AI agent call) of one playbook never holds back the others. The
+// stream position is saved by the watermark, only up to the last event whose executions have ended.
+export const buildPlaybookStreamHandler = (watermark: EventWatermark) => async (streamEvents: Array<SseEvent<StreamDataEvent>>) => {
   if (streamEvents.length === 0) {
     return;
   }
@@ -96,6 +101,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
   for (let index = 0; index < streamEvents.length; index += 1) {
     const streamEvent = streamEvents[index];
     const { id: eventId, data: { data, type, origin, scope } } = streamEvent;
+    watermark.open(streamEvent.id);
     // For each event we need to check ifs
     for (let playbookIndex = 0; playbookIndex < playbooks.length; playbookIndex += 1) {
       try { // try catch per playbook and per event to avoid losing events if an error is thrown on a playbook event
@@ -136,7 +142,8 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
                     type: 'bundle',
                     objects: [data],
                   };
-                  await playbookExecutor({
+                  await playbookTriggerScheduler.waitForCapacity();
+                  watermark.track(streamEvent.id, playbookTriggerScheduler.run(playbook.id, () => playbookExecutor({
                     eventId,
                     // Basic
                     executionId: uuidv4(),
@@ -150,12 +157,13 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
                     previousStepBundle: null,
                     bundle,
                     event: streamEvent.data,
-                  });
+                  }), { eventId, trigger: 'stream' }));
                 }
               }
             }
             if (instance && instance.component_id === 'PLAYBOOK_DATA_STREAM_PIR') {
-              await listenPirEvents(context, streamEvent, instance, playbook);
+              await playbookTriggerScheduler.waitForCapacity();
+              watermark.track(streamEvent.id, playbookTriggerScheduler.run(playbook.id, () => listenPirEvents(context, streamEvent, instance, playbook), { eventId, trigger: 'pir' }));
             }
           }
         }
@@ -163,7 +171,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
         logApp.error('[OPENCTI-MODULE] Playbook manager stream error', { cause: e, manager: 'PLAYBOOK_MANAGER' });
       }
     }
-    await redisSetManagerEventState(PLAYBOOK_MANAGER_NAME, streamEvent.id);
+    watermark.close(streamEvent.id);
   }
 };
 
@@ -286,7 +294,10 @@ export const handlePlaybookCrons = async (context: AuthContext) => {
         if (instance && instance.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id) {
           const connector = PLAYBOOK_COMPONENTS[instance.component_id];
           const cronConfiguration = JSON.parse(instance.configuration ?? '{}') as CronConfiguration;
-          if (shouldTriggerNow(cronConfiguration, baseDate) && cronConfiguration.filters) {
+          // The previous run of this playbook is still going: this occurrence is skipped, as when the cron loop awaited every execution.
+          if (shouldTriggerNow(cronConfiguration, baseDate) && cronConfiguration.filters && playbookTriggerScheduler.busy(playbook.id)) {
+            logApp.warn(`[OPENCTI-MODULE] Playbook ${instance.name} skipped for cron ${cronConfiguration.period}, its previous run is not finished`, { id: playbook.id, manager: 'PLAYBOOK_MANAGER' });
+          } else if (shouldTriggerNow(cronConfiguration, baseDate) && cronConfiguration.filters) {
             logApp.info(`[OPENCTI-MODULE] Running playbook ${instance.name} for cron ${cronConfiguration.period} (${cronConfiguration.triggerTime})`);
             const jsonFilters = JSON.parse(cronConfiguration.filters);
             const convertedFilters = convertRelationRefsFilterKeys(jsonFilters);
@@ -309,7 +320,8 @@ export const handlePlaybookCrons = async (context: AuthContext) => {
                     type: 'bundle',
                     objects: results,
                   };
-                  await playbookExecutor({
+                  await playbookTriggerScheduler.waitForCapacity();
+                  void playbookTriggerScheduler.run(playbook.id, () => playbookExecutor({
                     eventId,
                     // Basic
                     executionId: uuidv4(),
@@ -322,7 +334,7 @@ export const handlePlaybookCrons = async (context: AuthContext) => {
                     // Data
                     previousStepBundle: null,
                     bundle,
-                  });
+                  }), { trigger: 'cron', id: results[0].id });
                 } catch (e) {
                   logApp.warn('[OPENCTI-MODULE] Playbook manager cron error', { cause: e, id: results[0].id, manager: 'PLAYBOOK_MANAGER' });
                 }
@@ -345,7 +357,8 @@ export const handlePlaybookCrons = async (context: AuthContext) => {
                       type: 'bundle',
                       objects: [data],
                     };
-                    await playbookExecutor({
+                    await playbookTriggerScheduler.waitForCapacity();
+                    void playbookTriggerScheduler.run(playbook.id, () => playbookExecutor({
                       eventId,
                       // Basic
                       executionId: uuidv4(),
@@ -358,7 +371,7 @@ export const handlePlaybookCrons = async (context: AuthContext) => {
                       // Data
                       previousStepBundle: null,
                       bundle,
-                    });
+                    }), { trigger: 'cron', id: node.id });
                   } catch (e) {
                     logApp.warn('[OPENCTI-MODULE] Playbook manager cron error', { cause: e, id: node.id, manager: 'PLAYBOOK_MANAGER' });
                   }
@@ -384,12 +397,13 @@ const initPlaybookManager = () => {
 
   const playbookHandler = async () => {
     let lock;
+    const watermark = createEventWatermark((eventId) => redisSetManagerEventState(PLAYBOOK_MANAGER_NAME, eventId));
     try {
       // Lock the manager
       lock = await lockResources([PLAYBOOK_LIVE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running playbook manager');
-      streamProcessor = createStreamProcessor('Playbook manager', playbookStreamHandler, { withInternal: true });
+      streamProcessor = createStreamProcessor('Playbook manager', buildPlaybookStreamHandler(watermark), { withInternal: true });
       const lastEventState = await redisGetManagerEventState(PLAYBOOK_MANAGER_NAME);
       await streamProcessor.start(lastEventState ?? 'live');
       let delayCheckerCounter = 0;
@@ -410,6 +424,9 @@ const initPlaybookManager = () => {
       }
     } finally {
       if (streamProcessor) await streamProcessor.shutdown();
+      // The executions still running go on, but the position is no longer saved by this node.
+      watermark.stop();
+      await watermark.settled();
       if (lock) await lock.unlock();
     }
   };
