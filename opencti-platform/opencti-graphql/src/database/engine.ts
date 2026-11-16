@@ -3803,16 +3803,33 @@ export type HistogramBreakdownPoint = { date: string; value: number };
 const breakdownFilterKeyOf = (index: number) => `k${index}`;
 // Bucket of the documents carrying none of the keys, apart from the keys whatever they are named
 const BREAKDOWN_OTHER_BUCKET_KEY = 'other';
-// Query of the documents carrying a key: a term of the field, or for a side of the relationships a connection
-// on this side with the key among its types
+// Query of the documents whose keyword field holds an indexed form, exactly. The keyword normalizer (lowercase, then
+// ASCII folding) also applies to the value of a term query, and gives an indexed form back unchanged unless the folding
+// made an uppercase letter of it: a small capital `ᴀ` is indexed as `A`, and a term query of `A` looks for `a`. Such a
+// form is matched on the doc values, which hold it as indexed. Only a form with an uppercase letter pays for the script.
+export const buildIndexedKeywordQuery = (fieldForQuery: string, key: string) => {
+  if (key === key.toLowerCase()) {
+    return { term: { [fieldForQuery]: key } };
+  }
+  return {
+    script: {
+      script: {
+        source: 'doc.containsKey(params.field) && doc[params.field].contains(params.key)',
+        params: { field: fieldForQuery, key },
+      },
+    },
+  };
+};
+// Query of the documents carrying a key: the indexed form of the field, or for a side of the relationships
+// a connection on this side with the key among its types
 const buildBreakdownKeyQuery = (field: string, connectionSide: ConnectionSide | null) => {
   if (connectionSide) {
     return (key: string) => ({
-      nested: { path: 'connections', query: { bool: { must: [buildConnectionSideQuery(connectionSide), { term: { [CONNECTION_TYPES_FIELD]: key } }] } } },
+      nested: { path: 'connections', query: { bool: { must: [buildConnectionSideQuery(connectionSide), buildIndexedKeywordQuery(CONNECTION_TYPES_FIELD, key)] } } },
     });
   }
   const fieldForQuery = buildFieldForQuery(field);
-  return (key: string) => ({ term: { [fieldForQuery]: key } });
+  return (key: string) => buildIndexedKeywordQuery(fieldForQuery, key);
 };
 // Aggregation of elHistogramBreakdownCount: one filter per key, and with `withOther` the documents carrying none
 // of them in the other bucket. A document carrying several keys counts for each of them.
