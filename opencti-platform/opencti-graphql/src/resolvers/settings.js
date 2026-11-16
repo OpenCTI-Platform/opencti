@@ -39,6 +39,7 @@ import { updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../domain/set
 import { readPasswordHistoryCount } from '../modules/user/user-password-history';
 import { LOCAL_AUTH_LOCKOUT_DEFAULTS } from '../domain/local-auth-lockout';
 import { isSessionPresenceSupported } from '../modules/session/session-presence-domain';
+import { readXtmHubTokenFor } from '../utils/settings.helper';
 
 const settingsResolvers = {
   Query: {
@@ -64,6 +65,7 @@ const settingsResolvers = {
     platform_session_presence_enabled: (settings) => settings.platform_session_presence_enabled ?? false,
     platform_session_presence_supported: () => isSessionPresenceSupported(),
     platform_email: (settings) => smtpConfiguredEmail(settings),
+    xtm_hub_token: (settings, __, context) => readXtmHubTokenFor(context.user, settings),
     platform_email_configurable: () => isEmailRewriteAllowed(),
     password_policy_min_length: (settings) => settings.password_policy_min_length ?? 0,
     password_policy_max_length: (settings) => settings.password_policy_max_length ?? 0,
