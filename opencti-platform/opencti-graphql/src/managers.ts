@@ -24,6 +24,7 @@ import historyManager from './manager/historyManager';
 import notificationManager from './manager/notificationManager';
 import publisherManager from './manager/publisherManager';
 import playbookManager from './manager/playbookManager/playbookManager';
+import { PLAYBOOK_CONTINUATION_SHUTDOWN_TIMEOUT, playbookContinuationScheduler } from './manager/playbookManager/playbookContinuationScheduler';
 import { isAttachmentProcessorEnabled } from './database/engine';
 import fileIndexManager from './manager/fileIndexManager';
 import { shutdownAllManagers, startAllManagers } from './manager/managerModule';
@@ -206,6 +207,9 @@ export const shutdownModules = async () => {
   if (ENABLED_PLAYBOOK_MANAGER) {
     stoppingPromises.push(playbookManager.shutdown());
   }
+  // The steps that follow a connector callback run on the API node that received it, whatever the playbook manager setting:
+  // wait for them (bounded) and register the ones the stop interrupts, so no chain is lost silently.
+  stoppingPromises.push(playbookContinuationScheduler.drain(PLAYBOOK_CONTINUATION_SHUTDOWN_TIMEOUT));
   // endregion
   // region file index manager
   if (ENABLED_FILE_INDEX_MANAGER && isAttachmentProcessorEnabled()) {

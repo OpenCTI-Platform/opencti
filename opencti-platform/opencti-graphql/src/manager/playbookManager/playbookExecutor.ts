@@ -71,6 +71,43 @@ type ExecutorFn = {
   externalCallback?: {
     externalStartDate: Date;
   };
+  // Set on the steps run in the background after an external callback: the step running now,
+  // so a continuation interrupted by the platform stop is registered on it.
+  continuation?: ContinuationTracker;
+};
+
+type ContinuationTracker = {
+  currentStepId: () => string;
+  reach: (stepId: string) => void;
+};
+
+const createContinuationTracker = (firstStepId: string): ContinuationTracker => {
+  let current = firstStepId;
+  return {
+    currentStepId: () => current,
+    reach: (stepId: string) => {
+      current = stepId;
+    },
+  };
+};
+
+const registerInterruptedContinuation = async (
+  { executionId, playbookId, tracker, bundle }: { executionId: string; playbookId: string; tracker: ContinuationTracker; bundle: StixBundle },
+) => {
+  const now = utcDate().toISOString();
+  await registerStepObservation({
+    message: 'Execution interrupted by the platform stop, the remaining steps did not run',
+    status: 'error',
+    executionId,
+    playbookId,
+    start: now,
+    end: now,
+    diff: 0,
+    stepId: tracker.currentStepId(),
+    bundle,
+    error: JSON.stringify({ name: 'PlaybookContinuationInterrupted', message: 'The platform stopped before the steps following the connector callback ended' }, null, 2),
+    forceBundleTracking: false,
+  });
 };
 
 export const playbookExecutor = async ({
@@ -85,6 +122,7 @@ export const playbookExecutor = async ({
   bundle,
   event,
   externalCallback,
+  continuation,
 }: ExecutorFn) => {
   const currentPlaybookInDebug = isDebugPlaybook(playbookId);
   const isExternalCallback = externalCallback !== undefined;
@@ -97,6 +135,7 @@ export const playbookExecutor = async ({
   }
   const start = isExternalCallback ? externalCallback.externalStartDate : utcDate();
   const instanceWithConfig = { ...nextStep.instance, configuration: JSON.parse(nextStep.instance.configuration ?? '{}') };
+  continuation?.reach(nextStep.instance.id);
   if (nextStep.component.is_internal || isExternalCallback) {
     let execution: PlaybookExecution;
     const baseBundle = structuredClone(isExternalCallback ? previousStepBundle : bundle);
@@ -170,9 +209,12 @@ export const playbookExecutor = async ({
     if (execution.output_port) {
       const outputPort = execution.output_port;
       const outputBundle = execution.bundle;
+      // Find the next op for this attachment
+      const connections = definition.links.filter((c) => c.from.id === nextStep.instance.id && c.from.port === outputPort);
+      const tracker: ContinuationTracker | undefined = isExternalCallback
+        ? createContinuationTracker(connections[0]?.to.id ?? nextStep.instance.id)
+        : continuation;
       const continueChain = async () => {
-        // Find the next op for this attachment
-        const connections = definition.links.filter((c) => c.from.id === nextStep.instance.id && c.from.port === outputPort);
         for (let connectionIndex = 0; connectionIndex < connections.length; connectionIndex += 1) {
           const connection = connections[connectionIndex];
           const nextInstance = definition.nodes.find((c) => c.id === connection.to.id);
@@ -193,6 +235,7 @@ export const playbookExecutor = async ({
             nextStep: { component: nextConnector, instance: nextInstance },
             previousStepBundle,
             bundle: outputBundle,
+            continuation: tracker,
           });
         }
       };
@@ -201,7 +244,13 @@ export const playbookExecutor = async ({
         // the connector step is registered, so acknowledge the caller now and run the rest
         // of the chain in the background, with bounded concurrency (see playbookContinuationScheduler).
         // Errors of the following steps are registered as step observations by their own executor call.
-        await playbookContinuationScheduler.schedule(continueChain, { playbookId, executionId, stepId: nextStep.instance.id });
+        // A continuation the platform stop interrupts (or refuses before it starts) is registered as an
+        // error on the step it had reached, so the execution trace never ends silently on the connector step.
+        const continuationTracker = tracker as ContinuationTracker;
+        await playbookContinuationScheduler.schedule(continueChain, {
+          logMeta: { playbookId, executionId, stepId: nextStep.instance.id },
+          onAbandon: () => registerInterruptedContinuation({ executionId, playbookId, tracker: continuationTracker, bundle: outputBundle }),
+        });
       } else {
         await continueChain();
       }

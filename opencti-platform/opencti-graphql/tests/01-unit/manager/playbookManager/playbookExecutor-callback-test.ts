@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { redisPlaybookUpdate } from '../../../../src/database/redis';
 import { playbookExecutor } from '../../../../src/manager/playbookManager/playbookExecutor';
-import { createContinuationScheduler } from '../../../../src/manager/playbookManager/playbookContinuationScheduler';
+import { createContinuationScheduler, playbookContinuationScheduler } from '../../../../src/manager/playbookManager/playbookContinuationScheduler';
 import { PLAYBOOK_COMPONENTS } from '../../../../src/modules/playbook/playbook-components';
 import type { ComponentDefinition, PlaybookComponent } from '../../../../src/modules/playbook/playbook-types';
 import type { StixBundle } from '../../../../src/types/stix-2-1-common';
@@ -126,6 +126,30 @@ describe('playbookExecutor on an external callback', () => {
   });
 });
 
+describe('playbookExecutor on an external callback when the platform stops', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    PLAYBOOK_COMPONENTS[CONNECTOR_COMPONENT_ID] = { ...baseComponent(CONNECTOR_COMPONENT_ID, false), notify: async () => {} };
+    PLAYBOOK_COMPONENTS[SLOW_COMPONENT_ID] = { ...baseComponent(SLOW_COMPONENT_ID, true), executor: slowExecutor };
+  });
+
+  it('registers the step a continuation had reached as an error when the stop interrupts it', async () => {
+    await run(SLOW_COMPONENT_ID, true);
+    expect(observedSteps()).toEqual([{ step: 'connector-node', status: 'success' }]);
+    // Stop while the slow downstream step runs, with a drain timeout shorter than the step
+    const result = await playbookContinuationScheduler.drain(50);
+    expect(result.abandoned).toBe(1);
+    expect(observedSteps()).toEqual([
+      { step: 'connector-node', status: 'success' },
+      { step: 'downstream-node', status: 'error' },
+    ]);
+    const [interrupted] = vi.mocked(redisPlaybookUpdate).mock.calls[1];
+    expect((interrupted as Record<string, any>)['step_downstream-node'].message).toContain('interrupted by the platform stop');
+    // A callback received after the stop started is refused, so the connector sees the error
+    await expect(run(SLOW_COMPONENT_ID, true)).rejects.toThrow('the platform is stopping');
+  });
+});
+
 describe('createContinuationScheduler', () => {
   it('never runs more tasks at once than its limit and makes the caller wait for a free slot only', async () => {
     const scheduler = createContinuationScheduler(2);
@@ -159,6 +183,60 @@ describe('createContinuationScheduler', () => {
     expect(maxConcurrent).toBe(2);
     releases.splice(0).forEach((release) => release());
     await vi.waitFor(() => expect(scheduler.running()).toBe(0));
+  });
+
+  it('waits on drain for a running continuation that ends within the timeout, and reports nothing abandoned', async () => {
+    const scheduler = createContinuationScheduler(2);
+    const onAbandon = vi.fn(async () => {});
+    let ended = false;
+    await scheduler.schedule(async () => {
+      await new Promise((resolve) => {
+        setTimeout(resolve, 50);
+      });
+      ended = true;
+    }, { onAbandon });
+    const result = await scheduler.drain(2000);
+    expect(ended).toBe(true);
+    expect(result).toEqual({ completed: 1, abandoned: 0, refused: 0 });
+    expect(onAbandon).not.toHaveBeenCalled();
+  });
+
+  it('reports a running continuation still running at the drain timeout as abandoned, never silently', async () => {
+    const scheduler = createContinuationScheduler(2);
+    const onAbandon = vi.fn(async () => {});
+    await scheduler.schedule(() => new Promise<void>(() => {}), { onAbandon });
+    const result = await scheduler.drain(50);
+    expect(result).toEqual({ completed: 0, abandoned: 1, refused: 0 });
+    expect(onAbandon).toHaveBeenCalledWith('shutdown_timeout');
+  });
+
+  it('refuses a caller waiting for a slot at drain, and reports it', async () => {
+    const scheduler = createContinuationScheduler(1);
+    const runningAbandon = vi.fn(async () => {});
+    const waitingAbandon = vi.fn(async () => {});
+    const waitingTask = vi.fn(async () => {});
+    await scheduler.schedule(() => new Promise<void>(() => {}), { onAbandon: runningAbandon });
+    const waiting = scheduler.schedule(waitingTask, { onAbandon: waitingAbandon });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 10);
+    });
+    expect(scheduler.waiting()).toBe(1);
+    const result = await scheduler.drain(20);
+    await expect(waiting).rejects.toThrow('the platform is stopping');
+    expect(result).toEqual({ completed: 0, abandoned: 1, refused: 1 });
+    expect(waitingTask).not.toHaveBeenCalled();
+    expect(waitingAbandon).toHaveBeenCalledWith('shutdown_before_start');
+    expect(runningAbandon).toHaveBeenCalledWith('shutdown_timeout');
+  });
+
+  it('refuses a new continuation once draining', async () => {
+    const scheduler = createContinuationScheduler(1);
+    await scheduler.drain(0);
+    const onAbandon = vi.fn(async () => {});
+    const task = vi.fn(async () => {});
+    await expect(scheduler.schedule(task, { onAbandon })).rejects.toThrow('the platform is stopping');
+    expect(task).not.toHaveBeenCalled();
+    expect(onAbandon).toHaveBeenCalledWith('shutdown_before_start');
   });
 
   it('logs a task error and frees its slot', async () => {
