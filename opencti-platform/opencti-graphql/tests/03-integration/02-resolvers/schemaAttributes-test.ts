@@ -2,6 +2,8 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
+import { ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
 import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
 import { ATTRIBUTE_DESCRIPTIONS, ATTRIBUTE_DESCRIPTIONS_BY_TYPE } from '../../../src/schema/attribute-descriptions';
 
@@ -164,6 +166,15 @@ describe('schemaAttributes', () => {
     const [note] = await querySchemaAttributes(ENTITY_TYPE_CONTAINER_NOTE);
     const content = note.attributes.find((attribute) => attribute.name === 'content');
     expect(content?.description).toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_TYPE_CONTAINER_NOTE].content);
+  });
+
+  it('should describe the observables and the sightings', async () => {
+    const [software] = await querySchemaAttributes(ENTITY_SOFTWARE);
+    const version = software.attributes.find((attribute) => attribute.name === 'version');
+    expect(version?.description).toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_SOFTWARE].version);
+    const [sighting] = await querySchemaAttributes(STIX_SIGHTING_RELATIONSHIP);
+    const count = sighting.attributes.find((attribute) => attribute.name === 'attribute_count');
+    expect(count?.description).toEqual(ATTRIBUTE_DESCRIPTIONS.attribute_count);
   });
 
   it('should report the effective mandatory status and default value set in Entity Settings', async () => {

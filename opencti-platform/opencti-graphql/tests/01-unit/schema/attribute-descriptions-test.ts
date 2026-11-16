@@ -12,7 +12,7 @@ import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../../../src/modules/malwareAnalys
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../../../src/modules/securityCoverage/securityCoverage-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION } from '../../../src/modules/workflow/types/workflow-types';
-import { ENTITY_MEDIA_CONTENT } from '../../../src/schema/stixCyberObservable';
+import { ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE, ENTITY_MEDIA_CONTENT, ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
 
 // Every attribute and ref of the described types, with their type
 const describedFields = () => schemaAttributesDefinition.getRegisteredTypes().filter(isDescribedType).flatMap((type) => {
@@ -40,6 +40,10 @@ describe('resolveAttributeDescription', () => {
     // version is only described for a malware analysis, not shared with the other types
     expect(resolveAttributeDescription(ENTITY_TYPE_MALWARE_ANALYSIS, { name: 'version' })).toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_TYPE_MALWARE_ANALYSIS].version);
     expect(ATTRIBUTE_DESCRIPTIONS.version).toBeUndefined();
+    // version is the version of a software, but the X.509 encoding of a certificate
+    expect(resolveAttributeDescription(ENTITY_SOFTWARE, { name: 'version' })).toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_SOFTWARE].version);
+    expect(resolveAttributeDescription(ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE, { name: 'version' }))
+      .toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE].version);
   });
 
   it('should return null for an attribute without description', () => {
@@ -47,8 +51,8 @@ describe('resolveAttributeDescription', () => {
   });
 
   it('should not describe from the dictionary the types it was not written for', () => {
-    // content is the HTML of a container, but plain text in a Media-Content and JSON in a workflow definition
-    expect(resolveAttributeDescription(ENTITY_MEDIA_CONTENT, { name: 'content' })).toBeNull();
+    // content is the HTML of a container, plain text in a Media-Content (own override), but JSON in a workflow definition
+    expect(resolveAttributeDescription(ENTITY_MEDIA_CONTENT, { name: 'content' })).toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_MEDIA_CONTENT].content);
     expect(resolveAttributeDescription(ENTITY_TYPE_WORKFLOW_DEFINITION, { name: 'content' })).toBeNull();
     // the author of a workflow definition is a user, not an identity
     expect(resolveAttributeDescription(ENTITY_TYPE_WORKFLOW_DEFINITION, { name: 'createdBy' })).toBeNull();
@@ -60,7 +64,7 @@ describe('resolveAttributeDescription', () => {
     const undescribed = describedFields()
       .filter(({ type, field }) => !resolveAttributeDescription(type, field))
       .map(({ type, field }) => `${type}.${field.name}`);
-    // A new attribute of a STIX Domain Object or relationship needs a description in src/schema/attribute-descriptions.ts
+    // A new attribute of a STIX Domain Object, observable, relationship or sighting needs a description in src/schema/attribute-descriptions.ts
     expect(undescribed).toEqual([]);
   });
 

@@ -4,6 +4,21 @@ import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndiv
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from './stixSightingRelationship';
+import {
+  ENTITY_EMAIL_ADDR,
+  ENTITY_EMAIL_MESSAGE,
+  ENTITY_EMAIL_MIME_PART_TYPE,
+  ENTITY_HASHED_OBSERVABLE_ARTIFACT,
+  ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
+  ENTITY_MEDIA_CONTENT,
+  ENTITY_PAYMENT_CARD,
+  ENTITY_PROCESS,
+  ENTITY_SOFTWARE,
+  ENTITY_SSH_KEY,
+  ENTITY_USER_ACCOUNT,
+  isStixCyberObservable,
+} from './stixCyberObservable';
 
 // Descriptions of the attributes and refs, exposed by schemaAttributes so that an API client
 // (an XTM One agent for instance) picks the right field and fills it with the right value.
@@ -150,6 +165,138 @@ export const ATTRIBUTE_DESCRIPTIONS: Record<string, string> = {
   platforms_affinity: 'Platforms the coverage targets, from the platforms_ov vocabulary (e.g. windows, linux).',
   auto_enrichment_disable: 'Whether the enrichment connectors are prevented from assessing the coverage (manual coverage).',
   external_uri: 'Link to the coverage in the external tool that produced it.',
+  // -- Sighting --
+  attribute_count: 'Number of times the entity was sighted.',
+  x_opencti_negative: 'Whether the sighting is a false positive.',
+  // -- Observables --
+  x_opencti_description: 'Description of the observable.',
+  value: 'Value of the observable, in the format of its type (e.g. 198.51.100.7 for an IPv4-Addr, example.com for a Domain-Name, https://example.com/page for a Url).',
+  hashes: 'Hashes of the content, as an object keyed by algorithm: MD5, SHA-1, SHA-256, SHA-512, SHA3-256, SHA3-512, SSDEEP, SDHASH, TLSH or LZJD.',
+  mime_type: 'MIME type of the content (e.g. application/pdf).',
+  content_type: 'MIME content type, with its parameters (e.g. text/plain; charset=utf-8, multipart/mixed).',
+  extensions: 'STIX extensions of the observable, as JSON.',
+  ctime: 'Date when it was created on the file system, in ISO 8601.',
+  mtime: 'Date when it was last modified on the file system, in ISO 8601.',
+  atime: 'Date when it was last accessed on the file system, in ISO 8601.',
+  // Autonomous system
+  number: 'Number of the autonomous system (e.g. 15169).',
+  rir: 'Regional Internet Registry that assigned the number (e.g. RIPE NCC, ARIN).',
+  // Directory and file
+  path: 'Path of the directory (e.g. C:\\Windows\\System32).',
+  path_enc: 'Encoding of the path, as a character set name (e.g. UTF-8).',
+  size: 'Size of the file, in bytes.',
+  name_enc: 'Encoding of the file name, as a character set name (e.g. UTF-8).',
+  magic_number_hex: 'Magic number of the file, in hexadecimal (e.g. 25504446 for a PDF).',
+  // Artifact
+  payload_bin: 'Content of the artifact, encoded in base64.',
+  encryption_algorithm: 'Algorithm used to encrypt the payload (e.g. mime-type-indicated, AES-256-GCM).',
+  decryption_key: 'Key to decrypt the payload.',
+  // Email
+  is_multipart: 'Whether the email body is made of MIME parts.',
+  attribute_date: 'Date when the email was sent, in ISO 8601.',
+  message_id: 'Message-ID header of the email.',
+  received_lines: 'Received header lines of the email, in order.',
+  content_disposition: 'Content-Disposition header of the MIME part (e.g. attachment; filename="invoice.pdf").',
+  // X509 certificate
+  is_self_signed: 'Whether the certificate is self-signed.',
+  serial_number: 'Serial number of the certificate, in hexadecimal.',
+  signature_algorithm: 'Algorithm used to sign the certificate (e.g. sha256WithRSAEncryption).',
+  issuer: 'Distinguished name of the certificate issuer (e.g. C=US, O=Example CA, CN=Example Root).',
+  validity_not_before: 'Date from which the certificate is valid, in ISO 8601.',
+  validity_not_after: 'Date until which the certificate is valid, in ISO 8601.',
+  subject_public_key_algorithm: 'Algorithm of the subject public key (e.g. rsaEncryption).',
+  subject_public_key_modulus: 'Modulus of the subject RSA public key, in hexadecimal.',
+  subject_public_key_exponent: 'Exponent of the subject RSA public key (e.g. 65537).',
+  basic_constraints: 'Basic Constraints extension of the certificate (e.g. CA:TRUE, pathlen:0).',
+  name_constraints: 'Name Constraints extension of the certificate.',
+  policy_constraints: 'Policy Constraints extension of the certificate.',
+  key_usage: 'Key Usage extension of the certificate (e.g. digitalSignature, keyEncipherment).',
+  extended_key_usage: 'Extended Key Usage extension of the certificate (e.g. serverAuth, clientAuth).',
+  subject_key_identifier: 'Subject Key Identifier extension of the certificate, in hexadecimal.',
+  authority_key_identifier: 'Authority Key Identifier extension of the certificate.',
+  subject_alternative_name: 'Subject Alternative Name extension of the certificate (e.g. DNS:example.com).',
+  issuer_alternative_name: 'Issuer Alternative Name extension of the certificate.',
+  subject_directory_attributes: 'Subject Directory Attributes extension of the certificate.',
+  crl_distribution_points: 'CRL Distribution Points extension of the certificate: where its revocation list is published.',
+  inhibit_any_policy: 'Inhibit anyPolicy extension of the certificate.',
+  private_key_usage_period_not_before: 'Date from which the private key may be used, in ISO 8601.',
+  private_key_usage_period_not_after: 'Date until which the private key may be used, in ISO 8601.',
+  certificate_policies: 'Certificate Policies extension of the certificate.',
+  policy_mappings: 'Policy Mappings extension of the certificate.',
+  // Network traffic
+  start: 'Date when the network traffic started, in ISO 8601.',
+  end: 'Date when the network traffic ended, in ISO 8601.',
+  is_active: 'Whether the network traffic is still ongoing.',
+  src_port: 'Source port, from 0 to 65535.',
+  dst_port: 'Destination port, from 0 to 65535.',
+  protocols: 'Protocols of the traffic, from the outermost to the innermost layer (e.g. ipv4, tcp, http).',
+  src_byte_count: 'Number of bytes sent from the source to the destination.',
+  dst_byte_count: 'Number of bytes sent from the destination to the source.',
+  src_packets: 'Number of packets sent from the source to the destination.',
+  dst_packets: 'Number of packets sent from the destination to the source.',
+  // Process and Windows service
+  is_hidden: 'Whether the process is hidden.',
+  pid: 'Process identifier.',
+  created_time: 'Date when the process was created, in ISO 8601.',
+  cwd: 'Current working directory of the process.',
+  command_line: 'Full command line of the process, with its arguments.',
+  environment_variables: 'Environment variables of the process (e.g. PATH=/usr/bin).',
+  aslr_enabled: 'Whether Address Space Layout Randomization is enabled for the process.',
+  dep_enabled: 'Whether Data Execution Prevention is enabled for the process.',
+  owner_sid: 'Security identifier (SID) of the owner of the Windows process.',
+  window_title: 'Title of the main window of the Windows process.',
+  integrity_level: 'Windows integrity level of the process, from the integrity_level_ov vocabulary.',
+  service_name: 'Name of the Windows service.',
+  descriptions: 'Descriptions of the Windows service.',
+  group_name: 'Name of the load ordering group of the Windows service.',
+  start_type: 'Start type of the Windows service, from the start_type_ov vocabulary (e.g. SERVICE_AUTO_START, SERVICE_DEMAND_START).',
+  service_type: 'Type of the Windows service, from the service_type_ov vocabulary (e.g. SERVICE_WIN32_OWN_PROCESS, SERVICE_KERNEL_DRIVER).',
+  service_status: 'Status of the Windows service, from the service_status_ov vocabulary (e.g. SERVICE_RUNNING, SERVICE_STOPPED).',
+  // Software
+  cpe: 'CPE 2.3 identifier of the software (e.g. cpe:2.3:a:apache:http_server:2.4.58:*:*:*:*:*:*:*).',
+  swid: 'SWID tag identifier of the software.',
+  languages: 'Languages supported by the software, as ISO 639-2 codes (e.g. eng, fra).',
+  vendor: 'Vendor of the software (e.g. Microsoft).',
+  // User account
+  user_id: 'Identifier of the account in its system (e.g. a UID such as 1001, or a Windows SID).',
+  credential: 'Clear-text credential of the account (e.g. a password).',
+  account_login: 'Login of the account (e.g. jdoe).',
+  account_type: 'Type of the account, from the account_type_ov vocabulary (e.g. unix, windows-domain, ldap).',
+  is_service_account: 'Whether the account is used by a service rather than a person.',
+  is_privileged: 'Whether the account has elevated privileges (e.g. root, administrator).',
+  can_escalate_privs: 'Whether the account can escalate its privileges (e.g. through sudo).',
+  is_disabled: 'Whether the account is disabled.',
+  account_created: 'Date when the account was created, in ISO 8601.',
+  account_expires: 'Date when the account expires, in ISO 8601.',
+  credential_last_changed: 'Date when the credential was last changed, in ISO 8601.',
+  account_first_login: 'Date of the first login on the account, in ISO 8601.',
+  account_last_login: 'Date of the last login on the account, in ISO 8601.',
+  // Windows registry
+  attribute_key: 'Full path of the registry key (e.g. HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run).',
+  modified_time: 'Date when the registry key was last modified, in ISO 8601.',
+  number_of_subkeys: 'Number of subkeys of the registry key.',
+  data: 'Data of the registry value.',
+  data_type: 'Type of the registry value data (e.g. REG_SZ, REG_DWORD).',
+  // Financial
+  iban: 'International Bank Account Number of the account.',
+  bic: 'Bank Identifier Code (SWIFT) of the bank.',
+  account_number: 'Number of the bank account.',
+  card_number: 'Number of the payment card.',
+  cvv: 'Card verification value of the payment card.',
+  holder_name: 'Name of the payment card holder.',
+  // Media content and persona
+  title: 'Title of the media.',
+  media_category: 'Category of the media (e.g. article, video, social media post).',
+  publication_date: 'Date when the media was published, in ISO 8601.',
+  persona_name: 'Name of the persona (e.g. an online handle).',
+  persona_type: 'Type of the persona (e.g. a social media platform or a forum).',
+  // SSH key
+  key_type: 'Algorithm of the SSH key, from the key_type_ov vocabulary (e.g. rsa, ed25519).',
+  public_key: 'SSH public key, in OpenSSH format.',
+  fingerprint_sha256: 'SHA-256 fingerprint of the SSH key.',
+  fingerprint_md5: 'MD5 fingerprint of the SSH key.',
+  key_length: 'Length of the SSH key, in bits (e.g. 4096).',
+  comment: 'Comment attached to the SSH key (e.g. user@host).',
   // -- Refs --
   createdBy: 'Author of the entity: an identity (organization, individual, sector or system).',
   objectMarking: 'Marking definitions (e.g. TLP:AMBER) restricting who can see the entity.',
@@ -172,6 +319,33 @@ export const ATTRIBUTE_DESCRIPTIONS: Record<string, string> = {
   dataSource: 'Data source the data component belongs to.',
   objectCovered: 'Entity (intrusion set, campaign, incident or report) whose coverage is assessed.',
   resultOf: 'Results of the security coverage.',
+  // Observable refs
+  containsObservable: 'Objects contained in this observable (e.g. the files of a directory or of an archive).',
+  resolvesTo: 'Domain names, IP or MAC addresses this one resolves to.',
+  belongsTo: 'What the address belongs to: the user account of an email address, the autonomous system of an IP address.',
+  emailFrom: 'Email address of the author of the email (From header).',
+  emailSender: 'Email address of the sender of the email (Sender header), when it differs from the author.',
+  emailTo: 'Email addresses of the recipients (To header).',
+  emailCc: 'Email addresses of the recipients in copy (Cc header).',
+  emailBcc: 'Email addresses of the recipients in blind copy (Bcc header).',
+  bodyMultipart: 'MIME parts of the body of a multipart email.',
+  rawEmail: 'Artifact holding the raw email, headers included.',
+  bodyRaw: 'Artifact or file holding the raw content of the MIME part.',
+  parentDirectory: 'Directory containing the file.',
+  obsContent: 'Artifact holding the content of the file.',
+  networkSrc: 'Source address of the traffic (IPv4, IPv6, MAC address or domain name).',
+  networkDst: 'Destination address of the traffic (IPv4, IPv6, MAC address or domain name).',
+  srcPayload: 'Artifact holding the payload sent from the source.',
+  dstPayload: 'Artifact holding the payload sent from the destination.',
+  networkEncapsulates: 'Network traffics encapsulated in this one.',
+  encapsulatedBy: 'Network traffic encapsulating this one.',
+  openedConnections: 'Network traffics opened by the process.',
+  creatorUser: 'User account that created the process or the registry key.',
+  processImage: 'Executable file of the process.',
+  processParent: 'Parent process.',
+  processChild: 'Child processes.',
+  serviceDlls: 'DLL files loaded by the Windows service.',
+  winRegValues: 'Values of the registry key.',
 };
 
 // Overrides for the types where an attribute does not mean the same as elsewhere
@@ -197,12 +371,55 @@ export const ATTRIBUTE_DESCRIPTIONS_BY_TYPE: Record<string, Record<string, strin
   [ENTITY_TYPE_SECURITY_COVERAGE_RESULT]: {
     resultOf: 'Security coverage this result belongs to.',
   },
+  [STIX_SIGHTING_RELATIONSHIP]: {
+    first_seen: 'Date of the first sighting, in ISO 8601.',
+    last_seen: 'Date of the last sighting, in ISO 8601.',
+  },
+  // Observables sharing an attribute name with a different meaning
+  [ENTITY_EMAIL_ADDR]: {
+    display_name: 'Display name of the owner of the address (e.g. Jane Doe).',
+  },
+  [ENTITY_EMAIL_MESSAGE]: {
+    subject: 'Subject line of the email.',
+    body: 'Body of the email, when it is not multipart.',
+  },
+  [ENTITY_EMAIL_MIME_PART_TYPE]: {
+    body: 'Content of the MIME part, when it is text.',
+  },
+  [ENTITY_HASHED_OBSERVABLE_ARTIFACT]: {
+    url: 'URL from which the content of the artifact can be downloaded.',
+  },
+  [ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE]: {
+    version: 'Version of the X.509 encoding of the certificate (e.g. 3).',
+    subject: 'Distinguished name of the certificate subject (e.g. C=US, O=Example, CN=www.example.com).',
+  },
+  [ENTITY_SOFTWARE]: {
+    version: 'Version of the software (e.g. 2.4.58).',
+  },
+  [ENTITY_PROCESS]: {
+    priority: 'Priority of the Windows process, from the case_priority_ov vocabulary.',
+    display_name: 'Display name of the Windows service.',
+  },
+  [ENTITY_USER_ACCOUNT]: {
+    display_name: 'Display name of the owner of the account (e.g. Jane Doe).',
+  },
+  [ENTITY_MEDIA_CONTENT]: {
+    content: 'Text content of the media (e.g. the body of an article or a post).',
+    url: 'URL of the media.',
+  },
+  [ENTITY_PAYMENT_CARD]: {
+    expiration_date: 'Expiration date of the payment card, in ISO 8601.',
+  },
+  [ENTITY_SSH_KEY]: {
+    expiration_date: 'Date when the SSH key expires, in ISO 8601.',
+  },
 };
 
-// The types whose attributes and refs the dictionary was written for. Elsewhere a same name can
-// mean something else (the content of a Media-Content is plain text, the content of a workflow
-// definition is JSON…): a wrong description being worse than none, they get no description.
-export const isDescribedType = (entityType: string): boolean => isStixDomainObject(entityType) || isStixCoreRelationship(entityType);
+// The types whose attributes and refs the dictionary was written for: the STIX types. Elsewhere a
+// same name can mean something else (the content of a workflow definition is JSON, its author is a
+// user…): a wrong description being worse than none, the internal types get no description.
+export const isDescribedType = (entityType: string): boolean => isStixDomainObject(entityType) || isStixCyberObservable(entityType)
+  || isStixCoreRelationship(entityType) || isStixSightingRelationship(entityType);
 
 // Resolution order: the description written in the definition, then the override of the type,
 // then the dictionary for a described type only
