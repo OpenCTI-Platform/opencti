@@ -132,12 +132,18 @@ const breakdown = (args: Record<string, unknown>) => timeSeriesBreakdownEntities
   interval: 'day',
   ...args,
 } as any);
+// Filters as the engine completes them, told apart from the filters of the arguments
+const completedOf = (filters: unknown) => ({ completed: filters });
+const mockCompleteFilters = () => vi.mocked(engine.elCompleteFilters).mockImplementation(async (_context, _user, { filters }) => (
+  filters ? completedOf(filters) as any : undefined
+));
 
 describe('timeSeriesBreakdownEntities', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(accessModule, 'userFilterStoreElements').mockImplementation(async (_context, _user, elements) => elements);
     vi.mocked(engine.elKeywordWrittenForms).mockResolvedValue(new Map());
+    mockCompleteFilters();
     mockSchema();
     mockRegisteredTypes();
   });
@@ -277,24 +283,46 @@ describe('timeSeriesBreakdownEntities', () => {
     expect(result.series[0].total).toEqual(3.5);
   });
 
-  it('should use one filter per value in the histogram only when the field has many values', async () => {
+  it('should count the values kept in the same histogram whatever the number of values found', async () => {
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
     const types = (count: number) => Array.from({ length: count }, (_, i) => ({ key: `type-${i}`, label: `Type-${i}`, value: 100 - i, count: 100 - i }));
 
-    // A handful of values: the restricted terms aggregation is faster
-    vi.mocked(engine.elAggregationRanking).mockResolvedValue(ranking(types(5)));
-    await breakdown({ field: 'entity_type', limit: 5 });
-    expect((vi.mocked(engine.elHistogramBreakdownCount).mock.lastCall?.[3] as any).filterPerKey).toBe(false);
+    // A handful of values, three times more values than series, a full candidates page
+    for (const count of [5, 15, engine.MAX_AGGREGATION_SIZE]) {
+      vi.mocked(engine.elAggregationRanking).mockResolvedValue(ranking(types(count)));
+      await breakdown({ field: 'entity_type', limit: 5 });
+      const histogramOptions = vi.mocked(engine.elHistogramBreakdownCount).mock.lastCall?.[3];
+      expect(histogramOptions).toMatchObject({ field: 'entity_type', keys: ['type-0', 'type-1', 'type-2', 'type-3', 'type-4'], withOther: false });
+      expect(histogramOptions).not.toHaveProperty('filterPerKey');
+    }
+  });
 
-    // Three times more values than series
-    vi.mocked(engine.elAggregationRanking).mockResolvedValue(ranking(types(15)));
-    await breakdown({ field: 'entity_type', limit: 5 });
-    expect((vi.mocked(engine.elHistogramBreakdownCount).mock.lastCall?.[3] as any).filterPerKey).toBe(true);
+  it('should resolve the filters once, before any query, and query both aggregations with them', async () => {
+    vi.mocked(engine.elAggregationRanking).mockResolvedValue(ranking([bucket('label-a', 4)]));
+    vi.mocked(engine.elFindByIds).mockResolvedValue({ 'label-a': makeEntity('label-a', 'tlp') } as any);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
+    const filters = { mode: 'and', filters: [{ key: ['objectLabel'], values: ['label-b'], operator: 'eq' }], filterGroups: [] };
 
-    // A full candidates page, whatever the limit
-    vi.mocked(engine.elAggregationRanking).mockResolvedValue(ranking(types(engine.MAX_AGGREGATION_SIZE)));
-    await breakdown({ field: 'entity_type', limit: 50 });
-    expect((vi.mocked(engine.elHistogramBreakdownCount).mock.lastCall?.[3] as any).filterPerKey).toBe(true);
+    await breakdown({ field: 'objectLabel', filters, noFiltersChecking: true });
+
+    expect(engine.elCompleteFilters).toHaveBeenCalledTimes(1);
+    const [, completeUser, completeOptions] = vi.mocked(engine.elCompleteFilters).mock.calls[0];
+    expect(completeUser).toBe(accessModule.SYSTEM_USER);
+    // Checked or not as the caller asks, as each query did
+    expect(completeOptions).toMatchObject({ filters, noFiltersChecking: true });
+    const completeOrder = vi.mocked(engine.elCompleteFilters).mock.invocationCallOrder[0];
+    expect(completeOrder).toBeLessThan(vi.mocked(engine.elAggregationRanking).mock.invocationCallOrder[0]);
+    for (const options of [vi.mocked(engine.elAggregationRanking).mock.calls[0][3], vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3]]) {
+      expect(options).toMatchObject({ filters: completedOf(filters), filtersCompleted: true });
+    }
+  });
+
+  it('should pass a refusal of the filters on to the caller, before any query', async () => {
+    vi.mocked(engine.elCompleteFilters).mockRejectedValue(new Error('Incorrect filter keys not existing in any schema definition'));
+
+    await expect(breakdown({ field: 'creator_id' })).rejects.toThrow('Incorrect filter keys');
+    expect(engine.elAggregationRanking).not.toHaveBeenCalled();
+    expect(engine.elHistogramBreakdownCount).not.toHaveBeenCalled();
   });
 
   it('should only resolve the candidates needed to fill the limit and know whether more exist', async () => {
@@ -746,7 +774,8 @@ describe('timeSeriesBreakdownEntities', () => {
       expect(options.intervalInclude).toBe(true);
       expect(options.startDate).toEqual(startDate);
       expect(options.endDate).toEqual(endDate);
-      expect(options.filters).toEqual(filters);
+      expect(options.filters).toEqual(completedOf(filters));
+      expect(options.filtersCompleted).toBe(true);
     }
   });
 
@@ -959,6 +988,7 @@ describe('timeSeriesBreakdownHistory', () => {
     // The registered attributes of the logs
     vi.restoreAllMocks();
     vi.spyOn(accessModule, 'userFilterStoreElements').mockImplementation(async (_context, _user, elements) => elements);
+    mockCompleteFilters();
     mockRegisteredTypes();
   });
 
@@ -992,7 +1022,8 @@ describe('timeSeriesBreakdownHistory', () => {
       expect(options.field).toEqual('event_scope');
       expect(options.types).toEqual(['History', 'Activity']);
       expect(options.historyFiltering).toBe(true);
-      expect(options.filters).toEqual(filters);
+      expect(options.filters).toEqual(completedOf(filters));
+      expect(options.filtersCompleted).toBe(true);
       expect(options.search).toEqual('report');
       expect(options.dateAttribute).toEqual('timestamp');
       expect(options.intervalInclude).toBe(true);
@@ -1227,6 +1258,7 @@ describe('timeSeriesBreakdownRelations', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(accessModule, 'userFilterStoreElements').mockImplementation(async (_context, _user, elements) => elements);
+    mockCompleteFilters();
     mockRelationshipSchema();
     mockRegisteredTypes();
   });
@@ -1269,7 +1301,8 @@ describe('timeSeriesBreakdownRelations', () => {
       expect(options.field).toEqual('relationship_type');
       expect(options.dateAttribute).toEqual('start_time');
       expect(options.intervalInclude).toBe(true);
-      expect(options.filters).toEqual(filters);
+      expect(options.filters).toEqual(completedOf(filters));
+      expect(options.filtersCompleted).toBe(true);
     }
 
     await relationsBreakdown({ field: 'relationship_type', onlyInferred: true });
@@ -1404,6 +1437,7 @@ describe('stixRelationshipsTimeSeriesBreakdown', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockRelationshipSchema();
+    mockCompleteFilters();
     vi.mocked(engine.elAggregationRanking).mockResolvedValue(ranking([bucket('targets', 4)]));
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
     vi.mocked(engine.elHistogramCount).mockResolvedValue([]);
@@ -1440,8 +1474,12 @@ describe('stixRelationshipsTimeSeriesBreakdown', () => {
     // The dynamic source and target are applied as filters, on all the relationships without relationship type
     expect(JSON.stringify(timeSeriesOptions.filters)).toContain('dynamicFrom');
     expect(JSON.stringify(timeSeriesOptions.filters)).toContain('dynamicTo');
+    // Resolved once for both aggregations
+    expect(engine.elCompleteFilters).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(engine.elCompleteFilters).mock.calls[0][2].filters).toEqual(timeSeriesOptions.filters);
     for (const options of [discoveryOptions, histogramOptions]) {
-      expect(options.filters).toEqual(timeSeriesOptions.filters);
+      expect(options.filters).toEqual(completedOf(timeSeriesOptions.filters));
+      expect(options.filtersCompleted).toBe(true);
       expect(options.types).toEqual(timeSeriesOptions.types);
       expect(options.types).toEqual(['stix-relationship']);
       expect(options.dateAttribute).toEqual(timeSeriesOptions.field);

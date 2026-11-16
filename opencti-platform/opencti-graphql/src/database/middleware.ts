@@ -74,6 +74,7 @@ import {
   elAggregationRelationsCount,
   elConnection,
   type ConnectionSide,
+  elCompleteFilters,
   elConnectionTypesRanking,
   elDeleteElements,
   elFindByIds,
@@ -91,7 +92,6 @@ import {
   ES_MAX_CONCURRENCY,
   ES_MAX_PAGINATION,
   isImpactedTypeAndSide,
-  MAX_AGGREGATION_SIZE,
   MAX_BULK_OPERATIONS,
   type RepaginateOpts,
   ROLE_FROM,
@@ -925,8 +925,6 @@ const BREAKDOWN_OTHER_LABEL = 'Other';
 // Values resolved beyond the limit in the first page, to replace the ones that cannot be resolved (like a deleted
 // user). Each next page doubles: the lowest values among thousands are resolved in a handful of rounds.
 const BREAKDOWN_RESOLUTION_MARGIN = 10;
-// From this many distinct values per series kept, the histogram uses one filter per value
-const BREAKDOWN_FILTER_PER_KEY_RATIO = 3;
 // Relation refs usable as a breakdown field. Any other ref (objects, externalReferences, killChainPhases...)
 // has an unbounded cardinality or is not a classification of the entity, and is refused.
 export const BREAKDOWN_ALLOWED_REFS = [INPUT_CREATED_BY, INPUT_LABELS, INPUT_MARKINGS, INPUT_ASSIGNEE, INPUT_PARTICIPANT];
@@ -1246,8 +1244,14 @@ const timeSeriesBreakdown = async (
       max: TIME_SERIES_BREAKDOWN_MAX_BUCKETS,
     });
   }
+  // The filters are resolved once for both requests below (up to thousands of entities for a dynamic source or
+  // target), so both see the same entities
+  const { filters, noFiltersChecking, noRegardingOfFilterIdsCheck } = args;
+  const completedFilters = await elCompleteFilters(context, user, { filters, noFiltersChecking, noRegardingOfFilterIdsCheck });
   const breakdownArgs = {
     ...R.omit(['orderMode', 'includeOther'], args),
+    filters: completedFilters,
+    filtersCompleted: true,
     dateAttribute,
     endDate,
     field: aggregationField,
@@ -1289,10 +1293,7 @@ const timeSeriesBreakdown = async (
   if (selected.length === 0 && !withOther) {
     return { truncated, dates: axis.dates, series: [] };
   }
-  // 3. Count every selected value, and the entities carrying none of them, over time in a single query.
-  // Many distinct values (as many as a full desc candidates page, or several times the limit) mean a field with many
-  // values per entity or a high cardinality, where one filter per value is much faster than a restricted terms
-  const filterPerKey = candidates.length >= MAX_AGGREGATION_SIZE || candidates.length >= BREAKDOWN_FILTER_PER_KEY_RATIO * seriesLimit;
+  // 3. Count every selected value, and the entities carrying none of them, over time in a single query
   const keys = selected.map((candidate) => candidate.key);
   // The names of the vocabularies are read during the histogram, only for the values kept
   const [{ histograms, other }, vocabularyLabels] = await Promise.all([
@@ -1301,7 +1302,6 @@ const timeSeriesBreakdown = async (
       interval,
       keys,
       withOther,
-      filterPerKey,
       connectionSide,
     }),
     vocabularyCategories && keys.length > 0 ? resolveVocabularyLabels(context, vocabularyCategories, keys) : Promise.resolve(new Map<string, string>()),

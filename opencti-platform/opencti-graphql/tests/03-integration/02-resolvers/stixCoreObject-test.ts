@@ -322,8 +322,8 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
     expect(all.series.map((s) => s.entity?.value)).toEqual([LABELS.a, LABELS.b, LABELS.c]);
   });
 
-  it('should break down with one filter per value when there are many values for the series kept', async () => {
-    // 3 labels for 1 series: the histogram uses one filter per value instead of a restricted terms
+  it('should break down with many values for the series kept, the other values in Other', async () => {
+    // 3 labels for 1 series
     const { truncated, series } = await breakdown({ field: 'objectLabel', orderMode: 'desc', limit: 1, includeOther: true });
     expect(truncated).toEqual(true);
     expect(series.map((s) => s.entity?.value ?? s.label)).toEqual([LABELS.a, 'Other']);
