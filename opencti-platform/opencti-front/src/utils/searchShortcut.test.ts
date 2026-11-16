@@ -50,7 +50,6 @@ describe('searchShortcutFromEvent', () => {
     expect(searchShortcutFromEvent(press('F2', { ctrlKey: true }))).toEqual(shortcut('f2', { ctrl: true }));
   });
 
-
   it('keeps Shift for letters only: "?" on a keyboard needing Shift is still just "?"', () => {
     expect(searchShortcutFromEvent(press('?', { shiftKey: true }))?.shift).toBe(false);
     expect(searchShortcutFromEvent(press('K', { ctrlKey: true, shiftKey: true }))?.shift).toBe(true);

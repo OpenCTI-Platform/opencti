@@ -6,10 +6,10 @@ import type { NavGroup, NavSubItem } from './useNavMenu';
 
 let subItems: NavSubItem[] = [];
 vi.mock('./useNavMenu', () => ({
-  default: (): NavGroup[] => [{
-    id: 'settings',
-    items: [{ id: 'settings', label: 'Settings', icon: null, link: '/dashboard/settings', subItems }],
-  }],
+  default: (): NavGroup[] => [
+    { id: 'main', items: [{ id: 'home', label: 'Home', icon: null, link: '/dashboard', exact: true }] },
+    { id: 'settings', items: [{ id: 'settings', label: 'Settings', icon: null, link: '/dashboard/settings', subItems }] },
+  ],
 }));
 // Entries' own capability / feature flag checks are covered by useVisibleEntries: keep every entry here.
 vi.mock('../common/menus/useVisibleEntries', () => ({ default: (entries: unknown[]) => entries }));
@@ -55,6 +55,11 @@ describe('Hook: useNavSearch', () => {
     subItems = [parameters, { link: '/dashboard/settings/config', label: 'Paramètres avancés' }];
     expect(search('PARAMETRES avances')).toContain('/dashboard/settings/config');
     expect(search('paramètres')).toContain('/dashboard/settings/config');
+  });
+
+  it('finds the Home page', () => {
+    subItems = [];
+    expect(search('home')).toEqual(['/dashboard']);
   });
 
   it('drops Import entries when the Import subsection is hidden (draft)', () => {

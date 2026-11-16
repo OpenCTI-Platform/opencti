@@ -30,7 +30,7 @@ const useNavSearch = (keyword?: string | null): NavSearchResult[] => {
   const navNodes: Node[] = navGroups.flatMap((group) => group.items.flatMap((item) => [
     { path: item.link, label: item.label, parents: [], keywords: [] },
     ...(item.subItems ?? []).map((sub) => ({ path: sub.link, label: sub.label, parents: [item.label], keywords: sub.keywords ?? [] })),
-  ])).filter((node) => node.path !== '/dashboard');
+  ]));
 
   // Page entries must belong to a visible left bar subsection (its own permission, hidden in draft, etc.): it also
   // gives the breadcrumb. No visible subsection = the entry is not reachable, so not indexed.
