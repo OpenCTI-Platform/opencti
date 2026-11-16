@@ -145,12 +145,12 @@ describe('Relationships search with restricted connections', () => {
   it.each([
     ['name', () => RESTRICTED_ORGANIZATION_NAME, () => restrictedOrganizationId],
     ['exact name', () => `"${RESTRICTED_ORGANIZATION_NAME}"`, () => restrictedOrganizationId],
-    ['id', () => restrictedOrganizationId, () => restrictedOrganizationId],
+    // Quoted: an unquoted id is searched by its fragments, which random ids of accessible data can share
+    ['id', () => `"${restrictedOrganizationId}"`, () => restrictedOrganizationId],
     ['composite name', () => RESTRICTED_ATTACK_PATTERN_NAME, () => restrictedAttackPatternId],
     ['observable value', () => RESTRICTED_REGISTRY_KEY, () => restrictedRegistryKeyId],
   ])('should not find the relationship by the %s of a connection the user cannot access', async (_, getSearch, getSourceId) => {
     const variables = { search: getSearch() };
-    // Other data can match too, as an id is searched by its fragments
     const relationshipId = relationshipIdsBySource[getSourceId()];
     const adminResult = await queryAsAdminWithSuccess({ query: LIST_RELATIONSHIPS_QUERY, variables });
     expect(relationshipIds(adminResult)).toContain(relationshipId);

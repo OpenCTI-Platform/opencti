@@ -56,4 +56,40 @@ describe('createGraphqlContext', () => {
     expect(context.form_submission).toBe(false);
     expect(checkDraftInContext).toHaveBeenCalledOnce();
   });
+
+  it('should not track the touched ids outside of a work', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: { id: 'user-1' } } as any);
+    const context: any = await createGraphqlContext(req, res);
+    expect(context.trackWorkTouchedIds).toBeUndefined();
+    expect(context.enrichedEntityId).toBeUndefined();
+  });
+
+  it('should track the touched ids of an enrichment work triggered from an investigation', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: { id: 'user-1' }, workId: 'work-1' } as any);
+    vi.mocked(redisGetWork).mockResolvedValue({
+      is_initialized: 'true',
+      event_type: 'INTERNAL_ENRICHMENT',
+      investigation_id: 'investigation-1',
+      enriched_entity_id: 'enriched-1',
+    });
+    const context: any = await createGraphqlContext(req, res);
+    expect(context.trackWorkTouchedIds).toBe(true);
+    expect(context.enrichedEntityId).toEqual('enriched-1');
+    expect(redisGetWork).toHaveBeenCalledOnce();
+  });
+
+  it('should not track the touched ids of an enrichment work outside any investigation', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: { id: 'user-1' }, workId: 'work-1' } as any);
+    vi.mocked(redisGetWork).mockResolvedValue({ is_initialized: 'true', event_type: 'INTERNAL_ENRICHMENT', enriched_entity_id: 'enriched-1' });
+    const context: any = await createGraphqlContext(req, res);
+    expect(context.trackWorkTouchedIds).toBe(false);
+  });
+
+  it('should not track the touched ids of a work of another kind', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: { id: 'user-1' }, workId: 'work-1' } as any);
+    vi.mocked(redisGetWork).mockResolvedValue({ is_initialized: 'true', event_type: 'EXTERNAL_IMPORT', investigation_id: 'investigation-1' });
+    const context: any = await createGraphqlContext(req, res);
+    expect(context.trackWorkTouchedIds).toBe(false);
+    expect(context.enrichedEntityId).toBeUndefined();
+  });
 });

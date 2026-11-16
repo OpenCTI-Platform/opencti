@@ -1,17 +1,20 @@
 import { GraphQLError } from 'graphql';
 import type { AuthContext } from '../../../types/user';
-import type { QueryWorkflowMassTransitionsArgs } from '../../../generated/graphql';
+import { type QueryWorkflowMassTransitionsArgs, StatusScope } from '../../../generated/graphql';
 import { reportWorkflowAsyncActionResult } from '../domain/workflow-async-completion';
+import { buildWorkflowMigrationPreviewResult } from '../migration/status-to-definition-converter';
 import {
   clearWorkflowPendingState,
   deleteWorkflowDefinition,
   getAllowedTransitions,
   getWorkflowDefinition,
   getWorkflowInstance,
+  getWorkflowMigrationPreview,
   getWorkflowPublishedVersionId,
   getMassWorkflowTransitions,
   getWorkflowStatuses,
   hasPublishedWorkflowDefinition,
+  migrateWorkflowFromStatuses,
   publishWorkflowDefinition,
   restorePublishedWorkflowDefinition,
   setWorkflowDefinition,
@@ -19,14 +22,18 @@ import {
   setWorkflowStatus,
   getWorkflowBypassStatuses,
 } from '../domain/workflow-domain';
-import { COMMENT_MAX_LENGTH } from '../types/workflow-types';
+import { CLOSING_REASON_MAX_LENGTH, COMMENT_MAX_LENGTH } from '../types/workflow-types';
 
 const NON_STATE_CHANGING_EVENTS = new Set(['event_external_ignored', 'event_external_kept']);
 
 const workflowResolvers = {
   Query: {
-    workflowDefinition: (_: any, { entityType, allowDraft = false }: { entityType: string; allowDraft?: boolean }, context: AuthContext) => {
-      return getWorkflowDefinition(context, context.user!, entityType, allowDraft);
+    workflowDefinition: (
+      _: any,
+      { entityType, allowDraft = false, scope }: { entityType: string; allowDraft?: boolean; scope?: StatusScope | null },
+      context: AuthContext,
+    ) => {
+      return getWorkflowDefinition(context, context.user!, entityType, allowDraft, scope ?? StatusScope.Global);
     },
     workflowDefinitionPublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return hasPublishedWorkflowDefinition(context, context.user!, entityType);
@@ -40,6 +47,10 @@ const workflowResolvers = {
     workflowInstance: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getWorkflowInstance(context, context.user!, entityId);
     },
+    workflowMigrationPreview: async (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
+      const { byScope, publishedByScope } = await getWorkflowMigrationPreview(context, context.user!, entityType);
+      return buildWorkflowMigrationPreviewResult(entityType, byScope, publishedByScope);
+    },
     allowedTransitions: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getAllowedTransitions(context, context.user!, entityId);
     },
@@ -48,29 +59,45 @@ const workflowResolvers = {
     },
   },
   Mutation: {
-    workflowDefinitionSet: (_: any, { entityType, definition }: { entityType: string; definition: string }, context: AuthContext) => {
-      return setWorkflowDefinition(context, context.user!, entityType, definition);
+    workflowDefinitionSet: (
+      _: any,
+      { entityType, definition, scope }: { entityType: string; definition: string; scope?: StatusScope | null },
+      context: AuthContext,
+    ) => {
+      return setWorkflowDefinition(context, context.user!, entityType, definition, scope ?? StatusScope.Global);
     },
-    workflowDefinitionPublish: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
-      return publishWorkflowDefinition(context, context.user!, entityType);
+    workflowDefinitionPublish: (_: any, { entityType, scope }: { entityType: string; scope?: StatusScope | null }, context: AuthContext) => {
+      return publishWorkflowDefinition(context, context.user!, entityType, scope ?? StatusScope.Global);
     },
-    workflowDefinitionRestorePublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
-      return restorePublishedWorkflowDefinition(context, context.user!, entityType);
+    workflowMigrate: (
+      _: any,
+      { entityType, publish = false, overwrite = false, scope }: { entityType: string; publish?: boolean; overwrite?: boolean; scope?: StatusScope | null },
+      context: AuthContext,
+    ) => {
+      return migrateWorkflowFromStatuses(context, context.user!, entityType, publish, overwrite, scope ?? StatusScope.Global);
     },
-    workflowDefinitionDelete: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
-      return deleteWorkflowDefinition(context, context.user!, entityType);
+    workflowDefinitionRestorePublished: (_: any, { entityType, scope }: { entityType: string; scope?: StatusScope | null }, context: AuthContext) => {
+      return restorePublishedWorkflowDefinition(context, context.user!, entityType, scope ?? StatusScope.Global);
+    },
+    workflowDefinitionDelete: (_: any, { entityType, scope }: { entityType: string; scope?: StatusScope | null }, context: AuthContext) => {
+      return deleteWorkflowDefinition(context, context.user!, entityType, scope ?? StatusScope.Global);
     },
     triggerWorkflowEvent: (_: any, {
       entityId,
       eventName,
       comment,
       runtimeParams,
-    }: { entityId: string; eventName: string; comment?: string | null; runtimeParams?: Record<string, unknown> }, context: AuthContext) => {
+      closingReason,
+    }: { entityId: string; eventName: string; comment?: string | null; runtimeParams?: Record<string, unknown>; closingReason?: string | null }, context: AuthContext) => {
       const normalizedComment = comment?.trim() ?? undefined;
       if (normalizedComment !== undefined && normalizedComment.length > COMMENT_MAX_LENGTH) {
         throw new GraphQLError(`Comment exceeds maximum allowed length of ${COMMENT_MAX_LENGTH} characters.`);
       }
-      return triggerWorkflowEvent(context, context.user!, entityId, eventName, normalizedComment, runtimeParams ?? {});
+      const normalizedClosingReason = closingReason?.trim() ?? undefined;
+      if (normalizedClosingReason !== undefined && normalizedClosingReason.length > CLOSING_REASON_MAX_LENGTH) {
+        throw new GraphQLError(`Closing reason exceeds maximum allowed length of ${CLOSING_REASON_MAX_LENGTH} characters.`);
+      }
+      return triggerWorkflowEvent(context, context.user!, entityId, eventName, normalizedComment, runtimeParams ?? {}, normalizedClosingReason);
     },
     clearWorkflowPendingState: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return clearWorkflowPendingState(context, context.user!, entityId);
@@ -131,6 +158,7 @@ const workflowResolvers = {
   WorkflowTransition: {
     toStatus: (transition: any) => transition.toStatus ?? null,
     comment: (transition: any) => transition.comment ?? null,
+    closingReason: (transition: any) => transition.closingReason ?? null,
     actions: (transition: any) => transition.actions ?? [],
     requiresShareOrganizationInput: (transition: any) => transition.requiresShareOrganizationInput ?? false,
     requiresUnshareOrganizationInput: (transition: any) => transition.requiresUnshareOrganizationInput ?? false,

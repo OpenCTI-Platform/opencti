@@ -26,6 +26,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import pjson from '../../package.json';
 import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
+import { ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE } from '../modules/ingestionDeduplication/ingestionDeduplicationRule-types';
 import { ENTITY_TYPE_NOTIFICATION, ENTITY_TYPE_TRIGGER, NOTIFICATION_NUMBER } from '../modules/notification/notification-types';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
@@ -360,10 +361,17 @@ export const logAudit = {
 
 export const logFrontend = {
   _log: (level, message, meta = {}) => {
-    const data = prepareLogMetadata(meta, { category: LOG_APP, source: 'frontend' });
-    appLogger.log(level, message, data);
-    supportLogger.log(level, message, data);
+    if (appLogTransports.length > 0 && appLogger.isLevelEnabled(level)) {
+      const data = prepareLogMetadata(meta, { category: LOG_APP, source: 'frontend' });
+      appLogger.log(level, message, data);
+      if (supportLogger.isLevelEnabled(level)) {
+        supportLogger.log(level, message, data);
+      }
+    }
   },
+  debug: (message, meta = {}) => logFrontend._log('debug', message, meta),
+  info: (message, meta = {}) => logFrontend._log('info', message, meta),
+  warn: (message, meta = {}) => logFrontend._log('warn', message, meta),
   error: (message, meta = {}) => logFrontend._log('error', message, meta),
 };
 
@@ -604,8 +612,8 @@ export const ENABLED_FEATURE_FLAGS = nconf.get('app:enabled_dev_features') ?? []
 export const FEATURE_FLAG_ALL = '*';
 export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
 
-// User merge feature flag (use isFeatureEnabled(MERGE_USERS_FEATURE_FLAG) to check activation)
-export const MERGE_USERS_FEATURE_FLAG = 'MERGE_USERS';
+// Local authentication lockout policy feature flag (use isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG) to check activation)
+export const LOCAL_AUTH_LOCKOUT_FEATURE_FLAG = 'LOCAL_AUTH_LOCKOUT';
 
 // Extended workflow engine/UI feature flag (use isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) to
 // check activation). When disabled, only DraftWorkspace uses the workflow engine and UI; other
@@ -616,13 +624,20 @@ export const ENTITIES_WORKFLOW_FEATURE_FLAG = 'ENTITIES_WORKFLOW';
 // to check activation): remote catalog synchronization and connector update detection.
 export const DECOUPLING_VERSIONS_FEATURE_FLAG = 'DECOUPLING_VERSIONS';
 
-// Ingestion health of connectors, computed by the ingestion health manager
-// (use isFeatureEnabled(INGESTION_HEALTH_FEATURE_FLAG) to check activation)
+// Ingestion health monitoring parts that are still under FF
 export const INGESTION_HEALTH_FEATURE_FLAG = 'INGESTION_HEALTH';
 
 // Configuration presets: export of platform configuration bundles (use isFeatureEnabled(CONFIG_PRESET_FEATURE_FLAG)
 // to check activation)
 export const CONFIG_PRESET_FEATURE_FLAG = 'CONFIG_PRESET';
+
+// Skip the import of entities unchanged since the last import by the same user
+// (use isFeatureEnabled(INGESTION_DEDUPLICATION_FEATURE_FLAG) to check activation)
+export const INGESTION_DEDUPLICATION_FEATURE_FLAG = 'INGESTION_DEDUPLICATION';
+
+// Logout a session once its last browser tab is closed, until its Phase 2 (shared presence) and Phase 3 (hardening)
+// (use isFeatureEnabled(SESSION_PRESENCE_FEATURE_FLAG) to check activation)
+export const SESSION_PRESENCE_FEATURE_FLAG = 'SESSION_PRESENCE';
 
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
@@ -765,6 +780,11 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_EXCLUSION_RULE_EDIT_TOPIC`,
     DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_EXCLUSION_RULE_DELETE_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_EXCLUSION_RULE_ADDED_TOPIC`,
+  },
+  [ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE_EDIT_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE_DELETE_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE_ADDED_TOPIC`,
   },
   [ENTITY_TYPE_EXCLUSION_LIST]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_EXCLUSION_LIST_EDIT_TOPIC`,

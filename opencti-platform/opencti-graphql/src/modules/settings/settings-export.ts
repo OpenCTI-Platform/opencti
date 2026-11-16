@@ -1,5 +1,8 @@
 import { getPlatformDefaultTheme, getSettingsFromDatabase } from '../../domain/settings';
+import { storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
+import type { BasicStoreEntity } from '../../types/store';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 
 // Allowlists of the Settings fields a configuration carries. Anything not listed here
 // (credentials, license, providers) never leaves the platform. The import takes the same keys.
@@ -14,6 +17,18 @@ export const SETTINGS_MESSAGES_FIELDS = {
   consent: ['platform_consent_message', 'platform_consent_confirm_text'],
   noAccess: ['platform_no_access_message'],
 };
+// The policies of the platform: the visibility of the users and the password policy. The login and consent messages are messages
+export const SETTINGS_POLICIES_FIELDS = [
+  'view_all_users',
+  'password_policy_min_length',
+  'password_policy_max_length',
+  'password_policy_min_symbols',
+  'password_policy_min_numbers',
+  'password_policy_min_words',
+  'password_policy_min_lowercase',
+  'password_policy_min_uppercase',
+  'password_policy_validity_days',
+];
 
 // The Settings entity always exists on a platform that runs
 const readSettings = async (context: AuthContext) => (await getSettingsFromDatabase(context)) as unknown as Record<string, unknown>;
@@ -48,4 +63,16 @@ export const getWhitemarkConfigPresetConfiguration = async (context: AuthContext
 export const getMessagesConfigPresetConfigurations = async (context: AuthContext) => {
   const settings = await readSettings(context);
   return Object.fromEntries(Object.entries(SETTINGS_MESSAGES_FIELDS).map(([id, fields]) => [id, pickFields(settings, fields)]));
+};
+
+const policyValue = (settings: Record<string, unknown>, field: string) => settings[field] ?? (field === 'view_all_users' ? false : 0);
+
+export const exportPolicies = async (context: AuthContext, user: AuthUser) => {
+  const settings = await readSettings(context);
+  const organizationId = settings.platform_organization as string | undefined;
+  const organization = organizationId ? await storeLoadById<BasicStoreEntity>(context, user, organizationId, ENTITY_TYPE_IDENTITY_ORGANIZATION) : undefined;
+  return {
+    ...Object.fromEntries(SETTINGS_POLICIES_FIELDS.map((field) => [field, policyValue(settings, field)])),
+    platform_organization: organization ? { standard_id: organization.standard_id, name: organization.name } : null,
+  };
 };

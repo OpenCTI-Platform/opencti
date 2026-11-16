@@ -2,13 +2,11 @@ import { Page } from '@playwright/test';
 
 /**
  * The panel is rendered by the external `@filigran/chatbot` package, which
- * ships no `data-testid` and gives an accessible name to only some of its
- * controls. The unnamed header buttons are located by their lucide icon path,
- * scoped to the tooltip wrappers the header uses: the same icons appear in the
- * mode menu and in the conversation list, so an unscoped path is ambiguous as
- * soon as one of those is open.
+ * ships no `data-testid`. Since 3.25.0 every icon-only control of its header
+ * carries its tooltip label as accessible name, so the controls are located
+ * by role and name. The name is matched exactly: the conversation list has a
+ * 'New conversation' entry of its own.
  */
-const ICON_NEW_CHAT = 'M12 20h9';
 const CGU_STATUS_FIELD = 'filigran_chatbot_ai_cgu_status';
 
 export default class AskArianePageModel {
@@ -37,11 +35,7 @@ export default class AskArianePageModel {
   }
 
   getNewChatButton() {
-    return this.getHeaderButton(ICON_NEW_CHAT);
-  }
-
-  private getHeaderButton(iconPath: string) {
-    return this.getPanel().locator(`span.inline-flex > button:has(svg path[d="${iconPath}"])`);
+    return this.getPanel().getByRole('button', { name: 'New chat', exact: true });
   }
 
   // region Filigran AI terms

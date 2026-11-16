@@ -78,6 +78,20 @@ const makeSchema = (transitionOverrides: Partial<WorkflowSchema['transitions'][0
   ],
 });
 
+describe('WorkflowFactory.createDefinition – array from', () => {
+  it('registers one transition per source state when from is an array', () => {
+    const schema: WorkflowSchema = {
+      ...makeSchema({ from: ['draft', 'archived'], comment: 'shared' }),
+      states: [{ statusId: 'draft' }, { statusId: 'review' }, { statusId: 'archived' }],
+    };
+    const definition = WorkflowFactory.createDefinition(schema);
+
+    expect(definition.getTransition('draft', 'submit')).toEqual(expect.objectContaining({ from: 'draft', to: 'review', comment: 'shared' }));
+    expect(definition.getTransition('archived', 'submit')).toEqual(expect.objectContaining({ from: 'archived', to: 'review', comment: 'shared' }));
+    expect(definition.getTransitions('review')).toEqual([]);
+  });
+});
+
 // ---------------------------------------------------------------------------
 // WorkflowFactory.createDefinition – comment propagation
 // ---------------------------------------------------------------------------
@@ -336,5 +350,17 @@ describe('WorkflowFactory.createConditions – entity attribute filters', () => 
     const nameFilter = { ...filter('name', ['report'], FilterOperator.Contains), key: 'name' } as unknown as Filter;
     expect(await evaluate(group(FilterMode.And, [nameFilter]))).toBe(true);
     expect(stixLoadByIdMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('WorkflowFactory.createDefinition – closingReason field', () => {
+  it('propagates the closing reason mode to the transition definition', () => {
+    const definition = WorkflowFactory.createDefinition(makeSchema({ closingReason: 'required' }));
+    expect(definition.getTransition('draft', 'submit')!.closingReason).toBe('required');
+  });
+
+  it('leaves closingReason undefined when the schema transition has none', () => {
+    const definition = WorkflowFactory.createDefinition(makeSchema());
+    expect(definition.getTransition('draft', 'submit')!.closingReason).toBeUndefined();
   });
 });

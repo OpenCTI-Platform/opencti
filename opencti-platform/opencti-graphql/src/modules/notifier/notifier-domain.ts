@@ -146,6 +146,10 @@ export const initDefaultNotifiers = (context: AuthContext) => {
 };
 
 export const testNotifier = async (context: AuthContext, user: AuthUser, notifier: NotifierTestInput) => {
+  // A notifier test issues an outbound request on demand with an inline configuration: never from a service account.
+  if (user.user_service_account) {
+    return 'Cannot test a notifier with a service account';
+  }
   try {
     validateNotifier(notifier);
   } catch (error: any) {

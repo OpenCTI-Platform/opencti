@@ -90,6 +90,8 @@ marking definition.
 Also note that the list of marking definitions you can see is based on your current marking
 access on the platform **and the maximum sharable marking definitions** defined in your groups.
 
+For widgets broken down by the values of a field, see [Time series breakdown](time-series-breakdown.md#public-dashboards).
+
 !!! note "Define maximum shareable markings in groups"
 
     As a platform administrator, you can define, for each group and for each type of marking definition, [maximum marking definitions shareable](../administration/segregation.md) to be 

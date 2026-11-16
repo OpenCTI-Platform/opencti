@@ -39,6 +39,10 @@ enum State {
   complete
   timeout
 }
+enum WorkInvestigationStatus {
+  TO_REVIEW
+  DONE
+}
 enum Capabilities {
   BYPASS
   APIACCESS_USETOKEN
@@ -84,6 +88,7 @@ enum Capabilities {
   SETTINGS_SETSTATUSTEMPLATES
   SETTINGS_SETKILLCHAINPHASES
   SETTINGS_SETCUSTOMIZATION
+  SETTINGS_SETCUSTOMFIELDS
   SETTINGS_SECURITYACTIVITY
   SETTINGS_FILEINDEXING
   SETTINGS_SUPPORT
@@ -154,6 +159,11 @@ enum XTMHubRegistrationStatus {
   registered
   unregistered
   lost_connectivity
+}
+
+enum XTMHubCommercialModel {
+  saas
+  other
 }
 
 # noinspection GraphQLSchemaValidation
@@ -424,6 +434,47 @@ type TimeSeries {
 type MultiTimeSeries {
   data: [TimeSeries]
 }
+"""
+The documents carrying one value of the field, over time. A document carrying several of the values of the
+series (labels, markings...) counts in the series of each of them: the totals of the series can add up to
+more than the number of documents.
+"""
+type TimeSeriesBreakdownSeries {
+  label: String!
+  """
+  Entity of the value (restricted when the user cannot read it), null for the values that are not entities
+  (types, vocabularies...) and for Other
+  """
+  entity: StixObjectOrStixRelationshipOrCreator
+  """
+  Sum of the values of the series: its documents over the whole period, an inferred relationship weighing
+  the number of its inferences, as in the other time series
+  """
+  total: Int!
+  """
+  The series of the documents carrying none of the values of the other series, the documents without any
+  value included. A document carrying one of these values is never in Other, whatever its other values.
+  """
+  isOther: Boolean!
+  """
+  One value per date of TimeSeriesBreakdown.dates
+  """
+  values: [Int!]!
+}
+type TimeSeriesBreakdown {
+  """
+  Some values have no series of their own, beyond the limit: their documents are in Other when it is requested
+  """
+  truncated: Boolean!
+  """
+  Dates shared by every series, sent once
+  """
+  dates: [DateTime!]!
+  """
+  The series of the values kept by the limit, ranked, then Other when it is requested
+  """
+  series: [TimeSeriesBreakdownSeries!]!
+}
 input AuditsTimeSeriesParameters {
   field: String!
   types: [String]
@@ -600,6 +651,27 @@ type Log {
   user_metadata: JSON
 }
 
+############## Frontend logs
+enum FrontendLogLevel {
+  DEBUG
+  INFO
+  WARN
+  ERROR
+}
+input FrontendLogExceptionInput {
+  type: String
+  message: String
+  stacktrace: String
+}
+input FrontendLogInput {
+  timestamp: DateTime!
+  level: FrontendLogLevel!
+  message: String!
+  eventName: String!
+  data: JSON
+  exception: FrontendLogExceptionInput
+}
+
 ############## Attributes
 type AttributesMap {
   type: String!
@@ -740,7 +812,7 @@ type Synchronizer {
   queue_messages: Int!
   toConfigurationExport: String!
   consumer_metrics: StreamCollectionConsumer
-  ingestionHealth: IngestionHealth @ff(flags: ["INGESTION_HEALTH"], softFail: true)
+  ingestionHealth: IngestionHealth
 }
 
 type SynchronizerEdge {
@@ -807,6 +879,7 @@ type Work {
   timestamp: DateTime!
   status: State!
   event_source_id: String
+  eventSource: StixObjectOrStixRelationship @auth(for: [KNOWLEDGE])
   received_time: DateTime
   processed_time: DateTime
   completed_time: DateTime
@@ -815,6 +888,8 @@ type Work {
   errors: [WorkMessage]
   tracking: WorkTracking
   draft_context: String
+  touchedElements(first: Int = 100): [StixObjectOrStixRelationship] @auth(for: [KNOWLEDGE])
+  investigation_status: WorkInvestigationStatus
 }
 type WorkEdge {
   cursor: String!
@@ -1139,8 +1214,10 @@ input BackgroundTaskContextOptionsInput {
   applyTransitionActions: Boolean
   eventName: String
   comment: String
+  closingReason: String
   shareOrganizationIds: [String!]
   unshareOrganizationIds: [String!]
+  investigationId: String
 }
 
 input BackgroundTaskContextInput {
@@ -1333,6 +1410,7 @@ type PublicSettings implements IntlSettings & ThemeSettings {
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
   password_policy_validity_days: Int
+  password_policy_history_count: Int
 }
 
 type MetricAttributes {
@@ -1375,6 +1453,11 @@ type HeadersAuthConfig {
   organizations_mapping: OrganizationsMapping!
 }
 
+enum LocalAuthLockoutFinalAction {
+  temporary
+  permanent
+}
+
 input LocalAuthConfigInput {
   enabled: Boolean!
   password_policy_min_length: Int
@@ -1385,6 +1468,13 @@ input LocalAuthConfigInput {
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
   password_policy_validity_days: Int
+  password_policy_history_count: Int
+  local_auth_lockout_enabled: Boolean
+  local_auth_lockout_max_attempts: Int
+  local_auth_lockout_admin_max_attempts: Int
+  local_auth_lockout_final_action: LocalAuthLockoutFinalAction
+  local_auth_lockout_window: Int
+  local_auth_lockout_duration: Int
 }
 
 input CertAuthConfigInput {
@@ -1471,6 +1561,13 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
   password_policy_validity_days: Int
+  password_policy_history_count: Int
+  local_auth_lockout_enabled: Boolean @ff(flags: ["LOCAL_AUTH_LOCKOUT"], softFail: true, defaultValue: "false")
+  local_auth_lockout_max_attempts: Int @ff(flags: ["LOCAL_AUTH_LOCKOUT"], softFail: true, defaultValue: "10")
+  local_auth_lockout_admin_max_attempts: Int @ff(flags: ["LOCAL_AUTH_LOCKOUT"], softFail: true, defaultValue: "3")
+  local_auth_lockout_final_action: LocalAuthLockoutFinalAction @ff(flags: ["LOCAL_AUTH_LOCKOUT"], softFail: true, defaultValue: "\"temporary\"")
+  local_auth_lockout_window: Int @ff(flags: ["LOCAL_AUTH_LOCKOUT"], softFail: true, defaultValue: "15")
+  local_auth_lockout_duration: Int @ff(flags: ["LOCAL_AUTH_LOCKOUT"], softFail: true, defaultValue: "15")
   # Built-in authentication strategies
   local_auth: LocalAuthConfig
   cert_auth: CertAuthConfig
@@ -1479,6 +1576,9 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   caller_ip: String
   platform_messages: [SettingsMessage!]
   platform_session_max_concurrent: Int
+  platform_session_presence_enabled: Boolean! @ff(flags: ["SESSION_PRESENCE"], softFail: true, defaultValue: "false")
+  # False while several nodes serve the API: no session is then logged out when its last tab is closed
+  platform_session_presence_supported: Boolean! @ff(flags: ["SESSION_PRESENCE"], softFail: true, defaultValue: "false")
   messages_administration: [SettingsMessage!] @auth(for: [SETTINGS_SETPARAMETERS])
   analytics_google_analytics_v4: String
   playground_enabled: Boolean!
@@ -1496,6 +1596,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   xtm_hub_registration_status: XTMHubRegistrationStatus
   xtm_hub_backend_is_reachable: Boolean
   xtm_hub_available_news_feed_types: [String!]
+  xtm_hub_commercial_model: XTMHubCommercialModel
   # Notifiers
   platform_notifier_auto_trigger_assignee: Boolean!
   # AI insight
@@ -2572,6 +2673,7 @@ interface StixDomainObject {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
 }
@@ -2795,6 +2897,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
 }
@@ -3025,6 +3128,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
   securityCoverage: SecurityCoverage
@@ -3223,6 +3327,7 @@ interface Container {
   workflowEnabled: Boolean
   status: Status
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
 }
 
 ################ Notes
@@ -3415,6 +3520,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
 }
@@ -3666,6 +3772,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
 }
@@ -3890,6 +3997,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
 }
@@ -4137,6 +4245,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   deleteWithElementsCount: Int @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
@@ -4347,6 +4456,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
 }
@@ -4550,6 +4660,7 @@ interface Identity {
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   customFieldValues: [CustomFieldValue!]
+  x_opencti_closing_reason: String
 }
 input IdentityAddInput {
   stix_id: StixId
@@ -4753,6 +4864,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   isUser: Boolean @auth(for: [KNOWLEDGE, EXPLORE])
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
@@ -4964,6 +5076,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
 }
@@ -5140,6 +5253,13 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # System
   x_opencti_firstname: String
   x_opencti_lastname: String
+  x_opencti_system_category: String
+  x_opencti_system_subcategory: String
+  x_opencti_internet_facing: String
+  x_opencti_criticality: String
+  x_opencti_environment: String
+  x_opencti_owner: String
+  x_opencti_platform: String
   organizations: OrganizationConnection
   # Technical
   creators: [Creator!]
@@ -5168,6 +5288,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
 }
@@ -5182,6 +5303,13 @@ input SystemAddInput {
   x_opencti_firstname: String
   x_opencti_lastname: String
   x_opencti_reliability: String
+  x_opencti_system_category: String
+  x_opencti_system_subcategory: String
+  x_opencti_internet_facing: String
+  x_opencti_criticality: String
+  x_opencti_environment: String
+  x_opencti_owner: String
+  x_opencti_platform: String
   confidence: Int
   revoked: Boolean
   lang: String
@@ -5378,6 +5506,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
 }
@@ -5589,6 +5718,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
   securityCoverage: SecurityCoverage
@@ -5796,6 +5926,7 @@ interface Location {
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   customFieldValues: [CustomFieldValue!]
+  x_opencti_closing_reason: String
 }
 input LocationAddInput {
   stix_id: StixId
@@ -6000,6 +6131,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
 }
@@ -6207,6 +6339,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
 }
@@ -6408,6 +6541,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
 }
@@ -6611,6 +6745,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
 }
@@ -6829,6 +6964,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
 }
@@ -7054,6 +7190,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
 }
@@ -7224,6 +7361,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
 }
@@ -7435,6 +7573,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
 }
@@ -7649,6 +7788,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   customFieldValues: [CustomFieldValue!]
   securityCoverage: SecurityCoverage
@@ -13960,7 +14100,9 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
+  fromId: String!
   from: StixObjectOrStixRelationshipOrCreator
+  toId: String!
   to: StixObjectOrStixRelationshipOrCreator
   x_opencti_inferences: [Inference]
   spec_version: String!
@@ -14039,7 +14181,7 @@ type SynchronizerAddInputFromImport {
 
 type Query {
   stix(id: String!): String @auth(for: [KNOWLEDGE])
-  enrichmentConnectors(type: String!): [Connector] @auth(for: [MODULES])
+  enrichmentConnectors(type: String!): [Connector] @auth(for: [MODULES, KNOWLEDGE_KNENRICHMENT])
 
   ###### INTERNAL
 
@@ -14106,6 +14248,26 @@ type Query {
     onlyInferred: Boolean
     timeSeriesParameters: [AuditsTimeSeriesParameters]
   ): [MultiTimeSeries] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
+  auditsTimeSeriesBreakdown(
+    """
+    Field of the logs to break down by, as indexed: event_type, event_scope, user_id, group_ids,
+    organization_ids, entity_type (History or Activity) or context_data.entity_type (type of the entity of the event)
+    """
+    field: String!
+    """
+    Date of the logs the events are counted on: timestamp by default
+    """
+    dateAttribute: String
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    limit: Int = 10
+    orderMode: OrderingMode
+    includeOther: Boolean = false
+    types: [String]
+    filters: FilterGroup
+    search: String
+  ): TimeSeriesBreakdown @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   subType(id: String!): SubType @auth
   subTypes(
     first: Int
@@ -14343,6 +14505,38 @@ type Query {
     onlyInferred: Boolean
     timeSeriesParameters: [StixCoreObjectsTimeSeriesParameters]
   ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCoreObjectsTimeSeriesBreakdown(
+    """
+    Filter key to break the entities down by, carried by every requested type: a reference (createdBy, objectLabel,
+    objectMarking, objectAssignee or objectParticipant), creator_id, a vocabulary or enum attribute (like report_types),
+    or entity_type
+    """
+    field: String!
+    """
+    Date attribute of the requested types the entities are counted on: created_at by default
+    """
+    dateAttribute: String
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    limit: Int = 10
+    orderMode: OrderingMode
+    includeOther: Boolean = false
+    onlyInferred: Boolean
+    types: [String]
+    filters: FilterGroup
+    search: String
+  ): TimeSeriesBreakdown @auth(for: [KNOWLEDGE, EXPLORE])
+  """
+  Keys of the fields a time series widget of the perspective can be broken down by, for the types its dataset is
+  restricted to (at most 1,000, duplicates ignored), as the widget editor lists them. Without types, the ones the
+  breakdown queries default to: Stix-Core-Object, stix-relationship. Each field listed is accepted by the breakdown
+  query of the perspective for these types. The type itself (entity_type, relationship_type), which these queries
+  accept whatever the types, is only listed when it makes several series: several types, an abstract type, or none.
+  The relationships perspective lists no field when a type is not a relationship, as its breakdown refuses such a
+  dataset. The audits perspective lists the fields of the logs whatever the types.
+  """
+  timeSeriesBreakdownFields(perspective: WidgetPerspective!, types: [String!]): [String!]! @auth
   stixCoreObjectsNumber(
     dateAttribute: String
     types: [String]
@@ -14928,6 +15122,30 @@ type Query {
     timeSeriesParameters: [StixRelationshipsTimeSeriesParameters]
     relationship_type: [String!]
   ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixRelationshipsTimeSeriesBreakdown(
+    """
+    Field to break the relationships down by: relationship_type, fromTypes or toTypes (type of the source or of the
+    target), or a filter key carried by every requested relationship type: a reference (createdBy, objectLabel or
+    objectMarking), creator_id, or a vocabulary or enum attribute
+    """
+    field: String!
+    """
+    Date attribute of the requested relationship types the relationships are counted on: created_at by default
+    """
+    dateAttribute: String
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    limit: Int = 10
+    orderMode: OrderingMode
+    includeOther: Boolean = false
+    onlyInferred: Boolean
+    relationship_type: [String!]
+    filters: FilterGroup
+    dynamicFrom: FilterGroup
+    dynamicTo: FilterGroup
+    search: String
+  ): TimeSeriesBreakdown @auth(for: [KNOWLEDGE, EXPLORE])
   stixRelationshipsDistribution(
     field: String!
     operation: StatsOperation!
@@ -15338,8 +15556,8 @@ type ExternalReferenceEditMutations {
   contextClean: ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
-  askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
-  askEnrichments(connectorIds: [ID!]!): [Work!] @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  askEnrichment(connectorId: ID!, investigationId: ID): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  askEnrichments(connectorIds: [ID!]!, investigationId: ID): [Work!] @auth(for: [KNOWLEDGE_KNENRICHMENT])
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, embedded: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
 }
 type KillChainPhaseEditMutations {
@@ -15395,8 +15613,8 @@ type StixCoreObjectEditMutations {
   clearAccessRestriction: StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS])
   restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
-  askEnrichments(connectorIds: [ID!]!): [Work!] @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  askEnrichment(connectorId: ID!, investigationId: ID): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  askEnrichments(connectorIds: [ID!]!, investigationId: ID): [Work!] @auth(for: [KNOWLEDGE_KNENRICHMENT])
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work @auth(for: [KNOWLEDGE_KNUPDATE])
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File @auth(for: [CONNECTORAPI])
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -15730,7 +15948,8 @@ type Mutation {
   rulesRescanAsync(elementId: ID!, executionId: ID!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## INTERNAL OBJECT ENTITIES
-  frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean @auth
+  frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean @auth @deprecated(reason: "Replaced by frontendLogsAdd (#17400)")
+  frontendLogsAdd(logs: [FrontendLogInput!]!): Boolean @auth
   connectorJWT: String! @auth(for: [SETTINGS_SETACCESSES])
   settingsEdit(id: ID!): SettingsEditMutations @auth
   setupEnterpriseLicense(input: LicenseActivationInput!): Settings @auth(for: [SETTINGS_SETPARAMETERS, SETTINGS_SETMANAGEXTMHUB]) @allowUnlicensedLTS

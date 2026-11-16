@@ -21,7 +21,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import Button from '@common/button/Button';
 import Filters from '@components/common/lists/Filters';
-import { enabledFilters } from './utils/enabledFilters';
+import { useDecayFilterKeys } from './utils/enabledFilters';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import FilterIconButton from '../../../../components/FilterIconButton';
 
@@ -55,6 +55,7 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const [commit] = useApiMutation(decayRuleCreationFormAddMutation);
+  const decayFilterKeys = useDecayFilterKeys();
   const [filters, filterHelpers] = useFiltersState();
 
   const onSubmit: FormikConfig<DecayRuleCreationFormData>['onSubmit'] = (values, { setSubmitting, resetForm, setErrors }) => {
@@ -136,7 +137,7 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
           }}
           >
             <Filters
-              availableFilterKeys={enabledFilters}
+              availableFilterKeys={decayFilterKeys}
               helpers={filterHelpers}
               searchContext={{ entityTypes: ['Indicator'] }}
             />

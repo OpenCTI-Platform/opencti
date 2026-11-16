@@ -103,11 +103,9 @@ interface UseDeployedIntegrationsFiltersProps {
   searchParams: URLSearchParams;
   // Without connector update detection, a shared link must not restore an update filter nothing can match
   isConnectorUpdateEnabled: boolean;
-  // Without ingestion health (INGESTION_HEALTH feature flag), a shared link must not restore a health filter
-  isIngestionHealthEnabled?: boolean;
 }
 
-const useDeployedIntegrationsFilters = ({ items, searchParams, isConnectorUpdateEnabled, isIngestionHealthEnabled = false }: UseDeployedIntegrationsFiltersProps) => {
+const useDeployedIntegrationsFilters = ({ items, searchParams, isConnectorUpdateEnabled }: UseDeployedIntegrationsFiltersProps) => {
   // The legacy feed screens redirect to /integrations/deployed?kind=<feed>:
   // the kind is folded into the type facet as an initial selection.
   const legacyKind = searchParams.get('kind');
@@ -124,10 +122,8 @@ const useDeployedIntegrationsFilters = ({ items, searchParams, isConnectorUpdate
     kinds: parseListParam(searchParams.get('deployment'))
       .filter((k): k is DeployedKindFacet => (DEPLOYED_KIND_FACETS as string[]).includes(k)),
     updateAvailable: isConnectorUpdateEnabled && searchParams.get('updateAvailable') === 'true',
-    healthStatuses: isIngestionHealthEnabled
-      ? parseListParam(searchParams.get('health'))
-          .filter((h): h is DeployedHealthFacet => (DEPLOYED_HEALTH_FACETS as string[]).includes(h))
-      : [],
+    healthStatuses: parseListParam(searchParams.get('health'))
+      .filter((h): h is DeployedHealthFacet => (DEPLOYED_HEALTH_FACETS as string[]).includes(h)),
   });
   const [sort, setSort] = useState<DeployedSortMode>(
     (['name', 'status', 'lastRun', 'messages'] as const).find((mode) => mode === searchParams.get('sort')) ?? 'name',

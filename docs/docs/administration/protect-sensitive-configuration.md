@@ -59,30 +59,29 @@ Only users with `Allow modification of sensitive configuration` capability enabl
 
 1. Edit your config file to apply this configuration
 
-```jsx
+```json
 "protected_sensitive_config": {
-      "enabled": false,
-      "markings": {
-        "enabled": true,
-        "protected_definitions": ["TLP:CLEAR", "TLP:GREEN", "TLP:AMBER", "TLP:AMBER+STRICT", "TLP:RED", "PAP:CLEAR", "PAP:GREEN", "PAP:AMBER", "PAP:AMBER"]
-      },
-      "groups": {
-        "enabled": true,
-        "protected_names": ["Administrators", "Connectors", "Default"]
-      },
-      "roles": {
-        "enabled": true,
-        "protected_names": ["Administrator", "Connector", "Default"]
-      },
-      "rules": {
-        "enabled": true
-      },
-      "ce_ee_toggle": {
-        "enabled": true
-      },
-      "file_indexing": {
-        "enabled": true
-      }
-    }
+  "enabled": false,
+  "markings": {
+    "enabled": true,
+    "protected_definitions": ["TLP:CLEAR", "TLP:GREEN", "TLP:AMBER", "TLP:AMBER+STRICT", "TLP:RED", "PAP:CLEAR", "PAP:GREEN", "PAP:AMBER", "PAP:RED"]
   },
+  "groups": {
+    "enabled": true,
+    "protected_names": ["Administrators", "Connectors", "Default"]
+  },
+  "roles": {
+    "enabled": true,
+    "protected_names": ["Administrator", "Connector", "Default"]
+  },
+  "rules": {
+    "enabled": true
+  },
+  "ce_ee_toggle": {
+    "enabled": true
+  },
+  "file_indexing": {
+    "enabled": true
+  }
+}
 ```

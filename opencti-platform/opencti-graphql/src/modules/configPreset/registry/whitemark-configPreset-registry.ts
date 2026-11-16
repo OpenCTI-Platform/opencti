@@ -3,14 +3,11 @@ import { getWhitemarkConfigPresetConfiguration } from '../../settings/settings-e
 import { importWhitemark } from '../../settings/settings-import';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
-import { platformSettingsGroup, staticFamily, toAppliedStatus, toComputedItem } from './common-configPreset-registry';
+import { platformSettingsGroup, staticFamily, toAppliedStatus, toComputedItem, toIsEnabled } from './common-configPreset-registry';
 
 export const WHITEMARK_FAMILY_ID = 'whitemark';
 const WHITEMARK_ITEM_ID = 'whitemark';
 const WHITEMARK_LABEL = 'Remove Filigran logos';
-
-// On or off as the setting says it, null when it is not set: an unset setting is neither, the import leaves the platform as it is
-const toIsEnabled = (value: unknown) => (typeof value === 'boolean' ? value : null);
 
 const getWhitemarkItems = async (context: AuthContext): Promise<ConfigPresetItemDefinition[]> => [{
   id: WHITEMARK_ITEM_ID,

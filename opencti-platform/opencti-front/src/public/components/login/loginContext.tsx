@@ -8,6 +8,8 @@ interface LoginContextData {
   resendCodeDisabled?: boolean;
   validateOtpInError?: boolean;
   changePasswordInError?: boolean;
+  // Set when the refusal has its own message, such as a recently used password
+  changePasswordErrorCode?: string;
   mfaInError?: boolean;
   pwdChanged?: boolean;
 };

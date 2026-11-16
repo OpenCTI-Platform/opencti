@@ -63,6 +63,8 @@ export interface UserImportActionContextData extends ElementContextData {
 // The import of a configuration preset: the report of the import is the file, linked to no entity
 export interface ConfigPresetImportSummary {
   counts: Record<'created' | 'overwritten' | 'skipped' | 'failed', number>;
+  // The type of a partial import (the items of one type taken from the bundle), absent for the import of the wizard
+  type?: string;
 }
 export interface UserConfigPresetImportActionContextData {
   // The report of the import, null when it could not be written
@@ -183,6 +185,17 @@ export interface IngestionHealthAction extends BasicUserAction {
     id: string;
     entity_type: string;
     entity_name: string;
+    ingestion_health_changes: {
+      // The messages of the failing checks, absent when none fails
+      message?: string;
+      // The same messages, one by check: the critical ones apart from the others
+      critical_messages?: string[];
+      advisory_messages?: string[];
+      // Status reported by the previous health event, absent for the first one
+      previous_status?: string;
+      // Date the current status started
+      status_since: string;
+    };
   };
 }
 // endregion
@@ -200,7 +213,8 @@ export interface UserLoginAction extends BasicUserAction {
 export interface UserLogoutAction extends BasicUserAction {
   event_type: 'authentication';
   event_scope: 'logout';
-  context_data: undefined;
+  // Only set for automatic logouts, an explicit logout carries no context
+  context_data: { reason: 'last_tab_closed' } | undefined;
 }
 
 export interface UserForgotPasswordAction extends BasicUserAction {

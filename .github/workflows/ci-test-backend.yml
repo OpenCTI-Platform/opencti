@@ -75,10 +75,9 @@ jobs:
 
     - name: Set up Docker Compose for backends and sync instances
       env:
-        # Empty for Elasticsearch 8 and OpenSearch: docker-compose.yml then keeps its default image
-        ELASTICSEARCH_IMAGE: ${{ matrix.engine == 'elasticsearch9' && 'elasticsearch:9.5.5@sha256:da9e6fed4949f114c526cf51f5130fed9e30fe9f03a2ea7bf64ccbdc129fca8c' || '' }}
-        # OpenSearch: docker-compose.opensearch.yml replaces the image and the settings of the search engine service
-        COMPOSE_FILE: ${{ matrix.engine == 'opensearch' && 'docker-compose.yml:docker-compose.opensearch.yml' || 'docker-compose.yml' }}
+        # Elasticsearch 9 and OpenSearch: a file merged over docker-compose.yml replaces the search engine service
+        # image (and the settings, for OpenSearch). Kept in compose files, where Renovate finds the images.
+        COMPOSE_FILE: ${{ matrix.engine == 'elasticsearch9' && 'docker-compose.yml:docker-compose.elasticsearch9.yml' || matrix.engine == 'opensearch' && 'docker-compose.yml:docker-compose.opensearch.yml' || 'docker-compose.yml' }}
       run: |
          set -ex
          cd scripts/ci
@@ -87,13 +86,10 @@ jobs:
          docker network create runner-docker-network
          docker compose  --profile "backend" --profile "ci-test-api-sync" up -d
 
-    - name: Wait for OpenCTI sync instances to start
-      run: |
-          set -eux
-          ./scripts/ci/wait-for-url-200.sh http://localhost:4100/health?health_access_key=cihealthkey 300 10
-          ./scripts/ci/wait-for-url-200.sh http://localhost:4200/health?health_access_key=cihealthkey 180 10
-          ./scripts/ci/wait-for-url-200.sh http://localhost:4300/health?health_access_key=cihealthkey 180 10
-          ./scripts/ci/wait-for-url-200.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
+    # The sync instances keep booting while the first test files run: only the sync tests use them,
+    # and each of these tests waits for its own instance (see waitForRemotePlatform in tests/11-sync/sync-utils.js)
+    - name: Wait for the backend services to start
+      run: ./scripts/ci/wait-for-backends.sh
 
     - name: Start backend test (aka yarn test:ci-integration-sync)
       run: |
@@ -234,10 +230,9 @@ jobs:
 
     - name: Set up Docker Compose for backends and sync instances
       env:
-        # Empty for Elasticsearch 8 and OpenSearch: docker-compose.yml then keeps its default image
-        ELASTICSEARCH_IMAGE: ${{ matrix.engine == 'elasticsearch9' && 'elasticsearch:9.5.5@sha256:da9e6fed4949f114c526cf51f5130fed9e30fe9f03a2ea7bf64ccbdc129fca8c' || '' }}
-        # OpenSearch: docker-compose.opensearch.yml replaces the image and the settings of the search engine service
-        COMPOSE_FILE: ${{ matrix.engine == 'opensearch' && 'docker-compose.yml:docker-compose.opensearch.yml' || 'docker-compose.yml' }}
+        # Elasticsearch 9 and OpenSearch: a file merged over docker-compose.yml replaces the search engine service
+        # image (and the settings, for OpenSearch). Kept in compose files, where Renovate finds the images.
+        COMPOSE_FILE: ${{ matrix.engine == 'elasticsearch9' && 'docker-compose.yml:docker-compose.elasticsearch9.yml' || matrix.engine == 'opensearch' && 'docker-compose.yml:docker-compose.opensearch.yml' || 'docker-compose.yml' }}
       run: |
          set -eux
          cd scripts/ci
@@ -245,7 +240,9 @@ jobs:
          printf "\nAPP__ENTERPRISE_EDITION_LICENSE=\"%s\"" "$EE_LICENSE" >> ci-common.env
          docker network create runner-docker-network
          docker compose --profile "backend" --profile "ci-test-rules" up -d
-         ./wait-for-url-200.sh http://localhost:9200/_cluster/health?wait_for_status=yellow  120 2
+
+    - name: Wait for the backend services to start
+      run: ./scripts/ci/wait-for-backends.sh
 
     - name: Start rules test and others (aka yarn test:ci-rules-and-others)
       run: |

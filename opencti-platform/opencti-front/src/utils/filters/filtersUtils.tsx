@@ -17,6 +17,7 @@ import { dateFiltersValueForDisplay } from '../Time';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../widget/widgetUtils';
 import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
 import { getVariableTokenLabel } from '../../components/dashboard/dashboardVariableTokenLabel';
+import { logger } from '../logging/logger';
 
 // ----------------------------------------------------------------------------------------------------------------------
 
@@ -239,6 +240,7 @@ const STATIC_STIX_FILTERS = [
   'x_opencti_ssvc_exploitation',
   'x_opencti_ssvc_automatable',
   'x_opencti_ssvc_technical_impact',
+  'x_opencti_closing_reason',
 ];
 const customFieldStixFilterKeysQuery = graphql`
   query filtersUtilsCustomFieldStixFilterKeysQuery($entityType: String) {
@@ -252,7 +254,7 @@ const customFieldStixFilterKeysQuery = graphql`
  * each implement their own loading strategy (query, caching...).
  * Returns an empty array while loading.
  */
-const useCustomFieldStixFilterKeys = (entityType?: string): string[] => {
+export const useCustomFieldStixFilterKeys = (entityType?: string): string[] => {
   const [customFieldFilterKeys, setCustomFieldFilterKeys] = useState<string[]>([]);
   useEffect(() => {
     let isMounted = true;
@@ -691,7 +693,14 @@ export const filterValue = (
   }
 
   // Defensive check to prevent errors on string manipulation after this call
-  return typeof value === 'string' ? value : String(value);
+  if (typeof value !== 'string') {
+    logger.warn('Filter value is not a string', {
+      eventName: 'opencti.filter.value_not_string',
+      data: { filter: { key: filterKey, type: filterType, operator: filterOperator }, value: { type: typeof value } },
+    });
+    return String(value);
+  }
+  return value;
 };
 
 export const isFilterEditable = (filtersRestrictions: FiltersRestrictions | undefined, filterKey: string, filterValues: string[]) => {

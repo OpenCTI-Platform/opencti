@@ -32,6 +32,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { TYPE_FILTER, USER_ID_FILTER } from '../utils/filtering/filtering-constants';
 import { createWork } from './work';
+import { validateEnrichmentInvestigation } from '../modules/workspace/investigation-enrichment';
 import { getBestBackgroundConnectorId } from '../database/rabbitmq';
 import { addUserBackgroundTaskCount } from '../manager/telemetryManager';
 import { ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../config/conf';
@@ -124,7 +125,9 @@ const checkWorkflowActionsValidity = (context, user, actions) => {
   }
 };
 
-// check a user has the right to create a list or a query background task
+/**
+ * Check a user has the right to create a list or a query background task.
+ */
 export const checkActionValidity = async (context, user, input, scope, taskType) => {
   const { actions, filters: baseFilterString, ids } = input;
   // check actions validity
@@ -139,6 +142,9 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
   checkWorkflowActionsValidity(context, user, actions);
   // check rights
   const baseFilterObject = baseFilterString ? JSON.parse(baseFilterString) : undefined;
+  if (taskType === TASK_TYPE_QUERY && !isFilterGroupNotEmpty(baseFilterObject)) {
+    throw FunctionalError('A background task of type query should have at least one filter.');
+  }
   const filters = isFilterGroupNotEmpty(baseFilterObject)
     ? (baseFilterObject?.filters ?? [])
     : [];
@@ -171,7 +177,16 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
         throw ForbiddenAccess();
       }
     }
-    // 2.4. Check the targeted entities are of type Knowledge
+    // 2.4. If enrichment is linked to an investigation, the user must be allowed to enrich and to edit the investigation
+    const enrichmentInvestigationIds = uniq(
+      actions
+        .filter((a) => a.type === ACTION_TYPE_ENRICHMENT && a.context?.options?.investigationId) // Keep only enrichment with investigation ID
+        .map((a) => a.context.options.investigationId), // Then keep only the investigation ID
+    );
+    for (let index = 0; index < enrichmentInvestigationIds.length; index += 1) {
+      await validateEnrichmentInvestigation(context, user, enrichmentInvestigationIds[index]);
+    }
+    // 2.5. Check the targeted entities are of type Knowledge
     if (taskType === TASK_TYPE_QUERY) {
       const acceptedInternalTypes = entityTypeFiltersValues.every((type) => type === ENTITY_TYPE_DELETE_OPERATION || type === ENTITY_TYPE_DRAFT_WORKSPACE);
       const parentTypes = entityTypeFiltersValues.map((n) => getParentTypes(n));

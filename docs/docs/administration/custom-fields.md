@@ -10,7 +10,7 @@ Once attached to an entity type, a custom field behaves as a standard attribute:
 
 ## Manage custom fields
 
-Custom fields are managed in "Settings > Taxonomies > Custom fields", with the "Manage customization" capability.
+Custom fields are managed in "Settings > Taxonomies > Custom fields", with the "Manage custom fields" capability.
 
 ![Custom fields list](assets/custom-fields-list.png)
 
@@ -22,6 +22,7 @@ A custom field is defined by:
     - **Text**: a single line of text.
     - **Markdown**: a text formatted in Markdown.
     - **Integer**: an integer, optionally bounded by a minimum and a maximum value.
+    - **Decimal**: a decimal number.
     - **Boolean**: true or false.
     - **Date**: a date and time.
     - **Selection list**: one value among a list of options.
@@ -54,7 +55,7 @@ Deleting a custom field removes its values from all the entities, through a back
 
 ## Attach a custom field to an entity type
 
-A custom field is used on the entity types it is attached to. In "Settings > Customization > Entity types", select an entity type, then in its "Attributes" tab, the "Custom fields" section lists the custom fields attached to it.
+A custom field is used on the entity types it is attached to. Attaching it requires the "Manage customization" capability. In "Settings > Customization > Entity types", select an entity type, then in its "Attributes" tab, the "Custom fields" section lists the custom fields attached to it.
 
 ![Custom fields of an entity type](assets/custom-fields-entity-type.png)
 

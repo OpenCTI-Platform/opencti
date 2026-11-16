@@ -50,7 +50,7 @@ describe('forgot password with an unknown transaction', () => {
   });
 
   it('should refuse to verify the code', async () => {
-    await expect(verifyOtp({ transactionId: 'unknown', otp: INHERITED_OTP }))
+    await expect(verifyOtp(testContext, { transactionId: 'unknown', otp: INHERITED_OTP }))
       .rejects.toThrow('Password reset code expired or not found. Please request a new one.');
   });
 
@@ -62,7 +62,7 @@ describe('forgot password with an unknown transaction', () => {
 
   it('should refuse to change the password', async () => {
     await expect(changePassword(testContext, { transactionId: 'unknown', otp: INHERITED_OTP, newPassword: 'new-password' }))
-      .rejects.toThrow('Invalid password reset code. Please check the code and try again.');
+      .rejects.toThrow('Password reset code expired or not found. Please request a new one.');
     expect(userEditField).not.toHaveBeenCalled();
   });
 });

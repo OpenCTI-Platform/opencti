@@ -4,7 +4,7 @@ import Loader from '../../../../components/Loader';
 import LabelsVocabulariesMenu from '../LabelsVocabulariesMenu';
 import useGranted, {
   SETTINGS_SETCASETEMPLATES,
-  SETTINGS_SETCUSTOMIZATION,
+  SETTINGS_SETCUSTOMFIELDS,
   SETTINGS_SETKILLCHAINPHASES,
   SETTINGS_SETLABELS,
   SETTINGS_SETSTATUSTEMPLATES,
@@ -28,12 +28,14 @@ const VocabulariesRedirect = () => {
   const isGrantedToCaseTemplates = useGranted([SETTINGS_SETCASETEMPLATES]);
   const isGrantedToStatusTemplates = useGranted([SETTINGS_SETSTATUSTEMPLATES]);
   const isGrantedToVocabularies = useGranted([SETTINGS_SETVOCABULARIES]);
+  const isGrantedToCustomFields = useGranted([SETTINGS_SETCUSTOMFIELDS]);
 
   if (isGrantedToLabels) return <Navigate to="/dashboard/settings/vocabularies/labels" />;
   if (isGrantedToKillChainPhases) return <Navigate to="/dashboard/settings/vocabularies/kill_chain_phases" />;
   if (isGrantedToCaseTemplates) return <Navigate to="/dashboard/settings/vocabularies/case_templates" />;
   if (isGrantedToStatusTemplates) return <Navigate to="/dashboard/settings/vocabularies/status_templates" />;
   if (isGrantedToVocabularies) return <Navigate to="/dashboard/settings/vocabularies/fields" />;
+  if (isGrantedToCustomFields) return <Navigate to="/dashboard/settings/vocabularies/custom_fields" />;
   return <Navigate to="/dashboard/settings" />;
 };
 
@@ -48,7 +50,14 @@ const RootVocabularies = () => {
             path="/"
             element={(
               <Security
-                needs={[SETTINGS_SETLABELS, SETTINGS_SETKILLCHAINPHASES, SETTINGS_SETSTATUSTEMPLATES, SETTINGS_SETCASETEMPLATES, SETTINGS_SETVOCABULARIES]}
+                needs={[
+                  SETTINGS_SETLABELS,
+                  SETTINGS_SETKILLCHAINPHASES,
+                  SETTINGS_SETSTATUSTEMPLATES,
+                  SETTINGS_SETCASETEMPLATES,
+                  SETTINGS_SETVOCABULARIES,
+                  SETTINGS_SETCUSTOMFIELDS,
+                ]}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <VocabulariesRedirect />
@@ -98,7 +107,7 @@ const RootVocabularies = () => {
           <Route
             path="/custom_fields"
             element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={[SETTINGS_SETCUSTOMFIELDS]} placeholder={<Navigate to={fallbackUrl} />}>
                 <CustomFields />
               </Security>
             )}

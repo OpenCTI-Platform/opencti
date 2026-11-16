@@ -27,6 +27,80 @@ export const colors = (temp) => [
   C.grey[temp],
 ];
 
+/**
+ * Turns the animations of chart options off: entirely, or only when the series of a drawn chart are updated.
+ * @param {object} options
+ * @param {boolean} isAnimated
+ * @param {boolean} isUpdateAnimated
+ */
+export const withChartAnimations = (options, isAnimated = true, isUpdateAnimated = true) => {
+  if (!isAnimated) {
+    return { ...options, chart: { ...options.chart, animations: { enabled: false } } };
+  }
+  if (!isUpdateAnimated) {
+    return { ...options, chart: { ...options.chart, animations: { ...options.chart?.animations, dynamicAnimation: { enabled: false } } } };
+  }
+  return options;
+};
+
+/**
+ * Draws the legend of chart options in rows of about 20 pixels instead of 56: its items are 2 pixels apart
+ * vertically, for a legend of many series in a small chart.
+ * @param {object} options
+ */
+export const withCompactLegend = (options) => ({
+  ...options,
+  legend: { ...options.legend, itemMargin: { ...options.legend?.itemMargin, vertical: 2 } },
+});
+
+/**
+ * Highest value the y axis of time series shows: the highest sum of the values at a same x when stacked.
+ * @param {{ data: unknown[] }[]} series points `{ x, y }`, `[x, y]` or values, `null` for none
+ * @param {boolean} isStacked
+ */
+export const getSeriesMaxValue = (series, isStacked = false) => {
+  const sums = new Map();
+  let maxValue = 0;
+  series.forEach(({ data }) => data.forEach((point, index) => {
+    let x = index;
+    let y = point;
+    if (Array.isArray(point)) {
+      [x, y] = point;
+    } else if (typeof point === 'object' && point !== null) {
+      ({ x, y } = point);
+    }
+    const value = Number(y) || 0;
+    if (isStacked) {
+      // Dates stack by their time, not by their object
+      const key = x instanceof Date ? x.getTime() : x;
+      const sum = (sums.get(key) ?? 0) + value;
+      sums.set(key, sum);
+      maxValue = Math.max(maxValue, sum);
+    } else {
+      maxValue = Math.max(maxValue, value);
+    }
+  }));
+  return maxValue;
+};
+
+/**
+ * Labels the y axis of a chart of counts with integers only, from 0: about 5 ticks, a step of 1, 2 or 5 times
+ * a power of 10, and at least 1. ApexCharts would otherwise label fractions of a small count.
+ * @param {object} options
+ * @param {number} maxValue the highest value the axis shows
+ */
+export const withIntegerYAxis = (options, maxValue) => {
+  if (!(maxValue > 0)) {
+    return { ...options, yaxis: { ...options.yaxis, min: 0 } };
+  }
+  const rawStep = maxValue / 5;
+  const magnitude = 10 ** Math.floor(Math.log10(rawStep));
+  const niceStep = [1, 2, 5, 10].map((factor) => factor * magnitude).find((step) => step >= rawStep) ?? 10 * magnitude;
+  const step = Math.max(1, Math.round(niceStep));
+  const max = Math.ceil(maxValue / step) * step;
+  return { ...options, yaxis: { ...options.yaxis, min: 0, max, tickAmount: max / step, forceNiceScale: false } };
+};
+
 const toolbarOptions = {
   show: false,
   export: {
@@ -290,6 +364,7 @@ export const areaChartOptions = (
  * @param {boolean} isStacked
  * @param {boolean} legend
  * @param {number | 'dataPoints'} tickAmount
+ * @param {boolean} hoverFilter
  */
 export const verticalBarsChartOptions = (
   theme,
@@ -300,6 +375,7 @@ export const verticalBarsChartOptions = (
   isStacked = false,
   legend = false,
   tickAmount = undefined,
+  hoverFilter = true,
 ) => ({
   chart: {
     type: 'bar',
@@ -322,10 +398,9 @@ export const verticalBarsChartOptions = (
   ],
   states: {
     hover: {
-      filter: {
-        type: 'lighten',
-        value: 0.05,
-      },
+      filter: hoverFilter
+        ? { type: 'lighten', value: 0.05 }
+        : { type: 'none' },
     },
   },
   grid: {

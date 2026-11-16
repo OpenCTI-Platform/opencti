@@ -13,6 +13,7 @@ import { ConfigPresetExportItemsQuery } from './__generated__/ConfigPresetExport
 import { ConfigPresetExportItems_data$key } from './__generated__/ConfigPresetExportItems_data.graphql';
 import { buildConfigPresetItemsFilter, clearConfigPresetTypeSelection, ConfigPresetItemsFilter, countConfigPresetCheckedItems } from '../configPresetSelection';
 import { ConfigPresetItemRow, ConfigPresetSelectionProps } from '../ConfigPresetItemRow';
+import { describeEnabled } from '../ConfigPresetSelectionAccordion';
 
 const PAGE_SIZE = 25;
 
@@ -41,6 +42,7 @@ const configPresetExportItemsFragment = graphql`
           label
           translatable
           isDefault
+          isEnabled
         }
       }
     }
@@ -51,7 +53,8 @@ type ItemsVariables = Omit<ConfigPresetExportItemsQuery['variables'], 'count'>;
 
 const ConfigPresetExportItemsList: FunctionComponent<ConfigPresetSelectionProps & { variables: ItemsVariables }> = ({ variables, ...rowProps }) => {
   const { t_i18n } = useFormatter();
-  const queryData = useLazyLoadQuery<ConfigPresetExportItemsQuery>(configPresetExportItemsQuery, { ...variables, count: PAGE_SIZE });
+  // The items change while the page stays open (labels are added, renamed, deleted): the store may hold an older list and its count
+  const queryData = useLazyLoadQuery<ConfigPresetExportItemsQuery>(configPresetExportItemsQuery, { ...variables, count: PAGE_SIZE }, { fetchPolicy: 'network-only' });
   const { data, hasNext, isLoadingNext, loadNext } = usePaginationFragment<ConfigPresetExportItemsQuery, ConfigPresetExportItems_data$key>(
     configPresetExportItemsFragment,
     queryData,
@@ -72,7 +75,15 @@ const ConfigPresetExportItemsList: FunctionComponent<ConfigPresetSelectionProps 
   const edges = data.configPresetExportableItems.edges;
   return (
     <>
-      {edges.map(({ node }) => <ConfigPresetItemRow key={node.key} typeKey={variables.type} item={node} {...rowProps} />)}
+      {edges.map(({ node }) => (
+        <ConfigPresetItemRow
+          key={node.key}
+          typeKey={variables.type}
+          item={node}
+          description={typeof node.isEnabled === 'boolean' ? describeEnabled(t_i18n, node.isEnabled) : undefined}
+          {...rowProps}
+        />
+      ))}
       {edges.length === 0 && <Text variant="content-base">{t_i18n('No results')}</Text>}
       <div ref={sentinelRef} />
       {isLoadingNext && <Spinner label={t_i18n('Loading')} />}

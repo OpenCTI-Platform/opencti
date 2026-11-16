@@ -3,7 +3,6 @@ import { graphql, useFragment } from 'react-relay';
 import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { getHealthDisplay } from '@components/data/connectors/ingestionHealthDisplay';
 import { useFormatter } from '../../../../components/i18n';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { capitalizeFirstLetter } from '../../../../utils/String';
 import useHealthCheckMessage from './useHealthCheckMessage';
 import type { IngestionHealthChip_ingestionHealth$key } from './__generated__/IngestionHealthChip_ingestionHealth.graphql';
@@ -29,11 +28,10 @@ interface IngestionHealthChipProps {
 const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ ingestionHealth: ingestionHealthKey }) => {
   const { t_i18n, nsdt } = useFormatter();
   const { getHealthCheckMessage } = useHealthCheckMessage();
-  const { isFeatureEnable } = useHelper();
   const ingestionHealth = useFragment(ingestionHealthFragment, ingestionHealthKey ?? null);
   // Nothing to flag: not evaluated yet, healthy or unknown
   const severity = ingestionHealth ? getHealthDisplay(ingestionHealth.status)?.chip : undefined;
-  if (!isFeatureEnable('INGESTION_HEALTH') || !ingestionHealth || !severity) {
+  if (!ingestionHealth || !severity) {
     return null;
   }
   const { status } = ingestionHealth;
@@ -49,7 +47,10 @@ const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ ingestionHeal
       <TooltipContent>
         <div>{`${t_i18n('Since')} ${nsdt(ingestionHealth.status_since)}`}</div>
         {checks.length > 0
-          ? checks.map((check) => <div key={check.health_check_code}>{getHealthCheckMessage(check)}</div>)
+          ? checks.map((check, index) => {
+              const message = getHealthCheckMessage(check);
+              return <div key={`${check.health_check_code}-${index}`}>{message}</div>;
+            })
           : <div>{t_i18n('No health issue detected')}</div>}
       </TooltipContent>
     </Tooltip>

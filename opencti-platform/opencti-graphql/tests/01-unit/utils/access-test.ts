@@ -10,6 +10,8 @@ import {
   getUserAccessRight,
   isMarkingAllowed,
   isOrganizationAllowed,
+  isUserAccountActive,
+  isUserAccountExpired,
   isUserCanAccessStreamUpdateEvent,
   isUserInPlatformOrganization,
   KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
@@ -659,5 +661,27 @@ describe('isUserInPlatformOrganization testing', () => {
     };
     const expected = isUserInPlatformOrganization(user as AuthUser, settings as BasicStoreSettings);
     expect(expected).toEqual(false);
+  });
+});
+
+describe('user account activity', () => {
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const PAST = new Date(Date.now() - DAY_MS);
+  const FUTURE = new Date(Date.now() + DAY_MS);
+
+  it('should accept an active account, with or without an expiration date in the future', () => {
+    expect(isUserAccountActive({ account_status: 'Active', account_lock_after_date: undefined })).toBe(true);
+    expect(isUserAccountActive({ account_status: 'Active', account_lock_after_date: FUTURE })).toBe(true);
+    expect(isUserAccountExpired({ account_status: 'Active', account_lock_after_date: FUTURE })).toBe(false);
+  });
+
+  it.each(['Expired', 'Locked', 'Inactive', 'Custom locked status'])('should refuse an account whose status is %s', (status) => {
+    expect(isUserAccountActive({ account_status: status, account_lock_after_date: undefined })).toBe(false);
+    expect(isUserAccountExpired({ account_status: status, account_lock_after_date: undefined })).toBe(false);
+  });
+
+  it('should refuse an active account whose expiration date is past, as expired: its status is updated later by the expiration manager', () => {
+    expect(isUserAccountActive({ account_status: 'Active', account_lock_after_date: PAST })).toBe(false);
+    expect(isUserAccountExpired({ account_status: 'Active', account_lock_after_date: PAST })).toBe(true);
   });
 });

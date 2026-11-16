@@ -4,7 +4,6 @@ import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import IngestionHealthBanner from '@components/data/connectors/IngestionHealthBanner';
 import { useFormatter } from '../../../../components/i18n';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useHealthCheckMessage from './useHealthCheckMessage';
 import type { ConnectorHealthAlerts_ingestionHealth$key } from './__generated__/ConnectorHealthAlerts_ingestionHealth.graphql';
 
@@ -74,10 +73,9 @@ interface ConnectorHealthAlertsProps {
 const ConnectorHealthAlerts = ({ ingestionHealth, subject = 'connector' }: ConnectorHealthAlertsProps) => {
   const theme = useTheme();
   const { getHealthCheckMessage } = useHealthCheckMessage();
-  const { isFeatureEnable } = useHelper();
   const data = useFragment(connectorHealthAlertsFragment, ingestionHealth ?? null);
   // Nothing to flag: not evaluated yet, healthy or unknown. The checks of an unknown status are not issues of this platform version
-  if (!isFeatureEnable('INGESTION_HEALTH') || !data || (data.status !== 'critical' && data.status !== 'degraded')) return null;
+  if (!data || (data.status !== 'critical' && data.status !== 'degraded')) return null;
 
   // Same rule as the backend status: only a blocking runtime check is critical
   const critical: string[] = [];

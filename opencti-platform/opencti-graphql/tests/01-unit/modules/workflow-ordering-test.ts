@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeStateOrder, findUnreachableStates } from '../../../src/modules/workflow/domain/workflow-ordering';
+import { computeStateOrder, findStatesWithOutgoingTransitions, findUnreachableStates } from '../../../src/modules/workflow/domain/workflow-ordering';
 
 describe('workflow-ordering: computeStateOrder', () => {
   it('yields sequential orders 0,1,2,3 for a linear chain', () => {
@@ -190,5 +190,24 @@ describe('workflow-ordering: findUnreachableStates', () => {
       { from: 'B', to: 'A' },
     ]);
     expect(unreachable).toEqual([]);
+  });
+});
+
+describe('workflow-ordering: findStatesWithOutgoingTransitions', () => {
+  it('returns the states that a transition leaves, so the others are final', () => {
+    const states = findStatesWithOutgoingTransitions([
+      { from: 'new', to: 'in_progress' },
+      { from: ['in_progress', 'review'], to: 'closed' },
+      { from: 'closed', to: 'closed' },
+    ]);
+    expect(states).toEqual(new Set(['new', 'in_progress', 'review', 'closed']));
+  });
+
+  it('ignores transitions from any state', () => {
+    const states = findStatesWithOutgoingTransitions([
+      { from: 'new', to: 'closed' },
+      { from: '*', to: 'new' },
+    ]);
+    expect(states).toEqual(new Set(['new']));
   });
 });

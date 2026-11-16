@@ -58,6 +58,37 @@ def test_export_empty_report_preserves_object_refs(
     assert bundle["objects"][0]["object_refs"] == []
 
 
+@pytest.mark.parametrize(
+    "entity_type,standard_id",
+    [
+        ("Note", "note--11111111-1111-4111-8111-111111111111"),
+        ("Opinion", "opinion--11111111-1111-4111-8111-111111111111"),
+        ("Observed-Data", "observed-data--11111111-1111-4111-8111-111111111111"),
+        ("Grouping", "grouping--11111111-1111-4111-8111-111111111111"),
+        ("Case-Incident", "case-incident--11111111-1111-4111-8111-111111111111"),
+        ("Case-Rfi", "case-rfi--11111111-1111-4111-8111-111111111111"),
+        ("Case-Rft", "case-rft--11111111-1111-4111-8111-111111111111"),
+        ("Feedback", "feedback--11111111-1111-4111-8111-111111111111"),
+        ("Task", "task--11111111-1111-4111-8111-111111111111"),
+    ],
+)
+def test_export_empty_container_preserves_object_refs(
+    opencti_stix2_no_server: OpenCTIStix2, monkeypatch, entity_type, standard_id
+):
+    container = {
+        "id": "internal-container-id",
+        "standard_id": standard_id,
+        "entity_type": entity_type,
+        "parent_types": ["Stix-Domain-Object", "Stix-Core-Object"],
+        "objects": [],
+        "objectsIds": [],
+    }
+
+    bundle = export_entity(opencti_stix2_no_server, monkeypatch, container)
+
+    assert bundle["objects"][0]["object_refs"] == []
+
+
 def test_export_populated_report_preserves_object_refs(
     opencti_stix2_no_server: OpenCTIStix2, monkeypatch
 ):

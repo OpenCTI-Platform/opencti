@@ -4,6 +4,7 @@ import { redisGetWork } from '../database/redis';
 import { isVerifiedFormSubmission } from '../modules/form/form-submission-context';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { checkDraftInContext } from './httpServer-draft';
+import { CONNECTOR_INTERNAL_ENRICHMENT } from '../schema/general';
 
 // Context of a /graphql call
 export const createGraphqlContext = async (req: Request, res: Response) => {
@@ -17,6 +18,8 @@ export const createGraphqlContext = async (req: Request, res: Response) => {
     }
     // Import of a Form Intake submission: lets the applicant write with the form capability
     executeContext.form_submission = isVerifiedFormSubmission(executeContext, work);
+    executeContext.trackWorkTouchedIds = !!work.investigation_id && work.event_type === CONNECTOR_INTERNAL_ENRICHMENT;
+    executeContext.enrichedEntityId = work.enriched_entity_id;
   }
   await checkDraftInContext(executeContext);
   return executeContext;

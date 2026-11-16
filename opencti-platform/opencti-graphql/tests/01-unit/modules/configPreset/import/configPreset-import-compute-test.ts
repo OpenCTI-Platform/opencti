@@ -35,10 +35,17 @@ const compute = (
   return family.importer!.compute(context, user, item, plan, mode);
 };
 
-const apply = (type: string, id: string, configuration: Record<string, unknown>, computed: ConfigPresetComputedItem, mode: ConfigImportMode = ConfigImportMode.Overwrite) => {
+const apply = (
+  type: string,
+  id: string,
+  configuration: Record<string, unknown>,
+  computed: ConfigPresetComputedItem,
+  mode: ConfigImportMode = ConfigImportMode.Overwrite,
+  plan: ConfigPresetImportPlan = { created: new Set() },
+) => {
   const family = CONFIG_PRESET_FAMILIES.find((candidate) => candidate.id === type)!;
   const item: ConfigPresetBundleItem = { type, id, path: `${id}.json`, configuration };
-  return family.importer!.apply(context, user, item, computed, mode);
+  return family.importer!.apply(context, user, item, computed, mode, plan);
 };
 
 beforeEach(() => {
@@ -210,11 +217,27 @@ describe('Branding import (compute)', () => {
     expect(plan.created.size).toBe(0);
   });
 
+  it('copies a theme whose name only is taken under a free name: a conflict, as the theme the items depend on', async () => {
+    vi.mocked(checkExistingTheme).mockImplementation(async (_context, _user, name) => name === 'Import test theme');
+    const plan = { created: new Set<string>() };
+    const result = await compute('branding', CUSTOM_THEME_ID, themeConfiguration(), plan, ConfigImportMode.Copy);
+    expect(result).toMatchObject({ status: 'created', exists: false, conflict: true, reason: 'Added as "Import test theme (1)"' });
+    // The copy keeps the standard id of the bundle: the platform item can still take it as its default theme
+    expect(plan.created.has(`branding/${CUSTOM_THEME_ID}`)).toBe(true);
+  });
+
   it('copies a theme that is new as it is, and it is the theme the items depend on', async () => {
     const plan = { created: new Set<string>() };
     const result = await compute('branding', CUSTOM_THEME_ID, themeConfiguration(), plan, ConfigImportMode.Copy);
     expect(result).toMatchObject({ status: 'created', exists: false, conflict: false });
     expect(result.reason).toBeUndefined();
     expect(plan.created.has(`branding/${CUSTOM_THEME_ID}`)).toBe(true);
+  });
+});
+
+describe('Roles and groups import (compute)', () => {
+  it.each(['roles', 'groups'])('fails an item of %s whose name is blank, without failing the whole computation', async (type) => {
+    const results = await Promise.all(['', '   '].map((name) => compute(type, 'some-id', { name })));
+    results.forEach((computed) => expect(computed).toMatchObject({ status: 'failed', label: 'some-id' }));
   });
 });

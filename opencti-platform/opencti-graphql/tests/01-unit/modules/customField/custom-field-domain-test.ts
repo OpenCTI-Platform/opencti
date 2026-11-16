@@ -179,6 +179,12 @@ describe('customFieldDefinitionAdd', () => {
     expect(Middleware.createEntity).not.toHaveBeenCalled();
   });
 
+  it('throws when the input attaches the custom field to entity types, managed by the entity type mutations only', async () => {
+    await expect(customFieldDefinitionAdd(mockContext, mockUser, { ...validInput, entity_types: ['Report'] }))
+      .rejects.toThrow('Cannot create a custom field definition attached to entity types');
+    expect(Middleware.createEntity).not.toHaveBeenCalled();
+  });
+
   it('throws on an invalid technical name', async () => {
     await expect(customFieldDefinitionAdd(mockContext, mockUser, { ...validInput, name: 'invalid_name' }))
       .rejects.toThrow('Technical name must start with "x_opencti_cf_"');
@@ -282,6 +288,13 @@ describe('customFieldDefinitionEdit', () => {
     await expect(customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', [{ key: 'field_type', value: ['string'] } as any]))
       .rejects.toThrow('Cannot modify immutable fields');
     expect(Middleware.updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('throws when trying to edit the entity types, managed by the entity type mutations only', async () => {
+    await expect(customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', [{ key: 'entity_types', value: ['Report'] } as any]))
+      .rejects.toThrow('Cannot modify the entity types of a custom field definition');
+    await expect(customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', [{ key: 'entity_type_settings', value: [] } as any]))
+      .rejects.toThrow('Cannot modify the entity types of a custom field definition');
   });
 
   it('throws when the new label is already used by another definition', async () => {

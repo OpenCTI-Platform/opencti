@@ -5,7 +5,10 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.utils.opencti_stix2_utils import build_custom_field_values_input
+from pycti.utils.opencti_stix2_utils import (
+    build_custom_field_values_input,
+    query_to_stix,
+)
 
 
 class StixCoreRelationship:
@@ -49,6 +52,7 @@ class StixCoreRelationship:
                 field_id
                 field_name
                 int_value
+                float_value
                 string_value
                 boolean_value
                 date_value
@@ -140,6 +144,17 @@ class StixCoreRelationship:
                                     metaData {
                                         mimetype
                                         version
+                                    }
+                                    objectMarking {
+                                        id
+                                        standard_id
+                                        entity_type
+                                        definition_type
+                                        definition
+                                        created
+                                        modified
+                                        x_opencti_order
+                                        x_opencti_color
                                     }
                                 }
                             }
@@ -686,6 +701,24 @@ class StixCoreRelationship:
         else:
             self.opencti.app_logger.error("Missing parameters: id or from_id and to_id")
             return None
+
+    def to_stix(self, **kwargs):
+        """Get the STIX representation of a stix_core_relationship from the backend.
+
+        :param id: the id of the stix_core_relationship
+        :type id: str
+        :param version: the STIX version (``stix_2_0`` or ``stix_2_1``),
+            defaults to the backend default (``stix_2_1``)
+        :type version: str
+        :return: STIX object, or ``None`` if not found
+        :rtype: dict or None
+        """
+        return query_to_stix(
+            self.opencti,
+            "stixCoreRelationship",
+            kwargs.get("id"),
+            kwargs.get("version"),
+        )
 
     def create(self, **kwargs):
         """Create a stix_core_relationship object.

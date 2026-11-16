@@ -19,6 +19,8 @@ In this type of trigger, you will need to configure various options:
 - Recipients: the recipient of the notification,
 - Filters: a set of filters to get only events that really interest you.
 
+To be notified when a connector, a feed or a synchronization stops working, see [Ingestion health](../ingestion-health.md#get-notified).
+
 ## Event structure
 
 In order to correctly configure the filters, here's a definition of the event structure

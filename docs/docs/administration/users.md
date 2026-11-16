@@ -64,7 +64,8 @@ The below capabilities are applicable to the whole application.
 | &nbsp;&nbsp;`Manage authentication`                        | Define authentication strategies, the password policy & set up platform-wide authentication via 2FA when using basic auth.              |
 | &nbsp;&nbsp;`Manage marking definitions`                | Update and delete marking definitions.                                                        |
 | &nbsp;&nbsp;`Manage dissemination lists`                | Update and manage dissemination lists                                                         |
-| &nbsp;&nbsp;`Manage customization`                      | Customize entity types                                                                        |
+| &nbsp;&nbsp;`Manage customization`                      | Customize entity types, including attaching custom fields to them                             |
+| &nbsp;&nbsp;`Manage custom fields`                      | Manage custom fields (create/update/delete). See [Custom fields](custom-fields.md).           |
 | &nbsp;&nbsp;`Manage labels`                             | Manage labels (create/update/delete)                                                          |
 | &nbsp;&nbsp;`Manage vocabularies`                       | Manage vocabularies (create/update/delete)                                                    |
 | &nbsp;&nbsp;`Manage case templates`                     | Manage case templates (create/update/delete)                                                  |
@@ -210,6 +211,10 @@ Account status can have four values:
 * Expired: an expired user will not be able to log in. A user can be in an expired state because an **Account Expiry Date** has been defined for this user, and we are past this date. It ensures automatically that the user will not be able to log in after that date.
 
 Only the expired status can be automatically set (given the account expiry date). The other statuses can be set manually or through mass operations within the user management screen. 
+
+### Merging users
+
+To merge a duplicate account into another one, for instance a local account into the account created by SSO, see [Merging users](users-merge.md).
 
 ## Groups
 

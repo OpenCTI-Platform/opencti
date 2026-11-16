@@ -211,6 +211,10 @@ export const baseOperationBuilder = (actionType, operations, element, customFiel
   if (actionType === ACTION_TYPE_ENRICHMENT) {
     baseOperationObject.opencti_operation = 'enrichment';
     baseOperationObject.connector_ids = operations[0].context.values;
+    const investigationId = operations[0].context.options?.investigationId;
+    if (investigationId) {
+      baseOperationObject.investigation_id = investigationId;
+    }
   }
   if (actionType === ACTION_TYPE_MERGE) {
     baseOperationObject.opencti_operation = 'merge';
@@ -675,14 +679,14 @@ export const workflowBypassOperationCallback = (context, user, task, operations)
 };
 
 export const workflowTransitionOperationCallback = (context, user, task, operations) => {
-  const { eventName, comment, shareOrganizationIds, unshareOrganizationIds } = operations[0].context.options;
+  const { eventName, comment, closingReason, shareOrganizationIds, unshareOrganizationIds } = operations[0].context.options;
   // Same inputs for every element, as the single-entity transition wizard sends them
   const runtimeParams = {
     ...(shareOrganizationIds ? { shareOrganizationIds } : {}),
     ...(unshareOrganizationIds ? { unshareOrganizationIds } : {}),
   };
   return workflowOperationCallback(context, user, task, (element) => {
-    return triggerWorkflowEvent(context, user, element.internal_id, eventName, comment?.trim() || undefined, runtimeParams);
+    return triggerWorkflowEvent(context, user, element.internal_id, eventName, comment?.trim() || undefined, runtimeParams, closingReason?.trim() || undefined);
   });
 };
 

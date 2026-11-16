@@ -43,6 +43,7 @@ const TaskFragment = graphql`
       name
     }
     status {
+      id
       template {
         name
         color

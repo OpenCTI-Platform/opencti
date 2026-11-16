@@ -78,7 +78,7 @@ const buildFilterDefinitionFromAttributeDefinition = (attributeDefinition: Attri
   // construct the filter type (and eventually fill elementsForFilterValuesSearch)
   // depending on the attribute type and format
   if (attributeDefinition.type === 'numeric') {
-    if ((attributeDefinition as NumericAttribute).precision === 'float') {
+    if (['float', 'double'].includes((attributeDefinition as NumericAttribute).precision)) {
       type = 'float';
     } else {
       type = 'integer';
@@ -245,6 +245,7 @@ const completeFilterDefinitionMapWithSpecialKeys = async (
     // Map custom field type to filter type
     let filterType = 'string';
     if (cfDef.field_type === 'integer') filterType = 'integer';
+    else if (cfDef.field_type === 'decimal') filterType = 'float';
     else if (cfDef.field_type === 'boolean') filterType = 'boolean';
     else if (cfDef.field_type === 'date') filterType = 'date';
     else if (cfDef.field_type === 'select' || cfDef.field_type === 'multi_select') filterType = 'enum';
