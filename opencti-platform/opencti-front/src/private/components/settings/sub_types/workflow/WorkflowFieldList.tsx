@@ -1,13 +1,15 @@
 import { Field, useFormikContext } from 'formik';
 import WorkflowFieldItem from './WorkflowFieldItem';
-import { WorkflowDataType } from './utils';
+import { WorkflowActionType, WorkflowDataType } from './utils';
 import type { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 
 interface WorkflowFieldListProps {
   name: keyof typeof WorkflowDataType;
+  // Renders only the actions of this type; every action of the list otherwise.
+  actionType?: WorkflowActionType;
 }
 
-const WorkflowFieldList = ({ name }: WorkflowFieldListProps) => {
+const WorkflowFieldList = ({ name, actionType }: WorkflowFieldListProps) => {
   const { values } = useFormikContext<WorkflowEditionFormValues>();
   const items = values[name];
   const isCondition = name === 'conditions';
@@ -23,13 +25,15 @@ const WorkflowFieldList = ({ name }: WorkflowFieldListProps) => {
       );
     }
     if (Array.isArray(items)) {
-      return items.map((_, idx: number) => (
-        <Field
-          key={`${name}-${idx}`}
-          name={`${name}[${idx}]`}
-          component={WorkflowFieldItem}
-          isCondition={isCondition}
-        />
+      return items.map((item, idx: number) => (
+        !actionType || item.type === actionType ? (
+          <Field
+            key={`${name}-${idx}`}
+            name={`${name}[${idx}]`}
+            component={WorkflowFieldItem}
+            isCondition={isCondition}
+          />
+        ) : null
       ));
     }
     return null;

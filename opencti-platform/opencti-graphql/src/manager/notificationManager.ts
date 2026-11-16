@@ -231,7 +231,9 @@ export const getNotifications = async (context: AuthContext): Promise<Array<Reso
       notificationTriggers.push({ users: [user], trigger: generateAssigneeTrigger(user) });
     }
     notificationTriggers.push({ users: [user], trigger: generatePlatformNotificationTrigger(user) });
-    if (user.id !== OPENCTI_ADMIN_UUID) { // Admin is a fallback in current alerting on RFI request access creation.
+    // Admin is always an authorized member of a request access RFI, as a fallback: the validators of the approval
+    // groups are the ones alerted, whichever flow (legacy or request access workflow) decides the request.
+    if (user.id !== OPENCTI_ADMIN_UUID) {
       notificationTriggers.push({ users: [user], trigger: generateRequestAccessAuthorizeTrigger(user) });
     }
   }
