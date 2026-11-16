@@ -413,6 +413,11 @@ describe('WorkflowFactory.residualKnowledgeConditions', () => {
       .toEqual(group(FilterMode.And, [assignee], [group(FilterMode.Or, [filter('objectLabel', ['l'])])]));
   });
 
+  it('ignores an empty group, like the evaluation of the transition does', () => {
+    const conditions = group(FilterMode.And, [assignee], [group(FilterMode.Or, [])]);
+    expect(WorkflowFactory.residualKnowledgeConditions(ctxFor({ id: 'y' }), conditions)).toEqual(group(FilterMode.And, [assignee]));
+  });
+
   it('returns null when no knowledge condition is left to meet', () => {
     expect(WorkflowFactory.residualKnowledgeConditions(ctxFor({ id: 'y' }), undefined)).toBeNull();
     expect(WorkflowFactory.residualKnowledgeConditions(ctxFor({ id: 'y', groups: ['g'] }), group(FilterMode.And, [filter('workflow_group', ['g'])]))).toBeNull();

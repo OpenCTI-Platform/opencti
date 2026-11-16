@@ -4827,6 +4827,18 @@ describe('getWorkflowInstance — lazy backfill', () => {
     expect(result.id).toBe('backfilled-instance-id');
   });
 
+  it('does not backfill, nor run initial state actions, when the entity is read from a draft', async () => {
+    setupCommon();
+    (loadEntity as any).mockResolvedValue(null); // no pre-existing instance
+    (getDraftContext as any).mockReturnValue('draft-id');
+
+    const result = await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(createEntity).not.toHaveBeenCalled();
+    expect(result.id).toBe('initial-entity-id');
+    (getDraftContext as any).mockReturnValue(undefined);
+  });
+
   it('falls back to the synthesized instance when the backfill write fails, without failing the read', async () => {
     setupCommon();
     (loadEntity as any).mockResolvedValue(null); // no pre-existing instance

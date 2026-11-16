@@ -82,6 +82,8 @@ export class WorkflowFactory {
 
   // true/false when the user alone settles the group, otherwise the knowledge filters still to meet
   private static partialEvaluate(ctx: Context, group: FilterGroup): boolean | FilterGroup {
+    // An empty group holds no condition, the evaluation of the transition treats it as met
+    if (group.filters.length === 0 && group.filterGroups.length === 0) return true;
     const isAnd = group.mode === FilterMode.And;
     const residueFilters: Filter[] = [];
     const residueGroups: FilterGroup[] = [];

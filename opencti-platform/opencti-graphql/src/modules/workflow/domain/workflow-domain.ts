@@ -1740,7 +1740,9 @@ export const getWorkflowInstance = async (
 
   const effectiveEntityId = entity.internal_id || entity.id;
   let instanceEntity = resolved.instanceEntity;
-  if (!instanceEntity) {
+  // Inside a draft the entity is the live one: its initial state actions (e.g. resetting the authorized members)
+  // must not run from a read, so the instance is left to be created outside a draft
+  if (!instanceEntity && !isEntityWorkflowLockedByDraft(context, user, entity.entity_type)) {
     // Lazy backfill: a pre-existing entity created before this feature has no WorkflowInstance
     // row yet. Create one now, under the system identity (never the reading caller's), so
     // future reads/reconciliation have a real instance to work with. A failed backfill write
