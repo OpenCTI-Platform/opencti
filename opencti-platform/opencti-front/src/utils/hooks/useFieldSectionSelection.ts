@@ -10,25 +10,27 @@ import type { FieldRef, FieldSelectedSections } from '@mui/x-date-pickers/models
  * leave a valid but different date (#19228); a click on a section is ignored, so the next key is
  * lost. Selecting the first section instead types the date section by section, as after a click
  * on the field. That covers the field emptied by Ctrl+A then Backspace too: the picker selects
- * every section again while the sections still hold the previous date, so the selection is
- * checked again once the emptied field has rendered.
+ * every section again while the sections still hold what was typed, so the selection is checked
+ * again once the emptied field has rendered. A partly typed field has a null value already, so
+ * emptying it changes no value: every request is stored as a new object, which renders the
+ * picker again whatever the requested selection.
  *
  * As soon as one section holds something (a date, or a date partly typed, which the picker
  * reports as a null value), every section stays selected, so Backspace clears the whole field.
  */
 const useFieldSectionSelection = () => {
   const fieldRef = useRef<FieldRef<Date | null>>(null);
-  const [selectedSections, setSelectedSections] = useState<FieldSelectedSections>(null);
+  const [selection, setSelection] = useState<{ sections: FieldSelectedSections }>({ sections: null });
   const isEmpty = () => fieldRef.current?.getSections().every((section) => section.value === '') ?? false;
   const onSelectedSectionsChange = (newSelectedSections: FieldSelectedSections) => {
-    setSelectedSections(newSelectedSections === 'all' && isEmpty() ? 0 : newSelectedSections);
+    setSelection({ sections: newSelectedSections === 'all' && isEmpty() ? 0 : newSelectedSections });
   };
   useLayoutEffect(() => {
-    if (selectedSections === 'all' && isEmpty()) {
-      setSelectedSections(0);
+    if (selection.sections === 'all' && isEmpty()) {
+      setSelection({ sections: 0 });
     }
   });
-  return { fieldRef, selectedSections, onSelectedSectionsChange };
+  return { fieldRef, selectedSections: selection.sections, onSelectedSectionsChange };
 };
 
 export default useFieldSectionSelection;

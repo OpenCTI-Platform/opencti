@@ -41,6 +41,19 @@ describe('Hook: useFieldSectionSelection', () => {
     expect(result.current.selectedSections).toBe(0);
   });
 
+  it('selects the first section once a partly typed field has been emptied, though its value did not change', () => {
+    // A partly typed field already has a null value: emptying it renders the picker again only
+    // through the selection the picker requests, every section again.
+    const { result, values } = renderWithSections('2023', '12', '');
+    act(() => result.current.onSelectedSectionsChange('all'));
+    expect(result.current.selectedSections).toBe('all');
+    act(() => {
+      result.current.onSelectedSectionsChange('all');
+      values.fill('');
+    });
+    expect(result.current.selectedSections).toBe(0);
+  });
+
   it('keeps selecting every section while the field is not mounted', () => {
     const { result } = renderHook(() => useFieldSectionSelection());
     act(() => result.current.onSelectedSectionsChange('all'));
