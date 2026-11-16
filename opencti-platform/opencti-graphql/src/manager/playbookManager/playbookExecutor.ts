@@ -98,6 +98,11 @@ export const playbookExecutor = async ({
   const start = isExternalCallback ? externalCallback.externalStartDate : utcDate();
   const instanceWithConfig = { ...nextStep.instance, configuration: JSON.parse(nextStep.instance.configuration ?? '{}') };
   if (nextStep.component.is_internal || isExternalCallback) {
+    if (isExternalCallback) {
+      // Refuse the callback before its step is registered when this node's continuation backlog is full:
+      // the connector sees the error and nothing of this callback runs later.
+      playbookContinuationScheduler.assertAccepting({ playbookId, executionId, stepId: nextStep.instance.id });
+    }
     let execution: PlaybookExecution;
     const baseBundle = structuredClone(isExternalCallback ? previousStepBundle : bundle);
     try {
@@ -199,7 +204,8 @@ export const playbookExecutor = async ({
       if (isExternalCallback) {
         // External callback (a connector step answering through playbookStepExecution):
         // the connector step is registered, so acknowledge the caller now and run the rest
-        // of the chain in the background, with bounded concurrency (see playbookContinuationScheduler).
+        // of the chain in the background, with bounded and per-playbook fair concurrency (see playbookContinuationScheduler).
+        // schedule() never waits for a slot.
         // Errors of the following steps are registered as step observations by their own executor call.
         await playbookContinuationScheduler.schedule(continueChain, { playbookId, executionId, stepId: nextStep.instance.id });
       } else {

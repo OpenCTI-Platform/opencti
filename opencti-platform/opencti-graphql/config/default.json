@@ -306,6 +306,8 @@
     "cron_max_size": 500,
     "log_max_size": 10000,
     "callback_continuation_max_concurrency": 10,
+    "callback_continuation_max_concurrency_per_playbook": 3,
+    "callback_continuation_max_waiting": 1000,
     "realtime_priority": false
   },
   "hub_registration_manager": {
