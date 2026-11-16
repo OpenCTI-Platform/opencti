@@ -41,7 +41,7 @@ The `Sightings` correspond to events in which an `Observable` (IP, domain name, 
 
 In OpenCTI, as we are in a cybersecurity context, `Sightings` are associated with `Indicators` of Compromise (IoC) and the notion of "True positive" and "False positive". 
 
-It is important to note that Sightings are a type of relationship (not a STIX SDO or STIX SCO), between the sighted object, most often an Indicator or an Observable, and the Entity (Sector, Organization, Individual, System) or Location where it has been sighted.
+It is important to note that Sightings are a type of relationship (not a STIX SDO or STIX SCO), between the sighted object, most often an Indicator or an Observable, and the Entity (for example a Sector, Organization, Individual, System, Event or Security platform) or Location where it has been sighted.
 
 When clicking on the Sightings tab at the top left, you see the list of all the Sightings you have access to, in respect with your [allowed marking definitions](../administration/users.md).
 
