@@ -15,7 +15,8 @@ export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
 // 2 created by ingestionDeduplication-test (an import, then the same import after the deletion)
 testCreatedCounter['attack-pattern'] = 27;
-testCreatedCounter.campaign = 6;
+// 2 created and deleted by upsert-limit-dates-test
+testCreatedCounter.campaign = 8;
 // 3 created by workflow-closing-reason-test merge and external status write cases
 testCreatedCounter['case-incident'] = 23;
 testCreatedCounter['case-rfi'] = 9;
@@ -38,13 +39,14 @@ testCreatedCounter.iccid = 4;
 testCreatedCounter.identity = 63;
 testCreatedCounter.imei = 3;
 testCreatedCounter.imsi = 1;
-testCreatedCounter.incident = 7;
+testCreatedCounter.incident = 9; // 2 created and deleted by upsert-limit-dates-test
 testCreatedCounter.indicator = 61;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
 // - 1 created and deleted by stixRelationship-test (time series breakdown)
-testCreatedCounter['intrusion-set'] = 55;
+// - 2 created and deleted by upsert-limit-dates-test
+testCreatedCounter['intrusion-set'] = 57;
 testCreatedCounter['ipv4-addr'] = 1;
 // Counts for:
 // - 1 created and deleted by form-submission-test
@@ -60,8 +62,9 @@ testCreatedCounter.language = 1;
 testCreatedCounter.location = 23; // includes 1 created and deleted by publicDashboard-test (time series breakdown)
 testCreatedCounter['mac-addr'] = 1;
 // Includes 2 created and deleted by form-submission-test (a verified form import, an existing one left as it is),
-// 2 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown), and 5 by ingestionDeduplication-domain-test
-testCreatedCounter.malware = 75;
+// 2 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown), and 5 by ingestionDeduplication-domain-test,
+// and 2 by upsert-limit-dates-test
+testCreatedCounter.malware = 77;
 testCreatedCounter['malware-analysis'] = 3;
 testCreatedCounter['marking-definition'] = 29;
 testCreatedCounter.narrative = 1;
@@ -81,7 +84,7 @@ testCreatedCounter.report = 77;
 testCreatedCounter.sighting = 8; // 3 created and deleted by relations-deduplication-test
 testCreatedCounter.software = 2;
 testCreatedCounter.task = 1;
-testCreatedCounter['threat-actor'] = 33;
+testCreatedCounter['threat-actor'] = 36; // 3 created and deleted by upsert-limit-dates-test
 testCreatedCounter.tool = 5;
 testCreatedCounter['tracking-number'] = 1;
 // Counts for:
@@ -99,8 +102,8 @@ testUpdatedCounter['marking-definition'] = 3;
 testUpdatedCounter.relationship = 9;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
-// 1 by ingestionDeduplication-domain-test (an edit in the platform)
-testUpdatedCounter.malware = 23;
+// 1 by ingestionDeduplication-domain-test (an edit in the platform), 1 by upsert-limit-dates-test (real dates upserted)
+testUpdatedCounter.malware = 24;
 testUpdatedCounter.file = 27;
 testUpdatedCounter['intrusion-set'] = 18;
 testUpdatedCounter['data-component'] = 7;
@@ -115,7 +118,7 @@ testUpdatedCounter['course-of-action'] = 3;
 testUpdatedCounter['data-source'] = 1;
 testUpdatedCounter['external-reference'] = 1;
 testUpdatedCounter.grouping = 3;
-testUpdatedCounter.incident = 4;
+testUpdatedCounter.incident = 5; // 1 by upsert-limit-dates-test (severity upserted, dates kept)
 testUpdatedCounter.indicator = 33;
 // Counts for:
 // - 3 updated by killChainPhase-import-test
@@ -137,7 +140,7 @@ testUpdatedCounter['case-rfi'] = 5;
 testUpdatedCounter['ipv4-addr'] = 4;
 testUpdatedCounter.tool = 10;
 testUpdatedCounter.sighting = 7; // 2 upserts in relations-deduplication-test
-testUpdatedCounter['threat-actor'] = 18;
+testUpdatedCounter['threat-actor'] = 19; // 1 by upsert-limit-dates-test (synchronized upsert)
 // Counts for:
 // - 2 updated by vocabulary-import-test (the description of an entry of the platform, edited then restored)
 testUpdatedCounter.vocabulary = 3 + 2;
@@ -162,7 +165,7 @@ export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
 // 2 by ingestionDeduplication-test
 testDeletedCounter['attack-pattern'] = 22;
-testDeletedCounter.campaign = 2;
+testDeletedCounter.campaign = 4; // 2 by upsert-limit-dates-test
 // 2 by workflow-closing-reason-test merge and external status write cases, the merged source has no delete event
 testDeletedCounter['case-incident'] = 20;
 testDeletedCounter['case-rfi'] = 9;
@@ -181,13 +184,14 @@ testDeletedCounter.grouping = 2;
 // Includes 1 created and deleted by stixCoreObject-test, 1 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown),
 // and 2 by ingestionDeduplication-domain-test
 testDeletedCounter.identity = 46;
-testDeletedCounter.incident = 6;
+testDeletedCounter.incident = 8; // 2 by upsert-limit-dates-test
 testDeletedCounter.indicator = 33;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
 // - 1 created and deleted by stixRelationship-test (time series breakdown)
-testDeletedCounter['intrusion-set'] = 53;
+// - 2 created and deleted by upsert-limit-dates-test
+testDeletedCounter['intrusion-set'] = 55;
 testDeletedCounter['ipv4-addr'] = 1;
 // Counts for:
 // - 1 created and deleted by form-submission-test
@@ -202,8 +206,8 @@ testDeletedCounter.language = 1;
 testDeletedCounter.location = 18; // includes 1 created and deleted by publicDashboard-test (time series breakdown)
 testDeletedCounter['mac-addr'] = 1;
 // Includes 2 created and deleted by form-submission-test, and 2 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown),
-// and 5 by ingestionDeduplication-domain-test
-testDeletedCounter.malware = 48;
+// and 5 by ingestionDeduplication-domain-test, and 2 by upsert-limit-dates-test
+testDeletedCounter.malware = 50;
 testDeletedCounter['malware-analysis'] = 2;
 testDeletedCounter['marking-definition'] = 18;
 testDeletedCounter.narrative = 1;
@@ -220,7 +224,7 @@ testDeletedCounter.report = 68;
 testDeletedCounter.sighting = 5; // 3 created and deleted by relations-deduplication-test
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;
-testDeletedCounter['threat-actor'] = 20;
+testDeletedCounter['threat-actor'] = 23; // 3 by upsert-limit-dates-test
 testDeletedCounter.tool = 5;
 // Counts for:
 // - 3 deleted by vocabulary-import-test
