@@ -22,6 +22,12 @@ const subscribe = (listener: () => void) => {
   };
 };
 
+/**
+ * To call after something else than `writeSearchShortcut` changed the storage in this tab (`localStorage.clear()`):
+ * the `storage` event is not fired in the tab that made the change.
+ */
+export const notifySearchShortcutChange = () => listeners.forEach((listener) => listener());
+
 /** Saves the shortcut for this browser (`null` turns it off). ponytail: lost if the storage is refused, nothing falls back to memory. */
 export const writeSearchShortcut = (shortcut: SearchShortcut | null) => {
   try {
@@ -29,7 +35,7 @@ export const writeSearchShortcut = (shortcut: SearchShortcut | null) => {
   } catch {
     // Storage refused (private mode, quota): the default stays.
   }
-  listeners.forEach((listener) => listener());
+  notifySearchShortcutChange();
 };
 
 /** The shortcut focusing the top bar search: the user's choice, the default if none, `null` if turned off. */
