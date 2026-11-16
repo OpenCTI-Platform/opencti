@@ -46,14 +46,14 @@ XTM Composer authenticates to the registry only when both of these fields are se
 
 ### Optional fields
 
-- **server**: Registry server (for example `registry.example.com`). It has no default value. When set, XTM Composer prepends it to every connector image name (see [Registry Prefix Resolution](#registry-prefix-resolution)). When not set, the image names are used as they are and pulled from the default registry of the container engine (Docker Hub for Docker). On Kubernetes, `server` is required for the `imagePullSecret` to be created.
+- **server**: Registry server (for example `registry.example.com`). It has no default value. When set, XTM Composer prepends it to every connector image name (see [Registry Prefix Resolution](#registry-prefix-resolution)). When not set, the image names are used as they are and pulled from the default registry of the container engine (Docker Hub for Docker). On Kubernetes, `server` is required when `username` and `password` are set: without it, XTM Composer fails at startup.
 - **email**: User email, added to the credentials
 
 ---
 
 ## Kubernetes Secret Auto-Creation
 
-When using the **Kubernetes orchestrator**, XTM Composer automatically creates an `imagePullSecret` at startup if `server`, `username` and `password` are configured.
+When using the **Kubernetes orchestrator**, XTM Composer automatically creates an `imagePullSecret` at startup if `server`, `username` and `password` are configured. If `username` and `password` are set without `server`, XTM Composer fails at startup.
 
 ### Behavior
 

@@ -103,7 +103,7 @@ opencti:
 ```bash
 docker run -d \
   --name xtm-composer \
-  -v $(pwd)/config:/config \
+  -v $(pwd)/config/production.yaml:/opt/xtm-composer/config/production.yaml \
   -v $(pwd)/private_key_4096.pem:/keys/private_key.pem \
   -e COMPOSER_ENV=production \
   filigran/xtm-composer:latest
@@ -173,7 +173,7 @@ manager:
     level: warn
     format: json
     directory: true
-    console: false
+    console: true
 
 opencti:
   enable: true

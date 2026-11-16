@@ -35,6 +35,12 @@ The examples on this page use a pinned image tag, `filigran/xtm-composer:3.26102
 Create a configuration file based on your environment or add extra environment variables in the following steps.
 See [Configuration Reference](configuration.md) for more information on required configuration.
 
+!!! warning "Configuration directory"
+
+    XTM Composer reads `config/default.yaml`, then `config/<COMPOSER_ENV>.yaml` if it exists, from its working directory: `/opt/xtm-composer` in the Docker image. Mount your own settings as a single file, for example `/opt/xtm-composer/config/production.yaml` with `COMPOSER_ENV=production`: it only needs the settings that differ from the defaults.
+
+    Mounting a directory over `/opt/xtm-composer/config` hides the `default.yaml` of the image, and XTM Composer fails to start unless the directory contains a complete `default.yaml`.
+
 ## Production environment (Kubernetes)
 
 Note: The Kubernetes installation method described here assumes that OpenCTI is already deployed on a Kubernetes cluster.
@@ -55,10 +61,10 @@ kubectl create secret generic xtm-composer-keys \
   -n xtm-composer
 ```
 
-3. Create ConfigMap for configuration:
+3. Create ConfigMap for configuration (the settings that differ from the defaults, loaded with `COMPOSER_ENV=production`):
 ```bash
 kubectl create configmap xtm-composer-config \
-  --from-file=default.yaml=config/default.yaml \
+  --from-file=production.yaml=config/production.yaml \
   -n xtm-composer
 ```
 
@@ -134,7 +140,8 @@ spec:
           value: "/keys/private_key.pem"
         volumeMounts:
         - name: config
-          mountPath: /config
+          mountPath: /opt/xtm-composer/config/production.yaml
+          subPath: production.yaml
         - name: keys
           mountPath: /keys
       volumes:
@@ -156,7 +163,8 @@ EOF
 # Pull the image
 docker pull filigran/xtm-composer:3.261021.1
 
-# Create configuration directory
+# Create configuration directory, then write your settings to
+# /opt/xtm-composer/config/development.yaml (loaded with COMPOSER_ENV=development)
 mkdir -p /opt/xtm-composer/config
 
 # Generate RSA private key (PKCS#8 format, as required by XTM Composer)
@@ -165,7 +173,7 @@ openssl genpkey -algorithm RSA -out /opt/xtm-composer/private_key_4096.pem -pkey
 # Run container
 docker run -d \
   --name xtm-composer \
-  -v /opt/xtm-composer/config:/config \
+  -v /opt/xtm-composer/config/development.yaml:/opt/xtm-composer/config/development.yaml \
   -v /opt/xtm-composer/private_key_4096.pem:/keys/private_key.pem \
   -e COMPOSER_ENV=development \
   filigran/xtm-composer:3.261021.1
@@ -196,7 +204,7 @@ services:
       - MANAGER__ID=dev-manager
       - MANAGER__CREDENTIALS_KEY_FILEPATH=/keys/private_key.pem
     volumes:
-      - xtm-composer-config:/config
+      - xtm-composer-config:/opt/xtm-composer/config
       - xtm-composer-keys:/keys
     restart: unless-stopped
     networks:
@@ -219,7 +227,7 @@ networks:
      ```bash
      openssl genpkey -algorithm RSA -out /keys/private_key.pem -pkeyopt rsa_keygen_bits:4096
      ```
-   - Copy your configuration files to `/config`
+   - Copy your configuration file to `/opt/xtm-composer/config/development.yaml` (loaded with `COMPOSER_ENV=development`). On first creation, Docker fills the named volume with the `default.yaml` of the image; this copy is not updated when you upgrade the image
 
 #### Method 2: Deploy via Docker Compose
 
@@ -258,13 +266,22 @@ services:
       - COMPOSER_ENV=development
       - MANAGER__ID=dev-manager
       - MANAGER__CREDENTIALS_KEY_FILEPATH=/keys/private_key.pem
-      - OPENCTI__URL=http://opencti:8080  # URL of your OpenCTI platform
+      # Must be reachable from XTM Composer and from the connector containers
+      - OPENCTI__URL=http://opencti:8080
       - OPENCTI__TOKEN=ChangeMe  # OpenCTI API token
       - OPENCTI__DAEMON__SELECTOR=docker
+      # Network of your OpenCTI stack, where the connector containers are started
+      - OPENCTI__DAEMON__DOCKER__NETWORK_MODE=opencti_default
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # Required by the docker selector
       - ./keys:/keys:ro
     restart: unless-stopped
+    networks:
+      - opencti_default
+
+networks:
+  opencti_default:
+    external: true
 ```
 
 Deploy with:

@@ -25,7 +25,12 @@ export OPENCTI__NO_PROXY="localhost,127.0.0.1,.example.com"
 
 When enabled, XTM Composer forwards these proxy settings to managed connector containers as `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY`.
 
-When `with_proxy` is `true` and neither `http_proxy` nor `https_proxy` is set, XTM Composer uses the standard `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables of its own process. When `with_proxy` is `false`, XTM Composer ignores every proxy setting, including these variables.
+The settings apply differently to XTM Composer and to the connectors:
+
+- **Requests of XTM Composer to the platform** go through `http_proxy` and `https_proxy`. When neither is set, XTM Composer uses the standard `HTTP_PROXY` and `HTTPS_PROXY` environment variables of its own process. `no_proxy` does not apply to these requests.
+- **Deployed connectors** receive `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY`. Each one comes from the matching key (`http_proxy`, `https_proxy`, `no_proxy`) or, when that key is not set, from the same variable in the environment of XTM Composer (uppercase, then lowercase).
+
+When `with_proxy` is `false`, XTM Composer ignores every proxy setting, including these environment variables, and passes none to the connectors.
 
 For OpenAEV, use the same keys under `openaev` (for example `OPENAEV__HTTP_PROXY`). See the [Configuration reference](configuration.md#proxy-configuration) for the full list.
 
@@ -33,6 +38,8 @@ For OpenAEV, use the same keys under `openaev` (for example `OPENAEV__HTTP_PROXY
 
 Some environments use HTTPS proxies with TLS interception (for example, corporate proxies or debugging proxies like Burp).
 In these cases, additional certificate settings may be required.
+
+These settings apply only to the deployed connectors: XTM Composer mounts the CA bundle in them and sets the matching environment variables (see [Automatic Injection](#automatic-injection)). The requests of XTM Composer itself ignore them; for these requests, only `unsecured_certificate` changes certificate validation.
 
 ### YAML configuration
 
@@ -65,7 +72,7 @@ export OPENCTI__HTTPS_PROXY_REJECT_UNAUTHORIZED="false"
 
 | Purpose | Configuration Keys | Used For |
 |---------|-------------------|----------|
-| **Proxy certificates** (XTM Composer) | `https_proxy_ca`<br>`https_proxy_reject_unauthorized` | Validating HTTPS connections **through the proxy** |
+| **Proxy certificates** (deployed connectors) | `https_proxy_ca`<br>`https_proxy_reject_unauthorized` | Validating HTTPS connections of the connectors **through the proxy** |
 | **OpenCTI server certificates** (OpenCTI platform) | `app:https_cert:ca`<br>`app:https_cert:reject_unauthorized` | TLS for the OpenCTI web server itself |
 
 ---

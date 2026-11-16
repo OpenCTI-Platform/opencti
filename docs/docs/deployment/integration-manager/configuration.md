@@ -35,12 +35,16 @@ Example: `manager.logger.level` becomes `MANAGER__LOGGER__LEVEL`
 |:----------------------------|:--------------------------------|:--------------|:-----------------------------------------------------------------|
 | manager:logger:level        | MANAGER__LOGGER__LEVEL          | info          | Logging verbosity level (`trace`, `debug`, `info`, `warn`, `error`) |
 | manager:logger:format       | MANAGER__LOGGER__FORMAT         | json          | Log output format (`json`, `pretty`)                             |
-| manager:logger:directory    | MANAGER__LOGGER__DIRECTORY      | `true`        | Enable logging to directory/file                                 |
-| manager:logger:console      | MANAGER__LOGGER__CONSOLE        | `true`        | Enable logging to console/stdout                                 |
+| manager:logger:directory    | MANAGER__LOGGER__DIRECTORY      | `true`        | Enables the console (stdout) output in current releases (see the warning below) |
+| manager:logger:console      | MANAGER__LOGGER__CONSOLE        | `true`        | Enables the log file in current releases (see the warning below) |
+
+!!! warning "Inverted logger switches"
+
+    In current releases, the two switches are inverted compared to their names: `manager:logger:directory` turns the console (stdout) output on or off, and `manager:logger:console` turns the log file on or off. Keep both to `true` (the default) to get both outputs. To write no log file, set `manager:logger:console` to `false`.
 
 !!! note "Log file location"
 
-    `manager:logger:directory` is an on/off switch, not a path. XTM Composer writes its log file to a `logs` folder next to its executable: `/usr/local/bin/logs/xtm-composer.log` in the Docker image, `target/release/logs/xtm-composer.log` when you build from source. The file rotates daily and always uses the JSON format, whatever the value of `manager:logger:format`.
+    `manager:logger:directory` is an on/off switch, not a path. When the log file is enabled, XTM Composer writes it to a `logs` folder next to its executable: `/usr/local/bin/logs/xtm-composer.log` in the Docker image, `target/release/logs/xtm-composer.log` when you build from source. The file rotates daily and always uses the JSON format, whatever the value of `manager:logger:format`.
 
 #### Debug
 
@@ -64,21 +68,26 @@ Example: `manager.logger.level` becomes `MANAGER__LOGGER__LEVEL`
 
 #### Proxy configuration
 
-Proxy settings are defined for each platform, under `opencti` or `openaev`, and apply only when `with_proxy` is `true`. When neither `http_proxy` nor `https_proxy` is set, XTM Composer uses the standard `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables of its own process. See [Proxy support](proxy-configuration.md) for examples.
+Proxy settings are defined for each platform, under `opencti` or `openaev`, and apply only when `with_proxy` is `true`. They are used in two places:
+
+- **Requests of XTM Composer to the platform**: XTM Composer uses `http_proxy` and `https_proxy`. When neither is set, it uses the standard `HTTP_PROXY` and `HTTPS_PROXY` environment variables of its own process. `no_proxy` does not apply to these requests.
+- **Deployed connectors**: XTM Composer sets `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` in each connector. Each one comes from the matching key (`http_proxy`, `https_proxy`, `no_proxy`) or, when that key is not set, from the same variable in the environment of XTM Composer (uppercase, then lowercase).
+
+See [Proxy support](proxy-configuration.md) for examples.
 
 | Parameter                                           | Environment variable                                   | Default value | Description                                                                                       |
 |:----------------------------------------------------|:-------------------------------------------------------|:--------------|:--------------------------------------------------------------------------------------------------|
 | `{opencti\|openaev}`:http_proxy                      | `{OPENCTI\|OPENAEV}`__HTTP_PROXY                        |               | Proxy URL for HTTP requests (e.g., `http://proxy:8080`), also passed to the deployed connectors as `HTTP_PROXY` |
 | `{opencti\|openaev}`:https_proxy                     | `{OPENCTI\|OPENAEV}`__HTTPS_PROXY                       |               | Proxy URL for HTTPS requests (e.g., `http://proxy:8080`), also passed to the deployed connectors as `HTTPS_PROXY` |
-| `{opencti\|openaev}`:no_proxy                        | `{OPENCTI\|OPENAEV}`__NO_PROXY                          |               | Comma-separated list of hosts excluded from the proxy (e.g., `localhost,127.0.0.1,internal.domain`), passed to the deployed connectors as `NO_PROXY` |
-| `{opencti\|openaev}`:https_proxy_ca                  | `{OPENCTI\|OPENAEV}`__HTTPS_PROXY_CA                    |               | CA certificates of the proxy (file paths or inline PEM blocks), mounted in the deployed connectors |
-| `{opencti\|openaev}`:https_proxy_reject_unauthorized | `{OPENCTI\|OPENAEV}`__HTTPS_PROXY_REJECT_UNAUTHORIZED   | `true`        | When `false`, XTM Composer sets `NODE_TLS_REJECT_UNAUTHORIZED=0` in the deployed connectors       |
+| `{opencti\|openaev}`:no_proxy                        | `{OPENCTI\|OPENAEV}`__NO_PROXY                          |               | Comma-separated list of hosts excluded from the proxy (e.g., `localhost,127.0.0.1,internal.domain`). Used only by the deployed connectors, as `NO_PROXY` |
+| `{opencti\|openaev}`:https_proxy_ca                  | `{OPENCTI\|OPENAEV}`__HTTPS_PROXY_CA                    |               | CA certificates of the proxy (file paths or inline PEM blocks), mounted in the deployed connectors. Not used by XTM Composer for its own requests |
+| `{opencti\|openaev}`:https_proxy_reject_unauthorized | `{OPENCTI\|OPENAEV}`__HTTPS_PROXY_REJECT_UNAUTHORIZED   | `true`        | When `false`, XTM Composer sets `NODE_TLS_REJECT_UNAUTHORIZED=0` in the deployed connectors. Not used by XTM Composer for its own requests |
 
 !!! note "Proxy certificate separation"
 
     Proxy TLS certificates are **independent** from OpenCTI HTTPS server certificates.
 
-    - For proxy connections → use `https_proxy_ca` and `https_proxy_reject_unauthorized`
+    - For the proxy connections of the deployed connectors → use `https_proxy_ca` and `https_proxy_reject_unauthorized`
     - For OpenCTI platform HTTPS → use `app:https_cert:*` variables in the main OpenCTI configuration
 
 ### Registry authentication
@@ -90,11 +99,15 @@ Proxy settings are defined for each platform, under `opencti` or `openaev`, and 
 | `{opencti\|openaev}`:daemon:registry:password    | `{OPENCTI\|OPENAEV}`__DAEMON__REGISTRY__PASSWORD    |               | Password or token for registry authentication                               |
 | `{opencti\|openaev}`:daemon:registry:email       | `{OPENCTI\|OPENAEV}`__DAEMON__REGISTRY__EMAIL       |               | Email sent with the credentials (optional)                                  |
 
+!!! warning "OpenAEV registry"
+
+    In the current release (3.261021.1), only the `docker` and `podman` orchestrators read `openaev:daemon:registry` for OpenAEV. The `kubernetes`, `swarm` and `portainer` orchestrators always use `opencti:daemon:registry`, for OpenCTI and for OpenAEV.
+
 See [Private registry](registry-authentication.md) for the required fields and the Kubernetes behavior.
 
 #### OpenAEV
 
-When `openaev:enable` is `true`, XTM Composer registers with the OpenAEV platform at `openaev:url` and deploys its collectors and injectors, in the same way as the OpenCTI connectors. The proxy, registry and orchestration settings on this page apply to OpenAEV under the `openaev` prefix.
+When `openaev:enable` is `true`, XTM Composer registers with the OpenAEV platform at `openaev:url` and deploys its collectors and injectors, in the same way as the OpenCTI connectors. The proxy and orchestration settings on this page apply to OpenAEV under the `openaev` prefix. For the registry settings, see the [OpenAEV registry warning](#registry-authentication).
 
 | Parameter                        | Environment variable              | Default value                       | Description                                      |
 |:---------------------------------|:----------------------------------|:------------------------------------|:-------------------------------------------------|
@@ -111,7 +124,7 @@ When `openaev:enable` is `true`, XTM Composer registers with the OpenAEV platfor
 
 | Parameter                                        | Environment variable                                 | Default value | Description                                                        |
 |:-------------------------------------------------|:-----------------------------------------------------|:--------------|:-------------------------------------------------------------------|
-| `{opencti\|openaev}`:daemon:selector             | `{OPENCTI\|OPENAEV}`__DAEMON__SELECTOR               | kubernetes    | Container orchestration platform (`kubernetes`, `docker`, `portainer`) |
+| `{opencti\|openaev}`:daemon:selector             | `{OPENCTI\|OPENAEV}`__DAEMON__SELECTOR               | kubernetes    | Container orchestration platform (`kubernetes`, `docker`, `podman`, `swarm`, `portainer`) |
 
 #### Kubernetes
 
@@ -165,7 +178,7 @@ manager:
     level: info
     format: json
     directory: true
-    console: false
+    console: true
 
 opencti:
   enable: true
