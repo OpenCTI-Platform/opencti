@@ -392,17 +392,10 @@ export const AGENT_CALL_RETRY_MAX_DELAY_MS = 30000;
 const RETRYABLE_HTTP_STATUSES = new Set([408, 425, 429, 500, 502, 503, 504]);
 const NON_RETRYABLE_NETWORK_CODES = new Set(['ECONNABORTED', 'ERR_CANCELED', 'ERR_FR_TOO_MANY_REDIRECTS']);
 
-export type XtmAgentCallResult =
-  | { status: 'ok'; content: string | null; attempts: number }
-  | { status: 'skipped'; reason: string }
-  | {
-    status: 'failed';
-    httpStatus?: number;
-    errorType?: string;
-    retryable: boolean;
-    detail: string;
-    attempts: number;
-  };
+export type XtmAgentCallResult
+  = | { status: 'ok'; content: string | null; attempts: number }
+    | { status: 'skipped'; reason: string }
+    | { status: 'failed'; httpStatus?: number; errorType?: string; retryable: boolean; detail: string; attempts: number };
 
 type XtmAgentCallFailure = Extract<XtmAgentCallResult, { status: 'failed' }>;
 
