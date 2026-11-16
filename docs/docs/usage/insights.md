@@ -118,7 +118,7 @@ You also need access to the knowledge of the platform (**Access knowledge** capa
 | *Enable AI powered platform* when you click | No AI provider token is configured. Contact your administrator. |
 | *Ask Ariane isn't activated yet* | The Filigran AI Terms have not been accepted yet. Contact your administrator. |
 | *No agent available for this action* | XTM One has no agent for this summary. An administrator should configure one in XTM One. |
-| *Not enough data to summarize the containers attached to the entity* | No container matches. Widen the **Relative time**. |
+| *Not enough data to summarize the containers attached to the entity* | No container matches. Check that you can access the container, or a report or incident response case containing the entity, then reopen the panel. |
 
 ## Data and privacy
 
