@@ -3,7 +3,8 @@ unexpected exceptions raised by handle_message.
 
 These tests build a MessageQueueConsumer without running __post_init__ (which
 opens a real pika connection), since consume_message only touches
-self.logger, self.handle_message and self.pika_connection.add_callback_threadsafe.
+self.logger, self.handle_message, self.pika_connection.add_callback_threadsafe
+and the consumption stats (set up by _init_stats).
 """
 
 from unittest.mock import MagicMock
@@ -16,6 +17,7 @@ def make_consumer(handle_message) -> MessageQueueConsumer:
     consumer.logger = MagicMock()
     consumer.handle_message = handle_message
     consumer.pika_connection = MagicMock()
+    consumer._init_stats(now=0.0)
     return consumer
 
 
