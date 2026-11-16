@@ -1,0 +1,10 @@
+{
+  "diagnostics": [
+    { "message": "`debugger` statement is not allowed", "code": "eslint(no-debugger)", "severity": "error", "filename": "src/a.ts", "labels": [{ "span": { "offset": 42, "length": 9, "line": 2, "column": 3 } }] },
+    { "message": "Variable 'unused' is declared but never used.", "code": "eslint(no-unused-vars)", "severity": "warning", "filename": "src/a.ts", "labels": [{ "span": { "offset": 60, "length": 6, "line": 3, "column": 9 } }] }
+  ],
+  "number_of_files": 3,
+  "number_of_rules": 3,
+  "threads_count": 4,
+  "start_time": 0.04
+}

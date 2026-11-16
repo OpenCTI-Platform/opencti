@@ -1,0 +1,7 @@
+{
+  "rules": {
+    "no-debugger": "error",
+    "eqeqeq": "error",
+    "typescript/no-unused-vars": "warn"
+  }
+}
