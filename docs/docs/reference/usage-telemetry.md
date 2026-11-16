@@ -22,9 +22,22 @@ The collected data is used for the following purposes:
 
 ## How it works
 
-The platform send the metrics to the hostname `telemetry.filigran.io` using the OTLP protocol (over HTTPS). The format of the data is OpenTelemetry JSON.
+The platform sends the metrics to the hostname `telemetry.filigran.io` using the OTLP protocol (over HTTPS). The format of the data is OpenTelemetry JSON.
 
-The metrics push is done every 6 hours if OpenCTI was able to connect to the hostname when the telemetry manager is started. Metrics are also written in specific log files in order to be included in support packages.
+The telemetry manager runs on one platform node of the cluster at a time. When it starts, it sends an empty request to `https://telemetry.filigran.io/v1/metrics` to check connectivity:
+
+- If the endpoint answers with HTTP status 200, the platform pushes the metrics every 6 hours.
+- If the endpoint cannot be reached, for example in an air-gapped deployment, the platform sends nothing to Filigran. It does not check again until the telemetry manager restarts, for example when the platform restarts.
+
+In both cases, the platform also writes the metrics every 6 hours to the `telemetry` log files of the platform, so that they are included in support packages.
+
+## Disable telemetry
+
+Telemetry is enabled by default. To disable it, set `telemetry_manager:enabled` to `false` (environment variable `TELEMETRY_MANAGER__ENABLED=false`) on every platform node, then restart the platform.
+
+With this setting, the telemetry manager does not start: the platform neither sends metrics to Filigran nor writes the `telemetry` log files. At startup, the platform logs `[OPENCTI-MODULE] Telemetry manager not started (disabled by configuration)`.
+
+The setting does not depend on the Enterprise Edition: telemetry runs, and can be disabled, the same way with or without an Enterprise Edition license.
 
 ## Collected metrics
 
@@ -104,9 +117,6 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of data sharing surfaces, broken down by type (`live_stream`, `feed`, `taxii_collection`, `public_dashboard`) and public (anonymous access) state
 - The number of playbooks, broken down by running state
 - The number of playbook executions started
-- The number of security coverages 
-- The number of security coverages results
-- The number of 'has covered' relationships
 - The number of activated inference rules
 - The number of notification triggers, broken down by type (`live`, `digest`)
 - The number of notifiers, broken down by connector (`email`, `webhook`, `ui`, `other`)
@@ -145,6 +155,8 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 ### Security and compliance
 
 - The number of security coverages
+- The number of security coverage results
+- The number of 'has covered' relationships
 - The number of PIRs
 - The number of decay rules created
 
