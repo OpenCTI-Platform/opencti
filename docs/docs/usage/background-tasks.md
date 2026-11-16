@@ -30,7 +30,7 @@ Restoring or permanently deleting several objects from the [Trash](delete-restor
 The rights below use the capability names of [Users and Role Based Access Control](../administration/users.md#list-of-capabilities).
 
 - To create a knowledge task, the user should have the `Create / Update knowledge` capability. A deletion, a restore or a permanent deletion from the Trash also requires `Delete knowledge`, and a merge requires `Merge knowledge`.
-- To see or delete a knowledge task in Data > Processing > Tasks, the user should be the creator of the task. Users with `Bypass all capabilities` see and delete the tasks of every user.
+- The Data > Processing > Tasks page requires the `Create / Update knowledge` capability. On this page, a user sees and manages only the tasks they created. Users with `Bypass all capabilities` see and manage the tasks of every user.
 
 ## User tasks
 
@@ -39,4 +39,4 @@ User tasks are background tasks updating or deleting notifications. It can be do
 ### Rights
 
 - A user can create a user task on its own notifications only.
-- To see or delete a user task, the user should be the creator of the task. Users with `Bypass all capabilities` see and delete the tasks of every user.
+- In Data > Processing > Tasks (which requires the `Create / Update knowledge` capability), a user sees and manages only the user tasks they created. Users with `Bypass all capabilities` see and manage the tasks of every user.

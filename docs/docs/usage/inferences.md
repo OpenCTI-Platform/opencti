@@ -7,7 +7,7 @@ OpenCTI’s inferences and reasoning capability is a robust engine that automate
 
 ## Understanding inferences and reasoning
 
-Inferences and reasoning serve as OpenCTI’s intelligent engine. It interprets your data logically. By activating specific predefined rules (27 rules, listed in [Rules engine](../administration/reasoning.md)), OpenCTI can deduce new relationships from the existing ones. For instance, if there's a connection indicating an Intrusion Set targets a specific country, and another relationship stating that this country is part of a larger region, OpenCTI can automatically infer that the Intrusion Set also targets the broader region.
+Inferences and reasoning serve as OpenCTI’s intelligent engine. It interprets your data logically. By activating specific predefined rules (27 rules, which you enable in **Settings > Customization > Rules engine**; see [Rules engine](../administration/reasoning.md)), OpenCTI can deduce new relationships from the existing ones. For instance, if there's a connection indicating an Intrusion Set targets a specific country, and another relationship stating that this country is part of a larger region, OpenCTI can automatically infer that the Intrusion Set also targets the broader region.
 
 
 ## Key benefits
