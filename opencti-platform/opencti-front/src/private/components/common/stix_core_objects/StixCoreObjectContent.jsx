@@ -25,7 +25,7 @@ import { RichTextEditor } from '@filigran/rich-text-editor';
 import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 import HtmlDisplay from '../../../../components/HtmlDisplay';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import { isPdfPasswordError } from './StixCoreObjectContentPdfUtils';
+import { isOngoingExport, isPdfPasswordError } from './StixCoreObjectContentPdfUtils';
 
 import '../../../../utils/pdfWorker-setup';
 
@@ -177,7 +177,7 @@ const getExportFiles = (stixCoreObject) => {
     [...exportFiles].filter((n) => {
       return (
         ['application/pdf'].includes(n.metaData.mimetype)
-        || n.uploadStatus === 'progress'
+        || isOngoingExport(n)
       );
     }),
   );
@@ -203,7 +203,7 @@ class StixCoreObjectContentComponent extends Component {
     let onProgressExportFileName;
     if (params.currentFileId && (!params.contentSelected || params.forceFile)) {
       const onProgressExportFile = exportFiles.find(
-        (file) => file.id === params.currentFileId && file.uploadStatus === 'progress',
+        (file) => file.id === params.currentFileId && isOngoingExport(file),
       );
       if (onProgressExportFile) {
         isLoading = true;
@@ -290,7 +290,7 @@ class StixCoreObjectContentComponent extends Component {
     ];
     const currentFile = files.find((f) => f.id === currentFileId);
 
-    if (currentFile?.uploadStatus !== 'progress') {
+    if (!isOngoingExport(currentFile)) {
       this.loadFileContent();
     }
   }
