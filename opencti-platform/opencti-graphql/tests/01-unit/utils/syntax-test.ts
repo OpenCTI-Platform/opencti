@@ -245,6 +245,11 @@ describe('extractObservablesFromIndicatorPattern - string literal escapes', () =
 });
 
 describe('extractObservablesFromIndicatorPattern - prefixed literals', () => {
+  it('should keep a number literal as written', () => {
+    const observables = extractObservablesFromIndicatorPattern('[autonomous-system:number = 15169]');
+    expect(observables).toEqual([{ type: 'Autonomous-System', number: '15169' }]);
+  });
+
   it('should drop the prefix and quotes of a hex literal', () => {
     const observables = extractObservablesFromIndicatorPattern("[file:hashes.MD5 = h'd41d8cd98f00b204e9800998ecf8427e']");
     expect(observables).toEqual([{ type: 'StixFile', hashes: { MD5: 'd41d8cd98f00b204e9800998ecf8427e' } }]);

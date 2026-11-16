@@ -49,16 +49,13 @@ const decodePathKey = (ctx) => {
 
 const decodePrimitiveLiteral = (ctx) => {
   const literal = ctx.orderableLiteral();
-  if (!literal) {
-    return ctx.getText(); // BoolLiteral
-  }
-  if (literal.StringLiteral()) {
+  if (literal?.StringLiteral()) {
     return decodeStringLiteral(literal.getText());
   }
-  if (literal.HexLiteral() || literal.BinaryLiteral() || literal.TimestampLiteral()) {
+  if (literal?.HexLiteral() || literal?.BinaryLiteral() || literal?.TimestampLiteral()) {
     return literal.getText().slice(2, -1); // h'..', b'..' and t'..': drop the prefix and the quotes
   }
-  return literal.getText(); // Numbers
+  return ctx.getText(); // Numbers and booleans are kept as written
 };
 
 export const extractObservablesFromIndicatorPattern = (pattern) => {
