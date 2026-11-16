@@ -46,11 +46,12 @@ With an AI provider configured on the platform, Activity describes how the activ
 - **for a victim** (sector, country, region…): the reports and cases about it and the attacks targeting it over the
   last 24 months, and the intrusion sets and malware behind them.
 
-The summary ends with an evaluation of the trend: **Increasing**, **Stable**, **Decreasing**, or **Unknown** when there
-is not enough data.
+This summary ends with an evaluation of the trend: **Increasing**, **Stable**, **Decreasing**, or **Unknown** when
+there is not enough data.
 
 With XTM One, the selected agent is asked to retrieve time-series statistics about related indicators, relationships
-and sightings and analyze their trends. The request does not prescribe a 24-month window.
+and sightings and analyze their trends. The request does not prescribe a 24-month window, and the agent gives its
+evaluation of the trend in the text of the summary.
 
 ### Forecast
 
@@ -124,8 +125,7 @@ You also need access to the knowledge of the platform (**Access knowledge** capa
 
 ## Data and privacy
 
-New summaries are generated from knowledge read with the requesting user's permissions. However, cached summaries
-can be reused across users without rechecking the source data against the current user's permissions.
+Summaries are generated from knowledge read with the permissions of the user who requests them.
 
 - **With XTM One**, OpenCTI sends the request (the identifier of the entity or container) to XTM One, and the agent
   reads the data it needs from OpenCTI with your permissions.

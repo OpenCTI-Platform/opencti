@@ -134,10 +134,33 @@ playbook — cannot show it, so they stop instead of acting and report that appr
 When the platform is connected to XTM One, a second button with a radar icon sits next to **Ask Ariane**. It opens the
 CTEM Command Center of XTM One in a new browser tab. It does not require Enterprise Edition.
 
+The CTEM Command Center is the home dashboard of XTM One: one view of your exposure across the products connected to
+it (OpenCTI, OpenAEV and OpenCRQ), with an AI briefing and its recommended actions. To learn more, see the
+[XTM One documentation of the home dashboard](https://docs.xtmone.io/latest/usage/home-dashboard/).
+
 ## Data and privacy
 
-OpenCTI does not run the AI model itself. It forwards each request to XTM One, signed with a short-lived token that
-identifies you (your user identifier and email address). The following data leaves the platform:
+Ask Ariane stays within the Filigran XTM Suite. [XTM One](https://docs.xtmone.io/latest/deployment/xtm-suite-integration/)
+is the AI layer of the Suite, connected to OpenCTI by your administrator. OpenCTI does not run the AI model itself: it
+forwards each request to XTM One, signed with a short-lived token that identifies you (your user identifier and email
+address).
+
+How XTM One protects your data:
+
+- **It acts as you.** When XTM One reads or updates data in OpenCTI, it calls the OpenCTI API with a short-lived token
+  issued for you, which OpenCTI verifies. Your permissions apply, and the audit log records the action under your name,
+  exactly as if you had done it yourself.
+- **It never trains on your data.** XTM One does not use your prompts, files, conversations or any other data to train
+  or improve an AI model.
+- **You choose the AI model.** XTM One sends prompts to the AI provider configured by your administrator. With a model
+  hosted on your own network, no prompt data leaves it. Credentials are never sent to the model.
+- **Sensitive actions wait for you.** A tool call can require your approval before it runs (see
+  [Approving a tool call](#approving-a-tool-call)).
+
+For the details, see [Data flow](https://docs.xtmone.io/latest/deployment/data-flow/) and
+[AI governance](https://docs.xtmone.io/latest/administration/ai-governance/) in the XTM One documentation.
+
+The following data is sent from OpenCTI to XTM One:
 
 | Data | Sent to | Stored there |
 |:-----|:--------|:-------------|
