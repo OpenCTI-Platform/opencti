@@ -317,6 +317,47 @@ describe('The visibility of an entry', () => {
   });
 });
 
+describe('The colour of an entry', () => {
+  const overwrite = (configuration: unknown, dryRun = false) => importVocabulary(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun });
+  const category = VocabularyCategory.ReportTypesOv;
+
+  it('is accepted by the import, in an entry and in a category, and a file without colour still imports', () => {
+    expect(vocabularyImportSchema.parse({ ...entry, color: '#e91e63' })).toEqual({ ...entry, color: '#e91e63' });
+    expect(vocabularyImportSchema.parse({ ...entry, color: null })).toEqual({ ...entry, color: null });
+    expect(vocabularyCategoryImportSchema.safeParse({ category, entries: [{ name: 'fimi-report', color: '#e91e63' }] }).success).toBe(true);
+    expect(vocabularyCategoryImportSchema.safeParse({ category, entries: [{ name: 'fimi-report' }] }).success).toBe(true);
+    expect(vocabularyImportSchema.safeParse({ ...entry, color: 12 }).success).toBe(false);
+  });
+
+  it('creates a new entry with its colour, and without one as the platform does (no value)', async () => {
+    await overwrite({ ...entry, color: '#e91e63' });
+    expect(addVocabulary).toHaveBeenLastCalledWith(context, user, { ...entry, description: '', aliases: [], order: 0, color: '#e91e63' });
+    await overwrite({ ...entry, color: null });
+    expect(addVocabulary).toHaveBeenLastCalledWith(context, user, { ...entry, description: '', aliases: [], order: 0 });
+    await overwrite(entry);
+    expect(addVocabulary).toHaveBeenLastCalledWith(context, user, { ...entry, description: '', aliases: [], order: 0 });
+  });
+
+  it('does not change the colour of an entry that exists, as for its other values', async () => {
+    withExisting({ ...stored, color: '#1e88e5' } as BasicStoreEntityVocabulary);
+    expect(await overwrite({ ...entry, color: '#e91e63' })).toMatchObject({ status: 'skipped', code: 'exists' });
+    expect(addVocabulary).not.toHaveBeenCalled();
+    expect(editVocabulary).not.toHaveBeenCalled();
+  });
+
+  it('is exported when the entry has one, and an export imports back with it', async () => {
+    const exported = exportVocabularyCategory(category, [
+      { ...stored, name: 'EDGE_GATEWAY', aliases: [], color: '#e91e63' },
+      { ...stored, name: 'no-colour', aliases: [] },
+    ] as BasicStoreEntityVocabulary[]);
+    expect(exported.entries.map(({ name, color }) => [name, color])).toEqual([['EDGE_GATEWAY', '#e91e63'], ['no-colour', undefined]]);
+    expect(vocabularyCategoryImportSchema.safeParse(exported).success).toBe(true);
+    expect(await importVocabularyCategory(context, user, exported, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'created' });
+    const written = vi.mocked(addVocabulary).mock.calls.map(([, , input]) => [input.name, input.color]);
+    expect(written).toEqual([['EDGE_GATEWAY', '#e91e63'], ['no-colour', undefined]]);
+  });
+});
+
 describe('importVocabularyCategory', () => {
   const category = VocabularyCategory.ReportTypesOv;
   const other = { name: 'sev-report', category, description: 'Another one', aliases: [], order: 2 };
