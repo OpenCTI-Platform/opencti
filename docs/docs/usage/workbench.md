@@ -2,6 +2,12 @@
 
 Workbenches serve as dedicated workspaces for manipulating data before it is officially imported into the platform. 
 
+!!! note "Workbenches and drafts"
+
+    Workbenches and [draft workspaces](draftWorkspaces.md) are the two validation modes for imported files. Drafts are the default: automatic imports go into a draft unless the `app:validation_mode` parameter (environment variable `APP__VALIDATION_MODE`) is set to `workbench` (see [Functional customization](../deployment/configuration.md#functional-customization)). When you import a file manually, you choose the **Validation mode** (Draft or Workbench) in the import dialog.
+
+    A workbench holds the import result as a file to review before ingestion, whereas a draft is a separate workspace where you browse and edit the data with the usual platform screens. You can turn a workbench into a draft with the **Convert to draft** button.
+
 
 ## Location of use
 
@@ -27,15 +33,15 @@ Alternatively, analysts have the option to manually create a workbench by clicki
 
 ![Overview of workbench](assets/overview-of-workbench.png)
 
-The workbench being a draft space, the analysts use it to review connector proposals before finalizing them for import. Within the workbench, analysts have the flexibility to add, delete, or modify entities to meet specific requirements.
+The workbench being a staging space, the analysts use it to review connector proposals before finalizing them for import. Within the workbench, analysts have the flexibility to add, delete, or modify entities to meet specific requirements.
 
 ![Workbench data manipulation](assets/workbench-data-manipulation.png)
 
 Once the content within the workbench is deemed acceptable, the analyst must initiate the ingestion process by clicking on `Validate this workbench`. This action signifies writing the data in the knowledge base.
 
-!!! note "Workbenches are drafting spaces"
+!!! note "Workbenches are staging spaces"
 
-    Until the workbench is validated, the contained data remains in draft form and is not recorded in the knowledge base. This ensures that only reviewed and approved data is officially integrated into the platform.
+    Until the workbench is validated, the contained data is not recorded in the knowledge base. This ensures that only reviewed and approved data is officially integrated into the platform. Workbenches are distinct from [draft workspaces](draftWorkspaces.md).
 
 For more information on importing files, refer to the [Import from files](import-files.md) documentation page.
 
