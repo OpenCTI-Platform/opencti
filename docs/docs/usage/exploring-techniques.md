@@ -78,10 +78,8 @@ When clicking on the `Courses of action` tab at the top left, you access the lis
 
 When clicking on a `Course of Action`, you land on its Overview tab. For a Course of action, the following tabs are accessible:
 
-- Overview: Overview of Course of action is a bit different as the usual described [here](overview.md). In "Details" box, mitigated attack pattern are listed.
-- Knowledge: a complex tab that regroups all the structured Knowledge linked to the Narratives. Different thematic views are proposed to easily see the Threat actors and Intrusion Set using the Narrative, etc. 
+- Overview: Overview of Course of action is a bit different as the usual described [here](overview.md). The "Details" box contains the "Mitigated attack patterns" list: the Attack patterns that the Course of action mitigates, which you can add or remove from there.
 - Content: This specific tab allows to previzualize, manage and write deliverable associated with the Course of action. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
-- Analyses: as described [here](overview.md).
 - Data: as described [here](overview.md).
 - History: as described [here](overview.md).
 
@@ -95,8 +93,9 @@ In the MITRE ATT&CK documentation, `Data sources` are defined as such :
 
 ### Visualizing Knowledge associated with a Data source or a Data components
 
-When clicking on a `Data source` or a `Data component`, you land on its Overview tab. For a Course of action, the following tabs are accessible:
+When clicking on a `Data source` or a `Data component`, you land on its Overview tab. For a Data source or a Data component, the following tabs are accessible:
 
 - Overview: as described [here](overview.md).
+- Content: as described [here](overview.md#content-section).
 - Data: as described [here](overview.md).
 - History: as described [here](overview.md).
