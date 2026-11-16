@@ -275,6 +275,7 @@ export const handleErrorInForm = (
       (e) => ({
         type: 'error',
         text: e?.data?.reason ?? e.message,
+        fullError: e,
       }));
     MESSAGING$.messages.next(messages);
   }
@@ -288,6 +289,7 @@ export const handleError = (error: any) => {
       (e) => ({
         type: 'error',
         text: e?.data?.message ?? e.message,
+        fullError: e,
       }));
     MESSAGING$.messages.next(messages);
   }

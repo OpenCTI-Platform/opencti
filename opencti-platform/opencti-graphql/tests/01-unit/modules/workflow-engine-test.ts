@@ -205,4 +205,45 @@ describe('Workflow Engine', () => {
     // context.pendingAsyncSlots is reset on each trigger call
     expect(context.pendingAsyncSlots).toHaveLength(1);
   });
+
+  it('should return pending with the count of completed onEnter actions when an onEnter action queues a background task', async () => {
+    const definition = new WorkflowDefinition('start');
+    const firstOnEnter = vi.fn();
+    const queuesTask = vi.fn(async (ctx: any) => {
+      ctx.suspendingAsyncSlots.push({ id: 'slot-1', workId: 'work-1', type: 'shareRequestedEntities', status: 'pending' });
+    });
+    const afterTask = vi.fn();
+    definition.addState('end', { onEnter: [firstOnEnter, queuesTask, afterTask] });
+    definition.addTransition('start', 'end', 'approve');
+
+    const instance = new WorkflowInstance(definition, 'start', { user: {} });
+    const result = await instance.trigger('approve');
+
+    expect(result.success).toBe(true);
+    expect(result.executionStatus).toBe('pending');
+    expect(result.completedOnEnterActions).toBe(2);
+    expect(result.asyncActionSlots).toEqual([{ id: 'slot-1', workId: 'work-1', type: 'shareRequestedEntities', status: 'pending' }]);
+    expect(afterTask).not.toHaveBeenCalled();
+  });
+
+  it('should complete the transition when an onEnter asyncBulkAction queues a background task', async () => {
+    const definition = new WorkflowDefinition('start');
+    // asyncBulkAction pushes to pendingAsyncSlots when that array exists; onEnter must not suspend on it.
+    const bulkAction = vi.fn(async (ctx: any) => {
+      ctx.pendingAsyncSlots?.push({ id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' });
+    });
+    const afterTask = vi.fn();
+    definition.addState('end', { onEnter: [bulkAction, afterTask] });
+    definition.addTransition('start', 'end', 'approve');
+
+    const instance = new WorkflowInstance(definition, 'start', { user: {} });
+    const result = await instance.trigger('approve');
+
+    expect(result.success).toBe(true);
+    expect(result.executionStatus).not.toBe('pending');
+    expect(result.completedOnEnterActions).toBeUndefined();
+    expect(instance.getCurrentState()).toBe('end');
+    expect(bulkAction).toHaveBeenCalledTimes(1);
+    expect(afterTask).toHaveBeenCalledTimes(1);
+  });
 });

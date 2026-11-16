@@ -78,6 +78,20 @@ const makeSchema = (transitionOverrides: Partial<WorkflowSchema['transitions'][0
   ],
 });
 
+describe('WorkflowFactory.createDefinition – array from', () => {
+  it('registers one transition per source state when from is an array', () => {
+    const schema: WorkflowSchema = {
+      ...makeSchema({ from: ['draft', 'archived'], comment: 'shared' }),
+      states: [{ statusId: 'draft' }, { statusId: 'review' }, { statusId: 'archived' }],
+    };
+    const definition = WorkflowFactory.createDefinition(schema);
+
+    expect(definition.getTransition('draft', 'submit')).toEqual(expect.objectContaining({ from: 'draft', to: 'review', comment: 'shared' }));
+    expect(definition.getTransition('archived', 'submit')).toEqual(expect.objectContaining({ from: 'archived', to: 'review', comment: 'shared' }));
+    expect(definition.getTransitions('review')).toEqual([]);
+  });
+});
+
 // ---------------------------------------------------------------------------
 // WorkflowFactory.createDefinition – comment propagation
 // ---------------------------------------------------------------------------

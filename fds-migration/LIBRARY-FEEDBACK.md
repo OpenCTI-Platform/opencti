@@ -2365,6 +2365,11 @@ specified with text segments. It uses the library group with two glyphs, each
 named by its `aria-label` and a library `Tooltip` (marked `FDS-WORKAROUND`).
 With a text item, drop the glyphs and the tooltips and show both words.
 
+**Also at.** `WorkflowScopeSwitch.tsx` (Settings > Customization > Case-Rfi > Workflow): the
+"Global" / "Request access workflow" switch of the workflow editor header. It uses the
+library group with two glyphs, each named by its `aria-label` and a library `Tooltip` (marked
+`FDS-WORKAROUND`). With a text item, drop the glyphs and the tooltips and show both words.
+
 ## 64. `MenuItem` has no destructive tone, so a Delete row cannot read as dangerous
 
 **Needed.** A row menu that ends with a Delete command shows that row in the

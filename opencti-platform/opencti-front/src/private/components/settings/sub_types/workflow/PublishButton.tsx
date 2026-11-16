@@ -76,7 +76,7 @@ const PublishButton = ({
 
   const { hasUnpublishedChanges, validationErrors } = validationStatus;
 
-  let mainButtonTooltip: string;
+  let mainButtonTooltip: React.ReactNode;
   let mainButtonIcon: React.ReactNode;
   let mainButtonDisabled: boolean;
   let mainButtonOnClick: (() => void) | undefined;
@@ -87,7 +87,16 @@ const PublishButton = ({
     mainButtonDisabled = true;
     mainButtonOnClick = undefined;
   } else if (hasUnpublishedChanges && validationErrors.length > 0) {
-    mainButtonTooltip = t_i18n('Click to see validation errors');
+    mainButtonTooltip = (
+      <>
+        {t_i18n('Click to see validation errors')}
+        <ul data-testid="workflow-publish-errors" style={{ margin: '4px 0 0', paddingLeft: 16 }}>
+          {validationErrors.map((error, index) => (
+            <li key={`${error.type}-${index}`}>{error.message}</li>
+          ))}
+        </ul>
+      </>
+    );
     mainButtonIcon = <CircleIcon color="error" />;
     mainButtonDisabled = disabled ?? false;
     mainButtonOnClick = onPublish;

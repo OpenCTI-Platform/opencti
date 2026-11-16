@@ -18,13 +18,15 @@ export interface SerializedState {
   order?: number;
   onEnter?: ActionConfig[];
   onExit?: ActionConfig[];
+  /** Request-access definitions only: marks the state reached when the request is approved or declined. */
+  requestAccessOutcome?: 'APPROVED' | 'DECLINED';
 }
 
 /**
  * Serialized representation of a transition between states.
  */
 export interface SerializedTransition {
-  from: string; // ID of the source StatusTemplate
+  from: string | string[]; // ID(s) of the source StatusTemplate(s)
   to?: string | null; // No destination means the workflow completes without changing status.
   event: string;
   comment?: string;

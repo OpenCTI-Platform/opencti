@@ -24,7 +24,7 @@ import {
 } from '../../utils/access';
 import { internalLoadById, fullEntitiesList } from '../../database/middleware-loader';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS } from '../../schema/internalObject';
-import { BUS_TOPICS, logApp } from '../../config/conf';
+import { BUS_TOPICS, ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled, logApp } from '../../config/conf';
 import { addOrganizationRestriction } from '../../domain/stix';
 import { storeLoadByIdWithRefs, updateAttribute } from '../../database/middleware';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../../schema/general';
@@ -55,7 +55,16 @@ import {
   platformNotification,
   REQUEST_SHARE_ACCESS_INFO_TYPE,
 } from '../../manager/notificationManager';
-import { addRequestAccessCreationCount } from '../../manager/telemetryManager';
+import { addRequestAccessApprovedCount, addRequestAccessCreationCount, addRequestAccessDeclinedCount } from '../../manager/telemetryManager';
+import { resolveMappedStatusId } from '../workflow/domain/workflow-projection';
+import {
+  fireRequestAccessOutcomeTransition,
+  getRequestAccessWorkflow,
+  loadRequestAccessWorkflowState,
+  type RequestAccessOutcome,
+  type RequestAccessWorkflowState,
+} from '../workflow/domain/workflow-request-access';
+import { REQUEST_ACCESS_MAX_LENGTH, resolveRequestAccessWorkflowState } from '../workflow/domain/workflow-domain';
 
 // having an id is required for Relay
 const REQUEST_ACCESS_CONFIGURATION_ID = '7059b2f9-86d4-419b-9fde-adf825090820';
@@ -131,6 +140,15 @@ export const findWorkflowStatusByTemplateId = async (context: AuthContext, user:
   const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
   const allStatusesByScope = platformStatuses.filter((status) => status.scope === StatusScope.RequestAccess && status.template_id === templateId);
   return allStatusesByScope[0];
+};
+
+// The same status the workflow projection writes for this state, so a new request never starts on a duplicate
+const findInitialWorkflowStatusId = async (context: AuthContext, user: AuthUser, initialStateId: string) => {
+  const initialStatusId = await resolveMappedStatusId(context, user, ENTITY_TYPE_CONTAINER_CASE_RFI, StatusScope.RequestAccess, initialStateId);
+  if (!initialStatusId) {
+    throw FunctionalError('The initial state of the request access workflow has no status', { initialStateId });
+  }
+  return initialStatusId;
 };
 
 export const findFirstWorkflowStatus = async (context: AuthContext, user: AuthUser) => {
@@ -297,9 +315,12 @@ export const getRfiAccessConfiguration = async (
   const rfiEntitySettings = await getRfiEntitySettings(context, user);
   const requestAccessConfiguration = await getRequestAccessConfiguration(context, user, rfiEntitySettings);
   const isUserCanAction = await isUserCanActionRequestAccess(context, user, rfi);
+  // Same rule as the engine: a valid request on an RFI that runs the published request access workflow
+  const isWorkflowDriven = !!await resolveRequestAccessWorkflowState(context, rfi);
   return {
     configuration: requestAccessConfiguration,
     isUserCanAction,
+    isWorkflowDriven,
   };
 };
 
@@ -338,6 +359,7 @@ export const configureRequestAccess = async (context: AuthContext, user: AuthUse
     approval_admin = input.approval_admin as string [];
   }
   const newConfiguration = {
+    ...rfiEntitySettings.request_access_workflow,
     approval_admin,
     approved_workflow_id,
     declined_workflow_id,
@@ -373,9 +395,32 @@ export const configureRequestAccess = async (context: AuthContext, user: AuthUse
   return requestAccessConfigResult;
 };
 
+// The request record is stored as JSON of at most REQUEST_ACCESS_MAX_LENGTH characters. JSON escaping can multiply
+// the reason by 6 (control characters), so 10,000 characters take at most 60,000; 500 standard ids take at most
+// 500 * 65 = 32,500; the other fields stay under 1,000. The worst case is about 93,500, under the limit.
+export const REQUEST_ACCESS_REASON_MAX_LENGTH = 10_000;
+export const REQUEST_ACCESS_ENTITIES_MAX_COUNT = 500;
+
+// The limits protect the stored record of a workflow-driven request: without the ENTITIES_WORKFLOW feature the legacy
+// flow does not store it, so its inputs stay unbounded as before.
+const assertRequestAccessInputSize = (input: RequestAccessAddInput) => {
+  if (!isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    return;
+  }
+  const reasonLength = input.request_access_reason?.length ?? 0;
+  if (reasonLength > REQUEST_ACCESS_REASON_MAX_LENGTH) {
+    throw FunctionalError(`The reason of a request access is limited to ${REQUEST_ACCESS_REASON_MAX_LENGTH} characters`, { reasonLength });
+  }
+  const entitiesCount = input.request_access_entities.length;
+  if (entitiesCount > REQUEST_ACCESS_ENTITIES_MAX_COUNT) {
+    throw FunctionalError(`A request access is limited to ${REQUEST_ACCESS_ENTITIES_MAX_COUNT} requested entities`, { entitiesCount });
+  }
+};
+
 export const addRequestAccess = async (context: AuthContext, user: AuthUser, input: RequestAccessAddInput) => {
   logApp.debug('[OPENCTI-MODULE][Request access] - addRequestAccess', { input });
   await checkRequestAccessEnabled(context, user);
+  assertRequestAccessInputSize(input);
 
   const requestedEntities = input.request_access_entities;
   const organizationId = input.request_access_members[0];
@@ -406,25 +451,37 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
   const allActionStatuses = await getRFIStatusMap(context, user);
   const action: RequestAccessAction = {
     reason: input.request_access_reason || 'no reason',
-    members: input.request_access_members,
+    // Only the organization validated above and named on the RFI is recorded: approval shares with it alone
+    members: [organizationId],
     type: input.request_access_type?.toString(),
     entities: input.request_access_entities,
     status: ActionStatus.NEW,
     workflowMapping: allActionStatuses,
     applicant_id: user.id,
   };
-  const firstStatus: BasicWorkflowStatus = await findFirstWorkflowStatus(context, user);
+  const serializedAction = JSON.stringify(action);
+  // Backstop of the input limits above (ids are not length-bound): never hand over a record the workflow refuses
+  if (serializedAction.length > REQUEST_ACCESS_MAX_LENGTH) {
+    throw FunctionalError('The reason and the requested entities of this request access are too long, shorten the reason or request fewer entities', {
+      length: serializedAction.length,
+    });
+  }
+  const requestAccessWorkflow = await getRequestAccessWorkflow(context, user);
+  const firstStatusId = requestAccessWorkflow
+    ? await findInitialWorkflowStatusId(context, user, requestAccessWorkflow.definitionData.initialState)
+    : (await findFirstWorkflowStatus(context, user)).id;
   const rfiInput: CaseRfiAddInput = {
     name: `Request Access for entity ${mainRepresentative} by ${user.name} via organization ${organizationData.name}`,
     objectParticipant: [user.id],
     objects: requestedEntities,
     description: humanDescription,
     information_types: [REQUEST_SHARE_ACCESS_INFO_TYPE],
-    x_opencti_request_access: `${JSON.stringify(action)}`,
+    x_opencti_request_access: serializedAction,
     authorized_members,
     objectMarking: elementData[RELATION_OBJECT_MARKING] ?? [],
-    x_opencti_workflow_id: firstStatus.id,
+    x_opencti_workflow_id: firstStatusId,
     revoked: false,
+    ...(requestAccessWorkflow ? { createdBy: organizationData.id } : {}),
   };
   const requestForInformation = await addCaseRfi(context, SYSTEM_USER, rfiInput);
   await addRequestAccessCreationCount();
@@ -490,9 +547,29 @@ export const notifyRequestAccessResult = async (
   await storeNotificationEvent(context, notificationEvent);
 };
 
+// A request on the request-access workflow is decided by the transition into its outcome state
+const decideRequestAccessOnWorkflow = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  outcome: RequestAccessOutcome,
+  workflowState: RequestAccessWorkflowState,
+) => {
+  const result = await fireRequestAccessOutcomeTransition(context, user, id, outcome, workflowState);
+  if (!result.success) {
+    throw FunctionalError(result.reason ?? 'The request access decision failed', { id });
+  }
+  const element = await internalLoadById<BasicStoreEntityCaseRfi>(context, user, id);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, element, user);
+};
+
 export const approveRequestAccess = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkRequestAccessEnabled(context, user);
   logApp.debug('[OPENCTI-MODULE][Request Access] Approving request access:', { id });
+  const workflowState = await loadRequestAccessWorkflowState(context, id);
+  if (workflowState) {
+    return decideRequestAccessOnWorkflow(context, user, id, 'APPROVED', workflowState);
+  }
   const entityCaseRfi = await internalLoadById<BasicStoreEntityCaseRfi>(context, user, id);
   const isUserCanAction = await isUserCanActionRequestAccess(context, user, entityCaseRfi);
   if (!isUserCanAction) {
@@ -528,6 +605,10 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
     { key: 'x_opencti_workflow_id', value: [x_opencti_workflow_id] },
   ];
   const { element } = await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
+  // A replayed approval is not a new decision: count it once, as the workflow path does
+  if (action.status !== ActionStatus.APPROVED) {
+    addRequestAccessApprovedCount();
+  }
   const elementData = await elLoadById(context, SYSTEM_USER, targetInstanceToShare) as unknown as BasicStoreBase;
   const mainRepresentative = extractEntityRepresentativeName(elementData);
   await publishUserAction({
@@ -547,6 +628,10 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
 export const declineRequestAccess = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkRequestAccessEnabled(context, user);
   logApp.debug(`[OPENCTI-MODULE][Request Access] Reject for RFI ${id}`);
+  const workflowState = await loadRequestAccessWorkflowState(context, id);
+  if (workflowState) {
+    return decideRequestAccessOnWorkflow(context, user, id, 'DECLINED', workflowState);
+  }
   // region Check validity
   const { action, x_opencti_workflow_id } = await checkRequestActionAndGetWorkflow(context, user, id, ActionStatus.DECLINED);
   // endregion
@@ -563,6 +648,10 @@ export const declineRequestAccess = async (context: AuthContext, user: AuthUser,
     { key: 'x_opencti_workflow_id', value: [x_opencti_workflow_id] },
   ];
   const { element } = await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
+  // A replayed rejection is not a new decision: count it once, as the workflow path does
+  if (action.status !== ActionStatus.DECLINED) {
+    addRequestAccessDeclinedCount();
+  }
   const instanceToShare = await internalLoadById<BasicStoreEntity>(context, SYSTEM_USER, (action.entities ?? [])[0]);
   const mainRepresentative = extractEntityRepresentativeName(instanceToShare);
   await publishUserAction({
