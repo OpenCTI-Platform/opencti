@@ -80,6 +80,16 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, asyn
   // Typed with the keyboard in the emptied field: every part reaches its own section.
   await reportForm.publicationDateField.type('2023-12-05');
   await expect(reportForm.publicationDateField.getSections()).toHaveText(/^2023-12-05 /);
+  // Every section of a partly typed field stays selected, so Backspace empties them all.
+  await page.keyboard.press('ControlOrMeta+A');
+  await page.keyboard.press('Backspace');
+  await expect(reportForm.publicationDateField.getSections()).toHaveText(/^YYYY-MM-DD /);
+  // The emptied field gives its sections back: the keys typed after a click on one all reach it.
+  await reportForm.publicationDateField.getSection(0).click();
+  await page.keyboard.type('2023', { delay: 100 });
+  await expect(reportForm.publicationDateField.getSections()).toHaveText(/^2023-MM-DD /);
+  await page.keyboard.type('1205', { delay: 100 });
+  await expect(reportForm.publicationDateField.getSections()).toHaveText(/^2023-12-05 /);
   // A partly typed date is validated when the field loses the focus.
   await page.keyboard.press('Tab');
   await expect(page.getByText('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).toBeVisible();

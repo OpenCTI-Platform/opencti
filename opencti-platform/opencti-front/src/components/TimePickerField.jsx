@@ -1,11 +1,10 @@
 import React from 'react';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { fieldToTimePicker } from 'formik-mui-lab';
 import { useField } from 'formik';
 import * as R from 'ramda';
 import { useIntl } from 'react-intl';
 import { isAcceptedFromView, parse } from '../utils/Time';
-import useFieldSectionSelection from '../utils/hooks/useFieldSectionSelection';
+import TimePicker from './common/input/picker/BaseTimePicker';
 
 const timeFormatsMap = {
   'de-de': 'HH:mm',
@@ -43,7 +42,6 @@ const TimePickerField = (props) => {
   const intl = useIntl();
   const [_field, meta] = useField(name);
   const parsedValue = typeof value === 'string' ? new Date(value) : value; // Convert string to Date (MUI v6)
-  const sectionSelection = useFieldSectionSelection(parsedValue);
   const internalOnAccept = React.useCallback(
     (date, context) => {
       if (!isAcceptedFromView(context)) {
@@ -94,7 +92,6 @@ const TimePickerField = (props) => {
       allowKeyboardControl={true}
       onAccept={internalOnAccept}
       onChange={internalOnChange}
-      {...sectionSelection}
       views={views}
       format={inputFormat}
       slotProps={{

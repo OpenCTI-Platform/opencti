@@ -1,28 +1,54 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import type { FieldRef } from '@mui/x-date-pickers/models';
 import useFieldSectionSelection from './useFieldSectionSelection';
 
+// The hook only reads the value of each section.
+const renderWithSections = (...values: string[]) => {
+  const rendered = renderHook(() => useFieldSectionSelection());
+  rendered.result.current.fieldRef.current = {
+    getSections: () => values.map((value) => ({ value })),
+  } as unknown as FieldRef<Date | null>;
+  return { ...rendered, values };
+};
+
 describe('Hook: useFieldSectionSelection', () => {
-  it('selects the first section instead of every section of a field without a value', () => {
-    const { result } = renderHook(() => useFieldSectionSelection(null));
+  it('selects the first section instead of every section of an empty field', () => {
+    const { result } = renderWithSections('', '', '');
     act(() => result.current.onSelectedSectionsChange('all'));
     expect(result.current.selectedSections).toBe(0);
   });
 
-  it('does the same for a field holding an invalid date', () => {
-    const { result } = renderHook(() => useFieldSectionSelection(new Date(NaN)));
+  it('keeps selecting every section of a partly typed field', () => {
+    const { result } = renderWithSections('2023', '12', '');
     act(() => result.current.onSelectedSectionsChange('all'));
-    expect(result.current.selectedSections).toBe(0);
+    expect(result.current.selectedSections).toBe('all');
   });
 
   it('keeps selecting every section of a field holding a date', () => {
-    const { result } = renderHook(() => useFieldSectionSelection(new Date('2023-12-05T00:00:00Z')));
+    const { result } = renderWithSections('2023', '12', '05');
+    act(() => result.current.onSelectedSectionsChange('all'));
+    expect(result.current.selectedSections).toBe('all');
+  });
+
+  it('selects the first section once a field with every section selected has been emptied', () => {
+    // Ctrl+A then Backspace: the picker selects every section before the sections are emptied.
+    const { result, rerender, values } = renderWithSections('2023', '12', '05');
+    act(() => result.current.onSelectedSectionsChange('all'));
+    expect(result.current.selectedSections).toBe('all');
+    values.fill('');
+    rerender();
+    expect(result.current.selectedSections).toBe(0);
+  });
+
+  it('keeps selecting every section while the field is not mounted', () => {
+    const { result } = renderHook(() => useFieldSectionSelection());
     act(() => result.current.onSelectedSectionsChange('all'));
     expect(result.current.selectedSections).toBe('all');
   });
 
   it('keeps any other selection', () => {
-    const { result } = renderHook(() => useFieldSectionSelection(null));
+    const { result } = renderWithSections('', '', '');
     act(() => result.current.onSelectedSectionsChange(3));
     expect(result.current.selectedSections).toBe(3);
     act(() => result.current.onSelectedSectionsChange(null));

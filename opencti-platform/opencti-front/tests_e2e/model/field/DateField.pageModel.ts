@@ -26,6 +26,13 @@ export default class DateFieldPageModel {
     return this.fieldLocator.locator('.MuiPickersSectionList-root');
   }
 
+  /** One section, by its index in the field's format. */
+  getSection(index: number) {
+    return this.fieldLocator.locator(
+      `.MuiPickersSectionList-section[data-sectionindex="${index}"] .MuiPickersSectionList-sectionContent`,
+    );
+  }
+
   value() {
     return this.getInput().inputValue();
   }
@@ -67,9 +74,7 @@ export default class DateFieldPageModel {
     await this.clear();
     await this.fieldLocator.click();
     for (const [index, part] of parts.entries()) {
-      const section = this.fieldLocator.locator(
-        `.MuiPickersSectionList-section[data-sectionindex="${index}"] .MuiPickersSectionList-sectionContent`,
-      );
+      const section = this.getSection(index);
       await section.click();
       await section.evaluate((element, text) => {
         const clipboardData = new DataTransfer();

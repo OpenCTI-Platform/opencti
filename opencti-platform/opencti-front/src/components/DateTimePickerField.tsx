@@ -1,5 +1,4 @@
 import React from 'react';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { TextFieldProps } from '@mui/material/TextField';
 import { fieldToDateTimePicker } from 'formik-mui-lab';
 import { FieldProps, useField } from 'formik';
@@ -7,7 +6,7 @@ import { useIntl } from 'react-intl';
 import { isNil } from 'ramda';
 import { PickerChangeHandlerContext } from '@mui/x-date-pickers/models';
 import { isAcceptedFromView, parse } from '../utils/Time';
-import useFieldSectionSelection from '../utils/hooks/useFieldSectionSelection';
+import DateTimePicker from './common/input/picker/BaseDateTimePicker';
 
 const dateTimeFormatsMap: Record<string, string> = {
   'de-de': 'dd.MM.yyyy HH:mm',
@@ -60,7 +59,6 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
   const partlyTypedRef = React.useRef(false);
   const isInvalidDate = parsedValue instanceof Date && Number.isNaN(parsedValue.getTime());
   const pickerValue = partlyTypedRef.current && isInvalidDate ? null : parsedValue;
-  const sectionSelection = useFieldSectionSelection(pickerValue);
   const internalOnAccept = React.useCallback(
     (date: Date, context: PickerChangeHandlerContext<unknown>) => {
       if (!isAcceptedFromView(context)) {
@@ -125,7 +123,6 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
         error={showError}
         allowKeyboardControl={true}
         onAccept={internalOnAccept}
-        {...sectionSelection}
         onChange={internalOnChange}
         views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
         format={
@@ -155,7 +152,6 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
       error={showError}
       allowKeyboardControl={true}
       onAccept={internalOnAccept}
-      {...sectionSelection}
       onChange={internalOnChange}
       views={['year', 'month', 'day', 'hours', 'minutes']}
       format={dateTimeFormatsMap[intl.locale] || 'yyyy-MM-dd hh:mm a'}

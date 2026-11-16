@@ -1,25 +1,34 @@
-import { useState } from 'react';
-import type { FieldSelectedSections } from '@mui/x-date-pickers/models';
+import { useLayoutEffect, useRef, useState } from 'react';
+import type { FieldRef, FieldSelectedSections } from '@mui/x-date-pickers/models';
 
 /**
- * Section selection of a date field, to spread on a picker, given the picker's value.
+ * Section selection of a date field, spread on a picker by the wrappers of
+ * `components/common/input/picker`, with `fieldRef` handed to the picker's field slot.
  *
- * In a picker with a controlled value, once every section of an empty field is selected (Ctrl+A,
- * or Ctrl+A then Backspace to empty it), x-date-pickers 9 applies the typed keys to the first
- * section: a date typed in one go fills the year only, and typing it again can leave a valid but
- * different date (#19228, mui/mui-x#19997). Selecting the first section instead types the date
- * section by section, as after a click on the field.
+ * While every section of an empty field is selected, x-date-pickers 9 edits the field as a whole
+ * (mui/mui-x#19997): a date typed in one go fills the first section only, and typing it again can
+ * leave a valid but different date (#19228); a click on a section is ignored, so the next key is
+ * lost. Selecting the first section instead types the date section by section, as after a click
+ * on the field. That covers the field emptied by Ctrl+A then Backspace too: the picker selects
+ * every section again while the sections still hold the previous date, so the selection is
+ * checked again once the emptied field has rendered.
  *
- * A field holding a valid date keeps selecting every section, which types correctly and lets
- * Backspace clear the whole field.
+ * As soon as one section holds something (a date, or a date partly typed, which the picker
+ * reports as a null value), every section stays selected, so Backspace clears the whole field.
  */
-const useFieldSectionSelection = (value: unknown) => {
+const useFieldSectionSelection = () => {
+  const fieldRef = useRef<FieldRef<Date | null>>(null);
   const [selectedSections, setSelectedSections] = useState<FieldSelectedSections>(null);
-  const hasValue = value instanceof Date && !Number.isNaN(value.getTime());
+  const isEmpty = () => fieldRef.current?.getSections().every((section) => section.value === '') ?? false;
   const onSelectedSectionsChange = (newSelectedSections: FieldSelectedSections) => {
-    setSelectedSections(newSelectedSections === 'all' && !hasValue ? 0 : newSelectedSections);
+    setSelectedSections(newSelectedSections === 'all' && isEmpty() ? 0 : newSelectedSections);
   };
-  return { selectedSections, onSelectedSectionsChange };
+  useLayoutEffect(() => {
+    if (selectedSections === 'all' && isEmpty()) {
+      setSelectedSections(0);
+    }
+  });
+  return { fieldRef, selectedSections, onSelectedSectionsChange };
 };
 
 export default useFieldSectionSelection;

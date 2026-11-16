@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useRef, useState, KeyboardEvent } from 'react';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { buildDate, dateFiltersValueForDisplay, isAcceptedFromView } from '../../../../utils/Time';
-import useFieldSectionSelection from '../../../../utils/hooks/useFieldSectionSelection';
+import DatePicker from '../../../../components/common/input/picker/BaseDatePicker';
 
 interface FilterDateProps {
   defaultHandleAddFilter: (
@@ -73,18 +72,14 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
     }
   };
 
-  const value = buildDate(dateState || findFilterFromKey(inputValues, filterKey, operator)?.values[0]);
-  const sectionSelection = useFieldSectionSelection(value);
-
   return (
     <DatePicker
       key={filterKey}
       label={filterLabel}
-      value={value}
-      {...sectionSelection}
-      onChange={(value) => handleChangeDate(value)}
+      value={buildDate(dateState || findFilterFromKey(inputValues, filterKey, operator)?.values[0])}
+      onChange={(date) => handleChangeDate(date)}
       // Typed values are applied on Enter.
-      onAccept={(value, context) => isAcceptedFromView(context) && handleAcceptDate(value)}
+      onAccept={(date, context) => isAcceptedFromView(context) && handleAcceptDate(date)}
       slotProps={{
         textField: (params) => ({
           ...params,
