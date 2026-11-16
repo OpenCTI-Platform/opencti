@@ -197,7 +197,7 @@ export const ActionRegistry: Record<string, ActionFunction> = {
       // delete the container tasks already queued (a task the task manager already started keeps what it shared),
       if (queuedTasks.length > 0) {
         const { deleteTask } = await import('../../../domain/backgroundTask');
-        for (const { taskId } of queuedTasks) {
+        for (const { taskId, slot } of queuedTasks) {
           // One retry: a task left queued would share the container although the decision was refused
           for (let attempt = 1; attempt <= 2; attempt += 1) {
             try {
@@ -206,6 +206,8 @@ export const ActionRegistry: Record<string, ActionFunction> = {
             } catch (rollbackError) {
               if (attempt === 2) {
                 logApp.error('[shareRequestedEntities] Failed to delete a queued share task after a refused share', { cause: rollbackError, taskId });
+                // Handed to the transition, which records the task on the instance until it is deleted
+                executionContext.undeletedShareSlots = [...(executionContext.undeletedShareSlots ?? []), slot];
               }
             }
           }

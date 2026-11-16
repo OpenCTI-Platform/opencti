@@ -56,6 +56,7 @@ import {
   ENTITY_TYPE_WORKFLOW_DEFINITION,
   ENTITY_TYPE_WORKFLOW_INSTANCE,
   mergeRequestAccessDirectGrants,
+  type RequestAccessDirectGrant,
   type TriggerResult,
   type WorkflowActionConfig,
   type WorkflowDefinitionData,
@@ -2153,6 +2154,44 @@ const findClosingReasonVocabularyName = async (context: AuthContext, value: stri
  * @param options.fromState Refuses the event unless the entity is still in this state once locked
  * @returns {Promise<TriggerResult>} The result of the trigger
  */
+/**
+ * Records the container share tasks that could not be deleted after a failed transition, so none stays queued without a
+ * durable workflow slot: the instance keeps them (and the direct grants left) in an error pending transition, and an admin
+ * clear deletes them. Best effort: a failed write is logged with the task ids.
+ */
+const recordUndeletedShareTasks = async (
+  executionContext: AuthContext,
+  executionUser: AuthUser,
+  instanceId: string,
+  slots: AsyncActionSlot[] | undefined,
+  triggeredBy: string,
+  event: string,
+  toState: string,
+  cause: unknown,
+  grants: RequestAccessDirectGrant[] = [],
+) => {
+  if (!slots || slots.length === 0) return;
+  const pendingTransition: WorkflowPendingTransition = {
+    event,
+    toState,
+    triggeredBy,
+    triggeredAt: new Date().toISOString(),
+    runtimeParams: {},
+    asyncActions: slots,
+    syncActions: [],
+    ...(grants.length > 0 ? { requestAccessDirectGrants: grants } : {}),
+  };
+  try {
+    await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+      { key: 'pendingStatus', value: ['error'] },
+      { key: 'pendingError', value: [`The transition failed (${cause instanceof Error ? cause.message : String(cause)}) and its container share tasks could not all be deleted`] },
+      { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
+    ]);
+  } catch (recordError) {
+    logApp.error('[workflow] Failed to record the undeleted container share tasks', { cause: recordError, taskIds: slots.map((slot) => slot.taskId) });
+  }
+};
+
 export const triggerWorkflowEvent = async (
   context: AuthContext,
   user: AuthUser,
@@ -2267,7 +2306,7 @@ export const triggerWorkflowEvent = async (
         .filter(Boolean));
     }
 
-    const workflowContext = {
+    const workflowContext: Context = {
       entity,
       user: WORKFLOW_MANAGER_USER,
       triggeringUser: executionUser,
@@ -2295,9 +2334,16 @@ export const triggerWorkflowEvent = async (
 
     // 6. Create instance and trigger the event
     const instance = WorkflowFactory.getInstance(definitionData, definition, currentStateId || '', workflowContext);
-    const result = await instance.trigger(eventName);
+    let result;
+    try {
+      result = await instance.trigger(eventName);
+    } catch (error) {
+      await recordUndeletedShareTasks(executionContext, executionUser, instanceEntity.internal_id || instanceEntity.id, workflowContext.undeletedShareSlots, user.id, eventName, transition?.to ?? '', error);
+      throw error;
+    }
 
     if (!result.success) {
+      await recordUndeletedShareTasks(executionContext, executionUser, instanceEntity.internal_id || instanceEntity.id, workflowContext.undeletedShareSlots, user.id, eventName, transition?.to ?? '', result.reason);
       // The engine names the state by its status template id, unreadable in task errors and notifications
       if (!transition) {
         const statusTemplate = await storeLoadById<BasicStoreEntity>(executionContext, executionUser, currentStateId, ENTITY_TYPE_STATUS_TEMPLATE);
@@ -2369,10 +2415,12 @@ export const triggerWorkflowEvent = async (
       } catch (error) {
         // The queued container tasks and the direct grants are not tracked by any pending transition: undo them,
         // so a failed transition leaves nothing shared behind.
-        await cancelPendingContainerTasks(executionContext, rawSlots, user.id);
-        if (requestAccessDirectGrants.length > 0) {
-          await revokeRequestAccessDirectGrants(executionContext, requestAccessDirectGrants, user.id);
-        }
+        const remainingSlots = await cancelPendingContainerTasks(executionContext, rawSlots, user.id);
+        const remainingGrants = requestAccessDirectGrants.length > 0
+          ? await revokeRequestAccessDirectGrants(executionContext, requestAccessDirectGrants, user.id)
+          : [];
+        // A task that could not be deleted still shares its container: it stays recorded on the instance for an admin clear
+        await recordUndeletedShareTasks(executionContext, executionUser, instanceId, remainingSlots, user.id, eventName, toStateId, error, remainingGrants);
         throw error;
       }
 

@@ -907,6 +907,24 @@ describe('ActionRegistry.shareRequestedEntities', () => {
       expect(tracked.suspendingAsyncSlots).toEqual([]);
     });
 
+    it('hands the slot of a task that cannot be deleted to the transition after one retry', async () => {
+      vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => (
+        { id, internal_id: id, entity_type: id === 'malware-1' ? 'Malware' : 'Report' }
+      ) as any);
+      vi.mocked(createSharingTask)
+        .mockResolvedValueOnce({ id: 'task-a', work_id: 'work-a' } as any)
+        .mockRejectedValueOnce(new Error('task store unavailable'));
+      vi.mocked(deleteTask).mockClear();
+      vi.mocked(deleteTask).mockRejectedValue(new Error('delete failed'));
+      const tracked: any = { ...makeRfiCtx({ entities: ['report-a', 'malware-1', 'report-b'], members: ['org-author'] }), suspendingAsyncSlots: [] as any[], __workflowInstanceId: 'instance-id' };
+
+      await expect(ActionRegistry.shareRequestedEntities(tracked, { organizations: ['AUTHOR'] })).rejects.toThrow('task store unavailable');
+
+      expect(deleteTask).toHaveBeenCalledTimes(2);
+      expect(tracked.undeletedShareSlots).toEqual([expect.objectContaining({ workId: 'work-a', taskId: 'task-a', type: 'shareRequestedEntities' })]);
+      vi.mocked(deleteTask).mockReset();
+    });
+
     it('queues no task for a container already shared with every organization', async () => {
       const ctx = makeTrackedCtx();
       await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });

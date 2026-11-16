@@ -3954,6 +3954,35 @@ describe('triggerWorkflowEvent – async / pending / lock', () => {
     expect(revokeRequestAccessDirectGrants).toHaveBeenCalledWith(expect.anything(), [{ entityId: 'malware-2', organizationIds: ['org-a'] }], mockUser.id);
   });
 
+  it('records the container tasks that could not be deleted as an error pending transition', async () => {
+    const definitionContent = JSON.stringify({
+      initialState: 'draft',
+      states: [{ statusId: 'draft' }, { statusId: 'reviewing', onEnter: [{ type: 'shareRequestedEntities' }] }],
+      transitions: [{ from: 'draft', to: 'reviewing', event: 'submit' }],
+    });
+    setupAsyncPendingMocks(definitionContent);
+    const slot = { id: 'slot-1', workId: 'work-1', type: 'shareRequestedEntities', status: 'pending', taskId: 'task-1' };
+    (WorkflowFactory.getInstance as any).mockImplementation(() => ({
+      start: vi.fn(),
+      trigger: vi.fn(async () => ({ success: true, executionStatus: 'pending', asyncActionSlots: [slot], completedOnEnterActions: 1 })),
+      getCurrentState: vi.fn().mockReturnValue('reviewing'),
+    }));
+    vi.mocked(updateAttribute).mockClear();
+    vi.mocked(updateAttribute).mockRejectedValueOnce(new Error('write failed'));
+    vi.mocked(cancelPendingContainerTasks).mockResolvedValueOnce([slot] as any);
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'submit');
+
+    expect(result.success).toBe(false);
+    const recorded = vi.mocked(updateAttribute).mock.calls[1];
+    const input = recorded[4] as { key: string; value: unknown[] }[];
+    expect(input.find((i) => i.key === 'pendingStatus')?.value).toEqual(['error']);
+    const pending = JSON.parse(input.find((i) => i.key === 'pendingTransition')?.value[0] as string);
+    expect(pending.asyncActions).toEqual([slot]);
+    expect(pending.event).toBe('submit');
+    expect(pending.toState).toBe('reviewing');
+  });
+
   describe('request access direct grants', () => {
     const definitionContent = JSON.stringify({
       initialState: 'draft',

@@ -101,6 +101,8 @@ export interface Context {
   suspendingAsyncSlots?: AsyncActionSlot[];
   /** Direct grants of a request access share that waits for its container tasks, persisted on the pending transition. */
   requestAccessDirectGrants?: RequestAccessDirectGrant[];
+  /** Container share tasks a refused request access share could not delete: the transition records them so an admin clear retries. */
+  undeletedShareSlots?: AsyncActionSlot[];
   [key: string]: any;
 }
 
