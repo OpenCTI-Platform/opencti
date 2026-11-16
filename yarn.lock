@@ -1946,26 +1946,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/chatbot@npm:3.34.0":
-  version: 3.34.0
-  resolution: "@filigran/chatbot@npm:3.34.0"
+"@filigran/chatbot@npm:3.35.0":
+  version: 3.35.0
+  resolution: "@filigran/chatbot@npm:3.35.0"
   dependencies:
     remark-parse: "npm:^11.0.0"
     unified: "npm:^11.0.0"
   peerDependencies:
-    "@filigran/design-system": ^1.5.2
+    "@filigran/design-system": ^1.5.3
     react: ">=18"
     react-dom: ">=18"
     react-markdown: ">=10"
     remark-breaks: ">=4"
     remark-gfm: ">=4"
-  checksum: 10c0/4a3c604f3a0ac18de94d45d0fb3a4ea916e8810625fd032929ef3f5b28c0f3f4f9fba3f4008092a4f5f830f10d641b93397b259cc7f356ae1bc48fd7646dd847
+  checksum: 10c0/0275b8d8c4199e1f987f66d0df43b3ca223cd77d118bc1f0656a3b66e1e895afd70191523948cd7e349b95ea8776e1b0893ce994508c9980c7e2c4c702348e66
   languageName: node
   linkType: hard
 
-"@filigran/design-system@npm:1.5.2":
-  version: 1.5.2
-  resolution: "@filigran/design-system@npm:1.5.2"
+"@filigran/design-system@npm:1.5.3":
+  version: 1.5.3
+  resolution: "@filigran/design-system@npm:1.5.3"
   dependencies:
     "@dnd-kit/core": "npm:^6.3.1"
     "@dnd-kit/sortable": "npm:^10.0.0"
@@ -2005,7 +2005,7 @@ __metadata:
     react-dom: ^19.0.0
   bin:
     filigran-design-system: bin/install-skills.mjs
-  checksum: 10c0/9f545dec18e49ea254315fdd9e9267924a95f27aeae06e331d6d66740ed5cdd138d44cb1cb4b9fd2e09663d56f7143c575a568e181a8172e47c5302f2cbb3136
+  checksum: 10c0/9db744b6f2a10e1782d808ebb4d54c246d83849085e0cf98ff2c1683373dada13d582b116fec3323ad01c5b7411914dbd19048b1b56f42407b3a61561ecb493e
   languageName: node
   linkType: hard
 
@@ -18552,9 +18552,9 @@ __metadata:
     "@emotion/styled": "npm:11.14.1"
     "@eslint/js": "npm:10.0.1"
     "@faker-js/faker": "npm:10.6.0"
-    "@filigran/chatbot": "npm:3.34.0"
+    "@filigran/chatbot": "npm:3.35.0"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
-    "@filigran/design-system": "npm:1.5.2"
+    "@filigran/design-system": "npm:1.5.3"
     "@filigran/rich-text-editor": "npm:2.0.1"
     "@fontsource/geologica": "npm:5.3.0"
     "@fontsource/ibm-plex-sans": "npm:5.3.0"
