@@ -4199,13 +4199,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/x-date-pickers@npm:9.17.0":
-  version: 9.17.0
-  resolution: "@mui/x-date-pickers@npm:9.17.0"
+"@mui/x-date-pickers@npm:9.18.0":
+  version: 9.18.0
+  resolution: "@mui/x-date-pickers@npm:9.18.0"
   dependencies:
     "@babel/runtime": "npm:^7.29.7 || ^8.0.0"
     "@mui/utils": "npm:^9.5.0"
-    "@mui/x-internals": "npm:9.17.0"
+    "@mui/x-internals": "npm:9.18.0"
     "@types/react-transition-group": "npm:^4.4.12"
     clsx: "npm:^2.1.1"
     prop-types: "npm:^15.8.1"
@@ -4243,13 +4243,13 @@ __metadata:
       optional: true
     moment-jalaali:
       optional: true
-  checksum: 10c0/8db5537dd2fcd9497785dc44b90efb6a363af04c03f2d55839331f42e72e74ad285b5b9aba550f98ae588a6d95b919a8c159323c3f7b6f5080627e7f938e62e1
+  checksum: 10c0/ad698bb8edbb4bcf03674a8e3341268b34b2b0a3a6c48c52b4bee6142028efa1c3b4d4cd590decd72d0c6a57afd3374e02208c3acd7f101d64f008f5d29b1812
   languageName: node
   linkType: hard
 
-"@mui/x-internals@npm:9.17.0":
-  version: 9.17.0
-  resolution: "@mui/x-internals@npm:9.17.0"
+"@mui/x-internals@npm:9.18.0":
+  version: 9.18.0
+  resolution: "@mui/x-internals@npm:9.18.0"
   dependencies:
     "@babel/runtime": "npm:^7.29.7 || ^8.0.0"
     "@base-ui/utils": "npm:^0.5.0"
@@ -4257,7 +4257,7 @@ __metadata:
   peerDependencies:
     react: ^17.0.0 || ^18.0.0 || ^19.0.0
     react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/3a0104cb50bbf434e1b5e8af4b9a98954cf55951f9665af2a4e605b301c1dca1e8ed0fb19998fe733e4bf03ed871e0a3d4ef66507c8662e97aa0f2397057a2f4
+  checksum: 10c0/0502c274024629f6229a77d03c3aefbcbdc8ba3eab09eb2aefe83604a5d1445996f98b6e16135011944b8884d26d8442d48578d850af15d0c6fed7f25643b5ea
   languageName: node
   linkType: hard
 
@@ -18567,7 +18567,7 @@ __metadata:
     "@mui/icons-material": "npm:9.5.0"
     "@mui/lab": "npm:9.0.0-beta.10"
     "@mui/material": "npm:9.5.0"
-    "@mui/x-date-pickers": "npm:9.17.0"
+    "@mui/x-date-pickers": "npm:9.18.0"
     "@opentelemetry/api": "npm:1.10.0"
     "@opentelemetry/core": "npm:3.1.1"
     "@opentelemetry/sdk-logs": "npm:3.1.1"
