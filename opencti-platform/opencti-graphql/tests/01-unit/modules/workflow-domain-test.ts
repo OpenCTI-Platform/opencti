@@ -3917,6 +3917,43 @@ describe('triggerWorkflowEvent – async / pending / lock', () => {
     ]);
   });
 
+  it('deletes the queued container tasks and revokes the direct grants when the pending transition cannot be stored', async () => {
+    const definitionContent = JSON.stringify({
+      initialState: 'draft',
+      states: [{ statusId: 'draft' }, { statusId: 'reviewing', onEnter: [{ type: 'shareRequestedEntities' }] }],
+      transitions: [{ from: 'draft', to: 'reviewing', event: 'submit' }],
+    });
+    setupAsyncPendingMocks(definitionContent);
+    (WorkflowFactory.getInstance as any).mockImplementation((_data: any, _definition: any, _state: any, workflowContext: any) => ({
+      start: vi.fn(),
+      trigger: vi.fn(async () => {
+        workflowContext.requestAccessDirectGrants = [{ entityId: 'malware-2', organizationIds: ['org-a'] }];
+        return {
+          success: true,
+          executionStatus: 'pending',
+          asyncActionSlots: [{ id: 'slot-1', workId: 'work-1', type: 'shareRequestedEntities', taskId: 'task-1' }],
+          completedOnEnterActions: 1,
+        };
+      }),
+      getCurrentState: vi.fn().mockReturnValue('reviewing'),
+    }));
+    vi.mocked(updateAttribute).mockRejectedValueOnce(new Error('write failed'));
+    vi.mocked(cancelPendingContainerTasks).mockClear();
+    vi.mocked(revokeRequestAccessDirectGrants).mockClear();
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'submit');
+
+    expect(result.success).toBe(false);
+    expect(result.reason).toContain('write failed');
+
+    expect(cancelPendingContainerTasks).toHaveBeenCalledWith(
+      expect.anything(),
+      [{ id: 'slot-1', workId: 'work-1', type: 'shareRequestedEntities', status: 'pending', taskId: 'task-1' }],
+      mockUser.id,
+    );
+    expect(revokeRequestAccessDirectGrants).toHaveBeenCalledWith(expect.anything(), [{ entityId: 'malware-2', organizationIds: ['org-a'] }], mockUser.id);
+  });
+
   describe('request access direct grants', () => {
     const definitionContent = JSON.stringify({
       initialState: 'draft',

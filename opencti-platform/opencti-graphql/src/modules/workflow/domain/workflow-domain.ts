@@ -2360,11 +2360,21 @@ export const triggerWorkflowEvent = async (
         ...(requestAccessDirectGrants.length > 0 ? { requestAccessDirectGrants } : {}),
       };
 
-      await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
-        { key: 'pendingStatus', value: ['pending'] },
-        { key: 'pendingError', value: [null] },
-        { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
-      ]);
+      try {
+        await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+          { key: 'pendingStatus', value: ['pending'] },
+          { key: 'pendingError', value: [null] },
+          { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
+        ]);
+      } catch (error) {
+        // The queued container tasks and the direct grants are not tracked by any pending transition: undo them,
+        // so a failed transition leaves nothing shared behind.
+        await cancelPendingContainerTasks(executionContext, rawSlots, user.id);
+        if (requestAccessDirectGrants.length > 0) {
+          await revokeRequestAccessDirectGrants(executionContext, requestAccessDirectGrants, user.id);
+        }
+        throw error;
+      }
 
       await lock.unlock();
       lock = undefined;

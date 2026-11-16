@@ -198,10 +198,16 @@ export const ActionRegistry: Record<string, ActionFunction> = {
       if (queuedTasks.length > 0) {
         const { deleteTask } = await import('../../../domain/backgroundTask');
         for (const { taskId } of queuedTasks) {
-          try {
-            await deleteTask({ ...context, user }, user, taskId);
-          } catch (rollbackError) {
-            logApp.error('[shareRequestedEntities] Failed to delete a queued share task after a refused share', { cause: rollbackError, taskId });
+          // One retry: a task left queued would share the container although the decision was refused
+          for (let attempt = 1; attempt <= 2; attempt += 1) {
+            try {
+              await deleteTask({ ...context, user }, user, taskId);
+              break;
+            } catch (rollbackError) {
+              if (attempt === 2) {
+                logApp.error('[shareRequestedEntities] Failed to delete a queued share task after a refused share', { cause: rollbackError, taskId });
+              }
+            }
           }
         }
       }
