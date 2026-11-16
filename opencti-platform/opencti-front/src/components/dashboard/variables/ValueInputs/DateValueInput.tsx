@@ -9,7 +9,7 @@ const toDate = (value: string) => (value ? new Date(value) : null);
  * Date value, emitted as an ISO string. As in `FilterDate`, a typed date is committed on accept (a day picked in the
  * calendar, Enter, blur), never on each keystroke: the typed date is only a draft until then.
  */
-const DateValueInput = ({ value, onChange, disabled, label, commitOn }: ValueInputProps) => {
+const DateValueInput = ({ value, onChange, disabled, label, commitOn, required, error }: ValueInputProps) => {
   const { locale } = useIntl();
   const [date, setDate] = useState<Date | null>(toDate(value));
   const [received, setReceived] = useState(value);
@@ -33,6 +33,8 @@ const DateValueInput = ({ value, onChange, disabled, label, commitOn }: ValueInp
       locale={locale}
       value={date}
       disabled={disabled}
+      required={required}
+      error={error}
       onChange={setDate}
       onAccept={commit}
     />

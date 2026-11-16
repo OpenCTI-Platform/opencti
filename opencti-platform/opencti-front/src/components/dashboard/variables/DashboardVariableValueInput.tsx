@@ -24,9 +24,13 @@ export interface DashboardVariableValueInputProps {
   // When a typed text or number is emitted: on each keystroke (default, a form field) or once on Enter or blur
   // (a live filter, such as the chips, where each value re-queries the widgets). Other kinds of input ignore it.
   commitOn?: 'change' | 'blur';
+  // A required field shows the required marker after its label; an error is shown under the field.
+  required?: boolean;
+  error?: string;
 }
 
-export type ValueInputProps = Required<Omit<DashboardVariableValueInputProps, 'disabled'>> & { disabled?: boolean };
+export type ValueInputProps = Required<Omit<DashboardVariableValueInputProps, 'disabled' | 'required' | 'error'>>
+  & Pick<DashboardVariableValueInputProps, 'disabled' | 'required' | 'error'>;
 
 /**
  * Input of the value of a dashboard variable, by family of type.

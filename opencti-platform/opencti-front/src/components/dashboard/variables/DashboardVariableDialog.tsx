@@ -224,6 +224,7 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
           // The restriction and the default value wait for the type and for its parameter, which they depend on.
           const isTypeIncomplete = !type || (parameter !== undefined && !!errors[parameter]);
           const isRestrictable = !type || RESTRICTABLE_TYPES.includes(type);
+          const isOnlyDefaultValueMissing = Object.keys(errors).every((key) => key === 'defaultValue');
           // A type, or one of its parameters, changing makes the default value meaningless, and the selection and
           // the rule with it. They only change in creation: they are locked in edition.
           // The selection starts over untouched: it shows no error until touched again.
@@ -362,9 +363,13 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                     value={values.defaultValue}
                     // Searched within the rule: an empty or invalid one would offer entities the rule does not define.
                     disabled={isTypeIncomplete || (values.restrictionMode === 'filters' && !!errors.filters)}
+                    required
+                    // Shown once a value is chosen, or as soon as it is all that keeps Create disabled: the reason is
+                    // given, without an error on a field the user has not reached yet.
+                    error={errors.defaultValue && (values.defaultValue !== '' || isOnlyDefaultValueMissing) ? errors.defaultValue : undefined}
                     onChange={(defaultValue) => setFieldValue('defaultValue', defaultValue)}
                   />
-                ) : <Input label={t_i18n('Default value')} disabled value="" onChange={() => {}} />}
+                ) : <Input label={t_i18n('Default value')} required disabled value="" onChange={() => {}} />}
               </div>
               <div className="flex justify-end gap-2 pt-6">
                 <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>

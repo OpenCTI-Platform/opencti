@@ -19,7 +19,7 @@ import useVariableValueOptions from './useVariableValueOptions';
 /**
  * Server side search of the value of an entity pool variable or of an entity type (see useVariableValueOptions).
  */
-const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn }: ValueInputProps) => {
+const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn, required, error }: ValueInputProps) => {
   const { t_i18n } = useFormatter();
   const { options, search, listingError } = useVariableValueOptions(variable);
   const { labels } = useVariableValueLabels(variable, value ? [value] : []);
@@ -29,7 +29,8 @@ const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn
   return (
     <Combobox<FilterOptionValue>
       disabled={disabled}
-      error={!!listingError}
+      required={required}
+      error={!!listingError || !!error}
       clearable={commitOn === 'change'}
       options={options}
       value={selected}
@@ -44,7 +45,7 @@ const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn
         else if (commitOn === 'change') onChange('');
       }}
     >
-      <ComboboxLabel>{label}</ComboboxLabel>
+      <ComboboxLabel required={required}>{label}</ComboboxLabel>
       <ComboboxField>
         <ComboboxInput onFocus={(event) => search(event, '')} />
         <ComboboxControls>
@@ -52,7 +53,7 @@ const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn
           <ComboboxTrigger />
         </ComboboxControls>
       </ComboboxField>
-      {listingError && <ComboboxHelperText aria-live="polite">{listingError}</ComboboxHelperText>}
+      {(listingError || error) && <ComboboxHelperText aria-live="polite">{listingError || error}</ComboboxHelperText>}
       <ComboboxContent emptyMessage={t_i18n('No available options')} listAriaLabel={label} />
     </Combobox>
   );

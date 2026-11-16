@@ -13,7 +13,7 @@ const VARIABLE_TOKEN_PREFIX = toVariableToken('');
  * With `commitOn="blur"` (as `DateValueInput`) it is emitted once, on Enter or blur, only when it changed
  * and never empty.
  */
-const TextValueInput = ({ variable, value, onChange, disabled, label, commitOn }: ValueInputProps) => {
+const TextValueInput = ({ variable, value, onChange, disabled, label, commitOn, required, error }: ValueInputProps) => {
   const { t_i18n } = useFormatter();
   const isNumeric = variable.type === 'numeric';
   const [draft, setDraft] = useState(value);
@@ -57,7 +57,8 @@ const TextValueInput = ({ variable, value, onChange, disabled, label, commitOn }
       onKeyDown={handleKeyDown}
       onBlur={commit}
       disabled={disabled}
-      error={isToken ? t_i18n('A value cannot reference another variable') : undefined}
+      required={required}
+      error={isToken ? t_i18n('A value cannot reference another variable') : error}
     />
   );
 };
