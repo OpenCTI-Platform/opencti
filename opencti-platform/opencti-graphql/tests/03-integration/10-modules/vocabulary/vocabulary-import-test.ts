@@ -66,12 +66,12 @@ describe('Vocabulary import and export (configuration preset)', () => {
   });
 
   it('writes nothing on a dry run, and creates a custom entry otherwise', async () => {
-    // Hidden from the start: the visibility is part of the entry, the creation is one event whatever its values
-    const entry = { name: CUSTOM.name, description: 'Foreign information manipulation', aliases: ['fimi'], order: 5, is_hidden: true };
+    // Hidden and coloured from the start: the visibility and the colour are part of the entry, the creation is one event whatever its values
+    const entry = { name: CUSTOM.name, description: 'Foreign information manipulation', aliases: ['fimi'], order: 5, is_hidden: true, color: '#e91e63' };
     expect(await importCategory([entry], { dryRun: true })).toMatchObject({ status: 'created', exists: false });
     expect(await load(customId)).toBeFalsy();
     expect(await importCategory([entry])).toMatchObject({ status: 'created', exists: false });
-    expect(await load(customId)).toMatchObject({ ...CUSTOM, description: 'Foreign information manipulation', aliases: ['fimi'], order: 5, is_hidden: true });
+    expect(await load(customId)).toMatchObject({ ...CUSTOM, description: 'Foreign information manipulation', aliases: ['fimi'], order: 5, is_hidden: true, color: '#e91e63' });
     expect(await exportableCategories()).toContain(CATEGORY);
     expect(await exportedEntry(CUSTOM.name)).toEqual(entry);
   });
