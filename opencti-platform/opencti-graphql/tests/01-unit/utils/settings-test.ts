@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ADMIN_USER } from '../../utils/testQuery';
-import { completeXTMHubDataForRegistration, type InputSettingsData } from '../../../src/utils/settings.helper';
+import { completeXTMHubDataForRegistration, type InputSettingsData, readXtmHubTokenFor } from '../../../src/utils/settings.helper';
+import type { AuthUser } from '../../../src/types/user';
 
 describe('XTM Hub settings helper', () => {
   it('should complete XTM Data', () => {
@@ -67,5 +68,27 @@ describe('XTM Hub settings helper', () => {
 
     const data = completeXTMHubDataForRegistration(ADMIN_USER, mockInput);
     expect(data.length).toEqual(2);
+  });
+});
+
+describe('XTM Hub token visibility', () => {
+  const settings = { xtm_hub_token: 'platform-token' };
+  const userWith = (capabilities: string[]) => ({ ...ADMIN_USER, capabilities: capabilities.map((name) => ({ name })) }) as AuthUser;
+
+  it('should give the token to a user who manages the XTM Hub registration', () => {
+    expect(readXtmHubTokenFor(userWith(['SETTINGS_SETMANAGEXTMHUB']), settings)).toEqual('platform-token');
+  });
+  it('should give the token to a user with the BYPASS capability', () => {
+    expect(readXtmHubTokenFor(ADMIN_USER, settings)).toEqual('platform-token');
+  });
+  it('should hide the token from a user who does not manage the XTM Hub registration', () => {
+    expect(readXtmHubTokenFor(userWith([]), settings)).toBeNull();
+    expect(readXtmHubTokenFor(userWith(['KNOWLEDGE', 'SETTINGS_SETPARAMETERS', 'SETTINGS_SETACCESSES']), settings)).toBeNull();
+  });
+  it('should hide the token when there is no user', () => {
+    expect(readXtmHubTokenFor(undefined, settings)).toBeNull();
+  });
+  it('should give null when the platform is not registered', () => {
+    expect(readXtmHubTokenFor(ADMIN_USER, {})).toBeNull();
   });
 });

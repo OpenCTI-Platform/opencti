@@ -1,7 +1,18 @@
 import { isNotEmptyField } from '../database/utils';
 import type { AuthUser } from '../types/user';
+import type { BasicStoreSettings } from '../types/settings';
+import { isUserHasCapability, SETTINGS_SETMANAGEXTMHUB } from './access';
 
 export interface InputSettingsData { key: string; value: [unknown] }
+
+// The XTM Hub platform token authenticates this platform to XTM Hub: only the users who manage the XTM Hub
+// registration can read it. Everyone else gets null, not an error, because the settings every user loads ask for it.
+export const readXtmHubTokenFor = (user: AuthUser | undefined, settings: Pick<BasicStoreSettings, 'xtm_hub_token'>): string | null => {
+  if (!user || !isUserHasCapability(user, SETTINGS_SETMANAGEXTMHUB)) {
+    return null;
+  }
+  return settings.xtm_hub_token ?? null;
+};
 
 const readFirstValue = (item: InputSettingsData | undefined): unknown => {
   if (!item || item.value === undefined || item.value === null) return undefined;
