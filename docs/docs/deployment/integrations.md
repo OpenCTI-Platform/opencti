@@ -58,7 +58,7 @@ For all previously explained capabilities, as they are over the HTTP protocol, 3
 1. Using a bearer header with your OpenCTI API token
 
 	```
-	Authorization: Bearer a17bc103-8420-4208-bd53-e1f80845d15f
+	Authorization: Bearer <your API token>
 	```
 
 	!!! note "API token"
@@ -93,7 +93,7 @@ The API authentication can be performed using the token of a user and a classic 
 
 ```
 Content-Type: application/json
-Authorization: Bearer 6b6554c4-bb2c-4c80-9cd3-30288c8bf424
+Authorization: Bearer <your API token>
 ```
 
 #### Playground
