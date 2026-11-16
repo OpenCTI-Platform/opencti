@@ -54,7 +54,7 @@ When upgrading the platform, you replace the application files with the ones of 
 
     ```bash
     cd /path/to/your/app/opencti/worker
-    wget https://raw.githubusercontent.com/OpenCTI-Platform/opencti/{RELEASE_VERSION}/opencti-worker/requirements.txt
+    wget -O requirements.txt https://raw.githubusercontent.com/OpenCTI-Platform/opencti/{RELEASE_VERSION}/opencti-worker/requirements.txt
     pip3 install -r requirements.txt
     ```
 
