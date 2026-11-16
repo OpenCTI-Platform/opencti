@@ -116,6 +116,7 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          workflowStatusId: null,
           order: 0,
           requestAccessOutcome: null,
           onEnter: [{

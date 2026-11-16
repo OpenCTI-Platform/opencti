@@ -103,7 +103,7 @@ describe('Workflow definition GraphQL contract', () => {
     const schema = makeExecutableSchema({
       typeDefs: [
         `
-          enum Capabilities { BYPASS KNOWLEDGE_KNUPDATE SETTINGS_SETCUSTOMIZATION SETTINGS }
+          enum Capabilities { BYPASS KNOWLEDGE_KNUPDATE SETTINGS_SETCUSTOMIZATION SETTINGS AUTOMATION_AUTMANAGE }
           directive @auth(for: [Capabilities!]!, forDraft: [Capabilities!], and: Boolean) on FIELD_DEFINITION | OBJECT
           directive @public on FIELD_DEFINITION
           directive @ff(flags: [String!]!, softFail: Boolean = false, defaultValue: String = null) on FIELD_DEFINITION
@@ -128,6 +128,7 @@ describe('Workflow definition GraphQL contract', () => {
       states: [{ statusId: 'new' }, { statusId: 'approved', requestAccessOutcome: 'APPROVED' }],
       transitions: [],
     } as any);
+    vi.mocked(workflowDomain.attachWorkflowStatusIds).mockImplementation(async (_context, _user, _entityType, definition) => definition);
     const result = await graphql({
       schema: authDirectiveBuilder('auth').authDirectiveTransformer(schema),
       source: '{ workflowDefinition(entityType: "Case-Rfi", scope: REQUEST_ACCESS) { states { statusId requestAccessOutcome } } }',
@@ -506,7 +507,7 @@ describe('workflow-resolvers', () => {
           false,
           StatusScope.Global,
         );
-        expect(workflowDomain.attachWorkflowStatusIds).toHaveBeenCalledWith(mockContext, mockContext.user, 'Case', mockDefinition);
+        expect(workflowDomain.attachWorkflowStatusIds).toHaveBeenCalledWith(mockContext, mockContext.user, 'Case', mockDefinition, StatusScope.Global);
         expect(result).toBe(attachedDefinition);
       });
 

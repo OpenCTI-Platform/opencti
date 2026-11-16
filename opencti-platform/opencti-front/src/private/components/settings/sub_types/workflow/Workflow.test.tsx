@@ -643,7 +643,7 @@ describe('Workflow Component', () => {
       await user.click(screen.getByTestId('force-publish-button'));
 
       expect(mockPublishWorkflowDefinition).toHaveBeenCalledWith(
-        expect.objectContaining({ variables: { entityType: 'DraftWorkspace' } }),
+        expect.objectContaining({ variables: { entityType: 'DraftWorkspace', scope: 'GLOBAL' } }),
       );
       expect(mockNotifyError).not.toHaveBeenCalled();
     });
