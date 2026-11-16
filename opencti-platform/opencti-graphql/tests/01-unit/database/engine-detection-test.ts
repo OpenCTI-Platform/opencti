@@ -26,14 +26,19 @@ describe('engine detection: decideEngineClient', () => {
 describe('engine detection: resolveEngineClient', () => {
   it('should read the server in auto mode', async () => {
     const probe = vi.fn(async () => ({ version: { number: '9.1.0' } }));
-    expect(await resolveEngineClient('auto', null, probe)).toEqual({ client: 'elasticsearch9', version: '9.1.0', source: 'detection' });
+    expect(await resolveEngineClient('auto', null, probe)).toEqual({ client: 'elasticsearch9', version: '9.1.0', source: 'detection', serverless: false });
     expect(probe).toHaveBeenCalledOnce();
   });
 
   it('should trust a forced client without reading the server', async () => {
     const probe = vi.fn();
-    expect(await resolveEngineClient('elasticsearch8', null, probe)).toEqual({ client: 'elasticsearch8', source: 'configuration' });
+    expect(await resolveEngineClient('elasticsearch8', null, probe)).toEqual({ client: 'elasticsearch8', source: 'configuration', serverless: false });
     expect(probe).not.toHaveBeenCalled();
+  });
+
+  it('should report Elastic Serverless when the server is read', async () => {
+    const probe = vi.fn(async () => ({ version: { number: '8.11.0', build_flavor: 'serverless' } }));
+    expect(await resolveEngineClient('auto', null, probe)).toEqual({ client: 'elasticsearch9', version: '8.11.0', source: 'detection', serverless: true });
   });
 
   it('should refuse an unknown client', async () => {
@@ -42,7 +47,7 @@ describe('engine detection: resolveEngineClient', () => {
 
   it('should pick OpenSearch with AWS SigV4 without reading the server', async () => {
     const probe = vi.fn();
-    expect(await resolveEngineClient('auto', 'eu-west-1', probe)).toEqual({ client: 'opensearch', source: 'aws' });
+    expect(await resolveEngineClient('auto', 'eu-west-1', probe)).toEqual({ client: 'opensearch', source: 'aws', serverless: false });
     expect(probe).not.toHaveBeenCalled();
   });
 
@@ -148,9 +153,10 @@ describe('engine detection: checkEngineReachable', () => {
     ['OpenSearch', (node) => () => new OpenClient({ node, maxRetries: 0 }).info()],
   ];
 
-  it.each(clients)('should pass when %s answers', async (_name, ping) => {
+  // The answer is handed back: a forced client reads the engine flavor from it, having skipped the probe
+  it.each(clients)('should pass when %s answers, and return its answer', async (_name, ping) => {
     status = 200;
-    await expect(checkEngineReachable(ping(baseUrl))).resolves.toBeUndefined();
+    await expect(checkEngineReachable(ping(baseUrl))).resolves.toBeDefined();
   });
 
   it.each(clients)('should pass when %s refuses GET /, which proves it answers', async (_name, ping) => {
