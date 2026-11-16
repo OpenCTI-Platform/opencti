@@ -1677,7 +1677,7 @@ const publishWorkflowDraftUnderLock = async (
 
   // Drafts hold a status only once it is projected: those created before the workflow was published are
   // in its initial state. Best-effort, a draft left without status is projected when its instance is read.
-  if (entityType === 'DraftWorkspace') {
+  if (entityType === 'DraftWorkspace' && scope === StatusScope.Global) {
     try {
       // System identity: restricted drafts must be projected whatever the publisher can see.
       await projectDraftWorkflowStatuses(
