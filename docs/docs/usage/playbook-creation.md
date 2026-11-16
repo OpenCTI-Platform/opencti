@@ -141,3 +141,5 @@ To view execution traces, open a playbook and click the execution traces icon in
 - It is possible to configure playbooks to run based on the output of a previous playbook, allowing you to chain multiple processes to automate your data processing needs. For example one playbook can add a label, such as ‘weekly digest’, which can then be used as the trigger criteria for a (weekly) scheduled query that then creates a new container with all ‘weekly digest’ entities added. 
 
 - When drafting and testing a playbook consider adding a filter of `Creator = <your user>`. This will mean you will be able to manually create data that can be used with the playbook and limit the likelihood of other users running the playbook before it is ready.
+
+- To diagnose a playbook that does not behave as expected (fewer steps than expected, wrong route, unexpected Manipulate knowledge result), see [Troubleshoot playbook execution](#troubleshoot-playbook-execution).
