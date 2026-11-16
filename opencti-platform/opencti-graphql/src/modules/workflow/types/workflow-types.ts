@@ -37,6 +37,12 @@ export interface AsyncActionSlot {
 }
 
 /**
+ * Event of the record that only tracks the container share tasks and direct grants a failed transition could not
+ * undo. It is not a transition: its completion never projects a state, replays actions or writes history.
+ */
+export const WORKFLOW_CLEANUP_EVENT = 'event_failed_share_cleanup';
+
+/**
  * The full pending-transition record persisted on WorkflowInstance while async tasks run.
  */
 export interface WorkflowPendingTransition {

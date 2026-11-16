@@ -295,6 +295,24 @@ describe('reportWorkflowAsyncActionResult', () => {
     expect(ptUpdated.asyncActions[1].status).toBe('pending');
   });
 
+  it('keeps a failed-share cleanup record in error and never projects or replays anything when a leftover task completes', async () => {
+    const pt = makePendingTransition({
+      event: 'event_failed_share_cleanup',
+      toState: '',
+      asyncActions: [{ id: 'slot-1', workId: 'work-1', type: 'shareRequestedEntities', status: 'pending', taskId: 'task-1' }],
+    });
+    (storeLoadById as any).mockResolvedValue(makeInstance({ pendingStatus: 'error', pendingTransition: JSON.stringify(pt) }));
+    (updateAttribute as any).mockResolvedValue({});
+
+    await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+    expect(updateAttribute).toHaveBeenCalledTimes(1);
+    const [, , , , patches] = (updateAttribute as any).mock.calls[0];
+    expect(patches.map((p: { key: string }) => p.key)).toEqual(['pendingTransition']);
+    expect(JSON.parse(patches[0].value[0]).asyncActions[0].status).toBe('success');
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+
   it('sets pendingStatus=error when all slots have finished but at least one failed', async () => {
     const pt = makePendingTransition({
       asyncActions: [

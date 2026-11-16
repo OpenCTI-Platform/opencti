@@ -23,6 +23,7 @@ import {
   mergeRequestAccessDirectGrants,
   type RequestAccessDirectGrant,
   type WorkflowPendingTransition,
+  WORKFLOW_CLEANUP_EVENT,
 } from '../types/workflow-types';
 import { projectWorkflowState, resolveProjectionScope } from './workflow-projection';
 
@@ -192,6 +193,16 @@ const completeWorkflowAsyncActionResult = async (
   if (pendingTransition.event === 'event_bypass' && pendingTransition.asyncActions[slotIndex].status !== 'pending') return;
 
   pendingTransition.asyncActions[slotIndex].status = status;
+
+  // A failed-share cleanup record is not a transition: a leftover task reporting back only updates its slot. The
+  // instance stays in error, with no state projection, history entry or replayed action, until an admin clears it.
+  if (pendingTransition.event === WORKFLOW_CLEANUP_EVENT) {
+    await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+      { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
+    ]);
+    logApp.warn('[workflow-async-completion] A leftover container share task reported back after a failed transition', { workflowInstanceId, workflowActionId, status });
+    return;
+  }
 
   const allDone = pendingTransition.asyncActions.every((s) => s.status !== 'pending');
   const anyFailed = pendingTransition.asyncActions.some((s) => s.status === 'failed');

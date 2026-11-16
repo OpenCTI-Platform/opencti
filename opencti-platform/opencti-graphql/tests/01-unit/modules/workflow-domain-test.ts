@@ -3979,8 +3979,9 @@ describe('triggerWorkflowEvent – async / pending / lock', () => {
     expect(input.find((i) => i.key === 'pendingStatus')?.value).toEqual(['error']);
     const pending = JSON.parse(input.find((i) => i.key === 'pendingTransition')?.value[0] as string);
     expect(pending.asyncActions).toEqual([slot]);
-    expect(pending.event).toBe('submit');
-    expect(pending.toState).toBe('reviewing');
+    // Not a transition: the failed target state never reaches a leftover task's completion
+    expect(pending.event).toBe('event_failed_share_cleanup');
+    expect(pending.toState).toBe('');
   });
 
   it('records the direct grants a refused share could not undo, and retries the write once', async () => {
