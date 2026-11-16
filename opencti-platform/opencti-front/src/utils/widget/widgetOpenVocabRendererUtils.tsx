@@ -46,42 +46,61 @@ const renderOpenVocabList = (
   );
 };
 
+// Observable types are entity types, not a vocabulary: no VocabularyCategory holds them, so their chip stays plain
+export const NON_VOCABULARY_TYPES = ['observable_types_ov'];
+
+// The vocabulary of each single-value attribute: a VocabularyCategory enum member (or a NON_VOCABULARY_TYPES entry)
+export const openVocabSingleCategories: Record<string, string> = {
+  entity_type: 'observable_types_ov',
+  priority: 'case_priority_ov',
+  severity: 'case_severity_ov',
+  incident_type: 'incident_type_ov',
+  resource_level: 'attack_resource_level_ov',
+  primary_motivation: 'attack_motivation_ov',
+  x_opencti_organization_type: 'organization_type_ov',
+  eye_color: 'eye_color_ov',
+  context: 'grouping_context_ov',
+  hair_color: 'hair_color_ov',
+  gender: 'gender_ov',
+  marital_status: 'marital_status_ov',
+  x_opencti_reliability: 'reliability_ov',
+};
+
+// The vocabulary of each multi-value attribute: a VocabularyCategory enum member (or a NON_VOCABULARY_TYPES entry)
+export const openVocabListCategories: Record<string, string> = {
+  threat_actor_types: 'threat_actor_group_type_ov',
+  malware_types: 'malware_type_ov',
+  channel_types: 'channel_types_ov',
+  tool_types: 'tool_types_ov',
+  note_types: 'note_types_ov',
+  response_types: 'incident_response_types_ov',
+  information_types: 'request_for_information_types_ov',
+  takedown_types: 'request_for_takedown_types_ov',
+  event_types: 'event_type_ov',
+  infrastructure_types: 'infrastructure_type_ov',
+  architecture_execution_envs: 'processor_architecture_ov',
+  implementation_languages: 'implementation_language_ov',
+  capabilities: 'malware_capabilities_ov',
+  indicator_types: 'indicator_type_ov',
+  x_opencti_main_observable_type: 'observable_types_ov',
+};
+
 export const openVocabSingleRenderers: Record<
   string,
   (data: Record<string, unknown>) => React.ReactElement
-> = {
-  entity_type: (d) => renderSingleOpenVocab(d, 'entity_type', 'observable_types_ov'),
-  priority: (d) => renderSingleOpenVocab(d, 'priority', 'case_priority_ov'),
-  severity: (d) => renderSingleOpenVocab(d, 'severity', 'case_severity_ov'),
-  incident_type: (d) => renderSingleOpenVocab(d, 'incident_type', 'incident_type_ov'),
-  resource_level: (d) => renderSingleOpenVocab(d, 'resource_level', 'attack-resource-level-ov'),
-  primary_motivation: (d) => renderSingleOpenVocab(d, 'primary_motivation', 'attack-motivation-ov'),
-  x_opencti_organization_type: (d) => renderSingleOpenVocab(d, 'x_opencti_organization_type', 'organization_type_ov'),
-  eye_color: (d) => renderSingleOpenVocab(d, 'eye_color', 'eye-color-ov'),
-  context: (d) => renderSingleOpenVocab(d, 'context', 'grouping_context_ov'),
-  hair_color: (d) => renderSingleOpenVocab(d, 'hair_color', 'hair-color-ov'),
-  gender: (d) => renderSingleOpenVocab(d, 'gender', 'gender_ov'),
-  marital_status: (d) => renderSingleOpenVocab(d, 'marital_status', 'marital_status_ov'),
-  x_opencti_reliability: (d) => renderSingleOpenVocab(d, 'x_opencti_reliability', 'reliability_ov'),
-};
+> = Object.fromEntries(
+  Object.entries(openVocabSingleCategories).map(([attribute, vocabType]) => [
+    attribute,
+    (d: Record<string, unknown>) => renderSingleOpenVocab(d, attribute, vocabType),
+  ]),
+);
 
 export const openVocabListRenderers: Record<
   string,
   (data: Record<string, unknown>) => React.ReactElement
-> = {
-  threat_actor_types: (d) => renderOpenVocabList(d, 'threat_actor_types', 'threat-actor-type-ov'),
-  malware_types: (d) => renderOpenVocabList(d, 'malware_types', 'malware-type-ov'),
-  channel_types: (d) => renderOpenVocabList(d, 'channel_types', 'channel_types_ov'),
-  tool_types: (d) => renderOpenVocabList(d, 'tool_types', 'tool-type-ov'),
-  note_types: (d) => renderOpenVocabList(d, 'note_types', 'note_types_ov'),
-  response_types: (d) => renderOpenVocabList(d, 'response_types', 'response_types_ov'),
-  information_types: (d) => renderOpenVocabList(d, 'information_types', 'information_types_ov'),
-  takedown_types: (d) => renderOpenVocabList(d, 'takedown_types', 'takedown_types_ov'),
-  event_types: (d) => renderOpenVocabList(d, 'event_types', 'event_types_ov'),
-  infrastructure_types: (d) => renderOpenVocabList(d, 'infrastructure_types', 'infrastructure-type-ov'),
-  architecture_execution_envs: (d) => renderOpenVocabList(d, 'architecture_execution_envs', 'processor-architecture-ov'),
-  implementation_languages: (d) => renderOpenVocabList(d, 'implementation_languages', 'implementation-language-ov'),
-  capabilities: (d) => renderOpenVocabList(d, 'capabilities', 'malware-capabilities-ov'),
-  indicator_types: (d) => renderOpenVocabList(d, 'indicator_types', 'indicator-type-ov'),
-  x_opencti_main_observable_type: (d) => renderOpenVocabList(d, 'x_opencti_main_observable_type', 'observable_types_ov'),
-};
+> = Object.fromEntries(
+  Object.entries(openVocabListCategories).map(([attribute, vocabType]) => [
+    attribute,
+    (d: Record<string, unknown>) => renderOpenVocabList(d, attribute, vocabType),
+  ]),
+);

@@ -90,6 +90,10 @@ const indicatorRenderers: EntityRenderers = {
   },
 };
 
+// VocabularyCategory enum members of the sophistication chips
+export const THREAT_ACTOR_GROUP_SOPHISTICATION_CATEGORY = 'threat_actor_group_sophistication_ov';
+export const THREAT_ACTOR_INDIVIDUAL_SOPHISTICATION_CATEGORY = 'threat_actor_individual_sophistication_ov';
+
 // ─── Threat Actor Group
 const threatActorGroupRenderers: EntityRenderers = {
   sophistication: (data) => {
@@ -98,7 +102,7 @@ const threatActorGroupRenderers: EntityRenderers = {
       <FieldOrEmpty source={value}>
         <ItemOpenVocab
           displayMode="chip"
-          type="threat-actor-group-sophistication-ov"
+          type={THREAT_ACTOR_GROUP_SOPHISTICATION_CATEGORY}
           value={value}
         />
       </FieldOrEmpty>
@@ -122,7 +126,7 @@ const threatActorIndividualRenderers: EntityRenderers = {
       <FieldOrEmpty source={value}>
         <ItemOpenVocab
           displayMode="chip"
-          type="threat-actor-individual-sophistication-ov"
+          type={THREAT_ACTOR_INDIVIDUAL_SOPHISTICATION_CATEGORY}
           value={value}
         />
       </FieldOrEmpty>
