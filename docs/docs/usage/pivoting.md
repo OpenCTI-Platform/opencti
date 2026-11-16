@@ -75,7 +75,7 @@ Select one or more entities or relationships of the same type, then either:
 - open the **Enrichment** panel with the cloud button of the graph toolbar, pick one or more connectors under **Start an enrichment** and click **Enrich**;
 - or right-click the selection and pick a connector under **Enrichment** (see [Context menu](graphs.md#context-menu)).
 
-A confirmation lists the selected elements, then the enrichment runs as a [background task](background-tasks.md) and the panel opens on its **To review** tab. Only the connectors that can enrich the selected type are offered. When the selection mixes types, or no connector can enrich it, the panel says **No connector available for the selected entities.** and the menu entry cannot be chosen.
+The enrichment runs as a [background task](background-tasks.md) and the panel opens on its **To review** tab. OpenCTI asks for a confirmation, listing the selected elements, only when more than 1000 elements are selected. Until the task is created, **Enrich** and the menu entry cannot be used again. Only the connectors that can enrich the selected type are offered. When the selection mixes types, or no connector can enrich it, the panel says **No connector available for the selected entities.** and the menu entry cannot be chosen.
 
 ### Follow enrichments
 

@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { useEffect, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import { Link } from 'react-router';
 import { useTheme } from '@mui/material/styles';
@@ -75,6 +76,8 @@ interface BackgroundTaskLaunchProps {
   excludedIds?: string[];
   // To show the label of a custom field updated by an action, instead of its name
   customFieldDefinitions?: ReadonlyArray<{ name: string; label: string }>;
+  // Launches without the dialog up to MAX_ENTITIES elements
+  confirmOnlyAboveLimit?: boolean;
 }
 
 const BackgroundTaskLaunch = ({
@@ -97,6 +100,7 @@ const BackgroundTaskLaunch = ({
   promoteToContainer,
   excludedIds,
   customFieldDefinitions,
+  confirmOnlyAboveLimit = false,
 }: BackgroundTaskLaunchProps) => {
   const { me, schema } = useAuth();
   const isInDraft = me.draftContext;
@@ -114,12 +118,12 @@ const BackgroundTaskLaunch = ({
     </span>
   );
 
-  const [listMutation] = useApiMutation<BackgroundTaskLaunchListTaskAddMutation>(
+  const [listMutation, listInFlight] = useApiMutation<BackgroundTaskLaunchListTaskAddMutation>(
     listTaskAddMutation,
     undefined,
     { successMessage },
   );
-  const [queryMutation] = useApiMutation<BackgroundTaskLaunchQueryTaskAddMutation>(
+  const [queryMutation, queryInFlight] = useApiMutation<BackgroundTaskLaunchQueryTaskAddMutation>(
     queryTaskAddMutation,
     undefined,
     { successMessage },
@@ -188,6 +192,21 @@ const BackgroundTaskLaunch = ({
     );
   };
 
+  // Decided once per display, so that a selection changing meanwhile cannot relaunch or show the dialog
+  const [displayed, setDisplayed] = useState(false);
+  const [launchWithoutConfirmation, setLaunchWithoutConfirmation] = useState(false);
+  if (display !== displayed) {
+    setDisplayed(display);
+    setLaunchWithoutConfirmation(display
+      && confirmOnlyAboveLimit
+      && numberOfSelectedElements > 0
+      && numberOfSelectedElements <= MAX_ENTITIES);
+  }
+
+  // No onError, so that useApiMutation keeps its error handling: a request that ends with the launcher still open failed
+  const sending = listInFlight || queryInFlight;
+  const sentWithoutConfirmation = useRef(false);
+
   const launchTask = () => {
     onLaunch();
     const scope = taskScope ?? 'KNOWLEDGE';
@@ -198,6 +217,7 @@ const BackgroundTaskLaunch = ({
     const finalActions = taskScope === 'USER'
       ? getUserFinalActions()
       : getOtherActions();
+    sentWithoutConfirmation.current = launchWithoutConfirmation;
 
     if (selectAll) {
       queryMutation({
@@ -230,9 +250,21 @@ const BackgroundTaskLaunch = ({
     }
   };
 
+  useEffect(() => {
+    if (sending || !sentWithoutConfirmation.current) return;
+    sentWithoutConfirmation.current = false;
+    if (display) onClose();
+  }, [sending]);
+
+  useEffect(() => {
+    if (display && launchWithoutConfirmation) {
+      launchTask();
+    }
+  }, [display, launchWithoutConfirmation]);
+
   return (
     <Dialog
-      open={display}
+      open={display && !launchWithoutConfirmation}
       onClose={onClose}
       data-testid="background-task-popup"
       title={(

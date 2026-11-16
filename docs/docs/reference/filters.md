@@ -219,13 +219,13 @@ filters = {
 - There is a small difference between `search` and `contains`. `search` finds any occurrence of specified words regardless of their order, while `contains` specifically looks for the exact sequence of words you provide.
 
 ```ts
-// Example: contains 'my test'
+// Example: name contains 'my test'
 filters = {
     mode: 'and',
     filters: [{
-        key: 'contains',
+        key: 'name',
         values: ['my test'],
-        operator: 'eq',
+        operator: 'contains',
         mode: 'or',
     }],
     filterGroups: [],

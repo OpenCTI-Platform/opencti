@@ -37,6 +37,7 @@
   "resolutions": {
     "@filigran/chatbot/lodash": "4.18.1",
     "@filigran/chatbot/uuid": "14.0.3",
+    "@filigran/rich-text-editor": "patch:@filigran/rich-text-editor@2.0.1#./patch/filigran-rich-text-editor-2.0.1.patch",
     "@types/pdfmake": "0.3.3",
     "axios": "1.21.1",
     "chokidar": "6.0.0",
