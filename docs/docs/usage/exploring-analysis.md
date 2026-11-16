@@ -111,7 +111,7 @@ Clicking on a Grouping, you land on its Overview tab. For a Groupings, the follo
 - Knowledge: a complex tab that regroups all the structured Knowledge contained in the groupings, as for a Report, except for the Timeline view. As described [here](overview.md#knowledge-section).
 - Content: a tab to provide access to content mapping, suggested mapping and allows to preview, manage and write the deliverables associated with the Grouping. For example, an analytical report to share with other teams, a markdown file to feed a collaborative wiki, etc. As described [here](overview.md#content-section).
 - Entities: A table containing all SDO (Stix Domain Objects) contained in the Grouping, with search and filters available. It also displays if the SDO has been added directly or through [inferences with the reasoning engine](inferences.md)
-- Observables: A table containing all SCO (Stix Cyber Observable) contained in the Grouping, with search and filters available. It also displays if the SDO has been added directly or through [inferences with the reasoning engine](inferences.md)
+- Observables: A table containing all SCO (Stix Cyber Observable) contained in the Grouping, with search and filters available. It also displays if the SCO has been added directly or through [inferences with the reasoning engine](inferences.md)
 - Data: as described [here](overview.md#data-section).
 
 ### Restricting access to a Grouping
