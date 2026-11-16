@@ -42,6 +42,10 @@ You can find below the diagram of all types of entities and relationships availa
 
 <iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="800" height="450" src="https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Ffile%2FSrp4IQ9xAnzaS043epUZuJ%2FOpenCTI---Models%3Ftype%3Dwhiteboard%26node-id%3D0%253A1%26t%3DDeOZVWsFdJ13c05f-1" allowfullscreen></iframe>
 
+If the embedded diagram does not load, use this static export (click to zoom):
+
+![Diagram of entity and relationship types](assets/data-model-diagram.png)
+
 ### Attributes and properties
 
 To get a comprehensive list of available properties for a given type of entity or relationship, you can use the GraphQL playground schema available in your "Profile > Playground". Then you can click on the Documentation button on the left. You can for instance search for the keyword `IntrusionSet`:

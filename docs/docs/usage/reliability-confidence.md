@@ -123,6 +123,10 @@ To have a detailed understanding of the concept, please browse through this diag
 
 <iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="800" height="450" src="https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Ffile%2FlVU6O39B76MJmtnzg9DbZZ%2FConfidence-Level---Documentation%3Ftype%3Dwhiteboard%26node-id%3D0%253A1%26t%3DPQWrdBF6iMGEp0bw-1" allowfullscreen></iframe>
 
+If the embedded diagram does not load, use this static export (click to zoom):
+
+![Confidence level diagram](assets/confidence-level-diagram.png)
+
 #### User effective confidence level
 
 User and group confidence level configuration shall be viewed as:
@@ -143,6 +147,10 @@ To compute this value, OpenCTI uses the following strategy:
 The following diagram describes the different use-cases you can address with this system.
 
 <iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="800" height="450" src="https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fboard%2FcecHM2dDyOPoviw6qbVYK4%2FEffective-Confidence-Level-Computation---Documentation%3Fnode-id%3D0-1%26t%3DZSJNGb93mPAQRPVh-1" allowfullscreen></iframe>
+
+If the embedded diagram does not load, use this static export (click to zoom):
+
+![Effective confidence level use cases](assets/effective-confidence-level-diagram.png)
 
 #### How to set a confidence level
 
