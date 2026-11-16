@@ -51,6 +51,7 @@ import { buildIntent, intentOwnIds } from './sequencer-intent';
 import { sequencerIdentityMap, startIdentityMapInvalidation } from './sequencer-identity-map';
 import { buildBatchPlan, canonicalKey, classifyPhase } from './sequencer-batch-plan';
 import { computeBatchLockKeys, computeOwnLockKeys, getCurrentBatchLock, setCurrentBatchLock } from './sequencer-batch-lock';
+import { mergedSourceKeys, newEndpointShares, preShareEndpoints, releaseEndpointShares } from './sequencer-endpoint-shares';
 import { isNoopOfServedBasis, NOOP_TOKEN_SOURCE_EXCLUDES, NoopMemo, NoopMemoDiag, noopRecordOf, noopTokenOf, settleNoopRecords, takeNoopMemoHits } from './sequencer-noop-memo';
 import type { NoopDiagOutcome, NoopRecord, NoopTarget, NoopToken, NoopVersionsOf } from './sequencer-noop-memo';
 import type { CoalesceGroup } from './sequencer-batch-plan';
@@ -731,6 +732,12 @@ const batchLockKeys = (groups: CoalesceGroup[]): string[] => computeBatchLockKey
   (id) => sequencerIdentityMap.resolveInternalId(id),
   relationOwnIds,
 );
+// task 0040 defect 1: the relation endpoints the plan resolved, shared against a merge (sequencer-endpoint-shares.ts)
+const relationEndpointIds = (groups: CoalesceGroup[]): string[] => groups
+  .filter(({ leader }) => leader.kind === 'relation')
+  .flatMap(({ leader }) => [leader.input.fromId, leader.input.toId])
+  .map((id) => (typeof id === 'string' ? sequencerIdentityMap.resolveInternalId(id) : null))
+  .filter((id): id is string => typeof id === 'string');
 // task 0040 multi_writer step 2: what the batch locks in Redis (sequencer-batch-lock.ts)
 // task 0040: a label the map knows exists, the apply only references it (object-label_to is not
 // impacted, nothing writes the label): not locked as creatable
@@ -1305,11 +1312,17 @@ const runBatchLoop = async () => {
         continue;
       }
     }
+    const shares = SEQUENCER_CONFIG.multiWriter ? newEndpointShares() : undefined;
+    if (shares) {
+      await preShareEndpoints(shares, relationEndpointIds(plan.order))
+        .catch((err) => logApp.error('[SEQUENCER] relation endpoints not pre-shared, shared at apply', { cause: err }));
+    }
     setCurrentBatchLock({
       heldKeys: new Set(SEQUENCER_CONFIG.multiWriter ? [...heldKeys, ...lockKeys] : lockKeys),
       signal: lock.signal,
       onMiss: recordLockMiss,
       noWait: SEQUENCER_CONFIG.multiWriter,
+      shares,
     });
     // 5. apply leaders one at a time (C6) with the Stage E write buffer armed, then commit:
     // flush the buffered writes (one docs bulk + one side/update bulk + ONE refresh), push the
@@ -1326,6 +1339,12 @@ const runBatchLoop = async () => {
       // once, sequencer-batch-lock.ts): the group starts a new cycle, the key locked up front
       if (SEQUENCER_CONFIG.multiWriter && isLockError(err)) {
         const keys = lockErrorKeys(err);
+        // defect 1: an endpoint merged away by another platform, the next cycle resolves it again from ES
+        const merged = mergedSourceKeys(err);
+        if (merged.length > 0) {
+          sequencerIdentityMap.evict(merged);
+          sequencerMetrics.mapEvent('apply_merged_endpoint');
+        }
         [leader, ...absorbed].forEach((intent) => {
           intent.extraLockKeys = [...new Set([...(intent.extraLockKeys ?? []), ...keys])];
         });
@@ -1589,6 +1608,9 @@ const runBatchLoop = async () => {
         await bumpLockStamps(lockKeys.filter((key) => key.startsWith('relation-dedup:')), DEDUP_STAMP_TTL_S)
           .catch((err) => logApp.error('[SEQUENCER] dedup stamps not written, another platform may miss a dedup', { cause: err }));
       }
+      // defect 1: the shared endpoints are released once the batch writes are refreshed (flush above)
+      await releaseEndpointShares(shares)
+        .catch((err) => logApp.error('[SEQUENCER] relation endpoint shares not released, a merge waits for their expiry', { cause: err }));
       await lock.unlock();
     }
     // record the REAL assembly size (before the batchEwp-a diagnosis this recorded the

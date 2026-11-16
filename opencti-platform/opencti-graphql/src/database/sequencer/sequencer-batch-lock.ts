@@ -14,6 +14,9 @@ export interface SequencerBatchLock {
   // (another platform may hold it while waiting for one of ours); the apply fails with LOCK_ERROR
   // and its group starts a new cycle with the key locked up front
   noWait?: boolean;
+  // task 0040 defect 1 (multi_writer): the relation endpoints this batch shares against a merge, under
+  // one holder token, released after its flush (sequencer-multi-writer shareRelationEndpoints)
+  shares?: { holder: string; ids: Set<string> };
 }
 
 // Keys the batch lock must hold so the apply-time lock sites are no-ops (master-lock's

@@ -113,6 +113,7 @@ import { registerReconcileAssert, stripSinkOf } from './sequencer/sequencer-pend
 import { pendingIntentContext, pendingRecordInput, registerPendingIntentResubmit } from './sequencer/sequencer-pending-intents';
 import { sequencerIdentityBarrier } from './sequencer/sequencer-barrier';
 import { relationBasisContext } from './sequencer/sequencer-multi-writer';
+import { markMergeSources, shareRelationEndpoints, unmarkMergeSources } from './sequencer/sequencer-endpoint-shares';
 import { createInputCompletionOf } from './create-input-completion';
 import { notify, redisAddDeletions } from './redis';
 import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
@@ -2164,6 +2165,9 @@ export const mergeEntities = async (
   const { locks = [] } = opts;
   const participantIds = mergedIds.filter((e) => !locks.includes(e));
   let lock;
+  // task 0040 defect 1: sources marked against relations of other platforms, unmarked if not deleted
+  let markedSources: string[] = [];
+  let sourcesDeleted = false;
   try {
     // Lock the participants that will be merged
     lock = await lockResources(participantIds, { draftId: getDraftContext(context, user), sequencer: sequencerLockArgs(context) });
@@ -2189,11 +2193,14 @@ export const mergeEntities = async (
       });
     });
     const sources = R.uniqBy((s) => s.internal_id, sourceEntityIds.map((id) => sourcesByIds.get(id)).filter(isNotEmptyField));
+    // multi_writer: no relation of another platform lands on a source once its dependencies are read
+    markedSources = await markMergeSources(context, sources.map((s) => s.internal_id));
     const sourcesDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, sources.map((s) => s.internal_id));
     const targetDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, [initialInstance.internal_id]);
     // - TRANSACTION PART
     lock.signal.throwIfAborted();
     await mergeEntitiesRaw(context, user, target, sources, targetDependencies, sourcesDependencies, opts);
+    sourcesDeleted = true;
     const mergedInstance = await storeLoadByIdWithRefs<StoreObject>(context, user, targetEntityId);
     if (!mergedInstance) {
       throw FunctionalError('Cannot access merged instance', { targetEntityId });
@@ -2211,6 +2218,9 @@ export const mergeEntities = async (
     }
     throw err;
   } finally {
+    if (markedSources.length > 0 && !sourcesDeleted) {
+      await unmarkMergeSources(markedSources).catch((err) => logApp.error('[SEQUENCER] merge marks not removed', { cause: err }));
+    }
     if (lock) await lock.unlock();
   }
 };
@@ -3843,6 +3853,9 @@ export const createRelationRaw = async (
   if (isImpactedTypeAndSide(relationshipType, from.entity_type, to.entity_type, ROLE_FROM)) inputIds.push(from.internal_id);
   if (isImpactedTypeAndSide(relationshipType, from.entity_type, to.entity_type, ROLE_TO)) inputIds.push(to.internal_id);
   const participantIds = inputIds.filter((e) => !locks.includes(e));
+  // task 0040 defect 1 (multi_writer): the endpoints are shared until the batch flush, refused if another
+  // platform merges either away
+  await shareRelationEndpoints(context, [from.internal_id, to.internal_id]);
   try {
     // Try to get the lock in redis
     lock = await lockResources(participantIds, { draftId: getDraftContext(context, user), sequencer: sequencerLockArgs(context) });
