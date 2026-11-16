@@ -49,6 +49,11 @@ interface WorkflowValidationErrorsToastContentProps {
 
 const WorkflowValidationErrorsToastContent = ({ errors, t_i18n, statusTemplates }: WorkflowValidationErrorsToastContentProps) => {
   const statusTemplateMap = convertEdgesToObject(statusTemplates);
+  // The server names removed statuses by template id inside the message: show their names instead
+  const withStatusNames = (message: string) => Object.entries(statusTemplateMap).reduce(
+    (acc, [id, template]) => (template?.name ? acc.split(id).join(template.name) : acc),
+    message,
+  );
 
   const groupedErrors = errors.reduce((acc, error) => {
     if (!acc[error.type]) acc[error.type] = [];
@@ -68,7 +73,7 @@ const WorkflowValidationErrorsToastContent = ({ errors, t_i18n, statusTemplates 
           </Typography>
           {typeErrors.map((error, index) => (
             <Typography key={index} variant="caption" component="div" sx={{ ml: 1 }}>
-              • {error.message}
+              • {withStatusNames(error.message)}
               {error.path && error.path.length > 0 && (
                 <Typography variant="caption" component="span" sx={{ ml: 0.5, fontStyle: 'italic' }}>
                   ({error.path.map((ref) => {

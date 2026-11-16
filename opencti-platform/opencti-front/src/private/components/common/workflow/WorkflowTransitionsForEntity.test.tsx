@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { act, fireEvent, screen } from '@testing-library/react';
+import { act, fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useFragment, useLazyLoadQuery } from 'react-relay';
 import { MockPayloadGenerator } from 'relay-test-utils';
@@ -261,6 +261,15 @@ describe('WorkflowTransitionsForEntity refresh', () => {
     expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
   });
 
+  // Labels, markings, confidence... can all flip a knowledge condition: the modification date moves on every edit
+  it('refetches the allowed transitions when the entity is modified', async () => {
+    const { relayEnv } = await setup(null);
+    act(() => relayEnv.commitUpdate((store) => {
+      store.get('entity-1')?.setValue('2026-11-16T10:00:00.000Z', 'updated_at');
+    }));
+    expect(relayEnv.mock.getMostRecentOperation().request.node.params.name).toBe('WorkflowStatusEntityQuery');
+  });
+
   it('does not refetch the allowed transitions when another field changes', async () => {
     const { relayEnv } = await setup(null);
     act(() => relayEnv.commitUpdate((store) => {
@@ -302,7 +311,10 @@ describe('WorkflowTransitionsForEntity blocked transitions', () => {
 
   it('renders a disabled button when the only transition is blocked', async () => {
     await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', [], null, [blockedAnswer]);
-    expect(screen.getByRole('button', { name: 'answer' })).toBeDisabled();
+    const blocked = screen.getByRole('button', { name: 'answer' });
+    expect(blocked).toBeDisabled();
+    // A lock tells a blocked action apart from the status chip next to it
+    expect(within(blocked).getByTestId('LockOutlinedIcon')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Next status' })).toBeNull();
   });
 });

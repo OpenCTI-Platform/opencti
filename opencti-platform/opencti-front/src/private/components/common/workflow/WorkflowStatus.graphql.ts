@@ -90,6 +90,7 @@ export const workflowStatusStixDomainObjectFragment = graphql`
     entity_type
     currentUserAccessRight
     x_opencti_closing_reason
+    updated_at
     objectAssignee {
       id
     }

@@ -95,8 +95,9 @@ const PlaybookStatusValueField = ({ action, index, disabled = false }: PlaybookS
   const entityType = action.entity_type;
 
   return (
-    <div style={{ display: 'flex', gap: 16 }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
+    // Stacked: side by side, each field gets a fifth of the drawer and the entity type is cut ("Incident respor")
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ minWidth: 0 }}>
         <Field
           component={ComboboxField}
           name={`actions.${index}.entity_type`}
@@ -118,7 +119,7 @@ const PlaybookStatusValueField = ({ action, index, disabled = false }: PlaybookS
           }}
         />
       </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ minWidth: 0 }}>
         <StatusField
           // A new type starts from an empty list of statuses
           key={entityType ?? ''}

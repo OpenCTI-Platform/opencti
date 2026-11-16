@@ -20,7 +20,7 @@ import {
   TooltipTrigger,
 } from '@filigran/design-system';
 import { Alert, AlertTitle, Box, CircularProgress } from '@mui/material';
-import { ArrowDropDownOutlined, ArrowDropUpOutlined, ErrorOutlined, LockOpenOutlined } from '@mui/icons-material';
+import { ArrowDropDownOutlined, ArrowDropUpOutlined, ErrorOutlined, LockOpenOutlined, LockOutlined } from '@mui/icons-material';
 import { Form, Formik } from 'formik';
 import { WorkflowStatus_data$data, WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -369,8 +369,9 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                 >
                   <MenuItem
                     disabled
-                    style={{ height: 'auto', minHeight: 36, whiteSpace: 'normal' }}
+                    style={{ height: 'auto', minHeight: 36, whiteSpace: 'normal', gap: 8 }}
                   >
+                    <LockOutlined fontSize="small" />
                     <span style={{ overflowWrap: 'anywhere' }}>{transition.event}</span>
                   </MenuItem>
                 </BlockedTransitionTooltip>
@@ -391,7 +392,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                     {transition.event}
                   </FdsButton>
                 ) : (
-                  <Button variant="primary" size={buttonSize} disabled>
+                  <Button variant="secondary" size={buttonSize} startIcon={<LockOutlined fontSize="small" />} disabled>
                     {transition.event}
                   </Button>
                 )}
@@ -562,14 +563,17 @@ export const WorkflowTransitionsForEntity: FunctionComponent<{
     });
   };
 
-  // Conditions such as "assignee is @me" depend on these fields, and our own edits never come back through the subscription
+  // Knowledge conditions (assignee, labels, markings, confidence...) are evaluated on the server: any edit of the
+  // entity can flip one, and our own edits never come back through the subscription. The modification date moves
+  // on every edit, the people ids cover the edits that Relay applies to the store before the server answers.
   const peopleKey = [entity.objectAssignee, entity.objectParticipant].map((people) => (people ?? []).map(({ id }) => id).join(',')).join('|');
-  const seenPeople = useRef({ id: entity.id, key: peopleKey });
+  const changeKey = `${entity.updated_at ?? ''}|${peopleKey}`;
+  const seenChange = useRef({ id: entity.id, key: changeKey });
   useEffect(() => {
-    const seen = seenPeople.current;
-    seenPeople.current = { id: entity.id, key: peopleKey };
-    if (seen.id === entity.id && seen.key !== peopleKey) refresh();
-  }, [entity.id, peopleKey]);
+    const seen = seenChange.current;
+    seenChange.current = { id: entity.id, key: changeKey };
+    if (seen.id === entity.id && seen.key !== changeKey) refresh();
+  }, [entity.id, changeKey]);
 
   if (!enabled) return null;
   return (

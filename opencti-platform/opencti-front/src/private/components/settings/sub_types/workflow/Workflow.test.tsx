@@ -648,6 +648,33 @@ describe('Workflow Component', () => {
       expect(mockNotifyError).not.toHaveBeenCalled();
     });
 
+    it('should name the statuses in the refusal message instead of their ids', async () => {
+      const user = userEvent.setup();
+      const { usePreloadedQuery } = await import('react-relay');
+      vi.mocked(usePreloadedQuery).mockReturnValueOnce({
+        workflowDefinition: mockWorkflowDefinition,
+        statusTemplates: { edges: [{ node: { id: 'status-1', name: 'In progress', color: '#00FF00' } }] },
+        members: { edges: [] },
+      });
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);
+
+      await user.click(screen.getByTestId('publish-button'));
+
+      mockPublishWorkflowDefinition.mock.calls[0]?.[0]?.onError?.({
+        res: {
+          errors: [{
+            message: 'Cannot publish workflow with validation errors',
+            extensions: { data: { errors: [{ type: 'STATUS_IN_USE', message: 'Cannot remove statuses status-1 that are currently assigned to entities', path: [] }] } },
+          }],
+        },
+      });
+
+      const { getByText } = render(
+        <ThemeProvider theme={testTheme}>{mockNotifyError.mock.calls[0][0]}</ThemeProvider>,
+      );
+      expect(getByText(/Cannot remove statuses In progress that are currently assigned/)).toBeInTheDocument();
+    });
+
     it('should show the fresh errors the server returns when it refuses to publish', async () => {
       const user = userEvent.setup();
       renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);

@@ -1740,8 +1740,7 @@ export const getWorkflowInstance = async (
 
   const effectiveEntityId = entity.internal_id || entity.id;
   let instanceEntity = resolved.instanceEntity;
-  // Inside a draft the entity is the live one: its initial state actions (e.g. resetting the authorized members)
-  // must not run from a read, so the instance is left to be created outside a draft
+  // Inside a draft the entity is the live one: the instance is left to be created outside a draft
   if (!instanceEntity && !isEntityWorkflowLockedByDraft(context, user, entity.entity_type)) {
     // Lazy backfill: a pre-existing entity created before this feature has no WorkflowInstance
     // row yet. Create one now, under the system identity (never the reading caller's), so
@@ -1752,7 +1751,9 @@ export const getWorkflowInstance = async (
       // from `context.user` (via `bypassDraftContext`), not from a separately-passed user
       // argument — so the WORKFLOW_MANAGER_USER identity must be set on the context itself.
       const executionContext = { ...bypassDraftContext(context), user: WORKFLOW_MANAGER_USER };
-      instanceEntity = await ensureWorkflowInstance(executionContext, WORKFLOW_MANAGER_USER, entity, definitionData, resolved);
+      // The initial state's onEnter actions are not replayed: a read must never mutate the entity
+      // (e.g. resetAuthorizedMembers would lift a restriction on a plain GET).
+      instanceEntity = await ensureWorkflowInstance(executionContext, WORKFLOW_MANAGER_USER, entity, definitionData, resolved, false);
     } catch (error) {
       logApp.warn('[OPENCTI-MODULE] Failed to lazily backfill WorkflowInstance for entity, falling back to synthesized instance', { cause: error, entityId: effectiveEntityId });
     }
