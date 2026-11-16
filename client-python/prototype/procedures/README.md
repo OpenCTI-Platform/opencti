@@ -57,7 +57,9 @@ python client-python/prototype/procedures/seed_procedures.py \
 
 Each MITRE id is resolved to the attack pattern of the platform. `--count`
 procedures are generated per attack pattern, named `[Verb] [Object] via
-[Tool/Method]`. The same `--seed` gives the same bundle.
+[Tool/Method]`. The same `--seed` and MITRE ids give the same bundle;
+procedure ids also depend on the attack pattern, so another MITRE id with the
+same seed gives other procedures.
 
 ## Customer samples
 

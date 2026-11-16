@@ -2,8 +2,9 @@
 
 Every procedure implements one attack pattern (``x_technique_refs``). The
 output is a STIX bundle of ``x-procedure`` objects, which the pycti splitter
-converts on import (see ``seed_procedures.py``). The same seed always gives
-the same bundle.
+converts on import (see ``seed_procedures.py``). The same seed and attack
+patterns always give the same bundle; procedure ids also depend on the attack
+pattern, so the same seed with another MITRE id gives other procedures.
 
 Example::
 
@@ -78,10 +79,15 @@ def build_scale_bundle(
     :param count_per_pattern: number of procedures generated for each attack pattern
     :param seed: seed of the random generator, the same seed gives the same bundle
     :return: a STIX 2.1 bundle
+
+    Each attack pattern has its own generator, seeded with the seed and the
+    attack pattern id: the same seed with other attack patterns gives other
+    procedure ids, so two runs never upsert the same procedures.
     """
-    rng = random.Random(seed)
     objects = []
     for attack_pattern_id in attack_pattern_ids:
+        # A string seed is hashed with sha512: stable across runs and machines
+        rng = random.Random("{}:{}".format(seed, attack_pattern_id))
         for _ in range(count_per_pattern):
             name = "{} {} via {}".format(
                 rng.choice(VERBS), rng.choice(OBJECTS), rng.choice(METHODS)
@@ -101,7 +107,12 @@ def build_scale_bundle(
                     "confidence": rng.choice([50, 75, 85]),
                 }
             )
-    return {"type": "bundle", "id": "bundle--" + _uuid(rng), "objects": objects}
+    bundle_rng = random.Random("{}:{}".format(seed, "|".join(attack_pattern_ids)))
+    return {
+        "type": "bundle",
+        "id": "bundle--" + _uuid(bundle_rng),
+        "objects": objects,
+    }
 
 
 def resolve_attack_pattern_ids(client, mitre_ids: List[str]) -> List[str]:
