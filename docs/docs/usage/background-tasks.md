@@ -19,6 +19,8 @@ If a rule task is enabled, it leads to the scan of the whole platform data and t
 
 Knowledge tasks are background tasks updating or deleting entities and correspond to mass operations on these data. To create one, select entities via the checkboxes in an entity list, and choose the action to perform via the toolbar.
 
+Before launching the task, OpenCTI shows its scope and actions and asks for a confirmation. An enrichment launches without this confirmation when it targets 1000 elements or fewer, from an entity list or from an investigation. Above 1000 elements, every task asks for a confirmation and warns about the number of targeted entities.
+
 The update action can also add, replace or remove the value of a [custom field](../administration/custom-fields.md).
 
 ### Rights
