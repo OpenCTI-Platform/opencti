@@ -15,9 +15,13 @@ The Administration section explains how to configure and operate an OpenCTI plat
 
 ## Platform settings
 
-- [Parameters](parameters.md): global platform settings, themes, dependencies and managers.
+- [Parameters](parameters.md) (`Settings > Parameters`): the global platform settings.
+    - Configuration: platform title, platform favicon URL, sender email address and third-party analytics.
+    - Appearance: default theme, language, date and time format in tables, hidden entity types, and removal of the Filigran logos.
+    - Platform announcements, theme customization, and the status of the dependencies and managers.
 - Security:
-    - [Authentication](authentication-via-ui.md), [SMTP configuration](smtp-configuration.md), [Cookies](cookies.md) and [Policies](policies.md).
+    - [Policies](policies.md) (`Settings > Security > Policies`): platform main organization, authentication strategies, password policies, the banner, and the messages shown on the login page (platform login message, platform consent message and platform consent confirm text).
+    - [Authentication](authentication-via-ui.md), [SMTP configuration](smtp-configuration.md) and [Cookies](cookies.md).
     - [Users and RBAC](users.md), [Merging users](users-merge.md) and [Protect sensitive configuration](protect-sensitive-configuration.md).
     - Data segregation: [Marking restriction](segregation.md), [Organization segregation](organization-segregation.md), [Authorized members](authorized-members.md) and [Request access](request-access.md).
     - [Dissemination list](dissemination-list.md) and [Email templates](email-templates.md).
