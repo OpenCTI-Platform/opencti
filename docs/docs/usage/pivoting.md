@@ -10,9 +10,11 @@ To access investigations, navigate to the top right corner of the toolbar:
 
     When an investigation is created, it is initially visible only to the creator, allowing them to work on the investigation before deciding to share it. The sharing mechanism is akin to that of dashboards. For further details, refer to the [Access control section](dashboards.md#access-control-section) in the dashboard documentation page.
 
-!!! note "View access"
+!!! note "Who can change an investigation"
 
     With view access to an investigation, you can explore its graph (select, search, hide, lay out and export it) but not change it. Adding entities, expanding them, rolling back an expansion, removing elements and creating relationships, sightings or nested relationships stay visible but disabled, and their tooltip says **You have view access to this investigation**. A double click on an entity selects it without opening the expansion, and the entities you move keep their place in your view only.
+
+    With edit access but without the `Create / Update investigations` capability, the same actions are disabled in the same way, and their tooltip says **You need the Create / Update investigations capability to change this investigation**.
 
 
 ## Perform investigation

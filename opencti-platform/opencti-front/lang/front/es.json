@@ -6334,6 +6334,7 @@
   "You must provide at least one external reference for this type of entity": "Debes facilitar al menos una referencia externa para este tipo de entidad",
   "You need a confidence level to edit objects in the platform.": "Necesitas un nivel de confianza para editar objetos en la plataforma.",
   "You need the Ask for knowledge enrichment and Create / Update investigations capabilities to review enrichment results.": "Necesitas las capacidades «Solicitar enriquecimiento del conocimiento» y «Crear / Actualizar investigaciones» para revisar los resultados del enriquecimiento.",
+  "You need the Create / Update investigations capability to change this investigation.": "Necesitas la capacidad «Crear / Actualizar investigaciones» para modificar esta investigación.",
   "You need to activate a two-factor authentication. Please type the code generated in your application.": "Necesitas activar una autenticación de dos factores. Por favor, escriba el código generado en su aplicación.",
   "You need to activate OpenCTI enterprise edition to use this feature.": "Es necesario activar la edición empresarial de OpenCTI para utilizar esta función.",
   "You need to be able to edit the RFI and share knowledge": "Debe ser capaz de editar el RFI y compartir conocimientos",

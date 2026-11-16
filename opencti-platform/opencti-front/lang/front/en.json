@@ -6334,6 +6334,7 @@
   "You must provide at least one external reference for this type of entity": "You must provide at least one external reference for this type of entity",
   "You need a confidence level to edit objects in the platform.": "You need a confidence level to edit objects in the platform.",
   "You need the Ask for knowledge enrichment and Create / Update investigations capabilities to review enrichment results.": "You need the Ask for knowledge enrichment and Create / Update investigations capabilities to review enrichment results.",
+  "You need the Create / Update investigations capability to change this investigation.": "You need the Create / Update investigations capability to change this investigation.",
   "You need to activate a two-factor authentication. Please type the code generated in your application.": "You need to activate a two-factor authentication. Please type the code generated in your application.",
   "You need to activate OpenCTI enterprise edition to use this feature.": "You need to activate OpenCTI enterprise edition to use this feature.",
   "You need to be able to edit the RFI and share knowledge": "You need to be able to edit the RFI and share knowledge",

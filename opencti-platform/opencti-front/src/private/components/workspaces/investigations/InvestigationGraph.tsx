@@ -28,6 +28,7 @@ import Loader from '../../../../components/Loader';
 import { ObjectToParse } from '../../../../components/graph/utils/useGraphParser';
 import { useFormatter } from '../../../../components/i18n';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import useGranted, { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../../utils/hooks/useGranted';
 
 const investigationGraphDataFragment = graphql`
   fragment InvestigationGraphData_fragment on Workspace {
@@ -630,6 +631,11 @@ const InvestigationGraphLoader = ({
   const localStorageKey = `investigation-graph-${investigationId}`;
   const { currentUserAccessRight } = useFragment(investigationGraphFragment, otherProps.dataInvestigation);
   const { canEdit } = useGetCurrentUserAccessRight(currentUserAccessRight);
+  // Every change to the graph goes through workspaceFieldPatch, which needs one of these capabilities.
+  const canUpdateWorkspace = useGranted([EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]);
+  let editDisabledReason: string | undefined;
+  if (!canEdit) editDisabledReason = t_i18n('You have view access to this investigation');
+  else if (!canUpdateWorkspace) editDisabledReason = t_i18n('You need the Create / Update investigations capability to change this investigation.');
   const [dataLoaded, setDataLoaded] = useState(0);
 
   const {
@@ -687,7 +693,7 @@ const InvestigationGraphLoader = ({
       objects={objects}
       positions={positions}
       context="investigation"
-      editDisabledReason={canEdit ? undefined : t_i18n('You have view access to this investigation')}
+      editDisabledReason={editDisabledReason}
     >
       <InvestigationGraphComponent
         currentData={dataLoaded}

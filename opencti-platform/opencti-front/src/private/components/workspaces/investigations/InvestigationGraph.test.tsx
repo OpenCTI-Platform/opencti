@@ -4,7 +4,7 @@ import { useLazyLoadQuery } from 'react-relay';
 import { createMockEnvironment, MockPayloadGenerator } from 'relay-test-utils';
 import type { OperationDescriptor } from 'relay-runtime';
 import { describe, expect, it, vi } from 'vitest';
-import { ProvidersWrapper } from '../../../../utils/tests/test-render';
+import { createMockUserContext, ProvidersWrapper } from '../../../../utils/tests/test-render';
 import InvestigationGraph, { investigationGraphQuery } from './InvestigationGraph';
 import { InvestigationGraphQuery } from './__generated__/InvestigationGraphQuery.graphql';
 
@@ -45,14 +45,17 @@ const InvestigationGraphOf = () => {
   return workspace ? <InvestigationGraph id="investigation-1" data={workspace} /> : null;
 };
 
-const renderGraph = (currentUserAccessRight: string) => {
+const CAPABILITY_REASON = 'You need the Create / Update investigations capability to change this investigation.';
+
+const renderGraph = (currentUserAccessRight: string, capabilities = ['INVESTIGATION_INUPDATE']) => {
   const relayEnv = createMockEnvironment();
   const resolve = (operation: OperationDescriptor) => MockPayloadGenerator.generate(operation, {
     Workspace: () => ({ id: 'investigation-1', currentUserAccessRight, graph_data: null }),
   });
   relayEnv.mock.queueOperationResolver(resolve);
+  const userContext = createMockUserContext({ me: { id: 'user-1', capabilities: capabilities.map((name) => ({ name })) } });
   render(
-    <ProvidersWrapper relayEnv={relayEnv}>
+    <ProvidersWrapper relayEnv={relayEnv} userContext={userContext}>
       <Suspense fallback="loading">
         <InvestigationGraphOf />
       </Suspense>
@@ -77,5 +80,19 @@ describe('InvestigationGraph', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Move an entity' }));
     expect(savedPositions).toHaveBeenCalledWith(expect.objectContaining({ variables: expect.objectContaining({ id: 'investigation-1' }) }));
+  });
+
+  it('tells an editor without the capability to update investigations why the graph cannot change, and keeps the moves in the view', async () => {
+    savedPositions.mockClear();
+    renderGraph('edit', ['INVESTIGATION']);
+    expect(await screen.findByText(CAPABILITY_REASON)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Move an entity' }));
+    expect(savedPositions).not.toHaveBeenCalled();
+  });
+
+  it('leaves the graph editable for an editor holding the dashboard update capability, which the server also accepts', async () => {
+    renderGraph('admin', ['EXPLORE_EXUPDATE']);
+    expect(await screen.findByText('editable')).toBeInTheDocument();
   });
 });

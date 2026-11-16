@@ -6334,6 +6334,7 @@
   "You must provide at least one external reference for this type of entity": "このタイプのエンティティは最低1個の外部参照を含む必要があります",
   "You need a confidence level to edit objects in the platform.": "プラットフォーム上でオブジェクトを編集するには、最大の自信レベルが必要です。",
   "You need the Ask for knowledge enrichment and Create / Update investigations capabilities to review enrichment results.": "エンリッチメント結果をレビューするには、「知識の強化を依頼」と「調査の作成/更新」の能力が必要です。",
+  "You need the Create / Update investigations capability to change this investigation.": "この調査を変更するには、「調査の作成/更新」の能力が必要です。",
   "You need to activate a two-factor authentication. Please type the code generated in your application.": "二要素認証を有効にする必要があります。アプリケーションで生成されたコードを入力してください。",
   "You need to activate OpenCTI enterprise edition to use this feature.": "この機能を使用するには、OpenCTI エンタープライズ版を有効にする必要があります。",
   "You need to be able to edit the RFI and share knowledge": "RFIを編集し、知識を共有できる必要がある。",

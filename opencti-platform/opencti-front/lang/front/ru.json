@@ -6334,6 +6334,7 @@
   "You must provide at least one external reference for this type of entity": "Вы должны предоставить как минимум одну внешнюю ссылку для этого типа сущности",
   "You need a confidence level to edit objects in the platform.": "Для редактирования объектов в платформе необходим уровень доверия.",
   "You need the Ask for knowledge enrichment and Create / Update investigations capabilities to review enrichment results.": "Чтобы рассматривать результаты обогащения, нужны возможности «Попросите пополнить знания» и «Создание / обновление расследований».",
+  "You need the Create / Update investigations capability to change this investigation.": "Чтобы изменять это расследование, нужна возможность «Создание / обновление расследований».",
   "You need to activate a two-factor authentication. Please type the code generated in your application.": "Вам необходимо активировать двухфакторную аутентификацию. Пожалуйста, введите код, сгенерированный в вашем приложении.",
   "You need to activate OpenCTI enterprise edition to use this feature.": "Для использования этой функции необходимо активировать корпоративную версию OpenCTI.",
   "You need to be able to edit the RFI and share knowledge": "Вы должны уметь редактировать RFI и делиться знаниями",
