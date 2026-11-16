@@ -58,6 +58,28 @@ def test_scale_bundle_differs_with_seed():
     assert first != second
 
 
+def _procedure_ids(bundle, attack_pattern_id=None):
+    return [
+        o["id"]
+        for o in bundle["objects"]
+        if o["type"] == "x-procedure"
+        and attack_pattern_id in (None, o["x_technique_refs"][0])
+    ]
+
+
+def test_scale_bundle_ids_differ_per_attack_pattern_with_the_same_seed():
+    # Two runs with the same seed and another MITRE id must not upsert the
+    # same procedures
+    first = build_scale_bundle(["attack-pattern--a"], 20, 1)
+    second = build_scale_bundle(["attack-pattern--b"], 20, 1)
+    assert set(_procedure_ids(first)).isdisjoint(_procedure_ids(second))
+    assert first["id"] != second["id"]
+    # Each pattern's procedures stay reproducible, alone or with other patterns
+    both = build_scale_bundle(["attack-pattern--a", "attack-pattern--b"], 20, 1)
+    assert _procedure_ids(both, "attack-pattern--a") == _procedure_ids(first)
+    assert _procedure_ids(both, "attack-pattern--b") == _procedure_ids(second)
+
+
 def test_scale_bundle_names_follow_verb_object_via_method():
     b = build_scale_bundle(["attack-pattern--a"], 50, 3)
     for proc in (o for o in b["objects"] if o["type"] == "x-procedure"):
