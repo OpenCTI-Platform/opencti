@@ -18,6 +18,9 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import DashboardField from '../../common/form/DashboardField';
+import DashboardPresetField from '../../common/form/DashboardPresetField';
+import Security from '../../../../utils/Security';
+import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { SettingsOrganization_organization$data } from './__generated__/SettingsOrganization_organization.graphql';
 import SettingsOrganizationHiddenTypesField from './SettingsOrganizationHiddenTypesField';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -84,6 +87,7 @@ interface SettingsOrganizationFormValues {
   x_opencti_organization_type: string | null;
   contact_information: string | null;
   default_dashboard: FieldOption | null;
+  default_dashboard_preset: string | null;
   message?: string;
   references?: FieldOption[];
   grantable_groups: { label: string; value: string }[];
@@ -147,6 +151,7 @@ const SettingsOrganizationEdition = ({
           label: organization.default_dashboard.name,
         }
       : null,
+    default_dashboard_preset: organization.default_dashboard_preset ?? null,
     grantable_groups: convertGrantableGroups(organization),
   };
   const onSubmit: FormikConfig<SettingsOrganizationFormValues>['onSubmit'] = (
@@ -272,10 +277,35 @@ const SettingsOrganizationEdition = ({
                   />
                 )}
               />
-              <DashboardField
-                onChange={editor.changeField}
-                context={context}
-              />
+              {/* The home page of every member: reserved to the administrators of the accesses, the API refuses the others. */}
+              <Security needs={[SETTINGS_SETACCESSES]}>
+                <>
+                  <DashboardField
+                    onChange={(name, value) => {
+                      // Another dashboard: its presets are other ones, both keys go in one patch. With references
+                      // enforced, the submit of the form carries both with the commit message, as for every field.
+                      if (values.default_dashboard_preset) {
+                        setFieldValue('default_dashboard_preset', null);
+                        if (!enableReferences) {
+                          editor.fieldPatch({ variables: { id: organization.id, input: [{ key: name, value: value || '' }, { key: 'default_dashboard_preset', value: '' }] } });
+                        }
+                      } else {
+                        editor.changeField(name, value);
+                      }
+                    }}
+                    context={context}
+                  />
+                  <DashboardPresetField
+                    dashboardId={values.default_dashboard?.value}
+                    value={values.default_dashboard_preset}
+                    style={{ marginTop: 20 }}
+                    onChange={(value) => {
+                      setFieldValue('default_dashboard_preset', value);
+                      editor.changeField('default_dashboard_preset', value ?? '');
+                    }}
+                  />
+                </>
+              </Security>
               <SettingsOrganizationHiddenTypesField organizationData={organization} />
               <EEField featureLabel="Organization sharing">
                 <GroupField

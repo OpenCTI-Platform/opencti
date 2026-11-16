@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useFormatter } from '../../i18n';
 import { indexedVisualizationTypes, type WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
-import type { DashboardVariable, DashboardWidget } from '../dashboard-types';
+import type { DashboardPreset, DashboardVariable, DashboardWidget } from '../dashboard-types';
 import DashboardVariableDeleteDialog from './DashboardVariableDeleteDialog';
 import { useDashboardVariableMutations } from './useDashboardVariableMutations';
 
@@ -11,13 +11,15 @@ export interface DashboardVariableDeletionProps {
   usedInWidgetIds: readonly string[];
   // The widgets of the manifest: the ids the server reports but the manifest ignores are dropped.
   widgets: readonly DashboardWidget[];
+  // The presets of the dashboard: the ones holding a value for the variable lose it.
+  presets?: readonly DashboardPreset[];
   onClose: () => void;
 }
 
 /**
  * Deletion of a variable: confirmation listing the widgets that will lose their data.
  */
-const DashboardVariableDeletion = ({ workspaceId, variable, usedInWidgetIds, widgets, onClose }: DashboardVariableDeletionProps) => {
+const DashboardVariableDeletion = ({ workspaceId, variable, usedInWidgetIds, widgets, presets = [], onClose }: DashboardVariableDeletionProps) => {
   const { t_i18n } = useFormatter();
   const { remove } = useDashboardVariableMutations(workspaceId);
 
@@ -31,11 +33,14 @@ const DashboardVariableDeletion = ({ workspaceId, variable, usedInWidgetIds, wid
       });
   }, [usedInWidgetIds, widgets, t_i18n]);
 
+  const presetCount = presets.filter((preset) => preset.values[variable.id] !== undefined).length;
+
   return (
     <DashboardVariableDeleteDialog
       open
       variable={variable}
       widgets={impactedWidgets}
+      presetCount={presetCount}
       onConfirm={() => remove(variable.id)}
       onClose={onClose}
     />

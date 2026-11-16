@@ -38,7 +38,9 @@ const MANIFEST = toB64(JSON.stringify({
   variables: [{ id: SECTOR, name: 'Sector name', type: 'text', restriction: { mode: 'none' }, defaultValue: 'Finance' }],
 }));
 
-const renderForm = (flags: string[]) => {
+const LOADER_QUERY = 'PublicDashboardPublishedValuesQuery';
+
+const renderForm = async (flags: string[], { resolveLoader = true } = {}) => {
   const rendered = testRender(<PublicDashboardCreationForm dashboard_id="dashboard-1" />, {
     userContext: createMockUserContext({
       me: { id: 'user-1', name: 'admin' },
@@ -50,6 +52,16 @@ const renderForm = (flags: string[]) => {
       data: { workspaces: { edges: [{ node: { id: 'dashboard-1', name: 'Dashboard', currentUserAccessRight: 'admin', manifest: MANIFEST } }] } },
     });
   });
+  if (flags.includes('DASHBOARD_VARIABLES')) {
+    // The published values section loads the selected dashboard, with its variables and presets, on its own.
+    await waitFor(() => expect(rendered.relayEnv.mock.getAllOperations().some((op) => op.request.node.operation.name === LOADER_QUERY)).toBe(true));
+    if (!resolveLoader) return rendered;
+    act(() => {
+      rendered.relayEnv.mock.resolveMostRecentOperation({
+        data: { workspace: { id: 'dashboard-1', manifest: MANIFEST, variables: [{ id: SECTOR, usedInWidgetIds: ['widget-1'] }], presets: [] } },
+      });
+    });
+  }
   return rendered;
 };
 
@@ -70,7 +82,7 @@ describe('PublicDashboardCreationForm', () => {
   });
 
   it('should publish the values chosen in the published values section, with the time range and the time zone', async () => {
-    const { user } = renderForm(['DASHBOARD_VARIABLES']);
+    const { user } = await renderForm(['DASHBOARD_VARIABLES']);
     const sector = await screen.findByDisplayValue('Finance');
     await user.clear(sector);
     await user.type(sector, 'Energy');
@@ -87,8 +99,28 @@ describe('PublicDashboardCreationForm', () => {
     });
   });
 
+  it('keeps Create disabled until the published values of the selected dashboard are loaded', async () => {
+    const { user, relayEnv } = await renderForm(['DASHBOARD_VARIABLES'], { resolveLoader: false });
+    await user.type(screen.getByLabelText('Name'), 'Finance view');
+    await user.click(screen.getByRole('button', { name: 'Pick a marking' }));
+    const create = screen.getByRole('button', { name: 'Create' });
+    expect(create).toBeDisabled();
+    // A native submit (Enter in a field) is refused as well: the form itself is invalid while the values load.
+    await user.type(screen.getByLabelText('Name'), '{Enter}');
+    await new Promise((resolve) => {
+      setTimeout(resolve, 100);
+    });
+    expect(captured.commit).not.toHaveBeenCalled();
+    act(() => {
+      relayEnv.mock.resolveMostRecentOperation({
+        data: { workspace: { id: 'dashboard-1', manifest: MANIFEST, variables: [{ id: SECTOR, usedInWidgetIds: ['widget-1'] }], presets: [] } },
+      });
+    });
+    await waitFor(() => expect(create).toBeEnabled());
+  });
+
   it('should keep Create disabled while a date picker shows a date it refuses', async () => {
-    const { user } = renderForm(['DASHBOARD_VARIABLES']);
+    const { user } = await renderForm(['DASHBOARD_VARIABLES']);
     await screen.findByDisplayValue('Finance');
     // The manifest range is relative: the pickers are not in use, a refused date there does not count
     await user.type(screen.getByLabelText('Name'), 'Finance view');
@@ -104,7 +136,7 @@ describe('PublicDashboardCreationForm', () => {
 
   it('should block the publication on a refused date when the range is absolute', async () => {
     localStorage.setItem('dashboard-time-range-user-1-dashboard-1', JSON.stringify({ relativeDate: null, startDate: null, endDate: null }));
-    const { user } = renderForm(['DASHBOARD_VARIABLES']);
+    const { user } = await renderForm(['DASHBOARD_VARIABLES']);
     await screen.findByDisplayValue('Finance');
     await user.type(screen.getByLabelText('Name'), 'Finance view');
     await user.click(screen.getByRole('button', { name: 'Pick a marking' }));
@@ -137,24 +169,32 @@ describe('PublicDashboardCreationForm', () => {
       });
     });
     const { user } = rendered;
-    const pick = async (name: string) => {
+    const pick = async (name: string, id: string) => {
       await user.click(await screen.findByRole('combobox', { name: /Custom dashboard/ }));
       await user.click(await screen.findByRole('option', { name }));
+      // The published values section loads the selected dashboard
+      await waitFor(() => expect(rendered.relayEnv.mock.getAllOperations().some((op) => op.request.node.operation.name === LOADER_QUERY
+        && op.request.variables.id === id)).toBe(true));
+      act(() => {
+        rendered.relayEnv.mock.resolveMostRecentOperation({
+          data: { workspace: { id, manifest: MANIFEST, variables: [{ id: SECTOR, usedInWidgetIds: ['widget-1'] }], presets: [] } },
+        });
+      });
     };
-    await pick('First dashboard');
+    await pick('First dashboard', 'dashboard-1');
     await screen.findByDisplayValue('Finance');
     await user.type(screen.getByLabelText('Name'), 'Finance view');
     await user.click(screen.getByRole('button', { name: 'Pick a marking' }));
     const create = screen.getByRole('button', { name: 'Create' });
     await user.click(screen.getByRole('button', { name: 'Type a refused start date' }));
     await waitFor(() => expect(create).toBeDisabled());
-    await pick('Second dashboard');
+    await pick('Second dashboard', 'dashboard-2');
     await waitFor(() => expect(create).toBeEnabled());
     expect(screen.queryByTestId('public-dashboard-published-date-error')).toBeNull();
   });
 
   it('should neither show the section nor send its values without the feature flag', async () => {
-    const { user } = renderForm([]);
+    const { user } = await renderForm([]);
     await screen.findByLabelText('Name');
     expect(screen.queryByTestId('public-dashboard-published-values')).toBeNull();
     const input = await fillAndSubmit(user);
