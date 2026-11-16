@@ -21,6 +21,7 @@ vi.mock('@opensearch-project/opensearch/aws', () => ({ AwsSigv4Signer: vi.fn(() 
 import conf from '../../../src/config/conf';
 import {
   buildHistogramBreakdownAggregations,
+  buildIndexedKeywordQuery,
   elAggregationCount,
   elAggregationRanking,
   elCompleteFilters,
@@ -86,6 +87,32 @@ describe('buildHistogramBreakdownAggregations', () => {
   it('should read the side of the target from its role', () => {
     const aggs = buildHistogramBreakdownAggregations({ field: 'connections.types', keys: ['sector'], connectionSide: 'to' }, countOverTime);
     expect(aggs).toEqual({ breakdown: { filters: { filters: { k0: sideTypeQuery('to', 'sector') } }, aggs: { count_over_time: countOverTime } } });
+  });
+
+  it('should match an indexed form with an uppercase letter exactly, a term query of it looking for its lowercase', () => {
+    // A small capital `ᴀ` is indexed as `A`: the normalizer of a term query would turn `A` into `a`, another value
+    const aggs = buildHistogramBreakdownAggregations({ field: 'report_types', keys: ['A', 'a', 'ünïcode-ꜱ'], withOther: true }, countOverTime) as any;
+    expect(aggs.breakdown.filters.filters).toEqual({
+      k0: indexedKeyScript('report_types.keyword', 'A'),
+      k1: { term: { 'report_types.keyword': 'a' } },
+      k2: { term: { 'report_types.keyword': 'ünïcode-ꜱ' } },
+    });
+    expect(aggs.breakdown.filters.other_bucket_key).toBe('other');
+  });
+});
+
+const indexedKeyScript = (field: string, key: string) => ({
+  script: { script: { source: 'doc.containsKey(params.field) && doc[params.field].contains(params.key)', params: { field, key } } },
+});
+
+describe('buildIndexedKeywordQuery', () => {
+  it('should keep the term query for an indexed form the normalizer gives back unchanged', () => {
+    expect(buildIndexedKeywordQuery('name.keyword', 'apt-28')).toEqual({ term: { 'name.keyword': 'apt-28' } });
+    expect(buildIndexedKeywordQuery('name.keyword', 'σ-ж-中')).toEqual({ term: { 'name.keyword': 'σ-ж-中' } });
+  });
+
+  it('should match a form with an uppercase letter on the doc values, which hold it as indexed', () => {
+    expect(buildIndexedKeywordQuery('connections.types.keyword', 'X-a')).toEqual(indexedKeyScript('connections.types.keyword', 'X-a'));
   });
 });
 

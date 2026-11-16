@@ -408,6 +408,40 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
     expect(byReportType.series.map((s) => [s.label, s.total])).toEqual([['threat-report', REPORTS.length]]);
   });
 
+  it('should count a vocabulary value indexed with an uppercase letter in its own series only', async () => {
+    // `bkd-ᴀ` (small capital) is indexed as `bkd-A`, which a term query would look for as `bkd-a`, another value
+    const added = [{ type: 'bkd-ᴀ', created: '2021-02-15T12:00:00.000Z' }, { type: 'bkd-a', created: '2021-03-15T12:00:00.000Z' }, { type: 'bkd-a', created: '2021-03-16T12:00:00.000Z' }];
+    const addedIds: string[] = [];
+    try {
+      for (let i = 0; i < added.length; i += 1) {
+        const { type, created } = added[i];
+        const report = await queryAsAdminWithSuccess({
+          query: REPORT_ADD_QUERY,
+          variables: { input: { name: `bkd-int-report-vocabulary-${i}`, published: created, created, report_types: [type], createdBy: organizationId } },
+        });
+        addedIds.push(report.data?.reportAdd.id);
+      }
+      const { series } = await breakdown({ field: 'report_types', orderMode: 'desc', limit: 10, includeOther: true });
+      expect(Object.fromEntries(series.map((s) => [s.label, [s.total, s.values]]))).toEqual({
+        'threat-report': [REPORTS.length, [3, 2, 2]],
+        'bkd-ᴀ': [1, [0, 1, 0]],
+        'bkd-a': [2, [0, 0, 2]],
+        Other: [0, [0, 0, 0]],
+      });
+      // Left out of the series, the value is counted in Other, and the other value is not
+      const top = await breakdown({ field: 'report_types', orderMode: 'desc', limit: 2, includeOther: true });
+      expect(top.series.map((s) => [s.label, s.total, s.values])).toEqual([
+        ['threat-report', REPORTS.length, [3, 2, 2]],
+        ['bkd-a', 2, [0, 0, 2]],
+        ['Other', 1, [0, 1, 0]],
+      ]);
+    } finally {
+      for (const id of addedIds) {
+        await queryAsAdminWithSuccess({ query: REPORT_DELETE_QUERY, variables: { id } });
+      }
+    }
+  });
+
   it('should not count the entities above the markings of the user, neither in the series nor in Other', async () => {
     // The top label is the same for both: Other loses the amber reports of February (b) and January (no label)
     const top = await breakdownAsGreenUser({ field: 'objectLabel', orderMode: 'desc', limit: 1, includeOther: true });
