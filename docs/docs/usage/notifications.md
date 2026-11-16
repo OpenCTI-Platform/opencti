@@ -60,8 +60,8 @@ Instance triggers offer a targeted approach to live monitoring by allowing users
 **Method 1:** Using the general trigger creation form
 
 
-1. Go on the "Alerts and triggers" window through the bell icon at the top right.
-2. Navigate to the "Triggers" tab.
+1. Click the bell icon at the top right to open the Notification Center.
+2. Open the "Triggers" tab.
 3. Access the general trigger creation form.
 4. Toggle the switch "Instance trigger".
 5. Choose the entities to monitor.
@@ -98,18 +98,28 @@ Digests provide an efficient way to streamline and organize your notifications. 
 
 ### Creating digests
 
-1. Go on the "Alerts and triggers" window through the bell icon at the top right.
-2. Navigate to the "Triggers" tab.
+1. Click the bell icon at the top right to open the Notification Center.
+2. Open the "Triggers" tab.
 3. Create a new digest.
 4. Configure digest: Set the parameters, including triggers to be included and the frequency of notifications (daily, weekly, monthly).
 5. Choose the notifier(s): Select the notification method(s) (e.g. within the OpenCTI interface, via email, etc.).
 
 ![Digest configuration](assets/digest-creation.png)
 
-### Digest Buffering Configuration 
+### Notification buffering configuration { #digest-buffering-configuration }
 
-You can configure digest buffering directly in your configuration file to group notifications if many changes occur within a short period. 
-The buffering configuration is enabled in the platform by default at one minute. You can change it at your convenience.
+Buffering groups notifications when many changes occur within a short period. It applies to live triggers, not to digests: OpenCTI holds the events about the same entity for the buffering window, then sends them to each notifier as a single notification instead of one notification per event.
+
+Buffering is enabled by default, with a window of 60 seconds. You can change it in the platform configuration:
+
+| Parameter                           | Environment variable                 | Default | Description                                            |
+|:------------------------------------|:-------------------------------------|:--------|:-------------------------------------------------------|
+| `publisher_manager:enable_buffering`  | `PUBLISHER_MANAGER__ENABLE_BUFFERING`  | `true`  | Enable or disable buffering of live notifications      |
+| `publisher_manager:buffering_seconds` | `PUBLISHER_MANAGER__BUFFERING_SECONDS` | `60`    | Length of the buffering window, in seconds             |
+
+For example, to group the events of the same entity over five minutes, set `PUBLISHER_MANAGER__BUFFERING_SECONDS=300`. To send each event as soon as it occurs, set `PUBLISHER_MANAGER__ENABLE_BUFFERING=false`.
+
+For all the publisher manager parameters, see [Engines, Schedules and Managers](../deployment/configuration.md#engines-schedules-and-managers).
 
 ### Benefits of digests
 
@@ -130,9 +140,11 @@ In OpenCTI, notifiers serve as the channels for delivering notifications, allowi
 
 OpenCTI features built-in notifier connectors that empower users to create personalized notifiers for notification and activity alerting. Three essential connectors are available:
 
-- Platform mailer connector: Enables sending notifications directly within the OpenCTI platform.
-- Simple mailer connector: Offers a straightforward approach to email notifications with simplified configuration options.
-- Generic webhook connector: Facilitates communication through webhooks.
+- Platform mailer connector: Sends notifications by email through the platform SMTP service, with a title and an HTML template that you write. The built-in "Default mailer" notifier uses this connector.
+- Simple mailer connector: Sends notifications by email with simplified configuration options (title, header, footer, logo and background color) instead of a full template.
+- Generic webhook connector: Sends notifications to an external service through HTTP requests.
+
+In-platform alerts do not use any of these connectors: they come from the built-in "User interface" notifier, which publishes the notification to the Alerts tab of the Notification Center.
 
 OpenCTI provides two samples of webhook notifiers designed for Teams integration.
 
