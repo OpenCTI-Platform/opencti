@@ -98,42 +98,47 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries: 
 
   const theme = useTheme<Theme>();
   return (
-    <StyledDrawer variant="permanent" anchor="right">
-      <ToolbarSpacer />
-      <List component="nav" style={{ marginTop: bannerHeight + settingsMessagesBannerHeight + topBannerHeight, marginBottom: bannerHeight }}>
-        {entries.map((entry, idx) => {
-          const isSelected = location.pathname.startsWith(entry.path);
-          const iconColor = isSelected ? theme.palette.text.light : theme.palette.text.tertiary;
-          const iconOpacity = isSelected ? 1 : 0.5;
-          return (
-            <ListItemButton
-              key={idx}
-              component={Link}
-              to={entry.path}
-              selected={isSelected}
-              dense={false}
-              sx={{ paddingRight: 0 }}
-            >
-              {entry.icon && (
-                <ListItemIcon
-                  sx={{
-                    minWidth: '0px!important',
-                    mr: 1,
-                    opacity: iconOpacity,
-                    color: iconColor,
-                    '& svg': {
-                      fontSize: '16px!important',
-                    },
-                  }}
-                >{entry.icon}
-                </ListItemIcon>
-              )}
-              <ListItemText sx={{ m: 0 }} primary={renderLabel(entry)} />
-            </ListItemButton>
-          );
-        })}
-      </List>
-    </StyledDrawer>
+    <>
+      <StyledDrawer variant="permanent" anchor="right">
+        <ToolbarSpacer />
+        <List component="nav" style={{ marginTop: bannerHeight + settingsMessagesBannerHeight + topBannerHeight, marginBottom: bannerHeight }}>
+          {entries.map((entry, idx) => {
+            const isSelected = location.pathname.startsWith(entry.path);
+            const iconColor = isSelected ? theme.palette.text.light : theme.palette.text.tertiary;
+            const iconOpacity = isSelected ? 1 : 0.5;
+            return (
+              <ListItemButton
+                key={idx}
+                component={Link}
+                to={entry.path}
+                selected={isSelected}
+                dense={false}
+                sx={{ paddingRight: 0 }}
+              >
+                {entry.icon && (
+                  <ListItemIcon
+                    sx={{
+                      minWidth: '0px!important',
+                      mr: 1,
+                      opacity: iconOpacity,
+                      color: iconColor,
+                      '& svg': {
+                        fontSize: '16px!important',
+                      },
+                    }}
+                  >{entry.icon}
+                  </ListItemIcon>
+                )}
+                <ListItemText sx={{ m: 0 }} primary={renderLabel(entry)} />
+              </ListItemButton>
+            );
+          })}
+        </List>
+      </StyledDrawer>
+      {/* Right after the menu in the DOM: focusing it (see focusMainContent) makes the next Tab skip the menu and reach
+          the page content. Absolute so that it takes no room in a flex or grid parent. */}
+      <span tabIndex={-1} data-focus-target style={{ position: 'absolute', width: 0, height: 0, outline: 'none' }} />
+    </>
   );
 };
 
