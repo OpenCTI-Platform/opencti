@@ -8,6 +8,10 @@ This document will guide you through the steps required to connect or disconnect
 
 ## Connecting Your Product
 
+The connection is managed from the **XTM Hub** card of the `Settings > Filigran Experience` page. The card shows whether your product is connected, and the "Connect to XTM Hub" button.
+
+![The Settings > Filigran Experience page, with the Enterprise Edition card on the left and the XTM Hub card on the right](assets/hub-filigran-experience.webp)
+
 To connect your OpenCTI product to the XTM Hub, follow these steps:
 
 1. **Access the Settings:**
