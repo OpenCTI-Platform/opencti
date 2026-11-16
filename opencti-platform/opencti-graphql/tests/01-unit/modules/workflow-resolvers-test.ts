@@ -15,11 +15,13 @@ import { makeExecutableSchema } from '@graphql-tools/schema';
 import { graphql } from 'graphql';
 import { authDirectiveBuilder } from '../../../src/graphql/authDirective';
 import type { BasicWorkflowStatus } from '../../../src/types/store';
+import { StatusScope } from '../../../src/generated/graphql';
 
 // Mock all workflow domain functions
 vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
   getWorkflowDefinition: vi.fn(),
   hasPublishedWorkflowDefinition: vi.fn(),
+  getWorkflowMigrationPreview: vi.fn(),
   getWorkflowInstance: vi.fn(),
   getAllowedTransitions: vi.fn(),
   setWorkflowDefinition: vi.fn(),
@@ -51,6 +53,7 @@ describe('Workflow bypass API', () => {
         directive @auth(for: [Capabilities!]!, forDraft: [Capabilities!], and: Boolean) on FIELD_DEFINITION | OBJECT
         directive @public on FIELD_DEFINITION
         directive @ff(flags: [String!]!, softFail: Boolean = false, defaultValue: String = null) on FIELD_DEFINITION
+        enum StatusScope { GLOBAL REQUEST_ACCESS }
         scalar JSON
         scalar DateTime
         scalar BasicObject
@@ -91,6 +94,51 @@ describe('Workflow bypass API', () => {
   it('rejects oversized bypass comments before invoking the domain', () => {
     expect(() => workflowResolvers.Mutation.setWorkflowStatus({}, { entityId: 'entity-id', targetStatusId: 'status-id', applyTransitionActions: false, comment: 'a'.repeat(1001) }, mockContext)).toThrow('1000');
     expect(workflowDomain.setWorkflowStatus).not.toHaveBeenCalled();
+  });
+});
+
+describe('Workflow definition GraphQL contract', () => {
+  it('returns the request access outcome of a serialized state', async () => {
+    const schema = makeExecutableSchema({
+      typeDefs: [
+        `
+          enum Capabilities { BYPASS KNOWLEDGE_KNUPDATE SETTINGS_SETCUSTOMIZATION SETTINGS }
+          directive @auth(for: [Capabilities!]!, forDraft: [Capabilities!], and: Boolean) on FIELD_DEFINITION | OBJECT
+          directive @public on FIELD_DEFINITION
+          directive @ff(flags: [String!]!, softFail: Boolean = false, defaultValue: String = null) on FIELD_DEFINITION
+          enum StatusScope { GLOBAL REQUEST_ACCESS }
+          scalar JSON
+          scalar DateTime
+          scalar BasicObject
+          type Status { id: ID! }
+          type EntitySetting { id: ID! }
+          type DraftWorkspace { id: ID! }
+          type Query { health: Boolean @public }
+          type Mutation { health: Boolean @public }
+        `,
+        readFileSync(new URL('../../../src/modules/workflow/api/workflow.graphql', import.meta.url), 'utf8'),
+      ],
+      resolvers: { Query: workflowResolvers.Query },
+    });
+    vi.mocked(workflowDomain.getWorkflowDefinition).mockResolvedValue({
+      id: 'definition-id',
+      name: 'Request access',
+      initialState: 'new',
+      states: [{ statusId: 'new' }, { statusId: 'approved', requestAccessOutcome: 'APPROVED' }],
+      transitions: [],
+    } as any);
+    const result = await graphql({
+      schema: authDirectiveBuilder('auth').authDirectiveTransformer(schema),
+      source: '{ workflowDefinition(entityType: "Case-Rfi", scope: REQUEST_ACCESS) { states { statusId requestAccessOutcome } } }',
+      contextValue: { user: { id: 'admin', capabilities: [{ name: 'SETTINGS_SETCUSTOMIZATION' }] } },
+    });
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.workflowDefinition).toEqual({
+      states: [
+        { statusId: 'new', requestAccessOutcome: null },
+        { statusId: 'approved', requestAccessOutcome: 'APPROVED' },
+      ],
+    });
   });
 });
 
@@ -453,6 +501,7 @@ describe('workflow-resolvers', () => {
           mockContext.user,
           'Case',
           false,
+          StatusScope.Global,
         );
         expect(result).toBe(mockDefinition);
       });
@@ -479,8 +528,60 @@ describe('workflow-resolvers', () => {
           mockContext.user,
           'Incident',
           true,
+          StatusScope.Global,
         );
         expect(result).toBe(mockDefinition);
+      });
+    });
+
+    describe('workflowMigrationPreview', () => {
+      it('should shape byScope into a results array per scope', async () => {
+        vi.mocked(workflowDomain.getWorkflowMigrationPreview).mockResolvedValue({
+          byScope: {
+            GLOBAL: {
+              definition: { initialState: 't1', states: [{ statusId: 't1' }], transitions: [] },
+              diagnostics: [],
+            },
+          },
+          publishedByScope: { GLOBAL: true },
+        } as any);
+
+        const result = await workflowResolvers.Query.workflowMigrationPreview(
+          {},
+          { entityType: 'Incident' },
+          mockContext,
+        );
+
+        expect(workflowDomain.getWorkflowMigrationPreview).toHaveBeenCalledWith(
+          mockContext,
+          mockContext.user,
+          'Incident',
+        );
+        expect(result).toEqual({
+          entityType: 'Incident',
+          results: [
+            {
+              scope: 'GLOBAL',
+              initialState: 't1',
+              hasPublishedVersion: true,
+              states: [{ statusId: 't1' }],
+              transitions: [],
+              diagnostics: [],
+            },
+          ],
+        });
+      });
+
+      it('should return an empty results array when no scope has any Status data', async () => {
+        vi.mocked(workflowDomain.getWorkflowMigrationPreview).mockResolvedValue({ byScope: {} } as any);
+
+        const result = await workflowResolvers.Query.workflowMigrationPreview(
+          {},
+          { entityType: 'Incident' },
+          mockContext,
+        );
+
+        expect(result).toEqual({ entityType: 'Incident', results: [] });
       });
     });
 
@@ -525,7 +626,7 @@ describe('workflow-resolvers', () => {
 
     describe('allowedTransitions', () => {
       it('should call getAllowedTransitions with correct arguments', async () => {
-        const mockTransitions = [{ event: 'close', toState: 'closed', toStatus: null, actions: [], requiresShareOrganizationInput: false, requiresUnshareOrganizationInput: false }];
+        const mockTransitions = [{ event: 'close', toState: 'closed', toStatus: null, actions: [], requiresShareOrganizationInput: false, requiresUnshareOrganizationInput: false, requestAccessOutcome: null }];
         vi.mocked(workflowDomain.getAllowedTransitions).mockResolvedValue(mockTransitions);
 
         const result = await workflowResolvers.Query.allowedTransitions(
@@ -568,6 +669,7 @@ describe('workflow-resolvers', () => {
           mockContext.user,
           'Report',
           definitionJson,
+          StatusScope.Global,
         );
         expect(result).toBe(mockDefinition);
       });
@@ -594,6 +696,7 @@ describe('workflow-resolvers', () => {
           mockContext,
           mockContext.user,
           'Task',
+          StatusScope.Global,
         );
         expect(result).toBe(mockPublished);
       });
@@ -617,6 +720,7 @@ describe('workflow-resolvers', () => {
           mockContext,
           mockContext.user,
           'Case',
+          StatusScope.Global,
         );
         expect(result).toBe(mockDeleted);
       });
@@ -643,8 +747,51 @@ describe('workflow-resolvers', () => {
           mockContext,
           mockContext.user,
           'Incident',
+          StatusScope.Global,
         );
         expect(result).toBe(mockRestored);
+      });
+    });
+
+    describe('scope argument', () => {
+      it('forwards RequestAccess to every definition query and mutation', async () => {
+        const { Query, Mutation } = workflowResolvers;
+        const args = { entityType: 'Case-Rfi', scope: StatusScope.RequestAccess };
+
+        await Query.workflowDefinition({}, { ...args, allowDraft: true }, mockContext);
+        await Mutation.workflowDefinitionSet({}, { ...args, definition: '{}' }, mockContext);
+        await Mutation.workflowDefinitionPublish({}, args, mockContext);
+        await Mutation.workflowDefinitionRestorePublished({}, args, mockContext);
+        await Mutation.workflowDefinitionDelete({}, args, mockContext);
+
+        expect(workflowDomain.getWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Case-Rfi', true, StatusScope.RequestAccess);
+        expect(workflowDomain.setWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Case-Rfi', '{}', StatusScope.RequestAccess);
+        expect(workflowDomain.publishWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Case-Rfi', StatusScope.RequestAccess);
+        expect(workflowDomain.restorePublishedWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Case-Rfi', StatusScope.RequestAccess);
+        expect(workflowDomain.deleteWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Case-Rfi', StatusScope.RequestAccess);
+      });
+
+      it('treats an explicit null scope as Global on every definition query and mutation', async () => {
+        const { Query, Mutation } = workflowResolvers;
+        const args = { entityType: 'Report', scope: null } as any;
+
+        await Query.workflowDefinition({}, { ...args, allowDraft: false }, mockContext);
+        await Mutation.workflowDefinitionSet({}, { ...args, definition: '{}' }, mockContext);
+        await Mutation.workflowDefinitionPublish({}, args, mockContext);
+        await Mutation.workflowDefinitionRestorePublished({}, args, mockContext);
+        await Mutation.workflowDefinitionDelete({}, args, mockContext);
+
+        expect(workflowDomain.getWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Report', false, StatusScope.Global);
+        expect(workflowDomain.setWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Report', '{}', StatusScope.Global);
+        expect(workflowDomain.publishWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Report', StatusScope.Global);
+        expect(workflowDomain.restorePublishedWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Report', StatusScope.Global);
+        expect(workflowDomain.deleteWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Report', StatusScope.Global);
+      });
+
+      it('workflowDefinitionPublish passes scope', async () => {
+        await workflowResolvers.Mutation.workflowDefinitionPublish({}, { entityType: 'Case-Rfi', scope: StatusScope.RequestAccess }, mockContext);
+
+        expect(workflowDomain.publishWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Case-Rfi', StatusScope.RequestAccess);
       });
     });
 
