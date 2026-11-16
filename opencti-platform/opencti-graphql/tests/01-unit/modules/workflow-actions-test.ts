@@ -925,6 +925,21 @@ describe('ActionRegistry.shareRequestedEntities', () => {
       vi.mocked(deleteTask).mockReset();
     });
 
+    it('hands the direct grants it cannot undo to the transition', async () => {
+      vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => (
+        { id, internal_id: id, entity_type: id === 'malware-1' ? 'Malware' : 'Report' }
+      ) as any);
+      vi.mocked(createSharingTask)
+        .mockResolvedValueOnce({ id: 'task-a', work_id: 'work-a' } as any)
+        .mockRejectedValueOnce(new Error('task store unavailable'));
+      vi.mocked(removeOrganizationRestriction).mockRejectedValueOnce(new Error('revoke failed'));
+      const tracked: any = { ...makeRfiCtx({ entities: ['report-a', 'malware-1', 'report-b'], members: ['org-author'] }), suspendingAsyncSlots: [] as any[], __workflowInstanceId: 'instance-id' };
+
+      await expect(ActionRegistry.shareRequestedEntities(tracked, { organizations: ['AUTHOR'] })).rejects.toThrow('task store unavailable');
+
+      expect(tracked.unrevokedDirectGrants).toEqual([{ entityId: 'malware-1', organizationIds: ['org-author'] }]);
+    });
+
     it('queues no task for a container already shared with every organization', async () => {
       const ctx = makeTrackedCtx();
       await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });

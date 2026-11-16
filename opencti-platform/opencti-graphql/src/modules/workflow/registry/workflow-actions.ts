@@ -219,6 +219,11 @@ export const ActionRegistry: Record<string, ActionFunction> = {
           await removeOrganizationRestriction(context, user, target.id, target.newOrganizationIds);
         } catch (rollbackError) {
           logApp.error('[shareRequestedEntities] Failed to undo a grant after a refused share', { cause: rollbackError, targetId: target.id });
+          // Handed to the transition, which records the grant on the instance until it is revoked
+          executionContext.unrevokedDirectGrants = mergeRequestAccessDirectGrants(
+            executionContext.unrevokedDirectGrants,
+            [{ entityId: target.id, organizationIds: target.newOrganizationIds }],
+          );
         }
       }
       throw error;

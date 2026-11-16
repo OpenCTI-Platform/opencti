@@ -103,6 +103,8 @@ export interface Context {
   requestAccessDirectGrants?: RequestAccessDirectGrant[];
   /** Container share tasks a refused request access share could not delete: the transition records them so an admin clear retries. */
   undeletedShareSlots?: AsyncActionSlot[];
+  /** Direct grants a refused request access share could not undo: the transition records them so an admin clear revokes them. */
+  unrevokedDirectGrants?: RequestAccessDirectGrant[];
   [key: string]: any;
 }
 

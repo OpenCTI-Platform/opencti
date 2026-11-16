@@ -2155,9 +2155,10 @@ const findClosingReasonVocabularyName = async (context: AuthContext, value: stri
  * @returns {Promise<TriggerResult>} The result of the trigger
  */
 /**
- * Records the container share tasks that could not be deleted after a failed transition, so none stays queued without a
- * durable workflow slot: the instance keeps them (and the direct grants left) in an error pending transition, and an admin
- * clear deletes them. Best effort: a failed write is logged with the task ids.
+ * Records the container share tasks and the direct grants that could not be undone after a failed transition, so none
+ * stays shared or queued without a durable workflow record: the instance keeps them in an error pending transition,
+ * and an admin clear deletes the tasks and revokes the grants. The write is retried once; when it still fails, the
+ * full list is logged for a manual cleanup, since nothing more durable than the instance exists.
  */
 const recordUndeletedShareTasks = async (
   executionContext: AuthContext,
@@ -2168,27 +2169,39 @@ const recordUndeletedShareTasks = async (
   event: string,
   toState: string,
   cause: unknown,
-  grants: RequestAccessDirectGrant[] = [],
+  grants: RequestAccessDirectGrant[] | undefined = [],
 ) => {
-  if (!slots || slots.length === 0) return;
+  const undoneSlots = slots ?? [];
+  const undoneGrants = grants ?? [];
+  if (undoneSlots.length === 0 && undoneGrants.length === 0) return;
   const pendingTransition: WorkflowPendingTransition = {
     event,
     toState,
     triggeredBy,
     triggeredAt: new Date().toISOString(),
     runtimeParams: {},
-    asyncActions: slots,
+    asyncActions: undoneSlots,
     syncActions: [],
-    ...(grants.length > 0 ? { requestAccessDirectGrants: grants } : {}),
+    ...(undoneGrants.length > 0 ? { requestAccessDirectGrants: undoneGrants } : {}),
   };
-  try {
-    await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
-      { key: 'pendingStatus', value: ['error'] },
-      { key: 'pendingError', value: [`The transition failed (${cause instanceof Error ? cause.message : String(cause)}) and its container share tasks could not all be deleted`] },
-      { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
-    ]);
-  } catch (recordError) {
-    logApp.error('[workflow] Failed to record the undeleted container share tasks', { cause: recordError, taskIds: slots.map((slot) => slot.taskId) });
+  const attributes = [
+    { key: 'pendingStatus', value: ['error'] },
+    { key: 'pendingError', value: [`The transition failed (${cause instanceof Error ? cause.message : String(cause)}) and its container share tasks or direct grants could not all be undone`] },
+    { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
+  ];
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, attributes);
+      return;
+    } catch (recordError) {
+      if (attempt === 2) {
+        logApp.error('[workflow] Failed to record the container share tasks and direct grants that could not be undone', {
+          cause: recordError,
+          instanceId,
+          pendingTransition,
+        });
+      }
+    }
   }
 };
 
@@ -2338,12 +2351,12 @@ export const triggerWorkflowEvent = async (
     try {
       result = await instance.trigger(eventName);
     } catch (error) {
-      await recordUndeletedShareTasks(executionContext, executionUser, instanceEntity.internal_id || instanceEntity.id, workflowContext.undeletedShareSlots, user.id, eventName, transition?.to ?? '', error);
+      await recordUndeletedShareTasks(executionContext, executionUser, instanceEntity.internal_id || instanceEntity.id, workflowContext.undeletedShareSlots, user.id, eventName, transition?.to ?? '', error, workflowContext.unrevokedDirectGrants);
       throw error;
     }
 
     if (!result.success) {
-      await recordUndeletedShareTasks(executionContext, executionUser, instanceEntity.internal_id || instanceEntity.id, workflowContext.undeletedShareSlots, user.id, eventName, transition?.to ?? '', result.reason);
+      await recordUndeletedShareTasks(executionContext, executionUser, instanceEntity.internal_id || instanceEntity.id, workflowContext.undeletedShareSlots, user.id, eventName, transition?.to ?? '', result.reason, workflowContext.unrevokedDirectGrants);
       // The engine names the state by its status template id, unreadable in task errors and notifications
       if (!transition) {
         const statusTemplate = await storeLoadById<BasicStoreEntity>(executionContext, executionUser, currentStateId, ENTITY_TYPE_STATUS_TEMPLATE);

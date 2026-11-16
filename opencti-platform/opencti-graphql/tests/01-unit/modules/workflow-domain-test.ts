@@ -3983,6 +3983,36 @@ describe('triggerWorkflowEvent – async / pending / lock', () => {
     expect(pending.toState).toBe('reviewing');
   });
 
+  it('records the direct grants a refused share could not undo, and retries the write once', async () => {
+    const definitionContent = JSON.stringify({
+      initialState: 'draft',
+      states: [{ statusId: 'draft' }, { statusId: 'reviewing', onEnter: [{ type: 'shareRequestedEntities' }] }],
+      transitions: [{ from: 'draft', to: 'reviewing', event: 'submit' }],
+    });
+    setupAsyncPendingMocks(definitionContent);
+    (WorkflowFactory.getInstance as any).mockImplementation((_data: any, _definition: any, _state: any, workflowContext: any) => ({
+      start: vi.fn(),
+      trigger: vi.fn(async () => {
+        workflowContext.unrevokedDirectGrants = [{ entityId: 'malware-2', organizationIds: ['org-a'] }];
+        throw new Error('task store unavailable');
+      }),
+      getCurrentState: vi.fn().mockReturnValue('draft'),
+    }));
+    vi.mocked(updateAttribute).mockClear();
+    vi.mocked(updateAttribute).mockRejectedValueOnce(new Error('write failed'));
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'submit');
+
+    expect(result.success).toBe(false);
+    expect(result.reason).toContain('task store unavailable');
+    expect(updateAttribute).toHaveBeenCalledTimes(2);
+    const input = vi.mocked(updateAttribute).mock.calls[1][4] as { key: string; value: unknown[] }[];
+    expect(input.find((i) => i.key === 'pendingStatus')?.value).toEqual(['error']);
+    const pending = JSON.parse(input.find((i) => i.key === 'pendingTransition')?.value[0] as string);
+    expect(pending.asyncActions).toEqual([]);
+    expect(pending.requestAccessDirectGrants).toEqual([{ entityId: 'malware-2', organizationIds: ['org-a'] }]);
+  });
+
   describe('request access direct grants', () => {
     const definitionContent = JSON.stringify({
       initialState: 'draft',
