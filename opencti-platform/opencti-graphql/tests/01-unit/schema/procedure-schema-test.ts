@@ -15,8 +15,8 @@ describe('Procedure schema foundations', () => {
   it('registers implements-technique as a core relationship', () => {
     expect(isStixCoreRelationship('implements-technique')).toBe(true);
   });
-  it('declares procedure_type_ov with no default values', () => {
-    expect(openVocabularies.procedure_type_ov).toEqual([]);
+  it('declares procedure_type_ov with reporting as its only default value', () => {
+    expect(openVocabularies.procedure_type_ov).toEqual([{ key: 'reporting' }]);
   });
   it('adds the PDF platforms in lowercase', () => {
     const keys = openVocabularies.platforms_ov.map((v) => v.key);

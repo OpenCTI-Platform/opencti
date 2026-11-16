@@ -964,7 +964,9 @@ export const openVocabularies: Record<VocabularyCategory, Array<OpenVocabularyEn
     { key: 'azure ad' },
     { key: 'mobile' },
   ],
-  procedure_type_ov: [],
+  procedure_type_ov: [
+    { key: 'reporting' },
+  ],
   closing_reason_ov: [
     { key: 'true-positive', description: 'Confirmed and handled', order: 1 },
     { key: 'false-positive', description: 'Not a real threat', order: 2 },
