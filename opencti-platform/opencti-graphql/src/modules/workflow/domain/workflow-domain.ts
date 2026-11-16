@@ -2422,6 +2422,11 @@ export const triggerWorkflowEvent = async (
         (workflowContext as Context).requestAccessDirectGrants,
       );
 
+      // The container tasks an earlier failed share could not delete stay tracked, so clearing this pending state still deletes them
+      const leftoverSlots = retriedFailure?.event === WORKFLOW_CLEANUP_EVENT
+        ? retriedFailure.asyncActions.filter((leftover) => !rawSlots.some((slot) => slot.id === leftover.id))
+        : [];
+
       const pendingTransition: WorkflowPendingTransition = {
         event: eventName,
         toState: toStateId,
@@ -2431,7 +2436,7 @@ export const triggerWorkflowEvent = async (
         runtimeParams,
         ...(comment ? { comment } : {}),
         ...(resolvedClosingReason.closingReason !== undefined ? { closingReason: resolvedClosingReason.closingReason } : {}),
-        asyncActions: rawSlots,
+        asyncActions: [...leftoverSlots, ...rawSlots],
         syncActions: serializedTransitions,
         ...(serializedOnEnterActions.length > 0 ? { onEnterActions: serializedOnEnterActions } : {}),
         ...(requestAccessOutcome ? { requestAccessOutcome } : {}),

@@ -4119,6 +4119,22 @@ describe('triggerWorkflowEvent – async / pending / lock', () => {
       ]);
     });
 
+    it('keeps the tasks and grants of a failed-share cleanup record on whichever transition fires next', async () => {
+      setupAsyncPendingMocks(definitionContent);
+      suspendWithGrants();
+      const leftover = { id: 'old-slot', workId: 'old-work', type: 'shareRequestedEntities', status: 'pending', taskId: 'old-task' };
+      failedWith({ event: 'event_failed_share_cleanup', toState: '', asyncActions: [leftover] });
+
+      await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'submit');
+
+      const pending = getPendingTransitionArg();
+      expect(pending.asyncActions).toEqual([leftover, expect.objectContaining({ id: 'slot-1' })]);
+      expect(pending.requestAccessDirectGrants).toEqual([
+        { entityId: 'malware-1', organizationIds: ['org-a'] },
+        { entityId: 'malware-2', organizationIds: ['org-a'] },
+      ]);
+    });
+
     it('does not take over the grants of another failed transition', async () => {
       setupAsyncPendingMocks(definitionContent);
       suspendWithGrants();
