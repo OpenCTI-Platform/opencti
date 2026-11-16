@@ -146,11 +146,9 @@ export const getDeprecatedDescriptorsForEdition = (
 export const shouldShowDeprecatedAlert = (descriptors: DeprecatedFieldDescriptor[]) => descriptors.length > 0;
 
 /**
- * Builds edition payload values. The backend keeps the stored value of any key
- * omitted from the payload, so every configuration key present in the form is sent:
- * - non-deprecated fields as they are (a cleared field is sent empty),
- * - deprecated fields still configured with non-default values as they are,
- * - other deprecated fields reset to their default (or sent empty to be removed).
+ * Filters edition payload values by keeping all non-deprecated fields and only
+ * deprecated fields that are still configured with non-default values.
+ * A cleared non-deprecated field is sent empty so the backend does not keep its stored value.
  */
 export const filterValuesForEditionPayload = (
   values: ConnectorValues,
@@ -167,7 +165,7 @@ export const filterValuesForEditionPayload = (
 
     // Deprecated fields explicitly configured with default:null are hidden in
     // edition visibility rules, but must be preserved when already configured.
-    // Fields with truly missing defaults (undefined) are reset.
+    // Fields with truly missing defaults (undefined) remain filtered out.
     if (property.default === null) {
       return !isEmptyValue(values[key]);
     }
@@ -176,12 +174,9 @@ export const filterValuesForEditionPayload = (
   };
 
   return Object.fromEntries(
-    Object.entries(values).map(([key, value]) => {
-      const property = properties[key];
-      if (!property) return [key, value];
-      if (!isKept(key)) return [key, hasDefinedDefault(property) ? property.default : ''];
-      return [key, value ?? ''];
-    }),
+    Object.entries(values)
+      .filter(([key]) => isKept(key))
+      .map(([key, value]) => [key, properties[key] ? value ?? '' : value]),
   );
 };
 

@@ -67,14 +67,13 @@ describe('deprecatedFields utils', () => {
 
       const payload = filterValuesForEditionPayload(simulatedConnectorValues, connectorProperties);
 
-      expect(payload).toHaveProperty('ACTIVE_NAME', 'my-connector');
-      expect(payload).toHaveProperty('DEPRECATED_WITH_DEFAULT_STRING', 'custom-legacy');
-      // Hidden deprecated fields are reset explicitly: the backend keeps omitted keys
-      expect(payload).toHaveProperty('DEPRECATED_WITH_DEFAULT_INTEGER', 1800);
-      expect(payload).toHaveProperty('DEPRECATED_NO_DEFAULT', '');
+      expect(payload).toEqual({
+        ACTIVE_NAME: 'my-connector',
+        DEPRECATED_WITH_DEFAULT_STRING: 'custom-legacy',
+      });
     });
 
-    it('resets deprecated fields when values are empty or default-equivalent', () => {
+    it('drops deprecated fields when values are empty or default-equivalent', () => {
       const simulatedConnectorValues = {
         ACTIVE_NAME: 'my-connector',
         DEPRECATED_WITH_DEFAULT_STRING: 'legacy-default',
@@ -91,10 +90,7 @@ describe('deprecatedFields utils', () => {
 
       const payload = filterValuesForEditionPayload(simulatedConnectorValues, connectorProperties);
 
-      expect(payload).toHaveProperty('ACTIVE_NAME', 'my-connector');
-      expect(payload).toHaveProperty('DEPRECATED_WITH_DEFAULT_STRING', 'legacy-default');
-      expect(payload).toHaveProperty('DEPRECATED_WITH_DEFAULT_INTEGER', 1800);
-      expect(payload).toHaveProperty('DEPRECATED_NO_DEFAULT', '');
+      expect(payload).toEqual({ ACTIVE_NAME: 'my-connector' });
     });
   });
 
@@ -293,7 +289,7 @@ describe('deprecatedFields utils', () => {
       NORMAL_FIELD: makeStringProp({ deprecated: false }),
     };
 
-    it('keeps visible deprecated fields and resets hidden deprecated fields', () => {
+    it('keeps visible deprecated fields and drops hidden deprecated fields', () => {
       const payload = filterValuesForEditionPayload(
         {
           name: 'connector',
@@ -304,10 +300,11 @@ describe('deprecatedFields utils', () => {
         properties,
       );
 
-      expect(payload).toHaveProperty('DEPRECATED_WITH_DEFAULT', 'custom');
-      expect(payload).toHaveProperty('DEPRECATED_NO_DEFAULT', '');
-      expect(payload).toHaveProperty('NORMAL_FIELD', 'ok');
-      expect(payload).toHaveProperty('name', 'connector');
+      expect(payload).toEqual({
+        name: 'connector',
+        DEPRECATED_WITH_DEFAULT: 'custom',
+        NORMAL_FIELD: 'ok',
+      });
     });
 
     it('detects deprecated keys cleared for reset confirmation', () => {
@@ -429,7 +426,7 @@ describe('deprecatedFields utils', () => {
       });
     });
 
-    it('sends cleared fields as empty so the backend does not keep the stored value', () => {
+    it('sends cleared non-deprecated fields as empty and drops cleared deprecated fields', () => {
       const payload = filterValuesForEditionPayload(
         {
           NORMAL_FIELD: undefined,
@@ -451,7 +448,6 @@ describe('deprecatedFields utils', () => {
       expect(payload).toEqual({
         NORMAL_FIELD: '',
         ARRAY_FIELD: [],
-        DEPRECATED_NULL_DEFAULT: '',
       });
     });
   });
