@@ -1,0 +1,60 @@
+diff --git a/dist/index.cjs b/dist/index.cjs
+index 441af955d3e6295d1edd4b4e260225991bf5dd70..f15d2f2371eaeaf03c2d8cecc0667f3e7b053cb3 100644
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -11110,9 +11110,10 @@ var TiptapEditorToolbar = ({
+         anchorOrigin: { vertical: "bottom", horizontal: "left" },
+         children: [
+           /* @__PURE__ */ jsxRuntime$1.jsx(material.Box, { sx: { p: 1, borderBottom: 1, borderColor: "divider", display: "flex", justifyContent: "center" }, children: /* @__PURE__ */ jsxRuntime$1.jsx(
+-            material.MenuItem,
++            material.Button,
+             {
+-              sx: { borderRadius: 1, typography: "body2", py: 0.5, flexGrow: 1, justifyContent: "center" },
++              size: "small",
++              sx: { borderRadius: 1, typography: "body2", py: 0.5, flexGrow: 1, justifyContent: "center", textTransform: "none", color: "text.primary" },
+               onClick: () => {
+                 editor.chain().focus().unsetColor().run();
+                 setTextColorAnchor(null);
+@@ -11141,9 +11142,10 @@ var TiptapEditorToolbar = ({
+         anchorOrigin: { vertical: "bottom", horizontal: "left" },
+         children: [
+           /* @__PURE__ */ jsxRuntime$1.jsx(material.Box, { sx: { p: 1, borderBottom: 1, borderColor: "divider", display: "flex", justifyContent: "center" }, children: /* @__PURE__ */ jsxRuntime$1.jsx(
+-            material.MenuItem,
++            material.Button,
+             {
+-              sx: { borderRadius: 1, typography: "body2", py: 0.5, flexGrow: 1, justifyContent: "center" },
++              size: "small",
++              sx: { borderRadius: 1, typography: "body2", py: 0.5, flexGrow: 1, justifyContent: "center", textTransform: "none", color: "text.primary" },
+               onClick: () => {
+                 editor.chain().focus().unsetBackgroundColor().run();
+                 setBgColorAnchor(null);
+diff --git a/dist/index.js b/dist/index.js
+index 902340c4a29d670fcd9f354013a05a3135014138..37b1f2f8b402ca5e178158773ed60d8a3263777c 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -11104,9 +11104,10 @@ var TiptapEditorToolbar = ({
+         anchorOrigin: { vertical: "bottom", horizontal: "left" },
+         children: [
+           /* @__PURE__ */ jsx$1(Box, { sx: { p: 1, borderBottom: 1, borderColor: "divider", display: "flex", justifyContent: "center" }, children: /* @__PURE__ */ jsx$1(
+-            MenuItem,
++            Button,
+             {
+-              sx: { borderRadius: 1, typography: "body2", py: 0.5, flexGrow: 1, justifyContent: "center" },
++              size: "small",
++              sx: { borderRadius: 1, typography: "body2", py: 0.5, flexGrow: 1, justifyContent: "center", textTransform: "none", color: "text.primary" },
+               onClick: () => {
+                 editor.chain().focus().unsetColor().run();
+                 setTextColorAnchor(null);
+@@ -11135,9 +11136,10 @@ var TiptapEditorToolbar = ({
+         anchorOrigin: { vertical: "bottom", horizontal: "left" },
+         children: [
+           /* @__PURE__ */ jsx$1(Box, { sx: { p: 1, borderBottom: 1, borderColor: "divider", display: "flex", justifyContent: "center" }, children: /* @__PURE__ */ jsx$1(
+-            MenuItem,
++            Button,
+             {
+-              sx: { borderRadius: 1, typography: "body2", py: 0.5, flexGrow: 1, justifyContent: "center" },
++              size: "small",
++              sx: { borderRadius: 1, typography: "body2", py: 0.5, flexGrow: 1, justifyContent: "center", textTransform: "none", color: "text.primary" },
+               onClick: () => {
+                 editor.chain().focus().unsetBackgroundColor().run();
+                 setBgColorAnchor(null);

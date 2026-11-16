@@ -2026,6 +2026,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@filigran/rich-text-editor@patch:@filigran/rich-text-editor@2.0.1#./patch/filigran-rich-text-editor-2.0.1.patch::locator=opencti%40workspace%3A.":
+  version: 2.0.1
+  resolution: "@filigran/rich-text-editor@patch:@filigran/rich-text-editor@npm%3A2.0.1#./patch/filigran-rich-text-editor-2.0.1.patch::version=2.0.1&hash=79024d&locator=opencti%40workspace%3A."
+  dependencies:
+    "@tiptap/core": "npm:3.30.5"
+    "@tiptap/pm": "npm:3.30.5"
+    "@tiptap/react": "npm:3.30.5"
+  peerDependencies:
+    "@mui/icons-material": ">=5"
+    "@mui/material": ">=5.14.0"
+    react: ">=18"
+    react-color: ">=2"
+    react-dom: ">=18"
+  checksum: 10c0/29f8c13e7ca1df723db049e004ed92b2f4850b596e5aeb82b63e2a2481182bfcb5e48da0724ba93501cf845d87f5bdea9cfd6bee689611891787bdea2549ce13
+  languageName: node
+  linkType: hard
+
 "@floating-ui/core@npm:^1.8.0":
   version: 1.8.0
   resolution: "@floating-ui/core@npm:1.8.0"
