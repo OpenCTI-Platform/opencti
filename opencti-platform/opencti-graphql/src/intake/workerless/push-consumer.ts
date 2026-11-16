@@ -12,6 +12,23 @@ import { createByteBudget, createQueueOrder, handlePushMessage, isEventMessage, 
 
 const LOG_PREFIX = '[OPENCTI-MODULE] Worker-less intake:';
 const REQUEUE_DELAY_MS = 2000;
+// task 0040: a close lets the messages in flight be answered first (a message closed unanswered is
+// redelivered, possibly to another platform, while its chunks still commit here), up to this bound. At a
+// platform stop the caches no longer receive invalidations during the drain, and an orchestrator grace
+// period shorter than the bound (Kubernetes: 30 s) kills it midway: those messages are redelivered as before.
+const CLOSE_DRAIN_MAX_MS = 60000;
+const CLOSE_DRAIN_POLL_MS = 100;
+
+// Waits until nothing is pending or maxMs elapsed; true when drained
+export const waitDrained = async (pending: () => number, maxMs: number, pollMs: number, now: () => number = Date.now): Promise<boolean> => {
+  const start = now();
+  while (pending() > 0 && now() - start < maxMs) {
+    await new Promise((resolve) => {
+      setTimeout(resolve, pollMs);
+    });
+  }
+  return pending() === 0;
+};
 
 export interface PushConsumerOptions {
   // Unacked messages per queue
@@ -41,10 +58,14 @@ export const consumePushQueues = async (
   deps: PushIntakeDeps,
   options: PushConsumerOptions,
   onOutcome: (outcome: PushOutcome, queue: string) => void,
+  // task 0040 queue lease: told on the first event message of a queue, before it is handled, so that no
+  // other platform joins a queue consumed in order (queue-lease.ts)
+  onOrdered: (queue: string) => void = () => {},
 ): Promise<PushConsumer> => {
   const budget = createByteBudget(options.maxInFlightBytes);
   const order = createQueueOrder();
   const consumed = new Map<string, ConsumedQueue>();
+  const toldOrdered = new Set<string>();
   let alive = true;
   const connection = await new Promise<amqp.Connection>((resolve, reject) => {
     amqp.connect(rabbitmqUri(), rabbitmqConnectionOptions(), (err, opened) => (err ? reject(err) : resolve(opened)));
@@ -141,8 +162,13 @@ export const consumePushQueues = async (
         // Parsed once, on delivery: its type decides the order (an event queue is consumed in order);
         // from the raw bytes, its base64 content sliced out (not decoded here)
         const data = parsePushMessage(message.content);
+        const isEvent = isEventMessage(data ?? {});
+        if (isEvent && !toldOrdered.has(queue)) {
+          toldOrdered.add(queue);
+          onOrdered(queue);
+        }
         entry.inFlight += 1;
-        order.schedule(queue, isEventMessage(data ?? {}), () => handle(queue, channel, () => open, message, data))
+        order.schedule(queue, isEvent, () => handle(queue, channel, () => open, message, data))
           .catch((cause) => logApp.error(`${LOG_PREFIX} push message scheduling failed`, { queue, cause }))
           .finally(() => answered(entry));
       }, { noAck: false }, (consumeError, ok) => {
@@ -153,14 +179,26 @@ export const consumePushQueues = async (
     });
   };
 
-  // A stopping queue is consumed again once its channel is closed (next refresh)
+  // A stopping queue is consumed again once its channel is closed (next refresh). A queue no longer listed
+  // is stopped and drained on a single writer too (connector removed), not only when a lease moves.
   const refresh = async () => {
     if (!alive) return;
     const queues = new Set(await listQueues());
     [...queues].filter((queue) => !consumed.has(queue)).forEach(consumeQueue);
     [...consumed].filter(([queue, entry]) => !queues.has(queue) && !entry.stopping).forEach(([, entry]) => stopQueue(entry));
   };
-  await refresh();
+  try {
+    await refresh();
+  } catch (cause) {
+    // the first listing failed: nothing consumed yet, the connection is closed with it
+    alive = false;
+    try {
+      connection.close();
+    } catch {
+      // Already closed
+    }
+    throw cause;
+  }
   logApp.info(`${LOG_PREFIX} consuming`, { queues: consumed.size, prefetch: options.prefetch, max_in_flight_bytes: options.maxInFlightBytes });
   return {
     queue: 'push queues',
@@ -170,6 +208,10 @@ export const consumePushQueues = async (
     isConsuming: (queue) => consumed.has(queue),
     close: async () => {
       alive = false;
+      [...consumed.values()].filter((entry) => !entry.stopping).forEach(stopQueue);
+      if (!await waitDrained(() => consumed.size, CLOSE_DRAIN_MAX_MS, CLOSE_DRAIN_POLL_MS)) {
+        logApp.warn(`${LOG_PREFIX} closed with messages still in flight, the broker redelivers them`, { queues: consumed.size });
+      }
       try {
         connection.close();
       } catch {

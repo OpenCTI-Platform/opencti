@@ -8,8 +8,10 @@ const memoryStore = () => {
   const leases = new Map<string, string>();
   const backlogs = new Map<string, number>();
   const ordered = new Set<string>();
+  const renewed: string[] = [];
   const store: LeaseStore = {
     renew: async (queue, token) => {
+      renewed.push(queue);
       const holder = leases.get(queue);
       if (holder && holder !== token) return false;
       leases.set(queue, token);
@@ -33,7 +35,7 @@ const memoryStore = () => {
     markOrdered: async (queues) => queues.forEach((queue) => ordered.add(queue)),
     ordered: async (queues) => new Set(queues.filter((queue) => ordered.has(queue))),
   };
-  return { store, leases };
+  return { store, leases, renewed };
 };
 
 const options = { ttlMs: 30000, stealBacklogMin: 100, releaseIdleTicks: 2 };
@@ -42,9 +44,9 @@ const view = (consuming: string[] = [], orderedQueues: string[] = []): ConsumerV
   isConsuming: (queue) => consuming.includes(queue),
 });
 
-const platform = (nodeId: string, store: LeaseStore, depths: Map<string, QueueDepth>) => {
+const platform = (nodeId: string, store: LeaseStore, depths: Map<string, QueueDepth>, now?: () => number) => {
   const events: [LeaseEvent, string][] = [];
-  const lease = createQueueLease(nodeId, store, async () => depths, options, (event, queue) => events.push([event, queue]));
+  const lease = createQueueLease(nodeId, store, async () => depths, { ...options, now }, (event, queue) => events.push([event, queue]));
   const tick = async (candidates: string[], consumer: ConsumerView = view()) => {
     await lease.renew();
     return lease.assign(candidates, consumer);
@@ -78,7 +80,7 @@ describe('dynamic queue lease', () => {
   });
 
   it('should give back a queue empty for two ticks once its consumer is stopped, renewing it until then', async () => {
-    const { store, leases } = memoryStore();
+    const { store, leases, renewed } = memoryStore();
     const depths = depthsOf({ q1: 500 });
     const a = platform('a', store, depths);
     await a.tick(['q1']);
@@ -87,9 +89,11 @@ describe('dynamic queue lease', () => {
     expect(await a.tick(['q1'], view(['q1']))).toEqual(['q1']);
     expect(await a.tick(['q1'], view(['q1']))).toEqual([]);
     expect(leases.has('q1')).toBe(true);
-    // still draining: kept
+    // still draining: kept, and renewed so that it does not expire under its messages in flight
+    renewed.length = 0;
     await a.tick(['q1'], view(['q1']));
     expect(leases.has('q1')).toBe(true);
+    expect(renewed).toContain('q1');
     await a.tick(['q1'], view([]));
     expect(leases.has('q1')).toBe(false);
     expect(a.events.map(([event]) => event)).toEqual(['taken', 'released']);
@@ -161,12 +165,99 @@ describe('dynamic queue lease', () => {
     expect(await b.tick(['q1'])).toEqual([]);
   });
 
-  it('should give back every lease it holds on release', async () => {
+  it('should give back every lease it holds on release, those still draining included', async () => {
+    const { store, leases } = memoryStore();
+    const depths = depthsOf({ q1: 500, q2: 300 });
+    const a = platform('a', store, depths);
+    await a.tick(['q1', 'q2']);
+    await a.tick(['q1', 'q2']);
+    // q2 no longer listed: given back once drained, its consumer still running
+    expect(await a.tick(['q1'], view(['q1', 'q2']))).toEqual(['q1']);
+    expect(leases.has('q2')).toBe(true);
+    await a.lease.release();
+    expect(leases.size).toBe(0);
+  });
+
+  it('should let another platform take a queue given back after its drain', async () => {
+    const { store, leases } = memoryStore();
+    const depths = depthsOf({ q1: 500 });
+    const a = platform('a', store, depths);
+    const b = platform('b', store, depths);
+    await a.tick(['q1']);
+    await b.tick(['q1']);
+    expect(await a.tick(['q1'])).toEqual(['q1']);
+    const tokenOfA = leases.get('q1');
+    // q1 empty for two ticks, then drained: given back
+    depths.set('q1', { ready: 0, unacked: 0 });
+    await a.tick(['q1'], view(['q1']));
+    await a.tick(['q1'], view(['q1']));
+    await a.tick(['q1'], view([]));
+    expect(leases.has('q1')).toBe(false);
+    depths.set('q1', { ready: 300, unacked: 0 });
+    expect(await b.tick(['q1'])).toEqual(['q1']);
+    // taken by b, not a steal of a lease a still holds
+    expect(leases.get('q1')).toBeDefined();
+    expect(leases.get('q1')).not.toBe(tokenOfA);
+  });
+
+  it('should give back a held queue no longer listed (connector removed)', async () => {
     const { store, leases } = memoryStore();
     const a = platform('a', store, depthsOf({ q1: 500, q2: 300 }));
     await a.tick(['q1', 'q2']);
-    await a.tick(['q1', 'q2']);
-    await a.lease.release();
-    expect(leases.size).toBe(0);
+    expect(await a.tick(['q1', 'q2'])).toEqual(['q1', 'q2']);
+    // given back on the tick after: its consumer is stopped by then
+    expect(await a.tick(['q1'], view(['q1', 'q2']))).toEqual(['q1']);
+    expect(leases.has('q2')).toBe(true);
+    await a.tick(['q1'], view(['q1']));
+    expect(leases.has('q2')).toBe(false);
+  });
+
+  it('should take beyond its share when it is the least loaded platform, so that no queue is left unconsumed', async () => {
+    const { store } = memoryStore();
+    // another live platform loaded with queues this one does not list
+    await store.publishBacklog('c:other', 5000);
+    const b = platform('b', store, depthsOf({ q1: 300, q2: 300 }));
+    await b.tick(['q1', 'q2']);
+    // share 300 (600 over two live platforms): b reaches it with q1 but is the least loaded, so it takes q2 too
+    expect(await b.tick(['q1', 'q2'])).toEqual(['q1', 'q2']);
+  });
+
+  it('should not join a queue its own consumer saw carrying events', async () => {
+    const { store } = memoryStore();
+    const depths = depthsOf({ q1: 500 });
+    const a = platform('a', store, depths);
+    const b = platform('b', store, depths);
+    await a.tick(['q1']);
+    await b.tick(['q1']);
+    expect(await a.tick(['q1'])).toEqual(['q1']);
+    expect(await b.tick(['q1'], view([], ['q1']))).toEqual([]);
+  });
+
+  it('should mark a queue ordered at once, before any tick', async () => {
+    const { store } = memoryStore();
+    const depths = depthsOf({ q1: 500 });
+    const a = platform('a', store, depths);
+    const b = platform('b', store, depths);
+    await a.tick(['q1']);
+    await b.tick(['q1']);
+    expect(await a.tick(['q1'])).toEqual(['q1']);
+    await a.lease.markOrdered('q1');
+    expect(await b.tick(['q1'])).toEqual([]);
+  });
+
+  it('should take a free queue marked ordered only once seen free for a lease TTL', async () => {
+    const { store, leases } = memoryStore();
+    let clock = 0;
+    const depths = depthsOf({ q1: 500 });
+    const a = platform('a', store, depths, () => clock);
+    await a.tick(['q1']);
+    // given back by a previous holder that consumed events from it
+    await store.markOrdered(['q1']);
+    expect(await a.tick(['q1'])).toEqual([]);
+    clock += options.ttlMs - 1;
+    expect(await a.tick(['q1'])).toEqual([]);
+    clock += 1;
+    expect(await a.tick(['q1'])).toEqual(['q1']);
+    expect(leases.get('q1')).toBeDefined();
   });
 });

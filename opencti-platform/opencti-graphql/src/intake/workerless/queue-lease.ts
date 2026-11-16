@@ -9,7 +9,9 @@ import { v4 as uuidv4 } from 'uuid';
 // stealing) until that queue is empty or it takes a queue of its own; never a queue that carried
 // events, consumed in order by its holder. A lease is a hint, not a guard: two consumers on a queue
 // is the sharing without lease, slower only. The ordered queues of the synchronizations stay out of
-// it (push-queues.ts leadership).
+// it (push-queues.ts leadership). Event messages come only from synchronizations today, so the ordered
+// marking below guards a future producer; a queue stolen before its first event is consumed twice until the
+// stealer's next tick. A free queue marked ordered waits a TTL even after a clean hand-back (latency only).
 
 export interface QueueDepth {
   ready: number;
@@ -43,6 +45,8 @@ export type LeaseEventDetail = Record<string, number>;
 
 export interface QueueLeaseOptions {
   ttlMs: number;
+  // clock of the free-since delays (tests)
+  now?: () => number;
   // Messages ready on the queue of another platform before joining it
   stealBacklogMin: number;
   releaseIdleTicks: number;
@@ -54,6 +58,8 @@ export interface QueueLease {
   assign: (candidates: string[], consumer: ConsumerView) => Promise<string[]>;
   // The queues consumed without a new decision (queue depths unavailable)
   current: () => string[];
+  // A queue whose consumer received an event message: marked at once, no other platform joins it
+  markOrdered: (queue: string) => Promise<void>;
   release: () => Promise<void>;
 }
 
@@ -73,6 +79,10 @@ export const createQueueLease = (
   const idleTicks = new Map<string, number>();
   let stealing: string | null = null;
   let first = true;
+  const now = options.now ?? Date.now;
+  // A free queue marked ordered is taken once seen free for a lease TTL: its previous holder, which lost
+  // or gave it back, may still answer its messages in flight, and they are consumed in order
+  const freeSince = new Map<string, number>();
   const current = () => [...held, ...(stealing ? [stealing] : [])];
   const lose = (queue: string) => {
     held.delete(queue);
@@ -124,8 +134,15 @@ export const createQueueLease = (
       const others = [...live].filter(([node]) => node !== token).map(([, value]) => value);
       const minOther = others.length > 0 ? Math.min(...others) : Infinity;
       const holders = await store.holders(candidates);
-      const free = candidates
-        .filter((queue) => !holders.get(queue) && !releasing.has(queue) && backlog(queue) > 0)
+      const freeCandidates = candidates.filter((queue) => !holders.get(queue) && !releasing.has(queue) && backlog(queue) > 0);
+      const markedFree = freeCandidates.length > 0 ? await store.ordered(freeCandidates) : new Set<string>();
+      const at = now();
+      [...freeSince.keys()].filter((queue) => !markedFree.has(queue)).forEach((queue) => freeSince.delete(queue));
+      markedFree.forEach((queue) => {
+        if (!freeSince.has(queue)) freeSince.set(queue, at);
+      });
+      const free = freeCandidates
+        .filter((queue) => !markedFree.has(queue) || at - (freeSince.get(queue) ?? at) >= options.ttlMs)
         .sort((a, b) => backlog(b) - backlog(a));
       for (const queue of free) {
         // Up to its share; the least loaded platform takes beyond it, so that no queue is left unconsumed
@@ -157,6 +174,9 @@ export const createQueueLease = (
       return current();
     },
     current,
+    markOrdered: async (queue) => {
+      await store.markOrdered([queue]);
+    },
     release: async () => {
       const queues = [...held, ...releasing];
       held.clear();

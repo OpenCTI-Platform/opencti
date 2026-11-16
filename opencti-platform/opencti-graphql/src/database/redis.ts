@@ -486,72 +486,107 @@ export const readLockStamps = async (ids: string[]): Promise<Map<string, string>
   ids.forEach((id, i) => stamps.set(id, values[i] ?? ''));
   return stamps;
 };
+// task 0040: a pipeline answers each command apart and exec only rejects on a connection error: the first
+// command error is raised, so that a caller never takes a refused write for a done one
+export const execStrict = async (pipeline: { exec: () => Promise<[Error | null, unknown][] | null> }) => {
+  const results = (await pipeline.exec()) ?? [];
+  const failed = results.find(([error]) => error);
+  if (failed) throw failed[0];
+  return results;
+};
+const STAMP_PIPELINE_SIZE = 1000;
 export const bumpLockStamps = async (ids: string[], ttlS: number): Promise<void> => {
-  if (ids.length === 0) return;
-  const pipeline = getClientLock().pipeline();
-  ids.forEach((id) => pipeline.set(buildStampKey(id), uuidv4(), 'EX', ttlS));
-  await pipeline.exec();
+  for (let start = 0; start < ids.length; start += STAMP_PIPELINE_SIZE) {
+    const pipeline = getClientLock().pipeline();
+    ids.slice(start, start + STAMP_PIPELINE_SIZE).forEach((id) => pipeline.set(buildStampKey(id), uuidv4(), 'EX', ttlS));
+    await execStrict(pipeline);
+  }
 };
 
 // task 0040 defect 1: endpoint shares and merge marks, in the {locks} slot. A batch writing relations
-// shares their endpoints (one sorted set of holders per entity, scored by expiry); a merge marks its
-// sources before reading their dependencies, then waits until no other holder shares them. A share is
-// refused on a marked entity (checked and added in one script): either the relation shared first and the
-// merge reads it after its write, or the merge marked first and the relation never lands on the source.
+// shares their endpoints (one sorted set of holders per entity, scored by expiry, renewed while the batch
+// runs); a merge marks its sources before reading their dependencies, then waits until no other holder
+// shares them. A share is refused on a marked entity (checked and added in one script): either the
+// relation shared first and the merge reads it after its write, or the merge marked first and the
+// relation never lands on the source. Expiries come from the Redis clock, never from a platform's.
 const buildShareKey = (id: string) => `{locks}:share:${id}`;
 const buildMergeSourceKey = (id: string) => `{locks}:merge-source:${id}`;
-// KEYS: the n share keys then the n merge-source keys; ARGV: holder, expiry (epoch ms), ttl (ms).
-// Returns the 1-based positions refused.
-const ENDPOINT_SHARE_SCRIPT = `
+// Writes after TIME in a script need effects replication: the default from Redis 5, the only mode from Redis 7
+const REDIS_NOW_MS = `local t = redis.call('time')
+local now = tonumber(t[1]) * 1000 + math.floor(tonumber(t[2]) / 1000)`;
+// KEYS: the n share keys then the n merge-source keys; ARGV: holder, ttl (ms). Returns the 1-based positions refused.
+const ENDPOINT_SHARE_SCRIPT = `${REDIS_NOW_MS}
 local n = #KEYS / 2
 local refused = {}
 for i = 1, n do
   if redis.call('exists', KEYS[n + i]) == 1 then
     table.insert(refused, i)
   else
-    redis.call('zadd', KEYS[i], ARGV[2], ARGV[1])
-    redis.call('pexpire', KEYS[i], ARGV[3])
+    redis.call('zadd', KEYS[i], now + tonumber(ARGV[2]), ARGV[1])
+    redis.call('pexpire', KEYS[i], ARGV[2])
   end
 end
 return refused
 `;
+// KEYS: share keys; ARGV: holder, ttl (ms). Extends the holder's expiry where it still shares.
+const ENDPOINT_SHARE_RENEW_SCRIPT = `${REDIS_NOW_MS}
+for i = 1, #KEYS do
+  if redis.call('zscore', KEYS[i], ARGV[1]) then
+    redis.call('zadd', KEYS[i], now + tonumber(ARGV[2]), ARGV[1])
+    redis.call('pexpire', KEYS[i], ARGV[2])
+  end
+end
+return 1
+`;
+// KEYS: share keys; ARGV: the holder to ignore ('' for none). Drops the expired holders, returns the live ones.
+const ENDPOINT_SHARE_HOLDERS_SCRIPT = `${REDIS_NOW_MS}
+local holders = {}
+for i = 1, #KEYS do
+  redis.call('zremrangebyscore', KEYS[i], '-inf', now)
+  for _, holder in ipairs(redis.call('zrange', KEYS[i], 0, -1)) do
+    if holder ~= ARGV[1] then table.insert(holders, holder) end
+  end
+end
+return holders
+`;
+// KEYS: merge-source keys; ARGV: the marking token. Deletes the marks this merge set, never another's.
+const MERGE_SOURCE_UNMARK_SCRIPT = `
+for i = 1, #KEYS do
+  if redis.call('get', KEYS[i]) == ARGV[1] then redis.call('del', KEYS[i]) end
+end
+return 1
+`;
 export const redisShareEndpoints = async (holder: string, ids: string[], ttlMs: number): Promise<string[]> => {
   if (ids.length === 0) return [];
   const keys = [...ids.map(buildShareKey), ...ids.map(buildMergeSourceKey)];
-  const refused = await getClientLock().eval(ENDPOINT_SHARE_SCRIPT, keys.length, ...keys, holder, String(Date.now() + ttlMs), String(ttlMs)) as number[];
+  const refused = await getClientLock().eval(ENDPOINT_SHARE_SCRIPT, keys.length, ...keys, holder, String(ttlMs)) as number[];
   return (refused ?? []).map((position) => ids[Number(position) - 1]);
+};
+export const redisRenewEndpointShares = async (holder: string, ids: string[], ttlMs: number): Promise<void> => {
+  if (ids.length === 0) return;
+  await getClientLock().eval(ENDPOINT_SHARE_RENEW_SCRIPT, ids.length, ...ids.map(buildShareKey), holder, String(ttlMs));
 };
 export const redisReleaseEndpointShares = async (holder: string, ids: string[]): Promise<void> => {
   if (ids.length === 0) return;
   const pipeline = getClientLock().pipeline();
   ids.forEach((id) => pipeline.zrem(buildShareKey(id), holder));
-  await pipeline.exec();
+  await execStrict(pipeline);
 };
-export const redisMarkMergeSources = async (ids: string[], holder: string, ttlMs: number): Promise<void> => {
+export const redisMarkMergeSources = async (ids: string[], token: string, ttlMs: number): Promise<void> => {
   if (ids.length === 0) return;
   const pipeline = getClientLock().pipeline();
-  ids.forEach((id) => pipeline.set(buildMergeSourceKey(id), holder, 'PX', ttlMs));
-  await pipeline.exec();
+  ids.forEach((id) => pipeline.set(buildMergeSourceKey(id), token, 'PX', ttlMs));
+  await execStrict(pipeline);
 };
-export const redisUnmarkMergeSources = async (ids: string[]): Promise<void> => {
+export const redisUnmarkMergeSources = async (ids: string[], token: string): Promise<void> => {
   if (ids.length === 0) return;
-  await getClientLock().del(...ids.map(buildMergeSourceKey));
+  await getClientLock().eval(MERGE_SOURCE_UNMARK_SCRIPT, ids.length, ...ids.map(buildMergeSourceKey), token);
 };
 // The live holders sharing any of the ids, except one (the merging batch's own shares)
 export const redisEndpointShareHolders = async (ids: string[], except?: string): Promise<string[]> => {
   if (ids.length === 0) return [];
-  const pipeline = getClientLock().pipeline();
-  const now = Date.now();
-  ids.forEach((id) => {
-    pipeline.zremrangebyscore(buildShareKey(id), '-inf', now);
-    pipeline.zrange(buildShareKey(id), 0, -1);
-  });
-  const results = (await pipeline.exec()) ?? [];
-  const holders = new Set<string>();
-  results.forEach(([, value], index) => {
-    if (index % 2 === 1 && Array.isArray(value)) value.forEach((holder) => holder !== except && holders.add(String(holder)));
-  });
-  return Array.from(holders);
+  const holders = await getClientLock().eval(ENDPOINT_SHARE_HOLDERS_SCRIPT, ids.length, ...ids.map(buildShareKey), except ?? '') as string[];
+  return [...new Set((holders ?? []).map(String))];
 };
 
 // task 0040 dynamic queue lease (intake/workerless/queue-lease.ts), in the {intake} slot. The scripts
@@ -606,7 +641,7 @@ export const redisQueueLeaseStore = {
   markOrdered: async (queues: string[]) => {
     const pipeline = getClientBase().pipeline();
     queues.forEach((queue) => pipeline.set(buildOrderedQueueKey(queue), '1', 'EX', ORDERED_QUEUE_TTL_S));
-    await pipeline.exec();
+    await execStrict(pipeline);
   },
   ordered: async (queues: string[]) => {
     const values = await getClientBase().mget(queues.map(buildOrderedQueueKey));

@@ -34,6 +34,9 @@ export interface SequencerIntent {
   // task 0040 contention diag: cycles this intent was planned then carried to the next batch
   // (multi_writer re-check conflict, batch lock retry, apply-time lock refusal)
   replans?: number;
+  // task 0040 partial acquire: batches this intent was carried to because another platform held one of
+  // its group's own keys (the starvation limit of splitPlanOnHeldKeys)
+  partialCarries?: number;
   // s9.9 bounded wait: batches this intent was skipped in because its in-batch producer
   // failed at apply (mutated by the loop; at the limit it applies through today's path)
   failedProducerDefers?: number;

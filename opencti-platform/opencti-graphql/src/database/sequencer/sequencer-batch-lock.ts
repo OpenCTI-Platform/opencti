@@ -17,6 +17,9 @@ export interface SequencerBatchLock {
   // task 0040 defect 1 (multi_writer): the relation endpoints this batch shares against a merge, under
   // one holder token, released after its flush (sequencer-multi-writer shareRelationEndpoints)
   shares?: { holder: string; ids: Set<string> };
+  // task 0040 (multi_writer): the relation-dedup keys of the relations this batch created or a merge of
+  // it moved, stamped after its flush like the dedup keys it locked
+  writtenDedupKeys?: Set<string>;
 }
 
 // Keys the batch lock must hold so the apply-time lock sites are no-ops (master-lock's

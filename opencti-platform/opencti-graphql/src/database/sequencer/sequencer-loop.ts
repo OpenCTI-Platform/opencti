@@ -25,8 +25,11 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TY
 import { elCreateIndexWithMapping, elFindByIds, elFlushSequencerWrites, elIndexExists, elPutIndexMappingProperties, elRawBulk, elRawMget, elRawSearch } from '../engine';
 import {
   creatableNestedIds,
+  DEDUP_STAMP_TTL_S,
   dedupFoundRelationIds,
+  dedupStampsOutlived,
   ignoreIndexAlreadyExists,
+  isDedupStampedRelation,
   isLockError,
   lockErrorKeys,
   relationDedupLockKey,
@@ -51,7 +54,7 @@ import { buildIntent, intentOwnIds } from './sequencer-intent';
 import { sequencerIdentityMap, startIdentityMapInvalidation } from './sequencer-identity-map';
 import { buildBatchPlan, canonicalKey, classifyPhase } from './sequencer-batch-plan';
 import { computeBatchLockKeys, computeOwnLockKeys, getCurrentBatchLock, setCurrentBatchLock } from './sequencer-batch-lock';
-import { mergedSourceKeys, newEndpointShares, preShareEndpoints, releaseEndpointShares } from './sequencer-endpoint-shares';
+import { mergedSourceKeys, newEndpointShares, preShareEndpoints, releaseEndpointShares, startEndpointShareRenewal } from './sequencer-endpoint-shares';
 import { isNoopOfServedBasis, NOOP_TOKEN_SOURCE_EXCLUDES, NoopMemo, NoopMemoDiag, noopRecordOf, noopTokenOf, settleNoopRecords, takeNoopMemoHits } from './sequencer-noop-memo';
 import type { NoopDiagOutcome, NoopRecord, NoopTarget, NoopToken, NoopVersionsOf } from './sequencer-noop-memo';
 import type { CoalesceGroup } from './sequencer-batch-plan';
@@ -291,7 +294,7 @@ const dedupEndpointsOf = (key: string) => key.split('|').slice(0, 3).join('|');
 // batch lock, and the stamps of those keys read before the searches (staleDedupSearches)
 const dedupLockKeyOfSearch = new Map<string, string>();
 const dedupStampsBefore = new Map<string, string>();
-const DEDUP_STAMP_TTL_S = 600;
+let dedupStampsReadAt = 0;
 const setDedupPrefetch = (key: string, entry: { inputIds: Set<string>; existing: any[] }) => {
   dedupPrefetch.set(key, entry);
   dedupPrefetchEndpoints.add(dedupEndpointsOf(key));
@@ -610,12 +613,14 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
     await loadUpsertBases(context, entityCandidateIds);
     await prefetchRelationDedup(context, batch);
   } else if (SEQUENCER_CONFIG.dedupBeforeLock) {
+    // the searches of the other relation types read no stamp: searched again under the lock
     const keys = new Set<string>();
     batch.forEach((intent) => {
-      if (intent.kind !== 'relation') return;
+      if (intent.kind !== 'relation' || !isDedupStampedRelation(intent.input.relationship_type)) return;
       const key = relationDedupKey(intent);
       if (key) keys.add(key);
     });
+    dedupStampsReadAt = Date.now();
     const stamps = await readLockStamps(Array.from(keys)).catch((err) => {
       logApp.warn('[SEQUENCER] dedup stamps unreadable, the dedup runs under the lock', { cause: err });
       return null;
@@ -682,7 +687,10 @@ const resolveUnderLock = async (batch: SequencerIntent[]): Promise<any[]> => {
   // and run again below with the ones not made yet (stamps unreadable: all of them)
   if (dedupLockKeyOfSearch.size > 0) {
     const stampsNow = await readLockStamps(Array.from(dedupStampsBefore.keys())).catch(() => null);
-    const { stale, changedKeys } = stampsNow
+    // a stamp written since the first read may have expired already: every search runs again
+    const outlived = dedupStampsOutlived(dedupStampsReadAt, Date.now());
+    if (outlived) sequencerMetrics.mapEvent('dedup_stamps_outlived');
+    const { stale, changedKeys } = stampsNow && !outlived
       ? staleDedupSearches(dedupLockKeyOfSearch, dedupStampsBefore, stampsNow)
       : { stale: Array.from(dedupLockKeyOfSearch.keys()), changedKeys: dedupStampsBefore.size };
     stale.forEach((key) => dedupPrefetch.delete(key));
@@ -1260,6 +1268,7 @@ const runBatchLoop = async () => {
       if (carriedGroups.length > 0) {
         carriedGroups.forEach(({ leader, absorbed }) => [leader, ...absorbed].forEach((intent) => {
           intent.replans = (intent.replans ?? 0) + 1;
+          intent.partialCarries = (intent.partialCarries ?? 0) + 1;
           partialCarried.push(intent);
         }));
         plan.order = kept;
@@ -1313,17 +1322,32 @@ const runBatchLoop = async () => {
       }
     }
     const shares = SEQUENCER_CONFIG.multiWriter ? newEndpointShares() : undefined;
+    const writtenDedupKeys = SEQUENCER_CONFIG.multiWriter ? new Set<string>() : undefined;
     if (shares) {
       await preShareEndpoints(shares, relationEndpointIds(plan.order))
-        .catch((err) => logApp.error('[SEQUENCER] relation endpoints not pre-shared, shared at apply', { cause: err }));
+        .catch((err) => logApp.warn('[SEQUENCER] relation endpoints not pre-shared, shared at apply', { cause: err }));
     }
+    const stopShareRenewal = startEndpointShareRenewal(shares);
     setCurrentBatchLock({
       heldKeys: new Set(SEQUENCER_CONFIG.multiWriter ? [...heldKeys, ...lockKeys] : lockKeys),
       signal: lock.signal,
       onMiss: recordLockMiss,
       noWait: SEQUENCER_CONFIG.multiWriter,
       shares,
+      writtenDedupKeys,
     });
+    // step B2: the relation-dedup keys this batch held, and those of the relations it created or a merge of it
+    // moved, are stamped once its writes are refreshed and before their release, so a platform that searched
+    // them before its lock searches again. Every multi_writer platform stamps, whatever its own
+    // dedup_before_lock: the knob may differ across platforms. Once per batch.
+    let dedupKeysStamped = false;
+    const stampDedupKeys = async () => {
+      if (!SEQUENCER_CONFIG.multiWriter || dedupKeysStamped) return;
+      dedupKeysStamped = true;
+      const stamped = new Set([...lockKeys.filter((key) => key.startsWith('relation-dedup:')), ...(writtenDedupKeys ?? [])]);
+      await bumpLockStamps(Array.from(stamped), DEDUP_STAMP_TTL_S)
+        .catch((err) => logApp.warn('[SEQUENCER] dedup stamps not written, another platform may miss a dedup', { cause: err }));
+    };
     // 5. apply leaders one at a time (C6) with the Stage E write buffer armed, then commit:
     // flush the buffered writes (one docs bulk + one side/update bulk + ONE refresh), push the
     // buffered events in application order, and only then resolve the intents' promises.
@@ -1339,7 +1363,8 @@ const runBatchLoop = async () => {
       // once, sequencer-batch-lock.ts): the group starts a new cycle, the key locked up front
       if (SEQUENCER_CONFIG.multiWriter && isLockError(err)) {
         const keys = lockErrorKeys(err);
-        // defect 1: an endpoint merged away by another platform, the next cycle resolves it again from ES
+        // defect 1: an endpoint merged away by another platform (no lock key: keys is empty), the next
+        // cycle resolves it again from ES
         const merged = mergedSourceKeys(err);
         if (merged.length > 0) {
           sequencerIdentityMap.evict(merged);
@@ -1525,6 +1550,9 @@ const runBatchLoop = async () => {
           const flushContext = executionContext('sequencer', SYSTEM_USER);
           await elFlushSequencerWrites(flushContext, SYSTEM_USER, buffer);
         }
+        // step B2: stamped as soon as the writes are refreshed, before the events and records (the window of
+        // the keys written without being locked, sequencer-endpoint-shares stampWrittenRelations)
+        await stampDedupKeys();
         sequencerMetrics.phase('commit', (Date.now() - tFlush) / 1000, mFlush);
         const tEvents = Date.now();
         const mEvents = sequencerMetrics.mark();
@@ -1582,6 +1610,8 @@ const runBatchLoop = async () => {
         });
       }
     } finally {
+      // defect 1: stopped first, so that no later step can leave it renewing the shares
+      stopShareRenewal();
       // resolve-ahead intents are recovered FIRST (they were popped off the queue and must
       // never be lost), and BEFORE the evict/clear below so any stale warm entry for an
       // id this batch wrote is wiped right after the warm completed.
@@ -1602,15 +1632,11 @@ const runBatchLoop = async () => {
       basisVersions.clear();
       noopRecords.length = 0;
       noopTargetIds.length = 0;
-      // step B2: the relation-dedup keys this batch held are stamped before their release (its writes
-      // are refreshed by the flush above), so a platform that searched them before its lock searches again
-      if (SEQUENCER_CONFIG.multiWriter && SEQUENCER_CONFIG.dedupBeforeLock) {
-        await bumpLockStamps(lockKeys.filter((key) => key.startsWith('relation-dedup:')), DEDUP_STAMP_TTL_S)
-          .catch((err) => logApp.error('[SEQUENCER] dedup stamps not written, another platform may miss a dedup', { cause: err }));
-      }
+      // step B2: stamped after the flush; here when the batch ended before it (a failure)
+      await stampDedupKeys();
       // defect 1: the shared endpoints are released once the batch writes are refreshed (flush above)
       await releaseEndpointShares(shares)
-        .catch((err) => logApp.error('[SEQUENCER] relation endpoint shares not released, a merge waits for their expiry', { cause: err }));
+        .catch((err) => logApp.warn('[SEQUENCER] relation endpoint shares not released, a merge waits for their expiry', { cause: err }));
       await lock.unlock();
     }
     // record the REAL assembly size (before the batchEwp-a diagnosis this recorded the

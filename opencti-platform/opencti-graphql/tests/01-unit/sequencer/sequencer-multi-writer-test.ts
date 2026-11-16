@@ -1,8 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SEQUENCER_CONFIG } from '../../../src/database/sequencer/sequencer-config';
 import {
+  DEDUP_STAMP_TTL_S,
   dedupFoundRelationIds,
+  dedupStampsOutlived,
   ignoreIndexAlreadyExists,
+  isDedupStampedRelation,
   NODE_FIELD_MAPPING,
   ownedPendingQuery,
   recordOwner,
@@ -186,10 +189,26 @@ describe('step B2: dedup searches made before the batch lock', () => {
     expect(staleDedupSearches(keyOf, before, new Map(before)).stale).toEqual(['s2']);
     expect(staleDedupSearches(keyOf, before, new Map()).stale).toEqual(['s1', 's2', 's3']);
   });
+
+  it('should trust the stamps only while one written after their first read cannot have expired', () => {
+    const ttlMs = DEDUP_STAMP_TTL_S * 1000;
+    expect(dedupStampsOutlived(1000, 1000)).toBe(false);
+    expect(dedupStampsOutlived(1000, 1000 + ttlMs - 5001)).toBe(false);
+    expect(dedupStampsOutlived(1000, 1000 + ttlMs - 5000)).toBe(true);
+    expect(dedupStampsOutlived(1000, 1000 + ttlMs)).toBe(true);
+  });
+
+  it('should trust the searches of the relation types a merge stamps only (ref relations searched again)', () => {
+    expect(isDedupStampedRelation('targets')).toBe(true);
+    expect(isDedupStampedRelation('stix-sighting-relationship')).toBe(true);
+    expect(isDedupStampedRelation('obs_belongs-to')).toBe(false);
+    expect(isDedupStampedRelation('object')).toBe(false);
+    expect(isDedupStampedRelation('object-marking')).toBe(false);
+  });
 });
 
 describe('partial acquire: groups carried when another platform holds one of their keys', () => {
-  const group = (name: string, keys: string[], dependsOn?: number[], replans = 0) => ({ name, keys, leader: { replans }, dependsOn });
+  const group = (name: string, keys: string[], dependsOn?: number[], partialCarries = 0) => ({ name, keys, leader: { partialCarries }, dependsOn });
   const keysOf = (g: { keys: string[] }) => g.keys;
 
   it('should carry the conflicting group and its dependents, keep the rest with remapped dependencies', () => {

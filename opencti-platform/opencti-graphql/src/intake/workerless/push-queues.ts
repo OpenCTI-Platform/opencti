@@ -55,6 +55,9 @@ export const createOrderedQueuesLeadership = (tryLock: () => Promise<HeldLock | 
 // and `,` inside one (`connector-07,connector-05|connector-01,connector-02`). A platform holding the
 // slot of a group consumes the push queues of that group's connectors and of the connectors of no
 // group; the queues of the other groups are left to the platforms holding their slots.
+// Test knob only, not kept (the dynamic lease, queue-lease.ts, replaces it): a platform holds one slot and
+// never takes a free one, so the group of a dead platform waits for another platform to start, and a
+// fragment matches any name containing it (`connector-1` also matches `connector-10`).
 export const parseQueuePartition = (spec: string | undefined): string[][] => (spec ?? '')
   .split('|')
   .map((group) => group.split(',').map((fragment) => fragment.trim()).filter((fragment) => fragment.length > 0))
@@ -106,5 +109,30 @@ export const createPartitionSlot = (count: number, tryLock: (slot: number) => Pr
       held = null;
       if (current) await current.lock.unlock();
     },
+  };
+};
+
+// task 0040 (lease or partition): a failed listing (Redis, the connectors) keeps the queues of the last one,
+// for at most maxMs since the last success: past it (a lease not renewed for its TTL is lost, another platform
+// may consume its queues) the failure ends the consumer, which drains and is started again. Never before a
+// first success.
+export const keepLastQueuesOnFailure = (
+  listOnce: () => Promise<string[]>,
+  maxMs: number,
+  onKept: (cause: unknown) => void,
+  now: () => number = Date.now,
+): (() => Promise<string[]>) => {
+  let last: string[] | null = null;
+  let lastAt = 0;
+  return async () => {
+    try {
+      last = await listOnce();
+      lastAt = now();
+      return last;
+    } catch (cause) {
+      if (last === null || now() - lastAt >= maxMs) throw cause;
+      onKept(cause);
+      return last;
+    }
   };
 };

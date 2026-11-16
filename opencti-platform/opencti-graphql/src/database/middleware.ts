@@ -112,8 +112,8 @@ import { SEQUENCER_CONFIG } from './sequencer/sequencer-config';
 import { registerReconcileAssert, stripSinkOf } from './sequencer/sequencer-pending-refs';
 import { pendingIntentContext, pendingRecordInput, registerPendingIntentResubmit } from './sequencer/sequencer-pending-intents';
 import { sequencerIdentityBarrier } from './sequencer/sequencer-barrier';
-import { relationBasisContext } from './sequencer/sequencer-multi-writer';
-import { markMergeSources, shareRelationEndpoints, unmarkMergeSources } from './sequencer/sequencer-endpoint-shares';
+import { isDedupStampedRelation, relationBasisContext } from './sequencer/sequencer-multi-writer';
+import { markMergeSources, type MergeMark, shareRelationEndpoints, stampWrittenRelations, unmarkMergeSources } from './sequencer/sequencer-endpoint-shares';
 import { createInputCompletionOf } from './create-input-completion';
 import { notify, redisAddDeletions } from './redis';
 import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
@@ -1765,9 +1765,9 @@ const mergeEntitiesRaw = async (
   sourceEntities: BasicStoreObject[],
   targetDependencies: MergeEntitiesDependency,
   sourcesDependencies: MergeEntitiesDependency,
-  opts: { chosenFields?: Record<string, any> } = {},
+  opts: { chosenFields?: Record<string, any>; onSourcesDeleting?: () => void } = {},
 ): Promise<void> => {
-  const { chosenFields = {} } = opts;
+  const { chosenFields = {}, onSourcesDeleting } = opts;
   // 01 Check if everything is fully resolved.
   const elements = [targetEntity, ...sourceEntities];
   logApp.info(`[OPENCTI] Merging ${sourceEntities.map((i) => i.internal_id).join(',')} in ${targetEntity.internal_id}`);
@@ -1997,6 +1997,7 @@ const mergeEntitiesRaw = async (
   // Take care of relations deletions to prevent duplicate marking definitions.
   const elementToRemoves = [...sourceEntities, ...fromDeletions, ...toDeletions];
   // All not move relations will be deleted, so we need to remove impacted rel in entities.
+  onSourcesDeleting?.();
   await elDeleteElements(context, SYSTEM_USER, elementToRemoves);
   // Everything if fine update remaining attributes
   const updateAttributes: EditInput[] = [];
@@ -2165,8 +2166,9 @@ export const mergeEntities = async (
   const { locks = [] } = opts;
   const participantIds = mergedIds.filter((e) => !locks.includes(e));
   let lock;
-  // task 0040 defect 1: sources marked against relations of other platforms, unmarked if not deleted
-  let markedSources: string[] = [];
+  // task 0040 defect 1: sources marked against relations of other platforms, unmarked only if their
+  // deletion never started
+  let mergeMark: MergeMark | null = null;
   let sourcesDeleted = false;
   try {
     // Lock the participants that will be merged
@@ -2194,13 +2196,23 @@ export const mergeEntities = async (
     });
     const sources = R.uniqBy((s) => s.internal_id, sourceEntityIds.map((id) => sourcesByIds.get(id)).filter(isNotEmptyField));
     // multi_writer: no relation of another platform lands on a source once its dependencies are read
-    markedSources = await markMergeSources(context, sources.map((s) => s.internal_id));
+    mergeMark = await markMergeSources(context, sources.map((s) => s.internal_id));
     const sourcesDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, sources.map((s) => s.internal_id));
     const targetDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, [initialInstance.internal_id]);
     // - TRANSACTION PART
     lock.signal.throwIfAborted();
-    await mergeEntitiesRaw(context, user, target, sources, targetDependencies, sourcesDependencies, opts);
-    sourcesDeleted = true;
+    const onSourcesDeleting = () => {
+      sourcesDeleted = true;
+    };
+    await mergeEntitiesRaw(context, user, target, sources, targetDependencies, sourcesDependencies, { ...opts, onSourcesDeleting });
+    // multi_writer: the relations moved onto the target get new dedup keys, stamped for the platforms that
+    // searched them before their batch lock
+    const movedRelations = [
+      ...sourcesDependencies[INTERNAL_FROM_FIELD].map((dep) => ({ type: dep.i_relation.entity_type, fromId: target.internal_id, toId: dep.internal_id })),
+      ...sourcesDependencies[INTERNAL_TO_FIELD].map((dep) => ({ type: dep.i_relation.entity_type, fromId: dep.internal_id, toId: target.internal_id })),
+    ].filter(({ type }) => isDedupStampedRelation(type)); // the readers search the other types again under their lock
+    await stampWrittenRelations(context, movedRelations)
+      .catch((err) => logApp.warn('[SEQUENCER] dedup stamps of the merged relations not written', { cause: err }));
     const mergedInstance = await storeLoadByIdWithRefs<StoreObject>(context, user, targetEntityId);
     if (!mergedInstance) {
       throw FunctionalError('Cannot access merged instance', { targetEntityId });
@@ -2218,8 +2230,8 @@ export const mergeEntities = async (
     }
     throw err;
   } finally {
-    if (markedSources.length > 0 && !sourcesDeleted) {
-      await unmarkMergeSources(markedSources).catch((err) => logApp.error('[SEQUENCER] merge marks not removed', { cause: err }));
+    if (mergeMark && !sourcesDeleted) {
+      await unmarkMergeSources(mergeMark).catch((err) => logApp.warn('[SEQUENCER] merge marks not removed, they expire', { cause: err }));
     }
     if (lock) await lock.unlock();
   }
@@ -3911,6 +3923,9 @@ export const createRelationRaw = async (
     // Index the created element
     lock.signal.throwIfAborted();
     await indexCreatedElement(context, user, dataRel);
+    // task 0040 (multi_writer): its dedup key stamped for the platforms that searched it before their batch lock
+    await stampWrittenRelations(context, [{ type: relationshipType, fromId: from.internal_id, toId: to.internal_id }])
+      .catch((err) => logApp.warn('[SEQUENCER] dedup stamp of the created relation not written', { cause: err }));
     // Push the input in the stream
     let event;
     // Commit references of an embedded ref are checked whether its event is built or not

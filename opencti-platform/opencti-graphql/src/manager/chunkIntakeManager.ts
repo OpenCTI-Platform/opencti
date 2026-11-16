@@ -54,6 +54,7 @@ import {
   createOrderedQueuesLeadership,
   createPartitionSlot,
   intakeLockKey,
+  keepLastQueuesOnFailure,
   parseQueuePartition,
   partitionedPushQueues,
 } from '../intake/workerless/push-queues';
@@ -100,14 +101,23 @@ const PUSH_RELEASE_QUANTUM = Number(conf.get('chunk_intake_manager:push_release_
 // Transformations running at once: their reads reach the engine outside the pre-loop gate (a read
 // per open vocabulary value, author or marking not yet cached)
 const PUSH_TRANSFORM_CONCURRENCY = Number(conf.get('chunk_intake_manager:push_transform_concurrency') ?? 16);
-// task 0040 queue affinity test (multi_writer): connector groups, one per platform (push-queues.ts); empty = off
+// task 0040 queue affinity test (multi_writer): connector groups, one per platform (push-queues.ts); empty = off.
+// Test knob only: a dead platform's group is not taken over (push-queues.ts).
 const PUSH_QUEUE_PARTITION = parseQueuePartition(conf.get('chunk_intake_manager:push_queue_partition'));
 // task 0040 dynamic queue lease (multi_writer, queue-lease.ts): replaces the partition when on
 const PUSH_QUEUE_LEASE = booleanConf('chunk_intake_manager:push_queue_lease', false);
+// a value out of bounds falls back to the default: a lease shorter than a few ticks would be lost at every
+// tick, zero idle ticks would give every queue back at every tick
+const boundedConf = (key: string, fallback: number, min: number) => {
+  const value = Number(conf.get(key) ?? fallback);
+  if (Number.isFinite(value) && value >= min) return value;
+  logApp.warn('[OPENCTI-MODULE] Worker-less intake: option out of bounds, default used', { key, value: conf.get(key), min, default: fallback });
+  return fallback;
+};
 const PUSH_QUEUE_LEASE_OPTIONS = {
-  ttlMs: Number(conf.get('chunk_intake_manager:push_queue_lease_ttl_ms') ?? 30000),
-  stealBacklogMin: Number(conf.get('chunk_intake_manager:push_queue_steal_backlog_min') ?? 100),
-  releaseIdleTicks: Number(conf.get('chunk_intake_manager:push_queue_release_idle_ticks') ?? 2),
+  ttlMs: boundedConf('chunk_intake_manager:push_queue_lease_ttl_ms', 30000, 2 * SCHEDULE_TIME),
+  stealBacklogMin: boundedConf('chunk_intake_manager:push_queue_steal_backlog_min', 100, 1),
+  releaseIdleTicks: boundedConf('chunk_intake_manager:push_queue_release_idle_ticks', 2, 1),
 };
 // Per-OPERATION transient policy (depth campaign v2, 2026-09-14: a 240-rejection burst of the
 // ES search pool cost 34 indicators at prefetch 48, where pycti's ladder retried them on
@@ -859,7 +869,7 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
     });
     return !leadership || await leadership.refresh() ? [...leased, ...queues.filter((queue) => ordered.has(queue))] : leased;
   };
-  const listQueues = async () => {
+  const listQueuesOnce = async () => {
     await lease?.renew();
     const context = executionContext(CHUNK_INTAKE_MANAGER_CONTEXT);
     const pushConnectors = (await connectorsForWorker(context, SYSTEM_USER))
@@ -873,6 +883,13 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
     if (!leadership || await leadership.refresh()) return queues;
     return consumedPushQueues(queues, await orderedQueues(context), false);
   };
+  // task 0040: under a lease or a partition, a failed listing keeps the last queues for a lease TTL
+  // (push-queues.ts keepLastQueuesOnFailure); a single writer fails and starts again as before
+  const listQueues = lease || partition
+    ? keepLastQueuesOnFailure(listQueuesOnce, PUSH_QUEUE_LEASE_OPTIONS.ttlMs, (cause) => {
+        logApp.warn('[OPENCTI-MODULE] Worker-less intake: queues not listed, last queues kept', { cause });
+      })
+    : listQueuesOnce;
   // The operations are released against the sequencer's queue: R* = factor x max batch
   const setPoint = Math.max(1, Math.round(PUSH_READY_DEPTH_FACTOR * SEQUENCER_CONFIG.maxBatchSize));
   const scheduler = createReleaseScheduler({ queueDepth: sequencerQueueDepth, setPoint: () => setPoint, quantum: PUSH_RELEASE_QUANTUM });
@@ -910,31 +927,62 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
     objectsCounter?.add(new Set(operations.map((operation) => operation.object_id).filter((id) => !!id)).size);
   };
   logApp.info('[OPENCTI-MODULE] Worker-less intake: operations released against the sequencer queue', { set_point: setPoint, factor: PUSH_READY_DEPTH_FACTOR });
-  const consumer: PushConsumer = await consumePushQueues(
-    listQueues,
-    {
-      scheduler,
-      transformations: createLimiter(PUSH_TRANSFORM_CONCURRENCY),
-      isTransient: isTransientOperationError,
-      readsClient: readsClientFor,
-      contextFor,
-      writeContext,
-      runOperation: runIntakeOperation,
-      report,
-    },
-    { prefetch: PUSH_PREFETCH, maxInFlightBytes: PUSH_MAX_IN_FLIGHT_BYTES },
-    (outcome) => pushMessagesCounter?.add(1, { outcome: outcome.reason }),
-  );
+  // leadership, partition slot and leases, given back on close or when the consumer cannot start
+  const releaseClaims = async () => {
+    const results = await Promise.allSettled([leadership?.release(), partition?.release(), lease?.release()]);
+    results.forEach((result) => {
+      if (result.status === 'rejected') logApp.warn('[OPENCTI-MODULE] Worker-less intake: claim not released, it expires', { cause: result.reason });
+    });
+  };
+  let started: PushConsumer;
+  try {
+    started = await consumePushQueues(
+      listQueues,
+      {
+        scheduler,
+        transformations: createLimiter(PUSH_TRANSFORM_CONCURRENCY),
+        isTransient: isTransientOperationError,
+        readsClient: readsClientFor,
+        contextFor,
+        writeContext,
+        runOperation: runIntakeOperation,
+        report,
+      },
+      { prefetch: PUSH_PREFETCH, maxInFlightBytes: PUSH_MAX_IN_FLIGHT_BYTES },
+      (outcome) => pushMessagesCounter?.add(1, { outcome: outcome.reason }),
+      (queue) => {
+        lease?.markOrdered(queue).catch((cause) => logApp.warn('[OPENCTI-MODULE] Worker-less intake: ordered queue not marked, another platform may join it', { queue, cause }));
+      },
+    );
+  } catch (err) {
+    unsubscribe();
+    await releaseClaims();
+    throw err;
+  }
+  const consumer = started;
   consumerView = consumer;
   return {
     ...consumer,
     alive: () => consumer.alive() && !leadership?.lost() && !partition?.lost(),
     close: async () => {
-      unsubscribe();
-      await consumer.close();
-      await leadership?.release();
-      await partition?.release();
-      await lease?.release();
+      // the leases stay renewed while the consumer drains its messages in flight (no tick runs meanwhile),
+      // one renewal at a time, the last one done before the release (a late one would take them again)
+      const renewLeases = async () => {
+        await lease?.renew().catch((cause) => logApp.warn('[OPENCTI-MODULE] Worker-less intake: queue leases not renewed during the drain', { cause }));
+      };
+      let renewing = renewLeases();
+      const leaseRenewal = lease ? setInterval(() => {
+        renewing = renewing.then(renewLeases);
+      }, Math.max(1000, Math.floor(PUSH_QUEUE_LEASE_OPTIONS.ttlMs / 3))) : null;
+      try {
+        await consumer.close();
+      } finally {
+        if (leaseRenewal) clearInterval(leaseRenewal);
+        await renewing;
+        // after the drain: the scheduler keeps releasing the drained messages' operations until then
+        unsubscribe();
+      }
+      await releaseClaims();
     },
   };
 };

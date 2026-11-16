@@ -7,6 +7,8 @@ import { generateStandardId } from '../../schema/identifier';
 import { idLabel } from '../../schema/schema-labels';
 import { INPUT_EXTERNAL_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../../schema/general';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE } from '../../schema/stixMetaObject';
+import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
+import { isStixSightingRelationship } from '../../schema/stixSightingRelationship';
 import { TYPE_LOCK_ERROR } from '../../config/errors';
 import { SEQUENCER_CONFIG } from './sequencer-config';
 
@@ -59,6 +61,18 @@ export const lockErrorKeys = (error: any): string[] => {
 // x_opencti_stix_ids replace each other (multi-writer: 29 to 142 stix ids erased per mix285k run, the
 // reports citing them lost their refs). The key the dedup can never split: type, from, to (internal
 // ids, the search is directional), wider than the dedup window, never narrower.
+// The stamps of the relation-dedup keys (sequencer-loop staleDedupSearches): one per written relation-dedup
+// key, so kept short. A reader trusts its searches only while the stamps it read before them cannot have
+// expired since (dedupStampsOutlived): a slower batch (ES reads, lock wait) searches everything again.
+export const DEDUP_STAMP_TTL_S = 120;
+const DEDUP_STAMP_MARGIN_MS = 5000;
+// A stamp written after the reader's first read expires after it: while less than the TTL has passed since
+// that read, a stamp written since is still there under the lock, or was replaced (changed: stale)
+export const dedupStampsOutlived = (readAtMs: number, nowMs: number) => nowMs - readAtMs >= DEDUP_STAMP_TTL_S * 1000 - DEDUP_STAMP_MARGIN_MS;
+// The relation types whose dedup keys every writer stamps, a merge moving them included (middleware
+// mergeEntities). A search before the lock is trusted for these only: the others (ref relations) are
+// searched again under the lock.
+export const isDedupStampedRelation = (type: string) => isStixCoreRelationship(type) || isStixSightingRelationship(type);
 export const relationDedupLockKey = (relationshipType: string, fromInternalId: string, toInternalId: string) => (
   `relation-dedup:${relationshipType}:${fromInternalId}:${toInternalId}`
 );
@@ -150,7 +164,7 @@ export const staleDedupSearches = (
 // keys only. The kept groups get their dependsOn positions remapped. Nothing is carried when nothing
 // is held, when every group would be, or when a conflicting group was already carried `carryLimit`
 // times (no starvation: the batch then waits for the whole lock as before).
-export const splitPlanOnHeldKeys = <G extends { leader: { replans?: number }; dependsOn?: number[] }>(
+export const splitPlanOnHeldKeys = <G extends { leader: { partialCarries?: number }; dependsOn?: number[] }>(
   order: G[],
   ownKeysOf: (group: G) => string[],
   held: Set<string>,
@@ -161,7 +175,7 @@ export const splitPlanOnHeldKeys = <G extends { leader: { replans?: number }; de
   let starving = false;
   order.forEach((group, i) => {
     const conflict = ownKeysOf(group).some((key) => held.has(key));
-    if (conflict && (group.leader.replans ?? 0) >= carryLimit) starving = true;
+    if (conflict && (group.leader.partialCarries ?? 0) >= carryLimit) starving = true;
     carriedAt[i] = conflict || (group.dependsOn ?? []).some((d) => carriedAt[d]);
   });
   const carriedCount = carriedAt.filter(Boolean).length;

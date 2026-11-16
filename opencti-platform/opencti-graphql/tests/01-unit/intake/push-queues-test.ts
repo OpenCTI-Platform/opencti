@@ -4,6 +4,7 @@ import {
   createOrderedQueuesLeadership,
   createPartitionSlot,
   intakeLockKey,
+  keepLastQueuesOnFailure,
   parseQueuePartition,
   partitionedPushQueues,
 } from '../../../src/intake/workerless/push-queues';
@@ -121,5 +122,41 @@ describe('queue affinity test: connector groups, one slot per platform', () => {
     const slot = createPartitionSlot(2, async () => null);
     expect(await slot.refresh()).toBeNull();
     expect(slot.lost()).toBe(false);
+  });
+});
+
+describe('push queue listing kept on failure (lease or partition)', () => {
+  it('should fail before a first successful listing', async () => {
+    const onKept = vi.fn();
+    const list = keepLastQueuesOnFailure(async () => {
+      throw new Error('redis down');
+    }, 30000, onKept, () => 0);
+    await expect(list()).rejects.toThrow('redis down');
+    expect(onKept).not.toHaveBeenCalled();
+  });
+
+  it('should keep the last queues while failing for less than the bound, then fail', async () => {
+    let clock = 0;
+    let fail = false;
+    let queues = ['q1', 'q2'];
+    const onKept = vi.fn();
+    const list = keepLastQueuesOnFailure(async () => {
+      if (fail) throw new Error('redis down');
+      return queues;
+    }, 30000, onKept, () => clock);
+    expect(await list()).toEqual(['q1', 'q2']);
+    fail = true;
+    clock = 29999;
+    expect(await list()).toEqual(['q1', 'q2']);
+    expect(onKept).toHaveBeenCalledTimes(1);
+    clock = 30000;
+    await expect(list()).rejects.toThrow('redis down');
+    // a success restarts the bound and becomes the kept listing
+    fail = false;
+    queues = ['q3'];
+    expect(await list()).toEqual(['q3']);
+    fail = true;
+    clock = 50000;
+    expect(await list()).toEqual(['q3']);
   });
 });

@@ -107,8 +107,13 @@ const initManager = (manager: ManagerDefinition) => {
         }
       } finally {
         running = false;
-        if (lock) await lock.unlock();
-        if (cronInput && cronInput.shutdown) await cronInput.shutdown();
+        // The handler's input is shut down under the manager lock: a consumer draining its messages in
+        // flight (chunk intake) must not see another platform take its queues before it is done
+        try {
+          if (cronInput && cronInput.shutdown) await cronInput.shutdown();
+        } finally {
+          if (lock) await lock.unlock();
+        }
         if (startDate) {
           const duration = moment.duration(utcDate().diff(startDate)).asMilliseconds();
           logApp.debug(`[OPENCTI-MODULE] ${manager.label} done in ${duration}ms`);

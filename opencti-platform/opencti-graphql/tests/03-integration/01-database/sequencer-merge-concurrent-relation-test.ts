@@ -151,8 +151,10 @@ describe('Sequencer multi_writer: relation concurrent with a merge of its endpoi
       reachWrite = resolve;
     });
     let deleted = false;
+    let held = false;
     hooks.beforeBulk = async (request) => {
       if (!isRelationIndexFrom(request, source.internal_id)) return;
+      held = true;
       reachWrite();
       await Promise.race([writeReleased, timeout(3000)]);
     };
@@ -168,6 +170,7 @@ describe('Sequencer multi_writer: relation concurrent with a merge of its endpoi
     await merged;
     hooks.beforeBulk = undefined;
     hooks.afterBulk = undefined;
+    expect(held, 'the relation write was held during the merge').toBe(true);
     expect(deleted, 'the merge deleted the source').toBe(true);
     await relation;
     await expectRelationOnTarget(attackPattern.internal_id, target.internal_id);
