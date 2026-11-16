@@ -32,12 +32,17 @@ export const outPorts = (ports: ReadonlyArray<Port | null | undefined> | null | 
   return (ports ?? []).flatMap((p) => (p && p.type === 'out' ? [p] : []));
 };
 
+// The top of the right edge holds the three-dot menu of the card: in the horizontal layout, the
+// labelled ports of a step with several of them share the edge below it, so no pill covers the menu.
+export const PLAYBOOK_CARD_MENU_BAND = 36;
+
 // Where the out port number `index` of `count` sits on the card edge, relative to the card corner.
 export const portAnchor = (index: number, count: number, direction: PlaybookLayoutDirection): XYPosition => {
   const safeCount = Math.max(1, count);
   if (direction === 'horizontal') {
-    const interval = PLAYBOOK_CARD.height / safeCount;
-    return { x: PLAYBOOK_CARD.width, y: index * interval + interval / 2 };
+    const top = safeCount > 1 ? PLAYBOOK_CARD_MENU_BAND : 0;
+    const interval = (PLAYBOOK_CARD.height - top) / safeCount;
+    return { x: PLAYBOOK_CARD.width, y: Math.round(top + index * interval + interval / 2) };
   }
   const interval = PLAYBOOK_CARD.width / safeCount;
   return { x: index * interval + interval / 2, y: PLAYBOOK_CARD.height };

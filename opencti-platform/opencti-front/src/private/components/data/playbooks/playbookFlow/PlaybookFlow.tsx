@@ -39,7 +39,9 @@ import { PlaybookFlow_playbook$key } from './__generated__/PlaybookFlow_playbook
 
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 const proOptions = { account: 'paid-pro', hideAttribution: true };
-const fitViewOptions = { padding: 0.2 };
+// The first frame is a fit; useLayout then sets the landing view (a readable zoom on the entry point
+// when the fit would make the cards unreadable).
+const fitViewOptions = { padding: 0.2, maxZoom: 1 };
 // The smallest canvas height, for a window too short to hold the header and a usable canvas.
 const MIN_CANVAS_HEIGHT = 320;
 

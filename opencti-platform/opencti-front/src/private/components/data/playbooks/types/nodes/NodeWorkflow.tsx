@@ -144,12 +144,16 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            color: summary.kind === 'missing'
-              ? ((theme.palette.warning as { main?: string } | undefined)?.main ?? theme.palette.text?.primary)
-              : theme.palette.text?.primary,
+            // The text keeps the primary colour (the warning orange on white is 3.1:1 at 11 px, under
+            // the 4.5:1 of body text): the warning tone is carried by the icon, a non-text cue.
+            color: theme.palette.text?.primary,
           }}
         >
-          {summary.kind === 'missing' && <WarningAmberOutlined style={{ fontSize: 12 }} />}
+          {summary.kind === 'missing' && (
+            <WarningAmberOutlined
+              style={{ fontSize: 12, color: (theme.palette.warning as { main?: string } | undefined)?.main }}
+            />
+          )}
           {summaryText(summary)}
         </div>
       )}

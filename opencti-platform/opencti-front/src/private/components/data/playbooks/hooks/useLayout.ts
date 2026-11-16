@@ -4,6 +4,7 @@ import { timer } from 'd3-timer';
 import { layoutPlaybook, PlaybookLayoutComponent, PlaybookLayoutLink, PlaybookLayoutNode } from '../layout/layoutPlaybook';
 import type { PlaybookLayoutDirection } from './usePlaybookLayoutMode';
 import { outPorts, PLAYBOOK_CARD, portAddPosition } from '../types/nodes/playbookNodeGeometry';
+import { PLAYBOOK_LANDING, playbookLandingViewport } from '../utils/playbookLanding';
 
 // [gap between siblings, gap between ranks]: room for the port pills and the add buttons. The
 // links turn on the middle line of the rank gap; the add button of a free port ends 8 px above it.
@@ -11,8 +12,8 @@ export const PLAYBOOK_LAYOUT_SPACING: [number, number] = [56, 104];
 const ORIGIN_SIZE = { width: 240, height: 64 };
 
 const options = { duration: 300 };
-// Opening a playbook fits it, never above 100%: a one-step playbook is not blown up.
-const INITIAL_FIT = { padding: 0.2, maxZoom: 1 };
+// Opening a playbook fits it, never above 100% and never under a readable zoom (utils/playbookLanding).
+const INITIAL_FIT = { padding: PLAYBOOK_LANDING.padding, maxZoom: PLAYBOOK_LANDING.maxZoom };
 // A layout direction change refits the view once the steps reach their new place.
 const DIRECTION_REFIT_DELAY = options.duration + 50;
 
@@ -71,7 +72,17 @@ const useLayout = (direction: PlaybookLayoutDirection = 'vertical') => {
   const shownDirection = useRef(direction);
   const structure = useStore(structureSelector);
   const nodesInitialized = useNodesInitialized();
-  const { getNodes, getNode, setNodes, getEdges, fitView } = useReactFlow();
+  const { getNodes, getNode, setNodes, getEdges, fitView, setViewport } = useReactFlow();
+  const paneWidth = useStore((state: ReactFlowState) => state.width);
+  const paneHeight = useStore((state: ReactFlowState) => state.height);
+  // The landing view of the playbook: a fit when the cards stay readable, else the readable zoom on
+  // the entry point (a large playbook is explored from its start, the fit button still shows it whole).
+  const land = useRef<(duration?: number) => void>(() => undefined);
+  land.current = (duration?: number) => {
+    const viewport = playbookLandingViewport(getNodes(), { width: paneWidth, height: paneHeight }, direction);
+    if (viewport) setViewport(viewport, duration ? { duration } : undefined);
+    else fitView(duration ? { ...INITIAL_FIT, duration } : INITIAL_FIT);
+  };
   useEffect(() => {
     const nodes = getNodes();
     const edges = getEdges();
@@ -98,7 +109,7 @@ const useLayout = (direction: PlaybookLayoutDirection = 'vertical') => {
       })));
       if (elapsed > options.duration) {
         t.stop();
-        fitView({ duration: 200, padding: 0.2 });
+        fitView({ ...INITIAL_FIT, duration: 200 });
       }
     });
     return () => {
@@ -107,21 +118,19 @@ const useLayout = (direction: PlaybookLayoutDirection = 'vertical') => {
   }, [structure, direction, getEdges, getNodes, getNode, setNodes, fitView]);
   // A direction change moves every step: the view is refitted the same way as on open, on its own
   // timer, so a re-render that stops the move animation never leaves a step outside the pane.
-  const fitViewRef = useRef(fitView);
-  fitViewRef.current = fitView;
   useEffect(() => {
     if (shownDirection.current === direction) return undefined;
     shownDirection.current = direction;
-    const timeout = setTimeout(() => fitViewRef.current({ ...INITIAL_FIT, duration: 200 }), DIRECTION_REFIT_DELAY);
+    const timeout = setTimeout(() => land.current(200), DIRECTION_REFIT_DELAY);
     return () => clearTimeout(timeout);
   }, [direction]);
   // A fit before the cards are measured has no bounds and leaves the default zoom: fit once they are.
   useEffect(() => {
-    if (nodesInitialized && !fitted.current) {
+    if (nodesInitialized && paneWidth > 0 && paneHeight > 0 && !fitted.current) {
       fitted.current = true;
-      fitView(INITIAL_FIT);
+      land.current();
     }
-  }, [nodesInitialized, fitView]);
+  }, [nodesInitialized, paneWidth, paneHeight]);
 };
 
 export default useLayout;
