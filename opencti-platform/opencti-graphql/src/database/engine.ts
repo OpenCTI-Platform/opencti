@@ -125,9 +125,10 @@ import {
   buildFieldForQuery,
   POST_FILTER_TAG_SEPARATOR,
   NAMED_QUERIES_UNIQUENESS_SEPARATOR,
-  elResolveSearchConnectionsRestrictions,
+  elResolveSearchConnectionsRestrictions as buildSearchConnectionsRestrictions,
+  type EngineQueryDeps,
   type QueryBodyBuilderOpts,
-  elQueryBodyBuilder,
+  elQueryBodyBuilder as buildQueryBody,
 } from './engine-query-builder';
 
 const ELK_ENGINE = 'elk';
@@ -1540,6 +1541,21 @@ export const elPaginate = async <T extends BasicStoreBase>(
     if (root_cause === TOO_MANY_CLAUSES) throw ComplexSearchError();
     throw wrapEngineError('Fail to execute engine pagination', err, { root_cause, query: JSON.stringify(query), queryArguments: options });
   }
+};
+// The query builder gets the engine read functions injected, so that it never imports this module.
+const engineQueryDeps: EngineQueryDeps = { elFindByIds, elPaginate, elRawSearch, isRuntimeSortEnable };
+const elQueryBodyBuilder = (context: AuthContext, user: AuthUser, options: QueryBodyBuilderOpts) => {
+  return buildQueryBody(context, user, options, engineQueryDeps);
+};
+const elResolveSearchConnectionsRestrictions = (
+  context: AuthContext,
+  user: AuthUser,
+  search: string,
+  restrictions: Parameters<typeof buildSearchConnectionsRestrictions>[3],
+  relationshipsFilters: any[],
+  opts: Parameters<typeof buildSearchConnectionsRestrictions>[5],
+) => {
+  return buildSearchConnectionsRestrictions(context, user, search, restrictions, relationshipsFilters, opts, engineQueryDeps);
 };
 export type RepaginateOpts<T extends BasicStoreBase> = PaginateOpts & {
   maxSize?: number;

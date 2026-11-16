@@ -99,7 +99,7 @@ import { pushAll } from '../utils/arrayUtil';
 import { INNER_HITS_WINDOWS_SIZE } from './engine-data-converter';
 import { ES_DEFAULT_PAGINATION, ES_MAX_PAGINATION, isEsScriptFilterEnabled, MAX_RUNTIME_RESOLUTION_SIZE } from './engine-config';
 import { RELATION_RESULT_OF } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
-import { elFindByIds, elPaginate, elRawSearch, isRuntimeSortEnable } from './engine';
+import type { elFindByIds, elPaginate, elRawSearch, isRuntimeSortEnable } from './engine';
 
 const buildUserMemberAccessFilter = (user: AuthUser, opts: { includeAuthorities?: boolean | null; excludeEmptyAuthorizedMembers?: boolean }) => {
   const { includeAuthorities = false, excludeEmptyAuthorizedMembers = false } = opts;
@@ -1375,8 +1375,20 @@ const buildSubQueryForFilterGroup = (
   return { subQuery: currentSubQuery, postFiltersTags: localPostFilterTags, resultSaltCount: localSaltCount };
 };
 
-const getRuntimeEntities = async (context: AuthContext, user: AuthUser, entityType: string) => {
-  const elements = await elPaginate<BasicStoreEntity>(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+/**
+ * Engine read functions the query builder needs.
+ * They are injected by engine.ts (instead of imported) so that this module never imports engine.ts at runtime,
+ * which would create an engine.ts <-> engine-query-builder.ts import cycle.
+ */
+export type EngineQueryDeps = {
+  elFindByIds: typeof elFindByIds;
+  elPaginate: typeof elPaginate;
+  elRawSearch: typeof elRawSearch;
+  isRuntimeSortEnable: typeof isRuntimeSortEnable;
+};
+
+const getRuntimeEntities = async (context: AuthContext, user: AuthUser, entityType: string, deps: EngineQueryDeps) => {
+  const elements = await deps.elPaginate<BasicStoreEntity>(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
     types: [entityType],
     first: MAX_RUNTIME_RESOLUTION_SIZE,
     bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
@@ -1415,7 +1427,7 @@ export const RUNTIME_ATTRIBUTES: Record<string, any> = {
           emit('Unknown')
         }
     `,
-    getParams: async (context: AuthContext, user: AuthUser) => getRuntimeEntities(context, user, ENTITY_TYPE_IDENTITY),
+    getParams: async (context: AuthContext, user: AuthUser, deps: EngineQueryDeps) => getRuntimeEntities(context, user, ENTITY_TYPE_IDENTITY, deps),
   },
   deletedBy: {
     field: 'deletedBy.keyword',
@@ -1451,7 +1463,7 @@ export const RUNTIME_ATTRIBUTES: Record<string, any> = {
         emit('Unknown')
       }
     `,
-    getParams: async (context: AuthContext, user: AuthUser) => getRuntimeEntities(context, user, ENTITY_TYPE_LOCATION_COUNTRY),
+    getParams: async (context: AuthContext, user: AuthUser, deps: EngineQueryDeps) => getRuntimeEntities(context, user, ENTITY_TYPE_LOCATION_COUNTRY, deps),
   },
   ethnicity: {
     field: 'ethnicity.keyword',
@@ -1469,7 +1481,7 @@ export const RUNTIME_ATTRIBUTES: Record<string, any> = {
         emit('Unknown')
       }
     `,
-    getParams: async (context: AuthContext, user: AuthUser) => getRuntimeEntities(context, user, ENTITY_TYPE_LOCATION_COUNTRY),
+    getParams: async (context: AuthContext, user: AuthUser, deps: EngineQueryDeps) => getRuntimeEntities(context, user, ENTITY_TYPE_LOCATION_COUNTRY, deps),
   },
   creator: {
     field: 'creator.keyword',
@@ -1523,7 +1535,7 @@ export const RUNTIME_ATTRIBUTES: Record<string, any> = {
           emit('Unknown')
         }
     `,
-    getParams: async (context: AuthContext, user: AuthUser) => getRuntimeEntities(context, user, ENTITY_TYPE_KILL_CHAIN_PHASE),
+    getParams: async (context: AuthContext, user: AuthUser, deps: EngineQueryDeps) => getRuntimeEntities(context, user, ENTITY_TYPE_KILL_CHAIN_PHASE, deps),
   },
   objectAssignee: {
     field: 'objectAssignee.keyword',
@@ -1579,6 +1591,7 @@ export const elResolveSearchConnectionsRestrictions = async (
   restrictions: { must: any[]; must_not: any[] },
   relationshipsFilters: any[],
   opts: ProcessSearchArgs & BuildDraftFilterOpts & { withDraft?: boolean },
+  deps: Pick<EngineQueryDeps, 'elRawSearch'>,
 ): Promise<SearchConnectionsRestrictions> => {
   if (restrictions.must.length === 0 && restrictions.must_not.length === 0) {
     return {};
@@ -1602,7 +1615,7 @@ export const elResolveSearchConnectionsRestrictions = async (
   };
   // A partial result could miss connections, nothing can be allowed from it
   const rawSearchComplete = async (query: any) => {
-    const data = await elRawSearch(context, user, 'Search connections', query);
+    const data = await deps.elRawSearch(context, user, 'Search connections', query);
     return data.timed_out ? null : data;
   };
   const aggregateMatchingConnections = async (aggs: any) => {
@@ -1684,7 +1697,7 @@ export type QueryBodyBuilderOpts = ProcessSearchArgs & BuildDraftFilterOpts & {
    */
   internalScriptFilters?: string[];
 };
-export const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options: QueryBodyBuilderOpts) => {
+export const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options: QueryBodyBuilderOpts, deps: EngineQueryDeps) => {
   const {
     ids = [],
     after,
@@ -1709,7 +1722,7 @@ export const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, o
     internalScriptFilters = [],
   } = options;
   const elFindByIdsToMap = async (c: AuthContext, u: AuthUser, i: string[], o: any) => {
-    return elFindByIds<BasicStoreObject>(c, u, i, { ...o, toMap: true }) as Promise<Record<string, BasicStoreObject>>;
+    return deps.elFindByIds<BasicStoreObject>(c, u, i, { ...o, toMap: true }) as Promise<Record<string, BasicStoreObject>>;
   };
   const convertedFilters = await checkAndConvertFilters(context, user, filters, user.id, elFindByIdsToMap, { noFiltersChecking });
   const searchAfter = after ? cursorToOffset(after) : undefined;
@@ -1760,7 +1773,7 @@ export const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, o
   let scoreSearchOrder = orderMode;
   if (search !== null && search.length > 0) {
     const connectionsRestrictions = !historyFiltering && isSearchingRelationships(types)
-      ? await elResolveSearchConnectionsRestrictions(context, user, search, markingRestrictions, mustFilters, options)
+      ? await elResolveSearchConnectionsRestrictions(context, user, search, markingRestrictions, mustFilters, options, deps)
       : {};
     const shouldSearch = elGenerateFullTextSearchShould(search, { ...options, ...connectionsRestrictions });
     const bool = {
@@ -1796,7 +1809,7 @@ export const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, o
     const runtime = RUNTIME_ATTRIBUTES[orderBy as string];
     if (isNotEmptyField(runtime)) {
       const source = await runtime.getSource();
-      const params = await runtime.getParams(context, user);
+      const params = await runtime.getParams(context, user, deps);
       runtimeMappings[runtime.field] = {
         type: runtime.type,
         script: { source, params },
@@ -1829,7 +1842,7 @@ export const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, o
   }
   // Add extra configuration
   if (isNotEmptyField(runtimeMappings)) {
-    const isRuntimeSortFeatureEnable = isRuntimeSortEnable();
+    const isRuntimeSortFeatureEnable = deps.isRuntimeSortEnable();
     if (!isRuntimeSortFeatureEnable) {
       throw UnsupportedError('Runtime mapping is only possible with elastic >=7.12', { order: orderBy });
     }
