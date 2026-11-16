@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { BasicStoreCommon, BasicStoreIdentifier } from '../types/store';
-import { logApp } from '../config/conf';
+import { DEV_MODE, logApp } from '../config/conf';
 import { DatabaseError, UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -39,14 +39,6 @@ const cache: any = {};
 // (without storing them), so a burst of invalidations cannot keep readers waiting until it ends.
 export const MAX_CACHE_DISCARDS = 3;
 
-// The map of the entities by id is built from the values on first use, then kept in the cache entry (entitiesMap).
-// Every change of the values must go through this function, so the map is built again from the new values.
-// Some refresh functions update the values in place and return the same array: the map is dropped anyway.
-const setCacheValues = (cacheEntry: any, values: unknown) => {
-  cacheEntry.values = values;
-  cacheEntry.entitiesMap = undefined;
-};
-
 /**
  * Drops the values of a cache entry and bumps its generation. A load in flight started before this
  * call reads the generation it was started with: when it finishes, it sees that an invalidation
@@ -55,7 +47,8 @@ const setCacheValues = (cacheEntry: any, values: unknown) => {
 const invalidateCacheEntry = (entry: { values?: unknown; generation?: number }) => {
   // eslint-disable-next-line no-param-reassign
   entry.generation = (entry.generation ?? 0) + 1;
-  setCacheValues(entry, undefined);
+  // eslint-disable-next-line no-param-reassign
+  entry.values = undefined;
 };
 
 const buildStoreEntityMap = <T extends BasicStoreIdentifier>(entities: Array<T>) => {
@@ -115,7 +108,7 @@ const handleCacheForEntity = async (instance: BasicStoreCommon | BasicStoreCommo
             logApp.debug('[CACHE] Cache invalidated during an incremental update, discarding its values', { type, fn });
             return;
           }
-          setCacheValues(entry, values);
+          entry.values = values;
         };
         // The handlers of an entry run one after another, each on the values the previous one stored:
         // two concurrent handlers started from the same values would each drop the other's update.
@@ -200,7 +193,7 @@ const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>
               return undefined;
             }
             fromCache.discards = 0;
-            setCacheValues(fromCache, cacheData);
+            fromCache.values = cacheData;
             return undefined;
           } finally {
             fromCache.inProgress = undefined;
@@ -247,8 +240,25 @@ export const getEntitiesListFromCache = async <T extends BasicStoreIdentifier | 
   return data as T[];
 };
 
+// Map <id, instance> of the entities, keyed by the array of cached values it was built from.
+// Every change of the cached values produces a new array (the cache handlers never change an array in place),
+// so a map always matches the array it is keyed by, and is dropped by the garbage collector with that array.
+const entitiesMaps = new WeakMap<object, ReadonlyMap<string, unknown>>();
+
+const rejectSharedEntitiesChange = () => {
+  throw UnsupportedError('Entities from the cache are shared by every caller and must not be modified');
+};
+
+// Development and test only: the array and its map are shared by every caller on the node until the values change,
+// so changing them in place would leak into every other request, and would leave the map out of sync with its array.
+const guardSharedEntities = (values: object, entitiesMap: Map<string, unknown>) => {
+  Object.freeze(values);
+  Object.assign(entitiesMap, { set: rejectSharedEntitiesChange, delete: rejectSharedEntitiesChange, clear: rejectSharedEntitiesChange });
+};
+
 // get a map <id, instance> of the entities in the cache for a given type
 // The map is shared by all the callers until the values change: it must not be modified.
+// Exception: the resolved filters are stored as a map, returned as is, and their refresh updates that map in place.
 export const getEntitiesMapFromCache = async <T extends BasicStoreIdentifier | StixObject>(
   context: AuthContext, user: AuthUser, type: string,
 ): Promise<ReadonlyMap<string | StixId, T>> => {
@@ -257,16 +267,17 @@ export const getEntitiesMapFromCache = async <T extends BasicStoreIdentifier | S
   if (type === ENTITY_TYPE_RESOLVED_FILTERS) {
     return data as Map<string, T>; // map of <standard_id, instance>
   }
+  const cachedMap = entitiesMaps.get(data);
+  if (cachedMap) {
+    return cachedMap as ReadonlyMap<string | StixId, T>;
+  }
   // map of <id, instance> for all the instance ids (internal_id, standard_id, stix ids)
-  const fromCache = cache[type];
-  if (fromCache?.values !== data) {
-    // The values changed while they were fetched: build a map for this call only, do not keep it for old values
-    return buildStoreEntityMap(data as BasicStoreIdentifier[]);
+  const entitiesMap = buildStoreEntityMap(data as BasicStoreIdentifier[]);
+  if (DEV_MODE) {
+    guardSharedEntities(data, entitiesMap);
   }
-  if (!fromCache.entitiesMap) {
-    fromCache.entitiesMap = buildStoreEntityMap(data as BasicStoreIdentifier[]);
-  }
-  return fromCache.entitiesMap;
+  entitiesMaps.set(data, entitiesMap);
+  return entitiesMap;
 };
 
 export const getEntityFromCache = async <T extends BasicStoreIdentifier>(context: AuthContext, user: AuthUser, type: string): Promise<T> => {
