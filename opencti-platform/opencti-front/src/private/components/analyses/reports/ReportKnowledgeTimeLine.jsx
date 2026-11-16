@@ -292,6 +292,10 @@ export default createFragmentContainer(ReportKnowledgeTimeLineComponent, {
               name
               description
             }
+            ... on Procedure {
+              name
+              description
+            }
             ... on Language {
               name
             }
@@ -461,6 +465,10 @@ export default createFragmentContainer(ReportKnowledgeTimeLineComponent, {
                   name
                   description
                 }
+                ... on Procedure {
+                  name
+                  description
+                }
                 ... on Language {
                   name
                 }
@@ -619,6 +627,10 @@ export default createFragmentContainer(ReportKnowledgeTimeLineComponent, {
                   description
                 }
                 ... on Narrative {
+                  name
+                  description
+                }
+                ... on Procedure {
                   name
                   description
                 }

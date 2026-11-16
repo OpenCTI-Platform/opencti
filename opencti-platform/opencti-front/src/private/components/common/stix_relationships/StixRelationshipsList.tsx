@@ -218,6 +218,9 @@ export const stixRelationshipsListQuery = graphql`
               ... on Narrative {
                 name
               }
+              ... on Procedure {
+                name
+              }
               ... on Language {
                 name
               }
@@ -342,6 +345,9 @@ export const stixRelationshipsListQuery = graphql`
                     name
                   }
                   ... on Narrative {
+                    name
+                  }
+                  ... on Procedure {
                     name
                   }
                   ... on Language {
@@ -512,6 +518,9 @@ export const stixRelationshipsListQuery = graphql`
                           ... on Narrative {
                             name
                           }
+                          ... on Procedure {
+                            name
+                          }
                           ... on Language {
                             name
                           }
@@ -648,6 +657,9 @@ export const stixRelationshipsListQuery = graphql`
                       ... on Narrative {
                         name
                       }
+                      ... on Procedure {
+                        name
+                      }
                       ... on Language {
                         name
                       }
@@ -758,6 +770,9 @@ export const stixRelationshipsListQuery = graphql`
                         name
                       }
                       ... on Narrative {
+                        name
+                      }
+                      ... on Procedure {
                         name
                       }
                       ... on Language {
@@ -924,6 +939,9 @@ export const stixRelationshipsListQuery = graphql`
                               ... on Narrative {
                                 name
                               }
+                              ... on Procedure {
+                                name
+                              }
                               ... on Language {
                                 name
                               }
@@ -1047,6 +1065,9 @@ export const stixRelationshipsListQuery = graphql`
                     name
                   }
                   ... on Narrative {
+                    name
+                  }
+                  ... on Procedure {
                     name
                   }
                   ... on Language {
@@ -1208,6 +1229,9 @@ export const stixRelationshipsListQuery = graphql`
                           ... on Narrative {
                             name
                           }
+                          ... on Procedure {
+                            name
+                          }
                           ... on Language {
                             name
                           }
@@ -1336,6 +1360,9 @@ export const stixRelationshipsListQuery = graphql`
                         name
                       }
                       ... on Narrative {
+                        name
+                      }
+                      ... on Procedure {
                         name
                       }
                       ... on Language {
@@ -1509,6 +1536,9 @@ export const stixRelationshipsListQuery = graphql`
                               ... on Narrative {
                                 name
                               }
+                              ... on Procedure {
+                                name
+                              }
                               ... on Language {
                                 name
                               }
@@ -1633,6 +1663,9 @@ export const stixRelationshipsListQuery = graphql`
                         name
                       }
                       ... on Narrative {
+                        name
+                      }
+                      ... on Procedure {
                         name
                       }
                       ... on Language {
@@ -1794,6 +1827,9 @@ export const stixRelationshipsListQuery = graphql`
                               ... on Narrative {
                                 name
                               }
+                              ... on Procedure {
+                                name
+                              }
                               ... on Language {
                                 name
                               }
@@ -1925,6 +1961,9 @@ export const stixRelationshipsListQuery = graphql`
                     name
                   }
                   ... on Narrative {
+                    name
+                  }
+                  ... on Procedure {
                     name
                   }
                   ... on Language {
@@ -2084,6 +2123,9 @@ export const stixRelationshipsListQuery = graphql`
                             name
                           }
                           ... on Narrative {
+                            name
+                          }
+                          ... on Procedure {
                             name
                           }
                           ... on Language {
@@ -2223,6 +2265,9 @@ export const stixRelationshipsListQuery = graphql`
                       ... on Narrative {
                         name
                       }
+                      ... on Procedure {
+                        name
+                      }
                       ... on Language {
                         name
                       }
@@ -2328,6 +2373,9 @@ export const stixRelationshipsListQuery = graphql`
                         name
                       }
                       ... on Narrative {
+                        name
+                      }
+                      ... on Procedure {
                         name
                       }
                       ... on Language {
@@ -2486,6 +2534,9 @@ export const stixRelationshipsListQuery = graphql`
                               ... on Narrative {
                                 name
                               }
+                              ... on Procedure {
+                                name
+                              }
                               ... on Language {
                                 name
                               }
@@ -2604,6 +2655,9 @@ export const stixRelationshipsListQuery = graphql`
                     name
                   }
                   ... on Narrative {
+                    name
+                  }
+                  ... on Procedure {
                     name
                   }
                   ... on Language {
@@ -2762,6 +2816,9 @@ export const stixRelationshipsListQuery = graphql`
                           ... on Narrative {
                             name
                           }
+                          ... on Procedure {
+                            name
+                          }
                           ... on Language {
                             name
                           }
@@ -2889,6 +2946,9 @@ export const stixRelationshipsListQuery = graphql`
                       ... on Narrative {
                         name
                       }
+                      ... on Procedure {
+                        name
+                      }
                       ... on Language {
                         name
                       }
@@ -3058,6 +3118,9 @@ export const stixRelationshipsListQuery = graphql`
                                 name
                               }
                               ... on Narrative {
+                                name
+                              }
+                              ... on Procedure {
                                 name
                               }
                               ... on Language {
@@ -3177,6 +3240,9 @@ export const stixRelationshipsListQuery = graphql`
                       ... on Narrative {
                         name
                       }
+                      ... on Procedure {
+                        name
+                      }
                       ... on Language {
                         name
                       }
@@ -3346,6 +3412,9 @@ export const stixRelationshipsListQuery = graphql`
                                 name
                               }
                               ... on Narrative {
+                                name
+                              }
+                              ... on Procedure {
                                 name
                               }
                               ... on Language {
@@ -3487,6 +3556,9 @@ export const stixRelationshipsListQuery = graphql`
             ... on Narrative {
               name
             }
+            ... on Procedure {
+              name
+            }
             ... on Language {
               name
             }
@@ -3662,6 +3734,9 @@ export const stixRelationshipsListQuery = graphql`
                     ... on Narrative {
                       name
                     }
+                    ... on Procedure {
+                      name
+                    }
                     ... on Language {
                       name
                     }
@@ -3802,6 +3877,9 @@ export const stixRelationshipsListQuery = graphql`
                 ... on Narrative {
                   name
                 }
+                ... on Procedure {
+                  name
+                }
                 ... on Language {
                   name
                 }
@@ -3923,6 +4001,9 @@ export const stixRelationshipsListQuery = graphql`
                   name
                 }
                 ... on Narrative {
+                  name
+                }
+                ... on Procedure {
                   name
                 }
                 ... on Language {
@@ -4051,6 +4132,9 @@ export const stixRelationshipsListQuery = graphql`
             ... on Narrative {
               name
             }
+            ... on Procedure {
+              name
+            }
             ... on Language {
               name
             }
@@ -4226,6 +4310,9 @@ export const stixRelationshipsListQuery = graphql`
                     ... on Narrative {
                       name
                     }
+                    ... on Procedure {
+                      name
+                    }
                     ... on Language {
                       name
                     }
@@ -4352,6 +4439,9 @@ export const stixRelationshipsListQuery = graphql`
                 ... on Narrative {
                   name
                 }
+                ... on Procedure {
+                  name
+                }
                 ... on Language {
                   name
                 }
@@ -4458,6 +4548,9 @@ export const stixRelationshipsListQuery = graphql`
                   name
                 }
                 ... on Narrative {
+                  name
+                }
+                ... on Procedure {
                   name
                 }
                 ... on Language {

@@ -104,6 +104,9 @@ export const knowledgeCorrelationStixCoreObjectQuery = graphql`
       ... on Narrative {
         name
       }
+      ... on Procedure {
+        name
+      }
       ... on Language {
         name
       }

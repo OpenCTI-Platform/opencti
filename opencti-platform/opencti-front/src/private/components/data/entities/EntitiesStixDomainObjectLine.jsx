@@ -294,6 +294,10 @@ export const entitiesFragment = graphql`
       description
       aliases
     }
+    ... on Procedure {
+      name
+      description
+    }
     ... on Language {
       name
       aliases

@@ -134,6 +134,10 @@ const stixDomainObjectBookmarksListQuery = graphql`
             name
             description
           }
+          ... on Procedure {
+            name
+            description
+          }
           ... on Language {
             name
           }

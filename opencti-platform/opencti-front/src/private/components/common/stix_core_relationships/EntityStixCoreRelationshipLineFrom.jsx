@@ -415,6 +415,10 @@ const EntityStixCoreRelationshipLineFromFragment = createFragmentContainer(
             name
             description
           }
+          ... on Procedure {
+            name
+            description
+          }
           ... on Language {
             name
           }
@@ -549,6 +553,10 @@ const EntityStixCoreRelationshipLineFromFragment = createFragmentContainer(
             description
           }
           ... on Narrative {
+            name
+            description
+          }
+          ... on Procedure {
             name
             description
           }

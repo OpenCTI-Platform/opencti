@@ -4422,6 +4422,9 @@ const WorkbenchFileContent = createFragmentContainer(
             ... on Narrative {
               name
             }
+            ... on Procedure {
+              name
+            }
             ... on Language {
               name
             }

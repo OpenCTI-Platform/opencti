@@ -190,6 +190,9 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
             ... on Narrative {
               description
             }
+            ... on Procedure {
+              description
+            }
             ... on StixCyberObservable {
               id
               entity_type

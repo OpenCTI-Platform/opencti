@@ -293,6 +293,10 @@ export default createFragmentContainer(CaseRfiKnowledgeTimeLineComponent, {
               name
               description
             }
+            ... on Procedure {
+              name
+              description
+            }
             ... on Language {
               name
             }
@@ -481,6 +485,10 @@ export default createFragmentContainer(CaseRfiKnowledgeTimeLineComponent, {
                   name
                   description
                 }
+                ... on Procedure {
+                  name
+                  description
+                }
                 ... on Language {
                   name
                 }
@@ -658,6 +666,10 @@ export default createFragmentContainer(CaseRfiKnowledgeTimeLineComponent, {
                   description
                 }
                 ... on Narrative {
+                  name
+                  description
+                }
+                ... on Procedure {
                   name
                   description
                 }

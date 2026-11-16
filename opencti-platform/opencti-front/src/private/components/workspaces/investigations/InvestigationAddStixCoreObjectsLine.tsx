@@ -229,6 +229,9 @@ export const InvestigationAddStixCoreObjectsLine = createFragmentContainer(
         ... on Narrative {
           name
         }
+        ... on Procedure {
+          name
+        }
         ... on Vulnerability {
           name
           description

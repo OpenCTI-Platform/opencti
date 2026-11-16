@@ -152,6 +152,9 @@ const publicStixRelationshipsListQuery = graphql`
               ... on Narrative {
                 name
               }
+              ... on Procedure {
+                name
+              }
               ... on Language {
                 name
               }
@@ -273,6 +276,9 @@ const publicStixRelationshipsListQuery = graphql`
                     name
                   }
                   ... on Narrative {
+                    name
+                  }
+                  ... on Procedure {
                     name
                   }
                   ... on Language {
@@ -442,6 +448,9 @@ const publicStixRelationshipsListQuery = graphql`
                           ... on Narrative {
                             name
                           }
+                          ... on Procedure {
+                            name
+                          }
                           ... on Language {
                             name
                           }
@@ -582,6 +591,9 @@ const publicStixRelationshipsListQuery = graphql`
                         name
                       }
                       ... on Narrative {
+                        name
+                      }
+                      ... on Procedure {
                         name
                       }
                       ... on Language {
@@ -755,6 +767,9 @@ const publicStixRelationshipsListQuery = graphql`
                               ... on Narrative {
                                 name
                               }
+                              ... on Procedure {
+                                name
+                              }
                               ... on Language {
                                 name
                               }
@@ -904,6 +919,9 @@ const publicStixRelationshipsListQuery = graphql`
               name
             }
             ... on Narrative {
+              name
+            }
+            ... on Procedure {
               name
             }
             ... on Language {
@@ -1081,6 +1099,9 @@ const publicStixRelationshipsListQuery = graphql`
                     ... on Narrative {
                       name
                     }
+                    ... on Procedure {
+                      name
+                    }
                     ... on Language {
                       name
                     }
@@ -1223,6 +1244,9 @@ const publicStixRelationshipsListQuery = graphql`
                 ... on Narrative {
                   name
                 }
+                ... on Procedure {
+                  name
+                }
                 ... on Language {
                   name
                 }
@@ -1346,6 +1370,9 @@ const publicStixRelationshipsListQuery = graphql`
                   name
                 }
                 ... on Narrative {
+                  name
+                }
+                ... on Procedure {
                   name
                 }
                 ... on Language {
