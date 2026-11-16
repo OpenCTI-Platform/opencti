@@ -24,6 +24,9 @@ vi.mock('react-relay', async (importOriginal) => ({
     if (mocks.error) throw mocks.error;
     return mocks.response;
   },
+  // The breakdown is read as the query response holds it, unmasked: WidgetTimeSeriesBreakdown.test.tsx reads it
+  // through its fragment
+  useFragment: (_fragment: unknown, data: unknown) => data,
 }));
 // Resolved as is, unless the test sets what its saved filters and variables resolve to. The query is kept until a load.
 vi.mock('../../../../components/dashboard/useDashboardViz', async () => ({

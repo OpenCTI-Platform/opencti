@@ -2,10 +2,12 @@ import React from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import ApexCharts from 'apexcharts';
-import WidgetTimeSeriesBreakdown, { WidgetTimeSeriesBreakdownData } from './WidgetTimeSeriesBreakdown';
+import WidgetTimeSeriesBreakdown from './WidgetTimeSeriesBreakdown';
 import type { WidgetParameters } from '../../utils/widget/widget';
+import type { WidgetTimeSeriesBreakdown_breakdown$key } from './__generated__/WidgetTimeSeriesBreakdown_breakdown.graphql';
 
-export type SelectTimeSeriesBreakdown<TQuery extends OperationType> = (data: TQuery['response']) => WidgetTimeSeriesBreakdownData | null | undefined;
+// The breakdown of the query response, which spreads the fragment of WidgetTimeSeriesBreakdown
+export type SelectTimeSeriesBreakdown<TQuery extends OperationType> = (data: TQuery['response']) => WidgetTimeSeriesBreakdown_breakdown$key | null | undefined;
 
 interface TimeSeriesBreakdownContentProps<TQuery extends OperationType> {
   query: GraphQLTaggedNode;

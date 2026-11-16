@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ApexCharts from 'apexcharts';
 import { useIntl } from 'react-intl';
+import { graphql, useFragment } from 'react-relay';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import type { Theme } from '../Theme';
@@ -32,32 +33,53 @@ import { scheduleChartDraw } from '../../utils/chartDrawQueue';
 import useResizeObserver from '../../utils/hooks/useResizeObserver';
 import { getMainRepresentative } from '../../utils/defaultRepresentatives';
 import { displayEntityTypeForTranslation } from '../../utils/String';
+import type { WidgetTimeSeriesBreakdown_breakdown$key } from './__generated__/WidgetTimeSeriesBreakdown_breakdown.graphql';
 
-// Structural type satisfied by the private and the public breakdown queries
-export interface WidgetTimeSeriesBreakdownData {
-  readonly truncated: boolean;
-  // Interval of the dates when the API chose it: the public breakdowns count a long period in coarser intervals
-  readonly interval?: string | null;
-  // Shared by every series: each series carries one value per date
-  readonly dates: ReadonlyArray<unknown>;
-  readonly series: ReadonlyArray<{
-    readonly label: string;
-    readonly isOther: boolean;
-    readonly entity?: {
-      readonly entity_type?: string;
-      readonly id?: string;
-      readonly name?: string;
-      readonly representative?: { readonly main: string };
-      // The colors of a label and of a marking
-      readonly color?: string | null;
-      readonly x_opencti_color?: string | null;
-    } | null;
-    readonly values: ReadonlyArray<number>;
-  }>;
-}
+// The selection every breakdown query spreads, private and public: each serie with the entity of its value,
+// its colors included, and the interval of the dates when the API chose it
+const widgetTimeSeriesBreakdownFragment = graphql`
+  fragment WidgetTimeSeriesBreakdown_breakdown on TimeSeriesBreakdown {
+    truncated
+    # The interval of the dates, given by the public breakdowns: they count a long period in coarser intervals
+    interval
+    # Shared by every series: each series carries one value per date
+    dates
+    series {
+      label
+      isOther
+      entity {
+        ... on BasicObject {
+          id
+          entity_type
+        }
+        ... on StixObject {
+          representative {
+            main
+          }
+        }
+        # objects without representative
+        ... on Creator {
+          id
+          name
+        }
+        ... on Group {
+          name
+        }
+        # the colors of the values that have one
+        ... on Label {
+          color
+        }
+        ... on MarkingDefinition {
+          x_opencti_color
+        }
+      }
+      values
+    }
+  }
+`;
 
 interface WidgetTimeSeriesBreakdownProps {
-  breakdown?: WidgetTimeSeriesBreakdownData | null;
+  breakdown?: WidgetTimeSeriesBreakdown_breakdown$key | null;
   type: string;
   parameters: WidgetParameters;
   // Settings the breakdown was queried with, which the `parameters` of an edited widget no longer hold
@@ -75,7 +97,7 @@ interface WidgetTimeSeriesBreakdownProps {
  * Draws the series of a time series breakdown, and reports the warnings about what is not displayed.
  */
 const WidgetTimeSeriesBreakdown = ({
-  breakdown,
+  breakdown: breakdownKey,
   type,
   parameters,
   interval: queriedInterval,
@@ -93,6 +115,7 @@ const WidgetTimeSeriesBreakdown = ({
   const breakdownBy = queriedBreakdownBy ?? parameters.breakdownBy;
   const limit = queriedLimit ?? getWidgetBreakdownLimit(parameters);
   const order = queriedOrder ?? getWidgetBreakdownOrder(parameters);
+  const breakdown = useFragment(widgetTimeSeriesBreakdownFragment, breakdownKey ?? null);
 
   // A refresh hands a new breakdown even when nothing changed (its end date moved): the previous one is
   // kept then, so that no memo below is computed again and no chart is redrawn

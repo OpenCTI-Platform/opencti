@@ -48,32 +48,7 @@ const auditsTimeSeriesBreakdownQuery = graphql`
       types: $types
       filters: $filters
     ) {
-      truncated
-      dates
-      series {
-        label
-        isOther
-        entity {
-          ... on BasicObject {
-            id
-            entity_type
-          }
-          ... on StixObject {
-            representative {
-              main
-            }
-          }
-          # objects without representative
-          ... on Creator {
-            id
-            name
-          }
-          ... on Group {
-            name
-          }
-        }
-        values
-      }
+      ...WidgetTimeSeriesBreakdown_breakdown
     }
   }
 `;
