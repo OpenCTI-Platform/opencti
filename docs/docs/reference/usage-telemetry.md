@@ -27,7 +27,7 @@ The platform sends the metrics to the hostname `telemetry.filigran.io` using the
 The telemetry manager runs on one platform node of the cluster at a time. When it starts, it sends an empty request to `https://telemetry.filigran.io/v1/metrics` to check connectivity:
 
 - If the endpoint answers with HTTP status 200, the platform pushes the metrics every 6 hours.
-- If the endpoint cannot be reached, for example in an air-gapped deployment, the platform sends nothing to Filigran. It does not check again until the telemetry manager restarts, for example when the platform restarts.
+- If the endpoint cannot be reached or answers with any status other than 200 (for example in an air-gapped deployment or behind a blocking proxy), the platform sends nothing to Filigran. It does not check again until the telemetry manager restarts: when the platform restarts, or when another platform node takes over the telemetry manager.
 
 In both cases, the platform also writes the metrics every 6 hours to the `telemetry` log files of the platform, so that they are included in support packages.
 
@@ -190,3 +190,8 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 ### Configuration presets
 
 - The number of configuration preset bundles exported
+
+### Stream storage
+
+- The current number of events held in the Redis live stream
+- The current number of stream events offloaded to file storage (too large for Redis)
