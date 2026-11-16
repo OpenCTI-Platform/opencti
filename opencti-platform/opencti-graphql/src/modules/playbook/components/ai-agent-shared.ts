@@ -379,13 +379,128 @@ export const sanitizeDefinitionRunAs = async (
   return mutations.some((changed) => changed) ? JSON.stringify(definition) : playbookDefinition;
 };
 
+// Retry policy of the agent call. A retryable failure (network error,
+// 408, 429, 5xx, or an XTM One error body flagged ``retryable``) is tried
+// again with exponential backoff and full jitter; ``Retry-After`` is
+// honoured when XTM One sends it, capped so a playbook step never sleeps
+// for long. A client timeout is NOT retried: the call already waited
+// AGENT_CALL_TIMEOUT_MS and a retry would double a 10-minute wait.
+export const AGENT_CALL_MAX_ATTEMPTS = 3;
+export const AGENT_CALL_RETRY_BASE_DELAY_MS = 2000;
+export const AGENT_CALL_RETRY_MAX_DELAY_MS = 30000;
+
+const RETRYABLE_HTTP_STATUSES = new Set([408, 425, 429, 500, 502, 503, 504]);
+const NON_RETRYABLE_NETWORK_CODES = new Set(['ECONNABORTED', 'ERR_CANCELED', 'ERR_FR_TOO_MANY_REDIRECTS']);
+
+export type XtmAgentCallResult =
+  | { status: 'ok'; content: string | null; attempts: number }
+  | { status: 'skipped'; reason: string }
+  | {
+    status: 'failed';
+    httpStatus?: number;
+    errorType?: string;
+    retryable: boolean;
+    detail: string;
+    attempts: number;
+  };
+
+type XtmAgentCallFailure = Extract<XtmAgentCallResult, { status: 'failed' }>;
+
 /**
- * Synchronous, non-streaming call to XTM One Platform Chat. Returns the
- * raw assistant content or null when the call cannot complete (XTM One
- * not configured, network failure, non-success status). Errors are
- * logged but never thrown — playbook components are responsible for
- * deciding how to react (route to ``unmodified``, swallow at the end
- * of a chain, etc.) instead of crashing the whole run.
+ * Raised by ``callXtmAgent`` when XTM One could not answer the agent call
+ * (after the retries, for a retryable failure). The playbook executor
+ * records the step as failed with this message, so the run history shows
+ * the failure instead of a silent route to ``unmodified``.
+ */
+export class XtmAgentCallError extends Error {
+  readonly agentSlug: string;
+
+  readonly httpStatus?: number;
+
+  readonly errorType?: string;
+
+  readonly retryable: boolean;
+
+  readonly attempts: number;
+
+  constructor(agentSlug: string, failure: XtmAgentCallFailure) {
+    const status = failure.httpStatus ? `HTTP ${failure.httpStatus}` : 'network error';
+    const type = failure.errorType ? `, ${failure.errorType}` : '';
+    const tries = failure.attempts === 1 ? '1 attempt' : `${failure.attempts} attempts`;
+    super(`XTM One agent ${agentSlug} call failed (${status}${type}) after ${tries}: ${failure.detail}`);
+    this.name = 'XtmAgentCallError';
+    this.agentSlug = agentSlug;
+    this.httpStatus = failure.httpStatus;
+    this.errorType = failure.errorType;
+    this.retryable = failure.retryable;
+    this.attempts = failure.attempts;
+  }
+}
+
+const sleep = (ms: number) => new Promise<void>((resolve) => {
+  setTimeout(resolve, ms);
+});
+
+const readRetryAfterMs = (headers: Record<string, string> | undefined): number | null => {
+  const raw = headers?.['retry-after'] ?? headers?.['Retry-After'];
+  if (!raw) return null;
+  const seconds = Number(raw);
+  if (Number.isFinite(seconds) && seconds >= 0) return seconds * 1000;
+  const date = Date.parse(raw);
+  return Number.isNaN(date) ? null : Math.max(0, date - Date.now());
+};
+
+/**
+ * Delay before the attempt that follows ``attempt`` (1-based): the
+ * server's Retry-After when it sent one, else full jitter over an
+ * exponential window; always capped at AGENT_CALL_RETRY_MAX_DELAY_MS.
+ */
+export const computeAgentRetryDelayMs = (attempt: number, retryAfterMs: number | null): number => {
+  if (retryAfterMs !== null) return Math.min(retryAfterMs, AGENT_CALL_RETRY_MAX_DELAY_MS);
+  const window = Math.min(AGENT_CALL_RETRY_BASE_DELAY_MS * 2 ** (attempt - 1), AGENT_CALL_RETRY_MAX_DELAY_MS);
+  return Math.floor(Math.random() * window);
+};
+
+const describeFailure = (e: unknown, attempt: number): { failure: XtmAgentCallFailure; retryAfterMs: number | null } => {
+  const httpErr = getResponseError(e);
+  if (httpErr) {
+    const body = (httpErr.data && typeof httpErr.data === 'object') ? httpErr.data : {};
+    const detail = body.detail ?? body.message ?? httpErr.message ?? 'XTM One answered an error';
+    // XTM One >= the provider-failure fix answers {error_type, retryable};
+    // an older XTM One gives the status alone.
+    const retryable = typeof body.retryable === 'boolean'
+      ? body.retryable
+      : RETRYABLE_HTTP_STATUSES.has(httpErr.status);
+    return {
+      failure: {
+        status: 'failed',
+        httpStatus: httpErr.status,
+        errorType: typeof body.error_type === 'string' ? body.error_type : undefined,
+        retryable,
+        detail: typeof detail === 'string' ? detail : JSON.stringify(detail),
+        attempts: attempt,
+      },
+      retryAfterMs: readRetryAfterMs(httpErr.headers),
+    };
+  }
+  const code = (e as { code?: string })?.code;
+  return {
+    failure: {
+      status: 'failed',
+      retryable: !code || !NON_RETRYABLE_NETWORK_CODES.has(code),
+      detail: (e as Error)?.message ?? 'Network error',
+      attempts: attempt,
+    },
+    retryAfterMs: null,
+  };
+};
+
+/**
+ * Synchronous, non-streaming call to XTM One Platform Chat, with a typed
+ * result: ``ok`` with the raw assistant content, ``skipped`` when the call
+ * cannot run at all (XTM One not configured, no resolvable identity), or
+ * ``failed`` once XTM One could not answer (after the retries for a
+ * retryable failure). Never throws.
  *
  * The JWT is minted for the identity the executor resolved once with
  * ``resolveAgentJwtUser`` (configured ``run_as`` user, defaulting to the
@@ -396,50 +511,79 @@ export const sanitizeDefinitionRunAs = async (
  * skipped (a JWT minted for an in-memory placeholder user can never be
  * resolved by XTM One anyway).
  */
+export const requestXtmAgent = async (
+  agentSlug: string,
+  content: string,
+  jwtUser: AgentJwtUser | null,
+): Promise<XtmAgentCallResult> => {
+  const xtmOneUrl = nconf.get('xtm:xtm_one_url');
+  if (!xtmOneUrl || !xtmOneClient.isConfigured()) {
+    logApp.warn('[PLAYBOOK AI AGENT] XTM One is not configured, skipping agent call');
+    return { status: 'skipped', reason: 'XTM One is not configured' };
+  }
+  if (!jwtUser) {
+    // resolveAgentJwtUser already logged why no identity could be resolved.
+    return { status: 'skipped', reason: 'No resolvable JWT identity' };
+  }
+  // Telemetry: one playbook AI agent run (attempts semantics, counted before
+  // the upstream call, once per step whatever the retries). Fire-and-forget
+  // so a telemetry failure never breaks the playbook execution.
+  addPlaybookAiAgentRunCount();
+  let lastFailure: XtmAgentCallFailure | null = null;
+  for (let attempt = 1; attempt <= AGENT_CALL_MAX_ATTEMPTS; attempt += 1) {
+    try {
+      const jwt = await issueXtmJwt(jwtUser, xtmOneUrl);
+      const httpClient = getHttpClient({
+        baseURL: xtmOneUrl,
+        responseType: 'json',
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          'Content-Type': 'application/json',
+          'X-Platform-Product': 'opencti',
+          'X-Platform-Version': PLATFORM_VERSION,
+        },
+      });
+      const response = await httpClient.post(
+        '/api/v1/platform/chat/messages',
+        { agent_slug: agentSlug, content, stream: false },
+        { timeout: AGENT_CALL_TIMEOUT_MS },
+      );
+      return { status: 'ok', content: response.data?.content ?? null, attempts: attempt };
+    } catch (e: unknown) {
+      const { failure, retryAfterMs } = describeFailure(e, attempt);
+      lastFailure = failure;
+      const willRetry = failure.retryable && attempt < AGENT_CALL_MAX_ATTEMPTS;
+      logApp.error('[PLAYBOOK AI AGENT] Agent call failed', {
+        agentSlug,
+        status: failure.httpStatus,
+        errorType: failure.errorType,
+        detail: failure.detail,
+        attempt,
+        willRetry,
+      });
+      if (!willRetry) break;
+      await sleep(computeAgentRetryDelayMs(attempt, retryAfterMs));
+    }
+  }
+  return lastFailure as XtmAgentCallFailure;
+};
+
+/**
+ * Raw assistant content of an XTM One agent call, ``null`` when the call
+ * was skipped (XTM One not configured, no resolvable identity) or XTM One
+ * answered without content. Throws ``XtmAgentCallError`` when XTM One could
+ * not answer after the retries: the playbook executor then records the
+ * step as failed with the reason, instead of a silent route to
+ * ``unmodified`` that would look like a successful step.
+ */
 export const callXtmAgent = async (
   agentSlug: string,
   content: string,
   jwtUser: AgentJwtUser | null,
 ): Promise<string | null> => {
-  const xtmOneUrl = nconf.get('xtm:xtm_one_url');
-  if (!xtmOneUrl || !xtmOneClient.isConfigured()) {
-    logApp.warn('[PLAYBOOK AI AGENT] XTM One is not configured, skipping agent call');
-    return null;
+  const result = await requestXtmAgent(agentSlug, content, jwtUser);
+  if (result.status === 'failed') {
+    throw new XtmAgentCallError(agentSlug, result);
   }
-  if (!jwtUser) {
-    // resolveAgentJwtUser already logged why no identity could be resolved.
-    return null;
-  }
-  // Telemetry: one playbook AI agent run (attempts semantics, counted before
-  // the upstream call). Fire-and-forget so a telemetry failure never breaks
-  // the playbook execution.
-  addPlaybookAiAgentRunCount();
-  try {
-    const jwt = await issueXtmJwt(jwtUser, xtmOneUrl);
-    const httpClient = getHttpClient({
-      baseURL: xtmOneUrl,
-      responseType: 'json',
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        'Content-Type': 'application/json',
-        'X-Platform-Product': 'opencti',
-        'X-Platform-Version': PLATFORM_VERSION,
-      },
-    });
-    const response = await httpClient.post(
-      '/api/v1/platform/chat/messages',
-      { agent_slug: agentSlug, content, stream: false },
-      { timeout: AGENT_CALL_TIMEOUT_MS },
-    );
-    return response.data?.content ?? null;
-  } catch (e: unknown) {
-    const httpErr = getResponseError(e);
-    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? (e as Error)?.message;
-    logApp.error('[PLAYBOOK AI AGENT] Agent call failed', {
-      agentSlug,
-      status: httpErr?.status,
-      detail,
-    });
-    return null;
-  }
+  return result.status === 'ok' ? result.content : null;
 };
