@@ -76,6 +76,43 @@ describe('InvestigationEnrichmentLaunch', () => {
     }]);
   });
 
+  it('launches the enrichment without confirmation, unless it targets many elements', () => {
+    renderForm();
+
+    expect(lastLaunchProps().display).toBe(false);
+    fireEvent.click(screen.getByRole('button', { name: 'Enrich' }));
+
+    expect(lastLaunchProps()).toMatchObject({ display: true, confirmOnlyAboveLimit: true, numberOfSelectedElements: 1 });
+  });
+
+  it('is not left busy for the next enrichment when a launch the API rejected is closed', () => {
+    renderForm();
+    fireEvent.click(screen.getByRole('button', { name: 'Enrich' }));
+    act(() => lastLaunchProps().onLaunch());
+    expect(lastLaunchProps().processing).toBe(true);
+
+    act(() => lastLaunchProps().onClose());
+
+    expect(lastLaunchProps()).toMatchObject({ display: false, processing: false });
+  });
+
+  it('cannot be clicked again while the enrichment is being sent, so that no other choice is silently dropped', () => {
+    renderForm();
+    const enrich = () => screen.getByRole('button', { name: 'Enrich' });
+    fireEvent.click(enrich());
+    act(() => lastLaunchProps().onLaunch());
+    expect(enrich()).toBeDisabled();
+
+    act(() => lastLaunchProps().onClose());
+    expect(enrich()).toBeEnabled();
+
+    fireEvent.click(enrich());
+    act(() => lastLaunchProps().onLaunch());
+    act(() => lastLaunchProps().onCompleted());
+    fireEvent.click(screen.getByText('select connector'));
+    expect(enrich()).toBeEnabled();
+  });
+
   it('reports the enrichment once the API accepted it, so that the button shows it is sending', () => {
     const onCompleted = vi.fn();
     renderForm({ onCompleted });
