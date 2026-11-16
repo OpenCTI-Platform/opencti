@@ -117,7 +117,7 @@ Buffering is enabled by default, with a window of 60 seconds. You can change it 
 | `publisher_manager:enable_buffering`  | `PUBLISHER_MANAGER__ENABLE_BUFFERING`  | `true`  | Enable or disable buffering of live notifications      |
 | `publisher_manager:buffering_seconds` | `PUBLISHER_MANAGER__BUFFERING_SECONDS` | `60`    | Length of the buffering window, in seconds             |
 
-For example, to group the events of the same entity over five minutes, set `PUBLISHER_MANAGER__BUFFERING_SECONDS=300`. To send each event as soon as it occurs, set `PUBLISHER_MANAGER__ENABLE_BUFFERING=false`.
+For example, to group the events of the same entity over five minutes, set `PUBLISHER_MANAGER__BUFFERING_SECONDS=300`. To send each event as its own notification, without waiting for the buffering window, set `PUBLISHER_MANAGER__ENABLE_BUFFERING=false`.
 
 For all the publisher manager parameters, see [Engines, Schedules and Managers](../deployment/configuration.md#engines-schedules-and-managers).
 
