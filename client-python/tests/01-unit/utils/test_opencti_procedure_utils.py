@@ -495,3 +495,55 @@ def test_splitter_does_not_reject_a_bundle_with_bad_values():
     assert "x-opencti-procedure" in {o["type"] for o in objects}
     assert incompatible == []
     assert logger.warning.call_count == 8
+
+
+def _import_raw(stix_object):
+    """Import a procedure object as is, the way platform-side ingestion does."""
+    opencti = MagicMock()
+    opencti.query.return_value = {"data": {"procedureAdd": {"id": "internal-id"}}}
+    opencti.process_multiple_fields.side_effect = lambda data: data
+    opencti.get_attribute_in_extension.return_value = None
+    Procedure(opencti).import_from_stix2(stixObject=stix_object, extras={})
+    return opencti, opencti.query.call_args[0][1]["input"]
+
+
+def test_import_from_stix2_warns_on_an_unnormalized_procedure():
+    opencti, variables = _import_raw(
+        _procedure_object(
+            platforms=["Windows", "windows", "Office Suite"],
+            tactics=["execution"],
+            x_technique_refs=[AP1],
+            x_vulnerability_refs=[VULN],
+            x_source_refs=[IDENTITY, REPORT],
+        )
+    )
+    # Platforms are lowercased on this path too (review focus 3)
+    assert variables["x_mitre_platforms"] == ["windows", "office suite"]
+    assert opencti.app_logger.warning.call_count == 1
+    message = opencti.app_logger.warning.call_args[0][0]
+    assert X_PROC in message
+    for lost in (
+        "x-procedure",
+        "x_technique_refs",
+        "x_vulnerability_refs",
+        "tactics",
+        "report",
+        "platforms",
+    ):
+        assert lost in message
+
+
+def test_import_from_stix2_does_not_warn_on_a_normalized_procedure():
+    stix_object, _ = normalize_procedure_bundle(sample_bundle())
+    opencti, variables = _import_raw(procedure(stix_object))
+    assert variables["x_mitre_platforms"] == ["windows", "linux"]
+    opencti.app_logger.warning.assert_not_called()
+
+
+def test_import_from_stix2_warns_on_uppercase_platforms_only():
+    opencti, variables = _import_raw(
+        dict(_procedure_object(platforms="Windows"), type="x-opencti-procedure")
+    )
+    assert variables["x_mitre_platforms"] == ["windows"]
+    message = opencti.app_logger.warning.call_args[0][0]
+    assert "platforms" in message and "x_technique_refs" not in message

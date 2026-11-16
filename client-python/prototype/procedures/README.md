@@ -17,6 +17,16 @@ because `examples/run_all.sh` runs every script in `examples/` in CI.
   pip install -e client-python
   ```
 
+## Where the conversion runs
+
+The `x-procedure` conversion (type and id rename, techniques, vulnerabilities,
+tactics and report sources) runs only on the pycti paths: the seed script, the
+connector helper and any client that splits bundles with pycti. Platform-side
+ingestion (TAXII, feeds, bundle push, sync, playbooks) does not convert
+`x-procedure` in this prototype. A procedure that reaches the import
+unconverted is imported with a warning naming what is lost, and its platforms
+are lowercased.
+
 ## Seed the example bundle
 
 `data/example-procedures.json` holds a POWERSTAR procedure published as

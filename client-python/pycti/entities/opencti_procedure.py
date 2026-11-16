@@ -2,7 +2,11 @@
 
 import json
 
-from pycti.utils.opencti_procedure_utils import MITRE_ATTACK_KILL_CHAIN
+from pycti.utils.opencti_procedure_utils import (
+    MITRE_ATTACK_KILL_CHAIN,
+    describe_unnormalized_procedure,
+    lowercase_platforms,
+)
 from pycti.utils.opencti_stix2_utils import build_custom_field_values_input
 
 # Relationship type stored by the platform -> procedure property exported from it
@@ -475,6 +479,12 @@ class Procedure:
         relationships, kill chain phases and report containment, not
         properties of the procedure.
 
+        Platform-side ingestion (TAXII, feeds, bundle push, sync, playbooks)
+        does not run the normalizer: an object that is not normalized is
+        imported anyway, with a warning naming what is not converted (the
+        techniques, vulnerabilities, tactics and report sources are lost).
+        Platforms are lowercased here so they always match the vocabulary.
+
         :param stixObject: the STIX2 Procedure object
         :type stixObject: dict
         :param extras: extra parameters including created_by_id, object_marking_ids, etc.
@@ -492,6 +502,20 @@ class Procedure:
                 "[opencti_procedure] Missing parameters: stixObject"
             )
             return None
+
+        unnormalized = describe_unnormalized_procedure(stix_object)
+        if len(unnormalized) > 0:
+            self.opencti.app_logger.warning(
+                "[opencti_procedure] Procedure "
+                + str(stix_object.get("id"))
+                + " is not normalized, imported without converting: "
+                + ", ".join(unnormalized)
+                + ". Normalize the bundle with pycti first.",
+                {"id": stix_object.get("id")},
+            )
+        platforms = stix_object.get("platforms", None)
+        if platforms is not None:
+            platforms = lowercase_platforms(platforms)
 
         # Search in extensions
         extension_attributes = {
@@ -517,7 +541,7 @@ class Procedure:
                 else None
             ),
             x_procedure_type=stix_object.get("x_procedure_type", None),
-            x_mitre_platforms=stix_object.get("platforms", None),
+            x_mitre_platforms=platforms,
             first_observed=stix_object.get("first_observed", None),
             last_observed=stix_object.get("last_observed", None),
             x_execution_start=stix_object.get("x_execution_start", None),
