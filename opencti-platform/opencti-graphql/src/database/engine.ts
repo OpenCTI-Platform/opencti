@@ -3063,6 +3063,8 @@ type QueryBodyBuilderOpts = ProcessSearchArgs & BuildDraftFilterOpts & {
   filters?: FilterGroup | null;
   noFiltersChecking?: boolean;
   noRegardingOfFilterIdsCheck?: boolean;
+  // `filters` were checked, converted and completed by elCompleteFilters: used as they are, nothing resolved again
+  filtersCompleted?: boolean;
   historyFiltering?: boolean;
   startDate?: any;
   endDate?: any;
@@ -3073,6 +3075,23 @@ type QueryBodyBuilderOpts = ProcessSearchArgs & BuildDraftFilterOpts & {
    * MUST NEVER be populated from user/GraphQL/JSON input.
    */
   internalScriptFilters?: string[];
+};
+const elFindByIdsToMap = async (c: AuthContext, u: AuthUser, i: string[], o: any) => {
+  return elFindByIds<BasicStoreObject>(c, u, i, { ...o, toMap: true }) as Promise<Record<string, BasicStoreObject>>;
+};
+export type CompleteFiltersOpts = Pick<QueryBodyBuilderOpts, 'filters' | 'noFiltersChecking' | 'noRegardingOfFilterIdsCheck'>;
+// The filters of a query checked, converted and completed, as elQueryBodyBuilder reads them: their special keys are
+// resolved with the access of the user, which takes requests for some of them (up to ES_MAX_PAGINATION entities for
+// each of dynamicFrom and dynamicTo). Queries on the same filters resolve them once: each one gets the result with
+// `filtersCompleted`. Completing them again is not possible, a completed entity type filter being refused.
+// Undefined without any filter.
+export const elCompleteFilters = async (context: AuthContext, user: AuthUser, options: CompleteFiltersOpts): Promise<FilterGroup | undefined> => {
+  const { filters, noFiltersChecking, noRegardingOfFilterIdsCheck = false } = options;
+  const convertedFilters = await checkAndConvertFilters(context, user, filters, user.id, elFindByIdsToMap, { noFiltersChecking });
+  if (!convertedFilters || !isFilterGroupNotEmpty(convertedFilters)) {
+    return undefined;
+  }
+  return completeSpecialFilterKeys(context, user, convertedFilters, { noRegardingOfFilterIdsCheck });
 };
 const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options: QueryBodyBuilderOpts) => {
   const {
@@ -3096,12 +3115,12 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
     dateAttribute = null,
     includeAuthorities = false,
     noRegardingOfFilterIdsCheck = false,
+    filtersCompleted = false,
     internalScriptFilters = [],
   } = options;
-  const elFindByIdsToMap = async (c: AuthContext, u: AuthUser, i: string[], o: any) => {
-    return elFindByIds<BasicStoreObject>(c, u, i, { ...o, toMap: true }) as Promise<Record<string, BasicStoreObject>>;
-  };
-  const convertedFilters = await checkAndConvertFilters(context, user, filters, user.id, elFindByIdsToMap, { noFiltersChecking });
+  const completedFilters = filtersCompleted
+    ? filters ?? undefined
+    : await elCompleteFilters(context, user, { filters, noFiltersChecking, noRegardingOfFilterIdsCheck });
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let ordering: any[] = [];
   // Handle marking restrictions
@@ -3131,14 +3150,14 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
       specialFiltersContent.push({ key: TYPE_FILTER, values: R.flatten(types) });
     }
   }
-  const completeFilters = specialFiltersContent.length > 0 ? {
-    mode: FilterMode.And,
-    filters: specialFiltersContent,
-    filterGroups: isFilterGroupNotEmpty(convertedFilters) ? [convertedFilters as FilterGroup] : [],
-  } : convertedFilters;
-  // Handle filters
-  if (completeFilters && isFilterGroupNotEmpty(completeFilters)) {
-    const finalFilters = await completeSpecialFilterKeys(context, user, completeFilters, { noRegardingOfFilterIdsCheck });
+  // Handle filters: the special keys and the filters together, the filters first
+  let finalFilters = completedFilters;
+  if (specialFiltersContent.length > 0) {
+    const specialFiltersGroup = { mode: FilterMode.And, filters: specialFiltersContent, filterGroups: [] };
+    const specialFilters = await completeSpecialFilterKeys(context, user, specialFiltersGroup, { noRegardingOfFilterIdsCheck });
+    finalFilters = { ...specialFilters, filterGroups: [...(completedFilters ? [completedFilters] : []), ...specialFilters.filterGroups] };
+  }
+  if (finalFilters) {
     const { subQuery: filtersSubQuery } = buildSubQueryForFilterGroup(context, user, finalFilters);
     if (filtersSubQuery) {
       mustFilters.push(filtersSubQuery);
@@ -3712,7 +3731,7 @@ const CONNECTION_TYPES_FIELD = 'connections.types.keyword';
 const buildConnectionSideQuery = (side: ConnectionSide) => ({ query_string: { query: `*_${side}`, fields: ['connections.role'] } });
 // Terms on the type of one side of the relationships. A relationship has a single connection per side:
 // the number of connections of a type is its number of relationships, and `relationshipsAggs` goes back to them.
-const buildConnectionTypesAggregation = (side: ConnectionSide, terms: Record<string, unknown>, relationshipsAggs?: Record<string, unknown>) => ({
+const buildConnectionTypesAggregation = (side: ConnectionSide, terms: Record<string, unknown>, relationshipsAggs: Record<string, unknown>) => ({
   nested: { path: 'connections' },
   aggs: {
     side: {
@@ -3720,7 +3739,7 @@ const buildConnectionTypesAggregation = (side: ConnectionSide, terms: Record<str
       aggs: {
         types: {
           terms: { field: CONNECTION_TYPES_FIELD, ...terms },
-          ...(relationshipsAggs ? { aggs: { relationships: { reverse_nested: {}, aggs: relationshipsAggs } } } : {}),
+          aggs: { relationships: { reverse_nested: {}, aggs: relationshipsAggs } },
         },
       },
     },
@@ -3776,75 +3795,53 @@ export type HistogramBreakdownCountOpts = QueryBodyBuilderOpts & {
   interval: string;
   keys: string[];
   withOther?: boolean;
-  // One term filter per key instead of a terms aggregation restricted to the keys: much faster on fields
-  // with many values (labels, users), a little slower on fields with a handful of values
-  filterPerKey?: boolean;
-  // Breaks the relationships down by the type of this side instead of `field`. A side has a handful of
-  // types: the terms aggregation restricted to the keys is used, whatever `filterPerKey`.
+  // Breaks the relationships down by the type of this side instead of `field`
   connectionSide?: ConnectionSide | null;
 };
 export type HistogramBreakdownPoint = { date: string; value: number };
 // Filters are keyed by position: a value, which may contain dots, never becomes a field name of the response
 const breakdownFilterKeyOf = (index: number) => `k${index}`;
-// Aggregations of elHistogramBreakdownCount: `breakdown` holds one bucket per key, `other` the documents carrying none of them
-export const buildHistogramBreakdownAggregations = (
-  options: Pick<HistogramBreakdownCountOpts, 'field' | 'keys' | 'withOther' | 'filterPerKey' | 'connectionSide'>,
-  countOverTime: Record<string, unknown>,
-) => {
-  const { field, keys, withOther = false, filterPerKey = false, connectionSide = null } = options;
-  const aggs: Record<string, unknown> = {};
+// Bucket of the documents carrying none of the keys, apart from the keys whatever they are named
+const BREAKDOWN_OTHER_BUCKET_KEY = 'other';
+// Query of the documents carrying a key: a term of the field, or for a side of the relationships a connection
+// on this side with the key among its types
+const buildBreakdownKeyQuery = (field: string, connectionSide: ConnectionSide | null) => {
   if (connectionSide) {
-    if (keys.length > 0) {
-      aggs.breakdown = buildConnectionTypesAggregation(connectionSide, { include: keys, size: keys.length }, { count_over_time: countOverTime });
-    }
-    if (withOther) {
-      // A relationship has a single source and a single target: none of the keys on this side
-      const sideWithKeys = { nested: { path: 'connections', query: { bool: { must: [buildConnectionSideQuery(connectionSide), { terms: { [CONNECTION_TYPES_FIELD]: keys } }] } } } };
-      aggs.other = {
-        filter: keys.length > 0 ? { bool: { must_not: [sideWithKeys] } } : { match_all: {} },
-        aggs: { count_over_time: countOverTime },
-      };
-    }
-    return aggs;
+    return (key: string) => ({
+      nested: { path: 'connections', query: { bool: { must: [buildConnectionSideQuery(connectionSide), { term: { [CONNECTION_TYPES_FIELD]: key } }] } } },
+    });
   }
   const fieldForQuery = buildFieldForQuery(field);
-  if (keys.length > 0 && filterPerKey) {
-    aggs.breakdown = {
-      filters: {
-        filters: Object.fromEntries(keys.map((key, index) => [breakdownFilterKeyOf(index), { term: { [fieldForQuery]: key } }])),
-      },
-      aggs: { count_over_time: countOverTime },
-    };
-  } else if (keys.length > 0) {
-    aggs.breakdown = {
-      terms: {
-        field: fieldForQuery,
-        include: keys,
-        size: keys.length,
-      },
-      aggs: { count_over_time: countOverTime },
-    };
-  }
-  if (withOther) {
-    aggs.other = {
-      filter: keys.length > 0
-        ? { bool: { must_not: [{ terms: { [fieldForQuery]: keys } }] } }
-        : { match_all: {} },
-      aggs: { count_over_time: countOverTime },
-    };
-  }
-  return aggs;
+  return (key: string) => ({ term: { [fieldForQuery]: key } });
 };
-// One date histogram per term of `field`, restricted to the given raw `keys`, in a single query.
-// With `withOther`, a sibling aggregation counts the entities carrying none of the keys (entities without value included).
-// Its histogram is returned apart from the ones of the keys, whatever the keys are named (null without `withOther`).
+// Aggregation of elHistogramBreakdownCount: one filter per key, and with `withOther` the documents carrying none
+// of them in the other bucket. A document carrying several keys counts for each of them.
+export const buildHistogramBreakdownAggregations = (
+  options: Pick<HistogramBreakdownCountOpts, 'field' | 'keys' | 'withOther' | 'connectionSide'>,
+  countOverTime: Record<string, unknown>,
+) => {
+  const { field, keys, withOther = false, connectionSide = null } = options;
+  if (keys.length === 0 && !withOther) {
+    return {};
+  }
+  const keyQuery = buildBreakdownKeyQuery(field, connectionSide);
+  const keyFilters = Object.fromEntries(keys.map((key, index) => [breakdownFilterKeyOf(index), keyQuery(key)]));
+  // Without any key, every document is in Other: counted by a filter of its own, in the same bucket
+  const filters = keys.length > 0
+    ? { filters: keyFilters, ...(withOther ? { other_bucket_key: BREAKDOWN_OTHER_BUCKET_KEY } : {}) }
+    : { filters: { [BREAKDOWN_OTHER_BUCKET_KEY]: { match_all: {} } } };
+  return { breakdown: { filters, aggs: { count_over_time: countOverTime } } };
+};
+// One date histogram per raw key of `field` (or of the types of a side of the relationships), in a single query.
+// With `withOther`, the documents carrying none of the keys (documents without value included) are counted too.
+// Their histogram is returned apart from the ones of the keys, whatever the keys are named (null without `withOther`).
 export const elHistogramBreakdownCount = async (
   context: AuthContext,
   user: AuthUser,
   indexName: string[] | string | undefined,
   options: HistogramBreakdownCountOpts,
 ): Promise<{ histograms: Map<string, HistogramBreakdownPoint[]>; other: HistogramBreakdownPoint[] | null }> => {
-  const { interval, keys, withOther = false, filterPerKey = false, connectionSide = null, types = null } = options;
+  const { interval, keys, withOther = false, types = null } = options;
   const dateAttribute = options.dateAttribute || 'created_at';
   const dateFormat = getHistogramDateFormat(interval);
   const body = await elQueryBodyBuilder(context, user, { ...options, dateAttribute, noSize: true, noSort: true, intervalInclude: true });
@@ -3864,16 +3861,7 @@ export const elHistogramBreakdownCount = async (
   const query = {
     index: getIndicesToQuery(context, user, indexName),
     // Only what is read below: the response of 50 series over a long period weighs megabytes otherwise
-    filter_path: [
-      '_shards',
-      'aggregations.breakdown.buckets.key',
-      'aggregations.breakdown.buckets.count_over_time.buckets.*.weight.value',
-      'aggregations.breakdown.buckets.*.count_over_time.buckets.*.weight.value',
-      // The types of a side of the relationships, counted on the relationships
-      'aggregations.breakdown.side.types.buckets.key',
-      'aggregations.breakdown.side.types.buckets.relationships.count_over_time.buckets.*.weight.value',
-      'aggregations.other.count_over_time.buckets.*.weight.value',
-    ],
+    filter_path: ['_shards', 'aggregations.breakdown.buckets.*.count_over_time.buckets.*.weight.value'],
     body,
   };
   logApp.debug('[SEARCH] histogramBreakdownCount', { query });
@@ -3884,20 +3872,9 @@ export const elHistogramBreakdownCount = async (
   };
   return elRawSearch(context, user, types, query)
     .then((data) => {
-      const aggregations = data.aggregations ?? {};
-      const histograms = new Map<string, HistogramBreakdownPoint[]>();
-      if (connectionSide) {
-        (aggregations.breakdown?.side?.types?.buckets ?? []).forEach((bucket: any) => {
-          histograms.set(String(bucket.key), toPoints(bucket.relationships?.count_over_time));
-        });
-      } else if (filterPerKey) {
-        keys.forEach((key, index) => histograms.set(key, toPoints(aggregations.breakdown?.buckets?.[breakdownFilterKeyOf(index)]?.count_over_time)));
-      } else {
-        (aggregations.breakdown?.buckets ?? []).forEach((bucket: any) => {
-          histograms.set(String(bucket.key), toPoints(bucket.count_over_time));
-        });
-      }
-      const other = withOther ? toPoints(aggregations.other?.count_over_time) : null;
+      const buckets = data.aggregations?.breakdown?.buckets ?? {};
+      const histograms = new Map(keys.map((key, index) => [key, toPoints(buckets[breakdownFilterKeyOf(index)]?.count_over_time)]));
+      const other = withOther ? toPoints(buckets[BREAKDOWN_OTHER_BUCKET_KEY]?.count_over_time) : null;
       return { histograms, other };
     })
     .catch((err) => {
