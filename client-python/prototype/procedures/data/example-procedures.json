@@ -70,9 +70,9 @@
         "defense-evasion"
       ],
       "x_technique_refs": [
-        "attack-pattern--e94e1030-0b72-4b37-ab03-00e1a81a665e",
-        "attack-pattern--4c209832-0086-42bf-b4ac-84cdc2434a72",
-        "attack-pattern--ed0f9d93-0ae4-4feb-bec9-7f02016a6189"
+        "attack-pattern--3ccef7ae-cb5e-48f6-8302-897105fbf55c",
+        "attack-pattern--970a3432-3237-47ad-bcca-7d8cbb217736",
+        "attack-pattern--b3d682b6-98f2-4fb0-aa3b-b4df007ca70a"
       ],
       "x_observable_refs": [
         "process--24208e46-d950-42ff-a9c3-53b24b5b5dc8"
@@ -109,7 +109,7 @@
       "modified": "2026-07-28T14:14:00.000Z",
       "relationship_type": "implements-technique",
       "source_ref": "x-procedure--5e0040b0-42df-46d2-8e7f-0fa3d753b75d",
-      "target_ref": "attack-pattern--e94e1030-0b72-4b37-ab03-00e1a81a665e"
+      "target_ref": "attack-pattern--3ccef7ae-cb5e-48f6-8302-897105fbf55c"
     },
     {
       "type": "relationship",
@@ -119,7 +119,7 @@
       "modified": "2026-07-28T14:14:00.000Z",
       "relationship_type": "implements-technique",
       "source_ref": "x-procedure--5e0040b0-42df-46d2-8e7f-0fa3d753b75d",
-      "target_ref": "attack-pattern--4c209832-0086-42bf-b4ac-84cdc2434a72"
+      "target_ref": "attack-pattern--970a3432-3237-47ad-bcca-7d8cbb217736"
     },
     {
       "type": "relationship",
@@ -129,7 +129,7 @@
       "modified": "2026-07-28T14:14:00.000Z",
       "relationship_type": "implements-technique",
       "source_ref": "x-procedure--5e0040b0-42df-46d2-8e7f-0fa3d753b75d",
-      "target_ref": "attack-pattern--ed0f9d93-0ae4-4feb-bec9-7f02016a6189"
+      "target_ref": "attack-pattern--b3d682b6-98f2-4fb0-aa3b-b4df007ca70a"
     },
     {
       "type": "relationship",
