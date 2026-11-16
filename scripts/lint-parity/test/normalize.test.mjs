@@ -73,6 +73,7 @@ test('maps severities to error|warning', () => {
   assert.equal(eslint.find((f) => f.ruleId === '@typescript-eslint/no-unused-vars').severity, 'warning');
   const oxlint = normalizeOxlint(oxlintSample, fixtureDir);
   assert.equal(oxlint.find((f) => f.ruleId === 'no-debugger').severity, 'error');
+  // Intentional: oxlint reports a typescript/* rule with an eslint(...) code, so it normalizes to the bare id; compare.mjs re-keys it.
   assert.equal(oxlint.find((f) => f.ruleId === 'no-unused-vars').severity, 'warning');
 });
 
@@ -92,4 +93,8 @@ test('oxlintConfigRules collects top-level and override rules, skips off', () =>
 test('oxlintConfigRules handles numeric levels and missing sections', () => {
   assert.deepEqual([...oxlintConfigRules({})], []);
   assert.deepEqual([...oxlintConfigRules({ rules: { eqeqeq: 0, 'no-debugger': 1, 'react/jsx-key': ['off', {}] } })].sort(), ['no-debugger']);
+});
+
+test('oxlintConfigRules treats the allow alias as off', () => {
+  assert.deepEqual([...oxlintConfigRules({ rules: { eqeqeq: 'allow', 'no-debugger': ['allow', {}], 'no-console': 'warn' } })], ['no-console']);
 });

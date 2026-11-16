@@ -85,7 +85,7 @@ export const normalizeOxlint = (report, baseDir) => report.diagnostics
 
 const isEnabled = (setting) => {
   const level = Array.isArray(setting) ? setting[0] : setting;
-  return level !== 'off' && level !== 0;
+  return level !== 'off' && level !== 'allow' && level !== 0;
 };
 
 /**
