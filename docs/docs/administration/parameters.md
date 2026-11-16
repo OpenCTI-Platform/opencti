@@ -81,11 +81,14 @@ They can be used to inform some of your users or all of important information, l
 
 An Announcement can be accompanied by a "Dismiss” button. When clicked by a user, it makes the message disappear for this user.
 
-![parameters_broadcast_message_dismissible](assets/parameters_broadcast_message_dismissible.png)
+![An enabled and dismissible announcement in the Platform Announcement card](assets/parameters-announcement-enabled.png)
 
 This option can be deactivated to have a permanent announcement.
 
-![parameters_broadcast_message_non-dismissible](assets/parameters_broadcast_message_non-dismissible.png)
+An announcement is only displayed while its status is **Enabled**, set by the **Activated** option of the announcement form. A new announcement is disabled by default. To hide an announcement without deleting it, deactivate it: its status becomes **Disabled**.
+
+![A disabled announcement in the Platform Announcement card](assets/parameters-announcement-disabled.png)
+
 ⚠️ Only one announcement is shown at a time, with priority given to dismissible ones. If there are no dismissible announcements, the most recent non-dismissible one is shown.
 
 ## Third-party Analytics
