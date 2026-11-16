@@ -55,7 +55,7 @@ export const importVocabulary = async (
   if (!parsed.success) {
     return refused('failed', 'invalid', configImportValidationReason(parsed.error), false);
   }
-  const { name, category, description, aliases, order, is_hidden: isHidden, parent_name: parentName } = parsed.data;
+  const { name, category, description, aliases, order, is_hidden: isHidden, color } = parsed.data;
   const found = await loadEntry(context, user, name, category);
   if (found) {
     // Found by its name: the entry exists. Found by an alias of another entry: the name is taken
@@ -80,7 +80,7 @@ export const importVocabulary = async (
       aliases: aliases ?? [],
       order: order ?? 0,
       ...(isHidden !== null && isHidden !== undefined ? { is_hidden: isHidden } : {}),
-      ...(parentName ? { parent_name: parentName } : {}),
+      ...(color !== null && color !== undefined ? { color } : {}),
     });
   }
   return { status: 'created', exists: false, configuration: parsed.data };
