@@ -64,7 +64,8 @@ import {
 import { editAuthorizedMembers, sanitizeAuthorizedMembers } from '../../utils/authorizedMembers';
 import { bypassDraftContext, getDraftContext } from '../../utils/draftContext';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { WORKFLOW_INSTANCE_STATUS_FILTER } from '../../utils/filtering/filtering-constants';
+import { resolveWorkflowStatusFilter } from '../../utils/filtering/workflow-status-filter';
+import { getWorkflowDefaultState } from '../workflow/domain/workflow-domain';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../workflow/types/workflow-types';
 import { now } from '../../utils/format';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE } from './draftOperations';
@@ -73,46 +74,6 @@ import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
-
-// Helper: translates workflowInstanceCurrentState filter into an entity id filter
-// by performing a two-step lookup on WorkflowInstance entities.
-// WorkflowInstance.currentState stores the StatusTemplate internal ID directly
-// (per workflow-schema.ts: statusId refers to StatusTemplate internal ID).
-const resolveWorkflowInstanceStatusFilter = async (context: AuthContext, user: AuthUser, args: any): Promise<any> => {
-  const filters = args.filters;
-  if (!filters) return args;
-
-  const workflowStatusFilters = filters.filters?.filter((f: any) => f.key?.includes(WORKFLOW_INSTANCE_STATUS_FILTER)) ?? [];
-  if (workflowStatusFilters.length === 0) return args;
-
-  // Filter values are StatusTemplate IDs — WorkflowInstance.currentState stores them directly.
-  const statusTemplateIds: string[] = workflowStatusFilters.flatMap((f: any) => f.values as string[]);
-  const executionCtx = bypassDraftContext(context);
-
-  const workflowInstances = await fullEntitiesList(executionCtx, executionCtx.user!, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
-    first: 5000,
-    filters: {
-      mode: FilterMode.And,
-      filters: [{ key: ['currentState'], values: statusTemplateIds, operator: FilterOperator.Eq, mode: FilterMode.Or }],
-      filterGroups: [],
-    },
-  });
-
-  const entityIds = workflowInstances
-    .map((wi: any) => wi.entity_id as string)
-    .filter(Boolean);
-
-  const remainingFilters = filters.filters.filter((f: any) => !f.key?.includes(WORKFLOW_INSTANCE_STATUS_FILTER));
-  const idFilter = { key: ['id'], values: entityIds.length > 0 ? entityIds : ['<no-match>'], operator: FilterOperator.Eq, mode: FilterMode.Or };
-
-  return {
-    ...args,
-    filters: {
-      ...filters,
-      filters: [...remainingFilters, idFilter],
-    },
-  };
-};
 
 export const checkAndReturnDraft = async (context: AuthContext, user: AuthUser, draftId: string) => {
   const draft = await findById(context, user, draftId);
@@ -126,6 +87,37 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
 };
 
+// Helper: each draft's workflow state (a StatusTemplate id) as getWorkflowInstance shows it: a draft
+// without a WorkflowInstance (or without a currentState) is in the published workflow's initial state,
+// and no draft has a state when DraftWorkspace has no published workflow.
+const loadDraftWorkflowStates = async (executionCtx: AuthContext) => {
+  const statusNameMap = new Map<string, string>();
+  const defaultState = await getWorkflowDefaultState(executionCtx, executionCtx.user!, ENTITY_TYPE_DRAFT_WORKSPACE);
+  if (!defaultState) {
+    return { stateOf: (_draftId: string): string | undefined => undefined, statusNameMap };
+  }
+
+  // 1. Load all WorkflowInstances → map entity_id → StatusTemplate ID (currentState)
+  const allWorkflowInstances: any[] = await fullEntitiesList(executionCtx, executionCtx.user!, [ENTITY_TYPE_WORKFLOW_INSTANCE], { first: 5000 });
+  const draftToStatusTemplateId = new Map<string, string>();
+  for (const wi of allWorkflowInstances) {
+    if (wi.entity_id && wi.currentState) {
+      draftToStatusTemplateId.set(wi.entity_id as string, wi.currentState as string);
+    }
+  }
+  const stateOf = (draftId: string) => draftToStatusTemplateId.get(draftId) ?? defaultState.initialState ?? undefined;
+
+  // 2. Load StatusTemplates → map id → name
+  const statusTemplateIds = [...new Set([...draftToStatusTemplateId.values(), ...(defaultState.initialState ? [defaultState.initialState] : [])])];
+  if (statusTemplateIds.length > 0) {
+    const statusTemplates = await elFindByIds(executionCtx, executionCtx.user!, statusTemplateIds, { type: ENTITY_TYPE_STATUS_TEMPLATE }) as any[];
+    for (const st of statusTemplates) {
+      statusNameMap.set(st.id as string, st.name as string);
+    }
+  }
+  return { stateOf, statusNameMap };
+};
+
 // Helper: application-level sort by workflow instance current status name.
 // Required because workflowInstance.currentState is stored on a separate WorkflowInstance
 // document, not on the DraftWorkspace document itself, making native ES sorting impossible.
@@ -136,27 +128,11 @@ const resolveSortByWorkflowInstance = async (context: AuthContext, user: AuthUse
   const asc = (args.orderMode ?? 'asc') === 'asc';
   const executionCtx = bypassDraftContext(context);
 
-  // 1. Load all WorkflowInstances → map entity_id → StatusTemplate ID (currentState)
-  const allWorkflowInstances: any[] = await fullEntitiesList(executionCtx, executionCtx.user!, [ENTITY_TYPE_WORKFLOW_INSTANCE], { first: 5000 });
-  const draftToStatusTemplateId = new Map<string, string>();
-  for (const wi of allWorkflowInstances) {
-    if (wi.entity_id && wi.currentState) {
-      draftToStatusTemplateId.set(wi.entity_id as string, wi.currentState as string);
-    }
-  }
-
-  // 2. Load StatusTemplates → map id → name
-  const statusTemplateIds = [...new Set(draftToStatusTemplateId.values())];
-  const statusNameMap = new Map<string, string>();
-  if (statusTemplateIds.length > 0) {
-    const statusTemplates = await elFindByIds(executionCtx, executionCtx.user!, statusTemplateIds, { type: ENTITY_TYPE_STATUS_TEMPLATE }) as any[];
-    for (const st of statusTemplates) {
-      statusNameMap.set(st.id, st.name as string);
-    }
-  }
+  // 1-2. Each draft's workflow state and the status names
+  const { stateOf, statusNameMap } = await loadDraftWorkflowStates(executionCtx);
 
   // 3. Load all DraftWorkspaces with filters applied (no sort, no pagination limit)
-  const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
+  const resolvedArgs = await resolveWorkflowStatusFilter(context, args, ENTITY_TYPE_DRAFT_WORKSPACE);
   const allDrafts: BasicStoreEntityDraftWorkspace[] = await fullEntitiesList(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], {
     ...resolvedArgs,
     first: 5000,
@@ -165,8 +141,8 @@ const resolveSortByWorkflowInstance = async (context: AuthContext, user: AuthUse
 
   // 4. Sort in memory by status name (nulls last)
   const sorted = [...allDrafts].sort((a, b) => {
-    const aName = statusNameMap.get(draftToStatusTemplateId.get(a.id) ?? '') ?? '';
-    const bName = statusNameMap.get(draftToStatusTemplateId.get(b.id) ?? '') ?? '';
+    const aName = statusNameMap.get(stateOf(a.id) ?? '') ?? '';
+    const bName = statusNameMap.get(stateOf(b.id) ?? '') ?? '';
     if (!aName && !bName) return 0;
     if (!aName) return 1;
     if (!bName) return -1;
@@ -213,7 +189,7 @@ const resolveSortByRefUsers = async (
   }
 
   // 2. Load all DraftWorkspaces with filters applied
-  const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
+  const resolvedArgs = await resolveWorkflowStatusFilter(context, args, ENTITY_TYPE_DRAFT_WORKSPACE);
   const allDrafts: BasicStoreEntityDraftWorkspace[] = await fullEntitiesList(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], {
     ...resolvedArgs,
     first: 5000,
@@ -273,12 +249,12 @@ export const findDraftWorkspacePaginated = async (context: AuthContext, user: Au
   if (orderBy === 'objectParticipant') {
     return resolveSortByRefUsers(context, user, args, RELATION_OBJECT_PARTICIPANT);
   }
-  const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
+  const resolvedArgs = await resolveWorkflowStatusFilter(context, args, ENTITY_TYPE_DRAFT_WORKSPACE);
   return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], resolvedArgs);
 };
 
 export const draftWorkspacesNumber = async (context: AuthContext, user: AuthUser, args: any) => {
-  const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
+  const resolvedArgs = await resolveWorkflowStatusFilter(context, args, ENTITY_TYPE_DRAFT_WORKSPACE);
   const [count, total] = await Promise.all([
     elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...resolvedArgs, types: [ENTITY_TYPE_DRAFT_WORKSPACE] }),
     elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...resolvedArgs, endDate: undefined, types: [ENTITY_TYPE_DRAFT_WORKSPACE] }),
@@ -291,7 +267,7 @@ export const draftWorkspacesNumber = async (context: AuthContext, user: AuthUser
 };
 
 export const draftWorkspacesTimeSeries = async (context: AuthContext, user: AuthUser, args: any) => {
-  const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
+  const resolvedArgs = await resolveWorkflowStatusFilter(context, args, ENTITY_TYPE_DRAFT_WORKSPACE);
   return timeSeriesEntities(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], resolvedArgs);
 };
 
@@ -303,27 +279,11 @@ const resolveWorkflowInstanceDistribution = async (context: AuthContext, user: A
   const order: string = args.order ?? 'desc';
   const limit: number = args.limit ?? 10;
 
-  // 1. Load all WorkflowInstances → map entity_id → StatusTemplate ID (currentState)
-  const allWorkflowInstances: any[] = await fullEntitiesList(executionCtx, executionCtx.user!, [ENTITY_TYPE_WORKFLOW_INSTANCE], { first: 5000 });
-  const draftToStatusTemplateId = new Map<string, string>();
-  for (const wi of allWorkflowInstances) {
-    if (wi.entity_id && wi.currentState) {
-      draftToStatusTemplateId.set(wi.entity_id as string, wi.currentState as string);
-    }
-  }
-
-  // 2. Load StatusTemplates → map id → name
-  const statusTemplateIds = [...new Set(draftToStatusTemplateId.values())];
-  const statusNameMap = new Map<string, string>();
-  if (statusTemplateIds.length > 0) {
-    const statusTemplates = await elFindByIds(executionCtx, executionCtx.user!, statusTemplateIds, { type: ENTITY_TYPE_STATUS_TEMPLATE }) as any[];
-    for (const st of statusTemplates) {
-      statusNameMap.set(st.id as string, st.name as string);
-    }
-  }
+  // 1-2. Each draft's workflow state and the status names
+  const { stateOf, statusNameMap } = await loadDraftWorkflowStates(executionCtx);
 
   // 3. Load all DraftWorkspaces matching the filters (only pass list-relevant args)
-  const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
+  const resolvedArgs = await resolveWorkflowStatusFilter(context, args, ENTITY_TYPE_DRAFT_WORKSPACE);
   const allDrafts: BasicStoreEntityDraftWorkspace[] = await fullEntitiesList(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], {
     filters: resolvedArgs.filters,
     search: resolvedArgs.search,
@@ -333,7 +293,7 @@ const resolveWorkflowInstanceDistribution = async (context: AuthContext, user: A
   // 4. Group by status name → count
   const counts = new Map<string, number>();
   for (const draft of allDrafts) {
-    const statusTemplateId = draftToStatusTemplateId.get(draft.id);
+    const statusTemplateId = stateOf(draft.id);
     const statusName = statusTemplateId ? (statusNameMap.get(statusTemplateId) ?? statusTemplateId) : 'Unknown';
     counts.set(statusName, (counts.get(statusName) ?? 0) + 1);
   }
@@ -350,7 +310,7 @@ export const draftWorkspacesDistribution = async (context: AuthContext, user: Au
   if (args.field === 'workflowInstance') {
     return resolveWorkflowInstanceDistribution(context, user, args);
   }
-  const resolvedArgs = await resolveWorkflowInstanceStatusFilter(context, user, args);
+  const resolvedArgs = await resolveWorkflowStatusFilter(context, args, ENTITY_TYPE_DRAFT_WORKSPACE);
   return distributionEntities(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], resolvedArgs);
 };
 

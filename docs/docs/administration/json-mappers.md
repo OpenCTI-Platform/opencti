@@ -17,6 +17,7 @@ Click on the __+__ button to add an empty representation in the list, and click 
 
 Depending on the entity type, the form contains the fields that are either required (input outlined in red) or optional.
 For each field, set the corresponding path mapping that will be used to capture the data and the one to capture how to uniquely identify the information.
+The [custom fields](custom-fields.md) attached to the entity type are listed with the other fields and can be mapped the same way.
 
 !!! info "JSON path"
 

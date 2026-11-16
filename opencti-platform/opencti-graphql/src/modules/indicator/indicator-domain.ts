@@ -58,6 +58,7 @@ import { stixHashesToInput } from '../../schema/fieldDataAdapter';
 import { REVOKED, VALID_FROM, VALID_UNTIL, X_DETECTION, X_SCORE } from '../../schema/identifier';
 import { checkDecayExclusionRules, getActiveDecayExclusionRules } from '../decayRule/exclusions/decayExclusionRule-domain';
 import { getEntitySettingFromCache } from '../../modules/entitySetting/entitySetting-utils';
+import { transformCustomFieldValueAddInput } from '../customField/custom-field-validator';
 import { pushAll } from '../../utils/arrayUtil';
 import type { BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
 
@@ -291,13 +292,20 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   const isDecayActivated: boolean = await isDecayEnabled();
 
   const entitySetting = await getEntitySettingFromCache(context, ENTITY_TYPE_INDICATOR);
-  const resolvedIndicator = await inputResolveRefs(context, user, baseIndicator, ENTITY_TYPE_INDICATOR, entitySetting as BasicStoreEntityEntitySetting);
+  const { customFieldValues, ...indicatorInput } = await inputResolveRefs(context, user, baseIndicator, ENTITY_TYPE_INDICATOR, entitySetting as BasicStoreEntityEntitySetting);
 
-  const decayRule = await checkDecayRules(context, user, resolvedIndicator);
+  // The input custom field values are transformed once, in the stored format: the decay rules select the indicator
+  // on these values, and the indicator is created with the same values. As for the other attributes, the default
+  // values are not used: they are only filled on creation, not on upsert
+  const custom_field_values = await transformCustomFieldValueAddInput(context, user, customFieldValues ?? [], ENTITY_TYPE_INDICATOR);
+  // Without input custom field values, none are given, so that an upsert keeps the stored ones
+  const resolvedIndicator = customFieldValues ? { ...indicatorInput, custom_field_values } : indicatorInput;
+  const decayIndicator = { ...resolvedIndicator, custom_field_values };
+  const decayRule = await checkDecayRules(context, user, decayIndicator);
   const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule.decay_lifetime);
 
   const activeDecayExclusionRuleList = await getActiveDecayExclusionRules(context, user);
-  const exclusionRule = await checkDecayExclusionRules(context, user, resolvedIndicator, activeDecayExclusionRuleList);
+  const exclusionRule = await checkDecayExclusionRules(context, user, decayIndicator, activeDecayExclusionRuleList);
   const indicatorToCreate = {
     ...resolvedIndicator,
     valid_from: validFrom.toISOString(),

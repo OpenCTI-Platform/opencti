@@ -9,6 +9,7 @@ export const CHANNEL_INSTANCE = {
   channel_types: [
     'Facebook',
   ],
+  aliases: ['channel-alias'],
   created: '2025-08-01T15:34:01.690Z',
   modified: '2025-08-01T15:36:28.567Z',
   confidence: 100,
@@ -43,7 +44,7 @@ export const EXPECTED_CHANNEL = {
   created: '2025-08-01T15:34:01.690Z',
   modified: '2025-08-01T15:36:28.567Z',
   name: 'Channel Stix 2.0',
-  aliases: [],
+  aliases: ['channel-alias'],
   description: 'description',
   channel_types: [
     'Facebook',

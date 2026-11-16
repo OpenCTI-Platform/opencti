@@ -83,6 +83,7 @@ import useGranted, {
   SETTINGS_SETACCESSES,
   SETTINGS_SETAUTH,
   SETTINGS_SETCASETEMPLATES,
+  SETTINGS_SETCUSTOMFIELDS,
   SETTINGS_SETCUSTOMIZATION,
   SETTINGS_SETDISSEMINATION,
   SETTINGS_SETKILLCHAINPHASES,
@@ -145,11 +146,13 @@ const useNavMenu = (): NavGroup[] => {
   const isGrantedToKillChainPhases = useGranted([SETTINGS_SETKILLCHAINPHASES]);
   const isGrantedToCaseTemplates = useGranted([SETTINGS_SETCASETEMPLATES]);
   const isGrantedToStatusTemplates = useGranted([SETTINGS_SETSTATUSTEMPLATES]);
+  const isGrantedToCustomFields = useGranted([SETTINGS_SETCUSTOMFIELDS]);
   const isGrantedToTaxonomies = isGrantedToLabels
     || isGrantedToVocabularies
     || isGrantedToKillChainPhases
     || isGrantedToCaseTemplates
-    || isGrantedToStatusTemplates;
+    || isGrantedToStatusTemplates
+    || isGrantedToCustomFields;
   const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
   const isGrantedToExperience = useGranted([SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]);
   const isGrantedToDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
@@ -178,6 +181,7 @@ const useNavMenu = (): NavGroup[] => {
     SETTINGS_SETCASETEMPLATES,
     SETTINGS_SETSTATUSTEMPLATES,
     SETTINGS_SETKILLCHAINPHASES,
+    SETTINGS_SETCUSTOMFIELDS,
     SETTINGS_SECURITYACTIVITY,
     SETTINGS_FILEINDEXING,
     SETTINGS_SUPPORT,

@@ -140,9 +140,12 @@ export const PLAYBOOK_AI_AGENT_SEND_COMPONENT: PlaybookComponent<AiAgentSendConf
       return { output_port: undefined, bundle, forceBundleTracking: true };
     }
     const content = buildAgentMessageContent(bundle, prompt);
+    // A failed call (XTM One unreachable or erroring after the retries)
+    // throws XtmAgentCallError: the executor records the step as failed
+    // with the reason instead of ending it as if the agent had run.
     const rawResponse = await callXtmAgent(agent_slug, content, jwtUser);
     if (rawResponse === null) {
-      logApp.warn('[PLAYBOOK AI AGENT SEND] Agent call did not complete', {
+      logApp.warn('[PLAYBOOK AI AGENT SEND] Agent call returned no content', {
         playbookId,
         agentSlug: agent_slug,
       });

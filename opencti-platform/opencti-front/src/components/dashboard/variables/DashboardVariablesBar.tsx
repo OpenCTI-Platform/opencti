@@ -6,6 +6,7 @@ import { useFormatter } from '../../i18n';
 import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
 import type { DashboardVariable } from '../dashboard-types';
 import { getInvalidDefaultVariableIds } from '../dashboardVariableDefaults';
+import DashboardValuesActions from '../DashboardValuesActions';
 import DashboardVariableChip from './DashboardVariableChip';
 import { useVariablesValueLabels } from './useVariableValueLabels';
 
@@ -17,6 +18,8 @@ export interface DashboardVariablesBarProps {
   usedInWidgetIdsByVariable: ReadonlyMap<string, readonly string[]>;
   // Allows setting the current values as the dashboard defaults.
   canManage: boolean;
+  // The actions also cover the time range of the dashboard: they show when it alone differs from its default.
+  isTimeRangeModified?: boolean;
   onSetValue: (variableId: string, value: string) => void;
   onReset: () => void;
   // Must not reject: the caller reports its own failures.
@@ -44,6 +47,7 @@ const DashboardVariablesBar = ({
   defaults,
   usedInWidgetIdsByVariable,
   canManage,
+  isTimeRangeModified = false,
   onSetValue,
   onReset,
   onSetAsDefaults,
@@ -60,7 +64,7 @@ const DashboardVariablesBar = ({
 
   if (variables.length === 0 && !onCreate) return null;
 
-  const isModified = isModifiedFromDefaults(variables, values, defaults);
+  const isModified = isTimeRangeModified || isModifiedFromDefaults(variables, values, defaults);
   const handleSetAsDefaults = async () => {
     setIsSubmitting(true);
     try {
@@ -108,28 +112,12 @@ const DashboardVariablesBar = ({
         </Button>
       )}
       {isModified && (
-        <>
-          <Button
-            className={EXPORT_REMOVE_CLASS}
-            variant="tertiary"
-            size="small"
-            disabled={isSubmitting}
-            onClick={onReset}
-          >
-            {t_i18n('Reset')}
-          </Button>
-          {canManage && (
-            <Button
-              className={EXPORT_REMOVE_CLASS}
-              variant="secondary"
-              size="small"
-              disabled={isSubmitting}
-              onClick={handleSetAsDefaults}
-            >
-              {t_i18n('Set as default values')}
-            </Button>
-          )}
-        </>
+        <DashboardValuesActions
+          canSetAsDefaults={canManage}
+          disabled={isSubmitting}
+          onReset={onReset}
+          onSetAsDefaults={handleSetAsDefaults}
+        />
       )}
     </Stack>
   );

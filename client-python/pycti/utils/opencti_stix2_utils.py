@@ -5,6 +5,7 @@ in OpenCTI, including type mappings, pattern generation, and object reference co
 """
 
 import datetime
+import json
 from typing import Any, Dict, Iterable, List, Optional
 
 import datefinder
@@ -13,6 +14,69 @@ from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpressio
 # datefinder only catches ValueError while parsing candidates; an out-of-range date
 # raises OverflowError, which must be swallowed the same way.
 datefinder.ValueError = ValueError, OverflowError
+
+
+def query_to_stix(
+    opencti, root_field: str, entity_id: Optional[str], version: Optional[str]
+) -> Optional[Dict]:
+    """Get the STIX representation of one object from the backend ``toStix`` field.
+
+    :param opencti: OpenCTI API client
+    :type opencti: OpenCTIApiClient
+    :param root_field: GraphQL query returning the object by id, with a
+        ``toStix(version)`` field (e.g. ``stixCoreObject``)
+    :type root_field: str
+    :param entity_id: the id of the object
+    :type entity_id: str, optional
+    :param version: the STIX version (``stix_2_0`` or ``stix_2_1``), None for
+        the backend default (``stix_2_1``)
+    :type version: str, optional
+    :return: STIX object, or ``None`` if the id is missing, or the object is not
+        found or cannot be converted (the backend then returns an empty string)
+    :rtype: dict or None
+    :raises json.JSONDecodeError: if the backend payload is not valid JSON
+    """
+    if entity_id is None:
+        opencti.app_logger.error(f"[{root_field}] to_stix: missing parameter: id")
+        return None
+    opencti.app_logger.info(
+        f"Fetching {root_field} STIX", {"id": entity_id, "version": version}
+    )
+    operation_name = root_field[0].upper() + root_field[1:] + "ToStix"
+    query = f"""
+        query {operation_name}($id: String!, $version: Version) {{
+            {root_field}(id: $id) {{
+                toStix(version: $version)
+            }}
+        }}
+    """
+    result = opencti.query(query, {"id": entity_id, "version": version})
+    stix_object = (result.get("data") or {}).get(root_field)
+    # An empty string when the backend cannot load the object with its
+    # dependencies (e.g. a relationship whose endpoint the user cannot read).
+    if stix_object is None or not stix_object.get("toStix"):
+        return None
+    return json.loads(stix_object["toStix"])
+
+
+def is_custom_field_input_value(value: Any) -> bool:
+    """Tell whether the value of a STIX ``x_*`` property can fill a custom field.
+
+    A custom field holds a scalar (string, number, boolean or date), or a list of
+    strings for a multi select. An object, or a list holding one, never matches a
+    custom field (e.g. the files of ``x_opencti_files`` with their base64 content,
+    already sent as uploads) and is not sent as a custom field value.
+
+    :param value: value of a STIX custom property
+    :type value: Any
+    :return: True if the value can be sent as a custom field value
+    :rtype: bool
+    """
+    if value is None or isinstance(value, dict):
+        return False
+    if isinstance(value, (list, tuple)):
+        return all(not isinstance(item, (dict, list, tuple)) for item in value)
+    return True
 
 
 def build_custom_field_values_input(
@@ -58,7 +122,7 @@ def build_custom_field_values_input(
         for key, value in custom_properties.items()
         if isinstance(key, str)
         and key.startswith("x_")
-        and value is not None
+        and is_custom_field_input_value(value)
         and key not in explicit_names
     ]
     if len(converted) == 0:

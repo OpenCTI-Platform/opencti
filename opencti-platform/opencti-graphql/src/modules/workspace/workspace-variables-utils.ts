@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import { type DashboardVariable, DashboardVariableRestrictionMode, DashboardVariableType, type EditInput, VocabularyCategory } from '../../generated/graphql';
 import { fromB64, toB64 } from '../../utils/base64';
 import { FunctionalError } from '../../config/errors';
+import { isFeatureEnabled } from '../../config/conf';
 import { computeDashboardVariablesUsage } from '../dashboard/dashboard-variables-resolution';
 import { DASHBOARD_MANIFEST_SERVER_OWNED_KEYS, type StoreDashboardManifest, type StoreDashboardVariable } from './workspace-variables-types';
 import { buildDashboardVariable, type DashboardVariableInputLike } from './workspace-variables-validation';
@@ -148,4 +149,44 @@ export const stripServerOwnedManifestKeys = (encoded: string | null | undefined)
   const manifest = parseManifestObject(encoded);
   if (!manifest || !DASHBOARD_MANIFEST_SERVER_OWNED_KEYS.some((key) => key in manifest)) return encoded;
   return toB64(R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], manifest));
+};
+
+const isPlainObject = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+};
+
+/**
+ * Whether a widget uses a dashboard variable in its filters, as counted in the usage of the variables.
+ * The widgets may come from a client or a file: a malformed one counts as using none.
+ */
+export const findDashboardVariableWidgets = (widgets: unknown): string[] => {
+  if (!isPlainObject(widgets)) return [];
+  const selections = Object.fromEntries(Object.entries(widgets).map(([widgetId, widget]) => {
+    const dataSelection = isPlainObject(widget) && Array.isArray(widget.dataSelection) ? widget.dataSelection.filter(isPlainObject) : [];
+    return [widgetId, { dataSelection }];
+  }));
+  const widgetIds = new Set([...computeDashboardVariablesUsage(selections).values()].flat());
+  // Named as the user sees them: the title of the widget, else its id.
+  return [...widgetIds].map((widgetId) => {
+    const widget = widgets[widgetId];
+    const title = isPlainObject(widget) && isPlainObject(widget.parameters) ? widget.parameters.title : undefined;
+    return typeof title === 'string' && title.trim() !== '' ? title.trim() : widgetId;
+  });
+};
+
+export const hasDashboardVariableWidget = (widgets: unknown) => findDashboardVariableWidgets(widgets).length > 0;
+
+/**
+ * The manifest of a custom view, on every way in (creation, edition, duplication, configuration and widget import):
+ * dashboard variables do not exist there, so a widget using one would never show data and is refused, and the
+ * server-owned keys are removed (see stripServerOwnedManifestKeys). Nothing is refused without the feature.
+ */
+export const sanitizeCustomViewManifest = (encoded: string | null | undefined) => {
+  const refusedWidgets = encoded && isFeatureEnabled('DASHBOARD_VARIABLES') ? findDashboardVariableWidgets(parseManifestObject(encoded)?.widgets) : [];
+  if (refusedWidgets.length > 0) {
+    // Named in the message, the one the user is shown: a view saved before the refusal is refused on any change until
+    // these widgets are removed or changed.
+    throw FunctionalError(`A widget using dashboard variables cannot be used in a custom view: ${refusedWidgets.join(', ')}`, { widgets: refusedWidgets });
+  }
+  return stripServerOwnedManifestKeys(encoded);
 };

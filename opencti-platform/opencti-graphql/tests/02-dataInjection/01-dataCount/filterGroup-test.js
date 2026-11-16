@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, TESTING_USERS } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { addAllowedMarkingDefinition } from '../../../src/domain/markingDefinition';
 import { deleteElementById, distributionRelations } from '../../../src/database/middleware';
@@ -3186,7 +3186,7 @@ describe('User filter tests', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.users.edges.length).toEqual(9); // 7 + 2 created above
+    expect(queryResult.data.users.edges.length).toEqual(TESTING_USERS.length + 1 + 2); // admin + test users + 2 created above
   });
   it('should list Users with no service account', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY,
@@ -3203,7 +3203,7 @@ describe('User filter tests', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.users.edges.length).toEqual(9); // 7 + 2 created above
+    expect(queryResult.data.users.edges.length).toEqual(TESTING_USERS.length + 1 + 2); // admin + test users + 2 created above
   });
   it('should list Users with or without service account === all Users', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY,
@@ -3220,7 +3220,7 @@ describe('User filter tests', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.users.edges.length).toEqual(10); // 7 + 3 created above
+    expect(queryResult.data.users.edges.length).toEqual(TESTING_USERS.length + 1 + 3); // admin + test users + 3 created above
   });
   it('should list Users with and without service account === No User', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY,

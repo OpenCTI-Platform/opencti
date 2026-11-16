@@ -8,7 +8,7 @@ import IconButton from '../../../../components/common/button/IconButton';
 import { useFormatter } from '../../../../components/i18n';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE } from '../../../../utils/hooks/useGranted';
 
 // region types
 interface StixCoreObjectFormsProps {
@@ -76,7 +76,7 @@ const StixCoreObjectForms: FunctionComponent<StixCoreObjectFormsProps> = ({ enti
 
   // Remove create button in Draft context without the minimal right access "canEdit"
   const draftContext = useDraftContext();
-  const isGrantedAskImportInDraft = useGranted([], false, { capabilitiesInDraft: [KNOWLEDGE_KNASKIMPORT] });
+  const isGrantedAskImportInDraft = useGranted([], false, { capabilitiesInDraft: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE] });
   const currentAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
   const canDisplayButton = !draftContext || currentAccessRight.canEdit || isGrantedAskImportInDraft;
 

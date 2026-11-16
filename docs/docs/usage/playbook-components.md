@@ -201,6 +201,8 @@ Add filters to control which elements in your bundle the action defined in the c
 - A ***replace*** operation overwrites the existing set with the specified values
 - A ***remove*** operation deletes the specified values from the existing set.
 
+The [custom fields](../administration/custom-fields.md) attached to the entity types are available as attributes of this component.
+
 When a Manipulate Knowledge step is followed by an enrichment connector in the same playbook, explicit operations from the enrichment connector are automatically preserved and carried through into the enrichment step's output. This means that when the final result is written to the platform, both the enrichment data and the manipulation operations are reconciled correctly — for example, a label added by an enrichment connector and a label removed by Manipulate Knowledge will both take effect as expected in the final write to knowledge.
 
 ***Routes:***

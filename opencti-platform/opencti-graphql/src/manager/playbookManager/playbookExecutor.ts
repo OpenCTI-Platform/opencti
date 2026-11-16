@@ -11,6 +11,7 @@ import { PLAYBOOK_COMPONENTS } from '../../modules/playbook/playbook-components'
 import type { StreamDataEvent } from '../../types/event';
 import { isDebugPlaybook } from './playbookManagerUtils';
 import { addPlaybookExecutionCount } from '../telemetryManager';
+import { playbookContinuationScheduler } from './playbookContinuationScheduler';
 
 // Only way to force the step_literal checking
 // Don't try to understand, just trust
@@ -167,29 +168,42 @@ export const playbookExecutor = async ({
     }
     // Send the result to the next component if needed
     if (execution.output_port) {
-      // Find the next op for this attachment
-      const connections = definition.links.filter((c) => c.from.id === nextStep.instance.id && c.from.port === execution.output_port);
-      for (let connectionIndex = 0; connectionIndex < connections.length; connectionIndex += 1) {
-        const connection = connections[connectionIndex];
-        const nextInstance = definition.nodes.find((c) => c.id === connection.to.id);
-        const fromInstance = definition.nodes.find((c) => c.id === connection.from.id);
-        if (!nextInstance || !fromInstance) {
-          throw UnsupportedError('Invalid playbook, nextInstance needed');
+      const outputPort = execution.output_port;
+      const outputBundle = execution.bundle;
+      const continueChain = async () => {
+        // Find the next op for this attachment
+        const connections = definition.links.filter((c) => c.from.id === nextStep.instance.id && c.from.port === outputPort);
+        for (let connectionIndex = 0; connectionIndex < connections.length; connectionIndex += 1) {
+          const connection = connections[connectionIndex];
+          const nextInstance = definition.nodes.find((c) => c.id === connection.to.id);
+          const fromInstance = definition.nodes.find((c) => c.id === connection.from.id);
+          if (!nextInstance || !fromInstance) {
+            throw UnsupportedError('Invalid playbook, nextInstance needed');
+          }
+          const fromConnector = PLAYBOOK_COMPONENTS[fromInstance.component_id];
+          const nextConnector = PLAYBOOK_COMPONENTS[nextInstance.component_id];
+          await playbookExecutor({
+            event,
+            eventId,
+            executionId,
+            playbookId,
+            dataInstanceId,
+            definition,
+            previousStep: { component: fromConnector, instance: fromInstance },
+            nextStep: { component: nextConnector, instance: nextInstance },
+            previousStepBundle,
+            bundle: outputBundle,
+          });
         }
-        const fromConnector = PLAYBOOK_COMPONENTS[fromInstance.component_id];
-        const nextConnector = PLAYBOOK_COMPONENTS[nextInstance.component_id];
-        await playbookExecutor({
-          event,
-          eventId,
-          executionId,
-          playbookId,
-          dataInstanceId,
-          definition,
-          previousStep: { component: fromConnector, instance: fromInstance },
-          nextStep: { component: nextConnector, instance: nextInstance },
-          previousStepBundle,
-          bundle: execution.bundle,
-        });
+      };
+      if (isExternalCallback) {
+        // External callback (a connector step answering through playbookStepExecution):
+        // the connector step is registered, so acknowledge the caller now and run the rest
+        // of the chain in the background, with bounded concurrency (see playbookContinuationScheduler).
+        // Errors of the following steps are registered as step observations by their own executor call.
+        await playbookContinuationScheduler.schedule(continueChain, { playbookId, executionId, stepId: nextStep.instance.id });
+      } else {
+        await continueChain();
       }
     }
   } else {

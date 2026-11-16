@@ -8,6 +8,10 @@ import pytest
 
 from pycti import OpenCTIApiClient, OpenCTIStix2
 from pycti.entities.opencti_security_coverage_result import SecurityCoverageResult
+from pycti.utils.opencti_stix2_utils import (
+    build_custom_field_values_input,
+    is_custom_field_input_value,
+)
 
 
 @pytest.fixture
@@ -50,6 +54,84 @@ def test_extract_custom_field_values_reads_top_level_and_extensions():
     assert OpenCTIStix2.extract_custom_field_values(stix_object) == [
         {"field_name": "x_opencti_cf_priority", "value": "P1"},
         {"field_name": "x_opencti_cf_score", "value": 80},
+    ]
+
+
+def test_extract_custom_field_values_skips_values_that_cannot_be_custom_fields():
+    # The files are already sent as uploads: sending their base64 content again
+    # as a custom field value doubles the request size (issue #19617)
+    stix_file = {
+        "name": "report.pdf",
+        "data": "SGVsbG8=",
+        "mime_type": "application/pdf",
+    }
+    stix_object = {
+        "type": "report",
+        "name": "Report",
+        "x_opencti_files": [stix_file],
+        "x_opencti_kill_chain_phases": [{"kill_chain_name": "k", "phase_name": "p"}],
+        "x_opencti_cf_priority": "P1",
+        "x_opencti_cf_tags": ["tag1", "tag2"],
+        "extensions": {
+            "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+                "x_opencti_files": [stix_file],
+                "x_opencti_cf_details": {"nested": "object"},
+                "x_opencti_cf_score": 80,
+            }
+        },
+    }
+
+    assert OpenCTIStix2.extract_custom_field_values(stix_object) == [
+        {"field_name": "x_opencti_cf_priority", "value": "P1"},
+        {"field_name": "x_opencti_cf_tags", "value": ["tag1", "tag2"]},
+        {"field_name": "x_opencti_cf_score", "value": 80},
+    ]
+
+
+def test_extract_custom_field_values_keeps_top_level_precedence_for_skipped_values():
+    stix_object = {
+        "type": "report",
+        "name": "Report",
+        "x_opencti_cf_priority": {"level": "high"},
+        "extensions": {
+            "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+                "x_opencti_cf_priority": "P1",
+            }
+        },
+    }
+
+    assert OpenCTIStix2.extract_custom_field_values(stix_object) is None
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        ("text", True),
+        (80, True),
+        (12.5, True),
+        (False, True),
+        ("2026-11-05T00:00:00Z", True),
+        (["tag1", "tag2"], True),
+        ([], True),
+        (None, False),
+        ({"name": "report.pdf"}, False),
+        ([{"name": "report.pdf"}], False),
+        (["tag1", {"name": "report.pdf"}], False),
+        ([["tag1"]], False),
+    ],
+)
+def test_is_custom_field_input_value(value, expected):
+    assert is_custom_field_input_value(value) is expected
+
+
+def test_build_custom_field_values_input_skips_values_that_cannot_be_custom_fields():
+    custom_properties = {
+        "x_opencti_files": [{"name": "report.pdf", "data": "SGVsbG8="}],
+        "x_opencti_cf_priority": "P1",
+    }
+
+    assert build_custom_field_values_input(None, custom_properties) == [
+        {"field_name": "x_opencti_cf_priority", "value": "P1"}
     ]
 
 

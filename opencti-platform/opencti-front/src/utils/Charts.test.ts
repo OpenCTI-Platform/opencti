@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { simpleLabelTooltip } from './Charts';
+import { getSeriesMaxValue, simpleLabelTooltip, withCompactLegend, withIntegerYAxis } from './Charts';
 
 interface ThemeOverrides {
   background?: { nav?: unknown };
@@ -84,6 +84,62 @@ describe('Charts utils', () => {
     it('should not throw when theme color values are undefined', () => {
       const theme = buildTheme({ background: { nav: undefined }, text: { primary: undefined } });
       expect(() => simpleLabelTooltip(theme)({ seriesIndex: 0, w: { config: { labels: ['label'] } } })).not.toThrow();
+    });
+  });
+
+  describe('Function: withCompactLegend()', () => {
+    it('brings the legend items 2 pixels apart vertically, keeping the rest of the legend', () => {
+      const options = withCompactLegend({ legend: { show: true, itemMargin: { horizontal: 5, vertical: 20 } } });
+      expect(options.legend).toEqual({ show: true, itemMargin: { horizontal: 5, vertical: 2 } });
+    });
+  });
+
+  describe('Function: getSeriesMaxValue()', () => {
+    const day = (date: number) => new Date(Date.UTC(2026, 0, date));
+    const series = [
+      { data: [{ x: day(1), y: 2 }, { x: day(2), y: 5 }] },
+      { data: [{ x: day(1), y: 4 }, { x: day(2), y: 0 }] },
+    ];
+
+    it('reads the highest value, or the highest sum of a date when stacked', () => {
+      expect(getSeriesMaxValue(series)).toEqual(5);
+      expect(getSeriesMaxValue(series, true)).toEqual(6);
+    });
+
+    it('reads values, pairs and missing values too', () => {
+      expect(getSeriesMaxValue([{ data: [1, null, 3] }, { data: [2, 2, 2] }], true)).toEqual(5);
+      expect(getSeriesMaxValue([{ data: [[day(1), 7]] }, { data: [[day(1), 1]] }], true)).toEqual(8);
+      expect(getSeriesMaxValue([])).toEqual(0);
+    });
+  });
+
+  describe('Function: withIntegerYAxis()', () => {
+    const ticks = (maxValue: number) => {
+      const { yaxis } = withIntegerYAxis({ yaxis: { labels: { show: true } } }, maxValue);
+      return Array.from({ length: yaxis.tickAmount + 1 }, (_, i) => yaxis.min + (i * (yaxis.max - yaxis.min)) / yaxis.tickAmount);
+    };
+
+    it('labels a small count once per unit, from 0', () => {
+      expect(ticks(1)).toEqual([0, 1]);
+      expect(ticks(3)).toEqual([0, 1, 2, 3]);
+      expect(ticks(5)).toEqual([0, 1, 2, 3, 4, 5]);
+    });
+
+    it('labels a larger count with about 5 integer steps of 1, 2 or 5 times a power of 10', () => {
+      expect(ticks(7)).toEqual([0, 2, 4, 6, 8]);
+      expect(ticks(12)).toEqual([0, 5, 10, 15]);
+      expect(ticks(1234)).toEqual([0, 500, 1000, 1500]);
+      [2, 9, 17, 48, 99, 250, 3001].forEach((maxValue) => {
+        const values = ticks(maxValue);
+        values.forEach((value) => expect(Number.isInteger(value)).toBe(true));
+        expect(values.at(-1)).toBeGreaterThanOrEqual(maxValue);
+        expect(values.length).toBeLessThanOrEqual(11);
+      });
+    });
+
+    it('keeps the axis of no count from 0, and the rest of the axis', () => {
+      expect(withIntegerYAxis({ yaxis: { labels: { show: true } } }, 0).yaxis).toEqual({ labels: { show: true }, min: 0 });
+      expect(withIntegerYAxis({ yaxis: { labels: { show: true } } }, 3).yaxis.labels).toEqual({ show: true });
     });
   });
 });

@@ -4,6 +4,7 @@ import {
   mapContractDtoV0ToContractEntityFields,
   mapContractEntityFieldsToEmbeddedConnectorManagerContract,
   mapContractEntityFieldsToGraphqlCatalogContract,
+  orderConfigSchemaProperties,
 } from '../../../../src/modules/catalog/catalog-domain';
 
 const buildContractEntityFields = (): CatalogContractEntityFields => ({
@@ -140,5 +141,45 @@ describe('catalog contract mappings', () => {
     expect((embedded as any)._index).toBeUndefined();
     expect((embedded as any)._score).toBeUndefined();
     expect((embedded as any).entity_type).toBeUndefined();
+  });
+
+  it('should list the order of the options in the embedded manager contract snapshot', () => {
+    const embedded = mapContractEntityFieldsToEmbeddedConnectorManagerContract(buildContractEntityFields());
+    expect(embedded.config_schema.properties_order).toEqual(['OPENCTI_URL', 'OPENCTI_TOKEN', 'USERNAME']);
+  });
+
+  it('should keep the listed order when embedding a snapshot whose options were reordered', () => {
+    const contract = buildContractEntityFields();
+    contract.config_schema = {
+      ...contract.config_schema,
+      properties: { USERNAME: { type: 'string' }, OPENCTI_URL: { type: 'string' }, OPENCTI_TOKEN: { type: 'string', format: 'password' } },
+      properties_order: ['OPENCTI_URL', 'OPENCTI_TOKEN', 'USERNAME'],
+    };
+    const embedded = mapContractEntityFieldsToEmbeddedConnectorManagerContract(contract);
+    expect(embedded.config_schema.properties_order).toEqual(['OPENCTI_URL', 'OPENCTI_TOKEN', 'USERNAME']);
+  });
+
+  it('should give the options of a snapshot back in their listed order, without the list', () => {
+    const contract = buildContractEntityFields();
+    contract.config_schema = {
+      ...contract.config_schema,
+      properties: {
+        USERNAME: { type: 'string' },
+        PASSWORD: { type: 'string', format: 'password' },
+        OPENCTI_TOKEN: { type: 'string', format: 'password' },
+        API_URL: { type: 'string' },
+      },
+      properties_order: ['OPENCTI_TOKEN', 'API_URL', 'REMOVED_OPTION', 'USERNAME'],
+    };
+    const mapped = mapContractEntityFieldsToGraphqlCatalogContract(contract, { excludeRuntimeConfigVars: true });
+    // Listed options first, the ones missing from the list last, runtime ones still excluded
+    expect(Object.keys(mapped.config_schema.properties)).toEqual(['API_URL', 'USERNAME', 'PASSWORD']);
+    expect((mapped.config_schema as any).properties_order).toBeUndefined();
+  });
+
+  it('should leave the options of a contract without a listed order as they are', () => {
+    const contract = buildContractEntityFields();
+    expect(orderConfigSchemaProperties(contract.config_schema)).toBe(contract.config_schema);
+    expect(orderConfigSchemaProperties(undefined)).toBeUndefined();
   });
 });

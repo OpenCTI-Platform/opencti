@@ -4,12 +4,13 @@ import signal
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, Iterable, List
 
 import pika
 import yaml
 from opentelemetry import metrics
 from opentelemetry.exporter.prometheus import PrometheusMetricReader
+from opentelemetry.metrics import CallbackOptions, Meter, NoOpMeter, Observation
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from prometheus_client import start_http_server
@@ -17,6 +18,11 @@ from pycti import OpenCTIApiClient, __version__
 from pycti.connector.opencti_connector_helper import (
     create_mq_ssl_context,
     get_config_variable,
+    parse_boolean_config,
+)
+from pycti.utils.opencti_tls import (
+    get_tls_reject_unauthorized,
+    log_tls_verification_disabled,
 )
 
 from listen_handler import ListenHandler
@@ -24,28 +30,41 @@ from message_queue_consumer import MessageQueueConsumer
 from push_handler import PushHandler
 from thread_pool_selector import ThreadPoolSelector
 
-# Telemetry variables definition
-meter = metrics.get_meter(__name__)
-bundles_global_counter = meter.create_counter(
-    name="opencti_bundles_global_counter",
-    description="number of bundles processed",
-)
-bundles_processing_time_gauge = meter.create_histogram(
-    name="opencti_bundles_processing_time_gauge",
-    description="processing time of bundles",
-)
-max_ingestion_units_count = meter.create_gauge(
-    name="opencti_max_ingestion_units",
-    description="Maximum number of ingestion units (configuration)",
-)
-running_ingestion_units_gauge = meter.create_gauge(
-    name="opencti_running_ingestion_units",
-    description="Number of running ingestion units",
-)
-
 
 def is_priority_connector(connector_priority_group: str) -> bool:
     return connector_priority_group == "REALTIME"
+
+
+def register_ingestion_units_gauges(
+    meter: Meter, push_thread_pool_selector: ThreadPoolSelector
+) -> None:
+    """Expose ingestion units through observable gauges.
+
+    The values are read from the pool selector when metrics are collected (at
+    each Prometheus scrape), instead of being sampled once per main loop
+    iteration.
+    """
+
+    def observe_max_ingestion_units(
+        _options: CallbackOptions,
+    ) -> Iterable[Observation]:
+        return [Observation(push_thread_pool_selector.total_pool_size())]
+
+    def observe_running_ingestion_units(
+        _options: CallbackOptions,
+    ) -> Iterable[Observation]:
+        return [Observation(push_thread_pool_selector.active_tasks_count())]
+
+    meter.create_observable_gauge(
+        name="opencti_max_ingestion_units",
+        callbacks=[observe_max_ingestion_units],
+        description="Maximum number of ingestion units (configuration)",
+    )
+    meter.create_observable_gauge(
+        name="opencti_running_ingestion_units",
+        callbacks=[observe_running_ingestion_units],
+        description="Number of running ingestion units",
+    )
 
 
 @dataclass(unsafe_hash=True)
@@ -72,8 +91,18 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         self.opencti_token = get_config_variable(
             "OPENCTI_TOKEN", ["opencti", "token"], config
         )
-        self.opencti_ssl_verify = get_config_variable(
-            "OPENCTI_SSL_VERIFY", ["opencti", "ssl_verify"], config, default=False
+        # ssl_verify takes a boolean or a CA bundle path: parse the boolean
+        # spellings, keep any other string as a path
+        self.opencti_ssl_verify = parse_boolean_config(
+            "OPENCTI_SSL_VERIFY",
+            get_config_variable(
+                "OPENCTI_SSL_VERIFY",
+                ["opencti", "ssl_verify"],
+                config,
+                default=get_tls_reject_unauthorized(config),
+                isBoolean=False,
+            ),
+            strict=False,
         )
         self.opencti_json_logging = get_config_variable(
             "OPENCTI_JSON_LOGGING", ["opencti", "json_logging"], config, default=True
@@ -118,11 +147,16 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             config,
             default="info",
         )
-        self.listen_api_ssl_verify = get_config_variable(
+        self.listen_api_ssl_verify = parse_boolean_config(
             "WORKER_LISTEN_API_SSL_VERIFY",
-            ["worker", "listen_api_ssl_verify"],
-            config,
-            default=False,
+            get_config_variable(
+                "WORKER_LISTEN_API_SSL_VERIFY",
+                ["worker", "listen_api_ssl_verify"],
+                config,
+                default=get_tls_reject_unauthorized(config),
+                isBoolean=False,
+            ),
+            strict=False,
         )
         self.listen_api_http_proxy = get_config_variable(
             "WORKER_LISTEN_API_HTTP_PROXY",
@@ -166,6 +200,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             0,
         )
         # Telemetry
+        # Instruments are created from the configured provider, once it exists,
+        # so they are always bound to the Prometheus reader.
+        self.meter: Meter = NoOpMeter(__name__)
         if self.telemetry_enabled:
             self.prom_httpd, self.prom_t = start_http_server(
                 port=self.telemetry_prometheus_port, addr=self.telemetry_prometheus_host
@@ -175,6 +212,15 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                 metric_readers=[PrometheusMetricReader()],
             )
             metrics.set_meter_provider(provider)
+            self.meter = provider.get_meter(__name__)
+        self.bundles_global_counter = self.meter.create_counter(
+            name="opencti_bundles_global_counter",
+            description="number of bundles processed",
+        )
+        self.bundles_processing_time_gauge = self.meter.create_histogram(
+            name="opencti_bundles_processing_time_gauge",
+            description="processing time of bundles",
+        )
 
         # Check if openCTI is available
         self.api = OpenCTIApiClient(
@@ -189,6 +235,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             provider="worker/" + __version__,
         )
         self.worker_logger = self.api.logger_class("worker")
+        log_tls_verification_disabled(self.worker_logger, config)
 
     def build_pika_parameters(
         self, connector_config: Dict[str, Any]
@@ -237,6 +284,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             self.opencti_realtime_pool_size,
             realtime_push_execution_pool,
         )
+        register_ingestion_units_gauges(self.meter, push_thread_pool_selector)
 
         listen_execution_pool = ThreadPoolExecutor(max_workers=self.listen_pool_size)
 
@@ -245,13 +293,6 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
 
         while not self.exit_event.is_set():
             try:
-                # Telemetry
-                max_ingestion_units_count.set(self.opencti_pool_size)
-                running_ingestion_units_gauge.set(
-                    len(push_execution_pool._threads)
-                    + len(realtime_push_execution_pool._threads)
-                )
-
                 # Fetch queue configuration from API
                 queues: List[Any] = []
                 connectors: List[Any] = self.api.connector.list()
@@ -284,8 +325,8 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             connector_config["push_routing"],
                             connector_config["dead_letter_routing"],
                             pika_parameters,
-                            bundles_global_counter,
-                            bundles_processing_time_gauge,
+                            self.bundles_global_counter,
+                            self.bundles_processing_time_gauge,
                             self.objects_max_refs,
                         )
                         is_realtime = is_priority_connector(

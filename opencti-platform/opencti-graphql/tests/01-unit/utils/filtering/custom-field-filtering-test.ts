@@ -293,6 +293,15 @@ describe('adaptFilterToCustomFieldFilterKey', () => {
       expect(newFilterGroup).toEqual({ mode, filters: [exactFilter(10, negated), exactFilter(20, negated)], filterGroups: [] });
     });
 
+    it('matches each decimal value exactly, as an integer', async () => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'decimal' }));
+      const { newFilterGroup } = await adapt(makeFilter({ values: ['0.5', '0.85'], operator: FilterOperator.Eq, mode: 'or' } as Partial<Filter>));
+      expect(newFilterGroup.filters.map((f: any) => f.nested[1])).toEqual([
+        { key: 'float_value', values: [0.5], operator: FilterOperator.Gte },
+        { key: 'float_value', values: [0.85], operator: FilterOperator.Gte },
+      ]);
+    });
+
     it.each([
       [FilterOperator.Eq, 'or', 'or'],
       [FilterOperator.Eq, 'and', 'and'],

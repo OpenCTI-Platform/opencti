@@ -6,4 +6,5 @@ export const BUILD_ENTRY_POINTS = [
   'script/script-clean-relations.ts',
   'script/script-insert-dataset.ts',
   'src/utils/safeEjs.worker.ts',
+  'src/utils/jsonPath.worker.ts',
 ];

@@ -1,6 +1,6 @@
 import React from 'react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, screen } from '@testing-library/react';
+import { act, fireEvent, screen } from '@testing-library/react';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
 import NewsFeed from './NewsFeed';
@@ -44,7 +44,7 @@ vi.mock('../../../components/dataGrid/DataTable', () => ({
   },
 }));
 
-const renderNewsFeed = () => testRender(<NewsFeed />, {
+const renderNewsFeed = (props?: React.ComponentProps<typeof NewsFeed>) => testRender(<NewsFeed {...props} />, {
   userContext: createMockUserContext({
     me: { id: USER_ID },
     settings: { id: SETTINGS_ID, platform_xtmhub_url: HUB_URL },
@@ -92,10 +92,16 @@ describe('NewsFeed', () => {
     expect(screen.getByTestId('data-table')).toBeInTheDocument();
   });
 
-  it('marks all the news feed items as read on mount', () => {
+  it('marks the resources as read on mount', () => {
     renderNewsFeed();
     expect(mockCommitMarkAllAsRead).toHaveBeenCalledOnce();
-    expect(mockCommitMarkAllAsRead).toHaveBeenCalledWith({ variables: {} });
+    expect(mockCommitMarkAllAsRead).toHaveBeenCalledWith({ variables: { category: 'RESOURCE' } });
+  });
+
+  it('marks every item as read on mount when the blogposts tab is not available', () => {
+    renderNewsFeed({ markBlogPostsAsRead: true });
+    expect(mockCommitMarkAllAsRead).toHaveBeenCalledOnce();
+    expect(mockCommitMarkAllAsRead).toHaveBeenCalledWith({ variables: { category: null } });
   });
 
   it('restricts the news feed items to the news feed entity type', () => {
@@ -110,6 +116,13 @@ describe('NewsFeed', () => {
     renderNewsFeed();
     expect(dataTableProps?.contextFilters?.filters).toContainEqual(
       expect.objectContaining({ key: 'user_id', values: [USER_ID] }),
+    );
+  });
+
+  it('leaves the blogposts to their own tab', () => {
+    renderNewsFeed();
+    expect(dataTableProps?.contextFilters?.filters).toContainEqual(
+      expect.objectContaining({ key: 'news_feed_type', values: ['BLOG_POST'], operator: 'not_eq' }),
     );
   });
 
@@ -177,7 +190,9 @@ describe('NewsFeed', () => {
     renderColumn('tags', { tags: ['CTI', 'MALWARE'] });
     expect(screen.getByText('cti')).toBeInTheDocument();
     expect(screen.getByText('+1')).toBeInTheDocument();
-    expect(screen.getByLabelText('malware')).toBeInTheDocument();
+    // the hidden tags are listed in the tooltip of the "+N" chip
+    fireEvent.focus(screen.getByText('+1').closest('span[tabindex]') as HTMLElement);
+    expect(screen.getAllByText('malware').length).toBeGreaterThan(0);
   });
 
   it('ignores the empty tags of the tags column', () => {

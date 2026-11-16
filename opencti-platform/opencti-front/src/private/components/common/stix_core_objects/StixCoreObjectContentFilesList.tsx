@@ -234,6 +234,9 @@ const StixCoreObjectContentFilesList = ({
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={closePopover}
+        // Rendered in the fixed Content drawer: locking scroll would hide the page scrollbar and
+        // slide the drawer into its gutter.
+        disableScrollLock
       >
         {menuFile && (
           <MenuItem

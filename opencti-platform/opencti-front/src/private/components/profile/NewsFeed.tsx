@@ -1,13 +1,11 @@
 import { NewsFeedLine_node$data } from '@components/profile/__generated__/NewsFeedLine_node.graphql';
 import { NewsFeedLines_data$data } from '@components/profile/__generated__/NewsFeedLines_data.graphql';
 import { NewsFeedLinesPaginationQuery, NewsFeedLinesPaginationQuery$variables } from '@components/profile/__generated__/NewsFeedLinesPaginationQuery.graphql';
-import { Stack } from '@mui/material';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import React, { FunctionComponent, Suspense, useCallback, useEffect, useMemo } from 'react';
 import { graphql, PreloadedQuery, useMutation, useSubscription } from 'react-relay';
-import Tag from '../../../components/common/tag/Tag';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
@@ -19,9 +17,9 @@ import useAuth from '../../../utils/hooks/useAuth';
 import { UseLocalStorageHelpers, usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import { useQueryLoadingWithLoadQuery } from '../../../utils/hooks/useQueryLoading';
-import useChipOverflow from '../integrations/catalog/components/card/usecases/useChipOverflow';
+import NewsFeedTags from './NewsFeedTags';
 import { useXTMHubResourceLink } from '../../../utils/hooks/useXTMHubResourceLink';
-import { getNewsFeedIcon, isKnownNewsFeedType } from '../../../utils/NewsFeed';
+import { getNewsFeedIcon, isKnownNewsFeedType, NEWS_FEED_BLOG_POST_TYPE } from '../../../utils/NewsFeed';
 
 const LOCAL_STORAGE_KEY = 'newsFeed';
 
@@ -123,65 +121,10 @@ const newsFeedItemDeletedSubscription = graphql`
 `;
 
 const markAllNewsFeedItemsAsReadMutation = graphql`
-  mutation NewsFeedMarkAllAsReadMutation {
-    markAllNewsFeedItemsAsRead
+  mutation NewsFeedMarkAllAsReadMutation($category: NewsFeedCategory) {
+    markAllNewsFeedItemsAsRead(category: $category)
   }
 `;
-
-const TagsCell: FunctionComponent<{ tags: readonly (string | null | undefined)[] }> = ({ tags }) => {
-  const tagValues = tags.filter(Boolean) as string[];
-  const { containerRef, chipRefs, visibleCount, shouldTruncate } = useChipOverflow(tagValues);
-  const hiddenCount = tagValues.length - visibleCount;
-
-  return (
-    <div
-      ref={containerRef}
-      style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', overflow: 'hidden', width: '100%', position: 'relative', gap: 4, height: 20 }}
-    >
-      {/* Hidden measurement row */}
-      <Stack
-        direction="row"
-        sx={{
-          position: 'absolute',
-          visibility: 'hidden',
-          gap: 0.5,
-        }}
-      >
-        {tagValues.map((tag, index) => (
-          <div
-            key={tag}
-            ref={(el) => {
-              chipRefs.current[index] = el;
-            }}
-          >
-            <Tag label={tag} />
-          </div>
-        ))}
-      </Stack>
-
-      {/* Visible tags + overflow tag in the same row */}
-      <Stack
-        direction="row"
-        sx={{
-          gap: 0.5,
-          overflow: 'hidden',
-          alignItems: 'center',
-        }}
-      >
-        {tagValues.slice(0, visibleCount).map((tag) => (
-          <Tag key={tag} label={tag.toLowerCase()} />
-        ))}
-        {shouldTruncate && hiddenCount > 0 && (
-          <Tag
-            label={`+${hiddenCount}`}
-            tooltipTitle={tagValues.slice(visibleCount).map((tag) => tag.toLowerCase()).join(', ')}
-            sx={{ flexShrink: 0, width: 'fit-content' }}
-          />
-        )}
-      </Stack>
-    </div>
-  );
-};
 
 const NewsFeedLineActions: FunctionComponent<{ data: NewsFeedLine_node$data }> = ({ data }) => {
   const { t_i18n } = useFormatter();
@@ -218,16 +161,18 @@ interface NewsFeedComponentProps {
   helpers: UseLocalStorageHelpers;
   contextFilters: FilterGroup;
   onNewItem: () => void;
+  markBlogPostsAsRead: boolean;
 }
 
-const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef, helpers, contextFilters, onNewItem }) => {
+const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef, helpers, contextFilters, onNewItem, markBlogPostsAsRead }) => {
   const { t_i18n } = useFormatter();
 
   const [commitMarkAllAsRead] = useMutation(markAllNewsFeedItemsAsReadMutation);
 
   useEffect(() => {
-    commitMarkAllAsRead({ variables: {} });
-  }, [commitMarkAllAsRead]);
+    // Without the blogpost tab, nothing else can mark the blogposts as read: do it here, so the badge cannot stay on.
+    commitMarkAllAsRead({ variables: { category: markBlogPostsAsRead ? null : 'RESOURCE' } });
+  }, [commitMarkAllAsRead, markBlogPostsAsRead]);
 
   const subConfig = useMemo(() => ({
     subscription: newsFeedItemSubscription,
@@ -280,7 +225,7 @@ const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef
       percentWidth: 25,
       isSortable: false,
       render: ({ tags }: NewsFeedLine_node$data) => (
-        <TagsCell tags={tags ?? []} />
+        <NewsFeedTags tags={tags ?? []} lowercase />
       ),
     },
   };
@@ -316,7 +261,12 @@ const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef
   );
 };
 
-const NewsFeed: FunctionComponent = () => {
+interface NewsFeedProps {
+  // true when the blogpost tab is not available: this tab then marks every unread item as read, not only the resources.
+  markBlogPostsAsRead?: boolean;
+}
+
+const NewsFeed: FunctionComponent<NewsFeedProps> = ({ markBlogPostsAsRead = false }) => {
   const { me } = useAuth();
 
   const {
@@ -344,6 +294,13 @@ const NewsFeed: FunctionComponent = () => {
         operator: 'eq',
         mode: 'or',
       },
+      // the blogposts have their own tab
+      {
+        key: 'news_feed_type',
+        values: [NEWS_FEED_BLOG_POST_TYPE],
+        operator: 'not_eq',
+        mode: 'and',
+      },
     ],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
@@ -369,6 +326,7 @@ const NewsFeed: FunctionComponent = () => {
         helpers={helpers}
         contextFilters={contextFilters}
         onNewItem={handleNewItem}
+        markBlogPostsAsRead={markBlogPostsAsRead}
       />
     </Suspense>
   ) : (

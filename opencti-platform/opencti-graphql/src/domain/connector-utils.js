@@ -3,7 +3,7 @@ import { Agent, fetch } from 'undici';
 import { UnsupportedError } from '../config/errors';
 import { now } from '../utils/format';
 import { isEmptyField } from '../database/utils';
-import { getPlatformHttpProxyAgent, logApp } from '../config/conf';
+import { getPlatformHttpProxyAgent, logApp, TLS_REJECT_UNAUTHORIZED } from '../config/conf';
 
 // Feel free to migrate to typescript and move inside domain/connector.ts
 export const httpBase = (baseUri) => (baseUri.endsWith('/') ? baseUri : `${baseUri}/`);
@@ -35,7 +35,8 @@ const buildSyncFetch = (eventSourceUri, ssl, token) => {
 
 export const testSync = async (context, user, sync) => {
   const eventSourceUri = createSyncHttpUri(sync, now(), true);
-  const { token, ssl_verify: ssl = false } = sync;
+  const { token } = sync;
+  const ssl = sync.ssl_verify ?? TLS_REJECT_UNAUTHORIZED;
   return new Promise((resolve, reject) => {
     try {
       const eventSource = new EventSource(eventSourceUri, { fetch: buildSyncFetch(eventSourceUri, ssl, token) });

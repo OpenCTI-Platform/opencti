@@ -4,7 +4,7 @@ export const entitiesCounter = {
   AdministrativeArea: 1,
   AttackPattern: 2,
   Campaign: 1,
-  Capability: 56,
+  Capability: 58,
   City: 1,
   Country: 1,
   CourseOfAction: 1,
@@ -43,26 +43,29 @@ export const entitiesCounter = {
   ThreatActorIndividual: 2,
   TrackingNumber: 1,
   User: TESTING_USERS.length + 1,
-  Vocabulary: 355,
+  Vocabulary: 475, // 360 + 115 System asset vocabularies
   EmailTemplate: 1,
   RetentionRule: 4,
   SecurityCoverage: 1,
   SecurityCoverageResult: 1,
 };
 
+// Built-in vocabulary entries seeded with a colour: system_category_ov 12, system_criticality_ov 5, system_environment_ov 5, system_internet_facing_ov 3
+export const SEEDED_VOCABULARY_COLORS = 25;
+
 export const entitiesCounterTotal = Object.values(entitiesCounter).reduce((acc, value) => acc + value, 0);
 
 export const relationsCounter = {
-  'accesses-to': 28,
+  'accesses-to': 29,
   'attributed-to': 2,
   'created-by': 22,
   'external-reference': 7,
-  'has-capability': 74,
-  'has-role': 9,
+  'has-capability': 77,
+  'has-role': 10,
   indicates: 4,
   'kill-chain-phase': 3,
   'located-at': 4,
-  'member-of': 13,
+  'member-of': 15,
   mitigates: 1,
   object: 38,
   'object-covered': 1,

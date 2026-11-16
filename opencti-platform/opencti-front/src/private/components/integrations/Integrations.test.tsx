@@ -1,5 +1,5 @@
 import React from 'react';
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import Integrations from './Integrations';
@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   loadForms: vi.fn(),
   fetchQuery: vi.fn(),
   availableData: vi.fn(),
+  useGranted: vi.fn((_capabilities: string[]) => true),
   // Data components render their children so the provider reaches the tabs when refs are loaded
   renderChildrenWithEmptyData: ({ children }: { children: (args: { data: unknown }) => React.ReactNode }) => children({ data: {} }),
 }));
@@ -107,9 +108,10 @@ vi.mock('../../../utils/hooks/useConnectedDocumentModifier', () => ({
 
 vi.mock('../../../utils/hooks/useGranted', () => ({
   __esModule: true,
-  default: () => true,
+  default: mocks.useGranted,
   INGESTION: 'INGESTION',
   KNOWLEDGE_KNASKIMPORT: 'KNOWLEDGE_KNASKIMPORT',
+  KNOWLEDGE_KNFORMINTAKE: 'KNOWLEDGE_KNFORMINTAKE',
   KNOWLEDGE_KNUPDATE: 'KNOWLEDGE_KNUPDATE',
   MODULES: 'MODULES',
 }));
@@ -210,5 +212,41 @@ describe('Integrations catalogs refetch', () => {
 
     await expect(refetchCatalogs()).rejects.toThrow('network down');
     expect(mocks.loadCatalogs).not.toHaveBeenCalled();
+  });
+});
+
+describe('Integrations forms for a form-only user', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    mocks.useGranted.mockImplementation((_capabilities: string[]) => true);
+  });
+
+  it('loads the forms but no other source when the user only has the form intake capability', async () => {
+    // Only the form reader check lists KNFORMINTAKE: the user holds nothing else
+    mocks.useGranted.mockImplementation((capabilities: string[]) => capabilities.includes('KNOWLEDGE_KNFORMINTAKE'));
+    const loaders = [mocks.loadCatalogs, mocks.loadDeployment, mocks.loadFeeds, mocks.loadForms];
+    let callIndex = 0;
+    mocks.useQueryLoader.mockImplementation(() => {
+      const loader = loaders[callIndex % loaders.length];
+      callIndex += 1;
+      return [null, loader];
+    });
+    render(
+      <MemoryRouter initialEntries={['/dashboard/integrations/available']}>
+        <Routes>
+          <Route path="/dashboard/integrations/:tab" element={<Integrations />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(mocks.loadForms).toHaveBeenCalledWith({ first: expect.any(Number) }, { fetchPolicy: 'store-and-network' });
+    });
+    expect(mocks.loadCatalogs).not.toHaveBeenCalled();
+    expect(mocks.loadDeployment).not.toHaveBeenCalled();
+    expect(mocks.loadFeeds).not.toHaveBeenCalled();
   });
 });

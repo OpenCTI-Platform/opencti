@@ -1,14 +1,14 @@
-import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useEffect, useRef, useState } from 'react';
 import { fetchQuery, useFragment, useRelayEnvironment } from 'react-relay';
 import type { Subscription } from 'relay-runtime';
 import {
+  Button as FdsButton,
   Dialog,
   DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogTitle,
-  Icon,
   IconButton,
   Menu,
   MenuContent,
@@ -21,9 +21,7 @@ import {
 } from '@filigran/design-system';
 import { Alert, AlertTitle, Box, CircularProgress } from '@mui/material';
 import { ArrowDropDownOutlined, ArrowDropUpOutlined, ErrorOutlined, LockOpenOutlined } from '@mui/icons-material';
-import { Field, Form, Formik } from 'formik';
-import * as Yup from 'yup';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
+import { Form, Formik } from 'formik';
 import { WorkflowStatus_data$data, WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
@@ -34,7 +32,6 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import { Close } from 'mdi-material-ui';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { isWorkflowUiEnabledForType } from './workflowFeatureFlag';
-import TextareaField from '../../../../components/TextareaField';
 import type { WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
 import type { WorkflowStatusEntityQuery } from './__generated__/WorkflowStatusEntityQuery.graphql';
 import useInterval from '../../../../utils/hooks/useInterval';
@@ -43,8 +40,12 @@ import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMember
 import { relayErrorHandling } from '../../../../relay/environment';
 import WorkflowBypassStatus, { ItemStatusWorkflow } from './WorkflowBypassStatus';
 import Button from '@common/button/Button';
-
-const COMMENT_FIELD_ID = 'workflow-transition-comment';
+import WorkflowTransitionInputs, {
+  buildTransitionInputsSchema,
+  EMPTY_TRANSITION_INPUT_VALUES,
+  hasTransitionComment,
+  WORKFLOW_TRANSITION_COMMENT_FIELD_ID,
+} from './WorkflowTransitionInputs';
 
 // The reason only lives in a tooltip, so the trigger is a button: keyboard and screen-reader users reach it too.
 const WorkflowErrorHint = ({ message, severity }: { message: string; severity: 'error' | 'warning' }) => (
@@ -67,6 +68,16 @@ interface WorkflowTransitionsProps {
   entityType?: string;
 }
 
+export type WorkflowAllowedTransition = NonNullable<WorkflowStatus_data$data['workflowInstance']>['allowedTransitions'][number];
+
+// One button per transition, coloured by its target status, instead of the "Next status" menu
+export interface TransitionButtonsOptions {
+  // Why the current user cannot fire the transition: its button is then disabled and explains it
+  disabledReason?: (transition: WorkflowAllowedTransition) => string | undefined;
+  // What firing the transition does, stated in a dialog the user confirms before it runs
+  effect?: (transition: WorkflowAllowedTransition) => ReactNode;
+}
+
 interface WorkflowTransitionsViewProps {
   entityId: string;
   entityNavigationId?: string | null;
@@ -76,6 +87,8 @@ interface WorkflowTransitionsViewProps {
   entityType: string;
   refreshing?: boolean;
   onCompleted?: () => void;
+  onFailed?: () => void;
+  transitionButtons?: TransitionButtonsOptions;
 }
 
 const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> = ({
@@ -87,6 +100,8 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
   entityType,
   refreshing = false,
   onCompleted,
+  onFailed,
+  transitionButtons,
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
@@ -106,7 +121,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
     handleApplyWizard,
     handleClear,
     notifyBackgroundTransitionComplete,
-  } = useTransitionWizard({ entityId, entityNavigationId, draftId, isPending, onCompleted });
+  } = useTransitionWizard({ entityId, entityNavigationId, draftId, isPending, onCompleted, onFailed });
   const approving = submitting || refreshing;
 
   const pendingTransition = workflowInstance?.pendingTransition ?? null;
@@ -219,11 +234,58 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
     return divergence;
   }
 
+  const fireTransition = (transition: WorkflowAllowedTransition) => handleTransition(
+    transition.event,
+    transition.actions ?? [],
+    transition.comment,
+    transition.requiresShareOrganizationInput,
+    transition.requiresUnshareOrganizationInput,
+    transition.closingReason,
+    !!transitionButtons?.effect?.(transition),
+  );
+
+  const renderTransitionButton = (transition: WorkflowAllowedTransition) => {
+    if (!transitionButtons) {
+      return (
+        <Button
+          key={transition.event}
+          variant="primary"
+          onClick={() => fireTransition(transition)}
+          disabled={approving || clearing || !!wizard}
+        >
+          {transition.event}
+        </Button>
+      );
+    }
+    const color = transition.toStatus?.template?.color;
+    const disabledReason = transitionButtons.disabledReason?.(transition);
+    const button = (
+      <FdsButton
+        key={transition.event}
+        priority="secondary"
+        style={color ? { color, borderColor: color } : undefined}
+        onClick={() => fireTransition(transition)}
+        disabled={approving || clearing || !!wizard || !!disabledReason}
+      >
+        {transition.event}
+      </FdsButton>
+    );
+    if (!disabledReason) return button;
+    return (
+      <Tooltip key={transition.event}>
+        <TooltipTrigger asChild>
+          <span>{button}</span>
+        </TooltipTrigger>
+        <TooltipContent>{disabledReason}</TooltipContent>
+      </Tooltip>
+    );
+  };
+
   return (
     <>
       <Box data-testid="workflow-transitions-actions" sx={{ display: 'contents' }}>
         {divergence}
-        {workflowInstance.allowedTransitions.length > 1 ? (
+        {!transitionButtons && workflowInstance.allowedTransitions.length > 1 ? (
           <Menu open={menuOpen} onOpenChange={setMenuOpen}>
             <MenuTrigger asChild>
               <Button
@@ -244,13 +306,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                   <MenuItem
                     key={transition.event}
                     disabled={approving || clearing || !!wizard}
-                    onSelect={() => handleTransition(
-                      transition.event,
-                      transition.actions ?? [],
-                      transition.comment,
-                      transition.requiresShareOrganizationInput,
-                      transition.requiresUnshareOrganizationInput,
-                    )}
+                    onSelect={() => fireTransition(transition)}
                     style={{ display: 'flex', justifyContent: 'space-between', gap: 16, height: 'auto', minHeight: 36, whiteSpace: 'normal' }}
                     endIcon={actionCount > 0 ? (
                       <span style={{ fontSize: 12, color: 'var(--text-default-secondary)', whiteSpace: 'nowrap' }}>
@@ -266,44 +322,25 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
           </Menu>
         ) : (
           <>
-            {workflowInstance.allowedTransitions.map((transition) => (
-              <Button
-                key={transition.event}
-                variant="primary"
-                onClick={() => handleTransition(
-                  transition.event,
-                  transition.actions ?? [],
-                  transition.comment,
-                  transition.requiresShareOrganizationInput,
-                  transition.requiresUnshareOrganizationInput,
-                )}
-                disabled={approving || clearing || !!wizard}
-              >
-                {transition.event}
-              </Button>
-            ))}
+            {workflowInstance.allowedTransitions.map(renderTransitionButton)}
           </>
         )}
       </Box>
       {wizard && (
         <Formik<TransitionFormValues>
-          initialValues={{ comment: '', shareOrganizations: [], unshareOrganizations: [] }}
-          validationSchema={Yup.object({
-            comment: wizard.commentMode === CommentMode.required && !canBypassMandatoryFields
-              ? Yup.string().trim().required(t_i18n('This field is required')).max(COMMENT_MAX_LENGTH)
-              : Yup.string().trim().max(COMMENT_MAX_LENGTH),
-            shareOrganizations: Yup.array(),
-            unshareOrganizations: Yup.array(),
-          })}
+          initialValues={EMPTY_TRANSITION_INPUT_VALUES}
+          validationSchema={buildTransitionInputsSchema(wizard, canBypassMandatoryFields, t_i18n)}
           onSubmit={handleApplyWizard}
           validateOnMount
         >
           {({ values, isSubmitting, isValid }) => {
             const disabled = isSubmitting || approving || clearing;
             const missingComment = wizard.commentMode === CommentMode.required && !canBypassMandatoryFields && !values.comment.trim();
-            // Radix gives every DialogDescription the same id, so the validation prompt uses it only when no comment prompt precedes it.
-            const showComment = wizard.commentMode === CommentMode.allowed || wizard.commentMode === CommentMode.required;
-            const targetStatus = workflowInstance.allowedTransitions.find((transition) => transition.event === wizard.event)?.toStatus;
+            // Radix gives every DialogDescription the same id, so each prompt (closing reason, validation, confirmation) uses it only when no other prompt precedes it.
+            const showComment = hasTransitionComment(wizard.commentMode);
+            const wizardTransition = workflowInstance.allowedTransitions.find((transition) => transition.event === wizard.event);
+            const targetStatus = wizardTransition?.toStatus;
+            const effect = wizardTransition && transitionButtons?.effect?.(wizardTransition);
             return (
               <Dialog
                 open
@@ -317,7 +354,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                   // mandatory, the only action of this step), it gets the focus.
                   // TextareaField does not forward a ref, so it is found by id.
                   onOpenAutoFocus={(event) => {
-                    const commentField = document.getElementById(COMMENT_FIELD_ID);
+                    const commentField = document.getElementById(WORKFLOW_TRANSITION_COMMENT_FIELD_ID);
                     if (commentField) {
                       event.preventDefault();
                       commentField.focus();
@@ -337,64 +374,17 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                   <Form noValidate className="flex flex-col gap-6 min-h-0">
                     <DialogBody style={{ margin: 'calc(var(--spacing) * -1)', padding: 'var(--spacing)' }}>
                       <Box className="flex flex-col gap-6">
-                        {showComment && (
-                          <div className="flex flex-col gap-4">
-                            <DialogDescription className="flex flex-col gap-2">
-                              <Text variant="title-sm">{t_i18n('Add a comment')}</Text>
-                              <Text variant="content-compact">
-                                {wizard.commentMode === CommentMode.required
-                                  ? t_i18n('A comment is required before changing the status.')
-                                  : t_i18n('You can optionally add a comment before changing the status.')}
-                              </Text>
-                            </DialogDescription>
-                            <Field
-                              component={TextareaField}
-                              id={COMMENT_FIELD_ID}
-                              name="comment"
-                              label={t_i18n('Comment')}
-                              required={wizard.commentMode === CommentMode.required && !canBypassMandatoryFields}
-                              disabled={disabled}
-                              rows={3}
-                              maxLength={COMMENT_MAX_LENGTH}
-                              helperText={`${values.comment.length} / ${COMMENT_MAX_LENGTH}`}
-                            />
-                          </div>
-                        )}
-                        {wizard.requiresShareOrg && (
-                          <div className="flex flex-col gap-4">
-                            <div className="flex items-center gap-2">
-                              <Icon name="triangle-alert" size={16} className="text-icon-warning" aria-hidden />
-                              <Text variant="title-sm">{t_i18n('Share with organizations')}</Text>
-                            </div>
-                            <ObjectOrganizationField
-                              name="shareOrganizations"
-                              label={t_i18n('Organizations to share with')}
-                              multiple={true}
-                              disabled={disabled}
-                              style={{ width: '100%' }}
-                              alert={false}
-                            />
-                          </div>
-                        )}
-                        {wizard.requiresUnshareOrg && (
-                          <div className="flex flex-col gap-4">
-                            <div className="flex items-center gap-2">
-                              <Icon name="triangle-alert" size={16} className="text-icon-warning" aria-hidden />
-                              <Text variant="title-sm">{t_i18n('Unshare from organizations')}</Text>
-                            </div>
-                            <ObjectOrganizationField
-                              name="unshareOrganizations"
-                              label={t_i18n('Organizations to unshare from')}
-                              multiple={true}
-                              disabled={disabled}
-                              style={{ width: '100%' }}
-                              alert={false}
-                            />
-                          </div>
-                        )}
+                        <WorkflowTransitionInputs
+                          requirements={wizard}
+                          canBypassMandatoryFields={canBypassMandatoryFields}
+                          commentLength={values.comment.length}
+                          disabled={disabled}
+                          renderCommentPrompt={(prompt) => <DialogDescription className="flex flex-col gap-2">{prompt}</DialogDescription>}
+                        />
+                        {effect && (showComment ? <Text variant="content-base">{effect}</Text> : <DialogDescription>{effect}</DialogDescription>)}
                         {wizard.requiresValidation && (
                           <>
-                            {showComment ? (
+                            {showComment || effect ? (
                               <Text variant="content-base">{t_i18n('Do you want to approve this draft and send it to ingestion?')}</Text>
                             ) : (
                               <DialogDescription>{t_i18n('Do you want to approve this draft and send it to ingestion?')}</DialogDescription>
@@ -452,7 +442,10 @@ const WorkflowPendingPoll = ({ refresh }: { refresh: () => void }) => {
 export const WorkflowTransitionsForEntity: FunctionComponent<{
   data: WorkflowStatusStixDomainObject_data$key;
   entityType: string;
-}> = ({ data, entityType }) => {
+  transitionButtons?: TransitionButtonsOptions;
+  // Reload the transitions when one fails, as a concurrent change may have made them stale
+  refreshOnFailure?: boolean;
+}> = ({ data, entityType, transitionButtons, refreshOnFailure = false }) => {
   const entity = useFragment<WorkflowStatusStixDomainObject_data$key>(workflowStatusStixDomainObjectFragment, data);
   const environment = useRelayEnvironment();
   const { t_i18n } = useFormatter();
@@ -506,6 +499,8 @@ export const WorkflowTransitionsForEntity: FunctionComponent<{
         entityType={entityType}
         refreshing={refreshing}
         onCompleted={refresh}
+        onFailed={refreshOnFailure ? refresh : undefined}
+        transitionButtons={transitionButtons}
       />
     </>
   );

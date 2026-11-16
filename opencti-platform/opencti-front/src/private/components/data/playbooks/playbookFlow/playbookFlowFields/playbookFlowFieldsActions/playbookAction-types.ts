@@ -41,6 +41,7 @@ export const attributesMultiple = [
   'objectParticipant',
   'killChainPhases',
   'indicator_types',
+  'report_types',
   'x_mitre_platforms',
 ];
 

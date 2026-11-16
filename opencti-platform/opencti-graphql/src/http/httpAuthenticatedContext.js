@@ -13,7 +13,7 @@ import { isNotEmptyField } from '../database/utils';
 import { logApp } from '../config/conf';
 import { batchLoader } from '../database/middleware';
 import { batchInternalRels, batchMarkingDefinitions } from '../domain/stixCoreObject';
-import { elBatchIds, elBatchIdsWithRelCount } from '../database/engine';
+import { elBatchAnyIds, elBatchIds, elBatchIdsWithRelCount } from '../database/engine';
 import { batchStixDomainObjects } from '../domain/stixDomainObject';
 import { batchFileMarkingDefinitions, batchFileWorks } from '../domain/file';
 import { batchGlobalStatusesByType, batchRequestAccessStatusesByType } from '../domain/status';
@@ -31,6 +31,7 @@ export const computeLoaders = (executeContext, user) => {
     creatorsBatchLoader: batchLoader(batchCreators, executeContext, user),
     creatorBatchLoader: batchLoader(batchCreator, executeContext, user),
     idsBatchLoader: batchLoader(elBatchIds, executeContext, user),
+    anyIdsBatchLoader: batchLoader(elBatchAnyIds, executeContext, user),
     idsBatchLoaderWithCount: batchLoader(elBatchIdsWithRelCount, executeContext, user),
     markingsBatchLoader: batchLoader(batchMarkingDefinitions, executeContext, user),
     // Specific loaders
@@ -91,6 +92,8 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
       if (!Object.keys(req.headers).some((k) => k === 'opencti-draft-id')) {
         executeContext.draft_context = user.draft_context;
       }
+      // The origin of the context user is rebuilt, keep who really authenticated when an applicant is impersonated
+      executeContext.real_authentication_id = user.origin?.real_authentication_id;
       executeContext.user = userWithOrigin(req, user);
       // If full sync needs to be done : used only by bypass user (worker)
       executeContext.synchronizedUpsert = user.origin?.synchronized_upsert === true || (req.headers['synchronized-upsert'] === 'true' && isBypassUser(user));

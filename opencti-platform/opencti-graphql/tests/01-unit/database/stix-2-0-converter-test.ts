@@ -180,6 +180,8 @@ import {
   EXPECTED_MARKING_DEFINITION,
   PAP_MARKING_DEFINITION_INSTANCE,
   EXPECTED_PAP_MARKING_DEFINITION,
+  STATEMENT_MARKING_DEFINITION_INSTANCE,
+  EXPECTED_STATEMENT_MARKING_DEFINITION,
 } from './stix-2-0-converter-fixtures/SMOs/marking-definition';
 import { LABEL_INSTANCE, EXPECTED_LABEL } from './stix-2-0-converter-fixtures/SMOs/label';
 import { KILL_CHAIN_PHASE_INSTANCE, EXPECTED_KILL_CHAIN_PHASE } from './stix-2-0-converter-fixtures/SMOs/kill-chain-phase';
@@ -211,6 +213,33 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Indicator', async () => {
     const result = convertIndicatorToStix_2_0(INDICATOR_INSTANCE);
     expect(result).toEqual(EXPECTED_INDICATOR);
+  });
+  it('should convert Indicator with a valid_until one second after an equal valid_from', async () => {
+    const validity = '2025-08-01T10:00:00.000Z';
+    // Stored dates are strings, so equal dates are detected by value.
+    const instance = { ...INDICATOR_INSTANCE, valid_from: validity, valid_until: validity } as unknown as typeof INDICATOR_INSTANCE;
+    const result = convertIndicatorToStix_2_0(instance);
+    expect(result.valid_from).toEqual(validity);
+    expect(result.valid_until).toEqual('2025-08-01T10:00:01.000Z');
+  });
+  it('should convert Indicator with equal validity Date objects', async () => {
+    const validity = '2025-08-01T10:00:00.000Z';
+    const instance = { ...INDICATOR_INSTANCE, valid_from: new Date(validity), valid_until: new Date(validity) };
+    const result = convertIndicatorToStix_2_0(instance);
+    expect(result.valid_until).toEqual('2025-08-01T10:00:01.000Z');
+  });
+  it('should convert Indicator observable hashes as the legacy export', async () => {
+    const sha256 = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
+    const instance = { ...INDICATOR_INSTANCE, pattern: `[file:hashes.'SHA-256' = '${sha256}']` };
+    const result = convertIndicatorToStix_2_0(instance);
+    expect(result.x_opencti_observable_values).toEqual([
+      { type: 'StixFile', hashes: [{ algorithm: 'SHA-256', hash: sha256 }] },
+    ]);
+  });
+  it('should convert Indicator observable values with the legacy fields only', async () => {
+    const instance = { ...INDICATOR_INSTANCE, pattern: "[file:name = 'payload.exe']" };
+    const result = convertIndicatorToStix_2_0(instance);
+    expect(JSON.parse(JSON.stringify(result.x_opencti_observable_values))).toStrictEqual([{ type: 'StixFile' }]);
   });
   it('should convert Infrastructure', async () => {
     const result = convertInfrastructureToStix(INFRASTRUCTURE_INSTANCE);
@@ -508,6 +537,12 @@ describe('Stix 2.0 opencti converter', () => {
     const result = convertLocationToStix(POSITION_INSTANCE, ENTITY_TYPE_LOCATION_POSITION);
     expect(result).toEqual(EXPECTED_POSITION);
   });
+  it('should convert Position with zero coordinates', async () => {
+    const instance = { ...POSITION_INSTANCE, latitude: 0, longitude: 0 } as unknown as typeof POSITION_INSTANCE;
+    const result = convertLocationToStix(instance, ENTITY_TYPE_LOCATION_POSITION);
+    expect(result.latitude).toEqual(0);
+    expect(result.longitude).toEqual(0);
+  });
   it('should convert Administrative Area', async () => {
     const result = convertAdministrativeAreaToStix_2_0(ADMINISTRATIVE_AREA_INSTANCE);
     expect(result).toEqual(EXPECTED_ADMINISTRATIVE_AREA);
@@ -520,6 +555,10 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Marking Definition (non-TLP, e.g. PAP)', () => {
     const result = convertMarkingDefinitionToStix(PAP_MARKING_DEFINITION_INSTANCE);
     expect(result).toEqual(EXPECTED_PAP_MARKING_DEFINITION);
+  });
+  it('should convert Marking Definition (statement, value as in the legacy export)', () => {
+    const result = convertMarkingDefinitionToStix(STATEMENT_MARKING_DEFINITION_INSTANCE);
+    expect(result).toEqual(EXPECTED_STATEMENT_MARKING_DEFINITION);
   });
   it('should convert Label', () => {
     const result = convertLabelToStix(LABEL_INSTANCE);

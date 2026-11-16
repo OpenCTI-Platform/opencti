@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { DateTime } from 'luxon';
+import bcrypt from 'bcryptjs';
 import { OPENCTI_ADMIN_UUID } from '../../../../src/schema/general';
 import { updateAttribute } from '../../../../src/database/middleware';
 import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
@@ -11,7 +12,9 @@ import {
   authenticateUserByUserId,
   checkPasswordInlinePolicy,
   generatePasswordFromPolicy,
+  isPasswordPolicySatisfiable,
   isSensitiveChangesAllowed,
+  login,
 } from '../../../../src/modules/user/user-domain';
 import { addUserToken, generateSecureToken } from '../../../../src/modules/user/user-domain';
 import { testContext } from '../../../utils/testQuery';
@@ -192,6 +195,21 @@ describe('password generator', () => {
       .toThrowError('password policy cannot be satisfied');
     expect(() => generatePasswordFromPolicy({ password_policy_max_length: 8, password_policy_min_uppercase: Number.MAX_SAFE_INTEGER }))
       .toThrowError('password policy cannot be satisfied');
+  });
+  it('should tell a policy satisfiable when the password checker accepts a password of at most its maximum length', async () => {
+    // The checker counts the empty words around a separator, and a separator as a symbol
+    const emptyWords = { password_policy_max_length: 3, password_policy_min_words: 3, password_policy_min_symbols: 2 };
+    expect(checkPasswordInlinePolicy(testContext, emptyWords, 'a--')).toEqual([]);
+    expect(isPasswordPolicySatisfiable(emptyWords)).toBe(true);
+    expect(isPasswordPolicySatisfiable({ password_policy_max_length: 0, password_policy_min_uppercase: 9 })).toBe(true);
+    expect(isPasswordPolicySatisfiable({
+      password_policy_max_length: 4,
+      password_policy_min_words: 3,
+      password_policy_min_uppercase: 1,
+      password_policy_min_lowercase: 1,
+      password_policy_min_numbers: 1,
+    })).toBe(false);
+    expect(isPasswordPolicySatisfiable({ password_policy_max_length: 10, password_policy_min_length: 12 })).toBe(false);
   });
 });
 
@@ -810,5 +828,29 @@ describe('authenticateUserByToken', () => {
     await expect(
       authenticateUserByToken(mockContext, mockReq, 'notokens-plaintext'),
     ).rejects.toThrow('Cannot identify user with token');
+  });
+});
+
+describe('login', () => {
+  const prototype = Object.prototype as Record<string, unknown>;
+
+  beforeEach(() => {
+    vi.mocked(elLoadBy).mockReset();
+  });
+
+  it('should log in a user with the password matching its own hash', async () => {
+    const user = { id: 'local-user', user_email: 'local@test.com', password: bcrypt.hashSync('local-password', 4) };
+    vi.mocked(elLoadBy).mockResolvedValue(user as any);
+    await expect(login('local@test.com', 'local-password')).resolves.toBe(user);
+  });
+
+  it('should refuse a user without its own password even when one is set on the object prototype', async () => {
+    vi.mocked(elLoadBy).mockResolvedValue({ id: 'service-account', user_email: 'service@test.com' } as any);
+    prototype.password = bcrypt.hashSync('inherited-password', 4);
+    try {
+      await expect(login('service@test.com', 'inherited-password')).rejects.toThrow('Bad login or password');
+    } finally {
+      delete prototype.password;
+    }
   });
 });

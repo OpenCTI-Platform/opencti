@@ -64,7 +64,6 @@ vi.mock('../../../../src/utils/access', async () => {
   const actual = await vi.importActual('../../../../src/utils/access') as object;
   return {
     ...actual,
-    enforceEnableFeatureFlag: vi.fn(),
     executionContext: vi.fn(() => ({ source: 'testing' })),
   };
 });
@@ -92,7 +91,7 @@ const seedCustomFieldDefinitions = (...definitions: BasicStoreEntityCustomFieldD
 
 beforeEach(() => {
   // resetAllMocks (not clearAllMocks) so a mockImplementation set by one test (e.g. making
-  // enforceEnableFeatureFlag throw) never leaks into the next test.
+  // checkEnterpriseEdition reject) never leaks into the next test.
   vi.resetAllMocks();
   seedCustomFieldDefinitions();
   vi.mocked(MiddlewareLoader.fullEntitiesList).mockResolvedValue([]);
@@ -174,17 +173,15 @@ describe('customFieldDefinitionAdd', () => {
     expect(Middleware.createEntity).not.toHaveBeenCalled();
   });
 
-  it('throws when the feature flag is disabled', async () => {
-    vi.mocked(Access.enforceEnableFeatureFlag).mockImplementation(() => {
-      throw new Error('feature disabled');
-    });
-    await expect(customFieldDefinitionAdd(mockContext, mockUser, validInput)).rejects.toThrow('feature disabled');
-    expect(Middleware.createEntity).not.toHaveBeenCalled();
-  });
-
   it('throws in Community Edition', async () => {
     vi.mocked(EnterpriseEdition.checkEnterpriseEdition).mockRejectedValue(new Error('Enterprise edition is not enabled'));
     await expect(customFieldDefinitionAdd(mockContext, mockUser, validInput)).rejects.toThrow('Enterprise edition is not enabled');
+    expect(Middleware.createEntity).not.toHaveBeenCalled();
+  });
+
+  it('throws when the input attaches the custom field to entity types, managed by the entity type mutations only', async () => {
+    await expect(customFieldDefinitionAdd(mockContext, mockUser, { ...validInput, entity_types: ['Report'] }))
+      .rejects.toThrow('Cannot create a custom field definition attached to entity types');
     expect(Middleware.createEntity).not.toHaveBeenCalled();
   });
 
@@ -291,6 +288,13 @@ describe('customFieldDefinitionEdit', () => {
     await expect(customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', [{ key: 'field_type', value: ['string'] } as any]))
       .rejects.toThrow('Cannot modify immutable fields');
     expect(Middleware.updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('throws when trying to edit the entity types, managed by the entity type mutations only', async () => {
+    await expect(customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', [{ key: 'entity_types', value: ['Report'] } as any]))
+      .rejects.toThrow('Cannot modify the entity types of a custom field definition');
+    await expect(customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', [{ key: 'entity_type_settings', value: [] } as any]))
+      .rejects.toThrow('Cannot modify the entity types of a custom field definition');
   });
 
   it('throws when the new label is already used by another definition', async () => {

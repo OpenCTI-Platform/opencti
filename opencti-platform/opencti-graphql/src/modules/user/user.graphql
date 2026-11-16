@@ -162,6 +162,7 @@ type MeUser implements BasicObject & InternalObject {
   date_format: DateFormat
   time_format: TimeFormat
   submenu_show_icons: Boolean
+  bootstrap_wizard_skipped: Boolean @ff(flags: ["CONFIG_PRESET"], softFail: true)
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean
   unsubscribed_news_feed_types: [String!]
