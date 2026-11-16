@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { up } from '../../../src/migrations/1794216991000-project-draft-workflow-status';
+import { up } from '../../../src/migrations/1794828122000-project-draft-workflow-status';
 import { elUpdateByQueryForMigration } from '../../../src/database/engine';
 import { fullEntitiesList } from '../../../src/database/middleware-loader';
 import { getWorkflowDefaultState } from '../../../src/modules/workflow/domain/workflow-domain';
