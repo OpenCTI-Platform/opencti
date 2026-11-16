@@ -791,6 +791,42 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
     expect(indicatorAfterUpsert.valid_until).toBe(UNTIL_END_STR);
     expect(indicatorAfterUpsert.revoked).toBeFalsy();
   });
+
+  it('decay excluded indicator - same-score upsert with a valid_from after the existing valid_until and no valid_until should not fail (issue #19796)', async () => {
+    // GIVEN decay is enabled and an exclusion rule matches this indicator
+    isDecayEnabledSpy.mockResolvedValue(true);
+    vi.spyOn(decayExclusionRuleDomain, 'getActiveDecayExclusionRules').mockResolvedValue([fakeExclusionRule]);
+    vi.spyOn(decayExclusionRuleDomain, 'checkDecayExclusionRules').mockResolvedValue(fakeExclusionRule);
+
+    // AND an excluded indicator that has already expired
+    const indicatorInput: IndicatorAddInput = {
+      name: 'Indicator domain - exclusion rule - same-score upsert after expiration',
+      pattern: "[domain-name:value = 'excluded-same-score-upsert-after-expiration.test']",
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 80,
+      valid_from: inPast90Days.toISOString(),
+      valid_until: fiveDaysAgo.toISOString(),
+    };
+    const indicatorCreated = await createIndicator(ADMIN_USER, indicatorInput);
+    expect(indicatorCreated.decay_exclusion_applied_rule).toBeDefined();
+
+    // WHEN it is upserted with the same score and only a later valid_from (pycti sends valid_until: null)
+    const indicatorUpsertInput: IndicatorAddInput = {
+      name: 'Indicator domain - exclusion rule - same-score upsert after expiration',
+      pattern: "[domain-name:value = 'excluded-same-score-upsert-after-expiration.test']",
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 80,
+      valid_from: todayMorning.toISOString(),
+      valid_until: null,
+    };
+    await createIndicator(connectorUser, indicatorUpsertInput);
+    const indicatorAfterUpsert = await findById(testContext, ADMIN_USER, indicatorCreated.id);
+
+    // THEN no error is raised and the unchanged-score guard (issue #16365) keeps the stored validity period
+    expect(indicatorAfterUpsert.x_opencti_score).toBe(80);
+    expect(indicatorAfterUpsert.valid_from).toBe(indicatorCreated.valid_from);
+    expect(indicatorAfterUpsert.valid_until).toBe(indicatorCreated.valid_until);
+  });
 });
 
 // ─── Unit helpers (no DB required) ──────────────────────────────────────────
