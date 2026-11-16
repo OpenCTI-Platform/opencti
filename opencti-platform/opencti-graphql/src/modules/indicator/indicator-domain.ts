@@ -309,9 +309,11 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
 
   if (isDecayActivated && exclusionRule) {
     finalIndicatorToCreate = {
-      valid_until: UNTIL_END_STR,
       ...resolvedIndicator,
       valid_from: validFrom.toISOString(),
+      // Excluded indicators never expire unless a valid_until is explicitly provided.
+      // Input may carry valid_until: null (e.g. pycti), which must not override the default.
+      valid_until: isEmptyField(indicator.valid_until) ? UNTIL_END_STR : validUntil.toISOString(),
       decay_exclusion_applied_rule: {
         decay_exclusion_id: exclusionRule.id,
         decay_exclusion_name: exclusionRule.name,

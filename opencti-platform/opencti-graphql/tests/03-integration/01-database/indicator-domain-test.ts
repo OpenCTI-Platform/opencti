@@ -733,6 +733,64 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
     expect(indicatorCreated.valid_until).toBe(UNTIL_END_STR);
     expect(indicatorCreated.revoked).toBeFalsy();
   });
+
+  it('decay excluded indicator - creation with valid_until: null should never expire', async () => {
+    // GIVEN decay is enabled and an exclusion rule matches this indicator
+    isDecayEnabledSpy.mockResolvedValue(true);
+    vi.spyOn(decayExclusionRuleDomain, 'getActiveDecayExclusionRules').mockResolvedValue([fakeExclusionRule]);
+    vi.spyOn(decayExclusionRuleDomain, 'checkDecayExclusionRules').mockResolvedValue(fakeExclusionRule);
+
+    // AND an indicator created with an explicit null valid_until (as sent by pycti)
+    const indicatorInput: IndicatorAddInput = {
+      name: 'Indicator domain - exclusion rule - null valid_until',
+      pattern: "[domain-name:value = 'excluded-null-valid-until.test']",
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 40,
+      valid_until: null,
+    };
+    const indicatorCreated = await createIndicator(ADMIN_USER, indicatorInput);
+
+    // THEN null must not override the "never expires" default
+    expect(indicatorCreated.decay_exclusion_applied_rule).toBeDefined();
+    expect(indicatorCreated.valid_until).toBe(UNTIL_END_STR);
+    expect(indicatorCreated.revoked).toBeFalsy();
+  });
+
+  it('decay excluded indicator - upsert with a valid_from after the existing valid_until and no valid_until should not fail (issue #19796)', async () => {
+    // GIVEN decay is enabled and an exclusion rule matches this indicator
+    isDecayEnabledSpy.mockResolvedValue(true);
+    vi.spyOn(decayExclusionRuleDomain, 'getActiveDecayExclusionRules').mockResolvedValue([fakeExclusionRule]);
+    vi.spyOn(decayExclusionRuleDomain, 'checkDecayExclusionRules').mockResolvedValue(fakeExclusionRule);
+
+    // AND an excluded indicator that has already expired
+    const indicatorInput: IndicatorAddInput = {
+      name: 'Indicator domain - exclusion rule - upsert after expiration',
+      pattern: "[domain-name:value = 'excluded-upsert-after-expiration.test']",
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 80,
+      valid_from: inPast90Days.toISOString(),
+      valid_until: fiveDaysAgo.toISOString(),
+    };
+    const indicatorCreated = await createIndicator(ADMIN_USER, indicatorInput);
+    expect(indicatorCreated.decay_exclusion_applied_rule).toBeDefined();
+
+    // WHEN it is upserted with only a valid_from later than the existing valid_until (pycti sends valid_until: null)
+    const indicatorUpsertInput: IndicatorAddInput = {
+      name: 'Indicator domain - exclusion rule - upsert after expiration',
+      pattern: "[domain-name:value = 'excluded-upsert-after-expiration.test']",
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 60,
+      valid_from: todayMorning.toISOString(),
+      valid_until: null,
+    };
+    await createIndicator(connectorUser, indicatorUpsertInput);
+    const indicatorAfterUpsert = await findById(testContext, ADMIN_USER, indicatorCreated.id);
+
+    // THEN the new valid_from is applied and the indicator never expires
+    expect(indicatorAfterUpsert.valid_from).toBe(todayMorning.toISOString());
+    expect(indicatorAfterUpsert.valid_until).toBe(UNTIL_END_STR);
+    expect(indicatorAfterUpsert.revoked).toBeFalsy();
+  });
 });
 
 // ─── Unit helpers (no DB required) ──────────────────────────────────────────
