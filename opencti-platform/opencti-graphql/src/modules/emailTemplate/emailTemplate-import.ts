@@ -78,6 +78,8 @@ export const importEmailTemplate = async (
     } else {
       await addEmailTemplate(context, user, { ...data, name, description: data.description ?? undefined });
     }
+    // The reason is the name decided by the dry run, with the names the earlier items reserved. The real import has no reservation and reads the platform:
+    // if an earlier item failed, the copy can get another name than the one announced
     const reason = name === data.name ? undefined : `Added as "${configImportReasonValue(name)}"`;
     return { status: 'created', exists: sameName.length > 0, configuration: data, reason };
   }
@@ -86,6 +88,8 @@ export const importEmailTemplate = async (
     // between overwrite and copy ("When it already exists") only for an item that exists, so this one is refused without a choice, as for exclusion lists
     return refused('failed', 'duplicate', 'Another email template of the import has this name', false, data);
   }
+  // The name is reserved before the ambiguity check, on purpose: a later item of the same name is a duplicate of this one, whether the platform has
+  // one template of this name or several. Both are refusals
   if (dryRun) {
     reservedNames?.add(data.name);
   }

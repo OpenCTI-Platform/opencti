@@ -70,8 +70,8 @@ describe('Email template import schema', () => {
     expect(emailTemplateImportSchema.safeParse(exported).success).toBe(true);
   });
 
-  it('leaves a missing description out of the export', () => {
-    expect(exportEmailTemplate({ ...stored, description: null } as unknown as BasicStoreEntityEmailTemplate)).not.toHaveProperty('description');
+  it('exports an empty description for a template that has none, so that the import clears the one of the target', () => {
+    expect(exportEmailTemplate({ ...stored, description: null } as unknown as BasicStoreEntityEmailTemplate)).toHaveProperty('description', '');
   });
 });
 

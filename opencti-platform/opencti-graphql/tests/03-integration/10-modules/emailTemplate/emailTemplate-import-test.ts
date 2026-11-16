@@ -58,6 +58,16 @@ describe('Email template import and export (configuration preset)', () => {
     expect((await find(NAME_A))[0].description).toBe(description);
   });
 
+  it('clears the description with an empty one, and trims the values it compares with the stored ones', async () => {
+    const padded = { ...configuration, name: ` ${NAME_A} `, template_body: `${configuration.template_body}\n` };
+    expect(await importEmailTemplate(testContext, ADMIN_USER, padded, { mode })).toMatchObject({ status: 'skipped', code: 'unchanged' });
+    expect(await find(NAME_A)).toHaveLength(1);
+    expect(await importEmailTemplate(testContext, ADMIN_USER, { ...configuration, description: '' }, { mode })).toMatchObject({ status: 'overwritten' });
+    expect((await find(NAME_A))[0].description ?? '').toBe('');
+    // Put back for the next tests
+    expect(await importEmailTemplate(testContext, ADMIN_USER, configuration, { mode })).toMatchObject({ status: 'overwritten' });
+  });
+
   it('does not match a name that differs by its case: it is another template', async () => {
     const lower = NAME_A.toLowerCase();
     expect(await importEmailTemplate(testContext, ADMIN_USER, { ...configuration, name: lower }, { mode, dryRun: true })).toMatchObject({ status: 'created', exists: false });

@@ -19,8 +19,8 @@ import type { BasicStoreEntityEmailTemplate } from './emailTemplate-types';
 // The fields of an email template in the configuration: the ones the import accepts, so the import takes the export back as is
 const EMAIL_TEMPLATE_EXPORT_FIELDS = emailTemplateImportSchema.keyof().options;
 
-// An email template in the import format. A missing description is left out: the import leaves it as it is
+// An email template in the import format. A template without description exports an empty one: the import clears the description of the template it
+// overwrites with an empty value (an absent one leaves it), so the export imports back as is
 export const exportEmailTemplate = (emailTemplate: BasicStoreEntityEmailTemplate) => {
-  const presentFields = EMAIL_TEMPLATE_EXPORT_FIELDS.filter((field) => (emailTemplate[field] ?? null) !== null);
-  return Object.fromEntries(presentFields.map((field) => [field, emailTemplate[field]]));
+  return Object.fromEntries(EMAIL_TEMPLATE_EXPORT_FIELDS.map((field) => [field, emailTemplate[field] ?? '']));
 };

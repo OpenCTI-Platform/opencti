@@ -540,10 +540,10 @@ describe('Config preset registry', () => {
       expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|custom-email-template-id/);
     });
 
-    it('leaves a missing description out, so the import leaves the one of the template as it is', async () => {
+    it('exports an empty description for a template that has none, so the import clears the one of the target', async () => {
       vi.mocked(fullEntitiesList).mockResolvedValueOnce([{ ...customEmailTemplate, description: null }] as never);
       const file = await exportConfigPresetItem(context, user, emailTemplates, await findItem('emailTemplates', customEmailTemplate.standard_id));
-      expect(file.configuration).not.toHaveProperty('description');
+      expect(file.configuration).toHaveProperty('description', '');
     });
 
     it('opens the first page with the email templates by name, and counts them', async () => {
