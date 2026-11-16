@@ -9,7 +9,7 @@ Depending on your [installation mode](installation.md), upgrade path may change.
 ## Before you upgrade
 
 1. Read the [breaking changes and migrations](breaking-changes.md) of every version between your current version and the target version. Some of them require an action on your side, such as a new mandatory configuration key or an upgrade of a dependency (Elasticsearch, OpenAEV, XTM Composer).
-2. Back up your data: take a snapshot of the Elasticsearch / OpenSearch indices, copy the S3 bucket that stores the files (MinIO in the default Docker deployment), and keep a copy of your configuration files. The platform migrates its data at startup and only runs migrations forward: restoring this backup is the only way back to the previous version.
+2. Back up your data: take a snapshot of the Elasticsearch / OpenSearch indices, copy the S3 bucket that stores the files (in the default Docker deployment, the `minio` service, which runs Silo), and keep a copy of your configuration files. The platform migrates its data at startup and only runs migrations forward: restoring this backup is the only way back to the previous version.
 
 ## Using Docker
 

@@ -348,8 +348,12 @@ The OpenCTI worker is used to write the data coming from the RabbitMQ messages b
 
 #### Configure the worker
 
+The release file does not contain the worker `requirements.txt` and `config.yml.sample`: download them from the release tag (replace `{RELEASE_VERSION}` with the version you install).
+
 ```bash
 cd ../../worker
+wget -O requirements.txt https://raw.githubusercontent.com/OpenCTI-Platform/opencti/{RELEASE_VERSION}/opencti-worker/requirements.txt
+wget -O config.yml.sample https://raw.githubusercontent.com/OpenCTI-Platform/opencti/{RELEASE_VERSION}/opencti-worker/config.yml.sample
 pip3 install -r requirements.txt
 cp config.yml.sample config.yml
 ```
