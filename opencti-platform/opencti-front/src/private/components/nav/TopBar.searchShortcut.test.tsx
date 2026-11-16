@@ -13,8 +13,13 @@ vi.mock('../../../relay/environment', async (importOriginal) => ({
 }));
 // Only what TopBar hands to the field matters here
 vi.mock('../../../components/SearchInput', () => ({
-  default: ({ placeholder, id, ...props }: { placeholder: string; id: string }) => (
-    <input id={id} placeholder={placeholder} aria-keyshortcuts={props['aria-keyshortcuts' as keyof typeof props]} />
+  default: ({ placeholder, id, pagesOnly, ...props }: { placeholder: string; id: string; pagesOnly: boolean }) => (
+    <input
+      id={id}
+      placeholder={placeholder}
+      data-pages-only={pagesOnly}
+      aria-keyshortcuts={props['aria-keyshortcuts' as keyof typeof props]}
+    />
   ),
 }));
 vi.mock('use-analytics', () => ({ usePage: () => vi.fn() }));
@@ -23,10 +28,10 @@ vi.mock('../chatbox/CtemCommandCenterButton', () => ({ default: () => null }));
 vi.mock('../cases/feedbacks/FeedbackCreation', () => ({ default: () => null }));
 vi.mock('../common/ai/AINLQ', () => ({ useAINLQ: () => ({ search: vi.fn(), isLoading: false }) }));
 
-const renderTopBar = async () => {
+const renderTopBar = async (capabilities = [{ name: KNOWLEDGE }]) => {
   const result = testRender(<TopBar />, {
     userContext: createMockUserContext({
-      me: { id: 'user-id', capabilities: [{ name: KNOWLEDGE }], capabilitiesInDraft: [], draftContext: null },
+      me: { id: 'user-id', capabilities, capabilitiesInDraft: [], draftContext: null },
       settings: { platform_enterprise_edition: { license_type: 'standard' } },
     }),
   });
@@ -46,6 +51,20 @@ describe('TopBar search shortcut', () => {
 
     fireEvent.keyDown(document.body, { key: '/' });
     expect(field).toHaveFocus();
+  });
+
+  it('keeps the field, and its shortcut, without the knowledge capability: it then only finds pages', async () => {
+    await renderTopBar([]);
+    const field = screen.getByPlaceholderText('Type / to search');
+    expect(field).toHaveAttribute('data-pages-only', 'true');
+
+    fireEvent.keyDown(document.body, { key: '/' });
+    expect(field).toHaveFocus();
+  });
+
+  it('gives the field the whole search when the user has the knowledge capability', async () => {
+    await renderTopBar();
+    expect(screen.getByPlaceholderText('Type / to search')).toHaveAttribute('data-pages-only', 'false');
   });
 
   it('shows the shortcut chosen by the user, and nothing once it is turned off', async () => {

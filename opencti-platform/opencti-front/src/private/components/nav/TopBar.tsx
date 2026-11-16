@@ -239,20 +239,20 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             maxWidth: TOP_BAR_SEARCH_MAX_WIDTH,
           }}
         >
-          {hasKnowledgeAccess && (
-            <SearchInput
-              onSubmit={handleSearch}
-              keyword={keyword}
-              variant="topBar"
-              placeholder={searchShortcut
-                ? t_i18n('Type {shortcut} to search', { values: { shortcut: formatSearchShortcut(searchShortcut) } })
-                : `${t_i18n('Search the platform')}...`}
-              // Target of the shortcut, which the field announces to assistive technologies as well
-              id={TOP_BAR_SEARCH_ID}
-              aria-keyshortcuts={searchShortcut ? ariaKeyShortcuts(searchShortcut) : undefined}
-              isNLQLoading={isNLQLoading}
-            />
-          )}
+          <SearchInput
+            onSubmit={handleSearch}
+            keyword={keyword}
+            variant="topBar"
+            // Without the knowledge capability, the field still finds the pages the user can open
+            pagesOnly={!hasKnowledgeAccess}
+            placeholder={searchShortcut
+              ? t_i18n('Type {shortcut} to search', { values: { shortcut: formatSearchShortcut(searchShortcut) } })
+              : `${t_i18n('Search the platform')}...`}
+            // Target of the shortcut, which the field announces to assistive technologies as well
+            id={TOP_BAR_SEARCH_ID}
+            aria-keyshortcuts={searchShortcut ? ariaKeyShortcuts(searchShortcut) : undefined}
+            isNLQLoading={isNLQLoading}
+          />
         </HeaderGroup>
         <HeaderGroup>
           <Security needs={[KNOWLEDGE]}>

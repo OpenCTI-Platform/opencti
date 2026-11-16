@@ -52,8 +52,12 @@ const SearchInput = (props) => {
     keyword,
     placeholder = `${t_i18n('Search these results')}...`,
     isNLQLoading,
+    // Top bar of a user who cannot search the knowledge: the field only finds pages (no classic, bulk nor AI search).
+    pagesOnly = false,
     ...otherProps
   } = props;
+  // Dropdown rows: the "Search" row is first (0) unless pages only, then pages follow.
+  const firstPageRow = pagesOnly ? 0 : 1;
   const [displayEEDialog, setDisplayEEDialog] = useState(false);
   const [displayCGUDialog, setDisplayCGUDialog] = useState(false);
   const [searchValue, setSearchValue] = useState(keyword);
@@ -88,7 +92,7 @@ const SearchInput = (props) => {
     }
   }, [keyword]);
 
-  const isAIEnabled = variant === 'topBar' && isEnterpriseEdition && enabled && configured;
+  const isAIEnabled = variant === 'topBar' && !pagesOnly && isEnterpriseEdition && enabled && configured;
   const isNLQActivated = isAIEnabled && isNlqMode(mode);
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
   const { settings: { id: settingsId } } = useAuth();
@@ -241,9 +245,10 @@ const SearchInput = (props) => {
     const { value } = event.target;
     // preventDefault also tells the library field to skip its own Enter / Escape handling
     if (showSuggestions) {
-      const rows = suggestionsRef.current.length + 1; // the "Search" row (0) + pages
+      const rows = suggestionsRef.current.length + firstPageRow; // the "Search" row (0, unless pages only) + pages
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         event.preventDefault();
+        if (rows === 0) return;
         const step = event.key === 'ArrowDown' ? 1 : -1;
         setActiveIndex((i) => (i === -1 && step === -1 ? rows - 1 : (i + step + rows) % rows));
         return;
@@ -253,8 +258,8 @@ const SearchInput = (props) => {
         closeSuggestions();
         return;
       }
-      // Row 0 is "Search": it falls through to the classic Enter submit below.
-      const page = event.key === 'Enter' ? suggestionsRef.current[activeIndex - 1] : undefined;
+      // Row 0 is "Search" (unless pages only): it falls through to the classic Enter submit below.
+      const page = event.key === 'Enter' ? suggestionsRef.current[activeIndex - firstPageRow] : undefined;
       if (page) {
         event.preventDefault();
         handleSelectPage(page.path);
@@ -265,7 +270,8 @@ const SearchInput = (props) => {
       setSuggestionsOpen(true);
       return;
     }
-    if (typeof onSubmit === 'function' && event.key === 'Enter') {
+    // Pages only: Enter without a highlighted page does nothing.
+    if (!pagesOnly && typeof onSubmit === 'function' && event.key === 'Enter') {
       closeSuggestions();
       if (mode === MODE_BULK) {
         // Navigate to bulk search page with the keyword as a query param
@@ -412,6 +418,7 @@ const SearchInput = (props) => {
               keyword={searchValue.trim()}
               anchorEl={fieldContainerRef.current}
               activeIndex={activeIndex}
+              showSearchRow={!pagesOnly}
               itemsRef={suggestionsRef}
               onPageClick={handlePageClick}
               onSearch={handleSearchRow}
@@ -421,139 +428,141 @@ const SearchInput = (props) => {
         {/* FDS-WORKAROUND #20: NLQ loading indicator beside the field, SearchField exposes no busy slot — see fds-migration/LIBRARY-FEEDBACK.md #20 */}
         {isNLQActivated && isNLQLoading && <Loader variant="inline" />}
 
-        {/* ── Mode Toggles (right) ────────────────────────────────── */}
-        <ToggleButtonGroup
-          value={mode}
-          exclusive
-          onChange={handleModeChange}
-          size="small"
-          sx={{
-            flexShrink: 0,
-            // Remove the default grouped border behavior so each button has its own border
-            '& .MuiToggleButtonGroup-grouped': {
-              border: 'none',
-              borderRadius: `${theme.shape.borderRadius}px !important`,
-              '&:not(:first-of-type)': {
-                marginLeft: 0,
+        {/* ── Mode Toggles (right): all of them need the knowledge search ── */}
+        {!pagesOnly && (
+          <ToggleButtonGroup
+            value={mode}
+            exclusive
+            onChange={handleModeChange}
+            size="small"
+            sx={{
+              flexShrink: 0,
+              // Remove the default grouped border behavior so each button has its own border
+              '& .MuiToggleButtonGroup-grouped': {
+                border: 'none',
+                borderRadius: `${theme.shape.borderRadius}px !important`,
+                '&:not(:first-of-type)': {
+                  marginLeft: 0,
+                },
               },
-            },
-          }}
-        >
-          {/* Search mode */}
-          <Tooltip title={t_i18n('Advanced search')}>
-            <ToggleButton value={MODE_SEARCH} sx={{ ...toggleButtonSx, mr: 0.75 }}>
-              <TuneOutlined sx={{ fontSize: 18 }} />
-            </ToggleButton>
-          </Tooltip>
+            }}
+          >
+            {/* Search mode */}
+            <Tooltip title={t_i18n('Advanced search')}>
+              <ToggleButton value={MODE_SEARCH} sx={{ ...toggleButtonSx, mr: 0.75 }}>
+                <TuneOutlined sx={{ fontSize: 18 }} />
+              </ToggleButton>
+            </Tooltip>
 
-          {/* Bulk mode */}
-          <Tooltip title={t_i18n('Bulk search')}>
-            <ToggleButton value={MODE_BULK} sx={{ ...toggleButtonSx, mr: 0.75 }}>
-              <ManageSearchOutlined sx={{ fontSize: 18 }} />
-            </ToggleButton>
-          </Tooltip>
+            {/* Bulk mode */}
+            <Tooltip title={t_i18n('Bulk search')}>
+              <ToggleButton value={MODE_BULK} sx={{ ...toggleButtonSx, mr: 0.75 }}>
+                <ManageSearchOutlined sx={{ fontSize: 18 }} />
+              </ToggleButton>
+            </Tooltip>
 
-          {/* NLQ split button — icon toggles NLQ, caret opens agent selector.
+            {/* NLQ split button — icon toggles NLQ, caret opens agent selector.
               The icon toggle and the caret are two real, independently
               focusable elements (a <button> cannot validly nest another),
               but they share one background driven by React state so they
               still read, hover, and highlight as a single button, matching
               the rest of the segmented control (no visible outer border). */}
-          {isAIEnabled && (
-            <span
-              onMouseEnter={() => setIsNlqSplitHovered(true)}
-              onMouseLeave={() => setIsNlqSplitHovered(false)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'stretch',
-                height: 36,
-                borderRadius: theme.shape.borderRadius,
-                backgroundColor: nlqSplitBackground,
-                // No overflow: hidden here — both zones have their own
-                // background/border-radius fully neutralized (transparent,
-                // 0), so nothing needs clipping to this wrapper's rounded
-                // corners, and clipping would also cut off each zone's
-                // focus-visible ring when tabbing through them.
-                opacity: nlqSplitDisabled ? 0.5 : 1,
-              }}
-            >
-              <Tooltip
-                title={(isCGUStatusPending && !isAdmin)
-                  ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.')
-                  : nlqNoAgentAvailable
-                    ? t_i18n('No agent available for this action. Ask your administrator to configure XTM One.')
-                    : isNLQActivated && selectedAgent
-                      ? `${t_i18n('Ask AI')}: ${selectedAgent.name}${selectedAgent.description ? ` — ${selectedAgent.description}` : ''}`
-                      : t_i18n('Ask AI')}
+            {isAIEnabled && (
+              <span
+                onMouseEnter={() => setIsNlqSplitHovered(true)}
+                onMouseLeave={() => setIsNlqSplitHovered(false)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'stretch',
+                  height: 36,
+                  borderRadius: theme.shape.borderRadius,
+                  backgroundColor: nlqSplitBackground,
+                  // No overflow: hidden here — both zones have their own
+                  // background/border-radius fully neutralized (transparent,
+                  // 0), so nothing needs clipping to this wrapper's rounded
+                  // corners, and clipping would also cut off each zone's
+                  // focus-visible ring when tabbing through them.
+                  opacity: nlqSplitDisabled ? 0.5 : 1,
+                }}
               >
-                <span>
-                  <ToggleButton
-                    value={mode}
-                    selected={isNLQActivated}
-                    disableRipple
-                    disableFocusRipple
-                    sx={{
-                      height: '100%',
-                      minWidth: 36,
-                      width: hasCaret ? 36 : 'auto',
-                      px: 1,
-                      border: '0 !important',
-                      borderRadius: `${theme.shape.borderRadius}px !important`,
-                      textTransform: 'none',
-                      // Neutralized to transparent (with !important, since
-                      // the app-wide MuiToggleButtonGroup theme override
-                      // would otherwise tint this zone on its own hover):
-                      // the wrapping <span> above is the single source of
-                      // truth for the background, so both this zone and the
-                      // caret tint/untint together, as one continuous button.
-                      backgroundColor: 'transparent !important',
-                      color: `${aiColor} !important`,
-                      '&.Mui-disabled': { color: `${aiColor} !important` },
-                    }}
-                    onClick={handleNlqToggleClick}
-                    disabled={nlqSplitDisabled}
-                    // Named here: the tooltip labels the wrapping <span>, not this icon-only toggle
-                    aria-label={t_i18n('Ask AI')}
-                  >
-                    <FiligranIcon
-                      icon={LogoXtmOneIcon}
-                      size="small"
-                      color="ai"
-                    />
-                  </ToggleButton>
-                </span>
-              </Tooltip>
-              {hasCaret && (
-                <Tooltip title={t_i18n('Choose AI agent')}>
-                  {/* FDS-WORKAROUND #67: bare <button>, the library Button and IconButton always paint a box — see fds-migration/LIBRARY-FEEDBACK.md #67 */}
-                  <button
-                    type="button"
-                    aria-label={t_i18n('Choose AI agent')}
-                    className="nlq-split-caret"
-                    onClick={handleOpenNlqMenu}
-                    disabled={nlqSplitDisabled}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      paddingLeft: 4,
-                      paddingRight: 4,
-                      border: 0,
-                      borderLeft: `1px solid ${isNLQActivated ? `${aiColor}40` : theme.palette.divider}`,
-                      background: 'transparent',
-                      color: aiColor,
-                      cursor: nlqSplitDisabled ? 'default' : 'pointer',
-                      '--nlq-caret-focus-color': nlqCaretFocusRingColor,
-                      '--nlq-caret-focus-radius': `${theme.shape.borderRadius}px`,
-                    }}
-                  >
-                    <KeyboardArrowDownOutlined sx={{ fontSize: 18, color: 'inherit' }} />
-                  </button>
+                <Tooltip
+                  title={(isCGUStatusPending && !isAdmin)
+                    ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.')
+                    : nlqNoAgentAvailable
+                      ? t_i18n('No agent available for this action. Ask your administrator to configure XTM One.')
+                      : isNLQActivated && selectedAgent
+                        ? `${t_i18n('Ask AI')}: ${selectedAgent.name}${selectedAgent.description ? ` — ${selectedAgent.description}` : ''}`
+                        : t_i18n('Ask AI')}
+                >
+                  <span>
+                    <ToggleButton
+                      value={mode}
+                      selected={isNLQActivated}
+                      disableRipple
+                      disableFocusRipple
+                      sx={{
+                        height: '100%',
+                        minWidth: 36,
+                        width: hasCaret ? 36 : 'auto',
+                        px: 1,
+                        border: '0 !important',
+                        borderRadius: `${theme.shape.borderRadius}px !important`,
+                        textTransform: 'none',
+                        // Neutralized to transparent (with !important, since
+                        // the app-wide MuiToggleButtonGroup theme override
+                        // would otherwise tint this zone on its own hover):
+                        // the wrapping <span> above is the single source of
+                        // truth for the background, so both this zone and the
+                        // caret tint/untint together, as one continuous button.
+                        backgroundColor: 'transparent !important',
+                        color: `${aiColor} !important`,
+                        '&.Mui-disabled': { color: `${aiColor} !important` },
+                      }}
+                      onClick={handleNlqToggleClick}
+                      disabled={nlqSplitDisabled}
+                      // Named here: the tooltip labels the wrapping <span>, not this icon-only toggle
+                      aria-label={t_i18n('Ask AI')}
+                    >
+                      <FiligranIcon
+                        icon={LogoXtmOneIcon}
+                        size="small"
+                        color="ai"
+                      />
+                    </ToggleButton>
+                  </span>
                 </Tooltip>
-              )}
-            </span>
-          )}
-        </ToggleButtonGroup>
+                {hasCaret && (
+                  <Tooltip title={t_i18n('Choose AI agent')}>
+                    {/* FDS-WORKAROUND #67: bare <button>, the library Button and IconButton always paint a box — see fds-migration/LIBRARY-FEEDBACK.md #67 */}
+                    <button
+                      type="button"
+                      aria-label={t_i18n('Choose AI agent')}
+                      className="nlq-split-caret"
+                      onClick={handleOpenNlqMenu}
+                      disabled={nlqSplitDisabled}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        paddingLeft: 4,
+                        paddingRight: 4,
+                        border: 0,
+                        borderLeft: `1px solid ${isNLQActivated ? `${aiColor}40` : theme.palette.divider}`,
+                        background: 'transparent',
+                        color: aiColor,
+                        cursor: nlqSplitDisabled ? 'default' : 'pointer',
+                        '--nlq-caret-focus-color': nlqCaretFocusRingColor,
+                        '--nlq-caret-focus-radius': `${theme.shape.borderRadius}px`,
+                      }}
+                    >
+                      <KeyboardArrowDownOutlined sx={{ fontSize: 18, color: 'inherit' }} />
+                    </button>
+                  </Tooltip>
+                )}
+              </span>
+            )}
+          </ToggleButtonGroup>
+        )}
 
         {/* ── NLQ Agent dropdown menu ─────────────────────────────── */}
         <Menu

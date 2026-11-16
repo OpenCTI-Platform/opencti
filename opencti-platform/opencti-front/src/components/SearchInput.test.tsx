@@ -107,6 +107,44 @@ describe('SearchInput (top bar) pages dropdown', () => {
   });
 });
 
+describe('SearchInput (top bar) pages only', () => {
+  const setup = () => {
+    const onSubmit = vi.fn();
+    const { user } = testRender(<SearchInput variant="topBar" pagesOnly onSubmit={onSubmit} keyword="" />);
+    return { onSubmit, user };
+  };
+
+  it('offers no classic, bulk nor AI search, and lists only the pages', async () => {
+    const { user } = setup();
+    expect(screen.queryByRole('button', { name: 'Advanced search' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Bulk search' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Ask AI' })).not.toBeInTheDocument();
+
+    await user.type(screen.getByRole('combobox'), 'imp');
+    const options = screen.getAllByRole('option');
+    expect(options).toHaveLength(1);
+    expect(options[0]).toHaveTextContent('Import');
+  });
+
+  it('does nothing on Enter when no page is highlighted', async () => {
+    const { onSubmit, user } = setup();
+    await user.type(screen.getByRole('combobox'), 'imp{Enter}');
+
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('navigates to the page highlighted with the arrow keys, which start at the first page', async () => {
+    const { onSubmit, user } = setup();
+    await user.type(screen.getByRole('combobox'), 'imp{ArrowDown}');
+    expect(screen.getByRole('combobox')).toHaveAttribute('aria-activedescendant', 'nav-search-suggestions-option-0');
+
+    await user.type(screen.getByRole('combobox'), '{Enter}');
+    expect(mockNavigate).toHaveBeenCalledWith('/dashboard/data/import');
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+});
+
 describe('SearchInput (top bar) shortcut target', () => {
   it('puts the id and the announced shortcut on the input itself', () => {
     testRender(<SearchInput variant="topBar" onSubmit={vi.fn()} keyword="" id="top-bar-search" aria-keyshortcuts="/" />);
