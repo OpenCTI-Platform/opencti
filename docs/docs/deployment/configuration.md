@@ -191,7 +191,7 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 
     The **Settings > Filigran Experience** page shows where the Enterprise Edition comes from: the license source (OpenCTI license, Filigran license, or Filigran license (through XTM One)), the customer, the type and the dates of that license. An OpenCTI license takes precedence when both are valid, and is not affected by the Filigran license. As for OpenCTI licenses, an LTS platform only accepts an `lts` or `ci` Filigran license.
 
-    This requires an XTM One release returning the license at registration ([XTM One #3831](https://github.com/XTM-One-Platform/xtm-one/pull/3831)). **Upgrade XTM One first, then OpenCTI.** Against an older XTM One, the Filigran license grants nothing and OpenCTI logs a warning asking for the XTM One upgrade.
+    This requires an XTM One release that returns the license at registration. **Upgrade XTM One first, then OpenCTI.** Against an older XTM One, the Filigran license grants nothing. When such an XTM One reports the Enterprise Edition without returning the license, and the platform has no valid OpenCTI license of its own, OpenCTI logs a warning asking for the XTM One upgrade.
  
 
 #### ElasticSearch
