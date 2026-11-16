@@ -4,7 +4,7 @@ import { INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATI
 import { logApp } from '../config/conf';
 import { storeFileConverter, uploadToStorage } from '../database/file-storage';
 import path from 'path';
-import { computeDateFromEventId, truncate, utcDate } from './format';
+import { computeDateFromEventId, FROM_START_STR, truncate, UNTIL_END_STR, utcDate } from './format';
 import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REPLACE } from '../database/utils';
 import { hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE } from '../modules/indicator/indicator-utils';
 import { creators as creatorsAttribute, customFieldValues, iAttributes, xOpenctiStixIds } from '../schema/attribute-definition';
@@ -21,6 +21,7 @@ import { FunctionalError } from '../config/errors';
 import { getDraftContext } from './draftContext';
 import { getDraftFilePrefix } from '../database/draft-utils';
 import { pushAll } from './arrayUtil';
+import { dateForEndAttributes, dateForLimitsAttributes, dateForStartAttributes } from '../schema/fieldDataAdapter';
 
 const ALIGN_OLDEST = 'oldest';
 const ALIGN_NEWEST = 'newest';
@@ -562,6 +563,22 @@ export const mergeUpsertInputs = (resolvedElement, updatePatch, updatePatchInput
   return Array.from(updatePatchInputsMap.values());
 };
 
+// A start or end limit date (first_seen, last_seen, start_time, stop_time, valid_from, valid_until, first_observed, last_observed)
+// equal to its FROM_START / UNTIL_END sentinel carries no information: it is the default the creation path writes when the
+// producer gave no date (domain add functions, client libraries sending nothing for a missing STIX field).
+export const isDateLimitSentinel = (attributeKey, inputData) => {
+  if (!dateForLimitsAttributes.includes(attributeKey) || isEmptyField(inputData) || Array.isArray(inputData)) {
+    return false;
+  }
+  const date = utcDate(inputData);
+  if (!date.isValid()) {
+    return false;
+  }
+  const isoDate = date.toISOString();
+  return (dateForStartAttributes.includes(attributeKey) && isoDate === FROM_START_STR)
+    || (dateForEndAttributes.includes(attributeKey) && isoDate === UNTIL_END_STR);
+};
+
 export const generateAttributesInputsForUpsert = (context, _user, resolvedElement, type, updatePatch, confidenceForUpsert) => {
   const { isConfidenceMatch } = confidenceForUpsert;
   // -- Upsert attributes
@@ -582,7 +599,10 @@ export const generateAttributesInputsForUpsert = (context, _user, resolvedElemen
       // 1. Confidence is correct
       // 2. Attribute is declared upsert=true in the schema
       // 3. Data from the inputs is not empty to prevent any data cleaning
-      const canBeUpsert = isConfidenceMatch && attribute.upsert && isInputWithData;
+      // 4. Data is not a start/end limit sentinel: a sentinel means 'no date given' and must never overwrite a stored date.
+      //    A full synchronization (synchronized-upsert header) or a forced replace keeps its full-replace semantics.
+      const isSentinelInput = isDateLimitSentinel(attributeKey, inputData);
+      const canBeUpsert = isConfidenceMatch && attribute.upsert && isInputWithData && !isSentinelInput;
       // Upsert will be done if upsert is well-defined but also in full synchro mode or if the current value is empty
       if (!isOutDatedModification) {
         if (isStructuralUpsert || canBeUpsert || isFullSync || isCurrentlyEmpty) {
