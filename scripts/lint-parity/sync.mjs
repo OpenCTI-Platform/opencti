@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
-import { oxlintConfigRules, toEslintRuleId } from './normalize.mjs';
+import { oxlintConfigRules, toComparableRuleId, toEslintRuleId } from './normalize.mjs';
 
 // Regenerates .oxlintrc.json from eslint.config.ts (run from a package dir) so that
 // oxlint runs exactly the rules ESLint enables, then reports what could not be carried over.
@@ -32,8 +32,10 @@ const migrateEntryPoint = () => {
 };
 
 const runMigrate = () => {
+  const file = path.join(packageDir, OXLINTRC);
+  const previous = fs.existsSync(file) ? fs.readFileSync(file) : undefined;
   // The migration keeps an existing file as .oxlintrc.json.bak: the config is always regenerated from scratch.
-  fs.rmSync(path.join(packageDir, OXLINTRC), { force: true });
+  fs.rmSync(file, { force: true });
   const run = spawnSync(
     process.execPath,
     // --js-plugins=false: no `jsPlugins`, rules oxlint lacks stay ESLint-only. No --type-aware.
@@ -41,6 +43,9 @@ const runMigrate = () => {
     { cwd: packageDir, encoding: 'utf8' },
   );
   if (run.error || run.status !== 0) {
+    // Leave the previous config in place rather than none at all.
+    fs.rmSync(file, { force: true });
+    if (previous !== undefined) fs.writeFileSync(file, previous);
     fail(`oxlint-migrate failed (exit ${run.status}): ${run.error?.message ?? (run.stderr || run.stdout).trim()}`);
   }
 };
@@ -106,10 +111,11 @@ const main = async () => {
   oxlintrc.ignorePatterns = [...new Set(globalIgnores(eslintConfig))];
   fs.writeFileSync(path.join(packageDir, OXLINTRC), `${JSON.stringify(oxlintrc, null, 2)}\n`);
 
-  const eslintOptions = enabledOptions(eslintConfig.map((entry) => entry.rules ?? {}), (key) => key);
+  // Both sides are keyed by the id oxlint enforces: ESLint's @typescript-eslint/x folded into the core x where migrate does.
+  const eslintOptions = enabledOptions(eslintConfig.map((entry) => entry.rules ?? {}), toComparableRuleId);
   const oxlintOptions = enabledOptions(
     [oxlintrc.rules ?? {}, ...(oxlintrc.overrides ?? []).map((override) => override.rules ?? {})],
-    toEslintRuleId,
+    (key) => toComparableRuleId(toEslintRuleId(key)),
   );
   const oxlintRules = oxlintConfigRules(oxlintrc);
 

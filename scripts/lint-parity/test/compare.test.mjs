@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
+import path from 'node:path';
 import test from 'node:test';
 import { compareFindings } from '../compare.mjs';
-import { oxlintConfigRules } from '../normalize.mjs';
+import { normalizeEslint, normalizeOxlint, oxlintConfigRules } from '../normalize.mjs';
 
+const baseDir = path.resolve('/lint-parity-base');
 const f = (file, line, ruleId, severity = 'error') => ({ file, line, ruleId, severity });
 const compare = (input) => compareFindings({ eslint: [], oxlint: [], oxlintRules: new Set(), eslintOnly: [], allowlist: [], ...input });
 
@@ -57,32 +59,40 @@ test('skips eslint findings for rules on eslintOnly list', () => {
   assert.deepEqual(result.onlyEslint, []);
 });
 
-test('treats aliased rule as covered', () => {
+test('matches an ESLint @typescript-eslint finding with the oxlint eslint() finding of the folded rule', () => {
+  const eslintResults = [{ filePath: path.join(baseDir, 'a.ts'), messages: [{ ruleId: '@typescript-eslint/no-unused-vars', line: 7, severity: 2 }] }];
+  const oxlintReport = { diagnostics: [{ code: 'eslint(no-unused-vars)', severity: 'error', filename: 'a.ts', labels: [{ span: { line: 7 } }] }] };
   const result = compare({
-    eslint: [f('a.ts', 1, '@typescript-eslint/no-unused-vars')],
-    oxlintRules: oxlintConfigRules({ rules: { 'typescript/no-unused-vars': 'error' } }),
-  });
-  assert.deepEqual(result.onlyEslint, [f('a.ts', 1, '@typescript-eslint/no-unused-vars')]);
-  assert.deepEqual(result.eslintOnlySkipped, {});
-});
-
-test('re-keys oxlint eslint() code to its typescript config rule', () => {
-  const result = compare({
-    eslint: [f('a.ts', 1, '@typescript-eslint/no-unused-vars')],
-    oxlint: [f('a.ts', 1, 'no-unused-vars')],
-    oxlintRules: oxlintConfigRules({ rules: { 'typescript/no-unused-vars': 'error' } }),
+    eslint: normalizeEslint(eslintResults, baseDir),
+    oxlint: normalizeOxlint(oxlintReport, baseDir),
+    // What @oxlint/migrate writes for ESLint's @typescript-eslint/no-unused-vars: the core id.
+    oxlintRules: oxlintConfigRules({ rules: { 'no-unused-vars': 'error' } }),
   });
   assert.deepEqual(result.onlyEslint, []);
   assert.deepEqual(result.onlyOxlint, []);
   assert.deepEqual(result.severityMismatch, []);
+  assert.deepEqual(result.eslintOnlySkipped, {});
 });
 
-test('does not re-key an oxlint rule that is itself configured', () => {
+test('a folded rule that only ESLint reports stays an ESLint-only difference', () => {
+  const eslintResults = [{ filePath: path.join(baseDir, 'a.ts'), messages: [{ ruleId: '@typescript-eslint/no-unused-vars', line: 7, severity: 2 }] }];
   const result = compare({
-    oxlint: [f('a.ts', 1, 'no-unused-vars')],
-    oxlintRules: new Set(['no-unused-vars', '@typescript-eslint/no-unused-vars']),
+    eslint: normalizeEslint(eslintResults, baseDir),
+    oxlintRules: oxlintConfigRules({ rules: { 'no-unused-vars': 'error' } }),
   });
-  assert.deepEqual(result.onlyOxlint, [f('a.ts', 1, 'no-unused-vars')]);
+  assert.deepEqual(result.onlyEslint, [f('a.ts', 7, 'no-unused-vars')]);
+});
+
+test('an unfolded typescript rule keeps its @typescript-eslint id on both sides', () => {
+  const eslintResults = [{ filePath: path.join(baseDir, 'a.ts'), messages: [{ ruleId: '@typescript-eslint/no-explicit-any', line: 2, severity: 2 }] }];
+  const oxlintReport = { diagnostics: [{ code: 'typescript-eslint(no-explicit-any)', severity: 'error', filename: 'a.ts', labels: [{ span: { line: 2 } }] }] };
+  const result = compare({
+    eslint: normalizeEslint(eslintResults, baseDir),
+    oxlint: normalizeOxlint(oxlintReport, baseDir),
+    oxlintRules: oxlintConfigRules({ rules: { 'typescript/no-explicit-any': 'error' } }),
+  });
+  assert.deepEqual(result.onlyEslint, []);
+  assert.deepEqual(result.onlyOxlint, []);
 });
 
 test('allowlist with glob removes only matching files', () => {

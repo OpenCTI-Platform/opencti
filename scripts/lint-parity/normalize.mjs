@@ -44,6 +44,45 @@ export const toEslintRuleId = (id) => {
   return joinRuleId(id.slice(0, slash), id.slice(slash + 1));
 };
 
+// ESLint core rules that `@typescript-eslint` extends. @oxlint/migrate folds the `@typescript-eslint/x` form of
+// these into the core id `x` (its `typescriptRulesExtendEslintRules`, checked against 1.93.0), so oxlint enforces
+// them under the core id and reports `eslint(x)`. ESLint reports `@typescript-eslint/x` for the same rule.
+// This list is the one source of that alias: keep it in sync with the migrate version when bumping it.
+const TYPESCRIPT_FOLDED_RULES = new Set([
+  'class-methods-use-this',
+  'default-param-last',
+  'init-declarations',
+  'max-params',
+  'no-array-constructor',
+  'no-dupe-class-members',
+  'no-empty-function',
+  'no-invalid-this',
+  'no-loop-func',
+  'no-loss-of-precision',
+  'no-magic-numbers',
+  'no-redeclare',
+  'no-restricted-imports',
+  'no-shadow',
+  'no-unused-expressions',
+  'no-unused-vars',
+  'no-use-before-define',
+  'no-useless-constructor',
+]);
+
+const TYPESCRIPT_PREFIX = '@typescript-eslint/';
+
+/**
+ * The id both tools are compared under: `@typescript-eslint/x` becomes the core `x` when oxlint folds it.
+ * Applied to ESLint ids and to oxlint ids (after toEslintRuleId); idempotent.
+ * @param {string} ruleId
+ * @returns {string}
+ */
+export const toComparableRuleId = (ruleId) => {
+  if (!ruleId.startsWith(TYPESCRIPT_PREFIX)) return ruleId;
+  const core = ruleId.slice(TYPESCRIPT_PREFIX.length);
+  return TYPESCRIPT_FOLDED_RULES.has(core) ? core : ruleId;
+};
+
 const toPosix = (p) => p.split(path.sep).join('/');
 
 // ESLint reports absolute paths, oxlint reports paths relative to its cwd:
@@ -64,7 +103,7 @@ export const normalizeEslint = (results, baseDir) => results.flatMap((result) =>
     .map((message) => ({
       file,
       line: message.line,
-      ruleId: message.ruleId,
+      ruleId: toComparableRuleId(message.ruleId),
       severity: ESLINT_SEVERITIES[message.severity] ?? 'error',
     }));
 });
@@ -79,7 +118,7 @@ export const normalizeOxlint = (report, baseDir) => report.diagnostics
   .map((diagnostic) => ({
     file: toRelativeFile(diagnostic.filename, baseDir),
     line: diagnostic.labels?.[0]?.span?.line ?? 0,
-    ruleId: toEslintRuleId(diagnostic.code),
+    ruleId: toComparableRuleId(toEslintRuleId(diagnostic.code)),
     severity: diagnostic.severity === 'warning' ? 'warning' : 'error',
   }));
 
@@ -98,7 +137,7 @@ export const oxlintConfigRules = (oxlintrc) => {
   const enabled = new Set();
   for (const rules of rulesets) {
     for (const [key, setting] of Object.entries(rules)) {
-      if (isEnabled(setting)) enabled.add(toEslintRuleId(key));
+      if (isEnabled(setting)) enabled.add(toComparableRuleId(toEslintRuleId(key)));
     }
   }
   return enabled;

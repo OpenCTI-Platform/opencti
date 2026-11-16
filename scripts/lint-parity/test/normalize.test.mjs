@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { normalizeEslint, normalizeOxlint, oxlintConfigRules, toEslintRuleId } from '../normalize.mjs';
+import { normalizeEslint, normalizeOxlint, oxlintConfigRules, toComparableRuleId, toEslintRuleId } from '../normalize.mjs';
 
 const fixtureDir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures');
 const readFixture = (name) => fs.readFileSync(path.join(fixtureDir, name), 'utf8');
@@ -70,10 +70,10 @@ test('drops diagnostics without a rule id', () => {
 test('maps severities to error|warning', () => {
   const eslint = normalizeEslint(eslintSample, fixtureDir);
   assert.equal(eslint.find((f) => f.ruleId === 'no-debugger').severity, 'error');
-  assert.equal(eslint.find((f) => f.ruleId === '@typescript-eslint/no-unused-vars').severity, 'warning');
+  assert.equal(eslint.find((f) => f.ruleId === 'no-unused-vars').severity, 'warning');
   const oxlint = normalizeOxlint(oxlintSample, fixtureDir);
   assert.equal(oxlint.find((f) => f.ruleId === 'no-debugger').severity, 'error');
-  // Intentional: oxlint reports a typescript/* rule with an eslint(...) code, so it normalizes to the bare id; compare.mjs re-keys it.
+  // oxlint reports the rule migrate folds into the core id with an eslint(...) code; ESLint's @typescript-eslint form folds to the same id.
   assert.equal(oxlint.find((f) => f.ruleId === 'no-unused-vars').severity, 'warning');
 });
 
@@ -87,7 +87,7 @@ test('oxlintConfigRules collects top-level and override rules, skips off', () =>
     rules: { 'no-debugger': 'error', eqeqeq: 'off' },
     overrides: [{ files: ['*.ts'], rules: { 'typescript/no-unused-vars': ['warn', {}] } }],
   });
-  assert.deepEqual([...rules].sort(), ['@typescript-eslint/no-unused-vars', 'no-debugger']);
+  assert.deepEqual([...rules].sort(), ['no-debugger', 'no-unused-vars']);
 });
 
 test('oxlintConfigRules handles numeric levels and missing sections', () => {
@@ -97,4 +97,25 @@ test('oxlintConfigRules handles numeric levels and missing sections', () => {
 
 test('oxlintConfigRules treats the allow alias as off', () => {
   assert.deepEqual([...oxlintConfigRules({ rules: { eqeqeq: 'allow', 'no-debugger': ['allow', {}], 'no-console': 'warn' } })], ['no-console']);
+});
+
+test('toComparableRuleId folds the @typescript-eslint rules oxlint enforces under the core id', () => {
+  for (const core of ['no-unused-vars', 'no-array-constructor', 'no-unused-expressions', 'no-shadow', 'no-redeclare']) {
+    assert.equal(toComparableRuleId(`@typescript-eslint/${core}`), core);
+    assert.equal(toComparableRuleId(core), core);
+  }
+});
+
+test('toComparableRuleId keeps every other id', () => {
+  assert.equal(toComparableRuleId('@typescript-eslint/no-explicit-any'), '@typescript-eslint/no-explicit-any');
+  assert.equal(toComparableRuleId('@typescript-eslint/naming-convention'), '@typescript-eslint/naming-convention');
+  assert.equal(toComparableRuleId('react/jsx-key'), 'react/jsx-key');
+  assert.equal(toComparableRuleId('eqeqeq'), 'eqeqeq');
+});
+
+test('toComparableRuleId is idempotent and composes with toEslintRuleId', () => {
+  assert.equal(toComparableRuleId(toComparableRuleId('@typescript-eslint/no-unused-vars')), 'no-unused-vars');
+  assert.equal(toComparableRuleId(toEslintRuleId('typescript/no-unused-vars')), 'no-unused-vars');
+  assert.equal(toComparableRuleId(toEslintRuleId('typescript-eslint(no-unused-vars)')), 'no-unused-vars');
+  assert.equal(toComparableRuleId(toEslintRuleId('eslint(no-unused-vars)')), 'no-unused-vars');
 });

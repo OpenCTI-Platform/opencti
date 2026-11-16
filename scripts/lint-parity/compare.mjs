@@ -25,14 +25,6 @@ const groupByKey = (findings) => {
   return groups;
 };
 
-// oxlint reports a rule configured as `typescript/x` with the code `eslint(x)`, which normalizes to the bare `x`.
-// When `x` is not configured but `@typescript-eslint/x` is, the finding belongs to the typescript rule.
-const rekeyOxlint = (finding, oxlintRules) => {
-  const typescriptId = `@typescript-eslint/${finding.ruleId}`;
-  if (!oxlintRules.has(finding.ruleId) && oxlintRules.has(typescriptId)) return { ...finding, ruleId: typescriptId };
-  return finding;
-};
-
 const allowMatches = (entry, finding) => entry.rule === finding.ruleId
   && (entry.files === undefined || path.matchesGlob(finding.file, entry.files));
 
@@ -50,7 +42,7 @@ export const compareFindings = ({ eslint, oxlint, oxlintRules, eslintOnly, allow
     return false;
   });
   const eslintGroups = groupByKey(comparableEslint);
-  const oxlintGroups = groupByKey(oxlint.map((finding) => rekeyOxlint(finding, oxlintRules)));
+  const oxlintGroups = groupByKey(oxlint);
 
   const onlyEslint = [];
   const onlyOxlint = [];
