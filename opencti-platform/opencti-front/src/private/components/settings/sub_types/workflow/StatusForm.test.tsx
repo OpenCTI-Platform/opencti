@@ -349,6 +349,11 @@ describe('StatusForm – Request access outcome', () => {
     expect(screen.queryByTestId('workflow-status-outcome-bookkeeping')).toBeNull();
   });
 
+  it('hides the share caption when the Approved state has no share action', () => {
+    renderForm({ requestAccessOutcome: 'APPROVED', onEnter: [], onExit: [] }, vi.fn(), 'Case-Rfi', 'REQUEST_ACCESS');
+    expect(screen.queryByTestId('workflow-status-onenter-share-requested-entities-helper')).toBeNull();
+  });
+
   it('keeps the share action on while the state is Approved, with the reason shown', async () => {
     const onSubmit = vi.fn();
     const existing = shareAction([{ value: 'AUTHOR', label: 'Author' }]);

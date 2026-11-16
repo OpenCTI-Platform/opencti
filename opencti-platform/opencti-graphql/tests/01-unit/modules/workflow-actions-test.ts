@@ -867,7 +867,7 @@ describe('ActionRegistry.shareRequestedEntities', () => {
         ['org-extra'],
         { workflowInstanceId: 'instance-id', workflowActionId: 'generated-slot-id' },
       );
-      expect(ctx.suspendingAsyncSlots).toEqual([{ id: 'generated-slot-id', workId: 'work-share', type: 'shareRequestedEntities', status: 'pending' }]);
+      expect(ctx.suspendingAsyncSlots).toEqual([{ id: 'generated-slot-id', workId: 'work-share', taskId: 'task-id', type: 'shareRequestedEntities', status: 'pending' }]);
     });
 
     it('records only the organizations it newly granted on plain entities while a container task runs', async () => {

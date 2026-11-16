@@ -5,7 +5,15 @@ import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import { Box, FormControlLabel, Switch, Typography } from '@mui/material';
 import { Alert, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Switch as DsSwitch } from '@filigran/design-system';
 import WorkflowFieldList from './WorkflowFieldList';
-import { FEATURE_NAME, REQUEST_ACCESS_AUTHOR_KEY, RequestAccessOutcome, withoutShareRequestedEntities, withShareRequestedEntitiesLast, WorkflowActionType, WorkflowDataType } from './utils';
+import {
+  FEATURE_NAME,
+  REQUEST_ACCESS_AUTHOR_KEY,
+  RequestAccessOutcome,
+  withoutShareRequestedEntities,
+  withShareRequestedEntitiesLast,
+  WorkflowActionType,
+  WorkflowDataType,
+} from './utils';
 import type { WorkflowScope } from '../SubTypeWorkflow';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import EEChip from '../../../common/entreprise_edition/EEChip';
@@ -128,9 +136,11 @@ const StatusForm = ({ entityType, scope }: { entityType: string; scope?: Workflo
                 onCheckedChange={handleToggleShareRequestedEntities}
                 data-testid="workflow-status-onenter-share-requested-entities-toggle"
               />
-              <Typography variant="caption" color="text.secondary" data-testid="workflow-status-onenter-share-requested-entities-helper">
-                {t_i18n('An Approved state always shares the requested entities. Change the request outcome to turn this off.')}
-              </Typography>
+              {isEnterpriseEdition && hasShareRequestedEntitiesOnEnter && (
+                <Typography variant="caption" color="text.secondary" data-testid="workflow-status-onenter-share-requested-entities-helper">
+                  {t_i18n('An Approved state always shares the requested entities. Change the request outcome to turn this off.')}
+                </Typography>
+              )}
               {hasShareRequestedEntitiesOnEnter && <WorkflowFieldList name={WorkflowDataType.onEnter} actionType={WorkflowActionType.shareRequestedEntities} />}
             </>
           )}

@@ -3887,6 +3887,36 @@ describe('triggerWorkflowEvent – async / pending / lock', () => {
     expect(stored.onEnterActions).toEqual([{ type: 'validateDraft' }]);
   });
 
+  it('keeps the background task id of a slot on the pending transition', async () => {
+    const definitionContent = JSON.stringify({
+      initialState: 'draft',
+      states: [{ statusId: 'draft' }, { statusId: 'reviewing', onEnter: [{ type: 'shareRequestedEntities' }] }],
+      transitions: [{ from: 'draft', to: 'reviewing', event: 'submit' }],
+    });
+    setupAsyncPendingMocks(definitionContent);
+    (WorkflowFactory.getInstance as any).mockReturnValue({
+      start: vi.fn(),
+      trigger: vi.fn().mockResolvedValue({
+        success: true,
+        executionStatus: 'pending',
+        asyncActionSlots: [
+          { id: 'slot-1', workId: 'work-1', type: 'shareRequestedEntities', taskId: 'task-1' },
+          { id: 'slot-2', workId: 'work-2', type: 'asyncBulkAction' },
+        ],
+        completedOnEnterActions: 1,
+      }),
+      getCurrentState: vi.fn().mockReturnValue('reviewing'),
+    });
+
+    await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'submit');
+
+    const stored = getPendingTransitionArg();
+    expect(stored.asyncActions).toEqual([
+      { id: 'slot-1', workId: 'work-1', type: 'shareRequestedEntities', status: 'pending', taskId: 'task-1' },
+      { id: 'slot-2', workId: 'work-2', type: 'asyncBulkAction', status: 'pending' },
+    ]);
+  });
+
   describe('request access direct grants', () => {
     const definitionContent = JSON.stringify({
       initialState: 'draft',

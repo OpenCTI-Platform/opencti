@@ -2317,6 +2317,8 @@ export const triggerWorkflowEvent = async (
         workId: rawSlot.workId,
         type: rawSlot.type,
         status: 'pending' as const,
+        // Kept so an admin clear can delete a container share task that is still queued
+        ...(rawSlot.taskId ? { taskId: rawSlot.taskId } : {}),
       }));
 
       // An onEnter action suspended the transition: the transition actions and the onEnter actions before it already ran.

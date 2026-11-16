@@ -5,7 +5,7 @@ import { useFormatter } from '../../../../../../components/i18n';
 import useAddStatus from './useAddStatus';
 import useDeleteElement from './useDeleteElement';
 import { WorkflowEditionFormValues } from '../WorkflowEditionDrawer';
-import { withoutShareRequestedEntities, WorkflowActionType, WorkflowNodeType } from '../utils';
+import { withoutShareRequestedEntities, withShareRequestedEntitiesLast, WorkflowActionType, WorkflowNodeType } from '../utils';
 
 // Validation Factory
 const getValidationSchema = (isStatus: boolean, t: (s: string) => string) => {
@@ -45,8 +45,9 @@ const moveOutcomeMarker = (nodes: Node[], ownerId: string, outcome: WorkflowEdit
 };
 
 // Only the Approved state may share the requested entities.
-const withShareOnlyWhenApproved = (values: WorkflowEditionFormValues): WorkflowEditionFormValues => {
-  if (values.requestAccessOutcome === 'APPROVED') return values;
+export const withShareOnlyWhenApproved = (values: WorkflowEditionFormValues): WorkflowEditionFormValues => {
+  // On Approved the share action must stay the last onEnter action (publish refuses any other order), also for a state saved earlier
+  if (values.requestAccessOutcome === 'APPROVED') return values.onEnter ? { ...values, onEnter: withShareRequestedEntitiesLast(values.onEnter) } : values;
   return {
     ...values,
     ...(values.onEnter ? { onEnter: withoutShareRequestedEntities(values.onEnter) } : {}),
