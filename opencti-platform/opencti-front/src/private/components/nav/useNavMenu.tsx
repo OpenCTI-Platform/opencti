@@ -59,7 +59,7 @@ const useNavMenu = (): NavGroup[] => {
     label: t_i18n(entry.label),
     icon: entry.icon,
     exact: entry.exact,
-    keywords: entry.keywords,
+    keywords: entry.keywords?.map((keyword) => t_i18n(keyword)),
     granted: isVisible(entry),
   });
   const subItem = (item: NavSectionItem): NavSubItem => {

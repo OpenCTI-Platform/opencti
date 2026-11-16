@@ -39,8 +39,9 @@ const useNavSearch = (keyword?: string | null): NavSearchResult[] => {
   )));
   const sectionOf = (path: string) => sectionNodes.find((n) => n.paths.includes(path));
   const entryNodes: Node[] = entries.flatMap((entry) => {
+    const keywords = (entry.keywords ?? []).map((keyword) => t_i18n(keyword));
     if (entry.standaloneParents) {
-      return [{ path: entry.path, label: t_i18n(entry.label), parents: entry.standaloneParents.map((p) => t_i18n(p)), keywords: entry.keywords ?? [] }];
+      return [{ path: entry.path, label: t_i18n(entry.label), parents: entry.standaloneParents.map((p) => t_i18n(p)), keywords }];
     }
     const section = sectionOf(entry.path);
     if (!section) return [];
@@ -48,7 +49,7 @@ const useNavSearch = (keyword?: string | null): NavSearchResult[] => {
       path: entry.path,
       label: t_i18n(entry.label),
       parents: [...section.parents, section.label],
-      keywords: entry.keywords ?? [],
+      keywords,
     }];
   });
 
