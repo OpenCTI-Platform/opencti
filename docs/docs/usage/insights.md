@@ -78,7 +78,7 @@ analysts and connectors, based on its 200 latest history entries.
 ## Copy, regenerate, change agent
 
 - **Copy to clipboard** copies the summary, to paste it into a report or a note.
-- Summaries are kept for a while, for every user, so that opening the panel again is fast. The date under each summary
+- Summaries are kept for a while, so that opening the panel again is fast. The date under each summary
   tells you when it was generated. Click **Retry** to generate it again from the latest knowledge.
 - With XTM One, a selector at the top of the panel lets you choose the AI agent that writes the summaries. Changing it
   generates the current tab again.
@@ -116,22 +116,14 @@ You also need access to the knowledge of the platform (**Access knowledge** capa
 
 ## Data and privacy
 
-A summary is generated with the permissions of the user who triggers it: the platform, or the XTM One agent acting
-for that user, only reads knowledge that user is allowed to see.
+The platform, or the XTM One agent acting for the user, reads the knowledge with the permissions of the user who
+requests the summary.
 
 - **With XTM One**, OpenCTI sends the request (the identifier of the entity or container) to XTM One, and the agent
   reads the data it needs from OpenCTI with your permissions.
 - **With an AI provider configured on the platform**, OpenCTI sends the data the summary needs straight to that
   provider: names, descriptions and statistics, container content and file text, and, for **Internal history**, the
   history entries, which name the users and connectors who made the changes.
-
-!!! note "Shared results"
-
-    A generated summary is kept and shown to the next users who open the same panel, until it expires or someone
-    clicks **Retry**. It may therefore reflect knowledge that the user who generated it could see and you cannot.
-    Keep this in mind when users with different access rights, for example from different organizations, work on
-    the same entity.
-
 ## What's next?
 
 - [Ask Ariane](copilot.md): ask questions about the platform in a chat.
