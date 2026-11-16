@@ -78,8 +78,10 @@ entities they contain. For **Containers digest** with an AI provider configured 
 
 ### Internal history
 
-Summarizes what happened to the entity inside the platform: creations, updates, merges and deletions made by
-analysts and connectors, based on its 200 latest history entries.
+Summarizes what happened to the entity inside the platform. With an AI provider configured on the platform, it uses
+its 200 latest history entries, covering creations, updates, merges and deletions made by analysts and connectors.
+With XTM One, the selected agent is asked for a chronological summary of significant changes; the request does not
+specify an entry limit.
 
 ## Copy, regenerate, change agent
 
