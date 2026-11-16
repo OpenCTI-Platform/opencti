@@ -1,10 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useReactFlow, useStore, useNodesInitialized, Node, Edge, ReactFlowState } from 'reactflow';
 import { timer } from 'd3-timer';
 import { layoutPlaybook, PlaybookLayoutComponent, PlaybookLayoutLink, PlaybookLayoutNode } from '../layout/layoutPlaybook';
 import type { PlaybookLayoutDirection } from './usePlaybookLayoutMode';
 import { outPorts, PLAYBOOK_CARD, portAddPosition } from '../types/nodes/playbookNodeGeometry';
-import { PLAYBOOK_LANDING, playbookLandingViewport } from '../utils/playbookLanding';
+import { PLAYBOOK_LANDING, playbookLandingViewport, playbookMiniMapClear } from '../utils/playbookLanding';
 
 // [gap between siblings, gap between ranks]: room for the port pills and the add buttons. The
 // links turn on the middle line of the rank gap; the add button of a free port ends 8 px above it.
@@ -72,17 +72,28 @@ const useLayout = (direction: PlaybookLayoutDirection = 'vertical') => {
   const shownDirection = useRef(direction);
   const structure = useStore(structureSelector);
   const nodesInitialized = useNodesInitialized();
-  const { getNodes, getNode, setNodes, getEdges, fitView, setViewport } = useReactFlow();
+  const { getNodes, getNode, setNodes, getEdges, fitView, setViewport, getViewport } = useReactFlow();
   const paneWidth = useStore((state: ReactFlowState) => state.width);
   const paneHeight = useStore((state: ReactFlowState) => state.height);
   // The landing view of the playbook: a fit when the cards stay readable, else the readable zoom on
   // the entry point (a large playbook is explored from its start, the fit button still shows it whole).
+  // The minimap is drawn once a landing leaves every card clear of its box, or once the user pans or
+  // zooms: a landing never hides a card or its menu under the minimap.
+  const [miniMapShown, setMiniMapShown] = useState(false);
   const land = useRef<(duration?: number) => void>(() => undefined);
   land.current = (duration?: number) => {
-    const viewport = playbookLandingViewport(getNodes(), { width: paneWidth, height: paneHeight }, direction);
+    const pane = { width: paneWidth, height: paneHeight };
+    const viewport = playbookLandingViewport(getNodes(), pane, direction);
     if (viewport) setViewport(viewport, duration ? { duration } : undefined);
     else fitView(duration ? { ...INITIAL_FIT, duration } : INITIAL_FIT);
+    const settle = () => setMiniMapShown(playbookMiniMapClear(getNodes(), viewport ?? getViewport(), pane));
+    if (viewport || !duration) settle();
+    else setTimeout(settle, duration + 20);
   };
+  // Only a move the user starts (wheel, drag, pinch) carries an event; the landings carry none.
+  const onMoveStart = useCallback((event: unknown) => {
+    if (event) setMiniMapShown(true);
+  }, []);
   useEffect(() => {
     const nodes = getNodes();
     const edges = getEdges();
@@ -131,6 +142,7 @@ const useLayout = (direction: PlaybookLayoutDirection = 'vertical') => {
       land.current();
     }
   }, [nodesInitialized, paneWidth, paneHeight]);
+  return { miniMapShown, onMoveStart };
 };
 
 export default useLayout;

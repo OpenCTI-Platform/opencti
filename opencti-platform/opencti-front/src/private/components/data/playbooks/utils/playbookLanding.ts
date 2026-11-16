@@ -6,6 +6,9 @@ import { PLAYBOOK_CARD } from '../types/nodes/playbookNodeGeometry';
 // the zoom where a card title stays readable: a playbook too large for that lands on its entry point.
 export const PLAYBOOK_LANDING = { padding: 0.2, maxZoom: 1, minZoom: 0.75, margin: 24 };
 
+// The minimap box, drawn in the bottom right corner of the canvas with the margin of a React Flow panel.
+export const PLAYBOOK_MINIMAP = { width: 200, height: 150, margin: 15 };
+
 type Pane = { width: number; height: number };
 
 const steps = (nodes: Node[]) => nodes.filter((node) => node.type !== 'placeholder');
@@ -34,6 +37,24 @@ const entryOf = (nodes: Node[], direction: PlaybookLayoutDirection): XYPosition 
   const entries = cards.filter((n) => n.data?.component?.is_entry_point).sort(byReadingOrder);
   const first = entries[0] ?? cards.slice().sort(byReadingOrder)[0];
   return first ? first.position : null;
+};
+
+// Whether the minimap box leaves every step card visible at this viewport: the canvas draws the
+// minimap only then, or once the user has panned or zoomed it, so a landing never hides a card.
+export const playbookMiniMapClear = (nodes: Node[], viewport: Viewport, pane: Pane): boolean => {
+  const box = {
+    left: pane.width - PLAYBOOK_MINIMAP.margin - PLAYBOOK_MINIMAP.width,
+    top: pane.height - PLAYBOOK_MINIMAP.margin - PLAYBOOK_MINIMAP.height,
+    right: pane.width - PLAYBOOK_MINIMAP.margin,
+    bottom: pane.height - PLAYBOOK_MINIMAP.margin,
+  };
+  return steps(nodes).every((node) => {
+    const left = node.position.x * viewport.zoom + viewport.x;
+    const top = node.position.y * viewport.zoom + viewport.y;
+    const right = left + PLAYBOOK_CARD.width * viewport.zoom;
+    const bottom = top + PLAYBOOK_CARD.height * viewport.zoom;
+    return right <= box.left || left >= box.right || bottom <= box.top || top >= box.bottom;
+  });
 };
 
 // The viewport a playbook opens on when a fit would make its cards unreadable: the readable floor

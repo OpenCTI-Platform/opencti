@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Node } from 'reactflow';
-import { PLAYBOOK_LANDING, playbookFitZoom, playbookLandingViewport } from './playbookLanding';
+import { PLAYBOOK_LANDING, PLAYBOOK_MINIMAP, playbookFitZoom, playbookLandingViewport, playbookMiniMapClear } from './playbookLanding';
 import { PLAYBOOK_CARD } from '../types/nodes/playbookNodeGeometry';
 
 const step = (id: string, x: number, y: number, entry = false): Node => ({
@@ -41,6 +41,24 @@ describe('playbookLanding', () => {
     expect(viewport.x).toBe(PLAYBOOK_LANDING.margin);
     const top = 200 * viewport.zoom + viewport.y;
     expect(Math.abs(top + (PLAYBOOK_CARD.height * viewport.zoom) / 2 - 350)).toBeLessThanOrEqual(1);
+  });
+
+  it('reports a card under the minimap box at 1080x800', () => {
+    const pane = { width: 1080, height: 800 };
+    // a card whose bottom right corner reaches into the minimap box
+    const under = [step('entry', 0, 0, true), step('low', 1080 - PLAYBOOK_MINIMAP.margin - 100, 800 - PLAYBOOK_MINIMAP.margin - 40)];
+    expect(playbookMiniMapClear(under, { x: 0, y: 0, zoom: 1 }, pane)).toBe(false);
+    // the same card one pixel left of the box leaves it clear
+    expect(playbookMiniMapClear(under, { x: -(1229 - (1080 - PLAYBOOK_MINIMAP.margin - PLAYBOOK_MINIMAP.width)), y: 0, zoom: 1 }, pane)).toBe(true);
+  });
+
+  it('reports the minimap clear when every card stands outside its box', () => {
+    const pane = { width: 1080, height: 800 };
+    const top = [step('entry', 0, 0, true), step('b', 320, 0)];
+    expect(playbookMiniMapClear(top, { x: 24, y: 24, zoom: 0.75 }, pane)).toBe(true);
+    // the add buttons are not cards: one under the box does not hide the minimap
+    const withAdd = [...top, { id: 'p', type: 'placeholder', position: { x: 1000, y: 700 }, data: {} }];
+    expect(playbookMiniMapClear(withAdd, { x: 0, y: 0, zoom: 1 }, pane)).toBe(true);
   });
 
   it('ignores the add buttons and lands nowhere for an empty playbook', () => {

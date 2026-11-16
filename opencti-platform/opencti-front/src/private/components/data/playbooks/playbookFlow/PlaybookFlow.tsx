@@ -187,7 +187,7 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
   );
 
   // Needs to be called after computing nodes and edges.
-  useLayout(direction);
+  const { miniMapShown, onMoveStart } = useLayout(direction);
 
   // Rewiring by drag: only for users who may change playbooks; the others get a read-only canvas.
   const canManage = useGranted([AUTOMATION_AUTMANAGE]);
@@ -243,17 +243,20 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
           onConnect={canManage ? onConnect : undefined}
           onEdgeUpdate={canManage ? onEdgeUpdate : undefined}
           zoomOnDoubleClick={false}
+          onMoveStart={onMoveStart}
           proOptions={proOptions}
         >
           <Background variant={BackgroundVariant.Dots} gap={20} size={1} color={theme.palette.divider} />
-          <MiniMap
-            pannable
-            zoomable
-            ariaLabel={null}
-            nodeColor={(node) => (node.type === 'placeholder' ? 'transparent' : categoryAccent(theme, node.data?.component?.category))}
-            maskColor={theme.palette.action?.hover}
-            style={{ backgroundColor: theme.palette.background.paper }}
-          />
+          {miniMapShown && (
+            <MiniMap
+              pannable
+              zoomable
+              ariaLabel={null}
+              nodeColor={(node) => (node.type === 'placeholder' ? 'transparent' : categoryAccent(theme, node.data?.component?.category))}
+              maskColor={theme.palette.action?.hover}
+              style={{ backgroundColor: theme.palette.background.paper }}
+            />
+          )}
           <PlaybookFlowToolbar direction={direction} onDirectionChange={setDirection} history={canManage ? history : undefined} />
         </ReactFlow>
         <PlaybookFlowAddComponents
