@@ -4,7 +4,7 @@ Workbenches serve as dedicated workspaces for manipulating data before it is off
 
 !!! note "Workbenches and drafts"
 
-    Workbenches and [draft workspaces](draftWorkspaces.md) are the two validation modes for imported files. Drafts are the default: automatic imports go into a draft unless the `app:validation_mode` parameter (environment variable `APP__VALIDATION_MODE`) is set to `workbench` (see [Functional customization](../deployment/configuration.md#functional-customization)). When you import a file manually, you choose the **Validation mode** (Draft or Workbench) in the import dialog.
+    Workbenches and [draft workspaces](draftWorkspaces.md) are the two validation modes for imported files. They only apply to imports that require validation. When you import a file manually, you choose the **Validation mode** (Draft or Workbench) in the import dialog. An automatic import requires validation only when the import connector is configured to validate before import (`CONNECTOR_VALIDATE_BEFORE_IMPORT`); otherwise its result is ingested directly. For automatic imports that require validation, drafts are the default: the result goes into a draft unless the `app:validation_mode` parameter (environment variable `APP__VALIDATION_MODE`) is set to `workbench` (see [Functional customization](../deployment/configuration.md#functional-customization)).
 
     A workbench holds the import result as a file to review before ingestion, whereas a draft is a separate workspace where you browse and edit the data with the usual platform screens. You can turn a workbench into a draft with the **Convert to draft** button.
 

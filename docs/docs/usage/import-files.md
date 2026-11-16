@@ -65,14 +65,16 @@ Expanding the scope of file imports, users can seamlessly add files in the `Cont
 
 ### User capability requirement
 
-In order to initiate file imports, users must possess the requisite [capabilities](../administration/users.md):
+File imports rely on two [capabilities](../administration/users.md):
 
 - "Upload knowledge files": upload files in the "Data" and "Content" sections of entities.
-- "Import knowledge": trigger the ingestion of an uploaded file by an import connector or a CSV mapper.
+- "Import knowledge": trigger the ingestion of a file by an import connector or a CSV mapper.
+
+Either capability lets a user upload a file for import. Only "Import knowledge" starts the ingestion: with "Upload knowledge files" alone, the file is uploaded but no import is triggered. Creating a draft from a file already uploaded also requires "Import knowledge".
+
+Users without "Import knowledge" can be granted it in the [capabilities in draft](../administration/users.md#control-of-capabilities-in-draft-mode) (Enterprise Edition) instead. They can then upload and import files, but only with the Draft validation mode.
 
 These capabilities ensure that only authorized users can contribute and manage knowledge files within the OpenCTI platform, maintaining a controlled and secure environment for data uploads.
-
-To import files into a draft only, a user can instead hold "Import knowledge" in the [capabilities in draft](../administration/users.md#control-of-capabilities-in-draft-mode) (Enterprise Edition). This capability is required to create a draft from a file upload.
 
 
 !!! warning "Deprecation warning"
