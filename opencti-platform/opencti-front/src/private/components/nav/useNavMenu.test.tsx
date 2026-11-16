@@ -99,6 +99,12 @@ describe('Hook: useNavMenu, Techniques group', () => {
     expect(links).toContain('/dashboard/techniques/procedures');
   });
 
+  it('lists Procedures right under Attack patterns', () => {
+    hidden.splice(0, hidden.length);
+    const links = (techniquesItem()?.subItems ?? []).map((sub) => sub.link);
+    expect(links.slice(0, 2)).toEqual(['/dashboard/techniques/attack_patterns', '/dashboard/techniques/procedures']);
+  });
+
   it('keeps the Techniques group when only Procedure is left visible', () => {
     hidden.splice(0, hidden.length, ...techniqueTypes.filter((type) => type !== 'Procedure'));
     const links = (techniquesItem()?.subItems ?? []).map((sub) => sub.link);
