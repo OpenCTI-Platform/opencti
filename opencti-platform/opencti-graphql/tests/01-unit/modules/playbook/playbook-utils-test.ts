@@ -5,6 +5,8 @@ import {
   filterBundleElements,
   isBundleElementMatchFilters,
   convertMembersToUsersFromElements,
+  assertPlaybookDefinitionValid,
+  assertPlaybookNodeConfigurationValid,
   MINIMAL_COMPATIBLE_SCOPE_VERSION,
   buildPlaybookEventContext,
   updateImportedPlaybookDefinitionScope,
@@ -657,6 +659,109 @@ describe('Playbook utils unit tests', () => {
     it('should return empty array for empty members', async () => {
       const users = await convertMembersToUsersFromElements([], [element1], testBundle);
       expect(users).toEqual([]);
+    });
+  });
+
+  describe('Function assertPlaybookNodeConfigurationValid()', () => {
+    const validFilters = JSON.stringify({
+      mode: 'and',
+      filters: [{ key: ['entity_type'], operator: 'eq', values: ['Report'], mode: 'or' }],
+      filterGroups: [],
+    });
+    const nodeError = 'Invalid JSON in configuration of playbook node "my node"';
+
+    it('should accept an empty configuration', () => {
+      expect(() => assertPlaybookNodeConfigurationValid({ name: 'my node', configuration: '' })).not.toThrow();
+      expect(() => assertPlaybookNodeConfigurationValid({ name: 'my node', configuration: null })).not.toThrow();
+      expect(() => assertPlaybookNodeConfigurationValid({ name: 'my node' })).not.toThrow();
+    });
+
+    it('should accept a configuration with valid stringified filters', () => {
+      const configuration = JSON.stringify({
+        filters: validFilters,
+        applyWithFilters: validFilters,
+        applyToElements: 'onlyMain',
+      });
+      expect(() => assertPlaybookNodeConfigurationValid({ name: 'my node', configuration })).not.toThrow();
+    });
+
+    it('should accept a configuration with empty filters', () => {
+      const configuration = JSON.stringify({ filters: '' });
+      expect(() => assertPlaybookNodeConfigurationValid({ name: 'my node', configuration })).not.toThrow();
+    });
+
+    it('should reject a configuration that is not valid JSON', () => {
+      expect(() => assertPlaybookNodeConfigurationValid({ name: 'my node', configuration: '{"a":' })).toThrow(nodeError);
+    });
+
+    it('should reject a configuration that is not a JSON object', () => {
+      expect(() => assertPlaybookNodeConfigurationValid({ name: 'my node', configuration: '5' })).toThrow(nodeError);
+      expect(() => assertPlaybookNodeConfigurationValid({ name: 'my node', configuration: '[]' })).toThrow(nodeError);
+      expect(() => assertPlaybookNodeConfigurationValid({ name: 'my node', configuration: 'null' })).toThrow(nodeError);
+    });
+
+    it('should reject a configuration with truncated filters', () => {
+      const configuration = JSON.stringify({ filters: '{"mode":"and",' });
+      expect(() => assertPlaybookNodeConfigurationValid({ name: 'my node', configuration })).toThrow(nodeError);
+    });
+
+    it('should reject a configuration with truncated applyWithFilters', () => {
+      const configuration = JSON.stringify({ filters: validFilters, applyWithFilters: '{"mode":"and",' });
+      expect(() => assertPlaybookNodeConfigurationValid({ name: 'my node', configuration })).toThrow(nodeError);
+    });
+
+    it('should reject a configuration with filters that are not stringified', () => {
+      const configuration = JSON.stringify({ filters: { mode: 'and', filters: [], filterGroups: [] } });
+      expect(() => assertPlaybookNodeConfigurationValid({ name: 'my node', configuration })).toThrow(nodeError);
+    });
+  });
+
+  describe('Function assertPlaybookDefinitionValid()', () => {
+    const buildDefinition = (configuration: string) => JSON.stringify({
+      nodes: [{
+        id: '21f1f363-2b34-4327-802c-57ef2c3eb2ea',
+        name: 'my node',
+        position: { x: 0, y: 0 },
+        component_id: 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER',
+        configuration,
+      }],
+      links: [],
+    });
+    const definitionError = 'Invalid JSON in playbook definition';
+    const nodeError = 'Invalid JSON in configuration of playbook node "my node"';
+
+    it('should accept an empty definition', () => {
+      expect(() => assertPlaybookDefinitionValid('')).not.toThrow();
+      expect(() => assertPlaybookDefinitionValid(undefined)).not.toThrow();
+    });
+
+    it('should accept a definition with no node', () => {
+      expect(() => assertPlaybookDefinitionValid('{"nodes":[],"links":[]}')).not.toThrow();
+    });
+
+    it('should accept a definition with valid node configurations', () => {
+      expect(() => assertPlaybookDefinitionValid(buildDefinition('{}'))).not.toThrow();
+    });
+
+    it('should reject a definition that is not valid JSON', () => {
+      expect(() => assertPlaybookDefinitionValid('{"nodes":[],"links":[]}"')).toThrow(definitionError);
+    });
+
+    it('should reject a definition that is not a JSON object', () => {
+      expect(() => assertPlaybookDefinitionValid('[]')).toThrow(definitionError);
+    });
+
+    it('should reject a definition whose nodes are not an array', () => {
+      expect(() => assertPlaybookDefinitionValid('{"nodes":{}}')).toThrow(definitionError);
+    });
+
+    it('should reject a valid definition holding a node configuration that is not valid JSON', () => {
+      expect(() => assertPlaybookDefinitionValid(buildDefinition('{"a":'))).toThrow(nodeError);
+    });
+
+    it('should reject a valid definition holding a node with truncated filters', () => {
+      const configuration = JSON.stringify({ filters: '{"mode":"and",' });
+      expect(() => assertPlaybookDefinitionValid(buildDefinition(configuration))).toThrow(nodeError);
     });
   });
 });

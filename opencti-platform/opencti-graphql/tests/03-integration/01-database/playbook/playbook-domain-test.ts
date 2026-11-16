@@ -28,6 +28,13 @@ describe('playbook-domain', () => {
       await expect(playbookImport(testContext, ADMIN_USER, fileHandle)).rejects.toThrowError('Invalid import type, must be playbook');
     });
 
+    it('should throw a functional error if a node configuration is invalid in a playbook from an old version', async () => {
+      const fileUrl = new URL('testData/imported-playbook-with-invalid-node-configuration.json', import.meta.url);
+      const fileHandle = open(fileUrl);
+
+      await expect(playbookImport(testContext, ADMIN_USER, fileHandle)).rejects.toThrowError('Invalid JSON in configuration of playbook node "Broken node"');
+    });
+
     it('should update correctly a playbook imported with the old configuration', async () => {
       const fileUrl = new URL('testData/imported-playbook-with-old-scope.json', import.meta.url);
       const fileHandle = open(fileUrl);
