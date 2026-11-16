@@ -140,6 +140,22 @@ def test_example_bundle_has_no_customer_data():
     assert "customer" not in text
 
 
+def test_example_bundle_urls_are_defanged():
+    text = EXAMPLE_BUNDLE.read_text(encoding="utf-8")
+    assert "backblazeb2.com" not in text
+    for obj in _load_example()["objects"]:
+        assert "https://" not in obj.get("command_line", "")
+
+
+def test_example_bundle_attributes_only_the_published_procedure_to_its_vendor():
+    bundle = _load_example()
+    vendor = next(o["id"] for o in bundle["objects"] if o["type"] == "identity")
+    attributed = [
+        o["id"] for o in bundle["objects"] if o.get("created_by_ref") == vendor
+    ]
+    assert attributed == ["x-procedure--5e0040b0-42df-46d2-8e7f-0fa3d753b75d"]
+
+
 def test_split_keeps_relationships_to_attack_patterns_not_in_the_bundle():
     """import_bundle splits with cleanup_inconsistent_bundle=False (its default)."""
     splitter = OpenCTIStix2Splitter()
