@@ -93,7 +93,7 @@ const AutocompleteFreeSoloField = (props) => {
       {helperText && <ComboboxHelperText>{helperText}</ComboboxHelperText>}
     </Combobox>
   );
-  // FDS-WORKAROUND #78: the spacing a form passes as `style` goes on a wrapper, Combobox takes no style — see fds-migration/LIBRARY-FEEDBACK.md #78
+  // FDS-WORKAROUND #79: the spacing a form passes as `style` goes on a wrapper, Combobox takes no style — see fds-migration/LIBRARY-FEEDBACK.md #79
   if (!style) return combobox;
   return <div style={style}>{combobox}</div>;
 };
