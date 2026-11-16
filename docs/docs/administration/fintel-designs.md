@@ -5,13 +5,15 @@ Fintel design are used to customize and preview your own Fintel template. You ca
 To create and manage the templates themselves, see [Fintel templates](entities.md#fintel-templates). To send the resulting documents to a list of recipients, see [Dissemination list](dissemination-list.md).
 
 ## Create a fintel design
-Fintel designs can be configured on the "Settings > Customization > Fintel designs" menu.
+
+Fintel designs can be configured on the "Settings > Customization > Fintel design" menu.
 
 On this first screen, you can see the main view of the interface aiming to present a clear, organised presentation of the existing lists.
 
 ![Fintel design interface](./assets/fintel-designs/fintel-design-list.png)
 
 When creating a design you can provide the following data:
+
 - Name
 - Description
 
@@ -30,7 +32,8 @@ Now let's customize a little bit this template.
 ![Fintel design customization](./assets/fintel-designs/fintel-design-custom.png)
 
 As you can see now in the preview you can change the following data:
-- Logo: you can use png, jpg, svg files (even url are accepted)
+
+- Logo: you can use png, jpg, svg or webp files (even url are accepted)
 - Background primary color and Background secondary color: the two colors of the background gradient
 - Text color
 

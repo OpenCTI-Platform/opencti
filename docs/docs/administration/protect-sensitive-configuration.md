@@ -16,6 +16,7 @@ When a configuration is sensitive, it remains visible to user with access rights
 possible actions are disabled.
 
 The sensitive configurations identified are:
+
 - Modification of specific roles and groups
 - Activation/deactivation of inference rules
 - Main platform Organization modification

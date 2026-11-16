@@ -188,6 +188,7 @@ data:image/png;base64,iVBORw0KGgoAAAANS...
 ```
 
 **Recommended dimensions:**
+
 - **Logo URL (expanded):** 900×200px (will be scaled down to ~165×35px display size)
 - **Logo URL (collapsed):** 350×350px square (displays at 35×35px)
 - **Logo URL (login):** 900×200px (displays at ~400×85px)
