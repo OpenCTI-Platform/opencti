@@ -149,11 +149,19 @@ export const shouldShowDeprecatedAlert = (descriptors: DeprecatedFieldDescriptor
  * Filters edition payload values by keeping all non-deprecated fields and only
  * deprecated fields that are still configured with non-default values.
  * A cleared non-deprecated field is sent empty so the backend does not keep its stored value.
+ * JsonForms removes a field cleared to undefined from the form data, so configuration keys
+ * loaded on open (initialValues) and now absent are treated as cleared.
  */
 export const filterValuesForEditionPayload = (
-  values: ConnectorValues,
+  rawValues: ConnectorValues,
   properties: Record<string, IngestionTypedProperty>,
+  initialValues: ConnectorValues = {},
 ) => {
+  const values: ConnectorValues = { ...rawValues };
+  Object.keys(initialValues).forEach((key) => {
+    if (properties[key] && !(key in values)) values[key] = undefined;
+  });
+
   const deprecatedDescriptors = getDeprecatedDescriptorsForEdition(properties, values);
   const keepDeprecatedKeys = new Set(
     deprecatedDescriptors.map((descriptor) => descriptor.key),

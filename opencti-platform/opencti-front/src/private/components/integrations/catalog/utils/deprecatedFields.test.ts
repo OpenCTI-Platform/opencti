@@ -450,5 +450,49 @@ describe('deprecatedFields utils', () => {
         ARRAY_FIELD: [],
       });
     });
+
+    describe('keys removed from the form data on clear', () => {
+      // JsonForms unsets a key cleared to undefined, so it is absent from the values, not undefined
+      const removalProperties: Record<string, IngestionTypedProperty> = {
+        NORMAL_FIELD: makeStringProp({ deprecated: false }),
+        NUMBER_FIELD: { type: 'integer', default: 60, description: 'number' } as unknown as IngestionTypedProperty,
+        NEVER_STORED_FIELD: makeStringProp({ deprecated: false }),
+        DEPRECATED_WITH_DEFAULT: makeStringProp({ deprecated: true, default: 'same' }),
+      };
+
+      it('sends a non-deprecated key loaded on open and now absent as empty', () => {
+        const payload = filterValuesForEditionPayload(
+          { name: 'connector' },
+          removalProperties,
+          { name: 'connector', NORMAL_FIELD: 'stored', NUMBER_FIELD: 120 },
+        );
+
+        expect(payload).toEqual({
+          name: 'connector',
+          NORMAL_FIELD: '',
+          NUMBER_FIELD: '',
+        });
+      });
+
+      it('does not send a key that was neither loaded on open nor set', () => {
+        const payload = filterValuesForEditionPayload(
+          { NORMAL_FIELD: 'ok' },
+          removalProperties,
+          { NORMAL_FIELD: 'ok' },
+        );
+
+        expect(payload).toEqual({ NORMAL_FIELD: 'ok' });
+      });
+
+      it('still drops a deprecated key loaded on open and now absent', () => {
+        const payload = filterValuesForEditionPayload(
+          { NORMAL_FIELD: 'ok' },
+          removalProperties,
+          { NORMAL_FIELD: 'ok', DEPRECATED_WITH_DEFAULT: 'custom' },
+        );
+
+        expect(payload).toEqual({ NORMAL_FIELD: 'ok' });
+      });
+    });
   });
 });
