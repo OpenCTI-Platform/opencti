@@ -1,0 +1,11 @@
+[
+  {
+    "filePath": "__BASE_DIR__/sample-src/a.ts",
+    "messages": [
+      { "ruleId": "no-debugger", "severity": 2, "message": "Unexpected 'debugger' statement.", "line": 2, "column": 3 },
+      { "ruleId": "@typescript-eslint/no-unused-vars", "severity": 1, "message": "'unused' is assigned a value but never used.", "line": 3, "column": 9 },
+      { "ruleId": "eqeqeq", "severity": 2, "message": "Expected '===' and instead saw '=='.", "line": 4, "column": 16 },
+      { "ruleId": null, "severity": 2, "message": "Parsing error: Unexpected token", "line": 5, "column": 1 }
+    ]
+  }
+]
