@@ -1,138 +1,158 @@
+import { ValueType } from '@opentelemetry/api';
 import conf, { logApp } from '../../config/conf';
-import { FunctionalError } from '../../config/errors';
-
-export type ContinuationAbandonReason = 'shutdown_timeout' | 'shutdown_before_start';
-
-export type ContinuationOptions = {
-  logMeta?: Record<string, unknown>;
-  // Called when the node stops before the continuation could end, so the caller can leave
-  // a trace of it (an error observation on the playbook execution). Never called otherwise.
-  onAbandon?: (reason: ContinuationAbandonReason) => Promise<void>;
-};
-
-type Waiter = {
-  resolve: () => void;
-  reject: (error: Error) => void;
-};
-
-type InFlight = {
-  done: Promise<void>;
-  onAbandon?: ContinuationOptions['onAbandon'];
-  logMeta: Record<string, unknown>;
-};
+import { UnsupportedError } from '../../config/errors';
+import { meterManager } from '../../config/tracing';
 
 /**
- * Bounded scheduler for the playbook steps that follow an external callback.
+ * Bounded, fair scheduler for the playbook steps that follow an external callback.
  *
  * When a connector step calls back (`playbookStepExecution`), the rest of the chain
  * (AI transforms, ingestion, notifications...) is run in the background so the
  * connector is acknowledged as soon as its bundle is accepted.
- * To keep backpressure, at most `maxConcurrency` continuations run at once on this node:
- * `schedule` resolves when the continuation has STARTED (a slot was free), not when it has
- * finished. When every slot is taken, the caller waits for a free slot, so a flood of
- * callbacks can neither start unbounded concurrent downstream calls nor pile up unbounded
- * work in memory.
  *
- * The continuations live in the memory of this node. `drain` is called when the node stops:
- * it refuses new continuations, refuses the callers still waiting for a slot (their connector
- * sees an error and can retry), waits a bounded time for the running ones, and reports every
- * continuation that could not end through its `onAbandon`, so a stop never loses a chain silently.
+ * - The request path never waits for a slot: `schedule` queues the continuation and returns
+ *   at once. A continuation starts when a slot is free.
+ * - At most `maxConcurrency` continuations run at once on this node, and at most
+ *   `maxConcurrencyPerPlaybook` of them for one playbook, so a playbook with slow steps
+ *   (AI agent calls) cannot take every slot.
+ * - Queued continuations are kept per playbook and started round-robin across playbooks,
+ *   so a short chain of one playbook is never held behind the backlog of another.
+ * - The backlog is bounded: when `maxWaiting` continuations are queued, `assertAccepting`
+ *   throws, so the callback is refused and the connector sees the error. A refused
+ *   callback never runs later.
  */
-export const createContinuationScheduler = (maxConcurrency: number) => {
-  const limit = Math.max(1, Math.floor(maxConcurrency));
+export type ContinuationSchedulerOptions = {
+  maxConcurrency: number;
+  maxConcurrencyPerPlaybook?: number;
+  maxWaiting?: number;
+};
+
+type ContinuationTask = () => Promise<void>;
+type QueuedContinuation = { task: ContinuationTask; logMeta: Record<string, unknown> };
+
+const DEFAULT_PLAYBOOK_KEY = '__no_playbook__';
+
+export const createContinuationScheduler = (options: ContinuationSchedulerOptions) => {
+  const limit = Math.max(1, Math.floor(options.maxConcurrency));
+  const perPlaybookLimit = Math.min(limit, Math.max(1, Math.floor(options.maxConcurrencyPerPlaybook ?? limit)));
+  const maxWaiting = Math.max(0, Math.floor(options.maxWaiting ?? 1000));
   let running = 0;
-  let draining = false;
-  const waiters: Array<Waiter> = [];
-  const inFlight = new Set<InFlight>();
+  let waiting = 0;
+  const runningByPlaybook = new Map<string, number>();
+  // Insertion order of the Map is the round-robin order: a playbook served is moved to the end.
+  const queues = new Map<string, QueuedContinuation[]>();
+  let saturationLogged = false;
 
-  const acquire = async () => {
-    if (running < limit) {
-      running += 1;
-      return;
-    }
-    // The slot is handed over by release(): running is not decremented then incremented.
-    await new Promise<void>((resolve, reject) => {
-      waiters.push({ resolve, reject });
-    });
-  };
+  // Assigned below: start() and dispatch() call each other.
+  let dispatch: () => void = () => {};
 
-  const release = () => {
-    const next = waiters.shift();
-    if (next) {
-      next.resolve();
-    } else {
-      running -= 1;
-    }
-  };
+  const playbookKey = (logMeta: Record<string, unknown>) => (typeof logMeta.playbookId === 'string' ? logMeta.playbookId : DEFAULT_PLAYBOOK_KEY);
 
-  const reportAbandon = async (onAbandon: ContinuationOptions['onAbandon'], reason: ContinuationAbandonReason, logMeta: Record<string, unknown>) => {
-    logApp.error('[OPENCTI-MODULE] Playbook manager continuation interrupted by the platform stop', { manager: 'PLAYBOOK_MANAGER', reason, ...logMeta });
-    if (onAbandon) {
+  const start = (key: string, continuation: QueuedContinuation) => {
+    running += 1;
+    runningByPlaybook.set(key, (runningByPlaybook.get(key) ?? 0) + 1);
+    // Detached on purpose: the caller never waits for the task.
+    void (async () => {
       try {
-        await onAbandon(reason);
+        await continuation.task();
       } catch (error) {
-        logApp.error('[OPENCTI-MODULE] Playbook manager cannot register an interrupted continuation', { cause: error, manager: 'PLAYBOOK_MANAGER', reason, ...logMeta });
-      }
-    }
-  };
-
-  const schedule = async (task: () => Promise<void>, options: ContinuationOptions = {}) => {
-    const logMeta = options.logMeta ?? {};
-    if (draining) {
-      await reportAbandon(options.onAbandon, 'shutdown_before_start', logMeta);
-      throw FunctionalError('Playbook continuation refused, the platform is stopping', logMeta);
-    }
-    try {
-      await acquire();
-    } catch (error) {
-      await reportAbandon(options.onAbandon, 'shutdown_before_start', logMeta);
-      throw error;
-    }
-    // Detached on purpose: the caller only waits for the slot, never for the task.
-    const entry: InFlight = { done: Promise.resolve(), onAbandon: options.onAbandon, logMeta };
-    entry.done = (async () => {
-      try {
-        await task();
-      } catch (error) {
-        logApp.error('[OPENCTI-MODULE] Playbook manager continuation error', { cause: error, manager: 'PLAYBOOK_MANAGER', ...logMeta });
+        logApp.error('[OPENCTI-MODULE] Playbook manager continuation error', { cause: error, manager: 'PLAYBOOK_MANAGER', ...continuation.logMeta });
       } finally {
-        inFlight.delete(entry);
-        release();
+        running -= 1;
+        const left = (runningByPlaybook.get(key) ?? 1) - 1;
+        if (left <= 0) {
+          runningByPlaybook.delete(key);
+        } else {
+          runningByPlaybook.set(key, left);
+        }
+        dispatch();
       }
     })();
-    inFlight.add(entry);
   };
 
-  const drain = async (timeoutMs: number) => {
-    draining = true;
-    // Callers still waiting for a slot have not been answered yet: refuse them, their connector sees the error.
-    const refused = waiters.splice(0);
-    refused.forEach((waiter) => waiter.reject(FunctionalError('Playbook continuation refused, the platform is stopping')));
-    if (inFlight.size === 0) {
-      return { completed: 0, abandoned: 0, refused: refused.length };
+  dispatch = () => {
+    let started = true;
+    while (running < limit && started) {
+      started = false;
+      const keys = Array.from(queues.keys());
+      for (let index = 0; index < keys.length; index += 1) {
+        const key = keys[index];
+        const queue = queues.get(key) as QueuedContinuation[];
+        if ((runningByPlaybook.get(key) ?? 0) < perPlaybookLimit) {
+          const next = queue.shift() as QueuedContinuation;
+          waiting -= 1;
+          // Round-robin: the playbook just served goes to the end of the rotation.
+          queues.delete(key);
+          if (queue.length > 0) {
+            queues.set(key, queue);
+          }
+          start(key, next);
+          started = true;
+          break;
+        }
+      }
     }
-    const pending = Array.from(inFlight);
-    logApp.info(`[OPENCTI-MODULE] Playbook manager waiting for ${pending.length} running continuation(s) before stopping`, { manager: 'PLAYBOOK_MANAGER', timeoutMs });
-    let timer: NodeJS.Timeout | undefined;
-    const timeout = new Promise<void>((resolve) => {
-      timer = setTimeout(resolve, Math.max(0, timeoutMs));
-    });
-    await Promise.race([Promise.all(pending.map((entry) => entry.done)), timeout]);
-    if (timer) clearTimeout(timer);
-    const abandoned = pending.filter((entry) => inFlight.has(entry));
-    await Promise.all(abandoned.map((entry) => reportAbandon(entry.onAbandon, 'shutdown_timeout', entry.logMeta)));
-    return { completed: pending.length - abandoned.length, abandoned: abandoned.length, refused: refused.length };
+    if (waiting === 0 && saturationLogged) {
+      saturationLogged = false;
+      logApp.info('[OPENCTI-MODULE] Playbook manager continuation backlog drained', { manager: 'PLAYBOOK_MANAGER', running });
+    }
+  };
+
+  // Called on the request path BEFORE the connector step is registered, so a refused
+  // callback leaves no trace of an accepted step and never runs later.
+  const assertAccepting = (logMeta: Record<string, unknown> = {}) => {
+    if (waiting >= maxWaiting) {
+      logApp.warn('[OPENCTI-MODULE] Playbook manager continuation refused, backlog full', { manager: 'PLAYBOOK_MANAGER', running, waiting, maxWaiting, ...logMeta });
+      throw UnsupportedError('Playbook continuation backlog is full on this node, retry later', { running, waiting, max_waiting: maxWaiting });
+    }
+  };
+
+  // Resolves at once: the continuation is started now if a slot is free, else queued.
+  const schedule = async (task: ContinuationTask, logMeta: Record<string, unknown> = {}) => {
+    const key = playbookKey(logMeta);
+    const continuation = { task, logMeta };
+    if (running < limit && (runningByPlaybook.get(key) ?? 0) < perPlaybookLimit && !queues.has(key)) {
+      start(key, continuation);
+      return;
+    }
+    const queue = queues.get(key) ?? [];
+    queue.push(continuation);
+    queues.set(key, queue);
+    waiting += 1;
+    if (!saturationLogged) {
+      saturationLogged = true;
+      logApp.warn('[OPENCTI-MODULE] Playbook manager continuations are waiting for a slot', {
+        manager: 'PLAYBOOK_MANAGER', running, waiting, maxConcurrency: limit, maxConcurrencyPerPlaybook: perPlaybookLimit, ...logMeta,
+      });
+    }
   };
 
   return {
+    assertAccepting,
     schedule,
-    drain,
     running: () => running,
-    waiting: () => waiters.length,
+    waiting: () => waiting,
+    runningFor: (playbookId: string) => runningByPlaybook.get(playbookId) ?? 0,
   };
 };
 
 const PLAYBOOK_CONTINUATION_MAX_CONCURRENCY: number = conf.get('playbook_manager:callback_continuation_max_concurrency') || 10;
-export const PLAYBOOK_CONTINUATION_SHUTDOWN_TIMEOUT: number = conf.get('playbook_manager:callback_continuation_shutdown_timeout') ?? 20000;
+const PLAYBOOK_CONTINUATION_MAX_CONCURRENCY_PER_PLAYBOOK: number = conf.get('playbook_manager:callback_continuation_max_concurrency_per_playbook') || 3;
+const PLAYBOOK_CONTINUATION_MAX_WAITING: number = conf.get('playbook_manager:callback_continuation_max_waiting') ?? 1000;
 
-export const playbookContinuationScheduler = createContinuationScheduler(PLAYBOOK_CONTINUATION_MAX_CONCURRENCY);
+export const playbookContinuationScheduler = createContinuationScheduler({
+  maxConcurrency: PLAYBOOK_CONTINUATION_MAX_CONCURRENCY,
+  maxConcurrencyPerPlaybook: PLAYBOOK_CONTINUATION_MAX_CONCURRENCY_PER_PLAYBOOK,
+  maxWaiting: PLAYBOOK_CONTINUATION_MAX_WAITING,
+});
+
+// Saturation is visible as metrics of this node.
+const meter = meterManager.meterProvider.getMeter('opencti-playbook');
+meter.createObservableGauge('opencti_playbook_continuation_running', {
+  valueType: ValueType.INT,
+  description: 'Playbook continuations running on this node after a connector callback',
+}).addCallback((result) => result.observe(playbookContinuationScheduler.running()));
+meter.createObservableGauge('opencti_playbook_continuation_waiting', {
+  valueType: ValueType.INT,
+  description: 'Playbook continuations waiting for a slot on this node after a connector callback',
+}).addCallback((result) => result.observe(playbookContinuationScheduler.waiting()));

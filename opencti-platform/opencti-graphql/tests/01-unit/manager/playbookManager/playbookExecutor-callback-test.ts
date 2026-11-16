@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { redisPlaybookUpdate } from '../../../../src/database/redis';
 import { playbookExecutor } from '../../../../src/manager/playbookManager/playbookExecutor';
-import { createContinuationScheduler, playbookContinuationScheduler } from '../../../../src/manager/playbookManager/playbookContinuationScheduler';
+import { createContinuationScheduler } from '../../../../src/manager/playbookManager/playbookContinuationScheduler';
 import { PLAYBOOK_COMPONENTS } from '../../../../src/modules/playbook/playbook-components';
 import type { ComponentDefinition, PlaybookComponent } from '../../../../src/modules/playbook/playbook-types';
 import type { StixBundle } from '../../../../src/types/stix-2-1-common';
@@ -126,121 +126,120 @@ describe('playbookExecutor on an external callback', () => {
   });
 });
 
-describe('playbookExecutor on an external callback when the platform stops', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    PLAYBOOK_COMPONENTS[CONNECTOR_COMPONENT_ID] = { ...baseComponent(CONNECTOR_COMPONENT_ID, false), notify: async () => {} };
-    PLAYBOOK_COMPONENTS[SLOW_COMPONENT_ID] = { ...baseComponent(SLOW_COMPONENT_ID, true), executor: slowExecutor };
-  });
+type Gate = { release: () => void; started: boolean; done: boolean };
 
-  it('registers the step a continuation had reached as an error when the stop interrupts it', async () => {
-    await run(SLOW_COMPONENT_ID, true);
-    expect(observedSteps()).toEqual([{ step: 'connector-node', status: 'success' }]);
-    // Stop while the slow downstream step runs, with a drain timeout shorter than the step
-    const result = await playbookContinuationScheduler.drain(50);
-    expect(result.abandoned).toBe(1);
-    expect(observedSteps()).toEqual([
-      { step: 'connector-node', status: 'success' },
-      { step: 'downstream-node', status: 'error' },
-    ]);
-    const [interrupted] = vi.mocked(redisPlaybookUpdate).mock.calls[1];
-    expect((interrupted as Record<string, any>)['step_downstream-node'].message).toContain('interrupted by the platform stop');
-    // A callback received after the stop started is refused, so the connector sees the error
-    await expect(run(SLOW_COMPONENT_ID, true)).rejects.toThrow('the platform is stopping');
-  });
+// A task that runs until its gate is released, so a test drives slow chains by hand.
+const gatedTask = (gates: Gate[]) => () => new Promise<void>((resolve) => {
+  const gate: Gate = { started: true, done: false, release: () => {} };
+  gate.release = () => {
+    gate.done = true;
+    resolve();
+  };
+  gates.push(gate);
 });
 
 describe('createContinuationScheduler', () => {
-  it('never runs more tasks at once than its limit and makes the caller wait for a free slot only', async () => {
-    const scheduler = createContinuationScheduler(2);
-    let concurrent = 0;
-    let maxConcurrent = 0;
-    const releases: Array<() => void> = [];
-    const task = () => new Promise<void>((resolve) => {
-      concurrent += 1;
-      maxConcurrent = Math.max(maxConcurrent, concurrent);
-      releases.push(() => {
-        concurrent -= 1;
-        resolve();
-      });
-    });
-    await scheduler.schedule(task);
-    await scheduler.schedule(task);
+  it('never runs more tasks at once than its limit and never makes the caller wait for a slot', async () => {
+    const scheduler = createContinuationScheduler({ maxConcurrency: 2, maxConcurrencyPerPlaybook: 2 });
+    const gates: Gate[] = [];
+    await scheduler.schedule(gatedTask(gates), { playbookId: 'a' });
+    await scheduler.schedule(gatedTask(gates), { playbookId: 'a' });
+    // Third call resolves at once, the task is queued
+    const started = Date.now();
+    await scheduler.schedule(gatedTask(gates), { playbookId: 'a' });
+    expect(Date.now() - started).toBeLessThan(50);
     expect(scheduler.running()).toBe(2);
-    // Third caller waits for a slot
-    let thirdAccepted = false;
-    const third = scheduler.schedule(task).then(() => {
-      thirdAccepted = true;
-    });
-    await new Promise((resolve) => {
-      setTimeout(resolve, 20);
-    });
-    expect(thirdAccepted).toBe(false);
     expect(scheduler.waiting()).toBe(1);
-    releases.shift()?.();
-    await third;
-    expect(thirdAccepted).toBe(true);
-    expect(maxConcurrent).toBe(2);
-    releases.splice(0).forEach((release) => release());
+    expect(gates.length).toBe(2);
+    gates[0].release();
+    await vi.waitFor(() => expect(gates.length).toBe(3));
+    expect(scheduler.running()).toBe(2);
+    expect(scheduler.waiting()).toBe(0);
+    gates.forEach((gate) => gate.release());
     await vi.waitFor(() => expect(scheduler.running()).toBe(0));
   });
 
-  it('waits on drain for a running continuation that ends within the timeout, and reports nothing abandoned', async () => {
-    const scheduler = createContinuationScheduler(2);
-    const onAbandon = vi.fn(async () => {});
-    let ended = false;
+  it('runs the callback of a fast playbook at once while slow chains of other playbooks hold slots', async () => {
+    // The issue scenario: 10 slots, slow AI chains of several playbooks, then one fast callback of another playbook
+    const scheduler = createContinuationScheduler({ maxConcurrency: 10, maxConcurrencyPerPlaybook: 3 });
+    const slow: Gate[] = [];
+    // schedule() runs synchronously up to its return, so the calls are queued in order
+    await Promise.all(Array.from({ length: 12 }, (_, index) => scheduler.schedule(gatedTask(slow), { playbookId: `slow-${index % 3}` })));
+    // Per-playbook cap: 3 slow playbooks x 3 slots = 9 running, 3 queued, 1 slot left for anybody else
+    expect(scheduler.running()).toBe(9);
+    expect(scheduler.waiting()).toBe(3);
+    expect(scheduler.runningFor('slow-0')).toBe(3);
+    let fastDone = false;
+    const started = Date.now();
     await scheduler.schedule(async () => {
-      await new Promise((resolve) => {
-        setTimeout(resolve, 50);
-      });
-      ended = true;
-    }, { onAbandon });
-    const result = await scheduler.drain(2000);
-    expect(ended).toBe(true);
-    expect(result).toEqual({ completed: 1, abandoned: 0, refused: 0 });
-    expect(onAbandon).not.toHaveBeenCalled();
+      fastDone = true;
+    }, { playbookId: 'fast' });
+    expect(Date.now() - started).toBeLessThan(50);
+    await vi.waitFor(() => expect(fastDone).toBe(true));
+    // No slow chain ended: the fast one did not wait for them
+    expect(slow.every((gate) => !gate.done)).toBe(true);
+    slow.forEach((gate) => gate.release());
+    await vi.waitFor(() => expect(slow.length).toBe(12));
+    slow.forEach((gate) => gate.release());
+    await vi.waitFor(() => expect(scheduler.running()).toBe(0));
+    expect(scheduler.waiting()).toBe(0);
   });
 
-  it('reports a running continuation still running at the drain timeout as abandoned, never silently', async () => {
-    const scheduler = createContinuationScheduler(2);
-    const onAbandon = vi.fn(async () => {});
-    await scheduler.schedule(() => new Promise<void>(() => {}), { onAbandon });
-    const result = await scheduler.drain(50);
-    expect(result).toEqual({ completed: 0, abandoned: 1, refused: 0 });
-    expect(onAbandon).toHaveBeenCalledWith('shutdown_timeout');
-  });
-
-  it('refuses a caller waiting for a slot at drain, and reports it', async () => {
-    const scheduler = createContinuationScheduler(1);
-    const runningAbandon = vi.fn(async () => {});
-    const waitingAbandon = vi.fn(async () => {});
-    const waitingTask = vi.fn(async () => {});
-    await scheduler.schedule(() => new Promise<void>(() => {}), { onAbandon: runningAbandon });
-    const waiting = scheduler.schedule(waitingTask, { onAbandon: waitingAbandon });
-    await new Promise((resolve) => {
-      setTimeout(resolve, 10);
+  it('respects the per-playbook cap even when global slots are free', async () => {
+    const scheduler = createContinuationScheduler({ maxConcurrency: 10, maxConcurrencyPerPlaybook: 2 });
+    const gates: Gate[] = [];
+    await Promise.all(Array.from({ length: 5 }, () => scheduler.schedule(gatedTask(gates), { playbookId: 'slow' })));
+    expect(scheduler.runningFor('slow')).toBe(2);
+    expect(scheduler.waiting()).toBe(3);
+    gates[0].release();
+    await vi.waitFor(() => expect(gates.length).toBe(3));
+    expect(scheduler.runningFor('slow')).toBe(2);
+    await vi.waitFor(() => {
+      gates.forEach((gate) => gate.release());
+      expect(scheduler.running()).toBe(0);
     });
-    expect(scheduler.waiting()).toBe(1);
-    const result = await scheduler.drain(20);
-    await expect(waiting).rejects.toThrow('the platform is stopping');
-    expect(result).toEqual({ completed: 0, abandoned: 1, refused: 1 });
-    expect(waitingTask).not.toHaveBeenCalled();
-    expect(waitingAbandon).toHaveBeenCalledWith('shutdown_before_start');
-    expect(runningAbandon).toHaveBeenCalledWith('shutdown_timeout');
+    expect(gates.length).toBe(5);
   });
 
-  it('refuses a new continuation once draining', async () => {
-    const scheduler = createContinuationScheduler(1);
-    await scheduler.drain(0);
-    const onAbandon = vi.fn(async () => {});
-    const task = vi.fn(async () => {});
-    await expect(scheduler.schedule(task, { onAbandon })).rejects.toThrow('the platform is stopping');
-    expect(task).not.toHaveBeenCalled();
-    expect(onAbandon).toHaveBeenCalledWith('shutdown_before_start');
+  it('serves queued playbooks round-robin, so one backlog does not hold another back', async () => {
+    const scheduler = createContinuationScheduler({ maxConcurrency: 1, maxConcurrencyPerPlaybook: 1 });
+    const order: string[] = [];
+    const gates: Gate[] = [];
+    await scheduler.schedule(gatedTask(gates), { playbookId: 'a' });
+    await Promise.all(Array.from({ length: 3 }, (_, index) => scheduler.schedule(async () => {
+      order.push(`a${index}`);
+    }, { playbookId: 'a' })));
+    await scheduler.schedule(async () => {
+      order.push('b0');
+    }, { playbookId: 'b' });
+    gates[0].release();
+    await vi.waitFor(() => expect(order.length).toBe(4));
+    expect(order.indexOf('b0')).toBeLessThan(2);
+  });
+
+  it('bounds the backlog: a callback past the limit is refused and never runs later', async () => {
+    const scheduler = createContinuationScheduler({ maxConcurrency: 1, maxConcurrencyPerPlaybook: 1, maxWaiting: 2 });
+    const gates: Gate[] = [];
+    scheduler.assertAccepting();
+    await scheduler.schedule(gatedTask(gates), { playbookId: 'a' });
+    scheduler.assertAccepting();
+    await scheduler.schedule(gatedTask(gates), { playbookId: 'a' });
+    scheduler.assertAccepting();
+    await scheduler.schedule(gatedTask(gates), { playbookId: 'b' });
+    expect(scheduler.waiting()).toBe(2);
+    expect(() => scheduler.assertAccepting({ playbookId: 'c' })).toThrow('Playbook continuation backlog is full');
+    expect(scheduler.waiting()).toBe(2);
+    await vi.waitFor(() => {
+      gates.forEach((gate) => gate.release());
+      expect(scheduler.running()).toBe(0);
+    });
+    // Only the three accepted tasks ever ran
+    expect(gates.length).toBe(3);
+    scheduler.assertAccepting();
   });
 
   it('logs a task error and frees its slot', async () => {
-    const scheduler = createContinuationScheduler(1);
+    const scheduler = createContinuationScheduler({ maxConcurrency: 1 });
     await scheduler.schedule(async () => {
       throw new Error('boom');
     });
