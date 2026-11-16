@@ -122,8 +122,8 @@ You also need access to the knowledge of the platform (**Access knowledge** capa
 
 ## Data and privacy
 
-The platform, or the XTM One agent acting for the user, reads the knowledge with the permissions of the user who
-requests the summary.
+New summaries are generated from knowledge read with the requesting user's permissions. However, cached summaries
+can be reused across users without rechecking the source data against the current user's permissions.
 
 - **With XTM One**, OpenCTI sends the request (the identifier of the entity or container) to XTM One, and the agent
   reads the data it needs from OpenCTI with your permissions.
