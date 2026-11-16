@@ -7,7 +7,16 @@ Enriching the data within the OpenCTI platform is made seamlessly through the in
 
 Enrichment can be conducted automatically in two distinct modes:
 
-- Upon data arrival: Configuring the connector to run automatically when data arrives in OpenCTI ensures a real-time enrichment process, supplementing the platform's data. However, it's advisable to avoid automatic enrichment for quota-based connectors to paid sources to prevent quickly depleting all quotas. Additionally, this automatic enrichment contributes to increased data volume. On a large scale, with hundreds of thousands of objects, the disk space occupied by this data can be substantial, and it should be considered, especially if disk space is a concern. The automatic execution is configured at the connector level using the "auto: true|false" parameter.
+- Upon data arrival: Configuring the connector to run automatically when data arrives in OpenCTI ensures a real-time enrichment process, supplementing the platform's data. However, it's advisable to avoid automatic enrichment for quota-based connectors to paid sources to prevent quickly depleting all quotas. Additionally, this automatic enrichment contributes to increased data volume. On a large scale, with hundreds of thousands of objects, the disk space occupied by this data can be substantial, and it should be considered, especially if disk space is a concern. The automatic execution is configured at the connector level with the `connector:auto` parameter (environment variable `CONNECTOR_AUTO`), `false` by default. When it is `true`, the connector enriches every new object whose type is listed in its scope (`connector:scope`, environment variable `CONNECTOR_SCOPE`).
+
+    For example, in the `docker-compose.yml` of an enrichment connector:
+
+    ```yaml
+    environment:
+      - CONNECTOR_SCOPE=IPv4-Addr,Domain-Name
+      - CONNECTOR_AUTO=true
+    ```
+
 - Targeted enrichment via playbooks: Enrichment can also be performed in a more targeted manner using [playbooks](playbook-automation.md). This approach allows for a customized enrichment strategy, focusing on specific objects and optimizing the relevance of the retrieved data.
 
 ### Manual enrichment

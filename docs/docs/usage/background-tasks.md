@@ -7,7 +7,7 @@ Three types of tasks are done in the background:
 - user tasks.
 
 Rule tasks can be seen and activated in Settings > Customization > Rules engine.
-Knowledge and user tasks can be seen and managed in Data > Background Tasks. The scope of each task is indicated.
+Knowledge and user tasks can be seen and managed in Data > Processing > Tasks. The scope of each task is indicated.
 
 ![Background_tasks](assets/background-tasks.png)
 
@@ -23,11 +23,14 @@ Before launching the task, OpenCTI shows its scope and actions and asks for a co
 
 The update action can also add, replace or remove the value of a [custom field](../administration/custom-fields.md).
 
+Restoring or permanently deleting several objects from the [Trash](delete-restore.md#trash) also runs as a knowledge task.
+
 ### Rights
 
-- To create a knowledge task, the user should have the capability to Update Knowledge (or the capability to delete knowledge if the task action is a deletion).
-- To see a knowledge task in the Background task section, the user should be the creator of the task, or have the KNOWLEDGE capability.
-- To delete a knowledge task from the Background task section, the user should be the creator of the task, or have the KNOWLEDGE_UPDATE capability.
+The rights below use the capability names of [Users and Role Based Access Control](../administration/users.md#list-of-capabilities).
+
+- To create a knowledge task, the user should have the `Create / Update knowledge` capability. A deletion, a restore or a permanent deletion from the Trash also requires `Delete knowledge`, and a merge requires `Merge knowledge`.
+- To see or delete a knowledge task in Data > Processing > Tasks, the user should be the creator of the task. Users with `Bypass all capabilities` see and delete the tasks of every user.
 
 ## User tasks
 
@@ -36,4 +39,4 @@ User tasks are background tasks updating or deleting notifications. It can be do
 ### Rights
 
 - A user can create a user task on its own notifications only.
-- To see or delete a user task, the user should be the creator of the task or have the SET_ACCESS capability.
+- To see or delete a user task, the user should be the creator of the task. Users with `Bypass all capabilities` see and delete the tasks of every user.
