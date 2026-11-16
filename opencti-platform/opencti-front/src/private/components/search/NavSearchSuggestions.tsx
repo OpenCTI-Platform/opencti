@@ -17,8 +17,8 @@ interface NavSearchSuggestionsProps {
   activeIndex: number;
   /** Written with the displayed pages, so the parent's key handler can resolve the highlighted row. */
   itemsRef: MutableRefObject<NavSearchResult[]>;
-  /** A page row was clicked: only closes the dropdown, the row is a link that navigates by itself. */
-  onPageClick: () => void;
+  /** A page row was clicked: the row is a link that navigates by itself, the handler only cleans up around it. */
+  onPageClick: (event: React.MouseEvent) => void;
   onSearch: () => void;
 }
 

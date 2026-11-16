@@ -88,10 +88,22 @@ describe('SearchInput (top bar) pages dropdown', () => {
     await user.type(screen.getByRole('combobox'), 'imp{ArrowDown}{ArrowDown}{Enter}');
     expect(mockNavigate).toHaveBeenCalledWith('/dashboard/data/import');
     expect(onSubmit).not.toHaveBeenCalled();
+    // the page is reached: the field is emptied
+    expect(screen.getByRole('combobox')).toHaveValue('');
 
-    // the first ArrowDown reopens the closed dropdown, the next one highlights the "Search" row
-    await user.type(screen.getByRole('combobox'), '{ArrowDown}{ArrowDown}{Enter}');
+    // typing again, the first ArrowDown highlights the "Search" row
+    await user.type(screen.getByRole('combobox'), 'imp{ArrowDown}{Enter}');
     expect(onSubmit).toHaveBeenCalledWith('imp', false, undefined);
+    // a classic search keeps its keyword visible
+    expect(screen.getByRole('combobox')).toHaveValue('imp');
+  });
+
+  it('empties the field when a page row is clicked', async () => {
+    const { user } = setup();
+    await user.type(screen.getByRole('combobox'), 'imp');
+    await user.click(screen.getByRole('option', { name: /Import/ }));
+
+    expect(screen.getByRole('combobox')).toHaveValue('');
   });
 });
 

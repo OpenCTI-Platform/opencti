@@ -13,6 +13,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import useEnterpriseEdition from '../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from './i18n';
+import { focusMainContent } from '../utils/focusMainContent';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../utils/hooks/useGranted';
 import useAuth from '../utils/hooks/useAuth';
 import FiligranIcon from '../private/components/common/FiligranIcon';
@@ -222,9 +223,18 @@ const SearchInput = (props) => {
     closeSuggestions();
     if (typeof onSubmit === 'function') onSubmit(searchValue, false, undefined);
   };
+  // A page was picked: the field did its job, so it is emptied (a classic search keeps its keyword visible instead).
+  // Not through handleValueChange: it would re-submit an empty search and fight with the navigation.
   const handleSelectPage = (path) => {
     closeSuggestions();
+    setSearchValue('');
     navigate(path);
+    focusMainContent();
+  };
+  const handlePageClick = (event) => {
+    closeSuggestions();
+    setSearchValue('');
+    focusMainContent(event);
   };
 
   const handleKeyDown = (event) => {
@@ -403,7 +413,7 @@ const SearchInput = (props) => {
               anchorEl={fieldContainerRef.current}
               activeIndex={activeIndex}
               itemsRef={suggestionsRef}
-              onPageClick={closeSuggestions}
+              onPageClick={handlePageClick}
               onSearch={handleSearchRow}
             />
           )}

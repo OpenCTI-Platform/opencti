@@ -5,6 +5,7 @@ import { Text } from '@filigran/design-system';
 import { ChevronRightOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../components/i18n';
+import { focusMainContent } from '../../../utils/focusMainContent';
 import useNavSearch, { PLATFORM_SEARCH_PAGE_MAX_RESULTS } from '../nav/useNavSearch';
 import NavSearchResultContent from './NavSearchResultContent';
 
@@ -38,7 +39,7 @@ const NavigationSearchResults = ({ keyword }: { keyword?: string | null }) => {
       </Text>
       <List disablePadding aria-labelledby={TITLE_ID}>
         {(showAll ? results : results.slice(0, INITIAL_COUNT)).map(({ path, label, parents }) => (
-          <ListItemButton key={path} component={Link} to={path} sx={{ borderRadius: 1 }}>
+          <ListItemButton key={path} component={Link} to={path} onClick={focusMainContent} sx={{ borderRadius: 1 }}>
             <NavSearchResultContent label={label} parents={parents} iconWidth={48} />
             <ChevronRightOutlined fontSize="small" color="disabled" />
           </ListItemButton>
