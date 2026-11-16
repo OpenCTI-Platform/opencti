@@ -172,9 +172,9 @@ def test_split_keeps_relationships_to_attack_patterns_not_in_the_bundle():
             ):
                 kept.add(obj["target_ref"])
     assert kept == {
-        "attack-pattern--e94e1030-0b72-4b37-ab03-00e1a81a665e",
-        "attack-pattern--4c209832-0086-42bf-b4ac-84cdc2434a72",
-        "attack-pattern--ed0f9d93-0ae4-4feb-bec9-7f02016a6189",
+        "attack-pattern--3ccef7ae-cb5e-48f6-8302-897105fbf55c",
+        "attack-pattern--970a3432-3237-47ad-bcca-7d8cbb217736",
+        "attack-pattern--b3d682b6-98f2-4fb0-aa3b-b4df007ca70a",
         "attack-pattern--be2dcee9-a7a7-4e38-afd6-21b31ecc3d63",
     }
 
