@@ -102,7 +102,7 @@ The score of a technique is the number of distinct entities of the investigation
 |:---|:---|
 | `uses`, in either direction | An intrusion set, threat actor, malware or campaign uses the attack pattern. |
 | `indicates`, towards the attack pattern | An indicator indicates the attack pattern. |
-| Containment | A report, a grouping or a case contains the attack pattern. |
+| `contains` (the container's `object` reference), towards the attack pattern | A report, a grouping or a case contains the attack pattern. |
 
 - An entity counts once for a technique, even when several relationships link them.
 - Other relationship types, such as `related-to` or `mitigates`, do not count.
