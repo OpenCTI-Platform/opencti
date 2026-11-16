@@ -38,6 +38,10 @@ Example: `manager.logger.level` becomes `MANAGER__LOGGER__LEVEL`
 | manager:logger:directory    | MANAGER__LOGGER__DIRECTORY      | `true`        | Enable logging to directory/file                                 |
 | manager:logger:console      | MANAGER__LOGGER__CONSOLE        | `true`        | Enable logging to console/stdout                                 |
 
+!!! note "Log file location"
+
+    `manager:logger:directory` is an on/off switch, not a path. XTM Composer writes its log file to a `logs` folder next to its executable: `/usr/local/bin/logs/xtm-composer.log` in the Docker image, `target/release/logs/xtm-composer.log` when you build from source. The file rotates daily and always uses the JSON format, whatever the value of `manager:logger:format`.
+
 #### Debug
 
 | Parameter                              | Environment variable                      | Default value | Description                                                           |
@@ -55,18 +59,20 @@ Example: `manager.logger.level` becomes `MANAGER__LOGGER__LEVEL`
 | opencti:url                    | OPENCTI__URL                     | http://host.docker.internal:4000 | OpenCTI platform URL                                 |
 | opencti:token                  | OPENCTI__TOKEN                   | ChangeMe                       | OpenCTI API authentication token                     |
 | opencti:unsecured_certificate  | OPENCTI__UNSECURED_CERTIFICATE   | `false`                        | Allow self-signed SSL certificates                   |
-| opencti:with_proxy             | OPENCTI__WITH_PROXY              | `false`                        | Use system proxy settings for connection             |
-| opencti:logs_schedule          | OPENCTI__LOGS_SCHEDULE           | 10                             | Maximum interval in seconds between log reports      |
+| opencti:with_proxy             | OPENCTI__WITH_PROXY              | `false`                        | Use a proxy, and pass it to the deployed connectors (see [Proxy configuration](#proxy-configuration)) |
+| opencti:logs_schedule          | OPENCTI__LOGS_SCHEDULE           | 10                             | Interval in seconds between two log reports for each connector. It is checked at each execution cycle (`manager:execute_schedule`) |
 
 #### Proxy configuration
 
-| Parameter                         | Environment variable             | Default value | Description                                                                                       |
-|:----------------------------------|:---------------------------------|:--------------|:--------------------------------------------------------------------------------------------------|
-| http_proxy                        | HTTP_PROXY                       |               | Proxy URL for HTTP requests (e.g., `http://proxy:8080`)                                           |
-| https_proxy                       | HTTPS_PROXY                      |               | Proxy URL for HTTPS requests (e.g., `http://proxy:8080`)                                          |
-| no_proxy                          | NO_PROXY                         |               | Comma-separated list of hosts excluded from proxy (e.g., `localhost,127.0.0.1,internal.domain`)   |
-| https_proxy_ca                    | HTTPS_PROXY_CA                   |               | CA certificates used to validate HTTPS proxy connections                                          |
-| https_proxy_reject_unauthorized   | HTTPS_PROXY_REJECT_UNAUTHORIZED  | `false`       | If not false, validates the proxy certificate against the provided CA list                        |
+Proxy settings are defined for each platform, under `opencti` or `openaev`, and apply only when `with_proxy` is `true`. When neither `http_proxy` nor `https_proxy` is set, XTM Composer uses the standard `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables of its own process. See [Proxy support](proxy-configuration.md) for examples.
+
+| Parameter                                           | Environment variable                                   | Default value | Description                                                                                       |
+|:----------------------------------------------------|:-------------------------------------------------------|:--------------|:--------------------------------------------------------------------------------------------------|
+| `{opencti\|openaev}`:http_proxy                      | `{OPENCTI\|OPENAEV}`__HTTP_PROXY                        |               | Proxy URL for HTTP requests (e.g., `http://proxy:8080`), also passed to the deployed connectors as `HTTP_PROXY` |
+| `{opencti\|openaev}`:https_proxy                     | `{OPENCTI\|OPENAEV}`__HTTPS_PROXY                       |               | Proxy URL for HTTPS requests (e.g., `http://proxy:8080`), also passed to the deployed connectors as `HTTPS_PROXY` |
+| `{opencti\|openaev}`:no_proxy                        | `{OPENCTI\|OPENAEV}`__NO_PROXY                          |               | Comma-separated list of hosts excluded from the proxy (e.g., `localhost,127.0.0.1,internal.domain`), passed to the deployed connectors as `NO_PROXY` |
+| `{opencti\|openaev}`:https_proxy_ca                  | `{OPENCTI\|OPENAEV}`__HTTPS_PROXY_CA                    |               | CA certificates of the proxy (file paths or inline PEM blocks), mounted in the deployed connectors |
+| `{opencti\|openaev}`:https_proxy_reject_unauthorized | `{OPENCTI\|OPENAEV}`__HTTPS_PROXY_REJECT_UNAUTHORIZED   | `true`        | When `false`, XTM Composer sets `NODE_TLS_REJECT_UNAUTHORIZED=0` in the deployed connectors       |
 
 !!! note "Proxy certificate separation"
 
@@ -77,33 +83,27 @@ Example: `manager.logger.level` becomes `MANAGER__LOGGER__LEVEL`
 
 ### Registry authentication
 
-| Parameter                     | Environment variable         | Default value | Description                                                                 |
-|:------------------------------|:------------------------------|:--------------|:----------------------------------------------------------------------------|
-| registry:enable               | REGISTRY__ENABLE              | `false`       | Enable authentication to a container registry                               |
-| registry:url                  | REGISTRY__URL                 |               | Registry endpoint (e.g., `https://registry.hub.docker.com`)                 |
-| registry:username             | REGISTRY__USERNAME            |               | Username for registry authentication                                        |
-| registry:password             | REGISTRY__PASSWORD            |               | Password or token for registry authentication                               |
-| registry:cache_ttl            | REGISTRY__CACHE_TTL           | 3600          | Time (in seconds) for caching registry authorization tokens                  |
+| Parameter                                       | Environment variable                               | Default value | Description                                                                 |
+|:------------------------------------------------|:---------------------------------------------------|:--------------|:----------------------------------------------------------------------------|
+| `{opencti\|openaev}`:daemon:registry:server      | `{OPENCTI\|OPENAEV}`__DAEMON__REGISTRY__SERVER      |               | Registry server (e.g., `registry.example.com`), prepended to the connector image names |
+| `{opencti\|openaev}`:daemon:registry:username    | `{OPENCTI\|OPENAEV}`__DAEMON__REGISTRY__USERNAME    |               | Username for registry authentication                                        |
+| `{opencti\|openaev}`:daemon:registry:password    | `{OPENCTI\|OPENAEV}`__DAEMON__REGISTRY__PASSWORD    |               | Password or token for registry authentication                               |
+| `{opencti\|openaev}`:daemon:registry:email       | `{OPENCTI\|OPENAEV}`__DAEMON__REGISTRY__EMAIL       |               | Email sent with the credentials (optional)                                  |
 
-!!! note "Authentication cache"
+See [Private registry](registry-authentication.md) for the required fields and the Kubernetes behavior.
 
-    Composer caches registry authentication tokens to reduce the number of login requests.  
-    Tokens are refreshed automatically when expired.
+#### OpenAEV
 
-#### OpenAEV (Coming Soon)
-
-!!! note "OpenAEV Integration"
-    
-    Openaev module is not yet implemented. These configuration options are reserved for future use.
+When `openaev:enable` is `true`, XTM Composer registers with the OpenAEV platform at `openaev:url` and deploys its collectors and injectors, in the same way as the OpenCTI connectors. The proxy, registry and orchestration settings on this page apply to OpenAEV under the `openaev` prefix.
 
 | Parameter                        | Environment variable              | Default value                       | Description                                      |
 |:---------------------------------|:----------------------------------|:------------------------------------|:-------------------------------------------------|
-| openaev:enable                   | OPENAEV__ENABLE                   | `false`                             | Enable OpenAEV integration (Coming Soon)         |
-| openaev:url                      | OPENAEV__URL                      | http://host.docker.internal:4000    | OpenAEV platform URL (Coming Soon)               |
-| openaev:token                    | OPENAEV__TOKEN                    | ChangeMe                            | OpenAEV API authentication token (Coming Soon)   |
-| openaev:unsecured_certificate    | OPENAEV__UNSECURED_CERTIFICATE    | `false`                             | Allow self-signed SSL certificates (Coming Soon) |
-| openaev:with_proxy               | OPENAEV__WITH_PROXY               | `false`                             | Use system proxy settings (Coming Soon)          |
-| openaev:logs_schedule            | OPENAEV__LOGS_SCHEDULE            | 10                                  | Log report interval in seconds (Coming Soon)     |
+| openaev:enable                   | OPENAEV__ENABLE                   | `false`                             | Enable OpenAEV integration                       |
+| openaev:url                      | OPENAEV__URL                      | http://host.docker.internal:4000    | OpenAEV platform URL                             |
+| openaev:token                    | OPENAEV__TOKEN                    | ChangeMe                            | OpenAEV API authentication token                 |
+| openaev:unsecured_certificate    | OPENAEV__UNSECURED_CERTIFICATE    | `false`                             | Allow self-signed SSL certificates               |
+| openaev:with_proxy               | OPENAEV__WITH_PROXY               | `false`                             | Use a proxy, and pass it to the deployed collectors and injectors (see [Proxy configuration](#proxy-configuration)) |
+| openaev:logs_schedule            | OPENAEV__LOGS_SCHEDULE            | 10                                  | Interval in seconds between two log reports for each collector or injector. It is checked at each execution cycle (`manager:execute_schedule`) |
 
 ### Orchestration
 
@@ -180,7 +180,7 @@ opencti:
       image_pull_policy: IfNotPresent
 
 openaev:
-  enable: false  # Coming Soon
+  enable: false  # Set to true to manage OpenAEV collectors and injectors
 ```
 
 ## Security best practices

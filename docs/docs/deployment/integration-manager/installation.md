@@ -24,6 +24,12 @@
   - Production: Kubernetes service account with appropriate RBAC
   - Development: Docker socket access or Portainer API access
 
+### Version compatibility
+
+OpenCTI 7.260224.0 and later require XTM Composer 2.0 or later (see [Breaking changes](../breaking-changes.md#xtm-composer-version-compatibility)).
+
+The examples on this page use a pinned image tag, `filigran/xtm-composer:3.261021.1`, instead of `latest`: `latest` follows every new release, so a new pull of the image can upgrade XTM Composer without notice. Pick the tag from the [XTM Composer releases](https://github.com/FiligranHQ/xtm-composer/releases), and check the [breaking changes](../breaking-changes.md) before you upgrade OpenCTI.
+
 ## Installation methods
 
 Create a configuration file based on your environment or add extra environment variables in the following steps.
@@ -78,6 +84,11 @@ rules:
 - apiGroups: [""]
   resources: ["pods", "pods/log"]
   verbs: ["get", "watch", "list"]
+# Secrets: needed only when a private registry with credentials (daemon:registry)
+# or a proxy CA (https_proxy_ca) is configured
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["create", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -113,7 +124,7 @@ spec:
     spec:
       containers:
       - name: xtm-composer
-        image: filigran/xtm-composer:latest
+        image: filigran/xtm-composer:3.261021.1
         env:
         - name: COMPOSER_ENV
           value: "production"
@@ -142,8 +153,8 @@ EOF
 ### Docker installation with CLI
 
 ```bash
-# Pull the latest image
-docker pull filigran/xtm-composer:latest
+# Pull the image
+docker pull filigran/xtm-composer:3.261021.1
 
 # Create configuration directory
 mkdir -p /opt/xtm-composer/config
@@ -157,7 +168,7 @@ docker run -d \
   -v /opt/xtm-composer/config:/config \
   -v /opt/xtm-composer/private_key_4096.pem:/keys/private_key.pem \
   -e COMPOSER_ENV=development \
-  filigran/xtm-composer:latest
+  filigran/xtm-composer:3.261021.1
 ```
 
 ### Portainer installation
@@ -178,7 +189,7 @@ version: '3.8'
 
 services:
   xtm-composer:
-    image: filigran/xtm-composer:latest
+    image: filigran/xtm-composer:3.261021.1
     container_name: xtm-composer
     environment:
       - COMPOSER_ENV=development
@@ -241,22 +252,19 @@ version: '3.8'
 
 services:
   xtm-composer:
-    image: filigran/xtm-composer:latest
+    image: filigran/xtm-composer:3.261021.1
     container_name: xtm-composer
     environment:
       - COMPOSER_ENV=development
       - MANAGER__ID=dev-manager
       - MANAGER__CREDENTIALS_KEY_FILEPATH=/keys/private_key.pem
+      - OPENCTI__URL=http://opencti:8080  # URL of your OpenCTI platform
+      - OPENCTI__TOKEN=ChangeMe  # OpenCTI API token
+      - OPENCTI__DAEMON__SELECTOR=docker
     volumes:
-      - ./config:/config
-      - ./keys:/keys
+      - /var/run/docker.sock:/var/run/docker.sock  # Required by the docker selector
+      - ./keys:/keys:ro
     restart: unless-stopped
-    ports:
-      - "8080:8080"  # If web interface is available
-
-volumes:
-  xtm-composer-config:
-  xtm-composer-keys:
 ```
 
 Deploy with:

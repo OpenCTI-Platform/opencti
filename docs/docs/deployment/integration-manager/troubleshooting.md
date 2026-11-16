@@ -18,9 +18,11 @@ docker ps | grep xtm-composer
 # View logs
 docker logs xtm-composer
 
-# Test connectivity
-docker exec xtm-composer curl -s http://localhost:8080/health
+# Check that XTM Composer is registered in OpenCTI
+docker logs xtm-composer 2>&1 | grep "Manager registered"
 ```
+
+XTM Composer does not expose any HTTP port or health endpoint: check it through the container status and its logs.
 
 ##### Portainer verification
 1. Access Portainer dashboard
@@ -337,8 +339,11 @@ docker logs -f xtm-composer
 # Kubernetes
 kubectl logs -f deployment/xtm-composer -n xtm-composer
 
-# Binary/File-based
-tail -f /var/log/xtm-composer/composer.log
+# Binary (log file in the logs folder next to the xtm-composer executable)
+tail -f logs/xtm-composer.log
+
+# Docker image (log file inside the container)
+docker exec xtm-composer tail -f /usr/local/bin/logs/xtm-composer.log
 ```
 
 ### Common log messages

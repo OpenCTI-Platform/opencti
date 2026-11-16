@@ -71,7 +71,7 @@ This abstraction allows the composer to use the same orchestration logic regardl
    - Verify API compatibility
 
 3. **Main Orchestration Loop**
-   - Execute every `execute_schedule` seconds (default: 30s)
+   - Execute every `execute_schedule` seconds (default: 10)
    - Pull connector configurations
    - Reconcile desired vs actual state
    - Apply necessary changes
@@ -83,7 +83,7 @@ This abstraction allows the composer to use the same orchestration logic regardl
 The composer periodically pulls container configurations from the platform:
 
 ```rust
-// Executed every 30 seconds by default
+// Executed every `execute_schedule` seconds (10 by default)
 async fn orchestrate() {
     // 1. Fetch all container configurations from platform
     // (connectors for OpenCTI, collectors/injectors for OpenAEV)
@@ -170,7 +170,7 @@ if requested_hash != current_hash {
 - Reports health metrics every 30 seconds for running containers
 
 #### 5. Log Collection
-- Collects container logs every `logs_schedule` minutes
+- Collects container logs every `logs_schedule` seconds (default: 10), per connector. The interval is checked at each execution cycle, so logs are sent at the first cycle after it has elapsed
 - Sends logs to platform for centralized monitoring
 - Maintains log history for debugging
 

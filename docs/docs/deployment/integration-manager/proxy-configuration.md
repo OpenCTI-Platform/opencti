@@ -2,13 +2,16 @@
 
 ## Overview
 
-XTM Composer can use system proxy settings for outgoing network calls.
+XTM Composer can use a proxy for outgoing network calls. Proxy settings are defined for each platform, under `opencti` or `openaev`, and apply only when `with_proxy` is `true`.
 
 ### YAML configuration
 
 ```yaml
 opencti:
   with_proxy: true
+  http_proxy: http://proxy.example.com:8080
+  https_proxy: http://proxy.example.com:8080
+  no_proxy: localhost,127.0.0.1,.example.com
 ```
 
 ### Environment variable configuration
@@ -22,10 +25,29 @@ export OPENCTI__NO_PROXY="localhost,127.0.0.1,.example.com"
 
 When enabled, XTM Composer forwards these proxy settings to managed connector containers as `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY`.
 
+When `with_proxy` is `true` and neither `http_proxy` nor `https_proxy` is set, XTM Composer uses the standard `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables of its own process. When `with_proxy` is `false`, XTM Composer ignores every proxy setting, including these variables.
+
+For OpenAEV, use the same keys under `openaev` (for example `OPENAEV__HTTP_PROXY`). See the [Configuration reference](configuration.md#proxy-configuration) for the full list.
+
 ## HTTPS Proxy Certificate Support (optional)
 
 Some environments use HTTPS proxies with TLS interception (for example, corporate proxies or debugging proxies like Burp).
 In these cases, additional certificate settings may be required.
+
+### YAML configuration
+
+```yaml
+opencti:
+  with_proxy: true
+  https_proxy: http://proxy.example.com:8080
+  https_proxy_ca:
+    - /path/to/proxy-ca.pem
+    - |
+      -----BEGIN CERTIFICATE-----
+      ...
+      -----END CERTIFICATE-----
+  https_proxy_reject_unauthorized: true
+```
 
 ### Environment variables
 
@@ -34,48 +56,21 @@ export OPENCTI__HTTPS_PROXY_CA='["/path/to/proxy-ca.pem", "-----BEGIN CERTIFICAT
 export OPENCTI__HTTPS_PROXY_REJECT_UNAUTHORIZED="false"
 ```
 
-- `OPENCTI__HTTPS_PROXY_CA` — JSON array of CA certificate paths and/or PEM blocks used to validate the proxy certificate (for example: `["/path/to/proxy-ca.pem"]`).
-- `OPENCTI__HTTPS_PROXY_REJECT_UNAUTHORIZED` — if set to `false`, Composer injects `NODE_TLS_REJECT_UNAUTHORIZED=0` into connector containers.
-
-### Important: Certificate Scope Clarification
-
-Composer distinguishes two independent certificate configurations:
-
-| Purpose                           | Keys                                                  | Description                                                      |
-|-----------------------------------|-------------------------------------------------------|------------------------------------------------------------------|
-| OpenCTI HTTPS server certificates | `app:https_cert:ca`, `app:https_cert:reject_unauthorized` | TLS configuration for the OpenCTI web server                     |
-| Proxy HTTPS certificates          | `https_proxy_ca`, `https_proxy_reject_unauthorized`  | Validation settings for HTTPS connections made through the proxy |
-
-These settings must not be mixed.
-
-### Proxy Configuration in config.json
-
-Example of equivalent configuration in a JSON file:
-
-```json
-{
-  "http_proxy": "http://proxy.example.com:8080",
-  "https_proxy": "http://proxy.example.com:8080",
-  "no_proxy": "localhost,127.0.0.1,internal.domain",
-  "https_proxy_ca": ["/path/to/proxy-ca.pem", "-----BEGIN CERTIFICATE-----"],
-  "https_proxy_reject_unauthorized": false
-}
-```
+- `OPENCTI__HTTPS_PROXY_CA` — JSON array of CA certificate paths and/or PEM blocks used to validate the proxy certificate (for example: `["/path/to/proxy-ca.pem"]`). XTM Composer reads the files itself, so the paths must exist where XTM Composer runs (in its container, for a Docker or Kubernetes deployment).
+- `OPENCTI__HTTPS_PROXY_REJECT_UNAUTHORIZED` — defaults to `true`. If set to `false`, Composer injects `NODE_TLS_REJECT_UNAUTHORIZED=0` into connector containers.
 
 ## Certificate Separation
 
-⚠️ **Important**: Proxy certificates are separate from OpenCTI server certificates.
+⚠️ **Important**: Proxy certificates are separate from OpenCTI server certificates. These settings must not be mixed.
 
 | Purpose | Configuration Keys | Used For |
 |---------|-------------------|----------|
-| **Proxy certificates** | `https_proxy_ca`<br>`https_proxy_reject_unauthorized` | Validating HTTPS connections **through the proxy** |
-| **OpenCTI server certificates** | `app:https_cert:ca`<br>`app:https_cert:reject_unauthorized` | TLS for the OpenCTI web server itself |
-
-**Do not confuse these two configurations.**
+| **Proxy certificates** (XTM Composer) | `https_proxy_ca`<br>`https_proxy_reject_unauthorized` | Validating HTTPS connections **through the proxy** |
+| **OpenCTI server certificates** (OpenCTI platform) | `app:https_cert:ca`<br>`app:https_cert:reject_unauthorized` | TLS for the OpenCTI web server itself |
 
 ---
 
-### Troubleshooting - Connector Integration
+## Connector integration
 
 ### Automatic Injection
 
@@ -90,29 +85,13 @@ When proxy is enabled, XTM Composer automatically injects these environment vari
 - `CURL_CA_BUNDLE` (when `https_proxy_ca` is configured)
 - `NODE_TLS_REJECT_UNAUTHORIZED` (set to `0` when `https_proxy_reject_unauthorized: false`)
 
+The four CA variables point to `/etc/ssl/certs/xtm-proxy-ca.crt`, where XTM Composer mounts the bundle of the `https_proxy_ca` certificates.
+
 ### Verification
 
-Use this GraphQL query to verify proxy settings are injected:
+XTM Composer adds these variables when it deploys a connector: they are not stored in the connector configuration in OpenCTI. To check them:
 
-```graphql
-query Connector($id: String!) {
-  connector(id: $id) {
-    id
-    name
-    is_managed
-    manager_contract_configuration {
-      key
-      value
-    }
-  }
-}
-```
+- Set `manager:debug:show_env_vars` to `true` (see [Configuration reference](configuration.md#debug)). When XTM Composer starts a connector, it logs a `Starting connector` message with the connector environment variables. `HTTP_PROXY` and `HTTPS_PROXY` are masked unless `manager:debug:show_sensitive_env_vars` is also `true`.
+- Or read the environment of the connector container, for example with `docker inspect <container-name>` (`Config.Env`) or `kubectl describe deployment <deployment-name>`.
 
-Variables:
-
-```json
-{ "id": "your-connector-id" }
-```
-
-Look for proxy-related keys in `manager_contract_configuration`.
 See also: [Private Registry Authentication](registry-authentication.md)

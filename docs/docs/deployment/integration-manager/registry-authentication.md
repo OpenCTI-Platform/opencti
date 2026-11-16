@@ -22,9 +22,9 @@ No additional configuration is required inside Composer.
 opencti:
   daemon:
     registry:
-      server: "registry.example.com"  # Default: docker.io
-      username: "myuser"              # Required for Kubernetes auto-creation
-      password: "mypassword"          # Required for Kubernetes auto-creation
+      server: "registry.example.com"  # Optional, no default: prepended to the image names
+      username: "myuser"              # Required for authentication
+      password: "mypassword"          # Required for authentication
       email: "user@example.com"       # Optional
 ```
 
@@ -37,24 +37,29 @@ export OPENCTI__DAEMON__REGISTRY__PASSWORD="mypassword"
 export OPENCTI__DAEMON__REGISTRY__EMAIL="user@example.com"  # Optional
 ```
 
-### Required Fields
+### Required fields
 
-- **server**: Registry URL (defaults to `docker.io` if not specified)
-- **username**: Registry username (required for Kubernetes secret creation)
-- **password**: Registry password (required for Kubernetes secret creation)
-- **email**: User email (optional)
+XTM Composer authenticates to the registry only when both of these fields are set:
+
+- **username**: Registry username
+- **password**: Registry password or token
+
+### Optional fields
+
+- **server**: Registry server (for example `registry.example.com`). It has no default value. When set, XTM Composer prepends it to every connector image name (see [Registry Prefix Resolution](#registry-prefix-resolution)). When not set, the image names are used as they are and pulled from the default registry of the container engine (Docker Hub for Docker). On Kubernetes, `server` is required for the `imagePullSecret` to be created.
+- **email**: User email, added to the credentials
 
 ---
 
 ## Kubernetes Secret Auto-Creation
 
-When using the **Kubernetes orchestrator**, XTM Composer automatically creates an `imagePullSecret` at startup if credentials are configured.
+When using the **Kubernetes orchestrator**, XTM Composer automatically creates an `imagePullSecret` at startup if `server`, `username` and `password` are configured.
 
 ### Behavior
 
 **With credentials configured:**
 
-1. At startup, the orchestrator deletes any existing secret named `opencti-registry-auth`
+1. At startup, the orchestrator deletes the existing registry secret, if any
 2. Creates a new secret with your credentials
 3. Automatically attaches this secret to deployed connector pods
 
@@ -65,21 +70,17 @@ When using the **Kubernetes orchestrator**, XTM Composer automatically creates a
 
 ### Secret Details
 
-- **Name**: `opencti-registry-auth` (hardcoded)
+- **Name**: derived from the `server` value, converted to a valid Kubernetes name (for example, `registry.example.com` gives a name starting with `registry-example-com`)
 - **Type**: `kubernetes.io/dockerconfigjson`
 - **Lifecycle**: Recreated on each startup if credentials present
 
 ### Expected Startup Logs
 
-```
-INFO orchestrator="kubernetes" secret="opencti-registry-auth" Deleting existing imagePullSecret if present
-INFO orchestrator="kubernetes" secret="opencti-registry-auth" server="registry.example.com" Creating imagePullSecret for private registry
-INFO orchestrator="kubernetes" secret="opencti-registry-auth" Successfully created imagePullSecret
-```
+At startup, look for the `Kubernetes registry secret created` message. On failure, XTM Composer logs `Kubernetes registry secret creation failed` with the error.
 
 ### Required Kubernetes Permissions
 
-Your ServiceAccount must have these permissions:
+XTM Composer only creates and deletes secrets. The Role of the [installation guide](installation.md#production-environment-kubernetes) already includes this rule. If you use your own Role, add it:
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -89,7 +90,7 @@ metadata:
 rules:
 - apiGroups: [""]
   resources: ["secrets"]
-  verbs: ["get", "list", "create", "delete"]
+  verbs: ["create", "delete"]
 ```
 
 ### Troubleshooting
@@ -102,7 +103,7 @@ rules:
 
 **Pods can't pull images:**
 
-- Verify the secret exists: `kubectl get secret opencti-registry-auth`
+- Verify the secret exists: `kubectl get secrets --field-selector type=kubernetes.io/dockerconfigjson`
 - Check secret is attached to pods: `kubectl describe pod <pod-name>`
 - Ensure registry server is accessible from the cluster
 
@@ -112,9 +113,8 @@ rules:
 
 The Integration Manager automatically handles registry prefixes in image names:
 
-- If the image name already includes the registry, it will not prepend anything.
-- If no registry is included, the `server` from the registry configuration is automatically prefixed.
-- This prevents double-prefixing and ensures images are pulled from the correct registry.
+- When `server` is set, it is always prepended to the image name of the connector, so your registry must host the images under the same name.
+- When `server` is not set, the image name is used as it is.
 
 Example:
 

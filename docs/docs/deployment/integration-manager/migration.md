@@ -19,7 +19,7 @@ Before starting, ensure you have:
 ## Step 1 : Verify that the connector is compatible with the integration manager
 
 1. Log into your OpenCTI instance
-2. Navigate to **Data > Ingestion > Connector Catalog**
+2. Navigate to **Integrations > Available**
 3. Search for the connector in the list
 4. All connectors natively present in OpenCTI are manager compatible
 
@@ -31,7 +31,7 @@ For more information on the configuration settings for a connector, follow the l
 
 ## Step 3 : Deploy the new instance
 
-1. Navigate to **Data > Ingestion > Connector Catalog**
+1. Navigate to **Integrations > Available**
 2. Search for the connector in the list
 3. Click Deploy to display the form
 4. Fill out the form with the information you collected earlier
@@ -39,9 +39,9 @@ For more information on the configuration settings for a connector, follow the l
 
 ## Step 4 : Start the new instance
 
-1. Navigate to **Data > Ingestion > Connector > [your connector instance]**
+1. Navigate to **Integrations > Deployed** and open your connector instance
 2. Click Start to start the connector
-3. Wait a few seconds for the status to change to Start
+3. Wait a few seconds for the status to change to Started
 
 ## Step 5 : Delete the old instance
 
