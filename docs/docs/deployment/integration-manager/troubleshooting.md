@@ -168,9 +168,9 @@ manager:
   credentials_key_filepath: "/path/to/private_key_4096.pem"
 ```
 
-For Docker deployments, ensure the volume mount is correct:
+For Docker deployments, ensure the volume mount is correct and that `credentials_key_filepath` points to the path inside the container:
 ```bash
-docker run -v /local/path/key.pem:/keys/private_key.pem ...
+docker run -v /local/path/key.pem:/keys/private_key.pem -e MANAGER__CREDENTIALS_KEY_FILEPATH=/keys/private_key.pem ...
 ```
 
 ## Orchestration issues
