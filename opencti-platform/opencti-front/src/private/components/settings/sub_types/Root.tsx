@@ -22,6 +22,7 @@ import {
 import SubType from './SubType';
 import GlobalWorkflowSettingsCard from './global_workflow_request_access/GlobalWorkflowSettingsCard';
 import SubTypeWorkflow from './SubTypeWorkflow';
+import EntityStatusSyncSetting from './global_workflow_request_access/EntityStatusSyncSetting';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { isWorkflowUiEnabledForType } from '../../common/workflow/workflowFeatureFlag';
 
@@ -58,7 +59,12 @@ const RootSubType = () => {
           <Route
             path={SUBTYPE_TAB_WORKFLOW}
             element={isWorkflowUiEnabledForType(subTypeId, isFeatureEnable)
-              ? <SubTypeWorkflow entityType={subTypeId} />
+              ? (
+                  <>
+                    <EntityStatusSyncSetting sx={{ marginBottom: 1 }} />
+                    <SubTypeWorkflow entityType={subTypeId} heightOffset={340} />
+                  </>
+                )
               : <GlobalWorkflowSettingsCard />}
           />
           <Route path={SUBTYPE_TAB_TEMPLATES} element={<FintelTemplatesManager />} />
