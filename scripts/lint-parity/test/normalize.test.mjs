@@ -82,6 +82,25 @@ test('produces the Finding shape', () => {
   assert.deepEqual(normalizeOxlint(oxlintSample, fixtureDir).find((f) => f.ruleId === 'eqeqeq'), { file: 'sample-src/a.ts', line: 4, ruleId: 'eqeqeq', severity: 'error' });
 });
 
+test('expands the labels of a no-duplicates diagnostic into one finding per import, as ESLint reports them', () => {
+  // oxlint reports one diagnostic per duplicated module: the first import is labels[0], the other imports are the following labels.
+  const span = (line) => ({ span: { line, column: 1, offset: 0, length: 1 } });
+  const report = {
+    diagnostics: [
+      { code: 'import(no-duplicates)', severity: 'warning', filename: 'sample-src/a.ts', labels: [span(2), span(3), span(7), span(7)] },
+      { code: 'eslint(no-debugger)', severity: 'error', filename: 'sample-src/a.ts', labels: [span(10), span(11)] },
+    ],
+  };
+  const findings = normalizeOxlint(report, fixtureDir);
+  assert.deepEqual(
+    findings.filter((f) => f.ruleId === 'import/no-duplicates').map((f) => f.line),
+    [2, 3, 7],
+  );
+  assert.ok(findings.filter((f) => f.ruleId === 'import/no-duplicates').every((f) => f.file === 'sample-src/a.ts' && f.severity === 'warning'));
+  // Other rules keep one finding per diagnostic, at the first label.
+  assert.deepEqual(findings.filter((f) => f.ruleId === 'no-debugger').map((f) => f.line), [10]);
+});
+
 test('oxlintConfigRules collects top-level and override rules, skips off', () => {
   const rules = oxlintConfigRules({
     rules: { 'no-debugger': 'error', eqeqeq: 'off' },

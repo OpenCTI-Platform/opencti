@@ -108,6 +108,10 @@ export const normalizeEslint = (results, baseDir) => results.flatMap((result) =>
     }));
 });
 
+// Rules for which oxlint reports a whole group of locations as ONE diagnostic (the first location is labels[0],
+// the others are further labels) where ESLint reports one finding per location. Each label becomes a finding.
+const ONE_DIAGNOSTIC_PER_GROUP = new Set(['import/no-duplicates']);
+
 /**
  * @param {{ diagnostics: object[] }} report oxlint `--format json` output
  * @param {string} baseDir
@@ -115,12 +119,18 @@ export const normalizeEslint = (results, baseDir) => results.flatMap((result) =>
  */
 export const normalizeOxlint = (report, baseDir) => report.diagnostics
   .filter((diagnostic) => diagnostic.code)
-  .map((diagnostic) => ({
-    file: toRelativeFile(diagnostic.filename, baseDir),
-    line: diagnostic.labels?.[0]?.span?.line ?? 0,
-    ruleId: toComparableRuleId(toEslintRuleId(diagnostic.code)),
-    severity: diagnostic.severity === 'warning' ? 'warning' : 'error',
-  }));
+  .flatMap((diagnostic) => {
+    const ruleId = toComparableRuleId(toEslintRuleId(diagnostic.code));
+    const lines = ONE_DIAGNOSTIC_PER_GROUP.has(ruleId)
+      ? [...new Set((diagnostic.labels ?? []).map((label) => label?.span?.line))]
+      : [diagnostic.labels?.[0]?.span?.line];
+    return (lines.length > 0 ? lines : [undefined]).map((line) => ({
+      file: toRelativeFile(diagnostic.filename, baseDir),
+      line: line ?? 0,
+      ruleId,
+      severity: diagnostic.severity === 'warning' ? 'warning' : 'error',
+    }));
+  });
 
 const isEnabled = (setting) => {
   const level = Array.isArray(setting) ? setting[0] : setting;
