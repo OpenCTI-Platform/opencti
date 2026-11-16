@@ -15,7 +15,7 @@ vi.mock('../../../src/database/middleware', () => ({ stixLoadById: vi.fn(), stor
 vi.mock('../../../src/database/cache', () => ({ getEntitiesListFromCache: vi.fn(), getEntitiesMapFromCache: vi.fn(), getEntityFromCache: vi.fn() }));
 
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../../src/database/cache';
-import { SYSTEM_USER } from '../../../src/utils/access';
+import { BYPASS, SYSTEM_USER } from '../../../src/utils/access';
 // eslint-disable-next-line import/extensions
 import { refreshStreamUser } from '../../../src/graphql/sseMiddleware.js';
 
@@ -26,6 +26,7 @@ const buildUser = (overrides: Record<string, any> = {}) => ({
   id: 'user-id',
   internal_id: 'user-id',
   user_email: 'user@opencti.io',
+  account_status: 'Active',
   capabilities: [{ name: 'TAXIIAPI' }],
   allowed_marking: [{ internal_id: 'marking-a' }],
   organizations: [],
@@ -36,16 +37,19 @@ const buildUser = (overrides: Record<string, any> = {}) => ({
 const buildRequest = (user: any, contextUser: any = user) => ({
   user,
   userId: user.id,
-  capabilities: user.capabilities,
-  allowed_marking: user.allowed_marking,
   context: { user: contextUser, user_inside_platform_organization: true } as any,
 });
 
-// The user exists in these tests: fail clearly otherwise, and narrow the result type
-const refreshExistingStreamUser = async (req: any, channel: any) => {
-  const refreshed = await refreshStreamUser(req, channel);
-  if (!refreshed) {
-    throw new Error('The stream user should still exist');
+// Users as the platform users cache gives them: a new object for a user whenever it changes
+const mockPlatformUsers = (...users: any[]) => {
+  vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map(users.map((u) => [u.id, u])) as any);
+};
+
+// The user can still be served in these tests: fail clearly otherwise, and narrow the result type
+const refreshServedStreamUser = async (req: any, opts?: { isPublicUser?: boolean }) => {
+  const refreshed = await refreshStreamUser(req, opts);
+  if (refreshed.error !== undefined || refreshed.user === undefined) {
+    throw new Error(`The stream user should still be served: ${refreshed.error}`);
   }
   return refreshed;
 };
@@ -58,112 +62,160 @@ describe('refreshStreamUser', () => {
   });
 
   it('should apply the current rights when a service account is turned into a user', async () => {
-    const origin = { socket: 'query', user_id: 'user-id' };
-    const serviceAccount = buildUser({ user_service_account: true, organizations: [{ internal_id: OTHER_ORG }], origin });
+    const origin = { socket: 'query', user_id: 'user-id', group_ids: ['group-a'], organization_ids: [OTHER_ORG] };
+    const serviceAccount = buildUser({ user_service_account: true, organizations: [{ internal_id: OTHER_ORG }], groups: [{ internal_id: 'group-a' }], origin });
     const req = buildRequest(serviceAccount);
-    const channel = { user: serviceAccount, capabilities: serviceAccount.capabilities, allowed_marking: serviceAccount.allowed_marking } as any;
-    // The account is now a regular user, outside the platform organization, with fewer markings
-    const updatedUser = buildUser({ user_service_account: false, organizations: [{ internal_id: OTHER_ORG }], allowed_marking: [] });
-    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['user-id', updatedUser]]) as any);
+    mockPlatformUsers(buildUser({ user_service_account: true, organizations: [{ internal_id: OTHER_ORG }], groups: [{ internal_id: 'group-a' }] }));
+    const { isRightsChanged: isFirstRightsChanged } = await refreshServedStreamUser(req);
+    // The account is now a regular user in another group, outside the platform organization, with fewer markings
+    const updatedUser = buildUser({ organizations: [{ internal_id: OTHER_ORG }], groups: [{ internal_id: 'group-b' }], allowed_marking: [] });
+    mockPlatformUsers(updatedUser);
 
-    const { user: refreshed, isRightsChanged } = await refreshExistingStreamUser(req, channel);
+    const { user: refreshed, isRightsChanged } = await refreshServedStreamUser(req);
 
+    // The first resolution only takes the reference
+    expect(isFirstRightsChanged).toBe(false);
     expect(isRightsChanged).toBe(true);
     expect(refreshed.user_service_account).toBe(false);
     expect(refreshed.allowed_marking).toEqual([]);
-    // Origin computed at connection is kept
-    expect(refreshed.origin).toBe(origin);
+    // Origin computed at connection is kept, with the current groups and organizations
+    expect(refreshed.origin).toEqual({ ...origin, group_ids: ['group-b'], organization_ids: [OTHER_ORG] });
     expect(req.user).toBe(refreshed);
-    expect(req.allowed_marking).toEqual([]);
     expect(req.context.user).toBe(refreshed);
     expect(req.context.user_inside_platform_organization).toBe(false);
-    expect(channel.user).toBe(refreshed);
-    expect(channel.allowed_marking).toEqual([]);
   });
 
-  it('should keep a user of the platform organization inside it', async () => {
-    const user = buildUser({ organizations: [{ internal_id: PLATFORM_ORG }] });
+  it('should report a rights change when the platform organization changes, with the same user', async () => {
+    const user = buildUser({ organizations: [{ internal_id: OTHER_ORG }] });
     const req = buildRequest(user);
-    req.context.user_inside_platform_organization = false;
-    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['user-id', { ...user }]]) as any);
+    mockPlatformUsers(user);
+    await refreshServedStreamUser(req);
+    expect(req.context.user_inside_platform_organization).toBe(false);
+    vi.mocked(getEntityFromCache).mockResolvedValue({ platform_organization: OTHER_ORG } as any);
 
-    const { isRightsChanged } = await refreshExistingStreamUser(req, undefined);
+    const { isRightsChanged } = await refreshServedStreamUser(req);
 
     expect(req.context.user_inside_platform_organization).toBe(true);
     expect(isRightsChanged).toBe(true);
   });
 
-  it('should not report a rights change when only other attributes changed', async () => {
-    const user = buildUser({ organizations: [{ internal_id: PLATFORM_ORG }], groups: [{ internal_id: 'group-a' }, { internal_id: 'group-b' }] });
-    const req = buildRequest(user);
-    // Same rights, listed in another order, other attributes updated
-    const updatedUser = { ...user, name: 'Renamed', groups: [{ internal_id: 'group-b' }, { internal_id: 'group-a' }] };
-    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['user-id', updatedUser]]) as any);
-
-    const { user: refreshed, isRightsChanged } = await refreshExistingStreamUser(req, undefined);
-
-    expect(refreshed.name).toBe('Renamed');
-    expect(isRightsChanged).toBe(false);
-  });
-
-  it('should report a rights change when a role is removed, even with the same capabilities', async () => {
-    const user = buildUser({ organizations: [{ internal_id: PLATFORM_ORG }], roles: [{ internal_id: 'role-a' }, { internal_id: 'role-b' }] });
-    const req = buildRequest(user);
-    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['user-id', { ...user, roles: [{ internal_id: 'role-a' }] }]]) as any);
-
-    const { isRightsChanged } = await refreshExistingStreamUser(req, undefined);
-
-    expect(isRightsChanged).toBe(true);
-  });
-
-  it('should report a rights change when the individual of the user changes', async () => {
-    const user = buildUser({ organizations: [{ internal_id: OTHER_ORG }], individual_id: 'individual-a' });
-    const req = buildRequest(user);
-    req.context.user_inside_platform_organization = false;
-    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['user-id', { ...user, individual_id: 'individual-b' }]]) as any);
-
-    const { isRightsChanged } = await refreshExistingStreamUser(req, undefined);
-
-    expect(isRightsChanged).toBe(true);
-  });
-
-  it('should report a rights change when a marking is removed', async () => {
+  it('should report a rights change whenever the users cache gives a new object for the user', async () => {
     const user = buildUser({ organizations: [{ internal_id: PLATFORM_ORG }] });
     const req = buildRequest(user);
-    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['user-id', { ...user, allowed_marking: [] }]]) as any);
+    mockPlatformUsers(user);
+    await refreshServedStreamUser(req);
+    // Same users cache entry: nothing changed
+    const { isRightsChanged: isUnchanged } = await refreshServedStreamUser(req);
+    mockPlatformUsers({ ...user });
 
-    const { isRightsChanged } = await refreshExistingStreamUser(req, undefined);
+    const { isRightsChanged } = await refreshServedStreamUser(req);
 
+    expect(isUnchanged).toBe(false);
     expect(isRightsChanged).toBe(true);
+  });
+
+  it('should not serve a user whose account is locked', async () => {
+    const user = buildUser();
+    const req = buildRequest(user);
+    mockPlatformUsers({ ...user, account_status: 'Locked' });
+
+    const refreshed = await refreshStreamUser(req);
+
+    expect(refreshed.error).toBeDefined();
+    expect(req.user).toBe(user);
+  });
+
+  it('should not serve a user whose account expired', async () => {
+    const user = buildUser();
+    const req = buildRequest(user);
+    // The expiration manager only sets the Expired status later
+    mockPlatformUsers({ ...user, account_lock_after_date: '2020-01-01T00:00:00.000Z' });
+
+    const refreshed = await refreshStreamUser(req);
+
+    expect(refreshed.error).toBeDefined();
+  });
+
+  it('should not check the account status of the user of a public stream', async () => {
+    const publicUser = buildUser({ id: 'public-user-id', internal_id: 'public-user-id' });
+    const req = buildRequest(publicUser, undefined);
+    mockPlatformUsers({ ...publicUser, account_status: 'Locked' });
+
+    const { user: refreshed } = await refreshServedStreamUser(req, { isPublicUser: true });
+
+    expect(refreshed.id).toBe('public-user-id');
+  });
+
+  describe('with an applicant impersonated by the authenticated user', () => {
+    const applicant = buildUser({ origin: { user_id: 'user-id', real_authentication_id: 'worker-id' } });
+    const worker = buildUser({ id: 'worker-id', internal_id: 'worker-id', capabilities: [{ name: BYPASS }] });
+
+    it('should serve the applicant while the authenticated user can impersonate it', async () => {
+      const req = buildRequest(applicant);
+      mockPlatformUsers(buildUser(), worker);
+
+      const { user: refreshed } = await refreshServedStreamUser(req);
+
+      expect(refreshed.id).toBe('user-id');
+      expect(refreshed.origin.real_authentication_id).toBe('worker-id');
+    });
+
+    it('should not serve the applicant once the authenticated user lost the bypass capability', async () => {
+      const req = buildRequest(applicant);
+      mockPlatformUsers(buildUser(), { ...worker, capabilities: [{ name: 'TAXIIAPI' }] });
+
+      const refreshed = await refreshStreamUser(req);
+
+      expect(refreshed.error).toBeDefined();
+      expect(req.user).toBe(applicant);
+    });
+
+    it('should not serve the applicant once the authenticated user is locked', async () => {
+      const req = buildRequest(applicant);
+      mockPlatformUsers(buildUser(), { ...worker, account_status: 'Locked' });
+
+      const refreshed = await refreshStreamUser(req);
+
+      expect(refreshed.error).toBeDefined();
+    });
+
+    it('should not serve the applicant once the authenticated user no longer exists', async () => {
+      const req = buildRequest(applicant);
+      mockPlatformUsers(buildUser());
+
+      const refreshed = await refreshStreamUser(req);
+
+      expect(refreshed.error).toBeDefined();
+    });
   });
 
   it('should not replace the requester of a public stream served for another user', async () => {
     const publicUser = buildUser({ id: 'public-user-id', internal_id: 'public-user-id' });
     const requester = buildUser({ id: 'requester-id', internal_id: 'requester-id' });
     const req = buildRequest(publicUser, requester);
-    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['public-user-id', { ...publicUser }]]) as any);
+    mockPlatformUsers({ ...publicUser });
 
-    const { user: refreshed } = await refreshExistingStreamUser(req, undefined);
+    const { user: refreshed } = await refreshServedStreamUser(req, { isPublicUser: true });
 
     expect(req.user).toBe(refreshed);
     expect(req.context.user).toBe(requester);
   });
 
-  it('should return undefined when the user no longer exists', async () => {
+  it('should not serve a user who no longer exists', async () => {
     const user = buildUser();
     const req = buildRequest(user);
-    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map() as any);
+    mockPlatformUsers();
 
-    const refreshed = await refreshStreamUser(req, undefined);
+    const refreshed = await refreshStreamUser(req);
 
-    expect(refreshed).toBeUndefined();
+    expect(refreshed.error).toBeDefined();
     expect(req.user).toBe(user);
   });
 
   it('should keep internal users as is', async () => {
     const req = buildRequest(SYSTEM_USER, undefined);
 
-    const refreshed = await refreshStreamUser(req, undefined);
+    const refreshed = await refreshStreamUser(req);
 
     expect(refreshed).toEqual({ user: SYSTEM_USER, isRightsChanged: false });
     expect(getEntitiesMapFromCache).not.toHaveBeenCalled();
