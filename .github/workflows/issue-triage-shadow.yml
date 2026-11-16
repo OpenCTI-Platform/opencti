@@ -1,0 +1,97 @@
+# POC: suggests a type, an area and a "needs more info" flag for an issue with a
+# decision model (see scripts/issue-triage/README.md).
+#
+# Shadow mode: the suggestion goes to the job summary only. Nothing is written
+# to the issue and no label is applied; the token is read-only on purpose.
+#
+# Dormant until a provider is configured: without the TYPESAFE_API_KEY secret
+# or the LLM_MODEL variable, the triage job logs a notice and passes.
+name: Issue triage (shadow POC)
+
+on:
+  issues:
+    types: [opened]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Triage this issue. Leave empty to run the evaluation instead.
+        required: false
+      evaluate_limit:
+        description: Number of recently closed issues replayed by the evaluation.
+        required: false
+        default: "200"
+
+permissions: {}
+
+jobs:
+  triage:
+    name: Suggest triage
+    if: ${{ github.event_name == 'issues' || inputs.issue_number != '' }}
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      issues: read
+    defaults:
+      run:
+        working-directory: scripts/issue-triage
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      - run: npm ci
+
+      # The issue is fetched by the script through the API: its title and body
+      # never pass through the shell. Secrets are scoped to this step so that
+      # dependency install scripts never see them.
+      - name: Suggest triage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TRIAGE_PROVIDER: ${{ vars.TRIAGE_PROVIDER }}
+          TRIAGE_MODEL: ${{ vars.TRIAGE_MODEL }}
+          TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
+          LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+        run: npm run triage
+
+  evaluate:
+    name: Evaluate against human labels
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number == '' }}
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      issues: read
+    defaults:
+      run:
+        working-directory: scripts/issue-triage
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      - run: npm ci
+
+      - name: Evaluate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TRIAGE_PROVIDER: ${{ vars.TRIAGE_PROVIDER }}
+          TRIAGE_MODEL: ${{ vars.TRIAGE_MODEL }}
+          TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
+          LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          EVALUATE_LIMIT: ${{ inputs.evaluate_limit }}
+        run: npm run evaluate -- --limit "$EVALUATE_LIMIT"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: issue-triage-evaluation
+          path: scripts/issue-triage/out
+          if-no-files-found: ignore

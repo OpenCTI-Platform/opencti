@@ -1,0 +1,22 @@
+{
+  "name": "opencti-issue-triage-poc",
+  "description": "POC: shadow triage of GitHub issues with the Jev decision model",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "evaluate": "node src/evaluate.ts",
+    "triage": "node src/triage.ts",
+    "test": "node --test \"src/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@typesafe-ai/sdk": "0.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "typescript": "7.0.2"
+  }
+}
