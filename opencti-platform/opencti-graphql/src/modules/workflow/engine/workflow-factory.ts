@@ -70,17 +70,37 @@ export class WorkflowFactory {
   }
 
   /**
-   * The conditions with the audience filters removed: what the entity must satisfy for the transition to open.
-   * Null when no knowledge filter is left.
+   * What the entity must still satisfy for the user to open the transition: the conditions partially
+   * evaluated against the user. Audience filters are resolved, so a branch the user is excluded from
+   * disappears and a branch the user already satisfies drops out. Null when no knowledge filter is left.
    */
-  public static extractKnowledgeConditions(filters?: FilterGroup | null): FilterGroup | null {
+  public static residualKnowledgeConditions(ctx: Context, filters?: FilterGroup | null): FilterGroup | null {
     if (!filters) return null;
-    const knowledgeFilters = filters.filters.filter((f) => !this.isAudienceFilter(f));
-    const knowledgeGroups = filters.filterGroups
-      .map((g) => this.extractKnowledgeConditions(g))
-      .filter((g): g is FilterGroup => g !== null);
-    if (knowledgeFilters.length === 0 && knowledgeGroups.length === 0) return null;
-    return { ...filters, filters: knowledgeFilters, filterGroups: knowledgeGroups };
+    const residue = this.partialEvaluate(ctx, filters);
+    return typeof residue === 'boolean' ? null : residue;
+  }
+
+  // true/false when the user alone settles the group, otherwise the knowledge filters still to meet
+  private static partialEvaluate(ctx: Context, group: FilterGroup): boolean | FilterGroup {
+    const isAnd = group.mode === FilterMode.And;
+    const residueFilters: Filter[] = [];
+    const residueGroups: FilterGroup[] = [];
+    const parts: (boolean | Filter | FilterGroup)[] = [
+      ...group.filters.map((f) => (this.isAudienceFilter(f) ? this.evaluateFilter(ctx, f) : f)),
+      ...group.filterGroups.map((g) => this.partialEvaluate(ctx, g)),
+    ];
+    for (const part of parts) {
+      if (typeof part === 'boolean') {
+        // AND: one false settles it, trues drop. OR: one true settles it, falses drop.
+        if (part !== isAnd) return part;
+      } else if ('filterGroups' in part) {
+        residueGroups.push(part);
+      } else {
+        residueFilters.push(part);
+      }
+    }
+    if (residueFilters.length === 0 && residueGroups.length === 0) return isAnd;
+    return { ...group, filters: residueFilters, filterGroups: residueGroups };
   }
 
   private static entityFilterCaches = new WeakMap<object, EntityFilterCache>();
@@ -307,7 +327,7 @@ export class WorkflowFactory {
           comment: t.comment,
           closingReason: t.closingReason,
           conditions: this.createConditions<TContext>(t.conditions),
-          knowledgeConditions: this.extractKnowledgeConditions(t.conditions?.filters),
+          conditionFilters: t.conditions?.filters ?? null,
           asyncSideEffects,
           onTransition: syncSideEffects,
           actionTypes: allActionTypes,

@@ -44,7 +44,7 @@ export class WorkflowDefinition<TContext extends Context = Context> {
       comment?: string;
       closingReason?: string;
       conditions?: ConditionValidator<TContext>[];
-      knowledgeConditions?: FilterGroup | null;
+      conditionFilters?: FilterGroup | null;
       asyncSideEffects?: SideEffect<TContext>[];
       onTransition?: SideEffect<TContext>[];
       actionTypes?: string[];
@@ -63,7 +63,7 @@ export class WorkflowDefinition<TContext extends Context = Context> {
       comment: options?.comment,
       closingReason: options?.closingReason,
       conditions: options?.conditions || [],
-      knowledgeConditions: options?.knowledgeConditions ?? null,
+      conditionFilters: options?.conditionFilters ?? null,
       asyncSideEffects: options?.asyncSideEffects || [],
       onTransition: options?.onTransition || [],
       actionTypes: options?.actionTypes || [],

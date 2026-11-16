@@ -386,36 +386,44 @@ describe('WorkflowFactory.createDefinition – closingReason field', () => {
 });
 
 // ---------------------------------------------------------------------------
-// WorkflowFactory.extractKnowledgeConditions – tooltip content of blocked transitions
+// WorkflowFactory.residualKnowledgeConditions – tooltip content of blocked transitions
 // ---------------------------------------------------------------------------
-describe('WorkflowFactory.extractKnowledgeConditions', () => {
+describe('WorkflowFactory.residualKnowledgeConditions', () => {
   const filter = (key: string, values: string[]): Filter => ({ key: [key], values, operator: FilterOperator.Eq, mode: FilterMode.Or });
   const group = (mode: FilterMode, filters: Filter[], filterGroups: FilterGroup[] = []): FilterGroup => ({ mode, filters, filterGroups });
+  const ctxFor = (user: { id: string; groups?: string[] }) => ({
+    entity: {},
+    user: { id: user.id, groups: (user.groups ?? []).map((id) => ({ id })), organizations: [], roles: [] },
+  } as any);
+  const assignee = filter('objectAssignee', ['@me']);
 
-  it('removes audience filters and keeps knowledge filters', () => {
-    const conditions = group(FilterMode.Or, [filter('workflow_user', ['u']), filter('objectAssignee', ['@me'])]);
-    expect(WorkflowFactory.extractKnowledgeConditions(conditions)).toEqual(group(FilterMode.Or, [filter('objectAssignee', ['@me'])]));
+  it('keeps the knowledge filters of an audience the user is not in out of the residue (OR of AND)', () => {
+    const conditions = group(FilterMode.Or, [assignee], [group(FilterMode.And, [filter('workflow_user', ['x']), filter('objectLabel', ['a'])])]);
+    expect(WorkflowFactory.residualKnowledgeConditions(ctxFor({ id: 'y' }), conditions)).toEqual(group(FilterMode.Or, [assignee]));
   });
 
-  it('returns null when only audience filters remain', () => {
-    expect(WorkflowFactory.extractKnowledgeConditions(group(FilterMode.And, [filter('workflow_group', ['g'])]))).toBeNull();
-    expect(WorkflowFactory.extractKnowledgeConditions(undefined)).toBeNull();
+  it('drops a branch the user already satisfies through the audience (AND of OR)', () => {
+    const conditions = group(FilterMode.And, [assignee], [group(FilterMode.Or, [filter('workflow_group', ['g']), filter('objectLabel', ['l'])])]);
+    expect(WorkflowFactory.residualKnowledgeConditions(ctxFor({ id: 'y', groups: ['g'] }), conditions)).toEqual(group(FilterMode.And, [assignee]));
   });
 
-  it('drops nested groups left empty', () => {
-    const conditions = group(FilterMode.And, [filter('workflow_group', ['g'])], [
-      group(FilterMode.Or, [filter('workflow_role', ['r'])]),
-      group(FilterMode.And, [filter('objectLabel', ['l'])]),
-    ]);
-    expect(WorkflowFactory.extractKnowledgeConditions(conditions))
-      .toEqual(group(FilterMode.And, [], [group(FilterMode.And, [filter('objectLabel', ['l'])])]));
+  it('keeps the knowledge alternative when the user is not in the audience branch', () => {
+    const conditions = group(FilterMode.And, [assignee], [group(FilterMode.Or, [filter('workflow_group', ['g']), filter('objectLabel', ['l'])])]);
+    expect(WorkflowFactory.residualKnowledgeConditions(ctxFor({ id: 'y' }), conditions))
+      .toEqual(group(FilterMode.And, [assignee], [group(FilterMode.Or, [filter('objectLabel', ['l'])])]));
   });
 
-  it('exposes knowledgeConditions on the created transitions', () => {
+  it('returns null when no knowledge condition is left to meet', () => {
+    expect(WorkflowFactory.residualKnowledgeConditions(ctxFor({ id: 'y' }), undefined)).toBeNull();
+    expect(WorkflowFactory.residualKnowledgeConditions(ctxFor({ id: 'y', groups: ['g'] }), group(FilterMode.And, [filter('workflow_group', ['g'])]))).toBeNull();
+    expect(WorkflowFactory.residualKnowledgeConditions(ctxFor({ id: 'y' }), group(FilterMode.Or, [filter('workflow_user', ['y']), assignee]))).toBeNull();
+  });
+
+  it('exposes the stored condition filters on the created transitions', () => {
     const conditions = group(FilterMode.And, [filter('workflow_group', ['g']), filter('objectLabel', ['l'])]);
     const withConditions = WorkflowFactory.createDefinition(makeSchema({ conditions: { filters: conditions } } as any));
-    expect(withConditions.getTransitions('draft')[0].knowledgeConditions).toEqual(group(FilterMode.And, [filter('objectLabel', ['l'])]));
+    expect(withConditions.getTransitions('draft')[0].conditionFilters).toEqual(conditions);
     const withoutConditions = WorkflowFactory.createDefinition(makeSchema());
-    expect(withoutConditions.getTransitions('draft')[0].knowledgeConditions).toBeNull();
+    expect(withoutConditions.getTransitions('draft')[0].conditionFilters).toBeNull();
   });
 });

@@ -130,22 +130,26 @@ vi.mock('../../../src/modules/workflow/domain/workflow-async-completion', async 
   cancelPendingContainerTasks: vi.fn().mockResolvedValue([]),
 }));
 
-vi.mock('../../../src/modules/workflow/engine/workflow-factory', () => ({
-  WorkflowFactory: {
-    createDefinition: vi.fn(() => ({
-      getInitialState: () => 'open',
-      hasState: () => true,
-      getTransitions: () => [
-        { event: 'close', to: 'closed', actionTypes: ['log'] },
-      ],
-    })),
-    getInstance: vi.fn(() => ({
-      start: vi.fn().mockResolvedValue(undefined),
-      trigger: vi.fn().mockResolvedValue({ success: true }),
-      getCurrentState: () => 'closed',
-    })),
-  },
-}));
+vi.mock('../../../src/modules/workflow/engine/workflow-factory', async (importOriginal) => {
+  const actual = (await importOriginal<typeof import('../../../src/modules/workflow/engine/workflow-factory')>()).WorkflowFactory;
+  return {
+    WorkflowFactory: {
+      residualKnowledgeConditions: actual.residualKnowledgeConditions.bind(actual),
+      createDefinition: vi.fn(() => ({
+        getInitialState: () => 'open',
+        hasState: () => true,
+        getTransitions: () => [
+          { event: 'close', to: 'closed', actionTypes: ['log'] },
+        ],
+      })),
+      getInstance: vi.fn(() => ({
+        start: vi.fn().mockResolvedValue(undefined),
+        trigger: vi.fn().mockResolvedValue({ success: true }),
+        getCurrentState: () => 'closed',
+      })),
+    },
+  };
+});
 
 vi.mock('../../../src/database/members', () => ({
   loadAssignees: vi.fn(),
@@ -8347,7 +8351,7 @@ describe('getWorkflowTransitions – blocked transitions', () => {
   });
 
   it('classifies a transition failing only knowledge conditions as blocked', async () => {
-    setup([{ event: 'review', to: 'reviewed', actionTypes: [], conditions: [knowledgeOnlyCondition], knowledgeConditions: assigneeConditions }]);
+    setup([{ event: 'review', to: 'reviewed', actionTypes: [], conditions: [knowledgeOnlyCondition], conditionFilters: assigneeConditions }]);
 
     const { allowed, blocked } = await getWorkflowTransitions(mockContext, mockUser, 'entity-id');
 
@@ -8358,8 +8362,22 @@ describe('getWorkflowTransitions – blocked transitions', () => {
     expect(await getAllowedTransitions(mockContext, mockUser, 'entity-id')).toEqual([]);
   });
 
+  it('states only the knowledge conditions that can still open the transition for this user', async () => {
+    const otherUserBranch = {
+      mode: 'and',
+      filters: [{ key: ['workflow_user'], values: ['another-user'], operator: 'eq', mode: 'or' }, { key: ['objectLabel'], values: ['label-a'], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    };
+    const conditionFilters = { mode: 'or', filters: assigneeConditions.filters, filterGroups: [otherUserBranch] };
+    setup([{ event: 'review', to: 'reviewed', actionTypes: [], conditions: [knowledgeOnlyCondition], conditionFilters }]);
+
+    const { blocked } = await getWorkflowTransitions(mockContext, mockUser, 'entity-id');
+
+    expect(JSON.parse(blocked[0].blockingConditions as string)).toEqual({ mode: 'or', filters: assigneeConditions.filters, filterGroups: [] });
+  });
+
   it('hides a transition failing audience conditions', async () => {
-    setup([{ event: 'review', to: 'reviewed', actionTypes: [], conditions: [() => Promise.resolve(false)], knowledgeConditions: assigneeConditions }]);
+    setup([{ event: 'review', to: 'reviewed', actionTypes: [], conditions: [() => Promise.resolve(false)], conditionFilters: assigneeConditions }]);
 
     const { allowed, blocked } = await getWorkflowTransitions(mockContext, mockUser, 'entity-id');
 
@@ -8368,7 +8386,7 @@ describe('getWorkflowTransitions – blocked transitions', () => {
   });
 
   it('allows a transition without conditions', async () => {
-    setup([{ event: 'review', to: 'reviewed', actionTypes: [], conditions: [], knowledgeConditions: null }]);
+    setup([{ event: 'review', to: 'reviewed', actionTypes: [], conditions: [], conditionFilters: null }]);
 
     const { allowed, blocked } = await getWorkflowTransitions(mockContext, mockUser, 'entity-id');
 
@@ -8378,7 +8396,7 @@ describe('getWorkflowTransitions – blocked transitions', () => {
 
   it('returns no blocked transition when the instance is completed', async () => {
     setup(
-      [{ event: 'review', to: 'reviewed', actionTypes: [], conditions: [knowledgeOnlyCondition], knowledgeConditions: assigneeConditions }],
+      [{ event: 'review', to: 'reviewed', actionTypes: [], conditions: [knowledgeOnlyCondition], conditionFilters: assigneeConditions }],
       { id: 'instance-id', internal_id: 'instance-id', currentState: 'draft', history: '[]', completed: true },
     );
 
@@ -8389,7 +8407,7 @@ describe('getWorkflowTransitions – blocked transitions', () => {
   });
 
   it('getWorkflowInstance exposes blockedTransitions', async () => {
-    setup([{ event: 'review', to: 'reviewed', actionTypes: [], conditions: [knowledgeOnlyCondition], knowledgeConditions: assigneeConditions }]);
+    setup([{ event: 'review', to: 'reviewed', actionTypes: [], conditions: [knowledgeOnlyCondition], conditionFilters: assigneeConditions }]);
 
     const instance = await getWorkflowInstance(mockContext, mockUser, 'entity-id');
 

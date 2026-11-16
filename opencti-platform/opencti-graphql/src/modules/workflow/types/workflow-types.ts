@@ -140,8 +140,8 @@ export interface Transition<TContext extends Context = Context> {
   comment?: string;
   closingReason?: string;
   conditions?: ConditionValidator<TContext>[];
-  /** The conditions without the audience filters, shown to users when the transition is blocked. */
-  knowledgeConditions?: FilterGroup | null;
+  /** The stored condition filters; their part left for the entity to meet is shown when the transition is blocked. */
+  conditionFilters?: FilterGroup | null;
   /** Phase 1: async effects (background tasks). State does NOT advance until all succeed. */
   asyncSideEffects?: SideEffect<TContext>[];
   /** Phase 2: sync effects run after all async succeed (or immediately if no async). */

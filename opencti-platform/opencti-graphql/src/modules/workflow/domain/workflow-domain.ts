@@ -2046,7 +2046,8 @@ export const getWorkflowTransitions = async (
       if (conditions.length === 0) return { kind: 'allowed' as const, resolved };
       if (!(await passesAll(conditions, audienceContext))) return null;
       if (await passesAll(conditions, conditionContext)) return { kind: 'allowed' as const, resolved };
-      const blockingConditions = transition.knowledgeConditions ? JSON.stringify(transition.knowledgeConditions) : null;
+      const residue = WorkflowFactory.residualKnowledgeConditions(conditionContext, transition.conditionFilters);
+      const blockingConditions = residue ? JSON.stringify(residue) : null;
       return { kind: 'blocked' as const, resolved: { ...resolved, blockingConditions } };
     }),
   );
