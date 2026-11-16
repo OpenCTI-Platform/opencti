@@ -26,7 +26,7 @@ As with other objects in OpenCTI, you can also leverage the `Notes` to add some 
 
 You can also use `Opinions` to collect how the Case has been handled, helping you to build Lessons Learned.
 
-![Incident Responses' list](assets/case-opinion.png)
+![Create an opinion on a Case](assets/case-opinion.png)
 
 To trace the evolution of your Case and define specific resolution workflows, you can use the `Status` (that can be define in Settings/Taxonomies/Status templates).
 
