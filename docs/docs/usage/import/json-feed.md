@@ -23,7 +23,7 @@ So we will show by example of its different and how to configure it in the two c
 
 Here's a step-by-step guide to configure JSON ingesters:
 
-1. Schedule period: As the API is not paginated, its recommended to configure a longer polling period. By default, the schedule period is **Platform default**: the feed runs at every check of the ingestion manager, every 30 seconds by default (see [Feeds advanced configuration](advanced-feed-configuration.md#ingestion-manager-interval)).
+1. Schedule period: As the API is not paginated, its recommended to configure a longer polling period. By default, the schedule period is **Platform default**: the feed runs at every check of the ingestion manager, every 30 seconds by default, once the data from its previous run has been processed (see [Feeds advanced configuration](advanced-feed-configuration.md#ingestion-manager-interval)).
 2. HTTP JSON URL: Provide the URL of the JSON API from which items will be imported.
 3. HTTP Verb: Provide the type of verb that will be GET by default.
 4. JSON Mappers: Choose the JSON mapper to be used to import the data. See the page dedicated to the [JSON mapper](../../administration/json-mappers.md).

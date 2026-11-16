@@ -40,7 +40,7 @@ The endpoint follows this pattern, where `[domain]` is the host name of your pla
 https://[domain]/taxii2/root/collections/[ingester-id]/objects/
 ```
 
-The line of the ingester in the list displays this URL with a copy button.
+To find the ID of the ingester, open it from **Integrations** > **Deployed**: the ID is the last part of the page URL (`/dashboard/integrations/feeds/taxii-push/[ingester-id]`).
 
 To push data, send a `POST` request to this endpoint:
 

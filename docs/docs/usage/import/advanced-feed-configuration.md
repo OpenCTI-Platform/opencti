@@ -48,7 +48,7 @@ APP__URI_DENY_LIST='["internal-service.local","*.corp.internal","localhost:4200"
 
 ## Ingestion manager interval
 
-The ingestion manager checks every running feed (TAXII, RSS, CSV and JSON) at a fixed interval, set by the `ingestion_manager:interval` parameter in milliseconds. At each check, a feed fetches data only once its schedule period, and the minimum interval of its feed type if any, have elapsed.
+The ingestion manager checks every running feed (TAXII, RSS, CSV and JSON) at a fixed interval, set by the `ingestion_manager:interval` parameter in milliseconds. At each check, a feed fetches data only once its schedule period, and the minimum interval of its feed type if any, have elapsed, and only when the data from its previous run has left its queue. While messages are still waiting in the queue, the feed is shown as buffering and skips the check.
 
 **Default value**: 30000 (30 seconds)
 
@@ -156,4 +156,4 @@ INGESTION_MANAGER__CSV_FEED__MIN_INTERVAL_MINUTES=5
 
 ## JSON feed settings
 
-[JSON Feeds](json-feed.md) have no dedicated setting. The URI deny list and the ingestion manager interval above apply to them. A JSON feed with the **Platform default** schedule period runs at every ingestion manager check, with no minimum interval.
+[JSON Feeds](json-feed.md) have no dedicated setting. The URI deny list and the ingestion manager interval above apply to them. A JSON feed with the **Platform default** schedule period runs at every ingestion manager check, with no minimum interval, unless data from its previous run is still waiting in its queue.
