@@ -40,8 +40,9 @@ export const getSchemaAttributeNames = async (context: AuthContext, user: AuthUs
 
 export const getSchemaAttributes = async (context: AuthContext, user: AuthUser, entityType?: string | null) => {
   const registeredTypes = schemaAttributesDefinition.getRegisteredTypes();
-  // A single type can be asked, so an API client does not load the whole schema each time
-  const types = entityType ? registeredTypes.filter((type) => type === entityType) : registeredTypes;
+  // A single type can be asked, so an API client does not load the whole schema each time.
+  // Only an absent filter returns every type: any given string, even empty, is matched exactly.
+  const types = R.isNil(entityType) ? registeredTypes : registeredTypes.filter((type) => type === entityType);
 
   return Promise.all(types.map(async (type) => {
     const attributes = schemaAttributesDefinition.getAttributes(type);

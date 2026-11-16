@@ -85,6 +85,11 @@ describe('schemaAttributes', () => {
     expect(schemaAttributes).toEqual([]);
   });
 
+  it('should return no type for an empty entityType', async () => {
+    const schemaAttributes = await querySchemaAttributes('');
+    expect(schemaAttributes).toEqual([]);
+  });
+
   it('should describe the custom fields and return null for an undescribed native attribute', async () => {
     const [malware] = await querySchemaAttributes(ENTITY_TYPE_MALWARE);
     const riskLevel = malware.attributes.find((attribute) => attribute.name === RISK_LEVEL);
