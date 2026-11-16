@@ -176,6 +176,7 @@ docker run -d \
   -v /opt/xtm-composer/config/development.yaml:/opt/xtm-composer/config/development.yaml \
   -v /opt/xtm-composer/private_key_4096.pem:/keys/private_key.pem \
   -e COMPOSER_ENV=development \
+  -e MANAGER__CREDENTIALS_KEY_FILEPATH=/keys/private_key.pem \
   filigran/xtm-composer:3.261021.1
 ```
 
