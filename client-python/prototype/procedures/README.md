@@ -47,6 +47,30 @@ ids are kept and the generated relationship ids are deterministic. This is not
 verified on a live platform yet; verify it by seeding the file twice and
 checking that the number of procedures in the Procedures list does not change.
 
+## Seed the example library
+
+`data/example-procedure-library.json` holds four more published procedures,
+each in its own shape:
+
+- an Ebury backdoor command (MITRE ATT&CK, T1059.004), used by Windigo, with
+  its process and file observables and the Ebury malware;
+- an in-memory PowerShell credential harvester (MITRE ATT&CK, T1059.001), used
+  by Sandworm Team and the 2016 Ukraine Electric Power Attack campaign, with no
+  observable because the source gives no command line;
+- two Atomic Red Team tests for T1055.001, a mavinject DLL injection and a
+  WinPwn SYSTEM shell, with their command and file observables, the WinPwn
+  tool and a mitigating course of action.
+
+The intrusion sets, malware, campaign and course of action carry their MITRE
+ATT&CK ids and merge with the platform's MITRE data. URLs in command lines are
+defanged.
+
+```bash
+python client-python/prototype/procedures/seed_procedures.py \
+    --url http://localhost:4000 --token <token> \
+    client-python/prototype/procedures/data/example-procedure-library.json
+```
+
 ## Fingerprints
 
 An imported `x_fingerprint` is kept as is and not checked against the

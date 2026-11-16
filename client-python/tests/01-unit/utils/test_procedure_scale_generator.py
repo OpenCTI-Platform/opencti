@@ -219,3 +219,73 @@ def test_seed_script_imports_each_file_and_prints_counts_and_warnings(tmp_path):
     assert "2 procedure(s) in the file" in text
     assert "x-opencti-procedure: 1" in text
     assert "warning: Procedure x-opencti-procedure--" in text
+
+
+LIBRARY_BUNDLE = PROTOTYPE_DIR / "data" / "example-procedure-library.json"
+
+
+def _load_library():
+    with open(LIBRARY_BUNDLE, encoding="utf-8") as file:
+        return json.load(file)
+
+
+def test_library_bundle_normalizes_without_warnings():
+    normalized, warnings = normalize_procedure_bundle(_load_library())
+    assert warnings == []
+    procedures = [
+        o for o in normalized["objects"] if o["type"] == "x-opencti-procedure"
+    ]
+    assert len(procedures) == 4
+    for procedure in procedures:
+        assert NAME_PATTERN.match(procedure["name"]), procedure["name"]
+        assert procedure["platforms"] and procedure["kill_chain_phases"]
+
+
+def test_library_bundle_keeps_every_reference_resolvable():
+    normalized, _ = normalize_procedure_bundle(_load_library())
+    ids = {o["id"] for o in normalized["objects"]}
+    for obj in normalized["objects"]:
+        for key, value in obj.items():
+            refs = []
+            if key.endswith("_ref") and isinstance(value, str):
+                refs = [value]
+            elif key.endswith("_refs") and isinstance(value, list):
+                refs = value
+            for ref in refs:
+                if ref.startswith("attack-pattern--"):
+                    continue  # resolved by the platform MITRE dataset
+                assert ref in ids, obj["id"] + " -> " + ref
+
+
+def test_library_bundle_links_each_command_as_an_observable():
+    for obj in _load_library()["objects"]:
+        if obj["type"] == "x-procedure" and "x_command_ref" in obj:
+            assert obj["x_command_ref"] in obj["x_observable_refs"]
+
+
+def test_library_bundle_is_defanged_and_attributes_nothing():
+    bundle = _load_library()
+    assert "customer" not in LIBRARY_BUNDLE.read_text(encoding="utf-8").lower()
+    for obj in bundle["objects"]:
+        assert "https://" not in obj.get("command_line", "")
+        assert "created_by_ref" not in obj
+
+
+def test_library_bundle_split_keeps_relationships_to_attack_patterns():
+    splitter = OpenCTIStix2Splitter()
+    _, incompatible, bundles = splitter.split_bundle_with_expectations(
+        _load_library(), False, None
+    )
+    assert incompatible == []
+    kept = {
+        obj["target_ref"]
+        for split in bundles
+        for obj in split["objects"]
+        if obj["type"] == "relationship"
+        and obj["relationship_type"] == "implements-technique"
+    }
+    assert kept == {
+        "attack-pattern--a9d4b653-6915-42af-98b2-5758c4ceee56",
+        "attack-pattern--970a3432-3237-47ad-bcca-7d8cbb217736",
+        "attack-pattern--f4599aa0-4f85-4a32-80ea-fc39dc965945",
+    }
