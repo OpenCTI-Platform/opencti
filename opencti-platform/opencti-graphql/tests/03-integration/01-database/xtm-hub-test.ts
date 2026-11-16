@@ -3,7 +3,7 @@ import * as cache from '../../../src/database/cache';
 import { autoRegisterOpenCTI, checkXTMHubConnectivity, loadAndSaveLatestNewsFeed } from '../../../src/domain/xtm-hub';
 import { testContext } from '../../utils/testQuery';
 import { HUB_REGISTRATION_MANAGER_USER } from '../../../src/utils/access';
-import { type AutoRegisterInput, type PlatformEe, XtmHubRegistrationStatus } from '../../../src/generated/graphql';
+import { type AutoRegisterInput, type PlatformEe, XtmHubCommercialModel, XtmHubRegistrationStatus } from '../../../src/generated/graphql';
 import { type ProvisionedNewsFeedItem, xtmHubClient } from '../../../src/modules/xtm/hub/xtm-hub-client';
 import type { BasicStoreSettings } from '../../../src/types/settings';
 import * as middleware from '../../../src/database/middleware';
@@ -75,7 +75,7 @@ describe('XTM hub', () => {
       };
 
       getEntityFromCacheSpy.mockResolvedValue(settings);
-      xtmHubClientRefreshStatusSpy.mockResolvedValue('not_found');
+      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'not_found', commercialModel: null });
 
       const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -92,6 +92,7 @@ describe('XTM hub', () => {
           { key: 'xtm_hub_registration_user_name', value: [] },
           { key: 'xtm_hub_registration_date', value: [] },
           { key: 'xtm_hub_last_connectivity_check', value: [] },
+          { key: 'xtm_hub_commercial_model', value: [] },
         ],
       );
     });
@@ -103,7 +104,7 @@ describe('XTM hub', () => {
         xtm_hub_registration_status: XtmHubRegistrationStatus.Registered,
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
-      xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
+      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null });
 
       const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -125,7 +126,7 @@ describe('XTM hub', () => {
         xtm_hub_should_send_connectivity_email: false,
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
-      xtmHubClientRefreshStatusSpy.mockResolvedValue('active');
+      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'active', commercialModel: null });
 
       const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -154,7 +155,7 @@ describe('XTM hub', () => {
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
       vi.spyOn(licensing, 'getEnterpriseEditionInfo').mockReturnValue({ license_validated: licenseValidated } as PlatformEe);
-      xtmHubClientRefreshStatusSpy.mockResolvedValue('active');
+      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'active', commercialModel: null });
 
       await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -169,7 +170,7 @@ describe('XTM hub', () => {
         xtm_hub_registration_status: XtmHubRegistrationStatus.LostConnectivity,
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
-      xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
+      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null });
 
       await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -189,7 +190,7 @@ describe('XTM hub', () => {
         xtm_hub_registration_status: XtmHubRegistrationStatus.LostConnectivity,
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
-      xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
+      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null });
 
       const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -211,7 +212,7 @@ describe('XTM hub', () => {
         xtm_hub_should_send_connectivity_email: true,
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
-      xtmHubClientRefreshStatusSpy.mockResolvedValue('active');
+      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'active', commercialModel: null });
 
       const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -225,6 +226,57 @@ describe('XTM hub', () => {
       );
     });
 
+    describe('commercial model', () => {
+      it('should store the commercial model returned by the hub when it changes', async () => {
+        const settings: Partial<BasicStoreSettings> = {
+          id: 'id',
+          xtm_hub_token,
+          xtm_hub_registration_status: XtmHubRegistrationStatus.Registered,
+          xtm_hub_should_send_connectivity_email: true,
+        };
+        getEntityFromCacheSpy.mockResolvedValue(settings);
+        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'active', commercialModel: 'saas' });
+
+        await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
+
+        expect(updateAttributeSpy).toHaveBeenCalledWith(
+          testContext,
+          HUB_REGISTRATION_MANAGER_USER,
+          'id',
+          ENTITY_TYPE_SETTINGS,
+          [
+            { key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] },
+            { key: 'xtm_hub_commercial_model', value: ['saas'] },
+          ],
+        );
+      });
+
+      it.each([
+        { case: 'the hub returns the same commercial model', commercialModel: 'saas' },
+        { case: 'the hub returns no commercial model', commercialModel: null },
+      ])('should keep the stored commercial model when $case', async ({ commercialModel }) => {
+        const settings: Partial<BasicStoreSettings> = {
+          id: 'id',
+          xtm_hub_token,
+          xtm_hub_registration_status: XtmHubRegistrationStatus.Registered,
+          xtm_hub_should_send_connectivity_email: true,
+          xtm_hub_commercial_model: XtmHubCommercialModel.Saas,
+        };
+        getEntityFromCacheSpy.mockResolvedValue(settings);
+        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'active', commercialModel });
+
+        await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
+
+        expect(updateAttributeSpy).toHaveBeenCalledWith(
+          testContext,
+          HUB_REGISTRATION_MANAGER_USER,
+          'id',
+          ENTITY_TYPE_SETTINGS,
+          [{ key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] }],
+        );
+      });
+    });
+
     describe('lost connectivity email send', () => {
       it('should send connectivity email when 24 hours passed and connectivity is lost', async () => {
         const settings: Partial<BasicStoreSettings> = {
@@ -235,7 +287,7 @@ describe('XTM hub', () => {
           xtm_hub_should_send_connectivity_email: true,
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
-        xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
+        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null });
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -258,7 +310,7 @@ describe('XTM hub', () => {
           xtm_hub_should_send_connectivity_email: true,
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
-        xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
+        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null });
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -274,7 +326,7 @@ describe('XTM hub', () => {
           xtm_hub_should_send_connectivity_email: false,
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
-        xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
+        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null });
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -288,7 +340,7 @@ describe('XTM hub', () => {
           xtm_hub_registration_status: XtmHubRegistrationStatus.Registered,
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
-        xtmHubClientRefreshStatusSpy.mockResolvedValue('active');
+        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'active', commercialModel: null });
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -304,7 +356,7 @@ describe('XTM hub', () => {
           xtm_hub_should_send_connectivity_email: true,
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
-        xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
+        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null });
         vi.spyOn(conf, 'booleanConf').mockReturnValue(false);
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);

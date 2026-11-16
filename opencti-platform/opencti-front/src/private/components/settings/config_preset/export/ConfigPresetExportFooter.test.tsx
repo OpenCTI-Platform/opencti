@@ -4,6 +4,7 @@ import { act, screen } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import testRender from '../../../../../utils/tests/test-render';
 import ConfigPresetExportFooter from './ConfigPresetExportFooter';
+import { expandConfigPresetGroups } from '../../../../../utils/tests/config-preset-test-utils';
 
 describe('ConfigPresetExportFooter', () => {
   it('keeps the card footer actions above the export button', () => {
@@ -46,6 +47,7 @@ describe('ConfigPresetExportFooter', () => {
     });
     expect(await screen.findByText('Platform Bundle')).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: 'Platform settings (1/1)' })).toBeInTheDocument();
+    expandConfigPresetGroups();
     expect(screen.getByRole('checkbox', { name: 'Messages' })).toBeInTheDocument();
   });
 

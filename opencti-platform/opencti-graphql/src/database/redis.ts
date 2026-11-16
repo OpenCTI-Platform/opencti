@@ -905,6 +905,99 @@ export const redisConsumePasswordChangeAttempt = async (targetUserId: string, su
 
 // endregion - password change throttling
 
+// region - local authentication lockout
+// The keys of an email share a hash tag, so that the lockout scripts can run on a Redis cluster.
+// The failures are a hash: their count, and the id of their window (the token of the attempt that started it),
+// so that releasing an attempt never decrements the failures of a later window
+export const localAuthLockoutKeys = (emailHash: string) => ({
+  failures: `local_auth_lockout:{${emailHash}}:attempts`,
+  lock: `local_auth_lockout:{${emailHash}}:lock`,
+});
+
+export type LocalAuthLockType = 'temporary' | 'permanent';
+export type LocalAuthLockoutTimings = { maxAttempts: number; windowMs: number; finalLockMs: number; finalAction: LocalAuthLockType };
+
+// Records an attempt as a failure before its password is checked, in one atomic step with the lock check,
+// so that concurrent attempts never check more passwords than the max attempts. An accepted attempt clears or releases it.
+// - The failure window starts on the first failure and is never extended. A window of 0 removes its time limit:
+//   the failures are kept until an accepted login, the end of a temporary lock, or an administrator resets them.
+// - Below the max attempts, a failure is only counted: no lock.
+// - At the max attempts, the final action locks the email for finalLockMs, or until it is cleared when finalLockMs is 0.
+//   The lock holds the final action, so that a permanent lock is reported the same way for an existing account and an unknown email,
+//   and the token of the attempt that set it, so that releasing another attempt never lifts it.
+//   The failures expire with a temporary lock, with or without a window, so that the count starts over once the lock is lifted.
+// Returns [allowed, remainingMs, lockType, isFinal, windowId]:
+// - [0, remaining, type, 0, '']: the email is locked (remaining is -1 without expiry), the attempt is neither checked nor counted
+// - [1, 0, type, 0, window]: the attempt is counted in this window, below the max attempts, its password can be checked
+// - [1, finalLockMs, type, 1, window]: the attempt reaches the max attempts and locks the email, its password can still be checked
+const LOCAL_AUTH_LOCKOUT_ATTEMPT_SCRIPT = `
+local lockRemaining = redis.call('PTTL', KEYS[2])
+if lockRemaining > 0 or lockRemaining == -1 then
+  local lock = redis.call('GET', KEYS[2])
+  return {0, lockRemaining, string.match(lock, '^[^:]+'), 0, ''}
+end
+redis.call('HSETNX', KEYS[1], 'window', ARGV[5])
+local failures = redis.call('HINCRBY', KEYS[1], 'count', 1)
+if failures == 1 and tonumber(ARGV[1]) > 0 then
+  redis.call('PEXPIRE', KEYS[1], ARGV[1])
+end
+local window = redis.call('HGET', KEYS[1], 'window')
+if failures >= tonumber(ARGV[2]) then
+  local lock = ARGV[4] .. ':' .. ARGV[5]
+  if tonumber(ARGV[3]) > 0 then
+    redis.call('SET', KEYS[2], lock, 'PX', ARGV[3])
+    redis.call('PEXPIRE', KEYS[1], ARGV[3])
+  else
+    redis.call('SET', KEYS[2], lock)
+  end
+  return {1, tonumber(ARGV[3]), ARGV[4], 1, window}
+end
+return {1, 0, ARGV[4], 0, window}
+`;
+
+export const redisRecordLocalAuthAttempt = async (emailHash: string, timings: LocalAuthLockoutTimings, attemptToken: string) => {
+  const keys = localAuthLockoutKeys(emailHash);
+  const [allowed, remainingMs, lockType, isFinal, windowId] = await getClientBase().eval(
+    LOCAL_AUTH_LOCKOUT_ATTEMPT_SCRIPT,
+    2,
+    keys.failures,
+    keys.lock,
+    timings.windowMs,
+    timings.maxAttempts,
+    timings.finalLockMs,
+    timings.finalAction,
+    attemptToken,
+  ) as [number, number, LocalAuthLockType, number, string];
+  return { allowed: Number(allowed) === 1, remainingMs: Number(remainingMs), lockType, isFinal: Number(isFinal) === 1, windowId };
+};
+
+// Undoes an attempt whose password was right: the attempt is not a failure, but the other failures are kept,
+// so that for a user with MFA only a valid MFA code resets them.
+// - The count is decremented only in the window of the attempt: once it expired or was cleared,
+//   the attempt is no longer counted, and the failures of the new window are kept.
+// - The lock is lifted only when this attempt set it: a concurrent failure that reached the max attempts keeps its lock
+const LOCAL_AUTH_LOCKOUT_RELEASE_SCRIPT = `
+if redis.call('HGET', KEYS[1], 'window') == ARGV[2] and tonumber(redis.call('HGET', KEYS[1], 'count') or '0') > 0 then
+  redis.call('HINCRBY', KEYS[1], 'count', -1)
+end
+local lock = redis.call('GET', KEYS[2])
+if lock and string.match(lock, ':(.*)$') == ARGV[1] then
+  redis.call('DEL', KEYS[2])
+end
+return 1
+`;
+
+export const redisReleaseLocalAuthAttempt = async (emailHash: string, attempt: { attemptToken: string; windowId: string }) => {
+  const keys = localAuthLockoutKeys(emailHash);
+  await getClientBase().eval(LOCAL_AUTH_LOCKOUT_RELEASE_SCRIPT, 2, keys.failures, keys.lock, attempt.attemptToken, attempt.windowId);
+};
+
+export const redisClearLocalAuthLockout = async (emailHash: string) => {
+  const keys = localAuthLockoutKeys(emailHash);
+  await getClientBase().del(keys.failures, keys.lock);
+};
+// endregion - local authentication lockout
+
 // region - telemetry gauges
 const TELEMETRY_EVENT_KEY = 'telemetry_events';
 /**

@@ -161,6 +161,11 @@ enum XTMHubRegistrationStatus {
   lost_connectivity
 }
 
+enum XTMHubCommercialModel {
+  saas
+  other
+}
+
 # noinspection GraphQLSchemaValidation
 input FilterGroup {
   mode: FilterMode!
@@ -1571,6 +1576,9 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   caller_ip: String
   platform_messages: [SettingsMessage!]
   platform_session_max_concurrent: Int
+  platform_session_presence_enabled: Boolean! @ff(flags: ["SESSION_PRESENCE"], softFail: true, defaultValue: "false")
+  # False while several nodes serve the API: no session is then logged out when its last tab is closed
+  platform_session_presence_supported: Boolean! @ff(flags: ["SESSION_PRESENCE"], softFail: true, defaultValue: "false")
   messages_administration: [SettingsMessage!] @auth(for: [SETTINGS_SETPARAMETERS])
   analytics_google_analytics_v4: String
   playground_enabled: Boolean!
@@ -1588,6 +1596,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   xtm_hub_registration_status: XTMHubRegistrationStatus
   xtm_hub_backend_is_reachable: Boolean
   xtm_hub_available_news_feed_types: [String!]
+  xtm_hub_commercial_model: XTMHubCommercialModel
   # Notifiers
   platform_notifier_auto_trigger_assignee: Boolean!
   # AI insight
@@ -5244,6 +5253,13 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # System
   x_opencti_firstname: String
   x_opencti_lastname: String
+  x_opencti_system_category: String
+  x_opencti_system_subcategory: String
+  x_opencti_internet_facing: String
+  x_opencti_criticality: String
+  x_opencti_environment: String
+  x_opencti_owner: String
+  x_opencti_platform: String
   organizations: OrganizationConnection
   # Technical
   creators: [Creator!]
@@ -5287,6 +5303,13 @@ input SystemAddInput {
   x_opencti_firstname: String
   x_opencti_lastname: String
   x_opencti_reliability: String
+  x_opencti_system_category: String
+  x_opencti_system_subcategory: String
+  x_opencti_internet_facing: String
+  x_opencti_criticality: String
+  x_opencti_environment: String
+  x_opencti_owner: String
+  x_opencti_platform: String
   confidence: Int
   revoked: Boolean
   lang: String
