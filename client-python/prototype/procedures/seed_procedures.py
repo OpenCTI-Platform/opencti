@@ -2,8 +2,9 @@
 
 Each bundle file goes through the local pycti, which converts ``x-procedure``
 objects (ids, platforms, tactics, technique and vulnerability refs, report
-sources) before the import. The bundle can be imported again without creating
-duplicates: procedure ids are kept and relationship ids are deterministic.
+sources) before the import. The import is designed so that a bundle imported
+again creates no duplicates (procedure ids are kept and relationship ids are
+deterministic); this is not verified on a live platform yet.
 
 The target platform needs the MITRE ATT&CK dataset, because the attack
 patterns a procedure implements are not part of the bundle.

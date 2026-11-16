@@ -41,8 +41,21 @@ python client-python/prototype/procedures/seed_procedures.py \
 ```
 
 The script prints the number of objects imported by type and any normalizer
-warning (for example a report source that is not in the bundle). Seeding the
-same file again does not create duplicates.
+warning (for example a report source that is not in the bundle). The import is
+designed so that seeding the same file again creates no duplicates: procedure
+ids are kept and the generated relationship ids are deterministic. This is not
+verified on a live platform yet; verify it by seeding the file twice and
+checking that the number of procedures in the Procedures list does not change.
+
+## Fingerprints
+
+An imported `x_fingerprint` is kept as is and not checked against the
+procedure's properties; the POWERSTAR value of the example bundle, for
+instance, is not the one the formula gives. A missing fingerprint is computed
+once, at creation, and never recomputed on edit. On import it is computed from
+the technique ids as written in the bundle; in the UI, from the OpenCTI
+standard ids of the attack patterns. The two are not comparable in this
+prototype.
 
 ## Generate procedures at scale
 
