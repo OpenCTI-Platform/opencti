@@ -2163,26 +2163,35 @@ const findClosingReasonVocabularyName = async (context: AuthContext, value: stri
 const recordUndeletedShareTasks = async (
   executionContext: AuthContext,
   executionUser: AuthUser,
-  instanceId: string,
+  instanceEntity: WorkflowInstanceStoreEntity,
   slots: AsyncActionSlot[] | undefined,
   triggeredBy: string,
   event: string,
   toState: string,
   cause: unknown,
   grants: RequestAccessDirectGrant[] | undefined = [],
-) => {
+): Promise<string | undefined> => {
+  const instanceId = instanceEntity.internal_id || instanceEntity.id;
   const undoneSlots = slots ?? [];
   const undoneGrants = grants ?? [];
-  if (undoneSlots.length === 0 && undoneGrants.length === 0) return;
+  if (undoneSlots.length === 0 && undoneGrants.length === 0) return undefined;
+  // A failure already recorded on the instance keeps its leftovers: an earlier failed share is not forgotten by a later one
+  const previous = instanceEntity.pendingStatus === 'error' ? parsePendingTransition(instanceEntity) : undefined;
+  const asyncActions = [
+    ...(previous?.asyncActions ?? []).filter((previousSlot) => !undoneSlots.some((slot) => slot.id === previousSlot.id)),
+    ...undoneSlots,
+  ];
+  const directGrants = mergeRequestAccessDirectGrants(previous?.requestAccessDirectGrants, undoneGrants);
   const pendingTransition: WorkflowPendingTransition = {
+    ...(previous ?? {}),
     event,
     toState,
     triggeredBy,
     triggeredAt: new Date().toISOString(),
-    runtimeParams: {},
-    asyncActions: undoneSlots,
-    syncActions: [],
-    ...(undoneGrants.length > 0 ? { requestAccessDirectGrants: undoneGrants } : {}),
+    runtimeParams: previous?.runtimeParams ?? {},
+    asyncActions,
+    syncActions: previous?.syncActions ?? [],
+    ...(directGrants.length > 0 ? { requestAccessDirectGrants: directGrants } : {}),
   };
   const attributes = [
     { key: 'pendingStatus', value: ['error'] },
@@ -2192,7 +2201,7 @@ const recordUndeletedShareTasks = async (
   for (let attempt = 1; attempt <= 2; attempt += 1) {
     try {
       await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, attributes);
-      return;
+      return undefined;
     } catch (recordError) {
       if (attempt === 2) {
         logApp.error('[workflow] Failed to record the container share tasks and direct grants that could not be undone', {
@@ -2203,6 +2212,8 @@ const recordUndeletedShareTasks = async (
       }
     }
   }
+  // Surfaced to the caller, who reports it with the failure so an administrator knows the cleanup is manual
+  return 'Some container share tasks or direct grants could not be undone or recorded: an administrator must clean them up';
 };
 
 export const triggerWorkflowEvent = async (
@@ -2351,12 +2362,14 @@ export const triggerWorkflowEvent = async (
     try {
       result = await instance.trigger(eventName);
     } catch (error) {
-      await recordUndeletedShareTasks(executionContext, executionUser, instanceEntity.internal_id || instanceEntity.id, workflowContext.undeletedShareSlots, user.id, eventName, transition?.to ?? '', error, workflowContext.unrevokedDirectGrants);
+      const cleanupNote = await recordUndeletedShareTasks(executionContext, executionUser, instanceEntity, workflowContext.undeletedShareSlots, user.id, eventName, transition?.to ?? '', error, workflowContext.unrevokedDirectGrants);
+      if (cleanupNote && error instanceof Error) error.message = `${error.message} (${cleanupNote})`;
       throw error;
     }
 
     if (!result.success) {
-      await recordUndeletedShareTasks(executionContext, executionUser, instanceEntity.internal_id || instanceEntity.id, workflowContext.undeletedShareSlots, user.id, eventName, transition?.to ?? '', result.reason, workflowContext.unrevokedDirectGrants);
+      const cleanupNote = await recordUndeletedShareTasks(executionContext, executionUser, instanceEntity, workflowContext.undeletedShareSlots, user.id, eventName, transition?.to ?? '', result.reason, workflowContext.unrevokedDirectGrants);
+      if (cleanupNote) result.reason = `${result.reason} (${cleanupNote})`;
       // The engine names the state by its status template id, unreadable in task errors and notifications
       if (!transition) {
         const statusTemplate = await storeLoadById<BasicStoreEntity>(executionContext, executionUser, currentStateId, ENTITY_TYPE_STATUS_TEMPLATE);
@@ -2433,7 +2446,8 @@ export const triggerWorkflowEvent = async (
           ? await revokeRequestAccessDirectGrants(executionContext, requestAccessDirectGrants, user.id)
           : [];
         // A task that could not be deleted still shares its container: it stays recorded on the instance for an admin clear
-        await recordUndeletedShareTasks(executionContext, executionUser, instanceId, remainingSlots, user.id, eventName, toStateId, error, remainingGrants);
+        const cleanupNote = await recordUndeletedShareTasks(executionContext, executionUser, instanceEntity, remainingSlots, user.id, eventName, toStateId, error, remainingGrants);
+        if (cleanupNote && error instanceof Error) error.message = `${error.message} (${cleanupNote})`;
         throw error;
       }
 

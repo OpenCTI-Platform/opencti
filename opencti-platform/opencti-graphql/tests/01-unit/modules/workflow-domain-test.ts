@@ -4043,6 +4043,51 @@ describe('triggerWorkflowEvent – async / pending / lock', () => {
       }),
     });
 
+    it('keeps the leftovers of an earlier failed share when a retry leaves new ones', async () => {
+      setupAsyncPendingMocks(definitionContent);
+      failedWith({ asyncActions: [{ id: 'old-slot', workId: 'old-work', type: 'shareRequestedEntities', status: 'pending', taskId: 'old-task' }] });
+      (WorkflowFactory.getInstance as any).mockImplementation((_data: any, _definition: any, _state: any, workflowContext: any) => ({
+        start: vi.fn(),
+        trigger: vi.fn(async () => {
+          workflowContext.undeletedShareSlots = [{ id: 'new-slot', workId: 'new-work', type: 'shareRequestedEntities', status: 'pending', taskId: 'new-task' }];
+          workflowContext.unrevokedDirectGrants = [{ entityId: 'malware-2', organizationIds: ['org-b'] }];
+          throw new Error('task store unavailable');
+        }),
+        getCurrentState: vi.fn().mockReturnValue('draft'),
+      }));
+      vi.mocked(updateAttribute).mockClear();
+
+      await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'submit');
+
+      const input = vi.mocked(updateAttribute).mock.calls[0][4] as { key: string; value: unknown[] }[];
+      const pending = JSON.parse(input.find((i) => i.key === 'pendingTransition')?.value[0] as string);
+      expect(pending.asyncActions.map((slot: any) => slot.id)).toEqual(['old-slot', 'new-slot']);
+      expect(pending.requestAccessDirectGrants).toEqual(expect.arrayContaining([
+        { entityId: 'malware-1', organizationIds: ['org-a'] },
+        { entityId: 'malware-2', organizationIds: ['org-b'] },
+      ]));
+    });
+
+    it('reports that the cleanup is manual when the recovery record cannot be written', async () => {
+      setupAsyncPendingMocks(definitionContent);
+      (WorkflowFactory.getInstance as any).mockImplementation((_data: any, _definition: any, _state: any, workflowContext: any) => ({
+        start: vi.fn(),
+        trigger: vi.fn(async () => {
+          workflowContext.unrevokedDirectGrants = [{ entityId: 'malware-2', organizationIds: ['org-b'] }];
+          throw new Error('task store unavailable');
+        }),
+        getCurrentState: vi.fn().mockReturnValue('draft'),
+      }));
+      vi.mocked(updateAttribute).mockClear();
+      vi.mocked(updateAttribute).mockRejectedValue(new Error('write failed'));
+
+      const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'submit');
+
+      expect(result.success).toBe(false);
+      expect(result.reason).toContain('an administrator must clean them up');
+      vi.mocked(updateAttribute).mockReset();
+    });
+
     it('stores the grants the share added directly on the pending transition', async () => {
       setupAsyncPendingMocks(definitionContent);
       suspendWithGrants();
