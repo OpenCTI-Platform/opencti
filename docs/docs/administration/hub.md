@@ -11,8 +11,8 @@ This document will guide you through the steps required to connect or disconnect
 To connect your OpenCTI product to the XTM Hub, follow these steps:
 
 1. **Access the Settings:**
-    - Ensure you have the necessary permissions.
-    - Navigate to the Filigran Experience page in settings section.
+    - Ensure you have the `Manage XTM Hub` capability (see the list of [capabilities in the user page](users.md)).
+    - Navigate to `Settings > Filigran Experience`.
 
 2. **Initiate Connection:**
     - Click on the "Connect to XTM Hub" button.
@@ -39,7 +39,7 @@ To disconnect your product, follow these steps:
 
 2. **Disconnecting Process:**
     - This action will remove the link between your OpenCTI product and the XTM Hub, thus disabling access to the XTM Hub features.
-    - Go to the XTM Hub settings page and click on the "Disconnect" button.
+    - Go to `Settings > Filigran Experience` and click on the "Disconnect from XTM Hub" button.
 
 3. **Reconnection:**
     - Don't worry; it’s possible to reconnect your product at any time.

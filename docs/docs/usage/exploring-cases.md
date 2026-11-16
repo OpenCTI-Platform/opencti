@@ -76,7 +76,7 @@ If you have designated a main Organization in the platform settings, you can sha
 
 ![containers-organization-sharing-button.png](assets%2Fcontainers-organization-sharing-button.png)
 
-[read more about organization segregation](..%2Fadministration%2Forganization-segregation.md)
+[read more about organization segregation](../administration/organization-segregation.md)
 
 #### Authorized members
 

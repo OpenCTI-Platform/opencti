@@ -12,7 +12,7 @@ Allow to set a main organization for the entire platform. Users belonging to the
 
 !!! warning "Numerous repercussions linked to the activation of this feature"
 
-    This feature has implications for the entire platform and must be fully understood before being used. For example, it's mandatory to have organizations set up for each user, otherwise they won't be able to log in. It is also advisable to include connector's users in the platform main organization to avoid import problems.
+    This feature has implications for the entire platform and must be fully understood before being used. For example, it's mandatory to have organizations set up for each user, otherwise they won't be able to log in. Connector users must be Service Accounts: they then belong dynamically to the platform main organization, without the administrator having to add them to it, which avoids import problems. See the [organization segregation prerequisites](<Part 1 - Organization-Based Segregation Concept, Installation & RBAC Setup.md#12-prerequisites>).
 
 ## Authentication strategies
 

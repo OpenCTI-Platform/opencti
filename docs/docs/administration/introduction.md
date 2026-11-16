@@ -1,34 +1,29 @@
 # Introduction
 
-This guide aims to give you a full overview of the OpenCTI features and workflows. The platform can be used in various contexts to handle threats management use cases from a technical to a more strategic level.
+The Administration section explains how to configure and operate an OpenCTI platform once it is deployed: platform parameters, security and access control, data segregation, customization of entity types, data mappers, activity monitoring and the connection to XTM Hub. Most of these settings are in the `Settings` menu, and each one requires a dedicated capability, described in the [Users and RBAC](users.md) page.
 
-# Administrative Settings
-The OpenCTI Administrative settings console allows administrators to configure many options dynamically within the system. As an Administrator, you can access this settings console, by clicking the settings link.
-![Settings Link](./assets/system_settings.png?raw=true "System Settings")
+## Platform and license
 
-The Settings Console allows for configuration of various aspects of the system.
-## General Configuration
-  - Platform Title (Default: OpenCTI - Cyber Threat Intelligence Platform)
-  - Platform Favicon
-  - Platform General Sender email (Default: admin@opencti.io) 
-  - Platform Default Theme (Default: Dark)
-  - Language (Default: Automatic Detection)
-  - Hidden Entity Types (Default: None)
+- [Enterprise edition](enterprise.md): the features that require the OpenCTI Enterprise Edition license, and how to activate it.
+- [Product life cycle](product-life-cycle.md): version numbering, the Long-Term Support (LTS) program and breaking change policies.
 
-## Authentication Strategies Display
-  - This section will show configured and enabled/disabled strategies. The configuration is done in the config/default.json file or via ENV variables detected at launch.
+## Data management
 
-## Platform Messages
-  - Platform Login Message (optional) - if configured this will be displayed on the login page. This is usually used to have a welcome type message for users before login.
-  - Platform Consent Message (optional) - if configured this will be displayed on the login page. This is usually used to display some type of consent message for users to agree to before login. If enabled, a user must check the checkbox displayed to allow login.
-  - Platform Consent Confirm Text (optional) - This is displayed next to the platform consent checkbox, if Platform Consent Message is configured. Users must agree to the checkbox before the login prompt will be displayed. This message can be configured, but by default reads: ***I have read and comply with the above statement***
+- [Merging and de-duplication](merging.md): how OpenCTI merges duplicate entities.
+- [CSV Mappers](csv-mappers.md) and [JSON Mappers](json-mappers.md): how to parse CSV and JSON files into STIX 2.1 objects.
+- [Ingestion health](ingestion-health.md): whether each connector, feed and synchronization ingests data as expected.
 
-![Platform Messages](./assets/platform_message_examples.png?raw=true "Platform Messages")
+## Platform settings
 
-## Dark Theme Color Scheme
-Various aspects of the Dark Theme can be dynamically configured in this section.
-
-## Light Theme Color Scheme
-Various aspects of the Light Theme can be dynamically configured in this section.
-## Tools Configuration Display
-This section will give general status on the various tools and enabled components of the currently configured OpenCTI deployment.
+- [Parameters](parameters.md): global platform settings, themes, dependencies and managers.
+- Security:
+    - [Authentication](authentication-via-ui.md), [SMTP configuration](smtp-configuration.md), [Cookies](cookies.md) and [Policies](policies.md).
+    - [Users and RBAC](users.md), [Merging users](users-merge.md) and [Protect sensitive configuration](protect-sensitive-configuration.md).
+    - Data segregation: [Marking restriction](segregation.md), [Organization segregation](organization-segregation.md), [Authorized members](authorized-members.md) and [Request access](request-access.md).
+    - [Dissemination list](dissemination-list.md) and [Email templates](email-templates.md).
+- Customization: [Entity types](entities.md), [Custom fields](custom-fields.md), [Rules engine](reasoning.md), [Notifiers](notifiers.md), [Retention policies](retentions.md), [Decay rules](decay-rules.md), [Decay exclusion rules](decay-exclusion-rules.md), [Fintel designs](fintel-designs.md) and [Exclusion lists](exclusion-lists.md).
+- [Taxonomies](ontologies.md): labels, kill chain phases, vocabularies, status templates and case templates.
+- [Activity](audit/overview.md): the audit log of administration actions and knowledge access, its configuration and its triggers.
+- [File indexing](file-indexing.md): full text search in the content of files.
+- [Support package](support-package.md): how to generate a package to troubleshoot the platform.
+- [XTM Hub](hub.md): how to connect the platform to XTM Hub.

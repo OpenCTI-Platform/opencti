@@ -14,7 +14,7 @@ Click on the button __+__ in the bottom-right corner to add a new Mapper.
 
 Enter a name for your mapper and some basic information about your CSV files: 
 
-- The line separator used (defaults to the standard comma character)
+- The `CSV separator` used between columns: `Comma` (default), `Semicolon` or `Pipe`
 - The presence of a header on the first line
 - The char to escape the lines
 
