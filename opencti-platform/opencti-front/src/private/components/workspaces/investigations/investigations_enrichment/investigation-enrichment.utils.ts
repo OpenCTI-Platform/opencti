@@ -1,5 +1,6 @@
 import { InvestigationEnrichmentWork } from './investigation-enrichment.types';
 import type { EnrichmentConnector } from '../../../data/connectors/EnrichmentConnectorSelection';
+import toEnrichmentActionValues from '../../../data/connectors/utils/toEnrichmentActionValues';
 
 export const addInEnrichmentMap = (
   map: Map<string, InvestigationEnrichmentWork[]>,
@@ -31,14 +32,13 @@ export const toEnrichmentSelection = <T extends { id: string; label: string; ent
 };
 
 /**
- * The background task actions enriching with the given connectors.
- * Each connector is given as `{ id, value }`: the launcher shows the name and sends only the id.
+ * The background task actions enriching with the given connectors, named for the launcher.
  * The investigation id tags every enrichment work created by the task with this investigation.
  */
 export const toEnrichmentTaskActions = (connectors: readonly EnrichmentConnector[], investigationId: string) => [{
   type: 'ENRICHMENT' as const,
   context: {
-    values: connectors.map((connector) => ({ id: connector.id, value: connector.name })),
+    values: toEnrichmentActionValues(connectors),
     options: { investigationId },
   },
 }];

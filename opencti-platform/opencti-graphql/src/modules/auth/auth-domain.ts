@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
-import { findById, getUserByEmail, userEditField, userWithOrigin } from '../user/user-domain';
+import { findById, getUserByEmail, lockAccountAfterFailedAttempts, userEditField, userWithOrigin } from '../user/user-domain';
+import { clearLocalAuthLockout, loadLocalAuthLockout } from '../../domain/local-auth-lockout';
 import { AuthenticationFailure, PASSWORD_CHANGE_THROTTLED, PASSWORD_REUSED, PasswordResetExpired, UnsupportedError } from '../../config/errors';
 import { sendMail, smtpComputeFrom } from '../../database/smtp';
 import type { AuthContext } from '../../types/user';
@@ -157,14 +158,23 @@ export const verifyMfa = async (context: AuthContext, input: VerifyMfaInput) => 
     throw AuthenticationFailure();
   }
   const { hashedOtp, email, mfa_activated, ttl, userId } = transaction;
-  const { otp_secret: mfa_secret } = await findById(context, SYSTEM_USER, userId);
+  const mfaUser = await findById(context, SYSTEM_USER, userId);
+  const { otp_secret: mfa_secret } = mfaUser;
   if (!mfa_activated || !mfa_secret) {
     throw AuthenticationFailure();
   }
+  // A failed MFA code counts like a failed password, so that the second factor cannot be brute-forced
+  const lockout = await loadLocalAuthLockout(email, userId);
+  const attempt = await lockout?.recordAttempt();
   const { valid } = await totp.verify({ secret: mfa_secret, token: input.code });
   if (!valid) {
-    throw AuthenticationFailure();
+    if (attempt?.locksAccount) {
+      await lockAccountAfterFailedAttempts(mfaUser);
+    }
+    throw attempt?.failure ?? AuthenticationFailure();
   } else {
+    // Also when the lockout is disabled, so that enabling it again never brings back an old lock
+    await clearLocalAuthLockout(email);
     await redisSetForgotPasswordOtp(input.transactionId, { hashedOtp, email, mfa_activated, mfa_validated: valid, userId }, ttl);
   }
   return valid;

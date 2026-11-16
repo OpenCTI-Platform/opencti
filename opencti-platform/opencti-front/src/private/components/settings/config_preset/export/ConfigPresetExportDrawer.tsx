@@ -76,6 +76,8 @@ const ConfigPresetExportContent: FunctionComponent<ConfigPresetExportContentProp
   const [bundleName, setBundleName] = useState('');
   // The type whose items are managed in the sub-view, when it has more items than its first page
   const [managedTypeKey, setManagedTypeKey] = useState<string | null>(null);
+  // The groups the user opened stay open when the sub-view is closed
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const forced = getConfigPresetForcedItems(types, selection);
   const managedType = types.find((type) => type.key === managedTypeKey);
   const [commitExport, exporting] = useApiMutation<ConfigPresetExportDrawerMutation>(configPresetExportDrawerMutation);
@@ -115,6 +117,8 @@ const ConfigPresetExportContent: FunctionComponent<ConfigPresetExportContentProp
           forced={forced}
           onSelectionChange={setSelection}
           onManageType={setManagedTypeKey}
+          expandedGroups={expandedGroups}
+          onExpandedGroupsChange={setExpandedGroups}
           lockedTitle="Activate the Enterprise Edition to export this item"
         />
         <Input

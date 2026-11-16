@@ -131,8 +131,11 @@ interface ConfigPresetSelectionAccordionProps<T extends ConfigPresetAccordionTyp
   renderItem?: (type: T, item: T['items'][number]) => ReactNode;
   // What is shown on the row of a type, next to its chevron (the choice for all its items)
   renderTypeActions?: (type: T) => ReactNode;
-  // The types that start expanded, and the groups that hold one; without it, groups start expanded and types collapsed
+  // The types that start expanded, and the groups that hold one; without it, types start collapsed. Groups start collapsed, but for the ones that hold a type that starts expanded
   isExpandedByDefault?: (type: T) => boolean;
+  // The groups the user opened or closed, when the parent keeps them (the export drawer unmounts the accordion for its sub-view); the accordion keeps its own otherwise
+  expandedGroups?: Record<string, boolean>;
+  onExpandedGroupsChange?: (expandedGroups: Record<string, boolean>) => void;
   // The tooltip of a type that needs the Enterprise Edition the platform does not have yet, which opens the license dialog
   lockedTitle?: string;
 }
@@ -148,13 +151,17 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
   renderItem,
   renderTypeActions,
   isExpandedByDefault,
+  expandedGroups: controlledGroups,
+  onExpandedGroupsChange,
   lockedTitle,
 }: ConfigPresetSelectionAccordionProps<T>) => {
   const { t_i18n } = useFormatter();
   const isLocked = (type: T) => !!type.lockedByEnterpriseEdition;
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const [ownGroups, setOwnGroups] = useState<Record<string, boolean>>({});
+  const expandedGroups = controlledGroups ?? ownGroups;
+  const setExpandedGroups = onExpandedGroupsChange ?? setOwnGroups;
   const [expandedTypes, setExpandedTypes] = useState<Record<string, boolean>>({});
-  const isGroupExpanded = (key: string, groupTypes: ReadonlyArray<T>) => expandedGroups[key] ?? (isExpandedByDefault ? groupTypes.some(isExpandedByDefault) : true);
+  const isGroupExpanded = (key: string, groupTypes: ReadonlyArray<T>) => expandedGroups[key] ?? (isExpandedByDefault ? groupTypes.some(isExpandedByDefault) : false);
   const isExpanded = (type: T) => expandedTypes[type.key] ?? (isExpandedByDefault?.(type) ?? false);
   const typeLabel = (type: T) => `${t_i18n(type.label)} (${countConfigPresetCheckedItems([type], selection, forced)}/${type.itemsPageInfo.globalCount})`;
   const typeState = (type: T) => getConfigPresetCheckboxState([type], selection, forced);
@@ -171,7 +178,7 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
             disabled={disabled || group.types.every((type) => isLocked(type) || isEmpty(type))}
             onCheckedChange={(checked) => onSelectionChange(toggleConfigPresetTypes(selection, group.types, checked))}
             expanded={isGroupExpanded(group.key, group.types)}
-            onToggleExpanded={() => setExpandedGroups((current) => ({ ...current, [group.key]: !isGroupExpanded(group.key, group.types) }))}
+            onToggleExpanded={() => setExpandedGroups({ ...expandedGroups, [group.key]: !isGroupExpanded(group.key, group.types) })}
           >
             {group.types.map((type) => {
               // Nothing of the type is listed, checked or counted until the platform has the license

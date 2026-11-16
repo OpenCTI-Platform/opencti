@@ -36,7 +36,7 @@ import {
 import { ConfigPresetItemRow } from '../ConfigPresetItemRow';
 import ConfigPresetImportActions from './ConfigPresetImportActions';
 import ConfigPresetImportMessages from './ConfigPresetImportMessages';
-import ConfigPresetResultLine from './ConfigPresetResultLine';
+import ConfigPresetResultLine, { CODE_UNCHANGED, translateReasons } from './ConfigPresetResultLine';
 import ConfigPresetCredentialsDialog from './ConfigPresetCredentialsDialog';
 import ConfigPresetCredentialsItemRow from './ConfigPresetCredentialsItemRow';
 import ConfigPresetServiceAccountDialog from './ConfigPresetServiceAccountDialog';
@@ -487,6 +487,20 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           // The types the import hides: the row alone only says that the item is there
           // The platform points to a theme by its standard id: a copy of the default theme is another theme, the default stays the one it is
           const keepsDefaultTheme = hasChoice && item.isDefault && importModes[configImportModeKey(type.key, item.key)] === 'COPY';
+          const shownResult = result && isResultShown(result, hasChoice) ? result : null;
+          // An item that is created has nothing to flag, and its reason says how (the copy of an item that exists): the tag is for what is not a plain creation
+          const hasStatus = !!shownResult && shownResult.code !== CODE_UNCHANGED && !(shownResult.status === 'CREATED' && shownResult.reason);
+          // Under the label: the expected status, then what the item is and why the import does what it does
+          const detail = [
+            typeof item.isEnabled === 'boolean' ? describeEnabled(t_i18n, item.isEnabled) : (isSingletonConfigPresetType(type) ? describeType(t_i18n, type) : undefined),
+            shownResult?.reason ? translateReasons(t_i18n, shownResult.reason) : undefined,
+          ].filter(Boolean).join(' · ');
+          const description = (hasStatus || detail) ? (
+            <span style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: theme.spacing(1) }}>
+              {shownResult && hasStatus && <ConfigPresetResultLine status={shownResult.status} code={shownResult.code} withoutReason />}
+              {detail}
+            </span>
+          ) : undefined;
           const hiddenTypes = isImportedItem(type.key, item.key) && type.key === 'hiddenEntityTypes' ? item.fields.find(({ key }) => key === 'hidden_entity_types')?.value : null;
           const itemLabel = item.translatable ? t_i18n(item.label) : item.label;
           if (isCredentialsLocked(type.key, item)) {
@@ -517,13 +531,14 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
               <ConfigPresetItemRow
                 typeKey={type.key}
                 item={item}
-                description={typeof item.isEnabled === 'boolean' ? describeEnabled(t_i18n, item.isEnabled) : (isSingletonConfigPresetType(type) ? describeType(t_i18n, type) : undefined)}
+                description={description}
                 selection={importableSelection}
                 forced={forced}
                 disabled={isStarting}
                 onSelectionChange={handleSelectionChange}
-                statusSlot={(hasChoice || hasCredentials || needsServiceAccount || (result && isResultShown(result, hasChoice))) ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
+                statusSlot={(hasChoice || hasCredentials || needsServiceAccount) ? (
+                  // The choices are on the right of the row, and end where the one of the type does: the chevron is after them
+                  <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginRight: theme.spacing(4) }}>
                     {needsServiceAccount && (
                       <Button variant="secondary" size="small" disabled={isStarting} onClick={() => setServiceAccountItem({ typeKey: type.key, item })}>
                         {serviceAccount ? serviceAccount.label : t_i18n('Choose a service account')}
@@ -534,7 +549,6 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
                         {t_i18n('Configuration')}
                       </Button>
                     )}
-                    {result && isResultShown(result, hasChoice) && <ConfigPresetResultLine status={result.status} reason={result.reason} code={result.code} />}
                     {hasChoice && (
                       <ConfigPresetImportModeSelect
                         subject={item.translatable ? t_i18n(item.label) : item.label}

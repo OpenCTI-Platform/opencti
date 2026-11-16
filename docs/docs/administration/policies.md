@@ -37,6 +37,7 @@ This section encompasses a comprehensive set of parameters defining the local pa
 | `Number of lowercase chars must be greater or equals to`                | Specify the minimum number of lowercase characters.           |
 | `Number of uppercase chars must be greater or equals to`                | Specify the minimum number of uppercase characters.           |
 | `Password validity duration in days (0 equals unlimited)`              | Define how long a password remains valid before the user is forced to change it. A value of `0` means passwords never expire. |
+| `Number of recent passwords that cannot be reused (0 equals disabled)` | Refuse a new password equal to the current one or to one of the previous ones, from `0` to `24`. See [Password rotation](authentication-via-ui.md#password-rotation). |
 
 ![Local password policies](./assets/local-password-policies.png)
 
