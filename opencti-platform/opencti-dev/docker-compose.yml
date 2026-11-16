@@ -142,7 +142,7 @@ services:
       - "telemetry"
   opencti-dev-telemetry-otlp:
     container_name: opencti-dev-telemetry-otlp
-    image: otel/opentelemetry-collector-contrib:0.164.0@sha256:340c9ca6a36617084c6661bdc4f0fe92b7cda5a805d61673ec8db375fddc522b
+    image: otel/opentelemetry-collector-contrib:0.165.0@sha256:e40d61f10c9a617cca1ffd1be4d7e2b3a4b0f0001798ff07e58cabe82e618cea
     restart: unless-stopped
     volumes:
       - "./otlp-config.yaml:/etc/config/otlp-config.yaml"
@@ -164,7 +164,7 @@ services:
     profiles:
       - "telemetry"
   opencti-dev-telemetry-grafana:
-    image: grafana/grafana:13.3.0@sha256:488984b716c0862639f91a698adbe2862677a5a07bad42da5f03f3030883b205
+    image: grafana/grafana:13.3.1@sha256:0615ec4fbd4072004b7d86b46ded63013a74b7d6eb1119273dd89e8fa25c13cf
     container_name: opencti-dev-telemetry-grafana
     ports:
       - "3100:3000"
@@ -179,7 +179,7 @@ services:
   # docker compose --profile keycloak up -d
   opencti-dev-keycloak:
     profiles: [keycloak]
-    image: keycloak/keycloak:26.8.2@sha256:3879c623248408de29a5303178b5816c77e8dfef3890c361f8c0bbeaa979ba3b
+    image: keycloak/keycloak:26.8.2@sha256:c68e286cacd87b942ac1939a0a1481461109d6acd3a57dc496969a319a76bbf0
     volumes:
       - keycloakdata:/opt/keycloak/data
       - ./keycloak-configuration:/opt/keycloak/data/import
@@ -194,7 +194,7 @@ services:
       - "9999:8080"
 
   opencti-dev-mokapi:
-    image: mokapi/mokapi:0.56.0@sha256:ba86538dd92746be711b4bac6fadc7bd3645d4e80a8a4b8e915cad92e5f7756a
+    image: mokapi/mokapi:0.58.0@sha256:d4e0bb416233b54c8408bb68f402b802edbf2d3d6d6266dfa21858f1bcce5602
     profiles: [mokapi]
     container_name: opencti-dev-mokapi
     command: mokapi --providers.file.directory=/share
