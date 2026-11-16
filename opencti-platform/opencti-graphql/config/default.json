@@ -302,6 +302,7 @@
     "interval": 60000,
     "cron_max_size": 500,
     "log_max_size": 10000,
+    "callback_continuation_max_concurrency": 10,
     "realtime_priority": false
   },
   "hub_registration_manager": {
