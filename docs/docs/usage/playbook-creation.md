@@ -15,7 +15,7 @@ You can access playbook automation in the user interface under **Data > Processi
 
 You can create as many playbooks as you need. Each playbook runs independently. Playbooks can be [created manually](#create-a-playbook-manually) from scratch, [duplicated](#duplicate-a-playbook) or [imported](#import-and-export-a-playbook) from other OpenCTI environments or [from the XTM Hub](#import-a-playbook-from-the-xtm-hub). Playbooks can only be used when they are started running. 
 
-Each playbook needs to have three steps to be complete:
+Each playbook needs to have four steps to be complete:
 
 - [Step 1](#step-1-set-your-event-source): An Event source or Trigger
 - [Step 2](#step-2-build-your-workflow-with-playbook-components): Components that filter, enrich or manipulate the data
@@ -140,13 +140,4 @@ To view execution traces, open a playbook and click the execution traces icon in
 
 - It is possible to configure playbooks to run based on the output of a previous playbook, allowing you to chain multiple processes to automate your data processing needs. For example one playbook can add a label, such as ‘weekly digest’, which can then be used as the trigger criteria for a (weekly) scheduled query that then creates a new container with all ‘weekly digest’ entities added. 
 
-- When drafting and testing a playbook consider adding a filter of Creator = <your user id>. This will mean you will be able to manually create data that can be used with the playbook and limit the likelihood of other users running the playbook before it is ready.
-
-### Useful tips for troubleshooting
-
-- If fewer steps are shown than the number of components in your playbook, the execution stopped early due to an error.
-- For playbooks with multiple routes, adding temporary manipulation steps (for example adding a label) can help identify which path the bundle is taking.
-- For **Manipulate Knowledge** components, always verify:
-  - the operation type (add, replace, remove),
-  - the target field and value,
-  - the execution scope (triggering entity only vs all bundle entities).
+- When drafting and testing a playbook consider adding a filter of `Creator = <your user>`. This will mean you will be able to manually create data that can be used with the playbook and limit the likelihood of other users running the playbook before it is ready.
