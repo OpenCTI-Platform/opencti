@@ -6,12 +6,27 @@ Creating widgets on the [dashboard](dashboards.md) involves a four-step configur
 
 #### 1. Visualization
 
-Users can select from 15 diverse visualization options to highlight different aspects of their data. This includes simple views like counters and lists, as well as more intricate views like heatmaps and trees. The chosen visualization impacts the available perspectives and parameters, making it crucial to align the view with the desired data observations. Here are a few insights:
+On a dashboard, users can select from 17 visualization options to highlight different aspects of their data. This includes simple views like counters and lists, as well as more intricate views like heatmaps and trees. The chosen visualization impacts the available perspectives and parameters, making it crucial to align the view with the desired data observations.
 
-- Line and Area views: Ideal for visualizing activity volumes over time.
-- Horizontal bar views: Designed to identify top entities that best satisfy applied filters (e.g., top malware targeting the Finance sector).
-- Tree views: Useful for comparing activity volumes.
-- ...
+| Visualization       | Use                                                                                                              | Data sets |
+|:--------------------|:-----------------------------------------------------------------------------------------------------------------|:----------|
+| Text                | Display free text written in Markdown, for example a title or an explanation. It does not query any data.       | -         |
+| Number              | Display the count of matching entities, relationships or activities.                                             | 1         |
+| List                | List the matching entities, relationships or activities.                                                         | 1         |
+| List (distribution) | Rank the values of an attribute by count, as a list.                                                             | 1         |
+| Vertical Bar        | Visualize volumes over time as vertical bars.                                                                    | 1 to 5    |
+| Line                | Visualize volumes over time as lines, for example activity trends.                                               | 1 to 5    |
+| Area                | Visualize volumes over time as filled areas.                                                                     | 1 to 5    |
+| Timeline            | Display the matching entities or relationships in chronological order. Not available for "Activity & History".  | 1         |
+| Donut               | Show the distribution of the values of an attribute.                                                             | 1         |
+| Horizontal Bar      | Identify the top values that best satisfy the filters (e.g., top malware targeting the Finance sector). A second data set breaks each bar down (see [Pro-tips on widget creation](tips-widget-creation.md#break-down-widgets)). | 1 or 2    |
+| Radar               | Compare the distribution of the values of an attribute on radial axes.                                           | 1         |
+| Polar Area          | Show the distribution of the values of an attribute as circle sectors.                                           | 1         |
+| Heatmap             | Visualize the intensity of volumes over time.                                                                    | 1 to 5    |
+| Tree                | Compare volumes as nested rectangles (tree map).                                                                 | 1         |
+| Map                 | Display the countries and cities found in relationships on a world map. Only available for "Knowledge Graph".    | 1         |
+| Bookmark            | Display the entities you have bookmarked that match the filters. Only available for "Entities".                 | 1         |
+| Word Cloud          | Show the most frequent values of an attribute, sized by count.                                                   | 1         |
 
 ![Widget visualization](assets/widget-visualization.png)
 
@@ -26,6 +41,8 @@ A perspective is the way the platform will count the data to display in your wid
 ![Widget perspective](assets/widget-perspective.png)
 
 #### 3. Filters
+
+Filters define the data each widget displays. This step covers the generic filters, the additional filters of the "Knowledge Graph" perspective, and the use of saved filters.
 
 #### Generic knowledge
 
