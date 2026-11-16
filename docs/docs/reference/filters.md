@@ -4,12 +4,14 @@ In OpenCTI, you can filter data to target or view entities that have particular 
 
 ## Filters usages
 
-There are two types of filters that are used in many locations in the platform:
+Filters are used in many locations in the platform:
 
 - in entities lists: to display only the entities matching the filters. If an export or a background task is generated, only the filtered data will be taken into account,
 - in investigations and knowledge graphs: to display only the entities matching the filters,
 - in dashboards: to create widget with only the entities matching the filters,
 - in feeds, TAXII collections, triggers, streams, playbooks, background tasks: to process only the data or events matching the filters.
+
+Depending on where they are used, filters are of two types: [dynamic filters](#dynamic-filters), which are not saved in the database, and [stored filters](#stored-filters), which are saved in the database.
 
 ### Dynamic filters
 
@@ -170,7 +172,7 @@ filters = {
   The operator `not_only_eq_to` is the opposite of `only_eq_to` and returns the values that don't match the same filter with `only_eq_to` instead of `not_only_eq_to`.
 
 
-<details>
+<details markdown="1">
 
 <summary><strong>'Only equal to' and 'Not only equal to' detailed examples</strong></summary>
 
@@ -184,7 +186,7 @@ filters = {
 
 - `only_eq_to` with several values and `and` local mode: fields having exactly all the filter values, and no other values
 
-![Only Equal To filter operator with 'or' mode](./assets/filters-OnlyEqTo-and.png)
+![Only Equal To filter operator with 'and' mode](./assets/filters-OnlyEqTo-and.png)
 
 - `not_only_eq_to` with a single value
 
@@ -196,7 +198,7 @@ filters = {
 
 - `not_only_eq_to` with several values and `and` local mode
 
-![Not Only Equal To filter operator with 'or' mode](./assets/filters-NotOnlyEqTo-and.png)
+![Not Only Equal To filter operator with 'and' mode](./assets/filters-NotOnlyEqTo-and.png)
 
 
 </details>
