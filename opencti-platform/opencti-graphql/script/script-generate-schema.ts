@@ -1,8 +1,9 @@
 import fs from 'node:fs/promises';
-import { printSchema } from 'graphql';
+import { lexicographicSortSchema, printSchema } from 'graphql';
 import '../src/modules/index';
 import createSchema from '../src/graphql/schema';
 
 const schema = createSchema();
-const printedSchema = printSchema(schema);
+// Sorted, so that the file only changes when the schema does, not when registration order does
+const printedSchema = printSchema(lexicographicSortSchema(schema));
 await fs.writeFile('../opencti-front/src/schema/relay.schema.graphql', printedSchema);

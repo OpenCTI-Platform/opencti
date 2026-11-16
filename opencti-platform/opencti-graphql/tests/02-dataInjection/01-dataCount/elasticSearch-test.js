@@ -40,7 +40,7 @@ import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/sch
 import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { buildAggregationRelationFilter } from '../../../src/database/middleware-loader';
 import { mapCountPerEntityType, mapEdgesCountPerEntityType } from '../../utils/domainQueryHelper';
-import { entitiesCounter, entitiesCounterTotal, relationsCounter } from './entityCountHelper';
+import { entitiesCounter, entitiesCounterTotal, relationsCounter, SEEDED_VOCABULARY_COLORS } from './entityCountHelper';
 import { elRebuildRelation } from '../../../src/database/engine-data-converter';
 
 const elWhiteUser = async () => {
@@ -480,7 +480,7 @@ describe('Elasticsearch pagination', () => {
       first: ES_MAX_PAGINATION,
     });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(2);
+    expect(data.edges.length).toEqual(3);
   });
   it('should entity paginate domain objects sort by published', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
@@ -539,7 +539,7 @@ describe('Elasticsearch pagination', () => {
     let data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: 'malicious' });
     expect(data.edges.length).toEqual(28);
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: 'with malicious' });
-    expect(data.edges.length).toEqual(61);
+    expect(data.edges.length).toEqual(64); // 61 + 3 System asset vocabulary descriptions with "with"
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: '"with malicious"' });
     expect(data.edges.length).toEqual(2);
   });
@@ -697,8 +697,10 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Notifier')).toBe(entitiesCounter.Notifier);
     expect(entityTypeMap.get('Opinion')).toBe(entitiesCounter.Opinion);
     expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(1); // because of created filter
-    expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
-    expect(data.edges.length).toEqual(entitiesCounter.Vocabulary + TESTING_ORGS.length + 27);
+    // The color nil filter leaves out the vocabulary entries seeded with a colour (System category, criticality, environment, internet facing)
+    const vocabulariesWithoutColor = entitiesCounter.Vocabulary - SEEDED_VOCABULARY_COLORS;
+    expect(entityTypeMap.get('Vocabulary')).toBe(vocabulariesWithoutColor);
+    expect(data.edges.length).toEqual(vocabulariesWithoutColor + TESTING_ORGS.length + 27);
     filters = {
       mode: 'and',
       filters: [

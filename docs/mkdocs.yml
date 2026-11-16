@@ -225,6 +225,7 @@ nav:
         - Custom dashboards: usage/dashboards.md
         - Share custom dashboards: usage/dashboards-share.md
         - Widget creation: usage/widgets.md
+        - Time series breakdown: usage/time-series-breakdown.md
         - Tips for widget creation: usage/tips-widget-creation.md
       - Custom views: usage/custom-views.md
       - Workflows:
@@ -250,6 +251,7 @@ nav:
       - Merging and de-duplication: administration/merging.md
       - CSV Mappers: administration/csv-mappers.md
       - JSON Mappers: administration/json-mappers.md
+      - Ingestion health: administration/ingestion-health.md
     - Platform settings:
       - Parameters: administration/parameters.md
       - Security:

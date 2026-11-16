@@ -1,33 +1,23 @@
-import { FilterMode, FilterOperator, OrderingMode, ThemeOrdering } from '../../../generated/graphql';
+import { FilterOperator, ThemeOrdering } from '../../../generated/graphql';
 import { getPlatformDefaultTheme } from '../../../domain/settings';
 import { FunctionalError } from '../../../config/errors';
 import { ConfigImportMode } from '../../configImport/configImport-types';
 import { findAllThemes, findThemePaginated } from '../../theme/theme-domain';
-import { getThemeConfigPresetConfiguration } from '../../theme/theme-export';
+import { exportTheme } from '../../theme/theme-export';
 import { THEME_STANDARD_ID_PATTERN } from '../../theme/theme-import-schema';
 import { importTheme } from '../../theme/theme-import';
 import type { BasicStoreEntityTheme } from '../../theme/theme-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
 import { configPresetPlanKey } from '../import/configPreset-import-types';
-import { buildConfigPresetConnection, platformSettingsGroup } from './common-configPreset-registry';
-
-export const BRANDING_FAMILY_ID = 'branding';
+import { BRANDING_FAMILY_ID, buildConfigPresetConnection, platformSettingsGroup, standardIdListArgs } from './common-configPreset-registry';
 
 // Built-in themes are neither listed nor exported: they are the same on every platform, and an import never writes them.
 // A built-in default theme is still referenced by the platform item, by its standard id.
-const themesArgs = (ids?: string[] | null, excludedIds?: string[] | null) => {
-  const filters = [
-    { key: ['built_in'], values: ['true'], operator: FilterOperator.NotEq },
-    ...(ids ? [{ key: ['standard_id'], values: ids }] : []),
-    ...(excludedIds && excludedIds.length > 0 ? [{ key: ['standard_id'], values: excludedIds, operator: FilterOperator.NotEq }] : []),
-  ];
-  return {
-    orderBy: ThemeOrdering.Name,
-    orderMode: OrderingMode.Asc,
-    filters: { mode: FilterMode.And, filters, filterGroups: [] },
-  };
-};
+const themesArgs = (ids?: string[] | null, excludedIds?: string[] | null) => ({
+  orderBy: ThemeOrdering.Name,
+  ...standardIdListArgs(ids, excludedIds, [{ key: ['built_in'], values: ['true'], operator: FilterOperator.NotEq }]),
+});
 
 // A theme is identified by its standard id everywhere: it is the same on every platform the theme is imported to
 const toThemeItem = (theme: BasicStoreEntityTheme, defaultThemeId: string | undefined): ConfigPresetItemDefinition => ({
@@ -35,7 +25,7 @@ const toThemeItem = (theme: BasicStoreEntityTheme, defaultThemeId: string | unde
   label: theme.name,
   translatable: false,
   isDefault: theme.standard_id === defaultThemeId,
-  exporter: async () => getThemeConfigPresetConfiguration(theme),
+  exporter: async () => exportTheme(theme),
 });
 
 const brandingImporter: ConfigPresetImporter = {
@@ -52,8 +42,10 @@ const brandingImporter: ConfigPresetImporter = {
     if (result.status === 'created' && !result.exists) {
       plan.created.add(configPresetPlanKey(BRANDING_FAMILY_ID, item.id));
     }
-    // A theme conflicts when it exists, or when another one has its name: either way a copy is a way out
-    const conflict = result.exists || result.code === 'name_conflict';
+    // A theme conflicts when it exists, or when another one has its name: either way a copy is a way out. A copy that takes another name
+    // (COPY, the default of a partial import) conflicts too: its name is taken, the dialog shows it and offers the choice of the mode
+    const renamedCopy = result.copyName !== undefined && result.copyName !== result.configuration?.name;
+    const conflict = result.exists || result.code === 'name_conflict' || renamedCopy;
     return { ...base, exists: result.exists, conflict, status: result.status, reason: result.reason };
   },
   apply: async (context, user, item, computed, mode) => {

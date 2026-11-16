@@ -10,7 +10,6 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
-import Grid from '@mui/material/Grid';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery, handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
@@ -18,13 +17,9 @@ import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { dayStartDate } from '../../../../utils/Time';
-import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { insertNode } from '../../../../utils/store';
-import FilterIconButton from '../../../../components/FilterIconButton';
-import EnrichedTooltip from '../../../../components/EnrichedTooltip';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
-import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import IngestionCreationUserHandling from '../../../../private/components/data/IngestionCreationUserHandling';
@@ -36,6 +31,8 @@ import { SyncCreationStreamCollectionQuery$data } from '@components/data/sync/__
 import { RelayError } from '../../../../relay/relayTypes';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import { SyncImportQuery$data } from '../__generated__/SyncImportQuery.graphql';
+import RemoteStreamField from './RemoteStreamField';
+import { RemoteStreamOption } from './remoteStreamOptions';
 
 const syncCreationMutation = graphql`
   mutation SyncCreationMutation($input: SynchronizerAddInput!) {
@@ -99,14 +96,7 @@ interface SynchronizerAddInput {
   automatic_user?: boolean;
   confidence_level?: string;
 }
-type StreamOption = {
-  value: string;
-  label: string;
-  id: string;
-  name: string;
-  description?: string | null;
-  filters?: string | null;
-};
+type StreamOption = RemoteStreamOption;
 
 const CreateSynchronizerControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
@@ -325,53 +315,12 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                     disabled={streams.length > 0}
                   />
                   {streams.length > 0 && (
-                    <Field
-                      component={SelectFieldFds}
-                      variant="outlined"
+                    <RemoteStreamField
                       name="stream_id"
                       label={t_i18n('Remote OpenCTI stream ID')}
-                      inputProps={{ name: 'stream_id', id: 'stream_id' }}
-                      containerstyle={fieldSpacingContainerStyle}
-                      renderValue={(value: string | undefined) => streams.filter((stream) => stream.value === value).at(0)?.name}
-                    >
-                      {streams.map(
-                        ({ value, label, name, description, filters }) => {
-                          const streamsFilters = deserializeFilterGroupForFrontend(filters);
-                          return (
-                            <EnrichedTooltip
-                              key={value}
-                              value={value}
-                              style={{ overflow: 'hidden' }}
-                              title={(
-                                <Grid
-                                  container
-                                  spacing={1}
-                                  style={{ overflow: 'hidden' }}
-                                >
-                                  <Grid key={name} size={12}>
-                                    <Typography>{name}</Typography>
-                                  </Grid>
-                                  <Grid key={description} size={12}>
-                                    <Typography>{description}</Typography>
-                                  </Grid>
-                                  <Grid key={filters} size={12}>
-                                    <FilterIconButton
-                                      filters={streamsFilters}
-                                      variant="small"
-                                    />
-                                  </Grid>
-                                </Grid>
-                              )}
-                              placement="bottom-start"
-                            >
-                              <SelectItem key={value} value={value}>
-                                {label}
-                              </SelectItem>
-                            </EnrichedTooltip>
-                          );
-                        },
-                      )}
-                    </Field>
+                      streams={streams}
+                      required
+                    />
                   )}
                   <div style={{
                     width: '100%',

@@ -26,6 +26,10 @@ To connect your OpenCTI product to the XTM Hub, follow these steps:
     - Once the connection is complete, you will be redirected back to your OpenCTI product.
     - The XTM Hub administrators will be informed that an OpenCTI product is connected.
 
+### View your product's metrics (SaaS customers)
+
+This feature is only available to SaaS customers. Once you have completed connection and after a few minutes of connection, if you are a SaaS customer with a product handled by Filigran, you will see a button "See my OpenCTI metrics". It will redirect you to XTM Hub, on your product's page, to have more information about usage and health. 
+
 ## Disconnecting Your Product
 
 To disconnect your product, follow these steps:

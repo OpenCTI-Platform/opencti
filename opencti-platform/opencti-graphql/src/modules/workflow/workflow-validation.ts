@@ -4,11 +4,13 @@ import { fullEntitiesList, storeLoadById, storeLoadByIds } from '../../database/
 import { FilterMode, FilterOperator, StatusScope } from '../../generated/graphql';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../schema/internalObject';
 import { isBasicObject } from '../../schema/stixCoreObject';
+import { isStixDomainObject } from '../../schema/stixDomainObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../utils/authorizedMembers';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
-import { findUnreachableStates } from './domain/workflow-ordering';
-import { findEntitiesReferencingStatus } from './domain/workflow-status-usage';
+import { findStatesWithOutgoingTransitions, findUnreachableStates } from './domain/workflow-ordering';
+import { findEntitiesReferencingStatus, findInstancesInStates } from './domain/workflow-status-usage';
 import { ActionDefinitions } from './registry/workflow-actions';
 import type { WorkflowValidationError } from './types/workflow-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from './types/workflow-types';
@@ -50,6 +52,8 @@ export const workflowSerializedStateSchema = z.object({
   order: z.number().optional(),
   onEnter: z.array(workflowActionConfigSchema).optional(),
   onExit: z.array(workflowActionConfigSchema).optional(),
+  /** Request-access definitions only: marks the state reached when the request is approved or declined. */
+  requestAccessOutcome: z.enum(['APPROVED', 'DECLINED']).optional(),
 });
 
 export const workflowSerializedTransitionSchema = z.object({
@@ -62,6 +66,7 @@ export const workflowSerializedTransitionSchema = z.object({
   syncActions: z.array(workflowActionConfigSchema).optional(),
   conditions: workflowConditionConfigSchema.optional(),
   comment: z.enum(['allowed', 'required', 'disabled']).optional(),
+  closingReason: z.enum(['allowed', 'required', 'disabled']).optional(),
 });
 
 export const workflowDefinitionSchema = z.object({
@@ -147,29 +152,12 @@ export const findInstancesBlockingStateRemoval = async (
 ): Promise<{ states: string[]; instances: any[] }> => {
   const newStates = extractAllStatesFromDefinition(newDefinition);
   const removedStates = [...extractAllStatesFromDefinition(oldDefinition)].filter((s) => !newStates.has(s));
-  const statesWithOutgoingTransitions = new Set<string>();
-  for (const transition of (oldDefinition.transitions ?? [])) {
-    const fromStates = Array.isArray(transition.from) ? transition.from : [transition.from];
-    for (const s of fromStates) {
-      if (s && s !== '*') statesWithOutgoingTransitions.add(s);
-    }
-  }
+  const statesWithOutgoingTransitions = findStatesWithOutgoingTransitions(oldDefinition.transitions ?? []);
   const states = removedStates.filter((s) => statesWithOutgoingTransitions.has(s));
   if (states.length === 0) return { states, instances: [] };
 
-  // Note: 'workflow_id' is a reserved special filter key (WORKFLOW_FILTER) in OpenCTI that maps to
-  // entity workflow status (x_opencti_workflow_id). We cannot use it as a raw ES filter key.
-  // Instead, we filter by currentState in ES and post-filter by workflow_id.
-  const instancesInRemovedStates = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
-    filters: {
-      mode: FilterMode.And,
-      filters: [
-        { key: ['currentState'], values: states, operator: FilterOperator.Eq, mode: FilterMode.Or },
-      ],
-      filterGroups: [],
-    },
-  });
-  return { states, instances: instancesInRemovedStates.filter((inst: any) => inst.workflow_id === workflowDefinitionId && !inst.completed) };
+  const instancesInRemovedStates = await findInstancesInStates(context, user, states, workflowDefinitionId);
+  return { states, instances: instancesInRemovedStates.filter((inst: any) => !inst.completed) };
 };
 
 const validateAction = (action: z.infer<typeof workflowActionConfigSchema>, source: string) => {
@@ -185,12 +173,17 @@ const validateAction = (action: z.infer<typeof workflowActionConfigSchema>, sour
   }
 };
 
+const isClosingReasonEnabled = (transition: z.infer<typeof workflowSerializedTransitionSchema>) => {
+  return !!transition.closingReason && transition.closingReason !== 'disabled';
+};
+
 export const validateWorkflowDefinitionData = async (
   context: AuthContext,
   user: AuthUser,
   definitionStr: string,
   entityType: string,
   existingWorkflowId?: string,
+  scope: StatusScope = StatusScope.Global,
 ): Promise<WorkflowValidationError[]> => {
   let parsed;
   const errors: WorkflowValidationError[] = [];
@@ -257,10 +250,11 @@ export const validateWorkflowDefinitionData = async (
   const fromEventPairs = new Set<string>();
   let hasValidateDraft = false;
   const statesWithIncomingTransition = new Set<string>();
+  const statesWithOutgoingTransitions = findStatesWithOutgoingTransitions(transitions);
 
   for (const transition of transitions) {
     // A null `to` is only a valid terminal transition (the engine keeps the instance in its
-    // current state, see `targetTransitionForSync?.to ?? instance.getCurrentState()`) when the
+    // current state, see `targetTransition?.to ?? instance.getCurrentState()`) when the
     // transition explicitly completes the workflow via `validateDraft`. Otherwise it's an
     // orphaned reference (e.g. an admin deleted the target status) and must still be reported.
     const completesWorkflow = (transition.syncActions ?? []).some((action) => action.type === 'validateDraft');
@@ -294,6 +288,24 @@ export const validateWorkflowDefinitionData = async (
     }
     if (transition.to && transition.to !== '*') {
       statesWithIncomingTransition.add(transition.to);
+    }
+
+    if (isClosingReasonEnabled(transition) && !isStixDomainObject(entityType)) {
+      errors.push({
+        type: 'CLOSING_REASON_NOT_SUPPORTED',
+        message: `Closing reason in transition '${transition.event}' is only supported for domain objects`,
+      });
+    } else if (isClosingReasonEnabled(transition) && transition.to === '*') {
+      errors.push({
+        type: 'CLOSING_REASON_ANY_STATE',
+        message: `Closing reason in transition '${transition.event}' is not allowed on a transition to any state`,
+      });
+    } else if (isClosingReasonEnabled(transition) && transition.to && statesWithOutgoingTransitions.has(transition.to)) {
+      // The reason is kept while the entity stays in a final state, so it may only be asked on the way into one
+      errors.push({
+        type: 'CLOSING_REASON_NOT_FINAL',
+        message: `Closing reason in transition '${transition.event}' is only allowed into a final state, but transitions leave '${transition.to}'`,
+      });
     }
 
     if (transition.conditions) {
@@ -441,9 +453,10 @@ export const validateWorkflowDefinitionData = async (
   // Reachability: every declared/referenced state must be reachable from initialState via some
   // transition path. An unreachable state is a definition bug (it can never be entered), so it is
   // always a hard error.
+  let unreachableStates: string[] = [];
   if (initialState !== '*') {
     const allStateIds = [...extractCanonicalStateIds(validationResult.data)];
-    const unreachableStates = findUnreachableStates(initialState, allStateIds, transitions);
+    unreachableStates = findUnreachableStates(initialState, allStateIds, transitions);
     unreachableStates.forEach((stateId) => {
       errors.push({
         type: 'STATE_UNREACHABLE',
@@ -453,6 +466,90 @@ export const validateWorkflowDefinitionData = async (
 
     // Ordering is derived automatically from the transition graph (longest-simple-path) and is
     // never required for validation.
+  }
+
+  const isShareRequestedEntitiesAction = (action: z.infer<typeof workflowActionConfigSchema>) => action.type === 'shareRequestedEntities';
+  const stateActions = (state: z.infer<typeof workflowSerializedStateSchema>) => [...(state.onEnter ?? []), ...(state.onExit ?? [])];
+  const hasShareAction = states.some((state) => stateActions(state).some(isShareRequestedEntitiesAction))
+    || transitions.some((transition) => [...(transition.asyncActions ?? []), ...(transition.syncActions ?? [])].some(isShareRequestedEntitiesAction));
+  const outcomeStates = states.filter((state) => state.requestAccessOutcome);
+  const isRequestAccessDefinition = scope === StatusScope.RequestAccess && entityType === ENTITY_TYPE_CONTAINER_CASE_RFI;
+  if (!isRequestAccessDefinition) {
+    if (outcomeStates.length > 0) {
+      errors.push({
+        type: 'REQUEST_ACCESS_OUTCOME_NOT_ALLOWED',
+        message: 'Request access outcome states are only allowed in Case-Rfi request access workflows',
+      });
+    }
+    if (hasShareAction) {
+      errors.push({
+        type: 'REQUEST_ACCESS_SHARE_ACTION_NOT_ALLOWED',
+        message: "Action 'shareRequestedEntities' is only allowed in Case-Rfi request access workflows",
+      });
+    }
+  } else {
+    // The share must only run when entering Approved, the one state reached through a gated decision.
+    states.forEach((state) => {
+      const stateId = state.statusId ?? state.name;
+      const misplacedOnEnter = state.requestAccessOutcome !== 'APPROVED' && (state.onEnter ?? []).some(isShareRequestedEntitiesAction);
+      if (misplacedOnEnter || (state.onExit ?? []).some(isShareRequestedEntitiesAction)) {
+        errors.push({
+          type: 'REQUEST_ACCESS_SHARE_ACTION_MISPLACED',
+          message: `Action 'shareRequestedEntities' on state '${stateId}' is only allowed on enter of the Approved state`,
+        });
+      }
+    });
+    transitions.forEach((transition) => {
+      if ([...(transition.asyncActions ?? []), ...(transition.syncActions ?? [])].some(isShareRequestedEntitiesAction)) {
+        errors.push({
+          type: 'REQUEST_ACCESS_SHARE_ACTION_MISPLACED',
+          message: `Action 'shareRequestedEntities' in transition '${transition.event}' is only allowed on enter of the Approved state`,
+        });
+      }
+    });
+    const outcomeKinds = [['APPROVED', 'Approved'], ['DECLINED', 'Declined']] as const;
+    for (const [outcome, label] of outcomeKinds) {
+      const markedStates = outcomeStates.filter((state) => state.requestAccessOutcome === outcome);
+      if (markedStates.length !== 1) {
+        errors.push({
+          type: 'REQUEST_ACCESS_OUTCOME_COUNT',
+          message: `Request access workflow must have exactly one ${label} state, but found ${markedStates.length}`,
+        });
+      }
+      for (const state of markedStates) {
+        const stateId = state.statusId ?? state.name;
+        if (stateId && unreachableStates.includes(stateId)) {
+          errors.push({
+            type: 'REQUEST_ACCESS_OUTCOME_UNREACHABLE',
+            message: `${label} state '${stateId}' is not reachable from the initial state '${initialState}'`,
+          });
+        }
+        const hasOutgoingTransition = transitions.some((transition) => (
+          (Array.isArray(transition.from) ? transition.from : [transition.from]).includes(stateId as string)
+        ));
+        if (hasOutgoingTransition) {
+          errors.push({
+            type: 'REQUEST_ACCESS_OUTCOME_NOT_TERMINAL',
+            message: `${label} state '${stateId}' must not have outgoing transitions`,
+          });
+        }
+        if (outcome === 'APPROVED' && !(state.onEnter ?? []).some(isShareRequestedEntitiesAction)) {
+          errors.push({
+            type: 'MISSING_REQUEST_ACCESS_SHARE_ACTION',
+            message: `Approved state '${stateId}' must have a shareRequestedEntities action on enter`,
+          });
+        }
+        // A container share waits for its background task: an action after it would only run once the task finished,
+        // and nothing undoes it if the task then fails.
+        const onEnter = state.onEnter ?? [];
+        if (outcome === 'APPROVED' && onEnter.some(isShareRequestedEntitiesAction) && !isShareRequestedEntitiesAction(onEnter[onEnter.length - 1])) {
+          errors.push({
+            type: 'REQUEST_ACCESS_SHARE_ACTION_NOT_LAST',
+            message: `Action 'shareRequestedEntities' on state '${stateId}' must be the last action on enter of the Approved state`,
+          });
+        }
+      }
+    }
   }
 
   if (existingWorkflowId) {
@@ -502,7 +599,7 @@ export const validateWorkflowDefinitionData = async (
               mode: FilterMode.And,
               filters: [
                 { key: ['type'], values: [entityType] },
-                { key: ['scope'], values: [StatusScope.Global] },
+                { key: ['scope'], values: [scope] },
                 { key: ['template_id'], values: removedStatusIds, operator: FilterOperator.Eq, mode: FilterMode.Or },
               ],
               filterGroups: [],

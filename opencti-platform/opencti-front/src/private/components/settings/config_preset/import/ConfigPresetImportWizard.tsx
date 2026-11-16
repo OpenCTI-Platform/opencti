@@ -13,7 +13,7 @@ import { ConfigPresetImportWizardBackMutation } from './__generated__/ConfigPres
 import { ConfigPresetImportWizardRunningQuery, ConfigPresetImportWizardRunningQuery$data } from './__generated__/ConfigPresetImportWizardRunningQuery.graphql';
 import { getConfigPresetErrorReason, getConfigPresetImportStep, getConfigPresetStartedBy } from './configPresetImportStep';
 import ConfigPresetImportInterrupted from './ConfigPresetImportInterrupted';
-import ConfigPresetImportPreview, { ConfigPresetImportPreviewProps } from './ConfigPresetImportPreview';
+import ConfigPresetImportPreview, { ConfigPresetImportPreviewProps, type ImportItemOptions } from './ConfigPresetImportPreview';
 import { ConfigPresetImportProgress, ConfigPresetImportResult } from './ConfigPresetImportResult';
 import ConfigPresetImportUpload from './ConfigPresetImportUpload';
 import ConfigPresetWizardStepper from '../ConfigPresetWizardStepper';
@@ -66,8 +66,14 @@ const configPresetImportWizardQuery = graphql`
 // The same document applies and simulates. The real import returns the settings and the entity settings, so that the store learns
 // completed, the theme, the title and the hidden entity types; a dry run returns them null and writes nothing.
 const configPresetImportWizardApplyMutation = graphql`
-  mutation ConfigPresetImportWizardApplyMutation($file_id: ID!, $selections: [ConfigPresetSelectionInput!]!, $dry_run: Boolean!) {
-    configPresetImport(file_id: $file_id, selections: $selections, dry_run: $dry_run) {
+  mutation ConfigPresetImportWizardApplyMutation(
+    $file_id: ID!
+    $selections: [ConfigPresetSelectionInput!]!
+    $dry_run: Boolean!
+    $credentials: [ConfigPresetItemCredentialsInput!]
+    $service_accounts: [ConfigPresetItemServiceAccountInput!]
+  ) {
+    configPresetImport(file_id: $file_id, selections: $selections, dry_run: $dry_run, credentials: $credentials, service_accounts: $service_accounts) {
       results {
         type
         key
@@ -180,11 +186,15 @@ const ConfigPresetImportWizard: FunctionComponent<ConfigPresetImportWizardProps>
     return () => window.clearInterval(interval);
   }, [step, refresh]);
 
-  const handleApply = (fileId: string, selections: ConfigPresetImportWizardApplyMutation['variables']['selections']) => {
+  const handleApply = (
+    fileId: string,
+    selections: ConfigPresetImportWizardApplyMutation['variables']['selections'],
+    itemOptions: ImportItemOptions,
+  ) => {
     setStartedBy(null);
     setIsApplying(true);
     commitApply({
-      variables: { file_id: fileId, selections, dry_run: false },
+      variables: { file_id: fileId, selections, dry_run: false, ...itemOptions },
       // The progress stays until the session is read: the session in hand is still the draft, and its preview would ask for the zip the import deleted
       onCompleted: () => {
         refresh().finally(() => setIsApplying(false));
@@ -202,9 +212,9 @@ const ConfigPresetImportWizard: FunctionComponent<ConfigPresetImportWizardProps>
   };
 
   // The expected result of each item, nothing is written: the wizard stays on the preview
-  const handleSimulate: ConfigPresetImportPreviewProps['onSimulate'] = (fileId, selections, { onCompleted, onError }) => {
+  const handleSimulate: ConfigPresetImportPreviewProps['onSimulate'] = (fileId, selections, itemOptions, { onCompleted, onError }) => {
     commitApply({
-      variables: { file_id: fileId, selections, dry_run: true },
+      variables: { file_id: fileId, selections, dry_run: true, ...itemOptions },
       onCompleted: (response) => onCompleted(response.configPresetImport.results),
       onError,
     });
@@ -271,7 +281,7 @@ const ConfigPresetImportWizard: FunctionComponent<ConfigPresetImportWizardProps>
         isOtherImportRunning={otherImport !== null}
         lastFinishedAt={running?.last_finished_at}
         startedBy={startedBy}
-        onApply={(selections) => handleApply(session!.file_id, selections)}
+        onApply={(selections, itemOptions) => handleApply(session!.file_id, selections, itemOptions)}
         onSimulate={handleSimulate}
         onStartOver={handleStartOver}
         onFileMissing={() => setIsFileMissing(true)}

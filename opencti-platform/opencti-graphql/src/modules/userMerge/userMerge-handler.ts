@@ -188,8 +188,9 @@ export const handlerDryRun = async (
  * Order-independent signature of a plan, used by the engine to prove that what the real
  * pass is about to write is what the dry pass showed the operator.
  */
+// The detail is part of the key: two plans with the same counts can still move different elements
 const changeKeys = (plan: UserMergeHandlerPlan): string[] => [...plan.changes]
-  .map((change) => `${change.register_row_id}|${change.entity_type}|${change.count}|${change.exact}`)
+  .map((change) => `${change.register_row_id}|${change.entity_type}|${change.count}|${change.exact}${change.detail ? `|${change.detail}` : ''}`)
   .sort();
 
 const alertKeys = (plan: UserMergeHandlerPlan): string[] => [...plan.alerts]

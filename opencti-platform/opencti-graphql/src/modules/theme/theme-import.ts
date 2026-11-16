@@ -3,11 +3,11 @@ import { FunctionalError } from '../../config/errors';
 import type { EditInput } from '../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
-import { configImportValidationReason } from '../configImport/configImport-utils';
+import { configImportReasonValue, configImportValidationReason, freeConfigImportName } from '../configImport/configImport-utils';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { BUILT_IN_THEME_STANDARD_IDS } from './theme-constants';
 import { addTheme, checkExistingTheme, fieldPatchTheme, findById } from './theme-domain';
-import { THEME_NAME_MAX_LENGTH, type ThemeImportConfiguration, themeImportSchema } from './theme-import-schema';
+import { THEME_NAME_MAX_LENGTH, THEME_STANDARD_ID_PATTERN, type ThemeImportConfiguration, themeImportSchema } from './theme-import-schema';
 
 // A dry run writes nothing: the names the earlier items of the same dry run would take are reserved for the next ones
 export interface ThemeImportOptions extends ConfigImportOptions {
@@ -23,37 +23,18 @@ export type ThemeImportCode = 'invalid' | 'standard_id_required' | 'exists' | 'n
 export type ThemeImportResult = ConfigImportResult<ThemeImportConfiguration, ThemeImportCode> & {
   // The theme written, absent on a dry run
   theme?: Awaited<ReturnType<typeof addTheme>>;
+  // The name of a copy: the one of the configuration, or the free one it takes when that name is taken
+  copyName?: string;
 };
 
 const refused = (status: 'failed' | 'skipped', code: ThemeImportCode, reason: string, exists: boolean, configuration?: ThemeImportConfiguration): ThemeImportResult => {
   return { status, code, reason, exists, configuration };
 };
 
-const MAX_COPIES = 100;
-
-// The name itself when it is free, else the first free `name (n)`; undefined when the first copies are all taken
-// Taken by a theme of the platform, or by one that a dry run would have created; not by one that a dry run would have renamed
 const isNameTaken = async (context: AuthContext, user: AuthUser, name: string, { reservedNames, releasedNames }: ThemeImportOptions, excludeId?: string) => {
   return !!reservedNames?.has(name) || (!releasedNames?.has(name) && await checkExistingTheme(context, user, name, excludeId));
 };
 
-const freeThemeName = async (context: AuthContext, user: AuthUser, name: string, options: ThemeImportOptions) => {
-  const isTaken = (candidate: string) => isNameTaken(context, user, candidate, options);
-  if (!(await isTaken(name))) {
-    return name;
-  }
-  for (let copy = 1; copy <= MAX_COPIES; copy += 1) {
-    const suffix = ` (${copy})`;
-    const candidate = `${name.slice(0, THEME_NAME_MAX_LENGTH - suffix.length)}${suffix}`;
-    // The next candidate depends on this answer
-    if (!(await isTaken(candidate))) {
-      return candidate;
-    }
-  }
-  return undefined;
-};
-
-// addTheme trusts its input: the standard id is the given one (absent: the platform gives one), and the theme is never built-in
 const createTheme = (context: AuthContext, user: AuthUser, theme: Omit<ThemeImportConfiguration, 'standard_id'>, standardId?: string) => {
   return addTheme(context, user, {
     ...theme,
@@ -97,11 +78,11 @@ export const importTheme = async (
   }
   // A copy is never refused for its name or its identity: it takes a free name, and a new standard id when its own is taken
   if (mode === ConfigImportMode.Copy) {
-    const name = await freeThemeName(context, user, theme.name, options);
+    const name = await freeConfigImportName(theme.name, (candidate) => isNameTaken(context, user, candidate, options), { maxLength: THEME_NAME_MAX_LENGTH });
     if (!name) {
       return refused('failed', 'name_conflict', 'Theme name already exists', !!existing, parsed.data);
     }
-    const copy: ThemeImportResult = { status: 'created', exists: !!existing, configuration: parsed.data, reason: name === theme.name ? undefined : `Added as "${name}"` };
+    const copy: ThemeImportResult = { status: 'created', exists: !!existing, configuration: parsed.data, copyName: name, reason: name === theme.name ? undefined : `Added as "${configImportReasonValue(name)}"` };
     if (dryRun) {
       reservedNames?.add(name);
       return copy;
@@ -141,9 +122,26 @@ const importError = ({ code, reason }: ThemeImportResult, name?: string) => {
   }
 };
 
-// The import of a theme file: the theme must not exist yet
+// A theme file keeps its standard id when it is free, so that the theme stays the same one on the platforms it is imported to.
+// The id is dropped when it is a built-in one or the one of a theme of the platform: the file is then a new theme (a renamed export,
+// a theme started from a built-in one), and the platform gives it its own id. An id that is not a theme standard id is kept: the
+// validation refuses it.
+const withFreeStandardId = async (context: AuthContext, user: AuthUser, content: unknown) => {
+  if (!content || typeof content !== 'object') {
+    return content;
+  }
+  const { standard_id: standardId, ...theme } = content as Record<string, unknown>;
+  if (typeof standardId !== 'string' || !THEME_STANDARD_ID_PATTERN.test(standardId)) {
+    return content;
+  }
+  const taken = Object.values(BUILT_IN_THEME_STANDARD_IDS).includes(standardId) || !!(await findById(context, user, standardId));
+  return taken ? theme : content;
+};
+
+// The import of a theme file: always a new theme, under its own name (a name that another theme uses is refused, as before the
+// standard id was exported), and under its standard id when it is free
 export const themeImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
-  const content = await extractContentFrom(file);
+  const content = await withFreeStandardId(context, user, await extractContentFrom(file));
   const result = await importTheme(context, user, content, { mode: ConfigImportMode.Add });
   if (result.status !== 'created') {
     throw importError(result, result.configuration?.name);

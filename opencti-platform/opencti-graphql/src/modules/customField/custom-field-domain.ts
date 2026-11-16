@@ -21,6 +21,7 @@ import { FunctionalError, ValidationError } from '../../config/errors';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { getCustomFieldDefinitionByLabel, getCustomFieldDefinitionByNameOrAlias, getCustomFieldDefinitions, getCustomFieldValueField } from './custom-field-cache';
+import { validateCustomFieldDefaultValue } from './custom-field-validator';
 
 /**
  * Technical name must be the custom field prefix followed by lowercase letters,
@@ -365,6 +366,7 @@ export const customFieldDefinitionAddEntityType = async (
   if (!definition) {
     throw FunctionalError('Custom field definition not found', { id: customFieldDefinitionId });
   }
+  validateCustomFieldDefaultValue(definition, defaultValue);
   const currentTypes = definition.entity_types ?? [];
   const currentSettings = definition.entity_type_settings ?? [];
   const nextTypes = currentTypes.includes(entityType) ? currentTypes : [...currentTypes, entityType];
@@ -401,6 +403,10 @@ export const customFieldDefinitionUpdateEntityType = async (
   const isOnlyMadeOptional = !mandatory && (defaultValue ?? undefined) === (currentSetting?.default_value ?? undefined);
   if (!isOnlyMadeOptional) {
     await checkEnterpriseEdition(context);
+  }
+  // Only a changed default value is checked: a stored one never blocks making the field optional
+  if ((defaultValue ?? undefined) !== (currentSetting?.default_value ?? undefined)) {
+    validateCustomFieldDefaultValue(definition, defaultValue);
   }
   const nextSettings = [
     ...currentSettings.filter((setting) => setting.entity_type !== entityType),

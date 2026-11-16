@@ -211,6 +211,11 @@ export const PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT: PlaybookComponent<AiAgentTra
       return { output_port: 'unmodified', bundle };
     }
     const content = buildAgentMessageContent(bundle, prompt);
+    // A failed call (XTM One unreachable or erroring after the retries)
+    // throws XtmAgentCallError: the executor records the step as failed
+    // with the reason, so the run history shows it. ``unmodified`` stays
+    // for the legitimate cases: nothing to call, or an answer that is not
+    // a STIX bundle.
     const rawResponse = await callXtmAgent(agent_slug, content, jwtUser);
     if (rawResponse === null) {
       return { output_port: 'unmodified', bundle };

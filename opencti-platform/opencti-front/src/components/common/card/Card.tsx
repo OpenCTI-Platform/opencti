@@ -17,6 +17,8 @@ export interface CardProps extends PropsWithChildren {
   to?: string;
   variant?: 'elevation' | 'outlined';
   disabled?: boolean;
+  // A clickable card that is one of several choices: highlighted when chosen, and announced as pressed
+  selected?: boolean;
   'aria-label'?: string;
 }
 
@@ -33,6 +35,7 @@ const Card = ({
   to,
   disabled,
   variant,
+  selected,
   ...otherProps
 }: CardProps) => {
   const theme = useTheme<Theme>();
@@ -71,7 +74,9 @@ const Card = ({
     flexGrow: fullHeight ? 1 : 0,
     borderRadius: theme.spacing(0.5),
     background: backgroundColor,
-    border: '1px solid var(--border-elevation-subtle-soft-layer-1-transparency-15)',
+    border: selected
+      ? `1px solid ${theme.palette.primary.main}`
+      : '1px solid var(--border-elevation-subtle-soft-layer-1-transparency-15)',
     ...(applyStyleToContainer ? paddingStyle : {}),
     ...(applyStyleToContainer ? sx : {}),
   };
@@ -95,6 +100,7 @@ const Card = ({
       <CardActionArea
         disabled={disabled}
         onClick={onClick}
+        aria-pressed={selected}
         sx={actionAreaSx}
         {...linkProps}
       >

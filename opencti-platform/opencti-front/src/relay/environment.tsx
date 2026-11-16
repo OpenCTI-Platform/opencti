@@ -51,6 +51,7 @@ export const MESSAGING$ = {
     MESSENGER$.next(messages);
   },
   notifySuccess: (text: unknown) => MESSENGER$.next([{ type: 'message', text }]),
+  notifyWarning: (text: unknown) => MESSENGER$.next([{ type: 'warning', text }]),
   notifyNLQ: (text: unknown) => MESSENGER$.next([{ type: 'nlq', text }]),
   toggleNav: new Subject(),
   redirect: new Subject(),
@@ -82,6 +83,13 @@ const subscribeFn = (request: RequestParameters, variables: Variables) => {
     // Lazy creation of the subscription client to connect only after auth
     subscriptionClient = createClient({
       url: subscriptionUrl,
+      // Never give up reconnecting: the socket is also the presence of the tab for the platform
+      // (logout when the last tab is closed), a tab without socket would silently stop being tracked.
+      retryAttempts: Infinity,
+      // Exponential backoff with jitter, capped to keep reconnecting promptly after a long outage
+      retryWait: (retries) => new Promise((resolve) => {
+        setTimeout(resolve, Math.min(1000 * 2 ** retries, 10000) + Math.floor(Math.random() * 2700 + 300));
+      }),
     });
   }
   const client = subscriptionClient;
@@ -267,6 +275,7 @@ export const handleErrorInForm = (
       (e) => ({
         type: 'error',
         text: e?.data?.reason ?? e.message,
+        fullError: e,
       }));
     MESSAGING$.messages.next(messages);
   }
@@ -280,6 +289,7 @@ export const handleError = (error: any) => {
       (e) => ({
         type: 'error',
         text: e?.data?.message ?? e.message,
+        fullError: e,
       }));
     MESSAGING$.messages.next(messages);
   }

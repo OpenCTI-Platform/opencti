@@ -36,6 +36,7 @@ import {
   normalizeUploadError,
 } from './httpUtils';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
+import { onSessionPresenceClose, onSessionPresenceConnect } from '../modules/session/session-presence-ws';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -126,7 +127,16 @@ const createHttpServer = async () => {
   wsServer.on('error', (e) => {
     throw e;
   });
-  const serverCleanup = useServer(createSubscriptionServerOptions({ schema, protection, context: extractWsSessionContext }), wsServer);
+  // Like express does for every http request, give the upgrade request the express request API
+  // (ip resolved behind the trusted proxies, header()...). Registered before the graphql-ws listener.
+  wsServer.on('connection', (_socket, request) => {
+    Object.setPrototypeOf(request, app.request);
+  });
+  const serverCleanup = useServer({
+    ...createSubscriptionServerOptions({ schema, protection, context: extractWsSessionContext }),
+    onConnect: onSessionPresenceConnect,
+    onClose: onSessionPresenceClose,
+  }, wsServer);
 
   apolloServer.addPlugin(ApolloServerPluginDrainHttpServer({ httpServer }));
   apolloServer.addPlugin({

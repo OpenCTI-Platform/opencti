@@ -7,7 +7,7 @@ import { Box, Typography } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { Alert, Checkbox } from '@filigran/design-system';
 
-const enrichmentConnectorsQuery = graphql`
+export const enrichmentConnectorsQuery = graphql`
   query EnrichmentConnectorSelectionQuery($type: String!) {
     enrichmentConnectors(type: $type) {
       id
@@ -16,9 +16,14 @@ const enrichmentConnectorsQuery = graphql`
   }
 `;
 
+export interface EnrichmentConnector {
+  id: string;
+  name: string;
+}
+
 interface EnrichmentConnectorSelectionComponentProps {
-  value: string[];
-  onChange: (value: string[]) => void;
+  value: EnrichmentConnector[];
+  onChange: (value: EnrichmentConnector[]) => void;
   queryRef: PreloadedQuery<EnrichmentConnectorSelectionQuery>;
 }
 
@@ -36,10 +41,12 @@ const EnrichmentConnectorSelectionComponent = ({
     return c;
   });
 
-  const toggleConnector = (connectorId: string) => {
-    const newValue = value.includes(connectorId)
-      ? value.filter((c) => c !== connectorId)
-      : [...value, connectorId];
+  const isSelected = (connectorId: string) => value.some((c) => c.id === connectorId);
+
+  const toggleConnector = (connector: EnrichmentConnector) => {
+    const newValue = isSelected(connector.id)
+      ? value.filter((c) => c.id !== connector.id)
+      : [...value, { id: connector.id, name: connector.name }];
     onChange(newValue);
   };
 
@@ -58,8 +65,8 @@ const EnrichmentConnectorSelectionComponent = ({
         <Box key={connector.id} sx={{ mb: 1 }}>
           <Checkbox
             label={connector.name}
-            checked={value.includes(connector.id)}
-            onCheckedChange={() => toggleConnector(connector.id)}
+            checked={isSelected(connector.id)}
+            onCheckedChange={() => toggleConnector(connector)}
           />
         </Box>
       ))}
@@ -69,8 +76,8 @@ const EnrichmentConnectorSelectionComponent = ({
 
 interface EnrichmentConnectorSelectionProps {
   type: string;
-  value: string[];
-  onChange: (value: string[]) => void;
+  value: EnrichmentConnector[];
+  onChange: (value: EnrichmentConnector[]) => void;
 }
 
 const EnrichmentConnectorSelection = ({

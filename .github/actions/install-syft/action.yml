@@ -1,0 +1,42 @@
+name: Install Syft
+description: >
+  Installs a pinned Syft release on PATH. The release assets are downloaded with bounded
+  retries (a transient GitHub releases 5xx is retried, not fatal) and the archive is
+  verified against the release checksums before use.
+
+inputs:
+  version:
+    description: 'Syft version without the leading "v" (e.g. "1.54.0")'
+    required: false
+    default: "1.54.0"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download, verify and install Syft
+      shell: bash
+      env:
+        SYFT_VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+        case "$(uname -m)" in
+          x86_64) ARCH=amd64 ;;
+          aarch64|arm64) ARCH=arm64 ;;
+          *) echo "::error::Unsupported architecture $(uname -m)"; exit 1 ;;
+        esac
+        BASE_URL="https://github.com/anchore/syft/releases/download/v${SYFT_VERSION}"
+        ARCHIVE="syft_${SYFT_VERSION}_linux_${ARCH}.tar.gz"
+        CHECKSUMS="syft_${SYFT_VERSION}_checksums.txt"
+        INSTALL_DIR="${RUNNER_TEMP}/syft-${SYFT_VERSION}"
+        mkdir -p "${INSTALL_DIR}"
+        cd "${INSTALL_DIR}"
+        for FILE in "${CHECKSUMS}" "${ARCHIVE}"; do
+          curl --fail --silent --show-error --location \
+            --retry 5 --retry-all-errors --retry-delay 5 --retry-max-time 300 \
+            --connect-timeout 20 \
+            --output "${FILE}" "${BASE_URL}/${FILE}"
+        done
+        grep " ${ARCHIVE}\$" "${CHECKSUMS}" | sha256sum --check --strict -
+        tar -xzf "${ARCHIVE}" syft
+        echo "${INSTALL_DIR}" >> "${GITHUB_PATH}"
+        "${INSTALL_DIR}/syft" version

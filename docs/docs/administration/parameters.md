@@ -35,8 +35,41 @@ The **Appearance** card groups the settings that change what users see:
 
 - Default theme
 - Language
+- Date format in tables and Time in tables: how dates are displayed in tables (see [Date and time in tables](#date-and-time-in-tables) below)
 - Hidden entity types: allows you to customize which types of entities you want to see or hide in the platform. This can help you focus on the relevant information and avoid cluttering the platform with unnecessary data.
 - Remove Filigran logos: hides the Filigran logo on the login page and the sidebar (Enterprise Edition).
+
+### Date and time in tables
+
+By default, each table column displays its dates in its own way: some columns show the date only, others the date and the time, and the month and the clock (12-hour or 24-hour) follow the language. Teams that share lists with others, for example a SOC sending incidents and cases to customers, often need the full date and time, in an unambiguous format.
+
+Two settings of the **Appearance** card control how dates are displayed in every table and list of the platform:
+
+| Setting               | Option                                | Display                                                                          |
+|:----------------------|:--------------------------------------|:---------------------------------------------------------------------------------|
+| Date format in tables | Default                               | Date written in the language of the user, as each column displays it today.      |
+|                       | ISO 8601 (`YYYY-MM-DD`)                 | `YYYY-MM-DD`, followed by the time and the time zone offset when a time is shown. |
+| Time in tables        | Default                               | Each column keeps its own choice: date only, or date and time.                   |
+|                       | Date only                             | No time, in every column.                                                        |
+|                       | Hours and minutes (`HH:mm`)             | Time with hours and minutes, in every column.                                    |
+|                       | Hours, minutes and seconds (`HH:mm:ss`) | Time with hours, minutes and seconds, in every column.                           |
+
+For example, with **ISO 8601 (`YYYY-MM-DD`)** and **Hours, minutes and seconds (`HH:mm:ss`)**, a date is displayed as `2026-10-27 15:32:17+01:00`.
+
+Keep in mind that:
+
+- The time is always displayed on a 24-hour clock with `HH:mm`, `HH:mm:ss`, or **ISO 8601**. The clock follows the language only when both settings are **Default**.
+- Times are displayed in the time zone of the browser. With ISO 8601, the offset at the end of the date tells which time zone it is.
+- When a date is too long for its cell, it is cut with an ellipsis; hover the cell to read it in full in a tooltip.
+- An invalid date is displayed as `-`.
+
+These settings apply to all tables and lists: entity and relationship lists, ingestions, audit logs, alerts, news feed, support packages, health operations, connector works, user history, deployed integrations and coverage. They do not change dates displayed outside table cells, such as the history and activity timelines, tooltips and detail panels, enrichment logs, or the names of support package files.
+
+The **Due Date** column, for example in the Tasks list, is an exception: it keeps its date displayed in the language of the user, without time.
+
+#### Override for a user
+
+The platform settings are the default for every user. Each user can choose another display in their profile (top right icon > **Profile**), in the **User experience** card, with the same two settings. There, the first option is named **Platform default**: the user follows the platform setting until they pick another value. A value chosen by the user always takes precedence over the platform one.
 
 
 ## Platform Announcement

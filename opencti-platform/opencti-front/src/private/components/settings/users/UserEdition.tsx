@@ -7,9 +7,11 @@ import UserEditionOrganizationsAdmin from './edition/UserEditionOrganizationsAdm
 import UserEditionOverview from './edition/UserEditionOverview';
 import UserEditionPassword from './edition/UserEditionPassword';
 import UserEditionGroups from './edition/UserEditionGroups';
+import UserEditionDeduplication from './edition/UserEditionDeduplication';
 import { useFormatter } from '../../../../components/i18n';
 import { UserEdition_user$key } from './__generated__/UserEdition_user.graphql';
-import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import useGranted, { INGESTION, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
 import { RootUserEditionQuery$data } from './__generated__/RootUserEditionQuery.graphql';
 import Loader from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
@@ -118,6 +120,9 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
+  const hasSetAccessAndIngestion = useGranted([SETTINGS_SETACCESSES, INGESTION], true);
+  const { isFeatureEnable } = useHelper();
+  const isDeduplicationVisible = isFeatureEnable('INGESTION_DEDUPLICATION') && hasSetAccessAndIngestion;
   const user = useFragment<UserEdition_user$key>(UserEditionFragment, userRef);
   const isServiceAccount = user?.user_service_account;
   const [currentTab, setCurrentTab] = useState('overview');
@@ -134,10 +139,13 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
     >
       {user ? (
         <>
-          <Tabs value={currentTab} onValueChange={handleChangeTab}>
+          <Tabs value={isServiceAccount && currentTab === 'password' ? 'overview' : currentTab} onValueChange={handleChangeTab}>
             <TabsList>
               <TabsTrigger value="overview">{t_i18n('Overview')}</TabsTrigger>
-              <TabsTrigger value="password" disabled={!!user.external || isServiceAccount === true}>{t_i18n('Password')}</TabsTrigger>
+              {/* Service accounts have no password at all, so the tab is not even offered */}
+              {!isServiceAccount && (
+                <TabsTrigger value="password" disabled={!!user.external}>{t_i18n('Password')}</TabsTrigger>
+              )}
               <TabsTrigger value="groups">{t_i18n('Groups')}</TabsTrigger>
               {hasSetAccess && (
                 <TabsTrigger
@@ -148,19 +156,25 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
                 </TabsTrigger>
               )}
               {hasSetAccess && <TabsTrigger value="confidences">{t_i18n('Confidences')}</TabsTrigger>}
+              {isDeduplicationVisible && <TabsTrigger value="deduplication">{t_i18n('Deduplication')}</TabsTrigger>}
             </TabsList>
             <TabsContent value="overview">
               <UserEditionOverview user={user} context={user.editContext} />
             </TabsContent>
-            <TabsContent value="password">
-              <UserEditionPassword user={user} />
-            </TabsContent>
+            {!isServiceAccount && (
+              <TabsContent value="password">
+                <UserEditionPassword user={user} />
+              </TabsContent>
+            )}
             <TabsContent value="groups"><UserEditionGroups user={user} /></TabsContent>
             <TabsContent value="organizations-admin">
               {hasSetAccess && <UserEditionOrganizationsAdmin user={user} />}
             </TabsContent>
             <TabsContent value="confidences">
               {hasSetAccess && <UserEditionConfidence user={user} context={user.editContext} />}
+            </TabsContent>
+            <TabsContent value="deduplication">
+              {isDeduplicationVisible && <UserEditionDeduplication userId={user.id} />}
             </TabsContent>
           </Tabs>
         </>

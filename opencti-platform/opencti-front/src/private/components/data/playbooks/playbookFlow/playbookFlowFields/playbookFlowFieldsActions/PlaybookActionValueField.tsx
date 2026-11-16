@@ -236,6 +236,25 @@ const PlaybookActionValueField = ({
           }}
         />
       );
+    case 'report_types':
+      return (
+        <OpenVocabField
+          name={formValueName}
+          type="report_types_ov"
+          label={t_i18n('Report types')}
+          multiple
+          onChange={(_, reportTypes) => {
+            setFieldValue(
+              valueName,
+              (reportTypes as string[]).map((type) => ({
+                label: type,
+                value: type,
+                patch_value: type,
+              })),
+            );
+          }}
+        />
+      );
     case 'x_mitre_platforms':
       return (
         <OpenVocabField

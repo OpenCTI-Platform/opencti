@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as middlewareLoader from '../../../src/database/middleware-loader';
 import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
+import { StatusScope } from '../../../src/generated/graphql';
 import { WORKFLOW_ROLE_FILTER, WORKFLOW_USER_FILTER } from '../../../src/utils/filtering/filtering-constants';
 
 vi.mock('../../../src/database/middleware-loader', () => ({
@@ -15,7 +16,7 @@ vi.mock('../../../src/database/engine', () => ({
 }));
 
 vi.mock('../../../src/schema/stixCoreObject', () => ({
-  isBasicObject: vi.fn((type) => ['Incident', 'Report'].includes(type)),
+  isBasicObject: vi.fn((type) => ['Incident', 'Report', 'Case-Rfi'].includes(type)),
 }));
 
 vi.mock('../../../src/schema/stixDomainObject', async (importOriginal) => {
@@ -1095,6 +1096,259 @@ describe('Workflow Validation', () => {
       message: "Action 'validateDraft' in transition 'publish' is only allowed for DraftWorkspace workflows",
     }));
   });
+
+  describe('request access definitions', () => {
+    const shareAction = { type: 'shareRequestedEntities', params: { organizations: ['AUTHOR'] } };
+    const requestAccessDefinition = (overrides: Record<string, unknown> = {}) => ({
+      id: 'request-access-id',
+      initialState: 'existing-state',
+      states: [
+        { statusId: 'existing-state' },
+        { statusId: 'approved', requestAccessOutcome: 'APPROVED', onEnter: [shareAction] },
+        { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+      ],
+      transitions: [
+        { from: 'existing-state', to: 'approved', event: 'Accept' },
+        { from: 'existing-state', to: 'declined', event: 'Reject' },
+      ],
+      ...overrides,
+    });
+    const validate = (definition: unknown, entityType = 'Case-Rfi', scope = StatusScope.RequestAccess) => (
+      validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), entityType, undefined, scope)
+    );
+    const errorTypes = (errors: { type: string }[]) => errors.map((e) => e.type);
+
+    it('should return no errors for a valid request-access definition', async () => {
+      expect(await validate(requestAccessDefinition())).toEqual([]);
+    });
+
+    it('should return REQUEST_ACCESS_OUTCOME_COUNT when no state is marked Approved', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state' },
+          { statusId: 'approved', onEnter: [shareAction] },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toContain('REQUEST_ACCESS_OUTCOME_COUNT');
+    });
+
+    it('should return REQUEST_ACCESS_OUTCOME_COUNT when two states are marked Approved', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state', requestAccessOutcome: 'APPROVED', onEnter: [shareAction] },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED', onEnter: [shareAction] },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toContain('REQUEST_ACCESS_OUTCOME_COUNT');
+    });
+
+    it('should return REQUEST_ACCESS_OUTCOME_COUNT when two states are marked Declined', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state', requestAccessOutcome: 'DECLINED' },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED', onEnter: [shareAction] },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toContain('REQUEST_ACCESS_OUTCOME_COUNT');
+    });
+
+    it('should return REQUEST_ACCESS_OUTCOME_UNREACHABLE when the Declined state cannot be reached', async () => {
+      const definition = requestAccessDefinition({
+        transitions: [{ from: 'existing-state', to: 'approved', event: 'Accept' }],
+      });
+      const errors = await validate(definition);
+      expect(errors.find((e) => e.type === 'REQUEST_ACCESS_OUTCOME_UNREACHABLE')?.message).toContain('declined');
+    });
+
+    it('should return REQUEST_ACCESS_OUTCOME_NOT_TERMINAL when a transition leaves the Approved state', async () => {
+      const definition = requestAccessDefinition({
+        transitions: [
+          { from: 'existing-state', to: 'approved', event: 'Accept' },
+          { from: 'existing-state', to: 'declined', event: 'Reject' },
+          { from: 'approved', to: 'declined', event: 'Revoke' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toContain('REQUEST_ACCESS_OUTCOME_NOT_TERMINAL');
+    });
+
+    it('should return REQUEST_ACCESS_OUTCOME_NOT_TERMINAL when a multi-source transition leaves the Declined state', async () => {
+      const definition = requestAccessDefinition({
+        transitions: [
+          { from: 'existing-state', to: 'approved', event: 'Accept' },
+          { from: 'existing-state', to: 'declined', event: 'Reject' },
+          { from: ['declined', 'existing-state'], to: 'existing-state', event: 'Reopen' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toContain('REQUEST_ACCESS_OUTCOME_NOT_TERMINAL');
+    });
+
+    it('should not treat a wildcard source transition as leaving an outcome state', async () => {
+      const definition = requestAccessDefinition({
+        transitions: [
+          { from: 'existing-state', to: 'approved', event: 'Accept' },
+          { from: 'existing-state', to: 'declined', event: 'Reject' },
+          { from: ['*'], to: 'existing-state', event: 'Reopen' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).not.toContain('REQUEST_ACCESS_OUTCOME_NOT_TERMINAL');
+    });
+
+    it('should return REQUEST_ACCESS_OUTCOME_NOT_ALLOWED for a marker in a Global definition', async () => {
+      const errors = await validate(requestAccessDefinition(), 'Case-Rfi', StatusScope.Global);
+      expect(errorTypes(errors)).toContain('REQUEST_ACCESS_OUTCOME_NOT_ALLOWED');
+    });
+
+    it('should return REQUEST_ACCESS_OUTCOME_NOT_ALLOWED for a marker on another entity type', async () => {
+      const errors = await validate(requestAccessDefinition(), 'Report', StatusScope.RequestAccess);
+      expect(errorTypes(errors)).toContain('REQUEST_ACCESS_OUTCOME_NOT_ALLOWED');
+    });
+
+    it('should return MISSING_REQUEST_ACCESS_SHARE_ACTION when the Approved state does not share on enter', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state' },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED' },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toContain('MISSING_REQUEST_ACCESS_SHARE_ACTION');
+    });
+
+    it('should return MISSING_REQUEST_ACCESS_SHARE_ACTION when the share action is only on a transition', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state' },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED' },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+        transitions: [
+          { from: 'existing-state', to: 'approved', event: 'Accept', syncActions: [shareAction] },
+          { from: 'existing-state', to: 'declined', event: 'Reject' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toContain('MISSING_REQUEST_ACCESS_SHARE_ACTION');
+    });
+
+    it('should return REQUEST_ACCESS_SHARE_ACTION_MISPLACED when the initial state shares on enter', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state', onEnter: [shareAction] },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED', onEnter: [shareAction] },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+      });
+      const errors = await validate(definition);
+      expect(errorTypes(errors)).toEqual(['REQUEST_ACCESS_SHARE_ACTION_MISPLACED']);
+      expect(errors[0].message).toContain('existing-state');
+    });
+
+    it('should return REQUEST_ACCESS_SHARE_ACTION_MISPLACED when an intermediate state shares on exit', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state' },
+          { statusId: 'in-progress', onExit: [shareAction] },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED', onEnter: [shareAction] },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+        transitions: [
+          { from: 'existing-state', to: 'in-progress', event: 'Start' },
+          { from: 'in-progress', to: 'approved', event: 'Accept' },
+          { from: 'in-progress', to: 'declined', event: 'Reject' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toEqual(['REQUEST_ACCESS_SHARE_ACTION_MISPLACED']);
+    });
+
+    it('should return REQUEST_ACCESS_SHARE_ACTION_NOT_LAST when an action follows the share on enter of the Approved state', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state' },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED', onEnter: [shareAction, { type: 'log', params: {} }] },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+      });
+      const errors = await validate(definition);
+      expect(errorTypes(errors)).toEqual(['REQUEST_ACCESS_SHARE_ACTION_NOT_LAST']);
+      expect(errors[0].message).toBe("Action 'shareRequestedEntities' on state 'approved' must be the last action on enter of the Approved state");
+    });
+
+    it('should accept actions before the share on enter of the Approved state', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state' },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED', onEnter: [{ type: 'log', params: {} }, shareAction] },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toEqual([]);
+    });
+
+    it('should return REQUEST_ACCESS_SHARE_ACTION_MISPLACED when the Declined state shares on enter', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state' },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED', onEnter: [shareAction] },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED', onEnter: [shareAction] },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toEqual(['REQUEST_ACCESS_SHARE_ACTION_MISPLACED']);
+    });
+
+    it('should return REQUEST_ACCESS_SHARE_ACTION_MISPLACED when the Approved state shares on exit', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state' },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED', onEnter: [shareAction], onExit: [shareAction] },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toEqual(['REQUEST_ACCESS_SHARE_ACTION_MISPLACED']);
+    });
+
+    it('should return REQUEST_ACCESS_SHARE_ACTION_MISPLACED when a transition carries the share action', async () => {
+      const definition = requestAccessDefinition({
+        transitions: [
+          { from: 'existing-state', to: 'approved', event: 'Accept', syncActions: [shareAction] },
+          { from: 'existing-state', to: 'declined', event: 'Reject', syncActions: [shareAction] },
+        ],
+      });
+      const errors = await validate(definition);
+      expect(errorTypes(errors).filter((type) => type === 'REQUEST_ACCESS_SHARE_ACTION_MISPLACED')).toHaveLength(2);
+      expect(errors.map((e) => e.message).join(' ')).toContain('Accept');
+    });
+
+    it('should return REQUEST_ACCESS_SHARE_ACTION_NOT_ALLOWED for the share action in a Global Case-Rfi definition', async () => {
+      const definition = {
+        initialState: 'existing-state',
+        states: [{ statusId: 'existing-state' }, { statusId: 'in-progress', onEnter: [shareAction] }],
+        transitions: [{ from: 'existing-state', to: 'in-progress', event: 'start' }],
+      };
+      const errors = await validate(definition, 'Case-Rfi', StatusScope.Global);
+      expect(errorTypes(errors)).toEqual(['REQUEST_ACCESS_SHARE_ACTION_NOT_ALLOWED']);
+    });
+
+    it('should return REQUEST_ACCESS_SHARE_ACTION_NOT_ALLOWED for the share action in a transition on another entity type', async () => {
+      const definition = {
+        initialState: 'existing-state',
+        states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
+        transitions: [{ from: 'existing-state', to: 'in-progress', event: 'start', syncActions: [shareAction] }],
+      };
+      const errors = await validate(definition, 'Report', StatusScope.RequestAccess);
+      expect(errorTypes(errors)).toEqual(['REQUEST_ACCESS_SHARE_ACTION_NOT_ALLOWED']);
+    });
+
+    it('should not add request-access errors to a Global definition without markers or share action', async () => {
+      const definition = {
+        initialState: 'existing-state',
+        states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
+        transitions: [{ from: 'existing-state', to: 'in-progress', event: 'start' }],
+      };
+      expect(await validate(definition, 'Case-Rfi', StatusScope.Global)).toEqual([]);
+    });
+  });
 });
 
 describe('Workflow Validation – transition comment field', () => {
@@ -1281,5 +1535,86 @@ describe('Workflow Validation – transition comment field', () => {
 
     const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Task');
     expect(errors.some((e) => e.type === 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_ENTITY_TYPE')).toBe(true);
+  });
+});
+
+describe('Workflow Validation – transition closingReason field', () => {
+  const makeDefinition = (closingReason: string) => ({
+    initialState: 'existing-state',
+    states: [{ statusId: 'existing-state' }, { statusId: 'closed' }],
+    transitions: [
+      { from: 'existing-state', to: 'closed', event: 'close', closingReason },
+    ],
+  });
+
+  it.each(['allowed', 'required', 'disabled'])('should pass with closing reason mode %s on a domain object type', async (mode) => {
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(makeDefinition(mode)), 'Incident');
+    expect(result).toHaveLength(0);
+  });
+
+  it('should fail when the closing reason mode is invalid', async () => {
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(makeDefinition('invalid_mode')), 'Incident');
+    expect(result.some((e) => e.type === 'SCHEMA_VALIDATION_FAILED')).toBe(true);
+  });
+
+  it('should fail when a closing reason is enabled on a type without the closing reason attribute', async () => {
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(makeDefinition('allowed')), 'DraftWorkspace');
+    expect(result).toContainEqual(expect.objectContaining({
+      type: 'CLOSING_REASON_NOT_SUPPORTED',
+      message: "Closing reason in transition 'close' is only supported for domain objects",
+    }));
+  });
+
+  it('should accept a disabled closing reason on a type without the closing reason attribute', async () => {
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(makeDefinition('disabled')), 'DraftWorkspace');
+    expect(result.some((e) => e.type === 'CLOSING_REASON_NOT_SUPPORTED')).toBe(false);
+  });
+
+  describe('closing reason into a final state', () => {
+    const makeWorkflow = (extraTransitions: object[] = []) => ({
+      initialState: 'new',
+      states: [{ statusId: 'new' }, { statusId: 'in_progress' }, { statusId: 'closed' }],
+      transitions: [
+        { from: 'new', to: 'in_progress', event: 'start' },
+        { from: 'in_progress', to: 'closed', event: 'close', closingReason: 'required' },
+        ...extraTransitions,
+      ],
+    });
+
+    it('should accept a closing reason on a transition into a state no transition leaves', async () => {
+      const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(makeWorkflow()), 'Incident');
+      expect(result).toHaveLength(0);
+    });
+
+    it.each([
+      ['a way back', { from: 'closed', to: 'in_progress', event: 'reopen' }],
+      ['a transition on itself', { from: 'closed', to: 'closed', event: 'share' }],
+    ])('should fail when the target state is left by %s', async (_, leaving) => {
+      const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(makeWorkflow([leaving])), 'Incident');
+      expect(result).toEqual([expect.objectContaining({
+        type: 'CLOSING_REASON_NOT_FINAL',
+        message: "Closing reason in transition 'close' is only allowed into a final state, but transitions leave 'closed'",
+      })]);
+    });
+
+    it('should not depend on the order of the transitions', async () => {
+      const definition = makeWorkflow([{ from: 'closed', to: 'in_progress', event: 'reopen' }]);
+      definition.transitions.reverse();
+      const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), 'Incident');
+      expect(result.map((e) => e.type)).toEqual(['CLOSING_REASON_NOT_FINAL']);
+    });
+
+    it('should fail when a closing reason leads to any state', async () => {
+      const definition = {
+        initialState: 'new',
+        states: [{ statusId: 'new' }],
+        transitions: [{ from: 'new', to: '*', event: 'close', closingReason: 'allowed' }],
+      };
+      const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), 'Incident');
+      expect(result).toContainEqual(expect.objectContaining({
+        type: 'CLOSING_REASON_ANY_STATE',
+        message: "Closing reason in transition 'close' is not allowed on a transition to any state",
+      }));
+    });
   });
 });

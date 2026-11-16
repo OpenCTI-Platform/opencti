@@ -17,7 +17,9 @@ import { useChatbot } from './ChatbotContext';
  * available in full CE (metrics only).
  *
  * Uses the library IconButton in its `ia` variant, so it gets the same shape and
- * hover halo as the other top-bar actions and the AI tint comes from the token.
+ * hover halo as the other top-bar actions. The `ia` variant tints a label only:
+ * the glyph keeps `currentColor`, so it is painted AI purple with the token, like
+ * the Ask Ariane icon beside it and the OpenAEV CTEM Command Center button.
  */
 const CtemCommandCenterButton = () => {
   const { t_i18n } = useFormatter();
@@ -41,7 +43,7 @@ const CtemCommandCenterButton = () => {
           priority="tertiary"
           onClick={() => window.open(safeXtmOneUrl, '_blank', 'noopener,noreferrer')}
           aria-label={t_i18n('CTEM Command Center')}
-          icon={<RadarOutlined fontSize="medium" />}
+          icon={<RadarOutlined fontSize="medium" style={{ color: 'var(--color-filigran-ia-primary)' }} />}
         />
       </TooltipTrigger>
       {/* The library tooltip does not lower-case its text, so "CTEM" and

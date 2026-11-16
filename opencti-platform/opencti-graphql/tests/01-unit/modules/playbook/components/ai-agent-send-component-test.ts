@@ -186,7 +186,7 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
       expect(result.forceBundleTracking).toBe(true);
     });
 
-    it('should terminate cleanly (bundle tracked) even when the agent call fails (callXtmAgent returns null)', async () => {
+    it('should terminate cleanly (bundle tracked) when the agent call was skipped or answered no content (callXtmAgent returns null)', async () => {
       vi.mocked(callXtmAgent).mockResolvedValue(null);
 
       const result = await PLAYBOOK_AI_AGENT_SEND_COMPONENT.executor(
@@ -197,6 +197,15 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
       expect(result.output_port).toBeUndefined();
       expect(result.bundle).toBe(BUNDLE);
       expect(result.forceBundleTracking).toBe(true);
+    });
+
+    it('should fail the step when XTM One could not answer after the retries (the run history shows it)', async () => {
+      const failure = new Error('XTM One agent agent-x call failed (HTTP 503, provider_unavailable) after 3 attempts: All configured AI providers failed');
+      vi.mocked(callXtmAgent).mockRejectedValueOnce(failure);
+
+      await expect(PLAYBOOK_AI_AGENT_SEND_COMPONENT.executor(
+        buildExecutorParams({ agent_slug: 'agent-x' }),
+      )).rejects.toBe(failure);
     });
 
     it('should resolve the JWT identity ONCE from the configured run-as user and forward it to both the binding check and the agent call', async () => {

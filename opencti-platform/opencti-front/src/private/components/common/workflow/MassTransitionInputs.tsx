@@ -25,7 +25,7 @@ const ReportInputs = ({ values, isValid, onChange }: { values: TransitionInputVa
   return null;
 };
 
-// The comment and organizations of a mass transition, collected once for every entity, with the
+// The comment, closing reason and organizations of a mass transition, collected once for every entity, with the
 // fields and rules of the single-entity transition wizard
 const MassTransitionInputs = ({ requirements, onChange }: MassTransitionInputsProps) => {
   const { t_i18n } = useFormatter();
@@ -37,7 +37,11 @@ const MassTransitionInputs = ({ requirements, onChange }: MassTransitionInputsPr
         <div className="flex flex-col gap-6">
           {/* Checked synchronously: Formik reports a form as valid until its first validation run */}
           <ReportInputs values={values} isValid={schema.isValidSync(values)} onChange={onChange} />
-          <WorkflowTransitionInputs requirements={requirements} canBypassMandatoryFields={canBypassMandatoryFields} commentLength={values.comment.length} />
+          <WorkflowTransitionInputs
+            requirements={requirements}
+            canBypassMandatoryFields={canBypassMandatoryFields}
+            commentLength={values.comment.length}
+          />
         </div>
       )}
     </Formik>

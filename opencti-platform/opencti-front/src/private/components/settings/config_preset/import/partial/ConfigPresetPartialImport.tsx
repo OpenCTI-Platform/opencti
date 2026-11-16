@@ -1,0 +1,273 @@
+import React, { FunctionComponent, useEffect, useState } from 'react';
+import { graphql } from 'react-relay';
+import { DialogActions } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { Checkbox, Text } from '@filigran/design-system';
+import Button from '@common/button/Button';
+import { useFormatter } from '../../../../../../components/i18n';
+import type { Theme } from '../../../../../../components/Theme';
+import useApiMutation from '../../../../../../utils/hooks/useApiMutation';
+import { type ConfigImportMode, isConfigImportMode } from '../../configImportMode';
+import ConfigPresetBundleFileSelect from '../ConfigPresetBundleFileSelect';
+import ConfigPresetImportModeSelect from '../ConfigPresetImportModeSelect';
+import ConfigPresetResultLine from '../ConfigPresetResultLine';
+import { toConfigPresetSummaryCounts } from '../ConfigPresetImportResult';
+import { ConfigPresetLockedTypeRow } from '../../ConfigPresetSelectionAccordion';
+import useConfigPresetLockedTypes from '../../useConfigPresetLockedTypes';
+import {
+  partialImportConflictKeys,
+  partialImportItemModes,
+  partialImportSelectedKeys,
+  sharedPartialImportMode,
+  toggleSelectedKey,
+  withPartialImportModeForItems,
+} from './configPresetPartialImportSelection';
+import { ConfigPresetPartialImportPreviewMutation, ConfigPresetPartialImportPreviewMutation$data } from './__generated__/ConfigPresetPartialImportPreviewMutation.graphql';
+import { ConfigPresetPartialImportMutation, ConfigPresetPartialImportMutation$data } from './__generated__/ConfigPresetPartialImportMutation.graphql';
+
+const configPresetPartialImportPreviewMutation = graphql`
+  mutation ConfigPresetPartialImportPreviewMutation($file: Upload!, $type: ID!) {
+    configPresetPartialImportPreview(file: $file, type: $type) {
+      bundle_name
+      default_mode
+      type {
+        key
+        label
+        description
+        lockedByEnterpriseEdition
+        modes
+        items {
+          key
+          label
+          translatable
+          exists
+          conflict
+        }
+      }
+    }
+  }
+`;
+
+const configPresetPartialImportMutation = graphql`
+  mutation ConfigPresetPartialImportMutation($file: Upload!, $type: ID!, $items: [ID!]!, $item_modes: [ConfigPresetItemModeInput!]) {
+    configPresetPartialImport(file: $file, type: $type, items: $items, item_modes: $item_modes) {
+      results {
+        type
+        key
+        status
+        reason
+        code
+        label
+        translatable
+      }
+      counts {
+        created
+        overwritten
+        skipped
+        failed
+      }
+    }
+  }
+`;
+
+type Preview = ConfigPresetPartialImportPreviewMutation$data['configPresetPartialImportPreview'];
+type Output = ConfigPresetPartialImportMutation$data['configPresetPartialImport'];
+
+interface ConfigPresetPartialImportProps {
+  // The key of the configuration preset type to take from the bundle (branding for the themes...)
+  type: string;
+  // What the dialog calls the items of the type, already translated (the themes...)
+  itemsLabel: string;
+  // After a real import, so that the screen reads its items again
+  onImported?: () => void;
+  // While the bundle is read or imported: the dialog must keep this component mounted (no change of source, no dismissal),
+  // otherwise the result of an import that goes on on the server is lost
+  onBusyChange?: (busy: boolean) => void;
+  // Back to the previous step of the dialog, before the import
+  onBack?: () => void;
+  // The Close of the result
+  onClose: () => void;
+}
+
+// The partial import of one type from a full configuration bundle, to put in a dialog: the bundle is picked, the items of the type
+// are listed (every one selected), then the selected ones are imported. An item that already exists is added as a copy by default.
+// Generic: any screen can offer it for its own type, the backend imports any type that has an importer.
+const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProps> = ({ type, itemsLabel, onImported, onBusyChange, onBack, onClose }) => {
+  const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<Preview | null>(null);
+  const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
+  const [modes, setModes] = useState<Record<string, ConfigImportMode>>({});
+  const [output, setOutput] = useState<Output | null>(null);
+  const [commitPreview, previewing] = useApiMutation<ConfigPresetPartialImportPreviewMutation>(configPresetPartialImportPreviewMutation);
+  const [commitImport, importing] = useApiMutation<ConfigPresetPartialImportMutation>(configPresetPartialImportMutation);
+  const busy = previewing || importing;
+  useEffect(() => {
+    onBusyChange?.(busy);
+  }, [busy]);
+  // Unmounted (the dialog closed): no longer busy
+  useEffect(() => () => onBusyChange?.(false), []);
+
+  const items = preview?.type?.items ?? [];
+  const defaultMode = isConfigImportMode(preview?.default_mode ?? '') ? preview?.default_mode as ConfigImportMode : null;
+  const conflictKeys = partialImportConflictKeys(items, selected);
+  const itemLabel = (item: { label: string; translatable: boolean }) => (item.translatable ? t_i18n(item.label) : item.label);
+
+  // The preview of the file, every item selected
+  const loadPreview = (value: File) => {
+    commitPreview({
+      variables: { file: value, type },
+      onCompleted: (data) => {
+        const result = data.configPresetPartialImportPreview;
+        setPreview(result);
+        setSelected(partialImportSelectedKeys(result.type?.items ?? []));
+      },
+      onError: () => setFile(null),
+    });
+  };
+
+  const handleFile = (value: File) => {
+    setFile(value);
+    setPreview(null);
+    setModes({});
+    loadPreview(value);
+  };
+
+  // When the license changes (the locked row opens its dialog), the same file is read again, as the wizard reads its types again:
+  // a type the Enterprise Edition locked comes with its items, all selected by the new preview, so there is nothing more to select
+  useConfigPresetLockedTypes(preview?.type ? [preview.type] : null, () => {
+    if (file) {
+      loadPreview(file);
+    }
+  }, () => undefined);
+
+  const handleImport = () => {
+    if (!file) return;
+    const selectedItems = items.filter(({ key }) => selected.has(key));
+    commitImport({
+      variables: {
+        file,
+        type,
+        items: selectedItems.map(({ key }) => key),
+        item_modes: defaultMode ? partialImportItemModes(selectedItems, modes, defaultMode) : [],
+      },
+      onCompleted: (data) => {
+        setOutput(data.configPresetPartialImport);
+        onImported?.();
+      },
+    });
+  };
+
+  if (output) {
+    return (
+      <>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5) }} data-testid="config-preset-partial-import-result">
+          <Text variant="content-base">
+            {t_i18n('{created} created, {overwritten} overwritten, {unchanged} up to date, {skipped} skipped, {failed} failed', {
+              values: toConfigPresetSummaryCounts(output.counts, output.results),
+            })}
+          </Text>
+          {output.results.map((result) => (
+            <ConfigPresetResultLine key={`${result.type}/${result.key}`} label={itemLabel(result)} status={result.status} reason={result.reason} code={result.code} />
+          ))}
+        </div>
+        <DialogActions>
+          <Button onClick={onClose}>{t_i18n('Close')}</Button>
+        </DialogActions>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: theme.spacing(2) }}>
+        <Text variant="content-base">{t_i18n('Select the configuration bundle (zip) exported from another platform.')}</Text>
+        <ConfigPresetBundleFileSelect
+          value={file}
+          loading={previewing}
+          disabled={previewing || importing}
+          data-testid="config-preset-partial-import-file"
+          onFileChange={(value) => {
+            if (value) {
+              handleFile(value);
+            } else {
+              setFile(null);
+              setPreview(null);
+            }
+          }}
+        />
+        {preview && preview.bundle_name && (
+          <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>
+            {t_i18n('Bundle: {name}', { values: { name: preview.bundle_name } })}
+          </Text>
+        )}
+        {/* A type of the Enterprise Edition on a platform without it comes with no item: the lock, before the empty bundle */}
+        {preview?.type?.lockedByEnterpriseEdition && (
+          <ConfigPresetLockedTypeRow type={preview.type} title="Activate the Enterprise Edition to import this item" />
+        )}
+        {preview && !preview.type?.lockedByEnterpriseEdition && items.length === 0 && (
+          <Text variant="content-base">{t_i18n('This configuration bundle holds no {items}.', { values: { items: itemsLabel } })}</Text>
+        )}
+        {items.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1), width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1) }}>
+              <Text variant="content-base">{t_i18n('Select the {items} to import', { values: { items: itemsLabel } })}</Text>
+              {/* The same mode for every selected item in conflict, from two of them, as the wizard does on the row of a type */}
+              {defaultMode && conflictKeys.length > 1 && (preview?.type?.modes.length ?? 0) > 1 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }} data-testid="config-preset-partial-import-apply-to-all">
+                  <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{t_i18n('Apply to all')}</Text>
+                  <ConfigPresetImportModeSelect
+                    subject={itemsLabel}
+                    modes={preview?.type?.modes ?? []}
+                    value={sharedPartialImportMode(modes, conflictKeys, defaultMode)}
+                    purpose="Apply to all"
+                    disabled={importing}
+                    onChange={(mode) => setModes(withPartialImportModeForItems(modes, conflictKeys, mode))}
+                  />
+                </div>
+              )}
+            </div>
+            {/* Only the list scrolls: the stepper, the file and the actions stay in view, however many items the bundle holds */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1), maxHeight: '40vh', overflowY: 'auto' }} data-testid="config-preset-partial-import-items">
+              {items.map((item) => (
+                <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1) }}>
+                  <Checkbox
+                    label={itemLabel(item)}
+                    description={item.conflict ? t_i18n('Already exists') : undefined}
+                    checked={selected.has(item.key)}
+                    disabled={importing}
+                    onCheckedChange={() => setSelected(toggleSelectedKey(selected, item.key))}
+                  />
+                  {item.conflict && defaultMode && selected.has(item.key) && (
+                    <ConfigPresetImportModeSelect
+                      subject={itemLabel(item)}
+                      modes={preview?.type?.modes ?? []}
+                      value={modes[item.key] ?? defaultMode}
+                      purpose="When it already exists"
+                      disabled={importing}
+                      onChange={(mode) => setModes({ ...modes, [item.key]: mode })}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      {/* No Cancel: the close button of the dialog is enough */}
+      <DialogActions>
+        {onBack && <Button variant="secondary" onClick={onBack} disabled={busy}>{t_i18n('Back')}</Button>}
+        <Button
+          onClick={handleImport}
+          disabled={!file || selected.size === 0 || previewing || importing}
+          data-testid="config-preset-partial-import-submit"
+        >
+          {t_i18n('Import')}
+        </Button>
+      </DialogActions>
+    </>
+  );
+};
+
+export default ConfigPresetPartialImport;

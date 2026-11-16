@@ -2,7 +2,9 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
-import GraphContextMenu, { type GraphContextMenuSection, graphContextMenuSections } from './GraphContextMenu';
+import GraphContextMenu, { type GraphContextMenuSection, graphContextMenuSections, registeredSelectionMenuActions } from './GraphContextMenu';
+import { registerGraphSelectionAction } from '../badges/graphSelectionActionRegistry';
+import { graphNode } from '../../../utils/tests/graphTestData';
 
 describe('GraphContextMenu', () => {
   it('lists the actions of each section under its name, says why one cannot run, and runs the chosen one', async () => {
@@ -115,5 +117,61 @@ describe('graphContextMenuSections', () => {
     expect(keys(graphContextMenuSections({ selection, graph }))).toEqual(['selection', 'graph']);
     expect(keys(graphContextMenuSections({ element: entity, graph }))).toEqual(['node']);
     expect(keys(graphContextMenuSections({ graph }))).toEqual(['graph']);
+  });
+});
+
+describe('registeredSelectionMenuActions', () => {
+  const malware = graphNode();
+  const selection = { nodes: [malware], links: [] };
+  const t_i18n = (message: string) => `t:${message}`;
+
+  it('lists the actions registered for the selection on this surface, disabled with their reason or with their choices', async () => {
+    const enrich = vi.fn();
+    const cleanups = [
+      registerGraphSelectionAction({
+        id: 'loading',
+        icon: () => null,
+        label: (t) => t('Loading action'),
+        isAvailable: (_, context) => context === 'investigation',
+        disabledReason: (_, t) => t('Loading'),
+        options: () => ({ items: [{ key: 'never', label: 'Never shown' }], onSelect: vi.fn() }),
+      }),
+      registerGraphSelectionAction({
+        id: 'enrichment',
+        icon: () => null,
+        label: (t) => t('Enrichment'),
+        isAvailable: (_, context) => context === 'investigation',
+        options: (s) => ({ items: s.nodes.map((n) => ({ key: n.id, label: n.label })), onSelect: enrich }),
+      }),
+    ];
+    try {
+      expect(registeredSelectionMenuActions(selection, 'correlation', t_i18n)).toEqual([]);
+      const actions = registeredSelectionMenuActions(selection, 'investigation', t_i18n);
+      expect(actions.map((a) => a.id)).toEqual(['registered-enrichment', 'registered-loading']);
+
+      testRender(<GraphContextMenu anchor={{ x: 0, y: 0 }} label="Graph actions" onClose={vi.fn()} sections={[{ key: 'selection', actions }]} />);
+      const menu = await screen.findByRole('menu', { name: 'Graph actions' });
+      const loading = within(menu).getByRole('menuitem', { name: /t:Loading action/ });
+      expect(loading).toHaveAttribute('aria-disabled', 'true');
+      expect(loading).not.toHaveAttribute('aria-haspopup');
+      expect(within(menu).getByText('t:Loading')).toBeInTheDocument();
+      expect(within(menu).getByRole('menuitem', { name: /t:Enrichment/ })).toHaveAttribute('aria-haspopup', 'menu');
+
+      actions[0].options?.onSelect(malware.id);
+      expect(enrich).toHaveBeenCalledWith(malware.id);
+    } finally {
+      cleanups.forEach((cleanup) => cleanup());
+    }
+  });
+
+  it('runs an action without choices on the selection', () => {
+    const hunt = vi.fn();
+    const cleanup = registerGraphSelectionAction({ id: 'hunt', icon: () => null, label: () => 'Hunt', isAvailable: () => true, onSelect: hunt });
+    try {
+      registeredSelectionMenuActions(selection, undefined, t_i18n)[0].onSelect?.();
+      expect(hunt).toHaveBeenCalledWith(selection);
+    } finally {
+      cleanup();
+    }
   });
 });

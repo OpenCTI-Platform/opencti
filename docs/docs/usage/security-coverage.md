@@ -50,7 +50,7 @@ With the XTM Suite, OpenCTI can request OpenAEV to run an automated evaluation o
 To activate this feature, make sure the following requirements are met:
 
 * An active OpenAEV instance or tenant, [here is the dedicated documentation](https://docs.openaev.io/)
-* That same instance must be configured as an Enrichment Connector by a system administrator ([see the specific documentation](https://docs.openaev.io/latest/usage/xtm-suite-connector/)). An OpenCTI Administrator will need to generate an API token for the connector to use.    
+* That same instance must be configured as an Enrichment Connector by a system administrator ([see the specific documentation](https://docs.openaev.io/latest/integrations/xtm-suite/xtm-suite-connector/)). An OpenCTI Administrator will need to generate an API token for the connector to use.    
  
 !!! note "Compatibility requirement"
 

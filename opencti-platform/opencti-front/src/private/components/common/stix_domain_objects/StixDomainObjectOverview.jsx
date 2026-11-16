@@ -39,7 +39,7 @@ import ObjectAssigneeField from '../form/ObjectAssigneeField';
 import ObjectParticipantField from '../form/ObjectParticipantField';
 import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';
 import { stixDomainObjectMutation } from './StixDomainObjectHeader';
-import { WorkflowStatusForEntity } from '../workflow/WorkflowStatus';
+import { WorkflowClosingReasonForEntity, WorkflowStatusForEntity } from '../workflow/WorkflowStatus';
 import { WorkflowTransitionsForEntity } from '../workflow/WorkflowTransitions';
 import { isWorkflowUiEnabledForType } from '../workflow/workflowFeatureFlag';
 
@@ -232,13 +232,16 @@ const StixDomainObjectOverview = ({
                   {t_i18n('Processing status')}
                 </Label>
                 {isWorkflowUiEnabledForType(stixDomainObject.entity_type, isFeatureEnable) ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
-                    <WorkflowStatusForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} fallback={legacyStatus}>
-                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                        <WorkflowTransitionsForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} />
-                      </Security>
-                    </WorkflowStatusForEntity>
-                  </Box>
+                  <>
+                    <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                      <WorkflowStatusForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} fallback={legacyStatus}>
+                        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                          <WorkflowTransitionsForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} />
+                        </Security>
+                      </WorkflowStatusForEntity>
+                    </Box>
+                    <WorkflowClosingReasonForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} />
+                  </>
                 ) : legacyStatus}
               </>
             )}

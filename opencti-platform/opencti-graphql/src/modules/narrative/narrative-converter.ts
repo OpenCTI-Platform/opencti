@@ -10,7 +10,7 @@ export const convertNarrativeToStix_2_1 = (instance: StoreEntityNarrative): Stix
     ...stixDomainObject,
     name: instance.name,
     description: instance.description,
-    aliases: instance.x_opencti_aliases ?? [],
+    aliases: instance.aliases ?? [],
     narrative_types: instance.narrative_types ?? [],
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
@@ -29,6 +29,6 @@ export const convertNarrativeToStix_2_0 = (instance: StoreEntityNarrative): Stix
     name: instance.name,
     description: instance.description,
     narrative_types: instance.narrative_types ?? [],
-    aliases: instance.x_opencti_aliases ?? [],
+    aliases: instance.aliases ?? [],
   };
 };

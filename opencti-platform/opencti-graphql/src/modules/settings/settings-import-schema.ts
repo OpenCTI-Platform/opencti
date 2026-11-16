@@ -30,3 +30,18 @@ export const messageConfigurationSchemas = {
   consent: z.strictObject({ platform_consent_message: text, platform_consent_confirm_text: text }),
   noAccess: z.strictObject({ platform_no_access_message: text }),
 };
+
+const policyCount = z.number().int().min(0).nullish();
+
+export const policiesConfigurationSchema = z.strictObject({
+  view_all_users: z.boolean().nullish(),
+  password_policy_min_length: policyCount,
+  password_policy_max_length: policyCount,
+  password_policy_min_symbols: policyCount,
+  password_policy_min_numbers: policyCount,
+  password_policy_min_words: policyCount,
+  password_policy_min_lowercase: policyCount,
+  password_policy_min_uppercase: policyCount,
+  password_policy_validity_days: policyCount,
+  platform_organization: z.strictObject({ standard_id: z.string().min(1), name: z.string().max(MAX_SHORT_LENGTH) }).nullish(),
+});

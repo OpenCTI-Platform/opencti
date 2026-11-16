@@ -16,11 +16,21 @@ describe('ConfigPresetResultLine', () => {
     expect(screen.getByText('name: Too small')).toBeInTheDocument();
   });
 
+  it('leaves the reason to the row that shows it under its label', () => {
+    testRender(<ConfigPresetResultLine status="FAILED" reason="Theme already exists" withoutReason />);
+    expect(screen.getByText('Failed')).toBeInTheDocument();
+    expect(screen.queryByText('Theme already exists')).not.toBeInTheDocument();
+  });
+
   it.each([
     ['Already exists', 'Already exists'],
     ['Nothing to import', 'Nothing to import'],
     ['Unexpected item id', 'Unexpected item id'],
     ['Unknown message', 'Unknown message'],
+    ['Unknown rule', 'Unknown rule'],
+    ['Activating the rule starts a scan of the knowledge base', 'Activating the rule starts a scan of the knowledge base'],
+    ['Deactivating the rule starts a scan that deletes what it inferred', 'Deactivating the rule starts a scan that deletes what it inferred'],
+    ['The rule engine is disabled', 'The rule engine is disabled'],
     ['The standard id of the theme does not match its id', 'The standard id of the theme does not match its id'],
     ['The standard id of the theme is required to overwrite it', 'The standard id of the theme is required to overwrite it'],
     ['Requires Enterprise Edition', 'Requires Enterprise Edition'],
@@ -31,9 +41,76 @@ describe('ConfigPresetResultLine', () => {
     ['Default theme Dark could not be imported', 'Default theme Dark could not be imported'],
     ['Entity types that cannot be hidden: Foo, Bar', 'Entity types that cannot be hidden: Foo, Bar'],
     ['Entity types shown again: Channel, Report', 'Entity types shown again: Channel, Report'],
+    ['The standard id of the role does not match its name', 'The standard id of the role does not match its name'],
+    ['Role already exists', 'Role already exists'],
+    ['Role name already exists', 'Role name already exists'],
+    ['The Administrator role keeps the bypass capability', 'The Administrator role keeps the bypass capability'],
+    ['Grants sensitive rights', 'Grants sensitive rights'],
+    ['Unknown capabilities: FOO, BAR', 'Unknown capabilities: FOO, BAR'],
+    ['Capabilities not available in draft: SETTINGS_SETACCESSES', 'Capabilities not available in draft: SETTINGS_SETACCESSES'],
+    ['The standard id of the group does not match its name', 'The standard id of the group does not match its name'],
+    ['Group already exists', 'Group already exists'],
+    ['Group name already exists', 'Group name already exists'],
+    ['New users join this group automatically', 'New users join this group automatically'],
+    ['New integration users join this group automatically', 'New integration users join this group automatically'],
+    ['Roles could not be imported: Analyst', 'Roles could not be imported: Analyst'],
+    ['Markings not found: TLP:AMBER, PAP:RED', 'Markings not found: TLP:AMBER, PAP:RED'],
+    ['Default dashboard not found: SOC overview', 'Default dashboard not found: SOC overview'],
+    ['Roles removed: Hunter', 'Roles removed: Hunter'],
+    ['Markings removed: PAP:RED', 'Markings removed: PAP:RED'],
+    ['Capabilities removed: EXPLORE', 'Capabilities removed: EXPLORE'],
+    ['Capabilities in draft removed: KNOWLEDGE_KNUPDATE', 'Capabilities in draft removed: KNOWLEDGE_KNUPDATE'],
+    ['The main organization requires the Enterprise Edition', 'The main organization requires the Enterprise Edition'],
+    ['Main organization not found: Filigran', 'Main organization not found: Filigran'],
+    ['Requires the right to manage the sensitive configuration', 'Requires the right to manage the sensitive configuration'],
+    ['The Administrators group keeps the Administrator role', 'The Administrators group keeps the Administrator role'],
+    ['Removes sensitive rights', 'Removes sensitive rights'],
+    ['Shareable markings not allowed by the group: TLP:RED', 'Shareable markings not allowed by the group: TLP:RED'],
+    ['Built-in marking', 'Built-in marking'],
+    ['The order of the marking changes', 'The order of the marking changes'],
+    ['Groups that get new markings automatically get this one', 'Groups that get new markings automatically get this one'],
+    ['Sets the main organization: Filigran', 'Sets the main organization: Filigran'],
+    ["The expiration date of the users' passwords changes", "The expiration date of the users' passwords changes"],
+    ["The users' passwords no longer expire", "The users' passwords no longer expire"],
+    ['Users can view the users of other organizations', 'Users can view the users of other organizations'],
+    ['Several case templates have this name', 'Several case templates have this name'],
+    ['The standard id of the label does not match its value', 'The standard id of the label does not match its value'],
+    ['The standard id of the kill chain phase does not match its names', 'The standard id of the kill chain phase does not match its names'],
+    ['The standard id of the status template does not match its name', 'The standard id of the status template does not match its name'],
+    ['The id of the vocabulary category does not match its category', 'The id of the vocabulary category does not match its category'],
+    ['This vocabulary category is closed, new values cannot be added', 'This vocabulary category is closed, new values cannot be added'],
+    ['Vocabulary entries already exist', 'Vocabulary entries already exist'],
+    ['The name is an alias of the vocabulary entry fimi-report', 'The name is an alias of the vocabulary entry fimi-report'],
+    ['The alias taken belongs to another vocabulary entry', 'The alias taken belongs to another vocabulary entry'],
+    ['Connector already exists', 'Connector already exists'],
+    ['A connector that is not managed by the platform has this name', 'A connector that is not managed by the platform has this name'],
+    ['Connector name already exists', 'Connector name already exists'],
+    ['There is no connector manager configured', 'There is no connector manager configured'],
+    ['You have not defined a default group for ingestion users', 'You have not defined a default group for ingestion users'],
+    ['Service account not found', 'Service account not found'],
+    ['The confidence level of the service account is not changed', 'The confidence level of the service account is not changed'],
+    ['Configuration to provide: MITRE_API_KEY', 'Configuration to provide: MITRE_API_KEY'],
+    ['Connector not available on this platform: opencti/connector-mitre', 'Connector not available on this platform: opencti/connector-mitre'],
   ])('translates the reason %s', (reason, text) => {
     testRender(<ConfigPresetResultLine label="Theme" status="SKIPPED" reason={reason} />);
     expect(screen.getByText(text)).toBeInTheDocument();
+  });
+
+  it('translates each reason of an item that has several, and shows them on one line', () => {
+    testRender(<ConfigPresetResultLine label="Group" status="CREATED" reason={'Added as "SOC (1)"\nMarkings not found: PAP:RED'} />);
+    expect(screen.getByText('Added as "SOC (1)" · Markings not found: PAP:RED')).toBeInTheDocument();
+  });
+
+  it('translates the reason of each entry of a vocabulary category that fails, whatever the entry is named', () => {
+    const reason = [
+      'my-own-opinion: This vocabulary category is closed, new values cannot be added',
+      'a: b: The alias taken belongs to another vocabulary entry',
+      'weird, name: Something the front does not know',
+    ].join('\n');
+    testRender(<ConfigPresetResultLine label="Opinions" status="FAILED" reason={reason} />);
+    expect(screen.getByText('my-own-opinion: This vocabulary category is closed, new values cannot be added'
+      + ' · a: b: The alias taken belongs to another vocabulary entry'
+      + ' · weird, name: Something the front does not know')).toBeInTheDocument();
   });
 
   it('says an item the platform has already as it is, without a status that would read as if it was ignored', () => {
