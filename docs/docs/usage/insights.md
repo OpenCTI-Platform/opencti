@@ -68,8 +68,8 @@ It starts with the key findings and cites, for each statement, the report it com
 On a container, **Container summary** summarizes that container only.
 
 Each summary reads the description and content of the containers, the text of their attached files, and the
-entities they contain. With an AI provider configured directly on the platform (see
-[Prerequisites](#prerequisites)), two options let you narrow it:
+entities they contain. For **Containers digest** with an AI provider configured directly on the platform (see
+[Prerequisites](#prerequisites)), two options let you narrow the digest:
 
 | Option | Effect |
 |:-------|:-------|
