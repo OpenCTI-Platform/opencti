@@ -72,7 +72,7 @@ Only users with `Allow modification of sensitive configuration` capability enabl
   },
   "roles": {
     "enabled": true,
-    "protected_names": ["Administrators", "Connectors", "Default"]
+    "protected_names": ["Administrator", "Connector", "Default"]
   },
   "rules": {
     "enabled": true
