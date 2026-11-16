@@ -16,6 +16,16 @@ class ThreadPoolSelector:  # pylint: disable=too-many-instance-attributes
         self.realtime_active_threads_count = 0
         self.count_lock = threading.Lock()
 
+    def total_pool_size(self) -> int:
+        return self.default_pool_size + self.realtime_pool_size
+
+    def active_tasks_count(self) -> int:
+        # Tasks submitted to either pool and not completed yet
+        with self.count_lock:
+            return (
+                self.default_active_threads_count + self.realtime_active_threads_count
+            )
+
     def decrement_default_count(self, _future):
         with self.count_lock:
             self.default_active_threads_count -= 1
