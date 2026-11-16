@@ -105,6 +105,9 @@
     "account_statuses_default": "Active",
     "session_idle_timeout": 0,
     "session_manager": "shared",
+    "session_presence": {
+      "grace_period": 30000
+    },
     "rate_protection": {
       "time_window": 1,
       "max_requests": 10000
