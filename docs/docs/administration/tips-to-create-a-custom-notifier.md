@@ -295,7 +295,7 @@ A variable is a `$` followed by a path into the notification data:
 - It is followed by any number of `.property` or `[index]` (a non-negative integer, starting at 0).
 - `.length` gives the number of elements of a list, for instance `$data.length`.
 
-The `$` variables only work in the Title. The table gives, for each one, how to write the same value in the message template with EJS.
+The `$` variables only work in the Title of the **Platform mailer**. They are not available in the message template, nor in the Title of the Simple mailer. The table gives, for each one, how to write the same value in the message template with EJS.
 
 | **Variable** | **In the message template (EJS)** | **Value** |
 | --- | --- | --- |
@@ -336,7 +336,7 @@ In a digest, pick the event you want with an explicit index: there is no implici
 - Variables inside EJS tags (`<% %>`) are never rewritten. Use the regular EJS variables there.
 - `notification_content` groups the events **by entity**, whereas `data` lists the events one by one. In a digest, `$notification_content[1]` and `$data[1]` can therefore concern different events. Use the same root for all the pieces of information that must go together.
 - Only `$user.user_email` is available on `user`. The name of the recipient is not provided to the templates.
-- The title is plain text and is **not HTML-escaped**: a value such as `R&D` appears as is in the subject, including with `<%= %>`. The title is also normalized: line breaks are replaced by spaces, repeated spaces are collapsed and the title is trimmed.
+- The Platform mailer title is plain text and is **not HTML-escaped**: a value such as `R&D` appears as is in the subject, including with `<%= %>`. The title is also normalized: line breaks are replaced by spaces, repeated spaces are collapsed and the title is trimmed.
 
 You can check a title with the **Test** button of the notifier: it sends a test email using a trigger named `[TEST] ...` and example entities, so every variable above has a value.
 
