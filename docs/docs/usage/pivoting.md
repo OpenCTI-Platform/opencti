@@ -64,6 +64,59 @@ We can create a relationship between entities directly within our investigation.
     Creating a relationship in the investigation graph will generate the relationship in your knowledge base.
 
 
+## Analyse techniques in the matrix view
+
+The matrix view shows the attack patterns of your investigation on a tactics matrix, such as MITRE ATT&CK. With the heatmap active, you see at a glance which techniques the entities of your investigation use the most.
+
+![Investigation matrix view with the heatmap](assets/investigation-matrix-view.png)
+
+The matrix view displays only what is on the investigation graph and can be switched to from the header bar.
+
+![Investigation graph view with the view switch in the header](assets/investigation-matrix-graph-view.png)
+
+### Read the matrix
+
+The matrix shows the techniques of one kill chain (e.g. MITRE ATT&CK 20), grouped in columns by tactic. The attack patterns of the investigation are highlighted. Graph filters don't apply to the matrix view.
+
+Hover a technique, or focus it with the keyboard, to see the entities of the investigation linked to it, under **Linked entities**. The list shows the first 10 names.
+
+### Use the toolbar
+
+| Control | What it does |
+|:---|:---|
+| **Kill chain** | Selects the kill chain to show. The matrix opens on `mitre-attack` when it exists, otherwise on the first kill chain in alphabetical order. |
+| **N attack patterns in this investigation aren't shown in this kill chain** (note) | These attack patterns are on the graph but not in the selected kill chain: they belong to another kill chain, have no kill chain phase, or are revoked. Hover the note to see their names. |
+| **Display only used techniques** (eye icon) | Hides the techniques that are not in the investigation. Click it again to display the whole matrix. |
+| **Displays heat map of attack pattern use** (flame icon) | Turns the heatmap on or off. See [Read the heatmap](#read-the-heatmap). |
+| **Compare with my security posture** | Select one or more security platforms. The techniques of the investigation then show whether these security platforms cover them (`should-cover` relationships). |
+
+### Read the heatmap
+
+The heatmap colours each technique by how many entities of the investigation are linked to it: the more entities, the warmer the colour.
+
+#### How a technique is scored
+
+The score of a technique is the number of distinct entities of the investigation linked to it by one of these relationships:
+
+| Relationship | Example |
+|:---|:---|
+| `uses`, in either direction | An intrusion set, threat actor, malware or campaign uses the attack pattern. |
+| `indicates`, towards the attack pattern | An indicator indicates the attack pattern. |
+| Containment | A report, a grouping or a case contains the attack pattern. |
+
+- An entity counts once for a technique, even when several relationships link them.
+- Other relationship types, such as `related-to` or `mitigates`, do not count.
+- A sub-technique has its own score. The score of a technique is not the sum of the scores of its sub-techniques.
+
+#### How the scale works
+
+The scale has five colours, from light yellow (least used) to red (most used). It is relative: it runs from 1 to the highest score in the selected kill chain.
+
+Because the scale is relative, compare colours within one matrix only: red means the most used technique here, not a fixed number of entities.
+
+A technique with no score of its own but with scored sub-techniques gets a border in the colour of its highest-scoring sub-technique, even when it isn't on the graph itself.
+
+
 ## Enrich from the graph
 
 You can run [enrichment connectors](enrichment.md) on the entities of an investigation without leaving the graph. The results are not drawn straight away: you review them first and choose what to add, so that an enrichment bringing back many objects does not flood the investigation.
@@ -121,6 +174,7 @@ With view access to the investigation and the capability to open results, you ca
 Users have the capability to export investigations, providing a way to share, document, or archive their findings.
 
 - PDF and image formats: the header of the investigation exports it as a PDF, and the toolbar of its graph as a high-resolution image (see [Work with graphs](graphs.md#export)).
+- Matrix view: exports the whole matrix as a PDF or an image, with the heatmap when it is on, not only the visible area.
 - STIX bundle: The platform allows the export of the entire content of an investigation graph as a STIX bundle. In the STIX format, all objects within the investigation graph are automatically aggregated into a Report object.
 
 ![Investigation export](assets/investigation-export.png)
