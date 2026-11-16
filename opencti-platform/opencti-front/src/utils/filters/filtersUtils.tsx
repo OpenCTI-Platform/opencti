@@ -321,11 +321,23 @@ export const getStixFiltersDisplayedKeys = (availableFilterKeys: string[], filte
   return unavailableCustomFieldKeys.size > 0 ? [...availableFilterKeys, ...unavailableCustomFieldKeys] : availableFilterKeys;
 };
 
+/**
+ * Whether the filter is on the key: a stored filter can hold its key as a list, as the API types it
+ * (older or imported widgets), the same key.
+ */
+export const isFilterOnKey = (filter: Filter, key: string): boolean => {
+  return ([filter.key] as (string | string[])[]).flat().includes(key);
+};
+
+/**
+ * Whether the top level type filter of the group only selects draft workspaces, its values being strings or
+ * { id, value } objects. Stored filters can miss their lists (older or imported widgets): they hold none.
+ */
 export const isDraftWorkspaceFilterGroup = (filters: FilterGroup | null | undefined): boolean => {
-  if (!filters) return false;
-  const entityTypeFilter = filters.filters.find((f) => f.key === 'entity_type');
-  if (!entityTypeFilter || entityTypeFilter.values.length === 0) return false;
-  return entityTypeFilter.values.every((v) => {
+  const entityTypeFilter = (filters?.filters ?? []).find((f) => isFilterOnKey(f, 'entity_type'));
+  const values = entityTypeFilter?.values ?? [];
+  if (values.length === 0) return false;
+  return values.every((v) => {
     const val = typeof v === 'string' ? v : (v?.value ?? v?.id);
     return val === 'DraftWorkspace';
   });
