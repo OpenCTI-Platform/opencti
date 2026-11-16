@@ -147,6 +147,18 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
       }
     }
   `;
+  const VOCABULARY_ADD_QUERY = gql`
+    mutation VocabularyAdd($input: VocabularyAddInput!) {
+      vocabularyAdd(input: $input) {
+        id
+      }
+    }
+  `;
+  const VOCABULARY_DELETE_QUERY = gql`
+    mutation VocabularyDelete($id: ID!) {
+      vocabularyDelete(id: $id)
+    }
+  `;
   const BREAKDOWN_QUERY = gql`
     query StixCoreObjectsTimeSeriesBreakdown(
       $field: String!
@@ -389,17 +401,23 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
   });
 
   it('should count a vocabulary value indexed with an uppercase letter in its own series only', async () => {
-    // `bkd-ᴀ` (small capital) is indexed as `bkd-A`, which a term query would look for as `bkd-a`, another value
-    const added = [{ type: 'bkd-ᴀ', created: '2021-02-15T12:00:00.000Z' }, { type: 'bkd-a', created: '2021-03-15T12:00:00.000Z' }, { type: 'bkd-a', created: '2021-03-16T12:00:00.000Z' }];
-    const addedIds: string[] = [];
+    // `bkd-ᴀ` (small capital) is indexed as `bkd-A`, which a term query would look for as `bkd-a`, another value.
+    // A report keeps only the values of its vocabulary: both are added to it first.
+    const vocabularyIds: string[] = [];
+    const reportIdsOfValues: string[] = [];
     try {
+      for (const name of ['bkd-ᴀ', 'bkd-a']) {
+        const vocabulary = await queryAsAdminWithSuccess({ query: VOCABULARY_ADD_QUERY, variables: { input: { name, category: 'report_types_ov' } } });
+        vocabularyIds.push(vocabulary.data?.vocabularyAdd.id);
+      }
+      const added = [{ type: 'bkd-ᴀ', created: '2021-02-15T12:00:00.000Z' }, { type: 'bkd-a', created: '2021-03-15T12:00:00.000Z' }, { type: 'bkd-a', created: '2021-03-16T12:00:00.000Z' }];
       for (let i = 0; i < added.length; i += 1) {
         const { type, created } = added[i];
         const report = await queryAsAdminWithSuccess({
           query: REPORT_ADD_QUERY,
           variables: { input: { name: `bkd-int-report-vocabulary-${i}`, published: created, created, report_types: [type], createdBy: organizationId } },
         });
-        addedIds.push(report.data?.reportAdd.id);
+        reportIdsOfValues.push(report.data?.reportAdd.id);
       }
       const { series } = await breakdown({ field: 'report_types', orderMode: 'desc', limit: 10, includeOther: true });
       expect(Object.fromEntries(series.map((s) => [s.label, [s.total, s.values]]))).toEqual({
@@ -416,8 +434,11 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
         ['Other', 1, [0, 1, 0]],
       ]);
     } finally {
-      for (const id of addedIds) {
+      for (const id of reportIdsOfValues) {
         await queryAsAdminWithSuccess({ query: REPORT_DELETE_QUERY, variables: { id } });
+      }
+      for (const id of vocabularyIds) {
+        await queryAsAdminWithSuccess({ query: VOCABULARY_DELETE_QUERY, variables: { id } });
       }
     }
   });
