@@ -152,9 +152,55 @@ def _clean_kill_chain_phases(proc: Dict, warnings: List[str]) -> None:
     proc["kill_chain_phases"] = kept
 
 
+def lowercase_platforms(platforms: Any) -> List[str]:
+    """Lowercase platforms, as the platforms vocabulary values are.
+
+    A scalar is wrapped in a list; values that are not strings are dropped;
+    duplicates are removed, order kept.
+
+    :param platforms: platforms as written in a STIX object
+    :type platforms: list[str] or str
+    :return: the lowercased platforms
+    :rtype: list[str]
+    """
+    if not isinstance(platforms, (list, tuple)):
+        platforms = [platforms]
+    return _unique([p.strip().lower() for p in platforms if isinstance(p, str)])
+
+
 def _lowercase_platforms(proc: Dict) -> None:
     if proc.get("platforms") is not None:
-        proc["platforms"] = _unique([p.strip().lower() for p in proc["platforms"]])
+        proc["platforms"] = lowercase_platforms(proc["platforms"])
+
+
+def describe_unnormalized_procedure(stix_object: Dict) -> List[str]:
+    """List what a procedure object still carries that the normalizer converts.
+
+    An empty list means the object is normalized. Otherwise, each entry names
+    a property the import alone does not convert, and what happens to it.
+
+    :param stix_object: STIX procedure object
+    :type stix_object: dict
+    :return: the unconverted properties, as readable descriptions
+    :rtype: list[str]
+    """
+    found = []
+    if stix_object.get("type") == THIRD_PARTY_PROCEDURE_STIX_TYPE:
+        found.append("type x-procedure (references to its id are not renamed)")
+    for key in ("x_technique_refs", "x_vulnerability_refs", "tactics"):
+        if stix_object.get(key):
+            found.append(key + " (lost)")
+    source_refs = stix_object.get("x_source_refs") or []
+    if not isinstance(source_refs, (list, tuple)):
+        source_refs = [source_refs]
+    if any(isinstance(ref, str) and ref.startswith("report--") for ref in source_refs):
+        found.append("report entries of x_source_refs (no report containment)")
+    platforms = stix_object.get("platforms") or []
+    if not isinstance(platforms, (list, tuple)):
+        platforms = [platforms]
+    if any(isinstance(p, str) and p != p.lower() for p in platforms):
+        found.append("uppercase platforms (lowercased here)")
+    return found
 
 
 def _tactic_to_phase_name(tactic: str) -> str:
