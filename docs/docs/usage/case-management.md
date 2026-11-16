@@ -34,7 +34,7 @@ At the end of your Case, you will certainly want to report on what has been done
 
 To produce a document, you have several options:
 
-- In Enterprise Edition, generate a finished intelligence file in HTML or PDF from a [Fintel template](../administration/entities.md#fintelTemplates-section). The platform provides a built-in "Executive Summary" template for every type of Case and an "Incident Response Report" template for Incident Responses. You can also create your own templates to match your company's documents, and apply a [Fintel design](../administration/fintel-designs.md) to style the PDF.
+- In Enterprise Edition, generate a finished intelligence file in HTML or PDF from a [Fintel template](../administration/entities.md#fintelTemplates-section). The platform provides a built-in "Executive Summary" template for Incident Responses, Requests for Information and Requests for Takedown, and an "Incident Response Report" template for Incident Responses. You can also create your own templates to match your company's documents, and apply a [Fintel design](../administration/fintel-designs.md) to style the PDF.
 - Export the content of the Case in a structured format, such as JSON or CSV.
 
 See [Manual export](export.md) for the detailed steps.
