@@ -9,11 +9,14 @@ import { addAttackPattern } from '../../../../src/domain/attackPattern';
 import { addCampaign } from '../../../../src/domain/campaign';
 import { addIntrusionSet } from '../../../../src/domain/intrusionSet';
 import { addReport } from '../../../../src/domain/report';
-import { stixDomainObjectDelete, stixDomainObjectDeleteRelation } from '../../../../src/domain/stixDomainObject';
-import { addStixCoreRelationship, stixCoreRelationshipDelete } from '../../../../src/domain/stixCoreRelationship';
+import { stixDomainObjectAddRelation, stixDomainObjectDelete, stixDomainObjectDeleteRelation } from '../../../../src/domain/stixDomainObject';
+import { addStixCoreRelationship, stixCoreRelationshipDelete, stixCoreRelationshipDeleteByFromAndTo } from '../../../../src/domain/stixCoreRelationship';
 import { fullRelationsList, storeLoadById } from '../../../../src/database/middleware-loader';
+import { storeLoadByIdWithRefs } from '../../../../src/database/middleware';
 import { RELATION_HAS_COVERED, RELATION_TARGETS, RELATION_USES } from '../../../../src/schema/stixCoreRelationship';
-import { RELATION_OBJECT } from '../../../../src/schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT } from '../../../../src/schema/stixRefRelationship';
+import { addOrganization } from '../../../../src/modules/organization/organization-domain';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET } from '../../../../src/schema/stixDomainObject';
 import type { BasicStoreEntity, BasicStoreRelation, StoreEntityReport } from '../../../../src/types/store';
 import { addVulnerability } from '../../../../src/modules/vulnerability/vulnerability-domain';
@@ -242,5 +245,99 @@ describe('Security coverage has-covered cleanup when an entity leaves the covere
     await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.standard_id);
     await stixDomainObjectDelete(testContext, ADMIN_USER, intrusionSet.id, ENTITY_TYPE_INTRUSION_SET);
     await deleteVulnerabilities(vulnerabilities);
+  });
+
+  it('should remove the has-covered of an entity unlinked by from and to, and stay unchanged when the delete is repeated', async () => {
+    const prefix = 'sc-cleanup-from-to';
+    const attackPatterns = await createAttackPatterns(prefix);
+    const intrusionSet: BasicStoreEntity = await addIntrusionSet(testContext, ADMIN_USER, { name: `${prefix} intrusion set` });
+    for (const attackPattern of attackPatterns) {
+      await addStixCoreRelationship(testContext, ADMIN_USER, {
+        fromId: intrusionSet.standard_id,
+        toId: attackPattern.standard_id,
+        relationship_type: RELATION_USES,
+      });
+    }
+    const { securityCoverage, result } = await createCoverageCoveringAll(prefix, intrusionSet.standard_id, attackPatterns);
+
+    const [removed, ...stillUsed] = attackPatterns;
+    // The GraphQL mutation passes standard ids
+    await stixCoreRelationshipDeleteByFromAndTo(testContext, ADMIN_USER, intrusionSet.standard_id, removed.standard_id, RELATION_USES);
+    expect(await listCoveredTargetIds(result.id)).toEqual(sortedIds(stillUsed));
+
+    await stixCoreRelationshipDeleteByFromAndTo(testContext, ADMIN_USER, intrusionSet.standard_id, removed.standard_id, RELATION_USES);
+    expect(await listCoveredTargetIds(result.id)).toEqual(sortedIds(stillUsed));
+
+    await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.standard_id);
+    await stixDomainObjectDelete(testContext, ADMIN_USER, intrusionSet.id, ENTITY_TYPE_INTRUSION_SET);
+    await deleteAttackPatterns(attackPatterns);
+  });
+
+  it('should keep the has-covered of an entity still used through another uses relationship', async () => {
+    const prefix = 'sc-cleanup-double-uses';
+    const attackPatterns = await createAttackPatterns(prefix);
+    const intrusionSet: BasicStoreEntity = await addIntrusionSet(testContext, ADMIN_USER, { name: `${prefix} intrusion set` });
+    const [twiceUsed] = attackPatterns;
+    // Same pair, periods far enough apart to stay two distinct relationships
+    const firstUse = await addStixCoreRelationship(testContext, ADMIN_USER, {
+      fromId: intrusionSet.standard_id,
+      toId: twiceUsed.standard_id,
+      relationship_type: RELATION_USES,
+      start_time: '2020-01-01T00:00:00.000Z',
+      stop_time: '2020-12-31T00:00:00.000Z',
+    });
+    await addStixCoreRelationship(testContext, ADMIN_USER, {
+      fromId: intrusionSet.standard_id,
+      toId: twiceUsed.standard_id,
+      relationship_type: RELATION_USES,
+      start_time: '2023-01-01T00:00:00.000Z',
+      stop_time: '2023-12-31T00:00:00.000Z',
+    });
+    const { securityCoverage, result } = await createCoverageCoveringAll(prefix, intrusionSet.standard_id, [twiceUsed]);
+
+    await stixCoreRelationshipDelete(testContext, ADMIN_USER, firstUse.id);
+
+    expect(await listCoveredTargetIds(result.id)).toEqual(sortedIds([twiceUsed]));
+
+    await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.standard_id);
+    await stixDomainObjectDelete(testContext, ADMIN_USER, intrusionSet.id, ENTITY_TYPE_INTRUSION_SET);
+    await deleteAttackPatterns(attackPatterns);
+  });
+
+  it('should keep every has-covered when removing an entity that was never in the covered report', async () => {
+    const prefix = 'sc-cleanup-never-in-report';
+    const attackPatterns = await createAttackPatterns(prefix);
+    const [notInReport, ...inReport] = attackPatterns;
+    const report: StoreEntityReport = await addReport(testContext, ADMIN_USER, {
+      name: `${prefix} report`,
+      published: '2026-04-24T19:15:00.000Z',
+      objects: inReport.map((attackPattern) => attackPattern.standard_id),
+    });
+    const { securityCoverage, result } = await createCoverageCoveringAll(prefix, report.standard_id, inReport);
+
+    await stixDomainObjectDeleteRelation(testContext, ADMIN_USER, report.internal_id, notInReport.id, RELATION_OBJECT);
+
+    expect(await listCoveredTargetIds(result.id)).toEqual(sortedIds(inReport));
+
+    await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.standard_id);
+    await stixDomainObjectDelete(testContext, ADMIN_USER, report.internal_id, ENTITY_TYPE_CONTAINER_REPORT);
+    await deleteAttackPatterns(attackPatterns);
+  });
+});
+
+describe('Single-valued ref relationships through the ref relation API', () => {
+  // pycti update_created_by removes the current author through this API before adding the new one
+  it('should accept adding then removing the author of an entity', async () => {
+    const author = await addOrganization(testContext, ADMIN_USER, { name: 'sc-cleanup created-by author' });
+    const attackPattern = await addAttackPattern(testContext, ADMIN_USER, { name: 'sc-cleanup created-by attack pattern' });
+
+    await stixDomainObjectAddRelation(testContext, ADMIN_USER, attackPattern.id, { toId: author.id, relationship_type: RELATION_CREATED_BY });
+    const withAuthor = await storeLoadByIdWithRefs(testContext, ADMIN_USER, attackPattern.id) as Record<string, any>;
+    expect(withAuthor.createdBy?.internal_id).toEqual(author.internal_id);
+
+    await expect(stixDomainObjectDeleteRelation(testContext, ADMIN_USER, attackPattern.id, author.id, RELATION_CREATED_BY)).resolves.toBeDefined();
+
+    await stixDomainObjectDelete(testContext, ADMIN_USER, attackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
+    await stixDomainObjectDelete(testContext, ADMIN_USER, author.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   });
 });

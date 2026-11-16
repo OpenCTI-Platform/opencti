@@ -4,7 +4,8 @@ import { deleteElementById } from '../../database/middleware';
 import { fullRelationsList } from '../../database/middleware-loader';
 import { READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
 import type { SecurityCoverageAddInput, StixCoreRelationshipAddInput } from '../../generated/graphql';
-import { RELATION_HAS_COVERED } from '../../schema/stixCoreRelationship';
+import { RELATION_HAS_COVERED, RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
+import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import type { BasicStoreRelation } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { SYSTEM_USER } from '../../utils/access';
@@ -63,9 +64,17 @@ export const transformHasCoveredFromId = async (
   };
 };
 
+// Mirrors securityCoverageStixBundle: an entity stays in the assessed scope while the covered
+// entity still reaches it through an object ref or a uses / targets relationship.
+const SECURITY_COVERAGE_SCOPE_LINKS = [RELATION_OBJECT, RELATION_USES, RELATION_TARGETS];
+
 /**
  * Deletes the has-covered relationships pointing at entities that are no longer
  * part of the scope covered by a security coverage.
+ *
+ * Callers pass the entities whose link to the covered entity was just removed.
+ * The ones still in scope through another link (a second uses relationship, an
+ * object ref...) are kept, so calling it after a no-op removal is harmless.
  *
  * Runs as SYSTEM_USER so the cascade stays consistent whatever the rights of the
  * user performing the removal, and never throws: a failure here must not make the
@@ -73,14 +82,14 @@ export const transformHasCoveredFromId = async (
  *
  * @param context To make the request to engine.
  * @param coveredEntityId Internal ID of the entity covered by a security coverage.
- * @param removedEntityIds Internal IDs of the entities removed from the covered scope.
+ * @param candidateIds Internal IDs of the entities that may have left the covered scope.
  */
 export const removeHasCoveredForRemovedEntities = async (
   context: AuthContext,
   coveredEntityId: string,
-  removedEntityIds: string[],
+  candidateIds: string[],
 ) => {
-  if (removedEntityIds.length === 0) {
+  if (candidateIds.length === 0) {
     return;
   }
   try {
@@ -95,7 +104,19 @@ export const removeHasCoveredForRemovedEntities = async (
     if (resultIds.length === 0) {
       return;
     }
-    // 3. Find the has-covered relationships between those results and the removed entities.
+    // 3. Keep the candidates still in scope through another link.
+    const remainingLinks = await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, SECURITY_COVERAGE_SCOPE_LINKS, {
+      indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+      fromId: coveredEntityId,
+      toId: candidateIds,
+      baseData: true,
+    });
+    const stillInScopeIds = new Set(remainingLinks.map((relation) => relation.toId));
+    const removedEntityIds = candidateIds.filter((id) => !stillInScopeIds.has(id));
+    if (removedEntityIds.length === 0) {
+      return;
+    }
+    // 4. Find the has-covered relationships between those results and the removed entities.
     // Inferred relationships are left to the rule engine.
     const relations = await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, RELATION_HAS_COVERED, {
       indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
@@ -105,7 +126,7 @@ export const removeHasCoveredForRemovedEntities = async (
     if (relations.length === 0) {
       return;
     }
-    // 4. Delete them, the security coverage results themselves are kept.
+    // 5. Delete them, the security coverage results themselves are kept.
     for (const relation of relations) {
       await deleteElementById(context, SYSTEM_USER, relation.internal_id, relation.entity_type);
     }
@@ -116,7 +137,7 @@ export const removeHasCoveredForRemovedEntities = async (
   } catch (err) {
     logApp.error(
       '[SECURITY-COVERAGE] Cannot clean up has-covered relationships after entity removal',
-      { cause: err, coveredEntityId, removedEntityIds },
+      { cause: err, coveredEntityId, candidateIds },
     );
   }
 };

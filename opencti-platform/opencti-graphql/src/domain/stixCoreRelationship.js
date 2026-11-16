@@ -12,7 +12,7 @@ import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/
 import { RELATION_CREATED_BY } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
-import { buildRelationsFilter, internalLoadById, pageRelationsConnection, storeLoadById } from '../database/middleware-loader';
+import { buildRelationsFilter, pageRelationsConnection, storeLoadById } from '../database/middleware-loader';
 import { askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
@@ -156,15 +156,9 @@ export const stixCoreRelationshipDeleteByFromAndTo = async (context, user, fromI
   if (!isStixCoreRelationship(relationshipType)) {
     throw FunctionalError(`Only stix-core-relationship can be deleted through this method, not ${relationshipType}.`);
   }
-  const deletedRelations = await deleteRelationsByFromAndTo(context, user, fromId, toId, relationshipType, ABSTRACT_STIX_CORE_RELATIONSHIP);
-  if (deletedRelations.deletions.length > 0 && SECURITY_COVERAGE_SCOPE_RELATIONS.includes(relationshipType)) {
-    // Both ids may be standard ids here, resolve them before any coverage lookup.
-    const [from, to] = await Promise.all([
-      internalLoadById(context, user, fromId),
-      internalLoadById(context, user, toId),
-    ]);
-    await cleanupSecurityCoverageOnRelationDelete(context, relationshipType, from, to);
-  }
+  // from and to are returned resolved, whatever kind of ids the caller gave.
+  const { from, to } = await deleteRelationsByFromAndTo(context, user, fromId, toId, relationshipType, ABSTRACT_STIX_CORE_RELATIONSHIP);
+  await cleanupSecurityCoverageOnRelationDelete(context, relationshipType, from, to);
   return true;
 };
 

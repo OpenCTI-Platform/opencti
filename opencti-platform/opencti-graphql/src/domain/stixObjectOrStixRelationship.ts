@@ -36,7 +36,7 @@ const patchElementWithRefRelationships = async (
   targets: string[],
   operation: 'add' | 'remove',
   opts = {},
-): Promise<{ patchedFrom: BasicStoreObject; currentRefIds: string[] }> => {
+) => {
   const initial = await storeLoadByIdWithRefs(context, user, stixObjectOrRelationshipId, { type });
   if (!initial) {
     throw FunctionalError('Element can not be loaded', { stixObjectOrRelationshipId });
@@ -45,11 +45,9 @@ const patchElementWithRefRelationships = async (
   if (!fieldName) {
     throw UnsupportedError('This relationship type is not supported', { relationship_type });
   }
-  const currentRefIds = ((initial as Record<string, any>)[fieldName] ?? [])
-    .map((ref: BasicStoreObject) => ref.internal_id);
   const inputs = transformPatchToInput({ [fieldName]: targets }, { [fieldName]: operation });
   const { element: patchedFrom } = await updateAttributeFromLoadedWithRefs(context, user, initial, inputs, opts);
-  return { patchedFrom, currentRefIds };
+  return patchedFrom;
 };
 
 export const stixObjectOrRelationshipAddRefRelation = async (
@@ -72,8 +70,8 @@ export const stixObjectOrRelationshipAddRefRelation = async (
   if (!to) {
     throw MissingReferenceError({ input: { toId: input.toId }, doc_code: 'ELEMENT_NOT_FOUND' });
   }
-  const patchedElement = await patchElementWithRefRelationships(context, user, stixObjectOrRelationshipId, type, input.relationship_type, [input.toId], UPDATE_OPERATION_ADD, opts);
-  const { element: refRelation } = await buildRelationData(context, user, { from: patchedElement.patchedFrom, to, relationship_type: input.relationship_type });
+  const patchedFrom = await patchElementWithRefRelationships(context, user, stixObjectOrRelationshipId, type, input.relationship_type, [input.toId], UPDATE_OPERATION_ADD, opts);
+  const { element: refRelation } = await buildRelationData(context, user, { from: patchedFrom, to, relationship_type: input.relationship_type });
   await notify(BUS_TOPICS[type as BusTopicsKeyType].EDIT_TOPIC, refRelation, user);
   return refRelation as any;
 };
@@ -85,8 +83,7 @@ export const stixObjectOrRelationshipAddRefRelations = async (
   type: string,
   opts = {},
 ) => {
-  const patchedElement = await patchElementWithRefRelationships(context, user, stixObjectOrRelationshipId, type, input.relationship_type, input.toIds, UPDATE_OPERATION_ADD, opts);
-  return patchedElement.patchedFrom;
+  return patchElementWithRefRelationships(context, user, stixObjectOrRelationshipId, type, input.relationship_type, input.toIds, UPDATE_OPERATION_ADD, opts);
 };
 
 export const stixObjectOrRelationshipDeleteRefRelation = async (
@@ -105,15 +102,15 @@ export const stixObjectOrRelationshipDeleteRefRelation = async (
   if (!isStixRefRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be deleted through this method.`, { id: stixObjectOrRelationshipId });
   }
-  const patchedElement = await patchElementWithRefRelationships(context, user, stixObjectOrRelationshipId, type, relationshipType, [toId], UPDATE_OPERATION_REMOVE, opts);
-  // An object removed from a covered container is no longer part of the assessed scope,
+  const patchedFrom = await patchElementWithRefRelationships(context, user, stixObjectOrRelationshipId, type, relationshipType, [toId], UPDATE_OPERATION_REMOVE, opts);
+  // An object removed from a covered container may leave the assessed scope,
   // so the has-covered relationships of the security coverage results must follow.
   if (relationshipType === RELATION_OBJECT && COVERED_ENTITIES_TYPE.includes(stixObjectOrRelationship.entity_type)) {
     // toId is a StixRef, resolve it since has-covered relationships are indexed on internal ids.
     const removedEntity = await findById(context, user, toId);
-    if (removedEntity && patchedElement.currentRefIds.includes(removedEntity.internal_id)) {
+    if (removedEntity) {
       await removeHasCoveredForRemovedEntities(context, stixObjectOrRelationship.internal_id, [removedEntity.internal_id]);
     }
   }
-  return patchedElement.patchedFrom;
+  return patchedFrom;
 };
