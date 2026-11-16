@@ -308,6 +308,7 @@
     "callback_continuation_max_concurrency": 10,
     "callback_continuation_max_concurrency_per_playbook": 3,
     "callback_continuation_max_waiting": 1000,
+    "callback_continuation_shutdown_timeout": 20000,
     "realtime_priority": false
   },
   "hub_registration_manager": {

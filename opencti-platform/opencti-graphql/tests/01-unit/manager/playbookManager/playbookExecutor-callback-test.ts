@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { redisPlaybookUpdate } from '../../../../src/database/redis';
 import { playbookExecutor } from '../../../../src/manager/playbookManager/playbookExecutor';
-import { createContinuationScheduler } from '../../../../src/manager/playbookManager/playbookContinuationScheduler';
+import { createContinuationScheduler, playbookContinuationScheduler } from '../../../../src/manager/playbookManager/playbookContinuationScheduler';
 import { PLAYBOOK_COMPONENTS } from '../../../../src/modules/playbook/playbook-components';
 import type { ComponentDefinition, PlaybookComponent } from '../../../../src/modules/playbook/playbook-types';
 import type { StixBundle } from '../../../../src/types/stix-2-1-common';
@@ -126,6 +126,30 @@ describe('playbookExecutor on an external callback', () => {
   });
 });
 
+describe('playbookExecutor on an external callback when the platform stops', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    PLAYBOOK_COMPONENTS[CONNECTOR_COMPONENT_ID] = { ...baseComponent(CONNECTOR_COMPONENT_ID, false), notify: async () => {} };
+    PLAYBOOK_COMPONENTS[SLOW_COMPONENT_ID] = { ...baseComponent(SLOW_COMPONENT_ID, true), executor: slowExecutor };
+  });
+
+  it('registers the step a continuation had reached as an error when the stop interrupts it', async () => {
+    await run(SLOW_COMPONENT_ID, true);
+    expect(observedSteps()).toEqual([{ step: 'connector-node', status: 'success' }]);
+    // Stop while the slow downstream step runs, with a drain timeout shorter than the step
+    const result = await playbookContinuationScheduler.drain(50);
+    expect(result.abandoned).toBe(1);
+    expect(observedSteps()).toEqual([
+      { step: 'connector-node', status: 'success' },
+      { step: 'downstream-node', status: 'error' },
+    ]);
+    const [interrupted] = vi.mocked(redisPlaybookUpdate).mock.calls[1];
+    expect((interrupted as Record<string, any>)['step_downstream-node'].message).toContain('interrupted by the platform stop');
+    // A callback received after the stop started is refused, so the connector sees the error
+    await expect(run(SLOW_COMPONENT_ID, true)).rejects.toThrow('the platform is stopping');
+  });
+});
+
 type Gate = { release: () => void; started: boolean; done: boolean };
 
 // A task that runs until its gate is released, so a test drives slow chains by hand.
@@ -238,6 +262,47 @@ describe('createContinuationScheduler', () => {
     scheduler.assertAccepting();
   });
 
+  it('waits on drain for a running continuation that ends within the timeout, and reports nothing abandoned', async () => {
+    const scheduler = createContinuationScheduler({ maxConcurrency: 2 });
+    const onAbandon = vi.fn(async () => {});
+    const gates: Gate[] = [];
+    await scheduler.schedule(gatedTask(gates), { playbookId: 'a' }, onAbandon);
+    setTimeout(() => gates[0].release(), 50);
+    const result = await scheduler.drain(2000);
+    expect(gates[0].done).toBe(true);
+    expect(result).toEqual({ completed: 1, abandoned: 0, notStarted: 0 });
+    expect(onAbandon).not.toHaveBeenCalled();
+  });
+
+  it('reports a running continuation still running at the drain timeout, and a queued one never started, never silently', async () => {
+    const scheduler = createContinuationScheduler({ maxConcurrency: 1, maxConcurrencyPerPlaybook: 1 });
+    const runningAbandon = vi.fn(async () => {});
+    const queuedAbandon = vi.fn(async () => {});
+    const queuedTask = vi.fn(async () => {});
+    const gates: Gate[] = [];
+    await scheduler.schedule(gatedTask(gates), { playbookId: 'a' }, runningAbandon);
+    await scheduler.schedule(queuedTask, { playbookId: 'b' }, queuedAbandon);
+    expect(scheduler.waiting()).toBe(1);
+    const result = await scheduler.drain(50);
+    expect(result).toEqual({ completed: 0, abandoned: 1, notStarted: 1 });
+    expect(runningAbandon).toHaveBeenCalledWith('shutdown_timeout');
+    expect(queuedAbandon).toHaveBeenCalledWith('shutdown_before_start');
+    // The running task ending after the drain never starts the queued one
+    gates[0].release();
+    await vi.waitFor(() => expect(scheduler.running()).toBe(0));
+    expect(queuedTask).not.toHaveBeenCalled();
+  });
+
+  it('refuses a new callback once draining, and reports a continuation scheduled after the stop started', async () => {
+    const scheduler = createContinuationScheduler({ maxConcurrency: 1 });
+    await scheduler.drain(0);
+    expect(() => scheduler.assertAccepting({ playbookId: 'a' })).toThrow('the platform is stopping');
+    const onAbandon = vi.fn(async () => {});
+    const task = vi.fn(async () => {});
+    await scheduler.schedule(task, { playbookId: 'a' }, onAbandon);
+    expect(task).not.toHaveBeenCalled();
+    expect(onAbandon).toHaveBeenCalledWith('shutdown_before_start');
+  });
   it('logs a task error and frees its slot', async () => {
     const scheduler = createContinuationScheduler({ maxConcurrency: 1 });
     await scheduler.schedule(async () => {
