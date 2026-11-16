@@ -39,7 +39,7 @@ language of your browser.
 
 ### Activity
 
-Describes how the activity of the entity evolves:
+With an AI provider configured on the platform, Activity describes how the activity of the entity evolves:
 
 - **for a threat** (threat actor, intrusion set, campaign, malware): its indicators and its victims over the last
   24 months, and the sectors, countries and regions it targets;
@@ -49,10 +49,16 @@ Describes how the activity of the entity evolves:
 The summary ends with an evaluation of the trend: **Increasing**, **Stable**, **Decreasing**, or **Unknown** when there
 is not enough data.
 
+With XTM One, the selected agent is asked to retrieve time-series statistics about related indicators, relationships
+and sightings and analyze their trends. The request does not prescribe a 24-month window.
+
 ### Forecast
 
-Uses the same data as **Activity** to describe what may happen next: likely evolutions of the threat, or of the threats
-targeting the victim.
+With an AI provider configured on the platform, Forecast uses the same data as **Activity** to describe what may
+happen next: likely evolutions of the threat, or of the threats targeting the victim.
+
+With XTM One, the selected agent is asked to retrieve ranked distributions of related entities and time-series
+statistics, then assess expected activity based on current trends. The request does not prescribe a 24-month window.
 
 ### Containers digest and Container summary
 
