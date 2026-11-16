@@ -25,10 +25,14 @@ export const FONTS = {
   NotoSansJp: {
     normal: `${url}${APP_BASE_PATH}/assets/static/NotoSansJP-Regular.ttf`,
     bold: `${url}${APP_BASE_PATH}/assets/static/NotoSansJP-Bold.ttf`,
+    italics: `${url}${APP_BASE_PATH}/assets/static/NotoSansJP-Regular.ttf`,
+    bolditalics: `${url}${APP_BASE_PATH}/assets/static/NotoSansJP-Bold.ttf`,
   },
   NotoSansKr: {
     normal: `${url}${APP_BASE_PATH}/assets/static/NotoSansKR-Regular.ttf`,
     bold: `${url}${APP_BASE_PATH}/assets/static/NotoSansKR-Bold.ttf`,
+    italics: `${url}${APP_BASE_PATH}/assets/static/NotoSansKR-Regular.ttf`,
+    bolditalics: `${url}${APP_BASE_PATH}/assets/static/NotoSansKR-Bold.ttf`,
   },
 };
 
