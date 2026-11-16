@@ -323,11 +323,11 @@ const useNavMenu = (): NavGroup[] => {
           link: '/dashboard/techniques',
           subItems: [
             { type: 'Attack-Pattern', link: '/dashboard/techniques/attack_patterns', label: t_i18n('Attack patterns'), icon: <LockPattern fontSize="small" /> },
+            { type: 'Procedure', link: '/dashboard/techniques/procedures', label: t_i18n('Procedures'), icon: <ChecklistOutlined fontSize="small" /> },
             { type: 'Narrative', link: '/dashboard/techniques/narratives', label: t_i18n('Narratives'), icon: <SpeakerNotesOutlined fontSize="small" /> },
             { type: 'Course-Of-Action', link: '/dashboard/techniques/courses_of_action', label: t_i18n('Courses of action'), icon: <ProgressWrench fontSize="small" /> },
             { type: 'Data-Component', link: '/dashboard/techniques/data_components', label: t_i18n('Data components'), icon: <SourceOutlined fontSize="small" /> },
             { type: 'Data-Source', link: '/dashboard/techniques/data_sources', label: t_i18n('Data sources'), icon: <StreamOutlined fontSize="small" /> },
-            { type: 'Procedure', link: '/dashboard/techniques/procedures', label: t_i18n('Procedures'), icon: <ChecklistOutlined fontSize="small" /> },
           ],
         },
         !hideEntities && {

@@ -130,6 +130,11 @@ describe('useNavMenu, Techniques group', () => {
     });
   });
 
+  it('lists Procedures right under Attack patterns', () => {
+    const subItems = techniquesItem()?.subItems ?? [];
+    expect(subItems.map(({ type }) => type).slice(0, 2)).toEqual(['Attack-Pattern', 'Procedure']);
+  });
+
   it('keeps the Techniques group when only Procedure is left visible', () => {
     mockHiddenEntities = techniqueTypes.filter((type) => type !== 'Procedure');
     const subItems = techniquesItem()?.subItems ?? [];
