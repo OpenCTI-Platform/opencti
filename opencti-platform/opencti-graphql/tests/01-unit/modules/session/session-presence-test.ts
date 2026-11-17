@@ -1,10 +1,16 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { isSessionPresenceSupported, registerSessionPresence, unregisterSessionPresence } from '../../../../src/modules/session/session-presence-domain';
+import { isSessionPresenceSupported, logoutAbandonedSessions, registerSessionPresence, unregisterSessionPresence } from '../../../../src/modules/session/session-presence-domain';
 import { onSessionPresenceClose, onSessionPresenceConnect } from '../../../../src/modules/session/session-presence-ws';
+import * as cache from '../../../../src/database/cache';
 import * as session from '../../../../src/database/session';
+import * as listener from '../../../../src/listener/UserActionListener';
 import * as redis from '../../../../src/database/redis';
 import * as userDomain from '../../../../src/modules/user/user-domain';
 import { getStoppingState, isFeatureEnabled } from '../../../../src/config/conf';
+import '../../../../src/modules/attributes/internalObject-registrationAttributes';
+import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
+import { ENTITY_TYPE_ACTIVITY } from '../../../../src/schema/internalObject';
+import type { ObjectAttribute } from '../../../../src/schema/attribute-definition';
 
 const { GRACE_PERIOD, LEASE_TTL } = vi.hoisted(() => ({ GRACE_PERIOD: 30000, LEASE_TTL: 30000 }));
 const RENEW_INTERVAL = LEASE_TTL / 3;
@@ -31,13 +37,9 @@ const store = vi.hoisted(() => {
       origins.clear();
       due.clear();
     },
+    isDue: (sessionId: string) => due.has(sessionId),
     checkTime: (sessionId: string) => due.get(sessionId),
     hasLiveLease: (sessionId: string, connectionId: string) => (leases.get(sessionId)?.get(connectionId) ?? 0) > now(),
-    // Another node logging the session out
-    markClosing: (sessionId: string, closingTtl: number) => {
-      leases.delete(sessionId);
-      closing.set(sessionId, now() + closingTtl);
-    },
     saveSessionLeases: vi.fn(async (sessionId: string, connectionIds: string[], leaseTtl: number, _keysTtl: number, origin?: unknown) => {
       if ((closing.get(sessionId) ?? 0) > now()) return undefined;
       const expiry = now() + leaseTtl;
@@ -76,8 +78,18 @@ const store = vi.hoisted(() => {
 
 vi.mock('../../../../src/modules/session/session-presence-store', () => store);
 
+vi.mock('../../../../src/database/cache', () => ({
+  getEntityFromCache: vi.fn(),
+}));
+
 vi.mock('../../../../src/database/session', () => ({
+  findSessionByRawId: vi.fn(),
+  killSessionByRawId: vi.fn(),
   getSessionMiddleware: vi.fn(),
+}));
+
+vi.mock('../../../../src/listener/UserActionListener', () => ({
+  publishUserAction: vi.fn(),
 }));
 
 vi.mock('../../../../src/database/redis', () => ({
@@ -106,6 +118,12 @@ vi.mock('../../../../src/config/conf', async (importOriginal: any) => {
   };
 });
 
+vi.mock('../../../../src/utils/access', async (importOriginal: any) => ({
+  ...(await importOriginal()),
+  executionContext: vi.fn().mockReturnValue('mock-context'),
+  SYSTEM_USER: { id: 'system-user' },
+}));
+
 const USER = { id: 'user-id', groups: [{ internal_id: 'group-id' }], organizations: [] };
 const ORIGIN = { socket: 'query', user_id: USER.id };
 
@@ -114,6 +132,41 @@ let sessionCounter = 0;
 const nextSessionId = () => {
   sessionCounter += 1;
   return `session-${sessionCounter}`;
+};
+
+const enablePresence = (enabled: boolean) => {
+  vi.mocked(cache.getEntityFromCache).mockResolvedValue({ platform_session_presence_enabled: enabled } as any);
+};
+
+const storeSession = (sessionData: unknown) => {
+  vi.mocked(session.findSessionByRawId).mockResolvedValue(sessionData);
+};
+
+// The session presence manager runs on any node, after some time
+const sweepAfter = async (time: number) => {
+  await vi.advanceTimersByTimeAsync(time);
+  await logoutAbandonedSessions();
+};
+
+// Nodes listed in the cluster, by their `api_enabled` flag (undefined for a node of a previous version)
+const listClusterNodes = (...apiEnabledFlags: (boolean | undefined)[]) => {
+  const nodes = apiEnabledFlags.map((apiEnabled, i) => ({ platform_id: `node-${i}`, api_enabled: apiEnabled, managers: [] }));
+  vi.mocked(redis.getClusterInstances).mockResolvedValue(nodes as any);
+};
+
+// A tab on another node: its lease is written by that node, never by the module under test
+const openTabOnAnotherNode = async (sessionId: string) => {
+  const expiry = await store.saveSessionLeases(sessionId, [`other-node-${sessionId}`], LEASE_TTL, 0, ORIGIN);
+  await store.scheduleSessionCheck(sessionId, (expiry as number) + GRACE_PERIOD, 'GT');
+};
+
+// The other node renews the lease of its tab, until the end of the given time
+const keepTabOpenOnAnotherNode = async (sessionId: string, time: number) => {
+  for (let elapsed = 0; elapsed < time; elapsed += RENEW_INTERVAL) {
+    await openTabOnAnotherNode(sessionId);
+    await vi.advanceTimersByTimeAsync(Math.min(RENEW_INTERVAL, time - elapsed));
+  }
+  await openTabOnAnotherNode(sessionId);
 };
 
 describe('session presence', () => {
@@ -131,6 +184,9 @@ describe('session presence', () => {
     store.reset();
     vi.mocked(getStoppingState).mockReturnValue(false);
     vi.mocked(isFeatureEnabled).mockReturnValue(true);
+    enablePresence(true);
+    storeSession({ user: USER });
+    listClusterNodes(true);
   });
 
   it('should hold a lease for a connection, and schedule the check of its session', async () => {
@@ -164,6 +220,60 @@ describe('session presence', () => {
     expect(store.checkTime(sessionId)).toEqual(Date.now() + GRACE_PERIOD);
   });
 
+  it('should logout the session after the grace period once its last connection is closed', async () => {
+    const sessionId = nextSessionId();
+    const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+    await unregisterSessionPresence(sessionId, connectionId);
+
+    await sweepAfter(GRACE_PERIOD - 1);
+    expect(session.killSessionByRawId).not.toHaveBeenCalled();
+
+    await sweepAfter(1);
+    expect(session.killSessionByRawId).toHaveBeenCalledExactlyOnceWith(sessionId);
+    expect(listener.publishUserAction).toHaveBeenCalledExactlyOnceWith({
+      user: { ...USER, origin: ORIGIN },
+      event_type: 'authentication',
+      event_access: 'administration',
+      event_scope: 'logout',
+      context_data: { reason: 'last_tab_closed' },
+    });
+    expect(store.isDue(sessionId)).toBe(false);
+  });
+
+  it('should keep the session while another connection is alive, renewing its lease', async () => {
+    const sessionId = nextSessionId();
+    const firstConnectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+    await registerSessionPresence(sessionId, ORIGIN);
+    await unregisterSessionPresence(sessionId, firstConnectionId);
+
+    // Well after the lease ttl: only the renewal keeps the other connection alive
+    await sweepAfter(3 * LEASE_TTL);
+    expect(session.killSessionByRawId).not.toHaveBeenCalled();
+    expect(store.isDue(sessionId)).toBe(true);
+  });
+
+  it('should cancel the logout when a connection reopens within the grace period', async () => {
+    const sessionId = nextSessionId();
+    const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+    await unregisterSessionPresence(sessionId, connectionId);
+    await vi.advanceTimersByTimeAsync(GRACE_PERIOD - 1);
+    await registerSessionPresence(sessionId, ORIGIN);
+
+    await sweepAfter(2 * GRACE_PERIOD);
+    expect(session.killSessionByRawId).not.toHaveBeenCalled();
+  });
+
+  it('should only logout the session that lost its connections', async () => {
+    const closedSessionId = nextSessionId();
+    const openSessionId = nextSessionId();
+    const connectionId = await registerSessionPresence(closedSessionId, ORIGIN) as string;
+    await registerSessionPresence(openSessionId, ORIGIN);
+    await unregisterSessionPresence(closedSessionId, connectionId);
+
+    await sweepAfter(GRACE_PERIOD);
+    expect(session.killSessionByRawId).toHaveBeenCalledExactlyOnceWith(closedSessionId);
+  });
+
   it('should ignore an unknown or already closed connection', async () => {
     const sessionId = nextSessionId();
     const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
@@ -174,43 +284,138 @@ describe('session presence', () => {
     expect(store.removeSessionLease).toHaveBeenCalledOnce();
   });
 
-  it('should leave the lease of a stopping node to expire, so that its tabs can reconnect to another node', async () => {
+  it('should keep a session whose tab is open on another node', async () => {
     const sessionId = nextSessionId();
+    await openTabOnAnotherNode(sessionId);
     const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
-    vi.mocked(getStoppingState).mockReturnValue(true);
     await unregisterSessionPresence(sessionId, connectionId);
 
-    expect(store.removeSessionLease).not.toHaveBeenCalled();
-    expect(store.checkTime(sessionId)).toEqual(Date.now() + LEASE_TTL + GRACE_PERIOD);
+    await keepTabOpenOnAnotherNode(sessionId, 3 * LEASE_TTL);
+    await logoutAbandonedSessions();
+    expect(session.killSessionByRawId).not.toHaveBeenCalled();
+  });
+
+  it('should logout a session whose node crashed, once its leases expired', async () => {
+    const sessionId = nextSessionId();
+    // The other node crashes: its lease is never renewed nor removed
+    await openTabOnAnotherNode(sessionId);
+
+    await sweepAfter(LEASE_TTL + GRACE_PERIOD - 1);
+    expect(session.killSessionByRawId).not.toHaveBeenCalled();
+
+    await sweepAfter(1);
+    expect(session.killSessionByRawId).toHaveBeenCalledExactlyOnceWith(sessionId);
   });
 
   it('should refuse a connection of a session being logged out', async () => {
     const sessionId = nextSessionId();
-    store.markClosing(sessionId, 60000);
+    const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+    await unregisterSessionPresence(sessionId, connectionId);
+    await sweepAfter(GRACE_PERIOD);
+    expect(session.killSessionByRawId).toHaveBeenCalledOnce();
 
     expect(await registerSessionPresence(sessionId, ORIGIN)).toBeUndefined();
-    expect(store.checkTime(sessionId)).toBeUndefined();
   });
 
   it('should stop tracking the sockets of a session logged out by another node', async () => {
     const sessionId = nextSessionId();
     const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
-    store.markClosing(sessionId, 60000);
+    // Another node logged the session out (for instance after this node stalled): new leases are refused
+    const saveSessionLeases = vi.mocked(store.saveSessionLeases).getMockImplementation();
+    vi.mocked(store.saveSessionLeases).mockImplementation(async () => undefined);
     await vi.advanceTimersByTimeAsync(RENEW_INTERVAL);
+    vi.mocked(store.saveSessionLeases).mockImplementation(saveSessionLeases!);
 
     await unregisterSessionPresence(sessionId, connectionId);
     expect(store.removeSessionLease).not.toHaveBeenCalled();
   });
 
+  it('should not logout when the feature is disabled during the grace period, and release the session', async () => {
+    const sessionId = nextSessionId();
+    const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+    await unregisterSessionPresence(sessionId, connectionId);
+    enablePresence(false);
+
+    await sweepAfter(GRACE_PERIOD);
+    expect(session.killSessionByRawId).not.toHaveBeenCalled();
+    expect(store.isDue(sessionId)).toBe(false);
+    // Not marked as closing: the tab is tracked again as soon as it comes back
+    expect(await registerSessionPresence(sessionId, ORIGIN)).toBeDefined();
+  });
+
+  it('should leave the time to reconnect to another node to the tabs of a stopping node', async () => {
+    const sessionId = nextSessionId();
+    const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+    vi.mocked(getStoppingState).mockReturnValue(true);
+    await unregisterSessionPresence(sessionId, connectionId);
+    vi.mocked(getStoppingState).mockReturnValue(false);
+    expect(store.removeSessionLease).not.toHaveBeenCalled();
+
+    // The lease outlives the node: the tab reconnects to another node meanwhile,
+    // and is still open when the lease of the stopped node would have logged the session out
+    await vi.advanceTimersByTimeAsync(RENEW_INTERVAL);
+    await keepTabOpenOnAnotherNode(sessionId, LEASE_TTL + GRACE_PERIOD);
+    await logoutAbandonedSessions();
+    expect(session.killSessionByRawId).not.toHaveBeenCalled();
+  });
+
+  it('should not publish a logout for a session already logged out or expired', async () => {
+    storeSession(null);
+    const sessionId = nextSessionId();
+    const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+    await unregisterSessionPresence(sessionId, connectionId);
+
+    await sweepAfter(GRACE_PERIOD);
+    expect(session.killSessionByRawId).not.toHaveBeenCalled();
+    expect(listener.publishUserAction).not.toHaveBeenCalled();
+    expect(store.isDue(sessionId)).toBe(false);
+  });
+
+  it('should check the session again when its logout fails', async () => {
+    const sessionId = nextSessionId();
+    const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+    await unregisterSessionPresence(sessionId, connectionId);
+    vi.mocked(session.killSessionByRawId).mockRejectedValueOnce(new Error('store unavailable'));
+
+    await sweepAfter(GRACE_PERIOD);
+    expect(store.isDue(sessionId)).toBe(true);
+
+    await sweepAfter(5000);
+    expect(session.killSessionByRawId).toHaveBeenCalledTimes(2);
+    expect(listener.publishUserAction).toHaveBeenCalledOnce();
+    expect(store.isDue(sessionId)).toBe(false);
+  });
+
   it('should only be supported while at most one node serves the API', async () => {
-    const listClusterNodes = (...apiEnabledFlags: (boolean | undefined)[]) => {
-      const nodes = apiEnabledFlags.map((apiEnabled, i) => ({ platform_id: `node-${i}`, api_enabled: apiEnabled, managers: [] }));
-      vi.mocked(redis.getClusterInstances).mockResolvedValue(nodes as any);
-    };
     listClusterNodes(true, false);
     expect(await isSessionPresenceSupported()).toBe(true);
     listClusterNodes(true, undefined);
     expect(await isSessionPresenceSupported()).toBe(false);
+  });
+
+  it('should not logout while several platform nodes serve the API', async () => {
+    listClusterNodes(true, true);
+    const sessionId = nextSessionId();
+    const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+    await unregisterSessionPresence(sessionId, connectionId);
+
+    await sweepAfter(GRACE_PERIOD);
+    expect(session.killSessionByRawId).not.toHaveBeenCalled();
+    expect(store.isDue(sessionId)).toBe(false);
+  });
+
+  it('should only publish context data fields that the activity index maps', async () => {
+    // The mapping of the context data is strict: an unknown field makes the indexing of the event fail
+    const sessionId = nextSessionId();
+    const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+    await unregisterSessionPresence(sessionId, connectionId);
+
+    await sweepAfter(GRACE_PERIOD);
+    const contextData = vi.mocked(listener.publishUserAction).mock.calls[0][0].context_data as object;
+    const contextDataAttribute = schemaAttributesDefinition.getAttribute(ENTITY_TYPE_ACTIVITY, 'context_data') as ObjectAttribute;
+    const mappedFields = contextDataAttribute.mappings.map(({ name }) => name);
+    expect(Object.keys(contextData)).toEqual(['reason']);
+    Object.keys(contextData).forEach((field) => expect(mappedFields).toContain(field));
   });
 
   describe('graphql-ws hooks', () => {
@@ -238,24 +443,50 @@ describe('session presence', () => {
       const ctx = buildContext();
 
       await onSessionPresenceConnect(ctx);
-      expect(userDomain.userWithOrigin).toHaveBeenCalledWith(ctx.extra.request, USER);
-      expect(await store.findSessionOrigin(sessionId)).toEqual({ socket: 'query', ip: '10.0.0.1', user_id: USER.id });
-
       await onSessionPresenceClose(ctx);
-      expect(store.removeSessionLease).toHaveBeenCalledOnce();
-      expect(store.checkTime(sessionId)).toEqual(Date.now() + GRACE_PERIOD);
+      await sweepAfter(GRACE_PERIOD);
+
+      expect(session.killSessionByRawId).toHaveBeenCalledExactlyOnceWith(sessionId);
+      expect(userDomain.userWithOrigin).toHaveBeenCalledWith(ctx.extra.request, USER);
+      const { user } = vi.mocked(listener.publishUserAction).mock.calls[0][0];
+      expect(user.origin).toEqual({ socket: 'query', ip: '10.0.0.1', user_id: USER.id });
     });
 
-    it('should not track anything without the SESSION_PRESENCE feature flag', async () => {
+    it('should logout a tab opened before the feature was enabled', async () => {
+      enablePresence(false);
+      const sessionId = nextSessionId();
+      mockSessionMiddleware(sessionId, { user: USER });
+      const ctx = buildContext();
+
+      await onSessionPresenceConnect(ctx);
+      enablePresence(true);
+      await onSessionPresenceClose(ctx);
+      await sweepAfter(GRACE_PERIOD);
+
+      expect(session.killSessionByRawId).toHaveBeenCalledExactlyOnceWith(sessionId);
+    });
+
+    it('should neither track nor logout without the SESSION_PRESENCE feature flag', async () => {
       vi.mocked(isFeatureEnabled).mockReturnValue(false);
       mockSessionMiddleware(nextSessionId(), { user: USER });
       const ctx = buildContext();
 
       await onSessionPresenceConnect(ctx);
       await onSessionPresenceClose(ctx);
+      await sweepAfter(GRACE_PERIOD);
 
       expect(session.getSessionMiddleware).not.toHaveBeenCalled();
-      expect(store.saveSessionLeases).not.toHaveBeenCalled();
+      expect(session.killSessionByRawId).not.toHaveBeenCalled();
+    });
+
+    it('should not logout a session tracked before the feature flag was disabled', async () => {
+      const sessionId = nextSessionId();
+      const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+      vi.mocked(isFeatureEnabled).mockReturnValue(false);
+      await unregisterSessionPresence(sessionId, connectionId);
+      await sweepAfter(GRACE_PERIOD);
+
+      expect(session.killSessionByRawId).not.toHaveBeenCalled();
     });
 
     it('should not track an unauthenticated socket', async () => {
