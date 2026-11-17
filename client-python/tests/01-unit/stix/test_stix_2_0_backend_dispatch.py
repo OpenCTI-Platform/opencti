@@ -177,14 +177,14 @@ def test_prepare_export_legacy_entity_with_stored_spec_version_2_0(stix_helper):
 def test_generate_export_stix_2_0_non_migrated_type_uses_legacy_converter(
     stix_helper,
 ):
-    """A type not yet migrated keeps the legacy converter, even in 2.0."""
+    """A type missing from the migrated types keeps the legacy converter."""
     entity = _raw_graphql_entity()
-    entity["entity_type"] = "Language"
+    entity["entity_type"] = "Not-Migrated-Type"
 
     result = stix_helper.generate_export(entity, stix_version=STIX_VERSION_2_0)
 
     stix_helper.opencti.stix_core_object.to_stix.assert_not_called()
-    assert result["type"] == "language"
+    assert result["type"] == "not-migrated-type"
 
 
 @pytest.mark.parametrize("entity_type", sorted(_STIX_2_0_BACKEND_ENTITY_TYPES))
@@ -197,18 +197,6 @@ def test_stix_2_0_backend_entity_types_are_exportable_types(stix_helper, entity_
     reader = stix_helper.get_reader(entity_type)
 
     assert reader in stix_helper.get_readers().values()
-
-
-@pytest.mark.parametrize(
-    "entity_type",
-    # The backend has no STIX 2.0 converter for them: `toStix` raises an error.
-    ["Language", "Security-Coverage", "Security-Coverage-Result"],
-)
-def test_stix_2_0_backend_entity_types_exclude_types_without_converter(
-    entity_type,
-):
-    """The SDOs without a backend STIX 2.0 converter keep the legacy one."""
-    assert entity_type not in _STIX_2_0_BACKEND_ENTITY_TYPES
 
 
 # --- Backend dispatch -------------------------------------------------------
@@ -1803,3 +1791,191 @@ def test_stix_nested_ref_relationship_list_without_get_all_reads_one_page():
 
     assert [ref["to"]["standard_id"] for ref in result] == ["file--1"]
     query.assert_called_once()
+
+
+# --- Language and security coverage -----------------------------------------
+
+SECURITY_COVERAGE_ID = "security-coverage--66666666-6666-6666-6666-666666666666"
+SECURITY_COVERAGE_RESULT_ID = (
+    "security-coverage-result--77777777-7777-7777-7777-777777777777"
+)
+COVERED_ID = "intrusion-set--88888888-8888-8888-8888-888888888888"
+
+
+def _raw_security_coverage():
+    """Raw GraphQL Security-Coverage, as returned by its reader."""
+    return {
+        "id": "internal-security-coverage",
+        "standard_id": SECURITY_COVERAGE_ID,
+        "entity_type": "Security-Coverage",
+        "parent_types": ["Stix-Domain-Object"],
+        "spec_version": "2.1",
+        "name": "Coverage",
+        "objectCovered": {"__typename": "IntrusionSet", "id": "internal-covered"},
+        "results": [{"id": "internal-result"}],
+        "objectMarking": [],
+        "objectMarkingIds": [],
+    }
+
+
+def _backend_security_coverage_payload():
+    """STIX 2.0 Security-Coverage as produced by its backend converter."""
+    return {
+        "id": SECURITY_COVERAGE_ID,
+        "type": "security-coverage",
+        "spec_version": "2.0",
+        "name": "Coverage",
+        "covered_ref": COVERED_ID,
+        "x_opencti_id": "internal-security-coverage",
+        "x_opencti_type": "Security-Coverage",
+    }
+
+
+def _raw_security_coverage_result():
+    """Raw GraphQL Security-Coverage-Result, as returned by its reader."""
+    return {
+        "id": "internal-result",
+        "standard_id": SECURITY_COVERAGE_RESULT_ID,
+        "entity_type": "Security-Coverage-Result",
+        "parent_types": ["Stix-Domain-Object"],
+        "spec_version": "2.1",
+        "name": "Result",
+        "resultOf": {"id": "internal-security-coverage"},
+        "objectMarking": [],
+        "objectMarkingIds": [],
+    }
+
+
+def _backend_security_coverage_result_payload():
+    """STIX 2.0 Security-Coverage-Result as produced by its backend converter."""
+    return {
+        "id": SECURITY_COVERAGE_RESULT_ID,
+        "type": "security-coverage-result",
+        "spec_version": "2.0",
+        "name": "Result",
+        "coverage": [{"name": "DETECTION", "score": 80}],
+        "result_of_ref": SECURITY_COVERAGE_ID,
+        "x_opencti_id": "internal-result",
+        "x_opencti_type": "Security-Coverage-Result",
+    }
+
+
+def test_generate_export_stix_2_0_language_uses_backend(stix_helper):
+    stix_helper.opencti.stix_core_object.to_stix.return_value = {
+        "id": "language--99999999-9999-9999-9999-999999999999",
+        "type": "language",
+        "spec_version": "2.0",
+        "name": "French",
+        "x_opencti_id": "internal-language",
+        "x_opencti_type": "Language",
+    }
+    entity = _raw_graphql_entity()
+    entity.update(id="internal-language", entity_type="Language", name="French")
+
+    result = stix_helper.generate_export(entity, stix_version=STIX_VERSION_2_0)
+
+    stix_helper.opencti.stix_core_object.to_stix.assert_called_once_with(
+        id="internal-language", version=STIX_VERSION_2_0
+    )
+    assert result["type"] == "language"
+    assert result["spec_version"] == "2.0"
+
+
+@pytest.mark.parametrize(
+    "raw_entity, backend_payload, raw_key",
+    [
+        (_raw_security_coverage, _backend_security_coverage_payload, "results"),
+        (
+            _raw_security_coverage_result,
+            _backend_security_coverage_result_payload,
+            "resultOf",
+        ),
+    ],
+)
+def test_stix_2_0_security_coverage_keeps_raw_neighbours_out_of_export(
+    stix_helper, raw_entity, backend_payload, raw_key
+):
+    """The raw neighbours are kept for the full mode, never exported."""
+    stix_helper.opencti.stix_core_object.to_stix.return_value = backend_payload()
+
+    prepared = stix_helper.generate_export(raw_entity(), stix_version=STIX_VERSION_2_0)
+    assert prepared[raw_key] == raw_entity()[raw_key]
+    result = stix_helper.prepare_export(prepared, stix_version=STIX_VERSION_2_0)
+
+    exported = next(obj for obj in result if obj["spec_version"] == "2.0")
+    assert raw_key not in exported
+
+
+@pytest.mark.parametrize(
+    "raw_entity, backend_payload, typed_neighbour, generic_ref",
+    [
+        (
+            _raw_security_coverage,
+            _backend_security_coverage_payload,
+            ("internal-result", "Security-Coverage-Result"),
+            COVERED_ID,
+        ),
+        (
+            _raw_security_coverage_result,
+            _backend_security_coverage_result_payload,
+            ("internal-security-coverage", "Security-Coverage"),
+            SECURITY_COVERAGE_ID,
+        ),
+    ],
+)
+def test_prepare_export_stix_2_0_security_coverage_full_mode_reads_typed_neighbours(
+    stix_helper, raw_entity, backend_payload, typed_neighbour, generic_ref
+):
+    """The results and the coverage are read with their own reader first.
+
+    The other refs (the covered object) are read as plain SDOs, as in legacy.
+    """
+    stix_helper.opencti.stix_core_object.to_stix.return_value = backend_payload()
+    stix_helper.opencti.stix_core_relationship.list.return_value = []
+    stix_helper.opencti.stix_sighting_relationship.list.return_value = []
+    prepared = stix_helper.generate_export(raw_entity(), stix_version=STIX_VERSION_2_0)
+
+    readers = []
+
+    def get_reader(entity_type):
+        def read(filters):
+            readers.append((entity_type, filters["filters"][0]["values"]))
+
+        return read
+
+    with patch.object(stix_helper, "get_reader", side_effect=get_reader):
+        stix_helper.prepare_export(prepared, mode="full", stix_version=STIX_VERSION_2_0)
+
+    neighbour_id, neighbour_type = typed_neighbour
+    assert readers[0] == (neighbour_type, [neighbour_id])
+    assert ("Stix-Domain-Object", [generic_ref]) in readers[1:]
+
+
+@pytest.mark.parametrize("allowed", [True, False])
+def test_prepare_export_stix_2_0_security_coverage_covered_ref_follows_access_filter(
+    stix_helper, allowed
+):
+    """The covered object is a nested ref `object-covered`, exported as `covered_ref`."""
+    stix_helper.opencti.stix_core_object.to_stix.return_value = (
+        _backend_security_coverage_payload()
+    )
+    covered_ref = {
+        "relationship_type": "object-covered",
+        "to": {"standard_id": COVERED_ID},
+    }
+
+    def list_nested_refs(**kwargs):
+        return [covered_ref] if allowed or not kwargs.get("filters") else []
+
+    stix_helper.opencti.stix_nested_ref_relationship.list.side_effect = list_nested_refs
+    prepared = stix_helper.generate_export(
+        _raw_security_coverage(), stix_version=STIX_VERSION_2_0
+    )
+
+    result = stix_helper.prepare_export(
+        prepared, access_filter=ACCESS_FILTER, stix_version=STIX_VERSION_2_0
+    )
+
+    coverage = next(obj for obj in result if obj["type"] == "security-coverage")
+    assert coverage.get("covered_ref") == (COVERED_ID if allowed else None)
+    assert "object_covered_ref" not in coverage

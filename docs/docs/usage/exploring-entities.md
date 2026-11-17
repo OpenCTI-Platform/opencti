@@ -120,6 +120,8 @@ Furthermore, a System can be observed from an "Author" perspective. It is possib
 - Knowledge: A tab that presents an overview of the data authored by the System (i.e. counters and a graph).
 - Analyses: The list of all Analyses (`Report`, `Groupings`) and Cases (`Incident response`, `Request for Information`, `Request for Takedown`) for which the System is the author.
 
+![System author view](assets/system-author-view.png)
+
 
 ## Individuals
 
@@ -129,7 +131,7 @@ Individuals represent specific persons relevant to your threat intelligence anal
 
 When clicking on the Individuals tab at the top left, you see the list of all the Individuals you have access to, in respect with your [allowed marking definitions](../administration/users.md).
 
-![Positions list](assets/positions_list_view.png)
+![Individuals list](assets/individuals-list-view.png)
 
 ### Visualizing Knowledge associated with an Individual
 
@@ -148,3 +150,5 @@ Furthermore, an Individual can be observed from an "Author" perspective. It is p
 - Overview: The "Latest created relationships" and "Latest containers about the object" panels are replaced by the "Latest containers authored by this entity" panel.
 - Knowledge: A tab that presents an overview of the data authored by the Individual (i.e. counters and a graph).
 - Analyses: The list of all Analyses (`Report`, `Groupings`) and Cases (`Incident response`, `Request for Information`, `Request for Takedown`) for which the Individual is the author.
+
+![Individual author view](assets/individual-author-view.png)

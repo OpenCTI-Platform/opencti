@@ -1,0 +1,126 @@
+import { v4 as uuidv4 } from 'uuid';
+import validator from 'validator';
+import { FunctionalError } from '../../config/errors';
+import { containsDashboardVariableToken, isValidDashboardVariableValue } from '../dashboard/dashboard-variables-resolution';
+import { buildDashboardTimeRange, type DashboardTimeRangeInputLike } from '../dashboard/dashboard-time-range';
+import { DASHBOARD_PRESET_NAME_MAX_LENGTH, DASHBOARD_PRESETS_MAX_COUNT, type StoreDashboardPreset, type StoreDashboardVariable } from './workspace-variables-types';
+
+// Structural shape of the GraphQL DashboardPresetInput.
+export interface DashboardPresetInputLike {
+  id?: string | null;
+  name: string;
+  values?: readonly { variableId: string; value: string }[] | null;
+  config?: DashboardTimeRangeInputLike | null;
+}
+
+export interface BuildDashboardPresetOptions {
+  // Import and duplication: a value for a variable the dashboard does not hold is dropped instead of refused, since
+  // the file may come from another platform. The typed API refuses it.
+  dropUnknownVariables?: boolean;
+  now?: Date;
+}
+
+/**
+ * The values of a preset, keyed by variable id: each one belongs to a variable of the dashboard, is valid for the type
+ * of this variable and, for a selection restriction, belongs to the selection (a filters restriction is not checked:
+ * it would need a query). An empty value is not stored: the default of the variable then applies.
+ */
+const buildPresetValues = (
+  input: DashboardPresetInputLike,
+  variables: readonly StoreDashboardVariable[],
+  dropUnknownVariables: boolean,
+): Record<string, string> => {
+  const byId = new Map(variables.map((variable) => [variable.id, variable]));
+  const values: Record<string, string> = {};
+  // Imported or duplicated (dropUnknownVariables), a value the dashboard cannot hold is dropped and the preset kept: the
+  // file may come from another platform or another version. The typed API refuses it.
+  (input.values ?? []).forEach((entry) => {
+    const { variableId, value } = (entry ?? {}) as { variableId?: unknown; value?: unknown };
+    const variable = typeof variableId === 'string' ? byId.get(variableId) : undefined;
+    if (!variable) {
+      if (dropUnknownVariables) return;
+      if (typeof variableId !== 'string') throw FunctionalError('Invalid dashboard preset value');
+      throw FunctionalError('Unknown dashboard variable', { variableId });
+    }
+    if (variable.id in values) throw FunctionalError('Duplicated dashboard preset value', { variableId });
+    if (typeof value !== 'string') {
+      if (dropUnknownVariables) return;
+      throw FunctionalError('Invalid dashboard preset value', { variableId });
+    }
+    if (value.trim() === '') return;
+    // A value is never resolved further than one level: a token-shaped value would leave a token in the filter.
+    if (containsDashboardVariableToken(value) || !isValidDashboardVariableValue(variable.type, value)) {
+      if (dropUnknownVariables) return;
+      throw FunctionalError('Invalid dashboard preset value', { variableId });
+    }
+    // A selection restriction is a closed list: a preset cannot restore a value the chip could not offer.
+    if (variable.restriction.mode === 'selection' && !variable.restriction.values.includes(value)) {
+      if (dropUnknownVariables) return;
+      throw FunctionalError('The preset value must belong to the selection of the variable', { variableId });
+    }
+    values[variable.id] = value;
+  });
+  return values;
+};
+
+/**
+ * Validate a preset input against the presets and the variables already stored in the dashboard and build the preset
+ * to store. Throws a FunctionalError on any invalid input.
+ */
+export const buildDashboardPreset = (
+  input: DashboardPresetInputLike,
+  existingPresets: readonly StoreDashboardPreset[],
+  variables: readonly StoreDashboardVariable[],
+  { dropUnknownVariables = false }: BuildDashboardPresetOptions = {},
+): StoreDashboardPreset => {
+  const current = input.id ? existingPresets.find((preset) => preset.id === input.id) : undefined;
+  // An unknown id recreates the preset with it: a reference kept elsewhere (a default dashboard of a group) resolves again.
+  if (input.id != null && !current && !validator.isUUID(input.id)) {
+    throw FunctionalError('Invalid dashboard preset id', { presetId: input.id });
+  }
+  if (!current && existingPresets.length >= DASHBOARD_PRESETS_MAX_COUNT) {
+    throw FunctionalError(`A dashboard cannot hold more than ${DASHBOARD_PRESETS_MAX_COUNT} presets`);
+  }
+  if (typeof input.name !== 'string') throw FunctionalError('Dashboard preset name is required');
+  const name = input.name.trim();
+  if (name === '') throw FunctionalError('Dashboard preset name is required');
+  if (name.length > DASHBOARD_PRESET_NAME_MAX_LENGTH) throw FunctionalError('Dashboard preset name is too long');
+  const isDuplicatedName = existingPresets.some((preset) => preset.id !== current?.id
+    && preset.name.trim().toLowerCase() === name.toLowerCase());
+  if (isDuplicatedName) throw FunctionalError('A dashboard preset with this name already exists', { name });
+  // On an update, an omitted field keeps what is stored: a rename sends the name alone, and never writes back a stale
+  // copy of the values or of the range another editor changed in the meantime.
+  const values = current && input.values == null ? current.values : buildPresetValues(input, variables, dropUnknownVariables);
+  const config = current && input.config == null ? current.config : buildDashboardTimeRange(input.config, 'Invalid dashboard preset time range');
+  return { id: input.id ?? uuidv4(), name, values, config };
+};
+
+/**
+ * The presets of a dashboard once one of its variables is deleted: the value of this variable is removed from every
+ * preset, which is otherwise kept (its other values and its time range still make sense).
+ */
+export const removeVariableFromPresets = (presets: readonly StoreDashboardPreset[], variableId: string): StoreDashboardPreset[] => {
+  return presets.map((preset) => {
+    if (!(variableId in preset.values)) return preset;
+    const { [variableId]: _removed, ...values } = preset.values;
+    return { ...preset, values };
+  });
+};
+
+/**
+ * The presets of a dashboard once one of its variables is updated: a value the variable no longer accepts (outside a
+ * narrowed selection) is removed from the preset, which is otherwise kept, so that the preset can still be renamed or
+ * updated through the typed API. The type of a variable never changes.
+ */
+export const pruneInvalidPresetValues = (presets: readonly StoreDashboardPreset[], variable: StoreDashboardVariable): StoreDashboardPreset[] => {
+  return presets.map((preset) => {
+    const value = preset.values[variable.id];
+    if (value === undefined) return preset;
+    const accepted = !containsDashboardVariableToken(value)
+      && isValidDashboardVariableValue(variable.type, value)
+      && (variable.restriction.mode !== 'selection' || variable.restriction.values.includes(value));
+    if (accepted) return preset;
+    const { [variable.id]: _removed, ...values } = preset.values;
+    return { ...preset, values };
+  });
+};
