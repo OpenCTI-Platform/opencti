@@ -89,61 +89,69 @@ describe('Fintel design export and import schema', () => {
 });
 
 describe('Fintel design logo format', () => {
-  it('recognizes the image formats from their bytes, an SVG after its prolog, and nothing else', () => {
-    expect(fintelDesignLogoExtension(PNG_LOGO)).toBe('png');
-    expect(fintelDesignLogoExtension(Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00]))).toBe('jpg');
-    expect(fintelDesignLogoExtension(Buffer.from('GIF89a....'))).toBe('gif');
-    expect(fintelDesignLogoExtension(Buffer.from('RIFF\u0000\u0000\u0000\u0000WEBPVP8 '))).toBe('webp');
-    expect(fintelDesignLogoExtension(Buffer.from('﻿<?xml version="1.0"?>\n<!-- logo -->\n<svg xmlns="http://www.w3.org/2000/svg"></svg>'))).toBe('svg');
-    expect(fintelDesignLogoExtension(Buffer.from('<html><body>svg</body></html>'))).toBeUndefined();
-    expect(fintelDesignLogoExtension(Buffer.from('not an image'))).toBeUndefined();
+  it('recognizes the image formats from their bytes, an SVG after its prolog, and nothing else', async () => {
+    expect(await fintelDesignLogoExtension(PNG_LOGO)).toBe('png');
+    expect(await fintelDesignLogoExtension(Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00]))).toBe('jpg');
+    expect(await fintelDesignLogoExtension(Buffer.from('GIF89a....'))).toBe('gif');
+    expect(await fintelDesignLogoExtension(Buffer.from('RIFF\u0000\u0000\u0000\u0000WEBPVP8 '))).toBe('webp');
+    expect(await fintelDesignLogoExtension(Buffer.from('﻿<?xml version="1.0"?>\n<!-- logo -->\n<svg xmlns="http://www.w3.org/2000/svg"></svg>'))).toBe('svg');
+    expect(await fintelDesignLogoExtension(Buffer.from('<html><body>svg</body></html>'))).toBeUndefined();
+    expect(await fintelDesignLogoExtension(Buffer.from('not an image'))).toBeUndefined();
   });
 
-  it('recognizes an SVG by its root element, whatever comes before it, and not a document that merely holds an svg element', () => {
+  it('recognizes an SVG by its root element, whatever comes before it, and not a document that merely holds an svg element', async () => {
     const svg = '<svg xmlns="http://www.w3.org/2000/svg"><svg x="1"></svg></svg>';
     // A leading comment longer than any fixed window, a self-closed root, and the doctype with an internal subset of the vector editors
-    expect(fintelDesignLogoExtension(Buffer.from(`<!--${'x'.repeat(10000)}-->\n${svg}`))).toBe('svg');
-    expect(fintelDesignLogoExtension(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>'))).toBe('svg');
+    expect(await fintelDesignLogoExtension(Buffer.from(`<!--${'x'.repeat(10000)}-->\n${svg}`))).toBe('svg');
+    expect(await fintelDesignLogoExtension(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>'))).toBe('svg');
     const doctype = '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [<!ENTITY ns ">]">]>';
-    expect(fintelDesignLogoExtension(Buffer.from(`<?xml version="1.0"?>${doctype}\n${svg}`))).toBe('svg');
+    expect(await fintelDesignLogoExtension(Buffer.from(`<?xml version="1.0"?>${doctype}\n${svg}`))).toBe('svg');
+    // An apostrophe in a comment of the internal subset is text, not a quote
+    expect(await fintelDesignLogoExtension(Buffer.from(`<!DOCTYPE svg [<!-- the logo's entities --><!ENTITY ns "x">]>${svg}`))).toBe('svg');
     // Another root: an HTML page with an inline svg, a commented-out svg, an element whose name starts with svg
-    expect(fintelDesignLogoExtension(Buffer.from(`<!DOCTYPE html><html><body>${svg}</body></html>`))).toBeUndefined();
-    expect(fintelDesignLogoExtension(Buffer.from(`<!-- ${svg} --><html></html>`))).toBeUndefined();
-    expect(fintelDesignLogoExtension(Buffer.from('<svgfoo></svgfoo>'))).toBeUndefined();
+    expect(await fintelDesignLogoExtension(Buffer.from(`<!DOCTYPE html><html><body>${svg}</body></html>`))).toBeUndefined();
+    expect(await fintelDesignLogoExtension(Buffer.from(`<!-- ${svg} --><html></html>`))).toBeUndefined();
+    expect(await fintelDesignLogoExtension(Buffer.from('<svgfoo></svgfoo>'))).toBeUndefined();
+    // Text before the first markup: not an XML document
+    expect(await fintelDesignLogoExtension(Buffer.from(`logo ${svg}`))).toBeUndefined();
     // A prolog never closed, or nothing after it
-    expect(fintelDesignLogoExtension(Buffer.from(`<!-- ${svg}`))).toBeUndefined();
-    expect(fintelDesignLogoExtension(Buffer.from('<?xml version="1.0"?>\n'))).toBeUndefined();
+    expect(await fintelDesignLogoExtension(Buffer.from(`<!-- ${svg}`))).toBeUndefined();
+    expect(await fintelDesignLogoExtension(Buffer.from('<?xml version="1.0"?>\n'))).toBeUndefined();
   });
 });
 
 describe('Fintel design logo completeness', () => {
-  it('accepts a logo that goes on to the end of its format, data after it included, and refuses one cut short', () => {
+  it('accepts a logo that goes on to the end of its format, data after it included, and refuses one cut short', async () => {
     const jpg = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0xff, 0xd9]);
     const gif = Buffer.concat([Buffer.from('GIF89a'), Buffer.alloc(13), Buffer.from([0x3b])]);
     const webp = Buffer.concat([Buffer.from('RIFF'), Buffer.from([12, 0, 0, 0]), Buffer.from('WEBPVP8 ....')]);
     const complete: [Buffer, string][] = [
       [PNG_LOGO, 'png'], [Buffer.concat([PNG_LOGO, Buffer.from('trailing')]), 'png'],
       [jpg, 'jpg'], [Buffer.concat([jpg, Buffer.from([0x00])]), 'jpg'],
-      [gif, 'gif'],
+      [gif, 'gif'], [Buffer.concat([gif, Buffer.from('\r\n\u0000')]), 'gif'],
       [webp, 'webp'],
       [Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0"/></svg>\n'), 'svg'], [Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>'), 'svg'],
     ];
-    complete.forEach(([content, extension]) => {
-      expect(fintelDesignLogoExtension(content)).toBe(extension);
+    for (const [content, extension] of complete) {
+      expect(await fintelDesignLogoExtension(content)).toBe(extension);
       expect(isCompleteFintelDesignLogo(content, extension)).toBe(true);
-    });
+    }
     // The signature alone, or a logo whose end is missing
     const truncated: [Buffer, string][] = [
       [PNG_LOGO.subarray(0, 8), 'png'], [PNG_LOGO.subarray(0, PNG_LOGO.length - 4), 'png'],
       [Buffer.from([0xff, 0xd8, 0xff]), 'jpg'], [jpg.subarray(0, jpg.length - 1), 'jpg'],
       [Buffer.from('GIF89a'), 'gif'], [gif.subarray(0, gif.length - 1), 'gif'],
+      // A trailer byte in the image data does not end it: what follows is not padding
+      [Buffer.concat([gif.subarray(0, gif.length - 1), Buffer.from([0x3b, 0x01, 0x02])]), 'gif'],
       [webp.subarray(0, webp.length - 1), 'webp'],
       [Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0"/>'), 'svg'],
     ];
-    truncated.forEach(([content, extension]) => {
-      expect(fintelDesignLogoExtension(content)).toBe(extension);
+    for (const [content, extension] of truncated) {
+      // Too short to be recognized at all (a PNG signature alone), or recognized and incomplete: refused either way
+      const recognized = await fintelDesignLogoExtension(content);
+      expect(recognized === undefined || recognized === extension).toBe(true);
       expect(isCompleteFintelDesignLogo(content, extension)).toBe(false);
-    });
+    }
   });
 
   it('finds the end of an SVG root outside its quoted values, its comments and its CDATA sections', () => {
@@ -162,12 +170,12 @@ describe('Fintel design logo completeness', () => {
     expect(isCompleteSvg('<svg><svgfoo/></svgfoo>')).toBe(false);
   });
 
-  it('checks an SVG in a time linear in its length, whatever it holds', () => {
+  it('checks an SVG in a time linear in its length, whatever it holds', async () => {
     // A root start tag never closed, followed by more starts of svg tags: a backtracking search would rescan the rest from each of them
     const unclosed = Buffer.from(`<svg ${'<svg'.repeat(50_000)}`);
     const unclosedComments = Buffer.from(`<svg>${'<!--'.repeat(50_000)}`);
     const start = performance.now();
-    expect(fintelDesignLogoExtension(unclosed)).toBe('svg');
+    expect(await fintelDesignLogoExtension(unclosed)).toBe('svg');
     expect(isCompleteFintelDesignLogo(unclosed, 'svg')).toBe(false);
     expect(isCompleteFintelDesignLogo(unclosedComments, 'svg')).toBe(false);
     // About 200 KB each: seconds with a quadratic scan, milliseconds with a linear one. The bound leaves room for a slow CI machine

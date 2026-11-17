@@ -1,4 +1,5 @@
 import { pipeline, type Readable, Transform } from 'node:stream';
+import { fileTypeFromBuffer } from 'file-type';
 import { downloadFile } from '../../database/raw-file-storage';
 import { FunctionalError } from '../../config/errors';
 import type { BasicStoreEntityFintelDesign } from './fintelDesign-types';
@@ -24,59 +25,32 @@ export const limitFintelDesignLogoStream = (source: Readable): Readable => {
 
 export const fintelDesignLogoStorageKey = (internalId: string) => `${FINTEL_DESIGN_LOGO_FOLDER}/${internalId}`;
 
-// The image formats a logo can have, recognized from its bytes: the stored file has no extension and its stored mime type is not
-// reliable, so the extension written in the bundle (and checked by the upload when it is imported) is the one of its content
-const startsWith = (content: Buffer, signature: number[], offset = 0) => {
-  return content.length >= offset + signature.length && signature.every((byte, index) => content[offset + index] === byte);
-};
-const ascii = (text: string) => [...text].map((char) => char.charCodeAt(0));
+// The formats a logo can have, recognized from its bytes: the stored file has no extension and its stored mime type is not reliable,
+// so the extension written in the bundle (and checked by the upload when it is imported) is the one of its content.
+// The images are recognized by file-type; an SVG is text, which file-type does not recognize, and is checked here.
+const RASTER_EXTENSIONS = ['png', 'jpg', 'gif', 'webp'];
 
-// The end of the doctype that starts at `start`, after its internal subset when it has one: quoted values may hold '>' or ']'
-const doctypeEnd = (text: string, start: number) => {
-  let quote: string | undefined;
-  let inSubset = false;
-  for (let index = start; index < text.length; index += 1) {
-    const char = text[index];
-    if (quote) {
-      quote = char === quote ? undefined : quote;
-    } else if (char === '"' || char === '\'') {
-      quote = char;
-    } else if (char === '[') {
-      inSubset = true;
-    } else if (char === ']') {
-      inSubset = false;
-    } else if (char === '>' && !inSubset) {
-      return index + 1;
-    }
-  }
-  return -1;
-};
+const svgText = (content: Buffer) => content.toString('utf8').replace(/^\uFEFF/, '');
 
-// Where the root element of the text starts when it is an svg element, -1 otherwise. What may come before it (XML declaration, processing
-// instructions, comments, doctype, blanks) is skipped whatever its length, and nothing is parsed nor resolved: no entity, no external
-// reference is ever read. An HTML page holding an svg element, or a document whose svg element is commented out, has another root.
-// Every scan of the text goes forward only: linear in its length, whatever it holds.
+// Where the root element of the text starts when it is an svg element, -1 otherwise. The text starts with markup, and what comes before
+// the root (XML declaration, processing instructions, comments, doctype with its internal subset) is markup that is not an element:
+// the first element is the root. A comment is skipped whole, as it may hold any tag. Nothing is parsed nor resolved: no entity, no
+// external reference is ever read. An HTML page holding an svg element, or a document whose svg element is commented out, has another
+// root. Every scan of the text goes forward only: linear in its length, whatever it holds.
 const svgRootIndex = (text: string) => {
-  let index = 0;
-  while (index < text.length) {
-    const rest = text.slice(index, index + 9);
-    let end: number;
-    if (/^\s/.test(rest)) {
-      end = index + 1;
-    } else if (rest.startsWith('<?')) {
-      end = text.indexOf('?>', index + 2) + 2;
-    } else if (rest.startsWith('<!--')) {
-      end = text.indexOf('-->', index + 4) + 3;
-    } else if (rest.startsWith('<!DOCTYPE')) {
-      end = doctypeEnd(text, index + 9);
+  if (!text.trimStart().startsWith('<')) {
+    return -1;
+  }
+  let index = text.indexOf('<');
+  while (index !== -1) {
+    if (text.startsWith('<!--', index)) {
+      const commentEnd = text.indexOf('-->', index + 4);
+      index = commentEnd === -1 ? -1 : text.indexOf('<', commentEnd + 3);
+    } else if (text.startsWith('<?', index) || text.startsWith('<!', index)) {
+      index = text.indexOf('<', index + 2);
     } else {
       return /^<svg[\s/>]/.test(text.slice(index, index + 5)) ? index : -1;
     }
-    // A prolog that is never closed is not a document
-    if (end <= index) {
-      return -1;
-    }
-    index = end;
   }
   return -1;
 };
@@ -130,42 +104,41 @@ const isCompleteSvg = (text: string) => {
   return text[tagEnd - 2] === '/' || hasSvgClosingTag(text, tagEnd);
 };
 
-const svgText = (content: Buffer) => content.toString('utf8').replace(/^\uFEFF/, '');
-
-export const fintelDesignLogoExtension = (content: Buffer): string | undefined => {
-  if (startsWith(content, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) {
-    return 'png';
+export const fintelDesignLogoExtension = async (content: Buffer): Promise<string | undefined> => {
+  const type = await fileTypeFromBuffer(content);
+  if (type && RASTER_EXTENSIONS.includes(type.ext)) {
+    return type.ext;
   }
-  if (startsWith(content, [0xff, 0xd8, 0xff])) {
-    return 'jpg';
-  }
-  if (startsWith(content, ascii('GIF87a')) || startsWith(content, ascii('GIF89a'))) {
-    return 'gif';
-  }
-  if (startsWith(content, ascii('RIFF')) && startsWith(content, ascii('WEBP'), 8)) {
-    return 'webp';
-  }
-  // An SVG is text: an XML document whose root is an svg element. The whole document is checked: its size is bounded by the callers,
+  // An SVG is an XML document whose root is an svg element. The whole document is checked: its size is bounded by the callers,
   // which read FINTEL_DESIGN_LOGO_MAX_SIZE at most
-  if (svgRootIndex(svgText(content)) !== -1) {
-    return 'svg';
-  }
-  return undefined;
+  return svgRootIndex(svgText(content)) === -1 ? undefined : 'svg';
 };
 
 // Whether the logo goes on to the end its format sets, so that a browser can show it: a logo cut short (a signature alone, a download
-// interrupted) is refused. The structure is checked, not every byte decoded. Data after the end is tolerated, as the browsers do.
-// PNG: the IHDR chunk first and the IEND chunk with its CRC. JPEG: an end-of-image marker. GIF: the trailer as the last byte.
-// WEBP: the RIFF size within the file. SVG: the root closed on itself, or followed by a closing tag outside a comment.
-const PNG_END = [0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82];
+// interrupted) is refused. The structure is checked, not every byte decoded.
+// PNG: the IHDR chunk first and the IEND chunk with its CRC, data after it tolerated. JPEG: an end-of-image marker, data after it
+// tolerated. GIF: the trailer as the last byte, blanks and NUL padding after it tolerated: the trailer is a byte any image data may hold,
+// so it ends the file. WEBP: the RIFF size within the file. SVG: the root closed on itself, or followed by a closing tag outside a comment.
+const PNG_END = Buffer.from([0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82]);
+const GIF_PADDING = [0x00, 0x09, 0x0a, 0x0d, 0x20];
+const GIF_HEADER_SIZE = 13;
+
+const isCompleteGif = (content: Buffer) => {
+  let last = content.length - 1;
+  while (last > GIF_HEADER_SIZE && GIF_PADDING.includes(content[last])) {
+    last -= 1;
+  }
+  return last > GIF_HEADER_SIZE && content[last] === 0x3b;
+};
+
 export const isCompleteFintelDesignLogo = (content: Buffer, extension: string) => {
   switch (extension) {
     case 'png':
-      return startsWith(content, ascii('IHDR'), 12) && content.includes(Buffer.from(PNG_END), 16);
+      return content.toString('latin1', 12, 16) === 'IHDR' && content.includes(PNG_END, 16);
     case 'jpg':
       return content.lastIndexOf(Buffer.from([0xff, 0xd9])) >= 3;
     case 'gif':
-      return content.length > 13 && content[content.length - 1] === 0x3b;
+      return isCompleteGif(content);
     case 'webp':
       return content.length >= 12 && content.readUInt32LE(4) >= 4 && content.readUInt32LE(4) + 8 <= content.length;
     case 'svg':
@@ -212,7 +185,7 @@ export const readFintelDesignLogoUpload = async (source: Readable): Promise<Buff
     chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
   }
   const content = Buffer.concat(chunks);
-  const extension = fintelDesignLogoExtension(content);
+  const extension = await fintelDesignLogoExtension(content);
   if (!extension || !isCompleteFintelDesignLogo(content, extension)) {
     throw FunctionalError('The logo of the fintel design is not a supported image');
   }

@@ -47,7 +47,7 @@ const toFintelDesignItem = (design: BasicStoreEntityFintelDesign, defaultDesignI
         name: `${design.standard_id}.logo`,
         read: async () => {
           const content = await readFintelDesignLogo(design);
-          if (!content || !fintelDesignLogoExtension(content)) {
+          if (!content || !(await fintelDesignLogoExtension(content))) {
             throw FunctionalError('The logo of a fintel design is not a supported image', { id: design.internal_id, name: design.name });
           }
           return content;

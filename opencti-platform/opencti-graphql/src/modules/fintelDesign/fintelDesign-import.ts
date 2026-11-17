@@ -151,7 +151,7 @@ export const importFintelDesign = async (
     }
     // The format is recognized from the first bytes, and the logo must go on to the end of it: a logo cut short is stored, but a browser
     // cannot show it, and the reports of the design cannot be generated
-    const extension = fintelDesignLogoExtension(content);
+    const extension = await fintelDesignLogoExtension(content);
     if (!extension || !isCompleteFintelDesignLogo(content, extension)) {
       return refused('failed', 'logo_invalid', 'The logo of the fintel design is not a supported image', !!existing, parsed.data);
     }
