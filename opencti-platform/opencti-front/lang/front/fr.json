@@ -4413,6 +4413,8 @@
   "Password": "Mot de passe",
   "Password field": "Champ mot de passe",
   "Password reset code expired or not found. Please request a new one.": "Le code de réinitialisation du mot de passe a expiré ou est introuvable. Veuillez en demander un nouveau.",
+  "Procedure count scale, 1 to {count}": "Échelle du nombre de procédures, de 1 à {count}",
+  "Procedures (low → high)": "Procédures (faible → élevé)",
   "Password security policies": "Politiques de sécurité des mots de passe",
   "Password valid until": "Mot de passe valable jusqu'au",
   "Password validation": "Validation du mot de passe",

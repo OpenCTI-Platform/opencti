@@ -4413,6 +4413,8 @@
   "Password": "パスワード",
   "Password field": "パスワードフィールド",
   "Password reset code expired or not found. Please request a new one.": "パスワード リセット コードの有効期限が切れているか、見つかりません。新しいコードをリクエストしてください。",
+  "Procedure count scale, 1 to {count}": "プロシージャ数のスケール、1～{count}",
+  "Procedures (low → high)": "プロシージャ（低 → 高）",
   "Password security policies": "パスワード セキュリティ ポリシー",
   "Password valid until": "パスワードの有効期限",
   "Password validation": "パスワード認証",

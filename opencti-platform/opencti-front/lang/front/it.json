@@ -4413,6 +4413,8 @@
   "Password": "Password",
   "Password field": "Campo password",
   "Password reset code expired or not found. Please request a new one.": "Il codice di reimpostazione della password è scaduto o non è stato trovato. Richiederne uno nuovo.",
+  "Procedure count scale, 1 to {count}": "Scala del numero di procedure, da 1 a {count}",
+  "Procedures (low → high)": "Procedure (basso → alto)",
   "Password security policies": "Politiche di sicurezza della password",
   "Password valid until": "Password valida fino al",
   "Password validation": "Convalida della password",

@@ -4413,6 +4413,8 @@
   "Password": "비밀번호",
   "Password field": "비밀번호 필드",
   "Password reset code expired or not found. Please request a new one.": "비밀번호 재설정 코드가 만료되었거나 찾을 수 없습니다. 새 코드를 요청하세요.",
+  "Procedure count scale, 1 to {count}": "절차 수 척도, 1~{count}",
+  "Procedures (low → high)": "절차 (낮음 → 높음)",
   "Password security policies": "비밀번호 보안 정책",
   "Password valid until": "비밀번호 유효 기간:",
   "Password validation": "비밀번호 확인 중",

@@ -4413,6 +4413,8 @@
   "Password": "Пароль",
   "Password field": "Поле пароля",
   "Password reset code expired or not found. Please request a new one.": "Код сброса пароля истек или не найден. Запросите новый код.",
+  "Procedure count scale, 1 to {count}": "Шкала количества процедур, от 1 до {count}",
+  "Procedures (low → high)": "Процедуры (мало → много)",
   "Password security policies": "Политика безопасности паролей",
   "Password valid until": "Пароль действителен до",
   "Password validation": "Проверка пароля",

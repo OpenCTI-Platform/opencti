@@ -4413,6 +4413,8 @@
   "Password": "Password",
   "Password field": "Password field",
   "Password reset code expired or not found. Please request a new one.": "Password reset code expired or not found. Please request a new one.",
+  "Procedure count scale, 1 to {count}": "Procedure count scale, 1 to {count}",
+  "Procedures (low → high)": "Procedures (low → high)",
   "Password security policies": "Password security policies",
   "Password valid until": "Password valid until",
   "Password validation": "Password validation",
