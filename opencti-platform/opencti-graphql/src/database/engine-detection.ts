@@ -37,6 +37,13 @@ export interface EngineConnection {
   timeout: number;
 }
 
+// Elastic Serverless, recognized by build_flavor as Elastic recommends. The answer reaches us either
+// as the body itself (Elasticsearch client) or wrapped in one (OpenSearch client).
+export const isServerlessInfo = (info: unknown): boolean => {
+  const body = (info as { body?: EngineInfo })?.body ?? (info as EngineInfo);
+  return body?.version?.build_flavor === 'serverless';
+};
+
 // The answer of GET / decides the client:
 //   - OpenSearch announces itself in `distribution`. In compatibility mode (OpenSearch 1.x and 2.x
 //     with `compatibility.override_main_response_version`), `distribution` is hidden and the
@@ -45,13 +52,6 @@ export interface EngineConnection {
 //     recommends recognizing it by `build_flavor`;
 //   - Elasticsearch 9 and later get the 9.x client. Every other answer, Elasticsearch 8, 7 or an
 //     unreadable version, keeps the 8.x client, as the platform always did.
-// Elastic Serverless, recognized by build_flavor as Elastic recommends. The answer reaches us either
-// as the body itself (Elasticsearch client) or wrapped in one (OpenSearch client).
-export const isServerlessInfo = (info: unknown): boolean => {
-  const body = (info as { body?: EngineInfo })?.body ?? (info as EngineInfo);
-  return body?.version?.build_flavor === 'serverless';
-};
-
 export const decideEngineClient = (info: EngineInfo): EngineClient => {
   const distribution = info.version?.distribution;
   if (distribution === 'opensearch' || info.tagline?.includes('OpenSearch')) {

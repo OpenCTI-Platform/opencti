@@ -2,13 +2,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Fake clients capturing what the start-up refresh sends: the templates it rewrites and the settings
 // it puts on every existing index. The Elasticsearch client answers the payload, OpenSearch wraps it.
-const { capture, enabledFeatures, serverAnswer, FakeElkClient, FakeOpenClient } = vi.hoisted(() => {
+const { capture, enabledFeatures, serverAnswer, probe, FakeElkClient, FakeOpenClient } = vi.hoisted(() => {
   const templateName = 'opencti_history';
   const indexName = 'opencti_history-000001';
   const captured = { templates: [] as any[], settings: [] as any[] };
   const features = { flags: [] as string[] };
   // What GET / answers: the forced client still pings it, and the flavor is read there
   const answer = { info: {} as Record<string, any> };
+  // What the detection reads instead, when the client is not forced
+  const probeEngine = vi.fn(async () => ({}) as Record<string, any>);
   const clientOf = (wrap: (value: any) => any, rolloverSetting: any) => ({
     info: vi.fn(async () => wrap(answer.info)),
     ingest: { putPipeline: vi.fn(async () => wrap({})) },
@@ -41,13 +43,17 @@ const { capture, enabledFeatures, serverAnswer, FakeElkClient, FakeOpenClient } 
       Object.assign(this, clientOf((value) => ({ body: value }), { plugins: { index_state_management: { rollover_alias: templateName } } }));
     }
   }
-  return { capture: captured, enabledFeatures: features, serverAnswer: answer, FakeElkClient: ElkClientStub, FakeOpenClient: OpenClientStub };
+  return { capture: captured, enabledFeatures: features, serverAnswer: answer, probe: probeEngine, FakeElkClient: ElkClientStub, FakeOpenClient: OpenClientStub };
 });
 
 vi.mock('@elastic/elasticsearch', () => ({ Client: FakeElkClient }));
 vi.mock('@elastic/elasticsearch-v9', () => ({ Client: FakeElkClient }));
 vi.mock('@opensearch-project/opensearch', () => ({ Client: FakeOpenClient }));
 vi.mock('@opensearch-project/opensearch/aws', () => ({ AwsSigv4Signer: vi.fn(() => ({})) }));
+vi.mock('../../../src/database/engine-detection', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/database/engine-detection')>()),
+  probeEngine: probe,
+}));
 vi.mock('../../../src/config/conf', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/config/conf')>()),
   isFeatureEnabled: vi.fn((feature: string) => enabledFeatures.flags.includes(feature)),
@@ -103,9 +109,20 @@ describe('engine: translog durability sent to the search engine', () => {
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('ES_TRANSLOG_ASYNC only applies to Elasticsearch'));
   });
 
-  it('should never send a translog setting to Elastic Serverless, which does not expose it', async () => {
+  it('should never send a translog setting to a forced client answering Elastic Serverless', async () => {
     await startAndRefresh('elasticsearch9', ['ES_TRANSLOG_ASYNC'], { version: { build_flavor: 'serverless' } });
 
+    expect(capture.templates.length).toBe(1);
+    expect(capture.settings.length).toBe(1);
+    expect(JSON.stringify(capture.templates)).not.toContain('translog');
+    expect(JSON.stringify(capture.settings)).not.toContain('translog');
+  });
+
+  it('should never send a translog setting to a detected Elastic Serverless either', async () => {
+    probe.mockResolvedValue({ version: { number: '8.11.0', build_flavor: 'serverless' } });
+    await startAndRefresh('auto', ['ES_TRANSLOG_ASYNC']);
+
+    expect(probe).toHaveBeenCalledOnce();
     expect(capture.templates.length).toBe(1);
     expect(capture.settings.length).toBe(1);
     expect(JSON.stringify(capture.templates)).not.toContain('translog');

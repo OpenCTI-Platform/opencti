@@ -308,10 +308,6 @@ const setEngine = (client: ElkClient | OpenClient, isElk: boolean) => {
 // surface for every call OpenCTI makes (both majors compile against the 8.x types).
 export const isElkEngine = (_e: ElkClient | OpenClient = engine): _e is ElkClient => engineIsElk;
 
-// True when the engine is Elastic Serverless, which answers to the Elasticsearch client but only
-// accepts the index settings it exposes: anything else is rejected with an illegal_argument_exception.
-export const isServerlessEngine = () => engineIsServerless;
-
 export const isAttachmentProcessorEnabled = () => {
   return attachmentProcessorEnabled;
 };
