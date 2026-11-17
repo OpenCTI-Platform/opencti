@@ -87,7 +87,7 @@ const playbookResolvers: Resolvers = {
       return playbookInsertNode(context, context.user, id, parentNodeId, parentPortId, childNodeId, input);
     },
     playbookDelete: (_, { id }, context) => playbookDelete(context, context.user, id),
-    playbookDeleteNode: (_, { id, nodeId }, context) => playbookDeleteNode(context, context.user, id, nodeId),
+    playbookDeleteNode: (_, { id, nodeId, keepChildren }, context) => playbookDeleteNode(context, context.user, id, nodeId, keepChildren),
     playbookDeleteLink: (_, { id, linkId }, context) => playbookDeleteLink(context, context.user, id, linkId),
     playbookUpdatePositions: (_, { id, positions }, context) => playbookUpdatePositions(context, context.user, id, positions),
     playbookFieldPatch: (_, { id, input }, context) => playbookEdit(context, context.user, id, input),

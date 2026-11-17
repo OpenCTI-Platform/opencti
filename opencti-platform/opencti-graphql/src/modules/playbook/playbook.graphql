@@ -155,7 +155,7 @@ type Mutation {
     "Move a node and its branch under another out port in a single write: every link reaching the node is replaced by one link from parentNodeId / parentPortId."
     playbookMoveNode(id: ID!, nodeId: ID!, parentNodeId: ID!, parentPortId: ID!): String! @auth(for: [AUTOMATION_AUTMANAGE])
     playbookDelete(id: ID!): ID @auth(for: [AUTOMATION_AUTMANAGE])
-    playbookDeleteNode(id: ID!, nodeId: ID!): Playbook @auth(for: [AUTOMATION_AUTMANAGE])
+    playbookDeleteNode(id: ID!, nodeId: ID!, keepChildren: Boolean): Playbook @auth(for: [AUTOMATION_AUTMANAGE])
     playbookDeleteLink(id: ID!, linkId: ID!): Playbook @auth(for: [AUTOMATION_AUTMANAGE])
     playbookUpdatePositions(id: ID!, positions: String!): ID @auth(for: [AUTOMATION_AUTMANAGE])
     playbookImport(file: Upload!): String! @auth(for: [AUTOMATION_AUTMANAGE])

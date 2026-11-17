@@ -20097,6 +20097,7 @@ export type MutationPlaybookDeleteLinkArgs = {
 
 export type MutationPlaybookDeleteNodeArgs = {
   id: Scalars['ID']['input'];
+  keepChildren?: InputMaybe<Scalars['Boolean']['input']>;
   nodeId: Scalars['ID']['input'];
 };
 

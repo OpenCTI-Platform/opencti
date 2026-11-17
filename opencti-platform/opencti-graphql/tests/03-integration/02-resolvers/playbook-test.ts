@@ -113,9 +113,10 @@ const MOVE_NODE_PLAYBOOK = gql`
 `;
 
 const DELETE_NODE_PLAYBOOK = gql`
-    mutation playbookDeleteNode($id: ID!, $nodeId: ID!) {
-        playbookDeleteNode(id: $id, nodeId: $nodeId) {
+    mutation playbookDeleteNode($id: ID!, $nodeId: ID!, $keepChildren: Boolean) {
+        playbookDeleteNode(id: $id, nodeId: $nodeId, keepChildren: $keepChildren) {
             id
+            playbook_definition
         }
     }
 `;
@@ -1026,6 +1027,99 @@ describe('Playbook resolver standard behavior', () => {
       const playbookDef = await readPlaybookDefinition(playbookId);
       expect(playbookDef.nodes.length).toEqual(0);
       expect(playbookDef.links.length).toEqual(0);
+    });
+  });
+
+  describe('playbookDeleteNode with keepChildren (single-step delete)', () => {
+    type TestLink = { from: { id: string; port: string }; to: { id: string } };
+    const created: string[] = [];
+    const newPlaybook = async (name: string) => {
+      const playbook = await createPlaybook(name);
+      created.push(playbook.id);
+      return playbook.id as string;
+    };
+    const deleteKeepingChildren = (id: string, nodeId: string) => queryAsAdminWithSuccess({
+      query: DELETE_NODE_PLAYBOOK,
+      variables: { id, nodeId, keepChildren: true },
+    });
+    const edges = (links: TestLink[]) => links.map((l) => `${l.from.id}:${l.from.port}->${l.to.id}`).sort();
+
+    afterAll(async () => {
+      for (const id of created) {
+        await deletePlaybook(id).catch(() => {});
+      }
+    });
+
+    it('should remove a middle step and link its child to its parent', async () => {
+      const id = await newPlaybook('Single-step delete: middle');
+      const entry = await addEntryNode(id);
+      const a = await addMatchingNode(id, entry, 'a');
+      const b = await addMatchingNode(id, a, 'b');
+      const result = await deleteKeepingChildren(id, a);
+      expect(result.data?.playbookDeleteNode.id).toEqual(id);
+      const def = await readPlaybookDefinition(id);
+      expect(def.nodes.map((n: { id: string }) => n.id).sort()).toEqual([entry, b].sort());
+      expect(edges(def.links)).toEqual([`${entry}:out->${b}`]);
+    });
+
+    it('should link the children to the same output of the parent (no-match branch)', async () => {
+      const id = await newPlaybook('Single-step delete: branch output');
+      const entry = await addEntryNode(id);
+      const a = await addMatchingNode(id, entry, 'a');
+      const b = await addMatchingNode(id, a, 'b', 'no-match');
+      const c = await addMatchingNode(id, b, 'c');
+      const d = await addMatchingNode(id, b, 'd', 'no-match');
+      await deleteKeepingChildren(id, b);
+      const def = await readPlaybookDefinition(id);
+      expect(def.nodes.length).toEqual(4);
+      expect(edges(def.links)).toEqual([`${entry}:out->${a}`, `${a}:no-match->${c}`, `${a}:no-match->${d}`].sort());
+    });
+
+    it('should link the children to every parent of a step with two parents', async () => {
+      const id = await newPlaybook('Single-step delete: two parents');
+      const entry = await addEntryNode(id);
+      const a = await addMatchingNode(id, entry, 'a');
+      const b = await addMatchingNode(id, a, 'b');
+      await addLink(id, a, b, 'no-match');
+      const c = await addMatchingNode(id, b, 'c');
+      await deleteKeepingChildren(id, b);
+      const def = await readPlaybookDefinition(id);
+      expect(edges(def.links)).toEqual([`${entry}:out->${a}`, `${a}:out->${c}`, `${a}:no-match->${c}`].sort());
+    });
+
+    it('should remove a leaf step and its incoming link only', async () => {
+      const id = await newPlaybook('Single-step delete: leaf');
+      const entry = await addEntryNode(id);
+      const a = await addMatchingNode(id, entry, 'a');
+      await deleteKeepingChildren(id, a);
+      const def = await readPlaybookDefinition(id);
+      expect(def.nodes.map((n: { id: string }) => n.id)).toEqual([entry]);
+      expect(def.links.length).toEqual(0);
+    });
+
+    it('should refuse the entry point when it has children', async () => {
+      const id = await newPlaybook('Single-step delete: entry point');
+      const entry = await addEntryNode(id);
+      await addMatchingNode(id, entry, 'a');
+      await queryAsAdminWithError(
+        { query: DELETE_NODE_PLAYBOOK, variables: { id, nodeId: entry, keepChildren: true } },
+        'Playbook entry point cannot be deleted alone: its steps would have no parent',
+        FUNCTIONAL_ERROR,
+      );
+      const def = await readPlaybookDefinition(id);
+      expect(def.nodes.length).toEqual(2);
+      expect(def.links.length).toEqual(1);
+    });
+
+    it('should keep the branch delete unchanged without the argument', async () => {
+      const id = await newPlaybook('Single-step delete: default');
+      const entry = await addEntryNode(id);
+      const a = await addMatchingNode(id, entry, 'a');
+      await addMatchingNode(id, a, 'b');
+      await queryAsAdminWithSuccess({ query: DELETE_NODE_PLAYBOOK, variables: { id, nodeId: a } });
+      const def = await readPlaybookDefinition(id);
+      expect(def.nodes.map((n: { id: string }) => n.id)).toEqual([entry]);
+      expect(def.links.length).toEqual(0);
     });
   });
 

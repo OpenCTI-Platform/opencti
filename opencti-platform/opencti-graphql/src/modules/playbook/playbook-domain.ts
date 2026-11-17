@@ -471,10 +471,45 @@ export const playbookInsertNode = async (
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user).then(() => ({ nodeId, linkId }));
 };
 
-export const playbookDeleteNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string) => {
+// Single-step delete: the node goes, and each of its children is linked to each of the node's
+// parents on the same out port, so the steps after it stay wired (an existing link is not
+// duplicated). The entry point has no parent to hand its children to, so it is refused when
+// it has children.
+export const removePlaybookNodeKeepChildren = (definition: ComponentDefinition, nodeId: string): ComponentDefinition => {
+  const node = definition.nodes.find((n) => n.id === nodeId);
+  if (!node) {
+    throw FunctionalError('Playbook node not found', { node_id: nodeId });
+  }
+  const incoming = definition.links.filter((l) => l.to.id === nodeId);
+  const childIds = [...new Set(definition.links.filter((l) => l.from.id === nodeId).map((l) => l.to.id))];
+  if (PLAYBOOK_COMPONENTS[node.component_id]?.is_entry_point && childIds.length > 0) {
+    throw FunctionalError('Playbook entry point cannot be deleted alone: its steps would have no parent', { node_id: nodeId });
+  }
+  const links = definition.links.filter((l) => l.from.id !== nodeId && l.to.id !== nodeId);
+  incoming.forEach((parentLink) => {
+    childIds.forEach((childId) => {
+      const exists = links.some((l) => l.from.id === parentLink.from.id && l.from.port === parentLink.from.port && l.to.id === childId);
+      if (!exists) {
+        links.push({ id: uuidv4(), from: { id: parentLink.from.id, port: parentLink.from.port }, to: { id: childId } });
+      }
+    });
+  });
+  return { ...definition, nodes: definition.nodes.filter((n) => n.id !== nodeId), links };
+};
+
+export const playbookDeleteNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string, keepChildren?: boolean | null) => {
   await checkEnterpriseEdition(context);
   const playbook = await findById(context, user, id);
-  const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+  const parsed = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+  if (keepChildren) {
+    const kept = removePlaybookNodeKeepChildren(parsed, nodeId);
+    assertPlaybookDefinitionIsValid(kept);
+    assertPlaybookDefinitionIsAcyclicAndReachable(kept);
+    const keptPatch: any = { playbook_definition: JSON.stringify(kept) };
+    const { element: keptElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, keptPatch);
+    return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, keptElem, user);
+  }
+  const definition = parsed;
   definition.nodes = definition.nodes.filter((n) => n.id !== nodeId);
   // Also delete all links going to this node (all links from this node are deleted after)
   definition.links = definition.links.filter((n) => n.to.id !== nodeId);

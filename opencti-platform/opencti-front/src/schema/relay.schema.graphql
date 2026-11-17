@@ -9577,7 +9577,7 @@ type Mutation {
   playbookAddNode(id: ID!, input: PlaybookAddNodeInput!): String!
   playbookDelete(id: ID!): ID
   playbookDeleteLink(id: ID!, linkId: ID!): Playbook
-  playbookDeleteNode(id: ID!, nodeId: ID!): Playbook
+  playbookDeleteNode(id: ID!, nodeId: ID!, keepChildren: Boolean): Playbook
   playbookDuplicate(id: ID!): String!
   playbookExecute(entityId: String!, id: ID!): Boolean
   playbookFieldPatch(commitMessage: String, id: ID!, input: [EditInput!]!, references: [String]): Playbook
