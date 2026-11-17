@@ -76,6 +76,7 @@ import {
   type ConnectionSide,
   elConnectionTypesRanking,
   DELETE_MAX_SNAPSHOT_RELATIONS,
+  elControlSnapshotDelete,
   elCount,
   elDeleteElements,
   elFindByIds,
@@ -5039,6 +5040,8 @@ export const internalDeleteElementById = async <T extends StoreObject>(
       const forceDelete = !!opts.forceDelete || !isTrashableElement;
       const isTrashEnabled = conf.get('app:trash:enabled');
       if (isTrashEnabled && !forceDelete) {
+        // The trash is capped: refuse before the files of the element are hidden
+        await elControlSnapshotDelete(context, user, [element], { isDraftDelete: false });
         // mark indexed files as removed to exclude them from search
         await elUpdateRemovedFiles(element, true);
       } else {
@@ -5047,7 +5050,8 @@ export const internalDeleteElementById = async <T extends StoreObject>(
       }
       // Delete all linked elements
       const forceRefresh = opts.forceRefresh ?? true;
-      await elDeleteElements(context, user, [element], { forceDelete, forceRefresh, signal: lock.signal });
+      const snapshotChecked = isTrashEnabled && !forceDelete;
+      await elDeleteElements(context, user, [element], { forceDelete, forceRefresh, snapshotChecked, signal: lock.signal });
       // Publish event in the stream
       event = await storeDeleteEvent(context, user, element, opts);
     }

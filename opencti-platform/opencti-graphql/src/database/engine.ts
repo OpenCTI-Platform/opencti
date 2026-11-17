@@ -4951,8 +4951,10 @@ const elCopyRelationsTargetsToDraft = async (
   }
 };
 
-export const elMarkElementsAsDraftDelete = async (context: AuthContext, user: AuthUser, elements: BasicStoreBase[]) => {
+export const elMarkElementsAsDraftDelete = async (context: AuthContext, user: AuthUser, elements: BasicStoreBase[], opts: SnapshotDeleteOpts = {}) => {
   if (elements.some((e) => !isDraftSupportedEntity(e))) throw UnsupportedError('Cannot delete unsupported element in draft context', { elements });
+  // The whole cascade is copied into the draft: refuse above the cap, before anything is written
+  await elControlSnapshotDelete(context, user, elements, { ...opts, isDraftDelete: true });
 
   // 01. Remove all elements that are draft creations, mark as delete for others
   const liveElements = elements.filter((f) => !isDraftIndex(f._index));
@@ -5435,6 +5437,10 @@ type DeleteElementsOpts = {
   forceDelete?: boolean;
   // Signal of the lock held by the caller: the batched delete stops between two pages if the lock is lost
   signal?: AbortSignal;
+  // The caller already ran elControlSnapshotDelete
+  snapshotChecked?: boolean;
+} & SnapshotDeleteOpts;
+type SnapshotDeleteOpts = {
   // Overrides of MAX_BULK_OPERATIONS and DELETE_MAX_SNAPSHOT_RELATIONS, for tests
   batchSize?: number;
   maxSnapshotRelations?: number;
@@ -5445,6 +5451,8 @@ type DeleteElementsOpts = {
 // The same cap protects the load of the outgoing refs of the element to delete.
 export const DELETE_MAX_SNAPSHOT_RELATIONS: number = conf.get('app:delete:max_snapshot_relations') ?? 50000;
 const DELETE_PROGRESS_LOG_PAGES = 10;
+// A page larger than the search size limit would be read as the last page
+const cascadePageSize = (batchSize?: number) => Math.min(batchSize ?? MAX_BULK_OPERATIONS, ES_MAX_PAGINATION);
 
 type CascadePageHandler = (page: BasicStoreRelation[], removedIds: Set<string>) => Promise<boolean>;
 type CascadeOpts = {
@@ -5499,7 +5507,7 @@ const traverseRelationsCascade = async (
     filters,
     callback,
     types: [ABSTRACT_BASIC_RELATIONSHIP],
-    first: opts.batchSize ?? MAX_BULK_OPERATIONS,
+    first: cascadePageSize(opts.batchSize),
     includeDeletedInDraft: opts.includeDeletedInDraft,
   };
   await elList<BasicStoreRelation>(context, SYSTEM_USER, READ_RELATIONSHIPS_INDICES, listOpts);
@@ -5555,7 +5563,7 @@ const elDeleteElementsBatched = async (
   opts: DeleteElementsOpts = {},
 ) => {
   const rootIds = elements.map((e) => e.internal_id);
-  const batchSize = opts.batchSize ?? MAX_BULK_OPERATIONS;
+  const batchSize = cascadePageSize(opts.batchSize);
   if (!isDeleteControlBypassed(user)) {
     await preflightRelationsCascade(context, user, elements, { withControls: true, batchSize });
   }
@@ -5576,6 +5584,8 @@ const elDeleteElementsBatched = async (
     }
   };
   const onPage = async (page: BasicStoreRelation[], removedIds: Set<string>) => {
+    // The lock can be lost during the pre-flight or while reading the page: never write without it
+    opts.signal?.throwIfAborted();
     // Clean up the denormalized rel_ of the elements that remain, then delete the page
     const elementsImpact = await computeDeleteElementsImpacts(page, [], removedIds);
     await elRemoveRelationConnection(context, user, elementsImpact, opts);
@@ -5585,10 +5595,10 @@ const elDeleteElementsBatched = async (
     if (isHeavy && pages % DELETE_PROGRESS_LOG_PAGES === 0) {
       logApp.info('[SEARCH] Deleting heavily-referenced elements, in progress', { ...logMeta(), deleted_relations: deleted });
     }
-    opts.signal?.throwIfAborted();
     return true;
   };
   await traverseRelationsCascade(context, rootIds, new Set(rootIds), onPage, { batchSize, onFirstRootHits });
+  opts.signal?.throwIfAborted();
   // When the element is itself a relationship, its endpoints must be cleaned up too
   const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type)) as BasicStoreRelation[];
   if (basicCleanup.length > 0) {
@@ -5599,6 +5609,27 @@ const elDeleteElementsBatched = async (
   await elDeleteInstances(context, elements, opts);
   if (isHeavy) {
     logApp.info('[SEARCH] Deleting heavily-referenced elements, done', { ...logMeta(), deleted_relations: deleted });
+  }
+};
+
+// Trash and draft deletes snapshot the whole cascade: refuse them above the cap, before anything is written
+export const elControlSnapshotDelete = async (
+  context: AuthContext,
+  user: AuthUser,
+  elements: BasicStoreBase[],
+  opts: SnapshotDeleteOpts & { isDraftDelete: boolean },
+) => {
+  const { isDraftDelete } = opts;
+  const maxRelations = opts.maxSnapshotRelations ?? DELETE_MAX_SNAPSHOT_RELATIONS;
+  // Draft deletes run no control on the related relations
+  const withControls = !isDraftDelete && !isDeleteControlBypassed(user);
+  const preflightOpts = { withControls, maxRelations, batchSize: opts.batchSize, includeDeletedInDraft: isDraftDelete };
+  const isBelowCap = await preflightRelationsCascade(context, user, elements, preflightOpts);
+  if (!isBelowCap) {
+    const message = isDraftDelete
+      ? 'Cannot delete element in draft: too many related relations, delete it outside the draft'
+      : 'Cannot move element to trash: too many related relations, delete it permanently';
+    throw FunctionalError(message, { ids: elements.map((e) => e.internal_id), max_relations: maxRelations });
   }
 };
 // endregion
@@ -5620,20 +5651,12 @@ export const elDeleteElements = async (
     await elDeleteElementsBatched(context, user, elements, opts);
     return;
   }
-  // Trash and draft deletes snapshot the whole cascade: refuse them above the cap
-  const maxRelations = opts.maxSnapshotRelations ?? DELETE_MAX_SNAPSHOT_RELATIONS;
-  const withControls = isTrashDelete && !isDeleteControlBypassed(user);
-  const preflightOpts = { withControls, maxRelations, batchSize: opts.batchSize, includeDeletedInDraft: isDraftDelete };
-  const isBelowCap = await preflightRelationsCascade(context, user, elements, preflightOpts);
-  if (!isBelowCap) {
-    const message = isDraftDelete
-      ? 'Cannot delete element in draft: too many related relations, delete it outside the draft'
-      : 'Cannot move element to trash: too many related relations, delete it permanently';
-    throw FunctionalError(message, { ids: elements.map((e) => e.internal_id), max_relations: maxRelations });
-  }
   if (isDraftDelete) {
-    await elMarkElementsAsDraftDelete(context, user, elements);
+    await elMarkElementsAsDraftDelete(context, user, elements, opts);
     return;
+  }
+  if (!opts.snapshotChecked) {
+    await elControlSnapshotDelete(context, user, elements, { ...opts, isDraftDelete: false });
   }
   // Trash: the cascade is below the cap and the controls passed, it can be loaded in one go
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, SYSTEM_USER, elements);

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { buildEntityData, buildRelationData } from '../../../src/database/data-builder';
-import { elCount, elDeleteElements, elFindByIds, elIndexElements } from '../../../src/database/engine';
+import { elCount, elDeleteElements, elFindByIds, elIndexElements, elMarkElementsAsDraftDelete } from '../../../src/database/engine';
 import { READ_DATA_INDICES, READ_ENTITIES_INDICES, READ_RELATIONSHIPS_INDICES } from '../../../src/database/utils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
@@ -90,5 +90,36 @@ describe('Batched delete of heavily-referenced elements', () => {
     // Cleanup
     const liveMalwares = await elFindByIds(testContext, ADMIN_USER, malwares.map((m) => m.internal_id), { indices: READ_DATA_INDICES }) as BasicStoreBase[];
     await elDeleteElements(testContext, ADMIN_USER, liveMalwares);
+  });
+
+  it('should not write anything once the lock is lost', async () => {
+    const { author, malwares } = await createAuthorWithRelations('Lock lost author');
+    const controller = new AbortController();
+    controller.abort();
+
+    await expect(elDeleteElements(testContext, ADMIN_USER, [author], { batchSize: 2, signal: controller.signal })).rejects.toThrow();
+
+    expect(await findLive(author.internal_id)).toHaveLength(1);
+    expect(await countConnectedRelations(author.internal_id)).toBe(MALWARES_COUNT + 2);
+    expect(await countAuthoredMalwares(author.internal_id)).toBe(MALWARES_COUNT);
+
+    // Cleanup
+    const liveMalwares = await elFindByIds(testContext, ADMIN_USER, malwares.map((m) => m.internal_id), { indices: READ_DATA_INDICES }) as BasicStoreBase[];
+    await elDeleteElements(testContext, ADMIN_USER, [author, ...liveMalwares]);
+  });
+
+  it('should refuse a draft delete above the snapshot cap, before anything is copied to the draft', async () => {
+    const { author, malwares } = await createAuthorWithRelations('Draft capped author');
+    const draftContext = { ...testContext, draft_context: 'draft-delete-cap-test' };
+
+    const draftDelete = elMarkElementsAsDraftDelete(draftContext, ADMIN_USER, [author], { batchSize: 2, maxSnapshotRelations: 3 });
+    await expect(draftDelete).rejects.toThrow('Cannot delete element in draft: too many related relations, delete it outside the draft');
+
+    expect(await findLive(author.internal_id)).toHaveLength(1);
+    expect(await countConnectedRelations(author.internal_id)).toBe(MALWARES_COUNT + 2);
+
+    // Cleanup
+    const liveMalwares = await elFindByIds(testContext, ADMIN_USER, malwares.map((m) => m.internal_id), { indices: READ_DATA_INDICES }) as BasicStoreBase[];
+    await elDeleteElements(testContext, ADMIN_USER, [author, ...liveMalwares]);
   });
 });
