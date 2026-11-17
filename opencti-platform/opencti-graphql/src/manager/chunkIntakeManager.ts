@@ -88,8 +88,13 @@ const DEFER_MISSING_REFS = booleanConf('chunk_intake_manager:defer_missing_refs'
 const CHUNK_INTAKE_SOURCE = conf.get('chunk_intake_manager:source') ?? 'chunk_queue';
 // Unacked messages per push queue: a buffer of decoded messages for the release scheduler, not the
 // regulator (the set point below is); 25 keeps mix140k's throughput of 100 with 20% less platform
-// memory, 10 halves it with half-full batches (2026-11-06 tuning runs). Memory is bounded by the bytes.
+// memory, 10 halves it with half-full batches (2026-11-06 tuning runs). It is the start value only: each
+// queue's prefetch then follows the size of its messages, to hold about push_prefetch_bytes delivered,
+// within push_prefetch_max (push-prefetch.ts; misp split by the connector, one object per message: 434 s
+// at 25, 169 s at 600, 2026-11-17). push_prefetch_bytes 0 keeps the prefetch fixed.
 const PUSH_PREFETCH = Number(conf.get('chunk_intake_manager:push_prefetch') ?? 25);
+const PUSH_PREFETCH_BYTES = Number(conf.get('chunk_intake_manager:push_prefetch_bytes') ?? 33554432);
+const PUSH_PREFETCH_MAX = Number(conf.get('chunk_intake_manager:push_prefetch_max') ?? 600);
 const PUSH_MAX_IN_FLIGHT_BYTES = Number(conf.get('chunk_intake_manager:push_max_in_flight_bytes') ?? 268435456);
 // The ready depth the release scheduler holds, in sequencer batches (R* = factor x max_batch_size):
 // at least one batch keeps the batches full, more only adds write latency (KB note
@@ -948,7 +953,7 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
         runOperation: runIntakeOperation,
         report,
       },
-      { prefetch: PUSH_PREFETCH, maxInFlightBytes: PUSH_MAX_IN_FLIGHT_BYTES },
+      { prefetch: PUSH_PREFETCH, prefetchBytes: PUSH_PREFETCH_BYTES, maxPrefetch: PUSH_PREFETCH_MAX, maxInFlightBytes: PUSH_MAX_IN_FLIGHT_BYTES, readSizes: queueDepths },
       (outcome) => pushMessagesCounter?.add(1, { outcome: outcome.reason }),
       (queue) => {
         lease?.markOrdered(queue).catch((cause) => logApp.warn('[OPENCTI-MODULE] Worker-less intake: ordered queue not marked, another platform may join it', { queue, cause }));

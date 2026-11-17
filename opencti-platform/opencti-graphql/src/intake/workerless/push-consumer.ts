@@ -2,6 +2,7 @@ import amqp from 'amqplib/callback_api';
 import { logApp } from '../../config/conf';
 import { rabbitmqConnectionOptions, rabbitmqUri } from '../../database/rabbitmq';
 import { createByteBudget, createQueueOrder, handlePushMessage, isEventMessage, parsePushMessage, type PushIntakeDeps, type PushOutcome } from './push-intake';
+import { isOversized, retargetPrefetch } from './push-prefetch';
 
 // The broker side of the worker-less intake (POC): one connection, one channel per push queue as
 // the worker has one consumer per queue, manual acks. A message is answered on the channel it came
@@ -30,11 +31,21 @@ export const waitDrained = async (pending: () => number, maxMs: number, pollMs: 
   return pending() === 0;
 };
 
+export interface QueueSize {
+  ready: number;
+  bytesReady: number;
+}
+
 export interface PushConsumerOptions {
-  // Unacked messages per queue
+  // Unacked messages per queue, until the size of its messages is known (push-prefetch.ts)
   prefetch: number;
+  // Delivered bytes held per queue (0: the prefetch stays fixed) and the prefetch bound
+  prefetchBytes: number;
+  maxPrefetch: number;
   // Bytes of the messages in flight
   maxInFlightBytes: number;
+  // The messages ready of each queue and their bytes, read on each refresh to set its prefetch
+  readSizes?: () => Promise<Map<string, QueueSize>>;
 }
 
 export interface PushConsumer {
@@ -51,6 +62,9 @@ interface ConsumedQueue {
   consumerTag: string | null;
   inFlight: number;
   stopping: boolean;
+  open: boolean;
+  prefetch: number;
+  retargeting: boolean;
 }
 
 export const consumePushQueues = async (
@@ -63,6 +77,7 @@ export const consumePushQueues = async (
   onOrdered: (queue: string) => void = () => {},
 ): Promise<PushConsumer> => {
   const budget = createByteBudget(options.maxInFlightBytes);
+  const prefetchOptions = { initial: options.prefetch, bytes: options.prefetchBytes, max: options.maxPrefetch };
   const order = createQueueOrder();
   const consumed = new Map<string, ConsumedQueue>();
   const toldOrdered = new Set<string>();
@@ -136,8 +151,69 @@ export const consumePushQueues = async (
     if (entry.stopping && entry.inFlight === 0 && entry.channel) closeChannel(entry.channel);
   };
 
+  // The consumer of a queue on its channel, with the entry's prefetch: RabbitMQ binds a prefetch to a consumer
+  // when it is created (basic.qos, not global), a new prefetch is a new consumer on the same channel
+  const startConsumer = (queue: string, entry: ConsumedQueue, channel: amqp.Channel) => {
+    channel.prefetch(entry.prefetch, false);
+    channel.consume(queue, (message) => {
+      if (message === null) {
+        // Cancelled by the broker (queue deleted)
+        closeChannel(channel);
+        return;
+      }
+      // Parsed once, on delivery: its type decides the order (an event queue is consumed in order);
+      // from the raw bytes, its base64 content sliced out (not decoded here)
+      const data = parsePushMessage(message.content);
+      const isEvent = isEventMessage(data ?? {});
+      if (isEvent && !toldOrdered.has(queue)) {
+        toldOrdered.add(queue);
+        onOrdered(queue);
+      }
+      if (isOversized(message.content.length, entry.prefetch, prefetchOptions)) {
+        setPrefetch(queue, entry, retargetPrefetch(entry.prefetch, message.content.length, prefetchOptions));
+      }
+      entry.inFlight += 1;
+      order.schedule(queue, isEvent, () => handle(queue, channel, () => entry.open, message, data))
+        .catch((cause) => logApp.error(`${LOG_PREFIX} push message scheduling failed`, { queue, cause }))
+        .finally(() => answered(entry));
+    }, { noAck: false }, (consumeError, ok) => {
+      entry.retargeting = false;
+      if (consumeError) return; // the channel is closed with the error
+      entry.consumerTag = ok.consumerTag;
+      if (entry.stopping) stopQueue(entry);
+    });
+  };
+
+  // Its consumer cancelled then created again with the new prefetch; the messages in flight stay unacked on the
+  // channel and are answered on it, nothing is redelivered
+  const setPrefetch = (queue: string, entry: ConsumedQueue, prefetch: number | null) => {
+    const { channel, consumerTag } = entry;
+    if (prefetch === null || entry.stopping || entry.retargeting || !channel || !consumerTag) return;
+    logApp.info(`${LOG_PREFIX} prefetch changed`, { queue, from: entry.prefetch, to: prefetch });
+    entry.retargeting = true;
+    entry.consumerTag = null;
+    entry.prefetch = prefetch;
+    try {
+      channel.cancel(consumerTag, (cancelError) => {
+        if (cancelError) {
+          entry.retargeting = false;
+          return; // the channel is closed with the error
+        }
+        if (entry.stopping) {
+          // stopped meanwhile: no new consumer, closed once its messages in flight are answered
+          entry.retargeting = false;
+          if (entry.inFlight === 0) closeChannel(channel);
+          return;
+        }
+        startConsumer(queue, entry, channel);
+      });
+    } catch {
+      entry.retargeting = false; // Already closing
+    }
+  };
+
   const consumeQueue = (queue: string) => {
-    const entry: ConsumedQueue = { channel: null, consumerTag: null, inFlight: 0, stopping: false };
+    const entry: ConsumedQueue = { channel: null, consumerTag: null, inFlight: 0, stopping: false, open: false, prefetch: options.prefetch, retargeting: false };
     consumed.set(queue, entry);
     connection.createChannel((channelError, channel) => {
       if (channelError) {
@@ -145,37 +221,14 @@ export const consumePushQueues = async (
         logApp.warn(`${LOG_PREFIX} cannot open a channel, queue not consumed`, { queue, cause: channelError });
         return;
       }
-      let open = true;
+      entry.open = true;
       entry.channel = channel;
       channel.on('error', (cause) => logApp.warn(`${LOG_PREFIX} channel error, queue no longer consumed`, { queue, cause }));
       channel.on('close', () => {
-        open = false;
+        entry.open = false;
         if (consumed.get(queue) === entry) consumed.delete(queue);
       });
-      channel.prefetch(options.prefetch, false);
-      channel.consume(queue, (message) => {
-        if (message === null) {
-          // Cancelled by the broker (queue deleted)
-          closeChannel(channel);
-          return;
-        }
-        // Parsed once, on delivery: its type decides the order (an event queue is consumed in order);
-        // from the raw bytes, its base64 content sliced out (not decoded here)
-        const data = parsePushMessage(message.content);
-        const isEvent = isEventMessage(data ?? {});
-        if (isEvent && !toldOrdered.has(queue)) {
-          toldOrdered.add(queue);
-          onOrdered(queue);
-        }
-        entry.inFlight += 1;
-        order.schedule(queue, isEvent, () => handle(queue, channel, () => open, message, data))
-          .catch((cause) => logApp.error(`${LOG_PREFIX} push message scheduling failed`, { queue, cause }))
-          .finally(() => answered(entry));
-      }, { noAck: false }, (consumeError, ok) => {
-        if (consumeError) return; // the channel is closed with the error
-        entry.consumerTag = ok.consumerTag;
-        if (entry.stopping) stopQueue(entry);
-      });
+      startConsumer(queue, entry, channel);
     });
   };
 
@@ -186,6 +239,19 @@ export const consumePushQueues = async (
     const queues = new Set(await listQueues());
     [...queues].filter((queue) => !consumed.has(queue)).forEach(consumeQueue);
     [...consumed].filter(([queue, entry]) => !queues.has(queue) && !entry.stopping).forEach(([, entry]) => stopQueue(entry));
+    if (options.prefetchBytes > 0 && options.readSizes) {
+      let sizes: Map<string, QueueSize>;
+      try {
+        sizes = await options.readSizes();
+      } catch (cause) {
+        logApp.warn(`${LOG_PREFIX} queue sizes not read, prefetch kept`, { cause });
+        return;
+      }
+      consumed.forEach((entry, queue) => {
+        const size = sizes.get(queue);
+        if (size && size.ready > 0) setPrefetch(queue, entry, retargetPrefetch(entry.prefetch, size.bytesReady / size.ready, prefetchOptions));
+      });
+    }
   };
   try {
     await refresh();
@@ -199,7 +265,7 @@ export const consumePushQueues = async (
     }
     throw cause;
   }
-  logApp.info(`${LOG_PREFIX} consuming`, { queues: consumed.size, prefetch: options.prefetch, max_in_flight_bytes: options.maxInFlightBytes });
+  logApp.info(`${LOG_PREFIX} consuming`, { queues: consumed.size, prefetch: options.prefetch, prefetch_bytes: options.prefetchBytes, max_prefetch: options.maxPrefetch, max_in_flight_bytes: options.maxInFlightBytes });
   return {
     queue: 'push queues',
     alive: () => alive,

@@ -364,6 +364,8 @@
     "defer_missing_refs": true,
     "source": "chunk_queue",
     "push_prefetch": 25,
+    "push_prefetch_bytes": 33554432,
+    "push_prefetch_max": 600,
     "push_max_in_flight_bytes": 268435456,
     "push_ready_depth_factor": 2,
     "push_release_quantum": 1,
