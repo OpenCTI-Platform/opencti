@@ -26,6 +26,8 @@ import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 import HtmlDisplay from '../../../../components/HtmlDisplay';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { isPdfPasswordError } from './StixCoreObjectContentPdfUtils';
+import { filterContentTabFiles, isContentTabImage, isPreviewOnlyFile, resolveContentFileMimeType } from './StixCoreObjectContentFileUtils';
+import StixCoreObjectContentImageViewer from './StixCoreObjectContentImageViewer';
 
 import '../../../../utils/pdfWorker-setup';
 
@@ -50,6 +52,12 @@ const DocumentContainer = styled('div', {
   display: 'flex',
   justifyContent: 'center',
 }));
+
+// Block layout (not flex centring): a zoomed image wider than the panel must stay reachable by scrolling on both sides
+const ImageContainer = styled(DocumentContainer)({
+  display: 'block',
+  textAlign: 'center',
+});
 
 const AdjustedContainer = styled('div', {
   shouldForwardProp: (prop) => prop !== 'navOpen',
@@ -150,16 +158,7 @@ const getFiles = (stixCoreObject) => {
     .filter(
       (n) => n.metaData && isEmptyField(n.metaData.external_reference_id),
     ) ?? [];
-  return sortByLastModified(
-    [...importFiles, ...externalReferencesFiles].filter((n) => {
-      return [
-        'application/pdf',
-        'text/plain',
-        'text/html',
-        'text/markdown',
-      ].includes(n.metaData.mimetype);
-    }),
-  );
+  return filterContentTabFiles([...importFiles, ...externalReferencesFiles]);
 };
 
 const getFilesFromTemplate = (stixCoreObject) => {
@@ -252,8 +251,9 @@ class StixCoreObjectContentComponent extends Component {
         return this.setState({ isLoading: false });
       }
       const currentFile = files.find((f) => f.id === currentFileId);
-      const currentFileType = currentFile && currentFile.metaData.mimetype;
-      if (currentFileType === 'application/pdf') {
+      // A file just uploaded is not listed until the refetch completes: guess its type from its name
+      const currentFileType = resolveContentFileMimeType(currentFileId, currentFile?.metaData?.mimetype);
+      if (isPreviewOnlyFile(currentFileType)) {
         this.props.setEditorHeaderDisabled(true);
         return this.setState({ isLoading: false });
       }
@@ -687,6 +687,25 @@ class StixCoreObjectContentComponent extends Component {
                     ))}
                   </Document>
                 </DocumentContainer>
+              </>
+            )}
+            {isContentTabImage(currentFileType) && (
+              <>
+                <StixCoreObjectContentBar
+                  handleZoomIn={this.handleZoomIn.bind(this)}
+                  handleZoomOut={this.handleZoomOut.bind(this)}
+                  currentZoom={this.state.pdfViewerZoom}
+                  navOpen={navOpen}
+                />
+                <ImageContainer navOpen={navOpen}>
+                  <StixCoreObjectContentImageViewer
+                    key={currentFile.id}
+                    fileId={currentFile.id}
+                    fileName={currentFile.name}
+                    height={height}
+                    zoom={this.state.pdfViewerZoom}
+                  />
+                </ImageContainer>
               </>
             )}
             {isBlockedPdfPreview && (

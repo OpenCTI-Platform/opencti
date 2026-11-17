@@ -3,7 +3,6 @@ import { List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
 import moment from 'moment/moment';
 import { MoreVert, SendOutlined } from '@mui/icons-material';
 import React, { Fragment, MouseEvent, useState } from 'react';
-import { FileOutline, FilePdfBox, LanguageHtml5, LanguageMarkdownOutline, NoteTextOutline } from 'mdi-material-ui';
 import { FileLineDeleteMutation as deleteMutation } from '@components/common/files/FileLine';
 import { FileLineDeleteMutation } from '@components/common/files/__generated__/FileLineDeleteMutation.graphql';
 import MenuItem from '@mui/material/MenuItem';
@@ -26,21 +25,8 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import EETooltip from '../entreprise_edition/EETooltip';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import IconButton from '../../../../components/common/button/IconButton';
-
-const renderIcon = (mimeType: string) => {
-  switch (mimeType) {
-    case 'text/plain':
-      return <NoteTextOutline />;
-    case 'application/pdf':
-      return <FilePdfBox />;
-    case 'text/markdown':
-      return <LanguageMarkdownOutline />;
-    case 'text/html':
-      return <LanguageHtml5 />;
-    default:
-      return <FileOutline />;
-  }
-};
+import StixCoreObjectContentFileIcon from './StixCoreObjectContentFileIcon';
+import { isContentTabImage } from './StixCoreObjectContentFileUtils';
 
 export interface ContentFile {
   id: string;
@@ -177,7 +163,7 @@ const StixCoreObjectContentFilesList = ({
                   disabled={deleting}
                 >
                   <ListItemIcon>
-                    {renderIcon(fileMimeType)}
+                    <StixCoreObjectContentFileIcon mimeType={fileMimeType} />
                   </ListItemIcon>
                   <ListItemText
                     sx={{
@@ -247,6 +233,17 @@ const StixCoreObjectContentFilesList = ({
             rel="noopener noreferrer"
           >
             {t_i18n('Download file')}
+          </MenuItem>
+        )}
+        {menuFile && isContentTabImage(menuFile.metaData?.mimetype) && (
+          <MenuItem
+            component={Link}
+            to={`/storage/view/${encodeURIComponent(menuFile.id)}`}
+            onClick={closePopover}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t_i18n('Open in a new tab')}
           </MenuItem>
         )}
         {!draftContext && canDownloadAsPdf && (

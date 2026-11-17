@@ -2,7 +2,7 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
-import { DeleteOutlined, DocumentScannerOutlined, GetAppOutlined, WarningOutlined } from '@mui/icons-material';
+import { DeleteOutlined, DocumentScannerOutlined, GetAppOutlined, OpenInNewOutlined, WarningOutlined } from '@mui/icons-material';
 import { ListItem, ListItemButton, Stack } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -21,6 +21,7 @@ import moment from 'moment';
 import { isEmpty } from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import { createFragmentContainer, graphql, GraphQLTaggedNode } from 'react-relay';
+import { useNavigate } from 'react-router';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -86,6 +87,8 @@ interface FileLineComponentProps {
   onDelete?: () => void;
   onClick?: () => void;
   isArtifact?: boolean;
+  // In-app page previewing the file (e.g. an image in the Content tab), opened on click instead of the raw file
+  previewLink?: string | null;
 }
 
 const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
@@ -101,7 +104,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   onDelete,
   onClick,
   isArtifact,
+  previewLink,
 }) => {
+  const navigate = useNavigate();
   const { me } = useAuth();
   const draftContext = useDraftContext();
   const { t_i18n, fld } = useFormatter();
@@ -247,6 +252,22 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     || encodedFilePath.endsWith('.exe')
     || encodedFilePath.endsWith('.pif')
     || encodedFilePath.endsWith('.dll');
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+      return;
+    }
+    // Previewable file (e.g. an image): open its in-app preview instead of the raw file
+    if (previewLink && !isFail && !isOutdated && !isProgress) {
+      navigate(previewLink);
+      return;
+    }
+    if (isWarning) {
+      setDisplayDownload(true);
+    } else {
+      handleLink(listUri, true);
+    }
+  };
   const fileExtension = file?.name.substring(file?.name.lastIndexOf('.')) ?? '';
   const fileNameWithoutExtension = file?.name.substring(0, file?.name.lastIndexOf('.')) ?? '';
 
@@ -356,6 +377,23 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                 </Menu>
               </>
             )}
+            {previewLink && !isFail && (
+              <Tooltip title={t_i18n('Open in a new tab')}>
+                <IconButton
+                  disabled={isProgress}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleLink(`${APP_BASE_PATH}/storage/view/${encodedFilePath}`, true);
+                  }}
+                  size="small"
+                  keepMui
+                  aria-label={t_i18n('Open in a new tab')}
+                >
+                  <OpenInNewOutlined fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
             {!isExternalReferenceAttachment && (
               <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
                 <>
@@ -407,10 +445,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         <ListItemButton
           sx={nested ? itemNestedSx : itemSx}
           rel="noopener noreferrer"
-          onClick={
-            onClick
-            || (() => (isWarning ? setDisplayDownload(true) : handleLink(listUri, true)))
-          }
+          onClick={handleClick}
         >
           <ListItemIcon>
             {isProgress && (
