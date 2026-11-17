@@ -59,13 +59,15 @@ From `opencti-platform/opencti-front` or `opencti-platform/opencti-graphql`:
 | `yarn lint:parity` | Runs ESLint (warnings included, no `--quiet`, no cache) and oxlint, compares findings, prints the report. |
 | `yarn lint:ox` | Runs oxlint alone with `.oxlintrc.json`. Informational. |
 | `yarn lint:ox:sync` | Regenerates `.oxlintrc.json` from `eslint.config.ts` and prints what could not be carried over. |
+| `yarn lint:ox:check` | Drift check: generates the config in memory and compares it with the committed `.oxlintrc.json`. Writes nothing, does not use git. Exit `0` identical, `1` drift, `2` error. |
 
 Exit codes of `lint:parity`: `0` parity, `1` differences remain (or a stale
 allowlist entry, or the two tools checked a different number of files), `2`
 tool or config error (a tool crashed, produced no output, or checked no files).
 
 Never hand-edit `.oxlintrc.json`: it is generated and the next sync overwrites
-it. If the generated config needs a fix, make it in the post-processing of
+it. `yarn lint:ox:check` is what notices a stale file: run `yarn lint:ox:sync` after
+any change to `eslint.config.ts`, and commit the result. If the generated config needs a fix, make it in the post-processing of
 `sync.mjs`, then run `yarn lint:ox:sync` and commit the result.
 
 `oxlint` and `@oxlint/migrate` are pinned to the same exact version, in both
@@ -78,6 +80,72 @@ In `opencti-front`, ESLint is type-aware and reads the gitignored relay
 oxlint's fault. CI runs the step after "Frontend install and build".
 
 The script's own tests: `node --test "scripts/lint-parity/test/*.test.mjs"` from the repo root.
+
+## Config sync and drift check
+
+`sync.mjs` runs `@oxlint/migrate` into a scratch directory, post-processes the
+result in memory, and writes `.oxlintrc.json`. The post-processing (turn every
+category off, drop options of disabled rules, copy the global ignores, anchor
+the override globs) lives in `sync.mjs` and `oxlintrc.mjs`.
+
+`yarn lint:ox:check` (`sync.mjs --check`) runs the same generation but compares
+the result with the committed file byte for byte instead of writing it. It
+exists because the parity report cannot see config drift: a rule added to
+`eslint.config.ts` without a sync is absent from `.oxlintrc.json`, and its
+ESLint findings land in "ESLint-only findings skipped", so `parity: OK` is still
+printed. Exit codes: `0` the file is up to date, `1` it is out of date (the
+message says where the first difference is), `2` the generation failed. It
+needs no git, so it runs in the backend CI container, which has no `.git`. CI
+runs it before `yarn lint:parity` in the same non-blocking step, and the parity
+run goes on whatever the check returned.
+
+### Override globs without a slash
+
+In ESLint flat config a `files` pattern without a slash (`*.js`, `knip.ts`)
+only matches files at the package root. `@oxlint/migrate` copies the pattern
+as is, and oxlint matches a slash-less pattern against the basename at any
+depth. So `files: ['*.js']` with `no-this-alias: 'off'` turned that rule off for
+every `.js` file under `src/` in oxlint, but only for root-level files in
+ESLint.
+
+Checked on oxlint 1.93.0 with a scratch config (root file, a nested file, a
+deep file): `*.js` and `root.js` match at every depth, `/*.js` matches
+nothing, and `./*.js` (also `./knip.ts`, `./*.{js,ts}`) matches the root-level
+files only, whichever directory oxlint is run from (the pattern is relative to
+the config file). `sync.mjs` therefore rewrites every override pattern that
+has no `/` and no leading `!` to the `./` form, and prints the rewrites. Re-check
+this behavior when bumping oxlint.
+
+## What `parity: OK` does not prove
+
+Both tools honour inline `eslint-disable` directives (oxlint reads them too). ESLint
+blocks the build, so the tree holds no ESLint finding on a compared rule, apart
+from the ones hidden by a directive. The "only ESLint" group is therefore
+structurally empty: if oxlint fails to implement a rule at a site where a
+directive hides it, nothing is reported. `parity: OK` proves that oxlint does not
+over-report, not that it catches everything ESLint catches. On switch day each
+such directive becomes an "unused directive" and its violation goes unnoticed.
+
+The final review measured this on `opencti-graphql` by running ESLint with
+`--no-inline-config` and oxlint with `--report-unused-disable-directives`. Of 11
+directives that oxlint calls unused on a compared rule, 5 hide a real ESLint
+finding:
+
+- `src/utils/ai/dataResolutionHelpers.js:231` and `:234`:
+  `@typescript-eslint/ban-ts-comment`, oxlint does not flag a bare
+  `// @ts-expect-error` in a `.js` file.
+- `tests/01-unit/graphql/sseMiddleware-resolution-test.ts:65`:
+  `import/extensions`, oxlint does not check the dynamic `import('...')`.
+- `src/database/sessionStore-memory.js:103` and `:130`: `no-this-alias`, a config
+  translation bug since fixed (see "Override globs without a slash").
+
+`opencti-front` has about 19 times as many directives and was not measured.
+
+**Required follow-up before phase 2** (removing `continue-on-error`): a
+directive-aware parity mode. Run ESLint with `--no-inline-config` and oxlint with
+`--report-unused-disable-directives`, and report every directive that oxlint
+calls unused while ESLint reports the named rule at the target line. It is not
+implemented yet.
 
 ## How to read the report
 
