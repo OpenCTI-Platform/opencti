@@ -39,7 +39,19 @@ Upon executing a query, the playground displays the response data in a structure
 
 ## Getting started
 
-To access the GraphQL playground, navigate to the GraphQL endpoint of your OpenCTI instance: `https://[your-opencti-instance]/public/graphql`. Then, follow these steps to utilize the playground:
+To open the GraphQL playground, browse to `https://<your OpenCTI host>/public/graphql`. When the platform runs under a base path (`app:base_path`, for example `/opencti`), the base path comes first: `https://<your OpenCTI host>/opencti/public/graphql`.
+
+This address is the playground page, not the API endpoint. The playground, like any other API client, sends each query to the API endpoint, `https://<your OpenCTI host>/graphql` (after the base path if any), with the `POST` method. The API endpoint answers other methods with `405 Method Not Allowed`, so it does not open in a browser.
+
+The playground runs the queries as the user logged in to the platform in the same browser: log in to OpenCTI first.
+
+!!! note "Playground and introspection settings"
+
+    The playground is available when `app:graphql:playground:enabled` is `true`. This is the default, unless `app:graphql:secure_by_default` is `true`. The playground is never available when the UI is disabled (`app:enabled_ui` is `false`).
+
+    The documentation explorer and the autocompletion read the schema through introspection. When the platform runs in production mode (`NODE_ENV=production`, as in the Docker images), introspection is disabled by default: an administrator allows it by setting `app:graphql:playground:force_disabled_introspection` to `false` (environment variable `APP__GRAPHQL__PLAYGROUND__FORCE_DISABLED_INTROSPECTION`). See the [configuration](../deployment/configuration.md#technical-customization) page.
+
+Then, follow these steps to utilize the playground:
 
 1. Query editor: Write GraphQL queries, mutations, and subscriptions in the text editor. Use syntax highlighting and autocompletion to speed up query composition.
 2. Documentation explorer: Access documentation for the GraphQL schema by clicking on the "Docs" tab on the left. Browse types, fields, and descriptions to understand the available data and query syntax.

@@ -2,6 +2,8 @@
 
 This guide covers setting up a development environment for XTM Composer and contributing to the project.
 
+XTM Composer is the container-based Integration Manager of OpenCTI: it deploys and manages, on your orchestrator, the connectors that you set up from the platform. To install, configure and use it, see the [Integration Manager](../deployment/integration-manager.md) pages, and the [Configuration](../deployment/integration-manager/configuration.md) reference for every setting used below.
+
 ## Prerequisites
 
 ### Required Tools
@@ -134,23 +136,28 @@ xtm-composer/
 │   ├── main.rs              # Application entry point
 │   ├── api/                 # External API integrations
 │   │   ├── opencti/         # OpenCTI API client
-│   │   └── openaev/         # OpenAEV API client (Coming Soon)
+│   │   └── openaev/         # OpenAEV API client
 │   ├── config/              # Configuration management
 │   │   ├── mod.rs
 │   │   └── settings.rs      # Settings structure definitions
 │   ├── engine/              # Core business logic
 │   │   ├── mod.rs
-│   │   └── manager.rs       # Manager implementation
-│   └── orchestrator/        # Container orchestration
-│       ├── mod.rs
-│       ├── kubernetes.rs    # Kubernetes implementation
-│       ├── docker.rs        # Docker implementation
-│       └── portainer.rs     # Portainer implementation
+│   │   ├── opencti.rs       # OpenCTI engine
+│   │   └── openaev.rs       # OpenAEV engine
+│   ├── orchestrator/        # Container orchestration
+│   │   ├── mod.rs
+│   │   ├── docker/          # Docker implementation
+│   │   ├── kubernetes/      # Kubernetes implementation
+│   │   ├── podman/          # Podman implementation
+│   │   ├── portainer/       # Portainer implementation
+│   │   └── swarm/           # Docker Swarm implementation
+│   └── system/              # System signal handling
+├── api/                     # GraphQL schema used to generate the OpenCTI client
 ├── config/                  # Configuration files
 │   ├── default.yaml         # Default configuration
-│   └── development.yaml     # Development overrides
-├── Cargo.toml              # Rust dependencies
-└── build.rs                # Build script
+│   └── development.yaml     # Development overrides (you create it, ignored by Git)
+├── Cargo.toml               # Rust dependencies
+└── build.rs                 # Build script
 ```
 
 ## Development Workflow
@@ -240,17 +247,32 @@ impl ConnectorManager {
 
 ### Running Local OpenCTI
 
+The `opencti-dev` Docker Compose file of the OpenCTI repository starts the dependencies of the platform (Elasticsearch, Redis, RabbitMQ, S3 storage), not OpenCTI itself. Run the back end from the source code, as described in [Platform development](platform.md):
+
 ```bash
 # Clone OpenCTI
 git clone https://github.com/OpenCTI-Platform/opencti.git
-cd opencti/opencti-platform/opencti-dev
 
-# Start OpenCTI stack
+# Start the dependencies
+cd opencti/opencti-platform/opencti-dev
 docker compose up -d
 
-# OpenCTI will be available at http://localhost:4000
-# Default credentials: admin@opencti.io / admin
+# Create your development configuration
+cd ../opencti-graphql
+cp config/default.json config/development.json
 ```
+
+OpenCTI has no default password: the back end does not start while the admin password or token keeps its `ChangeMe` value. In the `app.admin` section of `config/development.json`, set the admin password, and set the admin token to a UUID:
+
+```json
+"admin": {
+  "email": "admin@opencti.io",
+  "password": "<your admin password>",
+  "token": "<a UUID, for example the output of uuidgen>"
+}
+```
+
+Then install the Node.js dependencies and start the back end (`yarn install`, then `yarn start` in `opencti-graphql`), as described in [Platform development](platform.md). The API is available at `http://localhost:4000/graphql`. To use the web interface, start the front end too, then log in with the admin email and the password that you set. For a local test, set `opencti.token` (`OPENCTI__TOKEN`) of XTM Composer to the admin token.
 
 ### Running Local Docker Registry
 
@@ -302,8 +324,11 @@ docker push localhost:5000/your-image
 #### 1. Connection Refused
 
 ```bash
-# Check if OpenCTI is running
-curl http://localhost:4000/graphql
+# Check that OpenCTI is running and accepts your token (the API only accepts POST)
+curl -X POST http://localhost:4000/graphql \
+  -H "Authorization: Bearer <your token>" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{ about { version } }"}'
 
 # Check Docker daemon
 docker info
