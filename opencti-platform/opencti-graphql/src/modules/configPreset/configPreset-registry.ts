@@ -10,6 +10,7 @@ import { markingsFamily } from './registry/markings-configPreset-registry';
 import { rolesFamily } from './registry/roles-configPreset-registry';
 import { groupsFamily } from './registry/groups-configPreset-registry';
 import { policiesFamily } from './registry/policies-configPreset-registry';
+import { emailTemplatesFamily } from './registry/emailTemplates-configPreset-registry';
 import { labelsFamily } from './registry/labels-configPreset-registry';
 import { connectorsFamily } from './registry/connectors-configPreset-registry';
 import { ruleEngineFamily } from './registry/ruleEngine-configPreset-registry';
@@ -35,6 +36,7 @@ export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   rolesFamily,
   groupsFamily,
   policiesFamily,
+  emailTemplatesFamily,
   labelsFamily,
   exclusionListsFamily,
   killChainPhasesFamily,
