@@ -25,6 +25,7 @@ import SightingIncidentDefinition from './sighting-incident/SightingIncidentDefi
 import SightingIndicatorDefinition from './sighting-indicator/SightingIndicatorDefinition';
 import SightingObservableDefinition from './sighting-observable/SightingObservableDefinition';
 import ParentTechniqueUseDefinition from './parent-technique-use/ParentTechniqueUseDefinition';
+import ProcedureTechniqueUseDefinition from './procedure-technique-use/ProcedureTechniqueUseDefinition';
 import VulnerabilitySoftwareToSystemDefinition from './vulnerability-software-to-system/VulnerabilitySoftwareToSystemDefinition';
 import VulnerabilitySoftwareToInfraDefinition from './vulnerability-software-to-infra/VulnerabilitySoftwareToInfraDefinition';
 
@@ -55,6 +56,7 @@ export const rule_definitions = [
   SightingIndicatorDefinition,
   SightingObservableDefinition,
   ParentTechniqueUseDefinition,
+  ProcedureTechniqueUseDefinition,
   VulnerabilitySoftwareToSystemDefinition,
   VulnerabilitySoftwareToInfraDefinition,
 ];

@@ -27,6 +27,7 @@ import ReportRefObservableBasedOnRule from '../rules/report-refs-observable-base
 import ReportRefObservableBelongsToRule from '../rules/report-refs-observable-belongs-to/ReportRefObservableBelongsToRule';
 import ReportRefsLocationLocatedAtRule from '../rules/report-refs-location-located-at/ReportRefLocationLocatedAtRule';
 import ParentTechniqueUseRule from '../rules/parent-technique-use/ParentTechniqueUseRule';
+import ProcedureTechniqueUseRule from '../rules/procedure-technique-use/ProcedureTechniqueUseRule';
 import VulnerabilitySoftwareToSystemRule from '../rules/vulnerability-software-to-system/VulnerabilitySoftwareToSystemRule';
 import { BUS_TOPICS, DEV_MODE, logApp } from '../config/conf';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -66,6 +67,7 @@ export const RULES_DECLARATION: Array<RuleRuntime> = [
   ReportRefObservableBelongsToRule,
   ReportRefsLocationLocatedAtRule,
   ParentTechniqueUseRule,
+  ProcedureTechniqueUseRule,
   VulnerabilitySoftwareToSystemRule,
   VulnerabilitySoftwareToInfraRule,
 ];
