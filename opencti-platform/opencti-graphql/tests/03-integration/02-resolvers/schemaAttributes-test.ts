@@ -64,7 +64,9 @@ describe('schemaAttributes', () => {
   });
 
   afterAll(async () => {
-    await queryAsAdmin({ query: CUSTOM_FIELD_DELETE, variables: { id: definitionId } });
+    // Left attached, the mandatory custom field would make every later Malware creation fail
+    const deletion = await queryAsAdmin({ query: CUSTOM_FIELD_DELETE, variables: { id: definitionId } });
+    expect(deletion.errors).toBeUndefined();
     vi.restoreAllMocks();
   });
 
@@ -80,14 +82,16 @@ describe('schemaAttributes', () => {
     expect(schemaAttributes[0].attributes.map((attribute) => attribute.name)).toContain('name');
   });
 
-  it('should return no type for an unknown entityType', async () => {
-    const schemaAttributes = await querySchemaAttributes('Unknown-Type');
-    expect(schemaAttributes).toEqual([]);
+  it('should match the entityType whatever its letter case', async () => {
+    const schemaAttributes = await querySchemaAttributes(ENTITY_TYPE_MALWARE.toLowerCase());
+    expect(schemaAttributes.map((map) => map.type)).toEqual([ENTITY_TYPE_MALWARE]);
   });
 
-  it('should return no type for an empty entityType', async () => {
-    const schemaAttributes = await querySchemaAttributes('');
-    expect(schemaAttributes).toEqual([]);
+  it('should fail on an unknown or empty entityType', async () => {
+    for (const entityType of ['Unknown-Type', '']) {
+      const result = await queryAsAdmin({ query: SCHEMA_ATTRIBUTES, variables: { entityType } });
+      expect(result.errors?.[0]?.message).toEqual('Unknown entity type');
+    }
   });
 
   it('should describe the custom fields and return null for an undescribed native attribute', async () => {

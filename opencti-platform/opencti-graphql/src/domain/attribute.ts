@@ -1,11 +1,12 @@
 import * as R from 'ramda';
 import { elAttributeValues } from '../database/engine';
-import { schemaAttributesDefinition } from '../schema/schema-attributes';
+import { getRegisteredTypeFromIndexedName, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { buildPagination } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { Attribute, QueryRuntimeAttributesArgs, TypeAttribute } from '../generated/graphql';
 import { INTERNAL_ATTRIBUTES } from './attribute-utils';
 import { getCustomFieldDefinitionsForEntityType, getDynamicTypeAttributeForEntityType } from '../modules/customField/custom-field-cache';
+import { FunctionalError } from '../config/errors';
 
 export interface DefaultValue {
   id: string;
@@ -41,8 +42,17 @@ export const getSchemaAttributeNames = async (context: AuthContext, user: AuthUs
 export const getSchemaAttributes = async (context: AuthContext, user: AuthUser, entityType?: string | null) => {
   const registeredTypes = schemaAttributesDefinition.getRegisteredTypes();
   // A single type can be asked, so an API client does not load the whole schema each time.
-  // Only an absent filter returns every type: any given string, even empty, is matched exactly.
-  const types = R.isNil(entityType) ? registeredTypes : registeredTypes.filter((type) => type === entityType);
+  // Only an absent filter returns every type. A given type is matched whatever its letter case
+  // (malware is Malware); a name of no registered type, even empty, is an error rather than an
+  // empty list, so that a typo is not taken for a type without attributes.
+  let types = registeredTypes;
+  if (!R.isNil(entityType)) {
+    const registeredType = registeredTypes.includes(entityType) ? entityType : getRegisteredTypeFromIndexedName(entityType.toLowerCase());
+    if (!registeredType) {
+      throw FunctionalError('Unknown entity type', { entityType });
+    }
+    types = [registeredType];
+  }
 
   return Promise.all(types.map(async (type) => {
     const attributes = schemaAttributesDefinition.getAttributes(type);
