@@ -90,6 +90,10 @@ describe('getContentTabImagePreviewPath', () => {
     expect(getContentTabImagePreviewPath('/dashboard/events/observed_data/abc/files', 'Observed-Data', fileId, 'image/png')).toBeNull();
   });
 
+  it('is null for Artifact files, which may be malicious and keep their download warning', () => {
+    expect(getContentTabImagePreviewPath('/dashboard/observations/artifacts/abc/files', 'Artifact', fileId, 'image/png')).toBeNull();
+  });
+
   it('is null outside an entity Data tab', () => {
     expect(getContentTabImagePreviewPath('/dashboard/data/import', 'Report', fileId, 'image/png')).toBeNull();
   });

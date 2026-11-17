@@ -20,6 +20,10 @@ export const isContainerWithContent = (entityType: string) => CONTAINER_TYPES_WI
 // Entities whose Data tab exists without a Content tab.
 const ENTITY_TYPES_WITHOUT_CONTENT_TAB = ['Note', 'Observed-Data'];
 
+// Entities whose files may be malicious samples: they keep the download warning (encrypted archive or raw file)
+// instead of an in-app preview link.
+const ENTITY_TYPES_WITH_UNSAFE_FILES = ['Artifact'];
+
 const MIME_TYPES_BY_EXTENSION: Record<string, string> = {
   png: 'image/png',
   jpg: 'image/jpeg',
@@ -68,10 +72,16 @@ export const resolveContentFileMimeType = (fileId: string, knownMimeType: MimeTy
  * @param fileId storage id of the file
  * @param mimeType mime type of the file
  * @returns the Content tab path with `forceFile` and `currentFileId` search params, or `null` when the file is
- * not a PNG / JPEG, the entity has no Content tab (Note, Observed-Data) or the route is not an entity Data tab
+ * not a PNG / JPEG, the entity has no Content tab (Note, Observed-Data), its files may be malicious (Artifact)
+ * or the route is not an entity Data tab
  */
 export const getContentTabImagePreviewPath = (pathname: string, entityType: string, fileId: string, mimeType: MimeType): string | null => {
-  if (!isContentTabImage(mimeType) || ENTITY_TYPES_WITHOUT_CONTENT_TAB.includes(entityType) || !pathname.endsWith('/files')) {
+  if (
+    !isContentTabImage(mimeType)
+    || ENTITY_TYPES_WITHOUT_CONTENT_TAB.includes(entityType)
+    || ENTITY_TYPES_WITH_UNSAFE_FILES.includes(entityType)
+    || !pathname.endsWith('/files')
+  ) {
     return null;
   }
   const search = createSearchParams({ forceFile: 'true', currentFileId: fileId });

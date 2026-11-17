@@ -252,13 +252,15 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     || encodedFilePath.endsWith('.exe')
     || encodedFilePath.endsWith('.pif')
     || encodedFilePath.endsWith('.dll');
+  // A file flagged as potentially malicious never gets the preview shortcuts: it keeps the download warning
+  const canPreview = !!previewLink && !isWarning && !isFail;
   const handleClick = () => {
     if (onClick) {
       onClick();
       return;
     }
     // Previewable file (e.g. an image): open its in-app preview instead of the raw file
-    if (previewLink && !isFail && !isOutdated && !isProgress) {
+    if (previewLink && canPreview && !isOutdated && !isProgress) {
       navigate(previewLink);
       return;
     }
@@ -377,7 +379,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                 </Menu>
               </>
             )}
-            {previewLink && !isFail && (
+            {canPreview && (
               <Tooltip title={t_i18n('Open in a new tab')}>
                 <IconButton
                   disabled={isProgress}
