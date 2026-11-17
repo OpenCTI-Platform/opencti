@@ -65,6 +65,7 @@ import { disarmKillChainPhase, killChainPhase, otherKillChainPhase } from './con
 import { customVocabulary, modifiedVocabulary } from './configPreset-vocabularies-fixtures';
 import { customStatusTemplate, defaultStatusTemplate } from './configPreset-statusTemplates-fixtures';
 import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemplates-fixtures';
+import { executiveDashboard, socDashboard } from './configPreset-dashboards-fixtures';
 import { mitreConnector } from './configPreset-connectors-fixtures';
 import { exportConnector } from '../../../../src/modules/connector/connector-export';
 import { customEmailTemplate, otherEmailTemplate } from './configPreset-emailTemplates-fixtures';
@@ -221,6 +222,8 @@ describe('Config preset registry', () => {
         group: 'taxonomy',
         itemIds: [fraudCaseTemplate.standard_id, phishingCaseTemplate.standard_id],
       },
+      // The dashboards by name, never an investigation
+      { id: 'dashboards', label: 'Dashboards', description: '', group: 'dashboards', itemIds: [executiveDashboard.standard_id, socDashboard.standard_id] },
       { id: 'connectors', label: 'Connectors', description: 'Managed connectors and their parameters, without their secrets', group: 'integrations', itemIds: ['mitre'] },
       // Every rule the platform declares, by its id
       {
@@ -282,6 +285,8 @@ describe('Config preset registry', () => {
       ['IN_PROGRESS', false],
       ['Fraud investigation', false],
       ['Phishing triage', false],
+      ['Executive summary', false],
+      ['SOC overview', false],
       ['MITRE', false],
       ...RULES_DECLARATION.map(({ name }) => [name, true]),
       ['Filigran report', false],
@@ -329,6 +334,8 @@ describe('Config preset registry', () => {
       `taxonomy/status_templates/${defaultStatusTemplate.standard_id}.json`,
       `taxonomy/case_templates/${fraudCaseTemplate.standard_id}.json`,
       `taxonomy/case_templates/${phishingCaseTemplate.standard_id}.json`,
+      `dashboards/${executiveDashboard.standard_id}.json`,
+      `dashboards/${socDashboard.standard_id}.json`,
       'integrations/connectors/mitre.json',
       ...RULES_DECLARATION.map(({ id }) => `automation_rules/rule_engine/${id}.json`),
       `customization/fintel_designs/${defaultFintelDesign.standard_id}.json`,
@@ -341,6 +348,32 @@ describe('Config preset registry', () => {
     const family = findFamily('platform');
     const item = await findItem('platform', 'platform');
     expect(configPresetItemFilePath(family, { ...item, fileName: 'custom-name.json' })).toBe('platform_settings/custom-name.json');
+  });
+
+  describe('dashboards', () => {
+    it('exports what the dashboard is, never an internal id nor who can open it, not even everyone', async () => {
+      const family = findFamily('dashboards');
+      const soc = await exportConfigPresetItem(context, user, family, await findItem('dashboards', socDashboard.standard_id));
+      expect(soc).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'dashboards.dashboards',
+        id: socDashboard.standard_id,
+        configuration: { name: 'SOC overview', description: 'What the SOC watches', tags: ['soc'], refresh_interval: 300 },
+      });
+      const executive = await exportConfigPresetItem(context, user, family, await findItem('dashboards', executiveDashboard.standard_id));
+      // Shared with everyone on the platform, as the file export of a dashboard: the bundle does not say it
+      expect(executive.configuration).toEqual({ name: 'Executive summary' });
+      expect(JSON.stringify([soc, executive])).not.toMatch(/creator-secret-id|created_at|dashboard-id/);
+    });
+
+    it('lists the dashboards only, an investigation is a workspace that is not exported', async () => {
+      const family = findFamily('dashboards');
+      expect((await family.resolveItems(context, user, null, [])).map(({ label }) => label)).toEqual(['Executive summary', 'SOC overview']);
+      expect((await family.resolveItems(context, user, null, [executiveDashboard.standard_id])).map(({ label }) => label)).toEqual(['SOC overview']);
+      expect(await family.resolveItems(context, user, [], [])).toEqual([]);
+      const page = await family.listItems(context, user, { first: 10, search: 'incident' });
+      expect(page.edges).toEqual([]);
+    });
   });
 
   describe('platform configuration', () => {
