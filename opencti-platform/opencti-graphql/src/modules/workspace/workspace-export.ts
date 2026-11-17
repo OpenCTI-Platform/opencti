@@ -25,8 +25,9 @@ export const exportDashboard = async (context: AuthContext, user: AuthUser, work
   const manifest = workspace.manifest ? await toBundleManifest(context, user, workspace.manifest) : undefined;
   return {
     name: workspace.name,
-    ...(workspace.description ? { description: workspace.description } : {}),
-    ...(workspace.tags?.length ? { tags: workspace.tags } : {}),
+    // Always written, empty or not: an overwrite then makes the description and the tags of the dashboard the ones of the bundle, empty ones included
+    description: workspace.description ?? '',
+    tags: workspace.tags ?? [],
     ...(typeof workspace.refresh_interval === 'number' ? { refresh_interval: workspace.refresh_interval } : {}),
     ...(manifest ? { manifest } : {}),
   };

@@ -362,7 +362,7 @@ describe('Config preset registry', () => {
       });
       const executive = await exportConfigPresetItem(context, user, family, await findItem('dashboards', executiveDashboard.standard_id));
       // Shared with everyone on the platform, as the file export of a dashboard: the bundle does not say it
-      expect(executive.configuration).toEqual({ name: 'Executive summary' });
+      expect(executive.configuration).toEqual({ name: 'Executive summary', description: '', tags: [] });
       expect(JSON.stringify([soc, executive])).not.toMatch(/creator-secret-id|created_at|dashboard-id/);
     });
 

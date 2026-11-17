@@ -93,12 +93,28 @@ const buildPatch = (existing: BasicStoreEntityWorkspace, data: DashboardImportCo
   return patch;
 };
 
-// Written with updateAttribute, not workspaceEditField: that one keeps the variables of the stored manifest, the import replaces them
-const patchDashboard = async (context: AuthContext, user: AuthUser, existing: BasicStoreEntityWorkspace, patch: EditInput[]) => {
+// Written with updateAttribute, not workspaceEditField: that one keeps the variables of the stored manifest, the import replaces them.
+// The patch is built from the dashboard as stored under the lock, so that what was written since it was found (a preset saved meanwhile) is kept
+const patchDashboard = async (
+  context: AuthContext,
+  user: AuthUser,
+  existing: BasicStoreEntityWorkspace,
+  data: DashboardImportConfiguration,
+  manifest: string | undefined,
+  withVariables: boolean,
+) => {
   const element = await withWorkspaceManifestLock(existing.id, async () => {
+    const stored = await findById(context, user, existing.id) as BasicStoreEntityWorkspace;
+    const patch = buildPatch(stored, data, manifest, withVariables);
+    if (patch.length === 0) {
+      return undefined;
+    }
     const { element: updated } = await updateAttribute<StoreEntityWorkspace>(context, user, existing.id, ENTITY_TYPE_WORKSPACE, patch);
     return updated;
   });
+  if (!element) {
+    return;
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -185,7 +201,7 @@ export const importDashboard = async (
     return refused('skipped', 'unchanged', CONFIG_IMPORT_UNCHANGED_REASON, true, data);
   }
   if (!dryRun) {
-    await patchDashboard(context, user, existing, patch);
+    await patchDashboard(context, user, existing, data, manifest, withVariables);
   }
   return { status: 'overwritten', exists: true, configuration: data };
 };

@@ -132,6 +132,22 @@ describe('Dashboard import and export (configuration preset)', () => {
     expect(await findDashboardsByName(testContext, ADMIN_USER, name.trim())).toEqual([]);
   });
 
+  it('clears the description and the tags of the dashboard when the bundle has none, as it exports them empty', async () => {
+    const name = `${PREFIX} cleared`;
+    await importDashboard(testContext, ADMIN_USER, { name, description: 'A description', tags: ['soc'] }, { mode });
+    expect(await loadWorkspace(name)).toMatchObject({ description: 'A description', tags: ['soc'] });
+    // A dashboard without description nor tag exports them empty, and the import writes them
+    const source = await addWorkspace(testContext, ADMIN_USER, { type: 'dashboard', name: `${PREFIX} cleared source` });
+    const exported = await exportDashboard(testContext, ADMIN_USER, await loadWorkspace(source.name));
+    expect(exported).toMatchObject({ description: '', tags: [] });
+    expect(await importDashboard(testContext, ADMIN_USER, { ...exported, name }, { mode })).toMatchObject({ status: 'overwritten' });
+    const cleared = await loadWorkspace(name);
+    expect(cleared.description ?? '').toBe('');
+    expect(cleared.tags ?? []).toEqual([]);
+    // And the same import is then up to date
+    expect(await importDashboard(testContext, ADMIN_USER, { ...exported, name }, { mode })).toMatchObject({ status: 'skipped', code: 'unchanged' });
+  });
+
   it('names the copies of two dashboards of one bundle as the preview said, item after item as the engine does', async () => {
     const name = `${PREFIX} copies`;
     await importDashboard(testContext, ADMIN_USER, { name }, { mode });
@@ -321,7 +337,7 @@ describe('Dashboard import and export (configuration preset)', () => {
     await patchAttribute(testContext, ADMIN_USER, (await loadWorkspace(names[7])).id, ENTITY_TYPE_WORKSPACE, {
       restricted_members: [{ id: ADMIN_USER.id, access_right: 'admin' }, { id: 'ALL', access_right: 'view' }],
     });
-    expect(await exportDashboard(testContext, ADMIN_USER, await loadWorkspace(names[7]))).toEqual({ name: names[7] });
+    expect(await exportDashboard(testContext, ADMIN_USER, await loadWorkspace(names[7]))).toEqual({ name: names[7], description: '', tags: [] });
     // The bundle does not carry it: the key is refused, as every unknown one
     expect(await importDashboard(testContext, ADMIN_USER, { name: names[7], shared_with_all: 'view' }, { mode })).toMatchObject({ status: 'failed', code: 'invalid' });
     // A new dashboard is the importing user's, as with the file import
