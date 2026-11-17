@@ -7,7 +7,7 @@ The GraphQL playground is an integrated development environment (IDE) provided b
 
 ### Interactive querying
 
-The Playground provides a text editor where developers can write GraphQL queries, mutations, and subscriptions. As you type, the Playground offers syntax highlighting, autocompletion, and error checking to aid in query composition.
+The Playground provides a text editor where developers can write GraphQL queries and mutations (subscriptions are not supported in the Playground). As you type, the Playground offers syntax highlighting, autocompletion, and error checking to aid in query composition.
 
 The pink arrow button run the query. The buttons below respectively enable to prettify the query, merge fragments into the query, and copy the query.
 
@@ -53,9 +53,9 @@ The playground runs the queries as the user logged in to the platform in the sam
 
 Then, follow these steps to utilize the playground:
 
-1. Query editor: Write GraphQL queries, mutations, and subscriptions in the text editor. Use syntax highlighting and autocompletion to speed up query composition.
-2. Documentation explorer: Access documentation for the GraphQL schema by clicking on the "Docs" tab on the left. Browse types, fields, and descriptions to understand the available data and query syntax.
-3. Query history: View and execute previously executed queries from the "History" tab on the top. Reuse queries and experiment with variations without retyping.
+1. Query editor: Write GraphQL queries and mutations in the text editor. Subscriptions are not supported in the Playground. Use syntax highlighting and autocompletion to speed up query composition.
+2. Documentation explorer: Access documentation for the GraphQL schema by clicking the **Documentation Explorer** icon (book) in the left sidebar. Browse types, fields, and descriptions to understand the available data and query syntax.
+3. Query history: View and execute previously executed queries by clicking the **History** icon in the left sidebar. Reuse queries and experiment with variations without retyping.
 4. Response panel: Visualize query responses in the response pane. Expand and collapse sections to navigate complex data structures and inspect individual fields.
 
 ### External Resources

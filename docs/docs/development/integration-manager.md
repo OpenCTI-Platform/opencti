@@ -8,7 +8,7 @@ XTM Composer is the container-based Integration Manager of OpenCTI: it deploys a
 
 ### Required Tools
 
-- **Rust**: 1.70.0 or higher
+- **Rust**: 1.85.0 or higher (the crate uses the 2024 edition; the release image is built with Rust 1.96)
 - **Git**: For version control
 - **Docker**: For testing orchestration features
 - **OpenSSL**: For generating RSA keys
@@ -37,7 +37,7 @@ cargo --version
 ### 2. Clone Repository
 
 ```bash
-git clone https://github.com/OpenCTI-Platform/xtm-composer.git
+git clone https://github.com/FiligranHQ/xtm-composer.git
 cd xtm-composer
 ```
 
@@ -324,7 +324,7 @@ docker push localhost:5000/your-image
 #### 1. Connection Refused
 
 ```bash
-# Check that OpenCTI is running and accepts your token (the API only accepts POST)
+# Check that OpenCTI is running and accepts your token (queries must use POST)
 curl -X POST http://localhost:4000/graphql \
   -H "Authorization: Bearer <your token>" \
   -H "Content-Type: application/json" \
@@ -356,7 +356,7 @@ For detailed information about contributing to XTM Composer, including:
 - Testing requirements
 - GPG signing setup
 
-Please refer to our [**Contributing Guide**](https://github.com/OpenCTI-Platform/opencti/blob/master/CONTRIBUTING.md).
+Please refer to our [**Contributing Guide**](https://github.com/FiligranHQ/xtm-composer/blob/master/CONTRIBUTING.md).
 
 ## Resources
 
