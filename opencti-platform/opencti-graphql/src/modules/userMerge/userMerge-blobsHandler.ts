@@ -172,8 +172,10 @@ export const rewriteTarget = (
   } else {
     const settled = target.settle ? target.settle(raw, sourceId, targetId) : raw;
     rewritten = rewriteJson(settled, sourceId, targetId);
-    // The settle step may have been the whole of the rewrite, leaving no source id behind.
-    if (rewritten === undefined && settled !== raw) {
+    // The settle step may have been the whole of the rewrite. What it left behind is either nothing
+    // or a free-text mention, which is not a reason to drop the references it did settle — the
+    // same rule as a draft patch mixing a reference and a mention.
+    if ((rewritten === undefined || rewritten === 'textual') && settled !== raw) {
       rewritten = settled;
     }
   }

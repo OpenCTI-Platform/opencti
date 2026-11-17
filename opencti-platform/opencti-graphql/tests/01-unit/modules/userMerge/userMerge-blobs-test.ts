@@ -99,6 +99,18 @@ describe('userMerge default values', () => {
     expect(defaultsOf(rewrite, 'objectAssignee')).toEqual([TARGET]);
   });
 
+  // A mention of the source id in free text is left alone, but must not cost the settled members.
+  it('should keep the settled authorized members when the source id is also mentioned in free text', () => {
+    const rewrite = rewriteOf('entity-setting-attributes-configuration', {
+      attributes_configuration: configurationOf(
+        { name: 'restricted_members', default_values: [memberOf(SOURCE, 'admin')] },
+        { name: 'description', default_values: [`owned by ${SOURCE}`] },
+      ),
+    });
+    expect(defaultsOf(rewrite, 'restricted_members')).toEqual([memberOf(TARGET, 'admin')]);
+    expect(defaultsOf(rewrite, 'description')).toEqual([`owned by ${SOURCE}`]);
+  });
+
   it('should be a no-op on a second run', () => {
     const once = rewriteOf('entity-setting-attributes-configuration', {
       attributes_configuration: configurationOf({ name: 'restricted_members', default_values: [memberOf(TARGET, 'view'), memberOf(SOURCE, 'admin')] }),
