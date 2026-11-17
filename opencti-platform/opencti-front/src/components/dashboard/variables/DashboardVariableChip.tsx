@@ -58,6 +58,9 @@ const DashboardVariableChip = ({
   // mounted again when the dot or the tooltip appears or goes, and a detached anchor sends the popover to the
   // top left corner of the screen.
   const anchorRef = useRef<HTMLDivElement>(null);
+  // For the same reason, the popover cannot give the focus back to the chip it was opened from: once closed by the
+  // user (Escape, click outside), the focus is given to the chip of now. Not after an action, which opens its own dialog.
+  const refocusChipRef = useRef(false);
   // Nothing to resolve (so no query) when the bar already did.
   const ownLabels = useVariableValueLabels(variable, valueLabels || !value ? [] : [value]);
   const { labels, restricted } = valueLabels ?? ownLabels;
@@ -74,6 +77,7 @@ const DashboardVariableChip = ({
 
   // The popover closes before the page opens its own dialog.
   const handleAction = (action: (variable: DashboardVariable) => void) => {
+    refocusChipRef.current = false;
     setOpen(false);
     action(variable);
   };
@@ -125,7 +129,18 @@ const DashboardVariableChip = ({
       <Popover
         open={open && !disabled}
         anchorEl={anchorRef.current}
-        onClose={() => setOpen(false)}
+        onClose={() => {
+          refocusChipRef.current = true;
+          setOpen(false);
+        }}
+        slotProps={{
+          transition: {
+            onExited: () => {
+              if (refocusChipRef.current) anchorRef.current?.querySelector('button')?.focus();
+              refocusChipRef.current = false;
+            },
+          },
+        }}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       >
         <Box sx={{ padding: 2, minWidth: 280 }}>
