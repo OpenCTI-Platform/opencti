@@ -50,7 +50,7 @@ export interface ConnectorWorkListItem {
   works: ReadonlyArray<ConnectorWorkListWork>;
 }
 
-interface ReviewActionProps {
+interface WorkActionProps {
   label: string;
   icon: ReactNode;
   disabled?: boolean;
@@ -59,9 +59,9 @@ interface ReviewActionProps {
 }
 
 /**
- * A review action of a work. Disabled with a reason, it stays in the keyboard path and says why.
+ * An action on a work. Disabled with a reason, it stays in the keyboard path and says why.
  */
-const ReviewAction = ({ label, icon, disabled = false, disabledReason, onClick }: ReviewActionProps) => {
+const WorkAction = ({ label, icon, disabled = false, disabledReason, onClick }: WorkActionProps) => {
   if (disabledReason) {
     return (
       <DisabledReasonTooltip reason={disabledReason} label={label}>
@@ -87,6 +87,8 @@ interface ConnectorWorkListProps {
   canEditInvestigation?: boolean;
   /** Why the results cannot be reviewed, which disables the review actions and says so in their tooltip. */
   reviewDisabledReason?: string;
+  /** Why the works cannot be deleted, which disables Delete and says so in its tooltip. */
+  deleteDisabledReason?: string;
 }
 
 /**
@@ -102,6 +104,7 @@ const ConnectorWorkList = ({
   onReviewAddAll,
   canEditInvestigation = false,
   reviewDisabledReason,
+  deleteDisabledReason,
 }: ConnectorWorkListProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n, nsdt } = useFormatter();
@@ -194,7 +197,7 @@ const ConnectorWorkList = ({
                           spacing={1}
                         >
                           {onReview && (
-                            <ReviewAction
+                            <WorkAction
                               label={t_i18n('Review results')}
                               icon={<OpenWithOutlined fontSize="small" />}
                               disabled={isFail}
@@ -203,7 +206,7 @@ const ConnectorWorkList = ({
                             />
                           )}
                           {canEditInvestigation && onReviewAddAll && (
-                            <ReviewAction
+                            <WorkAction
                               label={t_i18n('Add all to graph')}
                               icon={<DataSaverOn fontSize="small" />}
                               disabled={isFail}
@@ -212,7 +215,7 @@ const ConnectorWorkList = ({
                             />
                           )}
                           {canEditInvestigation && onReviewDismiss && (
-                            <ReviewAction
+                            <WorkAction
                               label={t_i18n('Mark as reviewed')}
                               icon={<DoNotDisturb fontSize="small" />}
                               disabledReason={reviewDisabledReason}
@@ -222,13 +225,12 @@ const ConnectorWorkList = ({
                           {(onReview || onReviewAddAll || onReviewDismiss) && (
                             <Divider orientation="vertical" flexItem />
                           )}
-                          <IconButton
-                            tooltip={t_i18n('Delete')}
-                            aria-label={t_i18n('Delete')}
+                          <WorkAction
+                            label={t_i18n('Delete')}
+                            icon={<DeleteOutlined />}
+                            disabledReason={deleteDisabledReason}
                             onClick={() => deleteWork(work.id)}
-                          >
-                            <DeleteOutlined />
-                          </IconButton>
+                          />
                         </Stack>
                       </Security>
                     )}

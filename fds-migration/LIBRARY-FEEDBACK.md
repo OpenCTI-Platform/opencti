@@ -2646,7 +2646,8 @@ the hover and the focus for the tooltip:
   (`InvestigationEnrichmentDrawer`), Expand and Mark as reviewed
   (`InvestigationEnrichmentExpandEmpty`, `InvestigationExpandForm`), Add
   (`InvestigationEnrichmentAddAllDialog`), and around the library
-  `IconButton` of the review actions of an enrichment (`ConnectorWorkList`).
+  `IconButton` of the review and Delete actions of an enrichment
+  (`ConnectorWorkList`).
   Given a `label`, as at every investigation site, the span carries
   `role="button"`, that name, `aria-disabled` and the disabled reason, and
   hides the control it wraps.

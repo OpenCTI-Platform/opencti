@@ -108,6 +108,23 @@ describe('ConnectorWorkList', () => {
     expect(onWorkDeleted).toHaveBeenCalledOnce();
   });
 
+  it('disables Delete for a member who cannot delete the works, saying why', async () => {
+    const { user, relayEnv } = renderList(
+      <ConnectorWorkList
+        items={[connectorItem([{ id: 'work-1', status: 'complete' }])]}
+        onRefresh={vi.fn()}
+        onWorkDeleted={vi.fn()}
+        deleteDisabledReason="View access"
+      />,
+    );
+
+    const action = screen.getByRole('button', { name: 'Delete' });
+    expect(action).toHaveAttribute('aria-disabled', 'true');
+    expect(action).toHaveAccessibleDescription('View access');
+    await user.click(action);
+    expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+  });
+
   it('lets an editor allowed to review add all the results or mark them as reviewed', async () => {
     const onReviewAddAll = vi.fn();
     const onReviewDismiss = vi.fn();

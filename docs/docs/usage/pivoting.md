@@ -113,12 +113,12 @@ Each enrichment of the **To review** tab offers:
 | See the **Enrichment** panel and the enrichments of the investigation | The `Access knowledge` capability. |
 | Launch an enrichment, from the panel or the context menu | Edit or manage access to the investigation, and the `Create / Update investigations`, `Ask for knowledge enrichment` and `Create / Update knowledge` capabilities. |
 | Run a connector again on an entity | Edit or manage access to the investigation, and the `Create / Update investigations` and `Ask for knowledge enrichment` capabilities. |
-| Open the results of an enrichment, or delete it | The `Manage connector state` or `Connectors API usage` capability. |
-| Add results to the graph or mark them as reviewed | What opening the results needs, plus edit or manage access to the investigation and the `Create / Update investigations` and `Ask for knowledge enrichment` capabilities. |
+| Open the results of an enrichment | The `Manage connector state` or `Connectors API usage` capability. |
+| Add results to the graph, mark them as reviewed, or delete an enrichment | What opening the results needs, plus edit or manage access to the investigation and the `Create / Update investigations` and `Ask for knowledge enrichment` capabilities. Deleting an enrichment of the investigation from the connector's page needs the same rights. |
 
-With view access to the investigation and the capability to open results, you can open the results of an enrichment but not add them or mark them as reviewed; the dialog says so.
+With view access to the investigation and the capability to open results, you can open the results of an enrichment but not add them or mark them as reviewed; the dialog says so. **Delete** is disabled, and its tooltip says you have view access.
 
-With edit access but without the `Ask for knowledge enrichment` or the `Create / Update investigations` capability, **Review all**, **Review results**, **Add all to graph** and **Mark as reviewed** stay visible but disabled, and their tooltip names the capabilities you need.
+With edit access but without the `Ask for knowledge enrichment` or the `Create / Update investigations` capability, **Review all**, **Review results**, **Add all to graph**, **Mark as reviewed** and **Delete** stay visible but disabled, and their tooltip names the capabilities you need.
 
 See [Access control](dashboards.md#access-control) for the levels of access and [Users and roles](../administration/users.md) for the capabilities.
 
