@@ -230,12 +230,16 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook, canEdit, running }
 
   return (
     <PlaybookCanvasContexts direction={direction} lastExecutions={lastExecutions} canEdit={canEdit}>
-      <div ref={canvas.ref} style={{ position: 'relative', width: '100%', height: canvas.height ?? '100%', margin: 0, overflow: 'hidden' }}>
+      <div
+        ref={canvas.ref}
+        style={{ position: 'relative', display: 'flex', flexDirection: 'column', width: '100%', height: canvas.height ?? '100%', margin: 0, overflow: 'hidden' }}
+      >
         {canEdit && running && (
-          // Over the canvas, never above it: the canvas height is measured once on mount.
+          // Inside the measured block, above the flow: the canvas gives up the notice's height, so the notice
+          // never covers a step or the toolbar and the page never scrolls.
           <div
             data-testid="playbook-running-notice"
-            style={{ position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)', zIndex: 5, maxWidth: 'calc(100% - 24px)' }}
+            style={{ flex: 'none', display: 'flex', justifyContent: 'center', paddingBottom: 12 }}
           >
             <Alert severity="warning" title={t_i18n('This playbook is running: your changes apply immediately.')} />
           </div>
@@ -255,37 +259,39 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook, canEdit, running }
             </marker>
           </defs>
         </svg>
-        <ReactFlow
-          defaultNodes={flowNodes}
-          defaultEdges={flowEdges}
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          defaultViewport={defaultViewport}
-          minZoom={0.2}
-          fitView={true}
-          fitViewOptions={fitViewOptions}
-          nodesDraggable={false}
-          nodesConnectable={canEdit}
-          edgesUpdatable={canEdit}
-          onConnect={canEdit ? onConnect : undefined}
-          onEdgeUpdate={canEdit ? onEdgeUpdate : undefined}
-          zoomOnDoubleClick={false}
-          onMoveStart={onMoveStart}
-          proOptions={proOptions}
-        >
-          <Background variant={BackgroundVariant.Dots} gap={20} size={1} color={theme.palette.divider} />
-          {miniMapShown && (
-            <MiniMap
-              pannable
-              zoomable
-              ariaLabel={null}
-              nodeColor={(node) => (node.type === 'placeholder' ? 'transparent' : categoryAccent(theme, node.data?.component?.category))}
-              maskColor={theme.palette.action?.hover}
-              style={{ backgroundColor: theme.palette.background.paper }}
-            />
-          )}
-          <PlaybookFlowToolbar direction={direction} onDirectionChange={setDirection} history={canEdit ? history : undefined} />
-        </ReactFlow>
+        <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
+          <ReactFlow
+            defaultNodes={flowNodes}
+            defaultEdges={flowEdges}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            defaultViewport={defaultViewport}
+            minZoom={0.2}
+            fitView={true}
+            fitViewOptions={fitViewOptions}
+            nodesDraggable={false}
+            nodesConnectable={canEdit}
+            edgesUpdatable={canEdit}
+            onConnect={canEdit ? onConnect : undefined}
+            onEdgeUpdate={canEdit ? onEdgeUpdate : undefined}
+            zoomOnDoubleClick={false}
+            onMoveStart={onMoveStart}
+            proOptions={proOptions}
+          >
+            <Background variant={BackgroundVariant.Dots} gap={20} size={1} color={theme.palette.divider} />
+            {miniMapShown && (
+              <MiniMap
+                pannable
+                zoomable
+                ariaLabel={null}
+                nodeColor={(node) => (node.type === 'placeholder' ? 'transparent' : categoryAccent(theme, node.data?.component?.category))}
+                maskColor={theme.palette.action?.hover}
+                style={{ backgroundColor: theme.palette.background.paper }}
+              />
+            )}
+            <PlaybookFlowToolbar direction={direction} onDirectionChange={setDirection} history={canEdit ? history : undefined} />
+          </ReactFlow>
+        </div>
         <PlaybookFlowAddComponents
           action={action}
           setSelectedNode={setSelectedNode}
