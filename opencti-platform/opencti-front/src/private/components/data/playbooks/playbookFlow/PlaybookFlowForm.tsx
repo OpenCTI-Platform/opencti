@@ -180,7 +180,7 @@ const PlaybookFlowForm = ({
       >
         {({ submitForm, handleReset, isSubmitting, values }) => {
           const actionsAreValid = (values.actions ?? []).every(isPlaybookUpdateActionValid);
-          const choicesAreSet = missingRequiredChoices(configurationSchema, values as Record<string, unknown>).length === 0;
+          const choicesAreSet = missingRequiredChoices(configurationSchema, values as unknown as Record<string, unknown>).length === 0;
 
           return (
             <Form>

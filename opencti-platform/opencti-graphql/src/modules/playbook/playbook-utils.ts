@@ -272,7 +272,7 @@ export const missingRequiredConfigurationFields = (
 
 /** Refuses a node whose configuration leaves a required choice empty (add, replace and insert). */
 export const assertNodeConfigurationIsComplete = (component: PlaybookComponent<object>, configuration: string | null | undefined) => {
-  let config: Record<string, unknown> = {};
+  let config: Record<string, unknown>;
   try {
     config = configuration ? JSON.parse(configuration) : {};
   } catch {
