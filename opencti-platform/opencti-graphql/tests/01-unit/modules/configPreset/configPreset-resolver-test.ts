@@ -36,7 +36,12 @@ vi.mock('../../../../src/modules/configPreset/export/configPreset-export-domain'
   ...(await importOriginal<typeof import('../../../../src/modules/configPreset/export/configPreset-export-domain')>()),
   configPresetExport: vi.fn(),
 }));
+vi.mock('../../../../src/domain/rules', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/domain/rules')>()),
+  getRules: vi.fn(),
+}));
 
+import { getRules, RULES_DECLARATION } from '../../../../src/domain/rules';
 import { authDirectiveBuilder } from '../../../../src/graphql/authDirective';
 import { makeFeatureFlagDirectiveTransformer } from '../../../../src/graphql/featureFlagDirective';
 import configPresetResolvers from '../../../../src/modules/configPreset/configPreset-resolver';
@@ -125,6 +130,7 @@ describe('Config preset exportable types query', () => {
     enterpriseEdition.enabled = true;
     vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: customTheme.id }] as never);
     mockConfigPresetLoaders();
+    vi.mocked(getRules).mockResolvedValue(RULES_DECLARATION.map((rule) => ({ ...rule, activated: false })));
   });
 
   it('returns the exportable types to a BYPASS user when the flag is enabled', async () => {
@@ -312,6 +318,15 @@ describe('Config preset exportable types query', () => {
         items: [{ key: 'Partner/TAXII', label: 'Partner/TAXII', translatable: false, dependsOn: [], isDefault: false }],
         itemsPageInfo: onePage(1),
       },
+      {
+        key: 'ruleEngine',
+        label: 'Rule engine',
+        description: 'Activation of the inference rules',
+        group: { key: 'automationRules', label: 'Automation & Rules' },
+        // The first page of the rules declared on the platform
+        items: RULES_DECLARATION.slice(0, 10).map(({ id, name }) => staticItem(id, name)),
+        itemsPageInfo: { hasNextPage: true, globalCount: RULES_DECLARATION.length },
+      },
     ]);
   });
 
@@ -354,7 +369,7 @@ describe('Config preset exportable types query', () => {
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
       ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['labels', false], ['exclusionLists', false], ['killChainPhases', false],
       ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['connectors', true],
-      ['rssFeeds', false], ['csvFeeds', false], ['jsonFeeds', false], ['taxiiFeeds', false],
+      ['rssFeeds', false], ['csvFeeds', false], ['jsonFeeds', false], ['taxiiFeeds', false], ['ruleEngine', false],
     ]);
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
@@ -407,6 +422,7 @@ describe('Config preset exportable types query', () => {
       ['csvFeeds', 'integrations'],
       ['jsonFeeds', 'integrations'],
       ['taxiiFeeds', 'integrations'],
+      ['ruleEngine', 'automationRules'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);

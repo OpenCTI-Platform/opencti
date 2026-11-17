@@ -193,7 +193,7 @@ describe('PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT', () => {
       expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_transformer', 'agent-x', JWT_USER);
     });
 
-    it('should route to `unmodified` when XTM One call fails (callXtmAgent returns null)', async () => {
+    it('should route to `unmodified` when the agent call was skipped or answered no content (callXtmAgent returns null)', async () => {
       vi.mocked(callXtmAgent).mockResolvedValue(null);
 
       const result = await PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT.executor(
@@ -203,6 +203,19 @@ describe('PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT', () => {
       expect(callXtmAgent).toHaveBeenCalledWith('agent-x', 'built content', JWT_USER);
       expect(result.output_port).toBe('unmodified');
       expect(result.bundle).toBe(ORIGINAL_BUNDLE);
+    });
+
+    it('should fail the step (no silent route to `unmodified`) when XTM One could not answer after the retries', async () => {
+      const failure = new Error('XTM One agent agent-x call failed (HTTP 503, provider_unavailable) after 3 attempts: All configured AI providers failed');
+      vi.mocked(callXtmAgent).mockRejectedValueOnce(failure);
+
+      const execution = PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT.executor(
+        buildExecutorParams({ agent_slug: 'agent-x' }),
+      );
+
+      // The playbook executor records a thrown step as an error observation
+      // with this message, so the run history shows the failure.
+      await expect(execution).rejects.toBe(failure);
     });
 
     it('should resolve the JWT identity ONCE from the configured run-as user and forward it to both the binding check and the agent call', async () => {

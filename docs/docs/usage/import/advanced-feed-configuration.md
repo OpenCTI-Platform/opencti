@@ -46,7 +46,29 @@ APP__URI_DENY_LIST='["internal-service.local","*.corp.internal","localhost:4200"
     - The check is performed at feed creation and feed update (when the URI changes).
     - Wildcard patterns (`*.domain.com`) match both subdomains and the base domain itself.
 
+## Ingestion manager interval
+
+The ingestion manager checks every running feed (TAXII, RSS, CSV and JSON) at a fixed interval, set by the `ingestion_manager:interval` parameter in milliseconds. At each check, a feed fetches data only once its schedule period, and the minimum interval of its feed type if any, have elapsed, and only when the data from its previous run has left its queue. While messages are still waiting in the queue, the feed is shown as buffering and skips the check.
+
+**Default value**: 30000 (30 seconds)
+
+**In the platform configuration file:**
+
+```json
+"ingestion_manager": {
+  "interval": 30000
+}
+```
+
+**Using environment variables:**
+
+```bash
+INGESTION_MANAGER__INTERVAL=30000
+```
+
 ## TAXII feed settings
+
+These settings apply to [TAXII Feeds](taxii-feed.md).
 
 ### Limit per request
 
@@ -72,6 +94,8 @@ INGESTION_MANAGER__TAXII_FEED__LIMIT_PER_REQUEST=500
 ```
 
 ## RSS feed settings
+
+These settings apply to [RSS Feeds](rss-feed.md).
 
 ### Minimum interval
 
@@ -106,6 +130,8 @@ INGESTION_MANAGER__RSS_FEED__USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x6
 
 ## CSV feed settings
 
+These settings apply to [CSV Feeds](csv-feed.md).
+
 ### Minimum interval
 
 Set the minimum polling interval (in minutes) for CSV ingestion feeds using the `ingestion_manager:csv_feed:min_interval_minutes` parameter.
@@ -127,3 +153,7 @@ Set the minimum polling interval (in minutes) for CSV ingestion feeds using the 
 ```bash
 INGESTION_MANAGER__CSV_FEED__MIN_INTERVAL_MINUTES=5
 ```
+
+## JSON feed settings
+
+[JSON Feeds](json-feed.md) have no dedicated setting. The URI deny list and the ingestion manager interval above apply to them. A JSON feed with the **Platform default** schedule period runs at every ingestion manager check, with no minimum interval, unless data from its previous run is still waiting in its queue.

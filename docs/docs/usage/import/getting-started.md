@@ -61,18 +61,18 @@ The **Sort by** control on this tab offers **Name (A-Z)**, **Status**, **Last ru
 
 ## Connector behaviors
 
-The behavior of each connector is defined by its development, determining the types of data it imports and its configuration options. This flexibility allows users to customize the import process to their specific needs, ensuring a seamless and personalized data integration experience.
-The level of configuration granularity regarding the imported data type varies with each connector. Nevertheless, connectors empower users to specify the date from which they wish to fetch data. This capability is particularly useful during the initial activation of a connector, enabling the retrieval of historical data. Following this, the connector operates in real-time, continuously importing new data from the source.
+Each connector defines the types of data it imports and its own configuration options. See [Connector behaviors](external-connectors.md#connector-behaviors) on the Connectors page.
 
 ## Stream / Push / Feed import behaviors
 
 An ingestion manager runs periodically in background, and for each running feeds:
+
 - fetches new data from the source. When data is paginated, fetches the next page
 - compose a stix bundle for data and send it in queue to be processed by workers
 
-!!! Note on timeline of data ingestion from Taxii feed, CSV feed, JSON feed and RSS feed.
+!!! note "Timeline of data ingestion from TAXII feed, CSV feed, JSON feed and RSS feed"
 
     Depending on workers load, the data can take some time between the fetch from source and visibility in the platform.
 
-Periodicity interval is configured with the manager with `ingestion_manager:interval`.
+The ingestion manager runs every 30 seconds by default. Change this interval with the `ingestion_manager:interval` parameter, in milliseconds (default `30000`), or with the `INGESTION_MANAGER__INTERVAL` environment variable. See [Feeds advanced configuration](advanced-feed-configuration.md#ingestion-manager-interval).
 Feed can be configured to schedule data fetch on a longer period.

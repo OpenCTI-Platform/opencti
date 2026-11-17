@@ -274,6 +274,9 @@ def test_external_reference_file_carries_its_markings(stix_helper):
     tlp_red = next(o for o in bundle["objects"] if o["id"] == TLP_RED["standard_id"])
     assert tlp_red["type"] == "marking-definition"
     assert tlp_red["definition"] == {"tlp": "red"}
+    # Built client-side, as the object carrying the file is not exported in 2.0
+    assert tlp_red["spec_version"] == "2.1"
+    assert "x_opencti_order" not in tlp_red
 
 
 def test_artifact_payload_is_not_filled_from_an_excluded_file(stix_helper):

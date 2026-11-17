@@ -39,7 +39,7 @@ With the XTM Suite, OpenCTI can request OpenAEV to run an automated evaluation o
 !!! note "Report entities eligible for automated coverage"
 
     Currently, the automated Security Coverage feature with OpenAEV can assess coverage for
-    the following entities, when atleast one of the following entities are present:
+    the following entities, when at least one of the following entities are present:
     
     * Attack patterns
     * Vulnerability
@@ -50,7 +50,7 @@ With the XTM Suite, OpenCTI can request OpenAEV to run an automated evaluation o
 To activate this feature, make sure the following requirements are met:
 
 * An active OpenAEV instance or tenant, [here is the dedicated documentation](https://docs.openaev.io/)
-* That same instance must be configured as an Enrichment Connector by a system administrator ([see the specific documentation](https://docs.openaev.io/latest/usage/xtm-suite-connector/)). An OpenCTI Administrator will need to generate an API token for the connector to use.    
+* That same instance must be configured as an Enrichment Connector by a system administrator ([see the specific documentation](https://docs.openaev.io/latest/integrations/xtm-suite/xtm-suite-connector/)). An OpenCTI Administrator will need to generate an API token for the connector to use.    
  
 !!! note "Compatibility requirement"
 
@@ -60,7 +60,7 @@ When the above steps have been completed, you should see OpenAEV being listed as
 
 ![OpenAEV Coverage connector listing](assets/openaev-coverage-connector.png)
 
-If you need to setup multiple OpenAEV instances or tenants to a single OpenCTI instance then you need to set up an account and generate an API for each instance or tenant to use.   
+If you need to setup multiple OpenAEV instances or tenants to a single OpenCTI instance then you need to set up an account and generate an API token for each instance or tenant to use.   
 
 
 ### Using the automated Security Coverage
@@ -112,7 +112,7 @@ For each entity covered by the secured coverage, the table displays:
 | **Tested Entity Labels**   | Displays labels applied to the tested entity                                                                              |
 | **Tested Entity Marking** | Displays data marking classifications applied to the entity                                                    | 
 | **Coverage Score** | The Prevention and Detection coverage value returned for the tested entity. " - " if no results are currently available. This information is stored on a 'has covered' relationship between the security coverage result and the tested entity|
-| **Coverage Last modified date** | The Prevention and Detection coverage value returned for the tested entity. " - " if no results are currently available. This information is stored on a 'has covered' relationship between the security coverage result and the tested entity|
+| **Coverage Last modified date** | The date and time the coverage scores of the tested entity were last updated. This is the last modification date of the 'has covered' relationship between the security coverage result and the tested entity|
 | **Security Coverage Result Name** | The name of the security coverage result name, this will be represented in the format OpenAEV name - result of - security coverage name |
 
 #### Understanding Placeholder Injects

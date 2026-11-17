@@ -1,0 +1,254 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+import { toB64 } from '../../../../../utils/String';
+import { dashboardVariablesStorageKey } from '../../../../../components/dashboard/dashboardVariablesStorage';
+import { dashboardTimeRangeStorageKey } from '../../../../../components/dashboard/dashboardTimeRangeStorage';
+import { dashboardPresetStorageKey } from '../../../../../components/dashboard/presets/dashboardPresetStorage';
+import type { DashboardVariable } from '../../../../../components/dashboard/dashboard-types';
+import {
+  applyPresetToPublishedValues,
+  applyPublishedTimeRangeChange,
+  applyPublishedVariableChange,
+  buildPublicationInput,
+  buildPublishedValuesState,
+  buildPublishedVariables,
+  buildPublishedVariableValues,
+  isOrderedPublishedTimeRange,
+  isSamePublishedTimeRange,
+  isTypedPublishedVariable,
+  pickPublishedTimeRange,
+} from './public-dashboard-utils';
+
+const USED = '11111111-1111-4111-8111-111111111111';
+const UNUSED = '22222222-2222-4222-8222-222222222222';
+const SELECTION = '33333333-3333-4333-8333-333333333333';
+const VARIABLES: DashboardVariable[] = [
+  { id: USED, name: 'Used', type: 'text', restriction: { mode: 'none' }, defaultValue: 'x' },
+  { id: UNUSED, name: 'Unused', type: 'text', restriction: { mode: 'none' }, defaultValue: 'u' },
+  { id: SELECTION, name: 'Selection', type: 'text', restriction: { mode: 'selection', values: ['a', 'b'] }, defaultValue: 'a' },
+];
+const tokenWidget = (variableId: string) => ({
+  dataSelection: [{ filters: { mode: 'and', filters: [{ key: ['entity_type'], values: [`$var:${variableId}`], operator: 'eq', mode: 'or' }], filterGroups: [] } }],
+});
+// UNUSED is used by no widget
+const WIDGETS = { 'widget-1': tokenWidget(USED), 'widget-2': tokenWidget(SELECTION), 'widget-3': { dataSelection: [{ label: 'no variable' }] } };
+const dashboard = (id: string, config = {}) => ({ id, manifest: toB64(JSON.stringify({ widgets: WIDGETS, config, variables: VARIABLES })) });
+const formValues = {
+  name: 'Public',
+  enabled: true,
+  uri_key: 'public',
+  max_markings: [{ value: 'marking-id', label: 'TLP:GREEN' }],
+  dashboard_id: 'dashboard-1',
+  published_for: 'dashboard-1',
+  variable_values: { [USED]: 'y', [SELECTION]: '' },
+  time_range: { relativeDate: 'days-7', startDate: null, endDate: null },
+};
+
+describe('buildPublishedVariables', () => {
+  it('should only keep the variables used by a widget of the manifest, in the manifest order', () => {
+    expect(buildPublishedVariables(VARIABLES, WIDGETS).map((variable) => variable.id)).toEqual([USED, SELECTION]);
+    expect(buildPublishedVariables(VARIABLES, undefined)).toEqual([]);
+  });
+});
+
+describe('buildPublishedVariableValues', () => {
+  it('should prefer a valid stored value over the default', () => {
+    expect(buildPublishedVariableValues(VARIABLES, { [USED]: 'stored' })).toEqual({ [USED]: 'stored', [UNUSED]: 'u', [SELECTION]: 'a' });
+  });
+
+  it('should ignore a stored value outside the selection of the variable', () => {
+    expect(buildPublishedVariableValues(VARIABLES, { [SELECTION]: 'c' })[SELECTION]).toEqual('a');
+  });
+});
+
+describe('buildPublishedValuesState', () => {
+  beforeEach(() => window.localStorage.clear());
+
+  it('should start from the values of the selected dashboard only', () => {
+    window.localStorage.setItem(dashboardVariablesStorageKey('user-1', 'dashboard-2'), JSON.stringify({ [USED]: 'other dashboard' }));
+    expect(buildPublishedValuesState(dashboard('dashboard-1', { relativeDate: 'months-1' }), 'user-1')).toEqual({
+      variable_values: { [USED]: 'x', [SELECTION]: 'a' },
+      time_range: { relativeDate: 'months-1', startDate: null, endDate: null },
+    });
+  });
+
+  it('should use the values the user sees on the dashboard', () => {
+    window.localStorage.setItem(dashboardVariablesStorageKey('user-1', 'dashboard-1'), JSON.stringify({ [USED]: 'seen' }));
+    expect(buildPublishedValuesState(dashboard('dashboard-1'), 'user-1').variable_values[USED]).toEqual('seen');
+  });
+
+  it('should be empty without a selected dashboard', () => {
+    expect(buildPublishedValuesState(undefined, 'user-1')).toEqual({ variable_values: {}, time_range: { relativeDate: null, startDate: null, endDate: null } });
+  });
+
+  it('should prefer the URL values on the page of the dashboard, as the page does', () => {
+    window.localStorage.setItem(dashboardVariablesStorageKey('user-1', 'dashboard-1'), JSON.stringify({ [USED]: 'stored' }));
+    window.localStorage.setItem(dashboardTimeRangeStorageKey('user-1', 'dashboard-1'), JSON.stringify({ relativeDate: 'days-7', startDate: null, endDate: null }));
+    const search = `?variables=${USED}:url&timeRange=years-1`;
+    const onPage = buildPublishedValuesState(dashboard('dashboard-1', { relativeDate: 'months-1' }), 'user-1', search, '/dashboard/workspaces/dashboards/dashboard-1');
+    expect(onPage.variable_values[USED]).toEqual('url');
+    expect(onPage.time_range).toEqual({ relativeDate: 'years-1', startDate: null, endDate: null });
+    // From a list, the URL speaks for another dashboard: ignored, the values and range kept in this browser apply
+    const fromList = buildPublishedValuesState(dashboard('dashboard-1', { relativeDate: 'months-1' }), 'user-1', search, '/dashboard/workspaces/dashboards_public');
+    expect(fromList.variable_values[USED]).toEqual('stored');
+    expect(fromList.time_range).toEqual({ relativeDate: 'days-7', startDate: null, endDate: null });
+    // The page of another dashboard whose id starts like this one
+    const otherPage = buildPublishedValuesState(dashboard('dashboard-1'), 'user-1', search, '/dashboard/workspaces/dashboards/dashboard-10');
+    expect(otherPage.variable_values[USED]).toEqual('stored');
+  });
+});
+
+describe('buildPublishedValuesState with presets', () => {
+  beforeEach(() => window.localStorage.clear());
+  const preset = (id: string, used: string, relativeDate: string) => ({
+    id, name: id, values: [{ variableId: USED, value: used }], config: { startDate: null, endDate: null, relativeDate },
+  });
+  const withPresets = (defaultPresetId: string | null = null) => ({
+    ...dashboard('dashboard-1', { relativeDate: 'months-1' }),
+    presets: [preset('alpha', 'from alpha', 'days-7'), preset('beta', 'from beta', 'years-1')],
+    currentUserDefaultPresetId: defaultPresetId,
+  });
+  const page = '/dashboard/workspaces/dashboards/dashboard-1';
+
+  it('should start from the preset of the address on the page, under the values changed on it', () => {
+    window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'dashboard-1'), 'beta');
+    const state = buildPublishedValuesState(withPresets(), 'user-1', '?preset=alpha', page);
+    expect(state).toEqual({ variable_values: { [USED]: 'from alpha', [SELECTION]: 'a' }, time_range: { relativeDate: 'days-7', startDate: null, endDate: null } });
+    window.localStorage.setItem(dashboardVariablesStorageKey('user-1', 'dashboard-1'), JSON.stringify({ [USED]: 'changed' }));
+    expect(buildPublishedValuesState(withPresets(), 'user-1', '?preset=alpha', page).variable_values[USED]).toEqual('changed');
+  });
+
+  it('should start, as the page, from the default preset when the address names a preset the dashboard does not hold', () => {
+    window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'dashboard-1'), 'alpha');
+    expect(buildPublishedValuesState(withPresets('beta'), 'user-1', '?preset=gone', page).variable_values[USED]).toEqual('from beta');
+    expect(buildPublishedValuesState(withPresets(), 'user-1', '?preset=gone', page).variable_values[USED]).toEqual('x');
+  });
+
+  it('should start from the dashboard defaults when no preset was chosen over a default one, as the page', () => {
+    window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'dashboard-1'), 'none');
+    expect(buildPublishedValuesState(withPresets('beta'), 'user-1', '', page).variable_values[USED]).toEqual('x');
+    window.localStorage.clear();
+    expect(buildPublishedValuesState(withPresets('beta'), 'user-1', '?preset=none', page).time_range.relativeDate).toEqual('months-1');
+  });
+
+  it('should start from the preset kept in this browser, else the default preset of the user, else the dashboard', () => {
+    expect(buildPublishedValuesState(withPresets('beta'), 'user-1', '', '/dashboard/workspaces/dashboards_public').time_range.relativeDate).toEqual('years-1');
+    window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'dashboard-1'), 'alpha');
+    expect(buildPublishedValuesState(withPresets('beta'), 'user-1', '', '/dashboard/workspaces/dashboards_public').variable_values[USED]).toEqual('from alpha');
+    // A deleted preset (kept in this browser, or default) falls back to the dashboard
+    window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'dashboard-1'), 'deleted');
+    expect(buildPublishedValuesState(withPresets('gone'), 'user-1', '', '/dashboard/workspaces/dashboards_public')).toEqual({
+      variable_values: { [USED]: 'x', [SELECTION]: 'a' }, time_range: { relativeDate: 'months-1', startDate: null, endDate: null },
+    });
+  });
+});
+
+describe('applyPublishedTimeRangeChange', () => {
+  it('should clear the absolute dates with a relative date', () => {
+    expect(applyPublishedTimeRangeChange({ relativeDate: null, startDate: 's', endDate: 'e' }, 'relativeDate', 'days-7'))
+      .toEqual({ relativeDate: 'days-7', startDate: null, endDate: null });
+  });
+
+  it('should empty a field set to none', () => {
+    expect(applyPublishedTimeRangeChange({ relativeDate: 'days-7', startDate: null, endDate: null }, 'relativeDate', 'none'))
+      .toEqual({ relativeDate: null, startDate: null, endDate: null });
+  });
+});
+
+describe('pickPublishedTimeRange', () => {
+  it('should read the range of a config, without its other keys', () => {
+    expect(pickPublishedTimeRange({ startDate: 's', refresh_interval: 5, allowViewersToEditTimeFilters: true })).toEqual({ startDate: 's', endDate: null, relativeDate: null });
+    expect(pickPublishedTimeRange(undefined)).toEqual({ startDate: null, endDate: null, relativeDate: null });
+  });
+
+  it('should compare two ranges field by field', () => {
+    expect(isSamePublishedTimeRange(pickPublishedTimeRange({ relativeDate: 'days-7' }), { relativeDate: 'days-7', startDate: null, endDate: null })).toBe(true);
+    expect(isSamePublishedTimeRange(pickPublishedTimeRange({ relativeDate: 'days-7' }), pickPublishedTimeRange({ relativeDate: 'days-1' }))).toBe(false);
+  });
+});
+
+describe('buildPublicationInput', () => {
+  it('should send the published values, the time range and the time zone', () => {
+    const input = buildPublicationInput(formValues, true);
+    expect(input.variable_values).toEqual([{ variable_id: USED, value: 'y' }]);
+    expect(input.time_range).toEqual({ relative_date: 'days-7', start_date: null, end_date: null });
+    expect(input.time_zone).toEqual(Intl.DateTimeFormat().resolvedOptions().timeZone);
+    expect(input.allowed_markings_ids).toEqual(['marking-id']);
+  });
+
+  it('should send nothing new when the feature flag is disabled', () => {
+    const input = buildPublicationInput(formValues, false);
+    expect(input).toEqual({ name: 'Public', enabled: true, uri_key: 'public', dashboard_id: 'dashboard-1', allowed_markings_ids: ['marking-id'] });
+  });
+});
+
+describe('applyPresetToPublishedValues', () => {
+  const SECTOR = '11111111-1111-4111-8111-111111111111';
+  const REGION = '22222222-2222-4222-8222-222222222222';
+  const LEVEL = '33333333-3333-4333-8333-333333333333';
+  const variables: DashboardVariable[] = [
+    { id: SECTOR, name: 'Sector', type: 'text', restriction: { mode: 'none' }, defaultValue: 'Energy' },
+    { id: REGION, name: 'Region', type: 'text', restriction: { mode: 'selection', values: ['eu', 'us'] }, defaultValue: 'eu' },
+    { id: LEVEL, name: 'Level', type: 'text', restriction: { mode: 'none' }, defaultValue: 'Low' },
+  ];
+  const preset = {
+    id: 'p1',
+    name: 'Finance',
+    values: [{ variableId: SECTOR, value: 'Finance' }, { variableId: REGION, value: 'apac' }],
+    config: { startDate: null, endDate: null, relativeDate: 'months-1' },
+  };
+
+  it('takes the values of the preset, the default for the variables it does not hold or whose value is refused, and its range', () => {
+    expect(applyPresetToPublishedValues(preset, variables)).toEqual({
+      variable_values: { [SECTOR]: 'Finance', [REGION]: 'eu', [LEVEL]: 'Low' },
+      time_range: { startDate: null, endDate: null, relativeDate: 'months-1' },
+    });
+  });
+
+  it('keeps a value the variable accepts and an absolute range', () => {
+    const absolute = { ...preset, values: [{ variableId: REGION, value: 'us' }], config: { startDate: '2026-01-01T00:00:00.000Z', endDate: null, relativeDate: null } };
+    expect(applyPresetToPublishedValues(absolute, variables)).toEqual({
+      variable_values: { [SECTOR]: 'Energy', [REGION]: 'us', [LEVEL]: 'Low' },
+      time_range: { startDate: '2026-01-01T00:00:00.000Z', endDate: null, relativeDate: null },
+    });
+  });
+});
+
+describe('applyPublishedVariableChange', () => {
+  const marking: DashboardVariable = { id: 'marking', name: 'Marking', type: 'marking', restriction: { mode: 'none' }, defaultValue: 'tlp-green-id' };
+  const noDefault: DashboardVariable = { id: 'entity', name: 'Entity', type: 'entity', entityTypes: ['Malware'], restriction: { mode: 'none' }, defaultValue: '' };
+  const text: DashboardVariable = { id: 'text', name: 'Text', type: 'text', restriction: { mode: 'none' }, defaultValue: 'x' };
+  const textSelection: DashboardVariable = { id: 'choice', name: 'Choice', type: 'text', restriction: { mode: 'selection', values: ['a', 'b'] }, defaultValue: 'a' };
+
+  it('should show the default again when a picked value is cleared: an empty value publishes the default', () => {
+    expect(applyPublishedVariableChange(marking, '')).toEqual('tlp-green-id');
+    expect(applyPublishedVariableChange(textSelection, '')).toEqual('a');
+  });
+
+  it('should keep a cleared picker empty when the variable has no default', () => {
+    expect(applyPublishedVariableChange(noDefault, '')).toEqual('');
+  });
+
+  it('should keep the empty draft of a typed field, and any chosen value', () => {
+    expect(applyPublishedVariableChange(text, '')).toEqual('');
+    expect(applyPublishedVariableChange(marking, 'tlp-amber-id')).toEqual('tlp-amber-id');
+  });
+
+  it('should only count free text and numbers as typed', () => {
+    expect([text, { ...text, type: 'numeric' as const }, textSelection, marking].map(isTypedPublishedVariable)).toEqual([true, true, false, false]);
+  });
+});
+
+describe('isOrderedPublishedTimeRange', () => {
+  const range = (startDate: string | null, endDate: string | null, relativeDate: string | null = null) => ({ startDate, endDate, relativeDate });
+
+  it('should refuse a start after the end, as the server does', () => {
+    expect(isOrderedPublishedTimeRange(range('2026-12-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z'))).toBe(false);
+  });
+
+  it('should accept an ordered or equal range, an open range, and any range under a relative date', () => {
+    expect(isOrderedPublishedTimeRange(range('2026-01-01T00:00:00.000Z', '2026-12-01T00:00:00.000Z'))).toBe(true);
+    expect(isOrderedPublishedTimeRange(range('2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'))).toBe(true);
+    expect(isOrderedPublishedTimeRange(range('2026-12-01T00:00:00.000Z', null))).toBe(true);
+    expect(isOrderedPublishedTimeRange(range('2026-12-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z', 'days-7'))).toBe(true);
+  });
+});

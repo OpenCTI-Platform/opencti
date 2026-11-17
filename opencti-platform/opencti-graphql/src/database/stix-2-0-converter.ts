@@ -280,6 +280,13 @@ export const convertIdentityToStix = (instance: StoreEntity, type: string): SDO.
     x_opencti_organization_type: instance.x_opencti_organization_type,
     x_opencti_reliability: instance.x_opencti_reliability,
     x_opencti_score: instance.x_opencti_score,
+    x_opencti_system_category: instance.x_opencti_system_category,
+    x_opencti_system_subcategory: instance.x_opencti_system_subcategory,
+    x_opencti_internet_facing: instance.x_opencti_internet_facing,
+    x_opencti_criticality: instance.x_opencti_criticality,
+    x_opencti_environment: instance.x_opencti_environment,
+    x_opencti_owner: instance.x_opencti_owner,
+    x_opencti_platform: instance.x_opencti_platform,
   };
 };
 
@@ -493,12 +500,19 @@ const buildStixMarkings = (instance: StoreEntity) => {
   };
 };
 
+// Creation date of the TLP marking definitions published with the STIX specification.
+const STIX_TLP_CREATED = '2017-01-20T00:00:00.000Z';
+
 export const convertMarkingDefinitionToStix = (instance: StoreEntity): SMO.StixMarkingDefinition => {
   assertType(ENTITY_TYPE_MARKING_DEFINITION, instance.entity_type);
   const defType = (instance.definition_type ?? '').toLowerCase();
-  const defValue = (instance.definition ?? '').toLowerCase().replace('tlp:', '').trim();
+  // Same as the legacy python export: every `tlp:` is removed, nothing is trimmed.
+  const defValue = (instance.definition ?? '').toLowerCase().replaceAll('tlp:', '');
   return {
     ...buildStixMarkings(instance),
+    // Same as the legacy python export: a TLP marking keeps the creation date
+    // of the STIX TLP marking definitions, whatever its stored date.
+    ...(instance.definition_type === 'TLP' ? { created: STIX_TLP_CREATED } : {}),
     name: instance.definition,
     definition_type: defType,
     definition: { [defType]: defValue },

@@ -727,6 +727,19 @@ describe('Local authentication lockout', () => {
       return `${code.slice(0, 5)}${(Number(code[5]) + 1) % 10}`;
     };
 
+    // A code is valid for its 30 seconds step only, without any tolerance: a code generated at the end of a step
+    // would be checked in the next one, and rejected. Each test takes far less than 3 seconds, so it starts in the next step
+    // when the current one is about to end, before any lock: waiting during a lock would change its remaining time
+    const TOTP_STEP_MS = 30 * 1000;
+    beforeEach(async () => {
+      const remainingMs = TOTP_STEP_MS - (Date.now() % TOTP_STEP_MS);
+      if (remainingMs < 3000) {
+        await new Promise((resolve) => {
+          setTimeout(resolve, remainingMs);
+        });
+      }
+    });
+
     it('should count a failed MFA code like a failed password', async () => {
       await expectBadCredentials(otpLogin(await wrongCode()));
       await failLogin(MFA_USER.email, 1);
