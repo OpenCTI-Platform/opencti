@@ -24,7 +24,7 @@ $ sudo sysctl -w vm.max_map_count=262144
 
 ## NodeJS and yarn
 
-The platform is developed on NodeJS technology. It requires Node.js 22.18.0 or later (the `engines` field of `package.json`), and the Docker image and the CI use Node.js 22.
+The platform is developed on NodeJS technology. It requires Node.js 22.18.0 or later (the `engines` field of `package.json`), and the standard Docker image and the CI use Node.js 22.
 The `nodejs` package of the Ubuntu archive can be older (Ubuntu 24.04 ships Node.js 18), so install Node.js 22 from [NodeSource](https://github.com/nodesource/distributions):
 
 ```bash

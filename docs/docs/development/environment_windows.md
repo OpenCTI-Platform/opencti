@@ -27,7 +27,7 @@ Docker Desktop from - [https://docs.docker.com/desktop/install/windows-install/]
 ## NodeJS and yarn
 
 The platform is developed on NodeJS technology, so you need to install node and the Yarn package manager.
-It requires Node.js 22.18.0 or later (the `engines` field of `package.json`), and the Docker image and the CI use Node.js 22.
+It requires Node.js 22.18.0 or later (the `engines` field of `package.json`), and the standard Docker image and the CI use Node.js 22.
 
 - Install Node.js 22 with the Windows Installer (.msi) from - [https://nodejs.org/en/download](https://nodejs.org/en/download)
    - Select the option for installing Chocolatey on the Tools for Native Modules screen
