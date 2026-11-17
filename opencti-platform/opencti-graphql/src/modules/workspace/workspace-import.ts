@@ -6,7 +6,6 @@ import { createEntity, updateAttribute } from '../../database/middleware';
 import { notify } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { pushAll } from '../../utils/arrayUtil';
 import { fromB64, toB64 } from '../../utils/base64';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
@@ -16,7 +15,6 @@ import {
   configImportRefusal,
   configImportValidationReason,
   freeConfigImportName,
-  joinConfigImportReasons,
 } from '../configImport/configImport-utils';
 import { checkDashboardConfigurationImport, convertDashboardManifestIds, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
 import { findAllWorkspaces, findById, initializeAuthorizedMembers, sanitizeElementForPublishAction } from './workspace-domain';
@@ -38,9 +36,6 @@ export type DashboardImportResult = ConfigImportResult<DashboardImportConfigurat
 
 const refused = configImportRefusal<DashboardImportConfiguration, DashboardImportCode>;
 
-// A reference that the platform does not know: its stix id is kept in the filters, as the file import does
-const UNRESOLVED_REFERENCES_REASON = 'Some references of the filters do not exist on this platform';
-
 export const findDashboardsByName = async (context: AuthContext, user: AuthUser, name: string) => {
   const workspaces = await findAllWorkspaces(context, user, {
     filters: { mode: FilterMode.And, filters: [{ key: ['type'], values: ['dashboard'] }, { key: ['name'], values: [name] }], filterGroups: [] },
@@ -50,38 +45,16 @@ export const findDashboardsByName = async (context: AuthContext, user: AuthUser,
 };
 
 // region manifest
-// A value that is a stix id, whole: anchored and bounded, so that testing a long string of the manifest stays linear
-const STIX_ID_PATTERN = /^[a-z][a-z0-9-]*--[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const STIX_ID_MAX_LENGTH = 128;
-
-const hasStixIdValue = (manifest: unknown) => {
-  const pending: unknown[] = [manifest];
-  while (pending.length > 0) {
-    const node = pending.pop();
-    if (typeof node === 'string') {
-      if (node.length <= STIX_ID_MAX_LENGTH && STIX_ID_PATTERN.test(node)) {
-        return true;
-      }
-    } else if (Array.isArray(node)) {
-      pushAll(pending, node);
-    } else if (typeof node === 'object' && node !== null) {
-      pushAll(pending, Object.values(node));
-    }
-  }
-  return false;
-};
-
-// The manifest with the ids of this platform. After the conversion, an id still in the format of the bundle is a reference this platform does not have.
+// The manifest with the ids of this platform. A reference it does not have is kept as it is, as the file import does.
 // The variables are taken only with the feature flag of the dashboard variables: validated as the typed API does, before any id is resolved,
 // then converted as the ids of the widgets. Without the flag they are left out. The presets are never taken
 const prepareManifest = async (context: AuthContext, user: AuthUser, manifest: string | null | undefined, withVariables: boolean) => {
   if (!manifest) {
-    return { manifest: undefined, hasUnresolvedReferences: false };
+    return undefined;
   }
   const taken = toB64(R.omit(bundleLeftOutKeys(withVariables), fromB64(manifest))) as string;
   const validated = validateManifestVariables(taken);
-  const converted = await convertDashboardManifestIds(context, user, validated, 'stix') as string;
-  return { manifest: converted, hasUnresolvedReferences: hasStixIdValue(fromB64(converted)) };
+  return convertDashboardManifestIds(context, user, validated, 'stix') as Promise<string>;
 };
 
 // What a bundle does not hold, so what it neither compares nor replaces on a dashboard: the presets, and the variables when the platform does not take them
@@ -145,7 +118,7 @@ const patchDashboard = async (context: AuthContext, user: AuthUser, existing: Ba
 // (its manifest, variables included, is replaced; its members are kept), else creates it. A name that several dashboards have is refused.
 // Copy creates the dashboard under a free name (`name (1)`, ...), whether the name is taken or not.
 // A name that an earlier item of the same import already took is a duplicate: refused, as the later item would overwrite the dashboard of the earlier one.
-// The ids of the filters are converted to this platform's: a reference it does not have is kept as it is and told.
+// The ids of the filters are converted to this platform's: a reference it does not have is kept as it is, as the file import does.
 // The variables, with the feature flag of the dashboard variables only, are converted the same way and replace the ones of an overwritten dashboard.
 export const importDashboard = async (
   context: AuthContext,
@@ -159,13 +132,12 @@ export const importDashboard = async (
   }
   const { data } = parsed;
   const withVariables = isFeatureEnabled(DASHBOARD_VARIABLES_FEATURE_FLAG);
-  let prepared: Awaited<ReturnType<typeof prepareManifest>>;
+  let manifest: string | undefined;
   try {
-    prepared = await prepareManifest(context, user, data.manifest, withVariables);
+    manifest = await prepareManifest(context, user, data.manifest, withVariables);
   } catch (error) {
     return refused('failed', 'invalid', configImportReasonValue(error instanceof Error ? error.message : 'Invalid dashboard manifest'), false, data);
   }
-  const unresolvedReason = prepared.hasUnresolvedReferences ? UNRESOLVED_REFERENCES_REASON : undefined;
   if (mode === ConfigImportMode.Copy) {
     const sameName = await findDashboardsByName(context, user, data.name);
     // The name of the configuration is read once: the first candidate of a copy is that name
@@ -182,9 +154,9 @@ export const importDashboard = async (
     if (dryRun) {
       reservedNames?.add(name);
     } else {
-      await createDashboard(context, user, data, prepared.manifest, name);
+      await createDashboard(context, user, data, manifest, name);
     }
-    const reason = joinConfigImportReasons([name === data.name ? undefined : `Added as "${configImportReasonValue(name)}"`, unresolvedReason]);
+    const reason = name === data.name ? undefined : `Added as "${configImportReasonValue(name)}"`;
     return { status: 'created', exists: sameName.length > 0, configuration: data, reason };
   }
   if (reservedNames?.has(data.name)) {
@@ -201,21 +173,21 @@ export const importDashboard = async (
   const [existing] = sameName;
   if (!existing) {
     if (!dryRun) {
-      await createDashboard(context, user, data, prepared.manifest, data.name);
+      await createDashboard(context, user, data, manifest, data.name);
     }
-    return { status: 'created', exists: false, configuration: data, reason: unresolvedReason };
+    return { status: 'created', exists: false, configuration: data };
   }
   if (mode === ConfigImportMode.Add) {
     return refused('failed', 'exists', 'Dashboard already exists', true, data);
   }
-  const patch = buildPatch(existing, data, prepared.manifest, withVariables);
+  const patch = buildPatch(existing, data, manifest, withVariables);
   if (patch.length === 0) {
     return refused('skipped', 'unchanged', CONFIG_IMPORT_UNCHANGED_REASON, true, data);
   }
   if (!dryRun) {
     await patchDashboard(context, user, existing, patch);
   }
-  return { status: 'overwritten', exists: true, configuration: data, reason: unresolvedReason };
+  return { status: 'overwritten', exists: true, configuration: data };
 };
 
 // A dashboard written by an import (the file import, the configuration bundle): the same audit event and notification

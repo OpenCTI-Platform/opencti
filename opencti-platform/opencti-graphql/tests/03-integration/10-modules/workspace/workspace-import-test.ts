@@ -202,17 +202,6 @@ describe('Dashboard import and export (configuration preset)', () => {
     expect(await loadWorkspace(names[5])).toBeUndefined();
   });
 
-  it('checks the references of a large manifest in linear time', async () => {
-    // A string of this shape made the search of the stix ids in the whole manifest quadratic
-    const title = 'a-'.repeat(200_000);
-    const manifest = toB64({ widgets: { w: { id: 'w', type: 'text', dataSelection: [], parameters: { title } } } }) as string;
-    const start = Date.now();
-    const result = await importDashboard(testContext, ADMIN_USER, { name: `${PREFIX} large`, manifest }, { mode, dryRun: true });
-    expect(Date.now() - start).toBeLessThan(5000);
-    expect(result).toMatchObject({ status: 'created' });
-    expect(result.reason).toBeUndefined();
-  });
-
   it('exports the ids of the filters as standard ids and imports them back as the ids of the platform', async () => {
     const label = await addLabel(testContext, ADMIN_USER, { value: labelValue, color: '#ff0000' });
     labelId = label.id;
@@ -234,10 +223,11 @@ describe('Dashboard import and export (configuration preset)', () => {
     expect(imported.reason).toBeUndefined();
     expect(storedFilterValues(await loadWorkspace(names[4]))).toEqual([label.id]);
 
-    // On a platform that has not, the reference is kept as it is and told
+    // On a platform that has not, the reference is kept as it is, as the file import does
     await labelDelete(testContext, ADMIN_USER, label.id);
     const dangling = await importDashboard(testContext, ADMIN_USER, { ...exported, name: names[5] }, { mode });
-    expect(dangling).toMatchObject({ status: 'created', reason: 'Some references of the filters do not exist on this platform' });
+    expect(dangling).toMatchObject({ status: 'created' });
+    expect(dangling.reason).toBeUndefined();
     expect(storedFilterValues(await loadWorkspace(names[5]))).toEqual([label.standard_id]);
   });
 
@@ -282,10 +272,11 @@ describe('Dashboard import and export (configuration preset)', () => {
         ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...enabled);
       }
 
-      // A reference the platform does not have is kept and told, as in the filters
+      // A reference the platform does not have is kept as it is, as in the filters
       await labelDelete(testContext, ADMIN_USER, label.id);
       const dangling = await importDashboard(testContext, ADMIN_USER, { ...exported, name: `${PREFIX} variables dangling` }, { mode });
-      expect(dangling).toMatchObject({ status: 'created', reason: 'Some references of the filters do not exist on this platform' });
+      expect(dangling).toMatchObject({ status: 'created' });
+      expect(dangling.reason).toBeUndefined();
       expect(variablesOf(await loadWorkspace(`${PREFIX} variables dangling`))[0]).toMatchObject({ defaultValue: label.standard_id });
     } finally {
       await labelDelete(testContext, ADMIN_USER, label.id).catch(() => undefined);
