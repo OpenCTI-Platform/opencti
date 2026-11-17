@@ -2473,6 +2473,7 @@
   "Filter marking definitions": "Filtra le definizioni del marking",
   "Filter name": "Nome del filtro",
   "Filters": "Filtri",
+  "Filters applied by the remote stream": "Filtri applicati dal flusso remoto",
   "Filters are not fully displayed": "I filtri non sono completamente visualizzati",
   "Find examples on our documentation.": "Trova esempi nella nostra {link}.",
   "fingerprint_md5": "Impronta digitale MD5",

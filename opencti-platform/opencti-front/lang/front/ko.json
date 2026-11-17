@@ -2473,6 +2473,7 @@
   "Filter marking definitions": "마킹 정의 필터",
   "Filter name": "필터 이름",
   "Filters": "필터",
+  "Filters applied by the remote stream": "원격 스트림이 적용하는 필터",
   "Filters are not fully displayed": "필터가 완전히 표시되지 않습니다",
   "Find examples on our documentation.": "{link}에서 예시를 찾아보세요.",
   "fingerprint_md5": "지문 MD5",
