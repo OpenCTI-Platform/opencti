@@ -15433,6 +15433,7 @@ type SubAttackPatternForMatrix {
   attack_pattern_id: String!
   description: String
   name: String!
+  x_mitre_id: String
 }
 
 type SubType {

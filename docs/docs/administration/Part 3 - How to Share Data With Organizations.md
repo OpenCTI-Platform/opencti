@@ -58,13 +58,13 @@ In other words, sharing a Report is safe by default (its contents travel with it
 
 ### 3.5 Using the "Resolve Neighbors" playbook pattern to close the gap
 
-To correctly share a standard entity together with everything connected to it, build a playbook using this pattern:
+To correctly share a standard entity together with everything connected to it, build a playbook (see [Playbook automation](../usage/playbook-automation.md)) using this pattern:
 
 ```
 System entity  →  Resolve Neighbors  →  Share With Organization
 ```
 
-The **Resolve neighbors relations and entities (add in bundle)** component retrieves the triggering entity, all of its relationships, and all entities at the other end of those relationships ("first neighbors") — collecting the relevant fragment of the knowledge graph:
+The **Resolve neighbors relations and entities (add in bundle)** rule of the [Apply predefined rule](../usage/playbook-components.md#apply-predefined-rule) component retrieves the triggering entity, all of its relationships, and all entities at the other end of those relationships ("first neighbors") — collecting the relevant fragment of the knowledge graph:
 
 ```
         System
@@ -76,7 +76,7 @@ The **Resolve neighbors relations and entities (add in bundle)** component retri
           +---- Software
 ```
 
-The **Share With Organizations** component is then applied to this enriched bundle, sharing the whole fragment — not just the original entity — with the target organization.
+The [Share with organizations](../usage/playbook-components.md#share-with-organizations) component is then applied to this enriched bundle, sharing the whole fragment — not just the original entity — with the target organization.
 
 > **Note:** Share With Organizations performs a direct database query before the "Send for ingestion" step. If an entity is created earlier in the same playbook (e.g., via a container-creation step) and shared in that same run, the playbook will fail because the entity does not exist yet in the database. In that case, run the creation and the sharing in two separate playbooks.
 
@@ -92,7 +92,7 @@ If Share With Organizations is left on its default "Main element only" scope, th
 
 ### 3.7 Filtering what actually gets shared
 
-Sharing everything connected to an entity is not always desirable. After a Resolve Neighbors step, insert a **Reduce Knowledge** component to keep only the part of the graph that should be released — for example, sharing only Observables, or explicitly excluding Incidents.
+Sharing everything connected to an entity is not always desirable. After a Resolve Neighbors step, insert a [Reduce knowledge](../usage/playbook-components.md#reduce-knowledge) component to keep only the part of the graph that should be released — for example, sharing only Observables, or explicitly excluding Incidents.
 
 ```
 System → Resolve Neighbors → Reduce Knowledge (filter) → Share With Organizations
@@ -183,3 +183,7 @@ Because every user in a participating organization inherits access through the c
 - Organization-based segregation is **not multi-tenancy**: a shared object remains the same object for everyone who has access to it.
 
 [Request for access on knowledge restricted by organization segregation](request-access.md)
+
+---
+
+**Previous:** [Part 2 - Customizing the Platform as the Main Organization](Part%202%20-%20Customizing%20the%20Platform%20as%20the%20Main%20Organization.md) | **Overview:** [Organization segregation](organization-segregation.md)
