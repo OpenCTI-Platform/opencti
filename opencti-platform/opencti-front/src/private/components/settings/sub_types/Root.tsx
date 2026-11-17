@@ -1,6 +1,5 @@
 import EEGuard from '@components/common/entreprise_edition/EEGuard';
 import { Suspense } from 'react';
-import { Stack } from '@mui/material';
 import { Navigate, Route, Routes, useParams } from 'react-router';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader from '../../../../components/Loader';
@@ -23,8 +22,6 @@ import {
 import SubType from './SubType';
 import GlobalWorkflowSettingsCard from './global_workflow_request_access/GlobalWorkflowSettingsCard';
 import SubTypeWorkflow from './SubTypeWorkflow';
-import EntityStatusSyncSetting from './global_workflow_request_access/EntityStatusSyncSetting';
-import RequestAccessDrawerButton from './global_workflow_request_access/RequestAccessDrawerButton';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { isWorkflowUiEnabledForType } from '../../common/workflow/workflowFeatureFlag';
 
@@ -62,13 +59,7 @@ const RootSubType = () => {
             path={SUBTYPE_TAB_WORKFLOW}
             element={isWorkflowUiEnabledForType(subTypeId, isFeatureEnable)
               ? (
-                  <>
-                    <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 1 }}>
-                      <EntityStatusSyncSetting />
-                      <RequestAccessDrawerButton />
-                    </Stack>
-                    <SubTypeWorkflow entityType={subTypeId} heightOffset={340} />
-                  </>
+                  <SubTypeWorkflow entityType={subTypeId} heightOffset={290} />
                 )
               : <GlobalWorkflowSettingsCard />}
           />

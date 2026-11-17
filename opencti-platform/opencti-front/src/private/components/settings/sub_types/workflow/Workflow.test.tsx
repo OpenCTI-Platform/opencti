@@ -249,6 +249,10 @@ vi.mock('../../../../../utils/hooks/useEnterpriseEdition', () => ({
   default: vi.fn(),
 }));
 
+vi.mock('../global_workflow_request_access/EntityStatusSyncSetting', () => ({
+  default: () => <div data-testid="entity-status-sync-setting" />,
+}));
+
 vi.mock('./RequestAccessValidatorGroup', () => ({
   default: () => <div data-testid="validator-group-field" />,
 }));
@@ -1003,14 +1007,19 @@ describe('Workflow Component', () => {
       expect(screen.queryByTestId('validator-group-field')).not.toBeInTheDocument();
     });
 
-    it('renders the scope switch and the validator group above the canvas, not over it', () => {
+    it('renders the scope switch, the validator group and the status sync in the top-left canvas panel', () => {
       renderRfi({ scope: 'REQUEST_ACCESS' });
-      const toolbar = screen.getByTestId('workflow-scope-toolbar');
-      expect(toolbar).toContainElement(screen.getByRole('radiogroup', { name: 'Workflow scope' }));
-      expect(toolbar).toContainElement(screen.getByTestId('validator-group-field'));
-      // A React Flow panel would sit on top of the nodes that fitView places
-      expect(toolbar.closest('.react-flow')).toBeNull();
-      expect(toolbar.querySelector('.react-flow__panel')).toBeNull();
+      const panel = screen.getByTestId('workflow-top-left-panel');
+      expect(panel).toContainElement(screen.getByRole('radiogroup', { name: 'Workflow scope' }));
+      expect(panel).toContainElement(screen.getByTestId('validator-group-field'));
+      expect(panel).toContainElement(screen.getByTestId('entity-status-sync-setting'));
+      expect(panel.closest('.react-flow__panel')).not.toBeNull();
+    });
+
+    it('keeps the status sync in the panel without the scope switch when there is no request access scope', () => {
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);
+      expect(screen.getByTestId('entity-status-sync-setting')).toBeInTheDocument();
+      expect(screen.queryByRole('radiogroup', { name: 'Workflow scope' })).not.toBeInTheDocument();
     });
 
     describe('migration entry point', () => {

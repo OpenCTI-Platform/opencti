@@ -1,6 +1,6 @@
 import React from 'react';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { Formik, Form } from 'formik';
 import TransitionForm from './TransitionForm';
 import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
@@ -520,7 +520,7 @@ describe('TransitionForm – closing reason section', () => {
   it('is disabled by default on domain objects', () => {
     renderForm({ event: 'close', syncActions: [] }, vi.fn(), 'Case-Incident');
     expect(screen.getByRole('switch', { name: /enable closing reason/i })).not.toBeChecked();
-    expect(screen.getByRole('switch', { name: /closing reason required/i })).toBeDisabled();
+    expect(within(screen.getByTestId('workflow-transition-required-closing-reason-toggle')).getByRole('switch')).toBeDisabled();
   });
 
   it('sets closingReason to "required" when enabled then required', async () => {
@@ -528,7 +528,7 @@ describe('TransitionForm – closing reason section', () => {
     const { user } = renderForm({ event: 'close', syncActions: [] }, onSubmit, 'Case-Incident');
 
     await user.click(screen.getByRole('switch', { name: /enable closing reason/i }));
-    await user.click(screen.getByRole('switch', { name: /closing reason required/i }));
+    await user.click(within(screen.getByTestId('workflow-transition-required-closing-reason-toggle')).getByRole('switch'));
     document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
 
     await waitFor(() => {

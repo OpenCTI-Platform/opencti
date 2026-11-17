@@ -1,6 +1,5 @@
 import { CSSProperties } from 'react';
-// The other switches of this form are still MUI ones, so the design system Switch is imported under another name
-import { Switch as DsSwitch, Text } from '@filigran/design-system';
+import { Text } from '@filigran/design-system';
 import { FlagOutlined } from '@mui/icons-material';
 import { Alert, Box, FormControlLabel, Icon, Switch, Typography } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
@@ -228,11 +227,16 @@ const TransitionForm = ({ entityType, targetStatusExits }: { entityType: string;
             {t_i18n('When enabled, users will be prompted to select a closing reason when changing the status.')}
           </Alert>
           <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-            <DsSwitch
-              checked={enableClosingReason}
-              // Kept enabled when already on, so a closing reason the status no longer allows can be turned off
-              disabled={!enableClosingReason && !!targetStatusExits}
-              onCheckedChange={(checked) => setFieldValue('closingReason', checked ? CommentMode.allowed : CommentMode.disabled)}
+            <FormControlLabel
+              control={(
+                <Switch
+                  checked={enableClosingReason}
+                  // Kept enabled when already on, so a closing reason the status no longer allows can be turned off
+                  disabled={!enableClosingReason && !!targetStatusExits}
+                  onChange={(e) => setFieldValue('closingReason', e.target.checked ? CommentMode.allowed : CommentMode.disabled)}
+                  data-testid="workflow-transition-enable-closing-reason-toggle"
+                />
+              )}
               label={t_i18n('Enable closing reason')}
             />
             {targetStatusExits && (
@@ -244,11 +248,15 @@ const TransitionForm = ({ entityType, targetStatusExits }: { entityType: string;
               </Text>
             )}
             <Box sx={{ pl: 4 }}>
-              <DsSwitch
-                checked={closingReasonMode === CommentMode.required}
-                disabled={!enableClosingReason}
-                onCheckedChange={(checked) => setFieldValue('closingReason', checked ? CommentMode.required : CommentMode.allowed)}
-                aria-label={t_i18n('Closing reason required')}
+              <FormControlLabel
+                control={(
+                  <Switch
+                    checked={closingReasonMode === CommentMode.required}
+                    disabled={!enableClosingReason}
+                    onChange={(e) => setFieldValue('closingReason', e.target.checked ? CommentMode.required : CommentMode.allowed)}
+                    data-testid="workflow-transition-required-closing-reason-toggle"
+                  />
+                )}
                 label={t_i18n('Required')}
               />
             </Box>

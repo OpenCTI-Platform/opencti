@@ -30,6 +30,7 @@ import PublishButton from './PublishButton';
 import RestoreConfirmDialog from './RestoreConfirmDialog';
 import WorkflowScopeSwitch from './WorkflowScopeSwitch';
 import RequestAccessValidatorGroup from './RequestAccessValidatorGroup';
+import EntityStatusSyncSetting from '../global_workflow_request_access/EntityStatusSyncSetting';
 import RequestAccessMigrationDialog from './RequestAccessMigrationDialog';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
@@ -138,7 +139,8 @@ const workflowDefinitionRestorePublishedMutation = graphql`
 
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 const proOptions = { account: 'paid-pro', hideAttribution: true };
-const fitViewOptions = {};
+// fitView knows nothing of the top-left panel: room is left on every side so the initial node never ends up under it
+const fitViewOptions = { padding: 0.12 };
 
 const emptyElement = {
   id: NEW_STATUS_NAME,
@@ -212,7 +214,7 @@ const Workflow = ({
   useWorkflowLayout(layoutOptions);
 
   useEffect(() => {
-    fitView();
+    fitView(fitViewOptions);
   }, [nodes, edges, fitView]);
 
   // Update workflow definition
@@ -454,13 +456,6 @@ const Workflow = ({
   const highlight = useMemo(() => getHoverHighlight(hoveredId, nodes, edges), [hoveredId, nodes, edges]);
   return (
     <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      {isRequestAccessScopeAvailable && (
-        // Above the canvas, not in a React Flow Panel: fitView knows nothing of a panel and would put the initial node under it
-        <div data-testid="workflow-scope-toolbar" style={{ display: 'flex', alignItems: 'flex-end', gap: 12, padding: 12, flexShrink: 0 }}>
-          <WorkflowScopeSwitch scope={scope} onScopeChange={(nextScope) => onScopeChange?.(nextScope)} />
-          {scope === 'REQUEST_ACCESS' && <RequestAccessValidatorGroup />}
-        </div>
-      )}
       <WorkflowEdgeActionsContext.Provider value={edgeActions}>
         <HoverHighlightContext.Provider value={highlight}>
           <ReactFlow
@@ -485,9 +480,17 @@ const Workflow = ({
             deleteKeyCode={null}
             zoomOnDoubleClick={false}
             proOptions={proOptions}
-            // Takes what the toolbar above leaves
             style={{ flex: 1, minHeight: 0 }}
           >
+            <Panel position="top-left" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12 }} data-testid="workflow-top-left-panel">
+              {isRequestAccessScopeAvailable && (
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
+                  <WorkflowScopeSwitch scope={scope} onScopeChange={(nextScope) => onScopeChange?.(nextScope)} />
+                  {scope === 'REQUEST_ACCESS' && <RequestAccessValidatorGroup />}
+                </div>
+              )}
+              <EntityStatusSyncSetting />
+            </Panel>
             {nodes.length ? (
               <Panel position="top-right" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <PublishButton
