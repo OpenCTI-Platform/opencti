@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { oxlintConfigRules, toComparableRuleId, toEslintRuleId } from './normalize.mjs';
+import { anchorOverrideGlobs, serializeConfig } from './oxlintrc.mjs';
 
 // Regenerates .oxlintrc.json from eslint.config.ts (run from a package dir) so that
 // oxlint runs exactly the rules ESLint enables, then reports what could not be carried over.
@@ -31,22 +33,24 @@ const migrateEntryPoint = () => {
   return path.resolve(path.dirname(manifestFile), entry);
 };
 
+// Runs the migration into a scratch directory, so no file of the package is ever touched, and returns the raw config.
 const runMigrate = () => {
-  const file = path.join(packageDir, OXLINTRC);
-  const previous = fs.existsSync(file) ? fs.readFileSync(file) : undefined;
-  // The migration keeps an existing file as .oxlintrc.json.bak: the config is always regenerated from scratch.
-  fs.rmSync(file, { force: true });
-  const run = spawnSync(
-    process.execPath,
-    // --js-plugins=false: no `jsPlugins`, rules oxlint lacks stay ESLint-only. No --type-aware.
-    [migrateEntryPoint(), ESLINT_CONFIG, '--js-plugins=false'],
-    { cwd: packageDir, encoding: 'utf8' },
-  );
-  if (run.error || run.status !== 0) {
-    // Leave the previous config in place rather than none at all.
-    fs.rmSync(file, { force: true });
-    if (previous !== undefined) fs.writeFileSync(file, previous);
-    fail(`oxlint-migrate failed (exit ${run.status}): ${run.error?.message ?? (run.stderr || run.stdout).trim()}`);
+  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'lint-parity-sync-'));
+  try {
+    const output = path.join(scratch, OXLINTRC);
+    // migrate resolves --output-file against its working directory even when it is absolute: pass it relative.
+    const run = spawnSync(
+      process.execPath,
+      // --js-plugins=false: no `jsPlugins`, rules oxlint lacks stay ESLint-only. No --type-aware.
+      [migrateEntryPoint(), ESLINT_CONFIG, '--js-plugins=false', '--output-file', path.relative(packageDir, output)],
+      { cwd: packageDir, encoding: 'utf8' },
+    );
+    if (run.error || run.status !== 0) {
+      fail(`oxlint-migrate failed (exit ${run.status}): ${run.error?.message ?? (run.stderr || run.stdout).trim()}`);
+    }
+    return JSON.parse(fs.readFileSync(output, 'utf8'));
+  } finally {
+    fs.rmSync(scratch, { recursive: true, force: true });
   }
 };
 
@@ -103,13 +107,16 @@ const main = async () => {
   if (!fs.existsSync(path.join(packageDir, ESLINT_CONFIG))) fail(`${ESLINT_CONFIG} not found in ${packageDir}`);
   const eslintConfig = await loadEslintConfig();
 
-  runMigrate();
-  const oxlintrc = JSON.parse(fs.readFileSync(path.join(packageDir, OXLINTRC), 'utf8'));
-  oxlintrc.categories = Object.fromEntries(CATEGORIES.map((category) => [category, 'off']));
-  stripOffRuleOptions(oxlintrc.rules);
-  (oxlintrc.overrides ?? []).forEach((override) => stripOffRuleOptions(override.rules));
-  oxlintrc.ignorePatterns = [...new Set(globalIgnores(eslintConfig))];
-  fs.writeFileSync(path.join(packageDir, OXLINTRC), `${JSON.stringify(oxlintrc, null, 2)}\n`);
+  const migrated = runMigrate();
+  migrated.categories = Object.fromEntries(CATEGORIES.map((category) => [category, 'off']));
+  stripOffRuleOptions(migrated.rules);
+  (migrated.overrides ?? []).forEach((override) => stripOffRuleOptions(override.rules));
+  migrated.ignorePatterns = [...new Set(globalIgnores(eslintConfig))];
+  const { config: oxlintrc, rewritten } = anchorOverrideGlobs(migrated);
+  const generated = serializeConfig(oxlintrc);
+  const file = path.join(packageDir, OXLINTRC);
+
+  fs.writeFileSync(file, generated);
 
   // Both sides are keyed by the id oxlint enforces: ESLint's @typescript-eslint/x folded into the core x where migrate does.
   const eslintOptions = enabledOptions(eslintConfig.map((entry) => entry.rules ?? {}), toComparableRuleId);
@@ -126,6 +133,7 @@ const main = async () => {
     .sort();
 
   console.log(`${OXLINTRC} written: ${oxlintRules.size} rules enabled, ${oxlintrc.ignorePatterns.length} ignore patterns`);
+  printList('override globs anchored to the package root (ESLint flat config semantics)', rewritten.map((item) => `override ${item.override}: ${item.before} -> ${item.after}`));
   printList('ESLint-only, unsupported by oxlint', unsupported);
   printList('options differ, check in triage', optionsDiffer);
 };

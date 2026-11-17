@@ -174,7 +174,7 @@
     },
     {
       "files": [
-        "*.js"
+        "./*.js"
       ],
       "rules": {
         "no-use-before-define": "off",
@@ -184,7 +184,7 @@
     {
       "files": [
         "builder/**/*.{ts,cts}",
-        "knip.ts"
+        "./knip.ts"
       ],
       "rules": {
         "import/extensions": [
