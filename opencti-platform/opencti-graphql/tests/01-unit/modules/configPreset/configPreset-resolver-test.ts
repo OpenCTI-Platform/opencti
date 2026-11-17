@@ -294,7 +294,7 @@ describe('Config preset exportable types query', () => {
       },
       {
         key: 'dashboards',
-        label: 'Dashboards',
+        label: 'Custom dashboards',
         description: '',
         group: { key: 'dashboards', label: 'Dashboards' },
         // By name, the investigation is not a dashboard

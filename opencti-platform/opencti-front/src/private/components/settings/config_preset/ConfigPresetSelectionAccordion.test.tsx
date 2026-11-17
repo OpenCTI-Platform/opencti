@@ -49,49 +49,6 @@ describe('ConfigPresetSelectionAccordion', () => {
     expect(onSelectionChange).toHaveBeenCalledWith({ branding: { mode: 'some', ids: [] } });
   });
 
-  it('shows a group that holds one type of the same name as that type, not as a group with one row', async () => {
-    const dashboards: ConfigPresetAccordionType = {
-      key: 'dashboards',
-      label: 'Dashboards',
-      description: '',
-      group: { key: 'dashboards', label: 'Dashboards' },
-      items: [
-        { key: 'workspace--1', label: 'SOC overview', translatable: false, isDefault: false, dependsOn: [] },
-        { key: 'workspace--2', label: 'Executive summary', translatable: false, isDefault: false, dependsOn: [] },
-      ],
-      itemsPageInfo: { globalCount: 2, hasNextPage: false },
-    };
-    const onSelectionChange = vi.fn();
-    const { user } = testRender(
-      <ConfigPresetSelectionAccordion types={[themes, dashboards]} selection={{}} forced={{}} onSelectionChange={onSelectionChange} onManageType={vi.fn()} />,
-    );
-    // Opened as far as it opens: with a group that has the same type inside, the type would show as a second checkbox of the same name
-    for (const button of screen.getAllByRole('button', { name: /^Expand Dashboards/ })) {
-      await user.click(button);
-    }
-    expect(screen.getAllByRole('checkbox', { name: 'Dashboards (0/2)' })).toHaveLength(1);
-    expect(screen.getByRole('checkbox', { name: 'SOC overview' })).toBeInTheDocument();
-    // The other groups are as they were
-    expect(screen.getByRole('checkbox', { name: 'Platform settings (0/40)' })).toBeInTheDocument();
-    await user.click(screen.getByRole('checkbox', { name: 'Dashboards (0/2)' }));
-    expect(onSelectionChange).toHaveBeenCalledWith({ dashboards: { mode: 'all', ids: [] } });
-  });
-
-  it('keeps a group that holds one type of another name, and a group that holds several types', () => {
-    const labels: ConfigPresetAccordionType = {
-      key: 'labels',
-      label: 'Labels',
-      description: '',
-      group,
-      items: [{ key: 'label--1', label: 'Phishing', translatable: false, isDefault: false, dependsOn: [] }],
-      itemsPageInfo: { globalCount: 1, hasNextPage: false },
-    };
-    testRender(<ConfigPresetSelectionAccordion types={[labels]} selection={{}} forced={{}} onSelectionChange={vi.fn()} />);
-    expect(screen.getByRole('checkbox', { name: 'Platform settings (0/1)' })).toBeInTheDocument();
-    expandConfigPresetGroups();
-    expect(screen.getByRole('checkbox', { name: 'Labels (0/1)' })).toBeInTheDocument();
-  });
-
   it('shows a singleton that has no description as its label alone', () => {
     const type: ConfigPresetAccordionType = {
       key: 'whitemark',

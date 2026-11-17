@@ -223,7 +223,7 @@ describe('Config preset registry', () => {
         itemIds: [fraudCaseTemplate.standard_id, phishingCaseTemplate.standard_id],
       },
       // The dashboards by name, never an investigation
-      { id: 'dashboards', label: 'Dashboards', description: '', group: 'dashboards', itemIds: [executiveDashboard.standard_id, socDashboard.standard_id] },
+      { id: 'dashboards', label: 'Custom dashboards', description: '', group: 'dashboards', itemIds: [executiveDashboard.standard_id, socDashboard.standard_id] },
       { id: 'connectors', label: 'Connectors', description: 'Managed connectors and their parameters, without their secrets', group: 'integrations', itemIds: ['mitre'] },
       // Every rule the platform declares, by its id
       {

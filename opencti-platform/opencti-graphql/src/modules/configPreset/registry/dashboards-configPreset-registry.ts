@@ -49,7 +49,8 @@ export const dashboardsFamily: ConfigPresetFamilyDefinition = {
   importer: dashboardsImporter,
   importModes: [ConfigImportMode.Overwrite, ConfigImportMode.Copy],
   id: DASHBOARDS_FAMILY_ID,
-  label: 'Dashboards',
+  // As in the navigation of the platform (Dashboards > Custom dashboards): the group is the one of the dashboards, the family the list of their custom dashboards
+  label: 'Custom dashboards',
   description: '',
   group: dashboardsGroup,
   directory: 'dashboards',
