@@ -1,9 +1,36 @@
 import { z } from 'zod';
 
+const isNodeConfiguration = (value: string) => {
+  if (value === '') {
+    return true;
+  }
+  try {
+    const configuration = JSON.parse(value);
+    return !!configuration && typeof configuration === 'object' && !Array.isArray(configuration);
+  } catch {
+    return false;
+  }
+};
+
+const playbookDefinitionSchema = z.object({
+  nodes: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    position: z.object({ x: z.number(), y: z.number() }),
+    component_id: z.string(),
+    configuration: z.string().refine(isNodeConfiguration),
+    description: z.string().nullish(),
+  })),
+  links: z.array(z.object({
+    id: z.string(),
+    from: z.object({ id: z.string(), port: z.string() }),
+    to: z.object({ id: z.string() }),
+  })),
+});
+
 const isPlaybookDefinition = (value: string) => {
   try {
-    const definition = JSON.parse(value);
-    return !!definition && Array.isArray(definition.nodes) && Array.isArray(definition.links);
+    return playbookDefinitionSchema.safeParse(JSON.parse(value)).success;
   } catch {
     return false;
   }

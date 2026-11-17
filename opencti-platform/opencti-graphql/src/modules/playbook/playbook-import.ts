@@ -106,7 +106,7 @@ export const importConfigPresetPlaybook = async (
   if (target) {
     const input = changedFields(target, fields);
     if (input.length === 0) {
-      return { status: 'skipped', code: 'unchanged', reason: CONFIG_IMPORT_UNCHANGED_REASON, exists: true, name, configuration: bundlePlaybook };
+      return { status: 'skipped', code: 'unchanged', reason: joinConfigImportReasons([CONFIG_IMPORT_UNCHANGED_REASON, reason]), exists: true, name, configuration: bundlePlaybook };
     }
     if (!dryRun) {
       await playbookEdit(context, user, target.id, input);

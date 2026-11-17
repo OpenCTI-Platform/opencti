@@ -1,6 +1,5 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ConfigImportMode } from '../../configImport/configImport-types';
-import { freeConfigImportName } from '../../configImport/configImport-utils';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter, ConfigPresetImportPlan } from '../import/configPreset-import-types';
 import { configPresetPlanKey } from '../import/configPreset-import-types';
@@ -14,6 +13,15 @@ const loadPlaybookExport = () => import('../../playbook/playbook-export');
 
 const fileNameOf = (id: string) => id.replace(/[^\p{L}\p{N} ._()-]/gu, '_');
 
+const uniqueName = (name: string, taken: Set<string>) => {
+  let candidate = name;
+  for (let copy = 1; taken.has(candidate); copy += 1) {
+    candidate = `${name} (${copy})`;
+  }
+  taken.add(candidate);
+  return candidate;
+};
+
 // Playbook ids are random and names are not unique: the bundle id of a playbook is its name,
 // and the next playbooks of the same name are `name (1)`, `name (2)`... by creation date
 const playbookItems = async (context: AuthContext, user: AuthUser): Promise<ConfigPresetItemDefinition[]> => {
@@ -22,23 +30,16 @@ const playbookItems = async (context: AuthContext, user: AuthUser): Promise<Conf
     .sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)) || String(a.internal_id).localeCompare(String(b.internal_id)));
   const ids = new Set<string>();
   const fileNames = new Set<string>();
-  const items: ConfigPresetItemDefinition[] = [];
-  for (let i = 0; i < playbooks.length; i += 1) {
-    const playbook = playbooks[i];
-    const id = await freeConfigImportName(playbook.name, async (candidate) => ids.has(candidate));
-    if (id) {
-      ids.add(id);
-      const fileName = (await freeConfigImportName(fileNameOf(id), async (candidate) => fileNames.has(candidate))) ?? id;
-      fileNames.add(fileName);
-      items.push({
-        id,
-        label: playbook.name,
-        translatable: false,
-        fileName: `${fileName}.json`,
-        exporter: async (ctx) => exportConfigPresetPlaybook(ctx, playbook),
-      });
-    }
-  }
+  const items = playbooks.map((playbook): ConfigPresetItemDefinition => {
+    const id = uniqueName(playbook.name, ids);
+    return {
+      id,
+      label: playbook.name,
+      translatable: false,
+      fileName: `${uniqueName(fileNameOf(id), fileNames)}.json`,
+      exporter: async (ctx) => exportConfigPresetPlaybook(ctx, playbook),
+    };
+  });
   return items.sort((a, b) => a.label.localeCompare(b.label) || a.id.localeCompare(b.id));
 };
 

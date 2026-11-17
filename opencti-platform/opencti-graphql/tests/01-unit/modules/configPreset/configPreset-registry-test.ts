@@ -587,6 +587,15 @@ describe('Config preset registry', () => {
       expect(exported.configuration.playbook_definition).toEqual(enrichPlaybook.playbook_definition);
     });
 
+    it('lists every playbook of a name, however many share it', async () => {
+      const homonyms = Array.from({ length: 105 }, (_, index) => ({ ...enrichPlaybook, id: `homonym-${index}`, internal_id: `homonym-${index}`, created_at: `2026-01-01T00:00:${String(index).padStart(3, '0')}Z` }));
+      vi.mocked(fullEntitiesList).mockResolvedValueOnce(homonyms as never);
+      const items = await findFamily('playbooks').resolveItems(context, user, null, []);
+      expect(items).toHaveLength(105);
+      expect(new Set(items.map(({ id }) => id)).size).toBe(105);
+      expect(items.map(({ id }) => id)).toContain('Enrich reports (104)');
+    });
+
     it('searches the playbooks by name', async () => {
       const page = await findFamily('playbooks').listItems(context, user, { first: 10, search: 'triage' });
       expect(page.edges.map(({ node }) => node.id)).toEqual(['Triage/Phishing']);

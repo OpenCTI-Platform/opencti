@@ -92,6 +92,28 @@ describe('Playbook import of a configuration preset', () => {
     expect(unparsable).toMatchObject({ status: 'failed', code: 'invalid' });
   });
 
+  it.each([
+    ['a node configuration that is not an object', { nodes: [{ ...node('start', 'PLAYBOOK_LOGGER_COMPONENT', {}), configuration: 'null' }], links: [] }],
+    ['a node configuration that is not JSON', { nodes: [{ ...node('start', 'PLAYBOOK_LOGGER_COMPONENT', {}), configuration: '{' }], links: [] }],
+    ['a node without its component', { nodes: [{ id: 'start', name: 'start', position: { x: 0, y: 0 }, configuration: '{}' }], links: [] }],
+    ['a link without its target', { nodes: [], links: [{ id: 'link', from: { id: 'start', port: 'out' } }] }],
+  ])('refuses %s as invalid, before reading anything of the platform', async (_case, definition) => {
+    withPlatform([]);
+    const configuration = bundlePlaybook({ playbook_definition: JSON.stringify(definition) });
+    const result = await importConfigPresetPlaybook(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true });
+    expect(result).toMatchObject({ status: 'failed', code: 'invalid', reason: expect.stringContaining('Invalid playbook definition') });
+    expect(fullEntitiesList).not.toHaveBeenCalled();
+    expect(sanitizeDefinitionRunAs).not.toHaveBeenCalled();
+  });
+
+  it('accepts a node without configuration', async () => {
+    withPlatform([]);
+    const definition = { nodes: [{ ...node('start', 'PLAYBOOK_LOGGER_COMPONENT', {}), configuration: '' }], links: [] };
+    const configuration = bundlePlaybook({ playbook_definition: JSON.stringify(definition) });
+    const result = await importConfigPresetPlaybook(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true });
+    expect(result.status).toBe('created');
+  });
+
   it('creates a new playbook stopped, its users found by standard id, and writes nothing in a dry run', async () => {
     withPlatform([]);
     const dryRun = await importConfigPresetPlaybook(context, user, bundlePlaybook(), { mode: ConfigImportMode.Overwrite, dryRun: true });
@@ -143,8 +165,14 @@ describe('Playbook import of a configuration preset', () => {
   it('is already up to date when the playbook of the same name has the same configuration', async () => {
     withPlatform([storedPlaybook()]);
     const result = await importConfigPresetPlaybook(context, user, bundlePlaybook(), { mode: ConfigImportMode.Overwrite });
-    expect(result).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true });
+    expect(result).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true, reason: 'Already up to date' });
     expect(playbookEdit).not.toHaveBeenCalled();
+  });
+
+  it('still reports the references the platform does not have when the playbook is already up to date', async () => {
+    withPlatform([storedPlaybook()], { [JANE.standard_id]: JANE, [JANE.internal_id]: JANE, [GROUP_ID]: {} });
+    const result = await importConfigPresetPlaybook(context, user, bundlePlaybook(), { mode: ConfigImportMode.Overwrite });
+    expect(result).toMatchObject({ status: 'skipped', code: 'unchanged', reason: `Already up to date\nReferences not found: ${MARKING_ID}` });
   });
 
   it('overwrites only the fields that differ, and keeps the running state of the playbook', async () => {
