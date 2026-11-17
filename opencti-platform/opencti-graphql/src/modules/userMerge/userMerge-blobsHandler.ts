@@ -170,7 +170,12 @@ export const rewriteTarget = (
   } else if (target.shape === 'nested-json') {
     rewritten = rewriteNestedJson(raw, sourceId, targetId);
   } else {
-    rewritten = rewriteJson(raw, sourceId, targetId);
+    const settled = target.settle ? target.settle(raw, sourceId, targetId) : raw;
+    rewritten = rewriteJson(settled, sourceId, targetId);
+    // The settle step may have been the whole of the rewrite, leaving no source id behind.
+    if (rewritten === undefined && settled !== raw) {
+      rewritten = settled;
+    }
   }
   if (isRejection(rewritten)) {
     return rewritten;

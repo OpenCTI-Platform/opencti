@@ -38,8 +38,8 @@ describe('userMerge blob targets', () => {
     userMergeBlobCoveredRows().forEach((rowId) => expect(known).toContain(rowId));
   });
 
-  it('should claim twelve rows, the paired case-rfi and workflow ones each through a single field', () => {
-    expect(userMergeBlobCoveredRows()).toHaveLength(12);
+  it('should claim fourteen rows, the paired case-rfi and workflow ones each through a single field', () => {
+    expect(userMergeBlobCoveredRows()).toHaveLength(14);
     expect(userMergeBlobCoveredRows()).toContain('case-rfi-terminal.request-access-applicant-id');
     expect(userMergeBlobCoveredRows()).toContain('workflow-instance-pending.transition-actions');
   });
@@ -57,6 +57,76 @@ describe('userMerge blob targets', () => {
   // sub-document here would have the two handlers write the same field.
   it('should not claim the workflow version sub-document as a whole', () => {
     expect(userMergeBlobCoveredRows()).not.toContain('workflow-definition.versions-created-by');
+  });
+});
+
+describe('userMerge default values', () => {
+  const configurationOf = (...attributes: { name: string; default_values: string[] }[]) => JSON.stringify(
+    attributes.map((attribute) => ({ mandatory: false, ...attribute })),
+  );
+  const memberOf = (id: string, access_right: string) => JSON.stringify({ id, access_right });
+  const defaultsOf = (rewrite: unknown, name: string): string[] => {
+    const configuration = JSON.parse((rewrite as { doc: Record<string, string> }).doc.attributes_configuration);
+    return configuration.find((attribute: { name: string }) => attribute.name === name).default_values;
+  };
+
+  // A default is applied to every entity created afterwards: left alone, it keeps assigning the
+  // source long after the merge.
+  it('should re-point a default assignee of an entity setting', () => {
+    const rewrite = rewriteOf('entity-setting-attributes-configuration', {
+      attributes_configuration: configurationOf({ name: 'objectAssignee', default_values: [SOURCE, OTHER] }),
+    });
+    expect(defaultsOf(rewrite, 'objectAssignee')).toEqual([TARGET, OTHER]);
+  });
+
+  it('should re-point a default authorized member', () => {
+    const rewrite = rewriteOf('entity-setting-attributes-configuration', {
+      attributes_configuration: configurationOf({ name: 'restricted_members', default_values: [memberOf(SOURCE, 'edit'), memberOf(OTHER, 'admin')] }),
+    });
+    expect(defaultsOf(rewrite, 'restricted_members')).toEqual([memberOf(OTHER, 'admin'), memberOf(TARGET, 'edit')]);
+  });
+
+  // The creation keeps the first entry of a member rather than the strongest, so the two entries
+  // have to be one before it reads them.
+  it('should collapse a default naming both accounts, the strongest access right winning', () => {
+    const rewrite = rewriteOf('entity-setting-attributes-configuration', {
+      attributes_configuration: configurationOf(
+        { name: 'restricted_members', default_values: [memberOf(TARGET, 'view'), memberOf(SOURCE, 'admin')] },
+        { name: 'objectAssignee', default_values: [SOURCE] },
+      ),
+    });
+    expect(defaultsOf(rewrite, 'restricted_members')).toEqual([memberOf(TARGET, 'admin')]);
+    expect(defaultsOf(rewrite, 'objectAssignee')).toEqual([TARGET]);
+  });
+
+  it('should be a no-op on a second run', () => {
+    const once = rewriteOf('entity-setting-attributes-configuration', {
+      attributes_configuration: configurationOf({ name: 'restricted_members', default_values: [memberOf(TARGET, 'view'), memberOf(SOURCE, 'admin')] }),
+    }) as { doc: Record<string, string> };
+    expect(rewriteOf('entity-setting-attributes-configuration', { attributes_configuration: once.doc.attributes_configuration })).toBeUndefined();
+  });
+
+  it('should leave an entity setting naming nobody relevant untouched', () => {
+    expect(rewriteOf('entity-setting-attributes-configuration', {
+      attributes_configuration: configurationOf({ name: 'restricted_members', default_values: [memberOf(OTHER, 'admin')] }),
+    })).toBeUndefined();
+  });
+
+  const representationsOf = (assignee: string) => JSON.stringify([
+    { id: 'r1', type: 'entity', target: { entity_type: 'Report' }, attributes: [{ key: 'objectAssignee', default_values: [assignee] }] },
+  ]);
+
+  it('should re-point a default value of a CSV and a JSON mapper', () => {
+    ['csv-mapper-representations', 'json-mapper-representations'].forEach((targetId) => {
+      const rewrite = rewriteOf(targetId, { representations: representationsOf(SOURCE) }) as { doc: Record<string, string> };
+      expect(rewrite.doc.representations, targetId).toEqual(representationsOf(TARGET));
+    });
+  });
+
+  it('should re-point a default value of the mapper a CSV feed carries inline', () => {
+    const csvMapperOf = (assignee: string) => JSON.stringify({ name: 'inline', representations: JSON.parse(representationsOf(assignee)) });
+    const rewrite = rewriteOf('ingestion-csv-inline-mapper', { csv_mapper: csvMapperOf(SOURCE) }) as { doc: Record<string, string> };
+    expect(rewrite.doc.csv_mapper).toEqual(csvMapperOf(TARGET));
   });
 });
 
