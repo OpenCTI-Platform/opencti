@@ -3,18 +3,23 @@ import * as conf from '../../../../src/config/conf';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { fullEntitiesList } from '../../../../src/database/middleware-loader';
 import { deleteInternalObject } from '../../../../src/domain/internalObject';
-import { initLockedUserEmailTemplate } from '../../../../src/modules/emailTemplate/emailTemplate-domain';
+import { addEmailTemplate, initLockedUserEmailTemplate } from '../../../../src/modules/emailTemplate/emailTemplate-domain';
 import { type BasicStoreEntityEmailTemplate, ENTITY_TYPE_EMAIL_TEMPLATE } from '../../../../src/modules/emailTemplate/emailTemplate-types';
 import { LOCKED_USER_EMAIL_TEMPLATE_INPUT } from '../../../../src/database/locked-user-email-template-input';
 import { addFilter } from '../../../../src/utils/filtering/filtering-utils';
 
 const { isFeatureEnabled } = conf;
 
-const lockedUserTemplates = () => fullEntitiesList<BasicStoreEntityEmailTemplate>(testContext, ADMIN_USER, [ENTITY_TYPE_EMAIL_TEMPLATE], {
+// The engine matches a name without its case: the templates whose name differs only by its case are found too
+const templatesWithLockedUserName = () => fullEntitiesList<BasicStoreEntityEmailTemplate>(testContext, ADMIN_USER, [ENTITY_TYPE_EMAIL_TEMPLATE], {
   filters: addFilter(undefined, 'name', LOCKED_USER_EMAIL_TEMPLATE_INPUT.name),
 });
+const lockedUserTemplates = async () => {
+  const templates = await templatesWithLockedUserName();
+  return templates.filter((template) => template.name === LOCKED_USER_EMAIL_TEMPLATE_INPUT.name);
+};
 const deleteLockedUserTemplates = async () => {
-  for (const template of await lockedUserTemplates()) {
+  for (const template of await templatesWithLockedUserName()) {
     await deleteInternalObject(testContext, ADMIN_USER, template.id, ENTITY_TYPE_EMAIL_TEMPLATE);
   }
 };
@@ -30,6 +35,7 @@ describe('Built-in email template for the locked users', () => {
 
   // The platform init creates it in the tests, where every feature flag is enabled
   afterAll(async () => {
+    await deleteLockedUserTemplates();
     await initLockedUserEmailTemplate(testContext);
   });
 
@@ -55,6 +61,15 @@ describe('Built-in email template for the locked users', () => {
     await initLockedUserEmailTemplate(testContext);
     await deleteLockedUserTemplates();
     await initLockedUserEmailTemplate(testContext);
+    expect(await lockedUserTemplates()).toHaveLength(1);
+  });
+
+  it('should create the template when only a template whose name differs by its case exists', async () => {
+    const otherName = LOCKED_USER_EMAIL_TEMPLATE_INPUT.name.toLowerCase();
+    const otherTemplate = await addEmailTemplate(testContext, ADMIN_USER, { ...LOCKED_USER_EMAIL_TEMPLATE_INPUT, name: otherName }, false);
+    const created = await initLockedUserEmailTemplate(testContext);
+    expect(created?.id).not.toEqual(otherTemplate.id);
+    expect(created?.name).toEqual(LOCKED_USER_EMAIL_TEMPLATE_INPUT.name);
     expect(await lockedUserTemplates()).toHaveLength(1);
   });
 

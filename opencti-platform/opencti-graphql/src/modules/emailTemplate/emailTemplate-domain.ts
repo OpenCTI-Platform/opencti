@@ -80,10 +80,13 @@ export const initLockedUserEmailTemplate = async (context: AuthContext) => {
   if (!isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG)) {
     return undefined;
   }
+  // As findEmailTemplatesByName, without its Enterprise Edition check, which would stop the startup: the engine matches
+  // a name without its case, but a template whose name differs by its case is another template
   const filters = addFilter(undefined, 'name', LOCKED_USER_EMAIL_TEMPLATE_INPUT.name);
-  const existingTemplates = await fullEntitiesList<BasicStoreEntityEmailTemplate>(context, SYSTEM_USER, [ENTITY_TYPE_EMAIL_TEMPLATE], { filters });
-  if (existingTemplates.length > 0) {
-    return existingTemplates[0];
+  const templates = await fullEntitiesList<BasicStoreEntityEmailTemplate>(context, SYSTEM_USER, [ENTITY_TYPE_EMAIL_TEMPLATE], { filters });
+  const existingTemplate = templates.find((template) => template.name === LOCKED_USER_EMAIL_TEMPLATE_INPUT.name);
+  if (existingTemplate) {
+    return existingTemplate;
   }
   return addEmailTemplate(context, SYSTEM_USER, LOCKED_USER_EMAIL_TEMPLATE_INPUT, false);
 };
