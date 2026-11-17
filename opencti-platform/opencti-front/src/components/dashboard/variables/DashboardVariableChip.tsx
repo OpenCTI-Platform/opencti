@@ -1,4 +1,4 @@
-import { useState, type MouseEvent } from 'react';
+import { useRef, useState } from 'react';
 import Popover from '@mui/material/Popover';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -53,7 +53,14 @@ const DashboardVariableChip = ({
   onDelete,
 }: DashboardVariableChipProps) => {
   const { t_i18n, fsd } = useFormatter();
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [open, setOpen] = useState(false);
+  // The popover is anchored on the container of the chip, which stays mounted: the chip element itself is
+  // mounted again when the dot or the tooltip appears or goes, and a detached anchor sends the popover to the
+  // top left corner of the screen.
+  const anchorRef = useRef<HTMLDivElement>(null);
+  // For the same reason, the popover cannot give the focus back to the chip it was opened from: once closed by the
+  // user (Escape, click outside), the focus is given to the chip of now. Not after an action, which opens its own dialog.
+  const refocusChipRef = useRef(false);
   // Nothing to resolve (so no query) when the bar already did.
   const ownLabels = useVariableValueLabels(variable, valueLabels || !value ? [] : [value]);
   const { labels, restricted } = valueLabels ?? ownLabels;
@@ -70,7 +77,8 @@ const DashboardVariableChip = ({
 
   // The popover closes before the page opens its own dialog.
   const handleAction = (action: (variable: DashboardVariable) => void) => {
-    setAnchorEl(null);
+    refocusChipRef.current = false;
+    setOpen(false);
     action(variable);
   };
 
@@ -84,7 +92,7 @@ const DashboardVariableChip = ({
       label={`${variable.name} : ${valueLabel}`}
       severity={severity}
       disabled={disabled}
-      onClick={(event: MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget)}
+      onClick={() => setOpen(true)}
     />
   );
   // The dot is described to assistive technology on the chip itself, not carried by its colour alone.
@@ -99,6 +107,7 @@ const DashboardVariableChip = ({
 
   return (
     <Stack
+      ref={anchorRef}
       direction="row"
       data-testid={`dashboard-variable-chip-${variable.name}`}
       data-unused={isUnused}
@@ -118,9 +127,21 @@ const DashboardVariableChip = ({
         </Tooltip>
       ) : chip}
       <Popover
-        open={anchorEl !== null && !disabled}
-        anchorEl={anchorEl}
-        onClose={() => setAnchorEl(null)}
+        open={open && !disabled}
+        // Read when the popover positions itself, not during the render.
+        anchorEl={() => anchorRef.current as HTMLDivElement}
+        onClose={() => {
+          refocusChipRef.current = true;
+          setOpen(false);
+        }}
+        slotProps={{
+          transition: {
+            onExited: () => {
+              if (refocusChipRef.current) anchorRef.current?.querySelector('button')?.focus();
+              refocusChipRef.current = false;
+            },
+          },
+        }}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       >
         <Box sx={{ padding: 2, minWidth: 280 }}>
