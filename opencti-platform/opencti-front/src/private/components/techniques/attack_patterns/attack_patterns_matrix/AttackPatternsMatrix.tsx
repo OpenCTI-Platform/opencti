@@ -8,6 +8,7 @@ import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
 import { getMatrixConfig, MatrixVariant } from './attackPatternsMatrixConfig';
 import type { CellDecoration } from './attackPatternsMatrixCellDecoration';
+import type { TechniqueUsage } from '../../../workspaces/investigations/matrix/matrixTypes';
 
 export interface AttackPatternsMatrixProps {
   attackPatterns: ReadonlyArray<{ id: string }>;
@@ -24,6 +25,8 @@ export interface AttackPatternsMatrixProps {
   entityId?: string;
   variant?: MatrixVariant;
   cellDecorations?: Map<string, CellDecoration>;
+  // Procedures per attack pattern: when set, cells show the procedure heatmap instead of cellDecorations.
+  procedureUsage?: Map<string, TechniqueUsage>;
   queryRef?: PreloadedQuery<AttackPatternsMatrixQuery>;
   exportElementId?: string;
 }
@@ -62,6 +65,7 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
   entityId,
   variant,
   cellDecorations,
+  procedureUsage,
   queryRef,
   exportElementId,
 }) => {
@@ -82,6 +86,7 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
     coverageMap,
     entityId,
     cellDecorations,
+    procedureUsage,
   };
 
   return (

@@ -22,6 +22,10 @@ import type { Theme } from '../../../../../components/Theme';
 import { containerTypes } from '../../../../../utils/hooks/useAttributes';
 import { MatrixConfig } from './attackPatternsMatrixConfig';
 import type { CellDecoration } from './attackPatternsMatrixCellDecoration';
+import { useFormatter } from '../../../../../components/i18n';
+import HeatmapLegend from '../../../workspaces/investigations/matrix/HeatmapLegend';
+import { computeHeatScale } from '../../../workspaces/investigations/matrix/heatScale';
+import { buildProcedureCellDecorations, heatmapTechniqueIds } from './procedureHeatmap';
 
 export type AttackPatternsOfPhase = NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number];
 export type AttackPattern = NonNullable<AttackPatternsOfPhase['attackPatterns']>[number];
@@ -173,8 +177,10 @@ const AttackPatternsMatrixColumns = ({
   entityId,
   config,
   cellDecorations,
+  procedureUsage,
 }: AttackPatternsMatrixColumnsProps) => {
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<EventTarget & Element | null>(null);
   const [selectedAttackPattern, setSelectedAttackPattern] = useState<MinimalAttackPattern | null>(null);
   const [navOpen, setNavOpen] = useState(localStorage.getItem('navOpen') === 'true');
@@ -251,6 +257,21 @@ const AttackPatternsMatrixColumns = ({
       }));
   }, [attackPatternsMatrix, searchTerm, attackPatterns, attackPatternIdsToOverlap, isModeOnlyActive, selectedKillChain, config]);
 
+  // Procedure heatmap: the scale only counts the techniques shown (kill chain, search and "only used" filter applied).
+  const procedureHeatmap = useMemo(() => {
+    if (!procedureUsage) return undefined;
+    const techniques = (filteredData ?? []).flatMap((phase) => (phase.attackPatterns ?? []) as FilteredAttackPattern[]);
+    const usedIds = new Set<string>();
+    techniques.forEach((ap) => {
+      if (ap.isCovered) usedIds.add(ap.attack_pattern_id);
+      ap.subAttackPatterns?.filter((sub) => (sub as FilteredSubAttackPattern).isCovered).forEach((sub) => usedIds.add(sub.attack_pattern_id));
+    });
+    const scale = computeHeatScale(procedureUsage, heatmapTechniqueIds(techniques));
+    const decorations = buildProcedureCellDecorations({ usage: procedureUsage, scale, techniques, usedIds, t: t_i18n });
+    return { scale, decorations };
+  }, [procedureUsage, filteredData, t_i18n]);
+  const decorations = procedureHeatmap?.decorations ?? cellDecorations;
+
   const { height: topBannerHeight } = useTopBanner();
 
   const matrixWidth = useMemo(() => {
@@ -279,6 +300,15 @@ const AttackPatternsMatrixColumns = ({
               marginBlockStart: config.fillParent ? 0 : 3,
             }}
           >
+            {procedureHeatmap && procedureHeatmap.scale.max > 0 && (
+              <Box sx={{ mb: 1.5, position: 'sticky', left: 0 }}>
+                <HeatmapLegend
+                  max={procedureHeatmap.scale.max}
+                  title={t_i18n('Procedures (low → high)')}
+                  scaleLabel="Procedure count scale, 1 to {count}"
+                />
+              </Box>
+            )}
             <Box
               id="container"
               sx={{
@@ -341,8 +371,8 @@ const AttackPatternsMatrixColumns = ({
                               <AccordionAttackPattern
                                 attackPattern={ap}
                                 config={config}
-                                decoration={cellDecorations?.get(ap.attack_pattern_id)}
-                                cellDecorations={cellDecorations}
+                                decoration={decorations?.get(ap.attack_pattern_id)}
+                                cellDecorations={decorations}
                                 handleOpen={handleOpen}
                                 attackPatternIdsToOverlap={attackPatternIdsToOverlap}
                                 isSecurityPlatform={isSecurityPlatform}
@@ -359,7 +389,7 @@ const AttackPatternsMatrixColumns = ({
                           key={ap.attack_pattern_id}
                           attackPattern={ap}
                           config={config}
-                          decoration={cellDecorations?.get(ap.attack_pattern_id)}
+                          decoration={decorations?.get(ap.attack_pattern_id)}
                           handleOpen={handleOpen}
                           attackPatternIdsToOverlap={attackPatternIdsToOverlap}
                           isSecurityPlatform={isSecurityPlatform}
