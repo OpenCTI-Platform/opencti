@@ -7,7 +7,8 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type { Attribute, QueryRuntimeAttributesArgs, TypeAttribute } from '../generated/graphql';
 import { INTERNAL_ATTRIBUTES } from './attribute-utils';
 import { getCustomFieldDefinitionsForEntityType, getDynamicTypeAttributeForEntityType } from '../modules/customField/custom-field-cache';
-import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import { type EntitySettingSchemaAttribute, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 import { getEntitySettingSchemaAttributes } from '../modules/entitySetting/entitySetting-attributeUtils';
 import { FunctionalError, UNSUPPORTED_ERROR } from '../config/errors';
 import type { RefAttribute } from '../schema/attribute-definition';
@@ -59,6 +60,19 @@ export const getSchemaAttributes = async (context: AuthContext, user: AuthUser, 
     types = [registeredType];
   }
 
+  // Every relationship type and every observable inherit the same entity setting: its
+  // effective attributes (and the lookup of its ref default values) are computed once per call.
+  const effectiveBySetting = new Map<string, Promise<EntitySettingSchemaAttribute[]>>();
+  const getEffectiveAttributes = (entitySetting: BasicStoreEntityEntitySetting | undefined) => {
+    if (!entitySetting) return Promise.resolve([]);
+    let effective = effectiveBySetting.get(entitySetting.id);
+    if (!effective) {
+      effective = getEntitySettingSchemaAttributes(context, user, entitySetting);
+      effectiveBySetting.set(entitySetting.id, effective);
+    }
+    return effective;
+  };
+
   return Promise.all(types.map(async (type) => {
     const attributes = schemaAttributesDefinition.getAttributes(type);
     const attributesArray = Array.from(attributes.values());
@@ -68,7 +82,7 @@ export const getSchemaAttributes = async (context: AuthContext, user: AuthUser, 
     // (US.2). A type without entity settings (e.g. an internal type) keeps the raw schema
     // mandatoryType and no default values, as before this chunk.
     const entitySetting = await getEntitySettingFromCache(context, type);
-    const effectiveAttributes = await getEntitySettingSchemaAttributes(context, user, entitySetting);
+    const effectiveAttributes = await getEffectiveAttributes(entitySetting);
     const effectiveByName = new Map(effectiveAttributes.map((effective) => [effective.name, effective]));
 
     // Map attributes to TypeAttribute format
