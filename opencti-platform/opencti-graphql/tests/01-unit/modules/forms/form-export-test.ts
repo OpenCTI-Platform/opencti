@@ -175,6 +175,16 @@ describe('Form intake export', () => {
     expect(users.draftDefaults?.authorizedMembers?.defaults).toEqual(['CREATORS', 'AUTHOR', { type: 'AUTHOR_ORG' }]);
   });
 
+  it('does not fail on a stored form whose relationship has a field that is not an object', () => {
+    const schema = {
+      version: '2.0',
+      mainEntityType: 'Malware',
+      fields: [],
+      relationships: [{ id: 'uses', fromEntity: 'main_entity', toEntity: 'x', relationshipType: 'uses', fields: [null] }],
+    } as unknown as FormSchemaDefinition;
+    expect(() => rewriteFormSchemaReferences(schema, () => null)).not.toThrow();
+  });
+
   it('does not change the schema it is given', () => {
     const schema = structuredClone(incidentFormSchema) as unknown as FormSchemaDefinition;
     rewriteFormSchemaReferences(schema, () => null);

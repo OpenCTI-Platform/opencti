@@ -324,7 +324,6 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
           fromEntity: { type: 'string' },
           toEntity: { type: 'string' },
           relationshipType: { type: 'string' },
-          fields: { type: 'array', items: { type: 'object' } },
         },
         required: ['id', 'fromEntity', 'toEntity', 'relationshipType'],
       },

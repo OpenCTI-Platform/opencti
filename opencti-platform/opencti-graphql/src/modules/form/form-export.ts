@@ -101,7 +101,9 @@ const rewriteMemberRule = (rule: Option, resolve: FormReferenceResolver): Option
 // The schema of a form as the bundle carries it: the references it holds go through `resolve`. A copy, the schema given is not changed.
 export const rewriteFormSchemaReferences = (formSchema: FormSchemaDefinition, resolve: FormReferenceResolver): FormSchemaDefinition => {
   const schema = structuredClone(formSchema);
-  const fields = [...(schema.fields ?? []), ...(schema.relationships ?? []).flatMap((relationship) => relationship.fields ?? [])];
+  const relationshipFields = (schema.relationships ?? []).flatMap((relationship) => relationship.fields ?? []);
+  // A stored form may hold what the schema of the forms does not check: only the fields that are objects are rewritten
+  const fields = [...(schema.fields ?? []), ...relationshipFields].filter((field) => typeof field === 'object' && field !== null);
   fields.forEach((field) => rewriteField(field, resolve));
   if (schema.markings) {
     schema.markings = convertDefault(schema.markings, 'marking', resolve) as string[];

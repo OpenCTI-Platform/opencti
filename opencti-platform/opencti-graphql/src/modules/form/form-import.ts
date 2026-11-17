@@ -83,6 +83,11 @@ export const importFormIntake = async (
     return configImportRefusal('failed', 'invalid', configImportReasonValue(`form_schema: ${schemaError}`), false, parsed.data);
   }
   const formSchema = rawSchema as unknown as FormSchemaDefinition;
+  // The schema of the forms does not check the fields of a relationship, and the references are rewritten through them
+  const relationshipFields = (formSchema.relationships ?? []).flatMap((relationship) => relationship.fields ?? []);
+  if (relationshipFields.some((field) => typeof field !== 'object' || field === null)) {
+    return configImportRefusal('failed', 'invalid', configImportReasonValue('form_schema: the fields of a relationship must be objects'), false, parsed.data);
+  }
   const entityType = formSchema.mainEntityType;
   // The entity type is not checked: a form for a type the platform does not have (yet) is imported, and works once the type exists
   const isCopy = mode === ConfigImportMode.Copy;
