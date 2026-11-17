@@ -8,7 +8,7 @@ export const profileEntry: MenuEntry = {
   path: '/dashboard/profile/me',
   label: 'Profile',
   standaloneParents: [],
-  keywords: ['account', 'user', 'me', 'password', 'api token', 'two factor', '2fa', 'language', 'theme'],
+  keywords: ['my account', 'preferences', 'mfa', 'API key', 'dark mode', 'timezone', 'Password', 'api token', 'two factor', '2FA', 'Language', 'theme'],
   availableInDraft: true,
 };
 
@@ -16,7 +16,7 @@ export const notificationCenterEntry: MenuEntry = {
   path: '/dashboard/profile/notifications',
   label: 'Notification Center',
   standaloneParents: [],
-  keywords: ['alerts', 'notifications', 'unread', 'bell'],
+  keywords: ['inbox', 'Messages', 'my alerts', 'Notifications', 'unread', 'bell'],
   requiredCapabilities: [KNOWLEDGE],
 };
 
@@ -27,7 +27,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/profile/notifications/triggers',
     label: 'Triggers',
     standaloneParents: [notificationCenterEntry.label],
-    keywords: ['trigger', 'digest', 'live', 'notifier', 'subscription'],
+    keywords: ['alert rule', 'watchlist', 'follow', 'Monitoring', 'Subscribe', 'notify me', 'digest', 'Notifier', 'subscription'],
     requiredCapabilities: [KNOWLEDGE],
   },
 ];

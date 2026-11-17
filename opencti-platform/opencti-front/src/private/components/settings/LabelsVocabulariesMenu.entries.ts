@@ -13,37 +13,37 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/settings/vocabularies/labels',
     label: 'Labels',
-    keywords: ['tag', 'tags'],
+    keywords: ['tagging', 'taxonomy', 'keyword', 'Tags'],
     requiredCapabilities: [SETTINGS_SETLABELS],
   },
   {
     path: '/dashboard/settings/vocabularies/kill_chain_phases',
     label: 'Kill chain phases',
-    keywords: ['mitre', 'att&ck', 'tactic', 'lockheed'],
+    keywords: ['cyber kill chain', 'stage', 'attack phase', 'unified kill chain', 'mitre', 'att&ck', 'tactic', 'lockheed'],
     requiredCapabilities: [SETTINGS_SETKILLCHAINPHASES],
   },
   {
     path: '/dashboard/settings/vocabularies/fields',
     label: 'Vocabularies',
-    keywords: ['open vocabulary', 'ov', 'dropdown values', 'enum'],
+    keywords: ['picklist', 'list of values', 'taxonomy', 'reference values', 'open vocabulary', 'dropdown values', 'enum'],
     requiredCapabilities: [SETTINGS_SETVOCABULARIES],
   },
   {
     path: '/dashboard/settings/vocabularies/status_templates',
     label: 'Status templates',
-    keywords: ['workflow', 'status'],
+    keywords: ['Lifecycle', 'workflow states'],
     requiredCapabilities: [SETTINGS_SETSTATUSTEMPLATES],
   },
   {
     path: '/dashboard/settings/vocabularies/case_templates',
     label: 'Case templates',
-    keywords: ['task', 'playbook', 'incident response'],
+    keywords: ['runbook', 'procedure', 'checklist', 'Task', 'Playbook', 'Incident response'],
     requiredCapabilities: [SETTINGS_SETCASETEMPLATES],
   },
   {
     path: '/dashboard/settings/vocabularies/custom_fields',
     label: 'Custom fields',
-    keywords: ['attribute', 'schema'],
+    keywords: ['custom attribute', 'extra field', 'additional field', 'schema'],
     requiredCapabilities: [SETTINGS_SETCUSTOMFIELDS],
   },
 ];

@@ -2,11 +2,22 @@ import { ExploreOutlined } from '@mui/icons-material';
 import type { MenuEntry } from '../common/menus/menuEntry';
 import { EXPLORE, INVESTIGATION } from '../../../utils/hooks/capabilities';
 
-export const customDashboards: MenuEntry = { path: '/dashboard/workspaces/dashboards', label: 'Custom dashboards', requiredCapabilities: [EXPLORE] };
-export const publicDashboards: MenuEntry = { path: '/dashboard/workspaces/dashboards_public', label: 'Public dashboards', requiredCapabilities: [EXPLORE] };
+export const customDashboards: MenuEntry = {
+  path: '/dashboard/workspaces/dashboards',
+  label: 'Custom dashboards',
+  keywords: ['Widget', 'Visualization', 'chart', 'kpi', 'Metrics', 'reporting'],
+  requiredCapabilities: [EXPLORE],
+};
+export const publicDashboards: MenuEntry = {
+  path: '/dashboard/workspaces/dashboards_public',
+  label: 'Public dashboards',
+  keywords: ['shared dashboard', 'public link', 'embed', 'external sharing'],
+  requiredCapabilities: [EXPLORE],
+};
 export const investigations: MenuEntry = {
   path: '/dashboard/workspaces/investigations',
   label: 'Investigations',
+  keywords: ['Graph', 'link analysis', 'pivot', 'threat hunting', 'canvas'],
   icon: <ExploreOutlined />,
   requiredCapabilities: [INVESTIGATION],
 };

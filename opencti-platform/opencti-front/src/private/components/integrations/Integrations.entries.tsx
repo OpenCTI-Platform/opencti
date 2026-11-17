@@ -5,6 +5,7 @@ import { INGESTION, INGESTION_SETINGESTIONS, MODULES } from '../../../utils/hook
 export const integrations: MenuEntry = {
   path: '/dashboard/integrations',
   label: 'Integrations',
+  keywords: ['Connectors', 'marketplace', 'application', 'plugin', 'incoming feed', 'Enrichment', 'Ingestion', 'XTM Hub', 'api'],
   icon: <ExtensionOutlined />,
   requiredCapabilities: [MODULES, INGESTION, INGESTION_SETINGESTIONS],
 };

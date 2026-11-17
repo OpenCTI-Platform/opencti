@@ -6,19 +6,19 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/settings/activity/audit',
     label: 'Events',
-    keywords: ['audit', 'logs', 'history', 'activity'],
+    keywords: ['audit trail', 'user activity', 'access log', 'who did what', 'Logs', 'History'],
     requiredCapabilities: [SETTINGS_SECURITYACTIVITY],
   },
   {
     path: '/dashboard/settings/activity/configuration',
     label: 'Configuration',
-    keywords: ['audit', 'logs', 'activity', 'retention'],
+    keywords: ['audit configuration', 'activity tracking', 'logging settings', 'listened users', 'Logs', 'Retention'],
     requiredCapabilities: [SETTINGS_SECURITYACTIVITY],
   },
   {
     path: '/dashboard/settings/activity/alerting',
     label: 'Alerting',
-    keywords: ['alert', 'notification', 'trigger', 'audit'],
+    keywords: ['audit alert', 'security alert', 'suspicious activity', 'Notification', 'Trigger'],
     requiredCapabilities: [SETTINGS_SECURITYACTIVITY],
   },
 ];

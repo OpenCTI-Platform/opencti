@@ -6,26 +6,26 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/data/processing/automation',
     label: 'Automation',
-    keywords: ['playbook', 'workflow', 'trigger'],
+    keywords: ['SOAR', 'orchestration', 'automation rule', 'automate', 'pipeline', 'no-code', 'Enrichment', 'Playbook', 'Workflow', 'Trigger'],
     requiredCapabilities: [AUTOMATION_AUTMANAGE],
     isEE: true,
   },
   {
     path: '/dashboard/data/processing/tasks',
     label: 'Tasks',
-    keywords: ['background task', 'bulk', 'mass update', 'job'],
+    keywords: ['bulk edit', 'batch', 'queue', 'running tasks', 'progress', 'mass delete', 'background task', 'mass update', 'job'],
     requiredCapabilities: [KNOWLEDGE_KNUPDATE],
   },
   {
     path: '/dashboard/data/processing/csv_mapper',
     label: 'CSV Mappers',
-    keywords: ['import', 'mapping', 'csv'],
+    keywords: ['parser', 'column mapping', 'spreadsheet', 'excel', 'ingest', 'csv import'],
     requiredCapabilities: [CSVMAPPERS],
   },
   {
     path: '/dashboard/data/processing/json_mapper',
     label: 'JSON Mappers',
-    keywords: ['import', 'mapping', 'json'],
+    keywords: ['parser', 'field mapping', 'api feed', 'ingest', 'json import'],
     requiredCapabilities: [CSVMAPPERS],
   },
 ];

@@ -6,12 +6,48 @@ const knowledge = { requiredCapabilities: [KNOWLEDGE], availableInDraft: true };
 
 // Pure data (no component import): collected by the left bar and the pages search through its `*.entries.ts(x)` name.
 const menuEntries: MenuEntry[] = [
-  { path: '/dashboard/entities/sectors', label: 'Sectors', icon: <DomainOutlined fontSize="small" />, ...knowledge },
-  { path: '/dashboard/entities/events', label: 'Events', icon: <EventOutlined fontSize="small" />, ...knowledge },
-  { path: '/dashboard/entities/organizations', label: 'Organizations', icon: <AccountBalanceOutlined fontSize="small" />, ...knowledge },
-  { path: '/dashboard/entities/security_platforms', label: 'Security platforms', icon: <SecurityOutlined fontSize="small" />, ...knowledge },
-  { path: '/dashboard/entities/systems', label: 'Systems', icon: <StorageOutlined fontSize="small" />, ...knowledge },
-  { path: '/dashboard/entities/individuals', label: 'Individuals', icon: <PersonOutlined fontSize="small" />, ...knowledge },
+  {
+    path: '/dashboard/entities/sectors',
+    label: 'Sectors',
+    icon: <DomainOutlined fontSize="small" />,
+    keywords: ['vertical', 'Victimology', 'targeted industry', 'naics'],
+    ...knowledge,
+  },
+  {
+    path: '/dashboard/entities/events',
+    label: 'Events',
+    icon: <EventOutlined fontSize="small" />,
+    keywords: ['real-world event', 'conference', 'election', 'summit', 'geopolitical event', 'crisis', 'news'],
+    ...knowledge,
+  },
+  {
+    path: '/dashboard/entities/organizations',
+    label: 'Organizations',
+    icon: <AccountBalanceOutlined fontSize="small" />,
+    keywords: ['company', 'Enterprise', 'Target', 'Vendor', 'Identity', 'Victimology'],
+    ...knowledge,
+  },
+  {
+    path: '/dashboard/entities/security_platforms',
+    label: 'Security platforms',
+    icon: <SecurityOutlined fontSize="small" />,
+    keywords: ['security product', 'EDR', 'XDR', 'SIEM', 'Firewall', 'detection platform', 'security stack'],
+    ...knowledge,
+  },
+  {
+    path: '/dashboard/entities/systems',
+    label: 'Systems',
+    icon: <StorageOutlined fontSize="small" />,
+    keywords: ['Host', 'Server', 'Endpoint', 'it asset', 'attack surface'],
+    ...knowledge,
+  },
+  {
+    path: '/dashboard/entities/individuals',
+    label: 'Individuals',
+    icon: <PersonOutlined fontSize="small" />,
+    keywords: ['person', 'people', 'Identity', 'victim', 'employee', 'vip', 'contact'],
+    ...knowledge,
+  },
 ];
 
 export default menuEntries;

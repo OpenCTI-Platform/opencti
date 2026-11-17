@@ -57,6 +57,13 @@ describe('Hook: useNavSearch', () => {
     expect(search('paramètres')).toContain('/dashboard/settings/config');
   });
 
+  it('matches an entry keyword whatever the case of the keyword and of the typed text', () => {
+    // Keywords reuse the casing of the existing translation keys ('2FA', 'SSO'...).
+    subItems = [section('/dashboard/settings/accesses', 'Security')];
+    ['2fa', '2FA'].forEach((typed) => expect(search(typed)).toContain('/dashboard/profile/me'));
+    ['sso', 'SSO'].forEach((typed) => expect(search(typed)).toContain('/dashboard/settings/accesses/authentications'));
+  });
+
   it('finds the Home page', () => {
     subItems = [];
     expect(search('home')).toEqual(['/dashboard']);
