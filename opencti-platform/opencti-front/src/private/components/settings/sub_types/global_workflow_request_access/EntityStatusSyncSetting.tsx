@@ -1,6 +1,6 @@
 import { Icon, Switch as DsSwitch, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Box } from '@mui/material';
 import { graphql } from 'react-relay';
-import Label from '../../../../../components/common/label/Label';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
@@ -41,33 +41,26 @@ const EntityStatusSyncSetting = ({ sx }: PropsWithSx) => {
   };
 
   return (
-    <div>
-      <Label
-        sx={sx}
-        action={(
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span style={{ display: 'inline-flex' }}>
-                <Icon name="info" size={16} className="text-feedback-info-primary" />
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              {isAvailable
-                ? t_i18n("When enabled, stream synchronizations will try to name-match the incoming entities' statuses with this instance's statuses, instead of dropping them.")
-                : t_i18n('This configuration is not available for this entity type')}
-            </TooltipContent>
-          </Tooltip>
-        )}
-      >
-        {t_i18n('Entity status sync')}
-      </Label>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ...sx }}>
       <DsSwitch
         disabled={!isAvailable}
         checked={isEnabled}
         onCheckedChange={handleToggle}
-        label={t_i18n("Update entities' statuses by name match")}
+        label={t_i18n('Entity status sync')}
       />
-    </div>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span style={{ display: 'inline-flex' }}>
+            <Icon name="info" size={16} className="text-feedback-info-primary" />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          {isAvailable
+            ? t_i18n("When enabled, stream synchronizations will try to name-match the incoming entities' statuses with this instance's statuses, instead of dropping them.")
+            : t_i18n('This configuration is not available for this entity type')}
+        </TooltipContent>
+      </Tooltip>
+    </Box>
   );
 };
 

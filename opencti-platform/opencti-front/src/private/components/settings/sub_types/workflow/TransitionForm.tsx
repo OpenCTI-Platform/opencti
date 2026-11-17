@@ -1,5 +1,4 @@
 import { CSSProperties } from 'react';
-import { Text } from '@filigran/design-system';
 import { FlagOutlined } from '@mui/icons-material';
 import { Alert, Box, FormControlLabel, Icon, Switch, Typography } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
@@ -226,6 +225,14 @@ const TransitionForm = ({ entityType, targetStatusExits }: { entityType: string;
           <Alert severity="info" variant="outlined">
             {t_i18n('When enabled, users will be prompted to select a closing reason when changing the status.')}
           </Alert>
+          {targetStatusExits && (
+            <Alert severity="warning" variant="outlined">
+              {t_i18n('Only on a transition into a final state: {status} is left by {transitions}.', {
+                // Quoted here: an apostrophe in the message itself is an ICU escape
+                values: { status: `'${targetStatusExits.status}'`, transitions: targetStatusExits.events.map((event) => `'${event}'`).join(', ') },
+              })}
+            </Alert>
+          )}
           <Box sx={{ display: 'flex', flexDirection: 'column' }}>
             <FormControlLabel
               control={(
@@ -239,14 +246,6 @@ const TransitionForm = ({ entityType, targetStatusExits }: { entityType: string;
               )}
               label={t_i18n('Enable closing reason')}
             />
-            {targetStatusExits && (
-              <Text variant="content-caption">
-                {t_i18n('Only on a transition into a final state: {status} is left by {transitions}.', {
-                  // Quoted here: an apostrophe in the message itself is an ICU escape
-                  values: { status: `'${targetStatusExits.status}'`, transitions: targetStatusExits.events.map((event) => `'${event}'`).join(', ') },
-                })}
-              </Text>
-            )}
             <Box sx={{ pl: 4 }}>
               <FormControlLabel
                 control={(

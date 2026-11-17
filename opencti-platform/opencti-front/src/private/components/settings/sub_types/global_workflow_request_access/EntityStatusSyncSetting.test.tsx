@@ -42,7 +42,7 @@ describe('EntityStatusSyncSetting', () => {
     mockSubType(['sync_workflow_status_by_name'], true);
     renderSetting();
 
-    const toggle = screen.getByRole('switch', { name: "Update entities' statuses by name match" });
+    const toggle = screen.getByRole('switch', { name: 'Entity status sync' });
     expect(toggle).toBeChecked();
     expect(toggle).toBeEnabled();
   });
@@ -51,7 +51,7 @@ describe('EntityStatusSyncSetting', () => {
     mockSubType(['workflow_configuration'], null);
     renderSetting();
 
-    const toggle = screen.getByRole('switch', { name: "Update entities' statuses by name match" });
+    const toggle = screen.getByRole('switch', { name: 'Entity status sync' });
     expect(toggle).toBeDisabled();
     expect(toggle).not.toBeChecked();
   });
@@ -60,7 +60,7 @@ describe('EntityStatusSyncSetting', () => {
     mockSubType(['sync_workflow_status_by_name'], false);
     renderSetting();
 
-    screen.getByRole('switch', { name: "Update entities' statuses by name match" }).click();
+    screen.getByRole('switch', { name: 'Entity status sync' }).click();
 
     expect(mockCommit).toHaveBeenCalledWith({
       variables: {

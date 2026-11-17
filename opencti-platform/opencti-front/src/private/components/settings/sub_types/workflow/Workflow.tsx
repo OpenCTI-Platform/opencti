@@ -483,13 +483,13 @@ const Workflow = ({
             style={{ flex: 1, minHeight: 0 }}
           >
             <Panel position="top-left" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12 }} data-testid="workflow-top-left-panel">
-              {isRequestAccessScopeAvailable && (
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                {isRequestAccessScopeAvailable && (
                   <WorkflowScopeSwitch scope={scope} onScopeChange={(nextScope) => onScopeChange?.(nextScope)} />
-                  {scope === 'REQUEST_ACCESS' && <RequestAccessValidatorGroup />}
-                </div>
-              )}
-              <EntityStatusSyncSetting />
+                )}
+                <EntityStatusSyncSetting />
+              </div>
+              {isRequestAccessScopeAvailable && scope === 'REQUEST_ACCESS' && <RequestAccessValidatorGroup />}
             </Panel>
             {nodes.length ? (
               <Panel position="top-right" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
