@@ -25,18 +25,9 @@ import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 import HtmlDisplay from '../../../../components/HtmlDisplay';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { isPdfPasswordError } from './StixCoreObjectContentPdfUtils';
-import {
-  filterContentTabFiles,
-  isContainerWithContent,
-  isContentTabImage,
-  isPreviewOnlyFile,
-  resolveContentFileMimeType,
-} from './StixCoreObjectContentFileUtils';
+import { filterContentTabFiles, isContainerWithContent, isContentTabImage, isPreviewOnlyFile, resolveContentFileMimeType } from './StixCoreObjectContentFileUtils';
 import StixCoreObjectContentImageViewer from './StixCoreObjectContentImageViewer';
-import {
-  StixCoreObjectContent_stixCoreObject$data,
-  StixCoreObjectContent_stixCoreObject$key,
-} from './__generated__/StixCoreObjectContent_stixCoreObject.graphql';
+import { StixCoreObjectContent_stixCoreObject$data, StixCoreObjectContent_stixCoreObject$key } from './__generated__/StixCoreObjectContent_stixCoreObject.graphql';
 import { StixCoreObjectContentRefetchQuery } from './__generated__/StixCoreObjectContentRefetchQuery.graphql';
 
 import '../../../../utils/pdfWorker-setup';
@@ -797,7 +788,7 @@ const StixCoreObjectContent: FunctionComponent<StixCoreObjectContentComponentPro
                   data={currentContent ?? ''}
                   onChange={(_, adapter) => {
                     setCurrentContent(adapter.getData());
-                      setChanged(true);
+                    setChanged(true);
                   }}
                   onBlur={(_, adapter) => {
                     onHtmlFieldChange(adapter.getData());
@@ -964,6 +955,5 @@ const StixCoreObjectContent: FunctionComponent<StixCoreObjectContentComponentPro
     </Container>
   );
 };
-
 
 export default StixCoreObjectContent;

@@ -42,7 +42,7 @@ export const isPreviewOnlyFile = (mimeType: MimeType) => mimeType === 'applicati
  * Keeps only the files the Content tab can display (PDF, text, HTML, Markdown, PNG, JPEG),
  * sorted by last modified date, oldest first. Files without a mime type are dropped.
  */
-export const filterContentTabFiles =<T extends { lastModified: string; metaData?: { mimetype?: MimeType } | null }>(files: T[]): T[] => {
+export const filterContentTabFiles = <T extends { lastModified: string; metaData?: { mimetype?: MimeType } | null }>(files: T[]): T[] => {
   return files
     .filter((file) => !!file.metaData?.mimetype && CONTENT_TAB_MIME_TYPES.includes(file.metaData.mimetype))
     .sort((a, b) => (a.lastModified < b.lastModified ? -1 : Number(a.lastModified > b.lastModified)));
