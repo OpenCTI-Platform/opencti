@@ -51,21 +51,44 @@ const isEmptyValue = (value: unknown): boolean => {
   return false;
 };
 
+interface SchemaLike {
+  required?: unknown;
+  properties?: Record<string, { oneOf?: { const?: unknown }[]; items?: { oneOf?: { const?: unknown }[] } } | undefined>;
+}
+
+// A referenced object the platform no longer knows (#15762): an organization the server flagged
+// deleted on read, or an id that is not among the options the component offers (a notifier removed).
+export const isDeletedReference = (value: unknown): boolean => typeof value === 'object'
+  && value !== null
+  && (value as { deleted?: unknown }).deleted === true;
+
+export const hasDeletedReference = (
+  configuration: Record<string, unknown>,
+  schema: SchemaLike | null,
+): boolean => Object.entries(configuration).some(([key, value]) => {
+  const values = Array.isArray(value) ? value : [value];
+  if (values.some(isDeletedReference)) return true;
+  const options = schema?.properties?.[key]?.items?.oneOf ?? schema?.properties?.[key]?.oneOf;
+  if (!Array.isArray(options) || options.length === 0) return false;
+  const known = new Set(options.map((o) => o?.const));
+  return values.some((v) => typeof v === 'string' && v.length > 0 && !known.has(v));
+});
+
 export const playbookNodeSummary = (
   configuration: Record<string, unknown> | null | undefined,
   configurationSchema: string | null | undefined,
 ): PlaybookNodeSummary | null => {
-  let required: string[] = [];
+  let schema: SchemaLike | null = null;
   if (configurationSchema) {
     try {
-      const schema = JSON.parse(configurationSchema) as { required?: unknown };
-      required = Array.isArray(schema.required) ? schema.required.filter((r): r is string => typeof r === 'string') : [];
+      schema = JSON.parse(configurationSchema) as SchemaLike;
     } catch {
-      required = [];
+      schema = null;
     }
   }
+  const required = Array.isArray(schema?.required) ? schema.required.filter((r): r is string => typeof r === 'string') : [];
   const config = configuration ?? {};
-  if (required.some((key) => isEmptyValue(config[key]))) {
+  if (required.some((key) => isEmptyValue(config[key])) || hasDeletedReference(config, schema)) {
     return { kind: 'missing' };
   }
   const filters = countSerializedFilters(config.filters);

@@ -6473,5 +6473,6 @@
   "Delete this step only": "仅删除此步骤",
   "{count, plural, one {Delete this step and the step after it} other {Delete this step and the # steps after it}}": "{count, plural, other {删除此步骤及其后的 # 个步骤}}",
   "{count, plural, one {Deleting the entry point also deletes the step after it.} other {Deleting the entry point also deletes the # steps after it.}}": "{count, plural, other {删除入口点也会删除其后的 # 个步骤。}}",
-  "What to delete": "要删除的内容"
+  "What to delete": "要删除的内容",
+  "A selected item no longer exists: remove it and pick another": "所选项目已不存在：请移除并选择其他项目"
 }

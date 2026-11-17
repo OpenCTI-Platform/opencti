@@ -6473,5 +6473,6 @@
   "Delete this step only": "이 단계만 삭제",
   "{count, plural, one {Delete this step and the step after it} other {Delete this step and the # steps after it}}": "{count, plural, other {이 단계와 이후 # 단계 삭제}}",
   "{count, plural, one {Deleting the entry point also deletes the step after it.} other {Deleting the entry point also deletes the # steps after it.}}": "{count, plural, other {진입점을 삭제하면 이후 # 단계도 삭제됩니다.}}",
-  "What to delete": "삭제할 대상"
+  "What to delete": "삭제할 대상",
+  "A selected item no longer exists: remove it and pick another": "선택한 항목이 더 이상 존재하지 않습니다. 제거하고 다른 항목을 선택하세요"
 }

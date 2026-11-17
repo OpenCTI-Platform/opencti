@@ -6473,5 +6473,6 @@
   "Delete this step only": "Eliminar solo este paso",
   "{count, plural, one {Delete this step and the step after it} other {Delete this step and the # steps after it}}": "{count, plural, one {Eliminar este paso y el paso siguiente} other {Eliminar este paso y los # pasos siguientes}}",
   "{count, plural, one {Deleting the entry point also deletes the step after it.} other {Deleting the entry point also deletes the # steps after it.}}": "{count, plural, one {Eliminar el punto de entrada también elimina el paso siguiente.} other {Eliminar el punto de entrada también elimina los # pasos siguientes.}}",
-  "What to delete": "Qué eliminar"
+  "What to delete": "Qué eliminar",
+  "A selected item no longer exists: remove it and pick another": "Un elemento seleccionado ya no existe: quítelo y elija otro"
 }

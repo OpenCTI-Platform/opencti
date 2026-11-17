@@ -6473,5 +6473,6 @@
   "Delete this step only": "このステップのみ削除",
   "{count, plural, one {Delete this step and the step after it} other {Delete this step and the # steps after it}}": "{count, plural, other {このステップと後続の # ステップを削除}}",
   "{count, plural, one {Deleting the entry point also deletes the step after it.} other {Deleting the entry point also deletes the # steps after it.}}": "{count, plural, other {エントリーポイントを削除すると、後続の # ステップも削除されます。}}",
-  "What to delete": "削除する対象"
+  "What to delete": "削除する対象",
+  "A selected item no longer exists: remove it and pick another": "選択した項目は存在しません。削除して別の項目を選択してください"
 }

@@ -13,10 +13,24 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
+import { useField } from 'formik';
 import { fieldSpacingContainerStyle } from '../../../../../../utils/field';
 import ObjectOrganizationField from '../../../../common/form/ObjectOrganizationField';
+import { useFormatter } from '../../../../../../components/i18n';
+import { isDeletedReference } from '../../utils/playbookNodeSummary';
+
+interface OrganizationOption {
+  label?: string;
+  value: string;
+  deleted?: boolean;
+}
 
 const PlaybookFlowFieldOrganizations = () => {
+  const { t_i18n } = useFormatter();
+  const [{ value }] = useField<OrganizationOption[] | undefined>('organizations');
+  // The server flags an organization that no longer exists on this platform (deleted, or a
+  // playbook imported from another one, #15762): it is named "<label> - deleted" until replaced.
+  const hasDeleted = (value ?? []).some(isDeletedReference);
   return (
     <ObjectOrganizationField
       multiple
@@ -24,6 +38,10 @@ const PlaybookFlowFieldOrganizations = () => {
       name="organizations"
       label="Target organizations"
       style={fieldSpacingContainerStyle}
+      helpertext={hasDeleted ? t_i18n('A selected item no longer exists: remove it and pick another') : undefined}
+      getOptionLabel={(option: OrganizationOption) => (isDeletedReference(option)
+        ? `${option.label ?? t_i18n('Unknown')} - ${t_i18n('deleted')}`
+        : option.label ?? '')}
     />
   );
 };

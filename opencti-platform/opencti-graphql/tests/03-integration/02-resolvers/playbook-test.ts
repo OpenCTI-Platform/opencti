@@ -1082,6 +1082,19 @@ describe('Playbook resolver standard behavior', () => {
         FUNCTIONAL_ERROR,
       );
     });
+
+    it('should name an organization that no longer exists as deleted when the playbook is read (#15762)', async () => {
+      const playbook = await createPlaybook('Deleted organization on read');
+      created.push(playbook.id);
+      const entry = await addEntryNode(playbook.id);
+      await queryAsAdminWithSuccess({
+        query: ADD_NODE_PLAYBOOK,
+        variables: { id: playbook.id, input: { ...sharingInput(entry, []), configuration: JSON.stringify({ organizations: [{ label: 'Imported org', value: 'organization-missing' }], applyToElements: 'only-main' }) } },
+      });
+      const def = await readPlaybookDefinition(playbook.id);
+      const share = def.nodes.find((n: { component_id: string }) => n.component_id === PLAYBOOK_SHARING_COMPONENT.id);
+      expect(JSON.parse(share.configuration).organizations).toEqual([{ label: 'Imported org', value: 'organization-missing', deleted: true }]);
+    });
   });
 
   describe('playbookDeleteNode with keepChildren (single-step delete)', () => {

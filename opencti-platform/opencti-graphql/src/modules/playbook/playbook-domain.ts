@@ -46,7 +46,6 @@ import {
   deleteLinksAndAllChildren,
   updateImportedPlaybookDefinitionScope,
 } from './playbook-utils';
-import { type SharingConfiguration } from './components/sharing-component';
 import { assertDefinitionRunAsAllowed, assertRunAsUserAllowed, sanitizeDefinitionRunAs } from './components/ai-agent-shared';
 
 const MINIMAL_COMPATIBLE_VERSION = '6.7.14';
@@ -152,37 +151,51 @@ export const availableComponents = async (context: AuthContext) => {
   });
 };
 
+// Steps whose configuration names organizations by id: their names are resolved on read.
+const ORGANIZATION_REFERENCING_COMPONENT_IDS: ReadonlySet<string> = new Set(['PLAYBOOK_SHARING_COMPONENT', 'PLAYBOOK_UNSHARING_COMPONENT']);
+
+type OrganizationReference = string | { label?: string; value: string; deleted?: boolean };
+
 export const getPlaybookDefinition = async (context: AuthContext, playbook: BasicStoreEntityPlaybook) => {
   await checkEnterpriseEdition(context);
-  if (playbook.playbook_definition && playbook.playbook_definition.includes('PLAYBOOK_SHARING_COMPONENT')) {
-    // parse playbook definition in case there is a sharing with organization component, in order to parse organizations to get their label
-    const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
-    const sharingComponent = definition.nodes.find((n) => n.component_id === 'PLAYBOOK_SHARING_COMPONENT');
-    if (sharingComponent && sharingComponent.configuration) {
-      const sharingConfiguration = JSON.parse(sharingComponent.configuration) as SharingConfiguration;
-      const organizationsIds = sharingConfiguration.organizations.filter((o) => typeof o === 'string');
-      if (organizationsIds.length === 0) {
-        return playbook.playbook_definition; // nothing to map, already mapped
-      }
-      const organizationsByIds = await internalFindByIds(context, SYSTEM_USER, organizationsIds, {
-        type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
-        baseData: true,
-        baseFields: ['internal_id', 'name'],
-        toMap: true,
-      }) as unknown as { [k: string]: BasicStoreEntityOrganization };
-      const organizationsWithNames = [];
-      for (let i = 0; i < organizationsIds.length; i += 1) {
-        const orgId = organizationsIds[i];
-        if (organizationsByIds[orgId]) {
-          organizationsWithNames.push({ label: organizationsByIds[orgId].name, value: orgId });
-        }
-      }
-      sharingConfiguration.organizations = organizationsWithNames;
-      sharingComponent.configuration = JSON.stringify(sharingConfiguration);
-      return JSON.stringify(definition);
-    }
+  if (!playbook.playbook_definition) {
+    return playbook.playbook_definition;
   }
-  return playbook.playbook_definition;
+  const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+  const nodes = definition.nodes.filter((n) => ORGANIZATION_REFERENCING_COMPONENT_IDS.has(n.component_id) && n.configuration);
+  if (nodes.length === 0) {
+    return playbook.playbook_definition;
+  }
+  // Every organization a sharing step names is read again (#15012, #15762): a raw id gets its name,
+  // and a label carried by an import or by an organization deleted since is checked against the
+  // platform. One that no longer exists keeps its last known label and is flagged deleted, so the
+  // editor shows that the step has to be set again instead of a name that leads nowhere.
+  const configurations = nodes.map((node) => ({ node, configuration: JSON.parse(node.configuration) as { organizations?: OrganizationReference[] } }));
+  const organizationIds = configurations.flatMap(({ configuration }) => (configuration.organizations ?? [])
+    .map((o) => (typeof o === 'string' ? o : o?.value))
+    .filter((id): id is string => typeof id === 'string' && id.length > 0));
+  if (organizationIds.length === 0) {
+    return playbook.playbook_definition;
+  }
+  const organizationsByIds = await internalFindByIds(context, SYSTEM_USER, [...new Set(organizationIds)], {
+    type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
+    baseData: true,
+    baseFields: ['internal_id', 'name'],
+    toMap: true,
+  }) as unknown as { [k: string]: BasicStoreEntityOrganization };
+  for (let i = 0; i < configurations.length; i += 1) {
+    const { node, configuration } = configurations[i];
+    configuration.organizations = (configuration.organizations ?? []).map((o) => {
+      const id = typeof o === 'string' ? o : o.value;
+      const organization = organizationsByIds[id];
+      if (organization) {
+        return { label: organization.name, value: id };
+      }
+      return { label: typeof o === 'string' ? id : (o.label ?? id), value: id, deleted: true };
+    });
+    node.configuration = JSON.stringify(configuration);
+  }
+  return JSON.stringify(definition);
 };
 
 // Enforce the AI-agent `run_as` guardrail on a node configuration: the

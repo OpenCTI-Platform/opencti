@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { countSerializedFilters, playbookNodeSummary } from './playbookNodeSummary';
+import { countSerializedFilters, hasDeletedReference, isDeletedReference, playbookNodeSummary } from './playbookNodeSummary';
 
 const filterGroup = (filters: number, nested: number[] = []) => ({
   mode: 'and',
@@ -40,5 +40,32 @@ describe('playbookNodeSummary', () => {
     expect(playbookNodeSummary({}, null)).toBeNull();
     expect(playbookNodeSummary(undefined, '{broken')).toBeNull();
     expect(playbookNodeSummary({ applyToElements: 'all-elements' }, JSON.stringify({ required: [] }))).toBeNull();
+  });
+});
+
+describe('deleted references (#15762)', () => {
+  const notifierSchema = {
+    required: ['notifiers'],
+    properties: { notifiers: { type: 'array', items: { oneOf: [{ const: 'n-1', title: 'Mail' }] } } },
+  };
+
+  it('flags an organization the server marked deleted', () => {
+    expect(isDeletedReference({ label: 'ACME', value: 'o-1', deleted: true })).toBe(true);
+    expect(isDeletedReference({ label: 'ACME', value: 'o-1' })).toBe(false);
+    expect(isDeletedReference('o-1')).toBe(false);
+  });
+
+  it('flags an id the component no longer offers, and only when the component lists its options', () => {
+    expect(hasDeletedReference({ notifiers: ['n-1'] }, notifierSchema)).toBe(false);
+    expect(hasDeletedReference({ notifiers: ['n-1', 'gone'] }, notifierSchema)).toBe(true);
+    expect(hasDeletedReference({ notifiers: ['gone'] }, { properties: { notifiers: { items: { oneOf: [] } } } })).toBe(false);
+    expect(hasDeletedReference({ name: 'free text' }, null)).toBe(false);
+  });
+
+  it('turns the card summary to a missing setting when a referenced object is deleted', () => {
+    const sharingSchema = JSON.stringify({ required: ['organizations'], properties: { organizations: { type: 'array' } } });
+    expect(playbookNodeSummary({ organizations: [{ label: 'ACME', value: 'o-1', deleted: true }] }, sharingSchema)).toEqual({ kind: 'missing' });
+    expect(playbookNodeSummary({ organizations: [{ label: 'ACME', value: 'o-1' }] }, sharingSchema)).toBeNull();
+    expect(playbookNodeSummary({ notifiers: ['gone'] }, JSON.stringify(notifierSchema))).toEqual({ kind: 'missing' });
   });
 });

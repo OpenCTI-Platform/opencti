@@ -46,6 +46,7 @@ const ObjectOrganizationField = (props) => {
     multiple = true,
     alert = true,
     filters = null,
+    getOptionLabel,
   } = props;
 
   const defaultStateOrganizations = (defaultOrganizations ?? []).map((n) => ({
@@ -109,6 +110,7 @@ const ObjectOrganizationField = (props) => {
       disabled={disabled}
       label={t_i18n(label) ?? ''}
       helperText={helpertext}
+      getOptionLabel={getOptionLabel}
       noOptionsText={t_i18n('No available options')}
       options={organizations}
       onInputChange={(search, meta) => {

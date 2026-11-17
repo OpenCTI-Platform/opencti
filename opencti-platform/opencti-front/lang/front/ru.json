@@ -6473,5 +6473,6 @@
   "Delete this step only": "Удалить только этот шаг",
   "{count, plural, one {Delete this step and the step after it} other {Delete this step and the # steps after it}}": "{count, plural, one {Удалить этот шаг и # следующий шаг} few {Удалить этот шаг и # следующих шага} many {Удалить этот шаг и # следующих шагов} other {Удалить этот шаг и # следующих шага}}",
   "{count, plural, one {Deleting the entry point also deletes the step after it.} other {Deleting the entry point also deletes the # steps after it.}}": "{count, plural, one {Удаление точки входа также удалит # следующий шаг.} few {Удаление точки входа также удалит # следующих шага.} many {Удаление точки входа также удалит # следующих шагов.} other {Удаление точки входа также удалит # следующих шага.}}",
-  "What to delete": "Что удалить"
+  "What to delete": "Что удалить",
+  "A selected item no longer exists: remove it and pick another": "Выбранный элемент больше не существует: удалите его и выберите другой"
 }
