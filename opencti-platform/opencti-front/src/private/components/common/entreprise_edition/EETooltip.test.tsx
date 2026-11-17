@@ -20,7 +20,9 @@ vi.mock('../../../../utils/hooks/useAuth', async (importOriginal) => ({
 }));
 vi.mock('../../../../utils/hooks/useAI', () => ({ default: () => ({ enabled: false, configured: false }) }));
 // Both dialogs are Relay-bound and irrelevant to what this asserts.
-vi.mock('../../cases/feedbacks/FeedbackCreation', () => ({ default: () => null }));
+vi.mock('../../cases/feedbacks/FeedbackCreation', () => ({
+  default: ({ openDrawer }: { openDrawer: boolean }) => (openDrawer ? <div>Feedback form</div> : null),
+}));
 vi.mock('./EnterpriseEditionAgreement', () => ({ default: () => null }));
 
 // A control enabled after the gate mounted, as a form does once its data loads
@@ -94,6 +96,8 @@ describe('EETooltip', () => {
     await user.tab();
     await user.keyboard('{Enter}');
     expect(childAction).not.toHaveBeenCalled();
+    // Loaded lazily on first open (it would close an import cycle otherwise)
+    expect(await screen.findByText('Feedback form')).toBeInTheDocument();
   });
 
   it('opens the "enable AI" dialog instead of running the wrapped control\'s own action', async () => {

@@ -3,15 +3,20 @@ import Dialog from '@common/dialog/Dialog';
 import { Tooltip, TooltipProps } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import { ReactElement, ReactNode, useEffect, useRef, useState } from 'react';
+import { ReactElement, ReactNode, Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import useAI from '../../../../utils/hooks/useAI';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
-import FeedbackCreation from '../../cases/feedbacks/FeedbackCreation';
 import EnterpriseEditionAgreement from './EnterpriseEditionAgreement';
 import { onActivationKey } from '../../../../utils/domEvent';
+
+// Loaded on first open: FeedbackCreation imports MarkdownField, whose base field
+// imports this tooltip (MarkdownFieldBase > TextFieldAskAI > EETooltip). A static
+// import closes that cycle, and a module still evaluating can then be handed out
+// before its exports are assigned.
+const FeedbackCreation = lazy(() => import('../../cases/feedbacks/FeedbackCreation'));
 
 const EETooltipComponent = ({ children, ...tooltipProps }: TooltipProps) => {
   return (
@@ -92,7 +97,8 @@ const EETooltip = ({
   forAi?: boolean;
 }) => {
   const { t_i18n } = useFormatter();
-  const [feedbackCreation, setFeedbackCreation] = useState(false);
+  // undefined until first opened, so FeedbackCreation is only loaded on demand
+  const [feedbackCreation, setFeedbackCreation] = useState<boolean>();
   const [openConfigAI, setOpenConfigAI] = useState(false);
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -148,20 +154,22 @@ const EETooltip = ({
       </EEGate>
       {isAdmin ? (
         <EnterpriseEditionAgreement
-          open={feedbackCreation}
+          open={!!feedbackCreation}
           onClose={() => setFeedbackCreation(false)}
           settingsId={settingsId}
         />
-      ) : (
-        <FeedbackCreation
-          openDrawer={feedbackCreation}
-          handleCloseDrawer={() => setFeedbackCreation(false)}
-          initialValue={{
-            description: t_i18n('I would like to use a EE feature ...', {
-              values: { feature: title },
-            }),
-          }}
-        />
+      ) : feedbackCreation !== undefined && (
+        <Suspense fallback={null}>
+          <FeedbackCreation
+            openDrawer={feedbackCreation}
+            handleCloseDrawer={() => setFeedbackCreation(false)}
+            initialValue={{
+              description: t_i18n('I would like to use a EE feature ...', {
+                values: { feature: title },
+              }),
+            }}
+          />
+        </Suspense>
       )}
     </>
   );
