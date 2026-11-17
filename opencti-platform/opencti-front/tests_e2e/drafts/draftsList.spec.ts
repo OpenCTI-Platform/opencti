@@ -11,6 +11,45 @@ import TopMenuProfilePage from '../model/menu/topMenuProfile.pageModel';
 // exists, every draft gets its NEW-status authorized members (OrgA only), and the admin's drafts
 // list stops showing them, so a draft created here would never be listed.
 test.describe('Drafts list', { tag: ['@ce'] }, () => {
+  test('should use the full width for the draft overview panels', async ({ page }) => {
+    const draftName = `Draft Overview E2E - ${crypto.randomUUID()}`;
+    const drafts = new DraftsPage(page);
+    const toolbar = new DraftToolbarPageModel(page);
+
+    await restoreAdminSession(page);
+    await toolbar.exitDraftIfPresent();
+    await drafts.createDraft({ name: draftName, authorizedMembers: [] });
+
+    try {
+      await drafts.openDraft(draftName);
+      const details = page.getByText('Details', { exact: true });
+      const information = page.getByText('Basic information', { exact: true });
+      await expect(details).toBeVisible();
+      await expect(information).toBeVisible();
+
+      // Compare the two columns with the available content width, rather
+      // than a fixed viewport size.
+      await expect(async () => {
+        const measurePanel = (element: Element) => {
+          const panel = element.closest('.MuiGrid-root');
+          const box = panel?.getBoundingClientRect();
+          const contentWidth = panel?.parentElement?.parentElement?.getBoundingClientRect().width ?? 0;
+          return { width: box?.width ?? 0, y: box?.y ?? 0, contentWidth };
+        };
+        const detailsBox = await details.evaluate(measurePanel);
+        const informationBox = await information.evaluate(measurePanel);
+        expect(detailsBox.contentWidth).toBeGreaterThan(0);
+        expect(detailsBox.width).toBeGreaterThan(detailsBox.contentWidth * 0.4);
+        expect(informationBox.width).toBeGreaterThan(informationBox.contentWidth * 0.4);
+        expect(Math.abs(detailsBox.y - informationBox.y)).toBeLessThan(2);
+      }).toPass();
+    } finally {
+      await toolbar.exitDraftIfPresent();
+      await drafts.navigate();
+      await drafts.deleteDraft(draftName);
+    }
+  });
+
   test('should list, search, and delete manually-created drafts', async ({ page }) => {
     const timestamp = Date.now();
     const alphaName = `Drafts List E2E Alpha - ${timestamp}`;
