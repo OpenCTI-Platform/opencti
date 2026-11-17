@@ -38,6 +38,7 @@ const PirRadialScore = ({ value }: PirRadialScoreProps) => {
           radialBar: {
             startAngle: -100,
             endAngle: 100,
+            offsetX: -15,
             hollow: {
               size: '35%',
             },
