@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
 // The rules of a fintel design to import: strict, unknown keys are rejected. The colors reach the style of the generated documents.
+// A value the form stores is accepted, so that any design exported can be imported back: the gradient colors are hex in the form,
+// the text color is any text (a color name, rgb(...)), which the PDF generation reads as a style value, never as CSS text.
 // The logo is not part of the configuration: it is a file of the bundle, next to the JSON of the design.
 export const FINTEL_DESIGN_NAME_MAX_LENGTH = 255;
 
@@ -15,7 +17,7 @@ export const fintelDesignImportSchema = z.strictObject({
   description: z.string().nullable().optional(),
   gradiantFromColor: optionalColor,
   gradiantToColor: optionalColor,
-  textColor: optionalColor,
+  textColor: z.string().nullable().optional(),
   // The default design of the platform it was exported from: it becomes the default of the platform it is imported to
   default: z.boolean().optional(),
 });

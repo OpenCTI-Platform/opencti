@@ -79,12 +79,21 @@ describe('Fintel design export and import schema', () => {
     expect(fintelDesignImportSchema.parse(exportFintelDesign(nightFintelDesign))).toEqual(exportFintelDesign(nightFintelDesign));
   });
 
-  it('refuses unknown keys, another standard id, a color that is not hex and a blank name', () => {
+  it('refuses unknown keys, another standard id, a gradient color that is not hex and a blank name', () => {
     expect(fintelDesignImportSchema.safeParse({ ...configuration, file_id: 'fintelDesigns/x' }).success).toBe(false);
     expect(fintelDesignImportSchema.safeParse({ ...configuration, standard_id: 'theme--2c5e8f1a-4b3d-5e6f-8a9b-0c1d2e3f4a5b' }).success).toBe(false);
-    expect(fintelDesignImportSchema.safeParse({ ...configuration, textColor: 'red;}' }).success).toBe(false);
+    expect(fintelDesignImportSchema.safeParse({ ...configuration, gradiantFromColor: 'red' }).success).toBe(false);
+    expect(fintelDesignImportSchema.safeParse({ ...configuration, gradiantToColor: 'rgb(0,0,0)' }).success).toBe(false);
     expect(fintelDesignImportSchema.safeParse({ ...configuration, name: '  ' }).success).toBe(false);
     expect(fintelDesignImportSchema.safeParse({ ...configuration, gradiantFromColor: null, textColor: '' }).success).toBe(true);
+  });
+
+  it('takes back any text color the form stores, so that every design exported is imported back', async () => {
+    ['black', 'rgb(0,0,0)', '#000'].forEach((textColor) => {
+      expect(fintelDesignImportSchema.safeParse({ ...configuration, textColor }).success).toBe(true);
+    });
+    expect(await importFintelDesign(context, user, { ...configuration, textColor: 'black' }, undefined, overwrite)).toMatchObject({ status: 'created' });
+    expect(addFintelDesign).toHaveBeenCalledWith(context, user, expect.objectContaining({ textColor: 'black', default: true }));
   });
 });
 
