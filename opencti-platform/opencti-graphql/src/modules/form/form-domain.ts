@@ -23,6 +23,7 @@ import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { addFormIntakeCreatedCount, addFormIntakeDeletedCount, addFormIntakeSubmittedCount, addFormIntakeUpdatedCount } from '../../manager/telemetryManager';
 import { validateFormSubmission } from './form-validation';
+import { normalizeOptionId } from './form-utils';
 import {
   countPendingLabels,
   getPendingMainEntityAuthor,
@@ -39,6 +40,11 @@ export { completeEntity } from './form-entity-builder';
 
 const ajv = new Ajv();
 const validateSchema = ajv.compile(FormSchemaDefinitionSchema);
+
+// What is wrong with a form schema, undefined when it is valid: the same compiled schema as addForm and formEditField, whose error text is kept as it is
+export const formSchemaErrors = (schema: unknown): string | undefined => {
+  return validateSchema(schema) ? undefined : ajv.errorsText(validateSchema.errors);
+};
 
 export const addForm = async (
   context: AuthContext,
@@ -226,14 +232,6 @@ export const formDelete = async (
 export interface FormParsed extends Omit<StoreEntityForm, 'form_schema'> {
   form_schema: FormSchemaDefinition;
 }
-
-const normalizeOptionId = (option: unknown): string | undefined => {
-  if (typeof option === 'object' && option !== null) {
-    const optionValue = (option as { value?: string; id?: string }).value || (option as { value?: string; id?: string }).id;
-    return typeof optionValue === 'string' && optionValue.length > 0 ? optionValue : undefined;
-  }
-  return typeof option === 'string' && option.length > 0 ? option : undefined;
-};
 
 export const resolveMainEntityAuthorFromValues = (
   schema: FormSchemaDefinition,

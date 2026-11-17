@@ -21,6 +21,7 @@ import { vocabulariesFamily } from './registry/vocabularies-configPreset-registr
 import { statusTemplatesFamily } from './registry/statusTemplates-configPreset-registry';
 import { caseTemplatesFamily } from './registry/caseTemplates-configPreset-registry';
 import { fintelDesignsFamily } from './registry/fintelDesigns-configPreset-registry';
+import { formIntakesFamily } from './registry/formIntakes-configPreset-registry';
 
 export { BRANDING_FAMILY_ID } from './registry/common-configPreset-registry';
 
@@ -45,6 +46,7 @@ export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   statusTemplatesFamily,
   caseTemplatesFamily,
   connectorsFamily,
+  formIntakesFamily,
   ruleEngineFamily,
   fintelDesignsFamily,
 ];
