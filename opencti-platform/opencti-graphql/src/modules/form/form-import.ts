@@ -29,8 +29,16 @@ export type FormIntakeImportResult = ConfigImportResult<FormIntakeImportConfigur
 // What the import leaves out of a form: the groups and the markings the platform does not know. The users and the organizations are never exported.
 export const FORM_INTAKE_UNRESOLVED_REASON = 'Groups or markings not found are left out of the form';
 
+// The letters the accent folding of the platform turns into others, and that do not decompose into a letter and an accent
+const FOLDED_LETTERS: Record<string, string> = { ß: 'ss', æ: 'ae', œ: 'oe', ø: 'o', đ: 'd', ð: 'd', ł: 'l', þ: 'th' };
+
 // The name as the platform tells two forms apart: the lookup by name also ignores the case and the accents
-const reservationKey = (name: string, entityType: string) => `${normalizeName(name).normalize('NFD').replace(/\p{Diacritic}/gu, '')}|${entityType}`;
+const foldName = (name: string) => normalizeName(name)
+  .normalize('NFD')
+  .replace(/\p{Diacritic}/gu, '')
+  .replace(/[ßæœøđðłþ]/g, (letter: string) => FOLDED_LETTERS[letter]);
+
+const reservationKey = (name: string, entityType: string) => `${foldName(name)}|${entityType}`;
 
 // The forms of a name and a main entity type: the identity of a form, the one addForm checks
 const findFormsByNameAndType = async (context: AuthContext, user: AuthUser, name: string, entityType: string): Promise<BasicStoreEntityForm[]> => {
