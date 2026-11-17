@@ -209,7 +209,7 @@ const PlaybookFlowForm = ({
                     return <PlaybookFlowFieldAccessRestrictions key={propName} />;
                   }
                   if (propName === 'authorized_members') {
-                    return <PlaybookFlowFieldAuthorizedMembers key={propName} />;
+                    return <PlaybookFlowFieldAuthorizedMembers key={propName} required={requiredProperties.includes(propName)} />;
                   }
                   if (propName === 'run_as') {
                     return (
@@ -228,6 +228,7 @@ const PlaybookFlowForm = ({
                         name={propName}
                         label={t_i18n(property.$ref)}
                         style={fieldSpacingContainerStyle}
+                        required={requiredProperties.includes(propName)}
                       />
                     );
                   }
@@ -241,6 +242,7 @@ const PlaybookFlowForm = ({
                         label={t_i18n('Type affinity')}
                         fullWidth={true}
                         containerstyle={{ width: '100%', marginTop: 20 }}
+                        required={requiredProperties.includes(propName)}
                       >
                         <SelectItem key="ENDPOINT" value="ENDPOINT">
                           {t_i18n('Endpoint')}
@@ -257,6 +259,7 @@ const PlaybookFlowForm = ({
                         label={t_i18n(property.$ref)}
                         containerStyle={fieldSpacingContainerStyle}
                         multiple={true}
+                        required={requiredProperties.includes(propName)}
                       />
                     );
                   }
@@ -267,10 +270,10 @@ const PlaybookFlowForm = ({
                     return <PlaybookFlowFieldInPirFilters key={propName} />;
                   }
                   if (propName === 'targets') {
-                    return <PlaybookFlowFieldTargets key={propName} />;
+                    return <PlaybookFlowFieldTargets key={propName} required={requiredProperties.includes(propName)} />;
                   }
                   if (propName === 'caseTemplates') {
-                    return <PlaybookFlowFieldCaseTemplates key={propName} />;
+                    return <PlaybookFlowFieldCaseTemplates key={propName} required={requiredProperties.includes(propName)} />;
                   }
                   if (propName === 'filters') {
                     return (
@@ -292,10 +295,10 @@ const PlaybookFlowForm = ({
                     );
                   }
                   if (propName === 'period') {
-                    return <PlaybookFlowFieldPeriod key={propName} />;
+                    return <PlaybookFlowFieldPeriod key={propName} required={requiredProperties.includes(propName)} />;
                   }
                   if (propName === 'triggerTime') {
-                    return <PlaybookFlowFieldTriggerTime key={propName} />;
+                    return <PlaybookFlowFieldTriggerTime key={propName} required={requiredProperties.includes(propName)} />;
                   }
                   if (propName === 'actions') {
                     return (
@@ -311,6 +314,7 @@ const PlaybookFlowForm = ({
                         key={propName}
                         name={propName}
                         label={t_i18n(property.$ref ?? propName)}
+                        required={requiredProperties.includes(propName)}
                       />
                     );
                   }
@@ -359,6 +363,7 @@ const PlaybookFlowForm = ({
                       label={t_i18n(property.$ref ?? propName)}
                       multiline={isTextarea}
                       rows={isTextarea ? 3 : undefined}
+                      required={requiredProperties.includes(propName)}
                     />
                   );
                 },
