@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import testRender from '../utils/tests/test-render';
 import SearchInput from './SearchInput';
 
@@ -80,6 +80,29 @@ describe('SearchInput (top bar) pages dropdown', () => {
     expect(onSubmit).toHaveBeenCalledWith('imp', false, undefined);
     expect(mockNavigate).not.toHaveBeenCalled();
     expect(screen.queryAllByRole('option')).toHaveLength(0);
+  });
+
+  it('leaves the keys to the input method while it composes text (isComposing, and keyCode 229 as Safari sends it)', async () => {
+    const { onSubmit, user } = setup();
+    await user.type(screen.getByRole('combobox'), 'imp');
+    const input = screen.getByRole('combobox');
+
+    [{ isComposing: true }, { keyCode: 229 }].forEach((composition) => {
+      // the arrows are not cancelled (fireEvent returns false when preventDefault was called): the IME gets them
+      expect(fireEvent.keyDown(input, { key: 'ArrowDown', ...composition })).toBe(true);
+      expect(input).not.toHaveAttribute('aria-activedescendant');
+      // Escape only cancels the composition: it must not empty the field nor close the list
+      fireEvent.keyDown(input, { key: 'Escape', ...composition });
+      expect(input).toHaveValue('imp');
+      expect(screen.getAllByRole('option')).toHaveLength(2);
+      fireEvent.keyDown(input, { key: 'Enter', ...composition });
+    });
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
+
+    // the same keys outside a composition still work
+    await user.keyboard('{Enter}');
+    expect(onSubmit).toHaveBeenCalledWith('imp', false, undefined);
   });
 
   it('navigates to the highlighted page with the arrow keys, or searches from the first row', async () => {

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import useSearchShortcut from '../../../utils/hooks/useSearchShortcut';
 import { matchesSearchShortcut, SearchShortcut, TOP_BAR_SEARCH_ID } from '../../../utils/searchShortcut';
 import { isEditable, isOverlayOpen } from '../../../utils/keyboard';
+import { isImeComposing } from '../../../utils/domEvent';
 
 /**
  * Focuses the top bar search when the user presses their shortcut, from anywhere in the app.
@@ -14,7 +15,7 @@ const useFocusSearchShortcut = (): SearchShortcut | null => {
     if (!shortcut) return undefined;
     const onKeyDown = (event: KeyboardEvent) => {
       // `defaultPrevented`: someone closer to the key already answered it (the graph owns "/" while hovered).
-      if (event.defaultPrevented || event.isComposing || event.keyCode === 229) return;
+      if (event.defaultPrevented || isImeComposing(event)) return;
       if (!matchesSearchShortcut(event, shortcut)) return;
       // A bare key while typing is text. With Ctrl / Command it is a command, even in a field.
       if (isEditable(event.target) && !shortcut.ctrl && !shortcut.meta) return;

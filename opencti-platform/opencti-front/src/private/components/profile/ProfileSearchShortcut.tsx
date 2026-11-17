@@ -5,6 +5,7 @@ import { Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../components/i18n';
 import useSearchShortcut, { writeSearchShortcut } from '../../../utils/hooks/useSearchShortcut';
+import { isImeComposing } from '../../../utils/domEvent';
 import { DEFAULT_SEARCH_SHORTCUT, formatSearchShortcut, SearchShortcut, searchShortcutFromEvent } from '../../../utils/searchShortcut';
 
 const LABEL_ID = 'search-shortcut-label';
@@ -20,7 +21,7 @@ const ProfileSearchShortcut = () => {
 
   // The field records the next key combination instead of typing text.
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Tab' || event.nativeEvent.isComposing) return; // leaving the field stays possible from the keyboard
+    if (event.key === 'Tab' || isImeComposing(event)) return; // leaving the field stays possible from the keyboard
     event.preventDefault(); // also keeps the global shortcut from reacting to the key being recorded
     const next = searchShortcutFromEvent(event);
     setRefused(next === null);

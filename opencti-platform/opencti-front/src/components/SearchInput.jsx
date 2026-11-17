@@ -26,6 +26,7 @@ import { fetchAgentsForIntent } from '../utils/ai/agentApi';
 import { NLQ_INTENT } from '../private/components/common/ai/AINLQ';
 import { useChatbot } from '../private/components/chatbox/ChatbotContext';
 import { hexToRGB } from '../utils/Colors';
+import { isImeComposing } from '../utils/domEvent';
 import NavSearchSuggestions, { NAV_SEARCH_LISTBOX_ID, navSearchOptionId } from '../private/components/search/NavSearchSuggestions';
 
 const MODE_SEARCH = 'search';
@@ -242,6 +243,11 @@ const SearchInput = (props) => {
   };
 
   const handleKeyDown = (event) => {
+    if (isImeComposing(event)) {
+      // The library field empties itself on Escape unless the event was answered: here Escape only cancels the composition.
+      if (event.key === 'Escape') event.preventDefault();
+      return;
+    }
     const { value } = event.target;
     // preventDefault also tells the library field to skip its own Enter / Escape handling
     if (showSuggestions) {
