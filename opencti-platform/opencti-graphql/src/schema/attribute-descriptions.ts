@@ -32,7 +32,7 @@ export const ATTRIBUTE_DESCRIPTIONS: Record<string, string> = {
   // -- Common --
   name: 'Name of the entity.',
   description: 'Description of the entity, in Markdown.',
-  confidence: 'Confidence in the correctness of the data, from 0 (none) to 100 (full).',
+  confidence: 'Confidence in the correctness of the data, from 0 (none) to 100 (full). Capped at the max confidence level of the user, which is also the default.',
   created: 'Date when the entity was originally created by its author, in ISO 8601. Defaults to the creation date in the platform.',
   x_opencti_aliases: 'Alternative names of the entity.',
   x_opencti_score: 'Score assessing how malicious or important the entity is, from 0 to 100.',
@@ -143,7 +143,7 @@ export const ATTRIBUTE_DESCRIPTIONS: Record<string, string> = {
   response_types: 'Types of response to the incident, from the incident_response_types_ov vocabulary (e.g. ransomware, data-leak).',
   information_types: 'Types of information requested, from the request_for_information_types_ov vocabulary.',
   takedown_types: 'Types of takedown requested, from the request_for_takedown_types_ov vocabulary (e.g. phishing, brand-abuse).',
-  x_opencti_request_access: 'Request for access to restricted knowledge, as JSON. Set by the platform.',
+  x_opencti_request_access: 'Request for access to restricted knowledge, as JSON. Set by the platform when a user requests access.',
   rating: 'Rating given in the feedback, from 1 to 5.',
   due_date: 'Date when the task is due, in ISO 8601.',
   // -- Malware analysis --
@@ -305,7 +305,7 @@ export const ATTRIBUTE_DESCRIPTIONS: Record<string, string> = {
   objectMarking: 'Marking definitions (e.g. TLP:AMBER) restricting who can see the entity.',
   objectLabel: 'Labels tagging the entity.',
   externalReferences: 'External references (source URL, report…) of the entity.',
-  objectOrganization: 'Organizations the entity is shared with.',
+  objectOrganization: 'Organizations the entity is shared with. Only taken into account with the capability to restrict access to organizations; otherwise set by the platform from the organizations of the user.',
   objectAssignee: 'Users assigned to the entity.',
   objectParticipant: 'Users participating in the entity.',
   killChainPhases: 'Kill chain phases (e.g. MITRE ATT&CK tactics) the entity belongs to.',
@@ -431,7 +431,7 @@ export const ATTRIBUTE_DESCRIPTIONS_BY_TYPE: Record<string, Record<string, strin
     source_name: 'Name of the source the reference comes from (e.g. mitre-attack, cve, a vendor name).',
     description: 'Description of the reference.',
     url: 'URL of the referenced content.',
-    hash: 'Hash of the content found at the URL, to check that it has not changed.',
+    hash: 'Hash of the content found at the URL, as free text (e.g. a SHA-256). Stored as is, not used by the platform.',
     external_id: 'Identifier of the referenced content in its source (e.g. T1566 in mitre-attack, CVE-2021-44228 in cve).',
     fileId: 'Id of the file uploaded with the reference in the platform storage, its URL then pointing to the file. Set by the platform.',
   },
@@ -446,7 +446,7 @@ export const ATTRIBUTE_DESCRIPTIONS_BY_TYPE: Record<string, Record<string, strin
     category: 'Vocabulary the entry belongs to (e.g. malware_type_ov, report_types_ov).',
     order: 'Position of the entry in its vocabulary, to sort the entries. Defaults to 0.',
     is_hidden: 'Whether the entry is hidden from the choices offered when filling a field.',
-    builtIn: 'Whether the entry is provided by the platform: a built-in entry cannot be deleted.',
+    builtIn: 'Whether the entry is provided by the platform: a built-in entry cannot be deleted. Set by the platform.',
   },
 };
 
