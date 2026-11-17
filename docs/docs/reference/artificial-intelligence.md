@@ -33,7 +33,7 @@ We are working on:
 
     This feature is generally available for both SaaS and on-premise deployments.
 
-The platform can easily [generate insights and summaries](../usage/insights.md) about a given entity based on the last pieces of knowledge associated to it (last reports, relationships, number of indicators etc.).
+The platform can easily [generate insights and summaries](../usage/insights.md) about a given entity or container based on the last pieces of knowledge associated to it (last reports, relationships, number of indicators, internal history etc.).
 
 !!! info "Outcomes"
 
@@ -41,11 +41,11 @@ The platform can easily [generate insights and summaries](../usage/insights.md) 
 
 ### Platform assistant (interaction) ✨
 
-!!! warning "Partially available"
+!!! success "Generally available"
 
-    A first iteration of this feature has been released but more iterations needed.
+    This feature is generally available for both SaaS and on-premise deployments, with XTM One.
 
-It is currently possible to ask questions to the platform in natural language and get some results. The full scope would be to have a capacity to interact with the platform in natural language (*chatbot*), to refine questions and be able to create new reports, dashboards, etc.
+[Ask Ariane](../usage/copilot.md) is a chatbot built into the platform: ask questions in natural language about the knowledge or the page you are on, attach documents, and let the assistant act on the platform with your approval. You can also [search in natural language](../usage/refine-content.md#nlq-section) from the top search bar.
 
 !!! info "Outcomes"
 
