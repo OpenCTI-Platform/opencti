@@ -205,8 +205,8 @@ describe('PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT', () => {
       expect(result.bundle).toBe(ORIGINAL_BUNDLE);
     });
 
-    it('should fail the step (no silent route to `unmodified`) when XTM One could not answer after the retries', async () => {
-      const failure = new Error('XTM One agent agent-x call failed (HTTP 503, provider_unavailable) after 3 attempts: All configured AI providers failed');
+    it('should fail the step (no silent route to `unmodified`) when XTM One could not answer', async () => {
+      const failure = new Error('XTM One agent agent-x call failed (HTTP 503, provider_unavailable): All configured AI providers failed');
       vi.mocked(callXtmAgent).mockRejectedValueOnce(failure);
 
       const execution = PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT.executor(

@@ -15695,8 +15695,6 @@ type System implements BasicObject & Identity & StixCoreObject & StixDomainObjec
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   x_opencti_aliases: [String]
-  x_opencti_system_category: String
-  x_opencti_system_subcategory: String
   x_opencti_closing_reason: String
   x_opencti_criticality: String
   x_opencti_environment: String
@@ -15710,6 +15708,8 @@ type System implements BasicObject & Identity & StixCoreObject & StixDomainObjec
   x_opencti_platform: String
   x_opencti_reliability: String
   x_opencti_stix_ids: [StixId]
+  x_opencti_system_category: String
+  x_opencti_system_subcategory: String
 }
 
 input SystemAddInput {
@@ -15741,8 +15741,6 @@ input SystemAddInput {
   update: Boolean
   upsertOperations: [EditInput!]
   x_opencti_aliases: [String]
-  x_opencti_system_category: String
-  x_opencti_system_subcategory: String
   x_opencti_criticality: String
   x_opencti_environment: String
   x_opencti_firstname: String
@@ -15753,6 +15751,8 @@ input SystemAddInput {
   x_opencti_platform: String
   x_opencti_reliability: String
   x_opencti_stix_ids: [StixId]
+  x_opencti_system_category: String
+  x_opencti_system_subcategory: String
   x_opencti_workflow_id: String
 }
 

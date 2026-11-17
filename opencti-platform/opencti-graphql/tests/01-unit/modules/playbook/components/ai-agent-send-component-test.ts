@@ -199,8 +199,8 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
       expect(result.forceBundleTracking).toBe(true);
     });
 
-    it('should fail the step when XTM One could not answer after the retries (the run history shows it)', async () => {
-      const failure = new Error('XTM One agent agent-x call failed (HTTP 503, provider_unavailable) after 3 attempts: All configured AI providers failed');
+    it('should fail the step when XTM One could not answer (the run history shows it)', async () => {
+      const failure = new Error('XTM One agent agent-x call failed (HTTP 503, provider_unavailable): All configured AI providers failed');
       vi.mocked(callXtmAgent).mockRejectedValueOnce(failure);
 
       await expect(PLAYBOOK_AI_AGENT_SEND_COMPONENT.executor(
