@@ -14,8 +14,8 @@ For each entity type, a workflow lets administrators control:
 
 - **The order of statuses** (**Community Edition**): an entity can only move along the transitions you draw. An incident cannot jump from *New* to *Closed* if no transition links them.
 - **Who can move an entity forward** (**Enterprise Edition**): each transition can be restricted to groups, organizations, roles or users, and to entities matching filters.
-- **What happens during a transition** (**Enterprise Edition**): share or unshare with organizations, update authorized members, ask for a comment.
-- **What happens when entering or leaving a status** (**Enterprise Edition**): update authorized members automatically.
+- **What happens during a transition** (**Enterprise Edition**): share or unshare with organizations, update or reset authorized members, ask for a comment.
+- **What happens when entering or leaving a status** (**Enterprise Edition**): update or reset authorized members automatically.
 - **Why an entity was closed** (**Community Edition**): ask for a [closing reason](#closing-reason) on the transition into a final status, such as *true positive* or *false positive*.
 
 The goal is to make your methodology part of the platform: steps cannot be skipped, duties are segregated, and every status change is traced in the entity's workflow history.
@@ -106,7 +106,7 @@ The panel contains, from top to bottom:
 - **Transition name**: unique among the transitions leaving the same status.
 - **Conditions**: who can see and take the transition. See [Conditions on transitions](#conditions-on-transitions).
 - **Organization sharing**: share with or unshare from organizations.
-- **Authorized members**: replace the entity's authorized members.
+- **Authorized members**: replace the entity's authorized members, or remove the restriction (**Reset authorized members**).
 - **Comment**: ask analysts for a comment, optional or required.
 
 On a Community Edition platform, the sections that require Enterprise Edition are shown but disabled. On domain objects, a [Closing reason](#configure-a-closing-reason) section follows **Comment**.
@@ -118,6 +118,8 @@ Click a status to change its template or to add actions that run each time an en
 ![Edit status](assets/entities-workflow-03-status-drawer.jpg)
 
 Status actions run whatever transition brought the entity there, which avoids repeating the same action on every incoming transition.
+
+The panel shows the **Status ID**, with a copy button. Use it in API calls or when troubleshooting. The ID is also refreshed after a publish that reorders statuses, so the new order shows without reloading the page.
 
 ### Publish a workflow definition
 
@@ -147,13 +149,14 @@ Open the **Publish** menu to find two more actions.
 - Every transition has a name, a source and a target.
 - Transition names are unique among the transitions leaving the same status.
 - Conditions only use supported filters.
-- *Update authorized members* is only used on entity types that support authorized members: Organization, Report, Note, Grouping, Incident response, Request for takedown, Request for information, and Draft.
+- *Update authorized members* and *Reset authorized members* are only used on entity types that support authorized members: Organization, Report, Note, Grouping, Incident response, Request for takedown, Request for information, and Draft.
+- *Update authorized members* and *Reset authorized members* are never combined on the same transition, nor on the same side (enter or exit) of a status. The editor swaps one for the other when you turn it on, and publishing rejects a workflow that has both.
 - *Validate draft* is only used in the Draft workflow, which must contain at least one.
 - A [closing reason](#closing-reason) is only asked on domain objects, and only on a transition into a final status (a status no transition leaves).
 
 #### Rules related to data
 
-- You cannot remove a status from a published workflow while entities are still in it. Move those entities to another status first; the error lists the statuses still in use.
+- You cannot remove a status from a published workflow while entities are still in it. Move those entities to another status first; the error lists the statuses still in use. **Publish** always re-checks the draft against the live data, so once the entities are moved you can click it again without editing the draft: the old errors do not block it, and the fresh ones replace them when it is still refused.
 - A status template used by a workflow, draft or published, cannot be deleted. Remove it from the workflow first.
 
 !!! tip "Status order is computed for you"
@@ -169,6 +172,8 @@ Open the **Publish** menu to find two more actions.
 ### Conditions on transitions
 
 Conditions decide which users can see and take a transition. A user who does not match never sees the transition button. Conditions use the standard OpenCTI filter editor, so you can combine them with *and*/*or* and nested groups.
+
+A transition that is blocked only by a condition on the entity, for example *has an assignee*, is shown **disabled** with a tooltip that names the conditions that can still open it. It is shown again as soon as the entity matches: the allowed transitions are fetched again when the assignees or participants change, with no page refresh. A transition the user can never take because of who they are (user, group, organization or role) stays hidden.
 
 | Filter on | Checked against | Example |
 |---|---|---|
@@ -186,6 +191,7 @@ Conditions decide which users can see and take a transition. A user who does not
 | **Share with organizations** | Shares the entity with the selected organizations. Leave the list empty to let the analyst pick organizations when taking the transition. Runs as a background task. |
 | **Unshare from organizations** | Removes organization sharing. Same behavior as above. |
 | **Update authorized members** | *Replaces* the authorized members of the entity. Dynamic members are available: author, creators, assignees, participants. Only on the types that support authorized members: Organization, Report, Note, Grouping, Incident response, Request for takedown, Request for information, and Draft. Use it only on these types: the publishing check does not catch every misuse. |
+| **Reset authorized members** | Removes the authorized members restriction of the entity, so it is no longer restricted to specific members. Same entity types as *Update authorized members*, and not combined with it on the same transition. |
 | **Comment** | Asks for a comment of up to 1,000 characters, optional or required. The comment is stored in the workflow history and notifies the entity's assignees and participants. |
 | **Validate draft** | Draft workflow only. See [Draft workflow](draft-workflow.md). |
 
@@ -193,6 +199,7 @@ Conditions decide which users can see and take a transition. A user who does not
 
 - **On enter: update authorized members.** Applied each time an entity enters the status, for example to give edit rights to assignees when an incident goes *In progress*.
 - **On exit: update authorized members.** Applied each time an entity leaves the status.
+- **On enter or on exit: reset authorized members.** Removes the restriction instead of replacing it. A side of a status uses either *update* or *reset*, not both.
 
 ### Order of execution
 
@@ -204,7 +211,7 @@ flowchart LR
   B -- no --> X["Transition<br/>not shown"]
   B -- yes --> C["On exit actions<br/>of current status"]
   C --> D["Background actions<br/>share / unshare"]
-  D -- all succeed --> E["Transition actions<br/>authorized members"]
+  D -- all succeed --> E["Transition actions<br/>authorized members<br/>update / reset"]
   D -- one fails --> ER["Status unchanged<br/>error shown"]
   E --> F["Status changes"]
   F --> G["On enter actions<br/>of new status"]
@@ -227,6 +234,10 @@ The user only sees the transitions they are allowed to take from the current sta
 4. Click **Confirm**. Transitions with no input apply directly.
 
 The last comment is shown next to the status; click the comment icon to read it.
+
+!!! note "Not inside a draft"
+
+    Inside a [draft](draft-workflow.md), the transition buttons of an entity are hidden, and the API refuses transitions, bypasses and *Clear* on entities. A transition would write to the live entity, not to the draft. Only the draft workspace itself keeps its own workflow. Exit the draft to move an entity forward.
 
 ### Transitions that run in the background
 
@@ -365,7 +376,7 @@ An entity in this situation shows the badge **Status out of sync with the workfl
 
 #### Playbooks
 
-A [playbook](playbook-automation.md) component **Manipulate knowledge** can replace the processing status like any other attribute. By default this is a plain status change, handled as described above. A playbook can instead move the entity through the workflow engine, so that the *on exit* and *on enter* status actions run: in the configuration of the replace action on the processing status, set `apply_transition_actions` to `true`. This option is not shown in the playbook editor and needs the workflow feature enabled. The status is changed as the automation user; if the change cannot be applied, it is logged and the playbook goes on. An entity already in the target status is left unchanged.
+A [playbook](playbook-automation.md) component **Manipulate knowledge** can replace the processing status like any other attribute. In the replace action on the status, choose the **entity type** first: the status list then only shows the statuses of that type's workflow. Playbooks saved before this step existed have no entity type and keep working. By default this is a plain status change, handled as described above. A playbook can instead move the entity through the workflow engine, so that the *on exit* and *on enter* status actions run: in the configuration of the replace action on the processing status, set `apply_transition_actions` to `true`. This option is not shown in the playbook editor and needs the workflow feature enabled. The status is changed as the automation user; if the change cannot be applied, it is logged and the playbook goes on. An entity already in the target status is left unchanged.
 
 ### Deleting statuses
 
@@ -389,6 +400,8 @@ A [playbook](playbook-automation.md) component **Manipulate knowledge** can repl
 - Check the transition **conditions**: the analyst's groups, organizations or roles must match, and so must the entity if entity filters are used.
 - Check that the analyst has **edit access** to the entity. Authorized members restrictions apply.
 - Check that no transition is **running** on the entity.
+- A **disabled** button means a condition on the entity is not met yet. Read the tooltip, for example assign the entity.
+- Check that you are not inside a **draft**: transitions are not available there.
 
 #### A transition stays in error
 
