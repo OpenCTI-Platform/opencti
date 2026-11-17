@@ -274,6 +274,11 @@ describe('Form intake import', () => {
       const second = await importFormIntake(context, user, { ...configuration, name: 'Cafe intake' }, { mode: ConfigImportMode.Overwrite, dryRun: true, reservedKeys });
       expect(first.status).toBe('created');
       expect(second).toMatchObject({ status: 'failed', code: 'duplicate' });
+      // The letters that do not decompose are folded as well
+      const third = await importFormIntake(context, user, { ...configuration, name: 'Straße intake' }, { mode: ConfigImportMode.Overwrite, dryRun: true, reservedKeys });
+      const fourth = await importFormIntake(context, user, { ...configuration, name: 'Strasse intake' }, { mode: ConfigImportMode.Overwrite, dryRun: true, reservedKeys });
+      expect(third.status).toBe('created');
+      expect(fourth).toMatchObject({ status: 'failed', code: 'duplicate' });
     });
 
     it('copies the forms of the same name one after the other under free names', async () => {
@@ -300,6 +305,13 @@ describe('Form intake import', () => {
       expect(await refused({ ...configuration, name: ' a ' })).toMatchObject({ status: 'failed', code: 'invalid' });
       expect(await refused({ ...configuration, form_schema: JSON.stringify(configuration.form_schema) })).toMatchObject({ status: 'failed', code: 'invalid' });
       expect(await refused(null)).toMatchObject({ status: 'failed', code: 'invalid' });
+    });
+
+    it('refuses a relationship whose fields are not objects, instead of failing while the references are rewritten', async () => {
+      const configuration = await exportedConfiguration();
+      const relationship = { id: 'r', fromEntity: 'main_entity', toEntity: 'x', relationshipType: 'uses', fields: [null] };
+      const result = await refused({ ...configuration, form_schema: { ...(configuration.form_schema as object), relationships: [relationship] } });
+      expect(result).toMatchObject({ status: 'failed', code: 'invalid' });
     });
 
     it('refuses a schema that is not a valid form schema, and says where', async () => {
