@@ -128,7 +128,8 @@ const DashboardVariableChip = ({
       ) : chip}
       <Popover
         open={open && !disabled}
-        anchorEl={anchorRef.current}
+        // Read when the popover positions itself, not during the render.
+        anchorEl={() => anchorRef.current as HTMLDivElement}
         onClose={() => {
           refocusChipRef.current = true;
           setOpen(false);

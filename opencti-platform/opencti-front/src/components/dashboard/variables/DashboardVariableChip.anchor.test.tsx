@@ -9,10 +9,12 @@ import DashboardVariableChip from './DashboardVariableChip';
 // recorded instead. An anchor no longer in the page has no position, and the browser shows the popover in the
 // top left corner of the screen (#20106).
 const popover = vi.hoisted(() => ({ anchorEl: null as Element | null }));
+type Anchor = Element | null | (() => Element | null);
 
 vi.mock('@mui/material/Popover', () => ({
-  default: ({ open, anchorEl, children }: { open: boolean; anchorEl: Element | null; children: ReactNode }) => {
-    popover.anchorEl = anchorEl;
+  default: ({ open, anchorEl, children }: { open: boolean; anchorEl: Anchor; children: ReactNode }) => {
+    // The anchor is resolved when the popover positions itself, after the render, as MUI does.
+    popover.anchorEl = typeof anchorEl === 'function' ? anchorEl() : anchorEl;
     return open ? <div data-testid="variable-popover">{children}</div> : null;
   },
 }));
@@ -43,10 +45,13 @@ const openThenRerender = async (before: ChipProps, after: ChipProps, name: strin
   expect(screen.getByTestId('variable-popover')).toBeInTheDocument();
 };
 
+// The anchor is the container of the chip itself: a farther ancestor (the bar, the body) would also hold the chip,
+// with the popover far from it.
 const expectAnchoredOnChip = () => {
   const { anchorEl } = popover;
   expect(anchorEl).not.toBeNull();
   expect(anchorEl?.isConnected).toBe(true);
+  expect(anchorEl).toBe(screen.getByTestId('dashboard-variable-chip-Min confidence'));
   expect(anchorEl).toContainElement(screen.getByRole('button', { name: /^Min confidence : / }));
 };
 
@@ -67,6 +72,17 @@ describe('DashboardVariableChip popover anchor', () => {
 
   it('stays anchored on the chip when the variable stops being used by any widget', async () => {
     await openThenRerender({ usedInWidgetIds: ['w-1'] }, { usedInWidgetIds: [] }, 'Min confidence : 50');
+    expectAnchoredOnChip();
+  });
+
+  it('stays anchored on the chip when it is disabled for a while, then enabled again', async () => {
+    // The chip button is wrapped while disabled (a preset being saved): it is mounted again both ways.
+    const { user, rerender } = testRender(chipOf({}));
+    await user.click(screen.getByRole('button', { name: 'Min confidence : 50' }));
+    rerender(chipOf({ disabled: true }));
+    expect(screen.queryByTestId('variable-popover')).not.toBeInTheDocument();
+    rerender(chipOf({ disabled: false }));
+    expect(screen.getByTestId('variable-popover')).toBeInTheDocument();
     expectAnchoredOnChip();
   });
 });
