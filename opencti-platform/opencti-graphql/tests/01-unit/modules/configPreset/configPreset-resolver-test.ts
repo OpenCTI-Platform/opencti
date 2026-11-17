@@ -318,6 +318,18 @@ describe('Config preset exportable types query', () => {
         itemsPageInfo: onePage(1),
       },
       {
+        key: 'playbooks',
+        label: 'Playbooks',
+        description: 'Playbook definitions, imported stopped',
+        group: { key: 'automationRules', label: 'Automation & Rules' },
+        items: [
+          { key: 'Enrich reports', label: 'Enrich reports', translatable: false, dependsOn: [], isDefault: false },
+          { key: 'Enrich reports (1)', label: 'Enrich reports', translatable: false, dependsOn: [], isDefault: false },
+          { key: 'Triage/Phishing', label: 'Triage/Phishing', translatable: false, dependsOn: [], isDefault: false },
+        ],
+        itemsPageInfo: onePage(3),
+      },
+      {
         key: 'rssFeeds',
         label: 'RSS feeds',
         description: 'RSS feeds and their parameters, without their state',
@@ -430,7 +442,7 @@ describe('Config preset exportable types query', () => {
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
       ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['emailTemplates', true], ['labels', false], ['exclusionLists', false], ['killChainPhases', false],
       ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['dashboards', false], ['connectors', true],
-      ['rssFeeds', false], ['csvFeeds', false], ['jsonFeeds', false], ['taxiiFeeds', false], ['formIntakes', false], ['ruleEngine', false], ['fintelDesigns', true],
+      ['rssFeeds', false], ['csvFeeds', false], ['jsonFeeds', false], ['taxiiFeeds', false], ['formIntakes', false], ['playbooks', true], ['ruleEngine', false], ['fintelDesigns', true],
     ]);
     expect(types.find((type) => type.key === 'emailTemplates')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     expect(types.find((type) => type.key === 'fintelDesigns')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
@@ -483,6 +495,7 @@ describe('Config preset exportable types query', () => {
       ['caseTemplates', 'taxonomy'],
       ['dashboards', 'dashboards'],
       ['connectors', 'integrations'],
+      ['playbooks', 'automationRules'],
       ['rssFeeds', 'integrations'],
       ['csvFeeds', 'integrations'],
       ['jsonFeeds', 'integrations'],

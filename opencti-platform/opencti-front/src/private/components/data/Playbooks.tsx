@@ -22,7 +22,7 @@ import { PlaybooksLines_data$data } from './__generated__/PlaybooksLines_data.gr
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { useQueryLoadingWithLoadQuery } from '../../../utils/hooks/useQueryLoading';
 import PlaybookCreation from './playbooks/PlaybookCreation';
 import { PlaybooksLinesPaginationQuery, PlaybooksLinesPaginationQuery$variables } from './__generated__/PlaybooksLinesPaginationQuery.graphql';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
@@ -142,7 +142,7 @@ const Playbooks: FunctionComponent = () => {
     filters: contextFilters,
   } as unknown as PlaybooksLinesPaginationQuery$variables;
 
-  const queryRef = useQueryLoading<PlaybooksLinesPaginationQuery>(
+  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<PlaybooksLinesPaginationQuery>(
     playbooksLinesQuery,
     queryPaginationOptions,
   );
@@ -229,7 +229,7 @@ const Playbooks: FunctionComponent = () => {
               )}
               createButton={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <PlaybookCreation />
+                  <PlaybookCreation onPlaybooksImported={() => loadQuery(queryPaginationOptions, { fetchPolicy: 'store-and-network' })} />
                 </Security>
               )}
               hideSavedFilters
