@@ -168,79 +168,87 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
   const isEmpty = (type: T) => type.itemsPageInfo.globalCount === 0;
   const toggleType = (type: T, checked: boolean) => onSelectionChange(toggleConfigPresetTypes(selection, [type], checked));
   const theme = useTheme<Theme>();
+  // The row of a type, or the rows that stand for it
+  const renderType = (type: T) => {
+    // Nothing of the type is listed, checked or counted until the platform has the license
+    if (isLocked(type)) {
+      return <ConfigPresetLockedTypeRow key={type.key} type={type} title={lockedTitle} />;
+    }
+    // A type without item has nothing to check or to expand: one disabled row, with its description
+    if (isEmpty(type)) {
+      return <Checkbox key={type.key} label={typeLabel(type)} description={describeType(t_i18n, type)} checked={false} disabled />;
+    }
+    // A type whose only item has the key of the type is one row, not a type with an item of the same name below it
+    if (isSingletonConfigPresetType(type)) {
+      if (renderItem) {
+        return <React.Fragment key={type.key}>{renderItem(type, type.items[0])}</React.Fragment>;
+      }
+      return (
+        <Checkbox
+          key={type.key}
+          label={t_i18n(type.label)}
+          description={typeof type.items[0].isEnabled === 'boolean' ? describeEnabled(t_i18n, type.items[0].isEnabled) : describeType(t_i18n, type)}
+          checked={typeState(type)}
+          disabled={disabled}
+          onCheckedChange={(checked) => toggleType(type, checked === true)}
+        />
+      );
+    }
+    if (onManageType && type.itemsPageInfo.hasNextPage) {
+      return (
+        <div key={type.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Checkbox
+            label={typeLabel(type)}
+            description={describeType(t_i18n, type)}
+            checked={typeState(type)}
+            onCheckedChange={(checked) => toggleType(type, checked === true)}
+          />
+          <Button variant="tertiary" endIcon={<ChevronRightOutlined />} onClick={() => onManageType(type.key)}>
+            {t_i18n('Manage')}
+          </Button>
+        </div>
+      );
+    }
+    return (
+      <ConfigPresetExpandableRow
+        key={type.key}
+        label={typeLabel(type)}
+        description={describeType(t_i18n, type)}
+        checked={typeState(type)}
+        disabled={disabled}
+        actions={renderTypeActions?.(type)}
+        onCheckedChange={(checked) => toggleType(type, checked)}
+        expanded={isExpanded(type)}
+        onToggleExpanded={() => setExpandedTypes((current) => ({ ...current, [type.key]: !isExpanded(type) }))}
+      >
+        {type.items.map((item) => (renderItem
+          ? <React.Fragment key={item.key}>{renderItem(type, item)}</React.Fragment>
+          : <ConfigPresetItemRow key={item.key} typeKey={type.key} item={item} selection={selection} forced={forced} onSelectionChange={onSelectionChange} />))}
+      </ConfigPresetExpandableRow>
+    );
+  };
   return (
     <div>
-      {groupConfigPresetTypes(types).map((group) => (
-        <div key={group.key} style={{ borderBottom: `1px solid ${theme.palette.divider}` }}>
-          <ConfigPresetExpandableRow
-            label={`${t_i18n(group.label)} (${countConfigPresetCheckedItems(group.types, selection, forced)}/${group.types.reduce((count, type) => count + type.itemsPageInfo.globalCount, 0)})`}
-            checked={getConfigPresetCheckboxState(group.types, selection, forced)}
-            disabled={disabled || group.types.every((type) => isLocked(type) || isEmpty(type))}
-            onCheckedChange={(checked) => onSelectionChange(toggleConfigPresetTypes(selection, group.types, checked))}
-            expanded={isGroupExpanded(group.key, group.types)}
-            onToggleExpanded={() => setExpandedGroups({ ...expandedGroups, [group.key]: !isGroupExpanded(group.key, group.types) })}
-          >
-            {group.types.map((type) => {
-              // Nothing of the type is listed, checked or counted until the platform has the license
-              if (isLocked(type)) {
-                return <ConfigPresetLockedTypeRow key={type.key} type={type} title={lockedTitle} />;
-              }
-              // A type without item has nothing to check or to expand: one disabled row, with its description
-              if (isEmpty(type)) {
-                return <Checkbox key={type.key} label={typeLabel(type)} description={describeType(t_i18n, type)} checked={false} disabled />;
-              }
-              // A type whose only item has the key of the type is one row, not a type with an item of the same name below it
-              if (isSingletonConfigPresetType(type)) {
-                if (renderItem) {
-                  return <React.Fragment key={type.key}>{renderItem(type, type.items[0])}</React.Fragment>;
-                }
-                return (
-                  <Checkbox
-                    key={type.key}
-                    label={t_i18n(type.label)}
-                    description={typeof type.items[0].isEnabled === 'boolean' ? describeEnabled(t_i18n, type.items[0].isEnabled) : describeType(t_i18n, type)}
-                    checked={typeState(type)}
-                    disabled={disabled}
-                    onCheckedChange={(checked) => toggleType(type, checked === true)}
-                  />
-                );
-              }
-              if (onManageType && type.itemsPageInfo.hasNextPage) {
-                return (
-                  <div key={type.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Checkbox
-                      label={typeLabel(type)}
-                      description={describeType(t_i18n, type)}
-                      checked={typeState(type)}
-                      onCheckedChange={(checked) => toggleType(type, checked === true)}
-                    />
-                    <Button variant="tertiary" endIcon={<ChevronRightOutlined />} onClick={() => onManageType(type.key)}>
-                      {t_i18n('Manage')}
-                    </Button>
-                  </div>
-                );
-              }
-              return (
-                <ConfigPresetExpandableRow
-                  key={type.key}
-                  label={typeLabel(type)}
-                  description={describeType(t_i18n, type)}
-                  checked={typeState(type)}
-                  disabled={disabled}
-                  actions={renderTypeActions?.(type)}
-                  onCheckedChange={(checked) => toggleType(type, checked)}
-                  expanded={isExpanded(type)}
-                  onToggleExpanded={() => setExpandedTypes((current) => ({ ...current, [type.key]: !isExpanded(type) }))}
-                >
-                  {type.items.map((item) => (renderItem
-                    ? <React.Fragment key={item.key}>{renderItem(type, item)}</React.Fragment>
-                    : <ConfigPresetItemRow key={item.key} typeKey={type.key} item={item} selection={selection} forced={forced} onSelectionChange={onSelectionChange} />))}
-                </ConfigPresetExpandableRow>
-              );
-            })}
-          </ConfigPresetExpandableRow>
-        </div>
-      ))}
+      {groupConfigPresetTypes(types).map((group) => {
+        // A group with one type of the same name is that type, not a group with a single row
+        if (group.types.length === 1 && t_i18n(group.label) === t_i18n(group.types[0].label)) {
+          return <div key={group.key} style={{ borderBottom: `1px solid ${theme.palette.divider}` }}>{renderType(group.types[0])}</div>;
+        }
+        return (
+          <div key={group.key} style={{ borderBottom: `1px solid ${theme.palette.divider}` }}>
+            <ConfigPresetExpandableRow
+              label={`${t_i18n(group.label)} (${countConfigPresetCheckedItems(group.types, selection, forced)}/${group.types.reduce((count, type) => count + type.itemsPageInfo.globalCount, 0)})`}
+              checked={getConfigPresetCheckboxState(group.types, selection, forced)}
+              disabled={disabled || group.types.every((type) => isLocked(type) || isEmpty(type))}
+              onCheckedChange={(checked) => onSelectionChange(toggleConfigPresetTypes(selection, group.types, checked))}
+              expanded={isGroupExpanded(group.key, group.types)}
+              onToggleExpanded={() => setExpandedGroups({ ...expandedGroups, [group.key]: !isGroupExpanded(group.key, group.types) })}
+            >
+              {group.types.map(renderType)}
+            </ConfigPresetExpandableRow>
+          </div>
+        );
+      })}
     </div>
   );
 };
