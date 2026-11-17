@@ -57,6 +57,7 @@ import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTem
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { COVERED_ENTITIES_TYPE } from '../modules/securityCoverage/securityCoverage-domain';
 import { removeHasCoveredForRemovedEntities } from '../modules/securityCoverage/securityCoverage-utils';
+import { HAS_COVERED_TARGETS_TYPE } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-utils';
 
 export const findStixDomainObjectPaginated = async (context, user, args) => {
   let types = [];
@@ -364,8 +365,8 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
       .flatMap((inputData) => inputData.value ?? []);
     if (removedObjectIds.length > 0) {
       // Values can be standard ids, resolve them since has-covered relationships are indexed on internal ids.
-      // Only domain objects can be covered, so other removed objects (observables, relationships) are not resolved.
-      const removedEntities = await elFindByIds(context, user, removedObjectIds, { indices: READ_INDEX_STIX_DOMAIN_OBJECTS, baseData: true });
+      // Only the types a has-covered can target are resolved (Artifact included), other removed objects are skipped.
+      const removedEntities = await elFindByIds(context, user, removedObjectIds, { type: HAS_COVERED_TARGETS_TYPE, baseData: true });
       await removeHasCoveredForRemovedEntities(context, stixDomainObject.internal_id, removedEntities.map((entity) => entity.internal_id));
     }
   }

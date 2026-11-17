@@ -7,11 +7,9 @@ import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/engine';
 import { isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
-import { isStixCoreRelationship, RELATION_TARGETS, RELATION_USES, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import { RELATION_CREATED_BY } from '../schema/stixRefRelationship';
-import { ENTITY_TYPE_ATTACK_PATTERN } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
 import { buildRelationsFilter, pageRelationsConnection, storeLoadById } from '../database/middleware-loader';
 import { askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
@@ -21,7 +19,7 @@ import { stixRelationshipsDistribution } from './stixRelationship';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
 import { paginatedForExportContext } from '../modules/internal/document/document-domain';
 import { removeHasCoveredForRemovedEntities, shouldHandleHasCoveredRel, transformHasCoveredFromId } from '../modules/securityCoverage/securityCoverage-utils';
-import { COVERED_ENTITIES_TYPE } from '../modules/securityCoverage/securityCoverage-domain';
+import { COVERED_ENTITIES_TYPE, SECURITY_COVERAGE_SCOPE_RELATION_TARGETS, SECURITY_COVERAGE_SCOPE_RELATIONS } from '../modules/securityCoverage/securityCoverage-domain';
 
 export const findStixCoreRelationshipsPaginated = async (context, user, args) => {
   const filters = addDynamicFromAndToToFilters(args);
@@ -116,22 +114,12 @@ export const addStixCoreRelationship = async (context, user, stixCoreRelationshi
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].ADDED_TOPIC, created, user);
 };
 
-// For a covered entity that is not a container, the assessed scope is built from these outgoing relationships.
-const SECURITY_COVERAGE_SCOPE_TO_ENTITIES = [
-  ENTITY_TYPE_ATTACK_PATTERN,
-  ENTITY_TYPE_VULNERABILITY,
-];
-const SECURITY_COVERAGE_SCOPE_RELATIONS = [
-  RELATION_USES,
-  RELATION_TARGETS,
-];
-
 const cleanupSecurityCoverageOnRelationDelete = async (context, relationshipType, from, to) => {
-  // Check if deleted relationship is in security coverage scope
-  // Check if the to and the from entity types are in the scope of security coverage
+  // Only a relationship the assessed scope follows can change it (same definition as securityCoverageStixBundle).
+  // Other targets are never sent to OpenAEV: skipping them avoids useless lookups on every deletion.
   if (
     !(SECURITY_COVERAGE_SCOPE_RELATIONS.includes(relationshipType))
-    || !SECURITY_COVERAGE_SCOPE_TO_ENTITIES.includes(to.entity_type)
+    || !SECURITY_COVERAGE_SCOPE_RELATION_TARGETS.includes(to.entity_type)
     || !COVERED_ENTITIES_TYPE.includes(from.entity_type)) {
     return;
   }

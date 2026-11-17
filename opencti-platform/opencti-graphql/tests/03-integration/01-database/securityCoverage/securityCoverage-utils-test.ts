@@ -26,6 +26,8 @@ import { addVulnerability } from '../../../../src/modules/vulnerability/vulnerab
 import { ENTITY_TYPE_VULNERABILITY } from '../../../../src/modules/vulnerability/vulnerability-types';
 import { INPUT_OBJECTS } from '../../../../src/schema/general';
 import { EditOperation } from '../../../../src/generated/graphql';
+import { addStixCyberObservable, stixCyberObservableDelete } from '../../../../src/domain/stixCyberObservable';
+import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../../../src/schema/stixCyberObservable';
 
 describe('Function transformHasCoveredFromId', () => {
   let securityCoverage: BasicStoreEntitySecurityCoverage;
@@ -195,6 +197,38 @@ describe('Security coverage has-covered cleanup when an entity leaves the covere
     await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.standard_id);
     await stixDomainObjectDelete(testContext, ADMIN_USER, report.internal_id, ENTITY_TYPE_CONTAINER_REPORT);
     await deleteAttackPatterns(attackPatterns);
+  });
+
+  it('should remove the has-covered of an artifact removed from a covered report by a field patch', async () => {
+    const prefix = 'sc-cleanup-field-patch-artifact';
+    const [attackPattern] = await createAttackPatterns(prefix);
+    // Artifacts are observables, but the assessed scope keeps them among the container refs
+    const artifact: BasicStoreEntity = await addStixCyberObservable(testContext, ADMIN_USER, {
+      type: ENTITY_HASHED_OBSERVABLE_ARTIFACT,
+      Artifact: {
+        mime_type: 'text/plain',
+        hashes: [{ algorithm: 'SHA-256', hash: 'b1c58c5ce6d1d6c3f8c1e2e5a6a1f2b3c4d5e6f708192a3b4c5d6e7f8091a2b3' }],
+        x_opencti_description: `${prefix} artifact`,
+      },
+    });
+    const report: StoreEntityReport = await addReport(testContext, ADMIN_USER, {
+      name: `${prefix} report`,
+      published: '2026-04-24T19:15:00.000Z',
+      objects: [attackPattern.standard_id, artifact.standard_id],
+    });
+    const { securityCoverage, result } = await createCoverageCoveringAll(prefix, report.standard_id, [attackPattern, artifact]);
+    expect(await listCoveredTargetIds(result.id)).toEqual(sortedIds([attackPattern, artifact]));
+
+    await stixDomainObjectEditField(testContext, ADMIN_USER, report.internal_id, [
+      { key: INPUT_OBJECTS, value: [artifact.internal_id], operation: EditOperation.Remove },
+    ]);
+
+    expect(await listCoveredTargetIds(result.id)).toEqual(sortedIds([attackPattern]));
+
+    await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.standard_id);
+    await stixDomainObjectDelete(testContext, ADMIN_USER, report.internal_id, ENTITY_TYPE_CONTAINER_REPORT);
+    await stixCyberObservableDelete(testContext, ADMIN_USER, artifact.id);
+    await deleteAttackPatterns([attackPattern]);
   });
 
   it('should remove the has-covered of a vulnerability untargeted by a covered campaign, keeping the other ones', async () => {

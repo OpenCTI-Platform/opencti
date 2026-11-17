@@ -4,12 +4,12 @@ import { deleteElementById } from '../../database/middleware';
 import { fullRelationsList } from '../../database/middleware-loader';
 import { READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
 import type { SecurityCoverageAddInput, StixCoreRelationshipAddInput } from '../../generated/graphql';
-import { RELATION_HAS_COVERED, RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
+import { RELATION_HAS_COVERED } from '../../schema/stixCoreRelationship';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import type { BasicStoreRelation } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { SYSTEM_USER } from '../../utils/access';
-import { findById, findSecurityCoverageByCoveredId, getSecurityCoverageResultIds, listSecurityCoverageResults } from './securityCoverage-domain';
+import { findById, findSecurityCoverageByCoveredId, getSecurityCoverageResultIds, listSecurityCoverageResults, SECURITY_COVERAGE_SCOPE_RELATIONS } from './securityCoverage-domain';
 
 /**
  * Checks if the relationship fromId should be changed.
@@ -64,10 +64,6 @@ export const transformHasCoveredFromId = async (
   };
 };
 
-// Mirrors securityCoverageStixBundle: an entity stays in the assessed scope while the covered
-// entity still reaches it through an object ref or a uses / targets relationship.
-const SECURITY_COVERAGE_SCOPE_LINKS = [RELATION_OBJECT, RELATION_USES, RELATION_TARGETS];
-
 /**
  * Deletes the has-covered relationships pointing at entities that are no longer
  * part of the scope covered by a security coverage.
@@ -104,7 +100,11 @@ export const removeHasCoveredForRemovedEntities = async (
       return;
     }
     // 3. Keep the candidates still in scope through another link.
-    const remainingLinks = await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, SECURITY_COVERAGE_SCOPE_LINKS, {
+    // Mirrors securityCoverageStixBundle: an entity stays in the assessed scope while the covered
+    // entity still reaches it through an object ref or a scope relationship. Built here, not at module
+    // level, since securityCoverage-domain imports this module too.
+    const scopeLinks = [RELATION_OBJECT, ...SECURITY_COVERAGE_SCOPE_RELATIONS];
+    const remainingLinks = await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, scopeLinks, {
       indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
       fromId: coveredEntityId,
       toId: candidateIds,

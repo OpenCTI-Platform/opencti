@@ -61,6 +61,11 @@ export const COVERED_ENTITIES_TYPE = [
   ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
 ];
 
+// Besides the refs of the covered entity, the assessed scope follows these outgoing relationships,
+// towards these entity types only. Shared with the has-covered cleanup so both stay aligned.
+export const SECURITY_COVERAGE_SCOPE_RELATIONS = [RELATION_TARGETS, RELATION_USES];
+export const SECURITY_COVERAGE_SCOPE_RELATION_TARGETS = [ENTITY_TYPE_VULNERABILITY, ENTITY_TYPE_ATTACK_PATTERN];
+
 // region CRUD
 export const findById = async (
   context: AuthContext,
@@ -171,9 +176,9 @@ export const securityCoverageStixBundle = async (context: AuthContext, user: Aut
       targetIds.add(relation.toId);
     }
   };
-  await fullRelationsList(context, user, [RELATION_TARGETS, RELATION_USES], {
+  await fullRelationsList(context, user, SECURITY_COVERAGE_SCOPE_RELATIONS, {
     fromId: objectCovered.id,
-    toTypes: [ENTITY_TYPE_VULNERABILITY, ENTITY_TYPE_ATTACK_PATTERN],
+    toTypes: SECURITY_COVERAGE_SCOPE_RELATION_TARGETS,
     callback: relationsCallback,
   });
   if (targetIds.size > 0) {
