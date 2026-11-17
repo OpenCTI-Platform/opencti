@@ -35467,6 +35467,8 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_system_category?: Maybe<Scalars['String']['output']>;
+  x_opencti_system_subcategory?: Maybe<Scalars['String']['output']>;
   x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_criticality?: Maybe<Scalars['String']['output']>;
   x_opencti_environment?: Maybe<Scalars['String']['output']>;
@@ -35480,8 +35482,6 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   x_opencti_platform?: Maybe<Scalars['String']['output']>;
   x_opencti_reliability?: Maybe<Scalars['String']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
-  x_opencti_system_category?: Maybe<Scalars['String']['output']>;
-  x_opencti_system_subcategory?: Maybe<Scalars['String']['output']>;
 };
 
 
@@ -35672,6 +35672,8 @@ export type SystemAddInput = {
   update?: InputMaybe<Scalars['Boolean']['input']>;
   upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  x_opencti_system_category?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_system_subcategory?: InputMaybe<Scalars['String']['input']>;
   x_opencti_criticality?: InputMaybe<Scalars['String']['input']>;
   x_opencti_environment?: InputMaybe<Scalars['String']['input']>;
   x_opencti_firstname?: InputMaybe<Scalars['String']['input']>;
@@ -35682,8 +35684,6 @@ export type SystemAddInput = {
   x_opencti_platform?: InputMaybe<Scalars['String']['input']>;
   x_opencti_reliability?: InputMaybe<Scalars['String']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
-  x_opencti_system_category?: InputMaybe<Scalars['String']['input']>;
-  x_opencti_system_subcategory?: InputMaybe<Scalars['String']['input']>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -54939,6 +54939,8 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_system_category?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_system_subcategory?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_criticality?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_environment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -54952,8 +54954,6 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   x_opencti_platform?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_reliability?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
-  x_opencti_system_category?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_system_subcategory?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
