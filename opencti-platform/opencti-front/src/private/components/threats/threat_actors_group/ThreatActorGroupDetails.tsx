@@ -66,7 +66,7 @@ const ThreatActorGroupDetails = ({ threatActorGroup: threatActorGroupKey }: Thre
       <Grid container={true} spacing={2}>
         {hasImages && (
           <Grid size={4}>
-            <ImageCarousel data={{ images: threatActorGroup.images }} />
+            <ImageCarousel data={{ images: threatActorGroup.images as ImagesData }} />
           </Grid>
         )}
         <Grid size={hasImages ? 8 : 12}>
