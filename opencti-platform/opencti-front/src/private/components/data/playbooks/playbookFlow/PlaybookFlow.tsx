@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import ReactFlow, { Background, BackgroundVariant, MiniMap, useReactFlow } from 'reactflow';
 import { useTheme } from '@mui/material/styles';
+import { Alert } from '@filigran/design-system';
 import { graphql, useFragment, useRefetchableFragment } from 'react-relay';
 import PlaybookFlowAddComponents from './PlaybookFlowAddComponents';
 import PlaybookFlowDeleteNode from './PlaybookFlowDeleteNode';
@@ -25,7 +26,8 @@ import useLayout from '../hooks/useLayout';
 import usePlaybookRewiring from '../hooks/usePlaybookRewiring';
 import usePlaybookHistory, { type PlaybookHistoryControls } from '../hooks/usePlaybookHistory';
 import { canvasSnapshot, type PlaybookOperation, type PlaybookOperationResult, type PlaybookSnapshot } from '../utils/playbookHistory';
-import useGranted, { AUTOMATION_AUTMANAGE } from '../../../../../utils/hooks/useGranted';
+import { PlaybookCanEditContext } from '../hooks/usePlaybookEditMode';
+import { useFormatter } from '../../../../../components/i18n';
 import { type PlaybookLayoutDirection, PlaybookLayoutDirectionContext, usePlaybookLayoutMode } from '../hooks/usePlaybookLayoutMode';
 import PlaybookFlowToolbar from './PlaybookFlowToolbar';
 import { categoryAccent, PLAYBOOK_ARROW_ID } from '../types/nodes/playbookNodeGeometry';
@@ -99,26 +101,34 @@ const playbookComponentsFragment = graphql`
   }
 `;
 
-// What the node cards read from the canvas: the layout direction and the latest outcome of each step.
-const PlaybookCanvasContexts = ({ direction, lastExecutions, children }: {
+// What the node cards read from the canvas: the layout direction, the latest outcome of each step
+// and whether the playbook can be changed (edit mode).
+const PlaybookCanvasContexts = ({ direction, lastExecutions, canEdit, children }: {
   direction: PlaybookLayoutDirection;
   lastExecutions: Map<string, PlaybookNodeLastExecution>;
+  canEdit: boolean;
   children: ReactNode;
 }) => (
   <PlaybookLayoutDirectionContext.Provider value={direction}>
-    <PlaybookLastExecutionContext.Provider value={lastExecutions}>
-      {children}
-    </PlaybookLastExecutionContext.Provider>
+    <PlaybookCanEditContext.Provider value={canEdit}>
+      <PlaybookLastExecutionContext.Provider value={lastExecutions}>
+        {children}
+      </PlaybookLastExecutionContext.Provider>
+    </PlaybookCanEditContext.Provider>
   </PlaybookLayoutDirectionContext.Provider>
 );
 
 interface PlaybookFlowProps {
   dataPlaybook: PlaybookFlow_playbook$key;
   dataPlaybookComponents: PlaybookFlow_playbookComponents$key;
+  // The user can manage playbooks and the editor is in edit mode (Playbook.tsx).
+  canEdit: boolean;
+  running: boolean;
 }
 
-const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProps) => {
+const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook, canEdit, running }: PlaybookFlowProps) => {
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
   const canvas = useCanvasHeight(Number.parseInt(theme.spacing(3), 10) || 24);
   const playbook = useFragment(playbookFragment, dataPlaybook);
   const { direction, setDirection } = usePlaybookLayoutMode(playbook.id);
@@ -189,8 +199,16 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
   // Needs to be called after computing nodes and edges.
   const { miniMapShown, onMoveStart } = useLayout(direction);
 
-  // Rewiring by drag: only for users who may change playbooks; the others get a read-only canvas.
-  const canManage = useGranted([AUTOMATION_AUTMANAGE]);
+  // Back to view mode: an open drawer or dialog closes, nothing stays half-edited.
+  useEffect(() => {
+    if (!canEdit) {
+      setAction(null);
+      setSelectedNode(null);
+      setSelectedEdge(null);
+    }
+  }, [canEdit, setAction, setSelectedNode, setSelectedEdge]);
+
+  // Rewiring by drag: only in edit mode; view mode and users without Manage Playbooks get a read-only canvas.
   const { onConnect, onEdgeUpdate } = usePlaybookRewiring(
     playbook.id,
     setAction,
@@ -211,8 +229,17 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
   }, [history]);
 
   return (
-    <PlaybookCanvasContexts direction={direction} lastExecutions={lastExecutions}>
-      <div ref={canvas.ref} style={{ width: '100%', height: canvas.height ?? '100%', margin: 0, overflow: 'hidden' }}>
+    <PlaybookCanvasContexts direction={direction} lastExecutions={lastExecutions} canEdit={canEdit}>
+      <div ref={canvas.ref} style={{ position: 'relative', width: '100%', height: canvas.height ?? '100%', margin: 0, overflow: 'hidden' }}>
+        {canEdit && running && (
+          // Over the canvas, never above it: the canvas height is measured once on mount.
+          <div
+            data-testid="playbook-running-notice"
+            style={{ position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)', zIndex: 5, maxWidth: 'calc(100% - 24px)' }}
+          >
+            <Alert severity="warning" title={t_i18n('This playbook is running: your changes apply immediately.')} />
+          </div>
+        )}
         <svg style={{ position: 'absolute', width: 0, height: 0 }} aria-hidden="true">
           <defs>
             <marker
@@ -238,10 +265,10 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
           fitView={true}
           fitViewOptions={fitViewOptions}
           nodesDraggable={false}
-          nodesConnectable={canManage}
-          edgesUpdatable={canManage}
-          onConnect={canManage ? onConnect : undefined}
-          onEdgeUpdate={canManage ? onEdgeUpdate : undefined}
+          nodesConnectable={canEdit}
+          edgesUpdatable={canEdit}
+          onConnect={canEdit ? onConnect : undefined}
+          onEdgeUpdate={canEdit ? onEdgeUpdate : undefined}
           zoomOnDoubleClick={false}
           onMoveStart={onMoveStart}
           proOptions={proOptions}
@@ -257,7 +284,7 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
               style={{ backgroundColor: theme.palette.background.paper }}
             />
           )}
-          <PlaybookFlowToolbar direction={direction} onDirectionChange={setDirection} history={canManage ? history : undefined} />
+          <PlaybookFlowToolbar direction={direction} onDirectionChange={setDirection} history={canEdit ? history : undefined} />
         </ReactFlow>
         <PlaybookFlowAddComponents
           action={action}

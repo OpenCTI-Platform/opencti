@@ -7,6 +7,7 @@ import { useFormatter } from 'src/components/i18n';
 import type { Theme } from '../../../../../../components/Theme';
 import { PLAYBOOK_ARROW_ID } from '../nodes/playbookNodeGeometry';
 import { playbookEdgePath } from './playbookEdgePath';
+import { usePlaybookCanvasAffordances } from '../../hooks/usePlaybookEditMode';
 
 // A link between two steps, on whole pixels: one straight segment when its ends are aligned, else
 // an orthogonal step with rounded corners, and an arrowhead. The port it leaves from is named on
@@ -26,6 +27,7 @@ export default function CustomEdge({
   const { t_i18n } = useFormatter();
   const { getEdge } = useReactFlow();
   const [hover, setHover] = useState(false);
+  const { edgeAddButton } = usePlaybookCanvasAffordances();
   const { path: edgePath, labelX: centerX, labelY: centerY } = playbookEdgePath({
     sourceX,
     sourceY,
@@ -42,35 +44,37 @@ export default function CustomEdge({
         interactionWidth={24}
         style={{ stroke, strokeWidth: hover ? 2 : 1.5, fill: 'none', shapeRendering: 'geometricPrecision' }}
       />
-      <EdgeLabelRenderer>
-        <div
-          className="nodrag nopan"
-          data-testid={`playbook-insert-${id}`}
-          onMouseEnter={() => setHover(true)}
-          onMouseLeave={() => setHover(false)}
-          onFocus={() => setHover(true)}
-          onBlur={() => setHover(false)}
-          style={{
-            position: 'absolute',
-            transform: `translate(-50%, -50%) translate(${centerX}px, ${centerY}px)`,
-            pointerEvents: 'all',
-            borderRadius: '50%',
-            opacity: hover ? 1 : 0,
-            transition: 'opacity 120ms',
-            backgroundColor: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.primary.main}`,
-          }}
-        >
-          <IconButton
-            aria-label={t_i18n('Insert a component on this link')}
-            tooltip={t_i18n('Insert a component on this link')}
-            size="small"
-            onClick={() => data.openConfig(getEdge(id))}
+      {edgeAddButton && (
+        <EdgeLabelRenderer>
+          <div
+            className="nodrag nopan"
+            data-testid={`playbook-insert-${id}`}
+            onMouseEnter={() => setHover(true)}
+            onMouseLeave={() => setHover(false)}
+            onFocus={() => setHover(true)}
+            onBlur={() => setHover(false)}
+            style={{
+              position: 'absolute',
+              transform: `translate(-50%, -50%) translate(${centerX}px, ${centerY}px)`,
+              pointerEvents: 'all',
+              borderRadius: '50%',
+              opacity: hover ? 1 : 0,
+              transition: 'opacity 120ms',
+              backgroundColor: theme.palette.background.paper,
+              border: `1px solid ${theme.palette.primary.main}`,
+            }}
           >
-            <AddOutlined style={{ fontSize: 14 }} />
-          </IconButton>
-        </div>
-      </EdgeLabelRenderer>
+            <IconButton
+              aria-label={t_i18n('Insert a component on this link')}
+              tooltip={t_i18n('Insert a component on this link')}
+              size="small"
+              onClick={() => data.openConfig(getEdge(id))}
+            >
+              <AddOutlined style={{ fontSize: 14 }} />
+            </IconButton>
+          </div>
+        </EdgeLabelRenderer>
+      )}
     </g>
   );
 }

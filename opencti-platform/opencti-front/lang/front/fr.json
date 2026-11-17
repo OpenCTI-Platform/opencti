@@ -6463,5 +6463,15 @@
   "Move the step and its branch": "Déplacer l'étape et sa branche",
   "Undo": "Annuler",
   "Redo": "Rétablir",
-  "Component unavailable": "Composant indisponible"
+  "Component unavailable": "Composant indisponible",
+  "Created by {name} on {date}": "Créé par {name} le {date}",
+  "Created on {date}": "Créé le {date}",
+  "Last modified {date}": "Dernière modification le {date}",
+  "Edit mode": "Mode édition",
+  "View only": "Lecture seule",
+  "This playbook is running: your changes apply immediately.": "Ce playbook est en cours d'exécution : vos modifications s'appliquent immédiatement.",
+  "Delete this step only": "Supprimer uniquement cette étape",
+  "{count, plural, one {Delete this step and the step after it} other {Delete this step and the # steps after it}}": "{count, plural, one {Supprimer cette étape et l'étape qui la suit} other {Supprimer cette étape et les # étapes qui la suivent}}",
+  "{count, plural, one {Deleting the entry point also deletes the step after it.} other {Deleting the entry point also deletes the # steps after it.}}": "{count, plural, one {Supprimer le point d'entrée supprime aussi l'étape qui le suit.} other {Supprimer le point d'entrée supprime aussi les # étapes qui le suivent.}}",
+  "What to delete": "Que supprimer"
 }

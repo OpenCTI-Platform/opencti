@@ -6463,5 +6463,15 @@
   "Move the step and its branch": "단계와 해당 분기 이동",
   "Undo": "실행 취소",
   "Redo": "다시 실행",
-  "Component unavailable": "구성 요소를 사용할 수 없음"
+  "Component unavailable": "구성 요소를 사용할 수 없음",
+  "Created by {name} on {date}": "{date}에 {name}님이 생성",
+  "Created on {date}": "{date}에 생성",
+  "Last modified {date}": "마지막 수정 {date}",
+  "Edit mode": "편집 모드",
+  "View only": "보기 전용",
+  "This playbook is running: your changes apply immediately.": "이 플레이북은 실행 중입니다. 변경 사항이 즉시 적용됩니다.",
+  "Delete this step only": "이 단계만 삭제",
+  "{count, plural, one {Delete this step and the step after it} other {Delete this step and the # steps after it}}": "{count, plural, other {이 단계와 이후 # 단계 삭제}}",
+  "{count, plural, one {Deleting the entry point also deletes the step after it.} other {Deleting the entry point also deletes the # steps after it.}}": "{count, plural, other {진입점을 삭제하면 이후 # 단계도 삭제됩니다.}}",
+  "What to delete": "삭제할 대상"
 }

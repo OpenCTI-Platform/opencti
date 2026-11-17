@@ -1,6 +1,7 @@
 import { EdgeProps, getStraightPath } from 'reactflow';
 import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../../components/Theme';
+import { usePlaybookCanvasAffordances } from '../../hooks/usePlaybookEditMode';
 
 // The short dashed stub from a free out port to its add button.
 export default function PlaceholderEdge({
@@ -11,6 +12,9 @@ export default function PlaceholderEdge({
   targetY,
 }: EdgeProps) {
   const theme = useTheme<Theme>();
+  const { placeholders } = usePlaybookCanvasAffordances();
+  // View mode: the stub leads to no add button, so it is not drawn.
+  if (!placeholders) return null;
   const [edgePath] = getStraightPath({ sourceX, sourceY, targetX, targetY });
   return (
     <path

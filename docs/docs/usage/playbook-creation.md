@@ -49,8 +49,20 @@ Each step is drawn as a card: its icon and colour give its category (entry point
 - **Add a step**: click the **+** on a free output of a step. The component palette opens: type to search by name or description, move with the arrow keys and press **Enter** to pick a component.
 - **Insert a step between two steps**: hover the link between them and click the **+** in its middle.
 - **Replace, configure or delete a step**: right-click the step (or use its **⋮** menu).
+- **Delete one step, keep the steps after it**: deleting a step that has steps after it asks what to delete. **Delete this step only** (the default) removes the step and links each step that followed it to the step before it, on the same output. **Delete this step and the N steps after it** removes the whole branch. The entry point can only be deleted with its branch, since its steps would have no parent. A step with nothing after it is deleted after a simple confirmation.
 - **Rewire without deleting**: drag the end of a link onto another step to reconnect it, or drag from a free output onto a step to move that step and its branch under this output. A change that would create a loop or leave a step without a parent is refused.
-- **Undo and redo**: use the toolbar buttons, **Ctrl/Cmd+Z** and **Shift+Ctrl/Cmd+Z**.
+- **Undo and redo**: use the toolbar buttons, **Ctrl/Cmd+Z** and **Shift+Ctrl/Cmd+Z**. Deleting a step that had steps after it cannot be undone and clears the undo history.
+
+### View mode and edit mode
+
+The header shows who created the playbook and when, and when it was last modified.
+
+The editor opens a playbook in one of two modes:
+
+- **View mode**: read the playbook safely. You can pan, zoom, use the minimap, switch the layout and read the last executions, but nothing can be added, replaced, deleted or rewired, and clicking a step opens nothing. A running playbook always opens in view mode.
+- **Edit mode**: every editing control is available. A stopped playbook opens in edit mode for users with the **Manage playbooks** capability.
+
+Users with the **Manage playbooks** capability switch between the two with the **Edit mode** switch in the header. While a running playbook is in edit mode, a notice at the top of the canvas reminds you that your changes apply immediately. The mode is chosen again each time the page is opened; starting or stopping the playbook does not change it. Users without the capability always see view mode. View mode is a display mode, not a permission: the platform keeps checking the capability on every change.
 
 The layout is deterministic: the same playbook is always drawn the same way. Switch between the **vertical** and **horizontal** layouts from the toolbar (or press **V** / **H**); the choice is kept per playbook. Press **?** to open the list of keyboard shortcuts. After a run, each step shows the status and duration of its last execution.
 

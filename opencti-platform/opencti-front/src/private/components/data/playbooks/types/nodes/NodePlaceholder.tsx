@@ -8,6 +8,7 @@ import { useFormatter } from '../../../../../../components/i18n';
 import type { Theme } from '../../../../../../components/Theme';
 import { usePlaybookHandlePositions } from '../../hooks/usePlaybookLayoutMode';
 import { PLAYBOOK_PORT_ADD } from './playbookNodeGeometry';
+import { usePlaybookCanvasAffordances } from '../../hooks/usePlaybookEditMode';
 
 const HiddenHandle = styled(Handle)({
   visibility: 'hidden',
@@ -19,6 +20,7 @@ const NodePlaceholder = ({ id, data }: NodeProps) => {
   const { t_i18n } = useFormatter();
   const { getNode } = useReactFlow();
   const { target, source } = usePlaybookHandlePositions();
+  const { placeholders } = usePlaybookCanvasAffordances();
   const isOrigin = Boolean(data.component?.is_entry_point);
   const label = isOrigin ? t_i18n('Add an entry point') : t_i18n('Add component');
   const handles = (
@@ -27,6 +29,10 @@ const NodePlaceholder = ({ id, data }: NodeProps) => {
       <HiddenHandle type="source" position={source} isConnectable={false} />
     </>
   );
+  // View mode: no add button, only the hidden handles its stub link hangs on.
+  if (!placeholders) {
+    return <span data-testid={`playbook-add-hidden-${id}`} style={{ display: 'inline-flex', width: 1, height: 1 }}>{handles}</span>;
+  }
   if (isOrigin) {
     return (
       <span style={{ display: 'inline-flex', position: 'relative' }}>

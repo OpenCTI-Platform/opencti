@@ -6463,5 +6463,15 @@
   "Move the step and its branch": "Move the step and its branch",
   "Undo": "Undo",
   "Redo": "Redo",
-  "Component unavailable": "Component unavailable"
+  "Component unavailable": "Component unavailable",
+  "Created by {name} on {date}": "Created by {name} on {date}",
+  "Created on {date}": "Created on {date}",
+  "Last modified {date}": "Last modified {date}",
+  "Edit mode": "Edit mode",
+  "View only": "View only",
+  "This playbook is running: your changes apply immediately.": "This playbook is running: your changes apply immediately.",
+  "Delete this step only": "Delete this step only",
+  "{count, plural, one {Delete this step and the step after it} other {Delete this step and the # steps after it}}": "{count, plural, one {Delete this step and the step after it} other {Delete this step and the # steps after it}}",
+  "{count, plural, one {Deleting the entry point also deletes the step after it.} other {Deleting the entry point also deletes the # steps after it.}}": "{count, plural, one {Deleting the entry point also deletes the step after it.} other {Deleting the entry point also deletes the # steps after it.}}",
+  "What to delete": "What to delete"
 }

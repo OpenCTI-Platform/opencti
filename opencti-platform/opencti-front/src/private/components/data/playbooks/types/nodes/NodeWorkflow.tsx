@@ -15,6 +15,7 @@ import { categoryAccent, outPorts, PLAYBOOK_CARD, portAnchor } from './playbookN
 import { usePlaybookNodeLastExecution } from '../../hooks/usePlaybookLastExecution';
 import { formatStepDuration } from '../../utils/playbookLastExecution';
 import { playbookNodeSummary, type PlaybookNodeSummary } from '../../utils/playbookNodeSummary';
+import { usePlaybookCanvasAffordances } from '../../hooks/usePlaybookEditMode';
 
 // The menu opens from the three dots, or at the pointer on a right click.
 type MenuAnchor = { element: Element } | { top: number; left: number };
@@ -30,6 +31,8 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
   const lastStatusLabel = lastExecution?.status === 'success' ? t_i18n('Success') : t_i18n('Error');
   const { getNode } = useReactFlow();
   const { direction, target, source } = usePlaybookHandlePositions();
+  // View mode: the card shows the step, a click opens nothing and it carries no menu.
+  const { nodeMenu, nodeOpensSettings } = usePlaybookCanvasAffordances();
   const component = data.component;
   const accent = categoryAccent(theme, component?.category);
   const displayDescription = data.description || component?.description;
@@ -61,16 +64,18 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
     }
   };
   // The card itself opens its configuration (click, Enter or Space): no permanent button for it.
-  const openConfiguration = () => data.openConfig(getNode(id));
+  const openConfiguration = () => {
+    if (nodeOpensSettings) data.openConfig(getNode(id));
+  };
   return (
     <div
       data-testid={`playbook-node-${id}`}
-      role="button"
-      tabIndex={0}
-      aria-label={`${t_i18n('Update')}: ${translated(data.name)}`}
+      role={nodeOpensSettings ? 'button' : 'group'}
+      tabIndex={nodeOpensSettings ? 0 : undefined}
+      aria-label={nodeOpensSettings ? `${t_i18n('Update')}: ${translated(data.name)}` : translated(data.name)}
       onClick={openConfiguration}
       onKeyDown={(event) => {
-        if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+        if (nodeOpensSettings && event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
           event.preventDefault();
           openConfiguration();
         }
@@ -78,6 +83,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onContextMenu={(event) => {
+        if (!nodeMenu) return;
         event.preventDefault();
         setAnchor({ top: event.clientY, left: event.clientX });
       }}
@@ -86,7 +92,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
         boxSizing: 'border-box',
         width: PLAYBOOK_CARD.width,
         height: PLAYBOOK_CARD.height,
-        cursor: 'pointer',
+        cursor: nodeOpensSettings ? 'pointer' : 'default',
         // The outline and the accent stripe are inset shadows, not borders: React Flow places the handles
         // in the padding box, so a 4 px left border moved the target handle 1.5 px off the card centre.
         border: 'none',
@@ -157,6 +163,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
           {summaryText(summary)}
         </div>
       )}
+      {nodeMenu && (
       <div
         role="presentation"
         style={{ position: 'absolute', top: 4, right: 2 }}
@@ -215,6 +222,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
           </MenuItem>
         </Menu>
       </div>
+      )}
       {lastExecution && (
         <Tooltip title={`${t_i18n('Last execution')}: ${lastStatusLabel}${lastDuration ? `, ${lastDuration}` : ''}`}>
           <span

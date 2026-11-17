@@ -6463,5 +6463,15 @@
   "Move the step and its branch": "Переместить шаг и его ветвь",
   "Undo": "Отменить",
   "Redo": "Повторить",
-  "Component unavailable": "Компонент недоступен"
+  "Component unavailable": "Компонент недоступен",
+  "Created by {name} on {date}": "Создано пользователем {name} {date}",
+  "Created on {date}": "Создано {date}",
+  "Last modified {date}": "Последнее изменение {date}",
+  "Edit mode": "Режим редактирования",
+  "View only": "Только просмотр",
+  "This playbook is running: your changes apply immediately.": "Этот плейбук запущен: ваши изменения применяются сразу.",
+  "Delete this step only": "Удалить только этот шаг",
+  "{count, plural, one {Delete this step and the step after it} other {Delete this step and the # steps after it}}": "{count, plural, one {Удалить этот шаг и # следующий шаг} few {Удалить этот шаг и # следующих шага} many {Удалить этот шаг и # следующих шагов} other {Удалить этот шаг и # следующих шага}}",
+  "{count, plural, one {Deleting the entry point also deletes the step after it.} other {Deleting the entry point also deletes the # steps after it.}}": "{count, plural, one {Удаление точки входа также удалит # следующий шаг.} few {Удаление точки входа также удалит # следующих шага.} many {Удаление точки входа также удалит # следующих шагов.} other {Удаление точки входа также удалит # следующих шага.}}",
+  "What to delete": "Что удалить"
 }

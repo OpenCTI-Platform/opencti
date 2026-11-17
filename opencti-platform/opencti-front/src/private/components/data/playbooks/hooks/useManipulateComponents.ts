@@ -65,9 +65,10 @@ export const useManipulateComponentsInsertNodeMutation = graphql`
 `;
 
 export const useManipulateComponentsDeleteNodeMutation = graphql`
-  mutation useManipulateComponentsDeleteNodeMutation($id: ID!, $nodeId: ID!) {
-    playbookDeleteNode(id: $id, nodeId: $nodeId) {
+  mutation useManipulateComponentsDeleteNodeMutation($id: ID!, $nodeId: ID!, $keepChildren: Boolean) {
+    playbookDeleteNode(id: $id, nodeId: $nodeId, keepChildren: $keepChildren) {
       id
+      playbook_definition
     }
   }
 `;
@@ -317,6 +318,19 @@ const useManipulateComponents = (playbook: { id: string }, history?: HistoryReco
     setNodes(newNodes);
     setEdges(newEdges as PlaybookEdge[]);
   };
+  // Single-step delete: the step and its own add buttons go, and the links between steps are the
+  // ones of the definition the server answered (the children linked to the step's parents).
+  const applyDeleteNodeKeepChildren = (node: PlaybookNode, links: { id: string; from: { id: string; port: string }; to: { id: string } }[]) => {
+    const ownPlaceholders = new Set(getEdges().filter((e) => e.source === node.id && e.type === 'placeholder').map((e) => e.target));
+    const nodes = (getNodes() as CanvasNode[]).filter((n) => n.id !== node.id && !ownPlaceholders.has(n.id));
+    const stepIds = new Set(nodes.filter((n) => n.type === 'workflow').map((n) => n.id));
+    const placeholderEdges = getEdges().filter((e) => e.type === 'placeholder' && e.source !== node.id);
+    const stepEdges: Edge[] = links
+      .filter((l) => stepIds.has(l.from.id) && stepIds.has(l.to.id))
+      .map((l) => ({ id: l.id, type: 'workflow', source: l.from.id, sourceHandle: l.from.port, target: l.to.id, data: { openConfig: openEdge } }));
+    setNodes(nodes);
+    setEdges([...stepEdges, ...placeholderEdges] as PlaybookEdge[]);
+  };
   const applyDeleteNode = (node: PlaybookNode) => {
     const allEdges = getEdges();
     // start by removing the node and the edges that leads to it
@@ -520,17 +534,25 @@ const useManipulateComponents = (playbook: { id: string }, history?: HistoryReco
       },
     });
   };
-  const deleteNode = () => {
+  // keepChildren: delete this step only; the server links its children to its parents and answers
+  // the new definition, whose links the canvas takes.
+  const deleteNode = (keepChildren = false) => {
     const node = selectedNode;
     if (!node) return;
     const before = history?.snapshot();
     commitMutation({
       mutation: useManipulateComponentsDeleteNodeMutation,
-      variables: { id: playbook.id, nodeId: node.id },
-      onCompleted: () => {
-        // A step deleted with its branch has no inverse: recording it ends the history.
+      variables: { id: playbook.id, nodeId: node.id, keepChildren },
+      onCompleted: (response: { playbookDeleteNode?: { playbook_definition?: string | null } | null }) => {
+        // A step deleted with its branch, or with children rewired to its parents, has no single
+        // inverse: recording it ends the history (inverseOf answers none for a step with children).
         if (before) history?.record({ kind: 'delete', nodeId: node.id }, before);
-        applyDeleteNode(node);
+        const definition = response?.playbookDeleteNode?.playbook_definition;
+        if (keepChildren && definition) {
+          applyDeleteNodeKeepChildren(node, JSON.parse(definition).links ?? []);
+        } else {
+          applyDeleteNode(node);
+        }
         closeSelection();
       },
     });
