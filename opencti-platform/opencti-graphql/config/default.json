@@ -111,7 +111,8 @@
     "session_idle_timeout": 0,
     "session_manager": "shared",
     "session_presence": {
-      "grace_period": 30000
+      "grace_period": 30000,
+      "lease_ttl": 30000
     },
     "concurrency": {
       "retry_count": 100,
