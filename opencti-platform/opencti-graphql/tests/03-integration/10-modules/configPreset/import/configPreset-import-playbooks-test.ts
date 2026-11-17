@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { buildZip, itemFile, metadataFile } from '../../../../utils/configPresetBundle';
-import { createUploadFromBuffer, queryAsAdmin } from '../../../../utils/testQueryHelper';
+import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess } from '../../../../utils/testQueryHelper';
+import { getClientBase } from '../../../../../src/database/redis';
 import { ADMIN_USER, testContext, USER_EDITOR } from '../../../../utils/testQuery';
 import * as enterpriseEdition from '../../../../../src/enterprise-edition/ee';
 import { internalLoadById } from '../../../../../src/database/middleware-loader';
@@ -19,6 +20,13 @@ const PREVIEW_MUTATION = gql`
 const IMPORT_MUTATION = gql`
   mutation ConfigPresetPlaybooksImport($file: Upload!, $type: ID!, $items: [ID!]!, $item_modes: [ConfigPresetItemModeInput!]) {
     configPresetPartialImport(file: $file, type: $type, items: $items, item_modes: $item_modes) { results { key status reason label } }
+  }
+`;
+
+const UPLOAD_MUTATION = gql`mutation ConfigPresetPlaybooksUpload($file: Upload!) { configPresetImportUpload(file: $file) { id } }`;
+const WIZARD_PREVIEW_QUERY = gql`
+  query ConfigPresetPlaybooksWizardPreview($file_id: ID!) {
+    configPresetImportPreview(file_id: $file_id) { types { key items { key exists conflict } } }
   }
 `;
 
@@ -70,6 +78,8 @@ describe('Config preset import: playbooks', () => {
       await playbookDelete(testContext, ADMIN_USER, playbooks[i].id);
     }
     vi.restoreAllMocks();
+    await queryAsAdmin({ query: gql`mutation ConfigPresetPlaybooksClear { configPresetImportSessionClear(delete_file: true) }` });
+    await getClientBase().del(`config_preset_import_session_${ADMIN_USER.id}`);
   });
 
   it('exports the definition with its users by standard id, then imports it back as up to date, and as a stopped copy', async () => {
@@ -114,6 +124,18 @@ describe('Config preset import: playbooks', () => {
     expect(created.playbook_definition).toContain(MISSING_ORGANIZATION_ID);
     const notify = JSON.parse(created.playbook_definition).nodes.find(({ id }: { id: string }) => id === 'notify');
     expect(JSON.parse(notify.configuration).authorized_members).toEqual([]);
+  });
+
+  it('offers a choice for a playbook of the bundle whose name an earlier one takes, so that it can be imported as a copy', async () => {
+    const configuration = { name: NAME, description: null, playbook_start: 'start', playbook_definition: definitionOf(editorId, greenId) };
+    const bundle = playbookBundle({ [NAME]: configuration, [`${NAME} (1)`]: configuration });
+    const upload = await queryAsAdminWithSuccess({ query: UPLOAD_MUTATION, variables: { file: await zipUpload(bundle) } });
+    const preview = await queryAsAdminWithSuccess({ query: WIZARD_PREVIEW_QUERY, variables: { file_id: upload.data?.configPresetImportUpload.id } });
+    const playbooks = preview.data?.configPresetImportPreview.types.find(({ key }: { key: string }) => key === 'playbooks');
+    expect(playbooks.items).toEqual([
+      { key: NAME, exists: false, conflict: false },
+      { key: `${NAME} (1)`, exists: false, conflict: true },
+    ]);
   });
 
   it('refuses an invalid playbook without importing it', async () => {
