@@ -12925,6 +12925,11 @@ type RetentionRule {
   filters: String!
   id: ID!
   last_deleted_count: Int
+
+  """
+  Message of the last delete that failed in the last execution, empty when the last execution had no error
+  """
+  last_error: String
   last_execution_date: DateTime
   max_retention: Int!
   name: String!

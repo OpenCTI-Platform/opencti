@@ -37,6 +37,8 @@ type RetentionRule {
   last_execution_date: DateTime
   last_deleted_count: Int
   remaining_count: Int
+  "Message of the last delete that failed in the last execution, empty when the last execution had no error"
+  last_error: String
   scope: RetentionRuleScope!
   active: Boolean
 }
