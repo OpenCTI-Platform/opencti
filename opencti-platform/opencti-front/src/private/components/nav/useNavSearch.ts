@@ -28,7 +28,7 @@ const useNavSearch = (keyword?: string | null): NavSearchResult[] => {
 
   // Left bar: already filtered by permissions and hidden entities.
   const navNodes: Node[] = navGroups.flatMap((group) => group.items.flatMap((item) => [
-    { path: item.link, label: item.label, parents: [], keywords: [] },
+    { path: item.link, label: item.label, parents: [], keywords: item.keywords ?? [] },
     ...(item.subItems ?? []).map((sub) => ({ path: sub.link, label: sub.label, parents: [item.label], keywords: sub.keywords ?? [] })),
   ]));
 

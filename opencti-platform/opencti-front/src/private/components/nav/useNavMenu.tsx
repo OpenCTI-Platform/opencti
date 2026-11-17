@@ -29,6 +29,8 @@ export interface NavItem {
   link: string;
   exact?: boolean;
   subItems?: NavSubItem[];
+  /** Top-level page only (no sub-items): its extra words in the main pages search. */
+  keywords?: string[];
 }
 
 export interface NavGroup {
@@ -75,8 +77,8 @@ const useNavMenu = (): NavGroup[] => {
 
   const buildItem = (section: NavSection): RawNavGroup['items'][number] => {
     if ('page' in section) {
-      const { link, label, icon, exact, granted } = pageItem(section.page);
-      return granted && { id: section.id, label, icon, link, exact };
+      const { link, label, icon, exact, granted, keywords } = pageItem(section.page);
+      return granted && { id: section.id, label, icon, link, exact, keywords };
     }
     const subItems = section.items.map(subItem);
     const firstVisible = subItems.find((sub) => sub.granted);

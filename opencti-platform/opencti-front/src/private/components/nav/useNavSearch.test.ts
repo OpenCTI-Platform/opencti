@@ -7,7 +7,7 @@ import type { NavGroup, NavSubItem } from './useNavMenu';
 let subItems: NavSubItem[] = [];
 vi.mock('./useNavMenu', () => ({
   default: (): NavGroup[] => [
-    { id: 'main', items: [{ id: 'home', label: 'Home', icon: null, link: '/dashboard', exact: true }] },
+    { id: 'main', items: [{ id: 'home', label: 'Home', icon: null, link: '/dashboard', exact: true, keywords: ['cockpit'] }] },
     { id: 'settings', items: [{ id: 'settings', label: 'Settings', icon: null, link: '/dashboard/settings', subItems }] },
   ],
 }));
@@ -67,6 +67,11 @@ describe('Hook: useNavSearch', () => {
   it('finds the Home page', () => {
     subItems = [];
     expect(search('home')).toEqual(['/dashboard']);
+  });
+
+  it('matches the keywords of a top-level page that has no subsection', () => {
+    subItems = [];
+    expect(search('cockpit')).toEqual(['/dashboard']);
   });
 
   it('drops Import entries when the Import subsection is hidden (draft)', () => {
