@@ -1,5 +1,5 @@
 import React from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 import { screen, within } from '@testing-library/react';
 import testRender from '../../utils/tests/test-render';
 import { GraphProvider } from './GraphContext';
@@ -33,16 +33,18 @@ const view: GraphViewActions = {
 };
 
 describe('GraphToolbar on a narrow graph', () => {
+  let offsetWidthSpy: MockInstance;
+
   beforeEach(() => {
     // A spy, not defineProperty: jsdom's own getter lives on this prototype, and
     // the worker's jsdom is shared with the test files that run after this one.
-    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function offsetWidth(this: HTMLElement) {
+    offsetWidthSpy = vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function offsetWidth(this: HTMLElement) {
       return this.hasAttribute('data-toolbar-pinned') ? 120 : 0;
     });
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    offsetWidthSpy.mockRestore();
     row.width = 400;
   });
 
