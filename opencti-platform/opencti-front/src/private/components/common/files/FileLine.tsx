@@ -55,6 +55,15 @@ const itemNestedSx = {
   height: 50,
 };
 
+const staticLineSx = {
+  display: 'flex',
+  flexGrow: 1,
+  alignItems: 'center',
+  minWidth: 0,
+  paddingX: 2,
+  paddingY: 1,
+};
+
 const fileNameSx = {
   overflow: 'hidden',
   textOverflow: 'ellipsis',
@@ -87,8 +96,11 @@ interface FileLineComponentProps {
   onDelete?: () => void;
   onClick?: () => void;
   isArtifact?: boolean;
-  // In-app page previewing the file (e.g. an image in the Content tab), opened on click instead of the raw file
-  previewLink?: string | null;
+  // Entity Data tab: the file opens from an "Open in a new tab" action, and a click on the line only
+  // goes to `contentTabLink`. Without a link, the line does nothing.
+  openInNewTabAction?: boolean;
+  // The file in the Content tab of its entity, if listed there. Used with `openInNewTabAction` only.
+  contentTabLink?: string | null;
 }
 
 const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
@@ -104,7 +116,8 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   onDelete,
   onClick,
   isArtifact,
-  previewLink,
+  openInNewTabAction,
+  contentTabLink,
 }) => {
   const navigate = useNavigate();
   const { me } = useAuth();
@@ -252,16 +265,22 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     || encodedFilePath.endsWith('.exe')
     || encodedFilePath.endsWith('.pif')
     || encodedFilePath.endsWith('.dll');
-  // A file flagged as potentially malicious never gets the preview shortcuts: it keeps the download warning
-  const canPreview = !!previewLink && !isWarning && !isFail;
+  // A file flagged as potentially malicious is never opened in the browser: "Open in a new tab" shows the
+  // download warning instead, and the line never links to the Content tab
+  const canOpenInNewTab = !!openInNewTabAction && !isFail;
+  const linkToContentTab = openInNewTabAction && !isWarning && !isFail && !isOutdated && !isProgress
+    ? contentTabLink
+    : null;
+  const isLineClickable = !openInNewTabAction || !!linkToContentTab;
+  // The download action replaces the click on the line, which downloads in `directDownload` mode
+  const showDownloadAction = !isFail && (!directDownload || !!openInNewTabAction);
   const handleClick = () => {
     if (onClick) {
       onClick();
       return;
     }
-    // Previewable file (e.g. an image): open its in-app preview instead of the raw file
-    if (previewLink && canPreview && !isOutdated && !isProgress) {
-      navigate(previewLink);
+    if (openInNewTabAction) {
+      if (linkToContentTab) navigate(linkToContentTab);
       return;
     }
     if (isWarning) {
@@ -281,6 +300,43 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     status = t_i18n('Failed');
   }
   const lastModifiedDate = fld(file?.lastModified ?? moment());
+
+  const lineContent = (
+    <>
+      <ListItemIcon>
+        {isProgress && (
+          <CircularProgress
+            size={20}
+            color={nested ? 'primary' : 'inherit'}
+          />
+        )}
+        {!isProgress && (isFail || isOutdated) && (
+          <Tooltip title={toolTip !== 'null' ? toolTip : ''}>
+            <WarningOutlined
+              color={nested ? 'primary' : 'inherit'}
+              style={{ fontSize: 15, color: theme.palette.error.main, marginLeft: 4 }}
+            />
+          </Tooltip>
+        )}
+        {!isProgress && !isFail && !isOutdated && generateIcon()}
+      </ListItemIcon>
+      <Tooltip title={!isFail && !isOutdated ? file?.name : ''}>
+        <ListItemText
+          sx={{ maxWidth: '55%', whiteSpace: 'nowrap', marginRight: '10px' }}
+          slotProps={{
+            primary: { sx: fileNameSx },
+            secondary: { sx: { ...fileNameSx, color: 'var(--text-default-secondary)' } },
+          }}
+          primary={`${truncate(fileNameWithoutExtension, 80)}${fileExtension}`}
+          secondary={(
+            <>
+              {`${truncate(status, 80 - lastModifiedDate.length)} (${lastModifiedDate})`}
+            </>
+          )}
+        />
+      </Tooltip>
+    </>
+  );
 
   return (
     <>
@@ -331,7 +387,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                 </IconButton>
               </Tooltip>
             )}
-            {!directDownload && !isFail && (
+            {showDownloadAction && (
               <>
                 <Tooltip title={t_i18n('Download this file')}>
                   <IconButton
@@ -379,14 +435,18 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                 </Menu>
               </>
             )}
-            {canPreview && (
+            {canOpenInNewTab && (
               <Tooltip title={t_i18n('Open in a new tab')}>
                 <IconButton
                   disabled={isProgress}
                   onClick={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
-                    handleLink(`${APP_BASE_PATH}/storage/view/${encodedFilePath}`, true);
+                    if (isWarning) {
+                      setDisplayDownload(true);
+                    } else {
+                      handleLink(`${APP_BASE_PATH}/storage/view/${encodedFilePath}`, true);
+                    }
                   }}
                   size="small"
                   keepMui
@@ -444,45 +504,19 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
           </Stack>
         )}
       >
-        <ListItemButton
-          sx={nested ? itemNestedSx : itemSx}
-          rel="noopener noreferrer"
-          onClick={handleClick}
-        >
-          <ListItemIcon>
-            {isProgress && (
-              <CircularProgress
-                size={20}
-                color={nested ? 'primary' : 'inherit'}
-              />
-            )}
-            {!isProgress && (isFail || isOutdated) && (
-              <Tooltip title={toolTip !== 'null' ? toolTip : ''}>
-                <WarningOutlined
-                  color={nested ? 'primary' : 'inherit'}
-                  style={{ fontSize: 15, color: theme.palette.error.main, marginLeft: 4 }}
-                />
-              </Tooltip>
-            )}
-            {!isProgress && !isFail && !isOutdated && generateIcon()}
-          </ListItemIcon>
-          <Tooltip title={!isFail && !isOutdated ? file?.name : ''}>
-            <ListItemText
-              sx={{ maxWidth: '55%', whiteSpace: 'nowrap', marginRight: '10px' }}
-              slotProps={{
-                primary: { sx: fileNameSx },
-                // `palette.text.secondary` is wired to the primary ink theme-wide, so MUI's own colour is the wrong one here.
-                secondary: { sx: { ...fileNameSx, color: 'var(--text-default-secondary)' } },
-              }}
-              primary={`${truncate(fileNameWithoutExtension, 80)}${fileExtension}`}
-              secondary={(
-                <>
-                  {`${truncate(status, 80 - lastModifiedDate.length)} (${lastModifiedDate})`}
-                </>
-              )}
-            />
-          </Tooltip>
-        </ListItemButton>
+        {isLineClickable ? (
+          <ListItemButton
+            sx={nested ? itemNestedSx : itemSx}
+            onClick={handleClick}
+          >
+            {lineContent}
+          </ListItemButton>
+        ) : (
+          // Nothing to open: plain content, without hover, focus nor button role
+          <Box sx={{ ...staticLineSx, ...(nested ? itemNestedSx : itemSx) }}>
+            {lineContent}
+          </Box>
+        )}
       </ListItem>
       <FileWork file={file} nested={workNested} />
       <DeleteDialog

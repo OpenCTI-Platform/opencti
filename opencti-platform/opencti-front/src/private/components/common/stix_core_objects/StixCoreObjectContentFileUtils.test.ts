@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { filterContentTabFiles, getContentTabImagePreviewPath, isContentTabImage, isPreviewOnlyFile, resolveContentFileMimeType } from './StixCoreObjectContentFileUtils';
+import {
+  filterContentTabFiles,
+  getContentTabFilePath,
+  isContentTabFile,
+  isContentTabImage,
+  isPreviewOnlyFile,
+  resolveContentFileMimeType,
+} from './StixCoreObjectContentFileUtils';
 
 const file = (id: string, mimetype: string | null, lastModified: string) => ({ id, lastModified, metaData: { mimetype } });
 
@@ -66,29 +73,56 @@ describe('resolveContentFileMimeType', () => {
   });
 });
 
-describe('getContentTabImagePreviewPath', () => {
-  const fileId = 'import/Report/abc/my shot.png';
-
-  it('points the Data tab to the image preview in the Content tab', () => {
-    expect(getContentTabImagePreviewPath('/dashboard/analyses/reports/abc/files', 'Report', fileId, 'image/png'))
-      .toBe('/dashboard/analyses/reports/abc/content?forceFile=true&currentFileId=import%2FReport%2Fabc%2Fmy+shot.png');
+describe('isContentTabFile', () => {
+  it('accepts every uploaded file type the Content tab lists', () => {
+    ['application/pdf', 'text/plain', 'text/html', 'text/markdown', 'image/png', 'image/jpeg']
+      .forEach((mimeType) => expect(isContentTabFile(mimeType)).toBe(true));
   });
 
-  it('is null for files that are not previewable images', () => {
-    expect(getContentTabImagePreviewPath('/dashboard/analyses/reports/abc/files', 'Report', 'a.pdf', 'application/pdf')).toBeNull();
-    expect(getContentTabImagePreviewPath('/dashboard/analyses/reports/abc/files', 'Report', 'a.gif', 'image/gif')).toBeNull();
+  it('accepts only PDF among exported files', () => {
+    expect(isContentTabFile('application/pdf', 'export')).toBe(true);
+    expect(isContentTabFile('text/html', 'export')).toBe(false);
+    expect(isContentTabFile('application/json', 'export')).toBe(false);
+  });
+
+  it('rejects unsupported or unknown types', () => {
+    expect(isContentTabFile('image/gif')).toBe(false);
+    expect(isContentTabFile('application/zip')).toBe(false);
+    expect(isContentTabFile(null)).toBe(false);
+  });
+});
+
+describe('getContentTabFilePath', () => {
+  const dataTab = '/dashboard/analyses/reports/abc/files';
+  const fileId = 'import/Report/abc/my shot.png';
+
+  it('points the Data tab to the file in the Content tab', () => {
+    expect(getContentTabFilePath(dataTab, 'Report', fileId, 'image/png'))
+      .toBe('/dashboard/analyses/reports/abc/content?forceFile=true&currentFileId=import%2FReport%2Fabc%2Fmy+shot.png');
+    expect(getContentTabFilePath(dataTab, 'Report', 'import/Report/abc/notes.md', 'text/markdown'))
+      .toBe('/dashboard/analyses/reports/abc/content?forceFile=true&currentFileId=import%2FReport%2Fabc%2Fnotes.md');
+  });
+
+  it('links exported PDF only', () => {
+    expect(getContentTabFilePath(dataTab, 'Report', 'export/Report/abc/a.pdf', 'application/pdf', 'export')).not.toBeNull();
+    expect(getContentTabFilePath(dataTab, 'Report', 'export/Report/abc/a.html', 'text/html', 'export')).toBeNull();
+  });
+
+  it('is null for files the Content tab does not list', () => {
+    expect(getContentTabFilePath(dataTab, 'Report', 'a.gif', 'image/gif')).toBeNull();
+    expect(getContentTabFilePath(dataTab, 'Report', 'a.zip', 'application/zip')).toBeNull();
   });
 
   it('is null for entities without a Content tab', () => {
-    expect(getContentTabImagePreviewPath('/dashboard/analyses/notes/abc/files', 'Note', fileId, 'image/png')).toBeNull();
-    expect(getContentTabImagePreviewPath('/dashboard/events/observed_data/abc/files', 'Observed-Data', fileId, 'image/png')).toBeNull();
+    expect(getContentTabFilePath('/dashboard/analyses/notes/abc/files', 'Note', fileId, 'image/png')).toBeNull();
+    expect(getContentTabFilePath('/dashboard/events/observed_data/abc/files', 'Observed-Data', fileId, 'image/png')).toBeNull();
   });
 
   it('is null for Artifact files, which may be malicious and keep their download warning', () => {
-    expect(getContentTabImagePreviewPath('/dashboard/observations/artifacts/abc/files', 'Artifact', fileId, 'image/png')).toBeNull();
+    expect(getContentTabFilePath('/dashboard/observations/artifacts/abc/files', 'Artifact', fileId, 'image/png')).toBeNull();
   });
 
   it('is null outside an entity Data tab', () => {
-    expect(getContentTabImagePreviewPath('/dashboard/data/import', 'Report', fileId, 'image/png')).toBeNull();
+    expect(getContentTabFilePath('/dashboard/data/import', 'Report', fileId, 'image/png')).toBeNull();
   });
 });
