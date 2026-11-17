@@ -51,7 +51,7 @@ import PlaybookFlowFieldTargets from './playbookFlowFields/PlaybookFlowFieldTarg
 import PlaybookFlowFieldTriggerTime from './playbookFlowFields/PlaybookFlowFieldTriggerTime';
 import PlaybookFlowFieldActions from './playbookFlowFields/playbookFlowFieldsActions/PlaybookFlowFieldActions';
 import { isPlaybookUpdateActionValid, PlaybookUpdateActionsForm } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
-import { computeInitialComponentConfigValues, missingRequiredChoices, requiredChoiceFields } from './playbookComponents-utils';
+import { computeInitialComponentConfigValues, isRequiredChoiceMissing, missingRequiredChoices, requiredChoiceFields } from './playbookComponents-utils';
 
 export type PlaybookFlowFormData
   // Component: update knowledge
@@ -164,7 +164,7 @@ const PlaybookFlowForm = ({
     name: Yup.string().trim().required(t_i18n('This field is required')),
     ...Object.fromEntries(requiredChoices.map((field) => [
       field,
-      Yup.mixed().test('required-choice', t_i18n('This field is required'), (value) => missingRequiredChoices(configurationSchema, { [field]: value }).length === 0),
+      Yup.mixed().test('required-choice', t_i18n('This field is required'), (value) => !isRequiredChoiceMissing(configurationSchema, field, value)),
     ])),
   });
 

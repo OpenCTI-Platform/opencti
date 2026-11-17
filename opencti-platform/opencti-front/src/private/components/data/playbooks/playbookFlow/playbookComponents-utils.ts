@@ -98,6 +98,13 @@ export const missingRequiredChoices = (
   values: Record<string, unknown>,
 ): string[] => requiredChoiceFields(schema).filter((field) => isEmptyChoice(values[field]));
 
+/** Whether one field is a required choice left empty; the per-field form validation reads only that field's value. */
+export const isRequiredChoiceMissing = (
+  schema: PlaybookComponentConfigSchema | null | undefined,
+  field: string,
+  value: unknown,
+): boolean => requiredChoiceFields(schema).includes(field) && isEmptyChoice(value);
+
 export interface NodeData {
   name?: string;
   description?: string;

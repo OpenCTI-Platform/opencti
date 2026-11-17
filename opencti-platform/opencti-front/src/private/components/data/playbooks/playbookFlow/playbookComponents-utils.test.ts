@@ -3,6 +3,7 @@ import {
   computeInitialComponentConfigValues,
   filterPlaybookComponentGroups,
   groupAndSortPlaybookComponents,
+  isRequiredChoiceMissing,
   missingRequiredChoices,
   NodeData,
   requiredChoiceFields,
@@ -31,6 +32,14 @@ describe('playbookComponents-utils', () => {
       expect(missingRequiredChoices(schema, { organizations: [], applyToElements: '' })).toEqual(['organizations', 'applyToElements']);
       expect(missingRequiredChoices(schema, { organizations: ['org'], applyToElements: 'only-main' })).toEqual([]);
       expect(missingRequiredChoices(schema, { organizations: [{ label: 'Org', value: 'org' }], applyToElements: 'only-main' })).toEqual([]);
+    });
+
+    it('checks one field on its own value, whatever the other required choices', () => {
+      expect(isRequiredChoiceMissing(schema, 'applyToElements', 'only-main')).toBe(false);
+      expect(isRequiredChoiceMissing(schema, 'organizations', ['org'])).toBe(false);
+      expect(isRequiredChoiceMissing(schema, 'applyToElements', '')).toBe(true);
+      expect(isRequiredChoiceMissing(schema, 'organizations', [])).toBe(true);
+      expect(isRequiredChoiceMissing(schema, 'triggerTime', '')).toBe(false);
     });
   });
 
