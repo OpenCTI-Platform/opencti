@@ -13,37 +13,37 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/settings/vocabularies/labels',
     label: 'Labels',
-    keywords: ['tagging', 'taxonomy', 'keyword', 'Tags'],
+    keywords: ['Tags', 'tagging', 'Taxonomy'],
     requiredCapabilities: [SETTINGS_SETLABELS],
   },
   {
     path: '/dashboard/settings/vocabularies/kill_chain_phases',
     label: 'Kill chain phases',
-    keywords: ['cyber kill chain', 'stage', 'attack phase', 'unified kill chain', 'mitre', 'att&ck', 'tactic', 'lockheed'],
+    keywords: ['stage', 'mitre', 'att&ck', 'attack', 'tactic', 'lockheed', 'unified', 'Taxonomy'],
     requiredCapabilities: [SETTINGS_SETKILLCHAINPHASES],
   },
   {
     path: '/dashboard/settings/vocabularies/fields',
     label: 'Vocabularies',
-    keywords: ['picklist', 'list of values', 'taxonomy', 'reference values', 'open vocabulary', 'dropdown values', 'enum'],
+    keywords: ['picklist', 'Values', 'dropdown', 'enum', 'ov', 'Taxonomy'],
     requiredCapabilities: [SETTINGS_SETVOCABULARIES],
   },
   {
     path: '/dashboard/settings/vocabularies/status_templates',
     label: 'Status templates',
-    keywords: ['Lifecycle', 'workflow states'],
+    keywords: ['Lifecycle', 'Workflow', 'States', 'Taxonomy'],
     requiredCapabilities: [SETTINGS_SETSTATUSTEMPLATES],
   },
   {
     path: '/dashboard/settings/vocabularies/case_templates',
     label: 'Case templates',
-    keywords: ['runbook', 'procedure', 'checklist', 'Task', 'Playbook', 'Incident response'],
+    keywords: ['runbook', 'procedure', 'checklist', 'Task', 'Playbook', 'Taxonomy'],
     requiredCapabilities: [SETTINGS_SETCASETEMPLATES],
   },
   {
     path: '/dashboard/settings/vocabularies/custom_fields',
     label: 'Custom fields',
-    keywords: ['custom attribute', 'extra field', 'additional field', 'schema'],
+    keywords: ['Attributes', 'extra', 'additional', 'schema', 'Taxonomy'],
     requiredCapabilities: [SETTINGS_SETCUSTOMFIELDS],
   },
 ];

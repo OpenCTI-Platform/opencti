@@ -6,19 +6,19 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/data/sharing/streams',
     label: 'Live streams',
-    keywords: ['real-time', 'push', 'Synchronization', 'siem integration', 'outgoing feed', 'Export', 'Share', 'sse'],
+    keywords: ['realtime', 'push', 'Synchronization', 'SIEM', 'outgoing', 'Export', 'sse', 'feed'],
     requiredCapabilities: [TAXIIAPI],
   },
   {
     path: '/dashboard/data/sharing/feeds',
     label: 'CSV feeds',
-    keywords: ['blocklist', 'ioc feed', 'outgoing feed', 'http feed', 'firewall feed', 'edl', 'external dynamic list', 'risk list', 'Export', 'Share'],
+    keywords: ['blocklist', 'iocs', 'outgoing', 'Firewall', 'edl', 'Export'],
     requiredCapabilities: [TAXIIAPI],
   },
   {
     path: '/dashboard/data/sharing/taxii',
     label: 'TAXII collections',
-    keywords: ['TAXII 2.1', 'stix', 'api', 'Publish', 'outgoing feed', 'feed server', 'Export', 'Share'],
+    keywords: ['stix', 'api', 'Publish', 'outgoing', 'feed', 'Export'],
     requiredCapabilities: [TAXIIAPI],
   },
 ];

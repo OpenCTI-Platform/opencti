@@ -12,7 +12,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Regions',
     entityType: 'Region',
     icon: <PublicOutlined fontSize="small" />,
-    keywords: ['continent', 'subregion', 'Area', 'geography', 'Location'],
+    keywords: ['continent', 'subregion', 'geography'],
     ...knowledge,
   },
   {
@@ -20,7 +20,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Countries',
     entityType: 'Country',
     icon: <FlagOutlined fontSize="small" />,
-    keywords: ['Country', 'nation state', 'geography', 'Location', 'Map'],
+    keywords: ['Country', 'nation', 'State', 'geography', 'Map'],
     ...knowledge,
   },
   {

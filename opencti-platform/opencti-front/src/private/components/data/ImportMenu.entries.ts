@@ -6,14 +6,14 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/data/import/file',
     label: 'Global files',
-    keywords: ['attachment', 'Ingestion', 'import file', 'txt', 'HTML', 'JSON', 'bundle', 'Upload', 'stix', 'pdf', 'document'],
+    keywords: ['Upload', 'Attachment', 'document', 'Ingestion', 'pdf', 'stix', 'JSON'],
     // Same rule as data/import/Root.tsx: draft-only users (KNUPDATE without KNASKIMPORT) only get /draft.
     requiredCapabilities: [KNOWLEDGE_KNASKIMPORT],
   },
   {
     path: '/dashboard/data/import/draft',
     label: 'Drafts',
-    keywords: ['Pending', 'approval', 'validation', 'quarantine', 'Preview', 'unpublished', 'change set', 'four eyes', 'Staging', 'sandbox'],
+    keywords: ['Pending', 'approval', 'quarantine', 'Preview', 'Staging', 'sandbox'],
     // Same rule as the left nav (useNavMenu): KNASKIMPORT, or KNUPDATE in main or draft.
     requiredCapabilities: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE],
     capabilitiesInDraft: [KNOWLEDGE_KNUPDATE],
@@ -21,7 +21,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/data/import/workbench',
     label: 'Analyst workbenches',
-    keywords: ['parse', 'ioc extraction', 'curation', 'triage', 'review import', 'Validate', 'pending import'],
+    keywords: ['parse', 'extraction', 'iocs', 'triage', 'curation', 'Validate', 'Pending'],
     requiredCapabilities: [KNOWLEDGE_KNASKIMPORT],
   },
 ];

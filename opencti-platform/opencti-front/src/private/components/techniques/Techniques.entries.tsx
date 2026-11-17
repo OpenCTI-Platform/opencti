@@ -12,7 +12,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Attack patterns',
     entityType: 'Attack-Pattern',
     icon: <LockPattern fontSize="small" />,
-    keywords: ['TTPs', 'sub-technique', 'mitre', 'att&ck', 'matrix', 'capec', 'behavior'],
+    keywords: ['TTPs', 'mitre', 'att&ck', 'matrix', 'capec'],
     ...knowledge,
   },
   {
@@ -20,7 +20,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Narratives',
     entityType: 'Narrative',
     icon: <SpeakerNotesOutlined fontSize="small" />,
-    keywords: ['disinformation', 'misinformation', 'influence operation', 'propaganda', 'fimi', 'info ops'],
+    keywords: ['disinformation', 'misinformation', 'propaganda', 'influence', 'fimi'],
     ...knowledge,
   },
   {
@@ -28,7 +28,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Courses of action',
     entityType: 'Course-Of-Action',
     icon: <ProgressWrench fontSize="small" />,
-    keywords: ['mitigation', 'remediation', 'countermeasure', 'recommendation', 'defense', 'd3fend'],
+    keywords: ['mitigation', 'remediation', 'countermeasure', 'defense', 'd3fend'],
     ...knowledge,
   },
   {
@@ -36,7 +36,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Data components',
     entityType: 'Data-Component',
     icon: <SourceOutlined fontSize="small" />,
-    keywords: ['telemetry', 'log source', 'mitre data component', 'Detection'],
+    keywords: ['telemetry', 'Logs', 'source', 'mitre', 'Detection'],
     ...knowledge,
   },
   {
@@ -44,7 +44,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Data sources',
     entityType: 'Data-Source',
     icon: <StreamOutlined fontSize="small" />,
-    keywords: ['log source', 'telemetry source', 'mitre data source', 'Visibility'],
+    keywords: ['telemetry', 'Logs', 'mitre', 'Visibility'],
     ...knowledge,
   },
 ];

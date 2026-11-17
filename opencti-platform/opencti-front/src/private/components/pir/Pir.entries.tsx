@@ -6,7 +6,7 @@ export const pir: MenuEntry = {
   path: '/dashboard/pirs',
   label: 'PIR',
   icon: <TrackChanges />,
-  keywords: ['priority intelligence requirement', 'collection plan', 'watchlist', 'interest', 'relevance', 'threat profile'],
+  keywords: ['priority', 'intelligence', 'requirement', 'watchlist', 'relevance'],
   requiredCapabilities: [PIRAPI],
 };
 

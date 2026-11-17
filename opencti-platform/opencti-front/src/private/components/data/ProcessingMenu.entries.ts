@@ -6,26 +6,26 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/data/processing/automation',
     label: 'Automation',
-    keywords: ['SOAR', 'orchestration', 'automation rule', 'automate', 'pipeline', 'no-code', 'Enrichment', 'Playbook', 'Workflow', 'Trigger'],
+    keywords: ['Playbook', 'Workflow', 'Trigger', 'SOAR', 'orchestration', 'automate', 'pipeline', 'Enrichment'],
     requiredCapabilities: [AUTOMATION_AUTMANAGE],
     isEE: true,
   },
   {
     path: '/dashboard/data/processing/tasks',
     label: 'Tasks',
-    keywords: ['bulk edit', 'batch', 'queue', 'running tasks', 'progress', 'mass delete', 'background task', 'mass update', 'job'],
+    keywords: ['bulk', 'batch', 'queue', 'mass', 'job', 'background'],
     requiredCapabilities: [KNOWLEDGE_KNUPDATE],
   },
   {
     path: '/dashboard/data/processing/csv_mapper',
     label: 'CSV Mappers',
-    keywords: ['parser', 'column mapping', 'spreadsheet', 'excel', 'ingest', 'csv import'],
+    keywords: ['Import', 'Mapping', 'parser', 'spreadsheet', 'excel', 'Ingestion'],
     requiredCapabilities: [CSVMAPPERS],
   },
   {
     path: '/dashboard/data/processing/json_mapper',
     label: 'JSON Mappers',
-    keywords: ['parser', 'field mapping', 'api feed', 'ingest', 'json import'],
+    keywords: ['Import', 'Mapping', 'parser', 'api', 'Ingestion'],
     requiredCapabilities: [CSVMAPPERS],
   },
 ];

@@ -6,7 +6,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/data/health/operations',
     label: 'Operations',
-    keywords: ['duplicates', 'Deduplication', 'Merge', 'cleanup', 'orphan', 'inconsistency', 'fix data', 'Health', 'sanity', 'data quality', 'integrity'],
+    keywords: ['duplicates', 'Deduplication', 'Merge', 'cleanup', 'orphan', 'inconsistency', 'sanity', 'quality', 'integrity'],
     // Same rule as the left nav (useNavMenu).
     requiredCapabilities: [BYPASS],
     featureFlag: 'DATA_SANITY_MANAGER',

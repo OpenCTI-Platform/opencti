@@ -4,20 +4,20 @@ import { SETTINGS_FILEINDEXING, SETTINGS_SETMANAGEXTMHUB, SETTINGS_SETPARAMETERS
 export const parameters: MenuEntry = {
   path: '/dashboard/settings',
   label: 'Parameters',
-  keywords: ['Configuration', 'administration', 'Platform settings', 'License', 'Enterprise Edition'],
+  keywords: ['Configuration', 'administration', 'License', 'Enterprise', 'Edition'],
   exact: true,
   requiredCapabilities: [SETTINGS_SETPARAMETERS],
 };
 export const fileIndexing: MenuEntry = {
   path: '/dashboard/settings/file_indexing',
   label: 'File indexing',
-  keywords: ['full text search', 'document search', 'file content search', 'attachment search'],
+  keywords: ['search', 'document', 'Attachment', 'Text', 'full'],
   requiredCapabilities: [SETTINGS_FILEINDEXING],
 };
 export const experience: MenuEntry = {
   path: '/dashboard/settings/experience',
   label: 'Filigran Experience',
-  keywords: ['XTM Hub', 'artificial intelligence', 'llm', 'Assistant', 'ariane', 'copilot', 'License', 'Enterprise Edition'],
+  keywords: ['xtm', 'hub', 'ai', 'artificial', 'llm', 'Assistant', 'copilot', 'ariane', 'License'],
   requiredCapabilities: [SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB],
 };
 

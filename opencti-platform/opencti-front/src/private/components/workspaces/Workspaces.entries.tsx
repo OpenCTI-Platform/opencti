@@ -6,20 +6,20 @@ export const customDashboards: MenuEntry = {
   path: '/dashboard/workspaces/dashboards',
   label: 'Custom dashboards',
   entityType: 'Dashboard',
-  keywords: ['Widget', 'Visualization', 'chart', 'kpi', 'Metrics', 'reporting'],
+  keywords: ['Widget', 'Visualization', 'chart', 'kpi', 'Metrics'],
   requiredCapabilities: [EXPLORE],
 };
 export const publicDashboards: MenuEntry = {
   path: '/dashboard/workspaces/dashboards_public',
   label: 'Public dashboards',
   entityType: 'Dashboard',
-  keywords: ['shared dashboard', 'public link', 'embed', 'external sharing'],
+  keywords: ['Shared', 'link', 'embed'],
   requiredCapabilities: [EXPLORE],
 };
 export const investigations: MenuEntry = {
   path: '/dashboard/workspaces/investigations',
   label: 'Investigations',
-  keywords: ['Graph', 'link analysis', 'pivot', 'threat hunting', 'canvas'],
+  keywords: ['Graph', 'pivot', 'hunting', 'canvas', 'link', 'Analysis'],
   icon: <ExploreOutlined />,
   requiredCapabilities: [INVESTIGATION],
 };

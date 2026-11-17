@@ -11,7 +11,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Reports',
     entityType: 'Report',
     icon: <DescriptionOutlined fontSize="small" />,
-    keywords: ['finished intelligence', 'finint', 'threat report', 'bulletin', 'advisory', 'Publication', 'Container'],
+    keywords: ['finint', 'bulletin', 'advisory', 'Publication', 'Container', 'Analysis'],
     ...knowledge,
   },
   {
@@ -19,7 +19,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Groupings',
     entityType: 'Grouping',
     icon: <WorkspacesOutlined fontSize="small" />,
-    keywords: ['bundle', 'Cluster', 'context', 'collection of objects', 'analysis in progress'],
+    keywords: ['bundle', 'Cluster', 'context', 'Analysis'],
     ...knowledge,
   },
   {
@@ -27,7 +27,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Malware analyses',
     entityType: 'Malware-Analysis',
     icon: <BiotechOutlined fontSize="small" />,
-    keywords: ['sandbox', 'detonation', 'dynamic analysis', 'static analysis', 'reverse engineering', 'sample analysis', 'malware report', 'verdict'],
+    keywords: ['sandbox', 'detonation', 'dynamic', 'static', 'Reverse', 'engineering', 'Sample', 'verdict', 'Report', 'Analysis'],
     ...knowledge,
   },
   {
@@ -35,7 +35,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Security coverages',
     entityType: 'Security-Coverage',
     icon: <SecurityOutlined fontSize="small" />,
-    keywords: ['mitre coverage', 'gap analysis', 'Heatmap', 'detection rule', 'defense posture', 'EDR', 'SIEM'],
+    keywords: ['gap', 'Heatmap', 'defense', 'EDR', 'SIEM', 'mitre', 'Analysis'],
     ...knowledge,
   },
   {
@@ -43,7 +43,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Notes',
     entityType: 'Note',
     icon: <SubjectOutlined fontSize="small" />,
-    keywords: ['comment', 'annotation', 'analyst note', 'Opinion', 'remark', 'assessment'],
+    keywords: ['comment', 'annotation', 'Opinion', 'remark', 'assessment', 'Analysis'],
     ...knowledge,
   },
   {
@@ -51,7 +51,7 @@ const menuEntries: MenuEntry[] = [
     label: 'External references',
     entityType: 'External-Reference',
     icon: <LocalOfferOutlined fontSize="small" />,
-    keywords: ['URL', 'link', 'citation', 'article', 'blog', 'osint source', 'bibliography'],
+    keywords: ['URL', 'citation', 'article', 'blog', 'osint', 'Analysis'],
     ...knowledge,
   },
 ];

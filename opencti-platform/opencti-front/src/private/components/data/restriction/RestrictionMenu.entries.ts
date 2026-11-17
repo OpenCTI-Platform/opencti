@@ -6,7 +6,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/data/restriction/restricted',
     label: 'Restricted entities',
-    keywords: ['private', 'rights', 'need to know', 'confidential', 'sharing restriction', 'access', 'Permissions', 'Authorized members'],
+    keywords: ['private', 'confidential', 'access', 'Permissions', 'authorized', 'entity'],
     requiredCapabilities: [BYPASS],
     // The route is only mounted with a valid Enterprise Edition licence (restriction/Root.tsx).
     requiresEE: true,
@@ -14,7 +14,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/data/restriction/drafts',
     label: 'Restricted drafts',
-    keywords: ['private draft', 'rights', 'need to know', 'confidential', 'sharing restriction', 'access', 'Permissions', 'Authorized members'],
+    keywords: ['private', 'confidential', 'access', 'Permissions', 'authorized'],
     requiredCapabilities: [BYPASS],
   },
 ];

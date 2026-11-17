@@ -12,7 +12,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Incident responses',
     entityType: 'Case-Incident',
     icon: <BriefcaseEyeOutline fontSize="small" />,
-    keywords: ['dfir', 'case management', 'ticket', 'soc case', 'investigation case'],
+    keywords: ['ir', 'dfir', 'ticket', 'soc'],
     ...knowledge,
   },
   {
@@ -20,7 +20,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Requests for information',
     entityType: 'Case-Rfi',
     icon: <BriefcaseSearchOutline fontSize="small" />,
-    keywords: ['rfi', 'intelligence request', 'question', 'ask analyst', 'tasking', 'requirement'],
+    keywords: ['rfi', 'question', 'tasking', 'requirement'],
     ...knowledge,
   },
   {
@@ -28,7 +28,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Requests for takedown',
     entityType: 'Case-Rft',
     icon: <BriefcaseRemoveOutline fontSize="small" />,
-    keywords: ['rft', 'removal', 'domain takedown', 'phishing takedown', 'brand protection', 'abuse report'],
+    keywords: ['rft', 'removal', 'phishing', 'brand', 'abuse'],
     ...knowledge,
   },
   {
@@ -36,7 +36,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Tasks',
     entityType: 'Task',
     icon: <TaskAltOutlined fontSize="small" />,
-    keywords: ['todo', 'assignment', 'action item', 'checklist', 'my tasks'],
+    keywords: ['todo', 'assignment', 'checklist'],
     ...knowledge,
   },
   {
@@ -44,7 +44,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Feedbacks',
     entityType: 'Feedback',
     icon: <BriefcaseEditOutline fontSize="small" />,
-    keywords: ['Rating', 'satisfaction', 'Review', 'survey', 'contribution', 'consumer feedback'],
+    keywords: ['Rating', 'satisfaction', 'survey'],
     ...knowledge,
   },
 ];

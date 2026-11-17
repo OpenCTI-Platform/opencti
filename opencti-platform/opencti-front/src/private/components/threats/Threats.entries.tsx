@@ -12,7 +12,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Threat actors (group)',
     entityType: 'Threat-Actor-Group',
     icon: <AccountMultipleOutline fontSize="small" />,
-    keywords: ['Adversary', 'apt group', 'gang', 'ransomware group', 'cybercrime group', 'nation-state', 'state-sponsored', 'hacktivist'],
+    keywords: ['apt', 'Adversary', 'gang', 'cybercriminal', 'nation', 'State', 'hacktivist', 'ransomware'],
     ...knowledge,
   },
   {
@@ -20,7 +20,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Threat actors (individual)',
     entityType: 'Threat-Actor-Individual',
     icon: <LaptopAccount fontSize="small" />,
-    keywords: ['hacker', 'persona', 'insider', 'cybercriminal', 'Alias', 'handle'],
+    keywords: ['hacker', 'persona', 'insider', 'cybercriminal', 'Alias'],
     ...knowledge,
   },
   {
@@ -28,7 +28,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Intrusion sets',
     entityType: 'Intrusion-Set',
     icon: <DiamondOutlined fontSize="small" />,
-    keywords: ['apt', 'threat group', 'activity group', 'Adversary', 'actor', 'Cluster', 'unc'],
+    keywords: ['apt', 'Adversary', 'actor', 'Cluster', 'unc'],
     ...knowledge,
   },
   {
@@ -36,7 +36,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Campaigns',
     entityType: 'Campaign',
     icon: <ChessKnight fontSize="small" />,
-    keywords: ['Operation', 'attack wave', 'activity cluster', 'threat activity'],
+    keywords: ['Operation', 'wave', 'Cluster'],
     ...knowledge,
   },
 ];

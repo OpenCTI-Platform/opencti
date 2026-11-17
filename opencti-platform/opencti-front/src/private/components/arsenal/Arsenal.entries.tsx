@@ -12,7 +12,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Malwares',
     entityType: 'Malware',
     icon: <Biohazard fontSize="small" />,
-    keywords: ['malware family', 'ransomware', 'remote access trojan', 'backdoor', 'loader', 'infostealer', 'botnet', 'Implant', 'virus'],
+    keywords: ['ransomware', 'trojan', 'rat', 'backdoor', 'loader', 'infostealer', 'botnet', 'Implant', 'virus'],
     ...knowledge,
   },
   {
@@ -20,7 +20,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Channels',
     entityType: 'Channel',
     icon: <SurroundSoundOutlined fontSize="small" />,
-    keywords: ['telegram', 'discord', 'forum', 'dark web', 'deep web', 'social media', 'paste site', 'marketplace', 'communication'],
+    keywords: ['telegram', 'discord', 'forum', 'darkweb', 'social', 'Paste'],
     ...knowledge,
   },
   {
@@ -28,7 +28,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Tools',
     entityType: 'Tool',
     icon: <WebAssetOutlined fontSize="small" />,
-    keywords: ['software', 'hacktool', 'dual-use', 'lolbin', 'living off the land', 'cobalt strike', 'mimikatz', 'utility'],
+    keywords: ['software', 'hacktool', 'dual', 'lolbin', 'lotl', 'living', 'cobalt', 'mimikatz'],
     ...knowledge,
   },
   {
@@ -36,7 +36,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Vulnerabilities',
     entityType: 'Vulnerability',
     icon: <BugReportOutlined fontSize="small" />,
-    keywords: ['Vulnerability', 'epss', 'CISA KEV', 'cwe', 'cpe', 'nvd', 'zero-day', '0day', 'patch', 'advisory', 'cve', 'cvss', 'exploit', 'weakness'],
+    keywords: ['Vulnerability', 'cve', 'cvss', 'epss', 'kev', 'cisa', 'cwe', 'CPE', 'nvd', 'exploit', 'weakness', 'patch', 'advisory', '0day', 'zero'],
     ...knowledge,
   },
 ];

@@ -5,7 +5,7 @@ export const home: MenuEntry = {
   path: '/dashboard',
   label: 'Home',
   icon: <Home />,
-  keywords: ['Overview', 'landing page', 'Start', 'main dashboard', 'summary', 'cockpit', 'Threat landscape'],
+  keywords: ['Overview', 'cockpit', 'landscape'],
   exact: true,
 };
 

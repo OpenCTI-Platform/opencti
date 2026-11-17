@@ -11,7 +11,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Observables',
     entityType: 'Stix-Cyber-Observable',
     icon: <HexagonOutline fontSize="small" />,
-    keywords: ['sco', 'cyber observable', 'Attribute', 'ipv4', 'Domain', 'Hostname', 'URL', 'hash', 'md5', 'sha256', 'Email address', 'technical data'],
+    keywords: ['sco', 'ipv4', 'ipv6', 'Domain', 'Hostname', 'URL', 'Hash', 'MD5', 'sha256', 'Email'],
     ...knowledge,
   },
   {
@@ -19,7 +19,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Artifacts',
     entityType: 'Artifact',
     icon: <ArchiveOutline fontSize="small" />,
-    keywords: ['malware sample', 'file sample', 'binary', 'payload', 'download sample'],
+    keywords: ['Sample', 'Malware', 'binary', 'Payload'],
     ...knowledge,
   },
   {
@@ -27,7 +27,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Indicators',
     entityType: 'Indicator',
     icon: <ShieldSearch fontSize="small" />,
-    keywords: ['iocs', 'indicator of compromise', 'detection rule', 'signature', 'yara', 'sigma', 'snort', 'suricata', 'stix pattern', 'blocklist'],
+    keywords: ['iocs', 'compromise', 'signature', 'yara', 'sigma', 'snort', 'suricata', 'pattern', 'blocklist'],
     ...knowledge,
   },
   {
@@ -35,7 +35,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Infrastructures',
     entityType: 'Infrastructure',
     icon: <ServerNetwork fontSize="small" />,
-    keywords: ['c2', 'c&c', 'command and control', 'adversary infrastructure', 'Server', 'hosting', 'botnet'],
+    keywords: ['c2', 'c&c', 'command', 'Control', 'hosting', 'botnet', 'Server'],
     ...knowledge,
   },
 ];

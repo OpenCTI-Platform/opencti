@@ -11,7 +11,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Sectors',
     entityType: 'Sector',
     icon: <DomainOutlined fontSize="small" />,
-    keywords: ['vertical', 'Victimology', 'targeted industry', 'naics'],
+    keywords: ['industry', 'vertical', 'Victimology', 'naics', 'entity'],
     ...knowledge,
   },
   {
@@ -19,7 +19,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Events',
     entityType: 'Event',
     icon: <EventOutlined fontSize="small" />,
-    keywords: ['real-world event', 'conference', 'election', 'summit', 'geopolitical event', 'crisis', 'news'],
+    keywords: ['conference', 'election', 'summit', 'geopolitical', 'news', 'entity'],
     ...knowledge,
   },
   {
@@ -27,7 +27,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Organizations',
     entityType: 'Organization',
     icon: <AccountBalanceOutlined fontSize="small" />,
-    keywords: ['company', 'Enterprise', 'Target', 'Vendor', 'Identity', 'Victimology'],
+    keywords: ['company', 'Vendor', 'Identity', 'Victimology', 'entity'],
     ...knowledge,
   },
   {
@@ -35,7 +35,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Security platforms',
     entityType: 'SecurityPlatform',
     icon: <SecurityOutlined fontSize="small" />,
-    keywords: ['security product', 'EDR', 'XDR', 'SIEM', 'Firewall', 'detection platform', 'security stack'],
+    keywords: ['EDR', 'XDR', 'SIEM', 'Firewall', 'Product', 'entity'],
     ...knowledge,
   },
   {
@@ -43,7 +43,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Systems',
     entityType: 'System',
     icon: <StorageOutlined fontSize="small" />,
-    keywords: ['Host', 'Server', 'Endpoint', 'it asset', 'attack surface'],
+    keywords: ['asset', 'Host', 'Server', 'Endpoint', 'entity'],
     ...knowledge,
   },
   {
@@ -51,7 +51,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Individuals',
     entityType: 'Individual',
     icon: <PersonOutlined fontSize="small" />,
-    keywords: ['person', 'people', 'Identity', 'victim', 'employee', 'vip', 'contact'],
+    keywords: ['person', 'people', 'Identity', 'Victimology', 'vip', 'entity'],
     ...knowledge,
   },
 ];

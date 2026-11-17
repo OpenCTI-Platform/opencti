@@ -12,7 +12,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Incidents',
     entityType: 'Incident',
     icon: <Fire fontSize="small" />,
-    keywords: ['breach', 'compromise', 'intrusion', 'security event', 'alert', 'cyber attack'],
+    keywords: ['breach', 'compromise', 'intrusion', 'alert', 'attack'],
     ...knowledge,
   },
   {
@@ -20,7 +20,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Sightings',
     entityType: 'stix-sighting-relationship',
     icon: <VisibilityOutlined fontSize="small" />,
-    keywords: ['seen', 'Detection', 'Match', 'observed in', 'True positive', 'False positive'],
+    keywords: ['seen', 'Detection', 'Match', 'positive', 'False'],
     ...knowledge,
   },
   {
@@ -28,7 +28,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Observed datas',
     entityType: 'Observed-Data',
     icon: <WifiTetheringOutlined fontSize="small" />,
-    keywords: ['telemetry', 'raw observation', 'Logs', 'evidence'],
+    keywords: ['telemetry', 'observation', 'Logs', 'evidence'],
     ...knowledge,
   },
 ];

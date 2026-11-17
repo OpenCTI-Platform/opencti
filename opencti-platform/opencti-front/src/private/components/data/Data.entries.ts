@@ -4,14 +4,14 @@ import { KNOWLEDGE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/cap
 export const dataEntities: MenuEntry = {
   path: '/dashboard/data/entities',
   label: 'Entities',
-  keywords: ['all objects', 'sdo', 'stix domain object', 'data browser', 'Explore', 'inventory', 'threat library', 'intelligence card'],
+  keywords: ['sdo', 'entity', 'Object', 'Explore', 'inventory'],
   requiredCapabilities: [KNOWLEDGE],
   availableInDraft: true,
 };
 export const dataRelationships: MenuEntry = {
   path: '/dashboard/data/relationships',
   label: 'Relationships',
-  keywords: ['link', 'edge', 'sro', 'association', 'connection', 'correlation', 'uses', 'targets', 'attributed-to'],
+  keywords: ['link', 'edge', 'sro', 'association', 'connection', 'correlation', 'uses', 'Targets', 'attributed'],
   requiredCapabilities: [KNOWLEDGE],
   availableInDraft: true,
 };
@@ -19,7 +19,7 @@ export const dataRelationships: MenuEntry = {
 export const trash: MenuEntry = {
   path: '/dashboard/trash',
   label: 'Trash',
-  keywords: ['deleted', 'recycle bin', 'Restore', 'undelete', 'recover'],
+  keywords: ['Deleted', 'Restore', 'recycle', 'recover'],
   requiredCapabilities: [KNOWLEDGE_KNUPDATE_KNDELETE],
 };
 
