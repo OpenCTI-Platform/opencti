@@ -30,7 +30,7 @@ Assign a name and description to each playbook.
 
 ## Step 1: Set your event source
 
-The first step is to define your event source. Click the grey rectangle in the center of the workspace and select the input component that suits your needs.
+The first step is to define your event source. Click **Add an entry point** in the center of the canvas and pick the input component that suits your needs in the component palette.
 
 ![Input component selection panel showing available event sources](assets/playbook_input.png)
 
@@ -44,11 +44,31 @@ You have flexible choices for the next steps in your workflow:
 
 Use the various playbook components at your disposal to build these steps. See the [Playbook Components](playbook-components.md) page for full details of the available components.
 
-To replace a component, click the **☰** (menu) button on the component.
+Each step is drawn as a card: its icon and colour give its category (entry point, transform and enrich, share and access, end of playbook), and its outputs (for example `out`, `unmodified`, `no-match`) are labelled pills on the bottom edge of the card.
 
-To create a new branch at the same level, click the **arrow** icon in the bottom-right corner of a component.
+- **Add a step**: click the **+** on a free output of a step. The component palette opens: type to search by name or description, move with the arrow keys and press **Enter** to pick a component.
+- **Insert a step between two steps**: hover the link between them and click the **+** in its middle.
+- **Replace, configure or delete a step**: right-click the step (or use its **⋮** menu).
+- **Delete one step, keep the steps after it**: deleting a step that has steps after it asks what to delete. **Delete this step only** (the default) removes the step and links each step that followed it to the step before it, on the same output. **Delete this step and the N steps after it** removes the whole branch. The entry point can only be deleted with its branch, since its steps would have no parent. A step with nothing after it is deleted after a simple confirmation.
+- **Rewire without deleting**: drag the end of a link onto another step to reconnect it, or drag from a free output onto a step to move that step and its branch under this output. A change that would create a loop or leave a step without a parent is refused.
+- **Undo and redo**: use the toolbar buttons, **Ctrl/Cmd+Z** and **Shift+Ctrl/Cmd+Z**. Deleting a step that had steps after it cannot be undone and clears the undo history.
 
-To insert a component between two existing components, click the **+** button on the link between them.
+### View mode and edit mode
+
+The header shows who created the playbook and when, and when it was last modified.
+
+The editor opens a playbook in one of two modes:
+
+- **View mode**: read the playbook safely. You can pan, zoom, use the minimap, switch the layout and read the last executions, but nothing can be added, replaced, deleted or rewired, and clicking a step opens nothing. A running playbook always opens in view mode.
+- **Edit mode**: every editing control is available. A stopped playbook opens in edit mode for users with the **Manage playbooks** capability.
+
+Users with the **Manage playbooks** capability switch between the two with the **Edit mode** switch in the header. While a running playbook is in edit mode, a notice at the top of the canvas reminds you that your changes apply immediately. The mode is chosen again each time the page is opened; starting or stopping the playbook does not change it. Users without the capability always see view mode. View mode is a display mode, not a permission: the platform keeps checking the capability on every change.
+
+The layout is deterministic: the same playbook is always drawn the same way. Switch between the **vertical** and **horizontal** layouts from the toolbar (or press **V** / **H**); the choice is kept per playbook. Press **?** to open the list of keyboard shortcuts. After a run, each step shows the status and duration of its last execution.
+
+![Playbook editor with step cards, labelled outputs and the toolbar](assets/playbooks/playbook-editor-overview.png)
+
+![Component palette with search](assets/playbooks/playbook-editor-palette.png)
 
 ![Grid of available playbook components in the OpenCTI component selector dialog](assets/playbook_components.png)
 
@@ -60,9 +80,7 @@ Finish your playbook by processing the bundle with at least one of the following
 - **Send to notifier / Send email from template** triggers a notification to users and can run in parallel with other actions in your playbook.
 - **Send to AI** sends the STIX bundle to an XTM One AI agent as the final step of the playbook. This requires access to XTM One.
 
-These components will complete a branch of your playbook. See the [Playbook components](playbook-components.md) page for full details of the available components. If you want to both send for ingestion and send a notification then you can use the option to “add a new branch at the same level from the parent output”. 
-
-![Add new branch at the same level](assets/playbook_add_new_branch_at_same_level.png)
+These components will complete a branch of your playbook. See the [Playbook components](playbook-components.md) page for full details of the available components. If you want to both send for ingestion and send a notification, add a second step on the same output: an output can feed several steps.
 
 ## Step 4: Start your playbook
 
