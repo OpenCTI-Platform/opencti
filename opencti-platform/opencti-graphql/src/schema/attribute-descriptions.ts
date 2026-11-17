@@ -1,4 +1,5 @@
-import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_THREAT_ACTOR_GROUP } from './stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_THREAT_ACTOR_GROUP, isStixDomainObject } from './stixDomainObject';
+import { isStixCoreRelationship } from './stixCoreRelationship';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../modules/malwareAnalysis/malwareAnalysis-types';
@@ -29,8 +30,8 @@ export const ATTRIBUTE_DESCRIPTIONS: Record<string, string> = {
   primary_motivation: 'Main reason behind the threat, from the attack_motivation_ov vocabulary (e.g. personal-gain, ideology).',
   secondary_motivations: 'Other reasons behind the threat, from the attack_motivation_ov vocabulary.',
   personal_motivations: 'Personal reasons of the threat actor, from the attack_motivation_ov vocabulary.',
-  sophistication: 'Skill level of the threat actor (e.g. minimal, expert, strategic).',
-  threat_actor_types: 'Types of the threat actor (e.g. nation-state, crime-syndicate, activist).',
+  sophistication: 'Skill level of the threat actor, from the threat_actor_group_sophistication_ov or threat_actor_individual_sophistication_ov vocabulary (e.g. minimal, expert, strategic).',
+  threat_actor_types: 'Types of the threat actor, from the threat_actor_group_type_ov or threat_actor_individual_type_ov vocabulary (e.g. nation-state, crime-syndicate, activist).',
   // -- Identity and location --
   contact_information: 'Contact information (email, phone…) of the identity.',
   roles: 'Roles the identity plays (e.g. CEO, analyst).',
@@ -198,10 +199,16 @@ export const ATTRIBUTE_DESCRIPTIONS_BY_TYPE: Record<string, Record<string, strin
   },
 };
 
-// Resolution order: the description written in the definition, then the override of the type, then the dictionary
+// The types whose attributes and refs the dictionary was written for. Elsewhere a same name can
+// mean something else (the content of a Media-Content is plain text, the content of a workflow
+// definition is JSON…): a wrong description being worse than none, they get no description.
+export const isDescribedType = (entityType: string): boolean => isStixDomainObject(entityType) || isStixCoreRelationship(entityType);
+
+// Resolution order: the description written in the definition, then the override of the type,
+// then the dictionary for a described type only
 export const resolveAttributeDescription = (entityType: string, attribute: { name: string; description?: string }): string | null => {
   return attribute.description
     ?? ATTRIBUTE_DESCRIPTIONS_BY_TYPE[entityType]?.[attribute.name]
-    ?? ATTRIBUTE_DESCRIPTIONS[attribute.name]
+    ?? (isDescribedType(entityType) ? ATTRIBUTE_DESCRIPTIONS[attribute.name] : undefined)
     ?? null;
 };
