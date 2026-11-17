@@ -23,6 +23,7 @@ vi.mock('../../../../src/modules/workspace/workspace-variables-domain', () => ({
 vi.mock('../../../../src/modules/workspace/workspace-utils', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/workspace/workspace-utils')>()),
   convertWidgetsIds: vi.fn(),
+  convertDashboardIds: vi.fn(),
 }));
 vi.mock('../../../../src/modules/savedFilter/savedFilter-domain', () => ({ findSavedFilter: vi.fn() }));
 // The widget file is read from an upload: what it gives is replaced, the write that follows is what is checked
@@ -41,7 +42,7 @@ import { extractContentFrom } from '../../../../src/utils/fileToContent';
 import { generateWidgetExportConfiguration, generateWorkspaceExportConfiguration } from '../../../../src/modules/workspace/workspace-export';
 import { workspaceImportConfiguration, workspaceImportWidgetConfiguration } from '../../../../src/modules/workspace/workspace-import';
 import { ENTITY_TYPE_WORKSPACE, type BasicStoreEntityWorkspace } from '../../../../src/modules/workspace/workspace-types';
-import { convertWidgetsIds } from '../../../../src/modules/workspace/workspace-utils';
+import { convertDashboardIds } from '../../../../src/modules/workspace/workspace-utils';
 import { findSavedFilter } from '../../../../src/modules/savedFilter/savedFilter-domain';
 import { convertDashboardManifestIds, importDashboardWidgetConfiguration, resolveSavedFiltersInDataSelection } from '../../../../src/modules/dashboard/dashboard-utils';
 import { fromB64, toB64 } from '../../../../src/utils/base64';
@@ -74,8 +75,8 @@ describe('Legacy file export of a dashboard', () => {
     const [widget] = Object.values<{ dataSelection: Record<string, unknown>[] }>(fromB64(file.configuration.manifest).widgets);
     expect(widget.dataSelection[0]).toMatchObject({ filters: savedFilterGroup });
     expect(widget.dataSelection[0].filters_id).toBeUndefined();
-    // The ids are converted to the standard ids, as ever
-    expect(convertWidgetsIds).toHaveBeenCalledWith(context, user, expect.any(Array), 'internal');
+    // The ids of the widgets and of the variables are converted to the standard ids, as ever
+    expect(convertDashboardIds).toHaveBeenCalledWith(context, user, expect.any(Array), [], 'internal', []);
   });
 
   it('keeps the variables and the presets of the manifest as they are: the bundle is the one that converts or drops them', async () => {
@@ -165,17 +166,22 @@ describe('Legacy file import of a dashboard', () => {
     expect(notify).toHaveBeenCalledWith(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, created, user);
   });
 
-  it('validates the variables of the file like the typed API, and drops the presets', async () => {
+  it('validates the variables and the presets of the file like the typed API, before any id is resolved', async () => {
     const variable = { id: VARIABLE_ID, name: 'Text', type: 'text', restriction: { mode: 'none' }, defaultValue: 'phishing' };
-    const manifest = manifestOf({ widget1: widgetOf({}) }, { variables: [variable], presets: [{ id: 'preset' }] });
-    vi.mocked(extractContentFrom).mockResolvedValue(file({ configuration: { name: 'Imported dashboard', manifest } }) as never);
     vi.mocked(createEntity).mockResolvedValue(created as never);
+    vi.mocked(extractContentFrom).mockResolvedValue(file({ configuration: { name: 'Imported dashboard', manifest: manifestOf({ widget1: widgetOf({}) }, { variables: [variable] }) } }) as never);
     await workspaceImportConfiguration(context, user, Promise.resolve({}) as never);
-    const stored = fromB64(vi.mocked(createEntity).mock.calls[0][2].manifest as string);
-    expect(stored.variables).toEqual([variable]);
-    expect(stored.presets).toBeUndefined();
-    vi.mocked(extractContentFrom).mockResolvedValue(file({ configuration: { name: 'Imported dashboard', manifest: manifestOf({}, { variables: [{ name: 'Bad', type: 'unknown' }] }) } }) as never);
-    await expect(workspaceImportConfiguration(context, user, Promise.resolve({}) as never)).rejects.toThrow('Invalid dashboard variable type');
+    expect(fromB64(vi.mocked(createEntity).mock.calls[0][2].manifest as string).variables).toEqual([variable]);
+    for (const [manifest, reason] of [
+      [manifestOf({}, { variables: [{ name: 'Bad', type: 'unknown' }] }), 'Invalid dashboard variable type'],
+      [manifestOf({}, { variables: [variable], presets: [{ id: 'preset' }] }), 'Invalid dashboard preset'],
+    ]) {
+      vi.mocked(extractContentFrom).mockResolvedValue(file({ configuration: { name: 'Imported dashboard', manifest } }) as never);
+      await expect(workspaceImportConfiguration(context, user, Promise.resolve({}) as never)).rejects.toThrow(reason);
+    }
+    // A malformed manifest never reaches the conversion of the ids
+    expect(convertDashboardIds).not.toHaveBeenCalledWith(context, user, expect.anything(), [{ name: 'Bad', type: 'unknown' }], 'stix', expect.anything());
+    expect(createEntity).toHaveBeenCalledTimes(1);
   });
 
   it('writes nothing for a file of another type, of an old version or without a name', async () => {

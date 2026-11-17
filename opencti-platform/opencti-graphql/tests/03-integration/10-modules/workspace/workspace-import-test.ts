@@ -292,6 +292,29 @@ describe('Dashboard import and export (configuration preset)', () => {
     }
   });
 
+  it('does not export nor import the presets, and an overwrite keeps the presets of the dashboard', async () => {
+    const name = `${PREFIX} presets`;
+    const variable = { id: '7c3b2e4a-9d5f-4a0c-8e6d-3f4a5b6c7d8e', name: 'Text', type: 'text', restriction: { mode: 'none' }, defaultValue: 'phishing' };
+    const preset = { id: '8d4c3f5b-0e6a-4b1d-9f7e-4a5b6c7d8e9f', name: 'Phishing', values: { [variable.id]: 'phishing' }, config: { startDate: null, endDate: null, relativeDate: null } };
+    await importDashboard(testContext, ADMIN_USER, { name, manifest: manifestOf('entity_type', ['Report'], [variable]) }, { mode });
+    const created = await loadWorkspace(name);
+    await patchAttribute(testContext, ADMIN_USER, created.id, ENTITY_TYPE_WORKSPACE, {
+      manifest: toB64({ ...fromB64<Record<string, unknown>>(created.manifest), presets: [preset] }) as string,
+    });
+    // Not exported
+    expect(fromB64((await exportDashboard(testContext, ADMIN_USER, await loadWorkspace(name))).manifest).presets).toBeUndefined();
+    // Not imported: a bundle that has some creates a dashboard without
+    const withPresets = toB64({ ...fromB64<Record<string, unknown>>(manifestOf('entity_type', ['Report'], [variable])), presets: [preset] }) as string;
+    expect(await importDashboard(testContext, ADMIN_USER, { name: `${PREFIX} presets copy`, manifest: withPresets }, { mode })).toMatchObject({ status: 'created' });
+    expect(fromB64((await loadWorkspace(`${PREFIX} presets copy`)).manifest).presets).toBeUndefined();
+    // An overwrite writes the widgets of the bundle and keeps the presets the dashboard has
+    expect(await importDashboard(testContext, ADMIN_USER, { name, manifest: withPresets }, { mode })).toMatchObject({ status: 'skipped', code: 'unchanged' });
+    expect(await importDashboard(testContext, ADMIN_USER, { name, manifest: manifestOf('entity_type', ['Malware'], [variable]) }, { mode })).toMatchObject({ status: 'overwritten' });
+    const overwritten = await loadWorkspace(name);
+    expect(storedFilterValues(overwritten)).toEqual(['Malware']);
+    expect(fromB64(overwritten.manifest).presets).toEqual([preset]);
+  });
+
   it('exports a saved filter that does not exist as it is, instead of failing', async () => {
     const [workspace] = await findDashboardsByName(testContext, ADMIN_USER, names[4]);
     const manifest = fromB64(workspace.manifest);
