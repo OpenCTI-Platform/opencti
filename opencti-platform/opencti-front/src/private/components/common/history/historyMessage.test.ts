@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { toSingleLineHistoryMessage } from './historyMessage';
+import { toPlainHistoryValue, toSingleLineHistoryMessage } from './historyMessage';
 
 describe('toSingleLineHistoryMessage', () => {
   it('should return an empty string for no message', () => {
@@ -18,5 +18,19 @@ describe('toSingleLineHistoryMessage', () => {
   it('should decode html entities and drop script content', () => {
     expect(toSingleLineHistoryMessage('replaces `a &amp; b<script>alert(1)</script>` in `Content`'))
       .toEqual('replaces `a & b ` in `Content`');
+  });
+});
+
+describe('toPlainHistoryValue', () => {
+  it('should return an empty string for no value', () => {
+    expect(toPlainHistoryValue(null)).toEqual('');
+  });
+  it('should show html content as readable text, never cut', () => {
+    const content = '<h1>CERT-FR Advisory</h1>\n<p>Subject: A &amp; B <strong>critical</strong></p><ul><li>CVE-2026-0001</li></ul><script>alert(1)</script>';
+    expect(toPlainHistoryValue(content)).toEqual('CERT-FR Advisory Subject: A & B critical CVE-2026-0001');
+  });
+  it('should remove markdown marks and keep the case of the data', () => {
+    const description = '# Title\nA **long** `CVE-2026-0002` [link](https://example.com)\n- item';
+    expect(toPlainHistoryValue(description)).toEqual('Title A long CVE-2026-0002 link item');
   });
 });

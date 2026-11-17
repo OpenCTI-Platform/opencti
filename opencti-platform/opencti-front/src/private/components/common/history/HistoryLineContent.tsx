@@ -2,7 +2,7 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import { ChevronRightOutlined, OpenInBrowserOutlined } from '@mui/icons-material';
-import { ListItemButton } from '@mui/material';
+import { Box, ListItemButton } from '@mui/material';
 import Badge from '@mui/material/Badge';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -129,7 +129,11 @@ const HistoryLineContent = ({
             />
           )}
           <Tooltip
-            slotProps={{ tooltip: { sx: { maxWidth: 600, lineHeight: 1.6, padding: '8px 10px' } } }}
+            slotProps={{
+              // The values are data (names, ids, statuses): keep their case, the theme lowercases tooltips
+              popper: { sx: { textTransform: 'none' } },
+              tooltip: { sx: { maxWidth: 600, lineHeight: 1.6, padding: '8px 10px', textTransform: 'none' } },
+            }}
             title={(
               <MarkdownDisplay
                 content={lineContent}
@@ -140,11 +144,13 @@ const HistoryLineContent = ({
             )}
           >
             {/* One line: inline markdown (no paragraph), cut with an ellipsis; the full message is in the tooltip and the details drawer */}
-            <div style={{
+            <Box sx={{
               lineHeight: '24px',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
+              // The text must flow inline in this box for the ellipsis to apply
+              '& .markdown, & .markdown p': { display: 'inline' },
             }}
             >
               <MarkdownDisplay
@@ -153,7 +159,7 @@ const HistoryLineContent = ({
                 commonmark={true}
                 removeLineBreaks={true}
               />
-            </div>
+            </Box>
           </Tooltip>
           {hasExternalRefs && (
             <List>

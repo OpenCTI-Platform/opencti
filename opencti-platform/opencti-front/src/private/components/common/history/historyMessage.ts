@@ -17,3 +17,22 @@ export const toSingleLineHistoryMessage = (message: string | null | undefined): 
     .replace(/\s+/g, ' ')
     .trim();
 };
+
+/**
+ * A value of the details drawer (one field of one operation) as readable text:
+ * rich text (Content is html, Description is markdown) shows without its markup,
+ * entities decoded, script and style removed; line breaks kept as single spaces.
+ * The value is never cut: the table cell wraps it.
+ */
+export const toPlainHistoryValue = (value: string | null | undefined): string => {
+  if (!value) return '';
+  return value
+    .replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi, ' ')
+    .replace(HTML_TAG, ' ')
+    .replace(/&(amp|lt|gt|quot|#39|apos|nbsp);/g, (entity) => HTML_ENTITIES[entity] ?? entity)
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1') // markdown links and images keep their text
+    .replace(/^[ \t]*(#{1,6}|>|[-*+]|\d+\.)[ \t]+/gm, '') // markdown headings, quotes and list markers
+    .replace(/(\*\*|~~|`+)/g, '') // markdown bold, strikethrough and code marks
+    .replace(/\s+/g, ' ')
+    .trim();
+};

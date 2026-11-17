@@ -47,6 +47,8 @@ const Description = styled('div')({
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
+  // The text must flow inline in this box for the ellipsis to apply
+  '& .markdown, & .markdown p': { display: 'inline' },
 });
 
 const LogDate = styled('div')({
@@ -347,11 +349,14 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
           <LogDate>{ftdt(log.timestamp)}</LogDate>
           <Tooltip
             slotProps={{
+              // The values are data (names, ids, statuses): keep their case, the theme lowercases tooltips
+              popper: { sx: { textTransform: 'none' } },
               tooltip: {
                 sx: {
                   maxWidth: '80%',
                   lineHeight: 2,
                   padding: '10px',
+                  textTransform: 'none',
                 },
               },
             }}
