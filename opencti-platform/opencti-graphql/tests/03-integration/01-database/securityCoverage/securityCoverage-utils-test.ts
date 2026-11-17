@@ -12,7 +12,10 @@ import { addReport } from '../../../../src/domain/report';
 import { stixDomainObjectAddRelation, stixDomainObjectDelete, stixDomainObjectDeleteRelation } from '../../../../src/domain/stixDomainObject';
 import { addStixCoreRelationship, stixCoreRelationshipDelete, stixCoreRelationshipDeleteByFromAndTo } from '../../../../src/domain/stixCoreRelationship';
 import { fullRelationsList, storeLoadById } from '../../../../src/database/middleware-loader';
-import { storeLoadByIdWithRefs } from '../../../../src/database/middleware';
+import { deleteElementById, storeLoadByIdWithRefs } from '../../../../src/database/middleware';
+import { addDraftWorkspace } from '../../../../src/modules/draftWorkspace/draftWorkspace-domain';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../../src/modules/draftWorkspace/draftWorkspace-types';
+import type { AuthContext } from '../../../../src/types/user';
 import { RELATION_HAS_COVERED, RELATION_TARGETS, RELATION_USES } from '../../../../src/schema/stixCoreRelationship';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../../../../src/schema/stixRefRelationship';
 import { addOrganization } from '../../../../src/modules/organization/organization-domain';
@@ -139,8 +142,8 @@ describe('Security coverage has-covered cleanup when an entity leaves the covere
     }
   };
 
-  const listCoveredTargetIds = async (resultId: string) => {
-    const relations = await fullRelationsList<BasicStoreRelation>(testContext, ADMIN_USER, RELATION_HAS_COVERED, { fromId: resultId });
+  const listCoveredTargetIds = async (resultId: string, context: AuthContext = testContext) => {
+    const relations = await fullRelationsList<BasicStoreRelation>(context, ADMIN_USER, RELATION_HAS_COVERED, { fromId: resultId });
     return relations.map((relation) => relation.toId).sort();
   };
 
@@ -318,6 +321,34 @@ describe('Security coverage has-covered cleanup when an entity leaves the covere
     await stixDomainObjectDeleteRelation(testContext, ADMIN_USER, report.internal_id, notInReport.id, RELATION_OBJECT);
 
     expect(await listCoveredTargetIds(result.id)).toEqual(sortedIds(inReport));
+
+    await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.standard_id);
+    await stixDomainObjectDelete(testContext, ADMIN_USER, report.internal_id, ENTITY_TYPE_CONTAINER_REPORT);
+    await deleteAttackPatterns(attackPatterns);
+  });
+
+  it('should remove the has-covered in the draft only when the entity is removed from the covered report in a draft', async () => {
+    const prefix = 'sc-cleanup-draft';
+    const attackPatterns = await createAttackPatterns(prefix);
+    const report: StoreEntityReport = await addReport(testContext, ADMIN_USER, {
+      name: `${prefix} report`,
+      published: '2026-04-24T19:15:00.000Z',
+      objects: attackPatterns.map((attackPattern) => attackPattern.standard_id),
+    });
+    const { securityCoverage, result } = await createCoverageCoveringAll(prefix, report.standard_id, attackPatterns);
+    const draft = await addDraftWorkspace(testContext, ADMIN_USER, { name: `${prefix} draft` });
+    const draftContext: AuthContext = { ...testContext, draft_context: draft.id };
+
+    const [removed, ...stillInReport] = attackPatterns;
+    await stixDomainObjectDeleteRelation(draftContext, ADMIN_USER, report.internal_id, removed.id, RELATION_OBJECT);
+
+    // The cleanup lands in the draft, the live has-covered are untouched
+    expect(await listCoveredTargetIds(result.id, draftContext)).toEqual(sortedIds(stillInReport));
+    expect(await listCoveredTargetIds(result.id)).toEqual(sortedIds(attackPatterns));
+
+    // Discarding the draft drops the removal and its cleanup together
+    await deleteElementById(testContext, ADMIN_USER, draft.id, ENTITY_TYPE_DRAFT_WORKSPACE);
+    expect(await listCoveredTargetIds(result.id)).toEqual(sortedIds(attackPatterns));
 
     await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.standard_id);
     await stixDomainObjectDelete(testContext, ADMIN_USER, report.internal_id, ENTITY_TYPE_CONTAINER_REPORT);
