@@ -18,6 +18,7 @@ import {
 import {
   addDraftContext,
   createWork,
+  deleteWork,
   deleteWorkForConnector,
   findById,
   findWorkPaginated,
@@ -30,7 +31,6 @@ import {
   workTouchedElements,
   worksForConnector,
 } from '../domain/work';
-import { deleteWorkWithInvestigationRights } from '../modules/workspace/investigation-enrichment';
 import { now } from '../utils/format';
 import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
 import { connector } from '../modules/connector/connector-domain';
@@ -84,7 +84,7 @@ const connectorResolvers = {
       });
     },
     workEdit: (_, { id }, context) => ({
-      delete: () => deleteWorkWithInvestigationRights(context, context.user, id),
+      delete: () => deleteWork(context, context.user, id),
       ping: () => pingWork(context, context.user, id),
       reportExpectation: ({ error }) => reportExpectation(context, context.user, id, error),
       addExpectations: ({ expectations }) => updateExpectationsNumber(context, context.user, id, expectations),

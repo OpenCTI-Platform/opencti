@@ -1,9 +1,9 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { fullEntitiesList, internalFindByIdsMapped, storeLoadById } from '../../database/middleware-loader';
-import { AccessOperation, isUserHasCapability, KNOWLEDGE_KNENRICHMENT, SYSTEM_USER, validateUserAccessOperation } from '../../utils/access';
+import { fullEntitiesList, internalFindByIdsMapped } from '../../database/middleware-loader';
+import { AccessOperation, isUserHasCapability, KNOWLEDGE_KNENRICHMENT, validateUserAccessOperation } from '../../utils/access';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
-import { type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE } from './workspace-types';
-import { deleteWork, findWorkPaginated, loadWorkById } from '../../domain/work';
+import { type BasicStoreEntityWorkspace } from './workspace-types';
+import { findWorkPaginated, loadWorkById } from '../../domain/work';
 import { elUpdate } from '../../database/engine';
 import { emptyPaginationResult, isNotEmptyField, READ_INDEX_HISTORY } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
@@ -143,17 +143,4 @@ export const editWorkInvestigationStatus = async (
   const source = 'ctx._source.investigation_status = params.investigation_status;';
   await elUpdate(context, work._index, workId, { script: { source, lang: 'painless', params: { investigation_status: status } } });
   return loadWorkById(context, user, workId);
-};
-
-// Deleting a work of an investigation needs the rights to review it, so results cannot be removed for the editors.
-export const deleteWorkWithInvestigationRights = async (context: AuthContext, user: AuthUser, workId: string) => {
-  const work: InvestigationWork | undefined = await loadWorkById(context, user, workId);
-  if (work?.investigation_id) {
-    // Loaded as system: a deleted investigation has nothing left to protect, a hidden one must still be checked.
-    const investigation = await storeLoadById(context, SYSTEM_USER, work.investigation_id, ENTITY_TYPE_WORKSPACE);
-    if (investigation) {
-      await validateEnrichmentInvestigation(context, user, work.investigation_id);
-    }
-  }
-  return deleteWork(context, user, workId);
 };

@@ -8,7 +8,7 @@ import { askElementEnrichmentForConnectors } from '../../../src/domain/stixCoreO
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
 import { deleteElementById, mergeEntities } from '../../../src/database/middleware';
 import { deleteWork, loadWorkById, reportExpectation, updateExpectationsNumber, updateProcessedTime } from '../../../src/domain/work';
-import { deleteWorkWithInvestigationRights, editWorkInvestigationStatus } from '../../../src/modules/workspace/investigation-enrichment';
+import { editWorkInvestigationStatus } from '../../../src/modules/workspace/investigation-enrichment';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../src/schema/stixDomainObject';
@@ -609,20 +609,20 @@ describe('Enrichments linked to an investigation', () => {
 
     it('should let an editor of the investigation delete its work', async () => {
       const workId = await startEnrichment(editableInvestigationId);
-      await deleteWorkWithInvestigationRights(testContext, analyst, workId);
+      await deleteWork(testContext, analyst, workId);
       expect(await exists(workId)).toBe(false);
     });
 
     it('should refuse a view-only member of the investigation', async () => {
       const workId = await startEnrichment(viewOnlyInvestigationId);
-      await expect(deleteWorkWithInvestigationRights(testContext, analyst, workId)).rejects.toThrow('You are not allowed to do this.');
+      await expect(deleteWork(testContext, analyst, workId)).rejects.toThrow('You are not allowed to do this.');
       expect(await exists(workId)).toBe(true);
     });
 
     it('should refuse an editor without the enrichment capability', async () => {
       const workId = await startEnrichment(editableInvestigationId);
       const withoutEnrichment = { ...analyst, capabilities: analyst.capabilities.filter((c: any) => c.name !== 'KNOWLEDGE_KNENRICHMENT') };
-      await expect(deleteWorkWithInvestigationRights(testContext, withoutEnrichment, workId)).rejects.toThrow('You are not allowed to do this.');
+      await expect(deleteWork(testContext, withoutEnrichment, workId)).rejects.toThrow('You are not allowed to do this.');
       expect(await exists(workId)).toBe(true);
     });
 
@@ -642,7 +642,7 @@ describe('Enrichments linked to an investigation', () => {
       const deletedId = await createWorkspace('investigation', 'Enrichment investigation (deleted before its work)', 'view');
       const workId = await startEnrichment(deletedId);
       await queryAsAdmin({ query: DELETE_WORKSPACE, variables: { id: deletedId } });
-      await deleteWorkWithInvestigationRights(testContext, analyst, workId);
+      await deleteWork(testContext, analyst, workId);
       expect(await exists(workId)).toBe(false);
     });
   });
