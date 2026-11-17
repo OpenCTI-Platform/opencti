@@ -4,6 +4,7 @@ import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
 import { ATTRIBUTE_DESCRIPTIONS, ATTRIBUTE_DESCRIPTIONS_BY_TYPE } from '../../../src/schema/attribute-descriptions';
 
@@ -175,6 +176,12 @@ describe('schemaAttributes', () => {
     const [sighting] = await querySchemaAttributes(STIX_SIGHTING_RELATIONSHIP);
     const count = sighting.attributes.find((attribute) => attribute.name === 'attribute_count');
     expect(count?.description).toEqual(ATTRIBUTE_DESCRIPTIONS.attribute_count);
+  });
+
+  it('should describe the meta objects', async () => {
+    const [marking] = await querySchemaAttributes(ENTITY_TYPE_MARKING_DEFINITION);
+    const definition = marking.attributes.find((attribute) => attribute.name === 'definition');
+    expect(definition?.description).toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_TYPE_MARKING_DEFINITION].definition);
   });
 
   it('should report the effective mandatory status and default value set in Entity Settings', async () => {

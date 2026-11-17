@@ -5,6 +5,8 @@ import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from './stixSightingRelationship';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from './stixMetaObject';
+import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import {
   ENTITY_EMAIL_ADDR,
   ENTITY_EMAIL_MESSAGE,
@@ -36,6 +38,7 @@ export const ATTRIBUTE_DESCRIPTIONS: Record<string, string> = {
   x_opencti_score: 'Score assessing how malicious or important the entity is, from 0 to 100.',
   x_opencti_reliability: 'Reliability of the source, from the reliability_ov vocabulary (A - Completely reliable to F - Reliability cannot be judged).',
   authorized_members_activation_date: 'Date when access to the entity was restricted to its authorized members. Set by the platform.',
+  color: 'Display color in the platform, as a hexadecimal code (e.g. #2e7d32).',
   // -- Activity --
   first_seen: 'Date when the entity was first seen active, in ISO 8601.',
   last_seen: 'Date when the entity was last seen active, in ISO 8601.',
@@ -413,13 +416,45 @@ export const ATTRIBUTE_DESCRIPTIONS_BY_TYPE: Record<string, Record<string, strin
   [ENTITY_SSH_KEY]: {
     expiration_date: 'Date when the SSH key expires, in ISO 8601.',
   },
+  // -- Meta objects --
+  [ENTITY_TYPE_MARKING_DEFINITION]: {
+    definition_type: 'Type of the marking, grouping the markings compared by their order (e.g. TLP, PAP).',
+    definition: 'Name of the marking, prefixed by its type (e.g. TLP:GREEN, PAP:AMBER).',
+    x_opencti_order: 'Level of the marking within its type: the higher, the more restrictive (e.g. 1 for TLP:CLEAR, 5 for TLP:RED).',
+    x_opencti_color: 'Display color of the marking, as a hexadecimal code (e.g. #2e7d32).',
+  },
+  [ENTITY_TYPE_LABEL]: {
+    value: 'Text of the label, matched whatever its letter case (e.g. phishing).',
+    color: 'Display color of the label, as a hexadecimal code (e.g. #2e7d32). Generated from the value when not given.',
+  },
+  [ENTITY_TYPE_EXTERNAL_REFERENCE]: {
+    source_name: 'Name of the source the reference comes from (e.g. mitre-attack, cve, a vendor name).',
+    description: 'Description of the reference.',
+    url: 'URL of the referenced content.',
+    hash: 'Hash of the content found at the URL, to check that it has not changed.',
+    external_id: 'Identifier of the referenced content in its source (e.g. T1566 in mitre-attack, CVE-2021-44228 in cve).',
+    fileId: 'Id of the file uploaded with the reference in the platform storage, its URL then pointing to the file. Set by the platform.',
+  },
+  [ENTITY_TYPE_KILL_CHAIN_PHASE]: {
+    kill_chain_name: 'Name of the kill chain (e.g. mitre-attack, lockheed-martin-cyber-kill-chain).',
+    phase_name: 'Name of the phase in the kill chain (e.g. initial-access, exfiltration).',
+    x_opencti_order: 'Position of the phase in its kill chain, to sort the phases. Defaults to 0.',
+  },
+  [ENTITY_TYPE_VOCABULARY]: {
+    name: 'Value of the entry, as set in the fields using its vocabulary (e.g. ransomware in malware_type_ov).',
+    description: 'Meaning of the entry.',
+    category: 'Vocabulary the entry belongs to (e.g. malware_type_ov, report_types_ov).',
+    order: 'Position of the entry in its vocabulary, to sort the entries. Defaults to 0.',
+    is_hidden: 'Whether the entry is hidden from the choices offered when filling a field.',
+    builtIn: 'Whether the entry is provided by the platform: a built-in entry cannot be deleted.',
+  },
 };
 
 // The types whose attributes and refs the dictionary was written for: the STIX types. Elsewhere a
 // same name can mean something else (the content of a workflow definition is JSON, its author is a
 // user…): a wrong description being worse than none, the internal types get no description.
 export const isDescribedType = (entityType: string): boolean => isStixDomainObject(entityType) || isStixCyberObservable(entityType)
-  || isStixCoreRelationship(entityType) || isStixSightingRelationship(entityType);
+  || isStixCoreRelationship(entityType) || isStixSightingRelationship(entityType) || isStixMetaObject(entityType);
 
 // Resolution order: the description written in the definition, then the override of the type,
 // then the dictionary for a described type only
