@@ -38,4 +38,4 @@ export interface SelectedEntities {
   relationships_config?: StixCoreRelationshipCreationAddInput;
 }
 
-export const HAS_COVERED_TARGETS_TYPES = ['Attack-Pattern', 'Vulnerability', 'Artifact', 'Indicator', 'SecurityPlatform'];
+export const HAS_COVERED_TARGETS_TYPES = ['Attack-Pattern', 'Procedure', 'Vulnerability', 'Artifact', 'Indicator', 'SecurityPlatform'];

@@ -14,6 +14,9 @@ describe('Procedure relationship mappings', () => {
     ['Campaign', 'Procedure', 'uses'],
     ['Indicator', 'Procedure', 'indicates'],
     ['Course-Of-Action', 'Procedure', 'mitigates'],
+    ['Security-Coverage-Result', 'Procedure', 'has-covered'],
+    ['SecurityPlatform', 'Procedure', 'should-cover'],
+    ['Organization', 'Procedure', 'should-cover'],
   ])('allows %s %s %s', (from, to, type) => {
     expect(checkStixCoreRelationshipMapping(from, to, type)).toBe(true);
   });

@@ -11,7 +11,7 @@ import { addAttackPattern } from '../../../../src/domain/attackPattern';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { addReport, reportDeleteWithElements } from '../../../../src/domain/report';
 import { stixDomainObjectDelete } from '../../../../src/domain/stixDomainObject';
-import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
 import { addMalware } from '../../../../src/domain/malware';
 import { addOrganization } from '../../../../src/modules/organization/organization-domain';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
@@ -21,11 +21,17 @@ import type { StoreEntity, StoreEntityReport } from '../../../../src/types/store
 import type { StixSecurityCoverage } from '../../../../src/modules/securityCoverage/securityCoverage-types';
 import { findBackgroundTaskPaginated } from '../../../../src/domain/backgroundTask';
 import { fullRelationsList } from '../../../../src/database/middleware-loader';
-import { storeLoadByIdWithRefs } from '../../../../src/database/middleware';
 import { isStixRefRelationship, RELATION_OBJECT } from '../../../../src/schema/stixRefRelationship';
 import { INPUT_OBJECTS } from '../../../../src/schema/general';
 import { addWorkspace, workspaceDelete } from '../../../../src/modules/workspace/workspace-domain';
 import { knowledgeAddFromInvestigation } from '../../../../src/domain/container';
+import { addIntrusionSet } from '../../../../src/domain/intrusionSet';
+import { addStixCoreRelationship } from '../../../../src/domain/stixCoreRelationship';
+import { addStixCyberObservable } from '../../../../src/domain/stixCyberObservable';
+import { addProcedure } from '../../../../src/modules/procedure/procedure-domain';
+import { ENTITY_TYPE_PROCEDURE } from '../../../../src/modules/procedure/procedure-types';
+import { RELATION_IMPLEMENTS_TECHNIQUE, RELATION_USES } from '../../../../src/schema/stixCoreRelationship';
+import { deleteElementById, storeLoadByIdWithRefs } from '../../../../src/database/middleware';
 
 describe('SecurityCoverage domain', () => {
   // Creating has-covered relationships from filters spawns a QUERY background task,
@@ -265,6 +271,98 @@ describe('SecurityCoverage domain', () => {
       await stixDomainObjectDelete(testContext, ADMIN_USER, securityPlatform.id, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
       await stixDomainObjectDelete(testContext, ADMIN_USER, malware.id, ENTITY_TYPE_MALWARE);
       await stixDomainObjectDelete(testContext, ADMIN_USER, author.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    });
+  });
+
+  describe('Function securityCoverageStixBundle() with procedures', () => {
+    const createProcedureWithRefs = async (suffix: string) => {
+      const attackPattern = await addAttackPattern(testContext, ADMIN_USER, { name: `SC procedure AP ${suffix}` });
+      const command = await addStixCyberObservable(testContext, ADMIN_USER, {
+        type: 'Process',
+        Process: { command_line: `cmd.exe /c whoami ${suffix}` },
+      });
+      const ipv4 = await addStixCyberObservable(testContext, ADMIN_USER, {
+        type: 'IPv4-Addr',
+        IPv4Addr: { value: suffix === 'used' ? '198.51.100.10' : '198.51.100.11' },
+      });
+      const procedure = await addProcedure(testContext, ADMIN_USER, {
+        name: `Run whoami via cmd ${suffix}`,
+        techniques: [attackPattern.id],
+        procedureCommand: command.id,
+        procedureObservables: [command.id, ipv4.id],
+      });
+      const [implementsTechnique] = await fullRelationsList(testContext, ADMIN_USER, RELATION_IMPLEMENTS_TECHNIQUE, { fromId: procedure.id });
+      return { attackPattern, command, ipv4, procedure, implementsTechnique };
+    };
+    const deleteProcedureWithRefs = async (refs: Awaited<ReturnType<typeof createProcedureWithRefs>>) => {
+      await deleteElementById(testContext, ADMIN_USER, refs.procedure.id, ENTITY_TYPE_PROCEDURE);
+      await deleteElementById(testContext, ADMIN_USER, refs.command.id, refs.command.entity_type);
+      await deleteElementById(testContext, ADMIN_USER, refs.ipv4.id, refs.ipv4.entity_type);
+      await stixDomainObjectDelete(testContext, ADMIN_USER, refs.attackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
+    };
+
+    it('should bundle the procedures the covered intrusion set uses, with their techniques and observables', async () => {
+      const refs = await createProcedureWithRefs('used');
+      const intrusionSet = await addIntrusionSet(testContext, ADMIN_USER, { name: 'SC procedure intrusion set' });
+      const uses = await addStixCoreRelationship(testContext, ADMIN_USER, {
+        fromId: intrusionSet.id,
+        toId: refs.procedure.id,
+        relationship_type: RELATION_USES,
+      });
+      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, {
+        ...BASE_INPUT(),
+        name: 'sc on intrusion set using a procedure',
+        objectCovered: intrusionSet.standard_id,
+      });
+
+      const bundle = JSON.parse(await securityCoverageStixBundle(testContext, ADMIN_USER, securityCoverage.id));
+      const bundleIds = (bundle.objects as { id: string }[]).map((o) => o.id);
+      const expectedIds = [
+        intrusionSet.standard_id,
+        uses.standard_id,
+        refs.procedure.standard_id,
+        refs.implementsTechnique.standard_id,
+        refs.attackPattern.standard_id,
+        refs.command.standard_id,
+        refs.ipv4.standard_id,
+      ];
+      expect(bundleIds).toEqual(expect.arrayContaining(expectedIds));
+      // Every object is sent once, even when reached through several paths
+      expect(bundleIds.length).toEqual(new Set(bundleIds).size);
+
+      await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
+      await stixDomainObjectDelete(testContext, ADMIN_USER, intrusionSet.id, ENTITY_TYPE_INTRUSION_SET);
+      await deleteProcedureWithRefs(refs);
+    });
+
+    it('should bundle the procedures contained in the covered report, with their techniques and observables', async () => {
+      const refs = await createProcedureWithRefs('contained');
+      const container = await addReport(testContext, ADMIN_USER, {
+        name: 'SC procedure container',
+        published: '2026-04-24T19:15:00.000Z',
+        objects: [refs.procedure.id],
+      });
+      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, {
+        ...BASE_INPUT(),
+        name: 'sc on report containing a procedure',
+        objectCovered: container.standard_id,
+      });
+
+      const bundle = JSON.parse(await securityCoverageStixBundle(testContext, ADMIN_USER, securityCoverage.id));
+      const bundleIds = (bundle.objects as { id: string }[]).map((o) => o.id);
+      expect(bundleIds).toEqual(expect.arrayContaining([
+        container.standard_id,
+        refs.procedure.standard_id,
+        refs.implementsTechnique.standard_id,
+        refs.attackPattern.standard_id,
+        refs.command.standard_id,
+        refs.ipv4.standard_id,
+      ]));
+      expect(bundleIds.length).toEqual(new Set(bundleIds).size);
+
+      await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
+      await stixDomainObjectDelete(testContext, ADMIN_USER, container.id, ENTITY_TYPE_CONTAINER_REPORT);
+      await deleteProcedureWithRefs(refs);
     });
   });
 
