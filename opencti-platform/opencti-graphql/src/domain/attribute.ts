@@ -11,6 +11,7 @@ import { getEntitySettingFromCache } from '../modules/entitySetting/entitySettin
 import { getEntitySettingSchemaAttributes } from '../modules/entitySetting/entitySetting-attributeUtils';
 import { FunctionalError, UNSUPPORTED_ERROR } from '../config/errors';
 import type { RefAttribute } from '../schema/attribute-definition';
+import { INPUT_EXTERNAL_REFS, INPUT_MARKINGS } from '../schema/general';
 
 export interface DefaultValue {
   id: string;
@@ -103,18 +104,23 @@ export const getSchemaAttributes = async (context: AuthContext, user: AuthUser, 
     }
     for (const ref of refs) {
       const effective = effectiveByName.get(ref.name);
+      // Enforce reference (Entity Settings) makes an external reference mandatory at creation,
+      // as the schema validator does, although the ref itself is not customizable.
+      const isEnforcedReference = ref.name === INPUT_EXTERNAL_REFS && entitySetting?.enforce_reference === true;
       typeAttributes.push({
         name: ref.name,
         type: 'ref',
         label: ref.label || ref.name,
         description: ref.description ?? null,
-        mandatory: effective ? effective.mandatory : ref.mandatoryType === 'external',
+        mandatory: isEnforcedReference || (effective ? effective.mandatory : ref.mandatoryType === 'external'),
         mandatoryType: ref.mandatoryType,
         editDefault: ref.editDefault,
         multiple: ref.multiple || false,
         upsert: ref.upsert || false,
         scale: undefined,
-        defaultValues: effective?.defaultValues ?? undefined,
+        // The default value of objectMarking is not a marking id but a flag ('true'/'false'):
+        // the creation applies the default markings of the user, so none is exposed here.
+        defaultValues: ref.name === INPUT_MARKINGS ? undefined : (effective?.defaultValues ?? undefined),
       } as TypeAttribute);
     }
 

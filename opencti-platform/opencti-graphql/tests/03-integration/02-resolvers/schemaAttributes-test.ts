@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
-import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
 
 const SCHEMA_ATTRIBUTES = gql`
@@ -61,6 +61,7 @@ const JOHN_DOE_ID = 'identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f';
 describe('schemaAttributes', () => {
   let definitionId: string;
   let noteEntitySettingId: string;
+  let reportEntitySettingId: string;
 
   beforeAll(async () => {
     // Managing the custom field definitions is an Enterprise Edition feature
@@ -85,16 +86,28 @@ describe('schemaAttributes', () => {
     const entitySetting = await queryAsAdmin({ query: ENTITY_SETTING_BY_TYPE, variables: { targetType: ENTITY_TYPE_CONTAINER_NOTE } });
     expect(entitySetting.errors).toBeUndefined();
     noteEntitySettingId = entitySetting.data?.entitySettingByType.id;
-    // attribute_abstract is customizable on Note; createdBy is a ref customizable everywhere
+    // attribute_abstract is customizable on Note; createdBy is a ref customizable everywhere;
+    // the default value of objectMarking is a flag to apply the default markings of the user
     const attributesConfiguration = JSON.stringify([
       { name: 'attribute_abstract', mandatory: true },
       { name: 'createdBy', default_values: [JOHN_DOE_ID] },
+      { name: 'objectMarking', default_values: ['true'] },
     ]);
     const patch = await queryAsAdmin({
       query: ENTITY_SETTING_FIELD_PATCH,
       variables: { ids: [noteEntitySettingId], input: { key: 'attributes_configuration', value: [attributesConfiguration] } },
     });
     expect(patch.errors).toBeUndefined();
+
+    // Enforce reference is not available on Note: set on Report
+    const reportEntitySetting = await queryAsAdmin({ query: ENTITY_SETTING_BY_TYPE, variables: { targetType: ENTITY_TYPE_CONTAINER_REPORT } });
+    expect(reportEntitySetting.errors).toBeUndefined();
+    reportEntitySettingId = reportEntitySetting.data?.entitySettingByType.id;
+    const enforce = await queryAsAdmin({
+      query: ENTITY_SETTING_FIELD_PATCH,
+      variables: { ids: [reportEntitySettingId], input: { key: 'enforce_reference', value: ['true'] } },
+    });
+    expect(enforce.errors).toBeUndefined();
   });
 
   afterAll(async () => {
@@ -104,6 +117,10 @@ describe('schemaAttributes', () => {
     await queryAsAdmin({
       query: ENTITY_SETTING_FIELD_PATCH,
       variables: { ids: [noteEntitySettingId], input: { key: 'attributes_configuration', value: [] } },
+    });
+    await queryAsAdmin({
+      query: ENTITY_SETTING_FIELD_PATCH,
+      variables: { ids: [reportEntitySettingId], input: { key: 'enforce_reference', value: ['false'] } },
     });
     vi.restoreAllMocks();
   });
@@ -147,6 +164,21 @@ describe('schemaAttributes', () => {
     expect(abstract?.mandatory).toBeTruthy();
     const createdBy = note.attributes.find((attribute) => attribute.name === 'createdBy');
     expect(createdBy?.defaultValues?.map((value) => value.id)).toEqual([JOHN_DOE_ID]);
+  });
+
+  it('should require the external references when Enforce reference is set', async () => {
+    const [report] = await querySchemaAttributes(ENTITY_TYPE_CONTAINER_REPORT);
+    const externalReferences = report.attributes.find((attribute) => attribute.name === 'externalReferences');
+    expect(externalReferences?.mandatory).toBeTruthy();
+    const [malware] = await querySchemaAttributes(ENTITY_TYPE_MALWARE);
+    expect(malware.attributes.find((attribute) => attribute.name === 'externalReferences')?.mandatory).toBeFalsy();
+  });
+
+  it('should not expose the default markings flag as a marking id', async () => {
+    const [note] = await querySchemaAttributes(ENTITY_TYPE_CONTAINER_NOTE);
+    const objectMarking = note.attributes.find((attribute) => attribute.name === 'objectMarking');
+    expect(objectMarking).toBeDefined();
+    expect(objectMarking?.defaultValues).toBeNull();
   });
 
   it('should list the refs with their type and mandatory status', async () => {
