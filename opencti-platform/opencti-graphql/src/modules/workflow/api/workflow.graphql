@@ -9,11 +9,17 @@ type WorkflowActionConfig {
     params: JSON
 }
 
+enum WorkflowRequestAccessOutcome {
+    APPROVED
+    DECLINED
+}
+
 type WorkflowSerializedState {
     statusId: String!
     order: Int
     onEnter: [WorkflowActionConfig!]
     onExit: [WorkflowActionConfig!]
+    requestAccessOutcome: WorkflowRequestAccessOutcome
 }
 
 type WorkflowSerializedTransition {
@@ -48,6 +54,53 @@ type WorkflowEntityRef {
     id: String!
     entity_type: String!
 }
+
+enum WorkflowMigrationDiagnosticType {
+    MISSING_ORDER
+    DUPLICATE_ORDER
+    DUPLICATE_TEMPLATE
+    NAME_CONFLICT
+    MISSING_TEMPLATE
+    EXISTING_WORKFLOW
+    REQUEST_ACCESS_OUTCOME_INVALID
+}
+
+type WorkflowMigrationDiagnostic {
+    type: WorkflowMigrationDiagnosticType!
+    message: String!
+    # Id of the legacy Status entity the diagnostic is about.
+    legacyStatusId: String
+    # StatusTemplate id of that status, i.e. the statusId of the matching WorkflowMigrationState.
+    templateId: String
+}
+
+# A migrated WorkflowSerializedState: its `order` is always set, to its final 0-based rank in the
+# migrated sequence.
+type WorkflowMigrationState {
+    statusId: String!
+    order: Int!
+    requestAccessOutcome: WorkflowRequestAccessOutcome
+}
+
+# One result per StatusScope present in the entity type's current legacy Status set (never a
+# single merged/blended definition across scopes, see convertStatusToDefinition in
+# status-to-definition-converter.ts).
+type WorkflowMigrationScopeResult {
+    scope: StatusScope!
+    initialState: String!
+    # Whether the entity type's existing workflow for this scope has a published version, in which
+    # case workflowMigrate refuses to replace it.
+    hasPublishedVersion: Boolean!
+    states: [WorkflowMigrationState!]!
+    transitions: [WorkflowSerializedTransition!]!
+    diagnostics: [WorkflowMigrationDiagnostic!]!
+}
+
+type WorkflowMigrationPreview {
+    entityType: String!
+    results: [WorkflowMigrationScopeResult!]!
+}
+
 
 extend type EntitySetting {
     workflow_configuration: Boolean
@@ -109,6 +162,8 @@ type WorkflowTransition {
     actions: [String!]
     requiresShareOrganizationInput: Boolean
     requiresUnshareOrganizationInput: Boolean
+    # Outcome marked on the target state of a request access transition, null for any other transition.
+    requestAccessOutcome: WorkflowRequestAccessOutcome
 }
 
 type WorkflowBypassStatus {
@@ -144,20 +199,25 @@ extend type DraftWorkspace {
 }
 
 extend type Query {
-    workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    workflowDefinition(entityType: String!, allowDraft: Boolean, scope: StatusScope): WorkflowSchema @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionPublished(entityType: String!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
     workflowStatuses(entityType: String!): [Status!]! @auth(for: [KNOWLEDGE_KNUPDATE]) @ff(flags: ["ENTITIES_WORKFLOW"], softFail: true, defaultValue: "[]")
     workflowMassTransitions(entityType: String!, entityIds: [String!], filters: String, search: String, excludedIds: [String!]): [WorkflowTransition!]! @auth(for: [KNOWLEDGE_KNUPDATE]) @ff(flags: ["ENTITIES_WORKFLOW"], softFail: true, defaultValue: "[]")
+    workflowMigrationPreview(entityType: String!): WorkflowMigrationPreview @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowInstance(entityId: String!): WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE], forDraft: [KNOWLEDGE_KNUPDATE])
     allowedTransitions(entityId: String!): [WorkflowTransition!]! @auth(for: [KNOWLEDGE_KNUPDATE])
     workflowBypassStatuses(entityId: String!): [WorkflowBypassStatus!]! @auth(for: [BYPASS])
 }
 
 extend type Mutation {
-    workflowDefinitionSet(entityType: String!, definition: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
-    workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
-    workflowDefinitionRestorePublished(entityType: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
-    workflowDefinitionDelete(entityType: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    workflowDefinitionSet(entityType: String!, definition: String!, scope: StatusScope): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    workflowDefinitionPublish(entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    # One-shot migration of the legacy Status set of a scope (GLOBAL by default; REQUEST_ACCESS for Case-Rfi only) into a workflow.
+    # Fails if a workflow already exists for that scope, unless overwrite is true and that workflow was never published.
+    # publish: true also requires the ENTITIES_WORKFLOW feature flag.
+    workflowMigrate(entityType: String!, publish: Boolean = false, overwrite: Boolean = false, scope: StatusScope): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    workflowDefinitionRestorePublished(entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    workflowDefinitionDelete(entityType: String!, scope: StatusScope): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
     triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON, closingReason: String): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
     setWorkflowStatus(entityId: String!, targetStatusId: String!, applyTransitionActions: Boolean!, comment: String, runtimeParams: JSON): WorkflowTriggerResult! @auth(for: [BYPASS])
     clearWorkflowPendingState(entityId: String!): WorkflowInstance! @auth(for: [BYPASS])

@@ -11,7 +11,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery.graphql';
 
 const Container = styled('div')({
-  width: 400,
+  width: '100%',
   marginBottom: 10,
 });
 

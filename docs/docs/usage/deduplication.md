@@ -95,7 +95,7 @@ With environment variables, set `RELATIONS_DEDUPLICATION__TYPES_OVERRIDES__STIX-
 
 ### Observables
 
-For STIX Cyber Observables, OpenCTI also generate deterministic IDs based on the [STIX specification](https://docs.oasis-open.org/cti/stix/v2.1/csprd01/stix-v2.1-csprd01.html#_Toc16070607) using the "ID Contributing Properties" defined for each type of observable.
+For STIX Cyber Observables, OpenCTI also generate deterministic IDs based on the [STIX 2.1 specification](https://docs.oasis-open.org/cti/stix/v2.1/stix-v2.1.html#identifier) using the "ID Contributing Properties" defined for each type of observable.
 
 ### STIX IDs and imported objects
 

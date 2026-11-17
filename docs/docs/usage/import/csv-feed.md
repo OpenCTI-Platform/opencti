@@ -5,11 +5,11 @@ CSV feed ingester enables users to import CSV files exposed on URLs.
 <a id="best-practices-section"></a>
 ## Best practices
 
-In OpenCTI, the **Integrations** section — accessible from the main navigation bar on the left — provides Service accounts with built-in functions for automated data import. These functions are designed for specific purposes and can be configured to seamlessly ingest data into the platform. Feeds and connectors are managed from the **Integrations** page, which is split into a **Deployed** tab (the feeds and connectors running on your platform) and an **Available** tab (the catalog of connectors and built-in feeds you can deploy). To create a new feed, open the **Available** tab and use the creation button on the corresponding built-in card. For a detailed description of these two tabs and their filters, see [Getting started](getting-started.md#the-integrations-menu). Here, we'll explore the configuration process for the five built-in functions: Live Streams, TAXII Feeds, TAXII Push, RSS Feeds, and JSON/CSV Feeds.
+In OpenCTI, the **Integrations** section — accessible from the main navigation bar on the left — provides users with built-in functions for automated data import. These functions are designed for specific purposes and can be configured to seamlessly ingest data into the platform. Feeds and connectors are managed from the **Integrations** page, which is split into a **Deployed** tab (the feeds and connectors running on your platform) and an **Available** tab (the catalog of connectors and built-in feeds you can deploy). To create a new feed, open the **Available** tab and use the creation button on the corresponding built-in card. For a detailed description of these two tabs and their filters, see [Getting started](getting-started.md#the-integrations-menu). This page covers the configuration of CSV Feeds. For the other built-in import methods, see [Automated import](getting-started.md).
 
 Ensuring a secure and well-organized environment is paramount in OpenCTI. Here are two recommended best practices to enhance security, traceability, and overall organizational clarity:
 
-1. Create a dedicated Service account for each source: Generate a technical user (or Service account) specifically for feed import, following the convention `[F] Source name` for clear identification. Assign the Service account to the "Connectors" group to streamline user management and permission related to data creation. Please [see here](../../deployment/connectors.md#connector-token-section) for more information on this good practice.
+1. Create a dedicated [Service account](../../administration/users.md#service-account) for each source: Generate a technical user (or Service account) specifically for feed import, following the convention `[F] Source name` for clear identification. Assign the Service account to the "Connectors" group to streamline user management and permission related to data creation. Please [see here](../../deployment/connectors.md#connector-token-section) for more information on this good practice.
 2. Establish a dedicated Organization for the source: Create an organization named after the data source for clear identification. Assign the newly created organization to the "Default author" field in feed import configuration if available.
 
 By adhering to these best practices, you ensure independence in managing rights for each import source through dedicated service account and organization structures. In addition, you enable clear traceability to the entity's creator, facilitating source evaluation, dashboard creation, data filtering and other administrative tasks.
@@ -26,7 +26,7 @@ Here's a step-by-step guide to configure Csv Feeds:
 2. Configure Your CSV Mapper
     1. Create a CSV mapper on the fly by clicking "Inline CSV Mapper."
     2. Select the CSV mapper you want to use for data import.
-3. Authentication Type (if required): Specify the authentication method to be used.
+3. Authentication Type (if required): Specify the authentication method to be used. See [Authentication types](#authentication-types).
 4. Scheduling Interval: Choose how often the feed should run. By default, this is set to 1 hour.
 
 !!! note "CSV mapper"
@@ -61,6 +61,17 @@ CSV feed ingestion is made possible thanks to the connector "ImportCSV". So you 
 ![CSV feeds creation: connectors](../assets/csv-feeds-connectors.png)
 
 ![CSV feeds creation: tracking](../assets/csv-feeds-importCSV-connector-tracking.png)
+
+### Authentication types
+
+The **Authentication type** field offers the following options:
+
+| Authentication type   | Fields to fill in                                            | Behavior                                                                                                    |
+|-----------------------|--------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| None                  | None                                                         | OpenCTI sends no credentials. Use it for public sources.                                                    |
+| Basic user / password | Username, Password                                           | OpenCTI sends an `Authorization: Basic` header. The username and the password cannot contain the `:` character. |
+| Bearer token          | Token                                                        | OpenCTI sends an `Authorization: Bearer <token>` header.                                                    |
+| Client certificate    | Certificate (base64), Key (base64), CA certificate (base64) | OpenCTI authenticates with a TLS client certificate. Enter each PEM file encoded in base64.                 |
 
 ## Duplicate a CSV feed ingester
 

@@ -7,7 +7,7 @@ OpenCTI’s inferences and reasoning capability is a robust engine that automate
 
 ## Understanding inferences and reasoning
 
-Inferences and reasoning serve as OpenCTI’s intelligent engine. It interprets your data logically. By activating specific predefined rules (of which there are around twenty), OpenCTI can deduce new relationships from the existing ones. For instance, if there's a connection indicating an Intrusion Set targets a specific country, and another relationship stating that this country is part of a larger region, OpenCTI can automatically infer that the Intrusion Set also targets the broader region.
+Inferences and reasoning serve as OpenCTI’s intelligent engine. It interprets your data logically. By activating specific predefined rules (27 rules, which you enable in **Settings > Customization > Rules engine**; see [Rules engine](../administration/reasoning.md)), OpenCTI can deduce new relationships from the existing ones. For instance, if there's a connection indicating an Intrusion Set targets a specific country, and another relationship stating that this country is part of a larger region, OpenCTI can automatically infer that the Intrusion Set also targets the broader region.
 
 
 ## Key benefits
@@ -43,4 +43,4 @@ OpenCTI will apply this rule to existing data. If it finds an Intrusion Set ("En
 ## Additional resources
 
 - **Administration:** To find out about existing inference rules and enable/disable them, refer to the [Rules engine](../administration/reasoning.md) page in the Administration section of the documentation.
-- **Playbooks:** [OpenCTI playbooks](playbook-automation.md) are highly customizable automation scenarios. This seamless integration allows for further automation, making your threat intelligence processes even more efficient and tailored to your specific needs. More information in our [blog post](https://blog.filigran.io/introducing-threat-intelligence-automation-and-playbooks-in-opencti-b9e2f9483aba).
+- **Playbooks:** [OpenCTI playbooks](playbook-automation.md) are highly customizable automation scenarios. This seamless integration allows for further automation, making your threat intelligence processes even more efficient and tailored to your specific needs. More information in our [blog post](https://filigran.io/blog/introducing-threat-intelligence-automation-and-playbooks-in-opencti).

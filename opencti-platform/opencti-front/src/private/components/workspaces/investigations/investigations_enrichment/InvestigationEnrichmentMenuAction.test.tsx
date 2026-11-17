@@ -162,7 +162,7 @@ describe('InvestigationEnrichmentMenuAction', () => {
     expect(enrichmentAction()?.options?.items).toEqual([{ key: 'connector-1', label: 'DomainTools' }]);
   });
 
-  it('opens the launcher with the connector picked only, and launches nothing on cancel', async () => {
+  it('launches with the connector picked only, confirming only for many elements, and nothing once closed', async () => {
     mocks.selectedNodes = [ip, otherIp];
     const query = answerConnectors();
     const onLaunched = vi.fn();
@@ -174,6 +174,7 @@ describe('InvestigationEnrichmentMenuAction', () => {
 
     expect(lastLaunchProps()).toMatchObject({
       display: true,
+      confirmOnlyAboveLimit: true,
       numberOfSelectedElements: 2,
       actions: [{ type: 'ENRICHMENT', context: { values: [{ id: 'connector-2', value: 'Shodan' }], options: { investigationId: 'investigation-1' } } }],
     });
@@ -216,5 +217,24 @@ describe('InvestigationEnrichmentMenuAction', () => {
 
     expect(lastLaunchProps()).toMatchObject({ display: false, processing: false });
     expect(onLaunched).toHaveBeenCalledTimes(1);
+  });
+
+  it('cannot be chosen again while the enrichment is being sent, so that no other pick is silently dropped', async () => {
+    mocks.selectedNodes = [ip];
+    const query = answerConnectors();
+    view = renderAction();
+    await query.resolve(['Coucou Enrichment']);
+    act(() => enrichmentAction()?.options?.onSelect('connector-1'));
+
+    act(() => lastLaunchProps().onLaunch());
+    expect(enrichmentAction()?.disabledReason).toBe('Sending…');
+
+    act(() => lastLaunchProps().onClose());
+    expect(enrichmentAction()?.disabledReason).toBeUndefined();
+
+    act(() => enrichmentAction()?.options?.onSelect('connector-1'));
+    act(() => lastLaunchProps().onLaunch());
+    act(() => lastLaunchProps().onCompleted());
+    expect(enrichmentAction()?.disabledReason).toBeUndefined();
   });
 });

@@ -1,16 +1,18 @@
 # Draft workflow
 
 Being able to control the lifecycle of data creation within the platform is essential.
-This is why draft workflows were introduced.
+This is why draft workflows were introduced. They apply to [draft workspaces](draftWorkspaces.md).
 
 ## Key features of draft workflow
 
-Contrary to the workflow used on entities, the draft workflow allows administrators to control each step of data production within a draft by:
+Contrary to the [workflow used on other entities](../administration/entities.md#workflow-on-all-other-entities), the draft workflow allows administrators to control each step of data production within a draft by:
 
-- Enforcing status order: a status cannot be skipped, except when the workflow is designed to allow it (**Community Edition**).
+- Enforcing status order: a status cannot be skipped, except when the workflow is designed to allow it (**Community Edition** feature).
 - Restricting who can transition: you can define that only a specific subset of users can move a draft to a given step, allowing only managers, for example, to approve a draft (**Enterprise Edition** feature).
-- Applying actions on transitions: when moving to a specific status, you can trigger automated actions controlled by the workflow engine, such as **Apply Authorized Members**, **Remove Authorized Members**, **Share draft to organizations**, **Enter a comment**, and **Validate Draft**. This is an **Enterprise Edition** feature.
+- Applying actions on transitions: when moving to a specific status, you can trigger automated actions controlled by the workflow engine, such as **Apply Authorized Members**, **Remove Authorized Members**, **Share draft to organizations**, **Enter a comment**, and **Validate Draft**. The **Validate Draft** action is a **Community Edition** feature; the other actions are **Enterprise Edition** features.
 - Applying actions on statuses: you can decide whether an action should run when entering or exiting a status. Available actions include **Apply Authorized Members** and **Remove Authorized Members**. This is an **Enterprise Edition** feature.
+
+In short, the **Community Edition** lets you design and publish a workflow made of statuses, transitions and the **Validate Draft** action. Conditions on transitions, comments, and every other action on transitions or statuses require the **Enterprise Edition**: without it, the platform refuses to save a workflow definition that uses them. See the [Enterprise Edition](../administration/enterprise.md) page.
 
 The overall goal of the draft workflow is to control **who can do what, when, and on which draft instance** so that only qualified data is ingested into the platform.
 
@@ -18,7 +20,7 @@ The overall goal of the draft workflow is to control **who can do what, when, an
 
 - A workflow definition: the root of your workflow.
 - A workflow instance: once a workflow definition has been created, a specific instance of that definition is created for each draft. The workflow instance is the application of the workflow definition to a given draft.
-- A status template: an existing OpenCTI concept that you can define in Taxonomy and reuse to create statuses across multiple entities. The goal is to ensure consistent naming conventions across entities.
+- A status template: an existing OpenCTI concept that you can define in **Settings > Taxonomies > [Status templates](../administration/ontologies.md#status-templates)** and reuse to create statuses across multiple entities. The goal is to ensure consistent naming conventions across entities.
 - A status: an instance of a status template for a specific entity type. For example, you can define the status template "New", and the Report entity can use the status "New", which is an instantiation of the template.
 - A transition: a concept introduced by the workflow engine that links statuses. You can move from status A to status B only if a transition between them exists.
 - A workflow action: an action triggered by the workflow itself, either on a transition or on a status.
@@ -27,7 +29,7 @@ The overall goal of the draft workflow is to control **who can do what, when, an
 
 By default, draft workflow is disabled on all platforms. If nothing is changed, the platform continues to work as it does today.
 
-To enable it, go to **Settings > Entity customization** and select the **Draft** entity. You will then land on the tab used to define a workflow.
+To enable it, go to **Settings > Customization > Entity types** and select the **Draft** entity. You then land on the **Workflow** tab, used to define a workflow (see also [Customize entities](../administration/entities.md#workflow-on-draft-entity)).
 
 **A single workflow definition applies to all drafts on the platform**: you cannot define multiple workflows based on specific draft values.
 
@@ -173,8 +175,8 @@ Like transitions, you can apply authorized members when exiting a status.
 
 ### Restore published workflow 
 
-When working on a worfklow definition, you might have deleted a workflow status that is already existing and used by some specific draft instance, preventing you to publish this version.
-As a result, you might need to go back to the published version, so that you can restart the worfklow edition, with a version that is currently working.
+When working on a workflow definition, you might have deleted a workflow status that is already existing and used by some specific draft instance, preventing you to publish this version.
+As a result, you might need to go back to the published version, so that you can restart the workflow edition, with a version that is currently working.
 
 Simply click on Restore the current version & validate on the pop up to go back to this version
 
@@ -182,9 +184,9 @@ Simply click on Restore the current version & validate on the pop up to go back 
 
 ### Reset workflow
 
-When working on a worfklow definition, you might want to restart from scratch. Therefore, click on reset worfklow: it will remove all the worfklow definition.
+When working on a workflow definition, you might want to restart from scratch. Therefore, click on reset workflow: it will remove all the workflow definition.
 
-**Resetting a worfklow does not publish it: it is simply a shortcut to restart your definition from scratch, but the published version is still the one you published before**.
+**Resetting a workflow does not publish it: it is simply a shortcut to restart your definition from scratch, but the published version is still the one you published before**.
 
 As a reminder, you cannot publish a workflow that does not contain some statuses that are used in some draft instances. 
 

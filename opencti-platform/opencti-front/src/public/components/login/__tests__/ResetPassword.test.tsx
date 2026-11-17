@@ -142,3 +142,48 @@ describe('ResetPassword, new password step', () => {
     expect(await screen.findByText('This new password does not comply with the platform policies.')).toBeDefined();
   });
 });
+
+// Opens the MFA step of the forgotten password flow, after a code refused because the account is locked
+const OnLockedMfaStep = () => {
+  const { setValue } = useLoginContext();
+  useEffect(() => {
+    setValue('resetPwdStep', ResetPwdStep.MFA);
+    setValue('mfaInError', true);
+    setValue('mfaLockMessage', 'Your account has been locked for security reasons. Please try again in 5 minutes.');
+  }, []);
+  return null;
+};
+
+// Exposes the lock message kept in the login context: once the error is cleared, no alert shows it any more
+const LockMessageProbe = () => {
+  const { mfaLockMessage } = useLoginContext();
+  return <div data-testid="mfa-lock-message" data-message={mfaLockMessage ?? ''} />;
+};
+
+describe('ResetPassword, MFA step', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('clears the lock message when going back to the login', async () => {
+    const user = userEvent.setup({ delay: null });
+    render(
+      <BrowserRouter useTransitions={false}>
+        <AppIntlProvider settings={{ platform_language: 'auto', platform_translations: '{}' }}>
+          <ThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
+            <CookiesProvider>
+              <LoginContextProvider>
+                <OnLockedMfaStep />
+                <LockMessageProbe />
+                <ResetPassword />
+              </LoginContextProvider>
+            </CookiesProvider>
+          </ThemeProvider>
+        </AppIntlProvider>
+      </BrowserRouter>,
+    );
+    await waitFor(() => expect(screen.getByTestId('mfa-lock-message')).toHaveAttribute('data-message', expect.stringContaining('try again in 5 minutes')));
+    await user.click(screen.getByRole('button', { name: 'Back to login' }));
+    expect(screen.getByTestId('mfa-lock-message')).toHaveAttribute('data-message', '');
+  });
+});

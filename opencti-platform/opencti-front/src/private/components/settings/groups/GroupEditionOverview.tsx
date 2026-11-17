@@ -14,6 +14,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
 import DashboardField from '../../common/form/DashboardField';
+import DashboardPresetField from '../../common/form/DashboardPresetField';
 import { GroupEditionOverview_group$data } from './__generated__/GroupEditionOverview_group.graphql';
 import GroupHiddenTypesField from './GroupHiddenTypesField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
@@ -116,6 +117,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
       value: group.default_dashboard.id,
       label: group.default_dashboard.name,
     } : null,
+    default_dashboard_preset: group.default_dashboard_preset ?? null,
   };
 
   return (
@@ -127,7 +129,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
         onSubmit={() => {
         }}
       >
-        {() => (
+        {({ values, setFieldValue }) => (
           <Form style={{ marginTop: theme.spacing(2) }}>
             <Field
               component={TextField}
@@ -158,8 +160,25 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               )}
             />
             <DashboardField
-              onChange={editor.changeField}
+              onChange={(name, value) => {
+                // Another dashboard: its presets are other ones, both keys go in one patch.
+                if (values.default_dashboard_preset) {
+                  setFieldValue('default_dashboard_preset', null);
+                  editor.fieldPatch({ variables: { id: group.id, input: [{ key: name, value: value || '' }, { key: 'default_dashboard_preset', value: '' }] } });
+                } else {
+                  editor.changeField(name, value);
+                }
+              }}
               context={context}
+            />
+            <DashboardPresetField
+              dashboardId={values.default_dashboard?.value}
+              value={values.default_dashboard_preset}
+              style={{ marginTop: 20 }}
+              onChange={(value) => {
+                setFieldValue('default_dashboard_preset', value);
+                editor.changeField('default_dashboard_preset', value ?? '');
+              }}
             />
             <GroupHiddenTypesField groupData={group} />
             <Field
@@ -267,6 +286,7 @@ const GroupEditionOverview = createFragmentContainer(
             member_id
           }
         }
+        default_dashboard_preset
         ...GroupHiddenTypesField_group
       }
     `,

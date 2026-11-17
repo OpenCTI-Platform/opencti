@@ -275,15 +275,20 @@ export class WorkflowFactory {
         && ((a.params as any)?.actions ?? []).some((ia: any) => ia.type === 'UNSHARE' && !ia.context?.values?.length),
       );
 
-      definition.addTransition(t.from, t.to, t.event, {
-        comment: t.comment,
-        closingReason: t.closingReason,
-        conditions: this.createConditions<TContext>(t.conditions),
-        asyncSideEffects,
-        onTransition: syncSideEffects,
-        actionTypes: allActionTypes,
-        requiresShareOrganizationInput,
-        requiresUnshareOrganizationInput,
+      // Validation and the GraphQL type accept an array `from`, but the engine matches a transition
+      // on `from === currentState`: register one transition per source state.
+      const fromStates = Array.isArray(t.from) ? t.from : [t.from];
+      fromStates.forEach((from) => {
+        definition.addTransition(from, t.to, t.event, {
+          comment: t.comment,
+          closingReason: t.closingReason,
+          conditions: this.createConditions<TContext>(t.conditions),
+          asyncSideEffects,
+          onTransition: syncSideEffects,
+          actionTypes: allActionTypes,
+          requiresShareOrganizationInput,
+          requiresUnshareOrganizationInput,
+        });
       });
     });
 

@@ -7,6 +7,7 @@ With the OpenCTI platform, you can manually export your intelligence content in 
 - JSON,
 - CSV,
 - PDF,
+- HTML (from a [Fintel template](#export-a-fintel-template-ee-only)),
 - TXT.
 
 
@@ -25,7 +26,7 @@ This opens the export settings panel, where you can customize your export accord
 - desired export format (text/csv, application/pdf, application/vnd.oasis.stix+json, text/plain)
 - export type (simple or full),
 - the max marking definition levels of the elements to be included in the export (a TLP level, for instance). The list of the available max markings is limited by the user allowed markings and its maximum shareable markings (more details about maximum shareable marking definitions in [data segregation](../administration/segregation.md)). For a marking definition type to be taken into account here, a marking definition from this type must be provided. For example, if you select TLP:GREEN for this field, AMBER and RED elements will be excluded but it will not take into account any PAP markings unless one is elected too.
-- the file marking definition levels of the export (a TLP level, for instance). This marking on the file itself will then restrain the access to it in accordance with users' marking definition levels. For example, if a file has the marking TLP:RED and INTERNAL, a user will need to have these marking to see and access the file in the platform.```
+- the file marking definition levels of the export (a TLP level, for instance). This marking on the file itself will then restrain the access to it in accordance with users' marking definition levels. For example, if a file has the marking TLP:RED and INTERNAL, a user will need to have these markings to see and access the file in the platform.
 
 ![customize your export](assets/customize_your_export.png)
 
@@ -51,6 +52,7 @@ You can also choose to export a list of entities within a container. To do so, g
 ### Export a Fintel template (EE only)
 
 In containers, under Enterprise Edition, it's possible to generate html and pdf files from a given template.
+Templates are created and managed per entity type, in the **Templates** tab of Settings > Customization > Entity types: see [Fintel templates](../administration/entities.md#fintelTemplates-section). To style the generated PDF files, see [Fintel designs](../administration/fintel-designs.md).
 Finished intelligence files can be generated via the general Export button or under the 'Content' section of your container.
 ![Generate Fintel templates button](assets/fintelTemplate-generate-button.png)
 

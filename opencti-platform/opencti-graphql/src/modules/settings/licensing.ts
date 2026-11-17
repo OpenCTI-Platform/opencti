@@ -61,7 +61,8 @@ const getFiligranLicenseEnterpriseEdition = (
   source: PlatformEeSource,
   licenseByConfiguration = false,
 ): PlatformEe | undefined => {
-  const verification = verifyXtmLicenseProof(pem, buildXtmLicenseContext(settings, IS_LTS_PLATFORM));
+  const pastedInPlatform = source === PlatformEeSource.FiligranLicense;
+  const verification = verifyXtmLicenseProof(pem, buildXtmLicenseContext(settings, IS_LTS_PLATFORM, pastedInPlatform));
   const { certificate, licenseType, validUntil } = verification;
   if (!verification.granted || !certificate || !licenseType || !validUntil) {
     return undefined;

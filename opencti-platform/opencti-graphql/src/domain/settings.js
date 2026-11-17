@@ -38,7 +38,7 @@ import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
 import { findById as findThemeById } from '../modules/theme/theme-domain';
 import { buildAvailableProviders } from './setting-auth';
 import { LOCAL_AUTH_LOCKOUT_KEYS } from './local-auth-lockout';
-import { CguStatus } from '../generated/graphql';
+import { CguStatus, PlatformEeSource } from '../generated/graphql';
 import { checkDateDisplayInput } from '../utils/dateDisplay';
 import { getXtmOneRegistrationVersion, refreshXtmLicenseProof } from '../modules/xtm/one/xtm-one';
 
@@ -250,6 +250,7 @@ const SETTINGS_SET_PARAMETERS_KEYS = [
   'platform_session_idle_timeout',
   'platform_session_timeout',
   'platform_session_max_concurrent',
+  'platform_session_presence_enabled',
   'analytics_google_analytics_v4',
   'enterprise_license',
   'platform_trash_enabled',
@@ -337,6 +338,11 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   const settings = await getSettings(context);
   let isLicenseActivated = false;
   const enterpriseLicense = data.find((inputData) => inputData.key === 'enterprise_license');
+  // Enterprise Edition granted by the Filigran license of XTM One is not revocable here: XTM One owns it
+  if (enterpriseLicense && !enterpriseLicense.value?.some((value) => isNotEmptyField(value))
+    && getEnterpriseEditionInfo(settings).license_source === PlatformEeSource.XtmOneLicense) {
+    throw UnsupportedError('The Enterprise Edition is granted by the Filigran license of XTM One and cannot be disabled in this platform');
+  }
   if (enterpriseLicense && enterpriseLicense.value?.length > 0) {
     const license = enterpriseLicense.value[0];
     if (isNotEmptyField(license)) {
