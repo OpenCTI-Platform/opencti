@@ -98,9 +98,8 @@ export const removeHasCoveredForRemovedEntities = async (
     if (!coverage) {
       return;
     }
-    // 2. Reload it to get the denormalized result-of refs.
-    const securityCoverage = await findById(context, SYSTEM_USER, coverage.id);
-    const resultIds = getSecurityCoverageResultIds(securityCoverage);
+    // 2. Its result-of refs are part of the refs every search loads by default, no reload needed.
+    const resultIds = getSecurityCoverageResultIds(coverage);
     if (resultIds.length === 0) {
       return;
     }
