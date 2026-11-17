@@ -150,17 +150,18 @@ export const isCompleteFintelDesignLogo = (content: Buffer, extension: string) =
 
 // The logo of a design as the platform stores it, byte for byte. null when the design has no logo.
 // Only the design's own key is read: `file_id` points at what the export would write, read by a user who may not read another file.
-// A logo missing from the storage, or not its own, is an error: the export would silently lose it.
+// A logo missing from the storage, or not its own, is an error: the export would silently lose it. The message names the design, so that
+// the administrator knows which logo to replace, or which design to leave out of the export.
 export const readFintelDesignLogo = async (design: Pick<BasicStoreEntityFintelDesign, 'internal_id' | 'file_id' | 'name'>): Promise<Buffer | null> => {
   if (!design.file_id) {
     return null;
   }
   if (design.file_id !== fintelDesignLogoStorageKey(design.internal_id)) {
-    throw FunctionalError('The logo of a fintel design is not its own file', { id: design.internal_id, name: design.name });
+    throw FunctionalError(`The logo of the fintel design "${design.name}" is not its own file`, { id: design.internal_id, name: design.name });
   }
   const stream = await downloadFile(design.file_id);
   if (!stream) {
-    throw FunctionalError('The logo of a fintel design is missing from the storage', { id: design.internal_id, name: design.name });
+    throw FunctionalError(`The logo of the fintel design "${design.name}" is missing from the storage`, { id: design.internal_id, name: design.name });
   }
   const chunks: Buffer[] = [];
   let size = 0;
@@ -169,7 +170,11 @@ export const readFintelDesignLogo = async (design: Pick<BasicStoreEntityFintelDe
     size += buffer.byteLength;
     if (size > FINTEL_DESIGN_LOGO_MAX_SIZE) {
       stream.destroy();
-      throw FunctionalError('The logo of a fintel design is too large', { maxFileSize: FINTEL_DESIGN_LOGO_MAX_SIZE, id: design.internal_id, name: design.name });
+      throw FunctionalError(`The logo of the fintel design "${design.name}" is too large`, {
+        maxFileSize: FINTEL_DESIGN_LOGO_MAX_SIZE,
+        id: design.internal_id,
+        name: design.name,
+      });
     }
     chunks.push(buffer);
   }

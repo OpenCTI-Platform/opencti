@@ -29,8 +29,8 @@ const findDefaultFintelDesign = async (context: AuthContext, user: AuthUser) => 
 };
 
 // A design is identified by its standard id everywhere: it is the same on every platform the design is imported to.
-// The default design is exported with any other design, whatever the selection: every other design depends on it, so that the platform the
-// bundle is imported to gets the default design of the platform it was exported from.
+// The default design is marked, and selected like any other: no design depends on it, so it can be left out of the export. When it is
+// exported, the platform the bundle is imported to gets it as its default.
 // The logo is a file written next to the JSON of the design, named by its format: the stored file has no extension.
 const toFintelDesignItem = (design: BasicStoreEntityFintelDesign, defaultDesignId: string | undefined): ConfigPresetItemDefinition => {
   const isDefault = design.standard_id === defaultDesignId;
@@ -39,7 +39,7 @@ const toFintelDesignItem = (design: BasicStoreEntityFintelDesign, defaultDesignI
     label: design.name,
     translatable: false,
     isDefault,
-    dependsOn: defaultDesignId && !isDefault ? [{ type: FINTEL_DESIGNS_FAMILY_ID, id: defaultDesignId }] : [],
+    dependsOn: [],
     exporter: async () => exportFintelDesign(design),
     ...(design.file_id ? {
       attachment: {
@@ -48,7 +48,7 @@ const toFintelDesignItem = (design: BasicStoreEntityFintelDesign, defaultDesignI
         read: async () => {
           const content = await readFintelDesignLogo(design);
           if (!content || !(await fintelDesignLogoExtension(content))) {
-            throw FunctionalError('The logo of a fintel design is not a supported image', { id: design.internal_id, name: design.name });
+            throw FunctionalError(`The logo of the fintel design "${design.name}" is not a supported image`, { id: design.internal_id, name: design.name });
           }
           return content;
         },

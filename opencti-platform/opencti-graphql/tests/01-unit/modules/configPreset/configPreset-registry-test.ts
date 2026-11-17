@@ -69,6 +69,7 @@ import { mitreConnector } from './configPreset-connectors-fixtures';
 import { exportConnector } from '../../../../src/modules/connector/connector-export';
 import { customEmailTemplate, otherEmailTemplate } from './configPreset-emailTemplates-fixtures';
 import { defaultFintelDesign, nightFintelDesign, PNG_LOGO } from './configPreset-fintelDesigns-fixtures';
+import { FINTEL_DESIGN_LOGO_MAX_SIZE } from '../../../../src/modules/fintelDesign/fintelDesign-logo';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'admin-id', capabilities: [{ name: 'BYPASS' }] } as AuthUser;
@@ -1010,19 +1011,19 @@ describe('Config preset registry', () => {
       expect(item.attachment).toBeUndefined();
     });
 
-    it('marks the default design, and makes every other design depend on it so that it cannot be left out of the export', async () => {
+    it('marks the default design, which no design depends on: it can be left out of the export', async () => {
       const [first, second] = await designs.resolveItems(context, user, null, []);
       expect([first.id, first.isDefault, first.dependsOn]).toEqual([defaultFintelDesign.standard_id, true, []]);
-      expect([second.id, second.isDefault, second.dependsOn]).toEqual([nightFintelDesign.standard_id, false, [{ type: 'fintelDesigns', id: defaultFintelDesign.standard_id }]]);
+      expect([second.id, second.isDefault, second.dependsOn]).toEqual([nightFintelDesign.standard_id, false, []]);
       // The same on a page of the dialog
       const page = await designs.listItems(context, user, { first: 10 });
       expect(page.edges.map(({ node }) => [node.id, node.isDefault, node.dependsOn])).toEqual([
         [defaultFintelDesign.standard_id, true, []],
-        [nightFintelDesign.standard_id, false, [{ type: 'fintelDesigns', id: defaultFintelDesign.standard_id }]],
+        [nightFintelDesign.standard_id, false, []],
       ]);
     });
 
-    it('depends on nothing when the platform has no default design', async () => {
+    it('marks no design when the platform has no default design', async () => {
       mockConfigPresetLoaders(entitySettings);
       vi.mocked(fullEntitiesList).mockImplementation(async (_ctx, _user, types, args) => {
         const filters = (args as { filters?: { filters: { key: string[] }[] } })?.filters?.filters ?? [];
@@ -1039,18 +1040,20 @@ describe('Config preset registry', () => {
       expect(downloadFile).toHaveBeenCalledWith('fintelDesigns/default-fintel-design-id');
     });
 
-    it('refuses to export a design whose logo is missing from the storage, or is not an image, instead of exporting it without its logo', async () => {
+    it('refuses to export a design whose logo is missing, too large or not an image, instead of exporting it without its logo, and names it', async () => {
       const item = await findItem('fintelDesigns', defaultFintelDesign.standard_id);
       vi.mocked(downloadFile).mockResolvedValue(null);
-      await expect(item.attachment!.read(context, user)).rejects.toThrow('The logo of a fintel design is missing from the storage');
+      await expect(item.attachment!.read(context, user)).rejects.toThrow('The logo of the fintel design "Filigran report" is missing from the storage');
+      vi.mocked(downloadFile).mockResolvedValue(Readable.from([Buffer.alloc(FINTEL_DESIGN_LOGO_MAX_SIZE + 1)]) as never);
+      await expect(item.attachment!.read(context, user)).rejects.toThrow('The logo of the fintel design "Filigran report" is too large');
       vi.mocked(downloadFile).mockResolvedValue(Readable.from([Buffer.from('not an image')]) as never);
-      await expect(item.attachment!.read(context, user)).rejects.toThrow('The logo of a fintel design is not a supported image');
+      await expect(item.attachment!.read(context, user)).rejects.toThrow('The logo of the fintel design "Filigran report" is not a supported image');
     });
 
     it('never reads a logo that is not the own file of the design', async () => {
       vi.mocked(fullEntitiesList).mockResolvedValue([{ ...defaultFintelDesign, file_id: 'import/global/secret.png' }] as never);
       const [item] = await designs.resolveItems(context, user, [defaultFintelDesign.standard_id], []);
-      await expect(item.attachment!.read(context, user)).rejects.toThrow('The logo of a fintel design is not its own file');
+      await expect(item.attachment!.read(context, user)).rejects.toThrow('The logo of the fintel design "Filigran report" is not its own file');
       expect(downloadFile).not.toHaveBeenCalled();
     });
   });

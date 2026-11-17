@@ -90,7 +90,7 @@ describe('Fintel designs: export and import of the real zip', () => {
     }
   });
 
-  it('exports the default design with any other one and its logo, imports them as they were, the default one as the default, then says they are up to date', async () => {
+  it('exports the designs selected, the default one only when it is, with its logo, imports them as they were, the default one as the default, then says they are up to date', async () => {
     const created = await addFintelDesign(testContext, ADMIN_USER, { name: DEFAULT_NAME, description: 'Round trip', gradiantFromColor: '#00020c', gradiantToColor: '#001bda', textColor: '#ffffff', default: true });
     const upload = Promise.resolve({ createReadStream: () => Readable.from(LOGO), filename: 'logo.png' });
     await fintelDesignEditField(testContext, ADMIN_USER, { id: created.id, file: upload as never });
@@ -100,17 +100,26 @@ describe('Fintel designs: export and import of the real zip', () => {
     // The key the export reads a logo from is the one it is stored under: both are defined by the module, nothing else ties them
     expect(defaultDesign.file_id).toBe(fintelDesignLogoStorageKey(defaultDesign.internal_id));
 
-    // Only the other design is selected: the default one is exported with it
-    const exported = await queryAsAdminWithSuccess({ query: EXPORT_MUTATION, variables: { selections: [{ type: 'fintelDesigns', items: [otherDesign.standard_id] }] } });
-    const exportId = exported.data?.configPresetExport.id as string;
-    const zip = await readStream(await downloadFile(exportId));
-    await deleteFile(testContext, ADMIN_USER, exportId, { forceDelete: true });
-    const directory = await unzipper.Open.buffer(zip);
-    const entries: Record<string, Buffer> = {};
-    for (let i = 0; i < directory.files.length; i += 1) {
-      entries[directory.files[i].path] = await directory.files[i].buffer();
-    }
+    const exportBundle = async (exportSelections: unknown[]) => {
+      const exported = await queryAsAdminWithSuccess({ query: EXPORT_MUTATION, variables: { selections: exportSelections } });
+      const exportId = exported.data?.configPresetExport.id as string;
+      const bundle = await readStream(await downloadFile(exportId));
+      await deleteFile(testContext, ADMIN_USER, exportId, { forceDelete: true });
+      const directory = await unzipper.Open.buffer(bundle);
+      const files: Record<string, Buffer> = {};
+      for (let i = 0; i < directory.files.length; i += 1) {
+        files[directory.files[i].path] = await directory.files[i].buffer();
+      }
+      return { bundle, files };
+    };
     const designPath = (design: BasicStoreEntityFintelDesign) => `customization/fintel_designs/${design.standard_id}`;
+
+    // Only the other design is selected: the default one is left out, nothing depends on it
+    const onlyOther = await exportBundle([{ type: 'fintelDesigns', items: [otherDesign.standard_id] }]);
+    expect(Object.keys(onlyOther.files).sort()).toEqual([`${designPath(otherDesign)}.json`, 'dependencies.json', 'metadata.json'].sort());
+
+    // The whole family: the default design comes with its logo
+    const { bundle: zip, files: entries } = await exportBundle([{ type: 'fintelDesigns' }]);
     expect(Object.keys(entries).sort()).toEqual([
       `${designPath(defaultDesign)}.json`,
       `${designPath(defaultDesign)}.logo`,
@@ -119,9 +128,7 @@ describe('Fintel designs: export and import of the real zip', () => {
       'metadata.json',
     ].sort());
     expect(entries[`${designPath(defaultDesign)}.logo`]).toEqual(LOGO);
-    expect(JSON.parse(entries['dependencies.json'].toString())).toEqual({
-      'customization.fintelDesigns': { [otherDesign.standard_id]: { [defaultDesign.standard_id]: `${designPath(defaultDesign)}.json` } },
-    });
+    expect(JSON.parse(entries['dependencies.json'].toString())).toEqual({});
 
     // Another platform: the designs do not exist there, and it has its own default design
     await deleteDesign(defaultDesign);

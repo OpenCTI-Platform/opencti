@@ -313,14 +313,14 @@ describe('Config preset exportable types query', () => {
         label: 'Fintel designs',
         description: 'Fintel designs, their colors and logos',
         group: { key: 'customization', label: 'Customization' },
-        // By name: the default design, and the others that depend on it
+        // By name, the default design marked: no design depends on it
         items: [
           { key: defaultFintelDesign.standard_id, label: 'Filigran report', translatable: false, dependsOn: [], isDefault: true },
           {
             key: nightFintelDesign.standard_id,
             label: 'Night briefing',
             translatable: false,
-            dependsOn: [{ type: 'fintelDesigns', key: defaultFintelDesign.standard_id }],
+            dependsOn: [],
             isDefault: false,
           },
         ],
