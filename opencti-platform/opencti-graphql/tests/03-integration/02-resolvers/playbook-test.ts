@@ -4,6 +4,7 @@ import gql from 'graphql-tag';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import type { PlaybookAddLinkInput, PlaybookAddNodeInput } from '../../../src/generated/graphql';
 import { PLAYBOOK_INTERNAL_DATA_CRON, PLAYBOOK_MATCHING_COMPONENT } from '../../../src/modules/playbook/playbook-components';
+import { PLAYBOOK_SHARING_COMPONENT } from '../../../src/modules/playbook/components/sharing-component';
 import { BAD_USER_INPUT_ERROR, FUNCTIONAL_ERROR, UNSUPPORTED_ERROR } from '../../../src/config/errors';
 import { getUserIdByEmail, USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
 
@@ -1027,6 +1028,59 @@ describe('Playbook resolver standard behavior', () => {
       const playbookDef = await readPlaybookDefinition(playbookId);
       expect(playbookDef.nodes.length).toEqual(0);
       expect(playbookDef.links.length).toEqual(0);
+    });
+  });
+
+  describe('required configuration fields (#8353)', () => {
+    const created: string[] = [];
+    afterAll(async () => {
+      for (const id of created) {
+        await deletePlaybook(id).catch(() => {});
+      }
+    });
+    const sharingInput = (parentNodeId: string, organizations: string[]): PlaybookAddNodeInput => ({
+      component_id: PLAYBOOK_SHARING_COMPONENT.id,
+      configuration: JSON.stringify({ organizations, applyToElements: 'only-main' }),
+      name: 'share',
+      position: { x: 5, y: 5 },
+      parentNodeId,
+      parentPortId: 'out',
+    });
+
+    it('should refuse to add a step whose required choice is empty', async () => {
+      const playbook = await createPlaybook('Required fields: add');
+      created.push(playbook.id);
+      const entry = await addEntryNode(playbook.id);
+      await queryAsAdminWithError(
+        { query: ADD_NODE_PLAYBOOK, variables: { id: playbook.id, input: sharingInput(entry, []) } },
+        'Playbook node configuration misses required fields',
+        FUNCTIONAL_ERROR,
+      );
+      const def = await readPlaybookDefinition(playbook.id);
+      expect(def.nodes.length).toEqual(1);
+    });
+
+    it('should add the step once the required choice is set, and refuse to update it back to empty', async () => {
+      const playbook = await createPlaybook('Required fields: replace');
+      created.push(playbook.id);
+      const entry = await addEntryNode(playbook.id);
+      const result = await queryAsAdminWithSuccess({
+        query: ADD_NODE_PLAYBOOK,
+        variables: { id: playbook.id, input: sharingInput(entry, ['organization-id']) },
+      });
+      const nodeId = result.data?.playbookAddNode;
+      expect(nodeId).toBeDefined();
+      const replaceInput: PlaybookAddNodeInput = {
+        component_id: PLAYBOOK_SHARING_COMPONENT.id,
+        configuration: JSON.stringify({ organizations: [], applyToElements: 'only-main' }),
+        name: 'share',
+        position: { x: 5, y: 5 },
+      };
+      await queryAsAdminWithError(
+        { query: REPLACE_NODE_PLAYBOOK, variables: { id: playbook.id, nodeId, input: replaceInput } },
+        'Playbook node configuration misses required fields',
+        FUNCTIONAL_ERROR,
+      );
     });
   });
 

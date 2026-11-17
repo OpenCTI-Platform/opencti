@@ -40,7 +40,12 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { buildPagination } from '../../database/utils';
-import { checkPlaybookFiltersAndBuildConfigWithCorrectFilters, deleteLinksAndAllChildren, updateImportedPlaybookDefinitionScope } from './playbook-utils';
+import {
+  assertNodeConfigurationIsComplete,
+  checkPlaybookFiltersAndBuildConfigWithCorrectFilters,
+  deleteLinksAndAllChildren,
+  updateImportedPlaybookDefinitionScope,
+} from './playbook-utils';
 import { type SharingConfiguration } from './components/sharing-component';
 import { assertDefinitionRunAsAllowed, assertRunAsUserAllowed, sanitizeDefinitionRunAs } from './components/ai-agent-shared';
 
@@ -262,6 +267,7 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
   if (!relatedComponent) {
     throw UnsupportedError('Playbook related component not found', { input });
   }
+  assertNodeConfigurationIsComplete(relatedComponent, configuration);
   const existingEntryPoint = definition.nodes.find((n) => PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point);
   if (relatedComponent.is_entry_point && existingEntryPoint) {
     throw UnsupportedError('Playbook multiple entrypoint is not supported', { input });
@@ -342,6 +348,7 @@ export const playbookReplaceNode = async (
   if (!relatedComponent) {
     throw UnsupportedError('Playbook related component not found', { id: input.component_id });
   }
+  assertNodeConfigurationIsComplete(relatedComponent, configuration);
   const existingEntryPoint = definition.nodes.filter((n) => n.id !== nodeId).find((n) => PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point);
   if (relatedComponent.is_entry_point && existingEntryPoint) {
     throw UnsupportedError('Playbook multiple entrypoint is not supported');
@@ -398,6 +405,7 @@ export const playbookInsertNode = async (
   if (!relatedComponent) {
     throw UnsupportedError('Playbook related component not found', { id: input.component_id });
   }
+  assertNodeConfigurationIsComplete(relatedComponent, input.configuration);
   const existingEntryPoint = definition.nodes.find((n) => PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point);
   if (relatedComponent.is_entry_point && existingEntryPoint) {
     throw UnsupportedError('Playbook multiple entrypoint is not supported');

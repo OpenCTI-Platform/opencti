@@ -1,8 +1,39 @@
 import { describe, expect, it } from 'vitest';
-import { computeInitialComponentConfigValues, filterPlaybookComponentGroups, groupAndSortPlaybookComponents, NodeData } from './playbookComponents-utils';
+import {
+  computeInitialComponentConfigValues,
+  filterPlaybookComponentGroups,
+  groupAndSortPlaybookComponents,
+  missingRequiredChoices,
+  NodeData,
+  requiredChoiceFields,
+} from './playbookComponents-utils';
 import { PlaybookBundleElementsToApply, type PlaybookComponent, type PlaybookComponentConfigSchema, type PlaybookConfig } from '../types/playbook-types';
 
 describe('playbookComponents-utils', () => {
+  describe('required choices (#8353)', () => {
+    const schema = {
+      type: 'object',
+      required: ['organizations', 'applyToElements', 'triggerTime', 'name'],
+      properties: {
+        organizations: { type: 'array', items: { type: 'string', oneOf: [] } },
+        applyToElements: { type: 'string', oneOf: [{ const: 'only-main', title: 'Only main' }] },
+        triggerTime: { type: 'string' },
+        name: { type: 'string' },
+      },
+    } as unknown as PlaybookComponentConfigSchema;
+
+    it('keeps the required lists and the required strings with options, not free text', () => {
+      expect(requiredChoiceFields(schema)).toEqual(['organizations', 'applyToElements']);
+      expect(requiredChoiceFields(null)).toEqual([]);
+    });
+
+    it('names the required choices left empty', () => {
+      expect(missingRequiredChoices(schema, { organizations: [], applyToElements: '' })).toEqual(['organizations', 'applyToElements']);
+      expect(missingRequiredChoices(schema, { organizations: ['org'], applyToElements: 'only-main' })).toEqual([]);
+      expect(missingRequiredChoices(schema, { organizations: [{ label: 'Org', value: 'org' }], applyToElements: 'only-main' })).toEqual([]);
+    });
+  });
+
   describe('groupAndSortPlaybookComponents', () => {
     const playbook = (overrides: Partial<PlaybookComponent> & { id: string; name: string }): PlaybookComponent => ({
       description: '',

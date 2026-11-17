@@ -51,7 +51,7 @@ import PlaybookFlowFieldTargets from './playbookFlowFields/PlaybookFlowFieldTarg
 import PlaybookFlowFieldTriggerTime from './playbookFlowFields/PlaybookFlowFieldTriggerTime';
 import PlaybookFlowFieldActions from './playbookFlowFields/playbookFlowFieldsActions/PlaybookFlowFieldActions';
 import { isPlaybookUpdateActionValid, PlaybookUpdateActionsForm } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
-import { computeInitialComponentConfigValues } from './playbookComponents-utils';
+import { computeInitialComponentConfigValues, missingRequiredChoices, requiredChoiceFields } from './playbookComponents-utils';
 
 export type PlaybookFlowFormData
   // Component: update knowledge
@@ -157,8 +157,15 @@ const PlaybookFlowForm = ({
 
   const requiredProperties = configurationSchema?.required ?? [];
 
+  // A required choice (a connector, notifiers, organizations...) left empty is a field error and keeps
+  // the submit disabled; the server refuses such a step with the same rule (#8353).
+  const requiredChoices = requiredChoiceFields(configurationSchema);
   const addComponentValidation = Yup.object().shape({
     name: Yup.string().trim().required(t_i18n('This field is required')),
+    ...Object.fromEntries(requiredChoices.map((field) => [
+      field,
+      Yup.mixed().test('required-choice', t_i18n('This field is required'), (value) => missingRequiredChoices(configurationSchema, { [field]: value }).length === 0),
+    ])),
   });
 
   const initialValues = computeInitialComponentConfigValues({ action, currentConfig, configurationSchema, nodeData, selectedComponent });
@@ -173,6 +180,7 @@ const PlaybookFlowForm = ({
       >
         {({ submitForm, handleReset, isSubmitting, values }) => {
           const actionsAreValid = (values.actions ?? []).every(isPlaybookUpdateActionValid);
+          const choicesAreSet = missingRequiredChoices(configurationSchema, values as Record<string, unknown>).length === 0;
 
           return (
             <Form>
@@ -339,6 +347,7 @@ const PlaybookFlowForm = ({
                         label={t_i18n(property.$ref ?? propName)}
                         options={(property.items?.oneOf ?? []) as PlaybookFlowFieldArrayProps['options']}
                         multiple
+                        required={requiredProperties.includes(propName)}
                       />
                     );
                   }
@@ -364,7 +373,7 @@ const PlaybookFlowForm = ({
                 </Button>
                 <Button
                   onClick={submitForm}
-                  disabled={!actionsAreValid || isSubmitting}
+                  disabled={!actionsAreValid || !choicesAreSet || isSubmitting}
                 >
                   {selectedNode?.data?.component?.id
                     ? t_i18n('Update')

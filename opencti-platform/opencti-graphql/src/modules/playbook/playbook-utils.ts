@@ -15,7 +15,14 @@ import { elFindByIds } from '../../database/engine';
 import { checkAndConvertFilters, type FiltersIdsFinder } from '../../utils/filtering/filtering-utils';
 import { isStixMatchFilterGroup, validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 import type { FilterEventContext } from '../../utils/filtering/boolean-logic-engine';
-import { playbookBundleElementsToApply, type ComponentDefinition, type LinkDefinition, type NodeDefinition, type PlaybookBundleElementsToApply } from './playbook-types';
+import {
+  playbookBundleElementsToApply,
+  type ComponentDefinition,
+  type LinkDefinition,
+  type NodeDefinition,
+  type PlaybookBundleElementsToApply,
+  type PlaybookComponent,
+} from './playbook-types';
 import { logApp } from '../../config/conf';
 import { pushAll } from '../../utils/arrayUtil';
 import { buildFilterEventContext, StreamDataEventTypeEnum } from '../../manager/playbookManager/playbookManagerUtils';
@@ -229,6 +236,52 @@ export const deleteLinksAndAllChildren = (definition: ComponentDefinition, links
     nodes: definition.nodes.filter((n) => !nodesToDelete.map((o) => o.id).includes(n.id)),
     links: definition.links.filter((n) => !linksToDelete.map((o) => o.id).includes(n.id)),
   };
+};
+
+interface ConfigurationSchemaLike {
+  properties?: Record<string, { type?: string; oneOf?: unknown[]; items?: { oneOf?: unknown[] } } | undefined>;
+  required?: readonly string[];
+}
+
+const isEmptyConfigurationValue = (value: unknown): boolean => {
+  if (value === undefined || value === null) return true;
+  if (typeof value === 'string') return value.trim().length === 0;
+  if (Array.isArray(value)) return value.length === 0;
+  return false;
+};
+
+/**
+ * Required configuration fields the user must pick a value for and left empty (issue #8353).
+ * A field counts when the component schema requires it and it is a choice: a string with
+ * oneOf options (connector, rule, container type, email template, AI agent) or an array
+ * (notifiers, recipients, organizations, actions). Free text and time fields are not checked:
+ * the editor leaves the cron trigger time unset for an hourly period on purpose.
+ */
+export const missingRequiredConfigurationFields = (
+  schema: ConfigurationSchemaLike | undefined,
+  configuration: Record<string, unknown>,
+): string[] => {
+  if (!schema?.required || !schema.properties) return [];
+  return schema.required.filter((field) => {
+    const property = schema.properties?.[field];
+    if (!property) return false;
+    const isChoice = property.type === 'array' || (property.type === 'string' && Array.isArray(property.oneOf));
+    return isChoice && isEmptyConfigurationValue(configuration[field]);
+  });
+};
+
+/** Refuses a node whose configuration leaves a required choice empty (add, replace and insert). */
+export const assertNodeConfigurationIsComplete = (component: PlaybookComponent<object>, configuration: string | null | undefined) => {
+  let config: Record<string, unknown> = {};
+  try {
+    config = configuration ? JSON.parse(configuration) : {};
+  } catch {
+    throw FunctionalError('Playbook node configuration is not valid JSON', { component_id: component.id });
+  }
+  const missing = missingRequiredConfigurationFields(component.configuration_schema as ConfigurationSchemaLike | undefined, config);
+  if (missing.length > 0) {
+    throw FunctionalError('Playbook node configuration misses required fields', { component_id: component.id, missing });
+  }
 };
 
 export const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (

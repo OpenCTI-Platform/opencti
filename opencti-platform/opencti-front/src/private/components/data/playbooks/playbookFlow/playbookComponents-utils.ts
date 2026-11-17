@@ -71,6 +71,33 @@ export function filterPlaybookComponentGroups(
     .filter((group) => group.items.length > 0);
 }
 
+const isEmptyChoice = (value: unknown): boolean => {
+  if (value === undefined || value === null) return true;
+  if (typeof value === 'string') return value.trim().length === 0;
+  if (Array.isArray(value)) return value.length === 0;
+  return false;
+};
+
+/**
+ * Required fields of a step the user must pick a value for (issue #8353): a required string with
+ * options or a required list. The server refuses a step that leaves one empty, with the same rule.
+ */
+export const requiredChoiceFields = (schema: PlaybookComponentConfigSchema | null | undefined): string[] => {
+  if (!schema?.required || !schema.properties) return [];
+  const properties = schema.properties as Record<string, { type?: string; oneOf?: unknown[] } | undefined>;
+  return schema.required.filter((field) => {
+    const property = properties[field];
+    if (!property) return false;
+    return property.type === 'array' || (property.type === 'string' && Array.isArray(property.oneOf));
+  });
+};
+
+/** The required choices a form's values leave empty. */
+export const missingRequiredChoices = (
+  schema: PlaybookComponentConfigSchema | null | undefined,
+  values: Record<string, unknown>,
+): string[] => requiredChoiceFields(schema).filter((field) => isEmptyChoice(values[field]));
+
 export interface NodeData {
   name?: string;
   description?: string;
