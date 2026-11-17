@@ -78,33 +78,33 @@ describe('engine: translog durability sent to the search engine', () => {
     serverAnswer.info = {};
   });
 
-  it('should write async on the templates and the existing indices by default', async () => {
+  it('should write the Elasticsearch default on the templates and the existing indices without the flag', async () => {
     await startAndRefresh('elasticsearch9', []);
-
-    expect(templateDurability()).toEqual(['async']);
-    expect(indexDurability()).toEqual(['async']);
-  });
-
-  it('should write the Elasticsearch default on the templates and the existing indices with the opt-out flag', async () => {
-    await startAndRefresh('elasticsearch9', ['ES_TRANSLOG_REQUEST']);
 
     expect(templateDurability()).toEqual(['request']);
     expect(indexDurability()).toEqual(['request']);
   });
 
-  it('should never send a translog setting to OpenSearch, and warn that the opt-out flag is ignored', async () => {
+  it('should write async on the templates and the existing indices with the flag', async () => {
+    await startAndRefresh('elasticsearch9', ['ES_TRANSLOG_ASYNC']);
+
+    expect(templateDurability()).toEqual(['async']);
+    expect(indexDurability()).toEqual(['async']);
+  });
+
+  it('should never send a translog setting to OpenSearch, and warn that the flag is ignored', async () => {
     const warn = vi.spyOn(logApp, 'warn');
-    await startAndRefresh('opensearch', ['ES_TRANSLOG_REQUEST']);
+    await startAndRefresh('opensearch', ['ES_TRANSLOG_ASYNC']);
 
     expect(capture.templates.length).toBe(1);
     expect(capture.settings.length).toBe(1);
     expect(JSON.stringify(capture.templates)).not.toContain('translog');
     expect(JSON.stringify(capture.settings)).not.toContain('translog');
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('ES_TRANSLOG_REQUEST only applies to Elasticsearch'));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('ES_TRANSLOG_ASYNC only applies to Elasticsearch'));
   });
 
   it('should never send a translog setting to Elastic Serverless, which does not expose it', async () => {
-    await startAndRefresh('elasticsearch9', [], { version: { build_flavor: 'serverless' } });
+    await startAndRefresh('elasticsearch9', ['ES_TRANSLOG_ASYNC'], { version: { build_flavor: 'serverless' } });
 
     expect(capture.templates.length).toBe(1);
     expect(capture.settings.length).toBe(1);
