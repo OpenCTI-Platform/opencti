@@ -1946,26 +1946,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/chatbot@npm:3.34.0":
-  version: 3.34.0
-  resolution: "@filigran/chatbot@npm:3.34.0"
+"@filigran/chatbot@npm:3.36.0":
+  version: 3.36.0
+  resolution: "@filigran/chatbot@npm:3.36.0"
   dependencies:
     remark-parse: "npm:^11.0.0"
     unified: "npm:^11.0.0"
   peerDependencies:
-    "@filigran/design-system": ^1.5.2
+    "@filigran/design-system": ^1.5.3
     react: ">=18"
     react-dom: ">=18"
     react-markdown: ">=10"
     remark-breaks: ">=4"
     remark-gfm: ">=4"
-  checksum: 10c0/4a3c604f3a0ac18de94d45d0fb3a4ea916e8810625fd032929ef3f5b28c0f3f4f9fba3f4008092a4f5f830f10d641b93397b259cc7f356ae1bc48fd7646dd847
+  checksum: 10c0/a4c021a5d3c4d986135754cf27b85e98e59a1390ae4c423b1c2f7a24638294609d0124dc027a20b8c892fb4c1a54ba89e7fa34fe6766328994d7f18dd5bd36f0
   languageName: node
   linkType: hard
 
-"@filigran/design-system@npm:1.5.2":
-  version: 1.5.2
-  resolution: "@filigran/design-system@npm:1.5.2"
+"@filigran/design-system@npm:1.5.3":
+  version: 1.5.3
+  resolution: "@filigran/design-system@npm:1.5.3"
   dependencies:
     "@dnd-kit/core": "npm:^6.3.1"
     "@dnd-kit/sortable": "npm:^10.0.0"
@@ -2005,7 +2005,7 @@ __metadata:
     react-dom: ^19.0.0
   bin:
     filigran-design-system: bin/install-skills.mjs
-  checksum: 10c0/9f545dec18e49ea254315fdd9e9267924a95f27aeae06e331d6d66740ed5cdd138d44cb1cb4b9fd2e09663d56f7143c575a568e181a8172e47c5302f2cbb3136
+  checksum: 10c0/9db744b6f2a10e1782d808ebb4d54c246d83849085e0cf98ff2c1683373dada13d582b116fec3323ad01c5b7411914dbd19048b1b56f42407b3a61561ecb493e
   languageName: node
   linkType: hard
 
@@ -3629,9 +3629,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/core@npm:1.4.0":
-  version: 1.4.0
-  resolution: "@langchain/core@npm:1.4.0"
+"@langchain/core@npm:1.4.1":
+  version: 1.4.1
+  resolution: "@langchain/core@npm:1.4.1"
   dependencies:
     "@cfworker/json-schema": "npm:^4.1.4"
     "@standard-schema/spec": "npm:^1.1.0"
@@ -3640,7 +3640,7 @@ __metadata:
     mustache: "npm:^4.2.0"
     p-queue: "npm:^6.6.2"
     zod: "npm:^4.6.6"
-  checksum: 10c0/0f3d7a66965b4f9dd47180f75ad6f8e9d2c956d3ad71fc6c0a93f9ab664146dbe6e328c65dac4881698e09ef89f946848a8a1b7cded2c3090ff437ffae92a9ad
+  checksum: 10c0/dec85c097e11031324ed5e5c5c48d7770980b544d3f71e13ea20b4dc2e507be3e202708071cbc1ee4a7d9fa54152af4585e8838cf59f96d7a0ecc623e34ed216
   languageName: node
   linkType: hard
 
@@ -4199,13 +4199,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/x-date-pickers@npm:9.17.0":
-  version: 9.17.0
-  resolution: "@mui/x-date-pickers@npm:9.17.0"
+"@mui/x-date-pickers@npm:9.18.0":
+  version: 9.18.0
+  resolution: "@mui/x-date-pickers@npm:9.18.0"
   dependencies:
     "@babel/runtime": "npm:^7.29.7 || ^8.0.0"
     "@mui/utils": "npm:^9.5.0"
-    "@mui/x-internals": "npm:9.17.0"
+    "@mui/x-internals": "npm:9.18.0"
     "@types/react-transition-group": "npm:^4.4.12"
     clsx: "npm:^2.1.1"
     prop-types: "npm:^15.8.1"
@@ -4243,13 +4243,13 @@ __metadata:
       optional: true
     moment-jalaali:
       optional: true
-  checksum: 10c0/8db5537dd2fcd9497785dc44b90efb6a363af04c03f2d55839331f42e72e74ad285b5b9aba550f98ae588a6d95b919a8c159323c3f7b6f5080627e7f938e62e1
+  checksum: 10c0/ad698bb8edbb4bcf03674a8e3341268b34b2b0a3a6c48c52b4bee6142028efa1c3b4d4cd590decd72d0c6a57afd3374e02208c3acd7f101d64f008f5d29b1812
   languageName: node
   linkType: hard
 
-"@mui/x-internals@npm:9.17.0":
-  version: 9.17.0
-  resolution: "@mui/x-internals@npm:9.17.0"
+"@mui/x-internals@npm:9.18.0":
+  version: 9.18.0
+  resolution: "@mui/x-internals@npm:9.18.0"
   dependencies:
     "@babel/runtime": "npm:^7.29.7 || ^8.0.0"
     "@base-ui/utils": "npm:^0.5.0"
@@ -4257,7 +4257,7 @@ __metadata:
   peerDependencies:
     react: ^17.0.0 || ^18.0.0 || ^19.0.0
     react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/3a0104cb50bbf434e1b5e8af4b9a98954cf55951f9665af2a4e605b301c1dca1e8ed0fb19998fe733e4bf03ed871e0a3d4ef66507c8662e97aa0f2397057a2f4
+  checksum: 10c0/0502c274024629f6229a77d03c3aefbcbdc8ba3eab09eb2aefe83604a5d1445996f98b6e16135011944b8884d26d8442d48578d850af15d0c6fed7f25643b5ea
   languageName: node
   linkType: hard
 
@@ -18512,9 +18512,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:7.56.0, openai@npm:^7.47.0":
-  version: 7.56.0
-  resolution: "openai@npm:7.56.0"
+"openai@npm:7.57.0, openai@npm:^7.47.0":
+  version: 7.57.0
+  resolution: "openai@npm:7.57.0"
   peerDependencies:
     "@aws-sdk/credential-provider-node": ">=3.972.0 <4"
     "@smithy/hash-node": ">=4.3.0 <5"
@@ -18538,7 +18538,7 @@ __metadata:
       optional: true
     zod:
       optional: true
-  checksum: 10c0/b635d9e0945ba2a891460734d705a7a3523157278e634a42df081b014d7b4490d7349159e44e6e91f1095108485d277f6e92c2f090ab75fa1a751831d33a2f08
+  checksum: 10c0/49f3e1a92a5e29da0fe6ac56730cbc06cdadf89e687fd7427666179fe2d4bb46f7f20cd3dc6df3e0db5285824eaf28922e5beafde9dc74f021bdbfd8b7db1843
   languageName: node
   linkType: hard
 
@@ -18552,9 +18552,9 @@ __metadata:
     "@emotion/styled": "npm:11.14.1"
     "@eslint/js": "npm:10.0.1"
     "@faker-js/faker": "npm:10.6.0"
-    "@filigran/chatbot": "npm:3.34.0"
+    "@filigran/chatbot": "npm:3.36.0"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
-    "@filigran/design-system": "npm:1.5.2"
+    "@filigran/design-system": "npm:1.5.3"
     "@filigran/rich-text-editor": "npm:2.0.1"
     "@fontsource/geologica": "npm:5.3.0"
     "@fontsource/ibm-plex-sans": "npm:5.3.0"
@@ -18567,7 +18567,7 @@ __metadata:
     "@mui/icons-material": "npm:9.5.0"
     "@mui/lab": "npm:9.0.0-beta.10"
     "@mui/material": "npm:9.5.0"
-    "@mui/x-date-pickers": "npm:9.17.0"
+    "@mui/x-date-pickers": "npm:9.18.0"
     "@opentelemetry/api": "npm:1.10.0"
     "@opentelemetry/core": "npm:3.1.1"
     "@opentelemetry/sdk-logs": "npm:3.1.1"
@@ -18722,7 +18722,7 @@ __metadata:
     "@graphql-tools/schema": "npm:11.0.9"
     "@graphql-tools/utils": "npm:13.2.2"
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
-    "@langchain/core": "npm:1.4.0"
+    "@langchain/core": "npm:1.4.1"
     "@langchain/mistralai": "npm:1.2.0"
     "@langchain/openai": "npm:1.8.4"
     "@lezer/javascript": "npm:1.5.6"
@@ -18845,8 +18845,8 @@ __metadata:
     node-forge: "npm:1.4.3"
     node-gyp-build: "npm:4.8.4"
     nodemailer: "npm:10.5.0"
-    openai: "npm:7.56.0"
-    openid-client: "npm:6.8.9"
+    openai: "npm:7.57.0"
+    openid-client: "npm:6.9.0"
     openid-clientv5: "npm:openid-client@5.7.1"
     opentelemetry-node-metrics: "npm:3.0.0"
     otplib: "npm:13.6.0"
@@ -18923,13 +18923,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openid-client@npm:6.8.9":
-  version: 6.8.9
-  resolution: "openid-client@npm:6.8.9"
+"openid-client@npm:6.9.0":
+  version: 6.9.0
+  resolution: "openid-client@npm:6.9.0"
   dependencies:
     jose: "npm:^6.2.15"
     oauth4webapi: "npm:^3.8.8"
-  checksum: 10c0/6ec85b68a9a153acfa23b1fe2a2130ab829c1e2be43e6a270d93bb9e550a0d21eac8d3ae47ba75cac9adbbae1e4cb7a714bfc3a836649cfd4ba8392ce860be4e
+  checksum: 10c0/546f9404f869f8168ed6760ab764f4c7105d8a712879caa801c7a65da0d5c57166536700578df56638bbd701b73696439bdbff91c150ea3550d25e32c8ef5e9d
   languageName: node
   linkType: hard
 

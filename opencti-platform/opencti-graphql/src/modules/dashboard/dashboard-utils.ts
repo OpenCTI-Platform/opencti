@@ -181,6 +181,7 @@ export const convertDashboardManifestIds = async <M extends string | null | unde
   const parsedManifest = fromB64(manifest ?? '{}');
   const hasWidgets = parsedManifest && isNotEmptyField(parsedManifest.widgets);
   const hasVariables = parsedManifest && Array.isArray(parsedManifest.variables) && parsedManifest.variables.length > 0;
+  const presets = parsedManifest && Array.isArray(parsedManifest.presets) ? parsedManifest.presets : [];
   if (!hasWidgets && !hasVariables) {
     return manifest;
   }
@@ -190,6 +191,6 @@ export const convertDashboardManifestIds = async <M extends string | null | unde
     await Promise.all(widgetDefinitions.map((widgetDefinition) => resolveSavedFiltersInDataSelection(context, user, widgetDefinition)));
   }
   // Widgets and variables share one lookup
-  await convertDashboardIds(context, user, widgetDefinitions, hasVariables ? parsedManifest.variables : [], from);
+  await convertDashboardIds(context, user, widgetDefinitions, hasVariables ? parsedManifest.variables : [], from, presets);
   return toB64(parsedManifest) as string;
 };

@@ -187,4 +187,4 @@ It may happen that some platform have "system" as a user used for impersonation:
 
 If a user that was used for the access right impersonation is deleted from the platform, any public feed using this user **will be stopped.**
 
-Additionnally, these feeds **will be made private.**
+Additionally, these feeds **will be made private.**

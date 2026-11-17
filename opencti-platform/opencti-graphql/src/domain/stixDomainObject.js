@@ -23,6 +23,7 @@ import {
 import { elCount, elFindByIds } from '../database/engine';
 import { workToExportFile } from './work';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
@@ -311,12 +312,27 @@ const verifyGrantableGroupInput = (user, input) => {
   }
 };
 
+// The dashboard the members of an organization open on, and its preset, change the home page of everyone in it:
+// reserved to the administrators of the accesses, like the other access settings. Checked here so that every edition
+// path of an organization (organizationFieldPatch, stixDomainObjectEdit) goes through it.
+const ORGANIZATION_ACCESS_SETTINGS_KEYS = ['default_dashboard', 'default_dashboard_preset'];
+const verifyOrganizationAccessSettingsInput = (user, stixDomainObject, input) => {
+  if (stixDomainObject.entity_type !== ENTITY_TYPE_IDENTITY_ORGANIZATION) {
+    return;
+  }
+  const touchesAccessSettings = input.some(({ key }) => ORGANIZATION_ACCESS_SETTINGS_KEYS.includes(key));
+  if (touchesAccessSettings && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    throw ForbiddenAccess('The default dashboard of an organization is reserved to the administrators');
+  }
+};
+
 export const stixDomainObjectEditField = async (context, user, stixObjectId, input, opts = {}) => {
   const stixDomainObject = await storeLoadById(context, user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
   if (!stixDomainObject) {
     throw FunctionalError('Cannot edit the field, Stix-Domain-Object cannot be found.', { stixObjectId });
   }
   verifyGrantableGroupInput(user, input);
+  verifyOrganizationAccessSettingsInput(user, stixDomainObject, input);
   const scoreEditInput = input.find((e) => e.key === 'x_opencti_score');
   if (scoreEditInput) {
     const newScore = scoreEditInput.value[0];

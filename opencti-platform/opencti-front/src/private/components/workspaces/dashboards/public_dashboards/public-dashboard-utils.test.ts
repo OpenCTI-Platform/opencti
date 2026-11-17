@@ -2,8 +2,10 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { toB64 } from '../../../../../utils/String';
 import { dashboardVariablesStorageKey } from '../../../../../components/dashboard/dashboardVariablesStorage';
 import { dashboardTimeRangeStorageKey } from '../../../../../components/dashboard/dashboardTimeRangeStorage';
+import { dashboardPresetStorageKey } from '../../../../../components/dashboard/presets/dashboardPresetStorage';
 import type { DashboardVariable } from '../../../../../components/dashboard/dashboard-types';
 import {
+  applyPresetToPublishedValues,
   applyPublishedTimeRangeChange,
   applyPublishedVariableChange,
   buildPublicationInput,
@@ -36,6 +38,7 @@ const formValues = {
   uri_key: 'public',
   max_markings: [{ value: 'marking-id', label: 'TLP:GREEN' }],
   dashboard_id: 'dashboard-1',
+  published_for: 'dashboard-1',
   variable_values: { [USED]: 'y', [SELECTION]: '' },
   time_range: { relativeDate: 'days-7', startDate: null, endDate: null },
 };
@@ -94,6 +97,51 @@ describe('buildPublishedValuesState', () => {
   });
 });
 
+describe('buildPublishedValuesState with presets', () => {
+  beforeEach(() => window.localStorage.clear());
+  const preset = (id: string, used: string, relativeDate: string) => ({
+    id, name: id, values: [{ variableId: USED, value: used }], config: { startDate: null, endDate: null, relativeDate },
+  });
+  const withPresets = (defaultPresetId: string | null = null) => ({
+    ...dashboard('dashboard-1', { relativeDate: 'months-1' }),
+    presets: [preset('alpha', 'from alpha', 'days-7'), preset('beta', 'from beta', 'years-1')],
+    currentUserDefaultPresetId: defaultPresetId,
+  });
+  const page = '/dashboard/workspaces/dashboards/dashboard-1';
+
+  it('should start from the preset of the address on the page, under the values changed on it', () => {
+    window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'dashboard-1'), 'beta');
+    const state = buildPublishedValuesState(withPresets(), 'user-1', '?preset=alpha', page);
+    expect(state).toEqual({ variable_values: { [USED]: 'from alpha', [SELECTION]: 'a' }, time_range: { relativeDate: 'days-7', startDate: null, endDate: null } });
+    window.localStorage.setItem(dashboardVariablesStorageKey('user-1', 'dashboard-1'), JSON.stringify({ [USED]: 'changed' }));
+    expect(buildPublishedValuesState(withPresets(), 'user-1', '?preset=alpha', page).variable_values[USED]).toEqual('changed');
+  });
+
+  it('should start, as the page, from the default preset when the address names a preset the dashboard does not hold', () => {
+    window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'dashboard-1'), 'alpha');
+    expect(buildPublishedValuesState(withPresets('beta'), 'user-1', '?preset=gone', page).variable_values[USED]).toEqual('from beta');
+    expect(buildPublishedValuesState(withPresets(), 'user-1', '?preset=gone', page).variable_values[USED]).toEqual('x');
+  });
+
+  it('should start from the dashboard defaults when no preset was chosen over a default one, as the page', () => {
+    window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'dashboard-1'), 'none');
+    expect(buildPublishedValuesState(withPresets('beta'), 'user-1', '', page).variable_values[USED]).toEqual('x');
+    window.localStorage.clear();
+    expect(buildPublishedValuesState(withPresets('beta'), 'user-1', '?preset=none', page).time_range.relativeDate).toEqual('months-1');
+  });
+
+  it('should start from the preset kept in this browser, else the default preset of the user, else the dashboard', () => {
+    expect(buildPublishedValuesState(withPresets('beta'), 'user-1', '', '/dashboard/workspaces/dashboards_public').time_range.relativeDate).toEqual('years-1');
+    window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'dashboard-1'), 'alpha');
+    expect(buildPublishedValuesState(withPresets('beta'), 'user-1', '', '/dashboard/workspaces/dashboards_public').variable_values[USED]).toEqual('from alpha');
+    // A deleted preset (kept in this browser, or default) falls back to the dashboard
+    window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'dashboard-1'), 'deleted');
+    expect(buildPublishedValuesState(withPresets('gone'), 'user-1', '', '/dashboard/workspaces/dashboards_public')).toEqual({
+      variable_values: { [USED]: 'x', [SELECTION]: 'a' }, time_range: { relativeDate: 'months-1', startDate: null, endDate: null },
+    });
+  });
+});
+
 describe('applyPublishedTimeRangeChange', () => {
   it('should clear the absolute dates with a relative date', () => {
     expect(applyPublishedTimeRangeChange({ relativeDate: null, startDate: 's', endDate: 'e' }, 'relativeDate', 'days-7'))
@@ -130,6 +178,38 @@ describe('buildPublicationInput', () => {
   it('should send nothing new when the feature flag is disabled', () => {
     const input = buildPublicationInput(formValues, false);
     expect(input).toEqual({ name: 'Public', enabled: true, uri_key: 'public', dashboard_id: 'dashboard-1', allowed_markings_ids: ['marking-id'] });
+  });
+});
+
+describe('applyPresetToPublishedValues', () => {
+  const SECTOR = '11111111-1111-4111-8111-111111111111';
+  const REGION = '22222222-2222-4222-8222-222222222222';
+  const LEVEL = '33333333-3333-4333-8333-333333333333';
+  const variables: DashboardVariable[] = [
+    { id: SECTOR, name: 'Sector', type: 'text', restriction: { mode: 'none' }, defaultValue: 'Energy' },
+    { id: REGION, name: 'Region', type: 'text', restriction: { mode: 'selection', values: ['eu', 'us'] }, defaultValue: 'eu' },
+    { id: LEVEL, name: 'Level', type: 'text', restriction: { mode: 'none' }, defaultValue: 'Low' },
+  ];
+  const preset = {
+    id: 'p1',
+    name: 'Finance',
+    values: [{ variableId: SECTOR, value: 'Finance' }, { variableId: REGION, value: 'apac' }],
+    config: { startDate: null, endDate: null, relativeDate: 'months-1' },
+  };
+
+  it('takes the values of the preset, the default for the variables it does not hold or whose value is refused, and its range', () => {
+    expect(applyPresetToPublishedValues(preset, variables)).toEqual({
+      variable_values: { [SECTOR]: 'Finance', [REGION]: 'eu', [LEVEL]: 'Low' },
+      time_range: { startDate: null, endDate: null, relativeDate: 'months-1' },
+    });
+  });
+
+  it('keeps a value the variable accepts and an absolute range', () => {
+    const absolute = { ...preset, values: [{ variableId: REGION, value: 'us' }], config: { startDate: '2026-01-01T00:00:00.000Z', endDate: null, relativeDate: null } };
+    expect(applyPresetToPublishedValues(absolute, variables)).toEqual({
+      variable_values: { [SECTOR]: 'Energy', [REGION]: 'us', [LEVEL]: 'Low' },
+      time_range: { startDate: '2026-01-01T00:00:00.000Z', endDate: null, relativeDate: null },
+    });
   });
 });
 
