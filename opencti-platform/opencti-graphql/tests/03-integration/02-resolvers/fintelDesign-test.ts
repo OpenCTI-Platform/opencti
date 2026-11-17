@@ -1,7 +1,10 @@
+import { Readable } from 'node:stream';
 import { expect, it, describe, vi, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
+import Upload from 'graphql-upload/Upload.mjs';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
+import { FINTEL_DESIGN_LOGO_MAX_SIZE, fintelDesignLogoStorageKey, readFintelDesignLogo } from '../../../src/modules/fintelDesign/fintelDesign-logo';
 
 const LIST_QUERY = gql`
   query fintelDesigns(
@@ -272,6 +275,62 @@ describe('Fintel Design resolver default behavior', () => {
 
     if (secondDesignId) {
       await queryAsAdmin({ query: DELETE_QUERY, variables: { id: secondDesignId } });
+    }
+  });
+});
+
+describe('Fintel Design resolver logo upload', () => {
+  // A complete PNG of one pixel
+  const PNG_LOGO = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+  const DELETE_QUERY = gql`
+    mutation FintelDesignDelete($id: ID!) {
+      fintelDesignDelete(id: $id)
+    }
+  `;
+  let designId: string;
+
+  // A file sent to the API as the browser sends it: named as an image, whatever its bytes
+  const uploadOf = (content: Buffer, filename = 'logo.png') => {
+    const file = { createReadStream: () => Readable.from([content]), filename, mimetype: 'image/png', encoding: '7bit' };
+    const upload = new Upload();
+    upload.promise = Promise.resolve(file);
+    upload.file = file;
+    return upload;
+  };
+  const sendLogo = (content: Buffer) => queryAsAdmin({ query: EDIT_QUERY, variables: { id: designId, file: uploadOf(content) } });
+  const storedLogo = async () => {
+    const { data } = await queryAsAdmin({ query: READ_QUERY, variables: { id: designId } });
+    const design = data?.fintelDesign;
+    return { fileId: design.file_id, content: await readFintelDesignLogo({ internal_id: designId, file_id: design.file_id, name: design.name }) };
+  };
+
+  beforeAll(async () => {
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
+    const created = await queryAsAdmin({ query: CREATE_QUERY, variables: { input: { name: 'Logo upload test design', default: false } } });
+    designId = created.data?.fintelDesignAdd.id;
+  });
+
+  it('stores a valid logo under the design', async () => {
+    const result = await sendLogo(PNG_LOGO);
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.fintelDesignFieldPatch.file_id).toBe(fintelDesignLogoStorageKey(designId));
+    expect((await storedLogo()).content).toEqual(PNG_LOGO);
+  });
+
+  it.each([
+    ['bytes that are not an image, named as one', Buffer.from('<html><body>not a logo</body></html>'), 'The logo of the fintel design is not a supported image'],
+    ['an image cut short', PNG_LOGO.subarray(0, PNG_LOGO.length - 12), 'The logo of the fintel design is not a supported image'],
+    ['a logo over the limit', Buffer.concat([PNG_LOGO, Buffer.alloc(FINTEL_DESIGN_LOGO_MAX_SIZE)]), 'The logo of the fintel design is too large'],
+  ])('refuses %s, and keeps the previous logo as it was', async (_case, content, message) => {
+    const result = await sendLogo(content);
+    expect(result.errors?.[0]?.message).toBe(message);
+    expect(await storedLogo()).toEqual({ fileId: fintelDesignLogoStorageKey(designId), content: PNG_LOGO });
+  });
+
+  it('should cleanup logo upload test data', async () => {
+    if (designId) {
+      await queryAsAdmin({ query: DELETE_QUERY, variables: { id: designId } });
     }
   });
 });
