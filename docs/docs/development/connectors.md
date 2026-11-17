@@ -56,57 +56,53 @@ $ git checkout -b [branch-name]
 $ cp -r templates/$connector_type $connector_type/$myconnector
 $ cd $connector_type/$myconnector
 $ ls -R
-Dockerfile              docker-compose.yml      requirements.txt
-README.md               entrypoint.sh           src
+Dockerfile              __metadata__            docker-compose.yml      tests
+README.md               config.yml.sample       src
+
+./__metadata__:
+connector_manifest.json
 
 ./src:
-lib     main.py
-
-./src/lib:
-$connector_type.py
+connector               main.py                 requirements.txt        template_client
+[...]
 ```
+
+The listing above comes from the `internal-enrichment` template. The content of `src` and `tests` differs from one template to another.
 
 ### Changing the template
 
-There are a few files in the template we need to change for our connector to be unique. You can check for all places you need to change you connector name with the following command (the output will look similar):
+There are a few files in the template we need to change for our connector to be unique. You can check for all places you need to change you connector name with the following command (the output will look similar, here for the `internal-enrichment` template):
 
 ```bash
 $ grep -Ri template .
 
-README.md:# OpenCTI Template Connector
-README.md:| `connector_type`                     | `CONNECTOR_TYPE`                    | Yes          | Must be `Template_Type` (this is the connector type).                                                                                                      |
-README.md:| `connector_name`                     | `CONNECTOR_NAME`                    | Yes          | Option `Template`                                                                                                                                          |
-README.md:| `connector_scope`                    | `CONNECTOR_SCOPE`                   | Yes          | Supported scope: Template Scope (MIME Type or Stix Object)                                                                                                 |
-README.md:| `template_attribute`                 | `TEMPLATE_ATTRIBUTE`                | Yes          | Additional setting for the connector itself                                                                                                                |
-docker-compose.yml:  connector-template:
-docker-compose.yml:    image: opencti/connector-template:4.5.5
-docker-compose.yml:      - CONNECTOR_TYPE=Template_Type
-docker-compose.yml:      - CONNECTOR_NAME=Template
-docker-compose.yml:      - CONNECTOR_SCOPE=Template_Scope # MIME type or Stix Object
-entrypoint.sh:cd /opt/opencti-connector-template
-Dockerfile:COPY src /opt/opencti-template
-Dockerfile:    cd /opt/opencti-connector-template && \
-src/main.py:class Template:
-src/main.py:            "TEMPLATE_ATTRIBUTE", ["template", "attribute"], config, True
-src/main.py:        connectorTemplate = Template()
-src/main.py:        connectorTemplate.run()
-src/config.yml.sample:  type: 'Template_Type'
-src/config.yml.sample:  name: 'Template'
-src/config.yml.sample:  scope: 'Template_Scope' # MIME type or SCO
+./config.yml.sample:  name: 'Template Connector' # optional (default: 'Template Connector')
+./config.yml.sample:template:
+./docker-compose.yml:  connector-template:
+./docker-compose.yml:    image: opencti/connector-template:latest # 'template' being the name of connector's directory
+./docker-compose.yml:      - CONNECTOR_NAME=CHANGEME # optional (default: 'Template Connector')
+./docker-compose.yml:      # Custom parameters for connector-template
+./docker-compose.yml:      - TEMPLATE_API_BASE_URL=CHANGEME
+./docker-compose.yml:      - TEMPLATE_API_KEY=CHANGEME
+./Dockerfile:COPY src /opt/opencti-connector-template
+./Dockerfile:WORKDIR /opt/opencti-connector-template
+./README.md:# OpenCTI Internal Enrichment Template Connector
+./__metadata__/connector_manifest.json:  "slug": "template",
+./__metadata__/connector_manifest.json:  "container_image": "opencti/connector-template",
+./src/main.py:from connector import ConnectorSettings, TemplateConnector
+./src/connector/settings.py:class TemplateConfig(BaseConfigModel):
+./src/connector/connector.py:class TemplateConnector:
+./src/template_client/api_client.py:class TemplateClient:
+./tests/test_main.py:from connector import ConnectorSettings, TemplateConnector
+[...]
 ```
 
 Required changes:
 
 - [ ]  Change `Template` or `template`mentions to your connector name e.g. `ImportCsv` or `importcsv`
 - [ ]  Change `TEMPLATE` mentions to your connector name e.g. `IMPORTCSV`
-- [ ]  Change `Template_Scope` mentions to the required scope of your connector. For processing imported files, that can be the Mime type e.g. `application/pdf` or for enriching existing information in OpenCTI, define the STIX object's name e.g. `Report`. Multiple scopes can be separated by a simple `,`
-- [ ]  Change `Template_Type` to the connector type you wish to develop. The OpenCTI types are defined hereafter:
-    - EXTERNAL_IMPORT
-    - INTERNAL_ANALYSIS
-    - INTERNAL_ENRICHMENT
-    - INTERNAL_EXPORT_FILE
-    - INTERNAL_IMPORT_FILE 
-    - STREAM
+- [ ]  Set the scope (`scope: 'ChangeMe'` in `config.yml.sample`, `CONNECTOR_SCOPE=CHANGEME` in `docker-compose.yml`) to the required scope of your connector. For processing imported files, that can be the Mime type e.g. `application/pdf` or for enriching existing information in OpenCTI, define the STIX object's name e.g. `Report`. Multiple scopes can be separated by a simple `,`
+- [ ]  Keep the connector type: each template already sets it (for example, `type: 'INTERNAL_ENRICHMENT'` in `config.yml.sample` of the `internal-enrichment` template).
 
 ## Development
 
@@ -130,9 +126,9 @@ class TemplateConnector:
         )
 ```
 
-Since there are some basic differences in the tasks of the different connector classes, the structure is also a bit class dependent. While the external-import and the stream connector run independently in a regular interval or constantly, the other 3 connector classes only run when being requested by the OpenCTI platform.
+Since there are some basic differences in the tasks of the different connector classes, the structure is also a bit class dependent. While the external-import and the stream connector run independently in a regular interval or constantly, the other 4 connector classes only run when being requested by the OpenCTI platform.
 
-The self-triggered connectors run independently, but the OpenCTI need to define a callback function, which can be executed for the connector to start its work. This is done via         `self.helper.listen(self._process_message)`. In the appended examples, the difference of the setup can be seen.
+The self-triggered connectors run independently, but the OpenCTI triggered connectors need to define a callback function, which can be executed for the connector to start its work. This is done via         `self.helper.listen(self._process_message)`. In the appended examples, the difference of the setup can be seen.
 
 Self-triggered Connectors
 
@@ -350,7 +346,7 @@ Internal Export Connector
 
 For self-triggered connectors, OpenCTI has to be told about new jobs to process and to import. This is done by registering a so called `work` before sending the stix bundle and signalling the end of a work. Here an example:
 
-By implementing the work registration, they will show up as shown in this screenshot for the MITRE ATT&CK connector:
+The code below initiates a work named `Template run @ <date>`, sends the bundle with this work ID, and marks the work as processed, with a message and an error flag. In the platform, open your connector from **Integrations** > **Deployed**, then the **Works** tab: the work shows under **In progress works** while it runs, then under **Completed works**, with its name, status and progress.
 
 ```python
 def run() -> None:
@@ -512,21 +508,19 @@ class TemplateConnector:
 
 ## Running the connector
 
-For development purposes, it is easier to simply run the python script locally until everything works as it should.
+For development purposes, it is easier to simply run the python script locally until everything works as it should. Run the following commands from the connector directory (`$connector_type/$myconnector`): the template keeps `requirements.txt` and `main.py` in `src`, and `config.yml.sample` at the root.
 
 ```bash
 $ virtualenv env
 $ source ./env/bin/activate
-$ pip3 install -r requirements
+$ pip3 install -r src/requirements.txt
 $ cp config.yml.sample config.yml
 # Define the opencti url and token, as well as the connector's id
 $ vim config.yml
-$ python3 main.py
-INFO:root:Listing Threat-Actors with filters null.
-INFO:root:Connector registered with ID: a2de809c-fbb9-491d-90c0-96c7d1766000
-INFO:root:Starting ping alive thread
-...
+$ python3 src/main.py
 ```
+
+The template reads `src/config.yml` if it exists, otherwise `config.yml` in the connector directory. Environment variables take precedence over the values in `config.yml`.
 
 ### Final Testing
 

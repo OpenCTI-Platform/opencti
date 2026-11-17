@@ -4,9 +4,15 @@ The PyCTI library is the official Python client for OpenCTI. It is made to help 
 
 # Installation
 
-To install the latest Python client library, please use `pip`:
+The pycti version must match the version of your OpenCTI platform: pycti is released together with the platform, under the same version number. To find your platform version, go to **Settings** > **Parameters** and read the **Version** field. Then install the matching pycti version with `pip`:
 
-    $ pip3 install pycti
+    $ pip3 install pycti==<platform version>
+
+For example, for OpenCTI 7.261116.0, run `pip3 install pycti==7.261116.0`.
+
+!!! note
+
+    pycti does not compare its version with the platform version and does not warn you about a mismatch: by default, the client only checks at initialization that it can reach the platform API.
 
 # Using the helper functions
 
@@ -34,12 +40,15 @@ indicator = opencti_api_client.indicator.create(
     description="This is the C2 server of the campaign",
     pattern_type="stix",
     pattern="[domain-name:value = 'www.5z8.info']",
-    x_opencti_main_observable_type="IPv4-Addr",
+    x_opencti_main_observable_type="Domain-Name",
     valid_from=date,
     update=True,
-    markingDefinitions=[TLP_GREEN_CTI["id"]],
+    objectMarking=[TLP_GREEN_CTI["id"]],
 )
 ```
+
+pycti requires `x_opencti_main_observable_type`. Set it to the OpenCTI type of the observable that the pattern describes, such as `Domain-Name`, `IPv4-Addr` or `StixFile` (`File` is also accepted). The platform rejects any value that is neither an observable type nor `Unknown`.
+
 # Examples
 
 A suite of illustrative examples is available in the [OpenCTI GitHub repository](https://github.com/OpenCTI-Platform/opencti/tree/master/client-python/examples) to aid in better understanding.
