@@ -1,7 +1,7 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
-import { OpenInBrowserOutlined } from '@mui/icons-material';
+import { ChevronRightOutlined, OpenInBrowserOutlined } from '@mui/icons-material';
 import { ListItemButton } from '@mui/material';
 import Badge from '@mui/material/Badge';
 import DialogActions from '@mui/material/DialogActions';
@@ -20,6 +20,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import { truncate } from '../../../../utils/String';
 import HistoryIcon from './HistoryIcon';
+import { toSingleLineHistoryMessage } from './historyMessage';
 
 interface ExternalReference {
   id: string;
@@ -41,6 +42,8 @@ export interface HistoryLineData {
 interface HistoryLineContentProps {
   data: HistoryLineData;
   isRelation: boolean;
+  // The parent opens the details drawer (every operation, full values) on click
+  hasDetails?: boolean;
 }
 
 /**
@@ -50,6 +53,7 @@ interface HistoryLineContentProps {
 const HistoryLineContent = ({
   data,
   isRelation,
+  hasDetails = false,
 }: HistoryLineContentProps) => {
   const { t_i18n, nsdt } = useFormatter();
   const [open, setOpen] = useState(false);
@@ -57,6 +61,7 @@ const HistoryLineContent = ({
   const [externalLink, setExternalLink] = useState<string | null>(null);
 
   const hasExternalRefs = data.externalReferences.length > 0;
+  const lineContent = `\`${data.userName ?? ''}\` ${toSingleLineHistoryMessage(data.message)}`;
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -115,21 +120,38 @@ const HistoryLineContent = ({
           >
             {nsdt(data.timestamp)}
           </div>
+          {hasDetails && (
+            <ChevronRightOutlined
+              fontSize="small"
+              color="action"
+              aria-label={t_i18n('Details')}
+              style={{ float: 'right', marginTop: 2, marginLeft: 8 }}
+            />
+          )}
           <Tooltip
-            sx={{ maxWidth: '80%', lineHeight: 2, padding: 10 }}
-            title={<><b>{data.userName}</b> {data.message}</>}
+            slotProps={{ tooltip: { sx: { maxWidth: 600, lineHeight: 1.6, padding: '8px 10px' } } }}
+            title={(
+              <MarkdownDisplay
+                content={lineContent}
+                remarkGfmPlugin={true}
+                commonmark={true}
+                removeLineBreaks={true}
+              />
+            )}
           >
+            {/* One line: inline markdown (no paragraph), cut with an ellipsis; the full message is in the tooltip and the details drawer */}
             <div style={{
-              height: '100%',
+              lineHeight: '24px',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
             }}
             >
               <MarkdownDisplay
-                content={`\`${data.userName}\` ${data.message ?? ''}`}
+                content={lineContent}
                 remarkGfmPlugin={true}
                 commonmark={true}
+                removeLineBreaks={true}
               />
             </div>
           </Tooltip>

@@ -8,6 +8,7 @@ import Loader from '../../../../components/Loader';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { HistoryDrawerQuery } from './__generated__/HistoryDrawerQuery.graphql';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
+import { toSingleLineHistoryMessage } from '../history/historyMessage';
 
 interface HistoryDrawerProps {
   open: boolean;
@@ -63,7 +64,7 @@ const HistoryDrawerContent: FunctionComponent<HistoryDrawerContentProps> = ({ lo
         content={(
           <>
             <MarkdownDisplay
-              content={data?.log?.context_data?.message ?? ''}
+              content={toSingleLineHistoryMessage(data?.log?.context_data?.message)}
               remarkGfmPlugin={true}
               commonmark={true}
             />

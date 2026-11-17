@@ -15,6 +15,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import type { Theme } from '../../../../components/Theme';
+import { toSingleLineHistoryMessage } from '../../common/history/historyMessage';
 
 const Container = styled('div')({
   marginBottom: 5,
@@ -42,7 +43,7 @@ const Content = styled('div')({
 });
 
 const Description = styled('div')({
-  height: '100%',
+  lineHeight: '24px',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
@@ -356,17 +357,19 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
             }}
             title={(
               <MarkdownDisplay
-                content={`\`${log.user?.name}\` ${log.context_data?.message}`}
+                content={`\`${log.user?.name ?? ''}\` ${toSingleLineHistoryMessage(log.context_data?.message)}`}
                 remarkGfmPlugin={true}
                 commonmark={true}
+                removeLineBreaks={true}
               />
             )}
           >
             <Description>
               <MarkdownDisplay
-                content={`\`${log.user?.name}\` ${log.context_data?.message}`}
+                content={`\`${log.user?.name ?? ''}\` ${toSingleLineHistoryMessage(log.context_data?.message)}`}
                 remarkGfmPlugin={true}
                 commonmark={true}
+                removeLineBreaks={true}
               />
             </Description>
           </Tooltip>
