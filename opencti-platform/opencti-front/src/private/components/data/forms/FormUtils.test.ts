@@ -492,3 +492,30 @@ describe('buildEntityTypes', () => {
     expect(getInitialMandatoryFields('Report', [report], t_i18n).map((field) => field.name)).toEqual(['name']);
   });
 });
+
+describe('getInitialMandatoryFields default values', () => {
+  const t_i18n = (key: string) => key;
+  const malware = {
+    value: 'Malware',
+    label: 'Malware',
+    isContainer: false,
+    attributes: [
+      { value: 'cf_date', name: 'cf_date', label: 'Seen', type: 'date', mandatory: true, defaultValues: [{ id: '@now', name: '@now' }] },
+      { value: 'cf_iso', name: 'cf_iso', label: 'Since', type: 'date', mandatory: true, defaultValues: [{ id: '2024-01-01', name: '2024-01-01' }] },
+      { value: 'cf_bool', name: 'cf_bool', label: 'Checked', type: 'boolean', mandatory: true, defaultValues: [{ id: 'true', name: 'true' }] },
+      { value: 'cf_int', name: 'cf_int', label: 'Count', type: 'numeric', mandatory: true, defaultValues: [{ id: '42', name: '42' }] },
+      { value: 'cf_text', name: 'cf_text', label: 'Text', type: 'string', mandatory: true, defaultValues: [{ id: 'low', name: 'low' }] },
+    ],
+  };
+
+  it('should convert the raw default values of Entity Settings to the field values', () => {
+    const fields = getInitialMandatoryFields('Malware', [malware], t_i18n);
+    const defaults = Object.fromEntries(fields.map((field) => [field.name, field.defaultValue]));
+    // @now is relative to the creation: not frozen in the form
+    expect(defaults.cf_date).toBeUndefined();
+    expect(defaults.cf_iso).toEqual('2024-01-01');
+    expect(defaults.cf_bool).toBe(true);
+    expect(defaults.cf_int).toBe(42);
+    expect(defaults.cf_text).toEqual('low');
+  });
+});
