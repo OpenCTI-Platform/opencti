@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  filterContentTabFiles,
-  getContentTabFilePath,
-  isContentTabFile,
-  isContentTabImage,
-  isPreviewOnlyFile,
-  resolveContentFileMimeType,
-} from './StixCoreObjectContentFileUtils';
+import { filterContentTabFiles, getContentTabFilePath, isContentTabFile, isContentTabImage, isPreviewOnlyFile, resolveContentFileMimeType } from './StixCoreObjectContentFileUtils';
 
 const file = (id: string, mimetype: string | null, lastModified: string) => ({ id, lastModified, metaData: { mimetype } });
 
