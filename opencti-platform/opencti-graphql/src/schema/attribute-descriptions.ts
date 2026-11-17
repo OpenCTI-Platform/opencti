@@ -1,6 +1,8 @@
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_THREAT_ACTOR_GROUP } from './stixDomainObject';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
+import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../modules/malwareAnalysis/malwareAnalysis-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 
 // Descriptions of the attributes and refs, exposed by schemaAttributes so that an API client
 // (an XTM One agent for instance) picks the right field and fills it with the right value.
@@ -127,7 +129,6 @@ export const ATTRIBUTE_DESCRIPTIONS: Record<string, string> = {
   due_date: 'Date when the task is due, in ISO 8601.',
   // -- Malware analysis --
   product: 'Name of the product that ran the analysis (e.g. a sandbox).',
-  version: 'Version of the analysis product.',
   configuration_version: 'Version of the configuration used for the analysis.',
   modules: 'Modules of the analysis product used for the analysis.',
   analysis_engine_version: 'Version of the analysis engine.',
@@ -169,7 +170,7 @@ export const ATTRIBUTE_DESCRIPTIONS: Record<string, string> = {
   ethnicity: 'Country of the ethnicity of the threat actor.',
   dataSource: 'Data source the data component belongs to.',
   objectCovered: 'Entity (intrusion set, campaign, incident or report) whose coverage is assessed.',
-  resultOf: 'Security coverage results.',
+  resultOf: 'Results of the security coverage.',
 };
 
 // Overrides for the types where an attribute does not mean the same as elsewhere
@@ -186,6 +187,14 @@ export const ATTRIBUTE_DESCRIPTIONS_BY_TYPE: Record<string, Record<string, strin
   },
   [ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL]: {
     roles: 'Roles of the threat actor, from the threat_actor_individual_role_ov vocabulary (e.g. agent, director, sponsor).',
+  },
+  // version is too common (software, certificate, connector…) to be shared
+  [ENTITY_TYPE_MALWARE_ANALYSIS]: {
+    version: 'Version of the analysis product.',
+  },
+  // resultOf links the coverage to its results, and a result to its single parent coverage
+  [ENTITY_TYPE_SECURITY_COVERAGE_RESULT]: {
+    resultOf: 'Security coverage this result belongs to.',
   },
 };
 

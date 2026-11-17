@@ -7,6 +7,9 @@ import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_REPORT, isStixDomainO
 import { INTERNAL_ATTRIBUTES } from '../../../src/domain/attribute-utils';
 import { RELATION_TARGETS } from '../../../src/schema/stixCoreRelationship';
 import { ENTITY_TYPE_EVENT } from '../../../src/modules/event/event-types';
+import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../../../src/modules/malwareAnalysis/malwareAnalysis-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE } from '../../../src/modules/securityCoverage/securityCoverage-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 
 describe('resolveAttributeDescription', () => {
   it('should use the description of the definition first', () => {
@@ -19,6 +22,13 @@ describe('resolveAttributeDescription', () => {
     // start_time is the validity of a relationship, but the start of an event
     expect(resolveAttributeDescription(RELATION_TARGETS, { name: 'start_time' })).toEqual(ATTRIBUTE_DESCRIPTIONS.start_time);
     expect(resolveAttributeDescription(ENTITY_TYPE_EVENT, { name: 'start_time' })).toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_TYPE_EVENT].start_time);
+    // resultOf lists the results of a coverage, but points a result to its parent coverage
+    expect(resolveAttributeDescription(ENTITY_TYPE_SECURITY_COVERAGE, { name: 'resultOf' })).toEqual(ATTRIBUTE_DESCRIPTIONS.resultOf);
+    expect(resolveAttributeDescription(ENTITY_TYPE_SECURITY_COVERAGE_RESULT, { name: 'resultOf' }))
+      .toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_TYPE_SECURITY_COVERAGE_RESULT].resultOf);
+    // version is only described for a malware analysis, not shared with the other types
+    expect(resolveAttributeDescription(ENTITY_TYPE_MALWARE_ANALYSIS, { name: 'version' })).toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_TYPE_MALWARE_ANALYSIS].version);
+    expect(ATTRIBUTE_DESCRIPTIONS.version).toBeUndefined();
   });
 
   it('should return null for an attribute without description', () => {
