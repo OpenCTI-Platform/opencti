@@ -20,6 +20,8 @@
   "Must be different from your last {count} passwords": "Doit être différent de vos {count} derniers mots de passe",
   "Number of recent passwords that cannot be reused": "Nombre de mots de passe récents qui ne peuvent pas être réutilisés",
   "Password reset code expired or not found. Please request a new one.": "Le code de réinitialisation du mot de passe a expiré ou est introuvable. Veuillez en demander un nouveau.",
+  "Procedure count scale, 1 to {count}": "Échelle du nombre de procédures, de 1 à {count}",
+  "Procedures (low → high)": "Procédures (faible → élevé)",
   "Select one of the two options below.": "Sélectionnez une des deux options ci-dessous.",
   "Several platform nodes serve the API: no session is logged out when its last tab is closed.": "Plusieurs nœuds de la plateforme servent l'API : aucune session n'est déconnectée à la fermeture de son dernier onglet.",
   "This password has already been used recently. Please choose a different one.": "Ce mot de passe a déjà été utilisé récemment. Veuillez en choisir un autre.",

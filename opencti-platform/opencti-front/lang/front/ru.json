@@ -20,6 +20,8 @@
   "Must be different from your last {count} passwords": "Должен отличаться от последних {count} паролей",
   "Number of recent passwords that cannot be reused": "Количество последних паролей, которые нельзя использовать повторно",
   "Password reset code expired or not found. Please request a new one.": "Код сброса пароля истек или не найден. Запросите новый код.",
+  "Procedure count scale, 1 to {count}": "Шкала количества процедур, от 1 до {count}",
+  "Procedures (low → high)": "Процедуры (мало → много)",
   "Select one of the two options below.": "Выберите один из двух вариантов ниже.",
   "Several platform nodes serve the API: no session is logged out when its last tab is closed.": "API обслуживают несколько узлов платформы: сеансы не завершаются при закрытии последней вкладки.",
   "This password has already been used recently. Please choose a different one.": "Этот пароль уже недавно использовался. Выберите другой.",

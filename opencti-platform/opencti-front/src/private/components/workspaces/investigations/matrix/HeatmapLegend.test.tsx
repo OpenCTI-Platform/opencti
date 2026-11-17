@@ -18,4 +18,10 @@ describe('HeatmapLegend', () => {
     const legend = screen.getByRole('img', { name: 'Technique usage scale, 1 to 7' });
     expect(legend.querySelectorAll('[data-heat-stop]')).toHaveLength(5);
   });
+
+  it('shows the given title and names the scale with the given label', () => {
+    testRender(<HeatmapLegend max={4} title="Procedures (low → high)" scaleLabel="Procedure count scale, 1 to {count}" />);
+    expect(screen.getByText('Procedures (low → high)')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Procedure count scale, 1 to 4' })).toBeInTheDocument();
+  });
 });

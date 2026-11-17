@@ -20,6 +20,8 @@
   "Must be different from your last {count} passwords": "必须与您最近使用的 {count} 个密码不同",
   "Number of recent passwords that cannot be reused": "不能重复使用的最近密码数量",
   "Password reset code expired or not found. Please request a new one.": "密码重置代码已过期或未找到。请重新申请。",
+  "Procedure count scale, 1 to {count}": "过程数量刻度，1 至 {count}",
+  "Procedures (low → high)": "过程（低 → 高）",
   "Select one of the two options below.": "请选择以下两个选项之一。",
   "Several platform nodes serve the API: no session is logged out when its last tab is closed.": "多个平台节点正在提供 API：关闭最后一个标签页时不会注销任何会话。",
   "This password has already been used recently. Please choose a different one.": "此密码最近已使用过。请选择其他密码。",

@@ -20,6 +20,8 @@
   "Must be different from your last {count} passwords": "直近 {count} 個のパスワードとは異なるものにする必要があります",
   "Number of recent passwords that cannot be reused": "再利用できない最近のパスワードの数",
   "Password reset code expired or not found. Please request a new one.": "パスワード リセット コードの有効期限が切れているか、見つかりません。新しいコードをリクエストしてください。",
+  "Procedure count scale, 1 to {count}": "プロシージャ数のスケール、1～{count}",
+  "Procedures (low → high)": "プロシージャ（低 → 高）",
   "Select one of the two options below.": "以下の2つのオプションのいずれかを選択してください。",
   "Several platform nodes serve the API: no session is logged out when its last tab is closed.": "複数のプラットフォームノードがAPIを提供しています：最後のタブを閉じてもセッションはログアウトされません。",
   "This password has already been used recently. Please choose a different one.": "このパスワードは最近使用されています。別のパスワードを選択してください。",

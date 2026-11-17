@@ -20,6 +20,8 @@
   "Must be different from your last {count} passwords": "최근 {count}개의 비밀번호와 달라야 합니다",
   "Number of recent passwords that cannot be reused": "재사용할 수 없는 최근 비밀번호 수",
   "Password reset code expired or not found. Please request a new one.": "비밀번호 재설정 코드가 만료되었거나 찾을 수 없습니다. 새 코드를 요청하세요.",
+  "Procedure count scale, 1 to {count}": "절차 수 척도, 1~{count}",
+  "Procedures (low → high)": "절차 (낮음 → 높음)",
   "Select one of the two options below.": "아래 두 옵션 중 하나를 선택하세요.",
   "Several platform nodes serve the API: no session is logged out when its last tab is closed.": "여러 플랫폼 노드가 API를 제공하고 있습니다: 마지막 탭을 닫아도 세션이 로그아웃되지 않습니다.",
   "This password has already been used recently. Please choose a different one.": "이 비밀번호는 최근에 이미 사용되었습니다. 다른 비밀번호를 선택하세요.",

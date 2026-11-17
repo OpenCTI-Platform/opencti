@@ -20,6 +20,8 @@
   "Must be different from your last {count} passwords": "Must be different from your last {count} passwords",
   "Number of recent passwords that cannot be reused": "Number of recent passwords that cannot be reused",
   "Password reset code expired or not found. Please request a new one.": "Password reset code expired or not found. Please request a new one.",
+  "Procedure count scale, 1 to {count}": "Procedure count scale, 1 to {count}",
+  "Procedures (low → high)": "Procedures (low → high)",
   "Select one of the two options below.": "Select one of the two options below.",
   "Several platform nodes serve the API: no session is logged out when its last tab is closed.": "Several platform nodes serve the API: no session is logged out when its last tab is closed.",
   "This password has already been used recently. Please choose a different one.": "This password has already been used recently. Please choose a different one.",
