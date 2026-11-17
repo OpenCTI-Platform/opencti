@@ -94,7 +94,7 @@ test('expands the labels of a no-duplicates diagnostic into one finding per impo
   const findings = normalizeOxlint(report, fixtureDir);
   assert.deepEqual(
     findings.filter((f) => f.ruleId === 'import/no-duplicates').map((f) => f.line),
-    [2, 3, 7],
+    [2, 3, 7, 7],
   );
   assert.ok(findings.filter((f) => f.ruleId === 'import/no-duplicates').every((f) => f.file === 'sample-src/a.ts' && f.severity === 'warning'));
   // Other rules keep one finding per diagnostic, at the first label.

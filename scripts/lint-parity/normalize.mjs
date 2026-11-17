@@ -122,7 +122,7 @@ export const normalizeOxlint = (report, baseDir) => report.diagnostics
   .flatMap((diagnostic) => {
     const ruleId = toComparableRuleId(toEslintRuleId(diagnostic.code));
     const lines = ONE_DIAGNOSTIC_PER_GROUP.has(ruleId)
-      ? [...new Set((diagnostic.labels ?? []).map((label) => label?.span?.line))]
+      ? (diagnostic.labels ?? []).map((label) => label?.span?.line)
       : [diagnostic.labels?.[0]?.span?.line];
     return (lines.length > 0 ? lines : [undefined]).map((line) => ({
       file: toRelativeFile(diagnostic.filename, baseDir),
