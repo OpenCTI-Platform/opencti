@@ -71,7 +71,12 @@ jobs:
             cd /home/workspace
             node --test "scripts/lint-parity/test/*.test.mjs"
             cd opencti-platform/opencti-front
+            # Drift check: .oxlintrc.json must equal what lint:ox:sync generates. It writes nothing and
+            # needs no git. The parity run below goes on whatever its result, the step still reports it.
+            check=0
+            yarn lint:ox:check || check=$?
             yarn lint:parity
+            exit $check
             '
 
     - name: Custom ESLint rules quality checks
