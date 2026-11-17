@@ -168,6 +168,7 @@ const AttackPatternsMatrixColumnsElement = ({
       {!isSecurityPlatform && attackPatternIdsToOverlap?.length !== undefined && attackPattern.isCovered && !isCoverage && (
         <AttackPatternsMatrixShouldCoverIcon
           isOverlapping={attackPattern.isOverlapping || false}
+          color={labelColor}
         />
       )}
     </Box>

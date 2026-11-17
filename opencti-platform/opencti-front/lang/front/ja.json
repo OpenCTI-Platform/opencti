@@ -27,6 +27,7 @@
   "Select one of the two options below.": "以下の2つのオプションのいずれかを選択してください。",
   "Several platform nodes serve the API: no session is logged out when its last tab is closed.": "複数のプラットフォームノードがAPIを提供しています：最後のタブを閉じてもセッションはログアウトされません。",
   "Show procedure heatmap": "プロシージャのヒートマップを表示",
+  "The procedure heatmap could not be loaded": "プロシージャのヒートマップを読み込めませんでした",
   "This password has already been used recently. Please choose a different one.": "このパスワードは最近使用されています。別のパスワードを選択してください。",
   "Too many password change attempts. Please try again in a few minutes.": "パスワード変更の試行回数が多すぎます。数分後にもう一度お試しください。",
   "When enabled, a session is logged out shortly after its last browser tab has been closed. Not supported when several platform nodes serve the API.": "有効にすると、最後のブラウザタブが閉じられた直後にセッションがログアウトされます。複数のプラットフォームノードがAPIを提供している場合はサポートされていません。",

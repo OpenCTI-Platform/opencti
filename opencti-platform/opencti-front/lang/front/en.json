@@ -27,6 +27,7 @@
   "Select one of the two options below.": "Select one of the two options below.",
   "Several platform nodes serve the API: no session is logged out when its last tab is closed.": "Several platform nodes serve the API: no session is logged out when its last tab is closed.",
   "Show procedure heatmap": "Show procedure heatmap",
+  "The procedure heatmap could not be loaded": "The procedure heatmap could not be loaded",
   "This password has already been used recently. Please choose a different one.": "This password has already been used recently. Please choose a different one.",
   "Too many password change attempts. Please try again in a few minutes.": "Too many password change attempts. Please try again in a few minutes.",
   "When enabled, a session is logged out shortly after its last browser tab has been closed. Not supported when several platform nodes serve the API.": "When enabled, a session is logged out shortly after its last browser tab has been closed. Not supported when several platform nodes serve the API.",

@@ -229,6 +229,7 @@ const AccordionAttackPattern = ({
             && (
               <AttackPatternsMatrixShouldCoverIcon
                 isOverlapping={attackPattern.isOverlapping || false}
+                color={labelColor}
               />
             )}
         </MuiAccordionSummary>

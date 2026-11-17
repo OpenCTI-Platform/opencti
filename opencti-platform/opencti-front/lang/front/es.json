@@ -27,6 +27,7 @@
   "Select one of the two options below.": "Seleccione una de las dos opciones siguientes.",
   "Several platform nodes serve the API: no session is logged out when its last tab is closed.": "Varios nodos de la plataforma sirven la API: ninguna sesión se cierra al cerrar su última pestaña.",
   "Show procedure heatmap": "Mostrar el mapa de calor de procedimientos",
+  "The procedure heatmap could not be loaded": "No se pudo cargar el mapa de calor de procedimientos",
   "This password has already been used recently. Please choose a different one.": "Esta contraseña ya se ha utilizado recientemente. Elija otra.",
   "Too many password change attempts. Please try again in a few minutes.": "Demasiados intentos de cambio de contraseña. Vuelva a intentarlo en unos minutos.",
   "When enabled, a session is logged out shortly after its last browser tab has been closed. Not supported when several platform nodes serve the API.": "Si está activado, una sesión se cierra poco después de cerrar su última pestaña del navegador. No compatible cuando varios nodos de la plataforma sirven la API.",

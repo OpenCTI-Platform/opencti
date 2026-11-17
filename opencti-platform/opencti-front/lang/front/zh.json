@@ -27,6 +27,7 @@
   "Select one of the two options below.": "请选择以下两个选项之一。",
   "Several platform nodes serve the API: no session is logged out when its last tab is closed.": "多个平台节点正在提供 API：关闭最后一个标签页时不会注销任何会话。",
   "Show procedure heatmap": "显示过程热图",
+  "The procedure heatmap could not be loaded": "无法加载过程热图",
   "This password has already been used recently. Please choose a different one.": "此密码最近已使用过。请选择其他密码。",
   "Too many password change attempts. Please try again in a few minutes.": "密码更改尝试次数过多。请几分钟后重试。",
   "When enabled, a session is logged out shortly after its last browser tab has been closed. Not supported when several platform nodes serve the API.": "启用后，会话将在其最后一个浏览器标签页关闭后不久注销。当多个平台节点提供 API 时不支持。",
