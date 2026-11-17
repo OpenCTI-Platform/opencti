@@ -482,14 +482,21 @@ const Workflow = ({
             proOptions={proOptions}
             style={{ flex: 1, minHeight: 0 }}
           >
-            <Panel position="top-left" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12 }} data-testid="workflow-top-left-panel">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                {isRequestAccessScopeAvailable && (
-                  <WorkflowScopeSwitch scope={scope} onScopeChange={(nextScope) => onScopeChange?.(nextScope)} />
-                )}
-                <EntityStatusSyncSetting />
-              </div>
-              {isRequestAccessScopeAvailable && scope === 'REQUEST_ACCESS' && <RequestAccessValidatorGroup />}
+            <Panel
+              position="top-left"
+              style={{ display: 'grid', gridTemplateColumns: 'max-content max-content', alignItems: 'center', columnGap: 16, rowGap: 12 }}
+              data-testid="workflow-top-left-panel"
+            >
+              {isRequestAccessScopeAvailable && (
+                <WorkflowScopeSwitch scope={scope} onScopeChange={(nextScope) => onScopeChange?.(nextScope)} />
+              )}
+              <EntityStatusSyncSetting />
+              {isRequestAccessScopeAvailable && scope === 'REQUEST_ACCESS' && (
+                // width 0 + min-width 100%: the select fills the first column, which the scope buttons size
+                <div style={{ gridColumn: 1, width: 0, minWidth: '100%' }}>
+                  <RequestAccessValidatorGroup />
+                </div>
+              )}
             </Panel>
             {nodes.length ? (
               <Panel position="top-right" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
