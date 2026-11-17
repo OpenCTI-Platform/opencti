@@ -5388,6 +5388,7 @@
   "Several form intakes have this name": "Mehrere Formularerfassungen haben diesen Namen",
   "Several platform nodes serve the API: no session is logged out when its last tab is closed.": "Mehrere Plattformknoten stellen die API bereit: Keine Sitzung wird beim Schließen ihres letzten Tabs abgemeldet.",
   "Show procedure heatmap": "Prozedur-Heatmap anzeigen",
+  "The procedure heatmap could not be loaded": "Die Prozedur-Heatmap konnte nicht geladen werden",
   "Several playbooks have this name: import it as a copy": "Mehrere Playbooks tragen diesen Namen: als Kopie importieren",
   "Severity": "Schweregrad",
   "severity": "Schweregrad",

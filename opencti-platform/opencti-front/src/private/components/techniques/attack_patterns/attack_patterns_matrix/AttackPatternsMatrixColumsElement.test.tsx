@@ -34,4 +34,18 @@ describe('AttackPatternsMatrixColumnsElement', () => {
     expect(screen.queryByLabelText('T1059 - Command, 2 procedures')).not.toBeInTheDocument();
     expect(screen.getByText('Command')).toBeInTheDocument();
   });
+  it('draws the should-cover icon in the dark label colour on a heat-filled cell', () => {
+    testRender(
+      <AttackPatternsMatrixColumnsElement
+        config={config}
+        attackPattern={{ ...attackPattern, isOverlapping: false } as FilteredSubAttackPattern}
+        handleOpen={vi.fn()}
+        isSecurityPlatform={false}
+        attackPatternIdsToOverlap={[]}
+        decoration={decoration}
+      />,
+    );
+    // The error red would vanish on the red end of the heat scale; the icon takes the cell's dark label colour instead.
+    expect(screen.getByTestId('CloseOutlinedIcon')).not.toHaveClass('MuiSvgIcon-colorError');
+  });
 });

@@ -5388,6 +5388,7 @@
   "Several form intakes have this name": "この名前のフォームインテイクが複数あります",
   "Several platform nodes serve the API: no session is logged out when its last tab is closed.": "複数のプラットフォームノードがAPIを提供しています：最後のタブを閉じてもセッションはログアウトされません。",
   "Show procedure heatmap": "プロシージャのヒートマップを表示",
+  "The procedure heatmap could not be loaded": "プロシージャのヒートマップを読み込めませんでした",
   "Several playbooks have this name: import it as a copy": "この名前のプレイブックが複数あります：コピーとしてインポートしてください",
   "Severity": "重大度",
   "severity": "重大度",

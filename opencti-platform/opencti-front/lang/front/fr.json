@@ -5388,6 +5388,7 @@
   "Several form intakes have this name": "Plusieurs formulaires de saisie portent ce nom",
   "Several platform nodes serve the API: no session is logged out when its last tab is closed.": "Plusieurs nœuds de la plateforme servent l'API : aucune session n'est déconnectée à la fermeture de son dernier onglet.",
   "Show procedure heatmap": "Afficher la carte thermique des procédures",
+  "The procedure heatmap could not be loaded": "La carte thermique des procédures n'a pas pu être chargée",
   "Several playbooks have this name: import it as a copy": "Plusieurs playbooks portent ce nom : importez-le en copie",
   "Severity": "Sévérité",
   "severity": "Sévérité",

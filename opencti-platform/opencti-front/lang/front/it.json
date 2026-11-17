@@ -5388,6 +5388,7 @@
   "Several form intakes have this name": "Più moduli di acquisizione hanno questo nome",
   "Several platform nodes serve the API: no session is logged out when its last tab is closed.": "Più nodi della piattaforma servono l'API: nessuna sessione viene disconnessa alla chiusura della sua ultima scheda.",
   "Show procedure heatmap": "Mostra la mappa di calore delle procedure",
+  "The procedure heatmap could not be loaded": "Impossibile caricare la mappa di calore delle procedure",
   "Several playbooks have this name: import it as a copy": "Più playbook hanno questo nome: importalo come copia",
   "Severity": "Severità",
   "severity": "severità",

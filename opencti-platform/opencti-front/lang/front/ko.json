@@ -5388,6 +5388,7 @@
   "Several form intakes have this name": "이 이름의 양식 접수가 여러 개 있습니다",
   "Several platform nodes serve the API: no session is logged out when its last tab is closed.": "여러 플랫폼 노드가 API를 제공하고 있습니다: 마지막 탭을 닫아도 세션이 로그아웃되지 않습니다.",
   "Show procedure heatmap": "절차 히트맵 표시",
+  "The procedure heatmap could not be loaded": "절차 히트맵을 불러올 수 없습니다",
   "Several playbooks have this name: import it as a copy": "이 이름을 가진 플레이북이 여러 개 있습니다: 사본으로 가져오세요",
   "Severity": "심각도",
   "severity": "심각도",

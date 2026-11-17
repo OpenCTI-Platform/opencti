@@ -5,9 +5,11 @@ import { useFormatter } from '../../../../../components/i18n';
 
 interface AttackPatternsMatrixShouldCoverIconProps {
   isOverlapping: boolean;
+  // Overrides the success/error colour, e.g. to stay readable on a heat-filled cell.
+  color?: string;
 }
 
-const AttackPatternsMatrixShouldCoverIcon = ({ isOverlapping }: AttackPatternsMatrixShouldCoverIconProps) => {
+const AttackPatternsMatrixShouldCoverIcon = ({ isOverlapping, color }: AttackPatternsMatrixShouldCoverIconProps) => {
   const { t_i18n } = useFormatter();
   return (
     <Tooltip
@@ -19,8 +21,8 @@ const AttackPatternsMatrixShouldCoverIcon = ({ isOverlapping }: AttackPatternsMa
       }}
     >
       {isOverlapping
-        ? <CheckOutlined fontSize="medium" color="success" />
-        : <CloseOutlined fontSize="medium" color="error" />
+        ? <CheckOutlined fontSize="medium" color={color ? undefined : 'success'} sx={color ? { color } : undefined} />
+        : <CloseOutlined fontSize="medium" color={color ? undefined : 'error'} sx={color ? { color } : undefined} />
       }
     </Tooltip>
   );

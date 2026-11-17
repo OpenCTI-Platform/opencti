@@ -5388,6 +5388,7 @@
   "Several form intakes have this name": "有多个表单接入使用此名称",
   "Several platform nodes serve the API: no session is logged out when its last tab is closed.": "多个平台节点正在提供 API：关闭最后一个标签页时不会注销任何会话。",
   "Show procedure heatmap": "显示过程热图",
+  "The procedure heatmap could not be loaded": "无法加载过程热图",
   "Several playbooks have this name: import it as a copy": "有多个剧本使用此名称：请作为副本导入",
   "Severity": "严重程度",
   "severity": "严重性",

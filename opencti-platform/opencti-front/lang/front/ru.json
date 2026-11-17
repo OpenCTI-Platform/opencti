@@ -5388,6 +5388,7 @@
   "Several form intakes have this name": "Несколько форм приема данных имеют это имя",
   "Several platform nodes serve the API: no session is logged out when its last tab is closed.": "API обслуживают несколько узлов платформы: сеансы не завершаются при закрытии последней вкладки.",
   "Show procedure heatmap": "Показать тепловую карту процедур",
+  "The procedure heatmap could not be loaded": "Не удалось загрузить тепловую карту процедур",
   "Several playbooks have this name: import it as a copy": "Это имя носят несколько плейбуков: импортируйте его как копию",
   "Severity": "Критичность",
   "severity": "критичность",
