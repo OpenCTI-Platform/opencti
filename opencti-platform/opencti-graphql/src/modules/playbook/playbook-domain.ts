@@ -458,7 +458,7 @@ export const playbookDeleteLink = async (context: AuthContext, user: AuthUser, i
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
 };
 
-type PlaybookCreationType = {
+export type PlaybookCreationType = {
   name: string;
   description?: string | null;
   playbook_start?: string;
@@ -544,8 +544,12 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
     playbook_mode: config.playbook_mode,
     playbook_definition: config.playbook_definition,
   };
-  const importPlaybook = await createPlaybook(context, user, importData);
-  const importPlaybookId = importPlaybook.id;
+  const importPlaybook = await playbookAddFromImport(context, user, importData);
+  return importPlaybook.id;
+};
+
+export const playbookAddFromImport = async (context: AuthContext, user: AuthUser, input: PlaybookCreationType) => {
+  const importPlaybook = await createPlaybook(context, user, input);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -553,12 +557,12 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
     event_access: 'extended',
     message: `import ${importPlaybook.name} playbook`,
     context_data: {
-      id: importPlaybookId,
+      id: importPlaybook.id,
       entity_type: ENTITY_TYPE_PLAYBOOK,
       input: importPlaybook,
     },
   });
-  return importPlaybookId;
+  return importPlaybook;
 };
 
 export const playbookDuplicate = async (context: AuthContext, user: AuthUser, id: string) => {

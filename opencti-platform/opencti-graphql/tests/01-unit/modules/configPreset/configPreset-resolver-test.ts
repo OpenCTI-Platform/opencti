@@ -284,6 +284,18 @@ describe('Config preset exportable types query', () => {
         itemsPageInfo: onePage(1),
       },
       {
+        key: 'playbooks',
+        label: 'Playbooks',
+        description: 'Playbook definitions, imported stopped',
+        group: { key: 'automationRules', label: 'Automation & Rules' },
+        items: [
+          { key: 'Enrich reports', label: 'Enrich reports', translatable: false, dependsOn: [], isDefault: false },
+          { key: 'Enrich reports (1)', label: 'Enrich reports', translatable: false, dependsOn: [], isDefault: false },
+          { key: 'Triage/Phishing', label: 'Triage/Phishing', translatable: false, dependsOn: [], isDefault: false },
+        ],
+        itemsPageInfo: onePage(3),
+      },
+      {
         key: 'ruleEngine',
         label: 'Rule engine',
         description: 'Activation of the inference rules',
@@ -333,7 +345,7 @@ describe('Config preset exportable types query', () => {
     expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
       ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['labels', false], ['exclusionLists', false], ['killChainPhases', false],
-      ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['connectors', true], ['ruleEngine', false],
+      ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['connectors', true], ['playbooks', true], ['ruleEngine', false],
     ]);
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
@@ -382,6 +394,7 @@ describe('Config preset exportable types query', () => {
       ['statusTemplates', 'taxonomy'],
       ['caseTemplates', 'taxonomy'],
       ['connectors', 'integrations'],
+      ['playbooks', 'automationRules'],
       ['ruleEngine', 'automationRules'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);

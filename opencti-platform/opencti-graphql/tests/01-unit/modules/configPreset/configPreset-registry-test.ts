@@ -15,6 +15,7 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   fullEntitiesThroughRelationsToList: vi.fn(),
   pageEntitiesConnection: vi.fn(),
   storeLoadById: vi.fn(),
+  internalFindByIdsMapped: vi.fn(),
 }));
 // The markings of a group are read from the cache
 vi.mock('../../../../src/database/cache', async (importOriginal) => {
@@ -40,7 +41,7 @@ vi.mock('../../../../src/domain/rules', async (importOriginal) => ({
 }));
 
 import { getRules, RULES_DECLARATION } from '../../../../src/domain/rules';
-import { fullEntitiesList, fullRelationsList, pageEntitiesConnection, storeLoadById, topEntitiesList } from '../../../../src/database/middleware-loader';
+import { fullEntitiesList, fullRelationsList, internalFindByIdsMapped, pageEntitiesConnection, storeLoadById, topEntitiesList } from '../../../../src/database/middleware-loader';
 import { Readable } from 'node:stream';
 import { downloadFile } from '../../../../src/database/raw-file-storage';
 import { PLATFORM_VERSION } from '../../../../src/config/conf';
@@ -63,6 +64,7 @@ import { customStatusTemplate, defaultStatusTemplate } from './configPreset-stat
 import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemplates-fixtures';
 import { mitreConnector } from './configPreset-connectors-fixtures';
 import { exportConnector } from '../../../../src/modules/connector/connector-export';
+import { enrichPlaybook, EXPORTED_PLAYBOOK_DEFINITION, playbookAuthor } from './configPreset-playbooks-fixtures';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'admin-id', capabilities: [{ name: 'BYPASS' }] } as AuthUser;
@@ -111,6 +113,7 @@ describe('Config preset registry', () => {
     withSettings({});
     mockConfigPresetLoaders(entitySettings);
     withRules();
+    vi.mocked(internalFindByIdsMapped).mockResolvedValue({ [playbookAuthor.id]: playbookAuthor } as never);
     vi.mocked(roleCapabilities).mockImplementation(async (_ctx, _user, roleId, type = 'has-capability') => {
       return ROLE_CAPABILITIES[roleId][type].map((name) => ({ id: `${name}-id`, name })) as never;
     });
@@ -208,6 +211,14 @@ describe('Config preset registry', () => {
         itemIds: [fraudCaseTemplate.standard_id, phishingCaseTemplate.standard_id],
       },
       { id: 'connectors', label: 'Connectors', description: 'Managed connectors and their parameters, without their secrets', group: 'integrations', itemIds: ['mitre'] },
+      // The playbooks by name; the next playbooks of the same name by creation date
+      {
+        id: 'playbooks',
+        label: 'Playbooks',
+        description: 'Playbook definitions, imported stopped',
+        group: 'automationRules',
+        itemIds: ['Enrich reports', 'Enrich reports (1)', 'Triage/Phishing'],
+      },
       // Every rule the platform declares, by its id
       {
         id: 'ruleEngine',
@@ -220,7 +231,7 @@ describe('Config preset registry', () => {
   });
 
   it('marks as requiring the Enterprise Edition the families of an Enterprise Edition setting only', () => {
-    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark', 'connectors']);
+    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark', 'connectors', 'playbooks']);
   });
 
   it('translates the static labels only, never a theme name, a label value, an exclusion list name, a phase name, a vocabulary entry, a status template or a case template name', async () => {
@@ -258,6 +269,9 @@ describe('Config preset registry', () => {
       ['Fraud investigation', false],
       ['Phishing triage', false],
       ['MITRE', false],
+      ['Enrich reports', false],
+      ['Enrich reports', false],
+      ['Triage/Phishing', false],
       ...RULES_DECLARATION.map(({ name }) => [name, true]),
     ]);
   });
@@ -300,6 +314,9 @@ describe('Config preset registry', () => {
       `taxonomy/case_templates/${fraudCaseTemplate.standard_id}.json`,
       `taxonomy/case_templates/${phishingCaseTemplate.standard_id}.json`,
       'integrations/connectors/mitre.json',
+      'automation_rules/playbooks/Enrich reports.json',
+      'automation_rules/playbooks/Enrich reports (1).json',
+      'automation_rules/playbooks/Triage_Phishing.json',
       ...RULES_DECLARATION.map(({ id }) => `automation_rules/rule_engine/${id}.json`),
     ]);
     expect(new Set(paths).size).toBe(paths.length);
@@ -409,6 +426,35 @@ describe('Config preset registry', () => {
     it('exports a whitemark that is not set as null, to keep a stable file shape', async () => {
       withSettings({ platform_whitemark: undefined });
       expect(await (await findItem('whitemark', 'whitemark')).exporter(context, user)).toEqual({ platform_whitemark: null });
+    });
+  });
+
+  describe('playbooks', () => {
+    it('exports the definition as it is, its users referenced by standard id, never its running state', async () => {
+      const exported = await exportConfigPresetItem(context, user, findFamily('playbooks'), await findItem('playbooks', 'Enrich reports'));
+      expect(exported).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'automationRules.playbooks',
+        id: 'Enrich reports',
+        configuration: {
+          name: 'Enrich reports',
+          description: enrichPlaybook.description,
+          playbook_start: 'node-start',
+          playbook_definition: EXPORTED_PLAYBOOK_DEFINITION,
+        },
+      });
+      expect(internalFindByIdsMapped).toHaveBeenCalledWith(context, expect.anything(), [playbookAuthor.id], { type: 'User', baseData: true });
+    });
+
+    it('keeps a user the platform does not find as it is', async () => {
+      vi.mocked(internalFindByIdsMapped).mockResolvedValueOnce({} as never);
+      const exported = await exportConfigPresetItem(context, user, findFamily('playbooks'), await findItem('playbooks', 'Enrich reports'));
+      expect(exported.configuration.playbook_definition).toEqual(enrichPlaybook.playbook_definition);
+    });
+
+    it('searches the playbooks by name', async () => {
+      const page = await findFamily('playbooks').listItems(context, user, { first: 10, search: 'triage' });
+      expect(page.edges.map(({ node }) => node.id)).toEqual(['Triage/Phishing']);
     });
   });
 

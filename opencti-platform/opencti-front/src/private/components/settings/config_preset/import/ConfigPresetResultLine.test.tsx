@@ -91,6 +91,11 @@ describe('ConfigPresetResultLine', () => {
     ['The confidence level of the service account is not changed', 'The confidence level of the service account is not changed'],
     ['Configuration to provide: MITRE_API_KEY', 'Configuration to provide: MITRE_API_KEY'],
     ['Connector not available on this platform: opencti/connector-mitre', 'Connector not available on this platform: opencti/connector-mitre'],
+    ['Playbook already exists', 'Playbook already exists'],
+    ['Playbook name already exists', 'Playbook name already exists'],
+    ['Several playbooks have this name: import it as a copy', 'Several playbooks have this name: import it as a copy'],
+    ['Users not found: Jane', 'Users not found: Jane'],
+    ['References not found: TLP:RED, ACME', 'References not found: TLP:RED, ACME'],
   ])('translates the reason %s', (reason, text) => {
     testRender(<ConfigPresetResultLine label="Theme" status="SKIPPED" reason={reason} />);
     expect(screen.getByText(text)).toBeInTheDocument();
