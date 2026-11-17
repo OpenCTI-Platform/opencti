@@ -98,6 +98,25 @@ procedures are generated per attack pattern, named `[Verb] [Object] via
 procedure ids also depend on the attack pattern, so another MITRE id with the
 same seed gives other procedures.
 
+## Procedure heatmap
+
+The techniques matrix of a campaign, intrusion set or threat actor can show how
+many of its procedures implement each technique.
+
+1. In Settings > Customization > Rules engine, enable "Usage propagation of
+   procedure techniques" (and "Usage propagation via attribution", so an
+   intrusion set also gets the procedures of the campaigns attributed to it).
+   An entity using a procedure then also uses the techniques the procedure
+   implements.
+2. Open the entity, then Knowledge > Techniques, matrix view.
+3. Turn on "Show procedure heatmap" in the matrix toolbar.
+
+A technique is filled by its own procedure count. A parent technique whose
+sub-techniques have procedures, but which has none itself, gets a coloured
+border. Used techniques without procedures keep a neutral border. With the
+example library, Windigo shows Unix Shell (T1059.004) filled and Command and
+Scripting Interpreter (T1059) with a border.
+
 ## Customer samples
 
 Customer procedure libraries are converted and seeded locally. They are never
