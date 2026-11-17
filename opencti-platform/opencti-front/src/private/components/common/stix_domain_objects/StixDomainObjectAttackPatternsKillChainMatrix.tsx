@@ -4,6 +4,7 @@ import {
   StixDomainObjectAttackPatternsKillChainContainer_data$data,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
+import type { TechniqueUsage } from '../../workspaces/investigations/matrix/matrixTypes';
 
 interface StixDomainObjectAttackPatternsKillChainMatrixProps {
   searchTerm: string;
@@ -14,6 +15,7 @@ interface StixDomainObjectAttackPatternsKillChainMatrixProps {
   attackPatternIdsToOverlap?: string[];
   isModeOnlyActive: boolean;
   expandAll?: boolean;
+  procedureUsage?: Map<string, TechniqueUsage>;
 }
 const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomainObjectAttackPatternsKillChainMatrixProps> = (
   {
@@ -25,6 +27,7 @@ const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomai
     attackPatternIdsToOverlap,
     isModeOnlyActive,
     expandAll,
+    procedureUsage,
   },
 ) => {
   const attackPatterns = (data.attackPatterns?.edges ?? []).map((n) => n.node);
@@ -38,6 +41,7 @@ const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomai
       attackPatternIdsToOverlap={attackPatternIdsToOverlap}
       isModeOnlyActive={isModeOnlyActive}
       expandAll={expandAll}
+      procedureUsage={procedureUsage}
     />
   );
 };
