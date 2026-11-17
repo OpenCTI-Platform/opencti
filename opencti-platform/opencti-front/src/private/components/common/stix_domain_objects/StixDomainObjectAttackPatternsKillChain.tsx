@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import { FileDownloadOutlined, UnfoldLessOutlined, UnfoldMoreOutlined, ViewColumnOutlined, VisibilityOutlined } from '@mui/icons-material';
+import { FileDownloadOutlined, UnfoldLessOutlined, UnfoldMoreOutlined, ViewColumnOutlined, VisibilityOutlined, WhatshotOutlined } from '@mui/icons-material';
 import { ProgressWrench, RelationManyToMany } from 'mdi-material-ui';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -55,6 +55,18 @@ import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { containerTypes } from '../../../../utils/hooks/useAttributes';
 import { useInitCreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 import Stack from '@mui/material/Stack';
+import type {
+  StixDomainObjectAttackPatternsProcedureHeatmapQuery$data,
+} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsProcedureHeatmapQuery.graphql';
+import {
+  buildProcedureHeatmapFilters,
+  PROCEDURE_HEATMAP_ENTITY_TYPES,
+  stixDomainObjectAttackPatternsProcedureHeatmapQuery,
+  toProceduresWithTechniques,
+} from './StixDomainObjectAttackPatternsProcedureHeatmap';
+import { fetchQuery } from '../../../../relay/environment';
+import { buildProcedureUsage } from '../../techniques/attack_patterns/attack_patterns_matrix/procedureHeatmap';
+import type { TechniqueUsage } from '../../workspaces/investigations/matrix/matrixTypes';
 
 export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainQuery(
@@ -125,11 +137,14 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   const { attackPatternIdsToOverlap, setSecurityPlatformIds } = useShouldCoverOverlap();
   const [isModeOnlyActive, setIsModeOnlyActive] = useState<boolean>(false);
   const [expandAll, setExpandAll] = useState<boolean>(false);
+  const [procedureUsage, setProcedureUsage] = useState<Map<string, TechniqueUsage> | undefined>();
   const [queryRef, loadQuery] = useQueryLoader<StixDomainObjectAttackPatternsKillChainQuery>(
     stixDomainObjectAttackPatternsKillChainQuery,
   );
 
   const isSecurityPlatform = entityType === 'SecurityPlatform';
+  const canShowProcedureHeatmap = PROCEDURE_HEATMAP_ENTITY_TYPES.includes(entityType);
+  const isProcedureHeatmapActive = procedureUsage !== undefined;
   const displayButtons = !containerTypes.includes(entityType);
 
   const refetch = React.useCallback(() => {
@@ -148,6 +163,19 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
 
   const handleKillChainChange = (value: string) => {
     setSelectedKillChain(value);
+  };
+
+  // Loads the procedures the entity uses (direct or inferred) and the techniques they implement only when turned on.
+  const handleToggleProcedureHeatmap = async () => {
+    if (isProcedureHeatmapActive) {
+      setProcedureUsage(undefined);
+      return;
+    }
+    const result = await fetchQuery(
+      stixDomainObjectAttackPatternsProcedureHeatmapQuery,
+      { filters: buildProcedureHeatmapFilters(stixDomainObjectId) },
+    ).toPromise() as StixDomainObjectAttackPatternsProcedureHeatmapQuery$data;
+    setProcedureUsage(buildProcedureUsage(toProceduresWithTechniques(result)));
   };
 
   const handleSecurityPlatformsChange = async (newSelectedSecurityPlatforms: EntityOption[]) => {
@@ -323,6 +351,22 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                   </TooltipTrigger>
                   <TooltipContent>{expandAll ? t_i18n('Collapse all') : t_i18n('Expand all')}</TooltipContent>
                 </FdsTooltip>
+
+                {canShowProcedureHeatmap && (
+                  <FdsTooltip>
+                    <TooltipTrigger asChild>
+                      <IconButton
+                        variant="default"
+                        priority="tertiary"
+                        active={isProcedureHeatmapActive}
+                        aria-label={isProcedureHeatmapActive ? t_i18n('Hide procedure heatmap') : t_i18n('Show procedure heatmap')}
+                        onClick={handleToggleProcedureHeatmap}
+                        icon={<WhatshotOutlined />}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>{isProcedureHeatmapActive ? t_i18n('Hide procedure heatmap') : t_i18n('Show procedure heatmap')}</TooltipContent>
+                  </FdsTooltip>
+                )}
               </Stack>
 
               {!isSecurityPlatform && (
@@ -463,6 +507,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             entityType={entityType}
             isModeOnlyActive={isModeOnlyActive}
             expandAll={expandAll}
+            procedureUsage={procedureUsage}
           />
         )}
         {currentView === 'matrix-in-line' && (
