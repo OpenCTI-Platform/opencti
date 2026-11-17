@@ -24,7 +24,7 @@ import { elCount, elFindByIds } from '../database/engine';
 import { workToExportFile } from './work';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_DOMAIN_OBJECTS, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_REPORT,
@@ -34,7 +34,7 @@ import {
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor,
 } from '../schema/stixDomainObject';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, INPUT_CREATED_BY, INPUT_MARKINGS } from '../schema/general';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, INPUT_CREATED_BY, INPUT_MARKINGS, INPUT_OBJECTS } from '../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE } from '../schema/stixRefRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
@@ -55,6 +55,8 @@ import { paginatedForExportContext, paginatedForPathWithEnrichment } from '../mo
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
+import { COVERED_ENTITIES_TYPE } from '../modules/securityCoverage/securityCoverage-domain';
+import { removeHasCoveredForRemovedEntities } from '../modules/securityCoverage/securityCoverage-utils';
 
 export const findStixDomainObjectPaginated = async (context, user, args) => {
   let types = [];
@@ -354,6 +356,19 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   }
   // Start the element edition
   const { element: updatedElem } = await updateAttribute(context, user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, input, opts);
+  // Objects removed from a covered container by a patch (bulk "remove from container" task, API clients)
+  // may leave the assessed scope, so the has-covered relationships of the security coverage results must follow.
+  if (COVERED_ENTITIES_TYPE.includes(stixDomainObject.entity_type)) {
+    const removedObjectIds = input
+      .filter((inputData) => inputData.key === INPUT_OBJECTS && inputData.operation === UPDATE_OPERATION_REMOVE)
+      .flatMap((inputData) => inputData.value ?? []);
+    if (removedObjectIds.length > 0) {
+      // Values can be standard ids, resolve them since has-covered relationships are indexed on internal ids.
+      // Only domain objects can be covered, so other removed objects (observables, relationships) are not resolved.
+      const removedEntities = await elFindByIds(context, user, removedObjectIds, { indices: READ_INDEX_STIX_DOMAIN_OBJECTS, baseData: true });
+      await removeHasCoveredForRemovedEntities(context, stixDomainObject.internal_id, removedEntities.map((entity) => entity.internal_id));
+    }
+  }
   // If indicator is score patched, we also patch the score of all observables attached to the indicator
   if (stixDomainObject.entity_type === ENTITY_TYPE_INDICATOR && input.key === 'x_opencti_score') {
     const observables = await fullEntitiesThroughRelationsToList(context, user, stixObjectId, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);

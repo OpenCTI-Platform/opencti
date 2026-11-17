@@ -9,7 +9,7 @@ import { addAttackPattern } from '../../../../src/domain/attackPattern';
 import { addCampaign } from '../../../../src/domain/campaign';
 import { addIntrusionSet } from '../../../../src/domain/intrusionSet';
 import { addReport } from '../../../../src/domain/report';
-import { stixDomainObjectAddRelation, stixDomainObjectDelete, stixDomainObjectDeleteRelation } from '../../../../src/domain/stixDomainObject';
+import { stixDomainObjectAddRelation, stixDomainObjectDelete, stixDomainObjectDeleteRelation, stixDomainObjectEditField } from '../../../../src/domain/stixDomainObject';
 import { addStixCoreRelationship, stixCoreRelationshipDelete, stixCoreRelationshipDeleteByFromAndTo } from '../../../../src/domain/stixCoreRelationship';
 import { fullRelationsList, storeLoadById } from '../../../../src/database/middleware-loader';
 import { deleteElementById, storeLoadByIdWithRefs } from '../../../../src/database/middleware';
@@ -24,6 +24,8 @@ import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_CONTAINER
 import type { BasicStoreEntity, BasicStoreRelation, StoreEntityReport } from '../../../../src/types/store';
 import { addVulnerability } from '../../../../src/modules/vulnerability/vulnerability-domain';
 import { ENTITY_TYPE_VULNERABILITY } from '../../../../src/modules/vulnerability/vulnerability-types';
+import { INPUT_OBJECTS } from '../../../../src/schema/general';
+import { EditOperation } from '../../../../src/generated/graphql';
 
 describe('Function transformHasCoveredFromId', () => {
   let securityCoverage: BasicStoreEntitySecurityCoverage;
@@ -166,6 +168,29 @@ describe('Security coverage has-covered cleanup when an entity leaves the covere
     expect(await listCoveredTargetIds(result.id)).toEqual(sortedIds(stillInReport));
     // The entity is only removed from the report, it must still exist
     expect(await storeLoadById(testContext, ADMIN_USER, removed.id, ENTITY_TYPE_ATTACK_PATTERN)).toBeDefined();
+
+    await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.standard_id);
+    await stixDomainObjectDelete(testContext, ADMIN_USER, report.internal_id, ENTITY_TYPE_CONTAINER_REPORT);
+    await deleteAttackPatterns(attackPatterns);
+  });
+
+  it('should remove the has-covered of every entity removed from a covered report by a field patch, keeping the other ones', async () => {
+    const prefix = 'sc-cleanup-field-patch';
+    const attackPatterns = await createAttackPatterns(prefix);
+    const report: StoreEntityReport = await addReport(testContext, ADMIN_USER, {
+      name: `${prefix} report`,
+      published: '2026-04-24T19:15:00.000Z',
+      objects: attackPatterns.map((attackPattern) => attackPattern.standard_id),
+    });
+    const { securityCoverage, result } = await createCoverageCoveringAll(prefix, report.standard_id, attackPatterns);
+
+    // The bulk "remove from container" task patches the objects field with internal ids, API clients often send standard ids
+    const [firstRemoved, secondRemoved, stillInReport] = attackPatterns;
+    await stixDomainObjectEditField(testContext, ADMIN_USER, report.internal_id, [
+      { key: INPUT_OBJECTS, value: [firstRemoved.internal_id, secondRemoved.standard_id], operation: EditOperation.Remove },
+    ]);
+
+    expect(await listCoveredTargetIds(result.id)).toEqual(sortedIds([stillInReport]));
 
     await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.standard_id);
     await stixDomainObjectDelete(testContext, ADMIN_USER, report.internal_id, ENTITY_TYPE_CONTAINER_REPORT);
