@@ -376,6 +376,11 @@
     "lock_key": "retention_manager_lock",
     "interval": 30000
   },
+  "session_presence_manager": {
+    "enabled": true,
+    "lock_key": "session_presence_manager_lock",
+    "interval": 5000
+  },
   "file_index_manager": {
     "enabled": true,
     "lock_key": "file_index_manager_lock",
