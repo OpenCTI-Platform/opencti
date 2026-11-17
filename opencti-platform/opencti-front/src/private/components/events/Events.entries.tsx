@@ -10,6 +10,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/events/incidents',
     label: 'Incidents',
+    entityType: 'Incident',
     icon: <Fire fontSize="small" />,
     keywords: ['breach', 'compromise', 'intrusion', 'security event', 'alert', 'cyber attack'],
     ...knowledge,
@@ -17,6 +18,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/events/sightings',
     label: 'Sightings',
+    entityType: 'stix-sighting-relationship',
     icon: <VisibilityOutlined fontSize="small" />,
     keywords: ['seen', 'Detection', 'Match', 'observed in', 'True positive', 'False positive'],
     ...knowledge,
@@ -24,6 +26,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/events/observed_data',
     label: 'Observed datas',
+    entityType: 'Observed-Data',
     icon: <WifiTetheringOutlined fontSize="small" />,
     keywords: ['telemetry', 'raw observation', 'Logs', 'evidence'],
     ...knowledge,

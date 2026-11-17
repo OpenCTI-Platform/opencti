@@ -10,6 +10,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/threats/threat_actors_group',
     label: 'Threat actors (group)',
+    entityType: 'Threat-Actor-Group',
     icon: <AccountMultipleOutline fontSize="small" />,
     keywords: ['Adversary', 'apt group', 'gang', 'ransomware group', 'cybercrime group', 'nation-state', 'state-sponsored', 'hacktivist'],
     ...knowledge,
@@ -17,6 +18,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/threats/threat_actors_individual',
     label: 'Threat actors (individual)',
+    entityType: 'Threat-Actor-Individual',
     icon: <LaptopAccount fontSize="small" />,
     keywords: ['hacker', 'persona', 'insider', 'cybercriminal', 'Alias', 'handle'],
     ...knowledge,
@@ -24,6 +26,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/threats/intrusion_sets',
     label: 'Intrusion sets',
+    entityType: 'Intrusion-Set',
     icon: <DiamondOutlined fontSize="small" />,
     keywords: ['apt', 'threat group', 'activity group', 'Adversary', 'actor', 'Cluster', 'unc'],
     ...knowledge,
@@ -31,6 +34,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/threats/campaigns',
     label: 'Campaigns',
+    entityType: 'Campaign',
     icon: <ChessKnight fontSize="small" />,
     keywords: ['Operation', 'attack wave', 'activity cluster', 'threat activity'],
     ...knowledge,

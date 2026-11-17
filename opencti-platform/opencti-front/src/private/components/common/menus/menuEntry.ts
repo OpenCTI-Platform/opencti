@@ -9,6 +9,8 @@ export interface MenuEntry {
   isEE?: boolean;
   /** Entry hidden unless the platform has a valid Enterprise Edition licence. */
   requiresEE?: boolean;
+  /** Entity type the page lists: the entry is hidden when the platform settings hide this exact type. */
+  entityType?: string;
   /** Extra words matching this entry in the main search (aliases, CTI jargon...). */
   keywords?: string[];
   /** Page reached outside the left bar (top bar icons...): indexed in the main search without a left bar subsection, with this breadcrumb. */

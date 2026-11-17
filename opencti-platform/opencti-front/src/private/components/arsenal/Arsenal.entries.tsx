@@ -10,6 +10,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/arsenal/malwares',
     label: 'Malwares',
+    entityType: 'Malware',
     icon: <Biohazard fontSize="small" />,
     keywords: ['malware family', 'ransomware', 'remote access trojan', 'backdoor', 'loader', 'infostealer', 'botnet', 'Implant', 'virus'],
     ...knowledge,
@@ -17,6 +18,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/arsenal/channels',
     label: 'Channels',
+    entityType: 'Channel',
     icon: <SurroundSoundOutlined fontSize="small" />,
     keywords: ['telegram', 'discord', 'forum', 'dark web', 'deep web', 'social media', 'paste site', 'marketplace', 'communication'],
     ...knowledge,
@@ -24,6 +26,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/arsenal/tools',
     label: 'Tools',
+    entityType: 'Tool',
     icon: <WebAssetOutlined fontSize="small" />,
     keywords: ['software', 'hacktool', 'dual-use', 'lolbin', 'living off the land', 'cobalt strike', 'mimikatz', 'utility'],
     ...knowledge,
@@ -31,6 +34,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/arsenal/vulnerabilities',
     label: 'Vulnerabilities',
+    entityType: 'Vulnerability',
     icon: <BugReportOutlined fontSize="small" />,
     keywords: ['Vulnerability', 'epss', 'CISA KEV', 'cwe', 'cpe', 'nvd', 'zero-day', '0day', 'patch', 'advisory', 'cve', 'cvss', 'exploit', 'weakness'],
     ...knowledge,

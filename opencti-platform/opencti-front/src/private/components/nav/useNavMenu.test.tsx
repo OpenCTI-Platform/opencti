@@ -1,6 +1,7 @@
 import React from 'react';
-import { describe, expect, it } from 'vitest';
-import { filterNavGroups, NavItem, RawNavGroup } from './useNavMenu';
+import { describe, expect, it, vi } from 'vitest';
+import { testRenderHook } from '../../../utils/tests/test-render';
+import useNavMenu, { filterNavGroups, NavItem, RawNavGroup } from './useNavMenu';
 
 const item = (id: string, extra: Partial<NavItem> = {}): NavItem => ({
   id, label: id, icon: <svg />, link: `/${id}`, ...extra,
@@ -53,5 +54,33 @@ describe('filterNavGroups', () => {
 
   it('returns nothing at all when the user may see nothing', () => {
     expect(filterNavGroups([{ id: 'g', items: [false] }, false])).toEqual([]);
+  });
+});
+
+// An entry is hidden by its own entity type: hiding IPv4-Addr must not hide the Observables page they share with
+// Stix-Cyber-Observable (both resolve to the same URL), while hiding Stix-Cyber-Observable itself must.
+const hidden: string[] = [];
+vi.mock('../../../utils/hooks/useEntitySettings', () => ({ useHiddenEntities: () => hidden }));
+vi.mock('../../../utils/hooks/useAuth', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  default: () => ({ me: { draftContext: null } }),
+}));
+vi.mock('../../../utils/hooks/useHelper', () => ({ default: () => ({ isTrashEnable: () => true }) }));
+vi.mock('../common/menus/useVisibleEntries', () => ({ default: (entries: unknown[]) => entries }));
+
+describe('Hook: useNavMenu hidden entity types', () => {
+  const observablesLinks = () => testRenderHook(() => useNavMenu()).hook.result.current
+    .flatMap((group) => group.items.flatMap((i) => i.subItems ?? []))
+    .map((sub) => sub.link)
+    .filter((link) => link === '/dashboard/observations/observables');
+
+  it('keeps Observables when only one observable type is hidden', () => {
+    hidden.splice(0, hidden.length, 'IPv4-Addr');
+    expect(observablesLinks()).toHaveLength(1);
+  });
+
+  it('hides Observables when Stix-Cyber-Observable is hidden', () => {
+    hidden.splice(0, hidden.length, 'Stix-Cyber-Observable');
+    expect(observablesLinks()).toHaveLength(0);
   });
 });

@@ -10,6 +10,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/locations/regions',
     label: 'Regions',
+    entityType: 'Region',
     icon: <PublicOutlined fontSize="small" />,
     keywords: ['continent', 'subregion', 'Area', 'geography', 'Location'],
     ...knowledge,
@@ -17,6 +18,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/locations/countries',
     label: 'Countries',
+    entityType: 'Country',
     icon: <FlagOutlined fontSize="small" />,
     keywords: ['Country', 'nation state', 'geography', 'Location', 'Map'],
     ...knowledge,
@@ -24,6 +26,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/locations/administrative_areas',
     label: 'Administrative areas',
+    entityType: 'Administrative-Area',
     icon: <MapOutlined fontSize="small" />,
     keywords: ['State', 'province', 'county', 'department', 'district', 'geography'],
     ...knowledge,
@@ -31,6 +34,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/locations/cities',
     label: 'Cities',
+    entityType: 'City',
     icon: <CityVariantOutline fontSize="small" />,
     keywords: ['City', 'town', 'geolocation', 'geography'],
     ...knowledge,
@@ -38,6 +42,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/locations/positions',
     label: 'Positions',
+    entityType: 'Position',
     icon: <PlaceOutlined fontSize="small" />,
     keywords: ['coordinates', 'gps', 'Latitude', 'Longitude', 'address', 'geolocation'],
     ...knowledge,

@@ -9,6 +9,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/observations/observables',
     label: 'Observables',
+    entityType: 'Stix-Cyber-Observable',
     icon: <HexagonOutline fontSize="small" />,
     keywords: ['sco', 'cyber observable', 'Attribute', 'ipv4', 'Domain', 'Hostname', 'URL', 'hash', 'md5', 'sha256', 'Email address', 'technical data'],
     ...knowledge,
@@ -16,6 +17,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/observations/artifacts',
     label: 'Artifacts',
+    entityType: 'Artifact',
     icon: <ArchiveOutline fontSize="small" />,
     keywords: ['malware sample', 'file sample', 'binary', 'payload', 'download sample'],
     ...knowledge,
@@ -23,6 +25,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/observations/indicators',
     label: 'Indicators',
+    entityType: 'Indicator',
     icon: <ShieldSearch fontSize="small" />,
     keywords: ['iocs', 'indicator of compromise', 'detection rule', 'signature', 'yara', 'sigma', 'snort', 'suricata', 'stix pattern', 'blocklist'],
     ...knowledge,
@@ -30,6 +33,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/observations/infrastructures',
     label: 'Infrastructures',
+    entityType: 'Infrastructure',
     icon: <ServerNetwork fontSize="small" />,
     keywords: ['c2', 'c&c', 'command and control', 'adversary infrastructure', 'Server', 'hosting', 'botnet'],
     ...knowledge,

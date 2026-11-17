@@ -9,6 +9,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/entities/sectors',
     label: 'Sectors',
+    entityType: 'Sector',
     icon: <DomainOutlined fontSize="small" />,
     keywords: ['vertical', 'Victimology', 'targeted industry', 'naics'],
     ...knowledge,
@@ -16,6 +17,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/entities/events',
     label: 'Events',
+    entityType: 'Event',
     icon: <EventOutlined fontSize="small" />,
     keywords: ['real-world event', 'conference', 'election', 'summit', 'geopolitical event', 'crisis', 'news'],
     ...knowledge,
@@ -23,6 +25,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/entities/organizations',
     label: 'Organizations',
+    entityType: 'Organization',
     icon: <AccountBalanceOutlined fontSize="small" />,
     keywords: ['company', 'Enterprise', 'Target', 'Vendor', 'Identity', 'Victimology'],
     ...knowledge,
@@ -30,6 +33,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/entities/security_platforms',
     label: 'Security platforms',
+    entityType: 'SecurityPlatform',
     icon: <SecurityOutlined fontSize="small" />,
     keywords: ['security product', 'EDR', 'XDR', 'SIEM', 'Firewall', 'detection platform', 'security stack'],
     ...knowledge,
@@ -37,6 +41,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/entities/systems',
     label: 'Systems',
+    entityType: 'System',
     icon: <StorageOutlined fontSize="small" />,
     keywords: ['Host', 'Server', 'Endpoint', 'it asset', 'attack surface'],
     ...knowledge,
@@ -44,6 +49,7 @@ const menuEntries: MenuEntry[] = [
   {
     path: '/dashboard/entities/individuals',
     label: 'Individuals',
+    entityType: 'Individual',
     icon: <PersonOutlined fontSize="small" />,
     keywords: ['person', 'people', 'Identity', 'victim', 'employee', 'vip', 'contact'],
     ...knowledge,

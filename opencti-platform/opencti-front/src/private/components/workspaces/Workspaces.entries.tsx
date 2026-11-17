@@ -5,12 +5,14 @@ import { EXPLORE, INVESTIGATION } from '../../../utils/hooks/capabilities';
 export const customDashboards: MenuEntry = {
   path: '/dashboard/workspaces/dashboards',
   label: 'Custom dashboards',
+  entityType: 'Dashboard',
   keywords: ['Widget', 'Visualization', 'chart', 'kpi', 'Metrics', 'reporting'],
   requiredCapabilities: [EXPLORE],
 };
 export const publicDashboards: MenuEntry = {
   path: '/dashboard/workspaces/dashboards_public',
   label: 'Public dashboards',
+  entityType: 'Dashboard',
   keywords: ['shared dashboard', 'public link', 'embed', 'external sharing'],
   requiredCapabilities: [EXPLORE],
 };
