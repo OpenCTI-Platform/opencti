@@ -1946,26 +1946,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/chatbot@npm:3.33.4":
-  version: 3.33.4
-  resolution: "@filigran/chatbot@npm:3.33.4"
+"@filigran/chatbot@npm:3.36.0":
+  version: 3.36.0
+  resolution: "@filigran/chatbot@npm:3.36.0"
   dependencies:
     remark-parse: "npm:^11.0.0"
     unified: "npm:^11.0.0"
   peerDependencies:
-    "@filigran/design-system": ^1.5.1
+    "@filigran/design-system": ^1.5.3
     react: ">=18"
     react-dom: ">=18"
     react-markdown: ">=10"
     remark-breaks: ">=4"
     remark-gfm: ">=4"
-  checksum: 10c0/d63d87e9c117f285d3395a5d0e248553c2606756cb3adc59dac3878c2e97725838de9c3c571f37d2ded046b6469169bd980ef6f6e73936be147f93ca521186a8
+  checksum: 10c0/a4c021a5d3c4d986135754cf27b85e98e59a1390ae4c423b1c2f7a24638294609d0124dc027a20b8c892fb4c1a54ba89e7fa34fe6766328994d7f18dd5bd36f0
   languageName: node
   linkType: hard
 
-"@filigran/design-system@npm:1.5.2":
-  version: 1.5.2
-  resolution: "@filigran/design-system@npm:1.5.2"
+"@filigran/design-system@npm:1.5.3":
+  version: 1.5.3
+  resolution: "@filigran/design-system@npm:1.5.3"
   dependencies:
     "@dnd-kit/core": "npm:^6.3.1"
     "@dnd-kit/sortable": "npm:^10.0.0"
@@ -2005,7 +2005,7 @@ __metadata:
     react-dom: ^19.0.0
   bin:
     filigran-design-system: bin/install-skills.mjs
-  checksum: 10c0/9f545dec18e49ea254315fdd9e9267924a95f27aeae06e331d6d66740ed5cdd138d44cb1cb4b9fd2e09663d56f7143c575a568e181a8172e47c5302f2cbb3136
+  checksum: 10c0/9db744b6f2a10e1782d808ebb4d54c246d83849085e0cf98ff2c1683373dada13d582b116fec3323ad01c5b7411914dbd19048b1b56f42407b3a61561ecb493e
   languageName: node
   linkType: hard
 
@@ -2023,6 +2023,23 @@ __metadata:
     react-color: ">=2"
     react-dom: ">=18"
   checksum: 10c0/38207b6ed0a73962c6f9b7843bba63d6c3d7f17f7b757dc6f9a2b1e2cc1d0bec7513b2414547b28c62f61bc21f24670c7267b3de4c6e252a5db389eadf1dd423
+  languageName: node
+  linkType: hard
+
+"@filigran/rich-text-editor@patch:@filigran/rich-text-editor@2.0.1#./patch/filigran-rich-text-editor-2.0.1.patch::locator=opencti%40workspace%3A.":
+  version: 2.0.1
+  resolution: "@filigran/rich-text-editor@patch:@filigran/rich-text-editor@npm%3A2.0.1#./patch/filigran-rich-text-editor-2.0.1.patch::version=2.0.1&hash=79024d&locator=opencti%40workspace%3A."
+  dependencies:
+    "@tiptap/core": "npm:3.30.5"
+    "@tiptap/pm": "npm:3.30.5"
+    "@tiptap/react": "npm:3.30.5"
+  peerDependencies:
+    "@mui/icons-material": ">=5"
+    "@mui/material": ">=5.14.0"
+    react: ">=18"
+    react-color: ">=2"
+    react-dom: ">=18"
+  checksum: 10c0/29f8c13e7ca1df723db049e004ed92b2f4850b596e5aeb82b63e2a2481182bfcb5e48da0724ba93501cf845d87f5bdea9cfd6bee689611891787bdea2549ce13
   languageName: node
   linkType: hard
 
@@ -3612,9 +3629,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/core@npm:1.4.0":
-  version: 1.4.0
-  resolution: "@langchain/core@npm:1.4.0"
+"@langchain/core@npm:1.4.1":
+  version: 1.4.1
+  resolution: "@langchain/core@npm:1.4.1"
   dependencies:
     "@cfworker/json-schema": "npm:^4.1.4"
     "@standard-schema/spec": "npm:^1.1.0"
@@ -3623,7 +3640,7 @@ __metadata:
     mustache: "npm:^4.2.0"
     p-queue: "npm:^6.6.2"
     zod: "npm:^4.6.6"
-  checksum: 10c0/0f3d7a66965b4f9dd47180f75ad6f8e9d2c956d3ad71fc6c0a93f9ab664146dbe6e328c65dac4881698e09ef89f946848a8a1b7cded2c3090ff437ffae92a9ad
+  checksum: 10c0/dec85c097e11031324ed5e5c5c48d7770980b544d3f71e13ea20b4dc2e507be3e202708071cbc1ee4a7d9fa54152af4585e8838cf59f96d7a0ecc623e34ed216
   languageName: node
   linkType: hard
 
@@ -4182,13 +4199,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/x-date-pickers@npm:9.17.0":
-  version: 9.17.0
-  resolution: "@mui/x-date-pickers@npm:9.17.0"
+"@mui/x-date-pickers@npm:9.18.0":
+  version: 9.18.0
+  resolution: "@mui/x-date-pickers@npm:9.18.0"
   dependencies:
     "@babel/runtime": "npm:^7.29.7 || ^8.0.0"
     "@mui/utils": "npm:^9.5.0"
-    "@mui/x-internals": "npm:9.17.0"
+    "@mui/x-internals": "npm:9.18.0"
     "@types/react-transition-group": "npm:^4.4.12"
     clsx: "npm:^2.1.1"
     prop-types: "npm:^15.8.1"
@@ -4226,13 +4243,13 @@ __metadata:
       optional: true
     moment-jalaali:
       optional: true
-  checksum: 10c0/8db5537dd2fcd9497785dc44b90efb6a363af04c03f2d55839331f42e72e74ad285b5b9aba550f98ae588a6d95b919a8c159323c3f7b6f5080627e7f938e62e1
+  checksum: 10c0/ad698bb8edbb4bcf03674a8e3341268b34b2b0a3a6c48c52b4bee6142028efa1c3b4d4cd590decd72d0c6a57afd3374e02208c3acd7f101d64f008f5d29b1812
   languageName: node
   linkType: hard
 
-"@mui/x-internals@npm:9.17.0":
-  version: 9.17.0
-  resolution: "@mui/x-internals@npm:9.17.0"
+"@mui/x-internals@npm:9.18.0":
+  version: 9.18.0
+  resolution: "@mui/x-internals@npm:9.18.0"
   dependencies:
     "@babel/runtime": "npm:^7.29.7 || ^8.0.0"
     "@base-ui/utils": "npm:^0.5.0"
@@ -4240,7 +4257,7 @@ __metadata:
   peerDependencies:
     react: ^17.0.0 || ^18.0.0 || ^19.0.0
     react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/3a0104cb50bbf434e1b5e8af4b9a98954cf55951f9665af2a4e605b301c1dca1e8ed0fb19998fe733e4bf03ed871e0a3d4ef66507c8662e97aa0f2397057a2f4
+  checksum: 10c0/0502c274024629f6229a77d03c3aefbcbdc8ba3eab09eb2aefe83604a5d1445996f98b6e16135011944b8884d26d8442d48578d850af15d0c6fed7f25643b5ea
   languageName: node
   linkType: hard
 
@@ -7682,7 +7699,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/d3-hierarchy@npm:*":
+"@types/d3-hierarchy@npm:*, @types/d3-hierarchy@npm:3.1.7":
   version: 3.1.7
   resolution: "@types/d3-hierarchy@npm:3.1.7"
   checksum: 10c0/873711737d6b8e7b6f1dda0bcd21294a48f75024909ae510c5d2c21fad2e72032e0958def4d9f68319d3aaac298ad09c49807f8bfc87a145a82693b5208613c7
@@ -8648,6 +8665,227 @@ __metadata:
     "@typescript-eslint/types": "npm:8.72.2"
     eslint-visitor-keys: "npm:^5.0.0"
   checksum: 10c0/134e441f0c1d055b6b82f59887bc96d07a89909f8e910622e1e95d7fbf42de9c4fa1910d8335af252910c298b474565d2c34888608130d53238eee1504df9894
+  languageName: node
+  linkType: hard
+
+"@typescript/native@npm:typescript@7.0.2":
+  version: 7.0.2
+  resolution: "typescript@npm:7.0.2"
+  dependencies:
+    "@typescript/typescript-aix-ppc64": "npm:7.0.2"
+    "@typescript/typescript-darwin-arm64": "npm:7.0.2"
+    "@typescript/typescript-darwin-x64": "npm:7.0.2"
+    "@typescript/typescript-freebsd-arm64": "npm:7.0.2"
+    "@typescript/typescript-freebsd-x64": "npm:7.0.2"
+    "@typescript/typescript-linux-arm": "npm:7.0.2"
+    "@typescript/typescript-linux-arm64": "npm:7.0.2"
+    "@typescript/typescript-linux-loong64": "npm:7.0.2"
+    "@typescript/typescript-linux-mips64el": "npm:7.0.2"
+    "@typescript/typescript-linux-ppc64": "npm:7.0.2"
+    "@typescript/typescript-linux-riscv64": "npm:7.0.2"
+    "@typescript/typescript-linux-s390x": "npm:7.0.2"
+    "@typescript/typescript-linux-x64": "npm:7.0.2"
+    "@typescript/typescript-netbsd-arm64": "npm:7.0.2"
+    "@typescript/typescript-netbsd-x64": "npm:7.0.2"
+    "@typescript/typescript-openbsd-arm64": "npm:7.0.2"
+    "@typescript/typescript-openbsd-x64": "npm:7.0.2"
+    "@typescript/typescript-sunos-x64": "npm:7.0.2"
+    "@typescript/typescript-win32-arm64": "npm:7.0.2"
+    "@typescript/typescript-win32-x64": "npm:7.0.2"
+  dependenciesMeta:
+    "@typescript/typescript-aix-ppc64":
+      optional: true
+    "@typescript/typescript-darwin-arm64":
+      optional: true
+    "@typescript/typescript-darwin-x64":
+      optional: true
+    "@typescript/typescript-freebsd-arm64":
+      optional: true
+    "@typescript/typescript-freebsd-x64":
+      optional: true
+    "@typescript/typescript-linux-arm":
+      optional: true
+    "@typescript/typescript-linux-arm64":
+      optional: true
+    "@typescript/typescript-linux-loong64":
+      optional: true
+    "@typescript/typescript-linux-mips64el":
+      optional: true
+    "@typescript/typescript-linux-ppc64":
+      optional: true
+    "@typescript/typescript-linux-riscv64":
+      optional: true
+    "@typescript/typescript-linux-s390x":
+      optional: true
+    "@typescript/typescript-linux-x64":
+      optional: true
+    "@typescript/typescript-netbsd-arm64":
+      optional: true
+    "@typescript/typescript-netbsd-x64":
+      optional: true
+    "@typescript/typescript-openbsd-arm64":
+      optional: true
+    "@typescript/typescript-openbsd-x64":
+      optional: true
+    "@typescript/typescript-sunos-x64":
+      optional: true
+    "@typescript/typescript-win32-arm64":
+      optional: true
+    "@typescript/typescript-win32-x64":
+      optional: true
+  bin:
+    tsc: bin/tsc
+  checksum: 10c0/3dcee51ec8c332492325bcdbf7df48b66668751f127e622ae7d41b6c716eb19184424a45e14f7750f50f340232388b69e6287859155f06a5ce2df76f12cb31cf
+  languageName: node
+  linkType: hard
+
+"@typescript/old@npm:typescript@6.0.3":
+  version: 6.0.3
+  resolution: "typescript@npm:6.0.3"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 10c0/4a25ff5045b984370f48f196b3a0120779b1b343d40b9a68d114ea5e5fff099809b2bb777576991a63a5cd59cf7bffd96ff6fe10afcefbcb8bd6fb96ad4b6606
+  languageName: node
+  linkType: hard
+
+"@typescript/typescript-aix-ppc64@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@typescript/typescript-aix-ppc64@npm:7.0.2"
+  conditions: os=aix & cpu=ppc64
+  languageName: node
+  linkType: hard
+
+"@typescript/typescript-darwin-arm64@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@typescript/typescript-darwin-arm64@npm:7.0.2"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@typescript/typescript-darwin-x64@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@typescript/typescript-darwin-x64@npm:7.0.2"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@typescript/typescript-freebsd-arm64@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@typescript/typescript-freebsd-arm64@npm:7.0.2"
+  conditions: os=freebsd & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@typescript/typescript-freebsd-x64@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@typescript/typescript-freebsd-x64@npm:7.0.2"
+  conditions: os=freebsd & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@typescript/typescript-linux-arm64@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@typescript/typescript-linux-arm64@npm:7.0.2"
+  conditions: os=linux & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@typescript/typescript-linux-arm@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@typescript/typescript-linux-arm@npm:7.0.2"
+  conditions: os=linux & cpu=arm
+  languageName: node
+  linkType: hard
+
+"@typescript/typescript-linux-loong64@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@typescript/typescript-linux-loong64@npm:7.0.2"
+  conditions: os=linux & cpu=loong64
+  languageName: node
+  linkType: hard
+
+"@typescript/typescript-linux-mips64el@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@typescript/typescript-linux-mips64el@npm:7.0.2"
+  conditions: os=linux & cpu=mips64el
+  languageName: node
+  linkType: hard
+
+"@typescript/typescript-linux-ppc64@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@typescript/typescript-linux-ppc64@npm:7.0.2"
+  conditions: os=linux & cpu=ppc64
+  languageName: node
+  linkType: hard
+
+"@typescript/typescript-linux-riscv64@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@typescript/typescript-linux-riscv64@npm:7.0.2"
+  conditions: os=linux & cpu=riscv64
+  languageName: node
+  linkType: hard
+
+"@typescript/typescript-linux-s390x@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@typescript/typescript-linux-s390x@npm:7.0.2"
+  conditions: os=linux & cpu=s390x
+  languageName: node
+  linkType: hard
+
+"@typescript/typescript-linux-x64@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@typescript/typescript-linux-x64@npm:7.0.2"
+  conditions: os=linux & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@typescript/typescript-netbsd-arm64@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@typescript/typescript-netbsd-arm64@npm:7.0.2"
+  conditions: os=netbsd & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@typescript/typescript-netbsd-x64@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@typescript/typescript-netbsd-x64@npm:7.0.2"
+  conditions: os=netbsd & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@typescript/typescript-openbsd-arm64@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@typescript/typescript-openbsd-arm64@npm:7.0.2"
+  conditions: os=openbsd & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@typescript/typescript-openbsd-x64@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@typescript/typescript-openbsd-x64@npm:7.0.2"
+  conditions: os=openbsd & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@typescript/typescript-sunos-x64@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@typescript/typescript-sunos-x64@npm:7.0.2"
+  conditions: os=sunos & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@typescript/typescript-win32-arm64@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@typescript/typescript-win32-arm64@npm:7.0.2"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@typescript/typescript-win32-x64@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@typescript/typescript-win32-x64@npm:7.0.2"
+  conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
@@ -11125,6 +11363,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"d3-hierarchy@npm:3.1.3":
+  version: 3.1.3
+  resolution: "d3-hierarchy@npm:3.1.3"
+  checksum: 10c0/539382d5eabac5ef18b8f8c5b601511183e0496d9d42c15b802e7af37f76ae3bbe4f52326a686c21ff58e38f3fc0b0d4342640ddd5685243d5496da47c725561
+  languageName: node
+  linkType: hard
+
 "d3-interpolate@npm:1":
   version: 1.4.0
   resolution: "d3-interpolate@npm:1.4.0"
@@ -12373,13 +12618,14 @@ __metadata:
     "@stylistic/eslint-plugin": "npm:5.10.0"
     "@types/node": "npm:22.20.5"
     "@typescript-eslint/parser": "npm:8.72.2"
+    "@typescript/native": "npm:typescript@7.0.2"
     eslint: "npm:10.14.0"
     eslint-import-resolver-typescript: "npm:4.4.5"
     eslint-plugin-import: "npm:2.32.0"
     globals: "npm:17.14.0"
     jiti: "npm:2.7.0"
     knip: "npm:6.45.1"
-    typescript: "npm:6.0.3"
+    typescript: "npm:@typescript/typescript6@6.0.2"
     typescript-eslint: "npm:8.72.2"
     vite: "npm:8.3.8"
     vitest: "npm:5.1.0"
@@ -18266,9 +18512,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:7.56.0, openai@npm:^7.47.0":
-  version: 7.56.0
-  resolution: "openai@npm:7.56.0"
+"openai@npm:7.57.0, openai@npm:^7.47.0":
+  version: 7.57.0
+  resolution: "openai@npm:7.57.0"
   peerDependencies:
     "@aws-sdk/credential-provider-node": ">=3.972.0 <4"
     "@smithy/hash-node": ">=4.3.0 <5"
@@ -18292,7 +18538,7 @@ __metadata:
       optional: true
     zod:
       optional: true
-  checksum: 10c0/b635d9e0945ba2a891460734d705a7a3523157278e634a42df081b014d7b4490d7349159e44e6e91f1095108485d277f6e92c2f090ab75fa1a751831d33a2f08
+  checksum: 10c0/49f3e1a92a5e29da0fe6ac56730cbc06cdadf89e687fd7427666179fe2d4bb46f7f20cd3dc6df3e0db5285824eaf28922e5beafde9dc74f021bdbfd8b7db1843
   languageName: node
   linkType: hard
 
@@ -18306,9 +18552,9 @@ __metadata:
     "@emotion/styled": "npm:11.14.1"
     "@eslint/js": "npm:10.0.1"
     "@faker-js/faker": "npm:10.6.0"
-    "@filigran/chatbot": "npm:3.33.4"
+    "@filigran/chatbot": "npm:3.36.0"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
-    "@filigran/design-system": "npm:1.5.2"
+    "@filigran/design-system": "npm:1.5.3"
     "@filigran/rich-text-editor": "npm:2.0.1"
     "@fontsource/geologica": "npm:5.3.0"
     "@fontsource/ibm-plex-sans": "npm:5.3.0"
@@ -18321,7 +18567,7 @@ __metadata:
     "@mui/icons-material": "npm:9.5.0"
     "@mui/lab": "npm:9.0.0-beta.10"
     "@mui/material": "npm:9.5.0"
-    "@mui/x-date-pickers": "npm:9.17.0"
+    "@mui/x-date-pickers": "npm:9.18.0"
     "@opentelemetry/api": "npm:1.10.0"
     "@opentelemetry/core": "npm:3.1.1"
     "@opentelemetry/sdk-logs": "npm:3.1.1"
@@ -18335,6 +18581,7 @@ __metadata:
     "@testing-library/jest-dom": "npm:7.0.1"
     "@testing-library/react": "npm:16.3.3"
     "@testing-library/user-event": "npm:14.6.10"
+    "@types/d3-hierarchy": "npm:3.1.7"
     "@types/d3-timer": "npm:3.0.2"
     "@types/eslint-plugin-jsx-a11y": "npm:6.10.1"
     "@types/geojson": "npm:7946.0.16"
@@ -18350,12 +18597,14 @@ __metadata:
     "@types/react-syntax-highlighter": "npm:15.5.13"
     "@types/react-transition-group": "npm:4.4.12"
     "@types/relay-test-utils": "npm:19.0.0"
+    "@typescript/native": "npm:typescript@7.0.2"
     "@vitejs/plugin-react": "npm:6.3.0"
     "@vitest/coverage-istanbul": "npm:5.1.0"
     analytics: "npm:0.8.19"
     apexcharts: "npm:4.7.0"
     babel-plugin-relay: "npm:21.0.1"
     convert: "npm:8.0.2"
+    d3-hierarchy: "npm:3.1.3"
     d3-scale: "npm:4.0.3"
     d3-timer: "npm:3.0.2"
     date-fns: "npm:4.4.0"
@@ -18439,7 +18688,7 @@ __metadata:
     rxjs: "npm:7.8.2"
     three-spritetext: "npm:1.10.0"
     tippy.js: "npm:6.3.7"
-    typescript: "npm:6.0.3"
+    typescript: "npm:@typescript/typescript6@6.0.2"
     typescript-eslint: "npm:8.72.2"
     use-analytics: "npm:1.1.0"
     uuid: "npm:14.0.3"
@@ -18473,7 +18722,7 @@ __metadata:
     "@graphql-tools/schema": "npm:11.0.9"
     "@graphql-tools/utils": "npm:13.2.2"
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
-    "@langchain/core": "npm:1.4.0"
+    "@langchain/core": "npm:1.4.1"
     "@langchain/mistralai": "npm:1.2.0"
     "@langchain/openai": "npm:1.8.4"
     "@lezer/javascript": "npm:1.5.6"
@@ -18519,6 +18768,7 @@ __metadata:
     "@types/turndown": "npm:5.0.6"
     "@types/validator": "npm:13.15.10"
     "@types/xml2js": "npm:0.4.14"
+    "@typescript/native": "npm:typescript@7.0.2"
     "@vitest/coverage-v8": "npm:5.1.0"
     ae-cvss-calculator: "npm:1.0.13"
     ajv: "npm:8.20.0"
@@ -18595,8 +18845,8 @@ __metadata:
     node-forge: "npm:1.4.3"
     node-gyp-build: "npm:4.8.4"
     nodemailer: "npm:10.5.0"
-    openai: "npm:7.56.0"
-    openid-client: "npm:6.8.9"
+    openai: "npm:7.57.0"
+    openid-client: "npm:6.9.0"
     openid-clientv5: "npm:openid-client@5.7.1"
     opentelemetry-node-metrics: "npm:3.0.0"
     otplib: "npm:13.6.0"
@@ -18617,7 +18867,7 @@ __metadata:
     source-map: "npm:0.8.0"
     tough-cookie: "npm:6.1.0"
     turndown: "npm:7.2.5"
-    typescript: "npm:6.0.3"
+    typescript: "npm:@typescript/typescript6@6.0.2"
     typescript-eslint: "npm:8.72.2"
     undici: "npm:8.12.4"
     unzipper: "npm:0.12.5"
@@ -18673,13 +18923,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openid-client@npm:6.8.9":
-  version: 6.8.9
-  resolution: "openid-client@npm:6.8.9"
+"openid-client@npm:6.9.0":
+  version: 6.9.0
+  resolution: "openid-client@npm:6.9.0"
   dependencies:
     jose: "npm:^6.2.15"
     oauth4webapi: "npm:^3.8.8"
-  checksum: 10c0/6ec85b68a9a153acfa23b1fe2a2130ab829c1e2be43e6a270d93bb9e550a0d21eac8d3ae47ba75cac9adbbae1e4cb7a714bfc3a836649cfd4ba8392ce860be4e
+  checksum: 10c0/546f9404f869f8168ed6760ab764f4c7105d8a712879caa801c7a65da0d5c57166536700578df56638bbd701b73696439bdbff91c150ea3550d25e32c8ef5e9d
   languageName: node
   linkType: hard
 
@@ -22792,23 +23042,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:6.0.3":
-  version: 6.0.3
-  resolution: "typescript@npm:6.0.3"
+"typescript@npm:@typescript/typescript6@6.0.2":
+  version: 6.0.2
+  resolution: "@typescript/typescript6@npm:6.0.2"
+  dependencies:
+    "@typescript/old": "npm:typescript@^6"
   bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: 10c0/4a25ff5045b984370f48f196b3a0120779b1b343d40b9a68d114ea5e5fff099809b2bb777576991a63a5cd59cf7bffd96ff6fe10afcefbcb8bd6fb96ad4b6606
+    tsc6: bin/tsc6
+  checksum: 10c0/0c6e5c1c3a61b79f2bc61506feb82f8ce54275b2af1aebc3dd9310d7f57b1de2aca40256d018cf736c524152ae4a731f5810ff7cd028d565158d53368e681af2
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A6.0.3#optional!builtin<compat/typescript>":
-  version: 6.0.3
-  resolution: "typescript@patch:typescript@npm%3A6.0.3#optional!builtin<compat/typescript>::version=6.0.3&hash=5786d5"
+"typescript@patch:typescript@npm%3A@typescript/typescript6@6.0.2#optional!builtin<compat/typescript>":
+  version: 6.0.2
+  resolution: "typescript@patch:@typescript/typescript6@npm%3A6.0.2#optional!builtin<compat/typescript>::version=6.0.2&hash=5786d5"
+  dependencies:
+    "@typescript/old": "npm:typescript@^6"
   bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: 10c0/2f25c74e65663c248fa1ade2b8459d9ce5372ff9dad07067310f132966ebec1d93f6c42f0baf77a6b6a7a91460463f708e6887013aaade22111037457c6b25df
+    tsc6: bin/tsc6
+  checksum: 10c0/ba91bd03aaf52617b757d8f186f5559587159f7984cc188f51435cf0cd36b7fc750825409db62d7f62ab22e292c41422e2c25b4b763b6a05e1dbde8c2ba93c3f
   languageName: node
   linkType: hard
 
