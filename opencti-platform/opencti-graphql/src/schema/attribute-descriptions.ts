@@ -189,7 +189,7 @@ export const ATTRIBUTE_DESCRIPTIONS: Record<string, string> = {
   magic_number_hex: 'Magic number of the file, in hexadecimal (e.g. 25504446 for a PDF).',
   // Artifact
   payload_bin: 'Content of the artifact, encoded in base64.',
-  encryption_algorithm: 'Algorithm used to encrypt the payload (e.g. mime-type-indicated, AES-256-GCM).',
+  encryption_algorithm: 'Algorithm used to encrypt the payload: AES-256-GCM, ChaCha20-Poly1305 or mime-type-indicated.',
   decryption_key: 'Key to decrypt the payload.',
   // Email
   is_multipart: 'Whether the email body is made of MIME parts.',
@@ -240,7 +240,7 @@ export const ATTRIBUTE_DESCRIPTIONS: Record<string, string> = {
   created_time: 'Date when the process was created, in ISO 8601.',
   cwd: 'Current working directory of the process.',
   command_line: 'Full command line of the process, with its arguments.',
-  environment_variables: 'Environment variables of the process (e.g. PATH=/usr/bin).',
+  environment_variables: 'Environment variables of the process, as NAME=value strings (e.g. PATH=/usr/bin).',
   aslr_enabled: 'Whether Address Space Layout Randomization is enabled for the process.',
   dep_enabled: 'Whether Data Execution Prevention is enabled for the process.',
   owner_sid: 'Security identifier (SID) of the owner of the Windows process.',
@@ -320,8 +320,8 @@ export const ATTRIBUTE_DESCRIPTIONS: Record<string, string> = {
   objectCovered: 'Entity (intrusion set, campaign, incident or report) whose coverage is assessed.',
   resultOf: 'Results of the security coverage.',
   // Observable refs
-  containsObservable: 'Objects contained in this observable (e.g. the files of a directory or of an archive).',
-  resolvesTo: 'Domain names, IP or MAC addresses this one resolves to.',
+  containsObservable: 'Observables contained in this one: the files and directories of a directory, the files, artifacts, URLs and email addresses of an email, the observables embedded in a file.',
+  resolvesTo: 'What the observable resolves to: IP addresses or domain names (CNAME) for a domain name, MAC addresses for an IP address.',
   belongsTo: 'What the address belongs to: the user account of an email address, the autonomous system of an IP address.',
   emailFrom: 'Email address of the author of the email (From header).',
   emailSender: 'Email address of the sender of the email (Sender header), when it differs from the author.',
@@ -384,7 +384,7 @@ export const ATTRIBUTE_DESCRIPTIONS_BY_TYPE: Record<string, Record<string, strin
     body: 'Body of the email, when it is not multipart.',
   },
   [ENTITY_EMAIL_MIME_PART_TYPE]: {
-    body: 'Content of the MIME part, when it is text.',
+    body: 'Decoded content of the MIME part, when it is text; otherwise bodyRaw holds it.',
   },
   [ENTITY_HASHED_OBSERVABLE_ARTIFACT]: {
     url: 'URL from which the content of the artifact can be downloaded.',
