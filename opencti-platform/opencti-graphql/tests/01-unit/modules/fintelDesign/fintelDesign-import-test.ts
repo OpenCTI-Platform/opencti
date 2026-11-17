@@ -353,7 +353,7 @@ describe('Fintel design import', () => {
     expect(await importFintelDesign(context, user, { ...configuration, default: false }, undefined, overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
   });
 
-  it('copies a design that exists under a free name and a new standard id, and as the default when it is the default of the bundle', async () => {
+  it('copies a design that exists under a free name and a new standard id, never as the default: the platform keeps its own', async () => {
     withExisting(defaultFintelDesign);
     withDesignsNamed(defaultFintelDesign, { ...nightFintelDesign, name: 'Filigran report (1)' } as BasicStoreEntityFintelDesign);
     const reservedNames = new Set<string>();
@@ -371,9 +371,10 @@ describe('Fintel design import', () => {
     const [[, , input]] = vi.mocked(addFintelDesign).mock.calls;
     expect(input).toMatchObject({ name: 'Filigran report (2)', default: false });
     expect(input).not.toHaveProperty('standard_id');
-    // The copy becomes the default with its logo
+    // The logo only: the copy is not made the default, and the default of the platform is not even read
     expect(fintelDesignEditField).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(fintelDesignEditField).mock.calls[0][2].input).toEqual([{ key: 'default', value: [true] }]);
+    expect(vi.mocked(fintelDesignEditField).mock.calls[0][2].input).toEqual([]);
+    expect(vi.mocked(fullEntitiesList).mock.calls.filter(([, , , args]) => JSON.stringify(args).includes('"default"'))).toHaveLength(0);
   });
 
   it('gives a copy the name the real import will give it, after a design an earlier item of the dry run creates or renames', async () => {
@@ -411,6 +412,7 @@ describe('Fintel design import', () => {
   it('copies a design that does not exist under its own name and standard id', async () => {
     withDesignsNamed(defaultFintelDesign);
     expect(await importFintelDesign(context, user, configuration, undefined, copy)).toMatchObject({ status: 'created', exists: false, copyName: 'Filigran report', reason: undefined });
-    expect(addFintelDesign).toHaveBeenCalledWith(context, user, expect.objectContaining({ name: 'Filigran report', standard_id: defaultFintelDesign.standard_id }));
+    // The design of the bundle itself: the default when it is the default of the bundle, as a first import
+    expect(addFintelDesign).toHaveBeenCalledWith(context, user, expect.objectContaining({ name: 'Filigran report', standard_id: defaultFintelDesign.standard_id, default: true }));
   });
 });

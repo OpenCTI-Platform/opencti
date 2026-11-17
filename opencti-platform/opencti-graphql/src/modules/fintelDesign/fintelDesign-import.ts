@@ -122,9 +122,10 @@ const createFintelDesign = async (
 // A refusal is a result, not an error. A dry run decides the same result and writes nothing.
 // add: the design must not exist yet. overwrite: a design with the same standard id is patched, else it is created.
 // copy: the design is created, under a free name and a new standard id when its own exists.
-// The default design of the bundle becomes the default of the platform, a copy included: as in the UI, the domain then takes the default
-// away from the previous one, so the platform keeps exactly one. `default: false` is never written: the previous default loses it only
-// because another one is set, so the platform never ends up without a default.
+// The default design of the bundle becomes the default of the platform, unless it is added as a copy of a design that exists, which is
+// another design: as in the UI, the domain then takes the default away from the previous one, so the platform keeps exactly one.
+// `default: false` is never written: the previous default loses it only because another one is set, so the platform never ends up
+// without a default.
 // A value that is null or absent is left untouched, and so is the logo when the bundle has none.
 export const importFintelDesign = async (
   context: AuthContext,
@@ -169,7 +170,9 @@ export const importFintelDesign = async (
     const reason = name === design.name ? undefined : `Added as "${configImportReasonValue(name)}"`;
     const copy: FintelDesignImportResult = { status: 'created', exists: !!existing, configuration: parsed.data, copyName: name, reason };
     if (!dryRun) {
-      await createFintelDesign(context, user, { ...design, name }, logo, existing ? undefined : standardId);
+      // A copy of a design that exists is another design, never the default: the platform keeps its own, as for the themes.
+      // A design that does not exist yet is the design of the bundle, the default when it is the default of the bundle
+      await createFintelDesign(context, user, { ...design, name, default: existing ? undefined : design.default }, logo, existing ? undefined : standardId);
     }
     return copy;
   }

@@ -5415,6 +5415,7 @@
   "The password has been updated": "Пароль был обновлен",
   "The password policy cannot be satisfied: its maximum length is below what its other rules require": "Политика паролей невыполнима: её максимальная длина меньше, чем требуют её другие правила",
   "The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.": "В настоящее время платформа использует настройки SMTP из файла app-config. Включите опцию выше, чтобы вместо этого использовать приведенные ниже настройки.",
+  "The platform keeps its current default fintel design.": "Платформа сохранит текущий дизайн Fintel по умолчанию.",
   "The platform keeps its current default theme.": "Платформа сохранит текущую тему по умолчанию.",
   "The public dashboard is disabled": "Публичнаый дашборд отключена",
   "The published values of the selected dashboard are still loading": "Опубликованные значения выбранного дашборда ещё загружаются",

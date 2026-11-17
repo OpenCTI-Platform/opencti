@@ -5415,6 +5415,7 @@
   "The password has been updated": "비밀번호가 업데이트되었습니다",
   "The password policy cannot be satisfied: its maximum length is below what its other rules require": "비밀번호 정책을 충족할 수 없습니다: 최대 길이가 다른 규칙에서 요구하는 길이보다 짧습니다",
   "The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.": "플랫폼은 현재 app-config 파일의 SMTP 구성을 사용하고 있습니다. 아래 구성을 대신 사용하려면 위의 옵션을 활성화하십시오.",
+  "The platform keeps its current default fintel design.": "플랫폼은 현재 기본 Fintel 디자인을 유지합니다.",
   "The platform keeps its current default theme.": "플랫폼은 현재 기본 테마를 유지합니다.",
   "The public dashboard is disabled": "공용 대시보드가 비활성화되었습니다",
   "The published values of the selected dashboard are still loading": "선택한 대시보드의 게시 값을 아직 불러오는 중입니다",

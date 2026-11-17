@@ -5415,6 +5415,7 @@
   "The password has been updated": "密码已更新",
   "The password policy cannot be satisfied: its maximum length is below what its other rules require": "密码策略无法满足：其最大长度低于其他规则的要求",
   "The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.": "平台当前使用 app-config 文件中的 SMTP 配置。启用上方选项可改用下方的配置。",
+  "The platform keeps its current default fintel design.": "平台将保留当前的默认 Fintel 设计。",
   "The platform keeps its current default theme.": "平台将保留当前的默认主题。",
   "The public dashboard is disabled": "公共仪表板已禁用",
   "The published values of the selected dashboard are still loading": "所选仪表板的发布值仍在加载中",

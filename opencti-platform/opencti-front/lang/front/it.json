@@ -5415,6 +5415,7 @@
   "The password has been updated": "La password è stata aggiornata",
   "The password policy cannot be satisfied: its maximum length is below what its other rules require": "La politica delle password non può essere soddisfatta: la sua lunghezza massima è inferiore a quanto richiesto dalle altre regole",
   "The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.": "La piattaforma utilizza attualmente la configurazione SMTP dal file app-config. Abilita l’opzione sopra per utilizzare invece la configurazione riportata di seguito.",
+  "The platform keeps its current default fintel design.": "La piattaforma mantiene il design Fintel predefinito attuale.",
   "The platform keeps its current default theme.": "La piattaforma mantiene il tema predefinito attuale.",
   "The public dashboard is disabled": "La dashboard pubblica è disabilitata",
   "The published values of the selected dashboard are still loading": "I valori pubblicati della dashboard selezionata sono ancora in caricamento",

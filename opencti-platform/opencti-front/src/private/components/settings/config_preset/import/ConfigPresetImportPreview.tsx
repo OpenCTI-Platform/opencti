@@ -49,6 +49,12 @@ const SAVE_DELAY_MS = 500;
 // The expected results wait for the changes to stop, but the first ones are asked at once
 const SIMULATE_DELAY_MS = 300;
 
+// The types whose default item stays the default of the platform when it is added as a copy, and what the row says then
+const KEPT_DEFAULT_NOTES: Record<string, string> = {
+  branding: 'The platform keeps its current default theme.',
+  fintelDesigns: 'The platform keeps its current default fintel design.',
+};
+
 const configPresetImportPreviewQuery = graphql`
   query ConfigPresetImportPreviewQuery($file_id: ID!) {
     configPresetImportPreview(file_id: $file_id) {
@@ -485,9 +491,9 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           const hasChoice = item.conflict && isImportedItem(type.key, item.key) && type.modes.length > 1;
           const result = results?.[`${type.key}/${item.key}`];
           // The types the import hides: the row alone only says that the item is there
-          // The platform points to a theme by its standard id: a copy of the default theme is another theme, the default stays the one it is.
-          // A copy of the default fintel design is the default design: it is not said
-          const keepsDefaultTheme = type.key === 'branding' && hasChoice && item.isDefault && importModes[configImportModeKey(type.key, item.key)] === 'COPY';
+          // A copy of the default theme or of the default fintel design is another item: the platform keeps its current default
+          const keptDefaultNote = KEPT_DEFAULT_NOTES[type.key];
+          const keepsDefault = !!keptDefaultNote && hasChoice && item.isDefault && importModes[configImportModeKey(type.key, item.key)] === 'COPY';
           const shownResult = result && isResultShown(result, hasChoice) ? result : null;
           // An item that is created has nothing to flag, and its reason says how (the copy of an item that exists): the tag is for what is not a plain creation
           const hasStatus = !!shownResult && shownResult.code !== CODE_UNCHANGED && !(shownResult.status === 'CREATED' && shownResult.reason);
@@ -563,9 +569,9 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
                   </div>
                 ) : undefined}
               />
-              {keepsDefaultTheme && (
+              {keepsDefault && (
                 <Text variant="content-compact" style={{ color: theme.palette.text.secondary, marginLeft: theme.spacing(3.5) }}>
-                  {t_i18n('The platform keeps its current default theme.')}
+                  {t_i18n(keptDefaultNote)}
                 </Text>
               )}
               {hiddenTypes && (

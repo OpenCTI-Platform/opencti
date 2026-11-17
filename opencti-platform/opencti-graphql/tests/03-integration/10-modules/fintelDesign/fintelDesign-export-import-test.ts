@@ -146,12 +146,13 @@ describe('Fintel designs: export and import of the real zip', () => {
     expect(again.map(({ status, code }) => `${status}:${code}`)).toEqual(['SKIPPED:unchanged', 'SKIPPED:unchanged']);
     expect(await designsNamed(DEFAULT_NAME)).toHaveLength(1);
 
-    // A copy of the default design that exists is another design, under a free name, and it is the default
+    // A copy of the default design that exists is another design, under a free name, and not the default: the platform keeps its own
     const copied = await runImport(zip, [{ type: 'fintelDesigns', items: [defaultDesign.standard_id], item_modes: [{ key: defaultDesign.standard_id, mode: 'COPY' }] }], false);
     expect(copied.map(({ label, status, reason }) => [label, status, reason])).toEqual([[DEFAULT_NAME, 'CREATED', `Added as "${DEFAULT_NAME} (1)"`]]);
     const copy = await loadDesign(`${DEFAULT_NAME} (1)`);
     expect(copy.standard_id).not.toBe(defaultDesign.standard_id);
     expect(await readFintelDesignLogo(copy)).toEqual(LOGO);
-    expect((await allDesigns()).filter((design) => design.default).map((design) => design.name)).toEqual([`${DEFAULT_NAME} (1)`]);
+    expect(copy.default).toBe(false);
+    expect((await allDesigns()).filter((design) => design.default).map((design) => design.name)).toEqual([DEFAULT_NAME]);
   });
 });
