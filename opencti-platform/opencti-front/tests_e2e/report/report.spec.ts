@@ -88,6 +88,13 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, asyn
   await reportForm.publicationDateField.getSection(0).click();
   await page.keyboard.type('2023', { delay: 100 });
   await expect(reportForm.publicationDateField.getSections()).toHaveText(/^2023-MM-DD /);
+  // Delete empties it too, though the picker then requests no selection at all.
+  await page.keyboard.press('ControlOrMeta+A');
+  await page.keyboard.press('Delete');
+  await expect(reportForm.publicationDateField.getSections()).toHaveText(/^YYYY-MM-DD /);
+  await reportForm.publicationDateField.getSection(0).click();
+  await page.keyboard.type('2023', { delay: 100 });
+  await expect(reportForm.publicationDateField.getSections()).toHaveText(/^2023-MM-DD /);
   await page.keyboard.type('1205', { delay: 100 });
   await expect(reportForm.publicationDateField.getSections()).toHaveText(/^2023-12-05 /);
   // A partly typed date is validated when the field loses the focus.
