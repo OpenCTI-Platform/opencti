@@ -27,7 +27,12 @@ class ThreatActorGroupDetailsComponent extends Component {
     return (
       <Card title={t('Details')}>
         <Grid container={true} spacing={2}>
-          <Grid size={12}>
+          {hasImages && (
+            <Grid size={4}>
+              <ImageCarousel data={threatActorGroup} />
+            </Grid>
+          )}
+          <Grid size={hasImages ? 8 : 12}>
             <Label>
               {t('Description')}
             </Label>
@@ -36,44 +41,35 @@ class ThreatActorGroupDetailsComponent extends Component {
               limit={hasImages ? 400 : 600}
             />
           </Grid>
-          <Grid size={hasImages ? 7 : 6}>
-            <Grid container={true} spacing={2}>
-              {hasImages && (
-                <Grid size={4}>
-                  <ImageCarousel data={threatActorGroup} />
-                </Grid>
-              )}
-              <Grid size={hasImages ? 8 : 12}>
-                <Label>
-                  {t('Threat actor types')}
-                </Label>
-                <FieldOrEmpty source={threatActorGroup.threat_actor_types}>
-                  <Stack
-                    direction="row"
-                    sx={{
-                      flexWrap: 'wrap',
-                      gap: 1,
-                    }}
-                  >
-                    {threatActorGroup.threat_actor_types
-                      && threatActorGroup.threat_actor_types.map(
-                        (threatActorGroupType) => (
-                          <Tag
-                            key={threatActorGroupType}
-                            label={threatActorGroupType}
-                          />
-                        ),
-                      )}
-                  </Stack>
-                </FieldOrEmpty>
-              </Grid>
-            </Grid>
+          <Grid size={4}>
+            <Label>
+              {t('Threat actor types')}
+            </Label>
+            <FieldOrEmpty source={threatActorGroup.threat_actor_types}>
+              <Stack
+                direction="row"
+                sx={{
+                  flexWrap: 'wrap',
+                  gap: 1,
+                }}
+              >
+                {threatActorGroup.threat_actor_types
+                  && threatActorGroup.threat_actor_types.map(
+                    (threatActorGroupType) => (
+                      <Tag
+                        key={threatActorGroupType}
+                        label={threatActorGroupType}
+                      />
+                    ),
+                  )}
+              </Stack>
+            </FieldOrEmpty>
           </Grid>
-          <Grid size={hasImages ? 5 : 6}>
+          <Grid size={4}>
             <ThreatActorGroupLocation threatActorGroup={threatActorGroup} />
-            <Label
-              sx={{ marginTop: 2 }}
-            >
+          </Grid>
+          <Grid size={4}>
+            <Label>
               {t('First seen')}
             </Label>
             {fldt(threatActorGroup.first_seen)}
