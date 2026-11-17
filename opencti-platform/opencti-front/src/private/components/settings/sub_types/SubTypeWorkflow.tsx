@@ -27,6 +27,7 @@ export const workflowQuery = graphql`
       initialState
       states {
         statusId
+        workflowStatusId
         order
         requestAccessOutcome
         onExit{
@@ -170,9 +171,11 @@ interface ScopedSubTypeWorkflowProps {
   entityType: string;
   scope: WorkflowScope;
   onScopeChange: (scope: WorkflowScope) => void;
+  /** Viewport height taken by the page around the canvas, in px */
+  heightOffset: number;
 }
 
-const ScopedSubTypeWorkflow = ({ entityType, scope, onScopeChange }: ScopedSubTypeWorkflowProps) => {
+const ScopedSubTypeWorkflow = ({ entityType, scope, onScopeChange, heightOffset }: ScopedSubTypeWorkflowProps) => {
   const [workflowQueryRef, loadWorkflowQuery] = useQueryLoadingWithLoadQuery<SubTypeWorkflowQuery>(
     workflowQuery,
     { entityType, allowDraft: true, scope },
@@ -190,7 +193,7 @@ const ScopedSubTypeWorkflow = ({ entityType, scope, onScopeChange }: ScopedSubTy
   return (
     <Suspense fallback={<Loader />}>
       <ErrorBoundary>
-        <div style={{ width: '100%', height: 'calc(100vh - 250px)', marginBottom: '-50px' }}>
+        <div style={{ width: '100%', height: `calc(100vh - ${heightOffset}px)`, marginBottom: '-50px' }}>
           <ReactFlowProvider>
             <WorkflowWithDependencies
               queryRef={workflowQueryRef}
@@ -208,21 +211,31 @@ const ScopedSubTypeWorkflow = ({ entityType, scope, onScopeChange }: ScopedSubTy
 
 interface SubTypeWorkflowProps {
   entityType?: string;
+  /** Viewport height taken by the page around the canvas, in px */
+  heightOffset?: number;
 }
 
-const SubTypeWorkflowForType = ({ entityType }: { entityType: string }) => {
+const SubTypeWorkflowForType = ({ entityType, heightOffset }: { entityType: string; heightOffset: number }) => {
   const [requestedScope, setRequestedScope] = useState<WorkflowScope>('GLOBAL');
   // The scope chosen on Case-Rfi must not follow the user to another entity type.
   const scope = entityType === REQUEST_ACCESS_ENTITY_TYPE ? requestedScope : 'GLOBAL';
 
   // Keyed by scope: each scope edits its own definition, so nothing of the other one
   // (graph, publish status, pending autosave) may leak across the switch.
-  return <ScopedSubTypeWorkflow key={scope} entityType={entityType} scope={scope} onScopeChange={setRequestedScope} />;
+  return (
+    <ScopedSubTypeWorkflow
+      key={scope}
+      entityType={entityType}
+      scope={scope}
+      onScopeChange={setRequestedScope}
+      heightOffset={heightOffset}
+    />
+  );
 };
 
-const SubTypeWorkflow = ({ entityType = 'DraftWorkspace' }: SubTypeWorkflowProps) => {
+const SubTypeWorkflow = ({ entityType = 'DraftWorkspace', heightOffset = 250 }: SubTypeWorkflowProps) => {
   // Keyed by entity type: coming back to Case-Rfi reopens it on the Global scope.
-  return <SubTypeWorkflowForType key={entityType} entityType={entityType} />;
+  return <SubTypeWorkflowForType key={entityType} entityType={entityType} heightOffset={heightOffset} />;
 };
 
 export default SubTypeWorkflow;
