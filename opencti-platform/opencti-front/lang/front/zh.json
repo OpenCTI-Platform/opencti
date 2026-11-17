@@ -2473,6 +2473,7 @@
   "Filter marking definitions": "过滤标记定义",
   "Filter name": "过滤器名称",
   "Filters": "过滤器",
+  "Filters applied by the remote stream": "远程流应用的筛选条件",
   "Filters are not fully displayed": "筛选器未完全显示",
   "Find examples on our documentation.": "在我们的 {link} 中查找示例。",
   "fingerprint_md5": "指纹 MD5",
