@@ -57,6 +57,38 @@ describe('Hook: useNavSearch', () => {
     expect(search('paramètres')).toContain('/dashboard/settings/config');
   });
 
+  it('matches the beginning of a word only, not any substring', () => {
+    subItems = [parameters, customization];
+    const retention = '/dashboard/settings/customization/retention';
+    expect(search('ret')).toContain(retention);
+    expect(search('POLI')).toContain(retention);
+    expect(search('tention')).not.toContain(retention);
+    expect(search('olicies')).not.toContain(retention);
+  });
+
+  it('tests each typed word on its own, in any order', () => {
+    subItems = [parameters, customization];
+    const retention = '/dashboard/settings/customization/retention';
+    expect(search('pol ret')).toContain(retention);
+    expect(search('ret pol')).toContain(retention);
+    expect(search('ret xyz')).not.toContain(retention);
+    // A word of the breadcrumb counts too.
+    expect(search('custom ret')).toContain(retention);
+  });
+
+  it('keeps "&" inside a word, so "c&c" is not the two words "c" and "c"', () => {
+    subItems = [{ link: '/dashboard/c2', label: 'Servers', keywords: ['c&c'] }];
+    // Home has the keyword "cockpit": it would match if "c&c" were split.
+    expect(search('c&c')).toEqual(['/dashboard/c2']);
+    expect(search('c&')).toEqual(['/dashboard/c2']);
+  });
+
+  it('also searches the English label when the user language is not English', () => {
+    subItems = [parameters, { link: '/dashboard/settings/config', label: 'Paramètres avancés', englishLabel: 'Advanced parameters' }];
+    expect(search('adv param')).toContain('/dashboard/settings/config');
+    expect(search('param avan')).toContain('/dashboard/settings/config');
+  });
+
   it('matches an entry keyword whatever the case of the keyword and of the typed text', () => {
     // Keywords reuse the casing of the existing translation keys ('2FA', 'SSO'...).
     subItems = [section('/dashboard/settings/accesses', 'Security')];

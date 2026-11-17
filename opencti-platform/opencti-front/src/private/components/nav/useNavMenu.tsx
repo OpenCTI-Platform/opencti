@@ -17,8 +17,10 @@ export interface NavSubItem {
   icon?: React.ReactNode;
   exact?: boolean;
   granted?: boolean;
-  /** Extra words matching this entry in the main pages search. */
+  /** Extra words matching this entry in the main pages search (in the user language and in English). */
   keywords?: string[];
+  /** Label in English (the translation key), always searchable whatever the user language. */
+  englishLabel?: string;
 }
 
 export interface NavItem {
@@ -28,8 +30,10 @@ export interface NavItem {
   link: string;
   exact?: boolean;
   subItems?: NavSubItem[];
-  /** Top-level page only (no sub-items): its extra words in the main pages search. */
+  /** Top-level page only (no sub-items): its extra words in the main pages search (in the user language and in English). */
   keywords?: string[];
+  /** Label in English (the translation key), always searchable whatever the user language. */
+  englishLabel?: string;
 }
 
 export interface NavGroup {
@@ -60,9 +64,11 @@ const useNavMenu = (): NavGroup[] => {
   const pageItem = (entry: MenuEntry): NavSubItem => ({
     link: entry.path,
     label: t_i18n(entry.label),
+    englishLabel: entry.label,
     icon: entry.icon,
     exact: entry.exact,
-    keywords: entry.keywords?.map((keyword) => t_i18n(keyword)),
+    // Translation keys are the English texts: the search matches both languages.
+    keywords: entry.keywords?.flatMap((keyword) => [t_i18n(keyword), keyword]),
     granted: isVisible(entry),
   });
   const subItem = (item: NavSectionItem): NavSubItem => {
@@ -71,6 +77,7 @@ const useNavMenu = (): NavGroup[] => {
     return {
       link: (firstVisible ?? item.entries[0]).path,
       label: t_i18n(item.label),
+      englishLabel: item.label,
       paths: item.entries.map(({ path }) => path),
       granted: !!firstVisible,
     };
@@ -78,14 +85,15 @@ const useNavMenu = (): NavGroup[] => {
 
   const buildItem = (section: NavSection): RawNavGroup['items'][number] => {
     if ('page' in section) {
-      const { link, label, icon, exact, granted, keywords } = pageItem(section.page);
-      return granted && { id: section.id, label, icon, link, exact, keywords };
+      const { link, label, englishLabel, icon, exact, granted, keywords } = pageItem(section.page);
+      return granted && { id: section.id, label, englishLabel, icon, link, exact, keywords };
     }
     const subItems = section.items.map(subItem);
     const firstVisible = subItems.find((sub) => sub.granted);
     return firstVisible && {
       id: section.id,
       label: t_i18n(section.label),
+      englishLabel: section.label,
       icon: section.icon,
       link: firstVisible.link,
       subItems,
@@ -96,6 +104,7 @@ const useNavMenu = (): NavGroup[] => {
   const draftOverview = draftContext && {
     id: 'draft-overview',
     label: t_i18n('Draft overview'),
+    englishLabel: 'Draft overview',
     icon: <ArchitectureOutlined />,
     link: `/dashboard/data/import/draft/${draftContext.id}`,
   };
