@@ -1345,13 +1345,17 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    // Read before the publish lock, then by the two draft rechecks made under it
+    const workflowBeforePublish = {
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      draft_version: draftVersion,
+      all_versions: [draftVersion],
+    };
     (storeLoadById as any)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        draft_version: draftVersion,
-        all_versions: [draftVersion],
-      })
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
       .mockResolvedValueOnce({
         id: 'workflow-id',
         name: 'Test Workflow',
@@ -1401,13 +1405,17 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    // Read before the publish lock, then by the two draft rechecks made under it
+    const workflowBeforePublish = {
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      draft_version: draftVersion,
+      all_versions: [draftVersion],
+    };
     (storeLoadById as any)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        draft_version: draftVersion,
-        all_versions: [draftVersion],
-      })
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
       .mockResolvedValueOnce({
         id: 'workflow-id',
         name: 'Test Workflow',
@@ -1453,13 +1461,17 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    // Read before the publish lock, then by the two draft rechecks made under it
+    const workflowBeforePublish = {
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      draft_version: draftVersion,
+      all_versions: [draftVersion],
+    };
     (storeLoadById as any)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        draft_version: draftVersion,
-        all_versions: [draftVersion],
-      })
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
       .mockResolvedValueOnce({
         id: 'workflow-id',
         name: 'Test Workflow',
@@ -1495,13 +1507,17 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    // Read before the publish lock, then by the two draft rechecks made under it
+    const workflowBeforePublish = {
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      draft_version: draftVersion,
+      all_versions: [draftVersion],
+    };
     (storeLoadById as any)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        draft_version: draftVersion,
-        all_versions: [draftVersion],
-      })
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
       .mockResolvedValueOnce({
         id: 'workflow-id',
         name: 'Test Workflow',
@@ -1552,8 +1568,12 @@ describe('Workflow Domain', () => {
     };
     const updatedStatus = { id: 'status-progress', entity_type: ENTITY_TYPE_STATUS, order: 1 };
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    // Read before the publish lock, then by the two draft rechecks made under it
+    const workflowBeforePublish = { id: 'workflow-id', name: 'Test Workflow', draft_version: draftVersion, all_versions: [draftVersion] };
     (storeLoadById as any)
-      .mockResolvedValueOnce({ id: 'workflow-id', name: 'Test Workflow', draft_version: draftVersion, all_versions: [draftVersion] })
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
       .mockResolvedValueOnce({ id: 'workflow-id', name: 'Test Workflow', published_version: draftVersion, draft_version: draftVersion, all_versions: [draftVersion] });
     (fullEntitiesList as any).mockResolvedValue([
       { id: 'status-open', type: 'Incident', scope: StatusScope.Global, template_id: 'tpl-open', order: 0 },
@@ -1599,14 +1619,18 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    // Read before the publish lock, then by the two draft rechecks made under it
+    const workflowBeforePublish = {
+      id: 'workflow-id',
+      name: 'Draft workflow',
+      published_version: publishedVersion,
+      draft_version: draftVersion,
+      all_versions: [draftVersion, publishedVersion],
+    };
     (storeLoadById as any)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Draft workflow',
-        published_version: publishedVersion,
-        draft_version: draftVersion,
-        all_versions: [draftVersion, publishedVersion],
-      })
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
       .mockResolvedValueOnce({
         id: 'workflow-id',
         name: 'Draft workflow',
@@ -1658,13 +1682,17 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    // Read before the publish lock, then by the two draft rechecks made under it
+    const workflowBeforePublish = {
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      draft_version: draftVersion,
+      all_versions: [draftVersion],
+    };
     (storeLoadById as any)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        draft_version: draftVersion,
-        all_versions: [draftVersion],
-      })
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
       .mockResolvedValueOnce({
         id: 'workflow-id',
         name: 'Test Workflow',
@@ -1715,14 +1743,18 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    // Read before the publish lock, then by the two draft rechecks made under it
+    const workflowBeforePublish = {
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: publishedVersion,
+      draft_version: draftVersion,
+      all_versions: [draftVersion, publishedVersion],
+    };
     (storeLoadById as any)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        published_version: publishedVersion,
-        draft_version: draftVersion,
-        all_versions: [draftVersion, publishedVersion],
-      })
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
       .mockResolvedValueOnce({
         id: 'workflow-id',
         name: 'Test Workflow',
@@ -1794,14 +1826,18 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    // Read before the publish lock, then by the two draft rechecks made under it
+    const workflowBeforePublish = {
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: publishedVersion,
+      draft_version: draftVersion,
+      all_versions: [draftVersion, publishedVersion],
+    };
     (storeLoadById as any)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        published_version: publishedVersion,
-        draft_version: draftVersion,
-        all_versions: [draftVersion, publishedVersion],
-      })
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
       .mockResolvedValueOnce({
         id: 'workflow-id',
         name: 'Test Workflow',
@@ -1925,14 +1961,18 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    // Read before the publish lock, then by the two draft rechecks made under it
+    const workflowBeforePublish = {
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: publishedVersion,
+      draft_version: draftVersion,
+      all_versions: [draftVersion, publishedVersion],
+    };
     (storeLoadById as any)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        published_version: publishedVersion,
-        draft_version: draftVersion,
-        all_versions: [draftVersion, publishedVersion],
-      })
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
       .mockResolvedValueOnce({
         id: 'workflow-id',
         name: 'Test Workflow',
@@ -1997,14 +2037,18 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    // Read before the publish lock, then by the two draft rechecks made under it
+    const workflowBeforePublish = {
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: publishedVersion,
+      draft_version: draftVersion,
+      all_versions: [draftVersion, publishedVersion],
+    };
     (storeLoadById as any)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        published_version: publishedVersion,
-        draft_version: draftVersion,
-        all_versions: [draftVersion, publishedVersion],
-      })
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
       .mockResolvedValueOnce({
         id: 'workflow-id',
         name: 'Test Workflow',
@@ -2165,14 +2209,18 @@ describe('Workflow Domain', () => {
 
     // Mock with existing published_version that matches draft
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    // Read before the publish lock, then by the two draft rechecks made under it
+    const workflowBeforePublish = {
+      id: 'workflow-id',
+      name: 'Same Content',
+      published_version: version, // Already has this published
+      draft_version: version, // Draft is the same
+      all_versions: [version],
+    };
     (storeLoadById as any)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Same Content',
-        published_version: version, // Already has this published
-        draft_version: version, // Draft is the same
-        all_versions: [version],
-      })
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
       .mockResolvedValueOnce({
         id: 'workflow-id',
         name: 'Same Content',
@@ -2376,14 +2424,18 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    // Read before the publish lock, then by the two draft rechecks made under it
+    const workflowBeforePublish = {
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: publishedVersion,
+      draft_version: draftVersion,
+      all_versions: [draftVersion, publishedVersion],
+    };
     (storeLoadById as any)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        published_version: publishedVersion,
-        draft_version: draftVersion,
-        all_versions: [draftVersion, publishedVersion],
-      })
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
       .mockResolvedValueOnce({
         id: 'workflow-id',
         name: 'Test Workflow',
@@ -2429,6 +2481,57 @@ describe('Workflow Domain', () => {
 
     expect(lockResources).toHaveBeenCalledWith(['workflow-status-lifecycle:Incident']);
     expect(unlock).toHaveBeenCalledOnce();
+  });
+
+  describe('when the draft changes while it is being published', () => {
+    const draftVersion = (id: string, statusId: string) => ({
+      id,
+      timestamp: '2024-01-01T00:00:00Z',
+      createdBy: 'user-1',
+      content: JSON.stringify({ initialState: statusId, states: [{ statusId }], transitions: [] }),
+      validation_errors: [],
+    });
+    const readDraft = draftVersion('draft-read', 'state-a');
+    const newerDraft = draftVersion('draft-newer', 'state-b');
+    const workflowWith = (draft: ReturnType<typeof draftVersion>) => ({
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      draft_version: draft,
+      all_versions: [readDraft, newerDraft],
+    });
+
+    // `changed(loadUnderLock)`: whether the n-th workflow load made under the publish lock (0-based) sees the newer draft
+    const mockDraftChange = (changed: (loadUnderLock: number) => boolean) => {
+      let locked = false;
+      let loadsUnderLock = 0;
+      (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+      (fullEntitiesList as any).mockResolvedValue([]);
+      (lockResources as any).mockImplementationOnce(async () => {
+        locked = true;
+        return { unlock: vi.fn() };
+      });
+      (storeLoadById as any).mockImplementation(async (_context: unknown, _user: unknown, id: string) => {
+        if (id !== 'workflow-id') return undefined;
+        if (!locked) return workflowWith(readDraft);
+        const draft = changed(loadsUnderLock) ? newerDraft : readDraft;
+        loadsUnderLock += 1;
+        return workflowWith(draft);
+      });
+    };
+
+    it('refuses a draft another save or publish replaced before the lock was taken', async () => {
+      mockDraftChange(() => true);
+
+      await expect(publishWorkflowDefinition(mockContext, mockUser, 'Incident')).rejects.toThrow('its draft changed during the publish');
+      expect(updateAttribute).not.toHaveBeenCalled();
+    });
+
+    it('refuses a draft a save replaced during the publish', async () => {
+      mockDraftChange((loadUnderLock) => loadUnderLock > 0);
+
+      await expect(publishWorkflowDefinition(mockContext, mockUser, 'Incident')).rejects.toThrow('its draft changed during the publish');
+      expect(updateAttribute).not.toHaveBeenCalled();
+    });
   });
 
   it('should release the lock even when publish throws', async () => {
@@ -2563,13 +2666,17 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    // Read before the publish lock, then by the two draft rechecks made under it
+    const workflowBeforePublish = {
+      id: 'workflow-id',
+      all_versions: [draftVersion],
+      draft_version: draftVersion,
+      published_version: null,
+    };
     (storeLoadById as any)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        all_versions: [draftVersion],
-        draft_version: draftVersion,
-        published_version: null,
-      })
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
+      .mockResolvedValueOnce(workflowBeforePublish)
       .mockResolvedValueOnce({
         id: 'workflow-id',
         all_versions: [draftVersion],

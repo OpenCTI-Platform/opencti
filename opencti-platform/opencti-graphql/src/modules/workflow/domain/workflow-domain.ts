@@ -1496,7 +1496,17 @@ export const publishWorkflowDefinition = async (
   // here could clear its deletion mark and recreate its mapping, and cleanup would still delete it
   // based on its now-stale check — clearing `to_be_deleted_at` does not cancel a deletion in progress.
   const lock = await lockResources([getWorkflowStatusLockKey(entityType)]);
+  // The draft above was read and validated before the lock. A publish that held the lock meanwhile, or a
+  // save (which takes no lock), may have replaced it: publishing the copy read here would put an outdated
+  // version live and drop the newer draft. Checked once the lock is held, then again right before the write.
+  const assertDraftUnchanged = async () => {
+    const current = await storeLoadById(executionContext, executionUser, definitionId, ENTITY_TYPE_WORKFLOW_DEFINITION) as WorkflowDefinitionEntity | undefined;
+    if (current?.draft_version?.id !== draftVersion.id) {
+      throw FunctionalError('Cannot publish workflow: its draft changed during the publish, try again', { entityType });
+    }
+  };
   try {
+    await assertDraftUnchanged();
     if (scope === StatusScope.RequestAccess) {
       const parseContent = (raw: unknown): WorkflowDefinitionData | undefined => {
         try {
@@ -1626,6 +1636,7 @@ export const publishWorkflowDefinition = async (
       { key: 'draft_version', value: [] },
     ];
 
+    await assertDraftUnchanged();
     await updateAttribute(executionContext, executionUser, workflowDefinitionEntity.id, ENTITY_TYPE_WORKFLOW_DEFINITION, updates);
   } finally {
     await lock.unlock();
