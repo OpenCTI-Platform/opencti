@@ -219,4 +219,4 @@ You can always verify your configuration before validating the form (with a file
 
 ## Additional resources
 
-- **Usefulness:** To additional content on entity customization, refers to the [Customize entities](./entities.md) page in the Administration section of the documentation.
+- **Usefulness:** For more on entity customization, see the [Customize entities](./entities.md) page.

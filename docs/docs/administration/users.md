@@ -161,6 +161,7 @@ Although these accounts generally do not receive emails, it is possible to add a
 
 It is possible to convert a user into a service account and ice-versa.
 Two options are possible:
+
 - through massive operations.
 - directly in the user/service account overview.
 
@@ -278,6 +279,7 @@ There are various places in OpenCTI where users are listed:
 But all the users are not always visible, according to your capabilities, organizations, and the platform settings.
 
 A user can see all the other users in each of those 3 cases:
+
 - The user has the BYPASS capability, the capability to manage users, to manage playbooks, or to manage customization.
 - Organization sharing is not activated.
 - The policies option 'allow users to view users of other organizations' is activated.

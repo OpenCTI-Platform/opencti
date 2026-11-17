@@ -16,6 +16,7 @@ When a configuration is sensitive, it remains visible to user with access rights
 possible actions are disabled.
 
 The sensitive configurations identified are:
+
 - Modification of specific roles and groups
 - Activation/deactivation of inference rules
 - Main platform Organization modification
@@ -43,10 +44,10 @@ Only users with `Allow modification of sensitive configuration` capability enabl
 
 ## Recommended approach to give yourself access to danger zone
 
-1. With a user having the capability “Manage credentials” or “Bypass all capabilities”, go into parameters/security
+1. With a user having the capability “Manage credentials” or “Bypass all capabilities”, go to Settings > Security > Roles
 2. Create a new role called “Danger Zone Administration”
 3. Give it the capability “Allow modification of sensitive configuration”
-4. Create a group “Danger Zone Administrator”
+4. In Settings > Security > Groups, create a group “Danger Zone Administrator” with this role
 5. Add a user of your choice (yourself for instance): at this stage, you should be able to manage any area under danger zone.
 
 ## Recommended approach to give administrator group access to danger zone
