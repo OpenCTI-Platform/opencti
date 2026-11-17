@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LOCKED_USER_EMAIL_TEMPLATE_INPUT } from '../../../../src/database/locked-user-email-template-input';
-import { type LockedUserEmailData, renderEmailTemplate } from '../../../../src/modules/emailTemplate/emailTemplate-render';
+import { type LockedUserEmailData, type LockedUserLock, renderEmailTemplate } from '../../../../src/modules/emailTemplate/emailTemplate-render';
 
 const flags = vi.hoisted(() => ({ lockout: true }));
 vi.mock('../../../../src/config/conf', async (importOriginal) => ({
@@ -43,6 +43,13 @@ describe('Email template rendering', () => {
   it('should say that an administrator must unlock a permanent lock, without any end', async () => {
     const html = await render('$lock.type | $lock.end_date | $lock.unlock', permanentLock);
     expect(html).toEqual('permanent |  | The account is locked until an administrator unlocks it.');
+  });
+
+  // Checked by the type checking of the tests: without its end, $lock.unlock could not say until when the account is locked
+  it('should not accept a temporary lock without its end', () => {
+    // @ts-expect-error a temporary lock always has its end
+    const lock: LockedUserLock = { date: LOCK_DATE, attempts: 10, type: 'temporary' };
+    expect(lock.type).toEqual('temporary');
   });
 
   it('should keep the recipient and the locked user apart', async () => {

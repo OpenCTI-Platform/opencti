@@ -3,11 +3,14 @@ import { isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG } from '../../config/
 import { safeRender } from '../../utils/safeEjs.client';
 import { sanitizeUser } from '../../utils/templateContextSanitizer';
 
+// attempts: the failed authentication attempts that locked the account. A temporary lock always has its end,
+// a permanent lock has none: an administrator must unlock the account
+export type LockedUserLock = { date: Date; attempts: number } & ({ type: 'temporary'; endDate: Date } | { type: 'permanent' });
+
 // The account locked by the local authentication lockout, and its lock, for the email sent to the administrators
 export type LockedUserEmailData = {
   lockedUser: { name: string; firstname?: string; lastname?: string; user_email: string };
-  // attempts: the failed authentication attempts that locked the account. endDate: only for a temporary lock
-  lock: { date: Date; attempts: number; type: 'temporary' | 'permanent'; endDate?: Date };
+  lock: LockedUserLock;
 };
 
 export type EmailTemplateData = {
@@ -61,7 +64,7 @@ const buildLockData = (lockedUserData?: LockedUserEmailData) => {
   }
   const { lockedUser, lock } = lockedUserData;
   const { name, firstname, lastname, user_email } = sanitizeUser(lockedUser);
-  const endDate = lock.type === 'temporary' && lock.endDate ? formatLockDate(lock.endDate) : '';
+  const endDate = lock.type === 'temporary' ? formatLockDate(lock.endDate) : '';
   return {
     locked_user: { name: name ?? '', firstname: firstname ?? '', lastname: lastname ?? '', user_email: user_email ?? '' },
     lock: {
@@ -69,9 +72,9 @@ const buildLockData = (lockedUserData?: LockedUserEmailData) => {
       attempts: String(lock.attempts),
       type: lock.type,
       end_date: endDate,
-      unlock: lock.type === 'permanent'
-        ? 'The account is locked until an administrator unlocks it.'
-        : `The account is locked until ${endDate}.`,
+      unlock: lock.type === 'temporary'
+        ? `The account is locked until ${endDate}.`
+        : 'The account is locked until an administrator unlocks it.',
     },
   };
 };
