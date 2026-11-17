@@ -657,13 +657,17 @@ export const commitSubmission = async (
       throw error;
     }
 
-    logApp.info('[FORM] Bundle sent to connector queue', { formId, workId, bundleId: bundle.id });
+    if (workId) {
+      logApp.info('[FORM] Bundle sent to connector queue', { formId, workId, bundleId: bundle.id });
+    } else {
+      logApp.info('[FORM] Nothing to import, the submission only references existing entities', { formId, bundleId: bundle.id });
+    }
     await addFormIntakeSubmittedCount();
 
     return {
       success: true,
       bundleId: bundle.id,
-      message: 'Form submitted successfully and sent for processing',
+      message: workId ? 'Form submitted successfully and sent for processing' : 'Form submitted successfully, nothing to import',
       entityId: finalIsDraft ? createdDraftId ?? undefined : mainEntityStixId,
     };
   } catch (error) {
