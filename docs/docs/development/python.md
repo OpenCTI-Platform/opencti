@@ -4,7 +4,7 @@ The PyCTI library is the official Python client for OpenCTI. It is made to help 
 
 # Installation
 
-The pycti version must match the version of your OpenCTI platform: pycti is released together with the platform, under the same version number. To find your platform version, go to **Settings** > **Parameters** and read the **Version** field. Then install the matching pycti version with `pip`:
+The pycti version must match the version of your OpenCTI platform: pycti is released together with the platform, under the same version number. To find your platform version, open your profile (top right menu > **Profile**) and read **OpenCTI version** in the **API access** card. With the **Manage parameters** capability, it is also shown in **Settings** > **Parameters** (**Version**). Then install the matching pycti version with `pip`:
 
     $ pip3 install pycti==<platform version>
 

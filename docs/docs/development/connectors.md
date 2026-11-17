@@ -45,7 +45,7 @@ Some prerequisites we recommend to follow this tutorial:
 In the terminal check out the connectors repository and copy the template connector to `$myconnector` (*replace it with your name throughout the following text examples*).
 
 ```bash
-$ pip3 install black flake8 pycti
+$ pip3 install black flake8 pycti==<platform version>
 # Fork the current repository, then clone your fork
 $ git clone https://github.com/YOUR-USERNAME/connectors.git
 $ cd connectors
@@ -515,7 +515,8 @@ $ virtualenv env
 $ source ./env/bin/activate
 $ pip3 install -r src/requirements.txt
 $ cp config.yml.sample config.yml
-# Define the opencti url and token, as well as the connector's id
+# Replace every ChangeMe value: the opencti url and token, the connector id and scope,
+# and the connector-specific settings (for example template.api_base_url, which must be a valid URL)
 $ vim config.yml
 $ python3 src/main.py
 ```
