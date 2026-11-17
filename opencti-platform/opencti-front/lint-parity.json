@@ -12,7 +12,7 @@
     {
       "rule": "import/default",
       "files": "src/utils/pdfWorker-setup.ts",
-      "reason": "One-off: `import pdfWorkerUrl from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?url'` (a Vite `?url` import of a worker script with no default export). oxlint resolves it and reports no default export; ESLint reports no import/default there (its only finding with inline comments off is import/no-extraneous-dependencies, line 3). In a repro, ESLint also reports no import/default for default imports of modules that only have named exports (.js, .mjs and .ts targets, with this config and with a plugin-only config), while oxlint reports all of them."
+      "reason": "Systemic cause, one file affected: tsconfig sets `esModuleInterop: true`, so eslint-plugin-import synthesizes a default export for every module and ESLint's `import/default` is inert across the whole package, while oxlint still reports it. Here: `import pdfWorkerUrl from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?url'` (a Vite `?url` import of a worker script with no default export). oxlint resolves it and reports no default export; ESLint reports no import/default there (its only finding with inline comments off is import/no-extraneous-dependencies, line 3). In a repro, ESLint reports no import/default for default imports of modules that only have named exports (.js, .mjs and .ts targets, with this config and with a plugin-only config), while oxlint reports all of them. The entry is file-level because this is the only file with a finding today; any new file hitting it needs its own entry."
     },
     {
       "rule": "jsx-a11y/interactive-supports-focus",
