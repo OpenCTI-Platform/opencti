@@ -6721,7 +6721,7 @@
   "What to delete": "要删除的内容",
   "When an entity ingested contains the alias field, it will be used to populate the value of the custom field you create": "当导入的实体包含别名字段时，将用它来填充您创建的自定义字段的值",
   "When an event happens on a knowledge your participate, you will receive notification through your personal notifiers": "当您参与的知识发生事件时，您将通过个人通知器收到通知",
-  "When enabled, a session is logged out shortly after its last browser tab has been closed. Not supported when several platform nodes serve the API.": "启用后，会话将在其最后一个浏览器标签页关闭后不久注销。当多个平台节点提供 API 时不支持。",
+  "When enabled, a session is logged out shortly after its last browser tab has been closed.": "启用后，会话将在其最后一个浏览器标签页关闭后不久注销。",
   "When enabled, platform default groups (groups with default assignation) will not be automatically assigned to users authenticated through this provider.": "启用后，平台默认组（具有默认分配的组）将不会自动分配给通过此提供程序进行身份验证的用户。",
   "When enabled, stream synchronizations will try to name-match the incoming entities' statuses with this instance's statuses, instead of dropping them.": "启用此功能后，流同步将尝试根据名称将传入实体的状态与该实例的状态进行匹配，而不是将其丢弃。",
   "When enabled, users will be prompted to leave a comment when changing the status.": "启用后，更改状态时将提示用户留下评论。",

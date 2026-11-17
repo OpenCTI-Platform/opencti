@@ -44,7 +44,7 @@ const validationSchema = Yup.object().shape({
   platform_session_presence_enabled: Yup.boolean(),
 });
 
-// The logout when the last tab is closed can be enabled while several nodes serve the API, but then never applies
+// With sessions held in the memory of each node, the logout when the last tab is closed never applies on several nodes
 const SessionPresenceUnsupportedAlert = ({ isSupported }: { isSupported: boolean }) => {
   const { t_i18n } = useFormatter();
   const { values } = useFormikContext<{ platform_session_presence_enabled: boolean }>();
@@ -137,7 +137,7 @@ const AuthenticationGlobalSettingsContent = () => {
                     containerstyle={{ marginTop: 20 }}
                     onChange={(name: string, value: string) => handleSubmitField(name, value)}
                     tooltip={t_i18n(
-                      'When enabled, a session is logged out shortly after its last browser tab has been closed. Not supported when several platform nodes serve the API.',
+                      'When enabled, a session is logged out shortly after its last browser tab has been closed.',
                     )}
                   />
                   <SessionPresenceUnsupportedAlert isSupported={settings.platform_session_presence_supported} />

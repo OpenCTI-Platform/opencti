@@ -33,6 +33,9 @@ const PRESENCE_KEYS_TTL = SESSION_PRESENCE_LEASE_TTL + SESSION_PRESENCE_GRACE_PE
 const CLOSING_TTL = 6 * LEASE_RENEW_INTERVAL;
 const SWEEP_BATCH_SIZE = 100;
 
+// Sessions held in the memory of each node can only be logged out by that node
+const IS_SHARED_SESSION_STORE = conf.get('app:session_manager') === 'shared';
+
 // connection id -> session id, for the sockets of this node
 const nodeConnections = new Map<string, string>();
 let renewTimer: NodeJS.Timeout | undefined;
@@ -47,10 +50,13 @@ const isSessionPresenceEnabled = async () => {
   return settings.platform_session_presence_enabled === true;
 };
 
-// Only the nodes serving the API hold WebSockets: manager-only nodes are not counted.
-// A node of a previous version doesn't tell, so it is counted. A starting node is listed before it serves the API,
-// a stopped one stays listed until its registration expires: both pause the feature meanwhile.
+// With the shared session store (default), any node can logout any session.
+// With sessions held in memory, only a single node serving the API is supported. Only the nodes serving the API
+// hold WebSockets: manager-only nodes are not counted, a node of a previous version doesn't tell so it is counted.
 export const isSessionPresenceSupported = async () => {
+  if (IS_SHARED_SESSION_STORE) {
+    return true;
+  }
   const instances = await getClusterInstances();
   const apiNodes = instances.filter((instance) => instance.api_enabled !== false);
   return apiNodes.length <= 1;
@@ -60,7 +66,7 @@ const isLogoutSupported = async () => {
   const isSupported = await isSessionPresenceSupported();
   if (!isSupported && !isMultiNodeWarned) {
     isMultiNodeWarned = true;
-    logApp.warn('[SESSION PRESENCE] Logout when the last tab is closed is not supported when several nodes serve the API, no session is logged out');
+    logApp.warn('[SESSION PRESENCE] Logout when the last tab is closed needs the shared session store when several nodes serve the API, no session is logged out');
   }
   return isSupported;
 };

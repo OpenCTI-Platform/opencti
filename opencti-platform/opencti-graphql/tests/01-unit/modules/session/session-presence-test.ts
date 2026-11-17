@@ -12,7 +12,7 @@ import { schemaAttributesDefinition } from '../../../../src/schema/schema-attrib
 import { ENTITY_TYPE_ACTIVITY } from '../../../../src/schema/internalObject';
 import type { ObjectAttribute } from '../../../../src/schema/attribute-definition';
 
-const { GRACE_PERIOD, LEASE_TTL } = vi.hoisted(() => ({ GRACE_PERIOD: 30000, LEASE_TTL: 30000 }));
+const { GRACE_PERIOD, LEASE_TTL, sessionManager } = vi.hoisted(() => ({ GRACE_PERIOD: 30000, LEASE_TTL: 30000, sessionManager: { value: 'shared' } }));
 const RENEW_INTERVAL = LEASE_TTL / 3;
 
 // In memory store with the semantics of the Redis scripts (tested against Redis in the integration tests),
@@ -109,6 +109,7 @@ vi.mock('../../../../src/config/conf', async (importOriginal: any) => {
       get: vi.fn((key) => {
         if (key === 'app:session_presence:grace_period') return GRACE_PERIOD;
         if (key === 'app:session_presence:lease_ttl') return LEASE_TTL;
+        if (key === 'app:session_manager') return sessionManager.value;
         return actual.default.get(key);
       }),
     },
@@ -386,22 +387,61 @@ describe('session presence', () => {
     expect(store.isDue(sessionId)).toBe(false);
   });
 
-  it('should only be supported while at most one node serves the API', async () => {
-    listClusterNodes(true, false);
+  it('should logout on several nodes with the shared session store', async () => {
+    listClusterNodes(true, true, true);
     expect(await isSessionPresenceSupported()).toBe(true);
-    listClusterNodes(true, undefined);
-    expect(await isSessionPresenceSupported()).toBe(false);
-  });
 
-  it('should not logout while several platform nodes serve the API', async () => {
-    listClusterNodes(true, true);
     const sessionId = nextSessionId();
     const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
     await unregisterSessionPresence(sessionId, connectionId);
-
     await sweepAfter(GRACE_PERIOD);
-    expect(session.killSessionByRawId).not.toHaveBeenCalled();
-    expect(store.isDue(sessionId)).toBe(false);
+    expect(session.killSessionByRawId).toHaveBeenCalledExactlyOnceWith(sessionId);
+  });
+
+  describe('with sessions held in the memory of each node', () => {
+    // The session store is read once, when the module is loaded
+    const loadDomain = async () => {
+      vi.resetModules();
+      const domain = await import('../../../../src/modules/session/session-presence-domain');
+      const { getClusterInstances } = await import('../../../../src/database/redis');
+      const nodes = (...apiEnabledFlags: (boolean | undefined)[]) => {
+        const instances = apiEnabledFlags.map((apiEnabled, i) => ({ platform_id: `node-${i}`, api_enabled: apiEnabled, managers: [] }));
+        vi.mocked(getClusterInstances).mockResolvedValue(instances as any);
+      };
+      return { domain, nodes };
+    };
+
+    beforeAll(() => {
+      sessionManager.value = 'local';
+    });
+
+    afterAll(() => {
+      sessionManager.value = 'shared';
+    });
+
+    it('should only be supported while at most one node serves the API', async () => {
+      const { domain, nodes } = await loadDomain();
+      nodes(true, false);
+      expect(await domain.isSessionPresenceSupported()).toBe(true);
+      nodes(true, undefined);
+      expect(await domain.isSessionPresenceSupported()).toBe(false);
+    });
+
+    it('should not logout while several nodes serve the API', async () => {
+      const { domain, nodes } = await loadDomain();
+      const { killSessionByRawId } = await import('../../../../src/database/session');
+      const { getEntityFromCache } = await import('../../../../src/database/cache');
+      vi.mocked(getEntityFromCache).mockResolvedValue({ platform_session_presence_enabled: true } as any);
+      nodes(true, true);
+      const sessionId = nextSessionId();
+      const connectionId = await domain.registerSessionPresence(sessionId, ORIGIN) as string;
+      await domain.unregisterSessionPresence(sessionId, connectionId);
+
+      await vi.advanceTimersByTimeAsync(GRACE_PERIOD);
+      await domain.logoutAbandonedSessions();
+      expect(killSessionByRawId).not.toHaveBeenCalled();
+      expect(store.isDue(sessionId)).toBe(false);
+    });
   });
 
   it('should only publish context data fields that the activity index maps', async () => {
