@@ -338,7 +338,7 @@ Add filters to control which elements in your bundle the action defined in the c
 
 This component makes a direct query to the database before the Send for ingestion step. If you create a new entity (for example, with the Container wrapper step) and share it in the same playbook, the playbook fails because the entity does not yet exist. To avoid this, run share the entity in a separate playbook.
 
-For more details, see [Organization segregation](https://docs.opencti.io/latest/administration/organization-segregation/).
+For more details, see [Organization segregation](../administration/organization-segregation.md).
 
 ### Transform with AI
 

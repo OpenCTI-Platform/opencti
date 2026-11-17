@@ -12,7 +12,7 @@ Allow to set a main organization for the entire platform. Users belonging to the
 
 !!! warning "Numerous repercussions linked to the activation of this feature"
 
-    This feature has implications for the entire platform and must be fully understood before being used. For example, it's mandatory to have organizations set up for each user, otherwise they won't be able to log in. It is also advisable to include connector's users in the platform main organization to avoid import problems.
+    This feature has implications for the entire platform and must be fully understood before being used. For example, it's mandatory to have organizations set up for each user, otherwise they won't be able to log in. Connector users must be Service Accounts: they then belong dynamically to the platform main organization, without the administrator having to add them to it, which avoids import problems. See the [organization segregation prerequisites](<Part 1 - Organization-Based Segregation Concept, Installation & RBAC Setup.md#12-prerequisites>).
 
 ## Authentication strategies
 
@@ -67,11 +67,11 @@ When a non-zero password validity duration is configured, each user's password i
 
 ## Login messages
 
-Allow to define messages on the login page to customize and highlight your platform's security policy. Three distinct messages can be customized:
+Allow to define messages on the login page to customize and highlight your platform's security policy. Three distinct messages can be customized, all optional:
 
-- Platform login message: Appears above the login form to convey important information or announcements.
-- Platform consent message: A consent message that obscures the login form until users check the approval box, ensuring informed user consent.
-- Platform consent confirm text: A message accompanying the consent box, providing clarity on the consent confirmation process.
+- Platform login message: Appears above the login form to convey important information or announcements, for example a welcome message.
+- Platform consent message: A consent message that obscures the login form until users check the approval box, ensuring informed user consent. When it is set, users must check the box to be able to log in.
+- Platform consent confirm text: The text displayed next to the consent box, when a platform consent message is set. By default, it reads *I have read and comply with the above statement*.
 
 ![Login message configuration](./assets/login-message-configuration1.png)
 ![Login message configuration](./assets/login-message-configuration2.jpeg)

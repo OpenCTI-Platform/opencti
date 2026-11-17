@@ -72,7 +72,7 @@ The below capabilities are applicable to the whole application.
 | &nbsp;&nbsp;`Manage status template`                    | Manage status templates (create/update/delete).                                               |
 | &nbsp;&nbsp;`Manage kill chain phases`                  | Manage kill chain phases (create/update/delete).                                              |
 | &nbsp;&nbsp;`Manage XTM Hub`                            | Manage connection of the OpenCTI product into XTM Hub.                                        |
-| &nbsp;&nbsp;`Access to security activity`               | Access to activity log.                                                                       |
+| &nbsp;&nbsp;`Access security activity`                  | Access to activity log.                                                                       |
 | &nbsp;&nbsp;`Access to file indexing`                   | Manage file indexing.                                                                         |
 | &nbsp;&nbsp;`Access to support`                         | Generate and download support packages.                                                       |
 

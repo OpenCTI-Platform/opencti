@@ -26,13 +26,14 @@ The sensitive configurations identified are:
 
 ## Configuration
 
-The configuration is done in the application configuration file. By default (in ``default.json``), ``platform_protected_sensitive_config`` is enabled.
+The configuration is done in the application configuration file. By default (in ``default.json``), ``protected_sensitive_config`` is enabled. See the [Protect Sensitive Configurations parameters](../deployment/configuration.md#protect-sensitive-configurations) for the list of keys and their environment variables.
 
 It is possible to activate it around specific areas in the platform, as listed previously. It is also possible to choose which `Roles`, `Groups`  or `Marking definitions` will be protected.
 
 By default, built-in `Groups` , `Roles` and `Markings` are protected:
-- Roles ``default``, ``administrator`` and ``connector``
-- Groups ``default``, ``administrators`` and ``connectors``
+
+- Roles ``Default``, ``Administrator`` and ``Connector``
+- Groups ``Default``, ``Administrators`` and ``Connectors``
 - Marking definitions ``TLP`` and ``PAP``
 
 Once the platform is running, a platform administrator can restrict access to the sensitive configuration scoped in the platform settings through a capability in the RBAC, via ``Settings > Security > Roles > Capabilities list``.
