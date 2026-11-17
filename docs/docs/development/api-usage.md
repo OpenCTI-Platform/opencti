@@ -41,7 +41,7 @@ Upon executing a query, the playground displays the response data in a structure
 
 To open the GraphQL playground, browse to `https://<your OpenCTI host>/public/graphql`. When the platform runs under a base path (`app:base_path`, for example `/opencti`), the base path comes first: `https://<your OpenCTI host>/opencti/public/graphql`.
 
-This address is the playground page, not the API endpoint. The playground, like any other API client, sends each query to the API endpoint, `https://<your OpenCTI host>/graphql` (after the base path if any), with the `POST` method. The API endpoint answers other methods with `405 Method Not Allowed`, so it does not open in a browser.
+This address is the playground page, not the API endpoint. The playground, like any other API client, sends each query to the API endpoint, `https://<your OpenCTI host>/graphql` (after the base path if any), with the `POST` method. The API endpoint answers methods other than `POST` (and the `OPTIONS` CORS preflight) with `405 Method Not Allowed`, so it does not open in a browser.
 
 The playground runs the queries as the user logged in to the platform in the same browser: log in to OpenCTI first.
 
