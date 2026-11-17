@@ -9,6 +9,7 @@
   "- Unsupported": "- 지원되지 않음",
   "- you will not pertain to the main platform organisation anymore unless you have been specifically granted access to the organisation.": "- 조직에 대한 액세스 권한이 특별히 부여되지 않는 한 더 이상 기본 플랫폼 조직과 관련이 없습니다.",
   "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "- 사용자는 현재 사용자가 소속된 조직 외에 기본 플랫폼 조직과도 관련됩니다",
+  "{label}, {count, plural, one {# procedure} other {# procedures}}": "{label}, {count, plural, other {절차 #개}}",
   "Author (requesting organization)": "작성자(요청 조직)",
   "Entering this state sets the request status to Approved and notifies the applicant.": "이 상태에 진입하면 요청 상태가 승인됨으로 설정되고 신청자에게 알림이 전송됩니다.",
   "Entering this state sets the request status to Declined and notifies the applicant.": "이 상태에 진입하면 요청 상태가 거절됨으로 설정되고 신청자에게 알림이 전송됩니다.",

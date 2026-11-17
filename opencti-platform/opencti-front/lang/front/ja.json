@@ -9,6 +9,7 @@
   "- Unsupported": "- 未対応",
   "- you will not pertain to the main platform organisation anymore unless you have been specifically granted access to the organisation.": "- 組織への特別なアクセス許可がない限り、メインプラットフォームの組織に関わることができなくなります。",
   "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "- 現在のユーザーが所属している組織に加えて、メインプラットフォームの組織にも所属することになります。",
+  "{label}, {count, plural, one {# procedure} other {# procedures}}": "{label}、{count, plural, other {# 件のプロシージャ}}",
   "Author (requesting organization)": "作成者（リクエスト元の組織）",
   "Entering this state sets the request status to Approved and notifies the applicant.": "このステータスに入ると、リクエストのステータスが「承認済み」に設定され、申請者に通知されます。",
   "Entering this state sets the request status to Declined and notifies the applicant.": "このステータスに入ると、リクエストのステータスが「却下」に設定され、申請者に通知されます。",
