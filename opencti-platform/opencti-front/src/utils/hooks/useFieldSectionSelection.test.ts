@@ -1,6 +1,5 @@
-import React from 'react';
 import { act, renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { FieldRef } from '@mui/x-date-pickers/models';
 import useFieldSectionSelection from './useFieldSectionSelection';
 
@@ -56,22 +55,12 @@ describe('Hook: useFieldSectionSelection', () => {
   });
 
   it('selects the first section once a partly typed field has been emptied with Delete', () => {
-    // Delete requests no selection: the hook renders the picker again by itself.
+    // Delete requests no selection and only renders the field: checked once the key is released.
     const { result, values } = renderWithSections('2023', '12', '');
     act(() => result.current.onSelectedSectionsChange('all'));
-    act(() => {
-      result.current.fieldProps.onKeyDown({ key: 'Delete' } as React.KeyboardEvent);
-      values.fill('');
-    });
+    values.fill('');
+    act(() => result.current.fieldProps.onKeyUpCapture());
     expect(result.current.selectedSections).toBe(0);
-  });
-
-  it('calls the onKeyDown it is given', () => {
-    const onKeyDown = vi.fn();
-    const { result } = renderHook(() => useFieldSectionSelection(onKeyDown));
-    const event = { key: 'Delete' } as React.KeyboardEvent;
-    act(() => result.current.fieldProps.onKeyDown(event));
-    expect(onKeyDown).toHaveBeenCalledWith(event);
   });
 
   it('keeps selecting every section while the field is not mounted', () => {

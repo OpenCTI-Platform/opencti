@@ -7,7 +7,7 @@ export type BaseTimePickerProps = WithSectionSelection<MuiTimePickerProps>;
 
 /** The x-date-pickers `TimePicker`, unstyled, with the section selection of `useFieldSectionSelection`. */
 const BaseTimePicker = ({ slotProps, ...props }: BaseTimePickerProps) => {
-  const { fieldProps, ...sectionSelection } = useFieldSectionSelection(slotProps?.field?.onKeyDown);
+  const { fieldProps, ...sectionSelection } = useFieldSectionSelection();
   return (
     <MuiTimePicker
       {...props}

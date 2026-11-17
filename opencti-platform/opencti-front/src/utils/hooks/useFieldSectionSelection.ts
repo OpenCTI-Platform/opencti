@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { FieldRef, FieldSelectedSections } from '@mui/x-date-pickers/models';
 
 /**
@@ -9,39 +9,34 @@ import type { FieldRef, FieldSelectedSections } from '@mui/x-date-pickers/models
  * (mui/mui-x#19997): a date typed in one go fills the first section only, and typing it again can
  * leave a valid but different date (#19228); a click on a section is ignored, so the next key is
  * lost. Selecting the first section instead types the date section by section, as after a click
- * on the field. That covers the field emptied by Ctrl+A then Backspace or Delete too: Backspace
- * makes the picker select every section again while the sections still hold what was typed, and
- * Delete requests no selection at all, so the selection is checked again once the emptied field
- * has rendered. A partly typed field has a null value already, so emptying it changes no value:
- * every request, and every Delete, is stored as a new object, which renders the picker again.
+ * on the field. That covers the field emptied by Ctrl+A then Backspace or Delete too. Backspace
+ * makes the picker select every section again while the sections still hold what was typed, so
+ * the selection is checked again once the emptied field has rendered. A partly typed field has a
+ * null value already, so emptying it changes no value: every request is stored as a new object,
+ * which renders the picker again. Delete requests no selection at all and only renders the field,
+ * so the selection is checked again once the key is released. That check runs in the capture
+ * phase, which a picker's `slotProps.textField.onKeyUp` does not replace.
  *
  * As soon as one section holds something (a date, or a date partly typed, which the picker
  * reports as a null value), every section stays selected, so Backspace clears the whole field.
- *
- * @param onKeyDown The field's own `onKeyDown`, called before the hook's.
  */
-const useFieldSectionSelection = (onKeyDown?: React.KeyboardEventHandler) => {
+const useFieldSectionSelection = () => {
   const fieldRef = useRef<FieldRef<Date | null>>(null);
   const [selection, setSelection] = useState<{ sections: FieldSelectedSections }>({ sections: null });
   const isEmpty = () => fieldRef.current?.getSections().every((section) => section.value === '') ?? false;
   const onSelectedSectionsChange = (newSelectedSections: FieldSelectedSections) => {
     setSelection({ sections: newSelectedSections === 'all' && isEmpty() ? 0 : newSelectedSections });
   };
-  const onFieldKeyDown = (event: React.KeyboardEvent) => {
-    onKeyDown?.(event);
-    if (event.key === 'Delete' && selection.sections === 'all') {
-      setSelection({ sections: 'all' });
-    }
-  };
-  useLayoutEffect(() => {
+  const selectFirstSectionOnceEmptied = () => {
     if (selection.sections === 'all' && isEmpty()) {
       setSelection({ sections: 0 });
     }
-  });
+  };
+  useLayoutEffect(selectFirstSectionOnceEmptied);
   return {
     selectedSections: selection.sections,
     onSelectedSectionsChange,
-    fieldProps: { fieldRef, onKeyDown: onFieldKeyDown },
+    fieldProps: { fieldRef, onKeyUpCapture: selectFirstSectionOnceEmptied },
   };
 };
 

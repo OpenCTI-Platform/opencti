@@ -7,19 +7,25 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { enUS } from 'date-fns/locale';
 import BaseDatePicker from './BaseDatePicker';
 
-const ControlledDatePicker = ({ onKeyDown }: { onKeyDown?: React.KeyboardEventHandler }) => {
+// An onKeyDown on the text field replaces the field's own one, as in FilterDate.
+const ControlledDatePicker = ({ textFieldOnKeyDown }: { textFieldOnKeyDown?: React.KeyboardEventHandler }) => {
   const [value, setValue] = useState<Date | null>(null);
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={enUS}>
-      <BaseDatePicker label="Date" value={value} onChange={setValue} slotProps={{ field: { onKeyDown } }} />
+      <BaseDatePicker
+        label="Date"
+        value={value}
+        onChange={setValue}
+        slotProps={textFieldOnKeyDown ? { textField: () => ({ onKeyDown: textFieldOnKeyDown }) } : undefined}
+      />
     </LocalizationProvider>
   );
 };
 
 // The sections, MM/DD/YYYY. While every one is selected, they are edited as one element and
 // lose their spinbutton role, so they are reached through the DOM.
-const renderPicker = (onKeyDown?: React.KeyboardEventHandler) => {
-  const rendered = render(<ControlledDatePicker onKeyDown={onKeyDown} />);
+const renderPicker = (textFieldOnKeyDown?: React.KeyboardEventHandler) => {
+  const rendered = render(<ControlledDatePicker textFieldOnKeyDown={textFieldOnKeyDown} />);
   const field = screen.getByRole('group', { name: 'Date' });
   const sectionList = field.querySelector('.MuiPickersSectionList-root') as HTMLElement;
   const section = (index: number) => sectionList.querySelectorAll<HTMLElement>('.MuiPickersSectionList-sectionContent')[index];
@@ -47,11 +53,14 @@ describe('BaseDatePicker', () => {
     expect(isEverySectionSelected()).toBe(true);
   });
 
-  it('gives back its sections to a partly typed date emptied with Delete', async () => {
+  it.each([
+    ['', undefined],
+    [', with an onKeyDown on the text field', vi.fn()],
+  ])('gives back its sections to a partly typed date emptied with Delete%s', async (_, textFieldOnKeyDown) => {
     // The value of a partly typed date is null already: emptying it calls no onChange, and Delete
     // requests no selection.
     const user = userEvent.setup();
-    const { sectionList, section, isEverySectionSelected } = renderPicker();
+    const { sectionList, section, isEverySectionSelected } = renderPicker(textFieldOnKeyDown);
     await user.click(section(0));
     await user.keyboard('12');
     await user.keyboard('{Control>}a{/Control}{Delete}');
@@ -60,14 +69,8 @@ describe('BaseDatePicker', () => {
     await user.click(section(1));
     await user.keyboard('16');
     expect(sectionList).toHaveTextContent('MM/16/YYYY');
-  });
-
-  it('calls the onKeyDown of the field slot', async () => {
-    const user = userEvent.setup();
-    const onKeyDown = vi.fn();
-    const { section } = renderPicker(onKeyDown);
-    await user.click(section(0));
-    await user.keyboard('{Delete}');
-    expect(onKeyDown).toHaveBeenCalledWith(expect.objectContaining({ key: 'Delete' }));
+    if (textFieldOnKeyDown) {
+      expect(textFieldOnKeyDown).toHaveBeenCalledWith(expect.objectContaining({ key: 'Delete' }));
+    }
   });
 });
