@@ -305,6 +305,8 @@
     "interval": 60000,
     "cron_max_size": 500,
     "log_max_size": 10000,
+    "trigger_max_concurrency": 10,
+    "trigger_max_pending": 1000,
     "realtime_priority": false
   },
   "hub_registration_manager": {
