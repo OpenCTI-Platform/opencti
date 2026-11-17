@@ -27,6 +27,7 @@ import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import IconButton from '../../../../components/common/button/IconButton';
 import StixCoreObjectContentFileIcon from './StixCoreObjectContentFileIcon';
 import { isContentTabImage } from './StixCoreObjectContentFileUtils';
+import FileDownloadWarningDialog, { isPotentiallyMaliciousFile } from '../files/FileDownloadWarningDialog';
 
 export interface ContentFile {
   id: string;
@@ -111,6 +112,14 @@ const StixCoreObjectContentFilesList = ({
   };
 
   const canDownloadAsPdf = menuFile?.metaData?.mimetype === 'text/html' || menuFile?.metaData?.mimetype === 'text/markdown';
+
+  // Same warning as the Data tab before getting a file that may be malicious (Artifact, binary)
+  const isMenuFileUnsafe = !!menuFile && isPotentiallyMaliciousFile(menuFile.id, stixCoreObjectType === 'Artifact');
+  const [downloadWarningFileId, setDownloadWarningFileId] = useState<string | null>(null);
+  const openDownloadWarning = (fileId: string) => {
+    closePopover();
+    setDownloadWarningFileId(fileId);
+  };
 
   return (
     <List>
@@ -224,7 +233,12 @@ const StixCoreObjectContentFilesList = ({
         // slide the drawer into its gutter.
         disableScrollLock
       >
-        {menuFile && (
+        {menuFile && isMenuFileUnsafe && (
+          <MenuItem onClick={() => openDownloadWarning(menuFile.id)}>
+            {t_i18n('Download file')}
+          </MenuItem>
+        )}
+        {menuFile && !isMenuFileUnsafe && (
           <MenuItem
             component={Link}
             to={`/storage/get/${encodeURIComponent(menuFile.id)}`}
@@ -235,7 +249,12 @@ const StixCoreObjectContentFilesList = ({
             {t_i18n('Download file')}
           </MenuItem>
         )}
-        {menuFile && isContentTabImage(menuFile.metaData?.mimetype) && (
+        {menuFile && isMenuFileUnsafe && isContentTabImage(menuFile.metaData?.mimetype) && (
+          <MenuItem onClick={() => openDownloadWarning(menuFile.id)}>
+            {t_i18n('Open in a new tab')}
+          </MenuItem>
+        )}
+        {menuFile && !isMenuFileUnsafe && isContentTabImage(menuFile.metaData?.mimetype) && (
           <MenuItem
             component={Link}
             to={`/storage/view/${encodeURIComponent(menuFile.id)}`}
@@ -279,6 +298,11 @@ const StixCoreObjectContentFilesList = ({
           message={t_i18n('Do you want to delete this file?')}
         />
       </Menu>
+      <FileDownloadWarningDialog
+        fileId={downloadWarningFileId}
+        open={!!downloadWarningFileId}
+        onClose={() => setDownloadWarningFileId(null)}
+      />
     </List>
   );
 };

@@ -4,7 +4,6 @@ import Dialog from '@common/dialog/Dialog';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import { DeleteOutlined, DocumentScannerOutlined, GetAppOutlined, OpenInNewOutlined, WarningOutlined } from '@mui/icons-material';
 import { ListItem, ListItemButton, Stack } from '@mui/material';
-import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -37,6 +36,7 @@ import Box from '@mui/material/Box';
 import { isBypassUser, KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
 import { isNotEmptyField } from '../../../../utils/utils';
 import FileWork from './FileWork';
+import FileDownloadWarningDialog, { isPotentiallyMaliciousFile } from './FileDownloadWarningDialog';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
 import ItemCreators from 'src/components/ItemCreators';
 
@@ -261,10 +261,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const listUri = `${APP_BASE_PATH}/storage/${
     directDownload ? 'get' : 'view'
   }/${encodedFilePath}`;
-  const isWarning = isArtifact
-    || encodedFilePath.endsWith('.exe')
-    || encodedFilePath.endsWith('.pif')
-    || encodedFilePath.endsWith('.dll');
+  const isWarning = isPotentiallyMaliciousFile(file?.id ?? '', isArtifact);
   // A file flagged as potentially malicious is never opened in the browser: "Open in a new tab" shows the
   // download warning instead, and the line never links to the Content tab
   const canOpenInNewTab = !!openInNewTabAction && !isFail;
@@ -547,42 +544,11 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog
+      <FileDownloadWarningDialog
+        fileId={file?.id}
         open={displayDownload}
         onClose={handleCloseDownload}
-      >
-        <DialogContentText>
-          {t_i18n('How do you want to download this file?')}
-        </DialogContentText>
-        <Alert
-          severity="warning"
-          variant="outlined"
-          style={{ position: 'relative', marginTop: 20 }}
-        >
-          {t_i18n(
-            'You are about to download a file related to an Artifact (or a binary). It might be malicious. You can download it as an encrypted archive (password: "infected") in order to protect your workstation and share it safely.',
-          )}
-        </Alert>
-        <DialogActions>
-          <Button onClick={handleCloseDownload} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            onClick={() => handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`)
-            }
-          >
-            {t_i18n('Raw file')}
-          </Button>
-          <Button
-            onClick={() => handleLink(
-              `${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`,
-            )
-            }
-          >
-            {t_i18n('Encrypted archive')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      />
     </>
   );
 };
