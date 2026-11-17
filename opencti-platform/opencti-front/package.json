@@ -13,6 +13,7 @@
     "lint": "DEBUG=eslint:cli-engine TIMING=1 eslint --quiet --cache --config eslint.config.ts",
     "lint:ox": "oxlint -c .oxlintrc.json",
     "lint:ox:sync": "node ../../scripts/lint-parity/sync.mjs",
+    "lint:ox:check": "node ../../scripts/lint-parity/sync.mjs --check",
     "lint:parity": "node ../../scripts/lint-parity/cli.mjs",
     "control": "yarn npm audit --environment production",
     "test": "vitest run",

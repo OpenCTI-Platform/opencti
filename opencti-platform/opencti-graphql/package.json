@@ -18,6 +18,7 @@
     "lint": "DEBUG=eslint:cli-engine TIMING=1 eslint --quiet --cache --config eslint.config.ts",
     "lint:ox": "oxlint -c .oxlintrc.json",
     "lint:ox:sync": "node ../../scripts/lint-parity/sync.mjs",
+    "lint:ox:check": "node ../../scripts/lint-parity/sync.mjs --check",
     "lint:parity": "node ../../scripts/lint-parity/cli.mjs",
     "build": "run install:python && run build:prod",
     "start": "run build:dev && node --enable-source-maps build/back.mjs",

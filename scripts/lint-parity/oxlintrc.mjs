@@ -1,4 +1,4 @@
-// Pure helpers for sync.mjs: post-processing of the generated oxlint config.
+// Pure helpers for sync.mjs: post-processing of the generated oxlint config and the drift comparison.
 
 // In ESLint flat config a `files` pattern without a slash (`*.js`, `knip.ts`) is matched against the path
 // relative to the config directory, so it only matches files at the package root. oxlint matches the same
@@ -27,3 +27,21 @@ export const anchorOverrideGlobs = (oxlintrc) => {
 };
 
 export const serializeConfig = (oxlintrc) => `${JSON.stringify(oxlintrc, null, 2)}\n`;
+
+const summarize = (lines, other) => {
+  const index = lines.findIndex((line, i) => line !== other[i]);
+  return index === -1 ? lines.length : index;
+};
+
+// Compares the generated config text with the committed one. `committed` is undefined when the file is missing.
+export const compareConfigs = (generated, committed) => {
+  if (committed === undefined) return { match: false, reason: 'the committed file does not exist' };
+  if (generated === committed) return { match: true, reason: '' };
+  const generatedLines = generated.split('\n');
+  const committedLines = committed.split('\n');
+  const first = summarize(generatedLines, committedLines);
+  return {
+    match: false,
+    reason: `first difference at line ${first + 1} (generated ${generatedLines.length} lines, committed ${committedLines.length})`,
+  };
+};

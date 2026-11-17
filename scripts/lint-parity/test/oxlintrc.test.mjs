@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { anchorOverrideGlobs, rootAnchorGlob, serializeConfig } from '../oxlintrc.mjs';
+import { anchorOverrideGlobs, compareConfigs, rootAnchorGlob, serializeConfig } from '../oxlintrc.mjs';
 
 test('anchors a slash-less pattern to the package root', () => {
   assert.equal(rootAnchorGlob('*.js'), './*.js');
@@ -52,4 +52,26 @@ test('is idempotent', () => {
 
 test('serializes with two-space indentation and a trailing newline', () => {
   assert.equal(serializeConfig({ a: [1] }), '{\n  "a": [\n    1\n  ]\n}\n');
+});
+
+test('compareConfigs: identical text matches', () => {
+  assert.deepEqual(compareConfigs('{\n}\n', '{\n}\n'), { match: true, reason: '' });
+});
+
+test('compareConfigs: reports the first differing line', () => {
+  const result = compareConfigs('a\nb\nc\n', 'a\nX\nc\n');
+  assert.equal(result.match, false);
+  assert.match(result.reason, /first difference at line 2/);
+});
+
+test('compareConfigs: a missing committed file is drift', () => {
+  const result = compareConfigs('a\n', undefined);
+  assert.equal(result.match, false);
+  assert.match(result.reason, /does not exist/);
+});
+
+test('compareConfigs: a trailing difference is drift', () => {
+  const result = compareConfigs('a\nb\n', 'a\n');
+  assert.equal(result.match, false);
+  assert.match(result.reason, /first difference at line 2/);
 });

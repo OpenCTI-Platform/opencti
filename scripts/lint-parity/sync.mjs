@@ -5,10 +5,13 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { oxlintConfigRules, toComparableRuleId, toEslintRuleId } from './normalize.mjs';
-import { anchorOverrideGlobs, serializeConfig } from './oxlintrc.mjs';
+import { anchorOverrideGlobs, compareConfigs, serializeConfig } from './oxlintrc.mjs';
 
 // Regenerates .oxlintrc.json from eslint.config.ts (run from a package dir) so that
 // oxlint runs exactly the rules ESLint enables, then reports what could not be carried over.
+// With --check nothing is written: the generated config is compared to the committed one
+// (exit 0 identical, 1 drift, 2 error).
+const CHECK = process.argv.includes('--check');
 
 const ESLINT_CONFIG = 'eslint.config.ts';
 const OXLINTRC = '.oxlintrc.json';
@@ -116,6 +119,15 @@ const main = async () => {
   const generated = serializeConfig(oxlintrc);
   const file = path.join(packageDir, OXLINTRC);
 
+  if (CHECK) {
+    const { match, reason } = compareConfigs(generated, fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : undefined);
+    if (match) {
+      console.log(`${OXLINTRC} is up to date with ${ESLINT_CONFIG}`);
+      return;
+    }
+    console.log(`${OXLINTRC} is out of date with ${ESLINT_CONFIG}: ${reason}. Run \`yarn lint:ox:sync\` and commit the result.`);
+    process.exit(1);
+  }
   fs.writeFileSync(file, generated);
 
   // Both sides are keyed by the id oxlint enforces: ESLint's @typescript-eslint/x folded into the core x where migrate does.
