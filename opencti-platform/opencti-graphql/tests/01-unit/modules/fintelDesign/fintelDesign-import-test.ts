@@ -272,6 +272,18 @@ describe('Fintel design import', () => {
     await expect(importFintelDesign(context, user, configuration, logoOf(PNG_LOGO), copy)).rejects.toThrow('storage down');
   });
 
+  it('reads the previous default before creating anything: a read that fails leaves no design behind', async () => {
+    vi.mocked(fullEntitiesList).mockRejectedValue(new Error('search timeout'));
+    await expect(importFintelDesign(context, user, configuration, logoOf(PNG_LOGO), overwrite)).rejects.toThrow('search timeout');
+    expect(addFintelDesign).not.toHaveBeenCalled();
+    expect(fintelDesignEditField).not.toHaveBeenCalled();
+    // Not read when it is not needed: a design that is not the default of the bundle, or the default without a logo
+    vi.mocked(fullEntitiesList).mockResolvedValue([]);
+    await importFintelDesign(context, user, { ...configuration, default: false }, logoOf(PNG_LOGO), overwrite);
+    await importFintelDesign(context, user, configuration, undefined, overwrite);
+    expect(vi.mocked(fullEntitiesList).mock.calls.filter(([, , , args]) => JSON.stringify(args).includes('"default"'))).toHaveLength(1);
+  });
+
   it('gives the default back to the previous design before deleting a design the failed edit had already made the default', async () => {
     const previousDefault = { ...nightFintelDesign, id: 'previous-default-id', default: true } as BasicStoreEntityFintelDesign;
     vi.mocked(fullEntitiesList).mockImplementation(async (_ctx, _user, _types, args) => {

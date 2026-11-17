@@ -94,6 +94,8 @@ const createFintelDesign = async (
   standardId?: string,
 ) => {
   const isDefault = design.default === true;
+  // The default the platform goes back to when the item fails. Read before anything is written: a read that fails leaves nothing to undo
+  const previousDefaultId = isDefault && logo ? await findDefaultFintelDesignId(context, user) : undefined;
   // The logo is stored under the internal id of the design: it is written once the design exists. Until it is, the design is not the
   // default: the logo and the default are written by one edit, which stores the logo before it changes anything
   const created = await addFintelDesign(context, user, {
@@ -106,8 +108,6 @@ const createFintelDesign = async (
     ...(standardId ? { standard_id: standardId } : {}),
   });
   if (logo) {
-    // Read before the edit: the default the platform goes back to when the item fails
-    const previousDefaultId = isDefault ? await findDefaultFintelDesignId(context, user) : undefined;
     try {
       await fintelDesignEditField(context, user, { id: created.id, file: toLogoUpload(logo), input: isDefault ? [{ key: 'default', value: [true] }] : [] });
     } catch (error) {
