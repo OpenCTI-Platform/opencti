@@ -6,7 +6,7 @@ import type { FileUploadData } from '../../database/file-storage';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
 import { CONFIG_IMPORT_UNCHANGED_REASON, configImportReasonValue, configImportValidationReason, freeConfigImportName } from '../configImport/configImport-utils';
 import { logApp } from '../../config/conf';
-import { addFintelDesign, fintelDesignDelete, fintelDesignEditField } from './fintelDesign-domain';
+import { addFintelDesign, findDefaultFintelDesign, fintelDesignDelete, fintelDesignEditField } from './fintelDesign-domain';
 import { FINTEL_DESIGN_NAME_MAX_LENGTH, type FintelDesignImportConfiguration, fintelDesignImportSchema } from './fintelDesign-import-schema';
 import { FINTEL_DESIGN_LOGO_MAX_SIZE, fintelDesignLogoExtension, fintelDesignLogoStorageKey, isCompleteFintelDesignLogo, readFintelDesignLogo } from './fintelDesign-logo';
 import { type BasicStoreEntityFintelDesign, ENTITY_TYPE_FINTEL_DESIGN } from './fintelDesign-types';
@@ -64,12 +64,6 @@ const hasSameLogo = async (existing: BasicStoreEntityFintelDesign, content: Buff
   return !!stored && stored.equals(content);
 };
 
-const findDefaultFintelDesignId = async (context: AuthContext, user: AuthUser) => {
-  const filters = { mode: FilterMode.And, filters: [{ key: ['default'], values: [true as unknown as string], operator: FilterOperator.Eq }], filterGroups: [] };
-  const [defaultDesign] = await fullEntitiesList<BasicStoreEntityFintelDesign>(context, user, [ENTITY_TYPE_FINTEL_DESIGN], { filters });
-  return defaultDesign?.id;
-};
-
 // A design created by an item that fails is undone, so that the platform is as it was before the item. The edit that failed may have got
 // as far as making the design the default, taking the default away from the previous one: the previous one is made the default again
 // first, which takes it away from the design, and the design is deleted only then. When that fails, the design stays: a design left as
@@ -95,7 +89,7 @@ const createFintelDesign = async (
 ) => {
   const isDefault = design.default === true;
   // The default the platform goes back to when the item fails. Read before anything is written: a read that fails leaves nothing to undo
-  const previousDefaultId = isDefault && logo ? await findDefaultFintelDesignId(context, user) : undefined;
+  const previousDefaultId = isDefault && logo ? (await findDefaultFintelDesign(context, user))?.id : undefined;
   // The logo is stored under the internal id of the design: it is written once the design exists. Until it is, the design is not the
   // default: the logo and the default are written by one edit, which stores the logo before it changes anything
   const created = await addFintelDesign(context, user, {

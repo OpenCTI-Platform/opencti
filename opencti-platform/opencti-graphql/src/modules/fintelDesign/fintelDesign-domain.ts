@@ -61,31 +61,33 @@ export const addFintelDesign = async (context: AuthContext, user: AuthUser, fint
   }
 };
 
+// The designs marked as the default: one, except while a new default takes the place of the previous one. The id excluded is the new one
+const findDefaultFintelDesigns = (context: AuthContext, user: AuthUser, { excludedId, baseData = false }: { excludedId?: string; baseData?: boolean } = {}) => {
+  return fullEntitiesList<BasicStoreEntityFintelDesign>(context, user, [ENTITY_TYPE_FINTEL_DESIGN], {
+    baseData,
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['default'], values: [true] },
+        ...(excludedId ? [{ key: ['id'], values: [excludedId], operator: FilterOperator.NotEq }] : []),
+      ],
+      filterGroups: [],
+    },
+  });
+};
+
+// The default design of the platform, undefined when it has none
+export const findDefaultFintelDesign = async (context: AuthContext, user: AuthUser): Promise<BasicStoreEntityFintelDesign | undefined> => {
+  const [defaultDesign] = await findDefaultFintelDesigns(context, user);
+  return defaultDesign;
+};
+
 const applyUniqueDefaultFintelDesignConstraint = async (
   context: AuthContext,
   user: AuthUser,
   newDefaultDesignId: string,
 ): Promise<StoreEntityFintelDesign[]> => {
-  const previousDefaultDesigns = await fullEntitiesList<BasicStoreEntityFintelDesign>(
-    context,
-    user,
-    [ENTITY_TYPE_FINTEL_DESIGN],
-    {
-      baseData: true,
-      filters: {
-        filters: [{
-          key: ['default'],
-          values: [true],
-        }, {
-          key: ['id'],
-          values: [newDefaultDesignId],
-          operator: FilterOperator.NotEq,
-        }],
-        filterGroups: [],
-        mode: FilterMode.And,
-      },
-    },
-  );
+  const previousDefaultDesigns = await findDefaultFintelDesigns(context, user, { excludedId: newDefaultDesignId, baseData: true });
 
   if (previousDefaultDesigns.length === 0) {
     return [];

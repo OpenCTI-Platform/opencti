@@ -1,10 +1,10 @@
 import { FintelDesignOrdering } from '../../../generated/graphql';
 import { FunctionalError } from '../../../config/errors';
-import type { AuthContext, AuthUser } from '../../../types/user';
 import { ConfigImportMode } from '../../configImport/configImport-types';
 import { fullEntitiesList, pageEntitiesConnection } from '../../../database/middleware-loader';
 import { exportFintelDesign } from '../../fintelDesign/fintelDesign-export';
 import { importFintelDesign } from '../../fintelDesign/fintelDesign-import';
+import { findDefaultFintelDesign } from '../../fintelDesign/fintelDesign-domain';
 import { FINTEL_DESIGN_STANDARD_ID_PATTERN } from '../../fintelDesign/fintelDesign-import-schema';
 import { fintelDesignLogoExtension, readFintelDesignLogo } from '../../fintelDesign/fintelDesign-logo';
 import { type BasicStoreEntityFintelDesign, ENTITY_TYPE_FINTEL_DESIGN } from '../../fintelDesign/fintelDesign-types';
@@ -20,13 +20,6 @@ const fintelDesignsArgs = (ids?: string[] | null, excludedIds?: string[] | null)
   orderBy: FintelDesignOrdering.Name,
   ...standardIdListArgs(ids, excludedIds),
 });
-
-const findDefaultFintelDesign = async (context: AuthContext, user: AuthUser) => {
-  const [defaultDesign] = await fullEntitiesList<BasicStoreEntityFintelDesign>(context, user, [ENTITY_TYPE_FINTEL_DESIGN], {
-    ...standardIdListArgs(null, null, [{ key: ['default'], values: [true as unknown as string] }]),
-  });
-  return defaultDesign;
-};
 
 // A design is identified by its standard id everywhere: it is the same on every platform the design is imported to.
 // The default design is marked, and selected like any other: no design depends on it, so it can be left out of the export. When it is
