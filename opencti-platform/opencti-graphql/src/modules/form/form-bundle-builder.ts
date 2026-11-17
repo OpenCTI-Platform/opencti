@@ -32,8 +32,9 @@ interface MainEntitySourceContext {
 interface MainEntitySourceResult {
   mainStixEntities: any[];
   mainEntityStixId: string | undefined;
-  // Entities picked in the lookup already exist: only referenced, never sent to the worker as objects to create
-  existingMainStixIds?: string[];
+  // Parallel to mainStixEntities: true for an entity picked in the lookup, it already exists and is only referenced.
+  // Decided by origin, not by id: an entity created in the form can have the id of a picked one, its attributes must still be sent
+  isExistingMain?: boolean[];
 }
 
 type EntitySourceAdapter = (ctx: MainEntitySourceContext) => Promise<MainEntitySourceResult>;
@@ -41,7 +42,7 @@ type EntitySourceAdapter = (ctx: MainEntitySourceContext) => Promise<MainEntityS
 const entitySourceAdapters: Record<MainEntitySourceMode, EntitySourceAdapter> = {
   lookup: async ({ context, user, values, mainEntityType, uploads }) => {
     const mainStixEntities: any[] = [];
-    const existingMainStixIds: string[] = [];
+    const isExistingMain: boolean[] = [];
     let mainEntityStixId: string | undefined;
 
     // Existing entities selected through the lookup (skipped when the user only created
@@ -53,7 +54,7 @@ const entitySourceAdapters: Record<MainEntitySourceMode, EntitySourceAdapter> = 
       }));
       for (let index = 0; index < mainEntities.length; index += 1) {
         mainStixEntities.push(toStix(mainEntities[index]));
-        existingMainStixIds.push(mainEntities[index].standard_id);
+        isExistingMain.push(true);
         mainEntityStixId = mainEntities[index].standard_id;
       }
     }
@@ -65,11 +66,12 @@ const entitySourceAdapters: Record<MainEntitySourceMode, EntitySourceAdapter> = 
         const pendingEntity = completeEntity(pendingEntities[index].entity_type, pendingEntities[index]);
         const stixPending = toStix(pendingEntity);
         mainStixEntities.push(stixPending);
+        isExistingMain.push(false);
         mainEntityStixId = pendingEntity.standard_id;
       }
     }
 
-    return { mainStixEntities, mainEntityStixId, existingMainStixIds };
+    return { mainStixEntities, mainEntityStixId, isExistingMain };
   },
   multiple: async ({ context, user, schema, values, mainEntityType, isBypass }) => {
     const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
@@ -393,11 +395,11 @@ export const wrapInContainerOrPush = (
   bundle: any,
   includeInContainer: boolean | undefined,
   additionalEntitiesMap: Record<string, string[]> = {},
-  existingMainStixIds: string[] = [],
+  isExistingMain: boolean[] = [],
 ): void => {
   const isContainer = includeInContainer && isStixDomainObjectContainer(mainEntityType);
   for (let i = 0; i < mainStixEntities.length; i += 1) {
-    const isExisting = existingMainStixIds.includes(mainStixEntities[i].id);
+    const isExisting = isExistingMain[i] ?? false;
     if (isContainer) {
       const stixContainer = mainStixEntities[i] as StixContainer;
       // Existing additional entities are not in the bundle, the container still references them

@@ -134,7 +134,7 @@ describe('buildMainStixEntities', () => {
       expect(loadFormEntity).toHaveBeenCalledWith(context, user, 'entity-id-1', 'Malware');
       expect(mainStixEntities).toHaveLength(1);
       expect(mainEntityStixId).toBe('malware--00000000-0000-0000-0000-000000000001');
-      expect(result.existingMainStixIds).toEqual(['malware--00000000-0000-0000-0000-000000000001']);
+      expect(result.isExistingMain).toEqual([true]);
     });
 
     it('should handle an array of lookup ids', async () => {
@@ -229,11 +229,11 @@ describe('buildMainStixEntities', () => {
         ],
       };
 
-      const { mainStixEntities, existingMainStixIds } = await buildMainStixEntities(context, user, schema, values, 'Intrusion-Set');
+      const { mainStixEntities, isExistingMain } = await buildMainStixEntities(context, user, schema, values, 'Intrusion-Set');
 
       expect(loadFormEntity).toHaveBeenCalledTimes(1);
       expect(mainStixEntities).toHaveLength(2);
-      expect(existingMainStixIds).toEqual(['intrusion-set--existing']);
+      expect(isExistingMain).toEqual([true, false]);
     });
 
     it('should map an observable pending creation from its flat variable format', async () => {
@@ -1201,9 +1201,20 @@ describe('wrapInContainerOrPush', () => {
     const bundle = { objects: [{ id: 'relationship--1' }] as unknown as StixObject[] };
     const mainStixEntities = [{ id: 'observed-data--existing' }, { id: 'observed-data--new' }];
 
-    wrapInContainerOrPush('Observed-Data', mainStixEntities, bundle, false, {}, ['observed-data--existing']);
+    wrapInContainerOrPush('Observed-Data', mainStixEntities, bundle, false, {}, [true, false]);
 
     expect(bundle.objects.map((o) => o.id)).toEqual(['relationship--1', 'observed-data--new']);
+  });
+
+  it('should push a main entity created in the form with the same id as an existing one picked in the lookup', () => {
+    vi.mocked(isStixDomainObjectContainer).mockReturnValue(false);
+
+    const bundle = makeBundle();
+    const mainStixEntities = [{ id: 'malware--emotet' }, { id: 'malware--emotet', description: 'typed in the form' }];
+
+    wrapInContainerOrPush('Malware', mainStixEntities, bundle, false, {}, [true, false]);
+
+    expect(bundle.objects).toEqual([{ id: 'malware--emotet', description: 'typed in the form' }]);
   });
 
   it('should not push an existing container when there is nothing to add into it', () => {
@@ -1211,7 +1222,7 @@ describe('wrapInContainerOrPush', () => {
 
     const bundle = makeBundle();
 
-    wrapInContainerOrPush('Report', [{ id: 'report--existing' }], bundle, true, {}, ['report--existing']);
+    wrapInContainerOrPush('Report', [{ id: 'report--existing' }], bundle, true, {}, [true]);
 
     expect(bundle.objects).toHaveLength(0);
   });
@@ -1221,7 +1232,7 @@ describe('wrapInContainerOrPush', () => {
 
     const bundle = { objects: [{ id: 'malware--new' }] as unknown as StixObject[] };
 
-    wrapInContainerOrPush('Report', [{ id: 'report--existing' }], bundle, true, { threat: ['malware--new', 'malware--existing'] }, ['report--existing']);
+    wrapInContainerOrPush('Report', [{ id: 'report--existing' }], bundle, true, { threat: ['malware--new', 'malware--existing'] }, [true]);
 
     expect(bundle.objects.map((o) => o.id)).toEqual(['malware--new', 'report--existing']);
     expect(bundle.objects[1].object_refs).toEqual(['malware--new', 'malware--existing']);

@@ -16,7 +16,7 @@ vi.mock('../../../src/modules/form/form-bundle-builder', () => ({
   buildMainStixEntities: vi.fn().mockResolvedValue({
     mainStixEntities: [{ id: 'report--main' }],
     mainEntityStixId: 'report--main',
-    existingMainStixIds: [],
+    isExistingMain: [],
   }),
   buildAdditionalEntities: vi.fn().mockResolvedValue(new Map()),
   buildRelationships: vi.fn().mockResolvedValue(undefined),
