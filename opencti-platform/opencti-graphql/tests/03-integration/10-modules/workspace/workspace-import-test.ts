@@ -10,6 +10,7 @@ import { addWorkspace, findAllWorkspaces, workspaceDelete, workspaceEditField } 
 import { exportDashboard } from '../../../../src/modules/workspace/workspace-export';
 import { findDashboardsByName, importDashboard } from '../../../../src/modules/workspace/workspace-import';
 import { ENTITY_TYPE_WORKSPACE, type BasicStoreEntityWorkspace } from '../../../../src/modules/workspace/workspace-types';
+import { SYSTEM_USER } from '../../../../src/utils/access';
 import { fromB64, toB64 } from '../../../../src/utils/base64';
 
 const PREFIX = 'Config preset dashboard';
@@ -119,6 +120,61 @@ describe('Dashboard import and export (configuration preset)', () => {
     expect(second.reason).toContain('Added as "Config preset dashboard fresh (1)"');
   });
 
+  it('finds again the dashboard whose name an export wrote as it is stored, with spaces around it included', async () => {
+    const name = `${PREFIX} padded `;
+    await addWorkspace(testContext, ADMIN_USER, { type: 'dashboard', name });
+    const [stored] = await findDashboardsByName(testContext, ADMIN_USER, name);
+    const exported = await exportDashboard(testContext, ADMIN_USER, stored);
+    expect(exported.name).toBe(name);
+    // The import overwrites it, it does not add a dashboard of the trimmed name next to it
+    expect(await importDashboard(testContext, ADMIN_USER, { ...exported, description: 'imported' }, { mode })).toMatchObject({ status: 'overwritten', exists: true });
+    expect((await findDashboardsByName(testContext, ADMIN_USER, name))[0]).toMatchObject({ description: 'imported' });
+    expect(await findDashboardsByName(testContext, ADMIN_USER, name.trim())).toEqual([]);
+  });
+
+  it('names the copies of two dashboards of one bundle as the preview said, item after item as the engine does', async () => {
+    const name = `${PREFIX} copies`;
+    await importDashboard(testContext, ADMIN_USER, { name }, { mode });
+    const copy = ConfigImportMode.Copy;
+    const reservedNames = new Set<string>();
+    // Each item is computed on the names of the plan, then written from what the platform holds
+    const promised: string[] = [];
+    for (let index = 0; index < 2; index += 1) {
+      const preview = await importDashboard(testContext, ADMIN_USER, { name }, { mode: copy, dryRun: true, reservedNames });
+      promised.push(/Added as "(.+)"/.exec(preview.reason ?? '')?.[1] ?? '');
+      await importDashboard(testContext, ADMIN_USER, { name }, { mode: copy });
+    }
+    expect(promised).toEqual([`${name} (1)`, `${name} (2)`]);
+    for (const copyName of promised) {
+      expect(await loadWorkspace(copyName)).toMatchObject({ type: 'dashboard' });
+    }
+  });
+
+  it('does not see a dashboard the importing user cannot open: it neither finds it nor overwrites it', async () => {
+    const name = `${PREFIX} not mine`;
+    const foreign = await addWorkspace(testContext, ADMIN_USER, { type: 'dashboard', name });
+    try {
+      // Its only member is someone else, even a user with every capability is not a member of it
+      await patchAttribute(testContext, ADMIN_USER, foreign.id, ENTITY_TYPE_WORKSPACE, {
+        description: 'not mine',
+        restricted_members: [{ id: '2f3c0b5e-7a1d-4c8e-9b2f-5d6e7f8a9b0c', access_right: 'admin' }],
+      });
+      expect(await findDashboardsByName(testContext, ADMIN_USER, name)).toEqual([]);
+      expect((await dashboardsFamily.resolveItems(testContext, ADMIN_USER, null, [])).map(({ label }) => label)).not.toContain(name);
+      // Overwrite does not reach it: the dashboard is created, the other one is left as it was
+      expect(await importDashboard(testContext, ADMIN_USER, { name, description: 'imported' }, { mode })).toMatchObject({ status: 'created', exists: false });
+      const all = await findAllWorkspaces(testContext, SYSTEM_USER, {}) as BasicStoreEntityWorkspace[];
+      const sameName = all.filter((workspace) => workspace.name === name);
+      expect(sameName).toHaveLength(2);
+      expect(sameName.find(({ id }) => id === foreign.id)).toMatchObject({ description: 'not mine' });
+    } finally {
+      const all = await findAllWorkspaces(testContext, SYSTEM_USER, {}) as BasicStoreEntityWorkspace[];
+      for (const workspace of all.filter((found) => found.name === name)) {
+        await workspaceDelete(testContext, SYSTEM_USER, workspace.id);
+      }
+    }
+  });
+
   it('refuses a name twice in a dry run, and a name that several dashboards have', async () => {
     const reservedNames = new Set<string>();
     expect(await importDashboard(testContext, ADMIN_USER, { name: names[6] }, { mode, dryRun: true, reservedNames })).toMatchObject({ status: 'created' });
@@ -131,7 +187,7 @@ describe('Dashboard import and export (configuration preset)', () => {
   });
 
   it('refuses an invalid configuration with a reason, an invalid manifest included', async () => {
-    expect(await importDashboard(testContext, ADMIN_USER, { name: 'x' }, { mode })).toMatchObject({ status: 'failed', code: 'invalid' });
+    expect(await importDashboard(testContext, ADMIN_USER, { name: '   ' }, { mode })).toMatchObject({ status: 'failed', code: 'invalid' });
     expect(await importDashboard(testContext, ADMIN_USER, { name: names[5], unknown: true }, { mode })).toMatchObject({ status: 'failed', code: 'invalid' });
     expect(await importDashboard(testContext, ADMIN_USER, { name: names[5], manifest: 'not a manifest' }, { mode })).toMatchObject({ status: 'failed', code: 'invalid' });
     // A widget without data selection is refused, not an error
