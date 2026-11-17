@@ -29,7 +29,7 @@ import {
 } from '../../../../src/modules/fintelDesign/fintelDesign-logo';
 import { exportFintelDesign } from '../../../../src/modules/fintelDesign/fintelDesign-export';
 import { importFintelDesign } from '../../../../src/modules/fintelDesign/fintelDesign-import';
-import { fintelDesignImportSchema } from '../../../../src/modules/fintelDesign/fintelDesign-import-schema';
+import { FINTEL_DESIGN_NAME_MAX_LENGTH, fintelDesignImportSchema } from '../../../../src/modules/fintelDesign/fintelDesign-import-schema';
 import type { BasicStoreEntityFintelDesign } from '../../../../src/modules/fintelDesign/fintelDesign-types';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
@@ -350,6 +350,40 @@ describe('Fintel design import', () => {
     expect(id).toBe(defaultFintelDesign.id);
     expect(input).toEqual([{ key: 'name', value: ['Filigran report'] }, { key: 'gradiantToColor', value: ['#001bda'] }]);
     expect((await readUpload(file)).content).toEqual(PNG_LOGO);
+  });
+
+  it('leaves a value the bundle gives as null untouched, as it does for one it does not give', async () => {
+    const nulls = { ...configuration, description: null, gradiantFromColor: null, gradiantToColor: null, textColor: null };
+    withExisting(defaultFintelDesign);
+    expect(await importFintelDesign(context, user, nulls, undefined, overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
+    // With a change: the change only, never a null value
+    withExisting({ ...defaultFintelDesign, name: 'Old name' } as BasicStoreEntityFintelDesign);
+    expect(await importFintelDesign(context, user, nulls, undefined, overwrite)).toMatchObject({ status: 'overwritten' });
+    expect(vi.mocked(fintelDesignEditField).mock.calls[0][2].input).toEqual([{ key: 'name', value: ['Filigran report'] }]);
+  });
+
+  it('keeps the free name of a copy within the length of a name, the suffix included', async () => {
+    const longName = 'n'.repeat(FINTEL_DESIGN_NAME_MAX_LENGTH);
+    withExisting({ ...defaultFintelDesign, name: longName } as BasicStoreEntityFintelDesign);
+    withDesignsNamed({ ...defaultFintelDesign, name: longName } as BasicStoreEntityFintelDesign);
+    const result = await importFintelDesign(context, user, { ...configuration, name: longName }, undefined, copy);
+    expect(result.copyName).toBe(`${'n'.repeat(FINTEL_DESIGN_NAME_MAX_LENGTH - 4)} (1)`);
+    expect(result.copyName).toHaveLength(FINTEL_DESIGN_NAME_MAX_LENGTH);
+    expect(addFintelDesign).toHaveBeenCalledWith(context, user, expect.objectContaining({ name: result.copyName }));
+  });
+
+  it('refuses a copy when every free name is taken, and writes nothing', async () => {
+    withExisting(defaultFintelDesign);
+    // Every name asked for is taken by a design
+    vi.mocked(fullEntitiesList).mockImplementation(async (_ctx, _user, _types, args) => {
+      const name = (args as { filters: { filters: { values: string[] }[] } }).filters.filters[0].values[0];
+      return [{ ...nightFintelDesign, name }] as never;
+    });
+    expect(await importFintelDesign(context, user, configuration, undefined, { ...copy, dryRun: true })).toMatchObject({
+      status: 'failed', code: 'name_conflict', reason: 'Fintel design name already exists', exists: true,
+    });
+    expect(await importFintelDesign(context, user, configuration, undefined, copy)).toMatchObject({ status: 'failed', code: 'name_conflict' });
+    expect(addFintelDesign).not.toHaveBeenCalled();
   });
 
   it('makes the design the default of the platform, and never takes the default away from a design', async () => {
