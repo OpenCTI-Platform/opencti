@@ -64,7 +64,8 @@ const playbooksImporter: ConfigPresetImporter = {
     if (result.status === 'created' && !result.exists) {
       plan.created.add(configPresetPlanKey(PLAYBOOKS_FAMILY_ID, item.id));
     }
-    return toComputedItem(label, result);
+    // A playbook refused because an earlier item of the bundle takes its name conflicts with it: the user can import it as a copy
+    return { ...toComputedItem(label, result), conflict: result.exists || result.code === 'ambiguous' };
   },
   apply: async (context, user, item, computed, mode) => {
     const { importConfigPresetPlaybook } = await loadPlaybookImport();
