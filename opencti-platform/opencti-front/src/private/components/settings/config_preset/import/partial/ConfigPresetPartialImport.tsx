@@ -265,7 +265,7 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
           <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1), width: '100%' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1) }}>
               <Text variant="content-base">{t_i18n('Select the {items} to import', { values: { items: itemsLabel } })}</Text>
-              {/* The same mode for every selected item in conflict, from two of them, as the wizard does on the row of a type */}
+              {/* The same mode for every selected item in conflict, from two of them: every item is listed, with its own choice */}
               {defaultMode && conflictKeys.length > 1 && (preview?.type?.modes.length ?? 0) > 1 && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }} data-testid="config-preset-partial-import-apply-to-all">
                   <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{t_i18n('Apply to all')}</Text>

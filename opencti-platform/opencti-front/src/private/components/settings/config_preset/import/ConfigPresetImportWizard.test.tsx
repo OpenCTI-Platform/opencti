@@ -1292,7 +1292,7 @@ describe('ConfigPresetImportWizard', () => {
 
     it('is offered on the item that conflicts, overwrite by default, and on no other', async () => {
       await renderPreview();
-      expect(screen.getAllByRole('combobox')).toHaveLength(1);
+      expect(screen.getAllByRole('combobox', { name: /When it already exists/ })).toHaveLength(1);
       expect(modeSelect()).toHaveTextContent('Overwrite');
       expect(within(screen.getByTestId('config-preset-import-item-branding-theme--1')).queryByRole('combobox')).not.toBeInTheDocument();
       expect(within(screen.getByTestId('config-preset-import-item-messages-banner')).queryByRole('combobox')).not.toBeInTheDocument();
@@ -1393,22 +1393,22 @@ describe('ConfigPresetImportWizard', () => {
       const anotherSelect = () => screen.getByRole('combobox', { name: 'Another theme: When it already exists' });
       const renderTwo = (currentSession = session(), results: unknown[] = []) => renderPreview(currentSession, results, previewWithTwoConflicts);
 
-      it('is offered from two items that conflict, and not with one', async () => {
+      it('is offered from two items that conflict', async () => {
         await renderTwo();
         expect(familySelect()).toHaveTextContent('Overwrite');
       });
 
-      it('does not count an item that is not imported: with one left in conflict, the choice of the item is enough', async () => {
+      it('does not count an item that is not imported: with none left in conflict, it is not offered', async () => {
         const { user } = await renderTwo();
-        expect(familySelect()).toBeInTheDocument();
         await user.click(within(screen.getByTestId('config-preset-import-item-branding-theme--3')).getByRole('checkbox'));
+        expect(familySelect()).toBeInTheDocument();
+        await user.click(within(screen.getByTestId('config-preset-import-item-branding-theme--2')).getByRole('checkbox'));
         expect(screen.queryByRole('combobox', { name: 'Branding: Apply to all' })).not.toBeInTheDocument();
-        expect(modeSelect()).toBeInTheDocument();
       });
 
-      it('is not offered with a single item in conflict, whose own choice is enough', async () => {
+      it('is offered with a single item in conflict too, as for the types with several', async () => {
         await renderPreview();
-        expect(screen.queryByRole('combobox', { name: 'Branding: Apply to all' })).not.toBeInTheDocument();
+        expect(familySelect()).toHaveTextContent('Overwrite');
       });
 
       it('sets the mode of every item of the type that conflicts, and asks for the expected results again', async () => {

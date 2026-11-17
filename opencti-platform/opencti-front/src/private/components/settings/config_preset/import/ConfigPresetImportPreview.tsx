@@ -464,9 +464,9 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         lockedTitle="Activate the Enterprise Edition to import this item"
         onSelectionChange={handleSelectionChange}
         renderTypeActions={(type) => {
-          // From two items in conflict that are imported: with one, its own choice is enough, and an item that is not imported has none
+          // As soon as an imported item conflicts, whatever their number, so that every type reads the same; an item that is not imported has none
           const conflictKeys = type.items.filter((item) => item.conflict && isImportedItem(type.key, item.key)).map((item) => item.key);
-          if (type.modes.length < 2 || conflictKeys.length < 2) {
+          if (type.modes.length < 2 || conflictKeys.length === 0) {
             return null;
           }
           return (
