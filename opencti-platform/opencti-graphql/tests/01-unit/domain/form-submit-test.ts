@@ -759,9 +759,38 @@ describe('formSubmit - deferred creation', () => {
 
     expect(result.success).toBe(true);
     expect(result.entityId).toBe(entityId);
+    expect(result.message).toBe('Form submitted successfully, nothing to import');
     expect(draftWorkspaceDomain.addDraftWorkspace).toHaveBeenCalledTimes(draftCount);
     expect(workDomain.createWork).not.toHaveBeenCalled();
     expect(rabbitmq.pushBundleToWorker).not.toHaveBeenCalled();
+  });
+
+  it('should only reference an existing entity picked in an additional lookup, in the relationship to it', async () => {
+    const form = {
+      ...lookupForm,
+      form_schema: JSON.stringify({
+        fields: [{ name: 'name', label: 'Name', type: 'text', attributeMapping: { entity: 'main_entity', attributeName: 'name' } }],
+        mainEntityType: 'Malware',
+        additionalEntities: [{ id: 'actor', lookup: true, entityType: 'Intrusion-Set' }],
+        relationships: [{ id: 'rel-1', fromEntity: 'actor', toEntity: 'main_entity', relationshipType: 'uses' }],
+      }),
+    };
+    const existing = { internal_id: 'intrusion-set-1', standard_id: 'intrusion-set--existing', entity_type: 'Intrusion-Set', name: 'APT28' };
+    mockStoreLoadById.mockImplementation(async (_c: any, _u: any, id: string) => (id === 'form-1' ? form : existing));
+    const values = { name: 'New Malware', additional_actor_lookup: ['intrusion-set-1'], relationships: [{ id: 'rel-1' }] };
+
+    await formSubmit(mockContext, mockUser, { formId: 'form-1', values: JSON.stringify(values) }, false);
+
+    const { objects } = pushedBundle();
+    const malware = objects.find((o: any) => o.type === 'malware');
+    expect(malware.name).toBe('New Malware');
+    expect(objects.find((o: any) => o.type === 'relationship')).toMatchObject({
+      relationship_type: 'uses',
+      source_ref: 'intrusion-set--existing',
+      target_ref: malware.id,
+    });
+    expect(objects.map((o: any) => o.id)).not.toContain('intrusion-set--existing');
+    expect(objects).toHaveLength(2);
   });
 
   it('should reject an external reference object sent in a direct field that is not in the pool', async () => {
