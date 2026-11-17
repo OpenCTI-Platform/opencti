@@ -12,6 +12,11 @@ const CONTENT_TAB_MIME_TYPES = [
   ...CONTENT_TAB_IMAGE_MIME_TYPES,
 ];
 
+// Containers with their own editable content (the "content" attribute), shown above the files in the Content tab.
+export const CONTAINER_TYPES_WITH_CONTENT = ['Report', 'Grouping', 'Case-Incident', 'Case-Rfi', 'Case-Rft'];
+
+export const isContainerWithContent = (entityType: string) => CONTAINER_TYPES_WITH_CONTENT.includes(entityType);
+
 // Entities whose Data tab exists without a Content tab.
 const ENTITY_TYPES_WITHOUT_CONTENT_TAB = ['Note', 'Observed-Data'];
 
