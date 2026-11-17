@@ -7,6 +7,7 @@ import { ENTITY_TYPE_VULNERABILITY } from '../../vulnerability/vulnerability-typ
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ENTITY_TYPE_INDICATOR } from '../../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../securityPlatform/securityPlatform-types';
+import { ENTITY_TYPE_PROCEDURE } from '../../procedure/procedure-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, type BasicStoreEntitySecurityCoverageResult, type StoreEntitySecurityCoverageResult } from './securityCoverageResult-types';
 
 export const HAS_COVERED_TARGETS_TYPE = [
@@ -15,6 +16,7 @@ export const HAS_COVERED_TARGETS_TYPE = [
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM,
+  ENTITY_TYPE_PROCEDURE,
 ];
 
 /**

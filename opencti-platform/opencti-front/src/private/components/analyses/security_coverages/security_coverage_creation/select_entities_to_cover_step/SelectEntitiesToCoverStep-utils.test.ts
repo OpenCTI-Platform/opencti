@@ -84,6 +84,12 @@ describe('SelectEntitiesToCoverStep-utils', () => {
     });
   });
 
+  describe('HAS_COVERED_TARGETS_TYPES', () => {
+    it('should let procedures be selected as tested entities', () => {
+      expect(HAS_COVERED_TARGETS_TYPES).toContain('Procedure');
+    });
+  });
+
   describe('buildCoveredEntitiesFilters with an existing result', () => {
     const alreadyCoveredFilter = {
       key: 'regardingOf',
