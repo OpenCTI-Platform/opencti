@@ -164,64 +164,64 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
         </div>
       )}
       {nodeMenu && (
-      <div
-        role="presentation"
-        style={{ position: 'absolute', top: 4, right: 2 }}
-        // The menu and its items act on their own: they never open the configuration as well.
-        onClick={(event) => event.stopPropagation()}
-        onKeyDown={(event) => event.stopPropagation()}
-      >
-        <IconButton
-          aria-label={t_i18n('Open menu')}
-          onClick={(event) => setAnchorEl(event.currentTarget)}
-          aria-haspopup="true"
-          size="small"
+        <div
+          role="presentation"
+          style={{ position: 'absolute', top: 4, right: 2 }}
+          // The menu and its items act on their own: they never open the configuration as well.
+          onClick={(event) => event.stopPropagation()}
+          onKeyDown={(event) => event.stopPropagation()}
         >
-          <MoreVert style={{ fontSize: 16 }} />
-        </IconButton>
-        <Menu
-          anchorEl={anchor && 'element' in anchor ? anchor.element : null}
-          anchorReference={anchor && 'top' in anchor ? 'anchorPosition' : 'anchorEl'}
-          anchorPosition={anchor && 'top' in anchor ? anchor : undefined}
-          open={Boolean(anchor)}
-          onClose={() => setAnchorEl(null)}
-        >
-          <MenuItem
-            onClick={() => {
-              data.openConfig(getNode(id));
-              setAnchorEl(null);
-            }}
+          <IconButton
+            aria-label={t_i18n('Open menu')}
+            onClick={(event) => setAnchorEl(event.currentTarget)}
+            aria-haspopup="true"
+            size="small"
           >
-            {t_i18n('Update')}
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              data.openReplace(getNode(id));
-              setAnchorEl(null);
-            }}
+            <MoreVert style={{ fontSize: 16 }} />
+          </IconButton>
+          <Menu
+            anchorEl={anchor && 'element' in anchor ? anchor.element : null}
+            anchorReference={anchor && 'top' in anchor ? 'anchorPosition' : 'anchorEl'}
+            anchorPosition={anchor && 'top' in anchor ? anchor : undefined}
+            open={Boolean(anchor)}
+            onClose={() => setAnchorEl(null)}
           >
-            {t_i18n('Replace')}
-          </MenuItem>
-          {!isEntryPoint && (
             <MenuItem
               onClick={() => {
-                data.openAddSibling(getNode(id));
+                data.openConfig(getNode(id));
                 setAnchorEl(null);
               }}
             >
-              {t_i18n('Add a sibling node')}
+              {t_i18n('Update')}
             </MenuItem>
-          )}
-          <MenuItem
-            onClick={() => {
-              data.openDelete(getNode(id));
-              setAnchorEl(null);
-            }}
-          >
-            {t_i18n('Delete')}
-          </MenuItem>
-        </Menu>
-      </div>
+            <MenuItem
+              onClick={() => {
+                data.openReplace(getNode(id));
+                setAnchorEl(null);
+              }}
+            >
+              {t_i18n('Replace')}
+            </MenuItem>
+            {!isEntryPoint && (
+              <MenuItem
+                onClick={() => {
+                  data.openAddSibling(getNode(id));
+                  setAnchorEl(null);
+                }}
+              >
+                {t_i18n('Add a sibling node')}
+              </MenuItem>
+            )}
+            <MenuItem
+              onClick={() => {
+                data.openDelete(getNode(id));
+                setAnchorEl(null);
+              }}
+            >
+              {t_i18n('Delete')}
+            </MenuItem>
+          </Menu>
+        </div>
       )}
       {lastExecution && (
         <Tooltip title={`${t_i18n('Last execution')}: ${lastStatusLabel}${lastDuration ? `, ${lastDuration}` : ''}`}>

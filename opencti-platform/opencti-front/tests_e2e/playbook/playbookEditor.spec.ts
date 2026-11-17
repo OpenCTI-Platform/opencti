@@ -257,4 +257,53 @@ test.describe('Playbook editor', { tag: ['@ee'] }, () => {
     await expect(steps(page)).toHaveCount(before - 1);
     await expect(freePort(page, fixture.matchId, 'no-match')).toBeVisible();
   });
+
+  test('deletes a single step and keeps the steps after it wired to its parent', async ({ page }) => {
+    await openEditor(page);
+    await expect(steps(page)).toHaveCount(4);
+    // match --out--> Keep the report only --out--> logger
+    const target = steps(page).filter({ hasText: 'Keep the report only' });
+    await target.click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Delete' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('radio', { name: 'Delete this step only' })).toBeChecked();
+    await expect(dialog.getByRole('radio', { name: 'Delete this step and the step after it' })).toBeVisible();
+    await dialog.getByRole('button', { name: 'Confirm' }).click();
+    await expect(steps(page)).toHaveCount(3);
+    await expect(step(page, fixture.loggerId)).toBeVisible();
+    // The logger now hangs on the out port of the match step: that port carries no "+".
+    await expect(freePort(page, fixture.matchId, 'out')).toHaveCount(0);
+    await page.reload();
+    await expect(step(page, fixture.loggerId)).toBeVisible();
+    await expect(freePort(page, fixture.matchId, 'out')).toHaveCount(0);
+  });
+
+  test('opens a running playbook in view mode, the switch turning edit mode on with a notice', async ({ page, playwright }) => {
+    const setRunning = (running: boolean) => withApiRequest(playwright, (request) => executeGraphql(
+      request,
+      `${running ? 'Start' : 'Stop'} playbook ${fixture.name}`,
+      'mutation E2EPlaybookRun($id: ID!, $input: [EditInput!]!) { playbookFieldPatch(id: $id, input: $input) { id } }',
+      { id: fixture.id, input: [{ key: 'playbook_running', value: [String(running)] }] },
+    ));
+    await setRunning(true);
+    try {
+      await openEditor(page);
+      await expect(page.getByTestId('playbook-metadata-line')).toContainText('Last modified');
+      const editMode = page.getByRole('switch', { name: 'Edit mode' });
+      await expect(editMode).not.toBeChecked();
+      // View mode: no add button, no link insert, no menu.
+      await expect(freePort(page, fixture.matchId, 'no-match')).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Insert a component on this link' })).toHaveCount(0);
+      await step(page, fixture.loggerId).click({ button: 'right' });
+      await expect(page.getByRole('menuitem', { name: 'Delete' })).toHaveCount(0);
+      await expect(page.getByTestId('playbook-running-notice')).toHaveCount(0);
+
+      await editMode.click();
+      await expect(editMode).toBeChecked();
+      await expect(page.getByTestId('playbook-running-notice')).toBeVisible();
+      await expect(freePort(page, fixture.matchId, 'no-match')).toBeVisible();
+    } finally {
+      await setRunning(false);
+    }
+  });
 });
