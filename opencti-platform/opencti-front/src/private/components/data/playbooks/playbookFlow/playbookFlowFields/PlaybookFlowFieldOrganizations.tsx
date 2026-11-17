@@ -25,7 +25,7 @@ interface OrganizationOption {
   deleted?: boolean;
 }
 
-const PlaybookFlowFieldOrganizations = () => {
+const PlaybookFlowFieldOrganizations = ({ required = false }: { required?: boolean }) => {
   const { t_i18n } = useFormatter();
   const [{ value }] = useField<OrganizationOption[] | undefined>('organizations');
   // The server flags an organization that no longer exists on this platform (deleted, or a
@@ -37,6 +37,7 @@ const PlaybookFlowFieldOrganizations = () => {
       alert={false}
       name="organizations"
       label="Target organizations"
+      required={required}
       style={fieldSpacingContainerStyle}
       helpertext={hasDeleted ? t_i18n('A selected item no longer exists: remove it and pick another') : undefined}
       getOptionLabel={(option: OrganizationOption) => (isDeletedReference(option)

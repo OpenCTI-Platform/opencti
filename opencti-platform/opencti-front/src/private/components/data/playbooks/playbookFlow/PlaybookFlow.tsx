@@ -236,10 +236,11 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook, canEdit, running }
       >
         {canEdit && running && (
           // Inside the measured block, above the flow: the canvas gives up the notice's height, so the notice
-          // never covers a step or the toolbar and the page never scrolls.
+          // never covers a step or the toolbar and the page never scrolls. The same 12 px above and below
+          // keep it apart from the metadata line of the header.
           <div
             data-testid="playbook-running-notice"
-            style={{ flex: 'none', display: 'flex', justifyContent: 'center', paddingBottom: 12 }}
+            style={{ flex: 'none', display: 'flex', justifyContent: 'center', paddingTop: 12, paddingBottom: 12 }}
           >
             <Alert severity="warning" title={t_i18n('This playbook is running: your changes apply immediately.')} />
           </div>

@@ -261,7 +261,7 @@ const PlaybookFlowForm = ({
                     );
                   }
                   if (propName === 'organizations') {
-                    return <PlaybookFlowFieldOrganizations key={propName} />;
+                    return <PlaybookFlowFieldOrganizations key={propName} required={requiredProperties.includes(propName)} />;
                   }
                   if (propName === 'inPirFilters') {
                     return <PlaybookFlowFieldInPirFilters key={propName} />;

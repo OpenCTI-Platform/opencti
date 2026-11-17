@@ -125,12 +125,25 @@ const PlaybookHeaderComponent = ({
             sx={{
               alignItems: 'center',
               gap: 1,
+              minWidth: 0,
             }}
           >
-            <TitleMainEntity>
-              {playbook.name}
-            </TitleMainEntity>
+            {/* One line whatever the width and the language: a long name ends with an ellipsis
+                and the tooltip gives it whole, the status tag never shrinks. */}
+            <FdsTooltip>
+              <TooltipTrigger asChild>
+                <span style={{ display: 'block', minWidth: 0 }}>
+                  <TitleMainEntity
+                    sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                  >
+                    {playbook.name}
+                  </TitleMainEntity>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{playbook.name}</TooltipContent>
+            </FdsTooltip>
             <Tag
+              style={{ flexShrink: 0 }}
               {...(playbook.playbook_running ? inlineStyles.green : inlineStyles.red)}
               label={
                 playbook.playbook_running
