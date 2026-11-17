@@ -490,7 +490,8 @@ const Workflow = ({
               {isRequestAccessScopeAvailable && (
                 <WorkflowScopeSwitch scope={scope} onScopeChange={(nextScope) => onScopeChange?.(nextScope)} />
               )}
-              <EntityStatusSyncSetting />
+              {/* Opaque paper background so the graph edges passing behind never show through the label */}
+              <EntityStatusSyncSetting sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 1, px: 1.5, py: 0.5 }} />
               {isRequestAccessScopeAvailable && scope === 'REQUEST_ACCESS' && (
                 // width 0 + min-width 100%: the select fills the first column, which the scope buttons size
                 <div style={{ gridColumn: 1, width: 0, minWidth: '100%' }}>
