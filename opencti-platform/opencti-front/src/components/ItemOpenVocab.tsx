@@ -7,6 +7,8 @@ import { EMPTY_VALUE } from '../utils/String';
 import { useFormatter } from './i18n';
 import useVocabularyEntries from '../utils/hooks/useVocabularyEntries';
 import { vocabularyValueLabel } from '../utils/vocabulary/vocabularyDisplay';
+import useVocabularyCategory from '../utils/hooks/useVocabularyCategory';
+import type { VocabularyCategory } from '../utils/hooks/__generated__/useVocabularyEntriesQuery.graphql';
 
 interface ItemOpenVocabProps {
   type: string;
@@ -34,7 +36,7 @@ const PlainVocabTag: FunctionComponent<VocabTagProps> = ({ value, humanLabel, ic
 };
 
 // The tag of a value in the colour its vocabulary entry carries, with the entry's description as tooltip
-const ColoredVocabTag: FunctionComponent<VocabTagProps> = ({ type, value, humanLabel, icon }) => {
+const ColoredVocabTag: FunctionComponent<VocabTagProps & { type: VocabularyCategory }> = ({ type, value, humanLabel, icon }) => {
   const { t_i18n } = useFormatter();
   const entry = useVocabularyEntries(type).get(value);
   const label = humanLabel ? vocabularyValueLabel(value, t_i18n) : value;
@@ -47,6 +49,16 @@ const ColoredVocabTag: FunctionComponent<VocabTagProps> = ({ type, value, humanL
       labelTextTransform={humanLabel ? 'none' : undefined}
     />
   );
+};
+
+// The coloured tag when the type names a vocabulary category the platform knows (useVocabularyCategory, preloaded from the backend),
+// the plain tag otherwise: querying a name outside the VocabularyCategory enum would throw and take the whole view down
+const VocabTag: FunctionComponent<VocabTagProps> = ({ type, value, humanLabel, icon }) => {
+  const { findCategory } = useVocabularyCategory();
+  const category = findCategory(type);
+  return category
+    ? <ColoredVocabTag type={category} value={value} humanLabel={humanLabel} icon={icon} />
+    : <PlainVocabTag type={type} value={value} humanLabel={humanLabel} icon={icon} />;
 };
 
 const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({
@@ -72,10 +84,10 @@ const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({
     } else if (type === 'case_priority_ov') {
       tag = <ItemPriority label={value} priority={value} />;
     } else {
-      // Every other vocabulary takes the colour of its entry when it has one (seeded or set in Settings > Taxonomies > Vocabularies)
+      // Every other vocabulary takes the colour of its entry when it has one (seeded or set in Settings > Taxonomies > Vocabularies).
       tag = (
         <Suspense fallback={tag}>
-          <ColoredVocabTag type={type} value={value} humanLabel={humanLabel} icon={icon} />
+          <VocabTag type={type} value={value} humanLabel={humanLabel} icon={icon} />
         </Suspense>
       );
     }

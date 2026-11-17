@@ -9,8 +9,8 @@ Dissemination list in OpenCTI aims to help you create mailing lists that are use
 
 ## Create a dissemination list
 
-To create a dissemination list, you need to have the capability to manage credentials (see the list of [capabilities in the user page](https://docs.opencti.io/latest/administration/users/) for more information). 
-Access the security menu & click on the dissemination list.
+To create a dissemination list, you need to have the `Manage dissemination lists` capability (see the list of [capabilities in the user page](users.md) for more information).
+Go to `Settings > Security > Dissemination list`.
 
 ![dissemination-list-overview.png](assets%2Fdissemination-list-overview.png)
 

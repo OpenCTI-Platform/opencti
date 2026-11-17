@@ -46,7 +46,8 @@ export interface DashboardPreset {
   id: string;
   name: string;
   values: Record<string, string>;
-  config: Pick<DashboardConfig, 'startDate' | 'endDate' | 'relativeDate'>;
+  // The time range the preset restores, every field present (null: not set).
+  config: { startDate: string | null; endDate: string | null; relativeDate: string | null };
 }
 
 export interface DashboardManifest {

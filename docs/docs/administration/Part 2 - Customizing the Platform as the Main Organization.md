@@ -93,3 +93,5 @@ As the main organization holding most of the knowledge, you will likely be the o
 - ALL-style organization created if a public/TLP:CLEAR distribution channel is needed.
 
 ---
+
+**Previous:** [Part 1 - Organization-Based Segregation Concept, Installation & RBAC Setup](Part%201%20-%20Organization-Based%20Segregation%20Concept,%20Installation%20%26%20RBAC%20Setup.md) | **Next:** [Part 3 - How to Share Data With Organizations](Part%203%20-%20How%20to%20Share%20Data%20With%20Organizations.md) | **Overview:** [Organization segregation](organization-segregation.md)
