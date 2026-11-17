@@ -124,7 +124,7 @@ When the primary entity is an incident and you use the Container wrapper step to
 - Participant
 - Title
 - Marking
-- Severity (only if the severity value of the incident exists as a severity value for the case type — verify this in the [Taxonomy](https://docs.opencti.io/6.7.X/reference/taxonomy/) settings)
+- Severity (only if the severity value of the incident exists as a severity value for the case type — verify this in the [Taxonomy](../reference/taxonomy.md) settings)
 
 ### Create security coverage
 
@@ -373,7 +373,7 @@ These components end the playbook or branch.
 
 ### Send email from template
 
-This component sends an email using a template configured in ****Settings > Security**** (used for user notifications). You can select the template to use and choose to set the email targets either dynamically, based on the data processed or set to a static user, group or organization, see below for more details.
+This component sends an email using a template configured in ****Settings > Security > Email templates**** (used for user notifications, see [Email templates](../administration/email-templates.md)). You can select the template to use and choose to set the email targets either dynamically, based on the data processed or set to a static user, group or organization, see below for more details.
 
 ***Component details***
 
