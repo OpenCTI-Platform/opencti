@@ -4,7 +4,7 @@ import { ENTITY_TYPE_RETENTION_RULE, type BasicStoreEntityRetentionRule } from '
 import { generateInternalId, generateStandardId } from '../../schema/identifier';
 import { elIndex, elPaginate } from '../../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_INDEX_HISTORY, READ_STIX_INDICES } from '../../database/utils';
-import { UnsupportedError } from '../../config/errors';
+import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { utcDate } from '../../utils/format';
 import { RETENTION_MANAGER_USER } from '../../utils/access';
 import { convertFiltersToQueryOptions } from '../../utils/filtering/filtering-resolution';
@@ -96,7 +96,14 @@ export const createRetentionRule = async (context: AuthContext, user: AuthUser, 
   return retentionRule;
 };
 
+// Written by the retention manager only, through patchAttribute
+const RETENTION_RULE_MANAGER_KEYS = ['last_error'];
+
 export const retentionRuleEditField = async (context: AuthContext, user: AuthUser, retentionRuleId: string, input: EditInput[]) => {
+  const managerKeys = input.map((i) => i.key).filter((key) => RETENTION_RULE_MANAGER_KEYS.includes(key));
+  if (managerKeys.length > 0) {
+    throw FunctionalError('Cannot update a field managed by the retention manager', { keys: managerKeys });
+  }
   const { element } = await updateAttribute(context, user, retentionRuleId, ENTITY_TYPE_RETENTION_RULE, input);
   const retentionElement = element as unknown as BasicStoreEntityRetentionRule;
   await publishUserAction({

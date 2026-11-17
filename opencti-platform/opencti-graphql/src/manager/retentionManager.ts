@@ -21,7 +21,7 @@ import type { BasicNodeEdge, StoreObject } from '../types/store';
 import { ALREADY_DELETED_ERROR } from '../config/errors';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import { publishUserAction } from '../listener/UserActionListener';
-import { buildRetentionAuditInput, buildRetentionAuditMessage, newRetentionRunSummary, recordRetentionFailure } from './retentionManager-utils';
+import { buildRetentionAuditInput, buildRetentionAuditMessage, newRetentionRunSummary, recordRetentionDeleted, recordRetentionFailure } from './retentionManager-utils';
 
 const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', false);
 const RETENTION_MANAGER_START_ENABLED = booleanConf('retention_manager:enabled', true);
@@ -99,7 +99,7 @@ export const executeProcessing = async (context: AuthContext, retentionRule: Ret
   logApp.info('[OPENCTI] Retention manager executing rule', { id, name, scope, matching_count: result.pageInfo.globalCount });
   let remainingDeletions = result.pageInfo.globalCount;
   const elements = result.edges;
-  const summary = newRetentionRunSummary(elements.length);
+  const summary = newRetentionRunSummary();
   if (elements.length > 0) {
     logApp.debug(`[OPENCTI] Retention manager clearing ${elements.length} elements`);
     const start = new Date().getTime();
@@ -112,19 +112,10 @@ export const executeProcessing = async (context: AuthContext, retentionRule: Ret
           const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
           await deleteElement(context, scope, scope === 'knowledge' ? node.internal_id : node.id, { knowledgeType: node.entity_type });
           logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
-          if (scope === 'knowledge') {
-            summary.deletedCountByType[node.entity_type] = (summary.deletedCountByType[node.entity_type] ?? 0) + 1;
-          }
-          if (scope === 'history' || scope === 'activity') {
-            summary.deletedHistoryEntries.push({
-              id: node.id,
-              timestamp: (node as any).timestamp ?? up,
-            });
-          }
+          recordRetentionDeleted(summary, scope, { id: node.id, entity_type: node.entity_type, timestamp: (node as any).timestamp ?? up });
         } else {
           // remove element from counters, since we can't delete it
           remainingDeletions -= 1;
-          summary.deletedCount -= 1;
           logApp.debug(`[OPENCTI] Retention manager cannot delete ${node.id}.`);
         }
       } catch (err: any) {

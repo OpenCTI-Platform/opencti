@@ -10,17 +10,27 @@ export interface RetentionRunSummary {
   deletedHistoryEntries: Array<{ id: string; timestamp: string }>;
 }
 
-export const newRetentionRunSummary = (candidatesCount: number): RetentionRunSummary => ({
-  deletedCount: candidatesCount,
+// Only deletes that happened are counted: candidates left by a shutdown, protected or already deleted are not
+export const newRetentionRunSummary = (): RetentionRunSummary => ({
+  deletedCount: 0,
   failedCount: 0,
   lastError: null,
   deletedCountByType: {},
   deletedHistoryEntries: [],
 });
 
-// The element is not deleted: it is not counted as deleted, and the rule keeps the error to show it
+export const recordRetentionDeleted = (summary: RetentionRunSummary, scope: string, element: { id: string; entity_type: string; timestamp: string }) => {
+  summary.deletedCount += 1;
+  if (scope === 'knowledge') {
+    summary.deletedCountByType[element.entity_type] = (summary.deletedCountByType[element.entity_type] ?? 0) + 1;
+  }
+  if (scope === 'history' || scope === 'activity') {
+    summary.deletedHistoryEntries.push({ id: element.id, timestamp: element.timestamp });
+  }
+};
+
+// The rule keeps the last error to show it
 export const recordRetentionFailure = (summary: RetentionRunSummary, elementId: string, err: any) => {
-  summary.deletedCount -= 1;
   summary.failedCount += 1;
   summary.lastError = `${elementId}: ${err?.message ?? 'Unknown error'}`.substring(0, RETENTION_LAST_ERROR_MAX_LENGTH);
 };
