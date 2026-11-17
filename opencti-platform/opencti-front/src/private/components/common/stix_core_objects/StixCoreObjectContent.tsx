@@ -2,7 +2,7 @@ import React, { ChangeEvent, FunctionComponent, useEffect, useRef, useState } fr
 import { graphql, useFragment } from 'react-relay';
 import { useLocation, useNavigate } from 'react-router';
 import { styled } from '@mui/material/styles';
-import TextField from '@mui/material/TextField';
+import { Textarea } from '@filigran/design-system';
 import { Document, Page } from 'react-pdf';
 import 'react-pdf/dist/Page/TextLayer.css';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
@@ -758,28 +758,22 @@ const StixCoreObjectContent: FunctionComponent<StixCoreObjectContentComponentPro
               <EditorContainer
                 style={{ minHeight: height }}
               >
-                <TextField
+                <Textarea
                   rows={Math.round(height / 23)}
                   key={currentFile?.id}
                   id={currentFile?.id}
+                  aria-label={currentFile?.name}
                   value={currentContent ?? ''}
-                  multiline={true}
-                  onChange={(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onTextFieldChange(event)}
-                  fullWidth={true}
-                  slotProps={{
-                    input: {
-                      endAdornment: (
-                        <TextFieldAskAI
-                          currentValue={currentContent ?? ''}
-                          setFieldValue={(val) => {
-                            onTextFieldChange({ target: { value: val } });
-                          }}
-                          format="text"
-                          variant="text"
-                        />
-                      ),
-                    },
+                  onChange={(event: ChangeEvent<HTMLTextAreaElement>) => onTextFieldChange(event)}
+                />
+                <TextFieldAskAI
+                  currentValue={currentContent ?? ''}
+                  setFieldValue={(val) => {
+                    onTextFieldChange({ target: { value: val } });
                   }}
+                  format="text"
+                  variant="text"
+                  style={{ position: 'absolute', top: 10, right: 10 }}
                 />
               </EditorContainer>
             </>
