@@ -1,5 +1,5 @@
 import React, { ChangeEvent, FunctionComponent, useEffect, useRef, useState } from 'react';
-import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import { useLocation, useNavigate } from 'react-router';
 import { styled } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
@@ -14,7 +14,7 @@ import StixCoreObjectMappableContent from './StixCoreObjectMappableContent';
 import TextFieldAskAI from '../form/TextFieldAskAI';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectContentFiles, { stixCoreObjectContentFilesUploadStixCoreObjectMutation } from './StixCoreObjectContentFiles';
-import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import { APP_BASE_PATH, commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectContentBar from './StixCoreObjectContentBar';
@@ -33,7 +33,11 @@ import {
   resolveContentFileMimeType,
 } from './StixCoreObjectContentFileUtils';
 import StixCoreObjectContentImageViewer from './StixCoreObjectContentImageViewer';
-import { StixCoreObjectContent_stixCoreObject$data } from './__generated__/StixCoreObjectContent_stixCoreObject.graphql';
+import {
+  StixCoreObjectContent_stixCoreObject$data,
+  StixCoreObjectContent_stixCoreObject$key,
+} from './__generated__/StixCoreObjectContent_stixCoreObject.graphql';
+import { StixCoreObjectContentRefetchQuery } from './__generated__/StixCoreObjectContentRefetchQuery.graphql';
 
 import '../../../../utils/pdfWorker-setup';
 
@@ -226,9 +230,189 @@ const getAllFiles = (stixCoreObject: StixCoreObjectData): ContentFile[] => [
   ...getFilesFromTemplate(stixCoreObject),
 ];
 
+const stixCoreObjectContentFragment = graphql`
+  fragment StixCoreObjectContent_stixCoreObject on StixCoreObject {
+    id
+    entity_type
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    ... on Report {
+      name
+      description
+      contentField: content
+      content_mapping
+      editContext {
+        name
+        focusOn
+      }
+    }
+    ... on Case {
+      name
+      description
+      contentField: content
+      content_mapping
+      editContext {
+        name
+        focusOn
+      }
+    }
+    ... on Grouping {
+      name
+      description
+      contentField: content
+      content_mapping
+      editContext {
+        name
+        focusOn
+      }
+    }
+    importFiles(first: 500) @connection(key: "Pagination_importFiles") {
+      edges {
+        node {
+          id
+          name
+          uploadStatus
+          lastModified
+          lastModifiedSinceMin
+          objectMarking {
+            id
+            x_opencti_color
+            definition
+          }
+          metaData {
+            mimetype
+            list_filters
+            file_markings
+            messages {
+              timestamp
+              message
+            }
+            errors {
+              timestamp
+              message
+            }
+          }
+          metaData {
+            mimetype
+          }
+        }
+      }
+    }
+    exportFiles(first: 500) @connection(key: "Pagination_exportFiles") {
+      edges {
+        node {
+          id
+          name
+          uploadStatus
+          lastModified
+          lastModifiedSinceMin
+          objectMarking {
+            id
+            x_opencti_color
+            definition
+          }
+          metaData {
+            mimetype
+            file_markings
+          }
+          ...FileLine_file
+        }
+      }
+    }
+    ... on StixDomainObject {
+      filesFromTemplate(first: 500) @connection(key: "Pagination_filesFromTemplate") {
+        edges {
+          node {
+            id
+            name
+            uploadStatus
+            lastModified
+            lastModifiedSinceMin
+            objectMarking {
+              id
+              x_opencti_color
+              definition
+            }
+              metaData {
+                mimetype
+                list_filters
+                file_markings
+                messages {
+                  timestamp
+                  message
+                }
+                errors {
+                  timestamp
+                  message
+                }
+              }
+              metaData {
+                mimetype
+              }
+          }
+        }
+      }
+      fintelTemplates {
+        id
+        name
+        default
+        template_content
+      }
+    }
+    externalReferences {
+      edges {
+        node {
+          source_name
+          url
+          description
+          importFiles(first: 500) {
+            edges {
+              node {
+                id
+                name
+                uploadStatus
+                lastModified
+                lastModifiedSinceMin
+                metaData {
+                  mimetype
+                  list_filters
+                  external_reference_id
+                  messages {
+                    timestamp
+                    message
+                  }
+                  errors {
+                    timestamp
+                    message
+                  }
+                }
+                metaData {
+                  mimetype
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const stixCoreObjectContentRefetchQuery = graphql`
+  query StixCoreObjectContentRefetchQuery($id: String!) {
+    stixCoreObject(id: $id) {
+      ...StixCoreObjectContent_stixCoreObject
+    }
+  }
+`;
+
 interface StixCoreObjectContentComponentProps {
-  stixCoreObject: StixCoreObjectData;
-  relay: RelayRefetchProp;
+  stixCoreObject: StixCoreObjectContent_stixCoreObject$key;
   currentMode: ContentMode;
   setMappingHeaderDisabled: (disabled: boolean) => void;
   setEditorHeaderDisabled: (disabled: boolean) => void;
@@ -281,13 +465,13 @@ const getInitialContentState = (stixCoreObject: StixCoreObjectData, params: Cont
   };
 };
 
-const StixCoreObjectContentComponent: FunctionComponent<StixCoreObjectContentComponentProps> = ({
-  stixCoreObject,
-  relay,
+const StixCoreObjectContent: FunctionComponent<StixCoreObjectContentComponentProps> = ({
+  stixCoreObject: stixCoreObjectKey,
   currentMode,
   setMappingHeaderDisabled,
   setEditorHeaderDisabled,
 }) => {
+  const stixCoreObject = useFragment(stixCoreObjectContentFragment, stixCoreObjectKey);
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const location = useLocation();
@@ -316,6 +500,11 @@ const StixCoreObjectContentComponent: FunctionComponent<StixCoreObjectContentCom
 
   // Periodic refetch, stopped once an export opened from the URL has completed
   const refetchSubscription = useRef<Subscription | undefined>(undefined);
+
+  // Network refetch of the same fragment: Relay updates the stored record and useFragment re-renders
+  const refetch = () => {
+    fetchQuery<StixCoreObjectContentRefetchQuery>(stixCoreObjectContentRefetchQuery, { id: stixCoreObject.id }).subscribe({});
+  };
 
   const saveView = (view: Partial<SavedContentView>) => {
     const savedView: SavedContentView = { currentFileId, contentSelected, pdfViewerZoom, ...view };
@@ -358,7 +547,7 @@ const StixCoreObjectContentComponent: FunctionComponent<StixCoreObjectContentCom
       next: () => setNavOpen(localStorage.getItem('navOpen') === 'true'),
     });
     refetchSubscription.current = interval$.subscribe(() => {
-      relay.refetch({ id: stixCoreObject.id });
+      refetch();
     });
     const initialFile = getAllFiles(stixCoreObject).find((f) => f.id === initialState.currentFileId);
     if (initialFile?.uploadStatus !== 'progress') {
@@ -393,7 +582,7 @@ const StixCoreObjectContentComponent: FunctionComponent<StixCoreObjectContentCom
   };
 
   const handleFileChange = (fileName?: string, isDelete = false) => {
-    relay.refetch({ id: stixCoreObject.id });
+    refetch();
     if (fileName && fileName === currentFileId && isDelete) {
       setMappingHeaderDisabled(false);
       setEditorHeaderDisabled(false);
@@ -782,191 +971,5 @@ const StixCoreObjectContentComponent: FunctionComponent<StixCoreObjectContentCom
   );
 };
 
-export const stixCoreObjectContentRefetchQuery = graphql`
-  query StixCoreObjectContentRefetchQuery($id: String!) {
-    stixCoreObject(id: $id) {
-      ...StixCoreObjectContent_stixCoreObject
-    }
-  }
-`;
-
-const StixCoreObjectContent = createRefetchContainer(
-  StixCoreObjectContentComponent,
-  {
-    stixCoreObject: graphql`
-      fragment StixCoreObjectContent_stixCoreObject on StixCoreObject {
-        id
-        entity_type
-        objectMarking {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-        ... on Report {
-          name
-          description
-          contentField: content
-          content_mapping
-          editContext {
-            name
-            focusOn
-          }
-        }
-        ... on Case {
-          name
-          description
-          contentField: content
-          content_mapping
-          editContext {
-            name
-            focusOn
-          }
-        }
-        ... on Grouping {
-          name
-          description
-          contentField: content
-          content_mapping
-          editContext {
-            name
-            focusOn
-          }
-        }
-        importFiles(first: 500) @connection(key: "Pagination_importFiles") {
-          edges {
-            node {
-              id
-              name
-              uploadStatus
-              lastModified
-              lastModifiedSinceMin
-              objectMarking {
-                id
-                x_opencti_color
-                definition
-              }
-              metaData {
-                mimetype
-                list_filters
-                file_markings
-                messages {
-                  timestamp
-                  message
-                }
-                errors {
-                  timestamp
-                  message
-                }
-              }
-              metaData {
-                mimetype
-              }
-            }
-          }
-        }
-        exportFiles(first: 500) @connection(key: "Pagination_exportFiles") {
-          edges {
-            node {
-              id
-              name
-              uploadStatus
-              lastModified
-              lastModifiedSinceMin
-              objectMarking {
-                id
-                x_opencti_color
-                definition
-              }
-              metaData {
-                mimetype
-                file_markings
-              }
-              ...FileLine_file
-            }
-          }
-        }
-        ... on StixDomainObject {
-          filesFromTemplate(first: 500) @connection(key: "Pagination_filesFromTemplate") {
-            edges {
-              node {
-                id
-                name
-                uploadStatus
-                lastModified
-                lastModifiedSinceMin
-                objectMarking {
-                  id
-                  x_opencti_color
-                  definition
-                }
-                  metaData {
-                    mimetype
-                    list_filters
-                    file_markings
-                    messages {
-                      timestamp
-                      message
-                    }
-                    errors {
-                      timestamp
-                      message
-                    }
-                  }
-                  metaData {
-                    mimetype
-                  }
-              }
-            }
-          }
-          fintelTemplates {
-            id
-            name
-            default
-            template_content
-          }
-        }
-        externalReferences {
-          edges {
-            node {
-              source_name
-              url
-              description
-              importFiles(first: 500) {
-                edges {
-                  node {
-                    id
-                    name
-                    uploadStatus
-                    lastModified
-                    lastModifiedSinceMin
-                    metaData {
-                      mimetype
-                      list_filters
-                      external_reference_id
-                      messages {
-                        timestamp
-                        message
-                      }
-                      errors {
-                        timestamp
-                        message
-                      }
-                    }
-                    metaData {
-                      mimetype
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    `,
-  },
-  stixCoreObjectContentRefetchQuery,
-);
 
 export default StixCoreObjectContent;
