@@ -227,7 +227,7 @@ OpenCTI supports two notification modes:
 - **Live trigger:** Sends a notification immediately for each matching event.
 - **Digest:** Accumulates multiple matching events over a defined period and delivers them in a single notification.
 
-More details are available in the OpenCTI documentation: https://docs.opencti.io/latest/usage/notifications/
+For more details, see [Notifications and alerting](../usage/notifications.md).
 
 ### Impact on notifier variables
 
@@ -350,10 +350,10 @@ You can check a title with the **Test** button of the notifier: it sends a test 
 
 To go further, please explore the following resources:
 
-- **EJS documentation:** https://ejs.co/
-- **OpenCTI custom notifiers documentation:** https://docs.opencti.io/latest/administration/notifiers/
-- **OpenCTI notifiers template:** https://docs.opencti.io/latest/administration/notifier-samples/
-- **Webhooks in OpenCTI blogpost:** https://filigran.io/webhooks-in-opencti-now-supported-in-triggers-and-digests/
+- [EJS documentation](https://ejs.co/)
+- [OpenCTI custom notifiers documentation](notifiers.md)
+- [OpenCTI notifier samples](notifier-samples.md)
+- [Webhooks in OpenCTI blog post](https://filigran.io/blog/webhooks-in-opencti-now-supported-in-triggers-and-digests)
 
 
  

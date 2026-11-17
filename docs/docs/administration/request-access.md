@@ -14,21 +14,21 @@ Platform administrator can configure a request access workflow to allows users t
 
 ### Configuration of the Request For Information settings
 
-Open the configuration of request for information entity.
+Go to `Settings > Customization > Entity types`, select `Request for information`, and open the `Workflow` tab.
 
 ![Request for Information entity settings](assets/request-access/entity-setting-rfi.png)
 
-Configure the "Specific workflow for request access:
+Configure the `Specific Workflow for Request Access` section:
 
 ![Example of request access workflow disabled](assets/request-access/specific-workflow.png)
 
-1. Configure all status that can be used for request access use case. Note that the `Request for Information` will be created with the first status in this list.
+1. Click the edit icon next to `Specific Workflow for Request Access` and configure all status that can be used for request access use case. Note that the `Request for Information` will be created with the first status in this list.
 
-2. Configure the status that will be used when the request is accepted
+2. Click the edit icon next to `Request access actions configuration`. In `On approval move to status:`, select the status that will be used when the request is accepted.
 
-3. Configure the status that will be used when the request is declined
+3. In `On decline move to status:`, select the status that will be used when the request is declined.
 
-4. Configure the group that will be allowed to see the `Request for Information` created automatically by the platform.
+4. In `Validator group membership:`, select the group that will be allowed to see the `Request for Information` created automatically by the platform.
 
 
 ![Example of request access workflow configured](assets/request-access/specific-workflow-configured.png)
@@ -67,7 +67,7 @@ User that are allowed to see the dedicated Request for Information and allowed t
 If you have attempted to use the functionality but need to remove it due to policy:
 
 - In entity setting, delete all status in "Specific Workflow for Request Access" section. 
-- You can alternatively remove the group in `Validator membership`. 
+- You can alternatively remove the group in `Validator group membership:`.
 
 This will restore the default behavior, and the button will not appear in the error message `Restricted entity already exists`.
 

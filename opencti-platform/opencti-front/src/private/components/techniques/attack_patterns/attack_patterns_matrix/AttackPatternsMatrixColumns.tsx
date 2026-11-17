@@ -20,6 +20,8 @@ import useTopBanner from '../../../../../utils/hooks/useTopBanner';
 import { hexToRGB } from '../../../../../utils/Colors';
 import type { Theme } from '../../../../../components/Theme';
 import { containerTypes } from '../../../../../utils/hooks/useAttributes';
+import { MatrixConfig } from './attackPatternsMatrixConfig';
+import type { CellDecoration } from './attackPatternsMatrixCellDecoration';
 
 export type AttackPatternsOfPhase = NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number];
 export type AttackPattern = NonNullable<AttackPatternsOfPhase['attackPatterns']>[number];
@@ -44,8 +46,9 @@ type FilteredData = {
   attackPatterns: FilteredAttackPattern[] | undefined;
 } & AttackPatternsOfPhase;
 
-interface AttackPatternsMatrixColumnsProps extends AttackPatternsMatrixProps {
+export interface AttackPatternsMatrixColumnsProps extends Omit<AttackPatternsMatrixProps, 'variant' | 'queryRef' | 'exportElementId'> {
   queryRef: PreloadedQuery<AttackPatternsMatrixQuery>;
+  config: MatrixConfig;
 }
 
 const LAYOUT_SIZE = {
@@ -83,6 +86,7 @@ export const attackPatternsMatrixColumnsFragment = graphql`
             attack_pattern_id
             name
             description
+            x_mitre_id
           }
           subAttackPatternsSearchText
           killChainPhasesIds
@@ -141,6 +145,18 @@ export const getBoxStyles = ({
   };
 };
 
+// A decoration overrides the base styles only for the keys it sets.
+export const applyCellDecoration = (
+  styles: { border: string; backgroundColor: string },
+  decoration?: CellDecoration,
+) => ({
+  border: styles.border,
+  borderColor: decoration?.border,
+  backgroundColor: decoration?.fill ?? styles.backgroundColor,
+  // FDS-WORKAROUND #82: --black-900 is not compiled into dist/index.css — see fds-migration/LIBRARY-FEEDBACK.md #82
+  labelColor: decoration?.textTone === 'dark' ? 'var(--black-1000)' : undefined,
+});
+
 const AttackPatternsMatrixColumns = ({
   queryRef,
   attackPatterns,
@@ -155,6 +171,8 @@ const AttackPatternsMatrixColumns = ({
   isCoverage = false,
   coverageMap,
   entityId,
+  config,
+  cellDecorations,
 }: AttackPatternsMatrixColumnsProps) => {
   const theme = useTheme<Theme>();
   const [anchorEl, setAnchorEl] = useState<EventTarget & Element | null>(null);
@@ -180,7 +198,7 @@ const AttackPatternsMatrixColumns = ({
 
   const handleAddAttackPattern = (element: MinimalAttackPattern) => {
     const { attack_pattern_id: id, name } = element;
-    handleAdd({ id, entity_type: 'Attack-Pattern', name });
+    handleAdd?.({ id, entity_type: 'Attack-Pattern', name });
     handleClose();
   };
 
@@ -191,45 +209,47 @@ const AttackPatternsMatrixColumns = ({
     return () => subscription.unsubscribe();
   }, []);
 
-  const isAttackPatternCovered = (ap: AttackPattern | SubAttackPattern) => {
-    return attackPatterns.filter((n) => n.id === ap.attack_pattern_id).length > 0;
-  };
+  const filteredData: FilteredData[] | undefined = useMemo(() => {
+    // Built once per memo run instead of scanning attackPatterns for every cell.
+    const levelById = new Map<string, number>();
+    attackPatterns.forEach(({ id }) => levelById.set(id, (levelById.get(id) ?? 0) + 1));
+    const getLevel = (ap: AttackPattern | SubAttackPattern) => levelById.get(ap.attack_pattern_id) ?? 0;
+    const isAttackPatternCovered = (ap: AttackPattern | SubAttackPattern) => levelById.has(ap.attack_pattern_id);
+    // The posture lookup is paged without a cap, so the list can hold thousands of ids: check them through a Set.
+    const overlapIds = attackPatternIdsToOverlap ? new Set(attackPatternIdsToOverlap) : undefined;
+    // Copy before sorting: Relay data is read-only.
+    const orderSubs = (subs: AttackPattern['subAttackPatterns']) => (
+      config.sortSubTechniques && subs ? [...subs].sort(config.compareTechniques) : subs
+    );
 
-  const getAttackPatternLevel = (ap: AttackPattern): number => {
-    return attackPatterns.filter((n) => n.id === ap.attack_pattern_id).length;
-  };
-
-  const getSubAttackPatternLevel = (sap: SubAttackPattern): number => {
-    return attackPatterns.filter((n) => n.id === sap.attack_pattern_id).length;
-  };
-
-  const filteredData: FilteredData[] | undefined = useMemo(() => attackPatternsMatrix?.attackPatternsOfPhases
-    ?.filter((a) => a.kill_chain_name === selectedKillChain)
-    .sort((a, b) => a.x_opencti_order - b.x_opencti_order)
-    .map((a) => ({
-      ...a,
-      attackPatterns: a.attackPatterns
-        ?.filter((ap) => !searchTerm
-          || ap.name.toLowerCase().includes(searchTerm.toLowerCase())
-          || ap.description?.toLowerCase().includes(searchTerm.toLowerCase())
-          || ap.x_mitre_id?.toLowerCase().includes(searchTerm.toLowerCase())
-          || ap.subAttackPatternsSearchText?.toLowerCase().includes(searchTerm.toLowerCase()))
-        .map((ap) => ({
-          ...ap,
-          level: getAttackPatternLevel(ap),
-          isCovered: isAttackPatternCovered(ap),
-          subAttackPatterns: ap.subAttackPatterns?.map((sub) => ({
-            ...sub,
-            level: getSubAttackPatternLevel(sub),
-            isCovered: isAttackPatternCovered(sub),
-            isOverlapping: attackPatternIdsToOverlap?.includes(sub.attack_pattern_id),
-          })),
-          isOverlapping: attackPatternIdsToOverlap?.includes(ap.attack_pattern_id),
-          subAttackPatternsTotal: ap.subAttackPatterns?.length,
-        }))
-        .filter((ap) => (isModeOnlyActive ? ap.isCovered || isSubAttackPatternCovered(ap) : true))
-        .sort((f, s) => f.name.localeCompare(s.name)),
-    })), [attackPatternsMatrix, searchTerm, attackPatterns, attackPatternIdsToOverlap, isModeOnlyActive]);
+    return attackPatternsMatrix?.attackPatternsOfPhases
+      ?.filter((a) => a.kill_chain_name === selectedKillChain)
+      .sort((a, b) => a.x_opencti_order - b.x_opencti_order)
+      .map((a) => ({
+        ...a,
+        attackPatterns: a.attackPatterns
+          ?.filter((ap) => !searchTerm
+            || ap.name.toLowerCase().includes(searchTerm.toLowerCase())
+            || ap.description?.toLowerCase().includes(searchTerm.toLowerCase())
+            || ap.x_mitre_id?.toLowerCase().includes(searchTerm.toLowerCase())
+            || ap.subAttackPatternsSearchText?.toLowerCase().includes(searchTerm.toLowerCase()))
+          .map((ap) => ({
+            ...ap,
+            level: getLevel(ap),
+            isCovered: isAttackPatternCovered(ap),
+            subAttackPatterns: orderSubs(ap.subAttackPatterns)?.map((sub) => ({
+              ...sub,
+              level: getLevel(sub),
+              isCovered: isAttackPatternCovered(sub),
+              isOverlapping: overlapIds?.has(sub.attack_pattern_id),
+            })),
+            isOverlapping: overlapIds?.has(ap.attack_pattern_id),
+            subAttackPatternsTotal: ap.subAttackPatterns?.length,
+          }))
+          .filter((ap) => (isModeOnlyActive ? ap.isCovered || isSubAttackPatternCovered(ap) : true))
+          .sort(config.compareTechniques),
+      }));
+  }, [attackPatternsMatrix, searchTerm, attackPatterns, attackPatternIdsToOverlap, isModeOnlyActive, selectedKillChain, config]);
 
   const { height: topBannerHeight } = useTopBanner();
 
@@ -249,13 +269,14 @@ const AttackPatternsMatrixColumns = ({
         return (
           <Box
             sx={{
-              width: `calc(100vw - ${matrixWidth}px)`,
-              height: `calc(100vh - ${matrixHeight}px)`,
+              // A screen that sizes the matrix itself (the investigation) lets it fill the space it gets.
+              width: config.fillParent ? '100%' : `calc(100vw - ${matrixWidth}px)`,
+              height: config.fillParent ? '100%' : `calc(100vh - ${matrixHeight}px)`,
               overflowX: 'auto',
               whiteSpace: 'nowrap',
               paddingBottom: 2,
               position: 'relative',
-              marginBlockStart: 3,
+              marginBlockStart: config.fillParent ? 0 : 3,
             }}
           >
             <Box
@@ -278,7 +299,10 @@ const AttackPatternsMatrixColumns = ({
                           let badgeColor = isSecurityPlatform ? COLORS.BADGE_SECURITY_POSTURE : COLORS.BADGE;
                           let badgeTextColor = theme.palette.common.black || '#000000';
 
-                          if (isCoverage && coverageMap) {
+                          if (config.badgeColors) {
+                            badgeColor = config.badgeColors.color;
+                            badgeTextColor = config.badgeColors.textColor;
+                          } else if (isCoverage && coverageMap) {
                             // Check if parent or any sub-technique is covered
                             const hasAnyCoveredSubTechniques = ap.subAttackPatterns?.some((sub) => (sub as FilteredSubAttackPattern).isCovered);
 
@@ -316,6 +340,9 @@ const AttackPatternsMatrixColumns = ({
                             >
                               <AccordionAttackPattern
                                 attackPattern={ap}
+                                config={config}
+                                decoration={cellDecorations?.get(ap.attack_pattern_id)}
+                                cellDecorations={cellDecorations}
                                 handleOpen={handleOpen}
                                 attackPatternIdsToOverlap={attackPatternIdsToOverlap}
                                 isSecurityPlatform={isSecurityPlatform}
@@ -331,6 +358,8 @@ const AttackPatternsMatrixColumns = ({
                         <AttackPatternsMatrixColumnsElement
                           key={ap.attack_pattern_id}
                           attackPattern={ap}
+                          config={config}
+                          decoration={cellDecorations?.get(ap.attack_pattern_id)}
                           handleOpen={handleOpen}
                           attackPatternIdsToOverlap={attackPatternIdsToOverlap}
                           isSecurityPlatform={isSecurityPlatform}
@@ -356,7 +385,7 @@ const AttackPatternsMatrixColumns = ({
                     <ListItemIcon><InfoOutlined fontSize="small" /></ListItemIcon>
                     <ListItemText>View</ListItemText>
                   </MenuItem>
-                  {!isCoverage && (
+                  {config.canAdd && handleAdd && (
                     <MenuItem onClick={() => handleAddAttackPattern(selectedAttackPattern)}>
                       <ListItemIcon><AddCircleOutlineOutlined fontSize="small" /></ListItemIcon>
                       <ListItemText>Add</ListItemText>

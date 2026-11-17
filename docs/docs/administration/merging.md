@@ -2,13 +2,13 @@
 
 ## Data merging
 
-Within the OpenCTI platform, the merge capability is present into the "Data > Entities" tab, and is fairly straightforward to use. To execute a merge, select the set of entities to be merged, then click on the Merge icon.
+Within the OpenCTI platform, the merge capability is available in the lists of entities, such as the "Data > Entities" tab or the list of an entity type (for example "Arsenal > Malware"), and is fairly straightforward to use. To execute a merge, select the set of entities to be merged, then click on the Merge icon in the toolbar above the list.
 
 !!! info "Merging limitation"
 
     It is not possible to merge entities of different types, nor is it possible to merge more than 4 entities at a time (it will have to be done in several stages).
 
-![Merge_panel](assets/merge_panel.png)
+![Two Malware entities selected in the Arsenal > Malware list, with the Merge icon in the toolbar](assets/merge-panel.png)
 
 
 Central to the merging process is the selection of a main entity. This primary entity becomes the anchor, retaining crucial attributes such as name and description. Other entities, while losing specific fields like descriptions, are aliased under the primary entity. This strategic decision preserves vital data while eliminating redundancy.
@@ -33,3 +33,4 @@ A common concern when merging entities lies in the potential loss of information
 
 - **Usefulness:** To understand the benefits of entity merger, refer to the [Merge objects](../usage/merging.md) page in the User Guide section of the documentation.
 - **Deduplication mechanism:** the platform is equipped with [deduplication processes](../usage/deduplication.md) that automatically merge data at creation (either manually or by importing data from different sources) if it meets certain conditions.
+- **User accounts:** user accounts are not merged with this feature. They follow a separate procedure, described in [Merging users](users-merge.md).
