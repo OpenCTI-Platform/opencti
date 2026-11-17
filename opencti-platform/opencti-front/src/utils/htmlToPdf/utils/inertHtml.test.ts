@@ -29,6 +29,19 @@ describe('parseInertHtml', () => {
     expect(root.ownerDocument).not.toBe(document);
     expect(root.innerHTML).toBe('<p>hello</p>');
   });
+
+  it('removes event handlers and scripts, keeping the markup the PDF export relies on', () => {
+    const root = parseInertHtml(
+      '<script>window.xss = true</script><img src="x" onerror="window.xss = true">'
+      + '<table data-pdfmake="{}" style="width: 100%"><tr><td class="page-break">a</td></tr></table>',
+    );
+    expect(root.querySelector('script')).toBeNull();
+    expect(root.querySelector('img')?.hasAttribute('onerror')).toBe(false);
+    expect(root.querySelector('img')?.getAttribute('src')).toBe('x');
+    expect(root.querySelector('table')?.getAttribute('data-pdfmake')).toBe('{}');
+    expect(root.querySelector('table')?.getAttribute('style')).toBe('width: 100%');
+    expect(root.querySelector('td')?.className).toBe('page-break');
+  });
 });
 
 describe('PDF export HTML processing', () => {
