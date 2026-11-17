@@ -73,7 +73,8 @@ const fetchAllAttackPatternIds = async (securityPlatformIds: string[]): Promise<
 
 /**
  * Looks up every attack pattern that the given security platforms "should-cover".
- * Pages through all results. `attackPatternIdsToOverlap` stays undefined until a lookup succeeds.
+ * Pages through all results. `attackPatternIdsToOverlap` is undefined until a lookup succeeds, and again while
+ * a new selection is looked up.
  */
 const useShouldCoverOverlap = () => {
   const [attackPatternIdsToOverlap, setAttackPatternIdsToOverlap] = useState<string[] | undefined>();
@@ -88,6 +89,8 @@ const useShouldCoverOverlap = () => {
       setAttackPatternIdsToOverlap([]);
       return;
     }
+    // No marks while the new selection is looked up: the ids of the previous one would be shown under it.
+    setAttackPatternIdsToOverlap(undefined);
     try {
       const ids = await fetchAllAttackPatternIds(securityPlatformIds);
       if (request !== latestRequest.current) return;
