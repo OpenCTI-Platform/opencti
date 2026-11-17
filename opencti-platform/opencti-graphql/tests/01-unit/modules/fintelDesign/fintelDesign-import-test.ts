@@ -146,6 +146,34 @@ describe('Fintel design logo completeness', () => {
     });
   });
 
+  it('finds the end of an SVG root outside its quoted values, its comments and its CDATA sections', () => {
+    const isCompleteSvg = (text: string) => isCompleteFintelDesignLogo(Buffer.from(text), 'svg');
+    // Closed on itself, a '>' or '/>' in a quoted value, the closing tag after a comment or a CDATA section, an XML declaration first
+    expect(isCompleteSvg('<svg width="1"\n/>')).toBe(true);
+    expect(isCompleteSvg('<svg a="x>y" b=\'/>\'><path/></svg>')).toBe(true);
+    expect(isCompleteSvg('<svg><!-- a --><![CDATA[ b ]]></svg >')).toBe(true);
+    expect(isCompleteSvg('\uFEFF<?xml version="1.0"?><svg></svg>')).toBe(true);
+    // A '/>' or a closing tag that is only text: in a quoted value, in a comment, in a CDATA section; a start tag never closed
+    expect(isCompleteSvg('<svg a="/>"')).toBe(false);
+    expect(isCompleteSvg('<svg a="/>">')).toBe(false);
+    expect(isCompleteSvg('<svg><path/><!-- </svg> -->')).toBe(false);
+    expect(isCompleteSvg('<svg><![CDATA[ </svg> ]]>')).toBe(false);
+    expect(isCompleteSvg('<svg><!-- </svg>')).toBe(false);
+    expect(isCompleteSvg('<svg><svgfoo/></svgfoo>')).toBe(false);
+  });
+
+  it('checks an SVG in a time linear in its length, whatever it holds', () => {
+    // A root start tag never closed, followed by more starts of svg tags: a backtracking search would rescan the rest from each of them
+    const unclosed = Buffer.from(`<svg ${'<svg'.repeat(50_000)}`);
+    const unclosedComments = Buffer.from(`<svg>${'<!--'.repeat(50_000)}`);
+    const start = performance.now();
+    expect(fintelDesignLogoExtension(unclosed)).toBe('svg');
+    expect(isCompleteFintelDesignLogo(unclosed, 'svg')).toBe(false);
+    expect(isCompleteFintelDesignLogo(unclosedComments, 'svg')).toBe(false);
+    // About 200 KB each: seconds with a quadratic scan, milliseconds with a linear one. The bound leaves room for a slow CI machine
+    expect(performance.now() - start).toBeLessThan(500);
+  });
+
   it('refuses at the import a logo cut short, whatever the mode, and writes nothing', async () => {
     const truncated = logoOf(Buffer.from([0xff, 0xd8, 0xff]));
     expect(await importFintelDesign(context, user, configuration, truncated, overwrite)).toMatchObject({ status: 'failed', code: 'logo_invalid' });

@@ -52,10 +52,11 @@ const doctypeEnd = (text: string, start: number) => {
   return -1;
 };
 
-// Whether the root element of the text is an svg element. What may come before it (XML declaration, processing instructions, comments,
-// doctype, blanks) is skipped whatever its length, and nothing is parsed nor resolved: no entity, no external reference is ever read.
-// An HTML page holding an svg element, or a document whose svg element is commented out, has another root.
-const isSvgDocument = (text: string) => {
+// Where the root element of the text starts when it is an svg element, -1 otherwise. What may come before it (XML declaration, processing
+// instructions, comments, doctype, blanks) is skipped whatever its length, and nothing is parsed nor resolved: no entity, no external
+// reference is ever read. An HTML page holding an svg element, or a document whose svg element is commented out, has another root.
+// Every scan of the text goes forward only: linear in its length, whatever it holds.
+const svgRootIndex = (text: string) => {
   let index = 0;
   while (index < text.length) {
     const rest = text.slice(index, index + 9);
@@ -69,16 +70,67 @@ const isSvgDocument = (text: string) => {
     } else if (rest.startsWith('<!DOCTYPE')) {
       end = doctypeEnd(text, index + 9);
     } else {
-      return /^<svg[\s/>]/.test(text.slice(index, index + 5));
+      return /^<svg[\s/>]/.test(text.slice(index, index + 5)) ? index : -1;
     }
     // A prolog that is never closed is not a document
     if (end <= index) {
-      return false;
+      return -1;
     }
     index = end;
   }
+  return -1;
+};
+
+// The end of the start tag that begins at `start`, just after its '>': a quoted attribute value may hold '>' or '/>'. -1 when never closed
+const startTagEnd = (text: string, start: number) => {
+  let quote: string | undefined;
+  for (let index = start; index < text.length; index += 1) {
+    const char = text[index];
+    if (quote) {
+      quote = char === quote ? undefined : quote;
+    } else if (char === '"' || char === '\'') {
+      quote = char;
+    } else if (char === '>') {
+      return index + 1;
+    }
+  }
+  return -1;
+};
+
+// Whether an svg closing tag comes after `start`, outside the comments and the CDATA sections, which may hold one as text
+const hasSvgClosingTag = (text: string, start: number) => {
+  let index = text.indexOf('<', start);
+  while (index !== -1) {
+    let next: number;
+    if (text.startsWith('<!--', index)) {
+      next = text.indexOf('-->', index + 4);
+    } else if (text.startsWith('<![CDATA[', index)) {
+      next = text.indexOf(']]>', index + 9);
+    } else if (/^<\/svg[\s>]/.test(text.slice(index, index + 6))) {
+      return true;
+    } else {
+      next = index + 1;
+    }
+    // A comment or a CDATA section never closed holds the rest of the text
+    if (next === -1) {
+      return false;
+    }
+    index = text.indexOf('<', next);
+  }
   return false;
 };
+
+// Whether the svg root goes on to its end: its start tag closed on itself, or followed by its closing tag
+const isCompleteSvg = (text: string) => {
+  const root = svgRootIndex(text);
+  const tagEnd = root === -1 ? -1 : startTagEnd(text, root + 4);
+  if (tagEnd === -1) {
+    return false;
+  }
+  return text[tagEnd - 2] === '/' || hasSvgClosingTag(text, tagEnd);
+};
+
+const svgText = (content: Buffer) => content.toString('utf8').replace(/^\uFEFF/, '');
 
 export const fintelDesignLogoExtension = (content: Buffer): string | undefined => {
   if (startsWith(content, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) {
@@ -95,7 +147,7 @@ export const fintelDesignLogoExtension = (content: Buffer): string | undefined =
   }
   // An SVG is text: an XML document whose root is an svg element. The whole document is checked: its size is bounded by the callers,
   // which read FINTEL_DESIGN_LOGO_MAX_SIZE at most
-  if (isSvgDocument(content.toString('utf8').replace(/^\uFEFF/, ''))) {
+  if (svgRootIndex(svgText(content)) !== -1) {
     return 'svg';
   }
   return undefined;
@@ -104,7 +156,7 @@ export const fintelDesignLogoExtension = (content: Buffer): string | undefined =
 // Whether the logo goes on to the end its format sets, so that a browser can show it: a logo cut short (a signature alone, a download
 // interrupted) is refused. The structure is checked, not every byte decoded. Data after the end is tolerated, as the browsers do.
 // PNG: the IHDR chunk first and the IEND chunk with its CRC. JPEG: an end-of-image marker. GIF: the trailer as the last byte.
-// WEBP: the RIFF size within the file. SVG: the closing tag of the svg element, or the element closed on itself.
+// WEBP: the RIFF size within the file. SVG: the root closed on itself, or followed by a closing tag outside a comment.
 const PNG_END = [0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82];
 export const isCompleteFintelDesignLogo = (content: Buffer, extension: string) => {
   switch (extension) {
@@ -116,10 +168,8 @@ export const isCompleteFintelDesignLogo = (content: Buffer, extension: string) =
       return content.length > 13 && content[content.length - 1] === 0x3b;
     case 'webp':
       return content.length >= 12 && content.readUInt32LE(4) >= 4 && content.readUInt32LE(4) + 8 <= content.length;
-    case 'svg': {
-      const text = content.toString('utf8');
-      return text.includes('</svg>') || /<svg[^>]*\/>/.test(text);
-    }
+    case 'svg':
+      return isCompleteSvg(svgText(content));
     default:
       return false;
   }
