@@ -341,6 +341,23 @@ jobs:
             yarn knip --dependencies
         '
 
+    - name: Backend oxlint parity (shadow, non-blocking)
+      # Phase 1 of the oxlint rollout: compares oxlint with ESLint and prints the
+      # differences in the job log. Never fails the build; see scripts/lint-parity/README.md.
+      # The builder image does not carry the root scripts/ folder, hence the extra mount.
+      continue-on-error: true
+      run: |
+        docker run --name backend-lint-parity \
+          -v ${{ github.workspace }}/.gitignore:/opt/opencti/.gitignore:ro \
+          -v ${{ github.workspace }}/scripts/lint-parity:/opt/opencti/scripts/lint-parity:ro \
+          --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
+          -e PYTHONUNBUFFERED=1  \
+          filigran/builder:${{ github.sha }} \
+          sh -c 'set -eux
+            cd /opt/opencti/opencti-platform/opencti-graphql
+            yarn lint:parity
+        '
+
     - name: Start unit tests (aka yarn test:ci-unit)
       if: '!cancelled()'
       run: |
