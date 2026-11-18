@@ -174,7 +174,7 @@ export const ATTRIBUTE_DESCRIPTIONS: Record<string, string> = {
   // -- Observables --
   x_opencti_description: 'Description of the observable.',
   value: 'Value of the observable, in the format of its type (e.g. 198.51.100.7 for an IPv4-Addr, example.com for a Domain-Name, https://example.com/page for a Url).',
-  hashes: 'Hashes of the content, as an object keyed by algorithm: MD5, SHA-1, SHA-256, SHA-512, SHA3-256, SHA3-512, SSDEEP, SDHASH, TLSH or LZJD.',
+  hashes: 'Hashes of the content, as a list of { algorithm, hash } entries (e.g. [{ algorithm: "SHA-256", hash: "..." }]), the algorithm being MD5, SHA-1, SHA-256, SHA-512, SHA3-256, SHA3-512, SSDEEP, SDHASH, TLSH or LZJD. In a STIX bundle, an object keyed by algorithm instead.',
   mime_type: 'MIME type of the content (e.g. application/pdf).',
   content_type: 'MIME content type, with its parameters (e.g. text/plain; charset=utf-8, multipart/mixed).',
   extensions: 'STIX extensions of the observable, as JSON.',
