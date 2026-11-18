@@ -7,6 +7,9 @@ import useWorkflowLayout from './hooks/useWorkflowLayout';
 import { useWorkflowInitialElements } from './hooks/useWorkflowInitialElements';
 import { WorkflowNodeType } from './utils';
 import ThemeDark from '../../../../../components/ThemeDark';
+import { TooltipProvider } from '@filigran/design-system';
+import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
+import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import type { PreloadedQuery } from 'react-relay';
 import { SubTypeWorkflowQuery } from '../__generated__/SubTypeWorkflowQuery.graphql';
 import { SubTypeWorkflowDependenciesQuery } from '../__generated__/SubTypeWorkflowDependenciesQuery.graphql';
@@ -25,7 +28,9 @@ const testTheme = createTheme(ThemeDark() as ThemeOptions);
 const renderWithTheme = (component: React.ReactElement) => {
   return render(
     <ThemeProvider theme={testTheme}>
-      {component}
+      <TooltipProvider>
+        {component}
+      </TooltipProvider>
     </ThemeProvider>,
   );
 };
@@ -90,13 +95,14 @@ const mockWorkflowDefinition = {
   published: false,
   errors: [],
 };
+let mockLoadedDefinition: (typeof mockWorkflowDefinition & { hasPublishedVersion?: boolean }) | null = mockWorkflowDefinition;
 
 vi.mock('react-relay', async () => {
   const actual = await vi.importActual('react-relay');
   return {
     ...actual,
     usePreloadedQuery: vi.fn(() => ({
-      workflowDefinition: mockWorkflowDefinition,
+      workflowDefinition: mockLoadedDefinition,
       statusTemplates: {
         edges: [{ node: { id: 'status-1', name: 'Open', color: '#00FF00' } }],
       },
@@ -188,9 +194,9 @@ vi.mock('./hooks/useStatusConnection', () => ({
 
 // Mock child components
 vi.mock('./WorkflowEditionDrawer', () => ({
-  default: ({ open, onClose }: { open: boolean; onClose: () => void }) => (
+  default: ({ open, onClose, workflowStatusIds }: { open: boolean; onClose: () => void; workflowStatusIds?: Record<string, string> }) => (
     open ? (
-      <div data-testid="workflow-edition-drawer">
+      <div data-testid="workflow-edition-drawer" data-workflow-status-ids={JSON.stringify(workflowStatusIds)}>
         <button onClick={onClose}>Close Drawer</button>
       </div>
     ) : null
@@ -235,6 +241,33 @@ vi.mock('./EdgeTypes', () => ({
   default: {},
 }));
 
+vi.mock('../SubTypeOutletContext', () => ({
+  useSubTypeOutletContext: vi.fn(),
+}));
+
+vi.mock('../../../../../utils/hooks/useEnterpriseEdition', () => ({
+  default: vi.fn(),
+}));
+
+vi.mock('../global_workflow_request_access/EntityStatusSyncSetting', () => ({
+  default: () => <div data-testid="entity-status-sync-setting" />,
+}));
+
+vi.mock('./RequestAccessValidatorGroup', () => ({
+  default: () => <div data-testid="validator-group-field" />,
+}));
+
+vi.mock('./RequestAccessMigrationDialog', () => ({
+  default: ({ open, onClose, onMigrated }: { open: boolean; onClose: () => void; onMigrated: () => void }) => (
+    open ? (
+      <div data-testid="request-access-migration-dialog">
+        <button onClick={onMigrated}>migrated</button>
+        <button onClick={onClose}>close migration</button>
+      </div>
+    ) : null
+  ),
+}));
+
 // Mock MESSAGING$ to capture toast calls — must use vi.hoisted because vi.mock is hoisted
 const { mockNotifyError, mockNotifySuccess } = vi.hoisted(() => ({
   mockNotifyError: vi.fn(),
@@ -255,6 +288,11 @@ describe('Workflow Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useApiMutationCallIndex = 0;
+    mockLoadedDefinition = mockWorkflowDefinition;
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+    vi.mocked(useSubTypeOutletContext).mockReturnValue({
+      subType: { settings: { availableSettings: ['workflow_configuration', 'request_access_workflow'] } },
+    } as never);
     mockGetNode.mockReturnValue({ id: 'test-node' });
     mockSetNodes = vi.fn();
     mockSetEdges = vi.fn();
@@ -452,6 +490,32 @@ describe('Workflow Component', () => {
   });
 
   describe('Drawer interactions', () => {
+    it('should give the drawer the status ids of published states, keyed by status template', async () => {
+      const user = userEvent.setup();
+      const { usePreloadedQuery } = await import('react-relay');
+      const original = vi.mocked(usePreloadedQuery).getMockImplementation();
+      vi.mocked(usePreloadedQuery).mockImplementation((() => ({
+        workflowDefinition: {
+          ...mockWorkflowDefinition,
+          states: [
+            { statusId: 'status-1', workflowStatusId: 'workflow-status-1' },
+            { statusId: 'status-2', workflowStatusId: null },
+          ],
+        },
+        statusTemplates: { edges: [{ node: { id: 'status-1', name: 'Open', color: '#00FF00' } }] },
+        members: { edges: [] },
+      })) as unknown as typeof usePreloadedQuery);
+      try {
+        renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);
+        await user.click(screen.getByText('Add Status'));
+
+        const drawer = screen.getByTestId('workflow-edition-drawer');
+        expect(JSON.parse(drawer.getAttribute('data-workflow-status-ids') ?? 'null')).toEqual({ 'status-1': 'workflow-status-1' });
+      } finally {
+        vi.mocked(usePreloadedQuery).mockImplementation(original as typeof usePreloadedQuery);
+      }
+    });
+
     it('should set selectedElement when opening drawer for new status', async () => {
       const user = userEvent.setup();
       renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);
@@ -565,13 +629,13 @@ describe('Workflow Component', () => {
   });
 
   describe('Publish functionality', () => {
-    it('should call notifyError with validation errors toast when pre-existing errors exist', async () => {
+    it('should ask the server even when errors were stored at save time', async () => {
       const user = userEvent.setup();
       const { usePreloadedQuery } = await import('react-relay');
       vi.mocked(usePreloadedQuery).mockReturnValueOnce({
         workflowDefinition: {
           ...mockWorkflowDefinition,
-          errors: [{ type: 'MISSING_TRANSITION', message: 'State has no outgoing transition', path: [] }],
+          errors: [{ type: 'STATUS_IN_USE', message: 'Cannot remove statuses status-1 that are currently assigned to entities', path: [] }],
         },
         statusTemplates: { edges: [{ node: { id: 'status-1', name: 'Open', color: '#00FF00' } }] },
         members: { edges: [] },
@@ -579,10 +643,66 @@ describe('Workflow Component', () => {
 
       renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);
 
-      // publish-button is disabled when there are errors; use force-publish-button to invoke handlePublish directly
+      // The entities may have moved since the save: only the server knows
       await user.click(screen.getByTestId('force-publish-button'));
 
-      expect(mockNotifyError).toHaveBeenCalled();
+      expect(mockPublishWorkflowDefinition).toHaveBeenCalledWith(
+        expect.objectContaining({ variables: { entityType: 'DraftWorkspace', scope: 'GLOBAL' } }),
+      );
+      expect(mockNotifyError).not.toHaveBeenCalled();
+    });
+
+    it('should name the statuses in the refusal message instead of their ids', async () => {
+      const user = userEvent.setup();
+      const { usePreloadedQuery } = await import('react-relay');
+      vi.mocked(usePreloadedQuery).mockReturnValueOnce({
+        workflowDefinition: mockWorkflowDefinition,
+        statusTemplates: { edges: [{ node: { id: 'status-1', name: 'In progress', color: '#00FF00' } }] },
+        members: { edges: [] },
+      });
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);
+
+      await user.click(screen.getByTestId('publish-button'));
+
+      mockPublishWorkflowDefinition.mock.calls[0]?.[0]?.onError?.({
+        res: {
+          errors: [{
+            message: 'Cannot publish workflow with validation errors',
+            extensions: { data: { errors: [{ type: 'STATUS_IN_USE', message: 'Cannot remove statuses status-1 that are currently assigned to entities', path: [] }] } },
+          }],
+        },
+      });
+
+      const { getByText } = render(
+        <ThemeProvider theme={testTheme}>{mockNotifyError.mock.calls[0][0]}</ThemeProvider>,
+      );
+      expect(getByText(/Cannot remove statuses In progress that are currently assigned/)).toBeInTheDocument();
+    });
+
+    it('should show the fresh errors the server returns when it refuses to publish', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);
+
+      await user.click(screen.getByTestId('publish-button'));
+
+      const publishCall = mockPublishWorkflowDefinition.mock.calls[0];
+      publishCall?.[0]?.onError?.({
+        res: {
+          errors: [{
+            message: 'Cannot publish workflow with validation errors',
+            extensions: { data: { errors: [{ type: 'STATE_UNREACHABLE', message: 'State is not reachable', path: [] }] } },
+          }],
+        },
+      });
+
+      const toastElement = mockNotifyError.mock.calls[0][0];
+      const { getByText } = render(
+        <ThemeProvider theme={testTheme}>{toastElement}</ThemeProvider>,
+      );
+      expect(getByText(/State is not reachable/)).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId('publish-button')).toBeDisabled();
+      });
     });
 
     it('should call commitPublish when there are no validation errors', async () => {
@@ -592,7 +712,7 @@ describe('Workflow Component', () => {
       await user.click(screen.getByTestId('publish-button'));
 
       expect(mockPublishWorkflowDefinition).toHaveBeenCalledWith(
-        expect.objectContaining({ variables: { entityType: 'DraftWorkspace' } }),
+        expect.objectContaining({ variables: { entityType: 'DraftWorkspace', scope: 'GLOBAL' } }),
       );
     });
 
@@ -609,6 +729,38 @@ describe('Workflow Component', () => {
       await waitFor(() => {
         expect(screen.getByTestId('publish-button')).toHaveTextContent('Published');
       });
+    });
+
+    it('should refetch on successful publish to load the status ids it created', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);
+
+      await user.click(screen.getByTestId('publish-button'));
+      expect(mockOnRefetch).not.toHaveBeenCalled();
+
+      const publishCall = mockPublishWorkflowDefinition.mock.calls[0];
+      publishCall?.[0]?.onCompleted?.();
+
+      expect(mockOnRefetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not refetch when the publish is refused', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);
+
+      await user.click(screen.getByTestId('publish-button'));
+
+      const publishCall = mockPublishWorkflowDefinition.mock.calls[0];
+      publishCall?.[0]?.onError?.({
+        res: {
+          errors: [{
+            message: 'Cannot publish workflow with validation errors',
+            extensions: { data: { errors: [{ type: 'STATE_UNREACHABLE', message: 'State is not reachable', path: [] }] } },
+          }],
+        },
+      });
+
+      expect(mockOnRefetch).not.toHaveBeenCalled();
     });
 
     it('should call notifyError with structured toast on publish API error', async () => {
@@ -689,6 +841,38 @@ describe('Workflow Component', () => {
       expect(getByText(/unknown-status-id/)).toBeInTheDocument();
     });
 
+    it('should list the request access errors of a refused publish with their messages', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="Case-Rfi" scope="REQUEST_ACCESS" />);
+
+      await user.click(screen.getByTestId('publish-button'));
+
+      const publishCall = mockPublishWorkflowDefinition.mock.calls[0];
+      publishCall?.[0]?.onError?.({
+        res: {
+          errors: [{
+            message: 'Cannot publish workflow with validation errors',
+            extensions: {
+              data: {
+                errors: [
+                  { type: 'REQUEST_ACCESS_OUTCOME_MOVED', message: "The Approved marker cannot leave state 'approved' while it still holds requests" },
+                  { type: 'REQUEST_ACCESS_OUTCOME_NOT_TERMINAL', message: "No transition can be added out of state 'declined'" },
+                ],
+              },
+            },
+          }],
+        },
+      });
+
+      const toastElement = mockNotifyError.mock.calls[0][0];
+      const { getByText, queryByText } = render(
+        <ThemeProvider theme={testTheme}>{toastElement}</ThemeProvider>,
+      );
+      expect(getByText(/The Approved marker cannot leave state 'approved'/)).toBeInTheDocument();
+      expect(getByText(/No transition can be added out of state 'declined'/)).toBeInTheDocument();
+      expect(queryByText(/Cannot publish workflow with validation errors/)).toBeNull();
+    });
+
     it('should handle publish API error with no removedStates gracefully', async () => {
       const user = userEvent.setup();
       renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);
@@ -711,7 +895,7 @@ describe('Workflow Component', () => {
 
       expect(mockRestoreWorkflowDefinition).toHaveBeenCalledWith(
         expect.objectContaining({
-          variables: { entityType: 'DraftWorkspace' },
+          variables: { entityType: 'DraftWorkspace', scope: 'GLOBAL' },
         }),
       );
     });
@@ -743,6 +927,168 @@ describe('Workflow Component', () => {
       // After restore the publish button should reflect published state
       await waitFor(() => {
         expect(screen.getByTestId('publish-button')).toHaveTextContent('Published');
+      });
+    });
+  });
+
+  describe('Request access scope', () => {
+    const renderRfi = (props: Partial<React.ComponentProps<typeof Workflow>> = {}) => renderWithTheme(
+      <Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="Case-Rfi" {...props} />,
+    );
+
+    it('shows the Global / Request access switch for Case-Rfi only', () => {
+      const { unmount } = renderRfi();
+      expect(screen.getByRole('radio', { name: 'Global' })).toHaveAttribute('aria-checked', 'true');
+      expect(screen.getByRole('radio', { name: 'Request access' })).toHaveAttribute('aria-checked', 'false');
+      unmount();
+
+      // Another entity type, even with the setting available.
+      const other = renderRfi({ entityType: 'Case-Rfd' });
+      expect(screen.queryByRole('radio', { name: 'Request access' })).not.toBeInTheDocument();
+      other.unmount();
+
+      // Case-Rfi without Enterprise Edition.
+      vi.mocked(useEnterpriseEdition).mockReturnValue(false);
+      const community = renderRfi();
+      expect(screen.queryByRole('radio', { name: 'Request access' })).not.toBeInTheDocument();
+      community.unmount();
+
+      // Case-Rfi without the request access setting.
+      vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+      vi.mocked(useSubTypeOutletContext).mockReturnValue({
+        subType: { settings: { availableSettings: ['workflow_configuration'] } },
+      } as never);
+      renderRfi();
+      expect(screen.queryByRole('radio', { name: 'Request access' })).not.toBeInTheDocument();
+    });
+
+    it('asks to change the scope when the other segment is picked', async () => {
+      const user = userEvent.setup();
+      const onScopeChange = vi.fn();
+      renderRfi({ onScopeChange });
+
+      await user.click(screen.getByRole('radio', { name: 'Request access' }));
+
+      expect(onScopeChange).toHaveBeenCalledWith('REQUEST_ACCESS');
+    });
+
+    it('publish sends scope REQUEST_ACCESS when selected', async () => {
+      const user = userEvent.setup();
+      renderRfi({ scope: 'REQUEST_ACCESS' });
+
+      await user.click(screen.getByTestId('publish-button'));
+
+      expect(mockPublishWorkflowDefinition).toHaveBeenCalledWith(
+        expect.objectContaining({ variables: { entityType: 'Case-Rfi', scope: 'REQUEST_ACCESS' } }),
+      );
+    });
+
+    it('sends scope REQUEST_ACCESS on save and restore too', async () => {
+      const user = userEvent.setup();
+      renderRfi({ scope: 'REQUEST_ACCESS' });
+
+      await user.click(screen.getByTestId('reset-button'));
+      await user.click(screen.getByTestId('restore-button'));
+
+      expect(mockSaveWorkflowDefinition).toHaveBeenCalledWith(
+        expect.objectContaining({ variables: expect.objectContaining({ entityType: 'Case-Rfi', scope: 'REQUEST_ACCESS' }) }),
+      );
+      expect(mockRestoreWorkflowDefinition).toHaveBeenCalledWith(
+        expect.objectContaining({ variables: { entityType: 'Case-Rfi', scope: 'REQUEST_ACCESS' } }),
+      );
+    });
+
+    it('shows the validator group field in Request access scope', () => {
+      const { unmount } = renderRfi({ scope: 'REQUEST_ACCESS' });
+      expect(screen.getByTestId('validator-group-field')).toBeInTheDocument();
+      unmount();
+
+      renderRfi({ scope: 'GLOBAL' });
+      expect(screen.queryByTestId('validator-group-field')).not.toBeInTheDocument();
+    });
+
+    it('renders the scope switch, the validator group and the status sync in the top-left canvas panel', () => {
+      renderRfi({ scope: 'REQUEST_ACCESS' });
+      const panel = screen.getByTestId('workflow-top-left-panel');
+      expect(panel).toContainElement(screen.getByRole('radiogroup', { name: 'Workflow scope' }));
+      expect(panel).toContainElement(screen.getByTestId('validator-group-field'));
+      expect(panel).toContainElement(screen.getByTestId('entity-status-sync-setting'));
+      expect(panel.closest('.react-flow__panel')).not.toBeNull();
+    });
+
+    it('keeps the status sync in the panel without the scope switch when there is no request access scope', () => {
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);
+      expect(screen.getByTestId('entity-status-sync-setting')).toBeInTheDocument();
+      expect(screen.queryByRole('radiogroup', { name: 'Workflow scope' })).not.toBeInTheDocument();
+    });
+
+    describe('migration entry point', () => {
+      beforeEach(() => {
+        mockNodes = [];
+        mockEdges = [];
+        mockLoadedDefinition = null;
+      });
+
+      it('offers to migrate the request access statuses when no request access workflow exists', async () => {
+        const user = userEvent.setup();
+        renderRfi({ scope: 'REQUEST_ACCESS' });
+
+        expect(screen.queryByTestId('request-access-migration-dialog')).not.toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: 'Migrate request access statuses' }));
+
+        expect(screen.getByTestId('request-access-migration-dialog')).toBeInTheDocument();
+      });
+
+      it('shows the new workflow once the migration is done', async () => {
+        const user = userEvent.setup();
+        renderRfi({ scope: 'REQUEST_ACCESS' });
+
+        await user.click(screen.getByRole('button', { name: 'Migrate request access statuses' }));
+        await user.click(screen.getByText('migrated'));
+
+        expect(mockOnRefetch).toHaveBeenCalledTimes(1);
+      });
+
+      it('closes the dialog without refetching when it is dismissed', async () => {
+        const user = userEvent.setup();
+        renderRfi({ scope: 'REQUEST_ACCESS' });
+
+        await user.click(screen.getByRole('button', { name: 'Migrate request access statuses' }));
+        await user.click(screen.getByText('close migration'));
+
+        expect(screen.queryByTestId('request-access-migration-dialog')).not.toBeInTheDocument();
+        expect(mockOnRefetch).not.toHaveBeenCalled();
+      });
+
+      it('does not offer the migration on the Global scope', () => {
+        renderRfi({ scope: 'GLOBAL' });
+
+        expect(screen.queryByRole('button', { name: 'Migrate request access statuses' })).not.toBeInTheDocument();
+      });
+
+      it('still offers the migration over a request access workflow never published', async () => {
+        const user = userEvent.setup();
+        mockLoadedDefinition = mockWorkflowDefinition;
+        renderRfi({ scope: 'REQUEST_ACCESS' });
+
+        await user.click(screen.getByRole('button', { name: 'Migrate request access statuses' }));
+
+        expect(screen.getByTestId('request-access-migration-dialog')).toBeInTheDocument();
+      });
+
+      it('offers the migration next to a draft that already has statuses', () => {
+        mockLoadedDefinition = mockWorkflowDefinition;
+        mockNodes = [{ id: 'node-1', type: WorkflowNodeType.status, data: { statusTemplate: { id: 'status-1', name: 'Open', color: '#00FF00' } }, position: { x: 0, y: 0 } }];
+        renderRfi({ scope: 'REQUEST_ACCESS' });
+
+        expect(screen.getByRole('button', { name: 'Migrate request access statuses' })).toBeInTheDocument();
+      });
+
+      it('does not offer the migration once the request access workflow has been published', () => {
+        mockLoadedDefinition = { ...mockWorkflowDefinition, hasPublishedVersion: true };
+        renderRfi({ scope: 'REQUEST_ACCESS' });
+
+        expect(screen.queryByRole('button', { name: 'Migrate request access statuses' })).not.toBeInTheDocument();
       });
     });
   });

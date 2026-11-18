@@ -21,9 +21,9 @@ In addition, the right panel will have now a counter of the amount of selected e
 ![select entities in graph](assets/Select-entities-in-graph.png)
 
 
-### Manipulate entity
+### Add entities
 
-We can add any existing entity of the platform to your investigation.
+You can add any existing entity of the platform to your investigation with **Add an entity to this investigation**, the + in the graph toolbar. While the investigation is still empty, the middle of the graph also offers an **Add entities** button, which opens the same panel.
 
 ![Investigation bottom right menu](assets/investigation-bottom-right-menu.png)
 
@@ -53,7 +53,7 @@ When clicking on this button, we will retrieve the state in which your graph was
 
 You can roll back your investigation graph up to the last 10 expand actions.
 
-### Manipulate relationship
+### Create relationships
 
 We can create a relationship between entities directly within our investigation. To achieve this, select multiple entities by clicking on them while holding down the shift key. Subsequently, a button appears at the bottom right to create one (or more, depending on the number of entities selected) relationships.
 
@@ -64,6 +64,106 @@ We can create a relationship between entities directly within our investigation.
     Creating a relationship in the investigation graph will generate the relationship in your knowledge base.
 
 
+## Analyse techniques in the matrix view
+
+The matrix view shows the attack patterns of your investigation on a tactics matrix, such as MITRE ATT&CK. With the heatmap active, you see at a glance which techniques the entities of your investigation use the most.
+
+![Investigation matrix view with the heatmap](assets/investigation-matrix-view.png)
+
+The matrix view displays only what is on the investigation graph and can be switched to from the header bar.
+
+### Read the matrix
+
+The matrix shows the techniques of one kill chain (e.g. MITRE ATT&CK 20), grouped in columns by tactic. The attack patterns of the investigation are highlighted, active Graph filters are ignored by the matrix view.
+
+Hover a technique, or focus it with the keyboard, to see the entities of the investigation linked to it, under **Linked entities**. The list shows the first 10 names.
+
+### Use the toolbar
+
+| Control | What it does |
+|:---|:---|
+| **Kill chain** | Selects the kill chain to show. The matrix opens on `mitre-attack` when it exists, otherwise on the first kill chain in alphabetical order. |
+| **N attack patterns in this investigation aren't shown in this kill chain** (note) | These attack patterns are on the graph but not in the selected kill chain: they belong to another kill chain, have no kill chain phase, or are revoked. Hover the note to see their names. |
+| **Display only used techniques** (eye icon) | Hides the techniques that are not in the investigation. Click it again to display the whole matrix. |
+| **Displays heat map of attack pattern use** (flame icon) | Turns the heatmap on or off. See [Read the heatmap](#read-the-heatmap). |
+| **Compare with my security posture** | Select one or more security platforms. The techniques of the investigation then show whether these security platforms cover them (`should-cover` relationships). |
+
+### Read the heatmap
+
+The heatmap colours each technique by how many entities of the investigation are linked to it: the more entities, the more red the colour.
+
+#### How a technique is scored
+
+The score of a technique is the number of distinct entities of the investigation linked to it by one of these relationships:
+
+| Relationship | Example |
+|:---|:---|
+| `uses`, in either direction | An intrusion set, threat actor, malware or campaign uses the attack pattern. |
+| `indicates`, towards the attack pattern | An indicator indicates the attack pattern. |
+| `contains` | A report, a grouping or a case contains the attack pattern. |
+
+- An entity counts once for a technique, even when several relationships link them.
+- Other relationship types, such as `related-to` or `mitigates`, do not count.
+- A sub-technique has its own score. The score of a technique is not the sum of the scores of its sub-techniques.
+
+#### How the scale works
+
+The scale has five colours, from light yellow (least used) to red (most used). It is relative: it runs from 1 to the highest score in the selected kill chain.
+
+Because the scale is relative, compare colours within one matrix only: red means the most used technique here, not a fixed number of entities.
+
+A technique with no score of its own but with scored sub-techniques gets a border in the colour of its highest-scoring sub-technique, even when it isn't on the graph itself.
+
+
+## Enrich from the graph
+
+You can run [enrichment connectors](enrichment.md) on the entities of an investigation without leaving the graph. The results are not drawn straight away: you review them first and choose what to add, so that an enrichment bringing back many objects does not flood the investigation.
+
+### Launch an enrichment
+
+Select one or more entities or relationships of the same type, then either:
+
+- open the **Enrichment** panel with the cloud button of the graph toolbar, pick one or more connectors under **Start an enrichment** and click **Enrich**;
+- or right-click the selection and pick a connector under **Enrichment** (see [Context menu](graphs.md#context-menu)).
+
+The enrichment runs as a [background task](background-tasks.md) and the panel opens on its **To review** tab. OpenCTI asks for a confirmation, listing the selected elements, only when more than 1000 elements are selected. Until the task is created, **Enrich** and the menu entry cannot be used again. Only the connectors that can enrich the selected type are offered. When the selection mixes types, or no connector can enrich it, the panel says **No connector available for the selected entities.** and the menu entry cannot be chosen.
+
+### Follow enrichments
+
+The **Enrichment** panel lists the enrichments launched from this investigation, grouped by enriched entity, then by connector. While elements are selected, it lists only their enrichments. Three tabs sort them:
+
+- **To review**: the connector has finished and its results wait for your review.
+- **In progress**: the connector is still running.
+- **Done**: the enrichment has finished and nothing waits for review.
+
+The cloud button of the toolbar carries a badge: the number of enrichments with results waiting, or, when none are waiting, the number in progress. Otherwise, a red dot means that an enrichment failed. The tooltip of the button spells the count out. The button is disabled while the investigation has no enrichment yet and you have nothing selected that you can enrich.
+
+Next to each connector, **Refresh the knowledge using this connector** runs that connector again on the entity.
+
+### Review the results
+
+Each enrichment of the **To review** tab offers:
+
+- **Review results**: lists only the data that the enrichment created or updated, counted by entity type and relationship type. Tick the types to add and click **Expand**: the entities of those types are added with their relationships to the enriched entity, and the enrichment is marked as reviewed. When the enrichment brought nothing that is not already on the graph, the dialog says **Nothing to add to the graph** and offers **Expand with data in the platform**, which opens the usual [expansion](#expansion) on the enriched entity.
+- **Add all to graph**: adds every result, without choosing types, after a confirmation, and marks the enrichment as reviewed.
+- **Mark as reviewed**: moves the enrichment to **Done** without adding anything.
+- **Delete**: removes the enrichment from the list. The data it brought into the platform stays.
+
+**Review all** opens the results of every enrichment of the tab that has some, in one dialog. An enrichment that failed has no results to review; only **Mark as reviewed** and **Delete** apply to it.
+
+### Who can enrich
+
+| To | You need |
+|:---|:---|
+| See the **Enrichment** panel and the enrichments of the investigation | The `Access knowledge` capability. |
+| Launch an enrichment, from the panel or the context menu | Edit or manage access to the investigation, and the `Create / Update investigations`, `Ask for knowledge enrichment` and `Create / Update knowledge` capabilities. |
+| Run a connector again on an entity | Edit or manage access to the investigation, and the `Create / Update investigations` and `Ask for knowledge enrichment` capabilities. |
+| Open the results of an enrichment, or delete it | The `Manage connector state` or `Connectors API usage` capability. |
+| Add results to the graph or mark them as reviewed | What opening the results needs, plus edit or manage access to the investigation and the `Create / Update investigations` and `Ask for knowledge enrichment` capabilities. |
+
+With view access to the investigation and the capability to open results, you can open the results of an enrichment but not add them or mark them as reviewed; the dialog says so. See [Access control](dashboards.md#access-control) for the levels of access and [Users and roles](../administration/users.md) for the capabilities.
+
+
 ## Capitalize on an investigation
 
 
@@ -72,6 +172,7 @@ We can create a relationship between entities directly within our investigation.
 Users have the capability to export investigations, providing a way to share, document, or archive their findings.
 
 - PDF and image formats: the header of the investigation exports it as a PDF, and the toolbar of its graph as a high-resolution image (see [Work with graphs](graphs.md#export)).
+- Matrix view: exports the whole matrix as a PDF or an image, with the heatmap when it is on, not only the visible area.
 - STIX bundle: The platform allows the export of the entire content of an investigation graph as a STIX bundle. In the STIX format, all objects within the investigation graph are automatically aggregated into a Report object.
 
 ![Investigation export](assets/investigation-export.png)

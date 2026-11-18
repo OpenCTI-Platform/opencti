@@ -281,6 +281,7 @@ describe('Hook: useBuildAttributesOutcome', () => {
             field_name: 'x_opencti_cf_note',
             string_value: 'cloture',
             int_value: null,
+            float_value: null,
             boolean_value: null,
             date_value: null,
             select_value: null,

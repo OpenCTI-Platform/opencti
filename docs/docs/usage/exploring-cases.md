@@ -36,7 +36,7 @@ When clicking on an Incident Response, Request for Information or Request for Ta
 - Knowledge: a complex tab that regroups all the structured Knowledge contained in the Case, accessible through different views (See below for a dive-in). As described [here](overview.md#knowledge-section).
 - Content: a tab to provide access to content mapping, suggested mapping and allows to preview, manage and write the deliverables associated with the Case. For example, an analytical report to share with other teams, a markdown file to feed a collaborative wiki, etc. As described [here](overview.md#content-section).
 - Entities: A table containing all SDO (Stix Domain Objects) contained in the Case, with search and filters available. It also displays if the SDO has been added directly or through [inferences with the reasoning engine](inferences.md)
-- Observables: A table containing all SCO (Stix Cyber Observable) contained in the Case, with search and filters available. It also displays if the SDO has been added directly or through [inferences with the reasoning engine](inferences.md)
+- Observables: A table containing all SCO (Stix Cyber Observable) contained in the Case, with search and filters available. It also displays if the SCO has been added directly or through [inferences with the reasoning engine](inferences.md)
 - Data: as described [here](overview.md#data-section).
 
 Exploring and modifying the structured Knowledge contained in a Case can be done through different lenses.
@@ -45,7 +45,7 @@ Exploring and modifying the structured Knowledge contained in a Case can be done
 
 ![Graph View of a Case](assets/case-graph.png)
 
-In Graph view, STIX SDO are displayed as graph nodes and relationships as graph links. Nodes are colored depending on their type. Direct relationship are displayed as plain link and inferred relationships in dotted link.
+In Graph view, STIX SDO are displayed as graph nodes and relationships as graph links. Nodes are colored depending on their type. Direct relationships are displayed as plain links, inferred relationships as dashed links and low-confidence relationships as dotted links: see [Work with graphs](graphs.md#links).
 At the top right, you will find a series of icons. From there you can change the current type of view. Here you can also perform global action on the Knowledge of the Case. Let's highlight 2 of them:
 
 - Suggestions: This tool suggests you some logical relationships to add between your contained Object to give more consistency to your Knowledge.
@@ -76,7 +76,7 @@ If you have designated a main Organization in the platform settings, you can sha
 
 ![containers-organization-sharing-button.png](assets%2Fcontainers-organization-sharing-button.png)
 
-[read more about organization segregation](..%2Fadministration%2Forganization-segregation.md)
+[read more about organization segregation](../administration/organization-segregation.md)
 
 #### Authorized members
 

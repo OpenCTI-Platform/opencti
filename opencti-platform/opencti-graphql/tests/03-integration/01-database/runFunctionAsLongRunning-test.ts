@@ -18,12 +18,14 @@ describe('runFunctionAsLongRunning testing', () => {
   it('runFunctionAsLongRunning on long running functions', async () => {
     const fakeExecutionId = 'long-function-call';
     const longRunningFunction = async () => {
-      await wait(20000);
+      await wait(2000);
     };
-    const firstCall = await runFunctionAsLongRunning(testContext, ADMIN_USER, longRunningFunction, fakeExecutionId);
+    // A short timeout keeps the same scenario (first call times out, second call sees the finished run) in seconds
+    const timeoutMs = 500;
+    const firstCall = await runFunctionAsLongRunning(testContext, ADMIN_USER, longRunningFunction, fakeExecutionId, fakeExecutionId, timeoutMs);
     expect(firstCall).toBeFalsy();
-    await wait(10000);
-    const secondCall = await runFunctionAsLongRunning(testContext, ADMIN_USER, longRunningFunction, fakeExecutionId);
+    await wait(3000);
+    const secondCall = await runFunctionAsLongRunning(testContext, ADMIN_USER, longRunningFunction, fakeExecutionId, fakeExecutionId, timeoutMs);
     expect(secondCall).toBeTruthy();
   });
 

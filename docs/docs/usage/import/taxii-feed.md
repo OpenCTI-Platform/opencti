@@ -5,14 +5,14 @@ TAXII Feeds in OpenCTI provide a robust mechanism for ingesting TAXII collection
 <a id="best-practices-section"></a>
 ## Best practices
 
-In OpenCTI, the **Integrations** section — accessible from the main navigation bar on the left — provides users with built-in functions for automated data import. These functions are designed for specific purposes and can be configured to seamlessly ingest data into the platform. Feeds and connectors are managed from the **Integrations** page, which is split into a **Deployed** tab (the feeds and connectors running on your platform) and an **Available** tab (the catalog of connectors and built-in feeds you can deploy). To create a new feed, open the **Available** tab and use the creation button on the corresponding built-in card. For a detailed description of these two tabs and their filters, see [Getting started](getting-started.md#the-integrations-menu). Here, we'll explore the configuration process for the five built-in functions: Live Streams, TAXII Feeds, TAXII Push, RSS Feeds, and JSON/CSV Feeds.
+In OpenCTI, the **Integrations** section — accessible from the main navigation bar on the left — provides users with built-in functions for automated data import. These functions are designed for specific purposes and can be configured to seamlessly ingest data into the platform. Feeds and connectors are managed from the **Integrations** page, which is split into a **Deployed** tab (the feeds and connectors running on your platform) and an **Available** tab (the catalog of connectors and built-in feeds you can deploy). To create a new feed, open the **Available** tab and use the creation button on the corresponding built-in card. For a detailed description of these two tabs and their filters, see [Getting started](getting-started.md#the-integrations-menu). This page covers the configuration of TAXII Feeds. For the other built-in import methods, see [Automated import](getting-started.md).
 
 Ensuring a secure and well-organized environment is paramount in OpenCTI. Here are two recommended best practices to enhance security, traceability, and overall organizational clarity:
 
-1. Create a dedicated user for each source: Generate a user specifically for feed import, following the convention `[F] Source name` for clear identification. Assign the user to the "Connectors" group to streamline user management and permission related to data creation. Please [see here](../../deployment/connectors.md#connector-token-section) for more information on this good practice.
+1. Create a dedicated [Service account](../../administration/users.md#service-account) for each source: Generate a technical user (or Service account) specifically for feed import, following the convention `[F] Source name` for clear identification. Assign the Service account to the "Connectors" group to streamline user management and permission related to data creation. Please [see here](../../deployment/connectors.md#connector-token-section) for more information on this good practice.
 2. Establish a dedicated Organization for the source: Create an organization named after the data source for clear identification. Assign the newly created organization to the "Default author" field in feed import configuration if available.
 
-By adhering to these best practices, you ensure independence in managing rights for each import source through dedicated user and organization structures. In addition, you enable clear traceability to the entity's creator, facilitating source evaluation, dashboard creation, data filtering and other administrative tasks.
+By adhering to these best practices, you ensure independence in managing rights for each import source through dedicated service account and organization structures. In addition, you enable clear traceability to the entity's creator, facilitating source evaluation, dashboard creation, data filtering and other administrative tasks.
 
 ## Configuration
 
@@ -20,7 +20,7 @@ Here's a step-by-step guide to configure TAXII ingesters:
 
 1. TAXII server URL: Provide the root API URL of the TAXII server. For collections from another OpenCTI instance, the URL is in the form `https://[domain]/taxii2/root`.
 2. TAXII collection: Enter the ID of the TAXII collection to be ingested. For collections from another OpenCTI instance, the ID follows the format `426e3acb-db50-4118-be7e-648fab67c16c`.
-3. Authentication type (if necessary): Enter the authentication type. For non-public collections from another OpenCTI instance, the authentication type is "Bearer token." Enter the token of a user with access to the collection (similar to the point 2 of the Live streams configuration above).
+3. Authentication type (if necessary): Enter the authentication type, see [Authentication types](#authentication-types). For non-public collections from another OpenCTI instance, the authentication type is "Bearer token." Enter the token of a user with access to the collection (similar to the point 2 of the [Live streams configuration](internal-streams.md#configuration)).
 
 !!! note "TAXII root API URL"
 
@@ -28,10 +28,21 @@ Here's a step-by-step guide to configure TAXII ingesters:
 
 Additional configuration options:
 
-- User responsible for data creation: Define the user responsible for creating data received from this TAXII feed. Best practice is to dedicate one user per source for organizational clarity. Please [go to the page](../getting-started.md) for more information.
+- User responsible for data creation: Define the user responsible for creating data received from this TAXII feed. Best practice is to dedicate one user per source for organizational clarity. See [Best practices](#best-practices) for more information.
 - Import from date: Specify the date of the oldest data to retrieve. Leave the field empty to import everything.
 
 ![TAXII feed configuration](../assets/taxii-feed-configuration.png)
+
+### Authentication types
+
+The **Authentication type** field offers the following options:
+
+| Authentication type   | Fields to fill in                                            | Behavior                                                                                                    |
+|-----------------------|--------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| None                  | None                                                         | OpenCTI sends no credentials. Use it for public sources.                                                    |
+| Basic user / password | Username, Password                                           | OpenCTI sends an `Authorization: Basic` header. The username and the password cannot contain the `:` character. |
+| Bearer token          | Token                                                        | OpenCTI sends an `Authorization: Bearer <token>` header.                                                    |
+| Client certificate    | Certificate (base64), Key (base64), CA certificate (base64) | OpenCTI authenticates with a TLS client certificate. Enter each PEM file encoded in base64.                 |
 
 ## Export a Taxii feed
 You can export your existing taxii feed from the platform, making it easy to share your configuration with others.

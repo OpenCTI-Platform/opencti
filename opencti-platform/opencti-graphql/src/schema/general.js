@@ -13,6 +13,8 @@ export const KNOWLEDGE_FORM_INTAKE = 'KNFORMINTAKE';
 
 export const ID_INTERNAL = 'internal_id';
 export const ID_INFERRED = 'inferred_id';
+// Fields of each denormalized rel_<relation> object
+export const REF_RELATION_ID_FIELDS = [ID_INTERNAL, ID_INFERRED];
 export const ID_STANDARD = 'standard_id';
 export const INTERNAL_IDS_ALIASES = 'i_aliases_ids';
 export const IDS_STIX = 'x_opencti_stix_ids';

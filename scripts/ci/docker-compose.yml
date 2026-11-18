@@ -2,7 +2,7 @@ services:
   redis:
     container_name: redis
     profiles: ["backend"]
-    image: redis:8.6.8@sha256:3d89f7d15768840f509ecc050347868c8b9f5768625eae14ed7633e039ded7fb
+    image: redis:8.6.8@sha256:8b30009c0de4fdb3fb67deb8afab050fe454e9b233c6a2c142ec34fcc51fa7f5
     restart: unless-stopped
     networks:
       - runner-docker-network
@@ -12,7 +12,7 @@ services:
     container_name: elasticsearch
     profiles: ["backend"]
     # Replaced by docker-compose.elasticsearch9.yml or docker-compose.opensearch.yml in the backend tests matrix
-    image: elasticsearch:8.19.23@sha256:3f4d63c59ca5a05b535179dfcced47a514119e351fa81653f69902beacae90c9
+    image: elasticsearch:8.19.25@sha256:ef44866274bd7cb2c644f4f6657ce0832819f662adb66b2769d0ba5dabad77d6
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -33,7 +33,7 @@ services:
   minio:
     container_name: minio
     profiles: ["backend"]
-    image: pgsty/silo:RELEASE.2026-10-26T00-00-00Z@sha256:7bb2aff6b89efe1cb1303c10fc21d579447434ed06649ac9ec05a5e2dbf30ad7
+    image: pgsty/silo:RELEASE.2026-11-12T00-00-00Z@sha256:c20d112390b9a9ce8c11b8af95ad35bcaa62f4759663c09c936cd8d2b511f329
     networks:
       - runner-docker-network
     ports:

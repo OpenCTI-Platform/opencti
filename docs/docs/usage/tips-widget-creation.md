@@ -1,6 +1,6 @@
 # Pro-tips on widget creation
 
-Previously, the creation of widgets has been covered. To help users being more confident in creating widgets, here are some details to master the widget creation.
+The [widget creation](widgets.md) page covers the creation of widgets. To help users being more confident in creating widgets, here are some details to master the widget creation.
 
 <a id="howto-section"></a>
 ## How to choose the appropriate widget visualization for your use case?
@@ -47,6 +47,10 @@ You can add up to 5 different data sets.  The `Label` field allows you to name a
 
 As mentioned in [How to choose the appropriate widget visualization for your use case?](#howto-section) section you can add data sets to decompose your graph into smaller meaningful chunks. In the below points, you can find some use cases that will help you understand how to structure your data.
 
+!!! tip "One series per value, without adding datasets"
+
+    For vertical bars, lines, areas and heatmaps over time, you do not need one dataset per value: the **Break down by** parameter draws one series per value of a field, found automatically in the data (up to 50 series). See [Time series breakdown](time-series-breakdown.md).
+
 You can break down a view either by **entity or by relations**, depending on what you need to count.
 
 #### Break down by entity
@@ -80,7 +84,7 @@ As a result, you get a list of countries broken down by malware types.
 
 #### Break down by relation
 
-**Use case example: I need to understand what are the top targeting malware and have a breakdown of the top targets per malware**
+**Use case example: I need to understand what are the top targeting malware and have a breakdown of their targets by type**
 
 **Process:**
 
@@ -97,17 +101,17 @@ In the filters view:
 
 In the parameter view:
 
-7. Attribute (of your relation): entity (so that you display the different entities values)
-8. Display the source toggle = on
-9. Attribute (of your entity malware) = Malware type (since you want to break down your relations by the malware types)
-10. Display the source toggle = off
+6. Attribute (of your first relation data set) = Entity (so that you display the different entities values)
+7. Display the source toggle (of your first relation data set) = on (so that you display the malware, the source of the relations)
+8. Attribute (of your second relation data set) = Entity type (since you want to break down each malware by the type of its targets)
+9. Display the source toggle (of your second relation data set) = off (so that the breakdown applies to the targets of the relations)
 
 ![paramter view](assets/widget-breakdwon-by-relation-parameter.png)
 
-As a result, you get a list of malware with the breakdown of their top targets.
+As a result, you get a list of malware with the breakdown of their targets by type.
 
 ![final view](assets/widget-breakdown-by-relation-final.png)
 
 ## More use cases
 
-To see more use cases, feel free to have a look at this [blog post](https://blog.filigran.io/new-octi-dashboards-the-first-graph-dashboarding-engine-for-the-stix-model-406e4eb5842a) that will provide you additional information.
+To see more use cases, feel free to have a look at this [blog post](https://filigran.io/blog/new-octi-dashboards-the-first-graph-dashboarding-engine-for-the-stix-model) that will provide you additional information.

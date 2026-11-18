@@ -5,10 +5,9 @@ import { AlertsLine_node$data } from '@components/profile/__generated__/AlertsLi
 import { AlertsLines_data$data } from '@components/profile/__generated__/AlertsLines_data.graphql';
 import { AlertsLinesPaginationQuery, AlertsLinesPaginationQuery$variables } from '@components/profile/__generated__/AlertsLinesPaginationQuery.graphql';
 import DigestNotificationDrawer from '@components/profile/notifications/DigestNotificationDrawer';
-import { getHealthDisplay } from '@components/data/connectors/ingestionHealthDisplay';
 import { CheckCircleOutlined, DeleteOutlined, UnpublishedOutlined } from '@mui/icons-material';
 import { Badge, Stack, Tooltip } from '@mui/material';
-import { Chip, type ChipSeverity } from '@filigran/design-system';
+import { Chip } from '@filigran/design-system';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import { FunctionComponent, Suspense, useState } from 'react';
@@ -29,7 +28,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { deleteNode } from '../../../utils/store';
 import { EMPTY_VALUE } from '../../../utils/String';
 import { isNotEmptyField } from '../../../utils/utils';
-import { computeNotificationLink, getFirstOperation, iconSelector } from './notifications/notificationUtils';
+import { computeNotificationLink, getFirstOperation, iconSelector, operationSeverity } from './notifications/notificationUtils';
 import MarkdownDisplay from '../../../components/markdownDisplay/MarkdownDisplay';
 
 const LOCAL_STORAGE_KEY = 'notifiers';
@@ -48,6 +47,7 @@ const alertsLineFragment = graphql`
         message
         operation
         instance_id
+        entity_internal_id
         entity_type
       }
     }
@@ -130,24 +130,6 @@ interface AlertsLineActionsProps {
   data: AlertsLine_node$data;
   setNotificationToDelete: (notification: AlertsLine_node$data) => void;
 }
-
-// Event type is categorical, so the tone carries the distinction without asserting a level:
-// create -> low, update -> info, delete -> critical, several at once -> medium.
-// Ingestion health transitions follow the health chip (getHealthDisplay), recovered -> low.
-const operationSeverity = (operation: string): ChipSeverity => {
-  const health = getHealthDisplay(operation);
-  if (health) return health.chip;
-  switch (operation) {
-    case 'update':
-      return 'info';
-    case 'delete':
-      return 'critical';
-    case 'multiple':
-      return 'medium';
-    default:
-      return 'low';
-  }
-};
 
 const AlertsLineActions: FunctionComponent<AlertsLineActionsProps> = ({
   data,
@@ -262,7 +244,7 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
     const isLinkAvailable = events.length === 1 && isNotEmptyField(firstEvent?.instance_id) && firstOperation !== 'delete';
     if (isLinkAvailable && firstEvent.instance_id) {
       markAsRead();
-      navigate(computeNotificationLink(firstEvent.instance_id, firstEvent.entity_type));
+      navigate(computeNotificationLink(firstEvent.entity_internal_id ?? firstEvent.instance_id, firstEvent.entity_type));
     }
   };
 

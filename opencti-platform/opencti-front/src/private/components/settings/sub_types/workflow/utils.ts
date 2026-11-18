@@ -10,11 +10,14 @@ export type Action = {
   params?: unknown;
 };
 
+export type RequestAccessOutcome = 'APPROVED' | 'DECLINED';
+
 export type Status = {
   statusTemplate: { id: string; name: string; color: string };
   color?: string;
   onEnter?: Action[];
   onExit?: Action[];
+  requestAccessOutcome?: RequestAccessOutcome | null;
 };
 
 export enum CommentMode {
@@ -30,6 +33,7 @@ export type Transition = {
   syncActions?: Action[];
   conditions?: { filters: FilterGroup };
   comment?: CommentModeType;
+  closingReason?: CommentModeType;
 };
 
 export const FEATURE_NAME = 'Workflow';
@@ -37,6 +41,12 @@ export const FEATURE_NAME = 'Workflow';
 export const NEW_EVENT_NAME = 'NEW_EVENT';
 
 export const NEW_STATUS_NAME = 'NEW_STATUS';
+
+// Request access exists for Case-Rfi only; the backend rejects the REQUEST_ACCESS scope for any other type.
+export const REQUEST_ACCESS_ENTITY_TYPE = 'Case-Rfi';
+
+// Dynamic organization of a shareRequestedEntities action: the organization of the RFI author, i.e. the requesting one.
+export const REQUEST_ACCESS_AUTHOR_KEY = 'AUTHOR';
 
 export enum WorkflowNodeType {
   status = 'status',
@@ -55,10 +65,27 @@ export enum WorkflowDataType {
 
 export enum WorkflowActionType {
   updateAuthorizedMembers = 'updateAuthorizedMembers',
+  resetAuthorizedMembers = 'resetAuthorizedMembers',
   validateDraft = 'validateDraft',
   shareWithOrganizations = 'shareWithOrganizations',
   unshareFromOrganizations = 'unshareFromOrganizations',
+  shareRequestedEntities = 'shareRequestedEntities',
 }
+
+// Only the Approved state may share the requested entities: any other state loses the action.
+export const withoutShareRequestedEntities = (actions: Action[] = []) => actions.filter((a) => a.type !== WorkflowActionType.shareRequestedEntities);
+
+// The share action must stay the last onEnter action of the Approved state (publish refuses any other order).
+export const withShareRequestedEntitiesLast = (actions: Action[] = []) => [
+  ...withoutShareRequestedEntities(actions),
+  ...actions.filter((a) => a.type === WorkflowActionType.shareRequestedEntities),
+];
+
+// Update and reset of authorized members contradict each other on the same transition or status side
+export const AUTHORIZED_MEMBERS_EXCLUSIVE_ACTIONS: Partial<Record<WorkflowActionType, WorkflowActionType>> = {
+  [WorkflowActionType.updateAuthorizedMembers]: WorkflowActionType.resetAuthorizedMembers,
+  [WorkflowActionType.resetAuthorizedMembers]: WorkflowActionType.updateAuthorizedMembers,
+};
 
 export const NODE_SIZE = { width: 160, height: 50 };
 
@@ -79,7 +106,7 @@ const formatActions = (actions: Action[] = []) => {
           })) },
       };
     }
-    if (type === 'validateDraft') {
+    if (type === 'validateDraft' || type === 'resetAuthorizedMembers') {
       return {
         type,
       };
@@ -94,6 +121,10 @@ const formatActions = (actions: Action[] = []) => {
           failOnAnyError: true,
         },
       };
+    }
+    if (type === 'shareRequestedEntities') {
+      const orgIds = ((params as { organizations?: (string | { value: string })[] })?.organizations ?? []).map((o) => (typeof o === 'string' ? o : o.value));
+      return { type, params: { organizations: orgIds } };
     }
     if (type === 'unshareFromOrganizations') {
       const orgIds = ((params as { organizations?: (string | { value: string })[] })?.organizations ?? []).map((o) => (typeof o === 'string' ? o : o.value));
@@ -135,12 +166,13 @@ const transformToWorkflowDefinition = (
   workflowDefinition: { readonly id?: string; readonly name?: string; readonly initialState?: string | null } | null | undefined,
 ) => {
   // 1. Extract States
-  const states = nodes.flatMap(({ type, data: { onEnter = [], onExit = [], statusTemplate } }) => {
+  const states = nodes.flatMap(({ type, data: { onEnter = [], onExit = [], statusTemplate, requestAccessOutcome } }) => {
     if (type === WorkflowNodeType.status) {
       return [{
         statusId: statusTemplate.id,
         onEnter: formatActions(onEnter),
         onExit: formatActions(onExit),
+        ...(requestAccessOutcome ? { requestAccessOutcome: requestAccessOutcome as RequestAccessOutcome } : {}),
       }];
     }
     return [];
@@ -149,7 +181,7 @@ const transformToWorkflowDefinition = (
   // 2. Extract transitions
   const transitions = nodes.flatMap((node) => {
     if (node.type === WorkflowNodeType.transition) {
-      const { event, conditions = {}, comment, asyncActions = [], syncActions = [] } = node.data;
+      const { event, conditions = {}, comment, closingReason, asyncActions = [], syncActions = [] } = node.data;
       // Find ALL incoming edges (From Status -> This Transition)
       const incomingEdges = edges.filter((e) => e.target === node.id);
       // Find ALL outgoing edges (This Transition -> To Status)
@@ -166,6 +198,7 @@ const transformToWorkflowDefinition = (
         asyncActions: formatActions(asyncActions),
         syncActions: formatActions(syncActions),
         comment,
+        closingReason,
       };
 
       // Fan out: one SerializedTransition per (from, to) pair.
@@ -197,9 +230,27 @@ const transformToWorkflowDefinition = (
 const isElementStatus = (selectedElement: Node) => (selectedElement?.type === WorkflowNodeType.status || selectedElement?.type === WorkflowNodeType.placeholder);
 const isNewElementStatus = (selectedElement: Node) => (selectedElement?.type === WorkflowNodeType.placeholder);
 
+export type TargetStatusExits = { status: string; events: string[] };
+
+// The transitions leaving a status a transition leads to. A closing reason is only allowed into a final status, left by none:
+// a transition leading to several statuses is checked against each of them, like the backend does.
+const findTargetStatusExits = (transitionId: string, nodes: Node[], edges: Edge[]): TargetStatusExits | undefined => {
+  const targets = nodes.filter((node) => node.type === WorkflowNodeType.status
+    && edges.some((edge) => edge.source === transitionId && edge.target === node.id));
+  for (const target of targets) {
+    const events = edges
+      .filter((edge) => edge.source === target.id)
+      .map((edge) => nodes.find((node) => node.id === edge.target && node.type === WorkflowNodeType.transition)?.data.event)
+      .filter((event): event is string => !!event);
+    if (events.length > 0) return { status: target.data.statusTemplate?.name ?? target.id, events };
+  }
+  return undefined;
+};
+
 export {
   getInitialState,
   transformToWorkflowDefinition,
   isElementStatus,
   isNewElementStatus,
+  findTargetStatusExits,
 };

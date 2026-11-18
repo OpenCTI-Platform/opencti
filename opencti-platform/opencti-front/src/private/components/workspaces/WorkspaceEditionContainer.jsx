@@ -8,7 +8,7 @@ import Drawer from '../common/drawer/Drawer';
 
 class WorkspaceEditionContainer extends Component {
   render() {
-    const { t, handleClose, workspace, open, type } = this.props;
+    const { t, handleClose, workspace, open, type, children } = this.props;
     const { editContext } = workspace;
     return (
       <Drawer
@@ -17,10 +17,14 @@ class WorkspaceEditionContainer extends Component {
         onClose={handleClose}
         context={editContext}
       >
-        <WorkspaceEditionOverview
-          workspace={this.props.workspace}
-          context={editContext}
-        />
+        {/* A single child: the Drawer clones it to pass onClose, a Fragment is passed through. */}
+        <>
+          <WorkspaceEditionOverview
+            workspace={this.props.workspace}
+            context={editContext}
+          />
+          {children}
+        </>
       </Drawer>
     );
   }
@@ -32,6 +36,7 @@ WorkspaceEditionContainer.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   type: PropTypes.oneOf(['dashboard', 'investigation']),
+  children: PropTypes.node,
 };
 
 const WorkspaceEditionFragment = createFragmentContainer(

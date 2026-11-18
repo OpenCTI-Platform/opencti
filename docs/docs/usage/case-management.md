@@ -26,18 +26,23 @@ As with other objects in OpenCTI, you can also leverage the `Notes` to add some 
 
 You can also use `Opinions` to collect how the Case has been handled, helping you to build Lessons Learned.
 
-![Incident Responses' list](assets/case-opinion.png)
+![Create an opinion on a Case](assets/case-opinion.png)
 
-To trace the evolution of your Case and define specific resolution worflows, you can use the `Status` (that can be define in Settings/Taxonomies/Status templates).
+To trace the evolution of your Case and define specific resolution workflows, you can use the `Status` (that can be define in Settings/Taxonomies/Status templates).
 
-At the end of your Case, you will certainly want to report on what has been done. OpenCTI allows you to export the content of the Case in a simple but customizable PDF (currently in refactor). But of course, your company has its own document templates. With OpenCTI, you will be able to include some nice graphics in it. For example, a Matrix view of the attacker attack pattern or even a graph display of how things are connected. 
+At the end of your Case, you will certainly want to report on what has been done. In the Knowledge tab of your Case, the Graph, Timeline and Matrix views help you present how things are connected, how events unfolded and which attack patterns were used (see [Cases](exploring-cases.md#visualizing-knowledge-within-an-incident-response-request-for-information-request-for-takedown)).
 
-Also, we are currently working a more meaningful Timeline view that will be possible to export too.
+To produce a document, you have several options:
+
+- In Enterprise Edition, generate a finished intelligence file in HTML or PDF from a [Fintel template](../administration/entities.md#fintelTemplates-section). The platform provides a built-in "Executive Summary" template for Incident Responses, Requests for Information and Requests for Takedown, and an "Incident Response Report" template for Incident Responses. You can also create your own templates to match your company's documents, and apply a [Fintel design](../administration/fintel-designs.md) to style the PDF.
+- Export the content of the Case in a structured format, such as JSON or CSV.
+
+See [Manual export](export.md) for the detailed steps.
 
 ## Use case example: A suspicious observable is sighted by a defense system. Is it important?
 
 - Daily, your SIEM and EDR are fed Indicators of Compromise from your OpenCTI instance. 
-- Today, your SIEM has sighted the domain name "bad.com" matching one of them. Its alert has been transferred to OpenCTI and has created a `Sighting` relationship between your System "SIEM permiter A" and the Observable "bad.com". 
+- Today, your SIEM has sighted the domain name "bad.com" matching one of them. Its alert has been transferred to OpenCTI and has created a `Sighting` relationship between your System "SIEM perimeter A" and the Observable "bad.com". 
 - You are alerted immediately, because you have activated the inference rule creating a corresponding `Incident` in this situation, and you have created an alert based on new Incident that sends you email `notification` and Teams message (webhook).
 - In OpenCTI, you can clearly see the link between the alerting System, the sighted Observable and the corresponding Indicator. Better, you can also see all the context of the Indicator. It is linked to a notorious and recent phishing `campaign` targeting your activity `sector`. "bad.com" is clearly something to investigate ASAP.
 - You quickly select all the context you have found, and add it to a new `Incident response`case. You position the priority to High, regarding the context, and the severity to Low, as you don't know yet if someone really interacted with "bad.com".

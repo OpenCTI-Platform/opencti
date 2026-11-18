@@ -76,6 +76,8 @@ const ConfigPresetExportContent: FunctionComponent<ConfigPresetExportContentProp
   const [bundleName, setBundleName] = useState('');
   // The type whose items are managed in the sub-view, when it has more items than its first page
   const [managedTypeKey, setManagedTypeKey] = useState<string | null>(null);
+  // The groups the user opened stay open when the sub-view is closed
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const forced = getConfigPresetForcedItems(types, selection);
   const managedType = types.find((type) => type.key === managedTypeKey);
   const [commitExport, exporting] = useApiMutation<ConfigPresetExportDrawerMutation>(configPresetExportDrawerMutation);
@@ -115,6 +117,8 @@ const ConfigPresetExportContent: FunctionComponent<ConfigPresetExportContentProp
           forced={forced}
           onSelectionChange={setSelection}
           onManageType={setManagedTypeKey}
+          expandedGroups={expandedGroups}
+          onExpandedGroupsChange={setExpandedGroups}
           lockedTitle="Activate the Enterprise Edition to export this item"
         />
         <Input
@@ -145,10 +149,8 @@ interface ConfigPresetExportFormProps {
 
 const ConfigPresetExportForm: FunctionComponent<ConfigPresetExportFormProps> = ({ queryRef, onClose, onReload }) => {
   const { configPresetExportableTypes } = usePreloadedQuery(configPresetExportDrawerQuery, queryRef);
-  // A type without item has nothing to check: it is not shown, and neither is a group left without type. A type the platform cannot use
-  // (it needs the Enterprise Edition the platform does not have) is shown, locked.
-  const types = configPresetExportableTypes.filter((type) => type.items.length > 0 || type.lockedByEnterpriseEdition);
-  return <ConfigPresetExportContent types={types} onClose={onClose} onReload={onReload} />;
+  // A type without item is shown, disabled: it tells the user what can be exported once the platform has some. It is not sent in the export.
+  return <ConfigPresetExportContent types={configPresetExportableTypes} onClose={onClose} onReload={onReload} />;
 };
 
 // The drawer content is only mounted while it is open, so the catalog is loaded on demand

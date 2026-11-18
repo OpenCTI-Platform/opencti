@@ -730,7 +730,9 @@ class ListenQueue(threading.Thread):
                 opencti_entity = do_read(id=entity_id, withFiles=True)
                 if opencti_entity is None:
                     raise ValueError(
-                        "Unable to read/access the entity, please check the connector permissions"
+                        f"Entity {entity_id} not found or not accessible: it may have "
+                        "been deleted since the message was queued, or be outside the "
+                        "connector's permissions"
                     )
                 event_data["enrichment_entity"] = opencti_entity
                 # Handle action vs playbook behavior

@@ -530,12 +530,13 @@ const createApp = async (app, schema) => {
     try {
       const context = executionContext(`${provider}_strategy`);
       const logged = await callbackLogin();
-      await sessionAuthenticateUser(context, req, logged, provider);
-      // Check IP whitelist after successful auth
+      // Check the IP whitelist before the session login: a rejected login must never be authenticated,
+      // nor reset the local authentication lockout of the user
       const ipBlocked = await checkIpWhitelistForRequest(req, logged.id);
       if (ipBlocked) {
-        req.session.destroy(() => {});
         setCookieError(res, 'Your IP address is not allowed to access this platform');
+      } else {
+        await sessionAuthenticateUser(context, req, logged, provider);
       }
     } catch (err) {
       if (err instanceof AuthenticationProviderError) {

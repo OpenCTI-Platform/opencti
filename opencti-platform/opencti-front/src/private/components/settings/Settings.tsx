@@ -666,7 +666,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
           modules={modules ?? []}
           isEnterpriseEditionValid={isEnterpriseEditionValid}
         />
-
         {isFeatureEnable('INGESTION_HEALTH') && <SettingsIngestionHealth settings={data.ingestionHealthSettings} />}
       </Box>
     </div>

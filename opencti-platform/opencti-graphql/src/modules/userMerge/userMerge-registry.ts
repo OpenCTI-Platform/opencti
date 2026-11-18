@@ -26,27 +26,33 @@ const HANDLERS: UserMergeHandler[] = [];
  * register groups them with `password` and `account_status`: a date in the past forces a password
  * reset on the target, and a lock date locks it out. Guarding the status without them would leave
  * a handler able to reach the same authentication state by another field.
+ *
+ * `password_history` holds the hashes of the previous passwords: a handler rewriting it on the
+ * target would let that account reuse them.
  */
 const PROTECTED_USER_FIELDS = [
   'name', 'user_email', 'firstname', 'lastname', 'external',
-  'password', 'password_valid_until',
+  'password', 'password_valid_until', 'password_history',
   'account_status', 'account_lock_after_date',
 ];
 
 /**
- * The one exemption, named rather than inferred.
+ * The exemptions, named rather than inferred.
  *
  * `account_status` belongs to the retained identity row, and the merge still writes it: closing
  * the source is an invalidate row of its own (`user.account-status`). Since `writes` carries no
  * source/target axis, naming the single handler allowed to touch it is the only way to state
  * "on the source, by this handler alone". Any other handler asking for the field is refused,
  * which is what stops a future one from overwriting the target's status.
+ *
+ * `password_history` is emptied on the source by the same handler: the disabled account keeps
+ * its password, as the register decides, but no hash of the passwords it used before.
  */
-const SOURCE_STATUS_FIELD = `${ENTITY_TYPE_USER}.account_status`;
+const SOURCE_DISABLE_FIELDS = [`${ENTITY_TYPE_USER}.account_status`, `${ENTITY_TYPE_USER}.password_history`];
 
 const assertNoProfileWrite = (handler: UserMergeHandler): void => {
   const protectedPaths = PROTECTED_USER_FIELDS.map((field) => `${ENTITY_TYPE_USER}.${field}`);
-  const exempted = (field: string) => field === SOURCE_STATUS_FIELD && handler.identifier === USER_MERGE_SOURCE_DISABLE_HANDLER;
+  const exempted = (field: string) => SOURCE_DISABLE_FIELDS.includes(field) && handler.identifier === USER_MERGE_SOURCE_DISABLE_HANDLER;
   const violations = handler.writes.filter((field) => protectedPaths.includes(field) && !exempted(field));
   if (violations.length > 0) {
     throw UnsupportedError('Merge handler writes user identity fields, which a merge never rewrites', {

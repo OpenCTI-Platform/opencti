@@ -63,6 +63,7 @@ export const INTERNAL_ATTRIBUTES = [
   'content_mapping',
   'caseTemplate',
   'default_dashboard',
+  'default_dashboard_preset',
   'default_hidden_types',
   'grantable_groups',
   authorizedMembers.name,
@@ -77,6 +78,7 @@ export const INTERNAL_ATTRIBUTES = [
   'x_opencti_graph_data',
   // X - OpenCTI
   'x_opencti_workflow_id',
+  'x_opencti_closing_reason',
   'x_opencti_detection',
   'x_opencti_threat_hunting',
   'x_opencti_log_sources',

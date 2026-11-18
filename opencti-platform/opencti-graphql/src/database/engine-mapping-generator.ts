@@ -10,7 +10,7 @@ import {
   shortStringFormats,
   textMapping,
 } from '../schema/attribute-definition';
-import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../schema/general';
+import { ABSTRACT_STIX_REF_RELATIONSHIP, REF_RELATION_ID_FIELDS } from '../schema/general';
 import { INTERNAL_RELATIONSHIPS } from '../schema/internalRelationship';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { schemaTypesDefinition } from '../schema/schema-types';
@@ -93,10 +93,7 @@ const denormalizeRelationsMappingGenerator = (): Record<string, { dynamic: strin
     const relName = databaseRelationshipsName[attrIndex];
     schemaProperties[`rel_${relName}`] = {
       dynamic: 'strict',
-      properties: {
-        internal_id: shortMapping,
-        inferred_id: shortMapping,
-      },
+      properties: Object.fromEntries(REF_RELATION_ID_FIELDS.map((field) => [field, shortMapping])),
     };
   }
   return schemaProperties;

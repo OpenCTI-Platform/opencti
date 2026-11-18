@@ -52,6 +52,17 @@ describe('Work domain query options', () => {
     expect(options.types).toEqual([ENTITY_TYPE_WORK]);
     expect(options.type).toBeUndefined();
     expect(options.filters).toEqual(connectorFilter);
+    expect(options.baseData).toBe(false);
+  });
+
+  it('worksForConnector should read only the given fields when asked', async () => {
+    mockAddFilter.mockReturnValue({ mode: 'and', filters: [], filterGroups: [] });
+
+    await worksForConnector(context, user, 'connector-id', { first: 1, baseData: true, baseFields: ['timestamp', 'errors.message'] });
+
+    const [, , , options] = mockElPaginate.mock.calls[0];
+    expect(options.baseData).toBe(true);
+    expect(options.baseFields).toEqual(['timestamp', 'errors.message']);
   });
 
   it('worksForSource should chain source and event filters and keep Work scoping', async () => {

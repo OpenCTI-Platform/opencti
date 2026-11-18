@@ -29,10 +29,10 @@ import type { StixBundle } from '../../../types/stix-2-1-common';
 import type { ComponentDefinition } from '../playbook-types';
 import { addPlaybookAiAgentRunCount } from '../../../manager/telemetryManager';
 
-// 5 minutes — agent runs may take a while when the LLM has to materialise
+// 10 minutes — agent runs may take a while when the LLM has to materialise
 // a large STIX bundle or call multiple tools. Keep well above the default
 // 2-minute httpClient cap used by the chatbot proxy.
-export const AGENT_CALL_TIMEOUT_MS = 5 * 60 * 1000;
+export const AGENT_CALL_TIMEOUT_MS = 10 * 60 * 1000;
 
 /**
  * Identity used by the AI-agent playbook components to call XTM One.

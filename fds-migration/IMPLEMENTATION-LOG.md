@@ -999,3 +999,20 @@ row). No container in this dataset generates suggestions, so the dialog never
 opens and the site could not be measured. Its trigger carries no `w-full`, which
 in every measured instance of that shape left the field width untouched — but
 that is an inference, not a measurement, and it is recorded as one.
+
+## 2026-11-13 — Dashboard context bar: preset and Save menus reworked
+
+Asked by the product side: the two menus had 10px secondary texts and group labels
+whose inset (MenuLabel, px-2) did not line up with the rows (MenuItem, px-4). Three
+variants per menu were measured in the app; the retained ones drop the group labels
+instead of overriding MenuLabel's spacing, and move the secondary texts from
+content-caption (10px) to content-compact (12px). Nothing is styled outside the
+library: Menu, MenuItem (startIcon), MenuSeparator and Text only.
+
+Declarations: MenuLabel removed for DashboardPresetSelector and DashboardSaveMenu
+(no longer rendered there), MenuSeparator and Text declared for both files, the
+Menu and MenuItem reasons updated.
+
+Gap worth raising upstream: MenuLabel's 8px inset against MenuItem's 16px makes a
+labelled group look misaligned; a product that needs group labels has no
+library-supported way to align them.

@@ -7,7 +7,7 @@ import { initManagerConfigurations } from '../modules/managerConfiguration/manag
 import { createStatus, createStatusTemplate } from '../domain/status';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { StatusScope, VocabularyCategory } from '../generated/graphql';
-import { builtInOv, openVocabularies } from '../modules/vocabulary/vocabulary-utils';
+import { openVocabularies, seedVocabularyInput } from '../modules/vocabulary/vocabulary-utils';
 import { addVocabulary } from '../modules/vocabulary/vocabulary-domain';
 import { addAllowedMarkingDefinition } from '../domain/markingDefinition';
 import { addCapability, addGroup, addRole } from '../domain/grant';
@@ -16,7 +16,7 @@ import { CAPABILITIES } from '../schema/capabilities';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { loadEntity, updateAttribute } from './middleware';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
-import conf, { CONFIG_PRESET_FEATURE_FLAG, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { CONFIG_PRESET_FEATURE_FLAG, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG, logApp } from '../config/conf';
 import { isNotEmptyField } from './utils';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elRawDelete, elRawGet, elRawIndex } from './engine';
@@ -92,16 +92,7 @@ const createVocabularies = async (context) => {
     const category = categories[index];
     const vocabularies = openVocabularies[category] ?? [];
     for (let i = 0; i < vocabularies.length; i += 1) {
-      const { key, description, aliases, order } = vocabularies[i];
-      const data = {
-        name: key,
-        description: description ?? '',
-        aliases: aliases ?? [],
-        category,
-        order,
-        builtIn: builtInOv.includes(category),
-      };
-      await addVocabulary(context, SYSTEM_USER, data);
+      await addVocabulary(context, SYSTEM_USER, seedVocabularyInput(category, vocabularies[i]));
     }
   }
 };
@@ -307,6 +298,9 @@ export const initializeData = async (context, withMarkings = true) => {
     ...(isFeatureEnabled(CONFIG_PRESET_FEATURE_FLAG) ? { platform_bootstrap_status: 'pending' } : {}),
     view_all_users: false,
     local_auth: { enabled: true },
+    // A new platform starts with the local authentication lockout enabled (NIST SP 800-53 AC-7),
+    // existing platforms keep it disabled at upgrade
+    ...(isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG) ? { local_auth_lockout_enabled: true } : {}),
     cert_auth: {
       enabled: false,
       description: null,

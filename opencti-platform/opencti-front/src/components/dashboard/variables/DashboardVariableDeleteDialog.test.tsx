@@ -14,6 +14,7 @@ const sector: DashboardVariable = {
 
 const renderDialog = (props: {
   widgets?: { id: string; title: string }[];
+  presetCount?: number;
   onConfirm?: () => Promise<void>;
   onClose?: () => void;
 } = {}) => {
@@ -24,6 +25,7 @@ const renderDialog = (props: {
       open
       variable={sector}
       widgets={props.widgets ?? []}
+      presetCount={props.presetCount}
       onConfirm={onConfirm}
       onClose={onClose}
     />,
@@ -64,6 +66,14 @@ describe('DashboardVariableDeleteDialog', () => {
     expect(within(dialog()).getByText(/will show “No data has been found”/)).toBeInTheDocument();
     const items = within(dialog()).getAllByRole('listitem');
     expect(items.map((item) => item.textContent)).toEqual(['Top malwares', 'Reports']);
+  });
+
+  it('tells how many presets lose their value for the variable, only when some do', () => {
+    const { unmount } = renderDialog({ presetCount: 2 });
+    expect(screen.getByTestId('dashboard-variable-delete-presets')).toHaveTextContent('Its value will also be removed from 2 preset(s).');
+    unmount();
+    renderDialog();
+    expect(screen.queryByTestId('dashboard-variable-delete-presets')).not.toBeInTheDocument();
   });
 
   it('only asks for a confirmation, without any list, when no widget uses the variable', () => {

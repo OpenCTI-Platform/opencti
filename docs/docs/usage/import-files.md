@@ -44,9 +44,14 @@ As for the `ImportFileStix` connector and the CSV mappers, there is no identific
 
 ## Additional information
 
-### No workbench for CSV mapper
+### Validation mode for CSV mapper
 
-It's essential to note that CSV mappers operate differently from other import mechanisms. Unlike connectors, CSV mappers do not generate workbenches. Instead, the data identified by CSV mappers is imported directly into the platform without an intermediary workbench stage.
+CSV mappers are never triggered automatically on upload: you always launch them manually. Where their output goes depends on how you launch them:
+
+- **From the import dialog**: the output follows the selected validation mode, a [draft](draftWorkspaces.md) (the default) or a [workbench](workbench.md).
+- **With Launch an import on a file that is already uploaded**: if you select **Draft**, the output is placed in a draft. If you select **Workbench**, or if the dialog offers no validation mode (as on the "Data" tab of some entities), the data is imported directly into the platform, unless the `import_csv_built_in_connector:validate_before_import` parameter (environment variable `IMPORT_CSV_BUILT_IN_CONNECTOR__VALIDATE_BEFORE_IMPORT`, default `false`) is set to `true`. In that case, the output goes to a workbench, or, when no validation mode is offered, to the destination set by `app:validation_mode`.
+
+See [Use a mapper for importing a CSV file](../administration/csv-mappers.md#use-a-mapper-for-importing-a-csv-file).
 
 ### Relationship handling from entity's "Data" tab
 
@@ -62,7 +67,16 @@ Expanding the scope of file imports, users can seamlessly add files in the `Cont
 
 ### User capability requirement
 
-In order to initiate file imports, users must possess the requisite [capability](../administration/users.md): "Upload knowledge files." This capability ensures that only authorized users can contribute and manage knowledge files within the OpenCTI platform, maintaining a controlled and secure environment for data uploads.
+File imports rely on two [capabilities](../administration/users.md):
+
+- "Upload knowledge files": upload files in the "Data" and "Content" sections of entities.
+- "Import knowledge": trigger the ingestion of a file by an import connector or a CSV mapper.
+
+Either capability lets a user upload a file for import. Choosing the import connector, the CSV mapper or the validation mode requires "Import knowledge": with "Upload knowledge files" alone, the uploaded file is only processed by the import connectors configured to run automatically. Creating a draft from a file already uploaded also requires "Import knowledge".
+
+Users without "Import knowledge" can be granted it in the [capabilities in draft](../administration/users.md#control-of-capabilities-in-draft-mode) (Enterprise Edition) instead. They can then upload and import files, but only with the Draft validation mode.
+
+These capabilities ensure that only authorized users can contribute and manage knowledge files within the OpenCTI platform, maintaining a controlled and secure environment for data uploads.
 
 
 !!! warning "Deprecation warning"

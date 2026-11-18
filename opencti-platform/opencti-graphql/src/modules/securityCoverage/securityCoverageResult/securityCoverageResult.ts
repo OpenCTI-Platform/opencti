@@ -17,12 +17,13 @@ import {
   ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
   INPUT_RESULT_OF,
   RELATION_RESULT_OF,
+  type Stix2SecurityCoverageResult,
   type StixSecurityCoverageResult,
   type StoreEntitySecurityCoverageResult,
 } from './securityCoverageResult-types';
-import convertSecurityCoverageResultToStix from './securityCoverageResult-converter';
+import convertSecurityCoverageResultToStix, { convertSecurityCoverageResultToStix_2_0 } from './securityCoverageResult-converter';
 
-const SECURITY_COVERAGE_RESULT_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverageResult, StixSecurityCoverageResult> = {
+const SECURITY_COVERAGE_RESULT_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverageResult, StixSecurityCoverageResult, Stix2SecurityCoverageResult> = {
   type: {
     id: 'security-coverage-result',
     name: ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
@@ -95,6 +96,7 @@ const SECURITY_COVERAGE_RESULT_DEFINITION: ModuleDefinition<StoreEntitySecurityC
     return stix.name;
   },
   converter_2_1: convertSecurityCoverageResultToStix,
+  converter_2_0: convertSecurityCoverageResultToStix_2_0,
 };
 
 registerDefinition(SECURITY_COVERAGE_RESULT_DEFINITION);

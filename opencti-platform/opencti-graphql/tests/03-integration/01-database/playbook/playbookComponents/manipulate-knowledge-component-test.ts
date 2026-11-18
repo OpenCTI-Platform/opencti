@@ -1,8 +1,8 @@
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import { STIX_EXT_OCTI } from '../../../../../src/types/stix-2-1-extensions';
-import type { StixThreatActor } from '../../../../../src/types/stix-2-1-sdo';
+import type { StixReport, StixThreatActor } from '../../../../../src/types/stix-2-1-sdo';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../../../../../src/schema/general';
-import { ENTITY_TYPE_INCIDENT } from '../../../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INCIDENT } from '../../../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../../src/modules/organization/organization-types';
 import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT, type ManipulateConfiguration } from '../../../../../src/modules/playbook/components/manipulate-knowledge-component';
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
@@ -549,11 +549,12 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
 
   describe('Workflow status', () => {
     const TARGET_STATUS_ID = 'status-id';
-    const statusAction = (applyTransitionActions?: boolean): ManipulateConfiguration['actions'][number] => ({
+    const statusAction = (applyTransitionActions?: boolean, entityType?: string): ManipulateConfiguration['actions'][number] => ({
       op: 'replace',
       attribute: 'x_opencti_workflow_id',
       value: [{ label: 'In progress', value: TARGET_STATUS_ID, patch_value: TARGET_STATUS_ID }],
       apply_transition_actions: applyTransitionActions,
+      entity_type: entityType,
     });
 
     beforeEach(() => {
@@ -650,6 +651,115 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
         assert.fail('Field patch missing');
       }
       expect(upsertOperations[0]).toMatchObject({ key: 'x_opencti_workflow_id', operation: 'replace', value: [TARGET_STATUS_ID] });
+    });
+
+    describe('Target entity type', () => {
+      const MIXED_BUNDLE = () => [
+        testBundleObject<StixThreatActor>({ id: THREAT_ACTOR_ID, type: ENTITY_TYPE_THREAT_ACTOR }),
+        testBundleObject<StixDomainObject>({ id: MALWARE_ID, type: 'Malware' }),
+      ];
+
+      it('should change the status through the workflow engine only on elements of the target type', async () => {
+        await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+          mainId: THREAT_ACTOR_ID,
+          bundleObjects: MIXED_BUNDLE(),
+          configuration: { applyToElements: 'all-elements', actions: [statusAction(true, 'Malware')] },
+        }));
+
+        expect(workflowDomain.setWorkflowStatus).toHaveBeenCalledTimes(1);
+        expect(workflowDomain.setWorkflowStatus).toHaveBeenCalledWith(expect.anything(), AUTOMATION_MANAGER_USER, MALWARE_ID, TARGET_STATUS_ID, true);
+      });
+
+      it('should patch the status only on elements of the target type', async () => {
+        const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+          mainId: THREAT_ACTOR_ID,
+          bundleObjects: MIXED_BUNDLE(),
+          configuration: { applyToElements: 'all-elements', actions: [statusAction(false, 'Malware')] },
+        }));
+
+        const [threatActor, malware] = result.bundle.objects;
+        expect(threatActor.extensions[STIX_EXT_OCTI].opencti_upsert_operations).toBeUndefined();
+        expect(malware.extensions[STIX_EXT_OCTI].opencti_upsert_operations?.[0]).toMatchObject({ key: 'x_opencti_workflow_id', value: [TARGET_STATUS_ID] });
+      });
+
+      it('should leave the bundle unmodified when no element has the target type', async () => {
+        const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+          mainId: THREAT_ACTOR_ID,
+          bundleObjects: MIXED_BUNDLE(),
+          configuration: { applyToElements: 'all-elements', actions: [statusAction(false, 'Report')] },
+        }));
+
+        expect(result.output_port).toEqual('unmodified');
+      });
+    });
+  });
+
+  describe('report_types', () => {
+    const REPORT_ID = 'report--09bd862a-f030-55f2-920a-900c4913d9ab';
+    const reportTypesAction = (op: 'add' | 'replace' | 'remove', values: string[]) => ({
+      op,
+      attribute: 'report_types',
+      value: values.map((v) => ({ label: v, value: v, patch_value: v })),
+    });
+    const reportBundleObjects = () => [testBundleObject<StixReport>({
+      id: REPORT_ID,
+      type: ENTITY_TYPE_CONTAINER_REPORT,
+      report_types: ['threat-report', 'internal-report'],
+    })];
+
+    it('should replace report types on a Report', async () => {
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: reportBundleObjects(),
+        configuration: { applyToElements: 'only-main', actions: [reportTypesAction('replace', ['malware'])] },
+      }));
+
+      expect(result.output_port).toBe('out');
+      const report = result.bundle.objects.find((o) => o.id === REPORT_ID) as StixReport;
+      expect(report.report_types).toEqual(['malware']);
+      const upsertOperations = report.extensions[STIX_EXT_OCTI].opencti_upsert_operations;
+      if (!upsertOperations?.[0]) {
+        assert.fail('Field patch missing');
+      }
+      expect(upsertOperations[0]).toMatchObject({ key: 'report_types', operation: 'replace', value: ['malware'] });
+    });
+
+    it('should add report types on a Report without duplicates', async () => {
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: reportBundleObjects(),
+        configuration: { applyToElements: 'only-main', actions: [reportTypesAction('add', ['threat-report', 'malware'])] },
+      }));
+
+      expect(result.output_port).toBe('out');
+      const report = result.bundle.objects.find((o) => o.id === REPORT_ID) as StixReport;
+      expect(report.report_types).toEqual(['threat-report', 'internal-report', 'malware']);
+    });
+
+    it('should remove report types on a Report', async () => {
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: reportBundleObjects(),
+        configuration: { applyToElements: 'only-main', actions: [reportTypesAction('remove', ['internal-report'])] },
+      }));
+
+      expect(result.output_port).toBe('out');
+      const report = result.bundle.objects.find((o) => o.id === REPORT_ID) as StixReport;
+      expect(report.report_types).toEqual(['threat-report']);
+    });
+
+    it('should leave a non-Report element unmodified', async () => {
+      const bundleObjects = [testBundleObject<StixThreatActor>({ id: THREAT_ACTOR_ID, type: ENTITY_TYPE_THREAT_ACTOR })];
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: THREAT_ACTOR_ID,
+        bundleObjects,
+        configuration: { applyToElements: 'only-main', actions: [reportTypesAction('replace', ['malware'])] },
+      }));
+
+      expect(result.output_port).toBe('unmodified');
+      const actor = result.bundle.objects[0] as unknown as Record<string, unknown>;
+      expect(actor.report_types).toBeUndefined();
+      expect(result.bundle.objects[0].extensions[STIX_EXT_OCTI].opencti_upsert_operations).toBeUndefined();
     });
   });
 });

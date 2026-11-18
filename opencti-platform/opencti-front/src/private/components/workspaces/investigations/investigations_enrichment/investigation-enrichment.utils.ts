@@ -1,4 +1,6 @@
 import { InvestigationEnrichmentWork } from './investigation-enrichment.types';
+import type { EnrichmentConnector } from '../../../data/connectors/EnrichmentConnectorSelection';
+import toEnrichmentActionValues from '../../../data/connectors/utils/toEnrichmentActionValues';
 
 export const addInEnrichmentMap = (
   map: Map<string, InvestigationEnrichmentWork[]>,
@@ -12,6 +14,34 @@ export const addInEnrichmentMap = (
     }
   }
 };
+
+/**
+ * What the background task launcher needs from the graph selection to enrich it: the selected
+ * elements by id, their count, and their entity type when they all share one.
+ */
+export const toEnrichmentSelection = <T extends { id: string; label: string; entity_type: string }>(elements: readonly T[]) => {
+  const selectionMap = Object.fromEntries(elements.map((el) => [
+    el.id,
+    // We override name because for investigation, name contains also the date
+    { ...el, name: el.label },
+  ]));
+  // Enrichment available only if elements are all of same type.
+  const selectedEntityTypes = new Set(elements.map((el) => el.entity_type));
+  const enrichmentType = selectedEntityTypes.size === 1 ? [...selectedEntityTypes][0] : undefined;
+  return { selectionMap, selectionSize: elements.length, enrichmentType };
+};
+
+/**
+ * The background task actions enriching with the given connectors, named for the launcher.
+ * The investigation id tags every enrichment work created by the task with this investigation.
+ */
+export const toEnrichmentTaskActions = (connectors: readonly EnrichmentConnector[], investigationId: string) => [{
+  type: 'ENRICHMENT' as const,
+  context: {
+    values: toEnrichmentActionValues(connectors),
+    options: { investigationId },
+  },
+}];
 
 /**
  * An element touched by an enrichment, reduced to what the expand needs.

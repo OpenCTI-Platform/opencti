@@ -135,6 +135,7 @@ export class TelemetryMeterManager {
 
   // Number of active drafts
   draftCount = 0;
+  investigationCount = 0;
 
   draftCreationCount = 0;
 
@@ -246,6 +247,14 @@ export class TelemetryMeterManager {
   sharedSavedFiltersPermissionChangesCount = 0;
 
   workflowPublishCount = 0;
+
+  workflowRequestAccessPublishCount = 0;
+
+  workflowRequestAccessMigrationCount = 0;
+
+  requestAccessApprovedCount = 0;
+
+  requestAccessDeclinedCount = 0;
 
   configPresetExportCount = 0;
 
@@ -450,6 +459,10 @@ export class TelemetryMeterManager {
     this.draftCount = n;
   }
 
+  setInvestigationCount(n: number) {
+    this.investigationCount = n;
+  }
+
   setDraftCreationCount(n: number) {
     this.draftCreationCount = n;
   }
@@ -580,6 +593,22 @@ export class TelemetryMeterManager {
 
   setWorkflowPublishCount(n: number) {
     this.workflowPublishCount = n;
+  }
+
+  setWorkflowRequestAccessPublishCount(n: number) {
+    this.workflowRequestAccessPublishCount = n;
+  }
+
+  setWorkflowRequestAccessMigrationCount(n: number) {
+    this.workflowRequestAccessMigrationCount = n;
+  }
+
+  setRequestAccessApprovedCount(n: number) {
+    this.requestAccessApprovedCount = n;
+  }
+
+  setRequestAccessDeclinedCount(n: number) {
+    this.requestAccessDeclinedCount = n;
   }
 
   setConfigPresetExportCount(n: number) {
@@ -772,6 +801,7 @@ export class TelemetryMeterManager {
     this.registerGauge('roles_with_capability_in_draft_count', 'number of roles with capability in draft', 'rolesWithCapabilityInDraftCount');
     this.registerGauge('capabilities_in_draft_tab_loaded_count', 'number of times the capabilities in draft tab is loaded', 'capabilitiesInDraftTabLoadedCount');
     this.registerGauge('active_drafts_count', 'number of active drafts', 'draftCount');
+    this.registerGauge('investigations_count', 'number of investigations', 'investigationCount');
     this.registerGauge('draft_creation_count', 'number of draft creation', 'draftCreationCount');
     this.registerGauge('draft_validation_count', 'number of draft validation', 'draftValidationCount');
     this.registerGauge('active_workbenches_count', 'number of active workbenches', 'workbenchCount');
@@ -815,6 +845,10 @@ export class TelemetryMeterManager {
     this.registerGauge('shared_saved_filters_count', 'Number of saved filters shared with at least one other member (non-creator)', 'sharedSavedFiltersCount');
     this.registerGauge('shared_saved_filters_permission_changes', 'Number of access restriction updates on shared saved filters', 'sharedSavedFiltersPermissionChangesCount');
     this.registerGauge('workflow_publish_count', 'Number of workflow definitions published', 'workflowPublishCount');
+    this.registerGauge('workflow_request_access_publish_count', 'Number of request-access workflow definitions published', 'workflowRequestAccessPublishCount');
+    this.registerGauge('workflow_request_access_migration_count', 'Number of request-access workflow migrations', 'workflowRequestAccessMigrationCount');
+    this.registerGauge('request_access_approved_count', 'Number of access requests approved', 'requestAccessApprovedCount');
+    this.registerGauge('request_access_declined_count', 'Number of access requests declined', 'requestAccessDeclinedCount');
     this.registerGauge('config_preset_export_count', 'Number of configuration preset bundles exported', 'configPresetExportCount');
     // region AI usage (backend-agnostic counters, see telemetryManager)
     this.registerGauge('chatbot_message_count', 'Number of chatbot messages sent (legacy and XTM One combined)', 'chatbotMessageCount');

@@ -211,6 +211,23 @@ export default defineConfig([
     },
   },
 
+  // Pickers go through the wrappers of `components/common/input/picker`, which own the section
+  // selection (#19228). Their types stay importable.
+  {
+    files: ['src/**/*.{js,jsx,ts,tsx}'],
+    ignores: ['src/components/common/input/picker/**'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': ['error', {
+        patterns: [{
+          regex: '^@mui/x-date-pickers(/(DatePicker|DateTimePicker|TimePicker))?$',
+          importNames: ['DatePicker', 'DateTimePicker', 'TimePicker'],
+          allowTypeImports: true,
+          message: 'Use the wrappers of components/common/input/picker, which own the section selection (#19228).',
+        }],
+      }],
+    },
+  },
+
   // Playwright fixtures and the maintenance scripts run in Node, not in a browser, so
   // they see Node's globals rather than the browser ones the app code is checked against.
   {

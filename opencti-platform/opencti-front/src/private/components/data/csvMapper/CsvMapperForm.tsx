@@ -186,7 +186,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                       fontSize="small"
                       color="primary"
                       style={{ cursor: 'default' }}
-                      sx={{ position: 'relative', top: '-4px' }}
+                      sx={{ position: 'relative', top: '-2px' }}
                     />
                   </TooltipTrigger>
                   <TooltipContent>

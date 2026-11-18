@@ -7,9 +7,9 @@ import nodeTypes from './NodeTypes';
 import edgeTypes from './EdgeTypes';
 import Button from '@common/button/Button';
 import { Box, Typography } from '@mui/material';
-import { getInitialState, NEW_STATUS_NAME, transformToWorkflowDefinition, WorkflowNodeType } from './utils';
+import { getInitialState, NEW_STATUS_NAME, REQUEST_ACCESS_ENTITY_TYPE, transformToWorkflowDefinition, WorkflowNodeType } from './utils';
 import { graphql, PreloadedQuery, usePreloadedQuery, useMutation } from 'react-relay';
-import { workflowDependenciesQuery, workflowQuery } from '../SubTypeWorkflow';
+import { workflowDependenciesQuery, workflowQuery, WorkflowScope } from '../SubTypeWorkflow';
 import { SubTypeWorkflowQuery, SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
 import { SubTypeWorkflowDependenciesQuery } from '../__generated__/SubTypeWorkflowDependenciesQuery.graphql';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
@@ -28,6 +28,12 @@ import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../components/Theme';
 import PublishButton from './PublishButton';
 import RestoreConfirmDialog from './RestoreConfirmDialog';
+import WorkflowScopeSwitch from './WorkflowScopeSwitch';
+import RequestAccessValidatorGroup from './RequestAccessValidatorGroup';
+import EntityStatusSyncSetting from '../global_workflow_request_access/EntityStatusSyncSetting';
+import RequestAccessMigrationDialog from './RequestAccessMigrationDialog';
+import { useSubTypeOutletContext } from '../SubTypeOutletContext';
+import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import { MESSAGING$ } from '../../../../../relay/environment';
 
 export interface WorkflowValidationError {
@@ -44,6 +50,11 @@ interface WorkflowValidationErrorsToastContentProps {
 
 const WorkflowValidationErrorsToastContent = ({ errors, t_i18n, statusTemplates }: WorkflowValidationErrorsToastContentProps) => {
   const statusTemplateMap = convertEdgesToObject(statusTemplates);
+  // The server names removed statuses by template id inside the message: show their names instead
+  const withStatusNames = (message: string) => Object.entries(statusTemplateMap).reduce(
+    (acc, [id, template]) => (template?.name ? acc.split(id).join(template.name) : acc),
+    message,
+  );
 
   const groupedErrors = errors.reduce((acc, error) => {
     if (!acc[error.type]) acc[error.type] = [];
@@ -63,7 +74,7 @@ const WorkflowValidationErrorsToastContent = ({ errors, t_i18n, statusTemplates 
           </Typography>
           {typeErrors.map((error, index) => (
             <Typography key={index} variant="caption" component="div" sx={{ ml: 1 }}>
-              • {error.message}
+              • {withStatusNames(error.message)}
               {error.path && error.path.length > 0 && (
                 <Typography variant="caption" component="span" sx={{ ml: 0.5, fontStyle: 'italic' }}>
                   ({error.path.map((ref) => {
@@ -83,8 +94,8 @@ const WorkflowValidationErrorsToastContent = ({ errors, t_i18n, statusTemplates 
 };
 
 const workflowDefinitionSetMutation = graphql`
-  mutation WorkflowDefinitionMutation($entityType: String!, $definition: String!) {
-    workflowDefinitionSet(entityType: $entityType, definition: $definition) {
+  mutation WorkflowDefinitionMutation($entityType: String!, $definition: String!, $scope: StatusScope) {
+    workflowDefinitionSet(entityType: $entityType, definition: $definition, scope: $scope) {
       id
       published
       errors {
@@ -100,8 +111,8 @@ const workflowDefinitionSetMutation = graphql`
 `;
 
 const workflowDefinitionPublishMutation = graphql`
-  mutation WorkflowPublishMutation($entityType: String!) {
-    workflowDefinitionPublish(entityType: $entityType) {
+  mutation WorkflowPublishMutation($entityType: String!, $scope: StatusScope) {
+    workflowDefinitionPublish(entityType: $entityType, scope: $scope) {
       id
       workflow_id
       published
@@ -110,8 +121,8 @@ const workflowDefinitionPublishMutation = graphql`
 `;
 
 const workflowDefinitionRestorePublishedMutation = graphql`
-  mutation WorkflowRestorePublishedMutation($entityType: String!) {
-    workflowDefinitionRestorePublished(entityType: $entityType) {
+  mutation WorkflowRestorePublishedMutation($entityType: String!, $scope: StatusScope) {
+    workflowDefinitionRestorePublished(entityType: $entityType, scope: $scope) {
       id
       published
       errors {
@@ -128,7 +139,8 @@ const workflowDefinitionRestorePublishedMutation = graphql`
 
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 const proOptions = { account: 'paid-pro', hideAttribution: true };
-const fitViewOptions = {};
+// fitView knows nothing of the top-left panel: room is left on every side so the initial node never ends up under it
+const fitViewOptions = { padding: 0.12 };
 
 const emptyElement = {
   id: NEW_STATUS_NAME,
@@ -142,13 +154,22 @@ const Workflow = ({
   depsQueryRef,
   onRefetch,
   entityType,
+  scope = 'GLOBAL',
+  onScopeChange,
 }: {
   queryRef: PreloadedQuery<SubTypeWorkflowQuery>;
   depsQueryRef: PreloadedQuery<SubTypeWorkflowDependenciesQuery>;
   onRefetch: () => void;
   entityType: string;
+  scope?: WorkflowScope;
+  onScopeChange?: (scope: WorkflowScope) => void;
 }) => {
   const { t_i18n } = useFormatter();
+  const isEnterpriseEdition = useEnterpriseEdition();
+  const { subType } = useSubTypeOutletContext();
+  const isRequestAccessScopeAvailable = entityType === REQUEST_ACCESS_ENTITY_TYPE
+    && isEnterpriseEdition
+    && subType.settings.availableSettings.includes('request_access_workflow');
   const theme = useTheme<Theme>();
   const { fitView, getNode } = useReactFlow();
 
@@ -160,6 +181,15 @@ const Workflow = ({
     workflowDependenciesQuery,
     depsQueryRef,
   );
+
+  // Status ids (value of x_opencti_workflow_id) keyed by status template id; only published states have one
+  const workflowStatusIds = useMemo(() => {
+    const ids: Record<string, string> = {};
+    (workflowDefinition?.states ?? []).forEach((state) => {
+      if (state.workflowStatusId) ids[state.statusId] = state.workflowStatusId;
+    });
+    return ids;
+  }, [workflowDefinition]);
 
   // 1. Get initial edges and nodes from workflow definition
   const { initialNodes, initialEdges } = useWorkflowInitialElements(workflowDefinition, statusTemplates, members);
@@ -184,7 +214,7 @@ const Workflow = ({
   useWorkflowLayout(layoutOptions);
 
   useEffect(() => {
-    fitView();
+    fitView(fitViewOptions);
   }, [nodes, edges, fitView]);
 
   // Update workflow definition
@@ -251,7 +281,7 @@ const Workflow = ({
     previousSchemaRef.current = schemaString;
 
     saveWorkflowDefinition({
-      variables: { entityType, definition: schemaString },
+      variables: { entityType, definition: schemaString, scope },
       onCompleted: (response) => {
         if (response.workflowDefinitionSet) {
           const { errors } = response.workflowDefinitionSet;
@@ -282,7 +312,7 @@ const Workflow = ({
     const emptySchemaString = JSON.stringify(transformToWorkflowDefinition([], [], workflowDefinition));
     previousSchemaRef.current = emptySchemaString;
     saveWorkflowDefinition({
-      variables: { entityType, definition: emptySchemaString },
+      variables: { entityType, definition: emptySchemaString, scope },
       onCompleted: (response) => {
         if (response.workflowDefinitionSet) {
           const { errors } = response.workflowDefinitionSet;
@@ -306,15 +336,11 @@ const Workflow = ({
   };
 
   // Handle publish action
+  // Always ask the server: the errors stored at save time may no longer hold (e.g. the entities
+  // left a removed status since), and publish re-validates the draft against the live data.
   const handlePublish = () => {
-    if (workflowDefinitionStatus.validationErrors.length > 0) {
-      MESSAGING$.notifyError(
-        <WorkflowValidationErrorsToastContent errors={workflowDefinitionStatus.validationErrors} t_i18n={t_i18n} />,
-      );
-      return;
-    }
     commitPublish({
-      variables: { entityType },
+      variables: { entityType, scope },
       onCompleted: () => {
         MESSAGING$.notifySuccess(t_i18n('Workflow successfully published'));
         setWorkflowDefinitionStatus({
@@ -322,11 +348,23 @@ const Workflow = ({
           hasPublishedVersion: true,
           validationErrors: [],
         });
+        // The mutation returns no states: refetch to get the status ids the publish just created
+        onRefetch();
       },
       onError: (error) => {
-        const firstError = (error as { res?: { errors?: Array<{ message?: string; extensions?: { data?: { removedStates?: string[]; entityType?: string } } }> } })
+        type PublishErrorData = { removedStates?: string[]; entityType?: string; errors?: WorkflowValidationError[] };
+        const firstError = (error as { res?: { errors?: Array<{ message?: string; extensions?: { data?: PublishErrorData } }> } })
           ?.res?.errors?.[0];
         const data = firstError?.extensions?.data;
+        // A refusal on validation carries the fresh errors: they replace the ones stored at save time
+        if (data?.errors && data.errors.length > 0) {
+          const freshErrors = [...data.errors];
+          setWorkflowDefinitionStatus((prev) => ({ ...prev, validationErrors: freshErrors }));
+          MESSAGING$.notifyError(
+            <WorkflowValidationErrorsToastContent errors={freshErrors} t_i18n={t_i18n} statusTemplates={statusTemplates} />,
+          );
+          return;
+        }
         const publishErrors: WorkflowValidationError[] = [{
           type: 'PUBLISH_ERROR',
           message: firstError?.message ?? t_i18n('An error occurred while publishing the workflow'),
@@ -342,7 +380,7 @@ const Workflow = ({
   // Handle restore action — reloads the published version into the draft
   const handleRestore = () => {
     restoreWorkflowDefinition({
-      variables: { entityType },
+      variables: { entityType, scope },
       onCompleted: () => {
         // Directly reset local state to `initialNodes`/`initialEdges`.
         // The Relay store already holds the published states (only full queries update
@@ -365,6 +403,9 @@ const Workflow = ({
   // Edit status and transitions
   const [open, setOpen] = useState<boolean>(false);
   const [emptyStateRestoreConfirmOpen, setEmptyStateRestoreConfirmOpen] = useState(false);
+  const [migrationOpen, setMigrationOpen] = useState(false);
+  // The migration builds the request access workflow until one is published: it may replace a draft, never a published one.
+  const canMigrateRequestAccess = scope === 'REQUEST_ACCESS' && !workflowDefinitionStatus.hasPublishedVersion;
   const [selectedElement, setSelectedElement] = useState<Node | Edge>(emptyElement);
   const onNodeClick: NodeMouseHandler = useCallback(
     (_, node) => {
@@ -414,7 +455,7 @@ const Workflow = ({
   const onNodeMouseLeave: NodeMouseHandler = useCallback(() => setHoveredId(null), []);
   const highlight = useMemo(() => getHoverHighlight(hoveredId, nodes, edges), [hoveredId, nodes, edges]);
   return (
-    <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden' }}>
+    <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <WorkflowEdgeActionsContext.Provider value={edgeActions}>
         <HoverHighlightContext.Provider value={highlight}>
           <ReactFlow
@@ -439,7 +480,25 @@ const Workflow = ({
             deleteKeyCode={null}
             zoomOnDoubleClick={false}
             proOptions={proOptions}
+            style={{ flex: 1, minHeight: 0 }}
           >
+            <Panel
+              position="top-left"
+              style={{ display: 'grid', gridTemplateColumns: 'max-content max-content', alignItems: 'center', columnGap: 16, rowGap: 12 }}
+              data-testid="workflow-top-left-panel"
+            >
+              {isRequestAccessScopeAvailable && (
+                <WorkflowScopeSwitch scope={scope} onScopeChange={(nextScope) => onScopeChange?.(nextScope)} />
+              )}
+              {/* Opaque paper background so the graph edges passing behind never show through the label */}
+              <EntityStatusSyncSetting sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 1, px: 1.5, py: 0.5 }} />
+              {isRequestAccessScopeAvailable && scope === 'REQUEST_ACCESS' && (
+                // width 0 + min-width 100%: the select fills the first column, which the scope buttons size
+                <div style={{ gridColumn: 1, width: 0, minWidth: '100%' }}>
+                  <RequestAccessValidatorGroup />
+                </div>
+              )}
+            </Panel>
             {nodes.length ? (
               <Panel position="top-right" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <PublishButton
@@ -462,6 +521,11 @@ const Workflow = ({
                 >
                   {t_i18n('Add Status')}
                 </Button>
+                {canMigrateRequestAccess && (
+                  <Button variant="secondary" onClick={() => setMigrationOpen(true)}>
+                    {t_i18n('Migrate request access statuses')}
+                  </Button>
+                )}
               </Panel>
             ) : (
               <Panel
@@ -497,6 +561,11 @@ const Workflow = ({
                 >
                   {t_i18n('Restore published version')}
                 </Button>
+                {canMigrateRequestAccess && (
+                  <Button variant="secondary" onClick={() => setMigrationOpen(true)}>
+                    {t_i18n('Migrate request access statuses')}
+                  </Button>
+                )}
               </Panel>
             )}
           </ReactFlow>
@@ -506,6 +575,8 @@ const Workflow = ({
         open={open}
         selectedElement={selectedElement}
         entityType={entityType}
+        scope={scope}
+        workflowStatusIds={workflowStatusIds}
         onClose={() => {
           setSelectedElement(emptyElement);
           setOpen(false);
@@ -519,6 +590,13 @@ const Workflow = ({
           handleRestore();
         }}
       />
+      {canMigrateRequestAccess && (
+        <RequestAccessMigrationDialog
+          open={migrationOpen}
+          onClose={() => setMigrationOpen(false)}
+          onMigrated={onRefetch}
+        />
+      )}
     </div>
   );
 };

@@ -6,7 +6,7 @@ import { fromB64, toB64 } from '../../utils/base64';
 import { isNotEmptyField } from '../../database/utils';
 import { FunctionalError } from '../../config/errors';
 import { extractContentFrom } from '../../utils/fileToContent';
-import { convertWidgetsIds } from '../workspace/workspace-utils';
+import { convertDashboardIds, convertWidgetsIds } from '../workspace/workspace-utils';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import type { ConfigImportData, WidgetConfigImportData, WidgetConfiguration } from './dashboard-types';
 import { findSavedFilter } from '../savedFilter/savedFilter-domain';
@@ -31,6 +31,17 @@ export const checkDashboardConfigurationImport = (type: string, parsedData: Conf
       `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_COMPATIBLE_VERSION}`,
       { reason: parsedData.openCTI_version },
     );
+  }
+
+  // A dashboard stored without a name breaks the dashboards list (name is mandatory in the GraphQL schema)
+  if (type === 'dashboard') {
+    const { configuration } = parsedData as ConfigImportData & { configuration?: { name?: unknown } };
+    const name = configuration?.name;
+    if (typeof name !== 'string' || name.trim().length === 0) {
+      throw FunctionalError('Invalid dashboard file. The dashboard configuration must have a name', {
+        reason: name === undefined ? 'missing name' : 'empty name',
+      });
+    }
   }
 };
 
@@ -109,10 +120,13 @@ export const importDashboardWidgetConfiguration = async (
   user: AuthUser,
   file: Promise<FileHandle>,
   manifest: string | null | undefined,
+  options: { validateWidget?: (widget: WidgetConfiguration) => void } = {},
 ) => {
   const parsedData = await extractContentFrom<WidgetConfigImportData>(file);
   checkDashboardConfigurationImport('widget', parsedData);
   const widgetDefinition = fromB64(parsedData.configuration);
+  // Before the ids are resolved: a refused widget costs no lookup.
+  options.validateWidget?.(widgetDefinition);
   await convertWidgetsIds(context, user, [widgetDefinition], 'stix');
   const importedWidgetId = uuidv4();
   const dashboardManifestObjects = fromB64(manifest ?? undefined);
@@ -150,28 +164,33 @@ export const importDashboardWidgetConfiguration = async (
 };
 
 /**
- * Convert dashboard widget ids between internal and STIX 2_1 formats.
+ * Convert dashboard widget and variable ids between internal and STIX 2_1 formats.
  *
  * - Export (`from = 'internal'`): filter ids are converted to STIX ids and
  *   saved filter references are resolved to inline filter content.
  * - Import (`from = 'stix'`): filter ids are converted back to internal ids.
+ *
+ * The variables are converted even without widget. A manifest with neither is returned untouched.
  */
-export const convertDashboardManifestIds = async (
+export const convertDashboardManifestIds = async <M extends string | null | undefined>(
   context: AuthContext,
   user: AuthUser,
-  manifest: string,
+  manifest: M,
   from: 'internal' | 'stix',
-): Promise<string> => {
+): Promise<M | string> => {
   const parsedManifest = fromB64(manifest ?? '{}');
-  // Regeneration for dashboards
-  if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
-    const { widgets } = parsedManifest;
-    const widgetDefinitions: Widget[] = Object.values(widgets);
-    if (from === 'internal') { // for exports: replace saved filters ids with the associated filters content
-      await Promise.all(widgetDefinitions.map((widgetDefinition) => resolveSavedFiltersInDataSelection(context, user, widgetDefinition)));
-    }
-    await convertWidgetsIds(context, user, widgetDefinitions, from);
-    return toB64(parsedManifest) as string;
+  const hasWidgets = parsedManifest && isNotEmptyField(parsedManifest.widgets);
+  const hasVariables = parsedManifest && Array.isArray(parsedManifest.variables) && parsedManifest.variables.length > 0;
+  const presets = parsedManifest && Array.isArray(parsedManifest.presets) ? parsedManifest.presets : [];
+  if (!hasWidgets && !hasVariables) {
+    return manifest;
   }
-  return manifest;
+  // Regeneration for dashboards
+  const widgetDefinitions: Widget[] = hasWidgets ? Object.values(parsedManifest.widgets) : [];
+  if (from === 'internal') { // for exports: replace saved filters ids with the associated filters content
+    await Promise.all(widgetDefinitions.map((widgetDefinition) => resolveSavedFiltersInDataSelection(context, user, widgetDefinition)));
+  }
+  // Widgets and variables share one lookup
+  await convertDashboardIds(context, user, widgetDefinitions, hasVariables ? parsedManifest.variables : [], from, presets);
+  return toB64(parsedManifest) as string;
 };
