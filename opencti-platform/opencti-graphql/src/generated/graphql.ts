@@ -14642,6 +14642,7 @@ export type IngestionJsonAddInputFromImport = {
   description?: Maybe<Scalars['String']['output']>;
   headers?: Maybe<Array<IngestionHeader>>;
   jsonMapper: IngestionJsonMapperFromImport;
+  markings?: Maybe<Array<Scalars['String']['output']>>;
   name: Scalars['String']['output'];
   pagination_with_sub_page?: Maybe<Scalars['Boolean']['output']>;
   pagination_with_sub_page_attribute_path?: Maybe<Scalars['String']['output']>;
@@ -49123,6 +49124,7 @@ export type IngestionJsonAddInputFromImportResolvers<ContextType = any, ParentTy
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   headers?: Resolver<Maybe<Array<ResolversTypes['IngestionHeader']>>, ParentType, ContextType>;
   jsonMapper?: Resolver<ResolversTypes['IngestionJsonMapperFromImport'], ParentType, ContextType>;
+  markings?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pagination_with_sub_page?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   pagination_with_sub_page_attribute_path?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

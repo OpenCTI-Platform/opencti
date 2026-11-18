@@ -8,7 +8,8 @@ const markingReference = z.strictObject({
 });
 
 const feedFields = {
-  name: z.string().trim().min(2, 'Feed name must be at least 2 characters'),
+  // Not trimmed: the feed is found again by its name as stored
+  name: z.string().refine((name) => name.trim().length >= 2, 'Feed name must be at least 2 characters'),
   description: z.string().nullable().optional(),
   scheduling_period: z.string().nullable().optional(),
   uri: z.string().min(5),

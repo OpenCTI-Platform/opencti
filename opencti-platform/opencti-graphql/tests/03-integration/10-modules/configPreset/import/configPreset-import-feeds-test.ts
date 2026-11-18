@@ -15,6 +15,7 @@ import { CONFIG_PRESET_FAMILIES, exportConfigPresetItem } from '../../../../../s
 import { IngestionAuthType, TaxiiVersion } from '../../../../../src/generated/graphql';
 import { isIngestionGroupMissing } from '../../../../../src/modules/ingestion/ingestion-import';
 import { MARKING_TLP_GREEN } from '../../../../../src/schema/identifier';
+import { deleteJsonMapper } from '../../../../../src/modules/internal/jsonMapper/jsonMapper-domain';
 
 const UPLOAD_MUTATION = gql`mutation ConfigPresetFeedsUpload($file: Upload!) { configPresetImportUpload(file: $file) { id } }`;
 const IMPORT_MUTATION = gql`
@@ -330,6 +331,47 @@ describe('Config preset: feeds', () => {
         csvMapper: { name: 'Bundle CSV mapper', has_header: true, separator: ',' },
       });
       expect(imported.markings).toHaveLength(1);
+    });
+
+    it('fills the JSON creation form with the markings of the platform among the ones of the bundle', async () => {
+      const jsonFile = {
+        openCTI_version: '7.261109.0',
+        type: 'integrations.jsonFeeds',
+        id: 'Bundle JSON feed',
+        configuration: {
+          name: 'Bundle JSON feed',
+          description: null,
+          scheduling_period: 'PT1H',
+          uri: 'https://api.example.com/indicators',
+          ssl_verify: null,
+          confidence_level: null,
+          authentication_type: 'none',
+          markings: [
+            { standard_id: MARKING_TLP_GREEN, definition_type: 'TLP', definition: 'TLP:GREEN' },
+            { standard_id: 'marking-definition--00000000-0000-4000-8000-000000000000', definition_type: 'PAP', definition: 'PAP:UNKNOWN' },
+          ],
+          verb: 'get',
+          body: null,
+          headers: [],
+          query_attributes: [],
+          json_mapper: { name: 'Bundle JSON mapper', variables: [], representations: [] },
+        },
+      };
+      const { data } = await queryAsAdminWithSuccess({
+        query: gql`
+          mutation ConfigPresetJsonFileImport($file: Upload!) {
+            ingestionJsonAddInputFromImport(file: $file) { name uri markings jsonMapper { id name } }
+          }
+        `,
+        variables: { file: bundleFeedFile(jsonFile) },
+      });
+      const imported = data?.ingestionJsonAddInputFromImport;
+      try {
+        expect(imported).toMatchObject({ name: 'Bundle JSON feed', uri: 'https://api.example.com/indicators', jsonMapper: { name: 'Bundle JSON mapper' } });
+        expect(imported.markings).toHaveLength(1);
+      } finally {
+        await deleteJsonMapper(testContext, ADMIN_USER, imported.jsonMapper.id);
+      }
     });
   });
 });

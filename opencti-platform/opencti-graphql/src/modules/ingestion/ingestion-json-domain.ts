@@ -41,6 +41,7 @@ import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { FunctionalError } from '../../config/errors';
 import { convertRepresentationsIds } from '../internal/mapper-utils';
 import { validateIngestionExecutionIdentity, validateIngestionExecutionIdentityFromEditInputs, validateStoredIngestionExecutionIdentity } from './ingestion-execution-identity';
+import { isConfigPresetFeedFile, resolveFeedFileMarkings } from './ingestion-file-import';
 
 const MINIMAL_JSON_FEED_COMPATIBLE_VERSION = '7.260722.0';
 
@@ -273,9 +274,9 @@ export const sanitizeExportedHeaders = (headers: { name: string; value: string }
   return headers?.map((header) => (isSensitiveHeaderName(header.name) ? { ...header, value: '' } : header));
 };
 
-// A query attribute exposed as a header sends its default value in that header: a sensitive one is a credential too
+// A query attribute sends its default value as a header, a query parameter or in the body: a sensitive one is a credential too
 export const isSensitiveQueryAttribute = (attribute: { exposed?: string | null; to?: string | null }) => {
-  return attribute.exposed === 'header' && !!attribute.to && isSensitiveHeaderName(attribute.to);
+  return !!attribute.to && isSensitiveHeaderName(attribute.to);
 };
 export const sanitizeExportedQueryAttributes = <T extends { exposed?: string | null; to?: string | null; default?: string | null }>(attributes: T[] | undefined) => {
   return attributes?.map((attribute) => (isSensitiveQueryAttribute(attribute) ? { ...attribute, default: '' } : attribute));
@@ -374,8 +375,13 @@ export const jsonFeedAddInputFromImport = async (context: AuthContext, user: Aut
     ? existingMappers[0]
     : await createJsonMapperFromConfiguration(context, user, jsonMapperConfiguration);
 
+  // A feed taken from a configuration bundle references its markings by standard id
+  const markings = isConfigPresetFeedFile(parsedData, 'jsonFeeds')
+    ? (await resolveFeedFileMarkings(context, configuration.markings)).map(({ internal_id }) => internal_id)
+    : [];
   return {
     ...configuration,
+    markings,
     jsonMapper: { id: jsonMapper.id, name: jsonMapper.name },
   };
 };

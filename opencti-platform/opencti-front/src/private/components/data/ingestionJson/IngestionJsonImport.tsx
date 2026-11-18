@@ -41,6 +41,7 @@ export const ingestionJsonImportMutation = graphql`
       }
       authentication_type
       ssl_verify
+      markings
       jsonMapper {
         id
         name

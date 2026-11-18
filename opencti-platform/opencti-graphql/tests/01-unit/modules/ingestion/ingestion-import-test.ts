@@ -13,7 +13,7 @@ vi.mock('../../../../src/modules/ingestion/ingestion-json-domain', () => ({
   findAllJsonIngestion: vi.fn(),
   ingestionJsonEditField: vi.fn(),
   isSensitiveHeaderName: (name: string) => /authorization|token|key|secret|password|cookie|credential/i.test(name),
-  isSensitiveQueryAttribute: (attribute: { exposed?: string; to?: string }) => attribute.exposed === 'header' && /token|key/i.test(attribute.to ?? ''),
+  isSensitiveQueryAttribute: (attribute: { to?: string }) => /token|key/i.test(attribute.to ?? ''),
   sanitizeExportedHeaders: (headers: { name: string; value: string }[] | undefined) => headers,
   sanitizeExportedQueryAttributes: (attributes: unknown[] | undefined) => attributes,
 }));
@@ -37,15 +37,21 @@ vi.mock('../../../../src/database/cache', () => ({ getEntitiesMapFromCache: vi.f
 import { addIngestion, findAllRssIngestion, ingestionEditField } from '../../../../src/modules/ingestion/ingestion-rss-domain';
 import { addIngestionCsv, findAllCsvIngestion } from '../../../../src/modules/ingestion/ingestion-csv-domain';
 import { findAllTaxiiIngestion, ingestionTaxiiAdd, ingestionTaxiiEditField } from '../../../../src/modules/ingestion/ingestion-taxii-domain';
-import { addIngestionJson, findAllJsonIngestion } from '../../../../src/modules/ingestion/ingestion-json-domain';
-import { createJsonMapperFromConfiguration, deleteJsonMapper } from '../../../../src/modules/internal/jsonMapper/jsonMapper-domain';
+import { addIngestionJson, findAllJsonIngestion, ingestionJsonEditField } from '../../../../src/modules/ingestion/ingestion-json-domain';
+import { createJsonMapperFromConfiguration, deleteJsonMapper, findById as findJsonMapperById } from '../../../../src/modules/internal/jsonMapper/jsonMapper-domain';
 import { createIngestionAutomaticUser } from '../../../../src/modules/ingestion/ingestion-execution-identity';
 import { decryptIngestionCredential } from '../../../../src/modules/ingestion/ingestion-common';
 import { userAlreadyExists } from '../../../../src/modules/user/user-domain';
 import { findDefaultIngestionGroups } from '../../../../src/domain/group';
 import { fullEntitiesList, internalFindByIds, internalLoadById, storeLoadById } from '../../../../src/database/middleware-loader';
 import { getEntitiesMapFromCache } from '../../../../src/database/cache';
-import { AMBIGUOUS_FEED_REASON, feedAdapterOf, importConfigPresetFeed } from '../../../../src/modules/ingestion/ingestion-import';
+import {
+  AMBIGUOUS_FEED_REASON,
+  DESTINATION_CHANGED_REASON,
+  feedAdapterOf,
+  importConfigPresetFeed,
+  SSL_VERIFY_DISABLED_REASON,
+} from '../../../../src/modules/ingestion/ingestion-import';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
@@ -112,6 +118,26 @@ const jsonConfiguration = (overrides: Record<string, unknown> = {}) => ({
   headers: [{ name: 'Accept', value: 'application/json' }, { name: 'X-Api-Key', value: '' }],
   query_attributes: [],
   json_mapper: { name: 'Vendor mapper', variables: [], representations: [] },
+  ...overrides,
+});
+
+const vendorMapper = (representations = '[]') => ({ id: 'mapper-id', name: 'Vendor mapper', variables: '[]', representations });
+const storedJson = (overrides: Record<string, unknown> = {}) => ({
+  id: 'json-id',
+  internal_id: 'json-id',
+  name: 'Vendor API',
+  uri: 'https://api.example.com/indicators',
+  authentication_type: 'none',
+  verb: 'get',
+  headers: [],
+  query_attributes: [{ type: 'header', from: 'x-next', to: 'X-Next-Token', default: 'stored-token', exposed: 'header' }],
+  json_mapper_id: 'mapper-id',
+  user_id: feedUser.id,
+  ...overrides,
+});
+const pagedJsonConfiguration = (overrides: Record<string, unknown> = {}) => jsonConfiguration({
+  headers: [],
+  query_attributes: [{ type: 'header', from: 'x-next', to: 'X-Next-Token', default: '', exposed: 'header' }],
   ...overrides,
 });
 
@@ -334,6 +360,90 @@ describe('importConfigPresetFeed credentials', () => {
       user_id: 'service-account-id',
       headers: [{ name: 'Accept', value: 'application/json' }, { name: 'X-Api-Key', value: 'api-key' }],
     }));
+  });
+});
+
+describe('importConfigPresetFeed on a feed moved to another server', () => {
+  it('does not keep the stored credentials, asks for them again and says why', async () => {
+    vi.mocked(findAllTaxiiIngestion).mockResolvedValue([storedTaxii()] as never);
+    const moved = taxiiConfiguration({ uri: 'https://other-host.example.com' });
+    const refusal = await importConfigPresetFeed(context, user, taxii, moved, overwrite);
+    expect(refusal).toMatchObject({ status: 'failed', code: 'credentials_required' });
+    expect(refusal.reason).toContain(DESTINATION_CHANGED_REASON);
+    expect(refusal.credentials?.some(({ stored }) => stored)).toBe(false);
+    vi.mocked(decryptIngestionCredential).mockResolvedValue('analyst:old-pass');
+    const result = await importConfigPresetFeed(context, user, taxii, moved, { ...overwrite, credentials: { username: 'partner', password: 'new-pass' } });
+    expect(result).toMatchObject({ status: 'overwritten' });
+    expect(result.reason).toContain(DESTINATION_CHANGED_REASON);
+    expect(decryptIngestionCredential).not.toHaveBeenCalled();
+    expect(ingestionTaxiiEditField).toHaveBeenLastCalledWith(context, user, 'taxii-id', [{ key: 'authentication_value', value: ['partner:new-pass'] }]);
+  });
+
+  it('does not copy the stored default of a sensitive query attribute to the new server', async () => {
+    vi.mocked(findJsonMapperById).mockResolvedValue(vendorMapper() as never);
+    vi.mocked(fullEntitiesList).mockResolvedValue([vendorMapper()] as never);
+    vi.mocked(findAllJsonIngestion).mockResolvedValue([storedJson()] as never);
+    expect(await importConfigPresetFeed(context, user, json, pagedJsonConfiguration(), overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
+    await importConfigPresetFeed(context, user, json, pagedJsonConfiguration({ uri: 'https://other-host.example.com/indicators' }), overwrite);
+    expect(vi.mocked(ingestionJsonEditField).mock.calls[0][3]).toContainEqual({
+      key: 'query_attributes',
+      value: [{ type: 'header', from: 'x-next', to: 'X-Next-Token', default: '', exposed: 'header' }],
+    });
+  });
+
+  it('tells when the import disables the verification of the SSL certificate', async () => {
+    vi.mocked(findAllRssIngestion).mockResolvedValue([storedRss()] as never);
+    const result = await importConfigPresetFeed(context, user, rss, rssConfiguration({ ssl_verify: false }), overwrite);
+    expect(result).toMatchObject({ status: 'overwritten' });
+    expect(result.reason).toContain(SSL_VERIFY_DISABLED_REASON);
+  });
+});
+
+describe('importConfigPresetFeed URI secrets', () => {
+  it('asks for a sensitive URI parameter the bundle blanked, keeps the stored one on the same server, and writes it back', async () => {
+    const configuration = rssConfiguration({ uri: 'https://news.example.com/rss?token=&lang=en' });
+    expect(await importConfigPresetFeed(context, user, rss, configuration, overwrite))
+      .toMatchObject({ status: 'failed', code: 'credentials_required', reason: 'Configuration to provide: uri:query:token' });
+    await importConfigPresetFeed(context, user, rss, configuration, { ...overwrite, credentials: { 'uri:query:token': 't0k' } });
+    expect(addIngestion).toHaveBeenCalledWith(context, user, expect.objectContaining({ uri: 'https://news.example.com/rss?token=t0k&lang=en' }));
+    vi.mocked(findAllRssIngestion).mockResolvedValue([storedRss({ uri: 'https://news.example.com/rss?token=stored&lang=en' })] as never);
+    expect(await importConfigPresetFeed(context, user, rss, configuration, overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
+  });
+});
+
+describe('importConfigPresetFeed JSON mapper', () => {
+  it('tells when the mapper of the same name has another content, and is up to date when nothing else changes', async () => {
+    const otherMapper = vendorMapper('[{"id":"other"}]');
+    vi.mocked(fullEntitiesList).mockResolvedValue([otherMapper] as never);
+    vi.mocked(createIngestionAutomaticUser).mockResolvedValue({ id: 'service-account-id' } as never);
+    vi.mocked(addIngestionJson).mockResolvedValue({ id: 'created-id' } as never);
+    const created = await importConfigPresetFeed(context, user, json, pagedJsonConfiguration(), overwrite);
+    expect(created).toMatchObject({ status: 'created', reason: 'JSON mapper Vendor mapper already exists with another content: the feed uses it' });
+    expect(createJsonMapperFromConfiguration).not.toHaveBeenCalled();
+    expect(addIngestionJson).toHaveBeenCalledWith(context, user, expect.objectContaining({ json_mapper_id: 'mapper-id' }));
+    vi.mocked(findJsonMapperById).mockResolvedValue(otherMapper as never);
+    vi.mocked(findAllJsonIngestion).mockResolvedValue([storedJson()] as never);
+    expect(await importConfigPresetFeed(context, user, json, pagedJsonConfiguration(), overwrite)).toMatchObject({
+      status: 'skipped',
+      code: 'unchanged',
+      reason: 'Already up to date\nJSON mapper Vendor mapper already exists with another content: the feed uses it',
+    });
+    expect(ingestionJsonEditField).not.toHaveBeenCalled();
+  });
+
+  it('reports the error of the feed, not the one of a rollback that fails', async () => {
+    vi.mocked(createJsonMapperFromConfiguration).mockResolvedValue({ id: 'created-mapper-id' } as never);
+    vi.mocked(createIngestionAutomaticUser).mockResolvedValue({ id: 'service-account-id' } as never);
+    vi.mocked(addIngestionJson).mockRejectedValue(new Error('Feed refused'));
+    vi.mocked(deleteJsonMapper).mockRejectedValue(new Error('Mapper used by a feed'));
+    await expect(importConfigPresetFeed(context, user, json, pagedJsonConfiguration(), overwrite)).rejects.toThrow('Feed refused');
+  });
+});
+
+describe('importConfigPresetFeed names', () => {
+  it('finds a feed by its name as stored, spaces included', async () => {
+    vi.mocked(findAllRssIngestion).mockResolvedValue([storedRss({ name: 'Security news ' })] as never);
+    expect(await importConfigPresetFeed(context, user, rss, rssConfiguration({ name: 'Security news ' }), overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
   });
 });
 

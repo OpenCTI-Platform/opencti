@@ -7397,6 +7397,7 @@ type IngestionJsonAddInputFromImport {
   description: String
   headers: [IngestionHeader!]
   jsonMapper: IngestionJsonMapperFromImport!
+  markings: [String!]
   name: String!
   pagination_with_sub_page: Boolean
   pagination_with_sub_page_attribute_path: String

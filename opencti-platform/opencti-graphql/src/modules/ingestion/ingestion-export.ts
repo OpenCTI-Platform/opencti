@@ -12,6 +12,7 @@ import type { JsonMapperRepresentation } from '../internal/jsonMapper/jsonMapper
 import { findById as findJsonMapperById } from '../internal/jsonMapper/jsonMapper-domain';
 import { findCsvMapperForIngestionById } from './ingestion-csv-domain';
 import { sanitizeExportedHeaders, sanitizeExportedQueryAttributes } from './ingestion-json-domain';
+import { sanitizeExportedUri } from './ingestion-uri-credentials';
 import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionJson, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from './ingestion-types';
 import type {
   CsvFeedImportConfiguration,
@@ -43,7 +44,7 @@ const commonFields = async (context: AuthContext, feed: StoredFeed) => ({
   name: feed.name,
   description: feed.description ?? null,
   scheduling_period: feed.scheduling_period ?? null,
-  uri: feed.uri,
+  uri: sanitizeExportedUri(feed.uri),
   ssl_verify: feed.ssl_verify ?? null,
   confidence_level: await feedConfidenceLevel(context, feed.user_id),
 });
