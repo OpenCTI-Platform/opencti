@@ -75,6 +75,7 @@ yarn test:ci-integration-sync  # Integration tests
 > - [Performance](backend/patterns/performance.md)
 > - [Testing](backend/patterns/testing.md)
 > - [Feature Flags](backend/patterns/feature-flags.md)
+> - [User References](backend/patterns/user-references.md)
 
 ### Feature flags (CRITICAL)
 When a feature is behind a feature flag, every new attribute definition **and** every new
@@ -83,6 +84,19 @@ field is added to the ElasticSearch index mapping and exposed in the schema even
 flag is disabled — silently, no test fails. The `@ff` directive and `isFeatureEnabled`
 checks do not cover this. Full checklist: [Feature Flags](backend/patterns/feature-flags.md)
 and the `add-feature-flag` skill.
+
+### User references (CRITICAL)
+When a change stores a user id, declare it to the user merge in
+`src/modules/userMerge/userMerge-register.ts`. This applies to an id stored in an attribute, in a
+stored filter, in a JSON payload or in a default value.
+
+If the id gives the user ownership, an assignment, access or an identity to run as, it must be
+`transfer` and covered by a handler. Otherwise the merge leaves it on the source account it then
+deletes, and nothing fails.
+
+Typed attributes and stored filters are caught by the userMerge unit tests. An id held inside a
+JSON or Base64 payload is not caught by anything. Full checklist:
+[User References](backend/patterns/user-references.md).
 
 ## Common Issues
 - **Missing Python deps**: If you see errors about missing modules, run `yarn install:python`.

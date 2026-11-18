@@ -269,10 +269,8 @@ const platformUsers = (context: AuthContext) => {
       }
       // If user not available (cluster mode)
       const user = await resolveUserById(context, instance.internal_id);
-      if (user) {
-        values.push(user);
-      }
-      return values;
+      // Never change the cached array in place: the entities map built from it is kept as long as the array is the same
+      return user ? [...values, user] : values;
     }
     return values;
   };
