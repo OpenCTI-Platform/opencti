@@ -1084,6 +1084,7 @@ type CSVFeedAddInputFromImport {
   markings: [String!]!
   name: String!
   scheduling_period: String
+  ssl_verify: Boolean
   uri: String!
 }
 
@@ -7504,12 +7505,14 @@ input IngestionRssAddInput {
 }
 
 type IngestionRssAddInputFromImport {
+  created_by_ref: DefaultMarkingDefinition
   current_state_date: DateTime
   description: String
   name: String!
   object_marking_refs: [DefaultMarkingDefinition]
   report_types: [String!]
   scheduling_period: String
+  ssl_verify: Boolean
   uri: String
 }
 
@@ -16006,9 +16009,11 @@ type TaxiiFeedAddInputFromImport {
   authentication_type: String!
   authentication_value: String!
   collection: String!
+  confidence_to_score: Boolean
   description: String!
   name: String!
   scheduling_period: String
+  ssl_verify: Boolean
   uri: String!
   version: String!
 }

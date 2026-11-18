@@ -25,6 +25,8 @@ export const taxiiFeedImportQuery = graphql`
         collection
         authentication_type
         added_after_start
+        ssl_verify
+        confidence_to_score
     }
   }
 `;

@@ -26,6 +26,7 @@ export const csvFeedImportQuery = graphql`
       authentication_value
       csv_mapper_type
       scheduling_period
+      ssl_verify
       csvMapper {
         name
         has_header

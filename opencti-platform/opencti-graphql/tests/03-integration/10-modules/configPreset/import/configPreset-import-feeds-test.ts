@@ -2,7 +2,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { buildZip, itemFile, metadataFile } from '../../../../utils/configPresetBundle';
 import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess } from '../../../../utils/testQueryHelper';
-import { ADMIN_USER, testContext } from '../../../../utils/testQuery';
+import { ADMIN_USER, TEST_ORGANIZATION, testContext } from '../../../../utils/testQuery';
 import { getClientBase } from '../../../../../src/database/redis';
 import { setPlatformBootstrapStatus } from '../../../../../src/domain/settings';
 import { allFilesForPaths } from '../../../../../src/modules/internal/document/document-domain';
@@ -267,8 +267,10 @@ describe('Config preset: feeds', () => {
     it('fills the TAXII creation form, the description of the bundle being null', async () => {
       const taxiiFile = await exportItem('taxiiFeeds', TAXII_NAME);
       const { data } = await queryAsAdminWithSuccess({
-        query: gql`query ConfigPresetTaxiiFileImport($file: Upload!) { taxiiFeedAddInputFromImport(file: $file) { name description uri version collection authentication_type } }`,
-        variables: { file: bundleFeedFile(taxiiFile) },
+        query: gql`query ConfigPresetTaxiiFileImport($file: Upload!) {
+          taxiiFeedAddInputFromImport(file: $file) { name description uri version collection authentication_type ssl_verify confidence_to_score }
+        }`,
+        variables: { file: bundleFeedFile({ ...taxiiFile, configuration: { ...taxiiFile.configuration, ssl_verify: false, confidence_to_score: true } }) },
       });
       expect(data?.taxiiFeedAddInputFromImport).toEqual({
         name: TAXII_NAME,
@@ -277,6 +279,8 @@ describe('Config preset: feeds', () => {
         version: 'v21',
         collection: 'collection-id',
         authentication_type: 'basic',
+        ssl_verify: false,
+        confidence_to_score: true,
       });
     });
 
@@ -287,11 +291,19 @@ describe('Config preset: feeds', () => {
         { standard_id: 'marking-definition--00000000-0000-4000-8000-000000000000', definition_type: 'PAP', definition: 'PAP:UNKNOWN' },
       ];
       const { data } = await queryAsAdminWithSuccess({
-        query: gql`query ConfigPresetRssFileImport($file: Upload!) { ingestionRssAddInputFromImport(file: $file) { name uri report_types object_marking_refs { label value } } }`,
-        variables: { file: bundleFeedFile({ ...rssFile, configuration: { ...rssFile.configuration, markings } }) },
+        query: gql`query ConfigPresetRssFileImport($file: Upload!) {
+          ingestionRssAddInputFromImport(file: $file) { name uri report_types ssl_verify object_marking_refs { label value } created_by_ref { label value } }
+        }`,
+        variables: {
+          file: bundleFeedFile({
+            ...rssFile,
+            configuration: { ...rssFile.configuration, markings, ssl_verify: false, author: { standard_id: TEST_ORGANIZATION.id, name: TEST_ORGANIZATION.name } },
+          }),
+        },
       });
       const imported = data?.ingestionRssAddInputFromImport;
-      expect(imported).toMatchObject({ name: RSS_NAME, uri: 'https://news.example.com/rss', report_types: ['threat-report'] });
+      expect(imported).toMatchObject({ name: RSS_NAME, uri: 'https://news.example.com/rss', report_types: ['threat-report'], ssl_verify: false });
+      expect(imported.created_by_ref).toEqual({ label: TEST_ORGANIZATION.name, value: expect.any(String) });
       expect(imported.object_marking_refs).toEqual([{ label: 'TLP:GREEN', value: expect.any(String) }]);
     });
 

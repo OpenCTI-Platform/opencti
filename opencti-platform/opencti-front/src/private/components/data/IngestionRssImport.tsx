@@ -27,6 +27,11 @@ export const rssFeedImportQuery = graphql`
         label
         value
       }
+      ssl_verify
+      created_by_ref {
+        label
+        value
+      }
     }
   }
 `;
