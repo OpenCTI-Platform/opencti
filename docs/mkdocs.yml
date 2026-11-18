@@ -223,8 +223,10 @@ nav:
       - Background tasks: usage/background-tasks.md
       - Dashboards:
         - Custom dashboards: usage/dashboards.md
+        - Dashboard variables and presets: usage/dashboards-variables.md
         - Share custom dashboards: usage/dashboards-share.md
         - Widget creation: usage/widgets.md
+        - Time series breakdown: usage/time-series-breakdown.md
         - Tips for widget creation: usage/tips-widget-creation.md
       - Custom views: usage/custom-views.md
       - Workflows:
@@ -251,6 +253,7 @@ nav:
       - Merging and de-duplication: administration/merging.md
       - CSV Mappers: administration/csv-mappers.md
       - JSON Mappers: administration/json-mappers.md
+      - Ingestion health: administration/ingestion-health.md
     - Platform settings:
       - Parameters: administration/parameters.md
       - Security:
@@ -265,6 +268,7 @@ nav:
         - Data segregation:
           - Marking restriction: administration/segregation.md
           - Organization segregation:
+            - Overview: administration/organization-segregation.md
             - Organization-Based Segregation Concept Installation & RBAC Setup: administration/Part 1 - Organization-Based Segregation Concept, Installation & RBAC Setup.md
             - Customizing the Platform as the Main Organization: administration/Part 2 - Customizing the Platform as the Main Organization.md
             - How to Share Data With Organizations: administration/Part 3 - How to Share Data With Organizations.md

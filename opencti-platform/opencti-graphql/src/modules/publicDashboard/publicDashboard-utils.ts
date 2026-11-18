@@ -12,18 +12,28 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { elLoadById } from '../../database/engine';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
 import { findById as findWorkspace } from '../workspace/workspace-domain';
-import { isFeatureEnabled, TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../config/conf';
 import { fromB64, toB64 } from '../../utils/base64';
 import { canWidgetBreakDown } from './publicDashboard-breakdown';
 
 // Parameters of a widget setting its breakdown: the type of the widgets of the public dashboards is derived from them
 export const WIDGET_BREAKDOWN_PARAMETERS = ['breakdownBy', 'breakdownLimit', 'breakdownOrder', 'breakdownOther'] as const;
 
+// The viewer switches of a dashboard are settings of the private dashboard, not public ones: the public time filters
+// stay read only, and anonymous visitors are never told how the dashboard is shared inside the platform.
+export const DASHBOARD_VIEWER_SWITCHES = ['allowViewersToEditTimeFilters', 'allowViewersToChangeVariables', 'allowViewersToSwitchPresets'] as const;
+
+/**
+ * The config of a dashboard without its viewer switches; the same object when it holds none.
+ */
+export const omitViewerSwitches = <T extends Record<string, unknown> | null | undefined>(config: T): T => {
+  if (!config || !DASHBOARD_VIEWER_SWITCHES.some((key) => config[key] !== undefined)) return config;
+  return R.omit([...DASHBOARD_VIEWER_SWITCHES], config) as T;
+};
+
 /**
  * Public manifest as served to the visitors. A widget keeps its breakdown when it can be broken down (canWidgetBreakDown),
- * read on its stored widget of the private manifest, which keeps the filters the public one strips, and with the time
- * series breakdown feature. Otherwise it is served without, and renders its regular chart as in the private dashboards:
- * the stored manifest keeps it.
+ * read on its stored widget of the private manifest, which keeps the filters the public one strips. Otherwise it is
+ * served without, and renders its regular chart as in the private dashboards: the stored manifest keeps it.
  */
 export const getServedPublicManifest = (publicDashboard: Pick<BasicStoreEntityPublicDashboard, 'public_manifest' | 'private_manifest'>) => {
   const { public_manifest: publicManifest } = publicDashboard;
@@ -31,24 +41,25 @@ export const getServedPublicManifest = (publicDashboard: Pick<BasicStoreEntityPu
     return publicManifest;
   }
   const manifest = fromB64(publicManifest);
+  // Stripped when publishing; stripped again here for the public dashboards published before that.
+  const servedConfig = omitViewerSwitches(manifest.config);
+  const serveWidgetsUnchanged = () => (servedConfig === manifest.config ? publicManifest : toB64({ ...manifest, config: servedConfig }));
   const widgets = Object.entries<any>(manifest.widgets ?? {});
   if (!widgets.some(([, widget]) => widget?.parameters?.breakdownBy)) {
-    return publicManifest;
+    return serveWidgetsUnchanged();
   }
-  const storedWidgets = isFeatureEnabled(TIME_SERIES_BREAKDOWN_FEATURE_FLAG)
-    ? fromB64<{ widgets?: Record<string, PublicDashboardCachedWidget> }>(publicDashboard.private_manifest).widgets ?? {}
-    : {};
+  const storedWidgets = fromB64<{ widgets?: Record<string, PublicDashboardCachedWidget> }>(publicDashboard.private_manifest).widgets ?? {};
   const isServedWithoutBreakdown = (widgetId: string, widget: any) => {
     const storedWidget = storedWidgets[widgetId];
     return !!widget?.parameters?.breakdownBy && !(storedWidget && canWidgetBreakDown(storedWidget));
   };
   if (!widgets.some(([widgetId, widget]) => isServedWithoutBreakdown(widgetId, widget))) {
-    return publicManifest;
+    return serveWidgetsUnchanged();
   }
   const servedWidgets = widgets.map(([widgetId, widget]) => {
     return [widgetId, isServedWithoutBreakdown(widgetId, widget) ? { ...widget, parameters: R.omit(WIDGET_BREAKDOWN_PARAMETERS, widget.parameters) } : widget];
   });
-  return toB64({ ...manifest, widgets: Object.fromEntries(servedWidgets) });
+  return toB64({ ...manifest, config: servedConfig, widgets: Object.fromEntries(servedWidgets) });
 };
 
 /**

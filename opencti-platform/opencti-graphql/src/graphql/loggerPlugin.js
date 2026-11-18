@@ -23,6 +23,16 @@ const resolveKeyPromises = async (object) => {
   return { ...object, ...resolvedObject };
 };
 
+// The size is only informative: variables nested too deep for JSON.stringify (near 10 000 levels)
+// must not prevent the logs and the activity events of the request
+const computeVariablesSize = (variables) => {
+  try {
+    return Buffer.byteLength(JSON.stringify(variables));
+  } catch {
+    return -1;
+  }
+};
+
 const tryResolveKeyPromises = async (data) => {
   try {
     return [await resolveKeyPromises(data), undefined];
@@ -43,7 +53,7 @@ export default {
           return;
         }
         const contextVariables = context.request.variables || {};
-        const size = Buffer.byteLength(JSON.stringify(contextVariables));
+        const size = computeVariablesSize(contextVariables);
         const isWrite = context.operation && context.operation.operation === 'mutation';
         const contextUser = context.contextValue.user;
         // Compute inner relations

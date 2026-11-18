@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { INGESTION_HEALTH_FEATURE_FLAG, isFeatureEnabled } from '../../config/conf';
 import { IngestionHealthCheckKind, IngestionHealthCheckSeverity } from '../../generated/graphql';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../../schema/internalObject';
 import { redisGetConnectorsHeartbeats } from '../connector/connector-redis';
@@ -65,6 +66,8 @@ interface BaseHealthCheckDefinition {
   // A failure of this check is dropped when the check named here also fails for the same ingestor:
   // the other one tells the cause, this one would only repeat it less precisely
   supersededBy?: HealthCheckCode;
+  // Feature flag the check is still under: without it, the check is neither evaluated nor listed in the platform settings
+  featureFlag?: string;
   // Computed when read, never stored: the entity type of the ingestor adapts it to the kind of ingestion
   // Absent when the failure needs nothing more than the name of the check: the label is the message.
   // A {key} placeholder is filled from metadata[key]: by the front once translated, by formatHealthCheckMessage elsewhere.
@@ -222,6 +225,7 @@ export const HEALTH_CHECK_REGISTRY = {
   [HEALTH_CHECK_LAST_RUN_FAILED]: defineRuntimeCheck({
     kind: IngestionHealthCheckKind.Runtime,
     label: 'Last run failed',
+    featureFlag: INGESTION_HEALTH_FEATURE_FLAG,
     message: (checkLabel, { error }) => (error ? `${checkLabel}: {error}` : checkLabel),
     // The error is the first message of the work, written by the connector
     messageWithoutSourceText: (metadata) => R.omit(['error'], metadata),
@@ -267,6 +271,12 @@ export const HEALTH_CHECK_REGISTRY = {
 } satisfies Record<HealthCheckCode, HealthCheckDefinition>;
 
 export const isHealthCheckCode = (code: unknown): code is HealthCheckCode => typeof code === 'string' && Object.hasOwn(HEALTH_CHECK_REGISTRY, code);
+
+// Whether the check exists on this platform: false while its feature flag is disabled
+export const isHealthCheckAvailable = (code: HealthCheckCode): boolean => {
+  const { featureFlag }: HealthCheckDefinition = HEALTH_CHECK_REGISTRY[code];
+  return !featureFlag || isFeatureEnabled(featureFlag);
+};
 
 // Inferred from the registry: the type of each runtime value is the one returned by the getRuntimeData of its check
 type Registry = typeof HEALTH_CHECK_REGISTRY;

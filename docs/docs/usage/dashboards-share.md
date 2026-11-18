@@ -11,7 +11,7 @@ On the contrary, if you want that your public dashboard is updated with the last
 associated custom dashboard, you can do it with few clicks by recreating a public dashboard using
 the same name of the one to update.
 
-> To be able to share custom dashboards you need to have the [Manage data sharing & ingestion](../administration/users.md) capability.
+> To be able to share custom dashboards you need to have the `Manage public dashboards` capability (under `Access dashboards` › `Create / Update dashboards`, see the [list of capabilities](../administration/users.md#list-of-capabilities)) and the `Manage` [access level](dashboards.md#access-control) on the custom dashboard.
 
 ## List of public dashboards page
 
@@ -21,11 +21,11 @@ From the left menu, you can choose the public dashboard option to see all the pu
 
 **Actions panel**
 
-You can realise actions on a public dashboard using the button located at the end of each line::
+You can perform actions on a public dashboard using the button located at the end of each line:
 
-- got to the original dashboard
-- disable the public link
+- go to the original dashboard
 - copy the public link
+- disable or enable the public link
 - delete
 
 **Massive operations delete**
@@ -89,6 +89,8 @@ marking definition.
 
 Also note that the list of marking definitions you can see is based on your current marking
 access on the platform **and the maximum sharable marking definitions** defined in your groups.
+
+For widgets broken down by the values of a field, see [Time series breakdown](time-series-breakdown.md#public-dashboards).
 
 !!! note "Define maximum shareable markings in groups"
 

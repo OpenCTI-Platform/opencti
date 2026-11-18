@@ -20,7 +20,8 @@ const colorValue = z.string().regex(/^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA
 const optionalColor = z.union([z.literal(''), colorValue]).nullable().optional();
 
 export const themeImportSchema = z.strictObject({
-  // Absent in a theme file: the platform gives the theme its own
+  // Always exported, but optional: a theme file exported before it was added has none, and the platform gives the theme its own.
+  // Checked where it is needed: required to overwrite a theme, and the id of the item in a configuration preset bundle.
   standard_id: z.string().regex(THEME_STANDARD_ID_PATTERN, 'Must be a theme standard id').optional(),
   name: z.string().min(1, 'Theme name is required').max(THEME_NAME_MAX_LENGTH),
   theme_background: colorValue,

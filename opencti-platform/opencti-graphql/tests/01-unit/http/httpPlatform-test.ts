@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import nconf from 'nconf';
+import passport from 'passport';
 import * as platformHealthMetrics from '../../../src/telemetry/platformHealthMetrics';
 import * as conf from '../../../src/config/conf';
 import createApp, {
@@ -15,7 +16,18 @@ import { sanitizeReferer } from '../../../src/http/httpUtils';
 import { getBaseUrl, logApp } from '../../../src/config/conf';
 import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedContext';
 import { checkDraftInContext } from '../../../src/http/httpServer-draft';
+import { checkIpWhitelistForRequest } from '../../../src/http/ipWhitelistMiddleware';
+import { sessionAuthenticateUser } from '../../../src/modules/user/user-domain';
+import { AuthenticationProviderError } from '../../../src/modules/authenticationProvider/providers-logger';
 
+vi.mock('../../../src/http/ipWhitelistMiddleware', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return { ...actual, checkIpWhitelistForRequest: vi.fn() };
+});
+vi.mock('../../../src/modules/user/user-domain', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return { ...actual, sessionAuthenticateUser: vi.fn() };
+});
 vi.mock('../../../src/http/httpAuthenticatedContext', () => ({
   createAuthenticatedContext: vi.fn(),
 }));
@@ -564,5 +576,101 @@ describe('storage routes: draft authorization', () => {
 
     expect(checkDraftInContext).toHaveBeenCalledWith(DENIED_CONTEXT);
     expect(res.status).toHaveBeenCalledWith(503);
+  });
+});
+
+describe('httpPlatform: /auth/:provider/callback', () => {
+  const PROVIDER = 'oidc';
+  const loggedUser = { id: 'user-id', user_email: 'user@example.com' };
+
+  const setupCallbackHandler = async () => {
+    const routes = new Map<string, (req: any, res: any, next: any) => Promise<void>>();
+    const app: any = {
+      set: vi.fn(),
+      use: vi.fn(),
+      get: vi.fn(),
+      post: vi.fn(),
+      delete: vi.fn(),
+      put: vi.fn(),
+      patch: vi.fn(),
+      // The callback route is registered with a body parser before its handler
+      all: vi.fn((path: unknown, ...handlers: any[]) => {
+        if (typeof path === 'string') {
+          routes.set(path, handlers[handlers.length - 1]);
+        }
+      }),
+    };
+    await createApp(app, {} as any);
+    const callbackRoute = Array.from(routes.entries()).find(([path]) => path.endsWith('/auth/:provider/callback'));
+    return callbackRoute?.[1];
+  };
+
+  // The provider strategy answers the callback with the logged user, or with an error
+  const mockProviderCallback = (err: unknown, user: unknown) => {
+    vi.spyOn(passport, '_strategy' as any).mockReturnValue({ logger: { error: vi.fn() } });
+    vi.spyOn(passport, 'authenticate').mockImplementation(((_provider: string, _options: unknown, callback: any) => () => callback(err, user)) as any);
+  };
+
+  const buildRequest = () => ({ params: { provider: PROVIDER }, query: {}, body: {}, session: {}, headers: {}, ip: '10.0.0.1' }) as any;
+  const buildResponse = () => ({ redirect: vi.fn(), cookie: vi.fn() }) as any;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(sessionAuthenticateUser).mockResolvedValue(undefined as any);
+  });
+
+  it('should authenticate the session when the IP is allowed', async () => {
+    mockProviderCallback(null, loggedUser);
+    vi.mocked(checkIpWhitelistForRequest).mockResolvedValue(false);
+    const handler = await setupCallbackHandler();
+    const req = buildRequest();
+    const res = buildResponse();
+
+    await handler?.(req, res, vi.fn());
+
+    expect(checkIpWhitelistForRequest).toHaveBeenCalledWith(req, loggedUser.id);
+    expect(sessionAuthenticateUser).toHaveBeenCalledWith(expect.anything(), req, loggedUser, PROVIDER);
+    expect(res.cookie).not.toHaveBeenCalled();
+    expect(res.redirect).toHaveBeenCalledTimes(1);
+  });
+
+  it('should never authenticate the session when the IP is rejected by the whitelist', async () => {
+    mockProviderCallback(null, loggedUser);
+    vi.mocked(checkIpWhitelistForRequest).mockResolvedValue(true);
+    const handler = await setupCallbackHandler();
+    const res = buildResponse();
+
+    await handler?.(buildRequest(), res, vi.fn());
+
+    // The session login also resets the local authentication lockout: it must not run for a rejected login
+    expect(sessionAuthenticateUser).not.toHaveBeenCalled();
+    expect(res.cookie).toHaveBeenCalledWith('opencti_flash', 'IP_NOT_ALLOWED', expect.anything());
+    expect(res.redirect).toHaveBeenCalledTimes(1);
+  });
+
+  it('should neither check the IP nor authenticate the session when the provider rejects the login', async () => {
+    mockProviderCallback(new Error('Invalid state'), null);
+    const handler = await setupCallbackHandler();
+    const res = buildResponse();
+
+    await handler?.(buildRequest(), res, vi.fn());
+
+    expect(checkIpWhitelistForRequest).not.toHaveBeenCalled();
+    expect(sessionAuthenticateUser).not.toHaveBeenCalled();
+    expect(res.cookie).toHaveBeenCalledWith('opencti_flash', 'AUTH_ERROR', expect.anything());
+    expect(res.redirect).toHaveBeenCalledTimes(1);
+  });
+
+  it('should send the provider error code when the session login raises a provider error', async () => {
+    mockProviderCallback(null, loggedUser);
+    vi.mocked(checkIpWhitelistForRequest).mockResolvedValue(false);
+    vi.mocked(sessionAuthenticateUser).mockRejectedValue(new AuthenticationProviderError('Enterprise edition is required'));
+    const handler = await setupCallbackHandler();
+    const res = buildResponse();
+
+    await handler?.(buildRequest(), res, vi.fn());
+
+    expect(res.cookie).toHaveBeenCalledWith('opencti_flash', 'ENTERPRISE_EDITION_REQUIRED', expect.anything());
+    expect(res.redirect).toHaveBeenCalledTimes(1);
   });
 });

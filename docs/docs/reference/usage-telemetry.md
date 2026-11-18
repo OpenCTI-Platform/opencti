@@ -99,6 +99,7 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 ### Product adoption
 
 - The number of knowledge objects, broken down by a curated list of entity types (reports, groupings, notes, opinions, cases, tasks, feedbacks, indicators, malware, intrusion sets, threat actors, incidents), plus the total number of observables and the total number of relationships. No knowledge content is ever collected, only counts.
+- The number of investigations
 - The number of built-in ingesters, broken down by type (`rss`, `taxii`, `taxii-collection`, `csv`, `json`) and running state
 - The number of OpenCTI-to-OpenCTI synchronizers
 - The number of data sharing surfaces, broken down by type (`live_stream`, `feed`, `taxii_collection`, `public_dashboard`) and public (anonymous access) state
@@ -138,7 +139,7 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 
 - The number of custom field definitions created
 - The number of custom field definitions, broken down by attached entity type
-- The number of custom field definitions, broken down by field type (`integer`, `string`, `markdown`, `boolean`, `date`, `select`, `multi_select`)
+- The number of custom field definitions, broken down by field type (`integer`, `decimal`, `string`, `markdown`, `boolean`, `date`, `select`, `multi_select`)
 - The number of dashboards with at least one widget filtering on a custom field
 - The number of saved filters filtering on a custom field
 
@@ -170,6 +171,10 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 ### Workflows
 
 - The number of workflow definitions published
+- The number of request-access workflow definitions published
+- The number of request-access workflow migrations
+- The number of access requests approved
+- The number of access requests declined
 
 ### Configuration presets
 

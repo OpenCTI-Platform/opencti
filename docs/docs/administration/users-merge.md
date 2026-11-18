@@ -30,6 +30,7 @@ The **User Merge** capability reassigns data ownership, entity associations, col
 ## 2. GraphQL API Reference & Parameter Specification
 
 All queries and mutations require the `BYPASS` capability:
+
 * `@auth(for: [BYPASS])`
 
 ---
@@ -366,6 +367,7 @@ the platform is idle rather than merely slow.
     Merges write partial documents across live Elasticsearch indices. A snapshot is your only recovery path in the event of an unrecoverable operational mistake.
 
 Create a restorable snapshot of:
+
 1. **Elasticsearch / OpenSearch cluster indices** (all indices, including `opencti_internal_objects`, `opencti_history`, `opencti_deleted_objects`).
 2. **Redis key-value store**.
 
@@ -532,6 +534,7 @@ query UserMergeCheckReadiness($sourceId: ID!, $targetId: ID!) {
 #### Gate Criteria
 
 The deletion gate enforces three mandatory conditions:
+
 1. `coverage_complete === true`: Every gating register row (transfer and conditional, 62 of the 100) is claimed by a handler — this is `gating_uncovered_count === 0`. `covered_count` is expected to stay below 100 and is not what the gate reads: invalidate, retain, and out-of-scope rows are outside the gate.
 2. `pending_change_count === 0`: A live dry-run on the pair plans no change, so nothing still points to the source user.
 3. `merged_into === <targetId>`: The source carries the mark a real merge into **this** target wrote on it.
@@ -576,6 +579,7 @@ The mutation re-verifies readiness internally before deletion, deletes the User 
     Neither Node.js nor Apollo cancels an in-flight mutation when a client disconnects. The merge is continuing server-side.
 
 **Procedure**:
+
 1. Retrieve the latest journal entries without specifying a `mergeId`:
    ```graphql
    query {

@@ -1,4 +1,4 @@
-import conf, { BUS_TOPICS, INGESTION_HEALTH_FEATURE_FLAG, booleanConf, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, booleanConf, logApp } from '../config/conf';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../database/cache';
 import { patchAttribute } from '../database/middleware';
 import { fullEntitiesList } from '../database/middleware-loader';
@@ -301,6 +301,4 @@ const INGESTION_HEALTH_MANAGER_DEFINITION: ManagerDefinition = {
   },
 };
 
-if (isFeatureEnabled(INGESTION_HEALTH_FEATURE_FLAG)) {
-  registerManager(INGESTION_HEALTH_MANAGER_DEFINITION);
-}
+registerManager(INGESTION_HEALTH_MANAGER_DEFINITION);

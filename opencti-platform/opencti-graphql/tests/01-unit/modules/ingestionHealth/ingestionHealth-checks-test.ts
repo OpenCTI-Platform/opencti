@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { type IngestionLogEntry, redisGetIngestionLogHistory } from '../../../../src/database/redis';
 import {
   buildHealthTransitionMessage,
@@ -10,6 +10,7 @@ import {
   DEFAULT_HEALTH_NOTIFICATION_DELAY_MS,
   computeIngestionHealthChecks,
   computeIngestionHealthPatch,
+  getEnabledRuntimeChecks,
   isRuntimeCheckEnabled,
   markHealthNotified,
   toGraphqlHealthChecks,
@@ -46,6 +47,13 @@ import {
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-types';
 import { CONNECTOR_ERROR_BLOCKING_CRITICITY } from '../../../../src/modules/ingestionHealth/ingestionHealth-registry-utils';
 
+// Every flag is enabled in the test configuration: only the flag off cases override it
+const { isFeatureEnabledMock } = vi.hoisted(() => ({ isFeatureEnabledMock: vi.fn() }));
+vi.mock('../../../../src/config/conf', async (importActual) => {
+  const actual = await importActual<typeof import('../../../../src/config/conf')>();
+  isFeatureEnabledMock.mockImplementation(actual.isFeatureEnabled);
+  return { ...actual, isFeatureEnabled: isFeatureEnabledMock };
+});
 vi.mock('../../../../src/database/redis', async (importActual) => ({
   ...(await importActual<typeof import('../../../../src/database/redis')>()),
   redisGetIngestionLogHistory: vi.fn(),
@@ -666,6 +674,26 @@ describe('last run failed check', () => {
     const read = {} as RuntimeDataReadContext;
     expect(await HEALTH_CHECK_REGISTRY[HEALTH_CHECK_LAST_RUN_FAILED].getRuntimeData([IMPORT_CONNECTOR], read)).toBe(state);
     expect(loadConnectorsRuntimeState).toHaveBeenCalledWith([IMPORT_CONNECTOR], read);
+  });
+
+  describe('without the INGESTION_HEALTH feature flag', () => {
+    beforeEach(() => {
+      isFeatureEnabledMock.mockImplementation((flag: string) => flag !== 'INGESTION_HEALTH');
+    });
+
+    afterEach(() => {
+      isFeatureEnabledMock.mockReset();
+      isFeatureEnabledMock.mockReturnValue(true);
+    });
+
+    it('should not be evaluated: a failed last run is not reported', () => {
+      expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'boom', source: null }]))).toEqual([]);
+    });
+
+    it('should not read its runtime data', () => {
+      expect(getEnabledRuntimeChecks(CONTEXT).map(([code]) => code)).not.toContain(HEALTH_CHECK_LAST_RUN_FAILED);
+      expect(getEnabledRuntimeChecks(CONTEXT).map(([code]) => code)).toContain(HEALTH_CHECK_HEARTBEAT_MISSING);
+    });
   });
 });
 

@@ -2241,6 +2241,11 @@ enum ConfigImportMode {
   OVERWRITE
 }
 
+input ConfigPresetCredentialInput {
+  key: String!
+  secret: String!
+}
+
 type ConfigPresetExportableGroup {
   key: String!
   label: String!
@@ -2282,6 +2287,15 @@ type ConfigPresetImportCounts {
   skipped: Int!
 }
 
+type ConfigPresetImportCredential {
+  description: String!
+  key: String!
+  required: Boolean!
+  secret: Boolean!
+  stored: Boolean!
+  type: String!
+}
+
 type ConfigPresetImportField {
   key: String!
   value: String
@@ -2289,6 +2303,7 @@ type ConfigPresetImportField {
 
 type ConfigPresetImportItem {
   conflict: Boolean!
+  credentials: [ConfigPresetImportCredential!]!
   dependsOn: [ConfigPresetItemReference!]!
   exists: Boolean!
   fields: [ConfigPresetImportField!]!
@@ -2402,6 +2417,12 @@ type ConfigPresetImportType {
   modes: [ConfigImportMode!]!
 }
 
+input ConfigPresetItemCredentialsInput {
+  key: ID!
+  type: ID!
+  values: [ConfigPresetCredentialInput!]!
+}
+
 type ConfigPresetItemMode {
   key: ID!
   mode: ConfigImportMode!
@@ -2415,6 +2436,25 @@ input ConfigPresetItemModeInput {
 type ConfigPresetItemReference {
   key: String!
   type: String!
+}
+
+input ConfigPresetItemServiceAccountInput {
+  key: ID!
+  type: ID!
+  user_id: ID!
+}
+
+type ConfigPresetPartialImportOutput {
+  counts: ConfigPresetImportCounts!
+  results: [ConfigPresetImportResult!]!
+}
+
+type ConfigPresetPartialImportPreview {
+  bundle_name: String
+  default_mode: ConfigImportMode!
+  generated_at: String!
+  openCTI_version: String!
+  type: ConfigPresetImportType
 }
 
 input ConfigPresetSelectionInput {
@@ -3404,6 +3444,7 @@ type CustomFieldValue {
   date_value: DateTime
   field_id: ID!
   field_name: String!
+  float_value: Float
   int_value: Int
   select_value: String
   select_values: [String!]
@@ -3481,6 +3522,42 @@ enum CustomViewsOrdering {
 
 type CustomViewsSettings {
   canEntityTypeHaveCustomViews: Boolean!
+}
+
+type DashboardPreset {
+  config: DashboardPresetConfig!
+  id: ID!
+  name: String!
+  values: [DashboardPresetValue!]!
+}
+
+type DashboardPresetConfig {
+  endDate: String
+  relativeDate: String
+  startDate: String
+}
+
+input DashboardPresetConfigInput {
+  endDate: String
+  relativeDate: String
+  startDate: String
+}
+
+input DashboardPresetInput {
+  config: DashboardPresetConfigInput
+  id: ID
+  name: String!
+  values: [DashboardPresetValueInput!]
+}
+
+type DashboardPresetValue {
+  value: String!
+  variableId: ID!
+}
+
+input DashboardPresetValueInput {
+  value: String!
+  variableId: ID!
 }
 
 type DashboardVariable {
@@ -5574,6 +5651,7 @@ type Group implements BasicObject & InternalObject {
   created_at: DateTime
   default_assignation: Boolean
   default_dashboard: Workspace
+  default_dashboard_preset: String
   default_hidden_types: [String!]
   default_marking: [DefaultMarking!]
   description: String
@@ -8227,6 +8305,7 @@ input LocalAuthConfigInput {
   local_auth_lockout_final_action: LocalAuthLockoutFinalAction
   local_auth_lockout_max_attempts: Int
   local_auth_lockout_window: Int
+  password_policy_history_count: Int
   password_policy_max_length: Int
   password_policy_min_length: Int
   password_policy_min_lowercase: Int
@@ -8977,6 +9056,7 @@ type MeUser implements BasicObject & InternalObject {
   capabilitiesInDraft: [Capability!]!
   date_format: DateFormat
   default_dashboard: Workspace
+  default_dashboard_preset: String
   default_dashboards: [Workspace!]!
   default_hidden_types: [String]!
   default_marking: [DefaultMarking!]
@@ -9281,11 +9361,13 @@ type Mutation {
   cityEdit(id: ID!): CityEditMutations
   clearWorkflowPendingState(entityId: String!): WorkflowInstance!
   configPresetExport(bundle_name: String, selections: [ConfigPresetSelectionInput!]!): File!
-  configPresetImport(dry_run: Boolean, file_id: ID!, selections: [ConfigPresetSelectionInput!]!): ConfigPresetImportOutput!
+  configPresetImport(credentials: [ConfigPresetItemCredentialsInput!], dry_run: Boolean, file_id: ID!, selections: [ConfigPresetSelectionInput!]!, service_accounts: [ConfigPresetItemServiceAccountInput!]): ConfigPresetImportOutput!
   configPresetImportSessionBackToSelection: ConfigPresetImportSession!
   configPresetImportSessionClear(delete_file: Boolean): Boolean!
   configPresetImportSessionSave(file_id: ID!, revision: Int!, selections: [ConfigPresetSelectionInput!]!): ConfigPresetImportSession!
   configPresetImportUpload(file: Upload!): File!
+  configPresetPartialImport(file: Upload!, item_modes: [ConfigPresetItemModeInput!], items: [ID!]!, type: ID!): ConfigPresetPartialImportOutput!
+  configPresetPartialImportPreview(file: Upload!, type: ID!): ConfigPresetPartialImportPreview!
   connectorJWT: String!
   connectorMigrateToManaged(input: MigrateConnectorToManagedInput!): ManagedConnector!
   contactUsXtmHub(message: String!): Success!
@@ -9716,10 +9798,11 @@ type Mutation {
   workDelete(connectorId: String!): Boolean
   workEdit(id: ID!): WorkEditMutations
   workInvestigationStatusEdit(status: WorkInvestigationStatus!, workId: ID!): Work
-  workflowDefinitionDelete(entityType: String!): EntitySetting
-  workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult
-  workflowDefinitionRestorePublished(entityType: String!): WorkflowDefinitionMutationResult
-  workflowDefinitionSet(definition: String!, entityType: String!): WorkflowDefinitionMutationResult
+  workflowDefinitionDelete(entityType: String!, scope: StatusScope): EntitySetting
+  workflowDefinitionPublish(entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult
+  workflowDefinitionRestorePublished(entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult
+  workflowDefinitionSet(definition: String!, entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult
+  workflowMigrate(entityType: String!, overwrite: Boolean = false, publish: Boolean = false, scope: StatusScope): WorkflowDefinitionMutationResult
   workspaceAdd(input: WorkspaceAddInput!): Workspace
   workspaceConfigurationImport(file: Upload!): String!
   workspaceContextClean(id: ID!): Workspace
@@ -9728,6 +9811,8 @@ type Mutation {
   workspaceDuplicate(input: WorkspaceDuplicateInput!): Workspace
   workspaceEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): Workspace
   workspaceFieldPatch(id: ID!, input: [EditInput!]!): Workspace
+  workspacePresetDelete(id: ID!, presetId: ID!): Workspace
+  workspacePresetUpsert(id: ID!, input: DashboardPresetInput!): Workspace
   workspaceVariableDelete(id: ID!, variableId: ID!): Workspace
   workspaceVariableUpsert(id: ID!, input: DashboardVariableInput!): Workspace
   workspaceWidgetConfigurationImport(id: ID!, input: ImportConfigurationInput!): Workspace
@@ -10727,6 +10812,7 @@ type Organization implements BasicObject & Identity & StixCoreObject & StixDomai
   currentUserAccessRight: String
   customFieldValues: [CustomFieldValue!]
   default_dashboard: Workspace
+  default_dashboard_preset: String
   default_hidden_types: [String!]
   description: String
   draftVersion: DraftVersion
@@ -11754,7 +11840,10 @@ input PublicDashboardAddInput {
 
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
+  time_range: PublicDashboardTimeRangeInput
+  time_zone: String
   uri_key: String!
+  variable_values: [PublicDashboardVariableValueInput!]
 }
 
 type PublicDashboardConnection {
@@ -11765,6 +11854,17 @@ type PublicDashboardConnection {
 type PublicDashboardEdge {
   cursor: String!
   node: PublicDashboard!
+}
+
+input PublicDashboardTimeRangeInput {
+  end_date: String
+  relative_date: String
+  start_date: String
+}
+
+input PublicDashboardVariableValueInput {
+  value: String!
+  variable_id: String!
 }
 
 enum PublicDashboardsOrdering {
@@ -11795,6 +11895,7 @@ type PublicProvider {
 type PublicSettings implements IntlSettings & ThemeSettings {
   id: ID!
   metrics_definition: [MetricDefinition!]
+  password_policy_history_count: Int
   password_policy_max_length: Int
   password_policy_min_length: Int
   password_policy_min_lowercase: Int
@@ -12311,6 +12412,17 @@ type Query {
   threatActors(after: ID, filters: FilterGroup, first: Int, orderBy: ThreatActorsOrdering, orderMode: OrderingMode, search: String, toStix: Boolean): ThreatActorConnection
   threatActorsGroup(after: ID, filters: FilterGroup, first: Int, orderBy: ThreatActorsOrdering, orderMode: OrderingMode, search: String, toStix: Boolean): ThreatActorGroupConnection
   threatActorsIndividuals(after: ID, filters: FilterGroup, first: Int, orderBy: ThreatActorsIndividualOrdering, orderMode: OrderingMode, search: String, toStix: Boolean): ThreatActorIndividualConnection
+
+  """
+  Keys of the fields a time series widget of the perspective can be broken down by, for the types its dataset is
+  restricted to (at most 1,000, duplicates ignored), as the widget editor lists them. Without types, the ones the
+  breakdown queries default to: Stix-Core-Object, stix-relationship. Each field listed is accepted by the breakdown
+  query of the perspective for these types. The type itself (entity_type, relationship_type), which these queries
+  accept whatever the types, is only listed when it makes several series: several types, an abstract type, or none.
+  The relationships perspective lists no field when a type is not a relationship, as its breakdown refuses such a
+  dataset. The audits perspective lists the fields of the logs whatever the types.
+  """
+  timeSeriesBreakdownFields(perspective: WidgetPerspective!, types: [String!]): [String!]!
   tool(id: String): Tool
   tools(after: ID, filters: FilterGroup, first: Int, orderBy: ToolsOrdering, orderMode: OrderingMode, search: String, toStix: Boolean): ToolConnection
   triggerActivity(id: String!): Trigger
@@ -12333,10 +12445,11 @@ type Query {
   vulnerability(id: String): Vulnerability
   work(id: ID!): Work
   workflowBypassStatuses(entityId: String!): [WorkflowBypassStatus!]!
-  workflowDefinition(allowDraft: Boolean, entityType: String!): WorkflowSchema
+  workflowDefinition(allowDraft: Boolean, entityType: String!, scope: StatusScope): WorkflowSchema
   workflowDefinitionPublished(entityType: String!): Boolean
   workflowInstance(entityId: String!): WorkflowInstance
   workflowMassTransitions(entityIds: [String!], entityType: String!, excludedIds: [String!], filters: String, search: String): [WorkflowTransition!]!
+  workflowMigrationPreview(entityType: String!): WorkflowMigrationPreview
   workflowStatuses(entityType: String!): [Status!]!
   works(after: ID, filters: FilterGroup, first: Int, orderBy: WorksOrdering, orderMode: OrderingMode, search: String): WorkConnection
   workspace(id: String!): Workspace
@@ -12793,6 +12906,7 @@ type RequestAccessWorkflow {
   approval_admin: [ID]
   approved_workflow_id: String
   declined_workflow_id: String
+  workflow_definition_id: String
 }
 
 input RequestConnectorStatusInput {
@@ -12875,6 +12989,7 @@ enum RetentionUnit {
 type RfiRequestAccessConfiguration {
   configuration: RequestAccessConfiguration
   isUserCanAction: Boolean!
+  isWorkflowDriven: Boolean!
 }
 
 type Role implements BasicObject & InternalObject {
@@ -13776,6 +13891,7 @@ type Settings implements BasicObject & InternalObject & IntlSettings & ThemeSett
   metrics_definition: [MetricDefinition!]
   otp_mandatory: Boolean
   parent_types: [String!]!
+  password_policy_history_count: Int
   password_policy_max_length: Int
   password_policy_min_length: Int
   password_policy_min_lowercase: Int
@@ -13825,6 +13941,8 @@ type Settings implements BasicObject & InternalObject & IntlSettings & ThemeSett
   platform_reference_attachment: Boolean
   platform_session_idle_timeout: Int
   platform_session_max_concurrent: Int
+  platform_session_presence_enabled: Boolean!
+  platform_session_presence_supported: Boolean!
   platform_session_timeout: Int
   platform_theme: Theme
   platform_time_format: TimeFormat
@@ -13845,6 +13963,7 @@ type Settings implements BasicObject & InternalObject & IntlSettings & ThemeSett
   view_all_users: Boolean
   xtm_hub_available_news_feed_types: [String!]
   xtm_hub_backend_is_reachable: Boolean
+  xtm_hub_commercial_model: XTMHubCommercialModel
   xtm_hub_last_connectivity_check: DateTime
   xtm_hub_registration_date: DateTime
   xtm_hub_registration_status: XTMHubRegistrationStatus
@@ -15314,6 +15433,7 @@ type SubAttackPatternForMatrix {
   attack_pattern_id: String!
   description: String
   name: String!
+  x_mitre_id: String
 }
 
 type SubType {
@@ -15576,12 +15696,19 @@ type System implements BasicObject & Identity & StixCoreObject & StixDomainObjec
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   x_opencti_aliases: [String]
+  x_opencti_system_category: String
+  x_opencti_system_subcategory: String
   x_opencti_closing_reason: String
+  x_opencti_criticality: String
+  x_opencti_environment: String
   x_opencti_firstname: String
   x_opencti_graph_data: String
   x_opencti_inferences: [Inference]
+  x_opencti_internet_facing: String
   x_opencti_lastname: String
   x_opencti_modified_at: DateTime
+  x_opencti_owner: String
+  x_opencti_platform: String
   x_opencti_reliability: String
   x_opencti_stix_ids: [StixId]
 }
@@ -15615,9 +15742,16 @@ input SystemAddInput {
   update: Boolean
   upsertOperations: [EditInput!]
   x_opencti_aliases: [String]
+  x_opencti_system_category: String
+  x_opencti_system_subcategory: String
+  x_opencti_criticality: String
+  x_opencti_environment: String
   x_opencti_firstname: String
+  x_opencti_internet_facing: String
   x_opencti_lastname: String
   x_opencti_modified_at: DateTime
+  x_opencti_owner: String
+  x_opencti_platform: String
   x_opencti_reliability: String
   x_opencti_stix_ids: [StixId]
   x_opencti_workflow_id: String
@@ -17345,6 +17479,7 @@ type Vocabulary implements BasicObject & StixMetaObject & StixObject {
   aliases: [String!]
   builtIn: Boolean
   category: VocabularyDefinition!
+  color: String
   created: DateTime
   created_at: DateTime!
   creators: [Creator!]
@@ -17373,6 +17508,7 @@ type Vocabulary implements BasicObject & StixMetaObject & StixObject {
 input VocabularyAddInput {
   aliases: [String!]
   category: VocabularyCategory!
+  color: String
   created: DateTime
   description: String
   modified: DateTime
@@ -17428,6 +17564,12 @@ enum VocabularyCategory {
   service_status_ov
   service_type_ov
   start_type_ov
+  system_category_ov
+  system_criticality_ov
+  system_environment_ov
+  system_internet_facing_ov
+  system_platform_ov
+  system_subcategory_ov
   threat_actor_group_role_ov
   threat_actor_group_sophistication_ov
   threat_actor_group_type_ov
@@ -18010,6 +18152,11 @@ enum WorkflowExecutionStatus {
 
 type WorkflowInstance {
   allowedTransitions: [WorkflowTransition!]!
+
+  """
+  Transitions the user is targeted by but whose entity conditions are not met yet
+  """
+  blockedTransitions: [WorkflowTransition!]!
   currentState: String!
   currentStatus: Status
   id: ID!
@@ -18026,6 +18173,43 @@ type WorkflowLastHistoryEntry {
   state: String!
   timestamp: String!
   user_id: String!
+}
+
+type WorkflowMigrationDiagnostic {
+  legacyStatusId: String
+  message: String!
+  templateId: String
+  type: WorkflowMigrationDiagnosticType!
+}
+
+enum WorkflowMigrationDiagnosticType {
+  DUPLICATE_ORDER
+  DUPLICATE_TEMPLATE
+  EXISTING_WORKFLOW
+  MISSING_ORDER
+  MISSING_TEMPLATE
+  NAME_CONFLICT
+  REQUEST_ACCESS_OUTCOME_INVALID
+}
+
+type WorkflowMigrationPreview {
+  entityType: String!
+  results: [WorkflowMigrationScopeResult!]!
+}
+
+type WorkflowMigrationScopeResult {
+  diagnostics: [WorkflowMigrationDiagnostic!]!
+  hasPublishedVersion: Boolean!
+  initialState: String!
+  scope: StatusScope!
+  states: [WorkflowMigrationState!]!
+  transitions: [WorkflowSerializedTransition!]!
+}
+
+type WorkflowMigrationState {
+  order: Int!
+  requestAccessOutcome: WorkflowRequestAccessOutcome
+  statusId: String!
 }
 
 type WorkflowPendingAsyncAction {
@@ -18048,6 +18232,11 @@ type WorkflowPendingTransition {
   triggeredAt: DateTime!
 }
 
+enum WorkflowRequestAccessOutcome {
+  APPROVED
+  DECLINED
+}
+
 type WorkflowSchema {
   errors: [WorkflowValidationError!]
   hasPublishedVersion: Boolean!
@@ -18063,7 +18252,9 @@ type WorkflowSerializedState {
   onEnter: [WorkflowActionConfig!]
   onExit: [WorkflowActionConfig!]
   order: Int
+  requestAccessOutcome: WorkflowRequestAccessOutcome
   statusId: String!
+  workflowStatusId: String
 }
 
 type WorkflowSerializedTransition {
@@ -18079,9 +18270,15 @@ type WorkflowSerializedTransition {
 
 type WorkflowTransition {
   actions: [String!]
+
+  """
+  Blocked transitions only: JSON filter group of the entity conditions not met yet
+  """
+  blockingConditions: String
   closingReason: String
   comment: String
   event: String!
+  requestAccessOutcome: WorkflowRequestAccessOutcome
   requiresShareOrganizationInput: Boolean
   requiresUnshareOrganizationInput: Boolean
   toState: String
@@ -18116,6 +18313,7 @@ type Workspace implements BasicObject & InternalObject {
   authorizedMembers: [MemberAccess!]!
   created_at: DateTime
   currentUserAccessRight: String
+  currentUserDefaultPresetId: ID
   description: String
   editContext: [EditUserContext!]
   enrichmentWorks(after: ID, entityIds: [String!], filters: FilterGroup, first: Int, orderBy: WorksOrdering, orderMode: OrderingMode, search: String): WorkConnection
@@ -18130,6 +18328,7 @@ type Workspace implements BasicObject & InternalObject {
   objects(after: ID, all: Boolean, filters: FilterGroup, first: Int, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, search: String, types: [String]): StixObjectOrStixRelationshipRefConnection
   owner: Creator
   parent_types: [String!]!
+  presets: [DashboardPreset!]!
   refresh_interval: Int
   refreshed_at: DateTime
   representative: Representative!
@@ -18296,6 +18495,11 @@ input X509CertificateAddInput {
   validity_not_after: DateTime
   validity_not_before: DateTime
   version: String
+}
+
+enum XTMHubCommercialModel {
+  other
+  saas
 }
 
 enum XTMHubRegistrationStatus {

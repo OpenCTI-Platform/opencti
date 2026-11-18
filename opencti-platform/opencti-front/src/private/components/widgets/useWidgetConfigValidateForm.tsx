@@ -63,7 +63,7 @@ const useWidgetConfigValidateForm = () => {
   // Check if the variable name is already used in an other widget
   const isWidgetVarNameAlreadyUsed = !!config.fintelVariableName && isVarNameAlreadyUsed(config.fintelVariableName);
 
-  // Check the breakdown can be kept or dropped: not while the saved filter of its dataset is read
+  // Check the breakdown can be kept or dropped: not while the saved filter of its dataset, or its fields, are read
   const isBreakdownResolved = !(breakdown.field && breakdown.resolution === 'loading');
 
   return {

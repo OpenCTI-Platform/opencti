@@ -1,34 +1,50 @@
 import { describe, expect, it } from 'vitest';
-import type { Widget, WidgetHost } from './widget';
+import type { Widget, WidgetHost, WidgetPerspective } from './widget';
 import { dayStartDate, daysAgo, monthsAgo } from '../Time';
 import type { FilterDefinition } from '../hooks/useAuth';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
 import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
 import {
   applyBreakdownCompatibility,
-  AUDITS_BREAKDOWN_FIELDS,
-  BREAKDOWN_ALLOWED_REFS,
   BREAKDOWN_LIMIT_OPTIONS,
+  type BreakdownFieldsRequest,
   canWidgetBreakDown,
   clearBreakdown,
   getBreakdownDefaultStartDate,
   getBreakdownEditorState,
   getBreakdownEntityTypes,
   getBreakdownFieldOptions,
+  getBreakdownFieldsRequest,
   getBreakdownLimitOptions,
-  getWidgetBreakdownFieldOptions,
   getWidgetBreakdownLimit,
   getWidgetBreakdownOrder,
   getWidgetBreakdownOther,
   getWidgetBreakdownState,
   hasWidgetBreakdown,
-  isBreakdownFieldSupported,
   isBreakdownTypeField,
   isWidgetBreakdownActive,
   resolveBreakdownTypeVariables,
 } from './widgetBreakdown';
 
 const workspace = { kind: 'workspace' } as const;
+const fintelTemplate = { kind: 'fintelTemplate' as const, fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
+
+const definition = (filterKey: string, type: string, label: string, subEntityTypes: string[]): FilterDefinition => ({
+  filterKey, type, label, multiple: true, subEntityTypes, elementsForFilterValuesSearch: [],
+});
+
+// The fields the API offers for the requests of these tests (timeSeriesBreakdownFields), in its order
+const AUDITS_API_FIELDS = ['event_type', 'event_scope', 'user_id', 'group_ids', 'organization_ids', 'entity_type', 'context_data.entity_type'];
+const API_FIELDS: Record<string, string[]> = {
+  'entities:': ['createdBy', 'objectLabel', 'objectMarking', 'creator_id', 'entity_type'],
+  'entities:Report': ['createdBy', 'objectLabel', 'objectMarking', 'objectAssignee', 'objectParticipant', 'creator_id', 'x_opencti_closing_reason', 'report_types'],
+  'entities:Malware': ['createdBy', 'objectLabel', 'objectMarking', 'objectAssignee', 'creator_id', 'malware_types'],
+  'entities:Malware,Report': ['createdBy', 'objectLabel', 'objectMarking', 'creator_id', 'entity_type'],
+  'relationships:': ['createdBy', 'objectLabel', 'objectMarking', 'creator_id', 'fromTypes', 'toTypes', 'relationship_type'],
+  'relationships:targets': ['createdBy', 'objectLabel', 'objectMarking', 'creator_id', 'fromTypes', 'toTypes'],
+  'audits:': AUDITS_API_FIELDS,
+};
+const readApiFields = (request: BreakdownFieldsRequest) => API_FIELDS[`${request.perspective}:${request.types.join(',')}`] ?? [];
 
 const makeWidget = (overrides: Partial<Widget> = {}, entityTypes: string[] = ['Report']): Widget => ({
   id: 'widget',
@@ -101,7 +117,6 @@ describe('canWidgetBreakDown', () => {
     const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
     expect(canWidgetBreakDown(makeWidget(), customView)).toBe(true);
     // A fintel template writes its widgets in a document
-    const fintelTemplate = { kind: 'fintelTemplate' as const, fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
     expect(canWidgetBreakDown(makeWidget(), fintelTemplate)).toBe(false);
     // Without host, the widget alone decides
     expect(canWidgetBreakDown(makeWidget())).toBe(true);
@@ -151,7 +166,6 @@ describe('isWidgetBreakdownActive', () => {
 
   it('needs a host that breaks its widgets down, while still knowing the widget is broken down', () => {
     // A fintel template writes its widgets in a document
-    const fintelTemplate = { kind: 'fintelTemplate' as const, fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
     expect(isWidgetBreakdownActive(makeWidget(), fintelTemplate)).toBe(false);
     expect(isWidgetBreakdownActive(makeWidget(), undefined)).toBe(false);
     // ...but the widget is broken down, to be refused elsewhere
@@ -237,248 +251,148 @@ describe('getBreakdownEntityTypes', () => {
 });
 
 describe('getBreakdownFieldOptions', () => {
-  const definition = (filterKey: string, type: string, label: string, subEntityTypes: string[]): FilterDefinition => ({
-    filterKey, type, label, multiple: true, subEntityTypes, elementsForFilterValuesSearch: [],
-  });
   const schema = new Map<string, Map<string, FilterDefinition>>([
     ['Report', new Map([
-      ['entity_type', definition('entity_type', 'string', 'Entity type', ['Report'])],
       ['createdBy', definition('createdBy', 'id', 'Author', ['Report'])],
       ['objectLabel', definition('objectLabel', 'id', 'Label', ['Report'])],
       ['report_types', definition('report_types', 'vocabulary', 'Report types', ['Report'])],
-      ['name', definition('name', 'string', 'Name', ['Report'])],
-      ['objects', definition('objects', 'id', 'Contains', ['Report'])],
-      ['externalReferences', definition('externalReferences', 'id', 'External reference', ['Report'])],
-      ['killChainPhases', definition('killChainPhases', 'id', 'Kill chain phase', ['Report'])],
-      ['published', definition('published', 'date', 'Publication date', ['Report'])],
-      ['computed_reliability', definition('computed_reliability', 'vocabulary', 'Reliability', ['Report'])],
-      ['draft_change.draft_operation', definition('draft_change.draft_operation', 'enum', 'Draft operation', ['Report'])],
+      ['x_opencti_closing_reason', definition('x_opencti_closing_reason', 'string', 'Closing reason', ['Report'])],
     ])],
-    ['Malware', new Map([
-      ['createdBy', definition('createdBy', 'id', 'Author', ['Malware'])],
-      ['objectLabel', definition('objectLabel', 'id', 'Label', ['Malware'])],
-      ['malware_types', definition('malware_types', 'vocabulary', 'Malware types', ['Malware'])],
-    ])],
-    ['Stix-Core-Object', new Map([
-      // the schema lists the entity type itself: it must be offered once
-      ['entity_type', definition('entity_type', 'string', 'Entity type', ['Stix-Core-Object', 'Report', 'Malware'])],
-      ['createdBy', definition('createdBy', 'id', 'Author', ['Stix-Core-Object', 'Report', 'Malware'])],
-      // only some sub types carry report types
-      ['report_types', definition('report_types', 'vocabulary', 'Report types', ['Report'])],
+    ['stix-relationship', new Map([
+      ['objectMarking', definition('objectMarking', 'id', 'Marking', ['stix-relationship', 'targets'])],
+      ['creator_id', definition('creator_id', 'id', 'Creators', ['stix-relationship', 'targets'])],
     ])],
   ]);
-  const keys = (entityTypes: string[]) => getBreakdownFieldOptions(schema, entityTypes).map(({ key }) => key);
+  const options = (keys: string[], perspective: WidgetPerspective = 'entities', translate?: (label: string) => string) => {
+    return getBreakdownFieldOptions(schema, keys, perspective, translate);
+  };
 
-  it('offers every field of a single type that can be broken down', () => {
-    expect(keys(['Report'])).toEqual(['createdBy', 'objectLabel', 'report_types']);
-  });
-
-  it('only offers the allowed references, vocabularies and enums', () => {
-    const options = keys(['Report']);
-    BREAKDOWN_ALLOWED_REFS.forEach((key) => {
-      if (schema.get('Report')?.has(key)) expect(options).toContain(key);
-    });
-    expect(options).toContain('report_types');
-    ['objects', 'externalReferences', 'killChainPhases'].forEach((key) => expect(options).not.toContain(key));
-  });
-
-  it('offers the fields shared by several types, and the entity type', () => {
-    expect(keys(['Report', 'Malware'])).toEqual(['createdBy', 'entity_type', 'objectLabel']);
-  });
-
-  it('offers the fields of the abstract type without type filter', () => {
-    expect(keys([])).toEqual(['createdBy', 'entity_type']);
-  });
-
-  it('offers the entity type for a single abstract type, which holds several concrete types', () => {
-    expect(keys(['Stix-Core-Object'])).toEqual(['createdBy', 'entity_type']);
-    // A single concrete type is the entity type of every series
-    expect(keys(['Report'])).not.toContain('entity_type');
-  });
-
-  it('does not offer the custom fields, which the API cannot break down', () => {
-    const withCustomField = new Map(schema);
-    withCustomField.set('Report', new Map([
-      ...(schema.get('Report') ?? new Map()),
-      ['x_opencti_cf_priority', definition('x_opencti_cf_priority', 'enum', 'Priority', ['Report'])],
-    ]));
-    expect(getBreakdownFieldOptions(withCustomField, ['Report']).map(({ key }) => key)).toEqual(['createdBy', 'objectLabel', 'report_types']);
-  });
-
-  describe('relationships', () => {
-    const relationshipsSchema = new Map<string, Map<string, FilterDefinition>>([
-      ['stix-relationship', new Map([
-        ['relationship_type', definition('relationship_type', 'string', 'Relationship type', ['stix-relationship', 'targets', 'uses'])],
-        ['createdBy', definition('createdBy', 'id', 'Author', ['stix-relationship', 'targets', 'uses'])],
-        ['objectLabel', definition('objectLabel', 'id', 'Label', ['stix-relationship', 'targets', 'uses'])],
-        ['objectMarking', definition('objectMarking', 'id', 'Marking', ['stix-relationship', 'targets', 'uses'])],
-        ['creator_id', definition('creator_id', 'id', 'Creators', ['stix-relationship', 'targets', 'uses'])],
-        ['externalReferences', definition('externalReferences', 'id', 'External reference', ['stix-relationship', 'targets', 'uses'])],
-        ['confidence', definition('confidence', 'integer', 'Confidence', ['stix-relationship', 'targets', 'uses'])],
-        ['objects', definition('objects', 'id', 'Contains', ['stix-relationship', 'targets', 'uses'])],
-      ])],
-      ['targets', new Map([
-        ['createdBy', definition('createdBy', 'id', 'Author', ['targets'])],
-        ['objectMarking', definition('objectMarking', 'id', 'Marking', ['targets'])],
-        ['fromId', definition('fromId', 'id', 'Source entity', ['targets'])],
-        ['toId', definition('toId', 'id', 'Target entity', ['targets'])],
-        ['fromTypes', definition('fromTypes', 'string', 'Source type', ['targets'])],
-        ['killChainPhases', definition('killChainPhases', 'id', 'Kill chain phase', ['targets'])],
-        ['workflow_id', definition('workflow_id', 'id', 'Status', ['targets'])],
-      ])],
-      ['uses', new Map([
-        ['createdBy', definition('createdBy', 'id', 'Author', ['uses'])],
-        ['usage_types', definition('usage_types', 'vocabulary', 'Usage types', ['uses'])],
-      ])],
+  it('labels the fields the API offers after their filter, whatever the fields the schema alone would tell', () => {
+    // The closing reason is not a vocabulary for the filters, but the API accepts it for the reports
+    expect(options(['report_types', 'x_opencti_closing_reason', 'createdBy'])).toEqual([
+      { key: 'createdBy', label: 'Author' },
+      { key: 'x_opencti_closing_reason', label: 'Closing reason' },
+      { key: 'report_types', label: 'Report types' },
     ]);
-    const relationshipKeys = (relationshipTypes: string[]) => getBreakdownFieldOptions(relationshipsSchema, relationshipTypes, 'relationships').map(({ key }) => key);
-
-    it('offers the fields of every relationship, their type and the types of their source and target', () => {
-      expect(relationshipKeys([])).toEqual(['createdBy', 'creator_id', 'objectLabel', 'objectMarking', 'relationship_type', 'fromTypes', 'toTypes']);
-    });
-
-    it('offers the fields of a single relationship type, without the relationship type', () => {
-      expect(relationshipKeys(['targets'])).toEqual(['createdBy', 'objectMarking', 'fromTypes', 'toTypes']);
-      expect(relationshipKeys(['uses'])).toEqual(['createdBy', 'fromTypes', 'toTypes', 'usage_types']);
-    });
-
-    it('offers the fields shared by several relationship types', () => {
-      expect(relationshipKeys(['targets', 'uses'])).toEqual(['createdBy', 'relationship_type', 'fromTypes', 'toTypes']);
-    });
-
-    it('never offers the source and target themselves, nor the fields of an unbounded cardinality', () => {
-      const options = relationshipKeys(['targets']);
-      ['fromId', 'toId', 'objects', 'externalReferences', 'killChainPhases', 'workflow_id', 'entity_type'].forEach((key) => expect(options).not.toContain(key));
-    });
-
-    it('orders the fields by their translated label', () => {
-      const french: Record<string, string> = {
-        Author: 'Auteur',
-        Creators: 'Créateurs',
-        Label: 'Label',
-        Marking: 'Marquage',
-        'Relationship type': 'Type de relation',
-        'Source type': 'Type de source',
-        'Target type': 'Type de cible',
-      };
-      const translate = (label: string) => french[label] ?? label;
-      const labels = getBreakdownFieldOptions(relationshipsSchema, [], 'relationships', translate).map(({ label }) => translate(label));
-      expect(labels).toEqual(['Auteur', 'Créateurs', 'Label', 'Marquage', 'Type de cible', 'Type de relation', 'Type de source']);
-      // The labels themselves are kept, to be translated where shown
-      expect(getBreakdownFieldOptions(relationshipsSchema, [], 'relationships', translate).map(({ label }) => label)).toContain('Target type');
-    });
-
-    it('labels the relationships fields', () => {
-      const labels = getBreakdownFieldOptions(relationshipsSchema, [], 'relationships').map(({ label }) => label);
-      expect(labels).toEqual(expect.arrayContaining(['Relationship type', 'Source type', 'Target type']));
-    });
-
-    it('checks the field of a relationships widget against its relationship types', () => {
-      const supported = (breakdownBy: string, relationshipTypes?: string[]) => isBreakdownFieldSupported(
-        relationshipsSchema,
-        { ...makeRelationshipsWidget({}, relationshipTypes), parameters: { breakdownBy } },
-      );
-      expect(supported('toTypes')).toBe(true);
-      expect(supported('objectMarking')).toBe(true);
-      expect(supported('usage_types')).toBe(false);
-      expect(supported('usage_types', ['uses'])).toBe(true);
-      // Not offered for a single relationship type, but accepted: a type variable may hold a single one
-      expect(supported('relationship_type')).toBe(true);
-      expect(supported('relationship_type', ['targets', 'uses'])).toBe(true);
-      // An entities field is not one of the relationships
-      expect(supported('entity_type', ['targets', 'uses'])).toBe(false);
-    });
-
-    it('offers no field for a perspective that cannot be broken down', () => {
-      expect(getBreakdownFieldOptions(relationshipsSchema, [], 'audits')).toEqual([]);
-    });
+    // A field the schema does not know is labelled with its key
+    expect(options(['x_unknown'])).toEqual([{ key: 'x_unknown', label: 'x_unknown' }]);
   });
 
-  describe('isBreakdownFieldSupported', () => {
-    const supported = (breakdownBy: string, entityTypes?: string[]) => isBreakdownFieldSupported(schema, {
-      ...makeWidget({}, entityTypes),
-      parameters: { breakdownBy },
-    });
-
-    it('accepts a field of the entity type of the dataset', () => {
-      expect(supported('createdBy', ['Report'])).toBe(true);
-      expect(supported('report_types', ['Report'])).toBe(true);
-    });
-
-    it('refuses a field the entity type does not have, or that cannot be broken down', () => {
-      expect(supported('report_types', ['Malware'])).toBe(false);
-      expect(supported('name', ['Report'])).toBe(false);
-    });
-
-    it('accepts the entity type of a single type, not offered but accepted by the API', () => {
-      // A type variable offering several types can be set to a single one
-      expect(supported('entity_type', ['Report'])).toBe(true);
-    });
-
-    it('refuses a field the abstract type has not, without type filter', () => {
-      const noTypeFilter = { ...makeWidget(), dataSelection: [{ filters: undefined }], parameters: { breakdownBy: 'objectAssignee' } } as unknown as Widget;
-      expect(isBreakdownFieldSupported(schema, noTypeFilter)).toBe(false);
-      expect(isBreakdownFieldSupported(schema, { ...noTypeFilter, parameters: { breakdownBy: 'createdBy' } })).toBe(true);
-    });
-
-    it('accepts the entity type with several types, and only their common fields', () => {
-      expect(supported('entity_type', ['Report', 'Malware'])).toBe(true);
-      expect(supported('objectLabel', ['Report', 'Malware'])).toBe(true);
-      expect(supported('report_types', ['Report', 'Malware'])).toBe(false);
-    });
-
-    it('refuses a widget without breakdown field', () => {
-      expect(isBreakdownFieldSupported(schema, makeWidget({ parameters: { breakdownBy: null } }))).toBe(false);
-    });
-
-    it('offers and accepts no field for draft workspaces, read from a saved filter', () => {
-      const withDrafts = new Map(schema);
-      withDrafts.set('DraftWorkspace', new Map([['creator_id', definition('creator_id', 'id', 'Creators', ['DraftWorkspace'])]]));
-      // The content of a saved filter, once read: the widget itself holds none, so it is eligible
-      const drafts = makeWidget({ parameters: { breakdownBy: 'creator_id' } }, ['DraftWorkspace']);
-      expect(getWidgetBreakdownFieldOptions(withDrafts, drafts)).toEqual([]);
-      expect(isBreakdownFieldSupported(withDrafts, drafts)).toBe(false);
-      // Not even the entity type, accepted for any other dataset
-      expect(isBreakdownFieldSupported(withDrafts, { ...drafts, parameters: { breakdownBy: 'entity_type' } })).toBe(false);
-      expect(getWidgetBreakdownFieldOptions(withDrafts, makeWidget({}, ['Report'])).length).toBeGreaterThan(0);
-    });
+  it('labels the fields of the perspective after the perspective', () => {
+    expect(options(['entity_type', 'objectLabel'])).toEqual([
+      { key: 'entity_type', label: 'Entity type' },
+      { key: 'objectLabel', label: 'Label' },
+    ]);
+    expect(options(['toTypes', 'relationship_type', 'fromTypes', 'objectMarking'], 'relationships').map(({ label }) => label))
+      .toEqual(['Marking', 'Relationship type', 'Source type', 'Target type']);
   });
 
-  describe('with dashboard variables', () => {
+  it('orders the fields by their translated label, and keeps the labels to translate where shown', () => {
+    const french: Record<string, string> = {
+      Creators: 'Créateurs',
+      Marking: 'Marquage',
+      'Relationship type': 'Type de relation',
+      'Source type': 'Type de source',
+      'Target type': 'Type de cible',
+    };
+    const translate = (label: string) => french[label] ?? label;
+    const relationshipOptions = options(['objectMarking', 'creator_id', 'fromTypes', 'toTypes', 'relationship_type'], 'relationships', translate);
+    expect(relationshipOptions.map(({ label }) => translate(label))).toEqual(['Créateurs', 'Marquage', 'Type de cible', 'Type de relation', 'Type de source']);
+    expect(relationshipOptions.map(({ label }) => label)).toContain('Target type');
+  });
+
+  it('labels the fields of the logs, and keeps them in the order of the API whatever the language', () => {
+    const reversed = (label: string) => label.split('').reverse().join('');
+    const auditsOptions = options(AUDITS_API_FIELDS, 'audits', reversed);
+    expect(auditsOptions.map(({ key }) => key)).toEqual(AUDITS_API_FIELDS);
+    expect(auditsOptions.map(({ label }) => label)).toEqual(['Event type', 'Event_scope', 'User', 'Group', 'Organization', 'Entity_type', 'Type of related entity']);
+    // Their own labels first: the entity type of the logs is the one of History or Activity
+    expect(options(['entity_type'], 'audits')).toEqual([{ key: 'entity_type', label: 'Entity_type' }]);
+  });
+});
+
+describe('getBreakdownFieldsRequest', () => {
+  const resolved = { resolution: 'resolved' } as const;
+  const requestOf = (widget: Widget, savedFilter: Parameters<typeof getBreakdownFieldsRequest>[0]['savedFilter'] = resolved, variables?: DashboardVariable[], host: WidgetHost = workspace) => {
+    return getBreakdownFieldsRequest({ widget, host, savedFilter, variables });
+  };
+  const ofTypes = (types: string[], key = 'entity_type') => ({
+    mode: 'and', filters: [{ key, values: types, operator: 'eq', mode: 'or' }], filterGroups: [],
+  } as FilterGroup);
+  // A dataset read from a saved filter holds no filters of its own
+  const savedFilterWidget = { ...makeWidget(), dataSelection: [{ filters_id: 'saved-filter', filters: undefined }] } as unknown as Widget;
+
+  it('asks the fields of the types the dataset is restricted to, sorted to ask the same types once whatever their order', () => {
+    expect(requestOf(makeWidget())).toEqual({ perspective: 'entities', types: ['Report'] });
+    expect(requestOf(makeWidget({}, ['Report', 'Malware']))).toEqual({ perspective: 'entities', types: ['Malware', 'Report'] });
+    expect(requestOf(makeWidget({}, ['Malware', 'Report']))).toEqual({ perspective: 'entities', types: ['Malware', 'Report'] });
+    expect(requestOf(makeRelationshipsWidget())).toEqual({ perspective: 'relationships', types: ['targets'] });
+    expect(requestOf(makeRelationshipsWidget({}, ['uses', 'targets']))).toEqual({ perspective: 'relationships', types: ['targets', 'uses'] });
+  });
+
+  it('asks the fields of any type of the perspective without type filter, and of the logs whatever their filters', () => {
+    expect(requestOf({ ...makeWidget(), dataSelection: [{ filters: undefined }] } as unknown as Widget)).toEqual({ perspective: 'entities', types: [] });
+    // "type = Report OR label = A" can also return other types
+    const orFilters = { mode: 'or', filters: [...ofTypes(['Report']).filters, { key: 'objectLabel', values: ['label-id'], operator: 'eq', mode: 'or' }], filterGroups: [] };
+    expect(requestOf({ ...makeWidget(), dataSelection: [{ filters: orFilters }] } as unknown as Widget)).toEqual({ perspective: 'entities', types: [] });
+    const logs = { ...makeWidget({ type: 'line', perspective: 'audits' }), dataSelection: [{ filters: ofTypes(['History']) }] } as unknown as Widget;
+    expect(requestOf(logs)).toEqual({ perspective: 'audits', types: [] });
+  });
+
+  it('asks the fields of the types a type variable allows, of any type for a variable that may hold any', () => {
     const VARIABLE_ID = '6f1c3f0e-2b7a-4c1e-9d3a-0a1b2c3d4e5f';
-    const token = `$var:${VARIABLE_ID}`;
     const typeVariable = (restriction: DashboardVariable['restriction']): DashboardVariable => ({
       id: VARIABLE_ID, name: 'type', type: 'entityType', defaultValue: null, restriction,
     });
+    const widget = makeWidget({}, [`$var:${VARIABLE_ID}`]);
+    expect(requestOf(widget, resolved, [typeVariable({ mode: 'selection', values: ['Report', 'Malware'] })]))
+      .toEqual({ perspective: 'entities', types: ['Malware', 'Report'] });
+    expect(requestOf(widget, resolved, [typeVariable({ mode: 'none' })])).toEqual({ perspective: 'entities', types: [] });
+  });
 
-    it('reads a type variable as the types it allows', () => {
-      expect(resolveBreakdownTypeVariables([token], [typeVariable({ mode: 'selection', values: ['Report', 'Malware'] })])).toEqual(['Report', 'Malware']);
-      expect(resolveBreakdownTypeVariables(['Report', token], [typeVariable({ mode: 'selection', values: ['Report', 'Grouping'] })])).toEqual(['Report', 'Grouping']);
-      expect(resolveBreakdownTypeVariables(['Report'], undefined)).toEqual(['Report']);
-    });
+  it('asks nothing until the saved filter is read, and then the fields of its content', () => {
+    expect(requestOf(savedFilterWidget, { resolution: 'loading' })).toBeNull();
+    expect(requestOf(savedFilterWidget, { resolution: 'resolved', filters: ofTypes(['Malware']) })).toEqual({ perspective: 'entities', types: ['Malware'] });
+    // Its types unknown, the fields of any type
+    expect(requestOf(savedFilterWidget, { resolution: 'failed', filters: null })).toEqual({ perspective: 'entities', types: [] });
+  });
 
-    it('reads no type, like without type filter, when a variable may hold any type or is unknown', () => {
-      expect(resolveBreakdownTypeVariables([token], [typeVariable({ mode: 'none' })])).toEqual([]);
-      expect(resolveBreakdownTypeVariables([token], [typeVariable({ mode: 'selection', values: [] })])).toEqual([]);
-      expect(resolveBreakdownTypeVariables(['Report', token], [])).toEqual([]);
-      expect(resolveBreakdownTypeVariables([token], undefined)).toEqual([]);
-      const labelVariable: DashboardVariable = { id: VARIABLE_ID, name: 'label', type: 'label', defaultValue: null, restriction: { mode: 'selection', values: ['Report'] } };
-      expect(resolveBreakdownTypeVariables([token], [labelVariable])).toEqual([]);
-    });
+  it('asks nothing for a widget whose breakdown is hidden, like the draft workspaces of a saved filter', () => {
+    expect(requestOf(savedFilterWidget, { resolution: 'resolved', filters: ofTypes(['DraftWorkspace']) })).toBeNull();
+    expect(requestOf(makeWidget({}, ['DraftWorkspace']))).toBeNull();
+    expect(requestOf(makeWidget({ type: 'donut' }))).toBeNull();
+    expect(requestOf(makeWidget({ perspective: null }))).toBeNull();
+    expect(requestOf(makeWidget(), resolved, undefined, fintelTemplate)).toBeNull();
+    // Several datasets: the controls are shown, disabled, with the fields of the first one
+    const widget = makeWidget();
+    expect(requestOf({ ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] })).toEqual({ perspective: 'entities', types: ['Report'] });
+  });
+});
 
-    it('offers the fields of the types a type variable allows', () => {
-      const widget = makeWidget({}, [token]);
-      const keys = (variables?: DashboardVariable[]) => getWidgetBreakdownFieldOptions(schema, widget, variables).map(({ key }) => key);
-      expect(keys([typeVariable({ mode: 'selection', values: ['Report'] })])).toContain('report_types');
-      // Any type: the fields of the abstract type, and the type itself
-      expect(keys([typeVariable({ mode: 'none' })])).not.toContain('report_types');
-      expect(keys([typeVariable({ mode: 'none' })])).toContain('entity_type');
-    });
+describe('resolveBreakdownTypeVariables', () => {
+  const VARIABLE_ID = '6f1c3f0e-2b7a-4c1e-9d3a-0a1b2c3d4e5f';
+  const token = `$var:${VARIABLE_ID}`;
+  const typeVariable = (restriction: DashboardVariable['restriction']): DashboardVariable => ({
+    id: VARIABLE_ID, name: 'type', type: 'entityType', defaultValue: null, restriction,
+  });
+
+  it('reads a type variable as the types it allows', () => {
+    expect(resolveBreakdownTypeVariables([token], [typeVariable({ mode: 'selection', values: ['Report', 'Malware'] })])).toEqual(['Report', 'Malware']);
+    expect(resolveBreakdownTypeVariables(['Report', token], [typeVariable({ mode: 'selection', values: ['Report', 'Grouping'] })])).toEqual(['Report', 'Grouping']);
+    expect(resolveBreakdownTypeVariables(['Report'], undefined)).toEqual(['Report']);
+  });
+
+  it('reads no type, like without type filter, when a variable may hold any type or is unknown', () => {
+    expect(resolveBreakdownTypeVariables([token], [typeVariable({ mode: 'none' })])).toEqual([]);
+    expect(resolveBreakdownTypeVariables([token], [typeVariable({ mode: 'selection', values: [] })])).toEqual([]);
+    expect(resolveBreakdownTypeVariables(['Report', token], [])).toEqual([]);
+    expect(resolveBreakdownTypeVariables([token], undefined)).toEqual([]);
+    const labelVariable: DashboardVariable = { id: VARIABLE_ID, name: 'label', type: 'label', defaultValue: null, restriction: { mode: 'selection', values: ['Report'] } };
+    expect(resolveBreakdownTypeVariables([token], [labelVariable])).toEqual([]);
   });
 });
 
 describe('audits breakdown', () => {
-  const emptyMap = new Map<string, Map<string, FilterDefinition>>();
   const makeAuditsWidget = (overrides: Partial<Widget> = {}, selectionOverrides: Record<string, unknown> = {}): Widget => ({
     id: 'audits-widget',
     type: 'line',
@@ -523,26 +437,26 @@ describe('audits breakdown', () => {
     expect(getBreakdownEditorState(makeAuditsWidget(), { kind: 'fintelTemplate', fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' })).toEqual('hidden');
   });
 
-  it('offers exactly the fields the API accepts for the logs, whatever the filters', () => {
-    // Mirror of HISTORY_BREAKDOWN_FIELDS in opencti-graphql/src/database/middleware.ts
-    const apiFields = ['event_type', 'event_scope', 'user_id', 'group_ids', 'organization_ids', 'entity_type', 'context_data.entity_type'];
-    expect(AUDITS_BREAKDOWN_FIELDS.map(({ key }) => key)).toEqual(apiFields);
-    expect(getWidgetBreakdownFieldOptions(emptyMap, makeAuditsWidget()).map(({ key }) => key)).toEqual(apiFields);
-    // In their own order, whatever the language
-    const reversed = (label: string) => label.split('').reverse().join('');
-    expect(getWidgetBreakdownFieldOptions(emptyMap, makeAuditsWidget(), undefined, reversed).map(({ key }) => key)).toEqual(apiFields);
-    ['context_data.id', 'context_data.search', 'context_data.message', 'creator_id', 'createdBy'].forEach((key) => {
-      expect(isBreakdownFieldSupported(emptyMap, makeAuditsWidget({ parameters: { breakdownBy: key } }))).toBe(false);
+  it('offers the fields the API accepts for the logs, in its order, and keeps one of them only', () => {
+    const stateOf = (widget: Widget) => {
+      const request = getBreakdownFieldsRequest({ widget, host: workspace, savedFilter: { resolution: 'resolved' } });
+      const reversed = (label: string) => label.split('').reverse().join('');
+      return getWidgetBreakdownState({
+        filterKeysSchema: new Map(),
+        widget,
+        host: workspace,
+        savedFilter: { resolution: 'resolved' },
+        fields: { resolution: 'resolved', keys: request ? readApiFields(request) : [] },
+        translate: reversed,
+      });
+    };
+    const state = stateOf(makeAuditsWidget());
+    expect(state.fieldOptions.map(({ key }) => key)).toEqual(AUDITS_API_FIELDS);
+    expect(state).toMatchObject({ field: 'event_scope', unlistedField: null });
+    // The context entity id, the free texts and the entities fields are not offered: not kept
+    ['context_data.id', 'context_data.message', 'creator_id', 'objectLabel'].forEach((breakdownBy) => {
+      expect(stateOf(makeAuditsWidget({ parameters: { breakdownBy } })).field).toBeNull();
     });
-    apiFields.forEach((key) => {
-      expect(isBreakdownFieldSupported(emptyMap, makeAuditsWidget({ parameters: { breakdownBy: key } }))).toBe(true);
-    });
-  });
-
-  it('keeps the entities fields to the entities', () => {
-    // An entities field carried over to an audits widget is not supported, and the reverse
-    expect(isBreakdownFieldSupported(emptyMap, makeAuditsWidget({ parameters: { breakdownBy: 'objectLabel' } }))).toBe(false);
-    expect(isBreakdownFieldSupported(emptyMap, makeWidget({ parameters: { breakdownBy: 'event_scope' } }))).toBe(false);
   });
 
   it('names the values of the type fields of the logs after the entity types', () => {
@@ -554,25 +468,22 @@ describe('audits breakdown', () => {
 });
 
 describe('getWidgetBreakdownState', () => {
-  const definition = (filterKey: string, type: string, label: string, subEntityTypes: string[]): FilterDefinition => ({
-    filterKey, type, label, multiple: true, subEntityTypes, elementsForFilterValuesSearch: [],
-  });
   const schema = new Map<string, Map<string, FilterDefinition>>([
     ['Report', new Map([
       ['createdBy', definition('createdBy', 'id', 'Author', ['Report'])],
+      ['objectLabel', definition('objectLabel', 'id', 'Label', ['Report'])],
+      ['objectMarking', definition('objectMarking', 'id', 'Marking', ['Report'])],
+      ['objectAssignee', definition('objectAssignee', 'id', 'Assignees', ['Report'])],
+      ['objectParticipant', definition('objectParticipant', 'id', 'Participants', ['Report'])],
+      ['creator_id', definition('creator_id', 'id', 'Creators', ['Report'])],
       ['report_types', definition('report_types', 'vocabulary', 'Report types', ['Report'])],
+      ['x_opencti_closing_reason', definition('x_opencti_closing_reason', 'string', 'Closing reason', ['Report'])],
     ])],
     ['Malware', new Map([
       ['createdBy', definition('createdBy', 'id', 'Author', ['Malware'])],
       ['malware_types', definition('malware_types', 'vocabulary', 'Malware types', ['Malware'])],
     ])],
-    ['Stix-Core-Object', new Map([
-      ['createdBy', definition('createdBy', 'id', 'Author', ['Stix-Core-Object', 'Report', 'Malware'])],
-      ['report_types', definition('report_types', 'vocabulary', 'Report types', ['Report'])],
-    ])],
-    ['DraftWorkspace', new Map([['creator_id', definition('creator_id', 'id', 'Creators', ['DraftWorkspace'])]])],
     ['stix-relationship', new Map([['objectMarking', definition('objectMarking', 'id', 'Marking', ['stix-relationship', 'targets'])]])],
-    ['targets', new Map([['objectMarking', definition('objectMarking', 'id', 'Marking', ['targets'])]])],
   ]);
   const ofTypes = (types: string[], key = 'entity_type') => ({
     mode: 'and', filters: [{ key, values: types, operator: 'eq', mode: 'or' }], filterGroups: [],
@@ -582,81 +493,134 @@ describe('getWidgetBreakdownState', () => {
     ...makeWidget({ parameters: { breakdownBy } }),
     dataSelection: [{ filters_id: 'saved-filter', filters: undefined }],
   } as unknown as Widget);
+  type StateArguments = Parameters<typeof getWidgetBreakdownState>[0];
   const resolved = { resolution: 'resolved' } as const;
+  const loadingFields = { resolution: 'loading' } as const;
+  const failedFields = { resolution: 'failed', keys: null } as const;
+  // The fields are the ones the API offers for the dataset, read once asked, unless given
   const stateOf = (
     widget: Widget,
-    savedFilter: Parameters<typeof getWidgetBreakdownState>[0]['savedFilter'] = resolved,
-    host: WidgetHost = workspace,
-    variables?: DashboardVariable[],
-  ) => getWidgetBreakdownState({ filterKeysSchema: schema, widget, host, savedFilter, variables });
+    savedFilter: StateArguments['savedFilter'] = resolved,
+    { host = workspace, variables, fields }: { host?: WidgetHost; variables?: DashboardVariable[]; fields?: StateArguments['fields'] } = {},
+  ) => {
+    const request = getBreakdownFieldsRequest({ widget, host, savedFilter, variables });
+    const readFields = request ? { resolution: 'resolved', keys: readApiFields(request) } as const : loadingFields;
+    return getWidgetBreakdownState({ filterKeysSchema: schema, widget, host, savedFilter, fields: fields ?? readFields });
+  };
   const keys = (state: { fieldOptions: { key: string }[] }) => state.fieldOptions.map(({ key }) => key);
 
-  it('offers the fields of the dataset, and keeps a field it has', () => {
+  it('offers the fields the API offers for the dataset, labelled and ordered, and keeps a field among them', () => {
     const state = stateOf(makeWidget({ parameters: { breakdownBy: 'report_types' } }));
-    expect(state).toMatchObject({ editorState: 'editable', resolution: 'resolved', field: 'report_types', unlistedField: null });
-    expect(keys(state)).toEqual(['createdBy', 'report_types']);
+    expect(state).toMatchObject({ editorState: 'editable', resolution: 'resolved', savedFilterResolution: 'resolved', field: 'report_types', unlistedField: null });
+    expect(state.fieldOptions.map(({ label }) => label))
+      .toEqual(['Assignees', 'Author', 'Closing reason', 'Creators', 'Label', 'Marking', 'Participants', 'Report types']);
+    expect(keys(state)).toEqual(['objectAssignee', 'createdBy', 'x_opencti_closing_reason', 'creator_id', 'objectLabel', 'objectMarking', 'objectParticipant', 'report_types']);
     expect(stateOf(makeWidget({ parameters: {} })).field).toBeNull();
   });
 
-  it('does not keep a field the dataset types do not have, to drop it on submit', () => {
-    const state = stateOf(makeWidget({ parameters: { breakdownBy: 'report_types' } }, ['Malware']));
-    expect(state).toMatchObject({ editorState: 'editable', field: null, unlistedField: null });
-    expect(keys(state)).toEqual(['createdBy', 'malware_types']);
+  it('keeps a field the API accepts which the filters do not tell, like the closing reason of the reports', () => {
+    expect(stateOf(makeWidget({ parameters: { breakdownBy: 'x_opencti_closing_reason' } }))).toMatchObject({
+      field: 'x_opencti_closing_reason',
+      unlistedField: null,
+    });
+    expect(stateOf(makeWidget({ parameters: { breakdownBy: 'x_opencti_closing_reason' } }, ['Malware'])).field).toBeNull();
   });
 
-  it('keeps and lists the type of a dataset of a single type, not offered but accepted by the API', () => {
-    expect(stateOf(makeWidget({ parameters: { breakdownBy: 'entity_type' } }))).toMatchObject({
-      field: 'entity_type',
-      unlistedField: { key: 'entity_type', label: 'Entity type' },
-    });
+  it('does not keep a field the API does not offer for the dataset types, to drop it on submit', () => {
+    const state = stateOf(makeWidget({ parameters: { breakdownBy: 'report_types' } }, ['Malware']));
+    expect(state).toMatchObject({ editorState: 'editable', field: null, unlistedField: null });
+    expect(keys(state)).toContain('malware_types');
+    expect(keys(state)).not.toContain('report_types');
+  });
+
+  it('keeps only a field the API lists, not the type of a dataset of a single type, which makes a single series', () => {
+    expect(stateOf(makeWidget({ parameters: { breakdownBy: 'entity_type' } }))).toMatchObject({ field: null, unlistedField: null });
     // A type variable allowing a single type
     const VARIABLE_ID = '6f1c3f0e-2b7a-4c1e-9d3a-0a1b2c3d4e5f';
     const variable: DashboardVariable = { id: VARIABLE_ID, name: 'type', type: 'entityType', defaultValue: null, restriction: { mode: 'selection', values: ['Report'] } };
     const byVariable = makeWidget({ parameters: { breakdownBy: 'entity_type' } }, [`$var:${VARIABLE_ID}`]);
-    expect(stateOf(byVariable, resolved, workspace, [variable])).toMatchObject({ field: 'entity_type', unlistedField: { key: 'entity_type' } });
+    expect(stateOf(byVariable, resolved, { variables: [variable] })).toMatchObject({ field: null, unlistedField: null });
     // ...whose fields are kept, which a variable that may hold any type does not have
     const reportTypesByVariable = { ...byVariable, parameters: { breakdownBy: 'report_types' } };
-    expect(stateOf(reportTypesByVariable, resolved, workspace, [variable]).field).toEqual('report_types');
-    expect(stateOf(reportTypesByVariable, resolved, workspace, [{ ...variable, restriction: { mode: 'none' } }]).field).toBeNull();
+    expect(stateOf(reportTypesByVariable, resolved, { variables: [variable] }).field).toEqual('report_types');
+    expect(stateOf(reportTypesByVariable, resolved, { variables: [{ ...variable, restriction: { mode: 'none' } }] }).field).toBeNull();
     // A single relationship type
     const targets = makeRelationshipsWidget({ parameters: { breakdownBy: 'relationship_type' } });
-    expect(stateOf(targets)).toMatchObject({ field: 'relationship_type', unlistedField: { key: 'relationship_type', label: 'Relationship type' } });
-    // Offered with several types: listed among the options
+    expect(stateOf(targets)).toMatchObject({ field: null, unlistedField: null });
+    // Listed with several types: kept among the options
     expect(stateOf(makeWidget({ parameters: { breakdownBy: 'entity_type' } }, ['Report', 'Malware']))).toMatchObject({ field: 'entity_type', unlistedField: null });
+    // Kept while the fields of the dataset are unknown, as any field
+    expect(stateOf(makeWidget({ parameters: { breakdownBy: 'entity_type' } }), resolved, { fields: loadingFields }))
+      .toMatchObject({ field: 'entity_type', unlistedField: { key: 'entity_type', label: 'Entity type' } });
   });
 
-  it('keeps the field while the saved filter is read, or when it cannot be, and lists it apart when not offered', () => {
+  it('keeps the field while the saved filter is read, offering no other, and lists it apart', () => {
     const loading = stateOf(savedFilterWidget('report_types'), { resolution: 'loading' });
-    expect(loading).toMatchObject({
+    expect(loading).toEqual({
       editorState: 'editable',
+      fieldOptions: [],
       resolution: 'loading',
+      savedFilterResolution: 'loading',
       field: 'report_types',
       unlistedField: { key: 'report_types', label: 'Report types' },
     });
-    // The types unknown, the fields of any dataset are offered
-    expect(keys(loading)).toEqual(['createdBy', 'entity_type']);
-    expect(stateOf(savedFilterWidget('report_types'), { resolution: 'failed', filters: null })).toMatchObject({
-      resolution: 'failed',
-      field: 'report_types',
-      unlistedField: { key: 'report_types' },
-    });
-    // Offered whatever the types: not listed apart
-    expect(stateOf(savedFilterWidget('createdBy'), { resolution: 'loading' })).toMatchObject({ field: 'createdBy', unlistedField: null });
     // Unknown to the schema, labelled with its key
     expect(stateOf(savedFilterWidget('x_unknown'), { resolution: 'loading' }).unlistedField).toEqual({ key: 'x_unknown', label: 'x_unknown' });
+  });
+
+  it('keeps the field while the fields of the dataset are read, offering no other', () => {
+    expect(stateOf(makeWidget({ parameters: { breakdownBy: 'report_types' } }, ['Malware']), resolved, { fields: loadingFields })).toEqual({
+      editorState: 'editable',
+      fieldOptions: [],
+      resolution: 'loading',
+      savedFilterResolution: 'resolved',
+      field: 'report_types',
+      unlistedField: { key: 'report_types', label: 'Report types' },
+    });
+    // Read after the saved filter
+    const savedFilter = { resolution: 'resolved', filters: ofTypes(['Malware']) } as const;
+    expect(stateOf(savedFilterWidget('report_types'), savedFilter, { fields: loadingFields })).toMatchObject({ resolution: 'loading', field: 'report_types' });
+  });
+
+  it('keeps the field when the fields of the dataset cannot be read, offering no other, without blaming the saved filter', () => {
+    expect(stateOf(makeWidget({ parameters: { breakdownBy: 'report_types' } }, ['Malware']), resolved, { fields: failedFields })).toEqual({
+      editorState: 'editable',
+      fieldOptions: [],
+      resolution: 'failed',
+      savedFilterResolution: 'resolved',
+      field: 'report_types',
+      unlistedField: { key: 'report_types', label: 'Report types' },
+    });
+    expect(stateOf(makeWidget({ parameters: {} }), resolved, { fields: failedFields })).toMatchObject({ resolution: 'failed', field: null, fieldOptions: [] });
+  });
+
+  it('keeps the field of a saved filter that cannot be read, offering the fields of any type', () => {
+    const unreadable = { resolution: 'failed', filters: null } as const;
+    const state = stateOf(savedFilterWidget('report_types'), unreadable);
+    expect(state).toMatchObject({
+      resolution: 'failed',
+      savedFilterResolution: 'failed',
+      field: 'report_types',
+      unlistedField: { key: 'report_types', label: 'Report types' },
+    });
+    expect(keys(state)).toEqual(expect.arrayContaining(['createdBy', 'entity_type']));
+    // Still loading while these fields are read
+    expect(stateOf(savedFilterWidget('report_types'), unreadable, { fields: loadingFields })).toMatchObject({ resolution: 'loading', savedFilterResolution: 'failed' });
+    // Offered whatever the types: not listed apart
+    expect(stateOf(savedFilterWidget('createdBy'), unreadable)).toMatchObject({ field: 'createdBy', unlistedField: null });
   });
 
   it('reads the fields of the content of the saved filter once read', () => {
     const reports = stateOf(savedFilterWidget('report_types'), { resolution: 'resolved', filters: ofTypes(['Report']) });
     expect(reports).toMatchObject({ field: 'report_types', unlistedField: null });
-    expect(keys(reports)).toEqual(['createdBy', 'report_types']);
+    expect(keys(reports)).toContain('report_types');
     expect(stateOf(savedFilterWidget('report_types'), { resolution: 'resolved', filters: ofTypes(['Malware']) }).field).toBeNull();
   });
 
   it('hides the breakdown of draft workspaces, read on the content of the saved filter', () => {
     const drafts = { resolution: 'resolved', filters: ofTypes(['DraftWorkspace']) } as const;
     expect(stateOf(savedFilterWidget('creator_id'), drafts)).toEqual({
-      editorState: 'hidden', fieldOptions: [], resolution: 'resolved', field: null, unlistedField: null,
+      editorState: 'hidden', fieldOptions: [], resolution: 'resolved', savedFilterResolution: 'resolved', field: null, unlistedField: null,
     });
     expect(stateOf(makeWidget({ parameters: { breakdownBy: 'creator_id' } }, ['DraftWorkspace'])).editorState).toEqual('hidden');
     // Unknown until the saved filter is read
@@ -667,7 +631,7 @@ describe('getWidgetBreakdownState', () => {
     const widget = makeWidget({ parameters: { breakdownBy: 'report_types' } });
     const severalDatasets = stateOf({ ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] });
     expect(severalDatasets).toMatchObject({ editorState: 'several-datasets', field: null, unlistedField: null });
-    expect(keys(severalDatasets)).toEqual(['createdBy', 'report_types']);
+    expect(keys(severalDatasets)).toContain('report_types');
     const distinct = {
       ...makeWidget({ type: 'line', perspective: 'audits', parameters: { breakdownBy: 'event_type' } }),
       dataSelection: [{ filters: ofTypes([]), unique: true }],
@@ -681,14 +645,13 @@ describe('getWidgetBreakdownState', () => {
       expect(stateOf(makeRelationshipsWidget({ type, parameters: { breakdownBy: 'toTypes' } })).field).toEqual('toTypes');
     });
     const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
-    expect(stateOf(makeWidget({ parameters: { breakdownBy: 'report_types' } }), resolved, customView).field).toEqual('report_types');
+    expect(stateOf(makeWidget({ parameters: { breakdownBy: 'report_types' } }), resolved, { host: customView }).field).toEqual('report_types');
   });
 
   it('hides the breakdown of the widgets that cannot be broken down', () => {
-    const hidden = (widget: Widget, host: WidgetHost = workspace) => stateOf(widget, resolved, host).editorState;
+    const hidden = (widget: Widget, host: WidgetHost = workspace) => stateOf(widget, resolved, { host }).editorState;
     expect(hidden(makeWidget({ type: 'donut' }))).toEqual('hidden');
     expect(hidden(makeWidget({ perspective: null }))).toEqual('hidden');
-    const fintelTemplate = { kind: 'fintelTemplate' as const, fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
     expect(hidden(makeWidget(), fintelTemplate)).toEqual('hidden');
     // A relationships widget left with an entities dataset cannot be broken down as relationships
     const relationships = makeRelationshipsWidget();

@@ -98,6 +98,7 @@ const GraphStateProvider = ({
     selectedLinks: [],
     selectedNodes: [],
     isAddRelationOpen: false,
+    isAddEntitiesOpen: false,
     isExpandOpen: false,
     layoutMode: null,
     layoutCentreId: null,

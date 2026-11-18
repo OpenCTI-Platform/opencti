@@ -5,7 +5,6 @@ import { HEADER_TEMPLATE } from '../../utils/emailTemplates/header';
 import { FOOTER_TEMPLATE } from '../../utils/emailTemplates/footer';
 import { LOGO_TEMPLATE } from '../../utils/emailTemplates/logo';
 import { ABSTRACT_BASIC_OBJECT, ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { INGESTION_HEALTH_FEATURE_FLAG, isFeatureEnabled } from '../../config/conf';
 
 // region Notifier User interface
 export const NOTIFIER_CONNECTOR_UI = 'f39b8ab2c-8f5c-4167-a249-229f34d9442b';
@@ -112,7 +111,11 @@ export const BUILTIN_NOTIFIERS_CONNECTORS: Record<string, NotifierConnector> = {
     built_in: true,
     connector_schema: JSON.stringify(NOTIFIER_CONNECTOR_EMAIL_CONFIG),
     connector_schema_ui: JSON.stringify({
+      // Variable helpers the front registers on the notifier forms (see variableHelperTemplates and variableHelperWidgets):
+      // they show how to insert notification data around the title and the template, and a title placeholder
+      title: { 'ui:FieldTemplate': 'TitleVariableHelper', 'ui:widget': 'TitleVariableInput' },
       template: {
+        'ui:FieldTemplate': 'TemplateVariableHelper',
         'ui:widget': 'textarea',
         'ui:options': {
           rows: 20,
@@ -667,7 +670,7 @@ ${HEADER_TEMPLATE}
       `,
     }),
   },
-  ...(isFeatureEnabled(INGESTION_HEALTH_FEATURE_FLAG) ? [STATIC_HEALTH_EMAIL_NOTIFIER] : []),
+  STATIC_HEALTH_EMAIL_NOTIFIER,
 ];
 
 export const SIMPLIFIED_EMAIL_TEMPLATE = `

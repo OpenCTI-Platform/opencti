@@ -1,12 +1,7 @@
 import React from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import testRender from '../../utils/tests/test-render';
 import type { Widget } from '../../utils/widget/widget';
-
-const flags = vi.hoisted(() => ({ enabled: ['TIME_SERIES_BREAKDOWN'] }));
-vi.mock('../../utils/hooks/useHelper', () => ({
-  default: () => ({ isFeatureEnable: (flag: string) => flags.enabled.includes(flag) }),
-}));
 
 vi.mock('../../private/components/common/stix_relationships/StixRelationshipsNumber', () => ({
   default: () => <div data-testid="relationships-number" />,
@@ -116,26 +111,6 @@ describe('DashboardRelationshipsViz', () => {
         <DashboardRelationshipsViz widget={makeWidget('donut', withBreakdown)} config={config} host={workspace} />,
       );
       expect(getByTestId('relationships-donut')).toBeTruthy();
-    });
-
-    describe('without the TIME_SERIES_BREAKDOWN feature flag', () => {
-      beforeEach(() => {
-        flags.enabled = [];
-      });
-      afterEach(() => {
-        flags.enabled = ['TIME_SERIES_BREAKDOWN'];
-      });
-
-      it('renders the regular widget, whatever breakdown it carries', () => {
-        Object.entries(charts).forEach(([type, testId]) => {
-          const { getByTestId, queryByTestId, unmount } = testRender(
-            <DashboardRelationshipsViz widget={makeWidget(type, withBreakdown)} config={config} host={workspace} />,
-          );
-          expect(getByTestId(`relationships-${testId}`)).toBeTruthy();
-          expect(queryByTestId('relationships-time-series-breakdown')).toBeNull();
-          unmount();
-        });
-      });
     });
   });
 });

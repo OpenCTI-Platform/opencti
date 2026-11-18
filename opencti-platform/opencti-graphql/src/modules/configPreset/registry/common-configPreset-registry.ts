@@ -4,13 +4,16 @@ import { buildPaginationFromEdges } from '../../../database/utils';
 import { FunctionalError } from '../../../config/errors';
 import type { ConfigImportResult } from '../../configImport/configImport-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition, ConfigPresetListItemsArgs } from '../configPreset-types';
-import type { ConfigPresetBundleItem, ConfigPresetComputedItem, ConfigPresetImportField } from '../import/configPreset-import-types';
+import type { ConfigPresetAppliedItem, ConfigPresetBundleItem, ConfigPresetComputedItem, ConfigPresetImportField } from '../import/configPreset-import-types';
 
 // Export groups of the spec table; a group is added with its first category
 export const platformSettingsGroup = { id: 'platformSettings', label: 'Platform settings' };
 export const dataModelGroup = { id: 'dataModel', label: 'Data model' };
 export const securityAccessGroup = { id: 'securityAccess', label: 'Security & Access' };
 export const taxonomyGroup = { id: 'taxonomy', label: 'Taxonomy' };
+export const customizationGroup = { id: 'customization', label: 'Customization' };
+export const integrationsGroup = { id: 'integrations', label: 'Integrations' };
+export const automationRulesGroup = { id: 'automationRules', label: 'Automation & Rules' };
 
 // The families the items of another family depend on (the roles of a group, the default theme of the platform):
 // their ids are shared here, so that registries do not import each other
@@ -63,6 +66,13 @@ export const buildConfigPresetConnection = <T>(
   return { ...connection, pageInfo: { ...connection.pageInfo, hasNextPage } };
 };
 
+// A page of items that are all in memory, paged on their ids (the cursor of an item is its id)
+export const pageConfigPresetItems = (items: ConfigPresetItemDefinition[], args: ConfigPresetListItemsArgs) => {
+  const start = args.after ? items.findIndex((item) => item.id === args.after) + 1 : 0;
+  const page = args.first ? items.slice(start, start + args.first) : items.slice(start);
+  return buildConfigPresetConnection(args, page.map((node) => ({ node, cursor: node.id })), items.length, start + page.length < items.length);
+};
+
 // A category of static items (one for a singleton), paged on their ids
 export const staticFamily = (
   family: Pick<ConfigPresetFamilyDefinition, 'id' | 'label' | 'description' | 'group' | 'directory'>,
@@ -70,10 +80,7 @@ export const staticFamily = (
 ): ConfigPresetFamilyDefinition => ({
   ...family,
   listItems: async (context, user, args) => {
-    const items = (await getItems(context, user)).filter((item) => matchesListArgs(item, args));
-    const start = args.after ? items.findIndex((item) => item.id === args.after) + 1 : 0;
-    const page = args.first ? items.slice(start, start + args.first) : items.slice(start);
-    return buildConfigPresetConnection(args, page.map((node) => ({ node, cursor: node.id })), items.length, start + page.length < items.length);
+    return pageConfigPresetItems((await getItems(context, user)).filter((item) => matchesListArgs(item, args)), args);
   },
   resolveItems: async (context, user, ids, excludedIds) => {
     return (await getItems(context, user)).filter((item) => matchesListArgs(item, { ids, excludedIds }));
@@ -103,6 +110,8 @@ export const checkStandardId = (
   return { ...label, exists: false, conflict: false, status: 'failed', reason };
 };
 
+export const toIsEnabled = (value: unknown) => (typeof value === 'boolean' ? value : null);
+
 // What an importer returns once a module has written an item: a failure is an error that makes the item failed,
 // and a status other than the computed one is reported
 export const toAppliedStatus = (result: ConfigImportResult, computed: ConfigPresetComputedItem) => {
@@ -110,4 +119,10 @@ export const toAppliedStatus = (result: ConfigImportResult, computed: ConfigPres
     throw FunctionalError(result.reason ?? 'Item cannot be imported');
   }
   return result.status === computed.status ? undefined : result.status;
+};
+
+// The same, with the reason of the module when the status differs: the one of compute described what was expected
+export const toAppliedItem = (result: ConfigImportResult, computed: ConfigPresetComputedItem): ConfigPresetAppliedItem | undefined => {
+  const status = toAppliedStatus(result, computed);
+  return status ? { status, reason: result.reason } : undefined;
 };

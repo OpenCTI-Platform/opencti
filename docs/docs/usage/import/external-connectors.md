@@ -8,6 +8,10 @@ The behavior of each connector is defined by its development, determining the ty
 
 The level of configuration granularity regarding the imported data type varies with each connector. Nevertheless, connectors empower users to specify the date from which they wish to fetch data. This capability is particularly useful during the initial activation of a connector, enabling the retrieval of historical data. Following this, the connector operates in real-time, continuously importing new data from the source.
 
+!!! tip "Ingestion health"
+
+    OpenCTI evaluates every minute whether each connector is working as expected, and can notify you when it stops. See [Ingestion health](../../administration/ingestion-health.md).
+
 ### Reset connector state
 
 Resetting the connector state enables you to restart the ingestion process from the very beginning.

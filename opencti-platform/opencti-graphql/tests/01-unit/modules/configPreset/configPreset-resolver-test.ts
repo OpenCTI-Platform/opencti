@@ -13,6 +13,8 @@ vi.mock('../../../../src/config/conf', async (importOriginal) => ({
 vi.mock('../../../../src/enterprise-edition/ee', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/enterprise-edition/ee')>()),
   isEnterpriseEditionUpToDate: vi.fn(async () => enterpriseEdition.enabled),
+  // The domain of a family of the Enterprise Edition checks the license too: the registry only reaches it when the platform has it
+  checkEnterpriseEdition: vi.fn(),
 }));
 vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
@@ -36,7 +38,12 @@ vi.mock('../../../../src/modules/configPreset/export/configPreset-export-domain'
   ...(await importOriginal<typeof import('../../../../src/modules/configPreset/export/configPreset-export-domain')>()),
   configPresetExport: vi.fn(),
 }));
+vi.mock('../../../../src/domain/rules', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/domain/rules')>()),
+  getRules: vi.fn(),
+}));
 
+import { getRules, RULES_DECLARATION } from '../../../../src/domain/rules';
 import { authDirectiveBuilder } from '../../../../src/graphql/authDirective';
 import { makeFeatureFlagDirectiveTransformer } from '../../../../src/graphql/featureFlagDirective';
 import configPresetResolvers from '../../../../src/modules/configPreset/configPreset-resolver';
@@ -49,8 +56,13 @@ import { builtInTheme, customTheme, otherCustomTheme } from './configPreset-them
 import { mockConfigPresetLoaders } from './configPreset-loaders-fixtures';
 import { administratorRole, analystRole } from './configPreset-roles-fixtures';
 import { administratorsGroup, analystsGroup } from './configPreset-groups-fixtures';
-import { customMarking, papRed } from './configPreset-markings-fixtures';
+import { customMarking, papRed, tlpAmber } from './configPreset-markings-fixtures';
 import { customLabel, otherLabel } from './configPreset-labels-fixtures';
+import { dnsExclusionList, retiredExclusionList } from './configPreset-exclusionLists-fixtures';
+import { disarmKillChainPhase, killChainPhase, otherKillChainPhase } from './configPreset-killChainPhases-fixtures';
+import { customStatusTemplate, defaultStatusTemplate } from './configPreset-statusTemplates-fixtures';
+import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemplates-fixtures';
+import { customEmailTemplate, otherEmailTemplate } from './configPreset-emailTemplates-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -89,7 +101,32 @@ const themeItem = (theme: { standard_id: string; name: string }, isDefault: bool
   dependsOn: [],
   isDefault,
 });
+const emailTemplateItem = (template: { standard_id: string; name: string }) => (
+  { key: template.standard_id, label: template.name, translatable: false, dependsOn: [], isDefault: false }
+);
 const labelItem = (label: { standard_id: string; value: string }) => ({ key: label.standard_id, label: label.value, translatable: false, dependsOn: [], isDefault: false });
+const exclusionListItem = (list: { standard_id: string; name: string }) => ({ key: list.standard_id, label: list.name, translatable: false, dependsOn: [], isDefault: false });
+const phaseItem = (phase: { standard_id: string; kill_chain_name: string; phase_name: string }) => ({
+  key: phase.standard_id,
+  label: `${phase.kill_chain_name}: ${phase.phase_name}`,
+  translatable: false,
+  dependsOn: [],
+  isDefault: false,
+});
+const vocabularyItem = (category: string) => ({
+  key: category,
+  label: category,
+  translatable: false,
+  dependsOn: [],
+  isDefault: false,
+});
+const statusTemplateItem = (template: { standard_id: string; name: string }) => ({
+  key: template.standard_id,
+  label: template.name,
+  translatable: false,
+  dependsOn: [],
+  isDefault: false,
+});
 const onePage = (globalCount: number) => ({ hasNextPage: false, globalCount });
 
 describe('Config preset exportable types query', () => {
@@ -99,6 +136,7 @@ describe('Config preset exportable types query', () => {
     enterpriseEdition.enabled = true;
     vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: customTheme.id }] as never);
     mockConfigPresetLoaders();
+    vi.mocked(getRules).mockResolvedValue(RULES_DECLARATION.map((rule) => ({ ...rule, activated: false })));
   });
 
   it('returns the exportable types to a BYPASS user when the flag is enabled', async () => {
@@ -154,9 +192,9 @@ describe('Config preset exportable types query', () => {
         label: 'Markings',
         description: 'Marking definitions, their colors and orders',
         group: { key: 'securityAccess', label: 'Security & Access' },
-        // The markings by definition, without the built-in ones
-        items: [customMarking, papRed].map((marking) => ({ key: marking.standard_id, label: marking.definition, translatable: false, dependsOn: [], isDefault: false })),
-        itemsPageInfo: onePage(2),
+        // The markings by definition, built-in ones included
+        items: [customMarking, papRed, tlpAmber].map((marking) => ({ key: marking.standard_id, label: marking.definition, translatable: false, dependsOn: [], isDefault: false })),
+        itemsPageInfo: onePage(3),
       },
       {
         key: 'roles',
@@ -171,7 +209,7 @@ describe('Config preset exportable types query', () => {
         label: 'Groups',
         description: 'Groups with their roles, markings and confidence level',
         group: { key: 'securityAccess', label: 'Security & Access' },
-        // Each group depends on its roles
+        // Each group depends on its roles, never on a built-in marking
         items: [[administratorsGroup, administratorRole], [analystsGroup, analystRole]].map(([group, role]) => ({
           key: group.standard_id,
           label: group.name,
@@ -190,6 +228,15 @@ describe('Config preset exportable types query', () => {
         itemsPageInfo: onePage(1),
       },
       {
+        key: 'emailTemplates',
+        label: 'Email templates',
+        description: 'Email templates and their content',
+        group: { key: 'securityAccess', label: 'Security & Access' },
+        // The email templates by name
+        items: [emailTemplateItem(otherEmailTemplate), emailTemplateItem(customEmailTemplate)],
+        itemsPageInfo: onePage(2),
+      },
+      {
         key: 'labels',
         label: 'Labels',
         description: 'Labels and their colors',
@@ -197,6 +244,68 @@ describe('Config preset exportable types query', () => {
         // The labels by value
         items: [labelItem(otherLabel), labelItem(customLabel)],
         itemsPageInfo: onePage(2),
+      },
+      {
+        key: 'exclusionLists',
+        label: 'Exclusion lists',
+        description: 'Exclusion lists and their values',
+        group: { key: 'customization', label: 'Customization' },
+        // By name
+        items: [exclusionListItem(dnsExclusionList), exclusionListItem(retiredExclusionList)],
+        itemsPageInfo: onePage(2),
+      },
+      {
+        key: 'killChainPhases',
+        label: 'Kill chain phases',
+        description: 'Kill chains, their phases and their order',
+        group: { key: 'taxonomy', label: 'Taxonomy' },
+        // By kill chain, then by order in the kill chain
+        items: [phaseItem(disarmKillChainPhase), phaseItem(otherKillChainPhase), phaseItem(killChainPhase)],
+        itemsPageInfo: onePage(3),
+      },
+      {
+        key: 'vocabularies',
+        label: 'Vocabularies',
+        description: 'Vocabulary categories and their entries',
+        group: { key: 'taxonomy', label: 'Taxonomy' },
+        // All the categories, by category
+        items: [vocabularyItem('case_severity_ov'), vocabularyItem('incident_type_ov'), vocabularyItem('integrity_level_ov'), vocabularyItem('report_types_ov')],
+        itemsPageInfo: onePage(4),
+      },
+      {
+        key: 'statusTemplates',
+        label: 'Status templates',
+        description: 'Status templates and their colors',
+        group: { key: 'taxonomy', label: 'Taxonomy' },
+        // By name
+        items: [statusTemplateItem(customStatusTemplate), statusTemplateItem(defaultStatusTemplate)],
+        itemsPageInfo: onePage(2),
+      },
+      {
+        key: 'caseTemplates',
+        label: 'Case templates',
+        description: 'Case templates and their tasks',
+        group: { key: 'taxonomy', label: 'Taxonomy' },
+        // By name
+        items: [statusTemplateItem(fraudCaseTemplate), statusTemplateItem(phishingCaseTemplate)],
+        itemsPageInfo: onePage(2),
+      },
+      {
+        key: 'connectors',
+        label: 'Connectors',
+        description: 'Managed connectors and their parameters, without their secrets',
+        group: { key: 'integrations', label: 'Integrations' },
+        items: [{ key: 'mitre', label: 'MITRE', translatable: false, dependsOn: [], isDefault: false }],
+        itemsPageInfo: onePage(1),
+      },
+      {
+        key: 'ruleEngine',
+        label: 'Rule engine',
+        description: 'Activation of the inference rules',
+        group: { key: 'automationRules', label: 'Automation & Rules' },
+        // The first page of the rules declared on the platform
+        items: RULES_DECLARATION.slice(0, 10).map(({ id, name }) => staticItem(id, name)),
+        itemsPageInfo: { hasNextPage: true, globalCount: RULES_DECLARATION.length },
       },
     ]);
   });
@@ -238,8 +347,10 @@ describe('Config preset exportable types query', () => {
     const types = result.data?.configPresetExportableTypes as { key: string; lockedByEnterpriseEdition: boolean; items: unknown[]; itemsPageInfo: unknown }[];
     expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
-      ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['labels', false],
+      ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['emailTemplates', true], ['labels', false], ['exclusionLists', false], ['killChainPhases', false],
+      ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['connectors', true], ['ruleEngine', false],
     ]);
+    expect(types.find((type) => type.key === 'emailTemplates')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
     const licensed = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
@@ -280,7 +391,15 @@ describe('Config preset exportable types query', () => {
       ['roles', 'securityAccess'],
       ['groups', 'securityAccess'],
       ['policies', 'securityAccess'],
+      ['emailTemplates', 'securityAccess'],
       ['labels', 'taxonomy'],
+      ['exclusionLists', 'customization'],
+      ['killChainPhases', 'taxonomy'],
+      ['vocabularies', 'taxonomy'],
+      ['statusTemplates', 'taxonomy'],
+      ['caseTemplates', 'taxonomy'],
+      ['connectors', 'integrations'],
+      ['ruleEngine', 'automationRules'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);

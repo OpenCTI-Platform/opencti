@@ -1,6 +1,5 @@
-import { createNoopMeter } from '@opentelemetry/api';
+import { createNoopMeter, logs } from '@opentelemetry/api';
 import type { Attributes, MeterProvider } from '@opentelemetry/api';
-import { logs } from '@opentelemetry/api-logs';
 import { BatchLogRecordProcessor, ConsoleLogRecordExporter, LoggerProvider, SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
 import type { LogRecordProcessor } from '@opentelemetry/sdk-logs';
 import { DedupLogRecordProcessor, RECORDS_SUPPRESSED_EVENT_NAME } from './DedupLogRecordProcessor';
@@ -91,7 +90,7 @@ export const initLogger = (isDev: boolean = import.meta.env.DEV): LoggerProvider
   provider = new LoggerProvider({
     processors: [new DedupLogRecordProcessor(buildShippingProcessor(isDev), { onSuppressed: reportSuppressed })],
     loggerConfigurator: () => ({
-      disabled: false,
+      enabled: true,
       minimumSeverity: isDev ? SEVERITY_NUMBERS.DEBUG : SEVERITY_NUMBERS.INFO,
       traceBased: false,
     }),

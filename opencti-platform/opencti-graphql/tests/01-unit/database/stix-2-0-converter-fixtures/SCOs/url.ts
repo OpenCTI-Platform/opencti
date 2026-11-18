@@ -24,5 +24,4 @@ export const EXPECTED_URL = {
   x_opencti_labels: [],
   x_opencti_external_references: [],
   value: 'https://example.com/malware',
-  score: 80,
 };

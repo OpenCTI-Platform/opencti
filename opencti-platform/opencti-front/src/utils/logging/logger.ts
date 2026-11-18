@@ -1,5 +1,5 @@
-import { logs, SeverityNumber } from '@opentelemetry/api-logs';
-import type { AnyValueMap } from '@opentelemetry/api-logs';
+import { logs, SeverityNumber } from '@opentelemetry/api';
+import type { Attributes } from '@opentelemetry/api';
 
 export const LOGGER_NAME = 'opencti-front';
 
@@ -45,7 +45,7 @@ const emit = (level: LogLevel, message: string, options: LogOptions) => {
       severityText: level,
       severityNumber: SEVERITY_NUMBERS[level],
       body: message,
-      attributes: options.data ? { data: toAttributeData(options.data) as AnyValueMap } : {},
+      attributes: options.data ? { data: toAttributeData(options.data) as Attributes } : {},
       exception: 'error' in options ? toException(options.error) : undefined,
     });
   } catch {

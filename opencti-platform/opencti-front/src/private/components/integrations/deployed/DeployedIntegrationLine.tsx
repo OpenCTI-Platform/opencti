@@ -12,7 +12,6 @@ import useHealthCheckMessage from '@components/data/connectors/useHealthCheckMes
 import DeployedIntegrationPopover from '@components/integrations/deployed/DeployedIntegrationPopover';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
-import useHelper from '../../../../utils/hooks/useHelper';
 import IntegrationStatusChip from '@components/data/connectors/IntegrationStatusChip';
 import { capitalizeFirstLetter, EMPTY_VALUE } from '../../../../utils/String';
 import { stopLinkNavigation } from '../../../../utils/domEvent';
@@ -59,7 +58,6 @@ const cellSx = (column: keyof typeof COLUMNS) => ({
 export const DeployedIntegrationLinesHeader = () => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
-  const { isFeatureEnable } = useHelper();
   const headerCellSx = {
     fontSize: 10,
     fontWeight: 600,
@@ -110,14 +108,12 @@ export const DeployedIntegrationLinesHeader = () => {
       <Typography component="div" sx={{ ...headerCellSx, ...cellSx('status') }}>
         {t_i18n('Status')}
       </Typography>
-      {isFeatureEnable('INGESTION_HEALTH') && (
-        <Typography
-          component="div"
-          sx={{ ...headerCellSx, ...cellSx('healthStatus') }}
-        >
-          {t_i18n('Health status')}
-        </Typography>
-      )}
+      <Typography
+        component="div"
+        sx={{ ...headerCellSx, ...cellSx('healthStatus') }}
+      >
+        {t_i18n('Health status')}
+      </Typography>
       <Box sx={cellSx('actions')} />
     </Box>
   );
@@ -137,7 +133,6 @@ const DeployedIntegrationLine = ({
   const { t_i18n, n, ftdt, rd } = useFormatter();
   const { getHealthCheckMessage } = useHealthCheckMessage();
   const theme = useTheme();
-  const { isFeatureEnable } = useHelper();
   const typeMetadata = useDeployedTypeMetadata();
   const { label: typeLabel, icon: TypeIcon } = typeMetadata(item.sectionKey);
 
@@ -151,9 +146,7 @@ const DeployedIntegrationLine = ({
   const hasQueuedMessages
     = item.messagesCount != null && item.messagesCount > 0;
 
-  const healthIssue = isFeatureEnable('INGESTION_HEALTH')
-    ? item.healthIssue
-    : null;
+  const { healthIssue } = item;
   const { color: healthColor, Icon: HealthIcon } = useHealthIssueDisplay(
     healthIssue?.severity ?? 'critical',
   );
@@ -444,23 +437,21 @@ const DeployedIntegrationLine = ({
         </Stack>
       </Box>
       {/* Health status column: forms are not ingestions, they have no health. Only a failure is shown */}
-      {isFeatureEnable('INGESTION_HEALTH') && (
-        <Box
-          onClick={stopLinkNavigation}
-          onAuxClick={stopLinkNavigation}
-          sx={cellSx('healthStatus')}
-        >
-          {item.kind !== 'form' && item.healthIssue ? (
-            <IngestionHealthChip ingestionHealth={item.ingestionHealth} />
-          ) : (
-            <Typography
-              sx={{ fontSize: 12, color: theme.palette.text.secondary }}
-            >
-              {EMPTY_VALUE}
-            </Typography>
-          )}
-        </Box>
-      )}
+      <Box
+        onClick={stopLinkNavigation}
+        onAuxClick={stopLinkNavigation}
+        sx={cellSx('healthStatus')}
+      >
+        {item.kind !== 'form' && item.healthIssue ? (
+          <IngestionHealthChip ingestionHealth={item.ingestionHealth} />
+        ) : (
+          <Typography
+            sx={{ fontSize: 12, color: theme.palette.text.secondary }}
+          >
+            {EMPTY_VALUE}
+          </Typography>
+        )}
+      </Box>
       {/* Actions column. */}
       <Box sx={cellSx('actions')}>
         <DeployedIntegrationPopover item={item} onChange={onChange} />

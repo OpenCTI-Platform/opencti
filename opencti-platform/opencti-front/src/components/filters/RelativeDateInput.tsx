@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import { IconButton } from '@filigran/design-system';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import DateTimePicker from '../common/input/picker/BaseDateTimePicker';
 import { CalendarIcon } from '@mui/x-date-pickers/icons';
 import { Link } from 'react-router';
 import { useFormatter } from '../i18n';

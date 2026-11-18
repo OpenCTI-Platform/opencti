@@ -340,6 +340,14 @@ interface BasicStoreEntity extends BasicStoreCommon {
   x_opencti_main_observable_type: string;
   x_opencti_lastname: string;
   x_opencti_firstname: string;
+  // System asset fields
+  x_opencti_system_category: string;
+  x_opencti_system_subcategory: string;
+  x_opencti_internet_facing: string;
+  x_opencti_criticality: string;
+  x_opencti_environment: string;
+  x_opencti_owner: string;
+  x_opencti_platform: string;
   x_opencti_inferences: Array<StoreRule> | undefined;
   // internal
   i_relation: BasicStoreRelation; // internal related relation for refs
@@ -409,6 +417,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
     field_id: string;
     field_name: string;
     int_value?: number;
+    float_value?: number;
     string_value?: string;
     boolean_value?: boolean;
     date_value?: string;

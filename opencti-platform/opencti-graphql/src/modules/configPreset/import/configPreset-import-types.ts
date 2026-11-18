@@ -1,6 +1,7 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ConfigImportMode, type ConfigImportStatus } from '../../configImport/configImport-types';
 import type { ConfigPresetConfiguration } from '../configPreset-types';
+import type { ConnectorImportLoaded } from '../../connector/connector-import';
 
 // Reasons of a refusal, read by the front in extensions.data.reason (the message is only for display)
 export const CONFIG_PRESET_REASON_FILE_MISSING = 'file_missing';
@@ -27,6 +28,16 @@ export interface ConfigPresetBundleItem {
   // Path in the zip
   path: string;
   configuration: ConfigPresetConfiguration;
+  // The attachment of the item in the zip (the values of an exclusion list): absent when the item has none, or when the zip lacks it
+  attachment?: ConfigPresetBundleAttachment;
+}
+
+export interface ConfigPresetBundleAttachment {
+  // Path in the zip
+  path: string;
+  // Reads the attachment when it is needed, never while the bundle is read. The limit is enforced on the bytes really read:
+  // null when the attachment is bigger, nothing is kept of it.
+  read: (limit: number) => Promise<Buffer | null>;
 }
 
 // What an importer decides for an item, without writing anything
@@ -46,6 +57,23 @@ export interface ConfigPresetComputedItem {
   fields?: ConfigPresetImportField[];
   // A setting that is on or off: whether the bundle turns it on, shown under its label; null when the bundle does not set it
   isEnabled?: boolean | null;
+  credentials?: ConfigPresetImportCredential[];
+}
+
+export interface ConfigPresetImportCredential {
+  key: string;
+  description: string;
+  required: boolean;
+  stored: boolean;
+  secret: boolean;
+  type: string;
+}
+
+export type ConfigPresetImportCredentials = Map<string, Record<string, string>>;
+
+export interface ConfigPresetItemOptions {
+  credentials: ConfigPresetImportCredentials;
+  serviceAccounts: Map<string, string>;
 }
 
 // What the import would create, shared by the items of one import: `<type>/<bundle id>`
@@ -55,6 +83,10 @@ export interface ConfigPresetImportPlan {
   themeNames?: Set<string>;
   // The names that the themes the earlier items of a dry run would rename no longer hold
   releasedThemeNames?: Set<string>;
+  // The names (normalized) of the exclusion lists the earlier items of an import hold, dry run or not
+  exclusionListNames?: Set<string>;
+  // The names the email templates of the earlier items of an import or a dry run take (the target of an overwrite, the name of a copy)
+  emailTemplateNames?: Set<string>;
   // The standard ids of the roles the earlier items of a dry run would create
   roleIds?: Set<string>;
   // The standard ids of the groups the earlier items of a dry run would create
@@ -66,6 +98,11 @@ export interface ConfigPresetImportPlan {
   // `<type>/<bundle id>` -> the standard id the item is written under (its copy when imported as COPY), null when the copy is not written.
   // The items that depend on it use it, so that they get the item of the bundle and never the local one with its bundle id
   targets?: Map<string, string | null>;
+  connectorNames?: Set<string>;
+  connectorsLoaded?: Promise<ConnectorImportLoaded>;
+  ingestionGroupPlanned?: boolean;
+  credentials?: ConfigPresetImportCredentials;
+  serviceAccounts?: Map<string, string>;
 }
 
 export const configPresetPlanKey = (type: string, id: string) => `${type}/${id}`;
@@ -91,7 +128,8 @@ export interface ConfigPresetImporter {
   compute: (context: AuthContext, user: AuthUser, item: ConfigPresetBundleItem, plan: ConfigPresetImportPlan, mode: ConfigImportMode) => Promise<ConfigPresetComputedItem>;
   // Writes the item, with one domain call when it can: an importer that needs several (the hidden entity types hide, then show) can leave
   // its item half written, and the error then makes it failed.
-  // Returns the status when it differs from the computed one (a theme created by another import since compute is overwritten).
+  // Returns the status when it differs from the computed one (a theme created by another import since compute is overwritten),
+  // with its own reason when the one of compute no longer applies (a rule skipped because the rule engine was disabled since).
   // The plan is the one compute recorded this item and the earlier ones in (the role a group gets)
   apply: (
     context: AuthContext,
@@ -100,7 +138,12 @@ export interface ConfigPresetImporter {
     computed: ConfigPresetComputedItem,
     mode: ConfigImportMode,
     plan: ConfigPresetImportPlan,
-  ) => Promise<ConfigImportStatus | void>;
+  ) => Promise<ConfigImportStatus | ConfigPresetAppliedItem | void>;
+}
+
+export interface ConfigPresetAppliedItem {
+  status: ConfigImportStatus;
+  reason?: string;
 }
 
 // Content of metadata.json

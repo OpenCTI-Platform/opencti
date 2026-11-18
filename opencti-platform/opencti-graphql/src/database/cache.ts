@@ -94,7 +94,27 @@ const handleCacheForEntity = async (instance: BasicStoreCommon | BasicStoreCommo
     if (cache[type] && cache[type].values) {
       if (cache[type][fn]) {
         logApp.debug(`${fn} reset cache for entity`, { type });
-        cache[type].values = await cache[type][fn](cache[type].values, instance);
+        const entry = cache[type];
+        const handler = entry[fn];
+        const applyHandler = async () => {
+          if (!entry.values) {
+            // Invalidated while the previous handler ran: nothing to update, the next read loads again.
+            return;
+          }
+          const startGeneration = entry.generation ?? 0;
+          const values = await handler(entry.values, instance);
+          if ((entry.generation ?? 0) !== startGeneration) {
+            // Invalidated during the handler: its values may predate the invalidation, leave the entry cleared.
+            logApp.debug('[CACHE] Cache invalidated during an incremental update, discarding its values', { type, fn });
+            return;
+          }
+          entry.values = values;
+        };
+        // The handlers of an entry run one after another, each on the values the previous one stored:
+        // two concurrent handlers started from the same values would each drop the other's update.
+        const applying = (entry.updating ?? Promise.resolve()).then(applyHandler);
+        entry.updating = applying.catch(() => undefined);
+        await applying;
       } else {
         logApp.debug('Simple reset cache for entity', { type });
         invalidateCacheEntry(cache[type]);

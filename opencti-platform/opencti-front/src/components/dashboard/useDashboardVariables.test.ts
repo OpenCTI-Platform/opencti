@@ -2,11 +2,8 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DashboardVariable } from './dashboard-types';
 
-const mocks = vi.hoisted(() => ({ userId: 'user-1', flags: ['DASHBOARD_VARIABLES'] as string[] }));
+const mocks = vi.hoisted(() => ({ userId: 'user-1' }));
 vi.mock('../../utils/hooks/useAuth', () => ({ default: () => ({ me: { id: mocks.userId } }) }));
-vi.mock('../../utils/hooks/useHelper', () => ({
-  default: () => ({ isFeatureEnable: (f: string) => mocks.flags.includes(f) }),
-}));
 
 import { useDashboardVariables } from './useDashboardVariables';
 
@@ -24,7 +21,6 @@ describe('useDashboardVariables', () => {
     window.localStorage.clear();
     window.history.replaceState(null, '', '/');
     mocks.userId = 'user-1';
-    mocks.flags = ['DASHBOARD_VARIABLES'];
   });
 
   afterEach(() => {
@@ -88,12 +84,6 @@ describe('useDashboardVariables', () => {
     expect(result.current.values.get(sector.id)).toBe('Energy');
   });
 
-  it('returns an empty map when the feature flag is off', () => {
-    mocks.flags = [];
-    const { result } = renderHook(() => useDashboardVariables('ws-1', [sector]));
-    expect(result.current.values.size).toBe(0);
-  });
-
   it('keeps the same Map instance when the manifest is re-saved with identical content', () => {
     const { result, rerender } = renderHook(({ vars }) => useDashboardVariables('ws-1', vars), { initialProps: { vars: [sector] } });
     const before = result.current.values;
@@ -126,16 +116,6 @@ describe('useDashboardVariables', () => {
     expect(second.result.current.values.get(sector.id)).toBe('Energy');
   });
 
-  it('does not write to the storage when the feature flag is off', () => {
-    mocks.flags = [];
-    const { result } = renderHook(() => useDashboardVariables('ws-1', [sector]));
-    act(() => result.current.setValue(sector.id, 'Finance'));
-    expect(window.localStorage.getItem('dashboard-variables-user-1-ws-1')).toBeNull();
-    window.localStorage.setItem('dashboard-variables-user-1-ws-1', JSON.stringify({ [sector.id]: 'Finance' }));
-    act(() => result.current.reset());
-    expect(window.localStorage.getItem('dashboard-variables-user-1-ws-1')).not.toBeNull();
-  });
-
   it('gives the URL priority over the storage and keeps other query params', () => {
     window.localStorage.setItem('dashboard-variables-user-1-ws-1', JSON.stringify({ [sector.id]: 'Finance' }));
     window.history.replaceState(null, '', `/?foo=bar&variables=${encodeURIComponent(`${sector.id}:Retail`)}`);
@@ -165,6 +145,43 @@ describe('useDashboardVariables', () => {
     act(() => result.current.setValue(sector.id, 'Finance'));
     act(() => result.current.reset());
     expect(new URLSearchParams(window.location.search).has('variables')).toBe(false);
+  });
+
+  it('writes the values restored from this browser into the URL, without the deleted variables', () => {
+    window.localStorage.setItem('dashboard-variables-user-1-ws-1', JSON.stringify({ gone: 'x', [sector.id]: 'Finance' }));
+    renderHook(() => useDashboardVariables('ws-1', [sector]));
+    expect(new URLSearchParams(window.location.search).get('variables')).toBe(`${sector.id}:Finance`);
+  });
+
+  it('leaves the URL untouched when the local values are ignored', () => {
+    window.localStorage.setItem('dashboard-variables-user-1-ws-1', JSON.stringify({ [sector.id]: 'Finance' }));
+    renderHook(() => useDashboardVariables('ws-1', [sector], { ignoreLocalValues: true }));
+    expect(window.location.search).toBe('');
+  });
+
+  describe('default overrides (the preset the user opens the dashboard on)', () => {
+    const overrides = new Map([[sector.id, 'Finance']]);
+
+    it('starts from, and resets to, the overridden defaults', () => {
+      const { result } = renderHook(() => useDashboardVariables('ws-1', [sector, country], { defaultOverrides: overrides }));
+      expect(result.current.values.get(sector.id)).toBe('Finance');
+      expect(result.current.defaults.get(sector.id)).toBe('Finance');
+      act(() => result.current.setValue(sector.id, 'Retail'));
+      act(() => result.current.reset());
+      expect(result.current.values.get(sector.id)).toBe('Finance');
+    });
+
+    it('keeps the manifest defaults apart, untouched by the overrides', () => {
+      const { result } = renderHook(() => useDashboardVariables('ws-1', [sector, country], { defaultOverrides: overrides }));
+      expect(result.current.manifestDefaults.get(sector.id)).toBe('Energy');
+      expect(result.current.manifestDefaults.get(country.id)).toBe('FR');
+      expect(result.current.defaults.get(country.id)).toBe('FR');
+    });
+
+    it('ignores an override the variable does not accept', () => {
+      const { result } = renderHook(() => useDashboardVariables('ws-1', [country], { defaultOverrides: new Map([[country.id, 'US']]) }));
+      expect(result.current.defaults.get(country.id)).toBe('FR');
+    });
   });
 
   describe('resetValues', () => {
@@ -204,13 +221,10 @@ describe('useDashboardVariables', () => {
       expect(JSON.parse(window.localStorage.getItem(STORAGE_KEY) as string)).toEqual({ [sector.id]: 'Retail' });
     });
 
-    it('does nothing with ignoreLocalValues nor when the feature flag is off', () => {
+    it('does nothing with ignoreLocalValues', () => {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ [sector.id]: 'Finance' }));
       const ignoring = renderHook(() => useDashboardVariables('ws-1', [sector], { ignoreLocalValues: true }));
       act(() => ignoring.result.current.resetValues(new Map([[sector.id, 'Finance']])));
-      mocks.flags = [];
-      const disabled = renderHook(() => useDashboardVariables('ws-1', [sector]));
-      act(() => disabled.result.current.resetValues(new Map([[sector.id, 'Finance']])));
       expect(JSON.parse(window.localStorage.getItem(STORAGE_KEY) as string)).toEqual({ [sector.id]: 'Finance' });
     });
   });
@@ -234,14 +248,6 @@ describe('useDashboardVariables', () => {
     act(() => result.current.setValue(country.id, 'DE'));
     expect(result.current.values.get(sector.id)).toBe('Retail');
     expect(new URLSearchParams(window.location.search).get('variables')).toBe(`${sector.id}:Retail,${country.id}:DE`);
-  });
-
-  it('does not touch the URL when the feature flag is off', () => {
-    mocks.flags = [];
-    window.history.replaceState(null, '', `/?variables=${encodeURIComponent(`${sector.id}:Retail`)}`);
-    const { result } = renderHook(() => useDashboardVariables('ws-1', [sector]));
-    act(() => result.current.setValue(sector.id, 'Finance'));
-    expect(new URLSearchParams(window.location.search).get('variables')).toBe(`${sector.id}:Retail`);
   });
 
   it('still updates the values when the storage write throws', () => {
@@ -339,12 +345,16 @@ describe('useDashboardVariables', () => {
       seed();
       const { result, rerender } = render(false);
       expect(result.current.values.get(sector.id)).toBe('Finance');
+      // While used, the values restored from this browser and from the URL are both shown in the URL.
+      const urlInUse = `${sector.id}:Finance,${country.id}:DE`;
+      expect(new URLSearchParams(window.location.search).get('variables')).toBe(urlInUse);
       rerender({ ignore: true });
       expect(result.current.values.get(sector.id)).toBe('Energy');
       expect(result.current.values.get(country.id)).toBe('FR');
       act(() => result.current.setValue(sector.id, 'Retail'));
+      // Once ignored, neither the storage nor the URL is written any more.
       expect(JSON.parse(window.localStorage.getItem(storageKey) as string)).toEqual({ [sector.id]: 'Finance' });
-      expect(new URLSearchParams(window.location.search).get('variables')).toBe(`${country.id}:DE`);
+      expect(new URLSearchParams(window.location.search).get('variables')).toBe(urlInUse);
     });
 
     it('keeps the state stable between renders once resynchronised', () => {
@@ -356,17 +366,6 @@ describe('useDashboardVariables', () => {
       rerender({ ignore: false });
       expect(result.current.values).toBe(before);
       expect(result.current.values.get(sector.id)).toBe('Finance');
-    });
-
-    it('applies the stored values when the feature flag resolves after the mount', () => {
-      mocks.flags = [];
-      seed();
-      const { result, rerender } = render(false);
-      expect(result.current.values.size).toBe(0);
-      mocks.flags = ['DASHBOARD_VARIABLES'];
-      rerender({ ignore: false });
-      expect(result.current.values.get(sector.id)).toBe('Finance');
-      expect(result.current.values.get(country.id)).toBe('DE');
     });
   });
 

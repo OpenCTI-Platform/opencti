@@ -11,7 +11,7 @@ export const convertChannelToStix_2_1 = (instance: StoreEntityChannel): StixChan
     name: instance.name,
     description: instance.description,
     channel_types: instance.channel_types,
-    aliases: instance.x_opencti_aliases ?? [],
+    aliases: instance.aliases ?? [],
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixDomainObject.extensions[STIX_EXT_OCTI],
@@ -29,6 +29,6 @@ export const convertChannelToStix_2_0 = (instance: StoreEntityChannel): Stix2Cha
     name: instance.name,
     description: instance.description,
     channel_types: instance.channel_types,
-    aliases: instance.x_opencti_aliases ?? [],
+    aliases: instance.aliases ?? [],
   };
 };

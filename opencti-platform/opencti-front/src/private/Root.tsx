@@ -227,6 +227,7 @@ const meUserFragment = graphql`
     default_dashboard {
       id
     }
+    default_dashboard_preset
     default_time_field
     default_hidden_types
     effective_confidence_level {
@@ -276,6 +277,9 @@ const meUserFragment = graphql`
   }
 `;
 
+// /!\ Besides refreshing `me`, this subscription keeps the tab's GraphQL WebSocket open for its whole life
+// (the client is lazy): the platform relies on it to log a session out when its last tab is closed.
+// Removing it silently disables that feature (guarded by tests_e2e/settings/sessionPresence.spec.ts).
 const subscription = graphql`
   subscription RootMeSubscription {
     me {

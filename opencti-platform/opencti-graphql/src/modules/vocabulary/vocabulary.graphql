@@ -33,6 +33,12 @@ enum VocabularyCategory {
   service_status_ov
   service_type_ov
   start_type_ov
+  system_category_ov
+  system_criticality_ov
+  system_environment_ov
+  system_internet_facing_ov
+  system_platform_ov
+  system_subcategory_ov
   key_type_ov
   threat_actor_group_type_ov
   threat_actor_group_role_ov
@@ -95,6 +101,7 @@ type Vocabulary implements BasicObject & StixObject & StixMetaObject {
   builtIn: Boolean
   is_hidden: Boolean
   order: Int
+  color: String
 }
 
 # Ordering
@@ -138,6 +145,7 @@ input VocabularyAddInput {
   description: String
   category: VocabularyCategory!
   order: Int
+  color: String
   created: DateTime
   modified: DateTime
   aliases: [String!]

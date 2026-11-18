@@ -137,6 +137,35 @@ describe('useDashboardViz', () => {
     widgetA2.unmount();
   });
 
+  it('does not refetch when the widget gets new parameters with the same content (manifest refreshed)', () => {
+    const buildQueryVariables = vi.fn((_, __, parameters?: { title?: string | null }) => ({
+      title: parameters?.title ?? null,
+      // Computed from "now", as a relative range is: a rebuild would change the variables.
+      at: Date.now(),
+    }));
+    // Stable, as the dashboard memoizes it on the range.
+    const config = {};
+    const widget = renderHook(({ parameters }: { parameters: { title: string } }) => useDashboardViz({
+      dataSelection: EMPTY_DATA_SELECTION,
+      perspective: 'entities',
+      refreshRate: null,
+      query: {} as never,
+      config,
+      parameters,
+      buildQueryVariables,
+    }), {
+      initialProps: { parameters: { title: 'A' } },
+    });
+    const [load] = loadMocks;
+    const baselineCalls = load.mock.calls.length;
+    vi.advanceTimersByTime(5000);
+    act(() => {
+      widget.rerender({ parameters: { title: 'A' } });
+    });
+    expect(load).toHaveBeenCalledTimes(baselineCalls);
+    widget.unmount();
+  });
+
   it('fetches on mount and then refetches when refresh token increments', () => {
     const buildQueryVariables = vi.fn(() => ({ marker: 'token-refetch' }));
 
@@ -329,40 +358,6 @@ describe('useDashboardViz', () => {
     expect(disposeMocks.at(-1)).toHaveBeenCalled();
   });
 
-  it('does not query the selection it builds no variables for, and loads the next variables again', () => {
-    // No variables for a field the dataset does not support
-    const buildQueryVariables = vi.fn((_: unknown, __: unknown, parameters?: { breakdownBy?: string | null }) => (
-      parameters?.breakdownBy === 'unsupported' ? null : { field: parameters?.breakdownBy }
-    ));
-    const hook = renderHook(({ parameters }: { parameters: { breakdownBy: string } }) => useDashboardViz({
-      dataSelection: EMPTY_DATA_SELECTION,
-      perspective: 'entities',
-      query: {} as never,
-      config: {},
-      parameters,
-      buildQueryVariables,
-    }), { initialProps: { parameters: { breakdownBy: 'unsupported' } } });
-    const [loadSpy] = loadMocks;
-    const [disposeSpy] = disposeMocks;
-    expect(hook.result.current.skipped).toBe(true);
-    expect(loadSpy).not.toHaveBeenCalled();
-
-    hook.rerender({ parameters: { breakdownBy: 'objectLabel' } });
-    expect(hook.result.current.skipped).toBe(false);
-    expect(loadSpy).toHaveBeenCalledTimes(1);
-    expect(loadSpy.mock.lastCall?.[0]).toEqual({ field: 'objectLabel' });
-
-    // The query loaded before is not shown any more...
-    hook.rerender({ parameters: { breakdownBy: 'unsupported' } });
-    expect(hook.result.current.skipped).toBe(true);
-    expect(disposeSpy).toHaveBeenCalledTimes(1);
-    // ...and is loaded again with the same variables
-    hook.rerender({ parameters: { breakdownBy: 'objectLabel' } });
-    expect(loadSpy).toHaveBeenCalledTimes(2);
-    expect(loadSpy.mock.lastCall?.[0]).toEqual({ field: 'objectLabel' });
-    hook.unmount();
-  });
-
   it('queries nothing while the selection is resolved, nor the previous filters with the new parameters', () => {
     const buildQueryVariables = vi.fn((resolvedDataSelection: WidgetDataSelection[], _: unknown, parameters?: { breakdownBy?: string | null }) => ({
       filters: resolvedDataSelection[0]?.filters ?? null,
@@ -379,19 +374,19 @@ describe('useDashboardViz', () => {
     }), { initialProps });
     const [loadSpy] = loadMocks;
     const [disposeSpy] = disposeMocks;
-    expect(hook.result.current.isResolving).toBe(false);
+    expect(loadSpy).toHaveBeenCalledTimes(1);
     expect(loadSpy.mock.lastCall?.[0]).toEqual({ filters: 'reports', field: 'objectLabel' });
 
-    // Edited to read a saved filter, still read from the API, with another field
+    // Edited to read a saved filter, still read from the API, with another field: no variables are built until it
+    // is read, and the query of the previous filters is not shown
+    const builtVariablesCount = buildQueryVariables.mock.calls.length;
     hook.rerender({ dataSelection: [{ filters: 'deferred' }] as unknown as WidgetDataSelection[], parameters: { breakdownBy: 'objectAssignee' } });
-    expect(hook.result.current.isResolving).toBe(true);
-    expect(hook.result.current.skipped).toBe(false);
+    expect(buildQueryVariables).toHaveBeenCalledTimes(builtVariablesCount);
     expect(loadSpy).toHaveBeenCalledTimes(1);
     expect(buildQueryVariables).not.toHaveBeenCalledWith([{ filters: 'reports' }], {}, { breakdownBy: 'objectAssignee' });
     expect(disposeSpy).toHaveBeenCalledTimes(1);
 
     act(() => deferredResolutions.shift()?.());
-    expect(hook.result.current.isResolving).toBe(false);
     expect(loadSpy).toHaveBeenCalledTimes(2);
     expect(loadSpy.mock.lastCall?.[0]).toEqual({ filters: 'deferred', field: 'objectAssignee' });
     hook.unmount();
@@ -407,16 +402,18 @@ describe('useDashboardViz', () => {
       parameters: {},
       buildQueryVariables,
     }));
-    expect(hook.result.current.isResolving).toBe(true);
-    act(() => deferredResolutions.shift()?.());
-    expect(hook.result.current.isResolving).toBe(false);
     const [loadSpy] = loadMocks;
     const [disposeSpy] = disposeMocks;
+    // Nothing is queried until the selection is resolved
+    expect(buildQueryVariables).not.toHaveBeenCalled();
+    expect(loadSpy).not.toHaveBeenCalled();
+    act(() => deferredResolutions.shift()?.());
     expect(loadSpy).toHaveBeenCalledTimes(1);
 
+    // While the refresh resolves it again, the query loaded is still shown
     refreshTokenMockValue = 1;
     hook.rerender();
-    expect(hook.result.current.isResolving).toBe(false);
+    expect(disposeSpy).not.toHaveBeenCalled();
     act(() => deferredResolutions.shift()?.());
     expect(loadSpy).toHaveBeenCalledTimes(2);
     expect(disposeSpy).not.toHaveBeenCalled();

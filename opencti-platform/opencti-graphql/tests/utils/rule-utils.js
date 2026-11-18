@@ -57,7 +57,7 @@ const countQueueConsumers = async (queueName) => {
 
 // A rule activation is a background task processed by a worker: wait until every background task queue is consumed,
 // so the activation budget below measures the rule, not the worker's connector refresh cycle (#19692).
-const awaitTaskWorkerReady = async () => {
+export const awaitTaskWorkerReady = async () => {
   const queueNames = getInternalBackgroundTaskQueues().map((queue) => `${RABBIT_QUEUE_PREFIX}push_${queue.id}`);
   await awaitUntilCondition(async () => {
     const consumers = await Promise.all(queueNames.map((queueName) => countQueueConsumers(queueName)));

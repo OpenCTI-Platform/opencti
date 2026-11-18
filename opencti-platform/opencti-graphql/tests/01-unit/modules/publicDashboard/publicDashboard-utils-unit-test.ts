@@ -1,6 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import { getServedPublicManifest, sanitizePublicDashboardUriKey } from '../../../../src/modules/publicDashboard/publicDashboard-utils';
-import { ENABLED_FEATURE_FLAGS, TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../../../src/config/conf';
+import { describe, expect, it } from 'vitest';
+import { getServedPublicManifest, omitViewerSwitches, sanitizePublicDashboardUriKey } from '../../../../src/modules/publicDashboard/publicDashboard-utils';
 import { fromB64, toB64 } from '../../../../src/utils/base64';
 
 const UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -17,8 +16,20 @@ describe('sanitizePublicDashboardUriKey', () => {
   });
 });
 
+describe('omitViewerSwitches', () => {
+  it('should remove the three viewer switches and keep the rest of the config', () => {
+    const config = { relativeDate: 'days-7', allowViewersToEditTimeFilters: true, allowViewersToChangeVariables: false, allowViewersToSwitchPresets: true };
+    expect(omitViewerSwitches(config)).toEqual({ relativeDate: 'days-7' });
+  });
+
+  it('should return the same config when it holds no switch', () => {
+    const config = { relativeDate: null };
+    expect(omitViewerSwitches(config)).toBe(config);
+    expect(omitViewerSwitches(undefined)).toBeUndefined();
+  });
+});
+
 describe('getServedPublicManifest', () => {
-  const previousEnabledFeatureFlags = [...ENABLED_FEATURE_FLAGS];
   const breakdown = { breakdownBy: 'objectLabel', breakdownLimit: 5, breakdownOrder: 'asc', breakdownOther: true };
   const reports = { mode: 'and', filters: [{ key: ['entity_type'], values: ['Report'], operator: 'eq', mode: 'or' }], filterGroups: [] };
   // The private manifest keeps the filters of the datasets, the public one strips them
@@ -46,33 +57,31 @@ describe('getServedPublicManifest', () => {
   };
   const withoutBreakdown = { ...publicWidgets['widget-1'], parameters: { title: 'Reports', interval: 'week' } };
 
-  afterEach(() => {
-    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...previousEnabledFeatureFlags);
+  it('should never serve the viewer switches of the dashboard: the public time filters stay read only', () => {
+    const served = { 'widget-2': publicWidgets['widget-2'] };
+    const dashboard = {
+      // A public dashboard published before the switches were stripped at write time
+      public_manifest: toB64({
+        widgets: served,
+        config: { refresh_interval: 0, allowViewersToEditTimeFilters: true, allowViewersToChangeVariables: false, allowViewersToSwitchPresets: true },
+      }) as string,
+      private_manifest: toB64({ widgets: { 'widget-2': storedWidgets['widget-2'] }, config: { refresh_interval: 0 } }) as string,
+    };
+    expect(fromB64(getServedPublicManifest(dashboard) as string)).toEqual({ widgets: served, config: { refresh_interval: 0 } });
   });
 
-  it('should serve the stored manifest with the time series breakdown flag, its widgets can be broken down', () => {
-    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, TIME_SERIES_BREAKDOWN_FEATURE_FLAG);
+  it('should serve the stored manifest when its widgets can be broken down', () => {
     const dashboard = publicDashboard();
     expect(getServedPublicManifest(dashboard)).toBe(dashboard.public_manifest);
   });
 
-  it('should serve the widgets without their breakdown without the flag, keeping everything else', () => {
-    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
-    expect(fromB64(getServedPublicManifest(publicDashboard()) as string)).toEqual({
-      widgets: { ...publicWidgets, 'widget-1': withoutBreakdown },
-      config: { refresh_interval: 0 },
-    });
-  });
-
-  it('should serve a manifest without breakdown as it is stored, without the flag', () => {
-    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
+  it('should serve a manifest without breakdown as it is stored', () => {
     const dashboard = publicDashboard({ 'widget-2': storedWidgets['widget-2'] }, { 'widget-2': publicWidgets['widget-2'] });
     expect(getServedPublicManifest(dashboard)).toBe(dashboard.public_manifest);
     expect(getServedPublicManifest({ public_manifest: null as unknown as string, private_manifest: dashboard.private_manifest })).toBeNull();
   });
 
   it('should serve without their breakdown the widgets that cannot be broken down, as the dashboards draw them', () => {
-    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, TIME_SERIES_BREAKDOWN_FEATURE_FLAG);
     const stored = storedWidgets['widget-1'];
     const [dataset] = stored.dataSelection;
     const drafts = { mode: 'and', filters: [{ key: ['entity_type'], values: ['DraftWorkspace'], operator: 'eq', mode: 'or' }], filterGroups: [] };
@@ -97,7 +106,6 @@ describe('getServedPublicManifest', () => {
   });
 
   it('should keep the breakdown of every widget that can be broken down', () => {
-    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, TIME_SERIES_BREAKDOWN_FEATURE_FLAG);
     const stored = storedWidgets['widget-1'];
     const canBreakDown = [
       ...['vertical-bar', 'line', 'area', 'heatmap'].map((type) => ({ ...stored, type })),

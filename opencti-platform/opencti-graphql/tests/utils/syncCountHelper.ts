@@ -13,13 +13,14 @@ import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
-// 2 created by ingestionDeduplication-test (an import, then the same import after the deletion)
-testCreatedCounter['attack-pattern'] = 27;
+// 2 created by ingestionDeduplication-test (an import, then the same import after the deletion), +1 sub-technique created and deleted by attackPattern-test (x_mitre_id)
+testCreatedCounter['attack-pattern'] = 28;
 testCreatedCounter.campaign = 6;
 // 3 created by workflow-closing-reason-test merge and external status write cases
 testCreatedCounter['case-incident'] = 23;
-testCreatedCounter['case-rfi'] = 9;
-testCreatedCounter['case-rft'] = 1;
+// 40 case-rfi and 1 case-rft created by the request access workflow tests (requestAccess-test, requestAccess-domain-test, workflow-test)
+testCreatedCounter['case-rfi'] = 49;
+testCreatedCounter['case-rft'] = 2;
 testCreatedCounter.channel = 1;
 testCreatedCounter['course-of-action'] = 4;
 testCreatedCounter.credential = 1;
@@ -46,7 +47,11 @@ testCreatedCounter.infrastructure = 1;
 // - 1 created and deleted by stixRelationship-test (time series breakdown)
 testCreatedCounter['intrusion-set'] = 55;
 testCreatedCounter['ipv4-addr'] = 1;
-testCreatedCounter['kill-chain-phase'] = 4;
+// Counts for:
+// - 1 created and deleted by form-submission-test
+// - 3 created and deleted by killChainPhase-import-test
+// - 3 created by the data files the tests load (kill_chain_phases of their objects), never deleted
+testCreatedCounter['kill-chain-phase'] = 7;
 // Counts for:
 // - 3 created and deleted by investigation-enrichment-test
 // - 3 created and deleted by label-import-test
@@ -57,7 +62,7 @@ testCreatedCounter.location = 23; // includes 1 created and deleted by publicDas
 testCreatedCounter['mac-addr'] = 1;
 // Includes 2 created and deleted by form-submission-test (a verified form import, an existing one left as it is),
 // 2 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown), and 5 by ingestionDeduplication-domain-test
-testCreatedCounter.malware = 75;
+testCreatedCounter.malware = 77; // 2 by the request access workflow tests
 testCreatedCounter['malware-analysis'] = 3;
 testCreatedCounter['marking-definition'] = 29;
 testCreatedCounter.narrative = 1;
@@ -70,30 +75,36 @@ testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
 // Includes 5 created and deleted by stixRelationship-test, and 1 created by publicDashboard-test, deleted with its target (time series breakdown)
-testCreatedCounter.relationship = 154;
+testCreatedCounter.relationship = 155; // +1 subtechnique-of created by attackPattern-test, removed with its sub-technique
 // Includes 8 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
-testCreatedCounter.report = 74;
+// Plus 3 created and deleted by workflow-entity-write-test
+testCreatedCounter.report = 77;
 testCreatedCounter.sighting = 8; // 3 created and deleted by relations-deduplication-test
 testCreatedCounter.software = 2;
 testCreatedCounter.task = 1;
 testCreatedCounter['threat-actor'] = 33;
 testCreatedCounter.tool = 5;
 testCreatedCounter['tracking-number'] = 1;
-testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
+// Counts for:
+// - 3 created and deleted by vocabulary-import-test
+testCreatedCounter.vocabulary = VOCABULARY_NUMBERS + 3;
 // 1 created and deleted by ingestionDeduplication-test (a type outside the deduplication allowlist)
-testCreatedCounter.vulnerability = 12;
+// 3 created and deleted by filterGroup-test (nil / not_nil operators on numbers)
+testCreatedCounter.vulnerability = 15;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
 testCreatedCounter['security-coverage'] = 27;
 testCreatedCounter['security-coverage-result'] = 22;
 
 export const testUpdatedCounter: Record<string, number> = {};
-testUpdatedCounter['marking-definition'] = 3;
+// Counts for:
+// - 2 by configPreset-import-markings-test (a built-in marking changed then imported back)
+testUpdatedCounter['marking-definition'] = 5;
 testUpdatedCounter.relationship = 9;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
 // 1 by ingestionDeduplication-domain-test (an edit in the platform)
-testUpdatedCounter.malware = 23;
+testUpdatedCounter.malware = 24; // 1 org sharing by the request access workflow tests
 testUpdatedCounter.file = 27;
 testUpdatedCounter['intrusion-set'] = 18;
 testUpdatedCounter['data-component'] = 7;
@@ -103,13 +114,16 @@ testUpdatedCounter['attack-pattern'] = 6;
 // 5 by workflow-closing-reason-test merge (1) and external status write (4) cases
 testUpdatedCounter['case-incident'] = 28;
 testUpdatedCounter.feedback = 1;
-testUpdatedCounter.report = 32; // includes 2 by audit-test (audits breakdown)
+testUpdatedCounter.report = 33; // includes 2 by audit-test (audits breakdown), and 1 status written by a transition in workflow-entity-write-test
 testUpdatedCounter['course-of-action'] = 3;
 testUpdatedCounter['data-source'] = 1;
 testUpdatedCounter['external-reference'] = 1;
 testUpdatedCounter.grouping = 3;
 testUpdatedCounter.incident = 4;
 testUpdatedCounter.indicator = 33;
+// Counts for:
+// - 3 updated by killChainPhase-import-test
+testUpdatedCounter['kill-chain-phase'] = 3;
 // Counts for:
 // - 1 updated by label-import-test
 testUpdatedCounter.label = 2;
@@ -123,12 +137,16 @@ testUpdatedCounter['email-addr'] = 1;
 testUpdatedCounter.event = 1;
 testUpdatedCounter.persona = 1;
 testUpdatedCounter['ssh-key'] = 1;
-testUpdatedCounter['case-rfi'] = 5;
+// 43 case-rfi and 2 case-rft updated by the request access workflow tests (status transitions, decisions)
+testUpdatedCounter['case-rfi'] = 48;
+testUpdatedCounter['case-rft'] = 2;
 testUpdatedCounter['ipv4-addr'] = 4;
 testUpdatedCounter.tool = 10;
 testUpdatedCounter.sighting = 7; // 2 upserts in relations-deduplication-test
 testUpdatedCounter['threat-actor'] = 18;
-testUpdatedCounter.vocabulary = 3;
+// Counts for:
+// - 2 updated by vocabulary-import-test (the description of an entry of the platform, edited then restored)
+testUpdatedCounter.vocabulary = 3 + 2;
 testUpdatedCounter.vulnerability = 5;
 testUpdatedCounter.iccid = 1;
 testUpdatedCounter.imei = 1;
@@ -145,16 +163,18 @@ testMergedCounter.artifact = 1;
 testMergedCounter['attack-pattern'] = 1;
 testMergedCounter['case-incident'] = 2; // 1 by workflow-closing-reason-test merge case
 testMergedCounter['intrusion-set'] = 1;
+testMergedCounter['case-rfi'] = 1; // requestAccess-test merge of a decided RFI
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
-// 2 by ingestionDeduplication-test
-testDeletedCounter['attack-pattern'] = 22;
+// 2 by ingestionDeduplication-test, +1 sub-technique deleted by attackPattern-test (x_mitre_id)
+testDeletedCounter['attack-pattern'] = 23;
 testDeletedCounter.campaign = 2;
 // 2 by workflow-closing-reason-test merge and external status write cases, the merged source has no delete event
 testDeletedCounter['case-incident'] = 20;
-testDeletedCounter['case-rfi'] = 9;
-testDeletedCounter['case-rft'] = 1;
+// 39 case-rfi and 1 case-rft deleted by the request access workflow tests (1 more case-rfi is merged)
+testDeletedCounter['case-rfi'] = 48;
+testDeletedCounter['case-rft'] = 2;
 testDeletedCounter.channel = 1;
 testDeletedCounter['course-of-action'] = 2;
 testDeletedCounter['data-component'] = 2;
@@ -177,7 +197,10 @@ testDeletedCounter.infrastructure = 1;
 // - 1 created and deleted by stixRelationship-test (time series breakdown)
 testDeletedCounter['intrusion-set'] = 53;
 testDeletedCounter['ipv4-addr'] = 1;
-testDeletedCounter['kill-chain-phase'] = 1; // created and deleted by form-submission-test
+// Counts for:
+// - 1 created and deleted by form-submission-test
+// - 3 deleted by killChainPhase-import-test
+testDeletedCounter['kill-chain-phase'] = 4;
 // Counts for:
 // - 3 created and deleted by investigation-enrichment-test
 // - 3 deleted by label-import-test
@@ -188,7 +211,7 @@ testDeletedCounter.location = 18; // includes 1 created and deleted by publicDas
 testDeletedCounter['mac-addr'] = 1;
 // Includes 2 created and deleted by form-submission-test, and 2 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown),
 // and 5 by ingestionDeduplication-domain-test
-testDeletedCounter.malware = 48;
+testDeletedCounter.malware = 50; // 2 by the request access workflow tests
 testDeletedCounter['malware-analysis'] = 2;
 testDeletedCounter['marking-definition'] = 18;
 testDeletedCounter.narrative = 1;
@@ -200,14 +223,19 @@ testDeletedCounter.persona = 1;
 testDeletedCounter['phone-number'] = 2;
 testDeletedCounter.relationship = 10; // includes 5 created and deleted by stixRelationship-test (time series breakdown)
 // Includes 8 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
-testDeletedCounter.report = 65;
+// Plus 3 created and deleted by workflow-entity-write-test
+testDeletedCounter.report = 68;
 testDeletedCounter.sighting = 5; // 3 created and deleted by relations-deduplication-test
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;
 testDeletedCounter['threat-actor'] = 20;
 testDeletedCounter.tool = 5;
+// Counts for:
+// - 3 deleted by vocabulary-import-test
+testDeletedCounter.vocabulary = 3;
 // 1 by ingestionDeduplication-test
-testDeletedCounter.vulnerability = 6;
+// 3 by filterGroup-test (nil / not_nil operators on numbers)
+testDeletedCounter.vulnerability = 9;
 testDeletedCounter.software = 1;
 testDeletedCounter.iccid = 4;
 testDeletedCounter.imei = 3;

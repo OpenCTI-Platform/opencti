@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import * as R from 'ramda';
 import { FIVE_MINUTES } from '../../utils/testQuery';
-import { checkStreamData, checkStreamGenericContent, fetchStreamEvents } from '../../utils/testStream';
+import { checkStreamData, checkStreamGenericContent, fetchStreamEvents, waitForStableStream } from '../../utils/testStream';
 import { logApp, PORT } from '../../../src/config/conf';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, waitInSec } from '../../../src/database/utils';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../../../src/database/utils';
 import { writeTestDataToFile } from '../../utils/testOutput';
 import { doTotal, RAW_EVENTS_SIZE, testCreatedCounter, testDeletedCounter, testMergedCounter, testUpdatedCounter } from '../../utils/syncCountHelper';
 
@@ -23,10 +23,10 @@ describe('Raw streams tests', () => {
     async () => {
       const startTime = new Date().getTime();
 
-      await waitInSec(10);
+      const lastEventId = await waitForStableStream();
 
       // Read all events from the beginning.
-      const events = await fetchStreamEvents(`http://localhost:${PORT}/stream`, { from: '0' });
+      const events = await fetchStreamEvents(`http://localhost:${PORT}/stream`, { from: '0', untilEventId: lastEventId });
       logApp.info(`[TEST][TIME] time to fetch event: ${new Date().getTime() - startTime}`);
 
       writeTestDataToFile(JSON.stringify(events), 'raw-test-all-event.json');

@@ -1,6 +1,5 @@
 import type { AttributeDefinition } from '../../schema/attribute-definition';
 import { IngestionHealthStatus } from '../../generated/graphql';
-import { INGESTION_HEALTH_FEATURE_FLAG } from '../../config/conf';
 
 // Spread into the definition of every entity that carries an ingestion health: connectors, feeds and syncs
 export const ingestionHealthAttributes: AttributeDefinition[] = [
@@ -14,7 +13,6 @@ export const ingestionHealthAttributes: AttributeDefinition[] = [
     multiple: false,
     upsert: false,
     isFilterable: false,
-    featureFlag: INGESTION_HEALTH_FEATURE_FLAG,
     mappings: [
       {
         name: 'status',
@@ -91,7 +89,6 @@ export const ingestionHealthSettingsAttribute: AttributeDefinition = {
   multiple: false,
   upsert: false,
   isFilterable: false,
-  featureFlag: INGESTION_HEALTH_FEATURE_FLAG,
   mappings: [
     { name: 'notification_delay', label: 'Notification delay (in minute)', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'disabled_health_checks', label: 'Disabled health checks', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },

@@ -26,6 +26,10 @@ on:
         description: "Existing release tag to build (e.g. 7.261002.0 or 7.260309.0-lts.7)"
         type: string
         required: true
+      check_credentials:
+        description: "Also check the PyPI trusted publisher in the pypi environment (nothing is published)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -123,6 +127,39 @@ jobs:
             echo "| LTS | ${IS_LTS} |"
             echo "| Mode | 🧪 dry-run (nothing will be published) |"
           } >> "$GITHUB_STEP_SUMMARY"
+
+  # -----------------------
+  # Credentials check (opt-in)
+  # -----------------------
+  # Enters the pypi environment on purpose, unlike every other dry-run job: it proves that the trusted publisher,
+  # the environment rules and the OIDC permission match, by minting an upload token that is discarded unused.
+  check-credentials:
+    name: Check PyPI credentials
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    if: github.event_name == 'workflow_dispatch' && inputs.check_credentials
+    environment: pypi
+    permissions:
+      id-token: write # PyPI trusted publishing (OIDC)
+    steps:
+      - name: Exchange the OIDC token with PyPI (nothing is uploaded)
+        run: |
+          set -euo pipefail
+          AUDIENCE="$(curl -fsS --max-time 30 https://pypi.org/_/oidc/audience | jq -r '.audience')"
+          OIDC_TOKEN="$(curl -fsS --max-time 30 -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${AUDIENCE}" | jq -r '.value')"
+          echo "::add-mask::${OIDC_TOKEN}"
+          RESPONSE="$(jq -n --arg token "${OIDC_TOKEN}" '{token: $token}' \
+            | curl -sS --max-time 30 -X POST --data @- https://pypi.org/_/oidc/mint-token)"
+          if jq -e '.success == true and (.token | type == "string")' <<< "${RESPONSE}" > /dev/null; then
+            echo "::add-mask::$(jq -r '.token' <<< "${RESPONSE}")"
+            echo "✅ PyPI accepts this repository, workflow and environment as trusted publisher of pycti" | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          # Failure responses carry no token, only the reason (e.g. no matching trusted publisher)
+          jq -r '"::error::PyPI refused the trusted publishing exchange: \(.message // "unknown error")",
+            (.errors[]? | "::error::\(.code): \(.description)")' <<< "${RESPONSE}"
+          exit 1
 
   # -----------------------
   # Client python (pycti)
@@ -479,7 +516,7 @@ jobs:
         run: docker load --input /tmp/opencti-builder.tar
 
       - name: Install Syft
-        uses: anchore/sbom-action/download-syft@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        uses: ./.github/actions/install-syft
 
       # Both builds share the single Yarn installation of the repository root, and each production
       # focus prunes the other workspace: every SBOM is generated right after the build of its workspace.

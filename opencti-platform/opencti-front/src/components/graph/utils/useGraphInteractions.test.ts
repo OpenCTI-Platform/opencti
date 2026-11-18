@@ -94,4 +94,12 @@ describe('useGraphInteractions', () => {
     interactions.setIsExpandOpen(true);
     expect(state().onExpandSubmit).toBeUndefined();
   });
+
+  it('opens and closes the drawer adding entities, shared by the toolbar and the empty state', () => {
+    const { interactions, state } = renderInteractions({ isAddEntitiesOpen: false });
+    interactions.setIsAddEntitiesOpen(true);
+    expect(state().isAddEntitiesOpen).toBe(true);
+    interactions.setIsAddEntitiesOpen(false);
+    expect(state().isAddEntitiesOpen).toBe(false);
+  });
 });

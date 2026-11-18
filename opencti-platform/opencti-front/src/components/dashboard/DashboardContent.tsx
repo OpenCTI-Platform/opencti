@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import useDashboard from './useDashboard';
 import DashboardWidgetPopover from './DashboardWidgetPopover';
 import DashboardViz from './DashboardViz';
+import DashboardWidgetVariablesMarker from './DashboardWidgetVariablesMarker';
 import type { DashboardLike } from './dashboard-types';
 import type { WidgetHost } from '../../utils/widget/widget';
 import { DASHBOARD_GRID_CONFIG } from './dashboard-utils';
@@ -13,12 +14,15 @@ type DashboardContentProps = {
   entity: DashboardLike;
   isEditable: boolean;
   refreshRate?: number | null;
+  // Names of the variables each widget filters on: a widget listed here shows a marker. Undefined: no marker.
+  variableNamesByWidget?: ReadonlyMap<string, readonly string[]>;
 };
 
 const DashboardContent = ({
   entity,
   isEditable,
   refreshRate,
+  variableNamesByWidget,
   helpers: {
     widgetsLayouts,
     widgetsArray,
@@ -73,6 +77,14 @@ const DashboardContent = ({
               host={host}
             />
           );
+          // The marker is for everyone who sees the widget, the menu for those who may edit it.
+          // Centered together on one row: in the header action slot (a block), the icon would sit on the text baseline.
+          const action = variableNamesByWidget ? (
+            <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, verticalAlign: 'top' }}>
+              <DashboardWidgetVariablesMarker names={variableNamesByWidget.get(widget.id) ?? []} />
+              {popover}
+            </Box>
+          ) : popover;
 
           return (
             <div key={widget.id}>
@@ -81,7 +93,7 @@ const DashboardContent = ({
                   widget={widget}
                   host={host}
                   config={config}
-                  popover={popover}
+                  popover={action}
                   refreshRate={refreshRate}
                 />
               )}

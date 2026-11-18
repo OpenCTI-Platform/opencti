@@ -227,7 +227,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                   />
                   {!values.user_service_account && (
                     <Stack sx={{ gap: 2.5 }}>
-                      <PasswordPolicies value={values.password} />
+                      <PasswordPolicies value={values.password} hideHistory />
                       <Field
                         component={TextField}
                         variant="outlined"

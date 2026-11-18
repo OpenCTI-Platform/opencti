@@ -43,12 +43,16 @@ export const entitiesCounter = {
   ThreatActorIndividual: 2,
   TrackingNumber: 1,
   User: TESTING_USERS.length + 1,
-  Vocabulary: 360,
-  EmailTemplate: 1,
+  Vocabulary: 475, // 360 + 115 System asset vocabularies
+  // The onboarding template, and the template for the locked users (behind the LOCAL_AUTH_LOCKOUT feature flag, enabled in the tests)
+  EmailTemplate: 2,
   RetentionRule: 4,
   SecurityCoverage: 1,
   SecurityCoverageResult: 1,
 };
+
+// Built-in vocabulary entries seeded with a colour: system_category_ov 12, system_criticality_ov 5, system_environment_ov 5, system_internet_facing_ov 3
+export const SEEDED_VOCABULARY_COLORS = 25;
 
 export const entitiesCounterTotal = Object.values(entitiesCounter).reduce((acc, value) => acc + value, 0);
 

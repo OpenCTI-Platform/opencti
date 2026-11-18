@@ -41,7 +41,7 @@ const normalizeContractConfigSchema = (
   };
 };
 
-const getContractConfigSchemaWithoutExcludedRuntimeVars = (configSchema: CatalogContract['config_schema'] | null | undefined) => {
+export const getContractConfigSchemaWithoutExcludedRuntimeVars = (configSchema: CatalogContract['config_schema'] | null | undefined) => {
   const normalizedConfigSchema = normalizeContractConfigSchema(configSchema);
   const filteredProperties = Object.fromEntries(
     Object.entries(normalizedConfigSchema.properties).filter(([property]) => !EXCLUDED_CONFIG_VARS.includes(property)),

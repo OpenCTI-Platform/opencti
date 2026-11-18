@@ -1,5 +1,5 @@
 import { beforeEach, afterEach, describe, expect, it } from 'vitest';
-import { logs } from '@opentelemetry/api-logs';
+import { logs } from '@opentelemetry/api';
 import { InMemoryLogRecordExporter, LoggerProvider, SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
 import { DedupLogRecordProcessor } from './DedupLogRecordProcessor';
 import { toFrontendLogInput } from './GraphQLLogRecordExporter';
@@ -13,7 +13,7 @@ describe('logger pipeline', () => {
     exporter = new InMemoryLogRecordExporter();
     provider = new LoggerProvider({
       processors: [new DedupLogRecordProcessor(new SimpleLogRecordProcessor({ exporter }))],
-      loggerConfigurator: () => ({ disabled: false, minimumSeverity: SEVERITY_NUMBERS.INFO, traceBased: false }),
+      loggerConfigurator: () => ({ enabled: true, minimumSeverity: SEVERITY_NUMBERS.INFO, traceBased: false }),
     });
     logs.setGlobalLoggerProvider(provider);
   });

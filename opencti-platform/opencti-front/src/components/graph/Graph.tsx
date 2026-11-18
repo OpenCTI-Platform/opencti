@@ -96,6 +96,7 @@ const Graph = ({
     setSelectedNodes,
     setSelectedLinks,
     setIsAddRelationOpen,
+    setIsAddEntitiesOpen,
     setRawPositions,
     setZoom,
     zoomToFit,
@@ -1059,7 +1060,13 @@ const Graph = ({
           </>
         )}
         {shownEmptyKind && (
-          <GraphEmptyState kind={shownEmptyKind} context={context} onClearFilters={resetFilters} onShowHidden={showHiddenNodes} />
+          <GraphEmptyState
+            kind={shownEmptyKind}
+            context={context}
+            onClearFilters={resetFilters}
+            onShowHidden={showHiddenNodes}
+            onAddEntities={context === 'investigation' ? () => setIsAddEntitiesOpen(true) : undefined}
+          />
         )}
         {!mode3D && shownNodes.length > 0 && (showLegend ? (
           <GraphLegend
