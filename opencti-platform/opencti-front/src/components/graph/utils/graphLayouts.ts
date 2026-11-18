@@ -203,26 +203,34 @@ export const layeredLayout = (
 
 /**
  * Columns by entity tier, read left to right like an attack: who (threats), with what (arsenal),
- * how (techniques), through what (infrastructure and observables), against whom (victims), where
- * (locations), then the reports and cases describing it.
+ * how (techniques, then the procedures carrying them out), through what (infrastructure and
+ * observables), against whom (victims), where (locations), then the reports and cases describing it.
  */
 const FAMILY_TIER: Record<string, number> = {
   allThreats: 0,
   arsenal: 1,
   techniques: 2,
-  observations: 3,
-  observables: 3,
-  victimology: 4,
-  locations: 5,
-  events: 6,
-  cases: 6,
-  analyse: 7,
-  relationships: 3,
-  restricted: 8,
+  observations: 4,
+  observables: 4,
+  victimology: 5,
+  locations: 6,
+  events: 7,
+  cases: 7,
+  analyse: 8,
+  relationships: 4,
+  restricted: 9,
 };
-const UNKNOWN_TIER = 8;
+// Types placed apart from the rest of their family: a procedure shares the techniques colour but sits
+// between the techniques it implements and the observables it uses.
+const TYPE_TIER: Record<string, number> = {
+  Procedure: 3,
+};
+const UNKNOWN_TIER = 9;
 
-export const entityTier = (family: string | null | undefined): number => (family ? FAMILY_TIER[family] ?? UNKNOWN_TIER : UNKNOWN_TIER);
+export const entityTier = (family: string | null | undefined, entityType?: string | null): number => {
+  if (entityType && TYPE_TIER[entityType] !== undefined) return TYPE_TIER[entityType];
+  return family ? FAMILY_TIER[family] ?? UNKNOWN_TIER : UNKNOWN_TIER;
+};
 
 export const tierLayout = (
   nodes: readonly LayoutNode[],

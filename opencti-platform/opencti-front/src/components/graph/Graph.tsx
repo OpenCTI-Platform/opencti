@@ -344,7 +344,7 @@ const Graph = ({
   if (modeTree) {
     layout = { key: `tree-${modeTree}`, compute: () => layeredLayout(shownNodes, layoutEnds(), modeTree) };
   } else if (layoutMode === 'tiers') {
-    layout = { key: 'tiers', compute: () => tierLayout(shownNodes, layoutEnds(), (node) => entityTier(itemFamily(node.entity_type))) };
+    layout = { key: 'tiers', compute: () => tierLayout(shownNodes, layoutEnds(), (node) => entityTier(itemFamily(node.entity_type), node.entity_type)) };
   } else if (layoutMode === 'radial') {
     layout = { key: `radial-${layoutCentreId ?? ''}`, compute: () => radialLayout(shownNodes, layoutEnds(), layoutCentreId ?? null) };
   }

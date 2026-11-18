@@ -94,6 +94,18 @@ describe('tierLayout', () => {
   it('puts unknown families last', () => {
     expect(entityTier(null)).toBeGreaterThan(entityTier('analyse'));
   });
+
+  it('gives procedures their own column between their techniques and observables', () => {
+    const typed = [
+      { id: 'observable', entity_type: 'Process' },
+      { id: 'procedure', entity_type: 'Procedure' },
+      { id: 'technique', entity_type: 'Attack-Pattern' },
+    ];
+    const family: Record<string, string> = { Process: 'observables', Procedure: 'techniques', 'Attack-Pattern': 'techniques' };
+    const positions = tierLayout(typed, [], (node) => entityTier(family[node.entity_type ?? ''], node.entity_type));
+    expect(positions.get('technique')?.x).toBeLessThan(positions.get('procedure')?.x ?? NaN);
+    expect(positions.get('procedure')?.x).toBeLessThan(positions.get('observable')?.x ?? NaN);
+  });
 });
 
 describe('radialLayout', () => {
