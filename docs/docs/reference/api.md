@@ -79,8 +79,6 @@ This query returns the five most recently published reports. It needs the `Acces
 query LatestReports {
   reports(first: 5, orderBy: published, orderMode: desc) {
     pageInfo {
-      hasNextPage
-      endCursor
       globalCount
     }
     edges {
@@ -99,7 +97,7 @@ query LatestReports {
 }
 ```
 
-To get the next page, run the query again with `after` set to the `endCursor` value of the previous answer, for example `reports(first: 5, after: "<endCursor>", orderBy: published, orderMode: desc)`. To narrow the results, add the `search` or `filters` arguments (see the [filters](filters.md) reference).
+To narrow the results, add the `search` or `filters` arguments (see the [filters](filters.md) reference).
 
 ### Read one report
 
