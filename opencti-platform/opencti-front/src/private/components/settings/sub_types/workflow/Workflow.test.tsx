@@ -417,6 +417,85 @@ describe('Workflow Component', () => {
       expect(mockSetEdges).toHaveBeenCalledWith([]);
     });
 
+    describe('when a save fails', () => {
+      const status = (id: string) => ({ id, type: WorkflowNodeType.status, data: { statusTemplate: { id, name: id, color: '#ffffff' }, onEnter: [], onExit: [] }, position: { x: 0, y: 0 } });
+      // Same wrapper as renderWithTheme, so a rerender updates the editor instead of remounting it.
+      const tree = () => (
+        <ThemeProvider theme={testTheme}>
+          <TooltipProvider>
+            <Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />
+          </TooltipProvider>
+        </ThemeProvider>
+      );
+      const lastSave = () => mockSaveWorkflowDefinition.mock.calls.at(-1)![0];
+      // Any later editor update (a selection, a drag) hands the effect new arrays holding the same graph.
+      const touch = () => {
+        mockNodes = [...mockNodes];
+        mockEdges = [...mockEdges];
+      };
+
+      beforeEach(() => {
+        mockEdges = [];
+        mockNodes = [status('S'), status('R')];
+      });
+
+      it('resends the change on the next editor update', () => {
+        const { rerender } = render(tree());
+        const failed = lastSave();
+        act(() => failed.onError(new Error('Lock timeout')));
+        const saves = mockSaveWorkflowDefinition.mock.calls.length;
+
+        touch();
+        rerender(tree());
+
+        expect(mockSaveWorkflowDefinition.mock.calls.length).toBe(saves + 1);
+        expect(lastSave().variables.definition).toBe(failed.variables.definition);
+      });
+
+      it('does not resend a change that saved', () => {
+        const { rerender } = render(tree());
+        act(() => lastSave().onCompleted({ workflowDefinitionSet: { errors: [] } }));
+        const saves = mockSaveWorkflowDefinition.mock.calls.length;
+
+        touch();
+        rerender(tree());
+
+        expect(mockSaveWorkflowDefinition.mock.calls.length).toBe(saves);
+      });
+
+      it('does not resend an older change once a newer one was sent', () => {
+        const { rerender } = render(tree());
+        const older = lastSave();
+        mockNodes = [status('R')];
+        rerender(tree());
+        const saves = mockSaveWorkflowDefinition.mock.calls.length;
+        act(() => older.onError(new Error('Lock timeout')));
+
+        touch();
+        rerender(tree());
+
+        expect(mockSaveWorkflowDefinition.mock.calls.length).toBe(saves);
+      });
+
+      it('keeps the graph on screen as the saved one when a reset fails', async () => {
+        const user = userEvent.setup();
+        const { rerender } = render(tree());
+        act(() => lastSave().onCompleted({ workflowDefinitionSet: { errors: [] } }));
+        await user.click(screen.getByTestId('reset-button'));
+        const reset = lastSave();
+        expect(JSON.parse(reset.variables.definition).states).toEqual([]);
+        act(() => reset.onError(new Error('Lock timeout')));
+        const saves = mockSaveWorkflowDefinition.mock.calls.length;
+
+        touch();
+        rerender(tree());
+
+        // The reset never ran: the graph on screen is still the saved draft, so there is nothing to send.
+        expect(mockSetNodes).not.toHaveBeenCalledWith([]);
+        expect(mockSaveWorkflowDefinition.mock.calls.length).toBe(saves);
+      });
+    });
+
     it('keeps the initial state it last saved, not the one fetched with the page', () => {
       const status = (id: string) => ({ id, type: WorkflowNodeType.status, data: { statusTemplate: { id, name: id, color: '#ffffff' }, onEnter: [], onExit: [] }, position: { x: 0, y: 0 } });
       const lastSaved = () => JSON.parse(mockSaveWorkflowDefinition.mock.calls.at(-1)![0].variables.definition).initialState;
