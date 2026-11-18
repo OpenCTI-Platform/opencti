@@ -11,7 +11,7 @@ import { useFormatter } from '../../../../../../components/i18n';
 import { truncate } from '../../../../../../utils/String';
 import type { Theme } from '../../../../../../components/Theme';
 import { usePlaybookHandlePositions } from '../../hooks/usePlaybookLayoutMode';
-import { categoryAccent, outPorts, PLAYBOOK_CARD, portAnchor } from './playbookNodeGeometry';
+import { categoryAccent, outPorts, PLAYBOOK_CARD, PLAYBOOK_PORT_PILL_MAX_WIDTH, portAnchor, portHasPill } from './playbookNodeGeometry';
 import { usePlaybookNodeLastExecution } from '../../hooks/usePlaybookLastExecution';
 import { formatStepDuration } from '../../utils/playbookLastExecution';
 import { playbookNodeSummary, type PlaybookNodeSummary } from '../../utils/playbookNodeSummary';
@@ -299,7 +299,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
               position={source}
               style={{ ...(direction === 'horizontal' ? { top: anchor.y } : { left: anchor.x }), background: accent, border: 'none' }}
             />
-            {(ports.length > 1 || port.id !== 'out') && (
+            {portHasPill(port.id, ports.length) && (
               // The pill sits on the card edge, centred on its port: the link leaves from under it, so
               // no label is ever drawn over a link.
               <span
@@ -316,6 +316,12 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
                   fontSize: 10,
                   lineHeight: '16px',
                   whiteSpace: 'nowrap',
+                  ...(direction === 'horizontal' && {
+                    boxSizing: 'border-box',
+                    maxWidth: PLAYBOOK_PORT_PILL_MAX_WIDTH,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }),
                   color: theme.palette.text?.primary,
                   backgroundColor: theme.palette.background.default,
                   border: `1px solid ${accent}`,

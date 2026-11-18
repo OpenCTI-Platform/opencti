@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { Position } from 'reactflow';
-import { playbookEdgePath, PLAYBOOK_STRAIGHT_TOLERANCE } from './playbookEdgePath';
+import { playbookEdgePath, PLAYBOOK_EDGE_LANE, PLAYBOOK_STRAIGHT_TOLERANCE } from './playbookEdgePath';
 import { layoutPlaybook } from '../../layout/layoutPlaybook';
 import type { PlaybookLayoutComponent, PlaybookLayoutLink, PlaybookLayoutNode } from '../../layout/layoutPlaybook';
-import { PLAYBOOK_CARD, portAnchor } from '../nodes/playbookNodeGeometry';
+import { PLAYBOOK_CARD, PLAYBOOK_SIBLING_GAP, portAnchor } from '../nodes/playbookNodeGeometry';
 
 // Every number written in a path, to check it is a whole pixel.
 const coordinates = (path: string) => (path.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
@@ -29,21 +29,29 @@ describe('playbookEdgePath', () => {
     expect(edge.path.startsWith('M100,105')).toBe(true);
     expect(edge.path.endsWith('L300,248')).toBe(true);
     coordinates(edge.path).forEach((value) => expect(Number.isInteger(value)).toBe(true));
-    expect(edge.labelY).toBe(Math.round((105 + 248) / 2));
+    expect(edge.labelY).toBe(Math.round((105 + 248) / 2) + PLAYBOOK_EDGE_LANE); // one column over
+  });
+
+  it('turns a shorter link further from its source, so links nest instead of crossing or sharing a line', () => {
+    const pitch = PLAYBOOK_CARD.width + PLAYBOOK_SIBLING_GAP;
+    const ends = { sourceX: portAnchor(0, 2, 'vertical').x, sourceY: PLAYBOOK_CARD.height, targetY: 248, sourcePosition: Position.Bottom };
+    const turn = (columns: number) => playbookEdgePath({ ...ends, targetX: columns * pitch + PLAYBOOK_CARD.width / 2 }).labelY;
+    const middle = Math.round((PLAYBOOK_CARD.height + 248) / 2);
+    expect([turn(0), turn(1), turn(2), turn(3)]).toEqual([middle + 2 * PLAYBOOK_EDGE_LANE, middle + PLAYBOOK_EDGE_LANE, middle, middle]);
   });
 
   it('joins two ports of one step into the same target as one merge, never as crossing links', () => {
     // out and unmodified of an AI step (anchors at a third and two thirds of the card) both go to the
-    // next step: the two links meet on the middle line and share the last straight segment.
+    // next step: the two links meet on the same lane and share the last straight segment.
     const ends = { sourceY: PLAYBOOK_CARD.height, targetX: 132, targetY: 248, sourcePosition: Position.Bottom };
     const out = playbookEdgePath({ ...ends, sourceX: portAnchor(0, 2, 'vertical').x });
     const unmodified = playbookEdgePath({ ...ends, sourceX: portAnchor(1, 2, 'vertical').x });
-    const trunk = 'Q132,176 132,188 L132,248';
+    const trunk = 'Q132,200 132,212 L132,248';
     expect(out.path.endsWith(trunk)).toBe(true);
     expect(unmodified.path.endsWith(trunk)).toBe(true);
     // Each link keeps its own side until the merge point: the two never cross.
-    expect(out.path).toContain('L120,176');
-    expect(unmodified.path).toContain('L144,176');
+    expect(out.path).toContain('L120,200');
+    expect(unmodified.path).toContain('L144,200');
     // Their insert buttons stay apart, one on each side of the merge.
     expect(out.labelX).toBeLessThan(132);
     expect(unmodified.labelX).toBeGreaterThan(132);
@@ -52,8 +60,8 @@ describe('playbookEdgePath', () => {
   it('caps the corner radius when the bend has little room', () => {
     const edge = playbookEdgePath({ sourceX: 0, sourceY: 0, targetX: 10, targetY: 200, sourcePosition: Position.Bottom });
     // 10 px across: 5 px radius at most, the path never goes back on itself.
-    expect(edge.path).toContain('Q0,100 5,100');
-    expect(edge.path).toContain('Q10,100 10,105');
+    expect(edge.path).toContain('Q0,124 5,124');
+    expect(edge.path).toContain('Q10,124 10,129');
   });
 });
 

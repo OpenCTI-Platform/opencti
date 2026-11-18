@@ -25,8 +25,16 @@ export const PLAYBOOK_CARD = { width: 264, height: 104 };
 // The add button of a free out port, drawn just past the port it extends: close to the card, so it
 // stays clear of the middle line of the rank gap, where the links of a neighbouring step turn.
 export const PLAYBOOK_PORT_ADD = { size: 28, gap: 16 };
+// Gap between two cards of one rank.
+export const PLAYBOOK_SIBLING_GAP = 56;
+// In the horizontal layout a port pill lies along the link: capped at this width, so the add button
+// of a labelled port can start past it in every language.
+export const PLAYBOOK_PORT_PILL_MAX_WIDTH = 80;
 
 type Port = { id: string; type: string };
+
+// A port is named on a pill unless it is the only port and is the plain 'out'.
+export const portHasPill = (portId: string, count: number) => count > 1 || portId !== 'out';
 
 export const outPorts = (ports: ReadonlyArray<Port | null | undefined> | null | undefined): Port[] => {
   return (ports ?? []).flatMap((p) => (p && p.type === 'out' ? [p] : []));
@@ -49,11 +57,12 @@ export const portAnchor = (index: number, count: number, direction: PlaybookLayo
 };
 
 // Top-left corner of the add button of a free port, from the top-left corner of its card.
-export const portAddPosition = (card: XYPosition, index: number, count: number, direction: PlaybookLayoutDirection): XYPosition => {
+export const portAddPosition = (card: XYPosition, index: number, count: number, direction: PlaybookLayoutDirection, hasPill: boolean): XYPosition => {
   const anchor = portAnchor(index, count, direction);
   const half = PLAYBOOK_PORT_ADD.size / 2;
   if (direction === 'horizontal') {
-    return { x: card.x + anchor.x + PLAYBOOK_PORT_ADD.gap, y: card.y + anchor.y - half };
+    const gap = hasPill ? PLAYBOOK_PORT_PILL_MAX_WIDTH / 2 + 8 : PLAYBOOK_PORT_ADD.gap;
+    return { x: card.x + anchor.x + gap, y: card.y + anchor.y - half };
   }
   return { x: card.x + anchor.x - half, y: card.y + anchor.y + PLAYBOOK_PORT_ADD.gap };
 };

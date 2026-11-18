@@ -3,12 +3,14 @@ import { useReactFlow, useStore, useNodesInitialized, Node, Edge, ReactFlowState
 import { timer } from 'd3-timer';
 import { layoutPlaybook, PlaybookLayoutComponent, PlaybookLayoutLink, PlaybookLayoutNode } from '../layout/layoutPlaybook';
 import type { PlaybookLayoutDirection } from './usePlaybookLayoutMode';
-import { outPorts, PLAYBOOK_CARD, portAddPosition } from '../types/nodes/playbookNodeGeometry';
+import { outPorts, PLAYBOOK_CARD, PLAYBOOK_SIBLING_GAP, portAddPosition, portHasPill } from '../types/nodes/playbookNodeGeometry';
 import { PLAYBOOK_LANDING, playbookLandingViewport, playbookMiniMapClear } from '../utils/playbookLanding';
 
 // [gap between siblings, gap between ranks]: room for the port pills and the add buttons. The
-// links turn on the middle line of the rank gap; the add button of a free port ends 8 px above it.
-export const PLAYBOOK_LAYOUT_SPACING: [number, number] = [56, 104];
+// links turn on the middle line of the rank gap or below it; the add button of a free port ends 8 px above it.
+export const PLAYBOOK_LAYOUT_SPACING: [number, number] = [PLAYBOOK_SIBLING_GAP, 104];
+// Horizontally, the add button of a labelled port starts past its pill: a wider rank gap keeps it 8 px above the middle line.
+export const PLAYBOOK_LAYOUT_SPACING_HORIZONTAL: [number, number] = [PLAYBOOK_SIBLING_GAP, 168];
 const ORIGIN_SIZE = { width: 240, height: 64 };
 
 const options = { duration: 300 };
@@ -36,7 +38,7 @@ export const layoutNodes = (nodes: Node[], edges: Edge[], direction: PlaybookLay
   const links: PlaybookLayoutLink[] = edges
     .filter((edge) => stepIds.has(edge.source) && stepIds.has(edge.target))
     .map((edge) => ({ id: edge.id, from: { id: edge.source, port: edge.sourceHandle ?? 'out' }, to: { id: edge.target } }));
-  const result = layoutPlaybook(layoutInput, links, [...components.values()], { mode: direction, nodeSize: PLAYBOOK_CARD, spacing: PLAYBOOK_LAYOUT_SPACING });
+  const result = layoutPlaybook(layoutInput, links, [...components.values()], { mode: direction, nodeSize: PLAYBOOK_CARD, spacing: direction === 'horizontal' ? PLAYBOOK_LAYOUT_SPACING_HORIZONTAL : PLAYBOOK_LAYOUT_SPACING });
 
   const parentOf = new Map<string, Edge>();
   edges.forEach((edge) => {
@@ -55,7 +57,7 @@ export const layoutNodes = (nodes: Node[], edges: Edge[], direction: PlaybookLay
     }
     const ports = outPorts(parent.data?.component?.ports);
     const index = Math.max(0, ports.findIndex((port) => port.id === edge.sourceHandle));
-    return { ...node, position: portAddPosition(parentPosition, index, ports.length, direction) };
+    return { ...node, position: portAddPosition(parentPosition, index, ports.length, direction, portHasPill(edge.sourceHandle ?? 'out', ports.length)) };
   });
 };
 

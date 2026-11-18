@@ -1,4 +1,5 @@
 import { Position } from 'reactflow';
+import { PLAYBOOK_CARD, PLAYBOOK_SIBLING_GAP } from '../nodes/playbookNodeGeometry';
 
 // Under this offset between the two ends of a link, across the flow, the link is one straight
 // segment: React Flow measures handles in sub-pixels, and an orthogonal route between two ends a
@@ -6,6 +7,9 @@ import { Position } from 'reactflow';
 export const PLAYBOOK_STRAIGHT_TOLERANCE = 4;
 // Radius of the rounded corners of a real bend, capped by the room the bend has.
 export const PLAYBOOK_EDGE_RADIUS = 12;
+// Distance between the lanes a link can turn on, and the number of lanes below the middle line.
+export const PLAYBOOK_EDGE_LANE = 12;
+const PLAYBOOK_EDGE_LANES_BELOW = 2;
 
 export interface PlaybookEdgeEnds {
   sourceX: number;
@@ -26,8 +30,10 @@ export interface PlaybookEdgePath {
 const snap = (value: number) => Math.round(value);
 
 // The path of a link between two steps, on whole pixels: a straight segment when both ends are
-// aligned within the tolerance, else an orthogonal step with rounded corners whose middle segment
-// sits halfway between the two ends (so links leaving one card or joining one card share it).
+// aligned within the tolerance, else an orthogonal step with rounded corners. The shorter the link
+// across the flow, the further it goes before turning: a link to the card straight ahead turns two
+// lanes past the middle line, one to the next column one lane past it, a longer one on it. So the
+// links of one port nest instead of crossing, and a long link never runs along a neighbour's short one.
 export const playbookEdgePath = ({ sourceX, sourceY, targetX, targetY, sourcePosition }: PlaybookEdgeEnds): PlaybookEdgePath => {
   const horizontal = sourcePosition === Position.Left || sourcePosition === Position.Right;
   // Work along / across the flow, then map back to x / y.
@@ -48,9 +54,11 @@ export const playbookEdgePath = ({ sourceX, sourceY, targetX, targetY, sourcePos
     };
   }
 
-  const mid = snap((along0 + along1) / 2);
   const direction = Math.sign(across1 - across0);
   const forward = Math.sign(along1 - along0) || 1;
+  const pitch = (horizontal ? PLAYBOOK_CARD.height : PLAYBOOK_CARD.width) + PLAYBOOK_SIBLING_GAP;
+  const columns = Math.min(PLAYBOOK_EDGE_LANES_BELOW, Math.round(Math.abs(across1 - across0) / pitch));
+  const mid = snap((along0 + along1) / 2) + forward * (PLAYBOOK_EDGE_LANES_BELOW - columns) * PLAYBOOK_EDGE_LANE;
   const radius = Math.max(0, Math.min(
     PLAYBOOK_EDGE_RADIUS,
     Math.abs(mid - along0),
