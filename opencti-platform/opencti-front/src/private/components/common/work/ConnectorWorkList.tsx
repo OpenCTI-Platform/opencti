@@ -154,105 +154,105 @@ const ConnectorWorkList = ({
                   .sort((a, b) => (a?.timestamp ?? '').localeCompare(b?.timestamp ?? ''));
 
                 return (
-                  <Tooltip key={work.id}>
-                    <TooltipTrigger asChild>
-                      <ListItem
-                        dense
-                        divider
-                        secondaryAction={(
-                          <Security needs={['CONNECTORAPI', 'MODULES_MODMANAGE']}>
-                            <Stack
-                              direction="row"
-                              spacing={1}
+                  <ListItem
+                    key={work.id}
+                    dense
+                    divider
+                    secondaryAction={(
+                      <Security needs={['CONNECTORAPI', 'MODULES_MODMANAGE']}>
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                        >
+                          {onReview && (
+                            <IconButton
+                              disabled={isFail}
+                              tooltip={t_i18n('Review results')}
+                              aria-label={t_i18n('Review results')}
+                              onClick={() => onReview(work.id)}
                             >
-                              {onReview && (
-                                <IconButton
-                                  disabled={isFail}
-                                  tooltip={t_i18n('Review results')}
-                                  aria-label={t_i18n('Review results')}
-                                  onClick={() => onReview?.(work.id)}
-                                >
-                                  <OpenWithOutlined fontSize="small" />
-                                </IconButton>
+                              <OpenWithOutlined fontSize="small" />
+                            </IconButton>
+                          )}
+                          {canEditInvestigation && onReviewAddAll && (
+                            <IconButton
+                              disabled={isFail}
+                              tooltip={t_i18n('Add all to graph')}
+                              aria-label={t_i18n('Add all to graph')}
+                              onClick={() => onReviewAddAll(work.id)}
+                            >
+                              <DataSaverOn fontSize="small" />
+                            </IconButton>
+                          )}
+                          {canEditInvestigation && onReviewDismiss && (
+                            <IconButton
+                              tooltip={t_i18n('Mark as reviewed')}
+                              aria-label={t_i18n('Mark as reviewed')}
+                              onClick={() => onReviewDismiss(work.id)}
+                            >
+                              <DoNotDisturb fontSize="small" />
+                            </IconButton>
+                          )}
+                          {canDelete && (
+                            <>
+                              {(onReview || onReviewAddAll || onReviewDismiss) && (
+                                <Divider orientation="vertical" flexItem />
                               )}
-                              <Security needs={[]} hasAccess={canEditInvestigation}>
-                                <>
-                                  {onReviewAddAll && (
-                                    <IconButton
-                                      disabled={isFail}
-                                      tooltip={t_i18n('Add all to graph')}
-                                      aria-label={t_i18n('Add all to graph')}
-                                      onClick={() => onReviewAddAll?.(work.id)}
-                                    >
-                                      <DataSaverOn fontSize="small" />
-                                    </IconButton>
-                                  )}
-                                  {onReviewDismiss && (
-                                    <IconButton
-                                      tooltip={t_i18n('Mark as reviewed')}
-                                      aria-label={t_i18n('Mark as reviewed')}
-                                      onClick={() => onReviewDismiss?.(work.id)}
-                                    >
-                                      <DoNotDisturb fontSize="small" />
-                                    </IconButton>
-                                  )}
-                                </>
-                              </Security>
-                              {canDelete && (
-                                <>
-                                  {(onReview || onReviewAddAll || onReviewDismiss) && (
-                                    <Divider orientation="vertical" flexItem />
-                                  )}
-                                  <IconButton
-                                    tooltip={t_i18n('Delete')}
-                                    aria-label={t_i18n('Delete')}
-                                    onClick={() => deleteWork(work.id)}
-                                  >
-                                    <DeleteOutlined />
-                                  </IconButton>
-                                </>
-                              )}
-                            </Stack>
-                          </Security>
-                        )}
-                      >
-                        <ListItemIcon>
-                          {isFail && (
-                            <WarningOutlined
-                              style={{
-                                fontSize: 15,
-                                color: theme.palette.error.main,
-                              }}
-                            />
+                              <IconButton
+                                tooltip={t_i18n('Delete')}
+                                aria-label={t_i18n('Delete')}
+                                onClick={() => deleteWork(work.id)}
+                              >
+                                <DeleteOutlined />
+                              </IconButton>
+                            </>
                           )}
-                          {!isFail && work.status === 'complete' && (
-                            <CheckCircleOutlined
-                              style={{
-                                fontSize: 15,
-                                color: theme.palette.success.main,
-                              }}
-                            />
-                          )}
-                          {((!isFail && work.status === 'wait') || work.status === 'progress') && (
-                            <Spinner
-                              size="md"
-                              style={{ marginRight: 10 }}
-                            />
-                          )}
-                        </ListItemIcon>
-                        <ListItemText primary={nsdt(work.timestamp)} />
-                      </ListItem>
-                    </TooltipTrigger>
-                    <TooltipContent style={{ maxWidth: 600 }}>
-                      {messages.length > 0
-                        ? messages.map((message, index) => (
-                            <div key={`${message?.timestamp}-${index}`}>
-                              [{nsdt(message?.timestamp)}] {message?.message}
-                            </div>
-                          ))
-                        : t_i18n(work.status)}
-                    </TooltipContent>
-                  </Tooltip>
+                        </Stack>
+                      </Security>
+                    )}
+                  >
+                    {/* The messages of the work show on its status and date, apart from the tooltips of its actions. */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
+                          <ListItemIcon>
+                            {isFail && (
+                              <WarningOutlined
+                                style={{
+                                  fontSize: 15,
+                                  color: theme.palette.error.main,
+                                }}
+                              />
+                            )}
+                            {!isFail && work.status === 'complete' && (
+                              <CheckCircleOutlined
+                                style={{
+                                  fontSize: 15,
+                                  color: theme.palette.success.main,
+                                }}
+                              />
+                            )}
+                            {((!isFail && work.status === 'wait') || work.status === 'progress') && (
+                              <Spinner
+                                size="md"
+                                style={{ marginRight: 10 }}
+                              />
+                            )}
+                          </ListItemIcon>
+                          <ListItemText primary={nsdt(work.timestamp)} />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent style={{ maxWidth: 600 }}>
+                        {messages.length > 0
+                          ? messages.map((message, index) => (
+                              <div key={`${message?.timestamp}-${index}`}>
+                                [{nsdt(message?.timestamp)}] {message?.message}
+                              </div>
+                            ))
+                          : t_i18n(work.status)}
+                      </TooltipContent>
+                    </Tooltip>
+                  </ListItem>
                 );
               })}
             </List>
