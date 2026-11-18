@@ -4,6 +4,7 @@ import { act, screen, waitFor, within } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
 import ConfigPresetExportDrawer from './ConfigPresetExportDrawer';
+import { expandConfigPresetGroups } from '../../../../../utils/tests/config-preset-test-utils';
 
 // The Enterprise Edition of the platform, which can change while the drawer is open (a license activated from it)
 const enterpriseEdition = vi.hoisted(() => {
@@ -94,6 +95,7 @@ const renderOpenDrawer = async (onClose = vi.fn(), types: unknown[] = catalog) =
     }));
   });
   await screen.findByRole('button', { name: 'Export Platform Bundle' });
+  expandConfigPresetGroups();
   return { ...rendered, onClose };
 };
 
@@ -176,15 +178,29 @@ describe('ConfigPresetExportDrawer', () => {
     expect(screen.getByRole('checkbox', { name: 'Platform settings (1/2)' })).toHaveAttribute('data-state', 'indeterminate');
   });
 
-  it('does not show a type without item, nor a group left without type', async () => {
-    const emptyTypes = [
-      ...catalog,
-      { key: 'observedData', label: 'Observed datas', group: { key: 'entities', label: 'Entities' }, lockedByEnterpriseEdition: false, items: [] },
-    ];
-    await renderOpenDrawer(vi.fn(), emptyTypes);
-    expect(screen.getByRole('checkbox', { name: 'Platform settings (2/2)' })).toBeInTheDocument();
-    expect(screen.queryByRole('checkbox', { name: /Entities/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('checkbox', { name: /Observed data/ })).not.toBeInTheDocument();
+  it('shows a type without item disabled and unchecked, with its description, and a group left without item disabled', async () => {
+    const entities = { key: 'entities', label: 'Entities' };
+    await renderOpenDrawer(vi.fn(), [...catalog, type('observedData', 'Observed datas', [], { group: entities })]);
+    expect(screen.getByRole('checkbox', { name: 'Platform settings (2/2)' })).toBeEnabled();
+    expect(screen.getByRole('checkbox', { name: 'Entities (0/0)' })).toBeDisabled();
+    const empty = screen.getByRole('checkbox', { name: 'Observed data (0/0)' });
+    expect(empty).toBeDisabled();
+    expect(empty).toHaveAttribute('data-state', 'unchecked');
+    expect(screen.getByText('Observed datas description')).toBeInTheDocument();
+    // Nothing to expand below it
+    expect(screen.queryByRole('button', { name: /Expand Observed data/ })).not.toBeInTheDocument();
+  });
+
+  it('exports the other types, whether or not a type has no item, and does not send the empty one', async () => {
+    const { user, relayEnv } = await renderOpenDrawer(vi.fn(), [...catalog, type('observedData', 'Observed datas', [], { group: { key: 'entities', label: 'Entities' } })]);
+    await user.click(screen.getByRole('button', { name: 'Export Platform Bundle' }));
+    const { selections } = relayEnv.mock.getMostRecentOperation().request.variables;
+    expect(selections.map(({ type: key }: { type: string }) => key)).toEqual(['platform', 'messages', 'hiddenEntityTypes']);
+  });
+
+  it('disables the export when every type is without item', async () => {
+    await renderOpenDrawer(vi.fn(), [type('observedData', 'Observed datas', [])]);
+    expect(screen.getByRole('button', { name: 'Export Platform Bundle' })).toBeDisabled();
   });
 
   it('disables the export when nothing is selected', async () => {
@@ -425,6 +441,19 @@ describe('ConfigPresetExportDrawer', () => {
       expect(relayEnv.mock.getMostRecentOperation().request.variables).toMatchObject({ type: 'branding', cursor: 'next', count: 25 });
     });
 
+    it('shows under each item whether it is on or off, and nothing for an item that is neither', async () => {
+      const rendered = await renderOpenDrawer(vi.fn(), pagedBrandingCatalog());
+      await rendered.user.click(screen.getByRole('button', { name: 'Manage' }));
+      await resolveItems(rendered.relayEnv, [
+        item('rule-on', 'Rule on', { isEnabled: true }),
+        item('rule-off', 'Rule off', { isEnabled: false }),
+        item('theme-acme', 'ACME', { translatable: false, isEnabled: null }),
+      ]);
+      expect(screen.getAllByText('Enabled')).toHaveLength(1);
+      expect(screen.getAllByText('Disabled')).toHaveLength(1);
+      expect(screen.getByRole('checkbox', { name: 'ACME' })).toBeInTheDocument();
+    });
+
     it('goes back to the bundle with the arrow or the button, keeping the selection', async () => {
       const { user } = await openThemes();
       await user.click(screen.getByRole('checkbox', { name: 'ACME' }));
@@ -435,6 +464,16 @@ describe('ConfigPresetExportDrawer', () => {
       await user.click(screen.getByRole('button', { name: 'Manage' }));
       await user.click(screen.getByRole('button', { name: 'Back to bundle' }));
       expect(screen.getByRole('button', { name: 'Export Platform Bundle' })).toBeInTheDocument();
+    });
+
+    it('asks the server for the items each time the sub-view opens, not the store: the items change while the page stays open', async () => {
+      const { user, relayEnv } = await openThemes();
+      expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+      await user.click(screen.getByRole('button', { name: 'Back' }));
+      await user.click(screen.getByRole('button', { name: 'Manage' }));
+      // The items of the first opening are in the store: they are not the answer, the server is asked again
+      expect(relayEnv.mock.getAllOperations()).toHaveLength(1);
+      expect(relayEnv.mock.getMostRecentOperation().request.variables).toMatchObject({ type: 'branding', count: 25 });
     });
 
     it('queries the excluded or selected items, and searches from the first page', async () => {

@@ -1,10 +1,12 @@
 import * as R from 'ramda';
-import { type DashboardVariable, DashboardVariableRestrictionMode, DashboardVariableType, type EditInput, VocabularyCategory } from '../../generated/graphql';
+import { type DashboardPreset, type DashboardVariable, DashboardVariableRestrictionMode, DashboardVariableType, type EditInput, VocabularyCategory } from '../../generated/graphql';
 import { fromB64, toB64 } from '../../utils/base64';
 import { FunctionalError } from '../../config/errors';
+import type { AuthUser } from '../../types/user';
 import { computeDashboardVariablesUsage } from '../dashboard/dashboard-variables-resolution';
-import { DASHBOARD_MANIFEST_SERVER_OWNED_KEYS, type StoreDashboardManifest, type StoreDashboardVariable } from './workspace-variables-types';
+import { DASHBOARD_MANIFEST_SERVER_OWNED_KEYS, type StoreDashboardManifest, type StoreDashboardPreset, type StoreDashboardVariable } from './workspace-variables-types';
 import { buildDashboardVariable, type DashboardVariableInputLike } from './workspace-variables-validation';
+import { buildDashboardPreset, type DashboardPresetInputLike } from './workspace-presets-validation';
 
 export const buildVariableAuditInput = (
   operation: 'upsert' | 'delete',
@@ -14,11 +16,27 @@ export const buildVariableAuditInput = (
   return [{ key: 'variables', value: [{ operation, id: variable.id, name: variable.name, type: variable.type }] }];
 };
 
-export const toGraphqlDashboardVariables = (workspace: { type?: string | null; manifest?: string | null }): DashboardVariable[] => {
-  if (workspace.type !== 'dashboard' || !workspace.manifest) return [];
-  const manifest = fromB64<StoreDashboardManifest>(workspace.manifest);
+type WorkspaceLike = { id?: string; type?: string | null; manifest?: string | null };
+
+// The three Workspace fields below decode the same manifest of the same loaded workspace: decoded once per object.
+const decodedManifests = new WeakMap<object, { encoded: string; manifest: StoreDashboardManifest }>();
+const decodeDashboardManifest = (workspace: WorkspaceLike): StoreDashboardManifest | null => {
+  if (workspace.type !== 'dashboard' || !workspace.manifest) return null;
+  const cached = decodedManifests.get(workspace);
+  if (cached && cached.encoded === workspace.manifest) return cached.manifest;
+  // These fields are read on every dashboard: a manifest that cannot be decoded gives no variable nor preset instead
+  // of failing the non-null fields, and with them the whole workspace.
+  const manifest = parseManifestObject(workspace.manifest) as StoreDashboardManifest | null;
+  if (!manifest) return null;
+  decodedManifests.set(workspace, { encoded: workspace.manifest, manifest });
+  return manifest;
+};
+
+export const toGraphqlDashboardVariables = (workspace: WorkspaceLike): DashboardVariable[] => {
+  const manifest = decodeDashboardManifest(workspace);
+  if (!manifest || !Array.isArray(manifest.variables) || manifest.variables.length === 0) return [];
   const usage = computeDashboardVariablesUsage(manifest.widgets);
-  return (manifest.variables ?? []).map((variable) => {
+  return manifest.variables.map((variable) => {
     const { restriction } = variable;
     return {
       id: variable.id,
@@ -36,6 +54,45 @@ export const toGraphqlDashboardVariables = (workspace: { type?: string | null; m
       usedInWidgetIds: usage.get(variable.id) ?? [],
     };
   });
+};
+
+export const toGraphqlDashboardPresets = (workspace: WorkspaceLike): DashboardPreset[] => {
+  const manifest = decodeDashboardManifest(workspace);
+  if (!manifest || !Array.isArray(manifest.presets)) return [];
+  return manifest.presets.map((preset) => ({
+    id: preset.id,
+    name: preset.name,
+    values: Object.entries(preset.values ?? {}).map(([variableId, value]) => ({ variableId, value })),
+    config: {
+      startDate: preset.config?.startDate ?? null,
+      endDate: preset.config?.endDate ?? null,
+      relativeDate: preset.config?.relativeDate ?? null,
+    },
+  }));
+};
+
+type DefaultDashboardHolder = { default_dashboard?: string | null; default_dashboard_preset?: string | null };
+
+/**
+ * The preset this dashboard opens on for the current user: the one attached to their own default dashboard choice,
+ * else the one of the first organization or group (the order of findDefaultDashboards) whose default dashboard is this
+ * one. Null when no holder points to this dashboard, when the first one holds no preset, or when it no longer exists.
+ */
+export const findCurrentUserDefaultPresetId = (user: AuthUser, workspace: WorkspaceLike & { id: string }) => {
+  if (workspace.type !== 'dashboard' || !workspace.manifest) return null;
+  const self = user as unknown as DefaultDashboardHolder;
+  const holders: DefaultDashboardHolder[] = [
+    ...(self.default_dashboard ? [self] : []),
+    ...((user.organizations ?? []) as unknown as DefaultDashboardHolder[]),
+    ...((user.groups ?? []) as unknown as DefaultDashboardHolder[]),
+  ];
+  // The first holder that opens on this dashboard decides, with or without a preset: a user who chose this dashboard
+  // with No preset is not caught up by the preset of their group.
+  const holder = holders.find((candidate) => candidate.default_dashboard === workspace.id);
+  if (!holder?.default_dashboard_preset) return null;
+  const manifest = decodeDashboardManifest(workspace);
+  const presets = Array.isArray(manifest?.presets) ? manifest.presets : [];
+  return presets.some((preset) => preset.id === holder.default_dashboard_preset) ? holder.default_dashboard_preset : null;
 };
 
 const parseManifestObject = (encoded: string): Record<string, unknown> | null => {
@@ -114,18 +171,40 @@ const toVariableInput = (variable: unknown): DashboardVariableInputLike => {
   };
 };
 
+// A stored preset coming from outside the typed API (import, duplication) is untrusted: checked like the mutation input.
+const toPresetInput = (preset: unknown): DashboardPresetInputLike => {
+  if (typeof preset !== 'object' || preset === null || Array.isArray(preset)) throw FunctionalError('Invalid dashboard preset');
+  const value = preset as Record<string, any>;
+  if (typeof value.name !== 'string' || !isOptionalString(value.id)) throw FunctionalError('Invalid dashboard preset', { presetId: value.id });
+  const values = value.values ?? {};
+  if (typeof values !== 'object' || values === null || Array.isArray(values)) throw FunctionalError('Invalid dashboard preset values', { presetId: value.id });
+  const config = value.config ?? {};
+  if (typeof config !== 'object' || config === null || Array.isArray(config)
+    || !isOptionalString(config.startDate) || !isOptionalString(config.endDate) || !isOptionalString(config.relativeDate)) {
+    throw FunctionalError('Invalid dashboard preset time range', { presetId: value.id });
+  }
+  return {
+    id: value.id,
+    name: value.name,
+    values: Object.entries(values).map(([variableId, presetValue]) => ({ variableId, value: presetValue as string })),
+    config: { startDate: config.startDate, endDate: config.endDate, relativeDate: config.relativeDate },
+  };
+};
+
 /**
  * Validate the server-owned keys of a manifest written outside the typed API (configuration import,
  * duplication): every variable goes through the same validation as workspaceVariableUpsert, keeping its id
- * so the widget tokens still resolve. Presets are dropped until they can be validated.
+ * so the widget tokens still resolve, and every preset through the same validation as workspacePresetUpsert
+ * (a value for a variable the dashboard does not hold is dropped, the preset is kept).
  * A manifest without these keys is returned untouched.
  */
 export const validateManifestVariables = (encoded: string | null | undefined) => {
   if (!encoded) return encoded;
   const manifest = parseManifestObject(encoded);
   if (!manifest || !DASHBOARD_MANIFEST_SERVER_OWNED_KEYS.some((key) => key in manifest)) return encoded;
-  const { variables } = manifest;
+  const { variables, presets } = manifest;
   if (variables !== undefined && !Array.isArray(variables)) throw FunctionalError('Invalid dashboard variables');
+  if (presets !== undefined && !Array.isArray(presets)) throw FunctionalError('Invalid dashboard presets');
   const validated: StoreDashboardVariable[] = [];
   (variables ?? []).forEach((variable: unknown) => {
     const input = toVariableInput(variable);
@@ -134,8 +213,20 @@ export const validateManifestVariables = (encoded: string | null | undefined) =>
     }
     validated.push(buildDashboardVariable(input, validated));
   });
+  const validatedPresets: StoreDashboardPreset[] = [];
+  (presets ?? []).forEach((preset: unknown) => {
+    const input = toPresetInput(preset);
+    if (input.id && validatedPresets.some((existing) => existing.id === input.id)) {
+      throw FunctionalError('Duplicated dashboard preset id', { presetId: input.id });
+    }
+    validatedPresets.push(buildDashboardPreset(input, validatedPresets, validated, { dropUnknownVariables: true }));
+  });
   const withoutServerKeys = R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], manifest);
-  return toB64(variables === undefined ? withoutServerKeys : { ...withoutServerKeys, variables: validated });
+  return toB64({
+    ...withoutServerKeys,
+    ...(variables !== undefined && { variables: validated }),
+    ...(presets !== undefined && { presets: validatedPresets }),
+  });
 };
 
 /**
@@ -148,4 +239,44 @@ export const stripServerOwnedManifestKeys = (encoded: string | null | undefined)
   const manifest = parseManifestObject(encoded);
   if (!manifest || !DASHBOARD_MANIFEST_SERVER_OWNED_KEYS.some((key) => key in manifest)) return encoded;
   return toB64(R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], manifest));
+};
+
+const isPlainObject = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+};
+
+/**
+ * Whether a widget uses a dashboard variable in its filters, as counted in the usage of the variables.
+ * The widgets may come from a client or a file: a malformed one counts as using none.
+ */
+export const findDashboardVariableWidgets = (widgets: unknown): string[] => {
+  if (!isPlainObject(widgets)) return [];
+  const selections = Object.fromEntries(Object.entries(widgets).map(([widgetId, widget]) => {
+    const dataSelection = isPlainObject(widget) && Array.isArray(widget.dataSelection) ? widget.dataSelection.filter(isPlainObject) : [];
+    return [widgetId, { dataSelection }];
+  }));
+  const widgetIds = new Set([...computeDashboardVariablesUsage(selections).values()].flat());
+  // Named as the user sees them: the title of the widget, else its id.
+  return [...widgetIds].map((widgetId) => {
+    const widget = widgets[widgetId];
+    const title = isPlainObject(widget) && isPlainObject(widget.parameters) ? widget.parameters.title : undefined;
+    return typeof title === 'string' && title.trim() !== '' ? title.trim() : widgetId;
+  });
+};
+
+export const hasDashboardVariableWidget = (widgets: unknown) => findDashboardVariableWidgets(widgets).length > 0;
+
+/**
+ * The manifest of a custom view, on every way in (creation, edition, duplication, configuration and widget import):
+ * dashboard variables do not exist there, so a widget using one would never show data and is refused, and the
+ * server-owned keys are removed (see stripServerOwnedManifestKeys).
+ */
+export const sanitizeCustomViewManifest = (encoded: string | null | undefined) => {
+  const refusedWidgets = encoded ? findDashboardVariableWidgets(parseManifestObject(encoded)?.widgets) : [];
+  if (refusedWidgets.length > 0) {
+    // Named in the message, the one the user is shown: a view saved before the refusal is refused on any change until
+    // these widgets are removed or changed.
+    throw FunctionalError(`A widget using dashboard variables cannot be used in a custom view: ${refusedWidgets.join(', ')}`, { widgets: refusedWidgets });
+  }
+  return stripServerOwnedManifestKeys(encoded);
 };

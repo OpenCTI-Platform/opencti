@@ -57,6 +57,7 @@ import { type BasicStoreEntityPir, ENTITY_TYPE_PIR } from '../modules/pir/pir-ty
 import { fromB64 } from '../utils/base64';
 import type { BasicStoreEntityDecayExclusionRule } from '../modules/decayRule/exclusions/decayExclusionRule-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
+import { ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE } from '../modules/ingestionDeduplication/ingestionDeduplicationRule-types';
 import type * as S from '../types/stix-2-1-common';
 import { pushAll } from '../utils/arrayUtil';
 import { ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from '../modules/customField/custom-field-types';
@@ -217,6 +218,12 @@ const platformDecayExclusionRules = (context: AuthContext) => {
     return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_DECAY_EXCLUSION_RULE]);
   };
   return { value: null, fn: reloadDecayExclusionRules };
+};
+const platformIngestionDeduplicationRules = (context: AuthContext) => {
+  const reloadIngestionDeduplicationRules = () => {
+    return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE]);
+  };
+  return { values: null, fn: reloadIngestionDeduplicationRules };
 };
 const platformMarkings = (context: AuthContext) => {
   const reloadMarkings = () => {
@@ -388,6 +395,7 @@ const CACHED_ENTITIES_MAP = {
   [ENTITY_TYPE_DRAFT_WORKSPACE]: platformDraftWorkspaces,
   [ENTITY_TYPE_PIR]: platformPirs,
   [ENTITY_TYPE_DECAY_EXCLUSION_RULE]: platformDecayExclusionRules,
+  [ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE]: platformIngestionDeduplicationRules,
   [ENTITY_TYPE_CUSTOM_FIELD_DEFINITION]: platformCustomFieldDefinitions,
 };
 // ABSTRACT_INTERNAL_OBJECT is always included

@@ -1,6 +1,8 @@
 type RfiRequestAccessConfiguration {
   configuration: RequestAccessConfiguration
   isUserCanAction: Boolean!
+  # The request is decided through the published request access workflow (not the legacy Validate / Decline flow)
+  isWorkflowDriven: Boolean!
 }
 
 type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
@@ -167,6 +169,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   # Cases
   name: String!
   description: String

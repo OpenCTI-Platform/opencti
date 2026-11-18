@@ -1,6 +1,6 @@
 import { PLATFORM_VERSION } from '../../config/conf';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition, ConfigPresetItemFile } from './configPreset-types';
+import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition, ConfigPresetItemFile, ConfigPresetItemAttachment } from './configPreset-types';
 import { platformFamily } from './registry/platform-configPreset-registry';
 import { brandingFamily } from './registry/branding-configPreset-registry';
 import { messagesFamily } from './registry/messages-configPreset-registry';
@@ -10,11 +10,21 @@ import { markingsFamily } from './registry/markings-configPreset-registry';
 import { rolesFamily } from './registry/roles-configPreset-registry';
 import { groupsFamily } from './registry/groups-configPreset-registry';
 import { policiesFamily } from './registry/policies-configPreset-registry';
+import { emailTemplatesFamily } from './registry/emailTemplates-configPreset-registry';
+import { labelsFamily } from './registry/labels-configPreset-registry';
+import { connectorsFamily } from './registry/connectors-configPreset-registry';
+import { ruleEngineFamily } from './registry/ruleEngine-configPreset-registry';
 import { isEnterpriseEditionUpToDate } from '../../enterprise-edition/ee';
+import { exclusionListsFamily } from './registry/exclusionLists-configPreset-registry';
+import { killChainPhasesFamily } from './registry/killChainPhases-configPreset-registry';
+import { vocabulariesFamily } from './registry/vocabularies-configPreset-registry';
+import { statusTemplatesFamily } from './registry/statusTemplates-configPreset-registry';
+import { caseTemplatesFamily } from './registry/caseTemplates-configPreset-registry';
 
 export { BRANDING_FAMILY_ID } from './registry/common-configPreset-registry';
 
-// In registry order, the categories of the spec table: Platform settings (platform, branding, messages, whitemark), then Data model, then Security & Access.
+// In registry order, the categories of the spec table: Platform settings (platform, branding, messages, whitemark), then Data model, then Security & Access,
+// then Taxonomy, then Customization, then Integrations, then Automation & Rules.
 // Each family is defined in its own file under registry/.
 export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   platformFamily,
@@ -26,6 +36,15 @@ export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   rolesFamily,
   groupsFamily,
   policiesFamily,
+  emailTemplatesFamily,
+  labelsFamily,
+  exclusionListsFamily,
+  killChainPhasesFamily,
+  vocabulariesFamily,
+  statusTemplatesFamily,
+  caseTemplatesFamily,
+  connectorsFamily,
+  ruleEngineFamily,
 ];
 
 // How the result of an item is shown next to its family: the name of its type, its place in the registry and its group.
@@ -51,6 +70,11 @@ export const configPresetItemFilePath = (family: ConfigPresetFamilyDefinition, i
   return `${family.directory}/${item.fileName ?? `${item.id}.json`}`;
 };
 
+// The path from the zip root of the attachment an item carries, next to its JSON
+export const configPresetItemAttachmentPath = (family: ConfigPresetFamilyDefinition, attachment: ConfigPresetItemAttachment) => {
+  return `${family.directory}/${attachment.name}`;
+};
+
 // The type written in the item files and in dependencies.json: `<group id>.<category id>`
 export const configPresetFamilyType = (family: ConfigPresetFamilyDefinition) => `${family.group.id}.${family.id}`;
 
@@ -66,5 +90,6 @@ export const exportConfigPresetItem = async (
     // The id of the item: the static id, or the standard id of an entity, never an internal id
     id: item.id,
     configuration: await item.exporter(context, user),
+    ...(item.attachment ? { attachment: configPresetItemAttachmentPath(family, item.attachment) } : {}),
   };
 };

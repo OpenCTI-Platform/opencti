@@ -22,15 +22,21 @@ vi.mock('../../../../../src/utils/http-client', async (importOriginal) => ({
 const PLATFORM_ID = 'platform-id';
 const TOKEN = 'platform-token';
 const PLATFORM_VERSION = '7.0.0';
-const BASE_INPUT = { platformId: PLATFORM_ID, token: TOKEN, platformVersion: PLATFORM_VERSION, platformIdentifier: 'opencti' };
-const FALLBACK_LOG = '[XTMH] XTM Hub does not accept the platform edition yet, refreshing the connectivity without it';
+const REFRESH_INPUT = { platformId: PLATFORM_ID, token: TOKEN, platformVersion: PLATFORM_VERSION, platformContract: 'EE' as const };
 const ECHOED_INPUT = '{ platformId: "platform-id", token: "platform-token", platformVersion: "7.0.0", platformIdentifier: "opencti", platformContract: "EE" }';
-const UNKNOWN_FIELD_ERROR = `Variable "$input" got invalid value ${ECHOED_INPUT}; `
+const BASE_INPUT = { platformId: PLATFORM_ID, token: TOKEN, platformVersion: PLATFORM_VERSION, platformIdentifier: 'opencti' };
+const INPUT_ERROR = `Variable "$input" got invalid value ${ECHOED_INPUT}; Field "platformVersion" of required type "String!" was not provided.`;
+const UNKNOWN_CONTRACT_ERROR = `Variable "$input" got invalid value ${ECHOED_INPUT}; `
   + 'Field "platformContract" is not defined by type "RefreshPlatformRegistrationConnectivityStatusInput".';
-const OTHER_INPUT_ERROR = `Variable "$input" got invalid value ${ECHOED_INPUT}; Field "platformVersion" of required type "String!" was not provided.`;
+const UNKNOWN_COMMERCIAL_MODEL_ERROR = 'Cannot query field "commercialModel" on type "PlatformRegistrationConnectivityStatus".';
 const CONTRACT_UPDATE_ERROR = 'Unable to update the "platformContract" of the platform';
+const COMMERCIAL_MODEL_UPDATE_ERROR = 'Unable to compute the "commercialModel" of the platform';
+const CONTRACT_FALLBACK_LOG = '[XTMH] XTM Hub does not accept the platform edition yet, refreshing the connectivity without it';
+const COMMERCIAL_MODEL_FALLBACK_LOG = '[XTMH] XTM Hub does not expose the commercial model yet, refreshing the connectivity without it';
 
-const statusResponse = (status: string) => ({ data: { data: { refreshPlatformRegistrationConnectivityStatus: { status } } } });
+const refreshResponse = (refreshed: { status: string; commercialModel?: string | null }) => ({
+  data: { data: { refreshPlatformRegistrationConnectivityStatus: refreshed } },
+});
 const graphqlErrorResponse = (message: string) => ({ data: { data: null, errors: [{ message }] } });
 const { HttpClientError } = await import('../../../../../src/utils/http-client');
 const badRequestError = (message: string) => new HttpClientError('Request failed with status code 400', 'ERR_BAD_REQUEST', {
@@ -46,7 +52,10 @@ const loadClient = async () => {
   return { xtmHubClient, logApp };
 };
 
-const sentInputs = () => mockPost.mock.calls.map(([, body]) => body.variables.input);
+const sentRequests = () => mockPost.mock.calls.map(([, body]) => ({
+  input: body.variables.input,
+  asksCommercialModel: body.query.includes('commercialModel'),
+}));
 
 describe('xtmHubClient.refreshRegistrationStatus', () => {
   beforeEach(() => {
@@ -54,76 +63,168 @@ describe('xtmHubClient.refreshRegistrationStatus', () => {
     mockPost.mockReset();
   });
 
-  it('should send the platform edition when the hub accepts it', async () => {
+  it('should send the platform edition and ask for the commercial model', async () => {
     // Given
     const { xtmHubClient } = await loadClient();
-    mockPost.mockResolvedValueOnce(statusResponse('active'));
+    mockPost.mockResolvedValueOnce(refreshResponse({ status: 'active', commercialModel: 'OTHER' }));
 
     // When
-    const status = await xtmHubClient.refreshRegistrationStatus({ platformId: PLATFORM_ID, token: TOKEN, platformVersion: PLATFORM_VERSION, platformContract: 'EE' });
+    await xtmHubClient.refreshRegistrationStatus(REFRESH_INPUT);
 
     // Then
-    expect({ status, inputs: sentInputs() }).toEqual({ status: 'active', inputs: [{ ...BASE_INPUT, platformContract: 'EE' }] });
+    const [[, body]] = mockPost.mock.calls;
+    expect(body.variables.input).toEqual({
+      platformId: PLATFORM_ID,
+      token: TOKEN,
+      platformVersion: PLATFORM_VERSION,
+      platformIdentifier: 'opencti',
+      platformContract: 'EE',
+    });
+    expect(body.query).toContain('commercialModel');
   });
 
   it.each([
-    { rejection: 'an HTTP 400 validation error', mockRejection: () => mockPost.mockRejectedValueOnce(badRequestError(UNKNOWN_FIELD_ERROR)) },
-    { rejection: 'GraphQL errors in an HTTP 200 answer', mockRejection: () => mockPost.mockResolvedValueOnce(graphqlErrorResponse(UNKNOWN_FIELD_ERROR)) },
+    { hubValue: 'SAAS', commercialModel: 'saas' },
+    { hubValue: 'OTHER', commercialModel: 'other' },
+    { hubValue: 'UNKNOWN_MODEL', commercialModel: null },
+    { hubValue: null, commercialModel: null },
+    { hubValue: undefined, commercialModel: null },
+  ])('should return the commercial model $commercialModel when the hub answers $hubValue', async ({ hubValue, commercialModel }) => {
+    // Given
+    const { xtmHubClient } = await loadClient();
+    mockPost.mockResolvedValueOnce(refreshResponse({ status: 'active', commercialModel: hubValue }));
+
+    // When
+    const result = await xtmHubClient.refreshRegistrationStatus(REFRESH_INPUT);
+
+    // Then
+    expect(result).toEqual({ status: 'active', commercialModel });
+  });
+
+  it.each([
+    { rejection: 'an HTTP 400 validation error', mockRejection: () => mockPost.mockRejectedValueOnce(badRequestError(UNKNOWN_CONTRACT_ERROR)) },
+    { rejection: 'GraphQL errors in an HTTP 200 answer', mockRejection: () => mockPost.mockResolvedValueOnce(graphqlErrorResponse(UNKNOWN_CONTRACT_ERROR)) },
   ])('should retry without the edition when the hub rejects the field with $rejection', async ({ mockRejection }) => {
     // Given
     const { xtmHubClient } = await loadClient();
     mockRejection();
-    mockPost.mockResolvedValueOnce(statusResponse('active'));
+    mockPost.mockResolvedValueOnce(refreshResponse({ status: 'active', commercialModel: 'SAAS' }));
 
     // When
-    const status = await xtmHubClient.refreshRegistrationStatus({ platformId: PLATFORM_ID, token: TOKEN, platformVersion: PLATFORM_VERSION, platformContract: 'CE' });
+    const result = await xtmHubClient.refreshRegistrationStatus({ ...REFRESH_INPUT, platformContract: 'CE' });
 
     // Then
-    expect({ status, inputs: sentInputs() }).toEqual({ status: 'active', inputs: [{ ...BASE_INPUT, platformContract: 'CE' }, BASE_INPUT] });
-  });
-
-  it('should log the fallback once when the hub keeps rejecting the edition', async () => {
-    // Given
-    const { xtmHubClient, logApp } = await loadClient();
-    mockPost
-      .mockRejectedValueOnce(badRequestError(UNKNOWN_FIELD_ERROR))
-      .mockResolvedValueOnce(statusResponse('active'))
-      .mockRejectedValueOnce(badRequestError(UNKNOWN_FIELD_ERROR))
-      .mockResolvedValueOnce(statusResponse('active'));
-
-    // When
-    await xtmHubClient.refreshRegistrationStatus({ platformId: PLATFORM_ID, token: TOKEN, platformVersion: PLATFORM_VERSION, platformContract: 'EE' });
-    await xtmHubClient.refreshRegistrationStatus({ platformId: PLATFORM_ID, token: TOKEN, platformVersion: PLATFORM_VERSION, platformContract: 'EE' });
-
-    // Then
-    expect(vi.mocked(logApp.warn).mock.calls.filter(([message]) => message === FALLBACK_LOG)).toHaveLength(1);
+    expect({ result, requests: sentRequests() }).toEqual({
+      result: { status: 'active', commercialModel: 'saas' },
+      requests: [
+        { input: { ...BASE_INPUT, platformContract: 'CE' }, asksCommercialModel: true },
+        { input: BASE_INPUT, asksCommercialModel: true },
+      ],
+    });
   });
 
   it.each([
-    { reason: 'another input error', mockRejection: () => mockPost.mockRejectedValueOnce(badRequestError(OTHER_INPUT_ERROR)) },
+    { rejection: 'an HTTP 400 validation error', mockRejection: () => mockPost.mockRejectedValueOnce(badRequestError(UNKNOWN_COMMERCIAL_MODEL_ERROR)) },
+    { rejection: 'GraphQL errors in an HTTP 200 answer', mockRejection: () => mockPost.mockResolvedValueOnce(graphqlErrorResponse(UNKNOWN_COMMERCIAL_MODEL_ERROR)) },
+  ])('should retry without the commercial model but keep the edition when the hub rejects the field with $rejection', async ({ mockRejection }) => {
+    // Given
+    const { xtmHubClient } = await loadClient();
+    mockRejection();
+    mockPost.mockResolvedValueOnce(refreshResponse({ status: 'active' }));
+
+    // When
+    const result = await xtmHubClient.refreshRegistrationStatus(REFRESH_INPUT);
+
+    // Then
+    expect({ result, requests: sentRequests() }).toEqual({
+      result: { status: 'active', commercialModel: null },
+      requests: [
+        { input: { ...BASE_INPUT, platformContract: 'EE' }, asksCommercialModel: true },
+        { input: { ...BASE_INPUT, platformContract: 'EE' }, asksCommercialModel: false },
+      ],
+    });
+  });
+
+  it('should fall back to the legacy status-only refresh when the hub knows neither field', async () => {
+    // Given
+    const { xtmHubClient } = await loadClient();
+    mockPost
+      .mockRejectedValueOnce(badRequestError(UNKNOWN_COMMERCIAL_MODEL_ERROR))
+      .mockRejectedValueOnce(badRequestError(UNKNOWN_CONTRACT_ERROR))
+      .mockResolvedValueOnce(refreshResponse({ status: 'active' }));
+
+    // When
+    const result = await xtmHubClient.refreshRegistrationStatus(REFRESH_INPUT);
+
+    // Then
+    expect({ result, requests: sentRequests() }).toEqual({
+      result: { status: 'active', commercialModel: null },
+      requests: [
+        { input: { ...BASE_INPUT, platformContract: 'EE' }, asksCommercialModel: true },
+        { input: { ...BASE_INPUT, platformContract: 'EE' }, asksCommercialModel: false },
+        { input: BASE_INPUT, asksCommercialModel: false },
+      ],
+    });
+  });
+
+  it('should log each fallback once when the hub keeps rejecting the fields', async () => {
+    // Given
+    const { xtmHubClient, logApp } = await loadClient();
+    const mockLegacyHubAnswers = () => mockPost
+      .mockRejectedValueOnce(badRequestError(UNKNOWN_COMMERCIAL_MODEL_ERROR))
+      .mockRejectedValueOnce(badRequestError(UNKNOWN_CONTRACT_ERROR))
+      .mockResolvedValueOnce(refreshResponse({ status: 'active' }));
+    mockLegacyHubAnswers();
+    mockLegacyHubAnswers();
+
+    // When
+    await xtmHubClient.refreshRegistrationStatus(REFRESH_INPUT);
+    await xtmHubClient.refreshRegistrationStatus(REFRESH_INPUT);
+
+    // Then
+    expect(vi.mocked(logApp.warn).mock.calls).toEqual([[COMMERCIAL_MODEL_FALLBACK_LOG], [CONTRACT_FALLBACK_LOG]]);
+  });
+
+  it.each([
     { reason: 'an error naming the edition field', mockRejection: () => mockPost.mockResolvedValueOnce(graphqlErrorResponse(CONTRACT_UPDATE_ERROR)) },
+    { reason: 'an error naming the commercial model field', mockRejection: () => mockPost.mockResolvedValueOnce(graphqlErrorResponse(COMMERCIAL_MODEL_UPDATE_ERROR)) },
   ])('should return inactive without retrying when the hub rejects the refresh with $reason', async ({ mockRejection }) => {
     // Given
     const { xtmHubClient } = await loadClient();
     mockRejection();
 
     // When
-    const status = await xtmHubClient.refreshRegistrationStatus({ platformId: PLATFORM_ID, token: TOKEN, platformVersion: PLATFORM_VERSION, platformContract: 'EE' });
+    const result = await xtmHubClient.refreshRegistrationStatus(REFRESH_INPUT);
 
     // Then
-    expect({ status, calls: mockPost.mock.calls.length }).toEqual({ status: 'inactive', calls: 1 });
+    expect({ result, calls: mockPost.mock.calls.length }).toEqual({ result: { status: 'inactive', commercialModel: null }, calls: 1 });
   });
 
   it.each([
-    { rejection: 'an HTTP 400 validation error', mockRejection: () => mockPost.mockRejectedValueOnce(badRequestError(OTHER_INPUT_ERROR)), codes: ['BAD_USER_INPUT'] },
-    { rejection: 'GraphQL errors in an HTTP 200 answer', mockRejection: () => mockPost.mockResolvedValueOnce(graphqlErrorResponse(OTHER_INPUT_ERROR)), codes: [] },
+    { rejection: 'an HTTP 400 validation error', mockRejection: () => mockPost.mockRejectedValueOnce(badRequestError(INPUT_ERROR)) },
+    { rejection: 'GraphQL errors in an HTTP 200 answer', mockRejection: () => mockPost.mockResolvedValueOnce(graphqlErrorResponse(INPUT_ERROR)) },
+  ])('should return inactive without retrying when the hub rejects the refresh with $rejection', async ({ mockRejection }) => {
+    // Given
+    const { xtmHubClient } = await loadClient();
+    mockRejection();
+
+    // When
+    const result = await xtmHubClient.refreshRegistrationStatus(REFRESH_INPUT);
+
+    // Then
+    expect({ result, calls: mockPost.mock.calls.length }).toEqual({ result: { status: 'inactive', commercialModel: null }, calls: 1 });
+  });
+
+  it.each([
+    { rejection: 'an HTTP 400 validation error', mockRejection: () => mockPost.mockRejectedValueOnce(badRequestError(INPUT_ERROR)), codes: ['BAD_USER_INPUT'] },
+    { rejection: 'GraphQL errors in an HTTP 200 answer', mockRejection: () => mockPost.mockResolvedValueOnce(graphqlErrorResponse(INPUT_ERROR)), codes: [] },
   ])('should log the error codes but not the echoed token when the hub rejects the refresh with $rejection', async ({ mockRejection, codes }) => {
     // Given
     const { xtmHubClient, logApp } = await loadClient();
     mockRejection();
 
     // When
-    await xtmHubClient.refreshRegistrationStatus({ platformId: PLATFORM_ID, token: TOKEN, platformVersion: PLATFORM_VERSION, platformContract: 'EE' });
+    await xtmHubClient.refreshRegistrationStatus(REFRESH_INPUT);
 
     // Then
     expect(vi.mocked(logApp.warn).mock.calls).toEqual([['XTM Hub sent an error', { codes }]]);
@@ -135,9 +236,9 @@ describe('xtmHubClient.refreshRegistrationStatus', () => {
     mockPost.mockRejectedValueOnce(new HttpClientError('connect ECONNREFUSED', 'ECONNREFUSED'));
 
     // When
-    const status = await xtmHubClient.refreshRegistrationStatus({ platformId: PLATFORM_ID, token: TOKEN, platformVersion: PLATFORM_VERSION, platformContract: 'EE' });
+    const result = await xtmHubClient.refreshRegistrationStatus(REFRESH_INPUT);
 
     // Then
-    expect({ status, calls: mockPost.mock.calls.length }).toEqual({ status: 'inactive', calls: 1 });
+    expect({ result, calls: mockPost.mock.calls.length }).toEqual({ result: { status: 'inactive', commercialModel: null }, calls: 1 });
   });
 });

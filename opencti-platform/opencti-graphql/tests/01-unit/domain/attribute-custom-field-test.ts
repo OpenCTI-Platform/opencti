@@ -94,6 +94,13 @@ describe('attribute domain — custom field injection', () => {
       expect(caseIncidentType?.attributes.find((a) => a.name === 'x_opencti_cf_when')).toMatchObject({ type: 'date' });
     });
 
+    it('does not expose the closing reason, which only the workflow writes', async () => {
+      seed();
+      const result = await getSchemaAttributes(CONTEXT, USER);
+      const caseIncidentType = result.find((t) => t.type === ENTITY_TYPE);
+      expect(caseIncidentType?.attributes.find((a) => a.name === 'x_opencti_closing_reason')).toBeUndefined();
+    });
+
     it('defaults non-mandatory custom fields to mandatoryType "no"', async () => {
       seed(makeDefinition({
         name: 'x_opencti_cf_score',

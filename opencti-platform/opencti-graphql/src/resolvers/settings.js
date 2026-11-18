@@ -36,6 +36,9 @@ import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils'
 import { isEmailRewriteAllowed, smtpConfiguredEmail } from '../database/smtp';
 import { isAuthenticationForcedFromEnv } from '../modules/authenticationProvider/providers-configuration';
 import { updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../domain/setting-auth';
+import { readPasswordHistoryCount } from '../modules/user/user-password-history';
+import { LOCAL_AUTH_LOCKOUT_DEFAULTS } from '../domain/local-auth-lockout';
+import { isSessionPresenceSupported } from '../modules/session/session-presence-domain';
 
 const settingsResolvers = {
   Query: {
@@ -58,6 +61,8 @@ const settingsResolvers = {
     platform_ip_whitelist_enabled: (settings) => settings.platform_ip_whitelist_enabled ?? false,
     platform_ip_whitelist_exclusions: (settings, __, context) => internalFindByIds(context, context.user, settings.platform_ip_whitelist_exclusion_ids),
     otp_mandatory: (settings) => settings.otp_mandatory ?? false,
+    platform_session_presence_enabled: (settings) => settings.platform_session_presence_enabled ?? false,
+    platform_session_presence_supported: () => isSessionPresenceSupported(),
     platform_email: (settings) => smtpConfiguredEmail(settings),
     platform_email_configurable: () => isEmailRewriteAllowed(),
     password_policy_min_length: (settings) => settings.password_policy_min_length ?? 0,
@@ -68,6 +73,9 @@ const settingsResolvers = {
     password_policy_min_lowercase: (settings) => settings.password_policy_min_lowercase ?? 0,
     password_policy_min_uppercase: (settings) => settings.password_policy_min_uppercase ?? 0,
     password_policy_validity_days: (settings) => settings.password_policy_validity_days ?? 0,
+    password_policy_history_count: (settings) => readPasswordHistoryCount(settings),
+    // Each lockout field falls back to its default when the settings hold none
+    ...Object.fromEntries(Object.entries(LOCAL_AUTH_LOCKOUT_DEFAULTS).map(([key, defaultValue]) => [key, (settings) => settings[key] ?? defaultValue])),
     editContext: (settings) => fetchEditContext(settings.id),
     platform_messages: (settings, _, context) => getMessagesFilteredByRecipients(context.user, settings),
     messages_administration: (settings) => JSON.parse(settings.platform_messages ?? '[]'),
@@ -102,6 +110,10 @@ const settingsResolvers = {
         size: meta.contentLength ?? 0,
       };
     },
+  },
+  PublicSettings: {
+    // Read by the login page: 0 whenever the rule is off, so no screen shows it
+    password_policy_history_count: (settings) => readPasswordHistoryCount(settings),
   },
   AppInfo: {
     memory: getMemoryStatistics(),

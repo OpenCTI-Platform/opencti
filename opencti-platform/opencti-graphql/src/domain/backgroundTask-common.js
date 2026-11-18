@@ -142,6 +142,9 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
   checkWorkflowActionsValidity(context, user, actions);
   // check rights
   const baseFilterObject = baseFilterString ? JSON.parse(baseFilterString) : undefined;
+  if (taskType === TASK_TYPE_QUERY && !isFilterGroupNotEmpty(baseFilterObject)) {
+    throw FunctionalError('A background task of type query should have at least one filter.');
+  }
   const filters = isFilterGroupNotEmpty(baseFilterObject)
     ? (baseFilterObject?.filters ?? [])
     : [];

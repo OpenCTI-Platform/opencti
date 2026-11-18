@@ -2,19 +2,30 @@ import { describe, expect, it } from 'vitest';
 import { fromB64, toB64 } from '../../../../src/utils/base64';
 import {
   buildVariableAuditInput,
+  hasDashboardVariableWidget,
+  findCurrentUserDefaultPresetId,
   preserveServerOwnedManifestKeys,
+  sanitizeCustomViewManifest,
   stripServerOwnedManifestKeys,
+  toGraphqlDashboardPresets,
   toGraphqlDashboardVariables,
   validateManifestVariables,
 } from '../../../../src/modules/workspace/workspace-variables-utils';
+import type { AuthUser } from '../../../../src/types/user';
 
 const VAR_ID = '11111111-1111-4111-8111-111111111111';
+const PRESET_ID = '55555555-5555-4555-8555-555555555555';
 const FILTERS = { mode: 'and', filters: [{ key: ['entity_type'], values: ['Sector'] }], filterGroups: [] };
 
 describe('toGraphqlDashboardVariables', () => {
   it('should return no variable for an investigation or an empty manifest', () => {
     expect(toGraphqlDashboardVariables({ type: 'investigation', manifest: toB64({ variables: [{ id: VAR_ID }] }) })).toEqual([]);
     expect(toGraphqlDashboardVariables({ type: 'dashboard', manifest: undefined })).toEqual([]);
+    // A manifest that cannot be decoded, or holds no list, gives nothing instead of failing the workspace
+    expect(toGraphqlDashboardVariables({ type: 'dashboard', manifest: 'not base64 json' })).toEqual([]);
+    expect(toGraphqlDashboardVariables({ type: 'dashboard', manifest: toB64({ variables: 'x' }) })).toEqual([]);
+    expect(toGraphqlDashboardPresets({ type: 'dashboard', manifest: 'not base64 json' })).toEqual([]);
+    expect(toGraphqlDashboardPresets({ type: 'dashboard', manifest: toB64({ presets: {} }) })).toEqual([]);
     expect(toGraphqlDashboardVariables({ type: 'dashboard', manifest: toB64({ widgets: {} }) })).toEqual([]);
   });
   it('should serialize restrictions and compute usage', () => {
@@ -33,6 +44,47 @@ describe('toGraphqlDashboardVariables', () => {
       defaultValue: 'sector-id',
       usedInWidgetIds: ['widget-1'],
     }]);
+  });
+});
+
+describe('toGraphqlDashboardPresets', () => {
+  it('should return no preset for an investigation or an empty manifest', () => {
+    expect(toGraphqlDashboardPresets({ type: 'investigation', manifest: toB64({ presets: [{ id: PRESET_ID }] }) })).toEqual([]);
+    expect(toGraphqlDashboardPresets({ type: 'dashboard', manifest: undefined })).toEqual([]);
+    expect(toGraphqlDashboardPresets({ type: 'dashboard', manifest: toB64({ widgets: {} }) })).toEqual([]);
+  });
+  it('should serialize the values as a list and complete the time range', () => {
+    const manifest = { presets: [{ id: PRESET_ID, name: 'Energy', values: { [VAR_ID]: 'sector-energy' }, config: { relativeDate: 'days-7' } }] };
+    expect(toGraphqlDashboardPresets({ type: 'dashboard', manifest: toB64(manifest) })).toEqual([{
+      id: PRESET_ID,
+      name: 'Energy',
+      values: [{ variableId: VAR_ID, value: 'sector-energy' }],
+      config: { startDate: null, endDate: null, relativeDate: 'days-7' },
+    }]);
+  });
+});
+
+describe('findCurrentUserDefaultPresetId', () => {
+  const workspace = { id: 'dashboard-1', type: 'dashboard', manifest: toB64({ presets: [{ id: PRESET_ID, name: 'Energy', values: {}, config: {} }] }) };
+  const user = (overrides: Record<string, unknown>) => ({ groups: [], organizations: [], ...overrides }) as unknown as AuthUser;
+
+  it('should return the preset of the own choice of the user first', () => {
+    const me = user({ default_dashboard: 'dashboard-1', default_dashboard_preset: PRESET_ID, groups: [{ default_dashboard: 'dashboard-1', default_dashboard_preset: 'other' }] });
+    expect(findCurrentUserDefaultPresetId(me, workspace)).toEqual(PRESET_ID);
+  });
+  it('should fall back to the organizations then the groups pointing to this dashboard', () => {
+    const me = user({ organizations: [{ default_dashboard: 'dashboard-2', default_dashboard_preset: PRESET_ID }], groups: [{ default_dashboard: 'dashboard-1', default_dashboard_preset: PRESET_ID }] });
+    expect(findCurrentUserDefaultPresetId(me, workspace)).toEqual(PRESET_ID);
+    expect(findCurrentUserDefaultPresetId(user({ groups: [{ default_dashboard: 'dashboard-1' }] }), workspace)).toBeNull();
+  });
+  it('should let the own choice of the user without preset win over the preset of a group', () => {
+    const me = user({ default_dashboard: 'dashboard-1', groups: [{ default_dashboard: 'dashboard-1', default_dashboard_preset: PRESET_ID }] });
+    expect(findCurrentUserDefaultPresetId(me, workspace)).toBeNull();
+  });
+  it('should return null when the preset no longer exists, or outside a dashboard', () => {
+    const me = user({ groups: [{ default_dashboard: 'dashboard-1', default_dashboard_preset: 'deleted' }] });
+    expect(findCurrentUserDefaultPresetId(me, workspace)).toBeNull();
+    expect(findCurrentUserDefaultPresetId(me, { ...workspace, type: 'investigation' })).toBeNull();
   });
 });
 
@@ -91,9 +143,19 @@ describe('validateManifestVariables', () => {
     const result = fromB64(validateManifestVariables(toB64({ widgets: {}, variables: [variable()] })) as string);
     expect(result.variables).toEqual([variable()]);
   });
-  it('should drop presets until they can be validated', () => {
-    const result = fromB64(validateManifestVariables(toB64({ widgets: {}, variables: [], presets: [{ id: 'p' }] })) as string);
-    expect(result.presets).toBeUndefined();
+  it('should validate the presets against the validated variables, dropping the values of unknown variables', () => {
+    const presets = [{ id: PRESET_ID, name: 'Energy', values: { [VAR_ID]: 'sector-energy', unknown: 'x' }, config: { relativeDate: 'days-7', startDate: '2026-01-01' } }];
+    const result = fromB64(validateManifestVariables(toB64({ widgets: {}, variables: [variable()], presets })) as string);
+    expect(result.presets).toEqual([{ id: PRESET_ID, name: 'Energy', values: { [VAR_ID]: 'sector-energy' }, config: { relativeDate: 'days-7', startDate: null, endDate: null } }]);
+  });
+  it('should keep presets without variables and refuse malformed ones', () => {
+    const result = fromB64(validateManifestVariables(toB64({ widgets: {}, presets: [{ name: 'Only range', config: { relativeDate: 'months-1' } }] })) as string);
+    expect(result.presets).toEqual([{ id: expect.any(String), name: 'Only range', values: {}, config: { relativeDate: 'months-1', startDate: null, endDate: null } }]);
+    expect(() => validateManifestVariables(toB64({ widgets: {}, presets: { id: 'p' } }))).toThrow('Invalid dashboard presets');
+    expect(() => validateManifestVariables(toB64({ widgets: {}, presets: [{ id: 'p' }] }))).toThrow('Invalid dashboard preset');
+    expect(() => validateManifestVariables(toB64({ widgets: {}, presets: [{ name: 'Bad range', config: { relativeDate: 'soon' } }] }))).toThrow('Invalid dashboard preset time range');
+    expect(() => validateManifestVariables(toB64({ widgets: {}, presets: [{ name: 'Array range', config: { relativeDate: ['days-7'] } }] }))).toThrow('Invalid dashboard preset time range');
+    expect(() => validateManifestVariables(toB64({ widgets: {}, presets: [{ id: PRESET_ID, name: 'A' }, { id: PRESET_ID, name: 'B' }] }))).toThrow('Duplicated dashboard preset id');
   });
   it.each([
     ['not an array', { variables: { id: VAR_ID } }, 'Invalid dashboard variables'],
@@ -123,5 +185,38 @@ describe('stripServerOwnedManifestKeys', () => {
     expect(stripServerOwnedManifestKeys('')).toEqual('');
     expect(stripServerOwnedManifestKeys(undefined)).toBeUndefined();
     expect(stripServerOwnedManifestKeys('%%%not-base64-json')).toEqual('%%%not-base64-json');
+  });
+});
+
+describe('hasDashboardVariableWidget', () => {
+  const tokenFilters = { mode: 'and', filters: [{ key: ['entity_type'], values: [`$var:${VAR_ID}`] }], filterGroups: [] };
+  it('should find a token in the filters, dynamicFrom and dynamicTo of a widget', () => {
+    expect(hasDashboardVariableWidget({ a: { dataSelection: [{ filters: tokenFilters }] } })).toBe(true);
+    expect(hasDashboardVariableWidget({ a: { dataSelection: [{ filters: FILTERS }, { dynamicTo: tokenFilters }] } })).toBe(true);
+    expect(hasDashboardVariableWidget({ a: { dataSelection: [{ filters: FILTERS, dynamicFrom: FILTERS }] } })).toBe(false);
+  });
+  it('should ignore a token outside the filters, and malformed widgets', () => {
+    expect(hasDashboardVariableWidget({ a: { parameters: { content: `$var:${VAR_ID}` }, dataSelection: [{ label: `$var:${VAR_ID}` }] } })).toBe(false);
+    expect(hasDashboardVariableWidget({ a: null, b: { dataSelection: 'x' }, c: { dataSelection: [null, 1] } })).toBe(false);
+    expect(hasDashboardVariableWidget(undefined)).toBe(false);
+    expect(hasDashboardVariableWidget([{ dataSelection: [{ filters: tokenFilters }] }])).toBe(false);
+  });
+});
+
+describe('sanitizeCustomViewManifest', () => {
+  const tokenWidget = { dataSelection: [{ filters: { mode: 'and', filters: [{ key: ['entity_type'], values: [`$var:${VAR_ID}`] }], filterGroups: [] } }] };
+
+  it('should refuse a widget using a dashboard variable', () => {
+    expect(() => sanitizeCustomViewManifest(toB64({ widgets: { a: tokenWidget } }))).toThrow('A widget using dashboard variables cannot be used in a custom view');
+  });
+  it('should name the refused widgets, by their title else by their id', () => {
+    const widgets = { a: tokenWidget, b: { ...tokenWidget, parameters: { title: ' Malware by sector ' } }, c: { dataSelection: [{ filters: FILTERS }] } };
+    expect(() => sanitizeCustomViewManifest(toB64({ widgets }))).toThrow('cannot be used in a custom view: a, Malware by sector');
+  });
+  it('should strip the server-owned keys of an accepted manifest', () => {
+    const result = sanitizeCustomViewManifest(toB64({ widgets: { a: { dataSelection: [{ filters: FILTERS }] } }, variables: [{ id: VAR_ID }], presets: [] }));
+    expect(fromB64(result as string)).toEqual({ widgets: { a: { dataSelection: [{ filters: FILTERS }] } } });
+    expect(sanitizeCustomViewManifest(undefined)).toBeUndefined();
+    expect(sanitizeCustomViewManifest('%%%not-base64-json')).toEqual('%%%not-base64-json');
   });
 });

@@ -41,6 +41,7 @@ vi.mock('../../../src/utils/filtering/filtering-constants', () => ({
   FILTER_KEYS_WITH_ME_VALUE: ['objectAssignee', 'objectParticipant'],
   ME_FILTER_VALUE: '@me',
   WORKFLOW_CONTEXT_FILTER_KEYS: ['workflow_user', 'workflow_group', 'workflow_organization', 'workflow_role', 'name'],
+  WORKFLOW_GROUP_FILTER: 'workflow_group',
   WORKFLOW_ORGANIZATION_FILTER: 'workflow_organization',
   WORKFLOW_ROLE_FILTER: 'workflow_role',
   WORKFLOW_USER_FILTER: 'workflow_user',
@@ -76,6 +77,20 @@ const makeSchema = (transitionOverrides: Partial<WorkflowSchema['transitions'][0
       ...transitionOverrides,
     },
   ],
+});
+
+describe('WorkflowFactory.createDefinition – array from', () => {
+  it('registers one transition per source state when from is an array', () => {
+    const schema: WorkflowSchema = {
+      ...makeSchema({ from: ['draft', 'archived'], comment: 'shared' }),
+      states: [{ statusId: 'draft' }, { statusId: 'review' }, { statusId: 'archived' }],
+    };
+    const definition = WorkflowFactory.createDefinition(schema);
+
+    expect(definition.getTransition('draft', 'submit')).toEqual(expect.objectContaining({ from: 'draft', to: 'review', comment: 'shared' }));
+    expect(definition.getTransition('archived', 'submit')).toEqual(expect.objectContaining({ from: 'archived', to: 'review', comment: 'shared' }));
+    expect(definition.getTransitions('review')).toEqual([]);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -336,5 +351,84 @@ describe('WorkflowFactory.createConditions – entity attribute filters', () => 
     const nameFilter = { ...filter('name', ['report'], FilterOperator.Contains), key: 'name' } as unknown as Filter;
     expect(await evaluate(group(FilterMode.And, [nameFilter]))).toBe(true);
     expect(stixLoadByIdMock).not.toHaveBeenCalled();
+  });
+
+  describe('audience pass (knowledge conditions assumed met)', () => {
+    const evaluateAudience = (filters: FilterGroup) => WorkflowFactory.createConditions({ filters })[0]({ ...conditionContext(), assumeKnowledgeConditionsMet: true } as any);
+
+    it('assumes knowledge filters met in the audience pass without loading the entity', async () => {
+      const result = await evaluateAudience(group(FilterMode.And, [filter('workflow_group', ['group-1']), filter('objectLabel', ['label-1'])]));
+      expect(result).toBe(true);
+      expect(stixLoadByIdMock).not.toHaveBeenCalled();
+      expect(isStixMatchFilterGroupMock).not.toHaveBeenCalled();
+    });
+
+    it('still evaluates audience filters in the audience pass', async () => {
+      expect(await evaluateAudience(group(FilterMode.And, [filter('workflow_group', ['other']), filter('objectLabel', ['label-1'])]))).toBe(false);
+    });
+
+    it('treats the entity name filter as knowledge', async () => {
+      expect(await evaluateAudience(group(FilterMode.And, [filter('name', ['nope'])]))).toBe(true);
+    });
+  });
+});
+
+describe('WorkflowFactory.createDefinition – closingReason field', () => {
+  it('propagates the closing reason mode to the transition definition', () => {
+    const definition = WorkflowFactory.createDefinition(makeSchema({ closingReason: 'required' }));
+    expect(definition.getTransition('draft', 'submit')!.closingReason).toBe('required');
+  });
+
+  it('leaves closingReason undefined when the schema transition has none', () => {
+    const definition = WorkflowFactory.createDefinition(makeSchema());
+    expect(definition.getTransition('draft', 'submit')!.closingReason).toBeUndefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// WorkflowFactory.residualKnowledgeConditions – tooltip content of blocked transitions
+// ---------------------------------------------------------------------------
+describe('WorkflowFactory.residualKnowledgeConditions', () => {
+  const filter = (key: string, values: string[]): Filter => ({ key: [key], values, operator: FilterOperator.Eq, mode: FilterMode.Or });
+  const group = (mode: FilterMode, filters: Filter[], filterGroups: FilterGroup[] = []): FilterGroup => ({ mode, filters, filterGroups });
+  const ctxFor = (user: { id: string; groups?: string[] }) => ({
+    entity: {},
+    user: { id: user.id, groups: (user.groups ?? []).map((id) => ({ id })), organizations: [], roles: [] },
+  } as any);
+  const assignee = filter('objectAssignee', ['@me']);
+
+  it('keeps the knowledge filters of an audience the user is not in out of the residue (OR of AND)', () => {
+    const conditions = group(FilterMode.Or, [assignee], [group(FilterMode.And, [filter('workflow_user', ['x']), filter('objectLabel', ['a'])])]);
+    expect(WorkflowFactory.residualKnowledgeConditions(ctxFor({ id: 'y' }), conditions)).toEqual(group(FilterMode.Or, [assignee]));
+  });
+
+  it('drops a branch the user already satisfies through the audience (AND of OR)', () => {
+    const conditions = group(FilterMode.And, [assignee], [group(FilterMode.Or, [filter('workflow_group', ['g']), filter('objectLabel', ['l'])])]);
+    expect(WorkflowFactory.residualKnowledgeConditions(ctxFor({ id: 'y', groups: ['g'] }), conditions)).toEqual(group(FilterMode.And, [assignee]));
+  });
+
+  it('keeps the knowledge alternative when the user is not in the audience branch', () => {
+    const conditions = group(FilterMode.And, [assignee], [group(FilterMode.Or, [filter('workflow_group', ['g']), filter('objectLabel', ['l'])])]);
+    expect(WorkflowFactory.residualKnowledgeConditions(ctxFor({ id: 'y' }), conditions))
+      .toEqual(group(FilterMode.And, [assignee], [group(FilterMode.Or, [filter('objectLabel', ['l'])])]));
+  });
+
+  it('ignores an empty group, like the evaluation of the transition does', () => {
+    const conditions = group(FilterMode.And, [assignee], [group(FilterMode.Or, [])]);
+    expect(WorkflowFactory.residualKnowledgeConditions(ctxFor({ id: 'y' }), conditions)).toEqual(group(FilterMode.And, [assignee]));
+  });
+
+  it('returns null when no knowledge condition is left to meet', () => {
+    expect(WorkflowFactory.residualKnowledgeConditions(ctxFor({ id: 'y' }), undefined)).toBeNull();
+    expect(WorkflowFactory.residualKnowledgeConditions(ctxFor({ id: 'y', groups: ['g'] }), group(FilterMode.And, [filter('workflow_group', ['g'])]))).toBeNull();
+    expect(WorkflowFactory.residualKnowledgeConditions(ctxFor({ id: 'y' }), group(FilterMode.Or, [filter('workflow_user', ['y']), assignee]))).toBeNull();
+  });
+
+  it('exposes the stored condition filters on the created transitions', () => {
+    const conditions = group(FilterMode.And, [filter('workflow_group', ['g']), filter('objectLabel', ['l'])]);
+    const withConditions = WorkflowFactory.createDefinition(makeSchema({ conditions: { filters: conditions } } as any));
+    expect(withConditions.getTransitions('draft')[0].conditionFilters).toEqual(conditions);
+    const withoutConditions = WorkflowFactory.createDefinition(makeSchema());
+    expect(withoutConditions.getTransitions('draft')[0].conditionFilters).toBeNull();
   });
 });

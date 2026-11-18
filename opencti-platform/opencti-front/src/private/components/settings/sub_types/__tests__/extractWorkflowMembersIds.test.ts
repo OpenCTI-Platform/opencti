@@ -34,7 +34,9 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          workflowStatusId: null,
           order: 0,
+          requestAccessOutcome: null,
           onEnter: [{
             type: 'updateAuthorizedMembers',
             params: { authorized_members: [{ id: 'user-1', access_right: 'view' }] },
@@ -50,7 +52,9 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          workflowStatusId: null,
           order: 0,
+          requestAccessOutcome: null,
           onEnter: [],
           onExit: [{
             type: 'updateAuthorizedMembers',
@@ -66,7 +70,9 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          workflowStatusId: null,
           order: 0,
+          requestAccessOutcome: null,
           onEnter: [{
             type: 'updateAuthorizedMembers',
             params: {
@@ -92,6 +98,7 @@ describe('extractWorkflowMembersIds', () => {
           event: 'go',
           conditions: {},
           comment: null,
+          closingReason: null,
           asyncActions: [],
           syncActions: [{
             type: 'updateAuthorizedMembers',
@@ -104,6 +111,26 @@ describe('extractWorkflowMembersIds', () => {
     });
   });
 
+  describe('shareRequestedEntities', () => {
+    it('extracts organization ids and leaves the AUTHOR dynamic key out', () => {
+      const def = emptyDef({
+        states: [{
+          statusId: 's1',
+          workflowStatusId: null,
+          order: 0,
+          requestAccessOutcome: null,
+          onEnter: [{
+            type: 'shareRequestedEntities',
+            params: { organizations: ['AUTHOR', 'org-1'] },
+          }],
+          onExit: [],
+        }],
+      });
+
+      expect(extractWorkflowMembersIds(def)).toEqual(['org-1']);
+    });
+  });
+
   describe('asyncBulkAction', () => {
     it('extracts org ids from SHARE asyncBulkAction in transition asyncActions', () => {
       const def = emptyDef({
@@ -113,6 +140,7 @@ describe('extractWorkflowMembersIds', () => {
           event: 'share',
           conditions: {},
           comment: null,
+          closingReason: null,
           asyncActions: [{
             type: 'asyncBulkAction',
             params: {
@@ -134,6 +162,7 @@ describe('extractWorkflowMembersIds', () => {
           event: 'unshare',
           conditions: {},
           comment: null,
+          closingReason: null,
           asyncActions: [{
             type: 'asyncBulkAction',
             params: {
@@ -154,7 +183,9 @@ describe('extractWorkflowMembersIds', () => {
         states: [
           {
             statusId: 's1',
+            workflowStatusId: null,
             order: 0,
+            requestAccessOutcome: null,
             onEnter: [{
               type: 'updateAuthorizedMembers',
               params: { authorized_members: [{ id: 'user-1', access_right: 'view' }] },
@@ -163,7 +194,9 @@ describe('extractWorkflowMembersIds', () => {
           },
           {
             statusId: 's2',
+            workflowStatusId: null,
             order: 1,
+            requestAccessOutcome: null,
             onEnter: [{
               type: 'updateAuthorizedMembers',
               params: { authorized_members: [{ id: 'user-1', access_right: 'admin' }] },
@@ -180,7 +213,9 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          workflowStatusId: null,
           order: 0,
+          requestAccessOutcome: null,
           onEnter: [{
             type: 'updateAuthorizedMembers',
             params: {
@@ -201,7 +236,9 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          workflowStatusId: null,
           order: 0,
+          requestAccessOutcome: null,
           onEnter: [{
             type: 'updateAuthorizedMembers',
             params: { authorized_members: [{ id: 'user-1', access_right: 'view' }] },
@@ -214,6 +251,7 @@ describe('extractWorkflowMembersIds', () => {
           event: 'go',
           conditions: {},
           comment: null,
+          closingReason: null,
           asyncActions: [{
             type: 'asyncBulkAction',
             params: { actions: [{ type: 'SHARE', context: { values: ['user-1', 'org-1'] } }] },

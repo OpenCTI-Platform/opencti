@@ -23,6 +23,7 @@ const notificationSchema = z.object({
   name: z.string().optional().catch(undefined),
   notification_type: z.string().optional().catch(undefined),
   trigger_type: z.string().optional().catch(undefined),
+  period: z.string().optional().catch(undefined),
   created: z.string().optional().catch(undefined),
 });
 

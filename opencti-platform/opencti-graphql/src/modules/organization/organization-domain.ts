@@ -82,6 +82,7 @@ export const organizationEditField = async (
   input: EditInput[],
   opts = {},
 ) => {
+  // The default dashboard and its preset are checked by stixDomainObjectEditField, for every edition path.
   const result = await stixDomainObjectEditField(context, user, organizationId, input, opts);
   await organizationUsersCacheRefresh(context, user, organizationId);
   return result;

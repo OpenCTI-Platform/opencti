@@ -25,8 +25,8 @@ interface ConfigPresetItemRowProps extends ConfigPresetSelectionProps {
   statusSlot?: ReactNode;
   // Disables the checkbox, as a forced dependency is
   disabled?: boolean;
-  // Under the label: what the item is, when it stands for its type
-  description?: string;
+  // Under the label: what the item is, when it stands for its type, and what the import does with it
+  description?: ReactNode;
 }
 
 // A forced dependency is checked and disabled

@@ -2,6 +2,8 @@ import { deepPurple, green, indigo, orange, red } from '@mui/material/colors';
 import { BellAlertOutline, BellCheckOutline, BellCogOutline, BellOutline, BellPlusOutline, BellRemoveOutline, FileTableBoxMultipleOutline } from 'mdi-material-ui';
 import React from 'react';
 import { AlertsLine_node$data } from '@components/profile/__generated__/AlertsLine_node.graphql';
+import type { ChipSeverity } from '@filigran/design-system';
+import { getHealthDisplay } from '@components/data/connectors/ingestionHealthDisplay';
 import { resolveLink } from '../../../../utils/Entity';
 
 export const colors: Record<string, string> = {
@@ -14,6 +16,25 @@ export const colors: Record<string, string> = {
   critical: red[500],
   degraded: orange[500],
   recovered: green[500],
+};
+
+// Same tone for an operation in the notifications list and in the details of a digest
+// Event type is categorical, so the tone carries the distinction without asserting a level:
+// create -> low, update -> info, delete -> critical, several at once -> medium.
+// Ingestion health transitions follow the health chip (getHealthDisplay), recovered -> low.
+export const operationSeverity = (operation: string): ChipSeverity => {
+  const health = getHealthDisplay(operation);
+  if (health) return health.chip;
+  switch (operation) {
+    case 'update':
+      return 'info';
+    case 'delete':
+      return 'critical';
+    case 'multiple':
+      return 'medium';
+    default:
+      return 'low';
+  }
 };
 
 export const getFirstOperation = ({ notification_content, notification_type }: Pick<AlertsLine_node$data, 'notification_content' | 'notification_type'>) => {

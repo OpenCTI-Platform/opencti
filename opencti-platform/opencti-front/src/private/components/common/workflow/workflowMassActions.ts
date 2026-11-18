@@ -10,7 +10,7 @@ interface TransitionOption {
   requirements?: TransitionInputRequirements;
 }
 
-// The comment and organizations collected for a mass transition, and whether they are complete
+// The comment, closing reason and organizations collected for a mass transition, and whether they are complete
 export type MassTransitionInputs = Partial<TransitionInputValues> & { inputsValid?: boolean };
 
 interface WorkflowActionInput {
@@ -28,6 +28,7 @@ interface MassTransition {
   toState: string;
   toStatus?: { template?: { name: string } | null } | null;
   comment?: string | null;
+  closingReason?: string | null;
   requiresShareOrganizationInput?: boolean | null;
   requiresUnshareOrganizationInput?: boolean | null;
 }
@@ -37,6 +38,7 @@ export const buildTransitionOptions = (transitions: readonly MassTransition[]): 
   value: transition.event,
   requirements: {
     commentMode: transition.comment,
+    closingReasonMode: transition.closingReason,
     requiresShareOrg: !!transition.requiresShareOrganizationInput,
     requiresUnshareOrg: !!transition.requiresUnshareOrganizationInput,
   },
@@ -60,6 +62,7 @@ export const buildWorkflowTransitionAction = (input: WorkflowActionInput) => {
   const requirements = input.values[0]?.requirements ?? NO_REQUIREMENTS;
   const inputs = { ...EMPTY_TRANSITION_INPUT_VALUES, ...input.transitionInputs };
   const comment = hasTransitionComment(requirements.commentMode) ? inputs.comment.trim() : '';
+  const closingReason = hasTransitionComment(requirements.closingReasonMode) ? inputs.closingReason?.trim() : '';
   return {
     type: input.type,
     context: {
@@ -70,13 +73,14 @@ export const buildWorkflowTransitionAction = (input: WorkflowActionInput) => {
         // Never undefined: a dropped key would turn the task into a plain replace that clears the status
         eventName: input.values[0]?.value ?? null,
         ...(comment ? { comment } : {}),
+        ...(closingReason ? { closingReason } : {}),
         ...buildTransitionRuntimeParams(requirements, inputs),
       },
     },
   };
 };
 
-// A transition step is complete once its comment and organizations are
+// A transition step is complete once its comment, closing reason and organizations are
 export const isTransitionInputValid = (input: WorkflowActionInput) => input.transitionInputs?.inputsValid === true;
 
 // With the workflow, a status only changes through a transition, unless the user can bypass the workflow

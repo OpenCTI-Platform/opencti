@@ -13,7 +13,7 @@ export const EVENT_INSTANCE = {
   event_types: ['financial'],
   start_time: '2026-04-05T22:00:00.000Z',
   stop_time: '2026-04-07T22:00:00.000Z',
-  x_opencti_aliases: ['event-alias'],
+  aliases: ['event-alias'],
   createdBy: { standard_id: 'identity--c801c762-92e8-58b6-9bcb-6fa805f902cb' },
   objectLabel: [{ value: 'stix 2.0' }],
   objectMarking: [{ standard_id: 'marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1' }],

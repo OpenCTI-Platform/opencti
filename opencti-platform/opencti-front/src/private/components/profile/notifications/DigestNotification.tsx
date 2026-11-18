@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { AlertsLine_node$data } from '@components/profile/__generated__/AlertsLine_node.graphql';
 import { Chip } from '@filigran/design-system';
-import { computeNotificationLink, iconSelector } from './notificationUtils';
+import { computeNotificationLink, iconSelector, operationSeverity } from './notificationUtils';
 import { DataTableProps, DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableWithoutFragment';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
@@ -26,19 +26,9 @@ const DigestNotification: FunctionComponent<DigestNotificationProps> = ({ notifi
       percentWidth: 20,
       isSortable: false,
       render: ({ operation }) => {
-        const getChipOperationSeverity = () => {
-          switch (operation) {
-            case 'update':
-              return 'info' as const;
-            case 'delete':
-              return 'critical' as const;
-            default:
-              return 'low' as const;
-          }
-        };
         return (
           <Chip
-            severity={getChipOperationSeverity()}
+            severity={operationSeverity(operation)}
             label={t_i18n(operation)}
             style={{ float: 'left' }}
           />

@@ -17,7 +17,7 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import TextField from '../../../../components/TextField';
-import { enabledFilters } from './utils/enabledFilters';
+import { useDecayFilterKeys } from './utils/enabledFilters';
 import { useTheme } from '@mui/material/styles';
 
 export const decayExclusionRuleEditionFieldPatch = graphql`
@@ -50,6 +50,7 @@ const decayExclusionRuleEditionValidator = (t: (value: string) => string) => {
 const DecayExclusionRuleEdition = ({ data, isOpen, onClose }: DecayExclusionRuleEditionProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const decayFilterKeys = useDecayFilterKeys();
   const [filters, filterHelpers] = useFiltersState(
     deserializeFilterGroupForFrontend(data.decay_exclusion_filters) ?? emptyFilterGroup,
     deserializeFilterGroupForFrontend(data.decay_exclusion_filters) ?? emptyFilterGroup,
@@ -140,7 +141,7 @@ const DecayExclusionRuleEdition = ({ data, isOpen, onClose }: DecayExclusionRule
               }}
               >
                 <Filters
-                  availableFilterKeys={enabledFilters}
+                  availableFilterKeys={decayFilterKeys}
                   helpers={filterHelpers}
                   searchContext={{ entityTypes: ['Indicator'] }}
                 />

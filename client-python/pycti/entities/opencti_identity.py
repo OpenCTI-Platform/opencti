@@ -8,6 +8,17 @@ from stix2.canonicalization.Canonicalize import canonicalize
 from pycti.utils.constants import IdentityTypes
 from pycti.utils.opencti_stix2_utils import build_custom_field_values_input
 
+# Asset fields of a System, aligned on the OpenAEV asset model
+SYSTEM_FIELDS = (
+    "x_opencti_system_category",
+    "x_opencti_system_subcategory",
+    "x_opencti_internet_facing",
+    "x_opencti_criticality",
+    "x_opencti_environment",
+    "x_opencti_owner",
+    "x_opencti_platform",
+)
+
 
 class Identity:
     """Main Identity class for OpenCTI
@@ -30,6 +41,7 @@ class Identity:
                 field_id
                 field_name
                 int_value
+                float_value
                 string_value
                 boolean_value
                 date_value
@@ -87,6 +99,15 @@ class Identity:
                 }
                 ... on SecurityPlatform {
                     security_platform_type
+                }
+                ... on System {
+                    x_opencti_system_category
+                    x_opencti_system_subcategory
+                    x_opencti_internet_facing
+                    x_opencti_criticality
+                    x_opencti_environment
+                    x_opencti_owner
+                    x_opencti_platform
                 }
             }
             objectMarking {
@@ -147,12 +168,22 @@ class Identity:
             ... on SecurityPlatform {
                 security_platform_type
             }
+            ... on System {
+                x_opencti_system_category
+                x_opencti_system_subcategory
+                x_opencti_internet_facing
+                x_opencti_criticality
+                x_opencti_environment
+                x_opencti_owner
+                x_opencti_platform
+            }
         """
         self.properties_with_files = """
             customFieldValues {
                 field_id
                 field_name
                 int_value
+                float_value
                 string_value
                 boolean_value
                 date_value
@@ -210,6 +241,15 @@ class Identity:
                 }
                 ... on SecurityPlatform {
                     security_platform_type
+                }
+                ... on System {
+                    x_opencti_system_category
+                    x_opencti_system_subcategory
+                    x_opencti_internet_facing
+                    x_opencti_criticality
+                    x_opencti_environment
+                    x_opencti_owner
+                    x_opencti_platform
                 }
             }
             objectMarking {
@@ -256,6 +296,17 @@ class Identity:
                                         mimetype
                                         version
                                     }
+                                    objectMarking {
+                                        id
+                                        standard_id
+                                        entity_type
+                                        definition_type
+                                        definition
+                                        created
+                                        modified
+                                        x_opencti_order
+                                        x_opencti_color
+                                    }
                                 }
                             }
                         }
@@ -282,6 +333,15 @@ class Identity:
             }
             ... on SecurityPlatform {
                 security_platform_type
+            }
+            ... on System {
+                x_opencti_system_category
+                x_opencti_system_subcategory
+                x_opencti_internet_facing
+                x_opencti_criticality
+                x_opencti_environment
+                x_opencti_owner
+                x_opencti_platform
             }
             importFiles {
                 edges {
@@ -518,6 +578,13 @@ class Identity:
         :param x_opencti_score: (optional) score
         :param x_opencti_firstname: (optional) first name for individuals
         :param x_opencti_lastname: (optional) last name for individuals
+        :param x_opencti_system_category: (optional) category of a system (OpenAEV taxonomy)
+        :param x_opencti_system_subcategory: (optional) subcategory of a system (OpenAEV taxonomy)
+        :param x_opencti_internet_facing: (optional) whether a system is internet facing (yes, no, unknown)
+        :param x_opencti_criticality: (optional) business criticality of a system (OpenAEV scale)
+        :param x_opencti_environment: (optional) environment of a system
+        :param x_opencti_owner: (optional) owner of a system
+        :param x_opencti_platform: (optional) operating system or platform of a system
         :param x_opencti_stix_ids: (optional) list of additional STIX IDs
         :param objectOrganization: (optional) list of organization IDs
         :param x_opencti_workflow_id: (optional) workflow ID
@@ -560,6 +627,9 @@ class Identity:
         x_opencti_score = kwargs.get("x_opencti_score", None)
         x_opencti_firstname = kwargs.get("x_opencti_firstname", None)
         x_opencti_lastname = kwargs.get("x_opencti_lastname", None)
+        system_asset_fields = {
+            field: kwargs.get(field, None) for field in SYSTEM_FIELDS
+        }
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         granted_refs = kwargs.get("objectOrganization", None)
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
@@ -666,6 +736,7 @@ class Identity:
                 input_variables["x_opencti_firstname"] = x_opencti_firstname
                 input_variables["x_opencti_lastname"] = x_opencti_lastname
                 input_variables["x_opencti_reliability"] = x_opencti_reliability
+                input_variables.update(system_asset_fields)
                 result_data_field = "systemAdd"
             else:
                 query = """
@@ -755,6 +826,11 @@ class Identity:
                 stix_object["x_opencti_lastname"] = (
                     self.opencti.get_attribute_in_extension("lastname", stix_object)
                 )
+            for field in SYSTEM_FIELDS:
+                if field not in stix_object:
+                    stix_object[field] = self.opencti.get_attribute_in_extension(
+                        field.replace("x_opencti_", "", 1), stix_object
+                    )
             if "x_opencti_stix_ids" not in stix_object:
                 stix_object["x_opencti_stix_ids"] = (
                     self.opencti.get_attribute_in_extension("stix_ids", stix_object)
@@ -849,6 +925,7 @@ class Identity:
                     if "x_opencti_lastname" in stix_object
                     else None
                 ),
+                **{field: stix_object.get(field) for field in SYSTEM_FIELDS},
                 x_opencti_stix_ids=(
                     stix_object["x_opencti_stix_ids"]
                     if "x_opencti_stix_ids" in stix_object

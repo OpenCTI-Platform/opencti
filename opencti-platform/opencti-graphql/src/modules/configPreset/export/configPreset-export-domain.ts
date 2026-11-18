@@ -21,8 +21,16 @@ import { allFilesForPaths } from '../../internal/document/document-domain';
 import { CONFIG_PRESET_EXPORT_PATH } from '../../internal/document/document-types';
 import { type ConfigPresetExportSummary, publishUserAction } from '../../../listener/UserActionListener';
 import { addConfigPresetExportCount } from '../../../manager/telemetryManager';
-import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, configPresetItemFilePath, exportConfigPresetItem, isConfigPresetFamilyAvailable } from '../configPreset-registry';
+import {
+  CONFIG_PRESET_FAMILIES,
+  configPresetFamilyType,
+  configPresetItemAttachmentPath,
+  configPresetItemFilePath,
+  exportConfigPresetItem,
+  isConfigPresetFamilyAvailable,
+} from '../configPreset-registry';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
+import { CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE, CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE, CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE } from '../import/configPreset-import-bundle';
 import { buildConfigPresetFileName, CONFIG_PRESET_DEPENDENCIES_FILE, CONFIG_PRESET_METADATA_FILE, sanitizeBundleName } from '../configPreset-utils';
 
 // The dialog shows a type inline when its first page is its only one
@@ -56,15 +64,12 @@ const findAvailableConfigPresetFamily = async (context: AuthContext, type: strin
 
 const NO_ITEMS_PAGE_INFO = { startCursor: '', endCursor: '', hasNextPage: false, hasPreviousPage: false, globalCount: 0 };
 
-// A family the platform cannot export is listed without its items, and its items are never read: the dialog shows it as locked
+// A family the platform cannot export is listed without its items, and its items are never read: the dialog shows it as locked.
+// A family with nothing to export is listed too, with no item: the dialog shows it disabled, so that the user knows it can be exported.
 export const findConfigPresetExportableTypes = async (context: AuthContext, user: AuthUser): Promise<ConfigPresetExportableType[]> => {
-  const types = await Promise.all(CONFIG_PRESET_FAMILIES.map(async (family): Promise<ConfigPresetExportableType | null> => {
+  return Promise.all(CONFIG_PRESET_FAMILIES.map(async (family): Promise<ConfigPresetExportableType> => {
     const isAvailable = await isConfigPresetFamilyAvailable(context, family);
     const page = isAvailable ? await family.listItems(context, user, { first: CONFIG_PRESET_FIRST_PAGE_SIZE }) : null;
-    // A category with nothing to export on this platform (no message set) is not shown, but a category the platform cannot export is
-    if (page && page.pageInfo.globalCount === 0) {
-      return null;
-    }
     return {
       key: family.id,
       label: family.label,
@@ -75,7 +80,6 @@ export const findConfigPresetExportableTypes = async (context: AuthContext, user
       itemsPageInfo: page?.pageInfo ?? NO_ITEMS_PAGE_INFO,
     };
   }));
-  return types.filter((type): type is ConfigPresetExportableType => type !== null);
 };
 
 export const findConfigPresetExportableItems = async (
@@ -236,6 +240,24 @@ const writeConfigPresetZip = async (
     streamError = err;
   });
   archive.pipe(output);
+  // The platform must be able to read its own export: the import refuses a bundle whose entries add up to more than its limit once extracted
+  let extractedSize = 0;
+  const append = (content: string | Buffer, name: string) => {
+    extractedSize += Buffer.byteLength(content);
+    if (extractedSize > CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE) {
+      throw FunctionalError('The export is too large to be imported back, select fewer items', { limit: CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE, size: extractedSize });
+    }
+    archive.append(content, { name });
+  };
+  // The import reads a JSON entry up to its own limit, whatever the size of the bundle: a bigger one is an export it could not read back.
+  // The files an item carries have their own limit, checked when they are read.
+  const appendJson = (content: string, name: string) => {
+    const size = Buffer.byteLength(content);
+    if (size > CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE) {
+      throw FunctionalError('The export is too large to be imported back, select fewer items', { limit: CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE, size, name });
+    }
+    append(content, name);
+  };
   try {
     const counts: Record<string, number> = {};
     for (let i = 0; i < families.length; i += 1) {
@@ -247,7 +269,11 @@ const writeConfigPresetZip = async (
         }
         const item = family.items[j];
         const file = await exportConfigPresetItem(context, user, family, item);
-        archive.append(JSON.stringify(file, null, 2), { name: configPresetItemFilePath(family, item) });
+        appendJson(JSON.stringify(file, null, 2), configPresetItemFilePath(family, item));
+        // The attachment of the item (the values of an exclusion list) as it is stored, next to its JSON
+        if (item.attachment) {
+          append(await item.attachment.read(context, user), configPresetItemAttachmentPath(family, item.attachment));
+        }
         counts[family.id] += 1;
       }
     }
@@ -256,10 +282,15 @@ const writeConfigPresetZip = async (
       generated_at: metadataBase.generated_at,
       bundle_name: metadataBase.bundle_name,
     };
-    archive.append(JSON.stringify(metadata, null, 2), { name: CONFIG_PRESET_METADATA_FILE });
-    archive.append(JSON.stringify(buildConfigPresetDependencies(families), null, 2), { name: CONFIG_PRESET_DEPENDENCIES_FILE });
+    appendJson(JSON.stringify(metadata, null, 2), CONFIG_PRESET_METADATA_FILE);
+    appendJson(JSON.stringify(buildConfigPresetDependencies(families), null, 2), CONFIG_PRESET_DEPENDENCIES_FILE);
     // Awaited together: when the output fails, the archive is no longer drained and finalize never resolves
     await Promise.all([archive.finalize(), written]);
+    // Attached files can hardly be compressed: the zip itself must be small enough for the import to take it
+    const { size } = await fs.promises.stat(zipPath);
+    if (size > CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE) {
+      throw FunctionalError('The export is too large to be imported back, select fewer items', { limit: CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE, size });
+    }
     return {
       entity_types: families.map((family) => family.id),
       counts,

@@ -4,6 +4,7 @@ import { userMergeFiltersHandler } from './userMerge-filtersHandler';
 import { userMergeHistoryHandler } from './userMerge-historyHandler';
 import { userMergeHistoryPayloadHandler } from './userMerge-historyPayloadHandler';
 import { userMergeIndividualHandler } from './userMerge-individualHandler';
+import { userMergeIngestionDeduplicationHandler } from './userMerge-ingestionDeduplicationHandler';
 import { userMergeOperationalRelationsHandler } from './userMerge-operationalRelationsHandler';
 import { userMergePublicSharingHandler } from './userMerge-publicSharingHandler';
 import { userMergeResidualHandler } from './userMerge-residualHandler';
@@ -24,6 +25,7 @@ export const registerUserMergeHandlers = (): void => {
   // authenticate and create new references while the following handlers move the existing ones.
   registerUserMergeHandler(userMergeSourceDisableHandler);
   registerUserMergeHandler(userMergeScalarHandler);
+  registerUserMergeHandler(userMergeIngestionDeduplicationHandler);
   registerUserMergeHandler(userMergeFiltersHandler);
   registerUserMergeHandler(userMergeBlobsHandler);
   registerUserMergeHandler(userMergeHistoryHandler);

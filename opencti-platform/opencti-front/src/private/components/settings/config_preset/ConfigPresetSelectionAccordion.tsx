@@ -20,8 +20,6 @@ import {
 } from './configPresetSelection';
 import { ConfigPresetItemRow } from './ConfigPresetItemRow';
 
-const toggleKey = (keys: readonly string[], key: string) => (keys.includes(key) ? keys.filter((current) => current !== key) : [...keys, key]);
-
 interface ConfigPresetExpandableRowProps {
   label: string;
   description?: string;
@@ -102,8 +100,9 @@ export const describeType = (t_i18n: (text: string) => string, type: { readonly 
 // Under the label of a setting that is on or off: its value
 export const describeEnabled = (t_i18n: (text: string) => string, isEnabled: boolean) => t_i18n(isEnabled ? 'Enabled' : 'Disabled');
 
-// A type the platform cannot use: one row that stays unchecked, with the chip, and opens the license dialog
-const ConfigPresetLockedTypeRow: FunctionComponent<{ type: ConfigPresetAccordionType; title?: string }> = ({ type, title }) => {
+// A type the platform cannot use: one row that stays unchecked, with the chip, and opens the license dialog.
+// Also the row of a locked type in the partial import, which shows one type only
+export const ConfigPresetLockedTypeRow: FunctionComponent<{ type: Pick<ConfigPresetAccordionType, 'label' | 'description'>; title?: string }> = ({ type, title }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -132,8 +131,11 @@ interface ConfigPresetSelectionAccordionProps<T extends ConfigPresetAccordionTyp
   renderItem?: (type: T, item: T['items'][number]) => ReactNode;
   // What is shown on the row of a type, next to its chevron (the choice for all its items)
   renderTypeActions?: (type: T) => ReactNode;
-  // Types with several items start expanded (default false)
-  expandTypes?: boolean;
+  // The types that start expanded, and the groups that hold one; without it, types start collapsed. Groups start collapsed, but for the ones that hold a type that starts expanded
+  isExpandedByDefault?: (type: T) => boolean;
+  // The groups the user opened or closed, when the parent keeps them (the export drawer unmounts the accordion for its sub-view); the accordion keeps its own otherwise
+  expandedGroups?: Record<string, boolean>;
+  onExpandedGroupsChange?: (expandedGroups: Record<string, boolean>) => void;
   // The tooltip of a type that needs the Enterprise Edition the platform does not have yet, which opens the license dialog
   lockedTitle?: string;
 }
@@ -148,15 +150,19 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
   onManageType,
   renderItem,
   renderTypeActions,
-  expandTypes = false,
+  isExpandedByDefault,
+  expandedGroups: controlledGroups,
+  onExpandedGroupsChange,
   lockedTitle,
 }: ConfigPresetSelectionAccordionProps<T>) => {
   const { t_i18n } = useFormatter();
   const isLocked = (type: T) => !!type.lockedByEnterpriseEdition;
-  // Groups start expanded, types with several items collapsed
-  const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<readonly string[]>([]);
-  const [toggledTypeKeys, setToggledTypeKeys] = useState<readonly string[]>([]);
-  const isExpanded = (type: T) => toggledTypeKeys.includes(type.key) !== expandTypes;
+  const [ownGroups, setOwnGroups] = useState<Record<string, boolean>>({});
+  const expandedGroups = controlledGroups ?? ownGroups;
+  const setExpandedGroups = onExpandedGroupsChange ?? setOwnGroups;
+  const [expandedTypes, setExpandedTypes] = useState<Record<string, boolean>>({});
+  const isGroupExpanded = (key: string, groupTypes: ReadonlyArray<T>) => expandedGroups[key] ?? (isExpandedByDefault ? groupTypes.some(isExpandedByDefault) : false);
+  const isExpanded = (type: T) => expandedTypes[type.key] ?? (isExpandedByDefault?.(type) ?? false);
   const typeLabel = (type: T) => `${t_i18n(type.label)} (${countConfigPresetCheckedItems([type], selection, forced)}/${type.itemsPageInfo.globalCount})`;
   const typeState = (type: T) => getConfigPresetCheckboxState([type], selection, forced);
   const isEmpty = (type: T) => type.itemsPageInfo.globalCount === 0;
@@ -169,15 +175,19 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
           <ConfigPresetExpandableRow
             label={`${t_i18n(group.label)} (${countConfigPresetCheckedItems(group.types, selection, forced)}/${group.types.reduce((count, type) => count + type.itemsPageInfo.globalCount, 0)})`}
             checked={getConfigPresetCheckboxState(group.types, selection, forced)}
-            disabled={disabled || group.types.every(isLocked)}
+            disabled={disabled || group.types.every((type) => isLocked(type) || isEmpty(type))}
             onCheckedChange={(checked) => onSelectionChange(toggleConfigPresetTypes(selection, group.types, checked))}
-            expanded={!collapsedGroupKeys.includes(group.key)}
-            onToggleExpanded={() => setCollapsedGroupKeys((current) => toggleKey(current, group.key))}
+            expanded={isGroupExpanded(group.key, group.types)}
+            onToggleExpanded={() => setExpandedGroups({ ...expandedGroups, [group.key]: !isGroupExpanded(group.key, group.types) })}
           >
             {group.types.map((type) => {
               // Nothing of the type is listed, checked or counted until the platform has the license
               if (isLocked(type)) {
                 return <ConfigPresetLockedTypeRow key={type.key} type={type} title={lockedTitle} />;
+              }
+              // A type without item has nothing to check or to expand: one disabled row, with its description
+              if (isEmpty(type)) {
+                return <Checkbox key={type.key} label={typeLabel(type)} description={describeType(t_i18n, type)} checked={false} disabled />;
               }
               // A type whose only item has the key of the type is one row, not a type with an item of the same name below it
               if (isSingletonConfigPresetType(type)) {
@@ -216,11 +226,11 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
                   label={typeLabel(type)}
                   description={describeType(t_i18n, type)}
                   checked={typeState(type)}
-                  disabled={disabled || isEmpty(type)}
+                  disabled={disabled}
                   actions={renderTypeActions?.(type)}
                   onCheckedChange={(checked) => toggleType(type, checked)}
                   expanded={isExpanded(type)}
-                  onToggleExpanded={() => setToggledTypeKeys((current) => toggleKey(current, type.key))}
+                  onToggleExpanded={() => setExpandedTypes((current) => ({ ...current, [type.key]: !isExpanded(type) }))}
                 >
                   {type.items.map((item) => (renderItem
                     ? <React.Fragment key={item.key}>{renderItem(type, item)}</React.Fragment>

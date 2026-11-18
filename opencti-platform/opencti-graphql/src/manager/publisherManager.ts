@@ -19,6 +19,7 @@ import {
   type NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE,
   SIMPLIFIED_EMAIL_TEMPLATE,
 } from '../modules/notifier/notifier-statics';
+import { compileTitleVariables, normalizeEmailSubject, TITLE_VARIABLES_DATA_KEY } from '../modules/notifier/notifier-title-variables';
 import { type BasicStoreEntityNotifier, ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -203,8 +204,12 @@ export async function handleEmailNotification(
     url_suffix: urlSuffix,
   };
 
-  const renderedTitle = await safeRender(title, sanitizedData, {
+  // `$variables` are resolved against the same data as the body and passed as data, never spliced into the template.
+  // The subject is plain text: no HTML escaping, and normalized to one line so a value can't inject a header.
+  const { template: titleTemplate, values: titleValues } = compileTitleVariables(title ?? '', sanitizedData);
+  const renderedTitle = await safeRender(titleTemplate, { ...sanitizedData, [TITLE_VARIABLES_DATA_KEY]: titleValues }, {
     useNotificationTool: true,
+    usePlainTextEscape: true,
   });
   const renderedEmail = await safeRender(template, sanitizedData, {
     useNotificationTool: true,
@@ -213,7 +218,7 @@ export async function handleEmailNotification(
   const emailPayload = {
     from: await smtpComputeFrom(),
     to: user.user_email,
-    subject: renderedTitle,
+    subject: normalizeEmailSubject(renderedTitle),
     html: renderedEmail,
   };
 
