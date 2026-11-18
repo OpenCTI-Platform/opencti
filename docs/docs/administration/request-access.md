@@ -81,15 +81,15 @@ Each scope has its own statuses, draft and published version. Changing one never
 
 A request for information belongs to one scope for its whole life. A request created by the request access form can only be created on the published request access workflow.
 
-In the **Request access** scope, a **Validator group** select sets the group that is notified of new requests and can decide them. It saves when you change it.
+In the **Request access** scope, a **Validator group** select sets the group of validators. It saves when you change it. A request cannot be created while no validator group is set.
 
 ### Set up the workflow
 
-1. **Migrate the legacy statuses (optional).** Click **Migrate request access statuses**. The preview shows the Approved and Declined statuses and the *Accept* and *Reject* transitions that will be created, and lists any blocking problem. The statuses already in use are reused, so existing requests keep their status. The migration replaces the current draft of the request access workflow. It does not publish.
+1. **Migrate the legacy statuses (optional).** Click **Migrate request access statuses**. The preview shows the Approved and Declined statuses and the *Accept* and *Reject* transitions that will be created, and lists any blocking problem. The statuses already in use are reused, so existing requests keep their status. The **Publish immediately** switch is on by default: the migrated workflow is published at once, and new requests follow it. Turn it off to review the result as a draft first. The migration replaces the current draft of the request access workflow, and asks for a confirmation when a draft already exists.
 2. **Edit the workflow.** Add intermediate statuses if you need a review step, for example *Under review* between the first status and the outcomes.
 3. **Mark the two outcomes.** On a status, the **Request outcome** select marks it as *Approved* or *Declined*. Exactly one status of each kind is needed.
-4. **Share on approval.** The *Approved* status carries the **Share requested entities** action on enter, as its last action. It is always there: change the request outcome to turn it off.
-5. **Publish.** From then on, new requests follow this workflow.
+4. **Share on approval.** When you set a status as *Approved*, the **Share requested entities** action is added on enter, as its last action. It stays there: change the request outcome to remove it.
+5. **Publish (if not already done).** From then on, new requests follow this workflow.
 
 !!! note "Publishing rules"
 
@@ -101,17 +101,17 @@ In the **Request access** scope, a **Validator group** select sets the group tha
     - the **Share requested entities** action is used anywhere else (another status, an exit action, a transition),
     - an outcome or the share action is used outside a request access workflow,
     - you move an outcome to another status while requests are in the one that holds it, or you mark as outcome a status that holds undecided requests,
-    - the workflow uses a name already used by the Global workflow,
     - the common [workflow rules](../usage/entities-workflow.md#rules-required-to-publish-a-workflow) are broken.
 
-    A status used by the request access workflow cannot be deleted.
+    A status used by the request access workflow cannot be deleted. The Global and Request access workflows must also have different names: this is refused when you save, not when you publish.
 
 ### What a request looks like
 
 When a user requests access:
 
 - the request for information starts in the first status of the workflow, with the **requesting organization** as author,
-- the validators are notified through their group,
+- the request is restricted to its [authorized members](authorized-members.md): the members of the validator group, in the organization that owns the requested entities (or in the platform organization),
+- each of them is notified by their own notifiers, through the *Request sharing* trigger, except the platform administrator account,
 - one request holds at most **500 entities** and a reason of at most **10,000 characters**.
 
 The requested entities are listed in the related entities of the request, as before.
@@ -120,7 +120,7 @@ The requested entities are listed in the related entities of the request, as bef
 
 Open the request. The processing banner shows one button per transition you are allowed to take from the current status, and no button once the request is decided. On *Accept*, the banner states the effect, for example *This will share 3 requested entities with Org A and notify the applicant*.
 
-To decide a request you need edit access to it and the *Restrict organization access* capability.
+To decide a request you need edit access to it and the *Restrict organization access* capability, and it cannot be decided from inside a [draft](../usage/draft-workflow.md).
 
 **Approve.** Entering the *Approved* status shares every requested entity with the requesting organization, **with your own rights**: nobody can grant access they could not grant otherwise. The request is then set as approved, the applicant is notified, and the decision is counted.
 

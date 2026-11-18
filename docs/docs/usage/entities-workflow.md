@@ -190,7 +190,7 @@ A transition that is blocked only by a condition on the entity, for example *has
 |---|---|
 | **Share with organizations** | Shares the entity with the selected organizations. Leave the list empty to let the analyst pick organizations when taking the transition. Runs as a background task. |
 | **Unshare from organizations** | Removes organization sharing. Same behavior as above. |
-| **Update authorized members** | *Replaces* the authorized members of the entity. Dynamic members are available: author, creators, assignees, participants. Only on the types that support authorized members: Organization, Report, Note, Grouping, Incident response, Request for takedown, Request for information, and Draft. Use it only on these types: the publishing check does not catch every misuse. |
+| **Update authorized members** | *Replaces* the authorized members of the entity. Dynamic members are available: author, creators, assignees, participants. Only on the types that support authorized members: Organization, Report, Note, Grouping, Incident response, Request for takedown, Request for information, and Draft. Publishing is refused on any other type. |
 | **Reset authorized members** | Removes the authorized members restriction of the entity, so it is no longer restricted to specific members. Same entity types as *Update authorized members*, and not combined with it on the same transition. |
 | **Comment** | Asks for a comment of up to 1,000 characters, optional or required. The comment is stored in the workflow history and notifies the entity's assignees and participants. |
 | **Validate draft** | Draft workflow only. See [Draft workflow](draft-workflow.md). |
@@ -237,7 +237,7 @@ The last comment is shown next to the status; click the comment icon to read it.
 
 !!! note "Not inside a draft"
 
-    Inside a [draft](draft-workflow.md), the transition buttons of an entity are hidden, and the API refuses transitions, bypasses and *Clear* on entities. A transition would write to the live entity, not to the draft. Only the draft workspace itself keeps its own workflow. Exit the draft to move an entity forward.
+    Inside a [draft](draft-workflow.md), the transition buttons of an entity are hidden, and mass transitions do nothing, and the API refuses transitions, bypasses and *Clear* on entities. A transition would write to the live entity, not to the draft. Only the draft workspace itself keeps its own workflow. Exit the draft to move an entity forward.
 
 ### Transitions that run in the background
 
@@ -271,7 +271,7 @@ Users with the *Bypass all capabilities* capability can also use the field **Sta
 
 ### Lists and filters
 
-Lists show the workflow status in the **Processing status** column. Click a status in a list to filter on it. A status can also be used as a filter and as a sort key, including for entities that do not have a workflow instance yet: they are in the starting status of the published workflow.
+Lists show the workflow status in the **Processing status** column. Click a status in a list to filter on it. A status can also be used as a filter and as a sort key.
 
 ## Closing reason
 
