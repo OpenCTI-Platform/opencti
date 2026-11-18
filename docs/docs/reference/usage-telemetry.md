@@ -35,7 +35,7 @@ In both cases, the platform also writes the metrics every 6 hours to the `teleme
 
 Telemetry is enabled by default. To disable it, set `telemetry_manager:enabled` to `false` (environment variable `TELEMETRY_MANAGER__ENABLED=false`) on every platform node, then restart the platform.
 
-With this setting, the telemetry manager does not start: the platform neither sends metrics to Filigran nor writes the `telemetry` log files. At startup, the platform logs `[OPENCTI-MODULE] Telemetry manager not started (disabled by configuration)`.
+With this setting, the telemetry manager does not start: the platform neither sends metrics to Filigran nor writes the `telemetry` log files.
 
 The setting does not depend on the Enterprise Edition: telemetry runs, and can be disabled, the same way with or without an Enterprise Edition license.
 
