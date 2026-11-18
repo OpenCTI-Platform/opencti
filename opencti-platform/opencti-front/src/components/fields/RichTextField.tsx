@@ -1,20 +1,13 @@
-import IconButton from '@common/button/IconButton';
-import Dialog from '@common/dialog/Dialog';
 import TextFieldAskAI from '@components/common/form/TextFieldAskAI';
-import { FullscreenOutlined } from '@mui/icons-material';
-import FormHelperText from '@mui/material/FormHelperText';
-import InputLabel from '@mui/material/InputLabel';
-import { useTheme } from '@mui/material/styles';
+import { RichTextField } from '@filigran/design-system/rich-text-field';
+import Box from '@mui/material/Box';
 import { FieldProps, useField } from 'formik';
 import { isNil } from 'ramda';
-import { CSSProperties, useState } from 'react';
+import { CSSProperties, ReactNode, useRef } from 'react';
 import useAI from '../../utils/hooks/useAI';
-import { RichTextEditor } from '@filigran/rich-text-editor';
 import { useFormatter } from '../i18n';
-import type { Theme } from '../Theme';
-import Box from '@mui/material/Box';
 
-interface RichTextFieldProps extends FieldProps<string> {
+interface RichTextFormikFieldProps extends FieldProps<string> {
   disabled?: boolean;
   onFocus?: (name: string) => void;
   onChange?: (name: string, value: string) => void;
@@ -23,12 +16,19 @@ interface RichTextFieldProps extends FieldProps<string> {
   required?: boolean;
   askAi?: boolean;
   label?: string;
+  // Accessible name when there is no visible label (full-page editors).
+  ariaLabel?: string;
+  helperText?: ReactNode;
+  // `height` sizes the editing area, as `height` on the design-system field.
   style?: CSSProperties;
   lastSavedValue?: string;
   hasFullScreen?: boolean;
+  // Email bodies turn both off: neither renders in mail clients.
+  pageBreak?: boolean;
+  taskList?: boolean;
 }
 
-const RichTextField = ({
+const RichTextFormikField = ({
   field: { name, value },
   form: { setFieldValue, setFieldTouched, errors, submitCount },
   disabled,
@@ -38,120 +38,96 @@ const RichTextField = ({
   onTextSelection,
   required,
   label,
+  ariaLabel,
+  helperText,
   askAi,
   style,
   lastSavedValue,
   hasFullScreen = true,
-}: RichTextFieldProps) => {
-  const theme = useTheme<Theme>();
+  pageBreak = true,
+  taskList = true,
+}: RichTextFormikFieldProps) => {
   const { t_i18n } = useFormatter();
-  const [fullScreen, setFullScreen] = useState(false);
   const [, meta] = useField(name);
   const { enabled, configured } = useAI();
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const fieldErrors = errors[name] as string;
+  const fieldErrors = errors[name] as string | undefined;
   const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
-  const RichTextEditorInstance = (
+  const unsavedChanges = lastSavedValue !== undefined && lastSavedValue !== value;
+  const showAskAi = !!askAi && enabled && configured;
+  // FDS-WORKAROUND #87 (fds-migration/LIBRARY-FEEDBACK.md): the Ask AI button
+  // sits over the right end of the label row when there is one, otherwise over
+  // the right end of the toolbar.
+  const hasLabelRow = !!label || unsavedChanges;
+  // Mapping: a disabled field that reports selections stays selectable, which
+  // the design system calls read-only (RULE-07).
+  const readOnly = !!disabled && !!onTextSelection;
+  // FDS-WORKAROUND #88 (fds-migration/LIBRARY-FEEDBACK.md): in fullscreen the
+  // editing area moves into a dialog outside this container, and that dialog
+  // would cover the mapping drawer a selection opens. Selections made there
+  // are ignored, as before the migration.
+  const handleTextSelection = onTextSelection && ((text: string) => {
+    if (containerRef.current?.contains(window.getSelection()?.anchorNode ?? null)) {
+      onTextSelection(text);
+    }
+  });
+
+  const { height, minHeight: _minHeight, ...containerStyle } = style ?? {};
+
+  return (
     <Box
+      ref={containerRef}
       sx={{
-        flex: 1,
-        minHeight: 0,
-        '& .tiptap-editor-content': {
-          // Same surface as the markdown textarea, read from the token so it
-          // follows the layer the field is dropped on.
-          backgroundColor: 'var(--bg-input-default)',
-          borderRadius: 'var(--radius-sm)',
-        },
+        position: 'relative',
+        ...(showAskAi && {
+          [hasLabelRow ? '& [role="status"]' : '& [role="toolbar"]']: { paddingRight: '32px' },
+        }),
       }}
+      style={containerStyle}
     >
-      <RichTextEditor
-        onTextSelection={(text) => {
-          if (onTextSelection && disabled && !fullScreen && text.length > 2) {
-            onTextSelection(text);
-          }
-        }}
-        data={value}
-        onChange={(_, adapter) => {
-          const html = adapter.getData();
+      <RichTextField
+        name={name}
+        value={value ?? ''}
+        onValueChange={(html) => {
           setFieldValue(name, html);
           onChange?.(name, html);
         }}
+        onFocus={() => onFocus?.(name)}
         onBlur={() => {
           setFieldTouched(name, true);
           onSubmit?.(name, value);
         }}
-        onFocus={() => onFocus?.(name)}
-        disabled={disabled}
+        label={label}
+        aria-label={label ? undefined : (ariaLabel ?? name)}
+        required={required}
+        helperText={helperText}
+        error={showError && fieldErrors ? fieldErrors : undefined}
+        disabled={!!disabled && !readOnly}
+        readOnly={readOnly}
+        onTextSelection={handleTextSelection}
+        unsavedChanges={unsavedChanges}
+        height={height}
+        fullscreen={hasFullScreen}
+        pageBreak={pageBreak}
+        taskList={taskList}
+        labels={{ unsavedChanges: t_i18n('You have unsaved changes') }}
       />
-    </Box>
-  );
-
-  const toolbarEmpty = !label && !askAi && !hasFullScreen && lastSavedValue === undefined;
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', ...style }}>
-      {!toolbarEmpty && (
-        <div style={{ display: 'flex', alignItems: 'end', height: '24px' }}>
-          {label && (
-            <InputLabel shrink required={required} error={showError}>
-              {label}
-            </InputLabel>
-          )}
-          <div style={{
-            flex: 1,
-            textAlign: 'center',
-            marginBottom: theme.spacing(0.5),
-            color: theme.palette.warn.main,
+      {showAskAi && (
+        <TextFieldAskAI
+          currentValue={value ?? ''}
+          setFieldValue={(val) => {
+            setFieldValue(name, val);
+            onSubmit?.(name, val);
           }}
-          >
-            {lastSavedValue !== undefined && lastSavedValue !== value && (
-              <span>{t_i18n('You have unsaved changes')}</span>
-            )}
-          </div>
-          {askAi && (enabled && configured) && (
-            <TextFieldAskAI
-              currentValue={value ?? ''}
-              setFieldValue={(val) => {
-                setFieldValue(name, val);
-                onSubmit?.(name, val);
-              }}
-              format="html"
-              variant="html"
-              style={{}}
-              disabled={disabled}
-            />
-          )}
-          {hasFullScreen && (
-            <IconButton aria-label={t_i18n('Set full screen')} size="small" onClick={() => setFullScreen(true)} sx={{ marginBottom: '2px' }}>
-              <FullscreenOutlined fontSize="small" />
-            </IconButton>
-          )}
-        </div>
+          format="html"
+          variant="html"
+          style={{ position: 'absolute', top: hasLabelRow ? -4 : 2, right: 0 }}
+          disabled={disabled}
+        />
       )}
-
-      {
-        fullScreen
-          ? (
-              <Dialog
-                open={fullScreen}
-                onClose={() => setFullScreen(false)}
-                fullScreen
-                showCloseButton
-                title={t_i18n('Content')}
-              >
-                {RichTextEditorInstance}
-              </Dialog>
-            )
-          : RichTextEditorInstance
-      }
-
-      {fieldErrors && showError && (
-        <FormHelperText style={{ marginTop: theme.spacing(1) }} error>
-          {fieldErrors}
-        </FormHelperText>
-      )}
-    </div>
+    </Box>
   );
 };
 
-export default RichTextField;
+export default RichTextFormikField;

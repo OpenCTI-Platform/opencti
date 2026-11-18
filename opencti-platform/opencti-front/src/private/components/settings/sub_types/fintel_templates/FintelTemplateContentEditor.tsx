@@ -2,6 +2,7 @@ import React from 'react';
 import { Field, Formik } from 'formik';
 import * as Yup from 'yup';
 import { graphql, useFragment } from 'react-relay';
+import { useFormatter } from '../../../../../components/i18n';
 import { useFintelTemplateContext } from './FintelTemplateContext';
 import { FintelTemplateContentEditor_template$key } from './__generated__/FintelTemplateContentEditor_template.graphql';
 import RichTextField from '../../../../../components/fields/RichTextField';
@@ -19,6 +20,7 @@ interface FintelTemplateContentEditorProps {
 const FintelTemplateContentEditor = ({
   data,
 }: FintelTemplateContentEditorProps) => {
+  const { t_i18n } = useFormatter();
   const template = useFragment(editorFragment, data);
   const { setEditorValue } = useFintelTemplateContext();
 
@@ -38,6 +40,7 @@ const FintelTemplateContentEditor = ({
           name="template_content"
           style={{ height: 'calc(100vh - 280px)' }}
           fullWidth
+          ariaLabel={t_i18n('Content')}
           hasFullScreen={false}
           onChange={(_: string, val: string) => setEditorValue(val)}
         />
