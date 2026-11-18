@@ -6431,6 +6431,8 @@
   "Fit view": "Вписать в экран",
   "Horizontal layout": "Горизонтальная компоновка",
   "Insert a component on this link": "Вставить компонент в эту связь",
+  "Link from {source} to {target}": "Связь от {source} к {target}",
+  "Link from {source} ({port}) to {target}": "Связь от {source} ({port}) к {target}",
   "Vertical layout": "Вертикальная компоновка",
   "System category": "Категория системы",
   "System subcategory": "Подкатегория системы",

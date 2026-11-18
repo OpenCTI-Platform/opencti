@@ -23,6 +23,7 @@ import PlaybookFlowDeleteNode from './PlaybookFlowDeleteNode';
 import useManipulateComponents from '../hooks/useManipulateComponents';
 import { addPlaceholders, computeEdges, computeNodes } from '../utils/playbook';
 import useLayout from '../hooks/useLayout';
+import usePlaybookEdgeNames from '../hooks/usePlaybookEdgeNames';
 import usePlaybookRewiring from '../hooks/usePlaybookRewiring';
 import usePlaybookHistory, { type PlaybookHistoryControls } from '../hooks/usePlaybookHistory';
 import { canvasSnapshot, type PlaybookOperation, type PlaybookOperationResult, type PlaybookSnapshot } from '../utils/playbookHistory';
@@ -201,6 +202,8 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook, canEdit, running }
 
   // Needs to be called after computing nodes and edges.
   const { miniMapShown, onMoveStart } = useLayout(direction);
+  // Every link is read by a screen reader as "Link from <step> to <step>", never by its ids.
+  usePlaybookEdgeNames();
 
   // Back to view mode: an open drawer or dialog closes, nothing stays half-edited.
   useEffect(() => {

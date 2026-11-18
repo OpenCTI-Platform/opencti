@@ -291,27 +291,36 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
       )}
       {ports.map((port, index) => {
         const anchor = portAnchor(index, ports.length, direction);
+        const portName = t_i18n(port.id);
+        const pill = portHasPill(port.id, ports.length);
         return (
-          <React.Fragment key={port.id}>
-            <Handle
-              id={port.id}
-              type="source"
-              position={source}
-              // The horizontal pill caps its label at PLAYBOOK_PORT_PILL_MAX_WIDTH and lets pointer events
-              // through to this handle, so the full port name is read here on hover.
-              title={t_i18n(port.id)}
-              style={{ ...(direction === 'horizontal' ? { top: anchor.y } : { left: anchor.x }), background: accent, border: 'none' }}
-            />
-            {portHasPill(port.id, ports.length) && (
-              // The pill sits on the card edge, centred on its port: the link leaves from under it, so
-              // no label is ever drawn over a link.
+          <Handle
+            key={port.id}
+            id={port.id}
+            type="source"
+            position={source}
+            // The full port name on hover: on the handle, and on the pill drawn inside it.
+            title={portName}
+            style={{ ...(direction === 'horizontal' ? { top: anchor.y } : { left: anchor.x }), background: accent, border: 'none' }}
+          >
+            {pill && (
+              // The pill is a child of its handle, centred on it: the link leaves from under it, no label
+              // is drawn over a link, and the whole pill is the hover target that reads the full name (the
+              // horizontal pill caps its label at PLAYBOOK_PORT_PILL_MAX_WIDTH). A click on it opens the
+              // configuration like a click on the card, never the handle's click-to-connect; React Flow
+              // measures the handle by its own box, not the pill's. The keyboard path is the title button.
+              // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
               <span
-                className="nodrag nopan"
                 data-testid={`playbook-port-${id}-${port.id}`}
+                title={portName}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  openConfiguration();
+                }}
                 style={{
                   position: 'absolute',
-                  left: anchor.x,
-                  top: anchor.y,
+                  left: '50%',
+                  top: '50%',
                   zIndex: 1,
                   transform: 'translate(-50%, -50%)',
                   padding: '1px 8px',
@@ -328,13 +337,16 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
                   color: theme.palette.text?.primary,
                   backgroundColor: theme.palette.background.default,
                   border: `1px solid ${accent}`,
-                  pointerEvents: 'none',
+                  // The handle lets pointer events through in view mode (not connectable): the pill
+                  // still answers the hover so its full name is read.
+                  pointerEvents: 'all',
+                  cursor: nodeOpensSettings ? 'pointer' : 'default',
                 }}
               >
-                {t_i18n(port.id)}
+                {portName}
               </span>
             )}
-          </React.Fragment>
+          </Handle>
         );
       })}
     </div>

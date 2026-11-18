@@ -6431,6 +6431,8 @@
   "Fit view": "适应视图",
   "Horizontal layout": "水平布局",
   "Insert a component on this link": "在此链接上插入组件",
+  "Link from {source} to {target}": "从 {source} 到 {target} 的链接",
+  "Link from {source} ({port}) to {target}": "从 {source} ({port}) 到 {target} 的链接",
   "Vertical layout": "垂直布局",
   "System category": "系统类别",
   "System subcategory": "系统子类别",

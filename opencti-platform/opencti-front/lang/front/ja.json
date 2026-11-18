@@ -6431,6 +6431,8 @@
   "Fit view": "全体を表示",
   "Horizontal layout": "横方向のレイアウト",
   "Insert a component on this link": "このリンクにコンポーネントを挿入",
+  "Link from {source} to {target}": "{source} から {target} へのリンク",
+  "Link from {source} ({port}) to {target}": "{source} ({port}) から {target} へのリンク",
   "Vertical layout": "縦方向のレイアウト",
   "System category": "システムカテゴリ",
   "System subcategory": "システムサブカテゴリ",

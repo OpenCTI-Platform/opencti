@@ -6431,6 +6431,8 @@
   "Fit view": "화면에 맞추기",
   "Horizontal layout": "가로 레이아웃",
   "Insert a component on this link": "이 링크에 구성 요소 삽입",
+  "Link from {source} to {target}": "{source}에서 {target}(으)로의 링크",
+  "Link from {source} ({port}) to {target}": "{source} ({port})에서 {target}(으)로의 링크",
   "Vertical layout": "세로 레이아웃",
   "System category": "시스템 범주",
   "System subcategory": "시스템 하위 범주",

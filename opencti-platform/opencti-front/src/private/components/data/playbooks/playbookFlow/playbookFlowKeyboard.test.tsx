@@ -44,6 +44,17 @@ describe('playbook canvas keyboard path', () => {
     });
   });
 
+  // The link names (never "Edge from <id> to <id>") are checked in utils/playbookEdgeNames.test.ts:
+  // jsdom measures no handle, so React Flow draws no link here.
+  it('drops the select and move hints from the cards', () => {
+    const { container } = renderCanvas(playbookFlowKeyboardProps);
+    const wrappers = container.querySelectorAll('.react-flow__node');
+    expect(wrappers.length).toBe(2);
+    wrappers.forEach((wrapper) => {
+      expect(wrapper.getAttribute('aria-describedby') ?? '').not.toMatch(/react-flow__node-desc/);
+    });
+  });
+
   it('documents the default this guards against', () => {
     const { container } = renderCanvas({});
     const wrapper = container.querySelector('.react-flow__node');

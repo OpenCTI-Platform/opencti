@@ -6431,6 +6431,8 @@
   "Fit view": "Ajustar la vista",
   "Horizontal layout": "Diseño horizontal",
   "Insert a component on this link": "Insertar un componente en este enlace",
+  "Link from {source} to {target}": "Enlace de {source} a {target}",
+  "Link from {source} ({port}) to {target}": "Enlace de {source} ({port}) a {target}",
   "Vertical layout": "Diseño vertical",
   "System category": "Categoría de sistema",
   "System subcategory": "Subcategoría de sistema",
