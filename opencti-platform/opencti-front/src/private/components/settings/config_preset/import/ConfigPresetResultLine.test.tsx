@@ -81,7 +81,7 @@ describe('ConfigPresetResultLine', () => {
     ['Several form intakes have this name', 'Several form intakes have this name'],
     ['Another form intake of the bundle has this name', 'Another form intake of the bundle has this name'],
     ['Form intake already exists', 'Form intake already exists'],
-    ['Groups or markings not found are left out of the form', 'Groups or markings not found are left out of the form'],
+    ['Groups, markings or labels not found are left out of the form', 'Groups, markings or labels not found are left out of the form'],
     ['The standard id of the label does not match its value', 'The standard id of the label does not match its value'],
     ['The standard id of the kill chain phase does not match its names', 'The standard id of the kill chain phase does not match its names'],
     ['The standard id of the status template does not match its name', 'The standard id of the status template does not match its name'],

@@ -2667,7 +2667,7 @@
   "Groupings": "Группировки",
   "Groupings | Analyses": "Группировки | Анализы",
   "Groups": "Группы",
-  "Groups or markings not found are left out of the form": "Не найденные группы или маркировки исключаются из формы",
+  "Groups, markings or labels not found are left out of the form": "Не найденные группы, маркировки или метки исключаются из формы",
   "Groups | Security | Settings": "Группы | Безопасность | Настройки",
   "Groups configuration": "Конфигурация групп",
   "Groups expressions": "Выражения групп",

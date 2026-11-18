@@ -95,7 +95,7 @@ const translateKnownReason = (t_i18n: Translate, reason: string): string | undef
     case 'Several form intakes have this name': return t_i18n('Several form intakes have this name');
     case 'Another form intake of the bundle has this name': return t_i18n('Another form intake of the bundle has this name');
     case 'Form intake already exists': return t_i18n('Form intake already exists');
-    case 'Groups or markings not found are left out of the form': return t_i18n('Groups or markings not found are left out of the form');
+    case 'Groups, markings or labels not found are left out of the form': return t_i18n('Groups, markings or labels not found are left out of the form');
     case 'The password policy cannot be satisfied: its maximum length is below what its other rules require':
       return t_i18n('The password policy cannot be satisfied: its maximum length is below what its other rules require');
     case 'Connector already exists': return t_i18n('Connector already exists');

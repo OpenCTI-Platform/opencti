@@ -2667,7 +2667,7 @@
   "Groupings": "分组",
   "Groupings | Analyses": "分组分析",
   "Groups": "组",
-  "Groups or markings not found are left out of the form": "未找到的组或标记将从表单中排除",
+  "Groups, markings or labels not found are left out of the form": "未找到的组、标记或标签将从表单中排除",
   "Groups | Security | Settings": "组 | 安全 | 设置",
   "Groups configuration": "组别配置",
   "Groups expressions": "组表达式",
