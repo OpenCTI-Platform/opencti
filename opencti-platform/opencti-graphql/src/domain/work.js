@@ -23,6 +23,7 @@ import { buildRefRelationKey, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/g
 import { generateWorkId } from '../schema/identifier';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import { isPublicDashboardUser } from '../utils/access';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { addIngestionObjectsProcessedCount } from '../manager/telemetryManager';
@@ -108,6 +109,9 @@ export const worksForDraft = async (context, user, draftId, args = {}) => {
 };
 
 export const worksForSource = async (context, user, sourceId, args = {}) => {
+  if (isPublicDashboardUser(user)) {
+    return [];
+  }
   const { first = ES_MINIMUM_FIXED_PAGINATION, filters = null, type } = args;
   let finalFilters = addFilter(filters, 'event_source_id', sourceId);
   if (type) {

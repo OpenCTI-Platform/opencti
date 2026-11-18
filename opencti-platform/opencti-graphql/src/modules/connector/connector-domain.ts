@@ -1339,8 +1339,8 @@ export const autoUpgradeManagedConnectors = async (
       for (const managedConnector of managedConnectors) {
         const upgradedSuccessfully = await autoUpgradeManagedConnector(context, user, managedConnector);
         hasErrors ||= !upgradedSuccessfully;
-      }
-    }
+      };
+    };
     if (shouldUpdateReadiness) {
       await redisSetManagedConnectorAutoUpgradeStatus({
         status: hasErrors ? 'failed' : 'ready',

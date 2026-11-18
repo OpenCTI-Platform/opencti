@@ -1,13 +1,15 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, getUserIdByEmail, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { createUploadFromTestDataFile, queryAsAdmin } from '../../utils/testQueryHelper';
 import { PRIVATE_DASHBOARD_MANIFEST } from './publicDashboard-data';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../../../src/modules/publicDashboard/publicDashboard-types';
 import { queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { fromB64, toB64 } from '../../../src/utils/base64';
 import { addSavedFilter, deleteSavedFilter } from '../../../src/modules/savedFilter/savedFilter-domain';
+import * as rabbitmq from '../../../src/modules/connector/connector-rabbitmq';
+import { deleteWork } from '../../../src/domain/work';
 
 const LIST_QUERY = gql`
   query publicDashboards(
@@ -976,8 +978,11 @@ describe('PublicDashboard resolver', () => {
           expect(belgique).toBeDefined();
         });
 
-        it('should not expose enrichment connectors through API: SCO List', async () => {
+        it('should not expose enrichment connectors, files and jobs through API: SCO List', async () => {
           const enrichmentConnectorId = '5d3c8a4e-3b1f-4f63-9c1e-2a7f0d6b8e41';
+          const pushToConnector = vi.spyOn(rabbitmq, 'pushToConnector').mockResolvedValue(true);
+          let fileId;
+          let workId;
           await queryAsAdmin({
             query: gql`
               mutation RegisterConnector($input: RegisterConnectorInput) {
@@ -987,26 +992,62 @@ describe('PublicDashboard resolver', () => {
             variables: { input: { id: enrichmentConnectorId, name: 'Public dashboard enrichment', type: 'INTERNAL_ENRICHMENT', scope: 'Administrative-Area', auto: false, only_contextual: false } },
           });
           try {
+            const upload = await createUploadFromTestDataFile('file-storage-helper-test.txt', 'public-dashboard-import.txt', 'text/plain');
+            const { data: importData } = await queryAsAdmin({
+              query: gql`
+                mutation AreaImportPush($id: ID!, $file: Upload!) {
+                  stixCoreObjectEdit(id: $id) { importPush(file: $file, noTriggerImport: true) { id } }
+                }
+              `,
+              variables: { id: franceId, file: upload },
+            });
+            fileId = importData.stixCoreObjectEdit.importPush.id;
+            const { data: enrichmentData } = await queryAsAdmin({
+              query: gql`
+                mutation AreaAskEnrichment($id: ID!, $connectorId: ID!) {
+                  stixCoreObjectEdit(id: $id) { askEnrichment(connectorId: $connectorId) { id } }
+                }
+              `,
+              variables: { id: franceId, connectorId: enrichmentConnectorId },
+            });
+            workId = enrichmentData.stixCoreObjectEdit.askEnrichment.id;
+
             const { data: privateData } = await queryAsAdmin({
               query: gql`
-                query AreaConnectors($id: String!) {
-                  administrativeArea(id: $id) { connectors { id } }
+                query AreaConnectorsFilesAndJobs($id: String!) {
+                  administrativeArea(id: $id) {
+                    connectors { id }
+                    importFiles { edges { node { id } } }
+                    jobs { id connector { id } }
+                  }
                 }
               `,
               variables: { id: franceId },
             });
             expect(privateData.administrativeArea.connectors.map((c) => c.id)).toContain(enrichmentConnectorId);
+            expect(privateData.administrativeArea.importFiles.edges.map((e) => e.node.id)).toContain(fileId);
+            expect(privateData.administrativeArea.jobs.map((j) => j.id)).toContain(workId);
 
             const { data } = await queryAsAdmin({
               query: gql`
-                query PublicStixCoreObjectsConnectors($uriKey: String!, $widgetId: String!) {
+                query PublicStixCoreObjectsConnectorsFilesAndJobs($uriKey: String!, $widgetId: String!) {
                   publicStixCoreObjects(uriKey: $uriKey, widgetId: $widgetId) {
                     edges {
                       node {
+                        id
                         ... on StixCoreObject {
-                          connectors {
+                          connectors { id }
+                          importFiles { edges { node { id } } }
+                          pendingFiles { edges { node { id } } }
+                          exportFiles { edges { node { id } } }
+                          jobs {
                             id
-                            manager_contract_configuration { key value }
+                            connector {
+                              id
+                              connector_state
+                              manager_contract_configuration { key value }
+                              manager_connector_logs
+                            }
                           }
                         }
                       }
@@ -1016,9 +1057,25 @@ describe('PublicDashboard resolver', () => {
               `,
               variables: { uriKey: publicDashboardUriKey, widgetId: 'bec879df-4da2-46c0-994a-e795c1b3a649' },
             });
-            expect(data.publicStixCoreObjects.edges.length).toBeGreaterThan(0);
-            data.publicStixCoreObjects.edges.forEach((e) => expect(e.node.connectors).toEqual([]));
+            expect(data.publicStixCoreObjects.edges.map((e) => e.node.id)).toContain(franceId);
+            data.publicStixCoreObjects.edges.forEach(({ node }) => {
+              expect(node.connectors).toEqual([]);
+              expect(node.importFiles.edges).toEqual([]);
+              expect(node.pendingFiles.edges).toEqual([]);
+              expect(node.exportFiles.edges).toEqual([]);
+              expect(node.jobs).toEqual([]);
+            });
           } finally {
+            pushToConnector.mockRestore();
+            if (workId) {
+              await deleteWork(testContext, ADMIN_USER, workId);
+            }
+            if (fileId) {
+              await queryAsAdmin({
+                query: gql`mutation AreaImportDelete($fileName: String) { deleteImport(fileName: $fileName) }`,
+                variables: { fileName: fileId },
+              });
+            }
             await queryAsAdmin({
               query: gql`mutation ConnectorDelete($id: ID!) { deleteConnector(id: $id) }`,
               variables: { id: enrichmentConnectorId },

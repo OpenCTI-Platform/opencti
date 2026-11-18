@@ -269,23 +269,27 @@ describe('Connector resolver standard behaviour', () => {
     ]));
   });
 
-  it('should not expose the manager contract configuration to a user without the connectors capability', async () => {
+  it('should not expose the configuration, logs and state of a connector to a user without the connectors capability', async () => {
     const queryResult = await queryAsUser(USER_EDITOR, {
       query: gql`
         query ListImportConnectorsWithConfiguration {
           connectorsForImport {
             id
+            connector_state
             manager_contract_configuration {
               key
               value
             }
+            manager_connector_logs
           }
         }
       `,
       variables: {},
     });
     expect(queryResult.data?.connectorsForImport?.length).toBeGreaterThan(0);
-    expect(queryResult.data?.connectorsForImport.every((c: Connector) => c.manager_contract_configuration === null)).toBe(true);
+    expect(queryResult.data?.connectorsForImport.every((c: Connector) => (
+      c.connector_state === null && c.manager_contract_configuration === null && c.manager_connector_logs === null
+    ))).toBe(true);
     expect(queryResult.errors?.length).toBeGreaterThan(0);
     expect(queryResult.errors?.every((e) => e.extensions?.code === FORBIDDEN_ACCESS)).toBe(true);
   });
