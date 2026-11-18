@@ -5,6 +5,7 @@ import { AlreadyDeletedError, DatabaseError } from '../config/errors';
 import { IMPORT_CSV_CONNECTOR, IMPORT_CSV_CONNECTOR_ID } from '../connector/importCsv/importCsv';
 import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
 import { internalLoadById } from '../database/middleware-loader';
+import { isPublicDashboardUser } from '../utils/access';
 import {
   redisAcquireWorkCompletionFlag,
   redisDeleteWorks,
@@ -105,6 +106,9 @@ export const worksForDraft = async (context, user, draftId, args = {}) => {
 };
 
 export const worksForSource = async (context, user, sourceId, args = {}) => {
+  if (isPublicDashboardUser(user)) {
+    return [];
+  }
   const { first = ES_MINIMUM_FIXED_PAGINATION, filters = null, type } = args;
   let finalFilters = addFilter(filters, 'event_source_id', sourceId);
   if (type) {

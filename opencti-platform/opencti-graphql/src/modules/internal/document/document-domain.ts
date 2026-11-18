@@ -4,7 +4,7 @@ import moment from 'moment';
 import { generateFileIndexId } from '../../../schema/identifier';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
 import { elAggregationCount, elCount, elDeleteInstances, elFindByIds, elIndex } from '../../../database/engine';
-import { INDEX_DRAFT_OBJECTS, INDEX_INTERNAL_OBJECTS, isEmptyField, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
+import { emptyPaginationResult, INDEX_DRAFT_OBJECTS, INDEX_INTERNAL_OBJECTS, isEmptyField, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
 import { type EntityOptions, type FilterGroupWithNested, internalLoadById, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { type DomainFindById } from '../../../domain/domainTypes';
@@ -13,7 +13,7 @@ import type { BasicStoreCommon } from '../../../types/store';
 import { type File, FilterMode, FilterOperator, OrderingMode, State } from '../../../generated/graphql';
 import { loadExportWorksAsProgressFiles } from '../../../domain/work';
 import { elSearchFiles } from '../../../database/file-search';
-import { SYSTEM_USER } from '../../../utils/access';
+import { isPublicDashboardUser, SYSTEM_USER } from '../../../utils/access';
 import { FROM_START_STR } from '../../../utils/format';
 import { RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../../../schema/general';
@@ -176,6 +176,9 @@ export const allFilesMimeTypeDistribution = async (context: AuthContext, user: A
 // Images metadata for users
 // In progress virtual files from export
 export const paginatedForPathWithEnrichment = async (context: AuthContext, user: AuthUser, path: string, entity_id?: string, opts?: FilesOptions<BasicStoreEntityDocument>) => {
+  if (isPublicDashboardUser(user)) {
+    return emptyPaginationResult<BasicStoreEntityDocument>();
+  }
   // Only auto-set exact_path if it's not explicitly provided in opts
   const autoExactPath = opts?.exact_path === undefined ? isEmptyField(entity_id) : opts.exact_path;
   const filterOpts = { ...opts, exact_path: autoExactPath };
