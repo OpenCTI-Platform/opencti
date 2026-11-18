@@ -112,9 +112,12 @@ const usePlaybookHistory = (
     const nodes = computeNodes(definition.nodes ?? [], playbookComponents, setAction, setSelectedNode, definition.links ?? []);
     const edges = computeEdges(definition.links ?? [], setAction, setSelectedEdge);
     const next = addPlaceholders(nodes, edges, setAction, setSelectedNode);
-    setNodes(next.nodes as PlaybookNode[]);
+    // The saved positions are not the layout: a step already on the canvas keeps its place, and
+    // useLayout moves the steps only when the structure changed (an undone edit leaves it as it is).
+    const shown = new Map(getNodes().map((node) => [node.id, node.position]));
+    setNodes((next.nodes as PlaybookNode[]).map((node) => ({ ...node, position: shown.get(node.id) ?? node.position })));
     setEdges(next.edges as Edge[]);
-  }, [playbookId, playbookComponents, setAction, setSelectedNode, setSelectedEdge, setNodes, setEdges]);
+  }, [playbookId, playbookComponents, setAction, setSelectedNode, setSelectedEdge, getNodes, setNodes, setEdges]);
 
   const execute = useCallback((op: PlaybookOperation): Promise<PlaybookOperationResult> => new Promise((resolve, reject) => {
     const onError = (error: Error) => reject(error);
