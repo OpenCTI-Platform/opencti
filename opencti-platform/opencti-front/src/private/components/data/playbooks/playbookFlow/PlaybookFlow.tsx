@@ -260,7 +260,23 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook, canEdit, running }
             </marker>
           </defs>
         </svg>
-        <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
+        {/* The canvas takes the focus (a click on it, or Tab): the single-key shortcuts answer there only. */}
+        <div
+          data-playbook-canvas
+          data-testid="playbook-canvas"
+          role="region"
+          aria-label={t_i18n('Playbook canvas')}
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+          tabIndex={0}
+          // A press on the pane, an edge or a card body gives the canvas the focus; a control keeps its own.
+          // Capture phase: the pane's zoom handler stops the press from bubbling.
+          onPointerDownCapture={(event) => {
+            if (!(event.target as HTMLElement).closest('button, input, textarea, [contenteditable="true"]')) {
+              event.currentTarget.focus({ preventScroll: true });
+            }
+          }}
+          style={{ position: 'relative', flex: 1, minHeight: 0, outline: 'none' }}
+        >
           <ReactFlow
             defaultNodes={flowNodes}
             defaultEdges={flowEdges}

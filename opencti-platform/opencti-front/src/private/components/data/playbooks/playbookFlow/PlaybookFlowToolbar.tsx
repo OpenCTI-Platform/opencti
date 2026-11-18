@@ -34,13 +34,15 @@ interface PlaybookFlowToolbarProps {
   history?: { undo: () => void; redo: () => void; canUndo: boolean; canRedo: boolean };
 }
 
-// Floating canvas toolbar: the layout direction, then undo and redo, then zoom and fit, then the
-// shortcuts cheat sheet. The same actions answer the keyboard (see playbookShortcuts.ts) whenever
-// no field has the focus.
+// Floating canvas toolbar: undo and redo first (they leave in view mode without moving anything
+// else), then the layout direction, then zoom and fit, then the shortcuts cheat sheet. The same
+// actions answer the keyboard (see playbookShortcuts.ts): Ctrl/Cmd+Z anywhere on the page, the
+// single-key shortcuts only while the focus is on the canvas.
 const PlaybookFlowToolbar = ({ direction, onDirectionChange, history }: PlaybookFlowToolbarProps) => {
   const { t_i18n } = useFormatter();
   const { zoomIn, zoomOut, fitView } = useReactFlow();
   const [cheatSheetOpen, setCheatSheetOpen] = useState(false);
+  const rowRef = useRef<HTMLDivElement>(null);
 
   // The key handler reads the latest actions through a ref, so it is registered once for the life of
   // the canvas: a re-render (a layout change, a new history state) never leaves a press unanswered.
@@ -52,7 +54,10 @@ const PlaybookFlowToolbar = ({ direction, onDirectionChange, history }: Playbook
       const action = playbookShortcutFor(event);
       if (!action) return;
       const current = actions.current;
-      if (action === 'undo' || action === 'redo') {
+      const isHistory = action === 'undo' || action === 'redo';
+      // The window listener answers undo / redo only; the canvas listener answers the rest.
+      if (isHistory !== (event.currentTarget === window)) return;
+      if (isHistory) {
         // A read-only canvas, or a dialog or drawer open over it, keeps Ctrl/Cmd+Z to the browser.
         if (!current.history || document.querySelector('[role="dialog"]')) return;
       }
@@ -68,15 +73,32 @@ const PlaybookFlowToolbar = ({ direction, onDirectionChange, history }: Playbook
       else if (action === 'horizontalLayout') current.onDirectionChange('horizontal');
       else setCheatSheetOpen(true);
     };
-    // Capture phase on the window: a control that handles the key itself (a focused toolbar
-    // button, the canvas pane) cannot stop the shortcut before it is read.
+    // Capture phase: a control that handles the key itself (a focused toolbar button, the canvas
+    // pane) cannot stop the shortcut before it is read. F, V, H, +, - and ? are read on the canvas
+    // only: a drawer, a dialog or a select (portalled out of it) keeps its own keys, typeahead
+    // included. Ctrl/Cmd+Z stays on the window.
+    const canvas = rowRef.current?.closest('[data-playbook-canvas]');
     window.addEventListener('keydown', onKeyDown, true);
-    return () => window.removeEventListener('keydown', onKeyDown, true);
+    canvas?.addEventListener('keydown', onKeyDown as EventListener, true);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown, true);
+      canvas?.removeEventListener('keydown', onKeyDown as EventListener, true);
+    };
   }, []);
 
   return (
     <Panel position="top-right">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div ref={rowRef} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {history && (
+          <>
+            <IconButton size="default" aria-label={t_i18n('Undo')} tooltip={t_i18n('Undo')} disabled={!history.canUndo} onClick={history.undo}>
+              <UndoOutlined style={GLYPH} />
+            </IconButton>
+            <IconButton size="default" aria-label={t_i18n('Redo')} tooltip={t_i18n('Redo')} disabled={!history.canRedo} onClick={history.redo}>
+              <RedoOutlined style={GLYPH} />
+            </IconButton>
+          </>
+        )}
         <ButtonGroup
           size="md"
           value={direction}
@@ -97,16 +119,6 @@ const PlaybookFlowToolbar = ({ direction, onDirectionChange, history }: Playbook
             icon={<AccountTreeOutlined sx={GLYPH} />}
           />
         </ButtonGroup>
-        {history && (
-          <>
-            <IconButton size="default" aria-label={t_i18n('Undo')} tooltip={t_i18n('Undo')} disabled={!history.canUndo} onClick={history.undo}>
-              <UndoOutlined style={GLYPH} />
-            </IconButton>
-            <IconButton size="default" aria-label={t_i18n('Redo')} tooltip={t_i18n('Redo')} disabled={!history.canRedo} onClick={history.redo}>
-              <RedoOutlined style={GLYPH} />
-            </IconButton>
-          </>
-        )}
         <IconButton size="default" aria-label={t_i18n('Zoom out')} tooltip={t_i18n('Zoom out')} onClick={() => zoomOut({ duration: 150 })}>
           <ZoomOutOutlined style={GLYPH} />
         </IconButton>

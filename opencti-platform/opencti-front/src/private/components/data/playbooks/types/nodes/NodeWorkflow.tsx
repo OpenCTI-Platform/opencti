@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import React, { memo, useId, useState } from 'react';
 import { Handle, NodeProps, useReactFlow } from 'reactflow';
 import { useTheme } from '@mui/material/styles';
 import Menu from '@mui/material/Menu';
@@ -33,6 +33,8 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
   const { direction, target, source } = usePlaybookHandlePositions();
   // View mode: the card shows the step, a click opens nothing and it carries no menu.
   const { nodeMenu, nodeOpensSettings } = usePlaybookCanvasAffordances();
+  const summaryId = useId();
+  const lastExecutionId = useId();
   const component = data.component;
   const accent = categoryAccent(theme, component?.category);
   const displayDescription = data.description || component?.description;
@@ -63,23 +65,23 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
         return `${t_i18n('{count, plural, one {# filter} other {# filters}}', { values: { count: s.filters } })}, ${t_i18n('{count, plural, one {# action} other {# actions}}', { values: { count: s.actions } })}`;
     }
   };
-  // The card itself opens its configuration (click, Enter or Space): no permanent button for it.
+  // The title is the button that opens the configuration (Enter or Space on it); a click anywhere on
+  // the card does the same for the pointer. The card itself is not interactive, so the menu button is
+  // its sibling, never nested in another control, and the summary and the last execution are read as
+  // the description of the title button.
   const openConfiguration = () => {
     if (nodeOpensSettings) data.openConfig(getNode(id));
   };
+  const describedBy = [summary ? summaryId : null, lastExecution ? lastExecutionId : null].filter(Boolean).join(' ') || undefined;
+  const titleStyle: React.CSSProperties = { marginTop: 4, fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' };
+  const title = translated(truncate(data.name ?? '', 60, false));
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
     <div
       data-testid={`playbook-node-${id}`}
-      role={nodeOpensSettings ? 'button' : 'group'}
-      tabIndex={nodeOpensSettings ? 0 : undefined}
-      aria-label={nodeOpensSettings ? `${t_i18n('Update')}: ${translated(data.name)}` : translated(data.name)}
+      role="group"
+      aria-label={translated(data.name)}
       onClick={openConfiguration}
-      onKeyDown={(event) => {
-        if (nodeOpensSettings && event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
-          event.preventDefault();
-          openConfiguration();
-        }
-      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onContextMenu={(event) => {
@@ -117,9 +119,34 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
         </span>
       </div>
       <Tooltip title={translated(data.name)}>
-        <div style={{ marginTop: 4, fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {translated(truncate(data.name ?? '', 60, false))}
-        </div>
+        {nodeOpensSettings ? (
+          <button
+            type="button"
+            data-testid={`playbook-node-open-${id}`}
+            aria-label={`${t_i18n('Update')}: ${translated(data.name)}`}
+            aria-describedby={describedBy}
+            onClick={(event) => {
+              event.stopPropagation();
+              openConfiguration();
+            }}
+            style={{
+              ...titleStyle,
+              display: 'block',
+              width: '100%',
+              padding: 0,
+              border: 'none',
+              background: 'none',
+              color: 'inherit',
+              fontFamily: 'inherit',
+              textAlign: 'left',
+              cursor: 'pointer',
+            }}
+          >
+            {title}
+          </button>
+        ) : (
+          <div style={titleStyle} aria-describedby={describedBy}>{title}</div>
+        )}
       </Tooltip>
       <Tooltip title={translated(displayDescription)}>
         <div style={{
@@ -139,6 +166,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
       </Tooltip>
       {summary && (
         <div
+          id={summaryId}
           data-testid={`playbook-node-summary-${id}`}
           style={{
             marginTop: 4,
@@ -226,6 +254,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
       {lastExecution && (
         <Tooltip title={`${t_i18n('Last execution')}: ${lastStatusLabel}${lastDuration ? `, ${lastDuration}` : ''}`}>
           <span
+            id={lastExecutionId}
             data-testid={`playbook-node-last-execution-${id}`}
             aria-label={`${t_i18n('Last execution')}: ${lastStatusLabel}`}
             style={{

@@ -21,6 +21,17 @@ export interface PlaybookShortcut {
   label: string;
 }
 
+// Stands for the platform modifier in the cheat sheet: shown as ⌘ on macOS and iOS, Ctrl elsewhere.
+export const MOD_KEY = 'Mod';
+
+export const isApplePlatform = (platform: string | undefined): boolean => /mac|iphone|ipad|ipod/i.test(platform ?? '');
+
+// The key a cheat sheet shows: the platform modifier resolved, any other key as written.
+export const displayShortcutKey = (key: string, platform: string | undefined): string => {
+  if (key !== MOD_KEY) return key;
+  return isApplePlatform(platform) ? '⌘' : 'Ctrl';
+};
+
 // The canvas shortcuts, in the order the cheat sheet lists them. Labels are catalog keys.
 export const PLAYBOOK_SHORTCUTS: PlaybookShortcut[] = [
   { action: 'zoomIn', keys: ['+'], label: 'Zoom in' },
@@ -28,8 +39,8 @@ export const PLAYBOOK_SHORTCUTS: PlaybookShortcut[] = [
   { action: 'fitView', keys: ['F'], label: 'Fit view' },
   { action: 'verticalLayout', keys: ['V'], label: 'Vertical layout' },
   { action: 'horizontalLayout', keys: ['H'], label: 'Horizontal layout' },
-  { action: 'undo', keys: ['Ctrl/Cmd', 'Z'], label: 'Undo' },
-  { action: 'redo', keys: ['Shift', 'Ctrl/Cmd', 'Z'], label: 'Redo' },
+  { action: 'undo', keys: [MOD_KEY, 'Z'], label: 'Undo' },
+  { action: 'redo', keys: ['Shift', MOD_KEY, 'Z'], label: 'Redo' },
   { action: 'cheatSheet', keys: ['?'], label: 'Keyboard shortcuts' },
 ];
 

@@ -86,9 +86,10 @@ const PlaybookFlowSelectComponent = ({
           setActive(0);
         }}
       />
-      {flat.length === 0 && (
-        <div style={{ padding: '16px 8px' }}>{t_i18n('No component matches your search')}</div>
-      )}
+      {/* Always in the page, so a screen reader announces the message when a search empties the list. */}
+      <div role="status" style={flat.length === 0 ? { padding: '16px 8px' } : undefined}>
+        {flat.length === 0 ? t_i18n('No component matches your search') : null}
+      </div>
       <List aria-label={t_i18n('Components')}>
         {grouped.map(({ category, items }, index) => (
           <React.Fragment key={category}>

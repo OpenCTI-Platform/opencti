@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PLAYBOOK_SHORTCUTS, playbookShortcutFor } from './playbookShortcuts';
+import { displayShortcutKey, MOD_KEY, PLAYBOOK_SHORTCUTS, playbookShortcutFor } from './playbookShortcuts';
 
 describe('playbookShortcutFor', () => {
   it('maps the canvas keys, both cases', () => {
@@ -36,6 +36,18 @@ describe('playbookShortcutFor', () => {
     expect(playbookShortcutFor({ key: 'v', target: { tagName: 'textarea' } as unknown as EventTarget })).toBeNull();
     expect(playbookShortcutFor({ key: 'h', target: { tagName: 'DIV', isContentEditable: true } as unknown as EventTarget })).toBeNull();
     expect(playbookShortcutFor({ key: 'h', target: { tagName: 'DIV' } as unknown as EventTarget })).toBe('horizontalLayout');
+  });
+
+  it('shows the platform modifier: ⌘ on Apple platforms, Ctrl elsewhere', () => {
+    expect(displayShortcutKey(MOD_KEY, 'MacIntel')).toBe('⌘');
+    expect(displayShortcutKey(MOD_KEY, 'macOS')).toBe('⌘');
+    expect(displayShortcutKey(MOD_KEY, 'iPhone')).toBe('⌘');
+    expect(displayShortcutKey(MOD_KEY, 'Win32')).toBe('Ctrl');
+    expect(displayShortcutKey(MOD_KEY, 'Linux x86_64')).toBe('Ctrl');
+    expect(displayShortcutKey(MOD_KEY, undefined)).toBe('Ctrl');
+    expect(displayShortcutKey('Z', 'MacIntel')).toBe('Z');
+    const undo = PLAYBOOK_SHORTCUTS.find((shortcut) => shortcut.action === 'undo');
+    expect(undo?.keys).toEqual([MOD_KEY, 'Z']);
   });
 
   it('lists every action once in the cheat sheet', () => {
