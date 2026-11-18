@@ -3205,7 +3205,7 @@ selection's anchor lies.
 
 ---
 
-## 86. `RichTextField` flags the page break written by `@filigran/rich-text-editor` as removed HTML
+## 86. `RichTextField` flags the page break written by `@filigran/rich-text-editor` as removed HTML — ✅ CLOSED at `@filigran/design-system` 1.5.4 (2026-11-18)
 
 **Needed.** OpenCTI's built-in FINTEL templates (`opencti-graphql/src/utils/fintelTemplate/__executiveSummary.template.ts`,
 `__incidentCase.template.ts`) and every page break saved by the previous editor
@@ -3232,9 +3232,14 @@ does not already mean.
 **Removal test.** Opening the built-in "Executive Summary" template shows no
 "Some HTML isn't supported and was removed" message.
 
+**Shipped by library release 1.5.4** (`fix(rich-text-field): keep CKEditor image
+resizes and read its page breaks without a loss warning`) — ✅ CLOSED. Removal
+test passed in the browser on 2026-11-18: the template opens with no message,
+and the field still saves its six page breaks as `<div class="page-break"></div>`.
+
 ---
 
-## 87. `RichTextField` drops the size of a resized image written by CKEditor
+## 87. `RichTextField` drops the size of a resized image written by CKEditor — ✅ CLOSED at `@filigran/design-system` 1.5.4 (2026-11-18)
 
 **Needed.** OpenCTI's built-in "Built-In Template For Onboarding" email template
 shows the OpenCTI logo, a 1000×250 PNG, at 355px wide. The size is carried the
@@ -3261,3 +3266,8 @@ of that width, as the library already does for its own resized images.
 **Removal test.** Opening the built-in onboarding email template shows the
 logo at 355px with no removal message, and the HTML emitted after an edit keeps
 that width.
+
+**Shipped by library release 1.5.4** (same fix as entry 86) — ✅ CLOSED. Removal
+test passed in the browser on 2026-11-18: the logo opens at 355px with no
+message, and after an edit the field emits `<img width="355" height="89">`, as
+the previous editor did.
