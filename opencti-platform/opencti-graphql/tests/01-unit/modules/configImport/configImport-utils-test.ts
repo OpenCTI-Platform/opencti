@@ -37,6 +37,12 @@ describe('freeConfigImportName', () => {
     expect(await freeConfigImportName('Analyst', async () => true)).toBeUndefined();
   });
 
+  it('goes past the 100th copy when the number of copies is not capped', async () => {
+    const taken = ['Analyst', ...Array.from({ length: 150 }, (_, index) => `Analyst (${index + 1})`)];
+    expect(await freeConfigImportName('Analyst', takenAmong(taken))).toBeUndefined();
+    expect(await freeConfigImportName('Analyst', takenAmong(taken), { maxCopies: Infinity })).toBe('Analyst (151)');
+  });
+
   it('cuts the name so that the copy fits the maximum length', async () => {
     expect(await freeConfigImportName('Analysts', takenAmong(['Analysts']), { maxLength: 10 })).toBe('Analys (1)');
     expect(await freeConfigImportName('Analysts', takenAmong(['Analysts', 'Analys (1)']), { maxLength: 10 })).toBe('Analys (2)');

@@ -929,7 +929,7 @@
   "Platform(s) affinity": "플랫폼 선호도",
   "Platforms": "플랫폼",
   "Playbook definition": "플레이북 정의",
-  "Playbook definitions, imported stopped": "플레이북 정의(중지된 상태로 가져옴)",
+  "Playbook definitions, imported as stopped": "플레이북 정의(중지된 상태로 가져옴)",
   "Playbook running": "플레이북 실행 중",
   "Playbook supported": "지원되는 플레이북",
   "Playbooks": "플레이북",

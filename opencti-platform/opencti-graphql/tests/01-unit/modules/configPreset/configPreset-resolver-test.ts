@@ -301,7 +301,7 @@ describe('Config preset exportable types query', () => {
       {
         key: 'playbooks',
         label: 'Playbooks',
-        description: 'Playbook definitions, imported stopped',
+        description: 'Playbook definitions, imported as stopped',
         group: { key: 'automationRules', label: 'Automation & Rules' },
         items: [
           { key: 'Enrich reports', label: 'Enrich reports', translatable: false, dependsOn: [], isDefault: false },

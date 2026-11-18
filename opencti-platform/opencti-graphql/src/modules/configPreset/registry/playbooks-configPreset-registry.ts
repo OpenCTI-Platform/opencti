@@ -1,5 +1,6 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ConfigImportMode } from '../../configImport/configImport-types';
+import { freeConfigImportName } from '../../configImport/configImport-utils';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter, ConfigPresetImportPlan } from '../import/configPreset-import-types';
 import { configPresetPlanKey } from '../import/configPreset-import-types';
@@ -13,11 +14,9 @@ const loadPlaybookExport = () => import('../../playbook/playbook-export');
 
 const fileNameOf = (id: string) => id.replace(/[^\p{L}\p{N} ._()-]/gu, '_');
 
-const uniqueName = (name: string, taken: Set<string>) => {
-  let candidate = name;
-  for (let copy = 1; taken.has(candidate); copy += 1) {
-    candidate = `${name} (${copy})`;
-  }
+// Every stored playbook is exported: the copy names are not capped
+const uniqueName = async (name: string, taken: Set<string>) => {
+  const candidate = (await freeConfigImportName(name, async (value) => taken.has(value), { maxCopies: Infinity })) ?? name;
   taken.add(candidate);
   return candidate;
 };
@@ -30,16 +29,18 @@ const playbookItems = async (context: AuthContext, user: AuthUser): Promise<Conf
     .sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)) || String(a.internal_id).localeCompare(String(b.internal_id)));
   const ids = new Set<string>();
   const fileNames = new Set<string>();
-  const items = playbooks.map((playbook): ConfigPresetItemDefinition => {
-    const id = uniqueName(playbook.name, ids);
-    return {
+  const items: ConfigPresetItemDefinition[] = [];
+  for (let i = 0; i < playbooks.length; i += 1) {
+    const playbook = playbooks[i];
+    const id = await uniqueName(playbook.name, ids);
+    items.push({
       id,
       label: playbook.name,
       translatable: false,
-      fileName: `${uniqueName(fileNameOf(id), fileNames)}.json`,
+      fileName: `${await uniqueName(fileNameOf(id), fileNames)}.json`,
       exporter: async (ctx) => exportConfigPresetPlaybook(ctx, playbook),
-    };
-  });
+    });
+  }
   return items.sort((a, b) => a.label.localeCompare(b.label) || a.id.localeCompare(b.id));
 };
 
@@ -76,7 +77,7 @@ const playbooksImporter: ConfigPresetImporter = {
 export const playbooksFamily: ConfigPresetFamilyDefinition = {
   id: PLAYBOOKS_FAMILY_ID,
   label: 'Playbooks',
-  description: 'Playbook definitions, imported stopped',
+  description: 'Playbook definitions, imported as stopped',
   group: automationRulesGroup,
   directory: 'automation_rules/playbooks',
   importer: playbooksImporter,

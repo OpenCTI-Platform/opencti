@@ -929,7 +929,7 @@
   "Platform(s) affinity": "Afinidad de plataforma(s)",
   "Platforms": "Plataformas",
   "Playbook definition": "Definición de Playbook",
-  "Playbook definitions, imported stopped": "Definiciones de playbooks, importados detenidos",
+  "Playbook definitions, imported as stopped": "Definiciones de playbooks, importados en estado detenido",
   "Playbook running": "Ejecución de Playbook",
   "Playbook supported": "Guía de procedimientos compatible",
   "Playbooks": "Playbooks",
