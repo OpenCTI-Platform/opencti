@@ -1,6 +1,6 @@
 import { RadarOutlined } from '@mui/icons-material';
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
-import { CGUStatus } from '@components/settings/Experience';
+import { CGUStatus } from '@components/settings/ExperienceFieldPatch';
 import React from 'react';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
