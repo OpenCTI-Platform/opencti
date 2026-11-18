@@ -55,15 +55,21 @@ Streams implement the [HTTP SSE (Server-sent events)](https://en.wikipedia.org/w
 
 For all previously explained capabilities, as they are over the HTTP protocol, 3 authentication mechanisms are available to consume them.
 
-1. Using a bearer header with your OpenCTI API key
+1. Using a bearer header with your OpenCTI API token
 
 	```
-	Authorization: Bearer a17bc103-8420-4208-bd53-e1f80845d15f
+	Authorization: Bearer <your API token>
 	```
 
-	!!! note "API Key"
-	    
-		Your API key can be found in your profile available clicking on the top right icon.
+	!!! note "API token"
+
+		Generate a token from your profile: click the profile icon at the top right, select **Profile**, then click **Generate Token** in the **API access** section. Enter a name, choose a duration, and click **Generate**. Copy the token right away: OpenCTI shows it only once.
+
+		![Generate Token button in the API access section of the profile](assets/profile-api-access.png)
+
+		![Generate a new token form](assets/profile-generate-token.png)
+
+		Since OpenCTI 7.260224.0, OpenCTI stores only a hash of each token, so an existing token can no longer be displayed again (see [Tokens management](breaking-changes.md#tokens-management)). Generating and using a token both require the **Allow token usage** capability.
 
 2. Using basic authentication
 
@@ -91,7 +97,7 @@ The API authentication can be performed using the token of a user and a classic 
 
 ```
 Content-Type: application/json
-Authorization: Bearer 6b6554c4-bb2c-4c80-9cd3-30288c8bf424
+Authorization: Bearer <your API token>
 ```
 
 #### Playground

@@ -21,7 +21,7 @@ All connectors support the same set of parameters to manage the log level and ou
 
 ```yaml
 - OPENCTI_JSON_LOGGING=true # Enable / disable JSON logging
-- CONNECTOR_LOG_LEVEL=info=[error|warning|info|debug]
+- CONNECTOR_LOG_LEVEL=[error|warning|info|debug]
 ```
 
 ### Workers

@@ -35,7 +35,6 @@ The image is named `filigran/import-document-ai-webservice`, you can pull it and
 > By default, the configuration below expose the service to the port `80`, feel free to change this.
 
 ```
-version: '3'
 services:
   service-import-document-ai-webservice:
     image: filigran/import-document-ai-webservice
