@@ -28,7 +28,7 @@ The **Configuration** card allows the administrator to edit the following settin
 
 - Platform title
 - Platform favicon URL
-- Sender email address: email address displayed as sender when sending notifications. The technical sender is defined in the [SMTP configuration](../deployment/configuration.md#smtp-service).
+- Sender email address: email address displayed as sender when sending notifications. The technical sender is defined in the [SMTP configuration](../deployment/configuration.md#smtp-service) (see also the [SMTP configuration page](smtp-configuration.md)).
 - Third-party analytics (see below)
 
 The **Appearance** card groups the settings that change what users see:
@@ -81,11 +81,14 @@ They can be used to inform some of your users or all of important information, l
 
 An Announcement can be accompanied by a "Dismiss” button. When clicked by a user, it makes the message disappear for this user.
 
-![parameters_broadcast_message_dismissible](assets/parameters_broadcast_message_dismissible.png)
+![An enabled and dismissible announcement in the Platform Announcement card](assets/parameters-announcement-enabled.png)
 
 This option can be deactivated to have a permanent announcement.
 
-![parameters_broadcast_message_non-dismissible](assets/parameters_broadcast_message_non-dismissible.png)
+An announcement is only displayed while its status is **Enabled**, set by the **Activated** option of the announcement form. A new announcement is disabled by default. To hide an announcement without deleting it, deactivate it: its status becomes **Disabled**.
+
+![A disabled announcement in the Platform Announcement card](assets/parameters-announcement-disabled.png)
+
 ⚠️ Only one announcement is shown at a time, with priority given to dismissible ones. If there are no dismissible announcements, the most recent non-dismissible one is shown.
 
 ## Third-party Analytics
@@ -188,6 +191,7 @@ data:image/png;base64,iVBORw0KGgoAAAANS...
 ```
 
 **Recommended dimensions:**
+
 - **Logo URL (expanded):** 900×200px (will be scaled down to ~165×35px display size)
 - **Logo URL (collapsed):** 350×350px square (displays at 35×35px)
 - **Logo URL (login):** 900×200px (displays at ~400×85px)

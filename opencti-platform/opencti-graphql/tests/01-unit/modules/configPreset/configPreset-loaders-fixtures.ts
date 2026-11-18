@@ -13,6 +13,7 @@ import { ALL_STATUS_TEMPLATES } from './configPreset-statusTemplates-fixtures';
 import { ALL_CASE_TEMPLATES, ALL_TASK_TEMPLATES } from './configPreset-caseTemplates-fixtures';
 import { ALL_CONNECTORS } from './configPreset-connectors-fixtures';
 import { ALL_RSS_FEEDS, ALL_TAXII_FEEDS } from './configPreset-feeds-fixtures';
+import { ALL_EMAIL_TEMPLATES } from './configPreset-emailTemplates-fixtures';
 
 interface ListingArgs {
   search?: string | null;
@@ -37,6 +38,7 @@ const FIXTURE_ENTITIES: Record<string, { id: string; name?: string; definition?:
   IngestionCsv: [],
   IngestionJson: [],
   IngestionTaxii: ALL_TAXII_FEEDS,
+  EmailTemplate: ALL_EMAIL_TEMPLATES,
 };
 const labelOf = (entity: { name?: string; definition?: string; value?: string }) => entity.name ?? entity.definition ?? entity.value ?? '';
 

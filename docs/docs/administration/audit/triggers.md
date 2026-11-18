@@ -9,7 +9,10 @@
 ## Description
 
 Having all the history in the user interface ([events](events.md)) is sometimes not enough to have a proactive monitoring. For this reason, you can configure some specific triggers to receive notifications on audit events.
-You can configure like personal triggers, lives one that will be sent directly or digest depending on your needs. 
+Activity triggers work like the personal [triggers and digests](../../usage/notifications.md#triggers) of the user interface. Create them in Settings > Activity > Alerting. Two types are available:
+
+- Live trigger: the notification is sent as soon as a matching event happens.
+- Regular digest: matching events are grouped and sent on a schedule (every hour, day, week or month).
 
 ## Configuration
 

@@ -8,6 +8,7 @@ import Loader from '../../../../components/Loader';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { HistoryDrawerQuery } from './__generated__/HistoryDrawerQuery.graphql';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
+import { toPlainHistoryValue, toSingleLineHistoryMessage } from '../history/historyMessage';
 
 interface HistoryDrawerProps {
   open: boolean;
@@ -50,8 +51,9 @@ const HistoryDrawerContent: FunctionComponent<HistoryDrawerContentProps> = ({ lo
     .filter((c): c is NonNullable<typeof c> => !!c)
     .map((c) => ({
       field: c.field,
-      removed: c.changes_removed ?? [],
-      added: c.changes_added ?? [],
+      // Rich text values (html Content, markdown Description) read as text, never as raw source
+      removed: (c.changes_removed ?? []).map(toPlainHistoryValue),
+      added: (c.changes_added ?? []).map(toPlainHistoryValue),
     }));
 
   return (
@@ -63,7 +65,7 @@ const HistoryDrawerContent: FunctionComponent<HistoryDrawerContentProps> = ({ lo
         content={(
           <>
             <MarkdownDisplay
-              content={data?.log?.context_data?.message ?? ''}
+              content={toSingleLineHistoryMessage(data?.log?.context_data?.message)}
               remarkGfmPlugin={true}
               commonmark={true}
             />
@@ -74,6 +76,7 @@ const HistoryDrawerContent: FunctionComponent<HistoryDrawerContentProps> = ({ lo
       <ChangesTable
         changes={mappedChanges}
         variant="text"
+        wrapValues={true}
       />
     </Stack>
   );

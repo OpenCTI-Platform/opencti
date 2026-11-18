@@ -13,6 +13,8 @@ vi.mock('../../../../src/config/conf', async (importOriginal) => ({
 vi.mock('../../../../src/enterprise-edition/ee', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/enterprise-edition/ee')>()),
   isEnterpriseEditionUpToDate: vi.fn(async () => enterpriseEdition.enabled),
+  // The domain of a family of the Enterprise Edition checks the license too: the registry only reaches it when the platform has it
+  checkEnterpriseEdition: vi.fn(),
 }));
 vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
@@ -54,12 +56,13 @@ import { builtInTheme, customTheme, otherCustomTheme } from './configPreset-them
 import { mockConfigPresetLoaders } from './configPreset-loaders-fixtures';
 import { administratorRole, analystRole } from './configPreset-roles-fixtures';
 import { administratorsGroup, analystsGroup } from './configPreset-groups-fixtures';
-import { customMarking, papRed } from './configPreset-markings-fixtures';
+import { customMarking, papRed, tlpAmber } from './configPreset-markings-fixtures';
 import { customLabel, otherLabel } from './configPreset-labels-fixtures';
 import { dnsExclusionList, retiredExclusionList } from './configPreset-exclusionLists-fixtures';
 import { disarmKillChainPhase, killChainPhase, otherKillChainPhase } from './configPreset-killChainPhases-fixtures';
 import { customStatusTemplate, defaultStatusTemplate } from './configPreset-statusTemplates-fixtures';
 import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemplates-fixtures';
+import { customEmailTemplate, otherEmailTemplate } from './configPreset-emailTemplates-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -98,6 +101,9 @@ const themeItem = (theme: { standard_id: string; name: string }, isDefault: bool
   dependsOn: [],
   isDefault,
 });
+const emailTemplateItem = (template: { standard_id: string; name: string }) => (
+  { key: template.standard_id, label: template.name, translatable: false, dependsOn: [], isDefault: false }
+);
 const labelItem = (label: { standard_id: string; value: string }) => ({ key: label.standard_id, label: label.value, translatable: false, dependsOn: [], isDefault: false });
 const exclusionListItem = (list: { standard_id: string; name: string }) => ({ key: list.standard_id, label: list.name, translatable: false, dependsOn: [], isDefault: false });
 const phaseItem = (phase: { standard_id: string; kill_chain_name: string; phase_name: string }) => ({
@@ -186,9 +192,9 @@ describe('Config preset exportable types query', () => {
         label: 'Markings',
         description: 'Marking definitions, their colors and orders',
         group: { key: 'securityAccess', label: 'Security & Access' },
-        // The markings by definition, without the built-in ones
-        items: [customMarking, papRed].map((marking) => ({ key: marking.standard_id, label: marking.definition, translatable: false, dependsOn: [], isDefault: false })),
-        itemsPageInfo: onePage(2),
+        // The markings by definition, built-in ones included
+        items: [customMarking, papRed, tlpAmber].map((marking) => ({ key: marking.standard_id, label: marking.definition, translatable: false, dependsOn: [], isDefault: false })),
+        itemsPageInfo: onePage(3),
       },
       {
         key: 'roles',
@@ -203,7 +209,7 @@ describe('Config preset exportable types query', () => {
         label: 'Groups',
         description: 'Groups with their roles, markings and confidence level',
         group: { key: 'securityAccess', label: 'Security & Access' },
-        // Each group depends on its roles
+        // Each group depends on its roles, never on a built-in marking
         items: [[administratorsGroup, administratorRole], [analystsGroup, analystRole]].map(([group, role]) => ({
           key: group.standard_id,
           label: group.name,
@@ -220,6 +226,15 @@ describe('Config preset exportable types query', () => {
         group: { key: 'securityAccess', label: 'Security & Access' },
         items: [staticItem('policies', 'Policies')],
         itemsPageInfo: onePage(1),
+      },
+      {
+        key: 'emailTemplates',
+        label: 'Email templates',
+        description: 'Email templates and their content',
+        group: { key: 'securityAccess', label: 'Security & Access' },
+        // The email templates by name
+        items: [emailTemplateItem(otherEmailTemplate), emailTemplateItem(customEmailTemplate)],
+        itemsPageInfo: onePage(2),
       },
       {
         key: 'labels',
@@ -367,10 +382,11 @@ describe('Config preset exportable types query', () => {
     const types = result.data?.configPresetExportableTypes as { key: string; lockedByEnterpriseEdition: boolean; items: unknown[]; itemsPageInfo: unknown }[];
     expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
-      ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['labels', false], ['exclusionLists', false], ['killChainPhases', false],
+      ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['emailTemplates', true], ['labels', false], ['exclusionLists', false], ['killChainPhases', false],
       ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['connectors', true],
       ['rssFeeds', false], ['csvFeeds', false], ['jsonFeeds', false], ['taxiiFeeds', false], ['ruleEngine', false],
     ]);
+    expect(types.find((type) => type.key === 'emailTemplates')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
     const licensed = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
@@ -411,6 +427,7 @@ describe('Config preset exportable types query', () => {
       ['roles', 'securityAccess'],
       ['groups', 'securityAccess'],
       ['policies', 'securityAccess'],
+      ['emailTemplates', 'securityAccess'],
       ['labels', 'taxonomy'],
       ['exclusionLists', 'customization'],
       ['killChainPhases', 'taxonomy'],

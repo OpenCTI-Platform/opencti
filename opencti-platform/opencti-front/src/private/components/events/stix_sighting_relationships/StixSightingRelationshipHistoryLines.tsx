@@ -107,7 +107,7 @@ const StixSightingRelationshipHistoryLines = ({ queryRef, isRelationLog, paginat
                     }
                   }}
                 >
-                  <StixCoreObjectHistoryLine key={log.id} node={log} isRelation={isRelationLog} />
+                  <StixCoreObjectHistoryLine key={log.id} node={log} isRelation={isRelationLog} hasDetails={hasChanges} />
                 </ListItemButton>
               </ListItem>
             </React.Fragment>

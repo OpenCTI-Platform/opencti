@@ -34,6 +34,10 @@ import type { BasicStoreSettings } from '../../../types/settings';
 
 // JSON list of the OpenCTI platform ids an XTM license sub-licenses, 'global' covering every platform.
 export const LICENSE_OID_XTM_OPENCTI_IDS = '1.3.6.1.4.1.62944.50';
+// The licence model: `2` for a Filigran License bound to the instance of its subject OU and granting every module.
+// A licence issued before carries no model claim and keeps the per-module rules it was issued with.
+export const LICENSE_OID_XTM_LICENSE_MODEL = '1.3.6.1.4.1.62944.120';
+export const XTM_LICENSE_MODEL_INSTANCE_BOUND = '2';
 const XTM_LICENSE_PRODUCT = 'filigran xtm';
 // Days, as XTM One counts them: not the three calendar months of OpenCTI's own license.
 const XTM_LICENSE_GRACE_PERIOD = 90 * 24 * 60 * 60 * 1000;
@@ -56,6 +60,9 @@ export interface XtmLicenseContext {
   platformCreatedAt: Date | string | undefined;
   // An LTS platform needs an lts or ci license, the rule OpenCTI applies to its own licenses.
   ltsPlatform?: boolean;
+  // The licence is pasted in this platform (not returned by XTM One): a model 2 licence must then name this platform,
+  // or `global`, in its subject OU.
+  pastedInPlatform?: boolean;
   now?: Date;
 }
 
@@ -83,6 +90,7 @@ interface XtmLicense {
   product: string | undefined;
   type: string | undefined;
   openctiIds: string[];
+  licenseModel: string | undefined;
   customer: string;
   creator: string;
   platform: string;
@@ -151,7 +159,8 @@ const decodeXtmLicense = (pem: string): DecodedXtmLicense => {
       product: readExtensionText(certificate, LICENSE_OID_PRODUCT, LICENSE_LEGACY_PRODUCT),
       type: readExtensionText(certificate, LICENSE_OID_TYPE, LICENSE_LEGACY_TYPE),
       openctiIds: readPlatformIds(readExtensionText(certificate, LICENSE_OID_XTM_OPENCTI_IDS)),
-      // Displayed only: like XTM One, nothing is decided on the subject.
+      licenseModel: readExtensionText(certificate, LICENSE_OID_XTM_LICENSE_MODEL),
+      // Displayed, and decided on only for a model 2 licence pasted in this platform (verifyXtmLicenseProof).
       customer: certificate.subject.getField('O')?.value ?? 'Unknown',
       platform: certificate.subject.getField('OU')?.value ?? GLOBAL_LICENSE_OPTION,
       creator: readExtensionText(certificate, LICENSE_OID_CREATOR, LICENSE_LEGACY_CREATOR) || 'Unknown',
@@ -241,13 +250,22 @@ export const verifyXtmLicenseProof = (pem: unknown, context: XtmLicenseContext):
   if (!license.openctiIds.includes(GLOBAL_LICENSE_OPTION) && !license.openctiIds.includes(context.platformId)) {
     return { granted: false, reason: 'the XTM license does not sub-license this OpenCTI platform', licenseType };
   }
+  const instanceBound = license.licenseModel === XTM_LICENSE_MODEL_INSTANCE_BOUND;
+  if (context.pastedInPlatform && instanceBound && license.platform !== GLOBAL_LICENSE_OPTION && license.platform !== context.platformId) {
+    return { granted: false, reason: 'the Filigran license is issued for another instance', licenseType };
+  }
   return verifyValidityDates(license, licenseType, context);
 };
 
-export const buildXtmLicenseContext = (settings: Pick<BasicStoreSettings, 'internal_id' | 'id' | 'created_at'>, ltsPlatform: boolean): XtmLicenseContext => ({
+export const buildXtmLicenseContext = (
+  settings: Pick<BasicStoreSettings, 'internal_id' | 'id' | 'created_at'>,
+  ltsPlatform: boolean,
+  pastedInPlatform = false,
+): XtmLicenseContext => ({
   platformId: settings.internal_id || settings.id,
   platformCreatedAt: settings.created_at,
   ltsPlatform,
+  pastedInPlatform,
 });
 
 // The XTM license of the last registration answer this node read: the one proof of the XTM license path. Kept up to

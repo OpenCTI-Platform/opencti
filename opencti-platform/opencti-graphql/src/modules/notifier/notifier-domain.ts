@@ -14,9 +14,8 @@ import type { BasicStoreSettings } from '../../types/settings';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER } from '../../utils/access';
 import { now } from '../../utils/format';
-import { MOCK_NOTIFICATIONS } from '../../utils/publisher-mock';
+import { buildMockNotificationInput } from '../../utils/publisher-mock';
 import { verifyUri } from '../../utils/uriDenyList';
-import type { BasicStoreEntityTrigger } from '../notification/notification-types';
 import {
   BUILTIN_NOTIFIERS_CONNECTORS,
   DEFAULT_TEAM_DIGEST_MESSAGE,
@@ -157,11 +156,11 @@ export const testNotifier = async (context: AuthContext, user: AuthUser, notifie
   }
   const usersFromCache = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const notificationMap = new Map([
-    ['default_notification_id', { name: 'test' } as BasicStoreEntityTrigger],
-    ['default_notification_id_2', { name: 'test 2' } as BasicStoreEntityTrigger],
-    ['default_activity_id', { name: 'test 2' } as BasicStoreEntityTrigger],
-  ]);
+  const mockInput = buildMockNotificationInput(notifier.notifier_test_id);
+  if (!mockInput) {
+    return `Unknown test notification ${notifier.notifier_test_id}`;
+  }
+  const { notificationMap, triggers, notifications } = mockInput;
   return internalProcessNotification(
     context,
     settings,
@@ -173,8 +172,8 @@ export const testNotifier = async (context: AuthContext, user: AuthUser, notifie
       notifiers: [],
     },
     notifier,
-    MOCK_NOTIFICATIONS[notifier.notifier_test_id],
-    [{ created: (new Date()).toISOString() }] as unknown as BasicStoreEntityTrigger[],
+    notifications,
+    triggers,
     usersFromCache,
   ).catch((error) => {
     return error.message;

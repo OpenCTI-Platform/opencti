@@ -151,6 +151,12 @@ const HistoryDefinition: AttributeDefinition[] = [
       { name: 'pir_ids', label: 'PIR IDS', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_PIR], editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
       { name: 'pir_score', label: 'PIR Score', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
       { name: 'pir_match_from', label: 'Match Pir with source of relationship', type: 'boolean', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+      // Automatic lock of the local authentication lockout: the type of lock, the duration of a temporary lock in minutes,
+      // the max attempts reached and where the last failed attempt came from (login form, Basic auth, MFA code, forgotten password)
+      { name: 'lock_type', label: 'Lock type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
+      { name: 'lock_duration', label: 'Lock duration in minutes', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
+      { name: 'max_attempts', label: 'Max attempts', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
+      { name: 'lock_source', label: 'Lock source', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
       history_changes,
       ingestion_health_changes,
     ],
@@ -292,7 +298,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
       ],
     },
     { name: 'default_dashboard', label: 'Default dashboard', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'default_dashboard_preset', label: 'Default dashboard preset', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: 'DASHBOARD_VARIABLES' },
+    { name: 'default_dashboard_preset', label: 'Default dashboard preset', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'default_hidden_types', label: 'Default hidden types', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
     {
       name: 'max_shareable_markings',

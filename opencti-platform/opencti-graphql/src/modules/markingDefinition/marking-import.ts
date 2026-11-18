@@ -11,7 +11,7 @@ import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } 
 import type { BasicStoreEntityMarking } from './marking-export';
 import { type MarkingImportConfiguration, markingImportSchema } from './marking-import-schema';
 
-export type MarkingImportCode = 'invalid' | 'built_in' | 'exists' | 'sensitive_config' | 'unchanged';
+export type MarkingImportCode = 'invalid' | 'exists' | 'sensitive_config' | 'unchanged';
 
 export type MarkingImportResult = ConfigImportResult<MarkingImportConfiguration, MarkingImportCode> & {
   marking?: BasicStoreEntityMarking;
@@ -21,7 +21,7 @@ export const markingStandardId = (definitionType: string, definition: string): s
   return generateStandardId(ENTITY_TYPE_MARKING_DEFINITION, { definition_type: definitionType, definition });
 };
 
-// The markings every platform creates at its initialization: the same on every platform, never written by an import
+// The markings every platform creates at its initialization
 const BUILT_IN_MARKINGS = [
   ['TLP', 'TLP:CLEAR'],
   ['TLP', 'TLP:GREEN'],
@@ -35,7 +35,6 @@ const BUILT_IN_MARKINGS = [
 ];
 export const BUILT_IN_MARKING_STANDARD_IDS = BUILT_IN_MARKINGS.map(([definitionType, definition]) => markingStandardId(definitionType, definition));
 
-export const BUILT_IN_MARKING_REASON = 'Built-in marking';
 const ORDER_REASON = 'The order of the marking changes';
 const AUTO_NEW_MARKING_REASON = 'Groups that get new markings automatically get this one';
 
@@ -59,16 +58,12 @@ export const importMarking = async (
   }
   const { definition_type: definitionType, definition, x_opencti_color: color, x_opencti_order: order } = parsed.data;
   const standardId = markingStandardId(definitionType, definition);
-  if (BUILT_IN_MARKING_STANDARD_IDS.includes(standardId)) {
-    return refused('skipped', 'built_in', BUILT_IN_MARKING_REASON, true, parsed.data);
-  }
   const existing = await findById(context, user, standardId) as BasicStoreEntityMarking | undefined;
   if (existing && mode === ConfigImportMode.Add) {
     return refused('failed', 'exists', 'Marking already exists', true, parsed.data);
   }
-  if (!(await isConfigImportSensitiveChangeAllowed(context, user, 'markings', standardId))) {
-    return refused('failed', 'sensitive_config', CONFIG_IMPORT_SENSITIVE_REASON, !!existing, parsed.data);
-  }
+  // Checked only for a real write: an unchanged marking is skipped whatever the rights of the user
+  const isWriteAllowed = () => isConfigImportSensitiveChangeAllowed(context, user, 'markings', standardId);
   if (existing) {
     // A marking stored without an order has the order 0, the one the export and the creation give it
     const stored = { x_opencti_color: existing.x_opencti_color, x_opencti_order: existing.x_opencti_order ?? 0 };
@@ -78,12 +73,18 @@ export const importMarking = async (
     if (input.length === 0) {
       return refused('skipped', 'unchanged', CONFIG_IMPORT_UNCHANGED_REASON, true, parsed.data);
     }
+    if (!(await isWriteAllowed())) {
+      return refused('failed', 'sensitive_config', CONFIG_IMPORT_SENSITIVE_REASON, true, parsed.data);
+    }
     const reason = joinConfigImportReasons([input.some(({ key }) => key === 'x_opencti_order') ? ORDER_REASON : undefined]);
     const result: MarkingImportResult = { status: 'overwritten', exists: true, configuration: parsed.data, reason };
     if (dryRun) {
       return result;
     }
     return { ...result, marking: await markingDefinitionEditField(context, user, existing.id, input) as BasicStoreEntityMarking };
+  }
+  if (!(await isWriteAllowed())) {
+    return refused('failed', 'sensitive_config', CONFIG_IMPORT_SENSITIVE_REASON, false, parsed.data);
   }
   const reason = joinConfigImportReasons([(await hasAutoNewMarkingGroups(context, user)) ? AUTO_NEW_MARKING_REASON : undefined]);
   const result: MarkingImportResult = { status: 'created', exists: false, configuration: parsed.data, reason };

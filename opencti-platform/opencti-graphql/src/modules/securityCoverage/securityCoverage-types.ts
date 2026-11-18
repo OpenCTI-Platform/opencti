@@ -1,6 +1,7 @@
 import type { BasicStoreEntity, BasicStoreObject, StoreEntity } from '../../types/store';
 import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
+import type { StixDomainObject as StixDomainObject2 } from '../../types/stix-2-0-common';
 import type {
   ATTRIBUTE_RESULT_OF,
   BasicStoreEntitySecurityCoverageResult,
@@ -51,5 +52,17 @@ export interface StixSecurityCoverage extends StixDomainObject {
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };
+}
+// endregion
+
+// region Stix 2.0 type
+export interface Stix2SecurityCoverage extends StixDomainObject2 {
+  name: string;
+  description?: string;
+  periodicity?: string;
+  duration?: string;
+  type_affinity?: string;
+  platforms_affinity: string[];
+  [ATTRIBUTE_COVERED]?: string;
 }
 // endregion

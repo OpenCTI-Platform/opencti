@@ -6,6 +6,7 @@ import { Box, FormControlLabel, Switch, Typography } from '@mui/material';
 import { Alert, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Switch as DsSwitch } from '@filigran/design-system';
 import WorkflowFieldList from './WorkflowFieldList';
 import {
+  AUTHORIZED_MEMBERS_EXCLUSIVE_ACTIONS,
   FEATURE_NAME,
   REQUEST_ACCESS_AUTHOR_KEY,
   RequestAccessOutcome,
@@ -18,11 +19,14 @@ import type { WorkflowScope } from '../SubTypeWorkflow';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import EEChip from '../../../common/entreprise_edition/EEChip';
 import { AUTHORIZED_MEMBERS_ENTITY_TYPES } from '../../../../../utils/authorizedMembers';
+import ItemCopy from '../../../../../components/ItemCopy';
 
 // The library Select has no empty item, so "None" is a value of its own.
 const NO_OUTCOME = 'NONE';
 
-const StatusForm = ({ entityType, scope }: { entityType: string; scope?: WorkflowScope }) => {
+type StatusFormProps = { entityType: string; scope?: WorkflowScope; workflowStatusIds?: Record<string, string> };
+
+const StatusForm = ({ entityType, scope, workflowStatusIds = {} }: StatusFormProps) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { values, setFieldValue } = useFormikContext<WorkflowEditionFormValues>();
@@ -32,8 +36,16 @@ const StatusForm = ({ entityType, scope }: { entityType: string; scope?: Workflo
   const hasShareRequestedEntitiesOnEnter = values.onEnter?.some((a) => a.type === WorkflowActionType.shareRequestedEntities);
   const hasUpdateAuthorizedMembersOnEnter = values.onEnter?.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
   const hasUpdateAuthorizedMembersOnExit = values.onExit?.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
+  const hasResetAuthorizedMembersOnEnter = values.onEnter?.some((a) => a.type === WorkflowActionType.resetAuthorizedMembers);
+  const hasResetAuthorizedMembersOnExit = values.onExit?.some((a) => a.type === WorkflowActionType.resetAuthorizedMembers);
 
-  const handleToggleUpdateAuthorizedMembers = (field: 'onEnter' | 'onExit', checked: boolean) => {
+  // The Status id only exists once the template has been published for this entity type.
+  // It is looked up from the template currently selected in the form, so swapping the
+  // template never shows the id of the previous one.
+  const selectedTemplateId = values.statusTemplate?.id;
+  const workflowStatusId = selectedTemplateId ? workflowStatusIds[selectedTemplateId] : undefined;
+
+  const handleToggleAuthorizedMembersAction = (field: 'onEnter' | 'onExit', actionType: WorkflowActionType, checked: boolean) => {
     const currentActions = values[field] ?? [];
     if (checked) {
       // Use the dynamic 'CREATORS' key (same as TransitionForm's default) rather than the
@@ -41,11 +53,16 @@ const StatusForm = ({ entityType, scope }: { entityType: string; scope?: Workflo
       // the AuthorizedMembersField's rendered list by isGenericOption (since showCreatorLine
       // isn't set here), making it invisible/impossible to edit or remove from the UI, and it
       // isn't a key resolveDynamicAuthorizedMembers understands server-side (only 'CREATORS' is).
-      const newAction = { type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [{ label: 'Creators', type: 'Dynamic options', value: 'CREATORS', accessRight: 'admin' as const, groupsRestriction: [] }] } };
+      const newAction = actionType === WorkflowActionType.updateAuthorizedMembers
+        ? { type: actionType, params: { authorized_members: [{ label: 'Creators', type: 'Dynamic options', value: 'CREATORS', accessRight: 'admin' as const, groupsRestriction: [] }] } }
+        : { type: actionType };
+      // Update and reset of authorized members contradict each other: turning one on turns the other off
+      const exclusiveType = AUTHORIZED_MEMBERS_EXCLUSIVE_ACTIONS[actionType];
+      const keptActions = exclusiveType ? currentActions.filter((a) => a.type !== exclusiveType) : currentActions;
       // On enter, the share action of an Approved state has to stay last.
-      setFieldValue(field, field === 'onEnter' ? withShareRequestedEntitiesLast([...currentActions, newAction]) : [...currentActions, newAction]);
+      setFieldValue(field, field === 'onEnter' ? withShareRequestedEntitiesLast([...keptActions, newAction]) : [...keptActions, newAction]);
     } else {
-      setFieldValue(field, currentActions.filter((a) => a.type !== WorkflowActionType.updateAuthorizedMembers));
+      setFieldValue(field, currentActions.filter((a) => a.type !== actionType));
     }
   };
 
@@ -87,6 +104,14 @@ const StatusForm = ({ entityType, scope }: { entityType: string; scope?: Workflo
         setFieldValue={(field, { value, label, color }) => setFieldValue(field, { id: value, name: label, color })}
         helpertext=""
       />
+      {selectedTemplateId && (
+        <Box data-testid="workflow-status-id" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, marginTop: 1 }}>
+          <Typography variant="h6">{t_i18n('Status ID')}</Typography>
+          {workflowStatusId
+            ? <ItemCopy content={workflowStatusId} variant="inLine" />
+            : <Typography variant="body2" color="text.secondary">{t_i18n('Available after publish')}</Typography>}
+        </Box>
+      )}
       {isRequestAccess && (
         <Box data-testid="workflow-status-outcome-container" sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
           <Select value={values.requestAccessOutcome ?? NO_OUTCOME} onValueChange={handleOutcomeChange}>
@@ -117,11 +142,22 @@ const StatusForm = ({ entityType, scope }: { entityType: string; scope?: Workflo
                   <Switch
                     checked={hasUpdateAuthorizedMembersOnEnter}
                     disabled={!isEnterpriseEdition}
-                    onChange={(e) => handleToggleUpdateAuthorizedMembers('onEnter', e.target.checked)}
+                    onChange={(e) => handleToggleAuthorizedMembersAction('onEnter', WorkflowActionType.updateAuthorizedMembers, e.target.checked)}
                     data-testid="workflow-status-onenter-authorized-members-toggle"
                   />
                 )}
                 label={t_i18n('Update authorized members on enter')}
+              />
+              <FormControlLabel
+                control={(
+                  <Switch
+                    checked={hasResetAuthorizedMembersOnEnter}
+                    disabled={!isEnterpriseEdition}
+                    onChange={(e) => handleToggleAuthorizedMembersAction('onEnter', WorkflowActionType.resetAuthorizedMembers, e.target.checked)}
+                    data-testid="workflow-status-onenter-reset-authorized-members-toggle"
+                  />
+                )}
+                label={t_i18n('Reset authorized members on enter')}
               />
               {hasUpdateAuthorizedMembersOnEnter && <WorkflowFieldList name={WorkflowDataType.onEnter} actionType={WorkflowActionType.updateAuthorizedMembers} />}
             </>
@@ -156,13 +192,24 @@ const StatusForm = ({ entityType, scope }: { entityType: string; scope?: Workflo
               <Switch
                 checked={hasUpdateAuthorizedMembersOnExit}
                 disabled={!isEnterpriseEdition}
-                onChange={(e) => handleToggleUpdateAuthorizedMembers('onExit', e.target.checked)}
+                onChange={(e) => handleToggleAuthorizedMembersAction('onExit', WorkflowActionType.updateAuthorizedMembers, e.target.checked)}
                 data-testid="workflow-status-onexit-authorized-members-toggle"
               />
             )}
             label={t_i18n('Update authorized members on exit')}
           />
-          {hasUpdateAuthorizedMembersOnExit && <WorkflowFieldList name={WorkflowDataType.onExit} />}
+          <FormControlLabel
+            control={(
+              <Switch
+                checked={hasResetAuthorizedMembersOnExit}
+                disabled={!isEnterpriseEdition}
+                onChange={(e) => handleToggleAuthorizedMembersAction('onExit', WorkflowActionType.resetAuthorizedMembers, e.target.checked)}
+                data-testid="workflow-status-onexit-reset-authorized-members-toggle"
+              />
+            )}
+            label={t_i18n('Reset authorized members on exit')}
+          />
+          {hasUpdateAuthorizedMembersOnExit && <WorkflowFieldList name={WorkflowDataType.onExit} actionType={WorkflowActionType.updateAuthorizedMembers} />}
         </Box>
       )}
     </>

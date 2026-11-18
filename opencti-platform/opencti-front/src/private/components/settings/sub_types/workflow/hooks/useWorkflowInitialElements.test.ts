@@ -53,6 +53,7 @@ describe('useWorkflowInitialElements', () => {
     states: [
       {
         statusId: 'status-open',
+        workflowStatusId: null,
         order: 0,
         requestAccessOutcome: null,
         onEnter: [
@@ -160,6 +161,7 @@ describe('useWorkflowInitialElements', () => {
       states: [
         {
           statusId: 'status-open',
+          workflowStatusId: null,
           order: 0,
           requestAccessOutcome: null,
           onEnter: [
@@ -196,9 +198,10 @@ describe('useWorkflowInitialElements', () => {
     const requestAccessDefinition: SubTypeWorkflowQuery$data['workflowDefinition'] = {
       ...mockWorkflowDefinition!,
       states: [
-        { statusId: 'status-open', order: 0, onEnter: [], onExit: [], requestAccessOutcome: null },
+        { statusId: 'status-open', workflowStatusId: null, order: 0, onEnter: [], onExit: [], requestAccessOutcome: null },
         {
           statusId: 'status-closed',
+          workflowStatusId: null,
           order: 1,
           onEnter: [{ type: 'shareRequestedEntities', params: { organizations: ['AUTHOR', 'org-1'] } }],
           onExit: [],
