@@ -5545,8 +5545,8 @@ const controlRelationsToDelete = async (context: AuthContext, user: AuthUser, re
 /**
  * Read-only pass over the whole cascade, before anything is mutated.
  * - withControls: keeps the all-or-nothing guarantee of the access controls for a batched delete.
- * - maxRelations: counts the cascade and stops as soon as it is above the cap. Returns false in that case.
- * A relation reachable from two parents is counted twice, the count is an upper bound.
+ * - maxRelations: counts the distinct relations of the cascade and stops as soon as it is above the cap.
+ *   Returns false in that case. The counted ids are kept to count each relation once: at most the cap.
  */
 const preflightRelationsCascade = async (
   context: AuthContext,
@@ -5555,14 +5555,17 @@ const preflightRelationsCascade = async (
   opts: { withControls: boolean; maxRelations?: number; batchSize?: number; includeDeletedInDraft?: boolean },
 ) => {
   const { withControls, maxRelations, batchSize, includeDeletedInDraft } = opts;
-  let count = 0;
+  const counted = new Set<string>();
   // Counted and controlled before going deeper, so that the cap stops a deep cascade as early as a wide one
   const onEnterPage = async (page: BasicStoreRelation[]) => {
     if (withControls) {
       await controlRelationsToDelete(context, user, page);
     }
-    count += page.length;
-    return maxRelations === undefined || count <= maxRelations;
+    if (maxRelations === undefined) {
+      return true;
+    }
+    page.forEach((relation) => counted.add(relation.internal_id));
+    return counted.size <= maxRelations;
   };
   const onPage = async () => true;
   const rootIds = elements.map((e) => e.internal_id);
