@@ -20,6 +20,7 @@ import { StatusScope } from '../../../src/generated/graphql';
 // Mock all workflow domain functions
 vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
   getWorkflowDefinition: vi.fn(),
+  attachWorkflowStatusIds: vi.fn(),
   hasPublishedWorkflowDefinition: vi.fn(),
   getWorkflowMigrationPreview: vi.fn(),
   getWorkflowInstance: vi.fn(),
@@ -49,7 +50,7 @@ describe('Workflow bypass API', () => {
   const schema = () => authDirectiveBuilder('auth').authDirectiveTransformer(makeExecutableSchema({
     typeDefs: [
       `
-        enum Capabilities { BYPASS KNOWLEDGE_KNUPDATE SETTINGS_SETCUSTOMIZATION SETTINGS }
+        enum Capabilities { BYPASS KNOWLEDGE_KNUPDATE SETTINGS_SETCUSTOMIZATION SETTINGS AUTOMATION_AUTMANAGE }
         directive @auth(for: [Capabilities!]!, forDraft: [Capabilities!], and: Boolean) on FIELD_DEFINITION | OBJECT
         directive @public on FIELD_DEFINITION
         directive @ff(flags: [String!]!, softFail: Boolean = false, defaultValue: String = null) on FIELD_DEFINITION
@@ -102,7 +103,7 @@ describe('Workflow definition GraphQL contract', () => {
     const schema = makeExecutableSchema({
       typeDefs: [
         `
-          enum Capabilities { BYPASS KNOWLEDGE_KNUPDATE SETTINGS_SETCUSTOMIZATION SETTINGS }
+          enum Capabilities { BYPASS KNOWLEDGE_KNUPDATE SETTINGS_SETCUSTOMIZATION SETTINGS AUTOMATION_AUTMANAGE }
           directive @auth(for: [Capabilities!]!, forDraft: [Capabilities!], and: Boolean) on FIELD_DEFINITION | OBJECT
           directive @public on FIELD_DEFINITION
           directive @ff(flags: [String!]!, softFail: Boolean = false, defaultValue: String = null) on FIELD_DEFINITION
@@ -127,6 +128,7 @@ describe('Workflow definition GraphQL contract', () => {
       states: [{ statusId: 'new' }, { statusId: 'approved', requestAccessOutcome: 'APPROVED' }],
       transitions: [],
     } as any);
+    vi.mocked(workflowDomain.attachWorkflowStatusIds).mockImplementation(async (_context, _user, _entityType, definition) => definition);
     const result = await graphql({
       schema: authDirectiveBuilder('auth').authDirectiveTransformer(schema),
       source: '{ workflowDefinition(entityType: "Case-Rfi", scope: REQUEST_ACCESS) { states { statusId requestAccessOutcome } } }',
@@ -488,7 +490,9 @@ describe('workflow-resolvers', () => {
           states: [],
           transitions: [],
         };
+        const attachedDefinition = { ...mockDefinition, states: [{ statusId: 'tpl-a', workflowStatusId: 'status-a' }] };
         vi.mocked(workflowDomain.getWorkflowDefinition).mockResolvedValue(mockDefinition);
+        vi.mocked(workflowDomain.attachWorkflowStatusIds).mockResolvedValue(attachedDefinition);
 
         const result = await workflowResolvers.Query.workflowDefinition(
           {},
@@ -503,7 +507,8 @@ describe('workflow-resolvers', () => {
           false,
           StatusScope.Global,
         );
-        expect(result).toBe(mockDefinition);
+        expect(workflowDomain.attachWorkflowStatusIds).toHaveBeenCalledWith(mockContext, mockContext.user, 'Case', mockDefinition, StatusScope.Global);
+        expect(result).toBe(attachedDefinition);
       });
 
       it('should call getWorkflowDefinition with allowDraft=true when specified', async () => {
@@ -516,6 +521,7 @@ describe('workflow-resolvers', () => {
           transitions: [],
         };
         vi.mocked(workflowDomain.getWorkflowDefinition).mockResolvedValue(mockDefinition);
+        vi.mocked(workflowDomain.attachWorkflowStatusIds).mockResolvedValue(mockDefinition);
 
         const result = await workflowResolvers.Query.workflowDefinition(
           {},
@@ -531,6 +537,16 @@ describe('workflow-resolvers', () => {
           StatusScope.Global,
         );
         expect(result).toBe(mockDefinition);
+      });
+
+      it('should return null without attaching status ids when there is no definition', async () => {
+        vi.mocked(workflowDomain.getWorkflowDefinition).mockResolvedValue(null);
+        vi.mocked(workflowDomain.attachWorkflowStatusIds).mockClear();
+
+        const result = await workflowResolvers.Query.workflowDefinition({}, { entityType: 'Case' }, mockContext);
+
+        expect(result).toBeNull();
+        expect(workflowDomain.attachWorkflowStatusIds).not.toHaveBeenCalled();
       });
     });
 

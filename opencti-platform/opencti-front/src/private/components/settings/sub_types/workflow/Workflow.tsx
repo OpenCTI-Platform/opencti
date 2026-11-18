@@ -30,6 +30,7 @@ import PublishButton from './PublishButton';
 import RestoreConfirmDialog from './RestoreConfirmDialog';
 import WorkflowScopeSwitch from './WorkflowScopeSwitch';
 import RequestAccessValidatorGroup from './RequestAccessValidatorGroup';
+import EntityStatusSyncSetting from '../global_workflow_request_access/EntityStatusSyncSetting';
 import RequestAccessMigrationDialog from './RequestAccessMigrationDialog';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
@@ -49,6 +50,11 @@ interface WorkflowValidationErrorsToastContentProps {
 
 const WorkflowValidationErrorsToastContent = ({ errors, t_i18n, statusTemplates }: WorkflowValidationErrorsToastContentProps) => {
   const statusTemplateMap = convertEdgesToObject(statusTemplates);
+  // The server names removed statuses by template id inside the message: show their names instead
+  const withStatusNames = (message: string) => Object.entries(statusTemplateMap).reduce(
+    (acc, [id, template]) => (template?.name ? acc.split(id).join(template.name) : acc),
+    message,
+  );
 
   const groupedErrors = errors.reduce((acc, error) => {
     if (!acc[error.type]) acc[error.type] = [];
@@ -68,7 +74,7 @@ const WorkflowValidationErrorsToastContent = ({ errors, t_i18n, statusTemplates 
           </Typography>
           {typeErrors.map((error, index) => (
             <Typography key={index} variant="caption" component="div" sx={{ ml: 1 }}>
-              • {error.message}
+              • {withStatusNames(error.message)}
               {error.path && error.path.length > 0 && (
                 <Typography variant="caption" component="span" sx={{ ml: 0.5, fontStyle: 'italic' }}>
                   ({error.path.map((ref) => {
@@ -133,7 +139,8 @@ const workflowDefinitionRestorePublishedMutation = graphql`
 
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 const proOptions = { account: 'paid-pro', hideAttribution: true };
-const fitViewOptions = {};
+// fitView knows nothing of the top-left panel: room is left on every side so the initial node never ends up under it
+const fitViewOptions = { padding: 0.12 };
 
 const emptyElement = {
   id: NEW_STATUS_NAME,
@@ -175,6 +182,15 @@ const Workflow = ({
     depsQueryRef,
   );
 
+  // Status ids (value of x_opencti_workflow_id) keyed by status template id; only published states have one
+  const workflowStatusIds = useMemo(() => {
+    const ids: Record<string, string> = {};
+    (workflowDefinition?.states ?? []).forEach((state) => {
+      if (state.workflowStatusId) ids[state.statusId] = state.workflowStatusId;
+    });
+    return ids;
+  }, [workflowDefinition]);
+
   // 1. Get initial edges and nodes from workflow definition
   const { initialNodes, initialEdges } = useWorkflowInitialElements(workflowDefinition, statusTemplates, members);
 
@@ -198,7 +214,7 @@ const Workflow = ({
   useWorkflowLayout(layoutOptions);
 
   useEffect(() => {
-    fitView();
+    fitView(fitViewOptions);
   }, [nodes, edges, fitView]);
 
   // Update workflow definition
@@ -320,13 +336,9 @@ const Workflow = ({
   };
 
   // Handle publish action
+  // Always ask the server: the errors stored at save time may no longer hold (e.g. the entities
+  // left a removed status since), and publish re-validates the draft against the live data.
   const handlePublish = () => {
-    if (workflowDefinitionStatus.validationErrors.length > 0) {
-      MESSAGING$.notifyError(
-        <WorkflowValidationErrorsToastContent errors={workflowDefinitionStatus.validationErrors} t_i18n={t_i18n} />,
-      );
-      return;
-    }
     commitPublish({
       variables: { entityType, scope },
       onCompleted: () => {
@@ -336,20 +348,28 @@ const Workflow = ({
           hasPublishedVersion: true,
           validationErrors: [],
         });
+        // The mutation returns no states: refetch to get the status ids the publish just created
+        onRefetch();
       },
       onError: (error) => {
-        type PublishErrorData = { removedStates?: string[]; entityType?: string; errors?: Array<{ type: string; message: string }> };
+        type PublishErrorData = { removedStates?: string[]; entityType?: string; errors?: WorkflowValidationError[] };
         const firstError = (error as { res?: { errors?: Array<{ message?: string; extensions?: { data?: PublishErrorData } }> } })
           ?.res?.errors?.[0];
         const data = firstError?.extensions?.data;
-        // A publish refused for validation reasons lists each error (request access outcome rules, ...).
-        const publishErrors: WorkflowValidationError[] = data?.errors?.length
-          ? data.errors.map((e) => ({ type: e.type, message: e.message }))
-          : [{
-              type: 'PUBLISH_ERROR',
-              message: firstError?.message ?? t_i18n('An error occurred while publishing the workflow'),
-              path: data?.removedStates?.map((s: string) => ({ id: s, entity_type: 'StatusTemplate' })) ?? [],
-            }];
+        // A refusal on validation carries the fresh errors: they replace the ones stored at save time
+        if (data?.errors && data.errors.length > 0) {
+          const freshErrors = [...data.errors];
+          setWorkflowDefinitionStatus((prev) => ({ ...prev, validationErrors: freshErrors }));
+          MESSAGING$.notifyError(
+            <WorkflowValidationErrorsToastContent errors={freshErrors} t_i18n={t_i18n} statusTemplates={statusTemplates} />,
+          );
+          return;
+        }
+        const publishErrors: WorkflowValidationError[] = [{
+          type: 'PUBLISH_ERROR',
+          message: firstError?.message ?? t_i18n('An error occurred while publishing the workflow'),
+          path: data?.removedStates?.map((s: string) => ({ id: s, entity_type: 'StatusTemplate' })) ?? [],
+        }];
         MESSAGING$.notifyError(
           <WorkflowValidationErrorsToastContent errors={publishErrors} t_i18n={t_i18n} statusTemplates={statusTemplates} />,
         );
@@ -436,13 +456,6 @@ const Workflow = ({
   const highlight = useMemo(() => getHoverHighlight(hoveredId, nodes, edges), [hoveredId, nodes, edges]);
   return (
     <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      {isRequestAccessScopeAvailable && (
-        // Above the canvas, not in a React Flow Panel: fitView knows nothing of a panel and would put the initial node under it
-        <div data-testid="workflow-scope-toolbar" style={{ display: 'flex', alignItems: 'flex-end', gap: 12, padding: 12, flexShrink: 0 }}>
-          <WorkflowScopeSwitch scope={scope} onScopeChange={(nextScope) => onScopeChange?.(nextScope)} />
-          {scope === 'REQUEST_ACCESS' && <RequestAccessValidatorGroup />}
-        </div>
-      )}
       <WorkflowEdgeActionsContext.Provider value={edgeActions}>
         <HoverHighlightContext.Provider value={highlight}>
           <ReactFlow
@@ -467,9 +480,25 @@ const Workflow = ({
             deleteKeyCode={null}
             zoomOnDoubleClick={false}
             proOptions={proOptions}
-            // Takes what the toolbar above leaves
             style={{ flex: 1, minHeight: 0 }}
           >
+            <Panel
+              position="top-left"
+              style={{ display: 'grid', gridTemplateColumns: 'max-content max-content', alignItems: 'center', columnGap: 16, rowGap: 12 }}
+              data-testid="workflow-top-left-panel"
+            >
+              {isRequestAccessScopeAvailable && (
+                <WorkflowScopeSwitch scope={scope} onScopeChange={(nextScope) => onScopeChange?.(nextScope)} />
+              )}
+              {/* Opaque paper background so the graph edges passing behind never show through the label */}
+              <EntityStatusSyncSetting sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 1, px: 1.5, py: 0.5 }} />
+              {isRequestAccessScopeAvailable && scope === 'REQUEST_ACCESS' && (
+                // width 0 + min-width 100%: the select fills the first column, which the scope buttons size
+                <div style={{ gridColumn: 1, width: 0, minWidth: '100%' }}>
+                  <RequestAccessValidatorGroup />
+                </div>
+              )}
+            </Panel>
             {nodes.length ? (
               <Panel position="top-right" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <PublishButton
@@ -547,6 +576,7 @@ const Workflow = ({
         selectedElement={selectedElement}
         entityType={entityType}
         scope={scope}
+        workflowStatusIds={workflowStatusIds}
         onClose={() => {
           setSelectedElement(emptyElement);
           setOpen(false);

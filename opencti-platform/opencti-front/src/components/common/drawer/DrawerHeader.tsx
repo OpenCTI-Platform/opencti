@@ -6,12 +6,13 @@ import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../utils/fds
 
 interface DrawerHeaderProps {
   title: string;
+  titleId?: string;
   layer?: Parameters<typeof fdsLayerClass>[0];
   onClose?: () => void;
   endContent?: React.ReactNode;
 }
 
-const DrawerHeader = ({ title, onClose, endContent, layer = SURFACE_LAYER }: DrawerHeaderProps) => {
+const DrawerHeader = ({ title, titleId = 'drawer-title', onClose, endContent, layer = SURFACE_LAYER }: DrawerHeaderProps) => {
   return (
     <Stack
       direction="row"
@@ -26,7 +27,7 @@ const DrawerHeader = ({ title, onClose, endContent, layer = SURFACE_LAYER }: Dra
       }}
     >
       <Typography
-        id="drawer-title"
+        id={titleId}
         variant="h5"
         style={{ textWrap: 'nowrap' }}
       >
