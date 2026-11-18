@@ -101,7 +101,7 @@ See [Proxy support](proxy-configuration.md) for examples.
 
 !!! warning "OpenAEV registry"
 
-    In the current release (3.261021.1), only the `docker` and `podman` orchestrators read `openaev:daemon:registry` for OpenAEV. The `kubernetes`, `swarm` and `portainer` orchestrators always use `opencti:daemon:registry`, for OpenCTI and for OpenAEV.
+    Currently, only the `docker` and `podman` orchestrators read `openaev:daemon:registry` for OpenAEV. The `kubernetes`, `swarm` and `portainer` orchestrators always use `opencti:daemon:registry`, for OpenCTI and for OpenAEV.
 
 See [Private registry](registry-authentication.md) for the required fields and the Kubernetes behavior.
 

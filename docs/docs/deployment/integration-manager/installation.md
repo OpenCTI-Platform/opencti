@@ -28,7 +28,7 @@
 
 OpenCTI 7.260224.0 and later require XTM Composer 2.0 or later (see [Breaking changes](../breaking-changes.md#xtm-composer-version-compatibility)).
 
-The examples on this page use a pinned image tag, `filigran/xtm-composer:3.261021.1`, instead of `latest`: `latest` follows every new release, so a new pull of the image can upgrade XTM Composer without notice. Pick the tag from the [XTM Composer releases](https://github.com/FiligranHQ/xtm-composer/releases), and check the [breaking changes](../breaking-changes.md) before you upgrade OpenCTI.
+The examples on this page use the `latest` image tag, which follows every new release: a new pull of the image can upgrade XTM Composer without notice. In production, replace `latest` with a release tag from the [XTM Composer releases](https://github.com/FiligranHQ/xtm-composer/releases), and check the [breaking changes](../breaking-changes.md) before you upgrade OpenCTI.
 
 ## Installation methods
 
@@ -130,7 +130,7 @@ spec:
     spec:
       containers:
       - name: xtm-composer
-        image: filigran/xtm-composer:3.261021.1
+        image: filigran/xtm-composer:latest
         env:
         - name: COMPOSER_ENV
           value: "production"
@@ -161,7 +161,7 @@ EOF
 
 ```bash
 # Pull the image
-docker pull filigran/xtm-composer:3.261021.1
+docker pull filigran/xtm-composer:latest
 
 # Create configuration directory, then write your settings to
 # /opt/xtm-composer/config/development.yaml (loaded with COMPOSER_ENV=development)
@@ -177,7 +177,7 @@ docker run -d \
   -v /opt/xtm-composer/private_key_4096.pem:/keys/private_key.pem \
   -e COMPOSER_ENV=development \
   -e MANAGER__CREDENTIALS_KEY_FILEPATH=/keys/private_key.pem \
-  filigran/xtm-composer:3.261021.1
+  filigran/xtm-composer:latest
 ```
 
 ### Portainer installation
@@ -198,7 +198,7 @@ version: '3.8'
 
 services:
   xtm-composer:
-    image: filigran/xtm-composer:3.261021.1
+    image: filigran/xtm-composer:latest
     container_name: xtm-composer
     environment:
       - COMPOSER_ENV=development
@@ -261,7 +261,7 @@ version: '3.8'
 
 services:
   xtm-composer:
-    image: filigran/xtm-composer:3.261021.1
+    image: filigran/xtm-composer:latest
     container_name: xtm-composer
     environment:
       - COMPOSER_ENV=development

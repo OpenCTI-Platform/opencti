@@ -21,7 +21,9 @@ Before starting, ensure you have:
 1. Log into your OpenCTI instance
 2. Navigate to **Integrations > Available**
 3. Search for the connector in the list
-4. All connectors natively present in OpenCTI are manager compatible
+4. Check that the connector card has a **Deploy** button: only these connectors can be deployed by the integration manager. To list them all, select **Managed** under **Deployment** in the filters. Connectors listed under **Manual** must still be deployed by hand
+
+![Managed filter in the available integrations](../assets/integration-manager-migration-managed-filter.png)
 
 ## Step 2 : Get the current configuration of the connector instance
 
@@ -33,14 +35,25 @@ For more information on the configuration settings for a connector, follow the l
 
 1. Navigate to **Integrations > Available**
 2. Search for the connector in the list
-3. Click Deploy to display the form
+3. Click **Deploy** to display the form
+
+    ![Deploy button on a connector card](../assets/integration-manager-migration-deploy-button.png)
+
 4. Fill out the form with the information you collected earlier
-5. Click Create to deploy the connector
+5. Click **Create** to deploy the connector
+
+    ![Deploy a new connector form](../assets/integration-manager-migration-deploy-form.png)
 
 ## Step 4 : Start the new instance
 
 1. Navigate to **Integrations > Deployed** and open your connector instance
-2. Click Start to start the connector
+
+    ![Deployed integrations list](../assets/integration-manager-migration-deployed-list.png)
+
+2. Click **Start** to start the connector
+
+    ![Start button of a deployed connector instance](../assets/integration-manager-migration-start.png)
+
 3. Wait a few seconds for the status to change to Started
 
 ## Step 5 : Delete the old instance
