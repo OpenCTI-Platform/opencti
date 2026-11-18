@@ -20,9 +20,19 @@ export const notificationCenterEntry: MenuEntry = {
   requiredCapabilities: [KNOWLEDGE],
 };
 
+// Same path and capability as the top bar icon (hidden in draft, like the entry by default).
+export const newsFeedEntry: MenuEntry = {
+  path: '/dashboard/news-feed',
+  label: 'News Feed',
+  standaloneParents: [],
+  keywords: ['xtm', 'hub', 'Blogpost'],
+  requiredCapabilities: [KNOWLEDGE],
+};
+
 const menuEntries: MenuEntry[] = [
   profileEntry,
   notificationCenterEntry,
+  newsFeedEntry,
   {
     path: '/dashboard/profile/notifications/triggers',
     label: 'Triggers',

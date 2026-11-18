@@ -4,7 +4,7 @@ import { SETTINGS_FILEINDEXING, SETTINGS_SETMANAGEXTMHUB, SETTINGS_SETPARAMETERS
 export const parameters: MenuEntry = {
   path: '/dashboard/settings',
   label: 'Parameters',
-  keywords: ['Configuration', 'administration', 'License', 'Enterprise', 'Edition'],
+  keywords: ['Configuration', 'administration', 'License', 'Enterprise', 'Edition', 'themes', 'Dependencies', 'Map', 'Managers'],
   exact: true,
   requiredCapabilities: [SETTINGS_SETPARAMETERS],
 };
@@ -17,7 +17,7 @@ export const fileIndexing: MenuEntry = {
 export const experience: MenuEntry = {
   path: '/dashboard/settings/experience',
   label: 'Filigran Experience',
-  keywords: ['xtm', 'hub', 'ai', 'artificial', 'llm', 'Assistant', 'copilot', 'ariane', 'License'],
+  keywords: ['xtm', 'hub', 'ai', 'artificial', 'llm', 'Assistant', 'copilot', 'ariane', 'License', 'Support', 'packages'],
   requiredCapabilities: [SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB],
 };
 
