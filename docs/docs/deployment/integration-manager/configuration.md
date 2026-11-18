@@ -35,12 +35,8 @@ Example: `manager.logger.level` becomes `MANAGER__LOGGER__LEVEL`
 |:----------------------------|:--------------------------------|:--------------|:-----------------------------------------------------------------|
 | manager:logger:level        | MANAGER__LOGGER__LEVEL          | info          | Logging verbosity level (`trace`, `debug`, `info`, `warn`, `error`) |
 | manager:logger:format       | MANAGER__LOGGER__FORMAT         | json          | Log output format (`json`, `pretty`)                             |
-| manager:logger:directory    | MANAGER__LOGGER__DIRECTORY      | `true`        | Enables the console (stdout) output in current releases (see the warning below) |
-| manager:logger:console      | MANAGER__LOGGER__CONSOLE        | `true`        | Enables the log file in current releases (see the warning below) |
-
-!!! warning "Inverted logger switches"
-
-    In current releases, the two switches are inverted compared to their names: `manager:logger:directory` turns the console (stdout) output on or off, and `manager:logger:console` turns the log file on or off. Keep both to `true` (the default) to get both outputs. To write no log file, set `manager:logger:console` to `false`.
+| manager:logger:directory    | MANAGER__LOGGER__DIRECTORY      | `true`        | Enable logging to directory/file                                 |
+| manager:logger:console      | MANAGER__LOGGER__CONSOLE        | `true`        | Enable logging to console/stdout                                 |
 
 !!! note "Log file location"
 
