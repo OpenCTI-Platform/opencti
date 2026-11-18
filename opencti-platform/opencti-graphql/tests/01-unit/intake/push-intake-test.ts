@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { DraftLockedError, WorkNotALiveError } from '../../../src/config/errors';
 import type { ChunkOperation } from '../../../src/graphql/chunk-executor';
 import { describeOperation } from '../../../src/intake/dry-intake/simulated-answers';
@@ -179,6 +179,52 @@ describe('Worker-less push message', () => {
     } });
     await expect(handlePushMessage(pushMessage(bundleOf(malware(1))), 'q', broken.deps)).rejects.toThrow('defect');
   });
+
+  it('should give back unstarted a message whose queue stopped while it waited for a transformation slot', async () => {
+    const h = intake();
+    let release: () => void = () => {};
+    // the only slot taken until the queue stops
+    const limiter = createLimiter(1);
+    const holding = limiter.run(() => new Promise<void>((resolve) => {
+      release = resolve;
+    }));
+    let stopped = false;
+    // what each transformation slot produced: null when it skipped the capture
+    const captured: unknown[] = [];
+    const transformations = { ...limiter, run: async <T>(fn: () => Promise<T>) => {
+      const result = await limiter.run(fn);
+      captured.push(result);
+      return result;
+    } };
+    const outcome = handlePushMessage(pushMessage(bundleOf(malware(1))), 'q', { ...h.deps, transformations }, () => stopped);
+    stopped = true;
+    release();
+    await holding;
+    expect(await outcome).toEqual({ ack: false, requeue: true, reason: 'stopped', operations: 0, objects: 1 });
+    expect(captured).toEqual([null]); // not transformed
+    expect(h.runs).toEqual([]);
+  });
+
+  it('should give back unstarted a message whose queue stopped during its transformation, before any write', async () => {
+    let stopped = false;
+    const writeContext = vi.fn(async () => ({ context: {} as any, user: {} as any }));
+    const h = intake({ writeContext });
+    const limiter = createLimiter(1);
+    const transformations = { ...limiter, run: async <T>(fn: () => Promise<T>) => limiter.run(async () => {
+      const result = await fn();
+      stopped = true; // stops once transformed
+      return result;
+    }) };
+    const outcome = await handlePushMessage(pushMessage(bundleOf(malware(1))), 'q', { ...h.deps, transformations }, () => stopped);
+    expect(outcome).toMatchObject({ ack: false, requeue: true, reason: 'stopped' });
+    expect(writeContext).not.toHaveBeenCalled();
+    expect(h.runs).toEqual([]);
+  });
+
+  it('should run a message whose queue does not stop', async () => {
+    const h = intake();
+    expect(await handlePushMessage(pushMessage(bundleOf(malware(1))), 'q', h.deps, () => false)).toMatchObject({ ack: true, reason: 'written' });
+  });
 });
 
 describe('Worker-less intake flow control', () => {
@@ -226,6 +272,22 @@ describe('Worker-less intake flow control', () => {
     // larger than the budget, alone: it starts
     await budget.acquire(500);
     expect(budget.inFlight()).toEqual(500);
+  });
+
+  it('should let an owner abandon its waiters, which leave without their bytes, the others kept', async () => {
+    const budget = createByteBudget(100);
+    await budget.acquire(80);
+    const stopping = {};
+    const other = {};
+    const abandoned = budget.acquire(50, stopping);
+    const kept = budget.acquire(60, other);
+    budget.abandon(stopping);
+    expect(await abandoned).toBe(false);
+    expect(budget.waiting()).toBe(1);
+    expect(budget.inFlight()).toBe(80);
+    budget.release(80);
+    expect(await kept).toBe(true);
+    expect(budget.inFlight()).toBe(60);
   });
 
   it('should run the messages of an event queue one at a time, in order, other queues concurrently', async () => {

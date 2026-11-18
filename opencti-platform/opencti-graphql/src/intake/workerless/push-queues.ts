@@ -136,3 +136,32 @@ export const keepLastQueuesOnFailure = (
     }
   };
 };
+
+// task 0040: the push queues of the synchronizations (consumed in order), as last read; null before a first read.
+// `read` throws on failure; `refresh` keeps the last ones, told once per outage.
+export const createOrderedQueuesReader = (
+  readOnce: () => Promise<Set<string>>,
+  onUnread: (cause: unknown) => void,
+  onReadAgain: () => void,
+) => {
+  let known: Set<string> | null = null;
+  let unread = false;
+  const read = async () => {
+    known = await readOnce();
+    if (unread) onReadAgain();
+    unread = false;
+    return known;
+  };
+  return {
+    known: () => known,
+    read,
+    refresh: async () => {
+      try {
+        await read();
+      } catch (cause) {
+        if (!unread) onUnread(cause);
+        unread = true;
+      }
+    },
+  };
+};

@@ -37,6 +37,9 @@ export interface ConsumerView {
   isOrdered: (queue: string) => boolean;
   // Its channel is open (a stopped queue is drained and closed)
   isConsuming: (queue: string) => boolean;
+  // Its messages delivered here, not answered yet: with a prefetch of hundreds (push-prefetch.ts), a queue
+  // whose ready messages are all delivered still has work here
+  inFlight: (queue: string) => number;
 }
 
 export type LeaseEvent = 'taken' | 'released' | 'lost' | 'steal_start' | 'steal_stop';
@@ -155,13 +158,20 @@ export const createQueueLease = (
       }
       await store.publishBacklog(token, own);
       let target: string | null = null;
-      if ([...held].every((queue) => ready(queue) === 0)) {
+      // idle: nothing ready on its queues and nothing of theirs in flight here; a stealer keeps its stolen queue
+      // until its own queues have messages ready again (the last of its own in flight do not end the steal)
+      const ownReady = [...held].some((queue) => ready(queue) > 0);
+      const idle = !ownReady && [...held].every((queue) => consumer.inFlight(queue) === 0);
+      if (idle || (stealing && !ownReady)) {
         const othersQueues = candidates.filter((queue) => !held.has(queue) && !releasing.has(queue) && !!holders.get(queue) && holders.get(queue) !== token);
         const marked = othersQueues.length > 0 ? await store.ordered(othersQueues) : new Set<string>();
         const stealable = othersQueues.filter((queue) => !marked.has(queue) && !consumer.isOrdered(queue));
-        if (stealing && stealable.includes(stealing) && ready(stealing) > 0) {
+        // the stolen queue is kept while it has messages ready or in flight here: given back once its own share is
+        // done, or as soon as its own queues have messages ready again, then taken again only with
+        // steal_backlog_min ready (no stop and start at each tick)
+        if (stealing && stealable.includes(stealing) && (ready(stealing) > 0 || consumer.inFlight(stealing) > 0)) {
           target = stealing;
-        } else {
+        } else if (idle) {
           const best = stealable.filter((queue) => ready(queue) >= options.stealBacklogMin).sort((a, b) => ready(b) - ready(a))[0];
           target = best ?? null;
         }

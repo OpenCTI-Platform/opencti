@@ -69,7 +69,9 @@ export interface PushIntakeDeps {
   report: (key: string, context: AuthContext, user: AuthUser, envelope: IntakeEnvelope, operations: ChunkOperation[], outcomes: PushOperationOutcome[]) => Promise<void>;
 }
 
-export type PushReason = 'written' | 'undecodable' | 'transformation_failed' | 'transient' | 'unknown_writer' | 'work_not_alive' | 'draft_locked';
+// stopped: given back unstarted, its queue stopping; channel_closed: not started, its channel closed by the broker,
+// which redelivers it (push-consumer.ts)
+export type PushReason = 'written' | 'undecodable' | 'transformation_failed' | 'transient' | 'unknown_writer' | 'work_not_alive' | 'draft_locked' | 'stopped' | 'channel_closed';
 
 export interface PushOutcome {
   ack: boolean;
@@ -206,7 +208,12 @@ const transient = (objects: number): PushOutcome => ({ ack: false, requeue: true
 // nacked when no redelivery can make it run (an unknown writer)
 const refused = (reason: PushReason, objects: number): PushOutcome => ({ ack: reason !== 'unknown_writer', reason, operations: 0, objects });
 
-export const handlePushMessage = async (data: Record<string, any> | null, queue: string, deps: PushIntakeDeps): Promise<PushOutcome> => {
+// Given back unstarted, its queue stopping (lease moved, connector removed, close): nothing written yet
+export const stoppedOutcome = (objects = 0): PushOutcome => ({ ack: false, requeue: true, reason: 'stopped', operations: 0, objects });
+
+// `stopped`: the message is given back instead of started, checked until its operations are admitted (nothing is
+// written before): after its wait for a transformation slot, and before its write context
+export const handlePushMessage = async (data: Record<string, any> | null, queue: string, deps: PushIntakeDeps, stopped: () => boolean = () => false): Promise<PushOutcome> => {
   if (!data) {
     return { ack: false, reason: 'undecodable', operations: 0, objects: 0 };
   }
@@ -225,7 +232,9 @@ export const handlePushMessage = async (data: Record<string, any> | null, queue:
   let operations: ChunkOperation[];
   try {
     const context = { ...deps.contextFor(decoded.draftId), client: deps.readsClient(envelope) };
-    ({ operations } = await deps.transformations.run(() => captureOperations(context, bundle, update, decoded.types)));
+    const captured = await deps.transformations.run(async () => (stopped() ? null : captureOperations(context, bundle, update, decoded.types)));
+    if (!captured) return stoppedOutcome(objects);
+    ({ operations } = captured);
   } catch (error: any) {
     // A read of the transformation refused by the context checks (the HTTP edge's)
     const reason = refusalOf(error);
@@ -249,6 +258,7 @@ export const handlePushMessage = async (data: Record<string, any> | null, queue:
       if (operation.variables) substituteEchoIds(operation.variables, resolved);
     });
   }
+  if (stopped()) return stoppedOutcome(objects);
   let written: { context: AuthContext; user: AuthUser };
   try {
     written = await deps.writeContext(envelope, operations, resolved.values());
@@ -282,21 +292,28 @@ export const handlePushMessage = async (data: Record<string, any> | null, queue:
 // The bytes of the messages in flight: a message starts once the budget has room for it (alone, it
 // always starts). The decoded bundle, its objects, the captured operations and the files are held
 // several times over the size of the message: a message count does not bound the memory.
+// A waiter leaves without its bytes when its owner abandons it (acquire answers false).
 export const createByteBudget = (maxBytes: number) => {
   let inFlight = 0;
-  const waiting: { bytes: number; start: () => void }[] = [];
+  const waiting: { bytes: number; owner: unknown; start: (acquired: boolean) => void }[] = [];
   const startWaiting = () => {
     while (waiting.length > 0 && (inFlight === 0 || inFlight + waiting[0].bytes <= maxBytes)) {
       const next = waiting.shift() as (typeof waiting)[number];
       inFlight += next.bytes;
-      next.start();
+      next.start(true);
     }
   };
   return {
-    acquire: (bytes: number) => new Promise<void>((resolve) => {
-      waiting.push({ bytes, start: resolve });
+    acquire: (bytes: number, owner?: unknown) => new Promise<boolean>((resolve) => {
+      waiting.push({ bytes, owner, start: resolve });
       startWaiting();
     }),
+    abandon: (owner: unknown) => {
+      for (let i = waiting.length - 1; i >= 0; i -= 1) {
+        if (waiting[i].owner === owner) waiting.splice(i, 1)[0].start(false);
+      }
+      startWaiting();
+    },
     release: (bytes: number) => {
       inFlight -= bytes;
       startWaiting();

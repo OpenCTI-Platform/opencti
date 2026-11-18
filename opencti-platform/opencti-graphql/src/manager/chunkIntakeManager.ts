@@ -38,6 +38,7 @@ import {
 import { DatabaseError, DRAFT_LOCKED_ERROR, EngineShardsError, MISSING_REF_ERROR, SEQUENCER_DEFERRED_ERROR, WORK_NOT_ALIVE_ERROR } from '../config/errors';
 import { createIntakeContext } from '../intake/intake-context';
 import { consumePushQueues, type PushConsumer } from '../intake/workerless/push-consumer';
+import { PREFETCH_LIMIT } from '../intake/workerless/push-prefetch';
 import { createQueueLease, type ConsumerView, type QueueLease } from '../intake/workerless/queue-lease';
 import { createLimiter, PushRefusedError } from '../intake/workerless/push-intake';
 import { createReleaseScheduler, type ReleaseScheduler } from '../intake/workerless/release-scheduler';
@@ -52,6 +53,7 @@ import { TYPE_LOCK_ERROR } from '../config/errors';
 import {
   consumedPushQueues,
   createOrderedQueuesLeadership,
+  createOrderedQueuesReader,
   createPartitionSlot,
   intakeLockKey,
   keepLastQueuesOnFailure,
@@ -86,15 +88,32 @@ const DEFER_MISSING_REFS = booleanConf('chunk_intake_manager:defer_missing_refs'
 // place of the workers (transformation, capture and chunks in process); 'chunk_queue' consumes the
 // chunks the workers publish
 const CHUNK_INTAKE_SOURCE = conf.get('chunk_intake_manager:source') ?? 'chunk_queue';
+// An option out of its bounds falls back to its default (logged)
+const boundedConf = (key: string, fallback: number, min: number, max = Number.MAX_SAFE_INTEGER) => {
+  const raw = conf.get(key);
+  // an empty value (an empty environment variable) is absent, not 0
+  const value = Number(raw === undefined || raw === null || raw === '' ? fallback : raw);
+  if (Number.isFinite(value) && value >= min && value <= max) return value;
+  logApp.warn('[OPENCTI-MODULE] Worker-less intake: option out of bounds, default used', { key, value: conf.get(key), min, max, default: fallback });
+  return fallback;
+};
 // Unacked messages per push queue: a buffer of decoded messages for the release scheduler, not the
 // regulator (the set point below is); 25 keeps mix140k's throughput of 100 with 20% less platform
-// memory, 10 halves it with half-full batches (2026-11-06 tuning runs). It is the start value only: each
-// queue's prefetch then follows the size of its messages, to hold about push_prefetch_bytes delivered,
-// within push_prefetch_max (push-prefetch.ts; misp split by the connector, one object per message: 434 s
-// at 25, 169 s at 600, 2026-11-17). push_prefetch_bytes 0 keeps the prefetch fixed.
-const PUSH_PREFETCH = Number(conf.get('chunk_intake_manager:push_prefetch') ?? 25);
-const PUSH_PREFETCH_BYTES = Number(conf.get('chunk_intake_manager:push_prefetch_bytes') ?? 33554432);
-const PUSH_PREFETCH_MAX = Number(conf.get('chunk_intake_manager:push_prefetch_max') ?? 600);
+// memory, 10 halves it with half-full batches (2026-11-06 tuning runs). It is the start value, and the fixed
+// value of an ordered queue: the queues consumed here then share push_prefetch_total_messages (the batches)
+// and push_prefetch_total_bytes (the memory held delivered), each within push_prefetch_max (push-prefetch.ts).
+// With 20 or 30 active queues a queue gets about 25, alone it gets the bound (misp split by the connector, one
+// object per message, one queue: 434 s at 25, 169 s at 600, 2026-11-17). Either total at 0 keeps it fixed.
+// The heap holds about twice the bytes of a message (its buffer and its base64 content).
+const PUSH_PREFETCH = boundedConf('chunk_intake_manager:push_prefetch', 25, 1, PREFETCH_LIMIT);
+const PUSH_PREFETCH_MAX = boundedConf('chunk_intake_manager:push_prefetch_max', 400, 1, PREFETCH_LIMIT);
+const PUSH_PREFETCH_TOTAL_BYTES = boundedConf('chunk_intake_manager:push_prefetch_total_bytes', 268435456, 0);
+const PUSH_PREFETCH_TOTAL_MESSAGES = boundedConf('chunk_intake_manager:push_prefetch_total_messages', 600, 0);
+if (PUSH_PREFETCH > PUSH_PREFETCH_MAX) {
+  logApp.warn('[OPENCTI-MODULE] Worker-less intake: push_prefetch above push_prefetch_max, the max is used', { push_prefetch: PUSH_PREFETCH, push_prefetch_max: PUSH_PREFETCH_MAX });
+}
+// The queue depths read once for the lease and the prefetch plan of a tick, at most for half a tick
+const readQueueDepths = () => queueDepths(Math.min(5000, SCHEDULE_TIME / 2));
 const PUSH_MAX_IN_FLIGHT_BYTES = Number(conf.get('chunk_intake_manager:push_max_in_flight_bytes') ?? 268435456);
 // The ready depth the release scheduler holds, in sequencer batches (R* = factor x max_batch_size):
 // at least one batch keeps the batches full, more only adds write latency (KB note
@@ -113,12 +132,6 @@ const PUSH_QUEUE_PARTITION = parseQueuePartition(conf.get('chunk_intake_manager:
 const PUSH_QUEUE_LEASE = booleanConf('chunk_intake_manager:push_queue_lease', false);
 // a value out of bounds falls back to the default: a lease shorter than a few ticks would be lost at every
 // tick, zero idle ticks would give every queue back at every tick
-const boundedConf = (key: string, fallback: number, min: number) => {
-  const value = Number(conf.get(key) ?? fallback);
-  if (Number.isFinite(value) && value >= min) return value;
-  logApp.warn('[OPENCTI-MODULE] Worker-less intake: option out of bounds, default used', { key, value: conf.get(key), min, default: fallback });
-  return fallback;
-};
 const PUSH_QUEUE_LEASE_OPTIONS = {
   ttlMs: boundedConf('chunk_intake_manager:push_queue_lease_ttl_ms', 30000, 2 * SCHEDULE_TIME),
   stealBacklogMin: boundedConf('chunk_intake_manager:push_queue_steal_backlog_min', 100, 1),
@@ -823,7 +836,7 @@ let workerlessGaugeRegistered = false;
 const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
   pushMessagesCounter = meterManager.meterProvider.getMeter('opencti-chunk-intake').createCounter('opencti_workerless_intake_messages_total', {
     valueType: ValueType.INT,
-    description: 'Push messages of the worker-less intake, by outcome (written, undecodable, transformation_failed, chunk_dead_lettered, work_not_alive, draft_locked)',
+    description: 'Push messages of the worker-less intake, by outcome (written, undecodable, transformation_failed, transient, unknown_writer, work_not_alive, draft_locked, stopped: given back unstarted, its queue stopping, channel_closed: not started, its channel closed by the broker)',
   });
   // pycti keeps its caches for the life of the worker, one per draft
   const contexts = new Map<string, ImportContext>();
@@ -849,24 +862,30 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
     description: 'Push queue lease events of the worker-less intake (taken, released, lost, steal_start, steal_stop)',
   });
   const lease = SEQUENCER_CONFIG.multiWriter && PUSH_QUEUE_LEASE
-    ? createQueueLease(SEQUENCER_CONFIG.nodeId, redisQueueLeaseStore, queueDepths, PUSH_QUEUE_LEASE_OPTIONS, (event, queue, detail) => {
+    ? createQueueLease(SEQUENCER_CONFIG.nodeId, redisQueueLeaseStore, readQueueDepths, PUSH_QUEUE_LEASE_OPTIONS, (event, queue, detail) => {
         queueLeaseCounter?.add(1, { event });
         logApp.info(`[OPENCTI-MODULE] Worker-less intake: queue lease ${event}`, { queue, node_id: SEQUENCER_CONFIG.nodeId, ...detail });
       })
     : null;
   // Bound once the consumer is started: the first tick of the lease takes no queue
-  let consumerView: ConsumerView = { isOrdered: () => false, isConsuming: () => false };
+  let consumerView: ConsumerView = { isOrdered: () => false, isConsuming: () => false, inFlight: () => 0 };
   const partition = !lease && SEQUENCER_CONFIG.multiWriter && PUSH_QUEUE_PARTITION.length > 0
     ? createPartitionSlot(PUSH_QUEUE_PARTITION.length, (slot) => lockResources([`${CHUNK_INTAKE_MANAGER_KEY}_partition_${slot}`], { retryCount: 0 })
         .catch((e: any) => (e?.name === TYPE_LOCK_ERROR ? null : Promise.reject(e))))
     : null;
-  const orderedQueues = async (context: AuthContext) => {
-    const syncs = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_SYNC]);
-    return new Set([connectorConfig('sync').push, ...syncs.map((sync) => connectorConfig(sync.internal_id).push)]);
-  };
+  // The push queues of the synchronizations, consumed in order: known by the consumer before their first event,
+  // so that the prefetch plan keeps them at the start value
+  const orderedQueues = createOrderedQueuesReader(
+    async () => {
+      const syncs = await fullEntitiesList(executionContext(CHUNK_INTAKE_MANAGER_CONTEXT), SYSTEM_USER, [ENTITY_TYPE_SYNC]);
+      return new Set([connectorConfig('sync').push, ...syncs.map((sync) => connectorConfig(sync.internal_id).push)]);
+    },
+    (cause) => logApp.warn('[OPENCTI-MODULE] Worker-less intake: synchronization queues not read, the last ones read kept (no prefetch raised before a first read)', { cause }),
+    () => logApp.info('[OPENCTI-MODULE] Worker-less intake: synchronization queues read again'),
+  );
   // The leases renewed first: a failed read below takes no new decision but keeps them
-  const leasedQueues = async (context: AuthContext, queueLease: QueueLease, queues: string[]) => {
-    const ordered = await orderedQueues(context);
+  const leasedQueues = async (queueLease: QueueLease, queues: string[]) => {
+    const ordered = await orderedQueues.read();
     const candidates = consumedPushQueues(queues, ordered, false);
     const leased = await queueLease.assign(candidates, consumerView).catch((cause) => {
       logApp.warn('[OPENCTI-MODULE] Worker-less intake: queue lease not assigned, current queues kept', { cause });
@@ -884,9 +903,14 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
     const queues = partition
       ? partitionedPushQueues(pushConnectors, PUSH_QUEUE_PARTITION, await partition.refresh())
       : [...new Set(pushConnectors.map(({ queue }) => queue))];
-    if (lease) return leasedQueues(context, lease, queues);
-    if (!leadership || await leadership.refresh()) return queues;
-    return consumedPushQueues(queues, await orderedQueues(context), false);
+    if (lease) return leasedQueues(lease, queues);
+    if (!leadership || await leadership.refresh()) {
+      // single writer, or leader without a lease: a failed read keeps the queues known; each queue's first event
+      // marks it too (push-consumer.ts)
+      if (PUSH_PREFETCH_TOTAL_BYTES > 0 && PUSH_PREFETCH_TOTAL_MESSAGES > 0) await orderedQueues.refresh();
+      return queues;
+    }
+    return consumedPushQueues(queues, await orderedQueues.read(), false);
   };
   // task 0040: under a lease or a partition, a failed listing keeps the last queues for a lease TTL
   // (push-queues.ts keepLastQueuesOnFailure); a single writer fails and starts again as before
@@ -953,7 +977,17 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
         runOperation: runIntakeOperation,
         report,
       },
-      { prefetch: PUSH_PREFETCH, prefetchBytes: PUSH_PREFETCH_BYTES, maxPrefetch: PUSH_PREFETCH_MAX, maxInFlightBytes: PUSH_MAX_IN_FLIGHT_BYTES, readSizes: queueDepths },
+      {
+        prefetch: PUSH_PREFETCH,
+        prefetchTotalBytes: PUSH_PREFETCH_TOTAL_BYTES,
+        prefetchTotalMessages: PUSH_PREFETCH_TOTAL_MESSAGES,
+        maxPrefetch: PUSH_PREFETCH_MAX,
+        maxInFlightBytes: PUSH_MAX_IN_FLIGHT_BYTES,
+        readSizes: readQueueDepths,
+        isOrdered: (queue) => !!orderedQueues.known()?.has(queue),
+        // not read yet: no queue raised (the stop paths are not changed by it)
+        holdAtStart: () => orderedQueues.known() === null,
+      },
       (outcome) => pushMessagesCounter?.add(1, { outcome: outcome.reason }),
       (queue) => {
         lease?.markOrdered(queue).catch((cause) => logApp.warn('[OPENCTI-MODULE] Worker-less intake: ordered queue not marked, another platform may join it', { queue, cause }));

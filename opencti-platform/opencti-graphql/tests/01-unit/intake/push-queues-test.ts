@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   consumedPushQueues,
   createOrderedQueuesLeadership,
+  createOrderedQueuesReader,
   createPartitionSlot,
   intakeLockKey,
   keepLastQueuesOnFailure,
@@ -158,5 +159,44 @@ describe('push queue listing kept on failure (lease or partition)', () => {
     fail = true;
     clock = 50000;
     expect(await list()).toEqual(['q3']);
+  });
+});
+
+describe('ordered queues reader (task 0040)', () => {
+  it('should know nothing before a first read, then the last queues read', async () => {
+    let fail = false;
+    const reader = createOrderedQueuesReader(async () => {
+      if (fail) throw new Error('es down');
+      return new Set(['push_sync']);
+    }, vi.fn(), vi.fn());
+    expect(reader.known()).toBe(null);
+    await reader.refresh();
+    expect(reader.known()).toEqual(new Set(['push_sync']));
+    fail = true;
+    await reader.refresh();
+    expect(reader.known()).toEqual(new Set(['push_sync'])); // kept
+    await expect(reader.read()).rejects.toThrow('es down');
+  });
+
+  it('should tell a failure once per outage, and the read again', async () => {
+    let fail = true;
+    const onUnread = vi.fn();
+    const onReadAgain = vi.fn();
+    const reader = createOrderedQueuesReader(async () => {
+      if (fail) throw new Error('es down');
+      return new Set<string>();
+    }, onUnread, onReadAgain);
+    await reader.refresh();
+    await reader.refresh();
+    expect(reader.known()).toBe(null); // never read: nothing known
+    expect(onUnread).toHaveBeenCalledTimes(1);
+    fail = false;
+    await reader.refresh();
+    expect(onReadAgain).toHaveBeenCalledTimes(1);
+    await reader.refresh();
+    expect(onReadAgain).toHaveBeenCalledTimes(1);
+    fail = true;
+    await reader.refresh();
+    expect(onUnread).toHaveBeenCalledTimes(2);
   });
 });

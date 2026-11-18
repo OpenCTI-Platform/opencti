@@ -466,12 +466,26 @@ export const metrics = async (context, user) => {
 };
 
 // task 0040 dynamic queue lease and prefetch by bytes: the messages ready and unacked of each queue, and
-// the bytes of the ready ones
-export const queueDepths = async () => {
+// the bytes of the ready ones. The lease and the prefetch plan read it on the same tick: one read (or one failure,
+// so that a management API down costs one timeout per tick) serves both for maxAgeMs after its answer; calls
+// made while it runs share it.
+let queueDepthsRead = null;
+const readQueueDepths = async () => {
   const httpClient = await rabbitmqManagementClient();
   const columns = 'name,messages_ready,messages_unacknowledged,message_bytes_ready';
   const queues = await httpClient.get(`/api/queues${rabbitmqVhostPath}?columns=${columns}`, { timeout: 5000 }).then((response) => response.data);
   return new Map(queues.map((q) => [q.name, { ready: q.messages_ready ?? 0, unacked: q.messages_unacknowledged ?? 0, bytesReady: q.message_bytes_ready ?? 0 }]));
+};
+export const queueDepths = async (maxAgeMs = 5000) => {
+  const last = queueDepthsRead;
+  if (last && (last.answeredAt === null || Date.now() - last.answeredAt < maxAgeMs)) return last.depths;
+  const read = { answeredAt: null, depths: readQueueDepths() };
+  queueDepthsRead = read;
+  const answered = () => {
+    read.answeredAt = Date.now();
+  };
+  read.depths.then(answered, answered);
+  return read.depths;
 };
 
 const metricsCache = new LRUCache({ ttl: 15000, max: 1 }); // 15 seconds cache

@@ -39,9 +39,10 @@ const memoryStore = () => {
 };
 
 const options = { ttlMs: 30000, stealBacklogMin: 100, releaseIdleTicks: 2 };
-const view = (consuming: string[] = [], orderedQueues: string[] = []): ConsumerView => ({
+const view = (consuming: string[] = [], orderedQueues: string[] = [], inFlight: Record<string, number> = {}): ConsumerView => ({
   isOrdered: (queue) => orderedQueues.includes(queue),
   isConsuming: (queue) => consuming.includes(queue),
+  inFlight: (queue) => inFlight[queue] ?? 0,
 });
 
 const platform = (nodeId: string, store: LeaseStore, depths: Map<string, QueueDepth>, now?: () => number) => {
@@ -138,6 +139,79 @@ describe('dynamic queue lease', () => {
     expect(await b.tick(['q1', 'q2'], view(['q2']))).toEqual(['q1']);
     depths.set('q1', { ready: 0, unacked: 25 });
     expect(await b.tick(['q1', 'q2'], view(['q2']))).toEqual([]);
+    expect(b.events.filter(([event]) => event.startsWith('steal'))).toEqual([['steal_start', 'q1'], ['steal_stop', 'q1']]);
+  });
+
+  it('should not join another queue while its own queues have messages in flight here', async () => {
+    const { store } = memoryStore();
+    const depths = depthsOf({ q1: 500, q2: 20 });
+    const a = platform('a', store, depths);
+    const b = platform('b', store, depths);
+    await a.tick(['q1', 'q2']);
+    await b.tick(['q1', 'q2']);
+    await a.tick(['q1', 'q2']);
+    expect(await b.tick(['q1', 'q2'])).toEqual(['q2']);
+    // q2 has nothing ready, but 20 messages delivered to b (a prefetch of hundreds takes them all): b is not idle
+    depths.set('q2', { ready: 0, unacked: 20 });
+    expect(await b.tick(['q1', 'q2'], view(['q2'], [], { q2: 20 }))).toEqual(['q2']);
+    expect(await b.tick(['q1', 'q2'], view(['q2'], [], { q2: 0 }))).toEqual(['q2', 'q1']);
+  });
+
+  it('should keep a stolen queue while its messages are in flight here, nothing left ready', async () => {
+    const { store } = memoryStore();
+    const depths = depthsOf({ q1: 500, q2: 0 });
+    const a = platform('a', store, depths);
+    const b = platform('b', store, depths);
+    await a.tick(['q1']);
+    await b.tick(['q1']);
+    expect(await a.tick(['q1'])).toEqual(['q1']);
+    expect(await b.tick(['q1'])).toEqual(['q1']); // stolen
+    // both prefetches took every ready message: b keeps its share until it is answered
+    depths.set('q1', { ready: 0, unacked: 600 });
+    expect(await b.tick(['q1'], view(['q1'], [], { q1: 300 }))).toEqual(['q1']);
+    expect(await b.tick(['q1'], view(['q1'], [], { q1: 1 }))).toEqual(['q1']);
+    expect(await b.tick(['q1'], view(['q1'], [], { q1: 0 }))).toEqual([]);
+    expect(b.events.filter(([event]) => event.startsWith('steal'))).toEqual([['steal_start', 'q1'], ['steal_stop', 'q1']]);
+  });
+
+  it('should keep a stolen queue while its own queues only have messages in flight, until they have some ready', async () => {
+    const { store } = memoryStore();
+    const depths = depthsOf({ q1: 500, q2: 20 });
+    const a = platform('a', store, depths);
+    const b = platform('b', store, depths);
+    await a.tick(['q1', 'q2']);
+    await b.tick(['q1', 'q2']);
+    await a.tick(['q1', 'q2']);
+    expect(await b.tick(['q1', 'q2'])).toEqual(['q2']);
+    depths.set('q2', { ready: 0, unacked: 0 });
+    expect(await b.tick(['q1', 'q2'], view(['q2']))).toEqual(['q2', 'q1']); // idle: stolen
+    // a trickle on its own queue, delivered here at once: the steal goes on (no stop and start at each tick)
+    depths.set('q2', { ready: 0, unacked: 1 });
+    expect(await b.tick(['q1', 'q2'], view(['q2', 'q1'], [], { q2: 1, q1: 50 }))).toEqual(['q2', 'q1']);
+    expect(await b.tick(['q1', 'q2'], view(['q2', 'q1'], [], { q2: 1, q1: 50 }))).toEqual(['q2', 'q1']);
+    // messages ready on its own queue again: back to it
+    depths.set('q2', { ready: 5, unacked: 1 });
+    expect(await b.tick(['q1', 'q2'], view(['q2', 'q1'], [], { q2: 1, q1: 50 }))).toEqual(['q2']);
+    expect(b.events.filter(([event]) => event.startsWith('steal'))).toEqual([['steal_start', 'q1'], ['steal_stop', 'q1']]);
+  });
+
+  it('should not start another steal once its stolen queue is done while its own queues have messages in flight', async () => {
+    const { store } = memoryStore();
+    const depths = depthsOf({ q1: 500, q2: 20, q3: 0 });
+    const a = platform('a', store, depths);
+    const b = platform('b', store, depths);
+    await a.tick(['q1', 'q2', 'q3']);
+    await b.tick(['q1', 'q2', 'q3']);
+    await a.tick(['q1', 'q2', 'q3']);
+    expect(await b.tick(['q1', 'q2', 'q3'])).toEqual(['q2']);
+    depths.set('q2', { ready: 0, unacked: 0 });
+    expect(await b.tick(['q1', 'q2', 'q3'], view(['q2']))).toEqual(['q2', 'q1']);
+    // q1 done, a has another queue full, b has one message of its own in flight: no new steal
+    depths.set('q1', { ready: 0, unacked: 0 });
+    depths.set('q3', { ready: 500, unacked: 0 });
+    expect(await a.tick(['q1', 'q2', 'q3'])).toContain('q3'); // held by a: b could only steal it
+    depths.set('q2', { ready: 0, unacked: 1 });
+    expect(await b.tick(['q1', 'q2', 'q3'], view(['q2', 'q1'], [], { q2: 1 }))).toEqual(['q2']);
     expect(b.events.filter(([event]) => event.startsWith('steal'))).toEqual([['steal_start', 'q1'], ['steal_stop', 'q1']]);
   });
 

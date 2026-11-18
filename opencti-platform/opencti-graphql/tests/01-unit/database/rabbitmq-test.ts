@@ -109,7 +109,7 @@ import { logApp } from '../../../src/config/conf';
 import { fullEntitiesList } from '../../../src/database/middleware-loader';
 import { getHttpClient } from '../../../src/utils/http-client';
 import { updateExpectationsNumber } from '../../../src/domain/work';
-import { buildSplitMessages, executeRabbitmq, getQueueConsumersByType, metrics, pushBundleToWorker, rabbitMQIsAlive } from '../../../src/database/rabbitmq';
+import { buildSplitMessages, executeRabbitmq, getQueueConsumersByType, metrics, pushBundleToWorker, queueDepths, rabbitMQIsAlive } from '../../../src/database/rabbitmq';
 import {
   connectorConfig,
   consumeQueue,
@@ -1044,5 +1044,69 @@ describe('connector rabbitmq: consumeQueue', () => {
     });
 
     await expect(startConsuming()).rejects.toBe(error);
+  });
+});
+
+describe('rabbitmq: queueDepths (task 0040 queue lease and prefetch by bytes)', () => {
+  let now = 1_000_000;
+  beforeEach(() => {
+    vi.clearAllMocks();
+    now += 60000; // past the memo of the previous test
+    vi.spyOn(Date, 'now').mockImplementation(() => now);
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should read the ready, unacked and ready bytes of each queue, 0 when the broker omits one', async () => {
+    mockHttpClient.get.mockResolvedValue({ data: [
+      { name: 'push_a', messages_ready: 10, messages_unacknowledged: 2, message_bytes_ready: 4096 },
+      { name: 'push_b' },
+    ] });
+    const depths = await queueDepths();
+    expect(mockHttpClient.get.mock.calls[0][0]).toContain('columns=name,messages_ready,messages_unacknowledged,message_bytes_ready');
+    expect(depths.get('push_a')).toEqual({ ready: 10, unacked: 2, bytesReady: 4096 });
+    expect(depths.get('push_b')).toEqual({ ready: 0, unacked: 0, bytesReady: 0 });
+  });
+
+  it('should serve the lease and the prefetch plan of one tick with one read, for the max age after its answer', async () => {
+    mockHttpClient.get.mockResolvedValue({ data: [{ name: 'push_a', messages_ready: 1 }] });
+    await queueDepths(5000);
+    now += 4999;
+    await queueDepths(5000);
+    expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
+    now += 1;
+    await queueDepths(5000);
+    expect(mockHttpClient.get).toHaveBeenCalledTimes(2);
+    now += 2000;
+    await queueDepths(1000); // a shorter tick reads more often
+    expect(mockHttpClient.get).toHaveBeenCalledTimes(3);
+  });
+
+  it('should share a read still running, its age counted from its answer', async () => {
+    let answerRead: (value: unknown) => void = () => {};
+    mockHttpClient.get.mockImplementation(() => new Promise((resolve) => {
+      answerRead = resolve;
+    }));
+    const first = queueDepths(5000);
+    now += 6000; // still running after the max age: shared, not read again
+    const second = queueDepths(5000);
+    await Promise.resolve();
+    now += 4000; // a slow answer
+    answerRead({ data: [{ name: 'push_a', messages_ready: 2 }] });
+    expect((await first).get('push_a')?.ready).toBe(2);
+    expect((await second).get('push_a')?.ready).toBe(2);
+    await queueDepths(5000); // answered just now: still fresh
+    expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
+  });
+
+  it('should keep a failed read for the max age (one timeout per tick), then read again', async () => {
+    mockHttpClient.get.mockRejectedValueOnce(new Error('management down'));
+    await expect(queueDepths(5000)).rejects.toThrow('management down');
+    await expect(queueDepths(5000)).rejects.toThrow('management down');
+    expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
+    now += 5000;
+    mockHttpClient.get.mockResolvedValue({ data: [{ name: 'push_a', messages_ready: 3 }] });
+    expect((await queueDepths(5000)).get('push_a')?.ready).toBe(3);
   });
 });
