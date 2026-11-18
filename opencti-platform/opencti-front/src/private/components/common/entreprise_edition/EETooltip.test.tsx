@@ -8,7 +8,7 @@ import EETooltip from './EETooltip';
 // `children` in a focusable `role="button"` span that opens the
 // feedback/agreement flow, or the "enable AI" dialog, instead of whatever the
 // child would normally do.
-const state = vi.hoisted(() => ({ isEnterpriseEdition: false }));
+const state = vi.hoisted(() => ({ isEnterpriseEdition: false, feedbackDrawerOpenings: [] as boolean[] }));
 vi.mock('../../../../utils/hooks/useEnterpriseEdition', () => ({ default: () => state.isEnterpriseEdition }));
 vi.mock('../../../../utils/hooks/useGranted', () => ({
   default: () => false,
@@ -21,7 +21,10 @@ vi.mock('../../../../utils/hooks/useAuth', async (importOriginal) => ({
 vi.mock('../../../../utils/hooks/useAI', () => ({ default: () => ({ enabled: false, configured: false }) }));
 // Both dialogs are Relay-bound and irrelevant to what this asserts.
 vi.mock('../../cases/feedbacks/FeedbackCreation', () => ({
-  default: ({ openDrawer }: { openDrawer: boolean }) => (openDrawer ? <div>Feedback form</div> : null),
+  default: ({ openDrawer }: { openDrawer: boolean }) => {
+    state.feedbackDrawerOpenings.push(openDrawer);
+    return openDrawer ? <div>Feedback form</div> : null;
+  },
 }));
 vi.mock('./EnterpriseEditionAgreement', () => ({ default: () => null }));
 
@@ -41,6 +44,7 @@ const EnabledLater = () => {
 describe('EETooltip', () => {
   beforeEach(() => {
     state.isEnterpriseEdition = false;
+    state.feedbackDrawerOpenings = [];
   });
 
   it.each([
@@ -96,8 +100,20 @@ describe('EETooltip', () => {
     await user.tab();
     await user.keyboard('{Enter}');
     expect(childAction).not.toHaveBeenCalled();
-    // Loaded lazily on first open (it would close an import cycle otherwise)
     expect(await screen.findByText('Feedback form')).toBeInTheDocument();
+  });
+
+  it('mounts the feedback drawer closed before its first open, so it slides in', async () => {
+    const { user } = testRender(
+      <EETooltip title="Some EE feature">
+        <button type="button">Do something</button>
+      </EETooltip>,
+    );
+
+    await user.click(screen.getByText('Do something'));
+    expect(await screen.findByText('Feedback form')).toBeInTheDocument();
+    // A drawer first mounted open skips its appear transition
+    expect(state.feedbackDrawerOpenings[0]).toBe(false);
   });
 
   it('opens the "enable AI" dialog instead of running the wrapped control\'s own action', async () => {

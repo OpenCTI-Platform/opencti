@@ -12,10 +12,10 @@ import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useG
 import EnterpriseEditionAgreement from './EnterpriseEditionAgreement';
 import { onActivationKey } from '../../../../utils/domEvent';
 
-// Loaded on first open: FeedbackCreation imports MarkdownField, whose base field
-// imports this tooltip (MarkdownFieldBase > TextFieldAskAI > EETooltip). A static
-// import closes that cycle, and a module still evaluating can then be handed out
-// before its exports are assigned.
+// Dynamic only to break an import cycle: FeedbackCreation imports MarkdownField, whose
+// base field imports this tooltip (MarkdownFieldBase > TextFieldAskAI > EETooltip), and a
+// module still evaluating in a cycle can be handed out before its exports are assigned.
+// It saves nothing in the bundle: other static importers keep it in the main chunk.
 const FeedbackCreation = lazy(() => import('../../cases/feedbacks/FeedbackCreation'));
 
 const EETooltipComponent = ({ children, ...tooltipProps }: TooltipProps) => {
@@ -47,7 +47,14 @@ const TABBABLE_SELECTOR = 'a[href], button, input, select, textarea, summary, if
  * content is a block.
  */
 // `label` names the gate: its content is hidden from assistive tech, so cannot name it
-const EEGate = ({ title, label, onActivate, children }: { title?: string; label: string; onActivate: () => void; children: ReactNode }) => {
+// `onApproach` fires on hover or focus, before any activation
+const EEGate = ({ title, label, onApproach, onActivate, children }: {
+  title?: string;
+  label: string;
+  onApproach?: () => void;
+  onActivate: () => void;
+  children: ReactNode;
+}) => {
   const contentRef = useRef<HTMLSpanElement>(null);
 
   // Watched, not set once: the content may render or re-enable a control later
@@ -71,6 +78,8 @@ const EEGate = ({ title, label, onActivate, children }: { title?: string; label:
         role="button"
         tabIndex={0}
         aria-label={label}
+        onPointerEnter={onApproach}
+        onFocus={onApproach}
         onClickCapture={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -97,7 +106,9 @@ const EETooltip = ({
   forAi?: boolean;
 }) => {
   const { t_i18n } = useFormatter();
-  // undefined until first opened, so FeedbackCreation is only loaded on demand
+  // undefined until the gate is first approached: FeedbackCreation is then mounted
+  // closed, so its drawer slides in on the first open (MUI skips the appear transition
+  // of a drawer mounted open)
   const [feedbackCreation, setFeedbackCreation] = useState<boolean>();
   const [openConfigAI, setOpenConfigAI] = useState(false);
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
@@ -148,6 +159,7 @@ const EETooltip = ({
       <EEGate
         title={title ? t_i18n(title) : undefined}
         label={title ? t_i18n(title) : t_i18n('Enterprise Edition')}
+        onApproach={() => setFeedbackCreation((open) => open ?? false)}
         onActivate={() => setFeedbackCreation(true)}
       >
         {children}
