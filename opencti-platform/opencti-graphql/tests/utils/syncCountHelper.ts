@@ -40,8 +40,7 @@ testCreatedCounter.identity = 63;
 testCreatedCounter.imei = 3;
 testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 7;
-// Includes 1 created and deleted by markingDefinition-test (OASIS TLP 2.0 RED id)
-testCreatedCounter.indicator = 62;
+testCreatedCounter.indicator = 64;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
@@ -121,7 +120,7 @@ testUpdatedCounter['data-source'] = 1;
 testUpdatedCounter['external-reference'] = 1;
 testUpdatedCounter.grouping = 3;
 testUpdatedCounter.incident = 4;
-testUpdatedCounter.indicator = 33;
+testUpdatedCounter.indicator = 35;
 // Counts for:
 // - 3 updated by killChainPhase-import-test
 testUpdatedCounter['kill-chain-phase'] = 3;
@@ -191,8 +190,7 @@ testDeletedCounter.grouping = 2;
 // and 2 by ingestionDeduplication-domain-test
 testDeletedCounter.identity = 46;
 testDeletedCounter.incident = 6;
-// Includes 1 created and deleted by markingDefinition-test (OASIS TLP 2.0 RED id)
-testDeletedCounter.indicator = 34;
+testDeletedCounter.indicator = 36;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
