@@ -5,11 +5,13 @@
 import conf, { ACCOUNT_STATUS_ACTIVE, logApp } from '../config/conf';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { LOCKED_USER_EMAIL_TEMPLATE_INPUT } from '../database/locked-user-email-template-input';
+import type { LocalAuthLockType } from '../database/redis';
 import { isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { findLockedUserEmailTemplate } from '../modules/emailTemplate/emailTemplate-domain';
+import type { LockedUserEmailData, LockedUserLock } from '../modules/emailTemplate/emailTemplate-render';
 import type { BasicStoreEntityEmailTemplate } from '../modules/emailTemplate/emailTemplate-types';
-import { ENTITY_TYPE_USER } from '../modules/user/user-types';
+import { type BasicStoreEntityUser, ENTITY_TYPE_USER } from '../modules/user/user-types';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
 import { isServiceAccountUser, isUserHasCapability, SETTINGS_SETACCESSES, SYSTEM_USER } from '../utils/access';
@@ -72,4 +74,19 @@ export const loadLocalAuthLockEmailTemplate = async (context: AuthContext): Prom
     template_name: LOCKED_USER_EMAIL_TEMPLATE_INPUT.name,
   });
   return LOCKED_USER_EMAIL_TEMPLATE_INPUT;
+};
+
+// The lock set by the attempt that reached the max attempts: its final action, and the time it lasts (the lockout duration)
+export type LocalAuthLock = { lockType: LocalAuthLockType; maxAttempts: number; remainingMs: number };
+type LockedAccount = Pick<BasicStoreEntityUser, 'name' | 'user_email'> & Partial<Pick<BasicStoreEntityUser, 'firstname' | 'lastname'>>;
+
+// The data of the $locked_user and $lock variables. Only the attempt that reaches the max attempts locks the account,
+// so the attempts are the max attempts. A temporary lock ends after the lockout duration, a permanent lock has no end:
+// an administrator must unlock the account
+export const buildLocalAuthLockEmailData = (lockedUser: LockedAccount, { lockType, maxAttempts, remainingMs }: LocalAuthLock, date = new Date()): LockedUserEmailData => {
+  const { name, firstname, lastname, user_email } = lockedUser;
+  const lock: LockedUserLock = lockType === 'temporary'
+    ? { date, attempts: maxAttempts, type: 'temporary', endDate: new Date(date.getTime() + remainingMs) }
+    : { date, attempts: maxAttempts, type: 'permanent' };
+  return { lockedUser: { name, firstname, lastname, user_email }, lock };
 };
