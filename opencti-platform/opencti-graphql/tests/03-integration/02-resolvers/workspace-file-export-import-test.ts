@@ -1,5 +1,4 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import fs from 'node:fs';
 import gql from 'graphql-tag';
 import pjson from '../../../package.json';
 import { elLoadById } from '../../../src/database/engine';
@@ -188,9 +187,9 @@ describe('Single-file export and import of a dashboard and of a widget', () => {
     expect(membersOf(workspace)).toEqual([{ member: ADMIN_USER.id, access_right: 'admin' }]);
   });
 
-  it('still imports the file the e2e dashboard comes from, with its widgets', async () => {
-    const file = fs.readFileSync(new URL('../../../../opencti-front/tests_e2e/dashboard/dashboard_e2e.json', import.meta.url));
-    const result = await importFile(createUploadFromBuffer(file, 'dashboard_e2e.json', 'application/json'));
+  it('still imports a 6.5.4 file with every kind of widget (the file the e2e dashboard comes from)', async () => {
+    // A copy of opencti-front/tests_e2e/dashboard/dashboard_e2e.json: the backend tests run without the front package
+    const result = await importFile(await createUploadFromTestDataFile('20241113_octi_dashboard_full_6.5.4.json', 'full.json', 'application/json'));
     expect(result.errors).toBeUndefined();
     const id = dataOf(result).workspaceConfigurationImport;
     createdIds.push(id);
