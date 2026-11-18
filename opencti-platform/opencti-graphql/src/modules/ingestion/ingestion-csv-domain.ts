@@ -290,6 +290,7 @@ export const fetchCsvFromUrl = async (
     timeout,
     responseType: 'arraybuffer',
     certificates,
+    feature: 'CSV feed',
   };
   const httpClient = getHttpClient(httpClientOptions);
   const { data, headers: resultHeaders } = await httpClient.get(ingestion.uri);

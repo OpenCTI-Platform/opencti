@@ -172,6 +172,10 @@
   "tls": {
     "reject_unauthorized": false
   },
+  "outbound_requests": {
+    "block_internal_destinations": false,
+    "allow_list": []
+  },
   "http_proxy": "",
   "https_proxy": "",
   "no_proxy": "",

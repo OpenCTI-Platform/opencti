@@ -1,9 +1,11 @@
 import { EventSource } from 'eventsource';
-import { Agent, fetch } from 'undici';
+import { fetch } from 'undici';
 import { UnsupportedError } from '../config/errors';
 import { now } from '../utils/format';
 import { isEmptyField } from '../database/utils';
 import { getPlatformHttpProxyAgent, logApp, TLS_REJECT_UNAUTHORIZED } from '../config/conf';
+import { getDestinationCheckedAgent } from '../utils/http-client';
+import { checkUrlDestination } from '../utils/internal-destination';
 
 // Feel free to migrate to typescript and move inside domain/connector.ts
 export const httpBase = (baseUri) => (baseUri.endsWith('/') ? baseUri : `${baseUri}/`);
@@ -23,14 +25,33 @@ export const createSyncHttpUri = (sync, state, testMode) => {
   return streamUri;
 };
 
-// Only needed when ssl_verify is disabled: with it enabled, undici's default dispatcher already
-// rejects unauthorized certificates, so no custom agent is required.
-const insecureAgent = new Agent({ connect: { rejectUnauthorized: false } });
-
-const buildSyncFetch = (eventSourceUri, ssl, token) => {
-  const dispatcher = getPlatformHttpProxyAgent(eventSourceUri, true) ?? (ssl ? undefined : insecureAgent);
-  const headers = !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined;
-  return (url, init) => fetch(url, { ...init, headers: { ...init.headers, ...headers }, dispatcher });
+// The remote OpenCTI is a destination configured by users: internal networks are checked like the other synchronizer requests.
+// Redirects are followed here, so that each hop is checked and goes through the proxy selected for it.
+const SYNC_FEATURE = 'Synchronizer';
+const SYNC_MAX_REDIRECTS = 5;
+const SYNC_REDIRECT_STATUSES = [301, 302, 303, 307, 308];
+const buildSyncFetch = (ssl, token) => {
+  return async (url, init) => {
+    const requestOrigin = new URL(url).origin;
+    let currentUrl = new URL(url);
+    for (let redirectCount = 0; ; redirectCount += 1) {
+      const proxyDispatcher = getPlatformHttpProxyAgent(currentUrl.href, true);
+      await checkUrlDestination(currentUrl, SYNC_FEATURE, proxyDispatcher !== undefined);
+      const dispatcher = proxyDispatcher ?? getDestinationCheckedAgent(ssl, SYNC_FEATURE);
+      // The token is only sent to the configured remote OpenCTI, not to another origin it redirects to
+      const authorization = !isEmptyField(token) && currentUrl.origin === requestOrigin ? { authorization: `Bearer ${token}` } : {};
+      const response = await fetch(currentUrl.href, { ...init, headers: { ...init.headers, ...authorization }, dispatcher, redirect: 'manual' });
+      const location = response.headers.get('location');
+      if (!location || !SYNC_REDIRECT_STATUSES.includes(response.status)) {
+        return response;
+      }
+      await response.body?.cancel();
+      if (redirectCount >= SYNC_MAX_REDIRECTS) {
+        throw new Error('Maximum number of redirects exceeded');
+      }
+      currentUrl = new URL(location, currentUrl);
+    }
+  };
 };
 
 export const testSync = async (context, user, sync) => {
@@ -39,7 +60,7 @@ export const testSync = async (context, user, sync) => {
   const ssl = sync.ssl_verify ?? TLS_REJECT_UNAUTHORIZED;
   return new Promise((resolve, reject) => {
     try {
-      const eventSource = new EventSource(eventSourceUri, { fetch: buildSyncFetch(eventSourceUri, ssl, token) });
+      const eventSource = new EventSource(eventSourceUri, { fetch: buildSyncFetch(ssl, token) });
       eventSource.addEventListener('connected', (d) => {
         const { connectionId } = JSON.parse(d.data);
         if (connectionId) {

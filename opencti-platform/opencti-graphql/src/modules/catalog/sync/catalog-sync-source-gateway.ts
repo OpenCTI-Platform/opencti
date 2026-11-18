@@ -108,14 +108,14 @@ class RemoteCatalogSyncSource implements CatalogSyncSourceAdapter {
 
   async fetch() {
     const timeout = resolveRemoteCatalogTimeoutMs(this.options);
-    const client = getHttpClient({ responseType: 'text', timeout });
+    const client = getHttpClient({ responseType: 'text', timeout, trusted: true });
     const response = await withAbortTimeout(timeout, (signal) => client.get(this.sourceConfig.uri, { signal }));
     return JSON.parse(response.data);
   }
 
   async fetchRevisionHint() {
     const timeout = resolveRemoteCatalogTimeoutMs(this.options);
-    const client = getHttpClient({ responseType: 'text', timeout });
+    const client = getHttpClient({ responseType: 'text', timeout, trusted: true });
     const response = await withAbortTimeout(timeout, (signal) => client.head(this.sourceConfig.uri, { signal }));
     const etagHeader = response.headers?.etag;
     const etag = Array.isArray(etagHeader) ? etagHeader[0] : etagHeader;
