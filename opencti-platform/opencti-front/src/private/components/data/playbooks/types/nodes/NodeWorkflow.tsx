@@ -11,7 +11,8 @@ import { useFormatter } from '../../../../../../components/i18n';
 import { truncate } from '../../../../../../utils/String';
 import type { Theme } from '../../../../../../components/Theme';
 import { usePlaybookHandlePositions } from '../../hooks/usePlaybookLayoutMode';
-import { categoryAccent, outPorts, PLAYBOOK_CARD, PLAYBOOK_PORT_PILL_MAX_WIDTH, portAnchor, portHasPill } from './playbookNodeGeometry';
+import { categoryAccent, outPorts, PLAYBOOK_CARD, portAnchor, portHasPill } from './playbookNodeGeometry';
+import PlaybookPortHandle from './PlaybookPortHandle';
 import { usePlaybookNodeLastExecution } from '../../hooks/usePlaybookLastExecution';
 import { formatStepDuration } from '../../utils/playbookLastExecution';
 import { playbookNodeSummary, type PlaybookNodeSummary } from '../../utils/playbookNodeSummary';
@@ -20,7 +21,7 @@ import { usePlaybookCanvasAffordances } from '../../hooks/usePlaybookEditMode';
 // The menu opens from the three dots, or at the pointer on a right click.
 type MenuAnchor = { element: Element } | { top: number; left: number };
 
-const NodeWorkflow = ({ id, data }: NodeProps) => {
+const NodeWorkflow = ({ id, data, isConnectable }: NodeProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [anchor, setAnchor] = useState<MenuAnchor | null>(null);
@@ -292,61 +293,36 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
       {ports.map((port, index) => {
         const anchor = portAnchor(index, ports.length, direction);
         const portName = t_i18n(port.id);
-        const pill = portHasPill(port.id, ports.length);
+        if (portHasPill(port.id, ports.length)) {
+          // A labelled port: the pill is the handle itself, so a drag from anywhere on it rewires and a
+          // hover anywhere on it reads the full name (round 11: a pill nested in a 6 px handle covered it).
+          return (
+            <PlaybookPortHandle
+              key={port.id}
+              portId={port.id}
+              portName={portName}
+              nodeId={id}
+              position={source}
+              anchor={anchor}
+              direction={direction}
+              accent={accent}
+              textColor={theme.palette.text?.primary}
+              background={theme.palette.background.default}
+              isConnectable={isConnectable}
+              opensSettings={nodeOpensSettings}
+              onOpen={openConfiguration}
+            />
+          );
+        }
         return (
           <Handle
             key={port.id}
             id={port.id}
             type="source"
             position={source}
-            // The full port name on hover: on the handle, and on the pill drawn inside it.
             title={portName}
             style={{ ...(direction === 'horizontal' ? { top: anchor.y } : { left: anchor.x }), background: accent, border: 'none' }}
-          >
-            {pill && (
-              // The pill is a child of its handle, centred on it: the link leaves from under it, no label
-              // is drawn over a link, and the whole pill is the hover target that reads the full name (the
-              // horizontal pill caps its label at PLAYBOOK_PORT_PILL_MAX_WIDTH). A click on it opens the
-              // configuration like a click on the card, never the handle's click-to-connect; React Flow
-              // measures the handle by its own box, not the pill's. The keyboard path is the title button.
-              // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-              <span
-                data-testid={`playbook-port-${id}-${port.id}`}
-                title={portName}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  openConfiguration();
-                }}
-                style={{
-                  position: 'absolute',
-                  left: '50%',
-                  top: '50%',
-                  zIndex: 1,
-                  transform: 'translate(-50%, -50%)',
-                  padding: '1px 8px',
-                  borderRadius: 10,
-                  fontSize: 10,
-                  lineHeight: '16px',
-                  whiteSpace: 'nowrap',
-                  ...(direction === 'horizontal' && {
-                    boxSizing: 'border-box',
-                    maxWidth: PLAYBOOK_PORT_PILL_MAX_WIDTH,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }),
-                  color: theme.palette.text?.primary,
-                  backgroundColor: theme.palette.background.default,
-                  border: `1px solid ${accent}`,
-                  // The handle lets pointer events through in view mode (not connectable): the pill
-                  // still answers the hover so its full name is read.
-                  pointerEvents: 'all',
-                  cursor: nodeOpensSettings ? 'pointer' : 'default',
-                }}
-              >
-                {portName}
-              </span>
-            )}
-          </Handle>
+          />
         );
       })}
     </div>
