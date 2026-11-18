@@ -98,7 +98,7 @@ describe('Form intake import', () => {
       const configuration = await exportedConfiguration();
       vi.mocked(internalFindByIds).mockImplementation(lookup([]));
       const result = await importFormIntake(context, user, configuration, { mode: ConfigImportMode.Overwrite });
-      expect(result).toMatchObject({ status: 'created', reason: 'Groups or markings not found are left out of the form' });
+      expect(result).toMatchObject({ status: 'created', reason: 'Groups, markings or labels not found are left out of the form' });
       const schema = JSON.parse(vi.mocked(addForm).mock.calls[0][2].form_schema) as FormSchemaDefinition;
       expect(schema.fields.find(({ name }) => name === 'objectMarking')?.defaultValue).toEqual([]);
       // A label given by its value does not depend on the platform
@@ -193,7 +193,7 @@ describe('Form intake import', () => {
       const dryRun = await importFormIntake(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true });
       expect(formEditField).not.toHaveBeenCalled();
       const real = await importFormIntake(context, user, configuration, { mode: ConfigImportMode.Overwrite });
-      expect(real).toMatchObject({ status: 'overwritten', reason: 'Groups or markings not found are left out of the form' });
+      expect(real).toMatchObject({ status: 'overwritten', reason: 'Groups, markings or labels not found are left out of the form' });
       expect(dryRun).toEqual(real);
       expect(formEditField).toHaveBeenCalledTimes(1);
     });
@@ -247,7 +247,7 @@ describe('Form intake import', () => {
       });
       vi.mocked(internalFindByIds).mockImplementation(lookup([]));
       const result = await importFormIntake(context, user, configuration, { mode: ConfigImportMode.Copy });
-      expect(result.reason).toBe('Added as "Incident intake (1)"\nGroups or markings not found are left out of the form');
+      expect(result.reason).toBe('Added as "Incident intake (1)"\nGroups, markings or labels not found are left out of the form');
     });
   });
 

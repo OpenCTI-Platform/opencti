@@ -2844,7 +2844,7 @@
   "Groupings": "グルーピング",
   "Groupings | Analyses": "グループ分け｜分析",
   "Groups": "グループ",
-  "Groups or markings not found are left out of the form": "見つからないグループまたはマーキングはフォームから除外されます",
+  "Groups, markings or labels not found are left out of the form": "見つからないグループ、マーキング、またはラベルはフォームから除外されます",
   "Groups | Security | Settings": "グループ｜セキュリティ｜設定",
   "Groups configuration": "グループ構成",
   "Groups expressions": "グループ式",

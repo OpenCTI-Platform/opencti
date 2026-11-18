@@ -2844,7 +2844,7 @@
   "Groupings": "그룹화",
   "Groupings | Analyses": "그룹화 | 분석",
   "Groups": "그룹",
-  "Groups or markings not found are left out of the form": "찾을 수 없는 그룹 또는 마킹은 양식에서 제외됩니다",
+  "Groups, markings or labels not found are left out of the form": "찾을 수 없는 그룹, 마킹 또는 라벨은 양식에서 제외됩니다",
   "Groups | Security | Settings": "그룹 | 보안 | 설정",
   "Groups configuration": "그룹 구성",
   "Groups expressions": "그룹 표현식",

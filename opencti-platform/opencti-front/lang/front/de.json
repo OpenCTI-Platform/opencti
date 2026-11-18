@@ -2844,7 +2844,7 @@
   "Groupings": "Gruppierungen",
   "Groupings | Analyses": "Gruppierungen | Analysen",
   "Groups": "Gruppen",
-  "Groups or markings not found are left out of the form": "Nicht gefundene Gruppen oder Markierungen werden aus dem Formular entfernt",
+  "Groups, markings or labels not found are left out of the form": "Nicht gefundene Gruppen, Markierungen oder Labels werden aus dem Formular entfernt",
   "Groups | Security | Settings": "Gruppen |Sicherheit | Einstellungen",
   "Groups configuration": "Gruppen-Konfiguration",
   "Groups expressions": "Gruppenausdrücke",
