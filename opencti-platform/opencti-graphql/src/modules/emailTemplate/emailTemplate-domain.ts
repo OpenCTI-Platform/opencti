@@ -73,6 +73,15 @@ export const addEmailTemplate = async (context: AuthContext, user: AuthUser, inp
   return createInternalObject<StoreEntityEmailTemplate>(context, user, emailTemplateToCreate, ENTITY_TYPE_EMAIL_TEMPLATE);
 };
 
+// The built-in template for the locked users, as the administrators edited it. As findEmailTemplatesByName, without its
+// Enterprise Edition check, which would stop the startup: the engine matches a name without its case,
+// but a template whose name differs by its case is another template
+export const findLockedUserEmailTemplate = async (context: AuthContext) => {
+  const filters = addFilter(undefined, 'name', LOCKED_USER_EMAIL_TEMPLATE_INPUT.name);
+  const templates = await fullEntitiesList<BasicStoreEntityEmailTemplate>(context, SYSTEM_USER, [ENTITY_TYPE_EMAIL_TEMPLATE], { filters });
+  return templates.find((template) => template.name === LOCKED_USER_EMAIL_TEMPLATE_INPUT.name);
+};
+
 // Creates the built-in template of the email sent to the administrators when the local authentication lockout locks an account,
 // unless a template of the same name exists. Called at each startup while the feature flag exists, so that enabling the flag later
 // still creates it: a migration runs only once. When the flag is removed, this becomes a migration and the platform init
@@ -80,11 +89,7 @@ export const initLockedUserEmailTemplate = async (context: AuthContext) => {
   if (!isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG)) {
     return undefined;
   }
-  // As findEmailTemplatesByName, without its Enterprise Edition check, which would stop the startup: the engine matches
-  // a name without its case, but a template whose name differs by its case is another template
-  const filters = addFilter(undefined, 'name', LOCKED_USER_EMAIL_TEMPLATE_INPUT.name);
-  const templates = await fullEntitiesList<BasicStoreEntityEmailTemplate>(context, SYSTEM_USER, [ENTITY_TYPE_EMAIL_TEMPLATE], { filters });
-  const existingTemplate = templates.find((template) => template.name === LOCKED_USER_EMAIL_TEMPLATE_INPUT.name);
+  const existingTemplate = await findLockedUserEmailTemplate(context);
   if (existingTemplate) {
     return existingTemplate;
   }

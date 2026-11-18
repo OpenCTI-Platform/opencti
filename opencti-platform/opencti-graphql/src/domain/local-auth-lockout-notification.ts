@@ -4,8 +4,11 @@
 
 import conf, { ACCOUNT_STATUS_ACTIVE, logApp } from '../config/conf';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
+import { LOCKED_USER_EMAIL_TEMPLATE_INPUT } from '../database/locked-user-email-template-input';
 import { isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { findLockedUserEmailTemplate } from '../modules/emailTemplate/emailTemplate-domain';
+import type { BasicStoreEntityEmailTemplate } from '../modules/emailTemplate/emailTemplate-types';
 import { ENTITY_TYPE_USER } from '../modules/user/user-types';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -54,4 +57,19 @@ export const loadLocalAuthLockRecipients = async (context: AuthContext, lockedUs
     withOrganizationAdmins: isNotEmptyField(settings.platform_organization),
     maxRecipients: MAX_RECIPIENTS,
   });
+};
+
+export type LocalAuthLockEmailTemplate = Pick<BasicStoreEntityEmailTemplate, 'email_object' | 'sender_email' | 'template_body'>;
+
+// The built-in template, as the administrators edited it. Once deleted, the email still goes with its default content
+// until the next startup creates it again: a security alert must never be lost silently
+export const loadLocalAuthLockEmailTemplate = async (context: AuthContext): Promise<LocalAuthLockEmailTemplate> => {
+  const template = await findLockedUserEmailTemplate(context);
+  if (template) {
+    return template;
+  }
+  logApp.warn('Local authentication lockout: the built-in template for the locked users cannot be found, the email is sent with its default content', {
+    template_name: LOCKED_USER_EMAIL_TEMPLATE_INPUT.name,
+  });
+  return LOCKED_USER_EMAIL_TEMPLATE_INPUT;
 };

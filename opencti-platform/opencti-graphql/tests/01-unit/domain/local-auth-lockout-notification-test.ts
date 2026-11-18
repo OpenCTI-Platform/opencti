@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { logApp } from '../../../src/config/conf';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../../src/database/cache';
-import { loadLocalAuthLockRecipients, selectLocalAuthLockRecipients } from '../../../src/domain/local-auth-lockout-notification';
+import { LOCKED_USER_EMAIL_TEMPLATE_INPUT } from '../../../src/database/locked-user-email-template-input';
+import { loadLocalAuthLockEmailTemplate, loadLocalAuthLockRecipients, selectLocalAuthLockRecipients } from '../../../src/domain/local-auth-lockout-notification';
+import { findLockedUserEmailTemplate } from '../../../src/modules/emailTemplate/emailTemplate-domain';
+import type { BasicStoreEntityEmailTemplate } from '../../../src/modules/emailTemplate/emailTemplate-types';
 import type { BasicStoreSettings } from '../../../src/types/settings';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 import { BYPASS, SETTINGS_SETACCESSES, SETTINGS_SETLABELS, VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
@@ -9,6 +12,10 @@ import { BYPASS, SETTINGS_SETACCESSES, SETTINGS_SETLABELS, VIRTUAL_ORGANIZATION_
 vi.mock('../../../src/database/cache', () => ({
   getEntityFromCache: vi.fn(),
   getEntitiesListFromCache: vi.fn(),
+}));
+
+vi.mock('../../../src/modules/emailTemplate/emailTemplate-domain', () => ({
+  findLockedUserEmailTemplate: vi.fn(),
 }));
 
 const ORGANIZATION = { internal_id: 'organization-locked-user' };
@@ -110,5 +117,32 @@ describe('Local authentication lockout - loading the recipients of the lock emai
   it('should not add the administrators of an organization without a platform organization', async () => {
     mockPlatform({}, [ACCESS_ADMIN, ORGANIZATION_ADMIN]);
     expect(ids(await loadLocalAuthLockRecipients(context, LOCKED_USER))).toEqual(['access-admin']);
+  });
+});
+
+describe('Local authentication lockout - template of the lock email', () => {
+  const context = {} as AuthContext;
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should use the built-in template as the administrators edited it', async () => {
+    const editedTemplate = { ...LOCKED_USER_EMAIL_TEMPLATE_INPUT, email_object: 'Account locked', template_body: '<p>$locked_user.name</p>' };
+    vi.mocked(findLockedUserEmailTemplate).mockResolvedValue(editedTemplate as BasicStoreEntityEmailTemplate);
+    const template = await loadLocalAuthLockEmailTemplate(context);
+    expect(template).toMatchObject({ email_object: 'Account locked', template_body: '<p>$locked_user.name</p>' });
+  });
+
+  it('should send the default content, and log it, when the built-in template was deleted', async () => {
+    const warn = vi.spyOn(logApp, 'warn').mockImplementation(() => undefined);
+    vi.mocked(findLockedUserEmailTemplate).mockResolvedValue(undefined);
+    const template = await loadLocalAuthLockEmailTemplate(context);
+    expect(template).toMatchObject({
+      email_object: LOCKED_USER_EMAIL_TEMPLATE_INPUT.email_object,
+      sender_email: LOCKED_USER_EMAIL_TEMPLATE_INPUT.sender_email,
+      template_body: LOCKED_USER_EMAIL_TEMPLATE_INPUT.template_body,
+    });
+    expect(warn).toHaveBeenCalledOnce();
   });
 });
