@@ -9,6 +9,9 @@ import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { isNotEmptyField } from '../../database/utils';
+import { ForbiddenAccess } from '../../config/errors';
+import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
+import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { detectObservableType, refangValues } from '../../utils/observable';
 import { createStixPattern } from '../../python/pythonBridge';
 import { transformSpecialFields } from './form-fields-converter';
@@ -192,6 +195,7 @@ export const buildAdditionalEntities = async (
   isBypass: boolean = false,
   uploads: PendingUpload[] = [],
   existingToAttach: any[] = [],
+  canUpdateKnowledge: boolean = true,
 ): Promise<Record<string, string[]>> => {
   const additionalEntitiesMap: Record<string, string[]> = {};
   if (!schema.additionalEntities) return additionalEntitiesMap;
@@ -210,7 +214,16 @@ export const buildAdditionalEntities = async (
         for (let index2 = 0; index2 < additionalEntities.length; index2 += 1) {
           const existingStixId = additionalEntities[index2].standard_id;
           if (SELF_ATTACHED_STIX_TYPES.includes(existingStixId.split('--')[0])) {
-            existingToAttach.push(toStix(additionalEntities[index2]));
+            const existingStix = toStix(additionalEntities[index2]);
+            // Attaching it updates its refs, which the import skips without a word when the applicant cannot: without
+            // Create / Update knowledge (isCreateOnlyFormImport), or below its confidence once it has refs (generateRefsInputsForUpsert)
+            if (!canUpdateKnowledge) {
+              throw ForbiddenAccess('You are not allowed to attach an existing task, note or opinion: it needs the right to update knowledge.', { id: existingStixId });
+            }
+            if (isNotEmptyField(additionalEntities[index2][RELATION_OBJECT])) {
+              controlUserConfidenceAgainstElement(user, additionalEntities[index2]);
+            }
+            existingToAttach.push(existingStix);
           }
           if (additionalEntitiesMap[additionalEntity.id]) {
             additionalEntitiesMap[additionalEntity.id].push(existingStixId);

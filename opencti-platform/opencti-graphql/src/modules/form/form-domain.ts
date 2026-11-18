@@ -531,9 +531,9 @@ export const planSubmission = async (
   const isBypass = isUserHasCapability(user, BYPASS);
   validateFormSubmission(schema, values, isBypass);
   validatePendingPayload(values, input.files?.length ?? 0, schema);
+  // A submission that creates no draft is imported in the current draft of the applicant, if any (see commitSubmission)
+  const toDraft = finalIsDraft || !!getDraftContext(context, user); // '' once the applicant left a draft
   if (!isBypass) {
-    // A submission that creates no draft is imported in the current draft of the applicant, if any (see commitSubmission)
-    const toDraft = finalIsDraft || !!getDraftContext(context, user); // '' once the applicant left a draft
     checkFormSubmissionAccess(user, toDraft, { pendingLabels: countPendingLabels(values) });
   }
   validatePendingRoots(schema, values);
@@ -549,7 +549,7 @@ export const planSubmission = async (
   const { mainEntityType } = schema;
   const { mainStixEntities, mainEntityStixId, isExistingMain } = await buildMainStixEntities(context, user, schema, values, mainEntityType, isBypass, uploads);
   const existingToAttach: any[] = [];
-  const additionalEntitiesMap = await buildAdditionalEntities(context, user, schema, values, bundle, isBypass, uploads, existingToAttach);
+  const additionalEntitiesMap = await buildAdditionalEntities(context, user, schema, values, bundle, isBypass, uploads, existingToAttach, canUpdateKnowledgeIn(user, toDraft));
   await buildRelationships(context, user, schema, values, mainStixEntities, additionalEntitiesMap, bundle);
   wrapInContainerOrPush(mainEntityType, mainStixEntities, bundle, schema.includeInContainer, additionalEntitiesMap, isExistingMain, existingToAttach);
 

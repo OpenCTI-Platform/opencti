@@ -53,9 +53,21 @@ describe('planSubmission', () => {
     // threaded through, main entities passed on to relationship-building and container wrapping)
     // rather than just happening to return a well-shaped, still-empty bundle.
     expect(buildMainStixEntities).toHaveBeenCalledWith(mockContext, mockUser, schema, { name: 'Report A' }, 'Report', false, []);
-    expect(buildAdditionalEntities).toHaveBeenCalledWith(mockContext, mockUser, schema, { name: 'Report A' }, plan.bundle, false, [], []);
+    expect(buildAdditionalEntities).toHaveBeenCalledWith(mockContext, mockUser, schema, { name: 'Report A' }, plan.bundle, false, [], [], true);
     expect(buildRelationships).toHaveBeenCalledWith(mockContext, mockUser, schema, { name: 'Report A' }, [{ id: 'report--main' }], new Map(), plan.bundle);
     expect(wrapInContainerOrPush).toHaveBeenCalledWith('Report', [{ id: 'report--main' }], plan.bundle, false, new Map(), [], []);
+  });
+
+  it('lets only an applicant who can update knowledge attach existing tasks, notes or opinions', async () => {
+    const { buildAdditionalEntities } = await import('../../../src/modules/form/form-bundle-builder');
+    const schema: any = { mainEntityType: 'Report', fields: [], includeInContainer: false };
+    const form: any = { id: 'form-1', name: 'Test Form', form_schema: JSON.stringify(schema) };
+    const input: any = { formId: 'form-1', values: JSON.stringify({}) };
+    const formIntakeOnly: any = { id: 'user-2', capabilities: [{ name: 'KNOWLEDGE_KNFORMINTAKE' }] };
+
+    await planSubmission(mockContext, formIntakeOnly, form, input, false);
+
+    expect(vi.mocked(buildAdditionalEntities).mock.lastCall?.[8]).toBe(false);
   });
 
   it('produces a draftPlan when isDraft is true', async () => {

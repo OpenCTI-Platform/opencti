@@ -661,6 +661,46 @@ describe('buildAdditionalEntities', () => {
       expect(result).toEqual({ t: ['task--abc'], m: ['malware--abc'] });
     });
 
+    // The import would use it as it is (isCreateOnlyFormImport) and the submission would report a success with nothing attached
+    it('should refuse to attach an existing task, note or opinion for an applicant who cannot update knowledge', async () => {
+      vi.mocked(loadFormEntity).mockResolvedValueOnce({ standard_id: 'task--abc', entity_type: 'Task' } as any);
+      const schema = makeSchema({ additionalEntities: [{ id: 't', lookup: true, entityType: 'Task' }] });
+
+      await expect(buildAdditionalEntities(context, user, schema, { additional_t_lookup: 'id-1' }, makeBundle(), false, [], [], false))
+        .rejects.toThrow('You are not allowed to attach an existing task, note or opinion');
+    });
+
+    it('should still reference any other existing entity for an applicant who cannot update knowledge', async () => {
+      vi.mocked(loadFormEntity).mockResolvedValueOnce({ standard_id: 'malware--abc', entity_type: 'Malware' } as any);
+      const schema = makeSchema({ additionalEntities: [{ id: 'm', lookup: true, entityType: 'Malware' }] });
+
+      const result = await buildAdditionalEntities(context, user, schema, { additional_m_lookup: 'id-2' }, makeBundle(), false, [], [], false);
+
+      expect(result).toEqual({ m: ['malware--abc'] });
+    });
+
+    // The upsert adds no ref above the applicant's confidence, unless the entity has none yet (generateRefsInputsForUpsert)
+    describe('applicant confidence below the existing note', () => {
+      const lowConfidenceUser = { ...user, effective_confidence_level: { max_confidence: 20, overrides: [] } } as any;
+      const schema = makeSchema({ additionalEntities: [{ id: 'n', lookup: true, entityType: 'Note' }] });
+
+      it('should refuse to attach it when it already has refs', async () => {
+        vi.mocked(loadFormEntity).mockResolvedValueOnce({ standard_id: 'note--abc', entity_type: 'Note', confidence: 80, object: ['malware-internal-id'] } as any);
+
+        await expect(buildAdditionalEntities(context, lowConfidenceUser, schema, { additional_n_lookup: 'id-1' }, makeBundle(), false, [], []))
+          .rejects.toThrow('User effective max confidence level is insufficient to update this element');
+      });
+
+      it('should attach it when it has no refs yet', async () => {
+        vi.mocked(loadFormEntity).mockResolvedValueOnce({ standard_id: 'note--abc', entity_type: 'Note', confidence: 80 } as any);
+        const existingToAttach: any[] = [];
+
+        await buildAdditionalEntities(context, lowConfidenceUser, schema, { additional_n_lookup: 'id-1' }, makeBundle(), false, [], existingToAttach);
+
+        expect(existingToAttach.map((o) => o.id)).toEqual(['note--abc']);
+      });
+    });
+
     it('should handle an array of lookup ids', async () => {
       vi.mocked(loadFormEntity)
         .mockResolvedValueOnce({ standard_id: 'identity--abc' } as any)
