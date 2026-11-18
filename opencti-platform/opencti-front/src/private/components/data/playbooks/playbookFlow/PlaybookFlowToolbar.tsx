@@ -21,7 +21,7 @@ import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../../../components/i18n';
 import type { PlaybookLayoutDirection } from '../hooks/usePlaybookLayoutMode';
 import PlaybookFlowShortcutsDialog from './PlaybookFlowShortcutsDialog';
-import { playbookShortcutFor } from './playbookShortcuts';
+import { isGlobalShortcut, playbookShortcutFor } from './playbookShortcuts';
 
 // The library item declares a 16x16 glyph. Every control of the row is the md size (36 px), the
 // size of the layout switch, so the row has one height.
@@ -32,17 +32,18 @@ interface PlaybookFlowToolbarProps {
   onDirectionChange: (direction: PlaybookLayoutDirection) => void;
   // Undo / redo of the session; absent on a read-only canvas.
   history?: { undo: () => void; redo: () => void; canUndo: boolean; canRedo: boolean };
+  // The focusable canvas wrapper: the single-key shortcuts answer only while the focus is inside it.
+  canvasRef: React.RefObject<HTMLDivElement | null>;
 }
 
-// Floating canvas toolbar: undo and redo first (they leave in view mode without moving anything
-// else), then the layout direction, then zoom and fit, then the shortcuts cheat sheet. The same
-// actions answer the keyboard (see playbookShortcuts.ts): Ctrl/Cmd+Z anywhere on the page, the
-// single-key shortcuts only while the focus is on the canvas.
-const PlaybookFlowToolbar = ({ direction, onDirectionChange, history }: PlaybookFlowToolbarProps) => {
+// Floating canvas toolbar: undo and redo first (absent in view mode, so nothing after them moves), then
+// the layout direction, then zoom and fit, then the shortcuts cheat sheet. The same actions answer the
+// keyboard (see playbookShortcuts.ts): undo and redo anywhere on the page, the single keys on the canvas
+// only, never in a field, a select or a dialog or drawer.
+const PlaybookFlowToolbar = ({ direction, onDirectionChange, history, canvasRef }: PlaybookFlowToolbarProps) => {
   const { t_i18n } = useFormatter();
   const { zoomIn, zoomOut, fitView } = useReactFlow();
   const [cheatSheetOpen, setCheatSheetOpen] = useState(false);
-  const rowRef = useRef<HTMLDivElement>(null);
 
   // The key handler reads the latest actions through a ref, so it is registered once for the life of
   // the canvas: a re-render (a layout change, a new history state) never leaves a press unanswered.
@@ -50,14 +51,11 @@ const PlaybookFlowToolbar = ({ direction, onDirectionChange, history }: Playbook
   actions.current = { zoomIn, zoomOut, fitView, onDirectionChange, history };
 
   useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
+    const run = (event: KeyboardEvent, global: boolean) => {
       const action = playbookShortcutFor(event);
-      if (!action) return;
+      if (!action || isGlobalShortcut(action) !== global) return;
       const current = actions.current;
-      const isHistory = action === 'undo' || action === 'redo';
-      // The window listener answers undo / redo only; the canvas listener answers the rest.
-      if (isHistory !== (event.currentTarget === window)) return;
-      if (isHistory) {
+      if (global) {
         // A read-only canvas, or a dialog or drawer open over it, keeps Ctrl/Cmd+Z to the browser.
         if (!current.history || document.querySelector('[role="dialog"]')) return;
       }
@@ -73,22 +71,23 @@ const PlaybookFlowToolbar = ({ direction, onDirectionChange, history }: Playbook
       else if (action === 'horizontalLayout') current.onDirectionChange('horizontal');
       else setCheatSheetOpen(true);
     };
-    // Capture phase: a control that handles the key itself (a focused toolbar button, the canvas
-    // pane) cannot stop the shortcut before it is read. F, V, H, +, - and ? are read on the canvas
-    // only: a drawer, a dialog or a select (portalled out of it) keeps its own keys, typeahead
-    // included. Ctrl/Cmd+Z stays on the window.
-    const canvas = rowRef.current?.closest('[data-playbook-canvas]');
-    window.addEventListener('keydown', onKeyDown, true);
-    canvas?.addEventListener('keydown', onKeyDown as EventListener, true);
+    const onWindowKeyDown = (event: KeyboardEvent) => run(event, true);
+    const onCanvasKeyDown = (event: KeyboardEvent) => run(event, false);
+    // Undo and redo stay global. The single keys (F, V, H, +, -, ?) are read on the canvas wrapper only,
+    // in the capture phase so a focused toolbar button or the pane cannot stop them: a key typed in the
+    // step drawer, a select or any dialog never reaches them.
+    const canvas = canvasRef.current;
+    window.addEventListener('keydown', onWindowKeyDown, true);
+    canvas?.addEventListener('keydown', onCanvasKeyDown, true);
     return () => {
-      window.removeEventListener('keydown', onKeyDown, true);
-      canvas?.removeEventListener('keydown', onKeyDown as EventListener, true);
+      window.removeEventListener('keydown', onWindowKeyDown, true);
+      canvas?.removeEventListener('keydown', onCanvasKeyDown, true);
     };
-  }, []);
+  }, [canvasRef]);
 
   return (
     <Panel position="top-right">
-      <div ref={rowRef} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         {history && (
           <>
             <IconButton size="default" aria-label={t_i18n('Undo')} tooltip={t_i18n('Undo')} disabled={!history.canUndo} onClick={history.undo}>

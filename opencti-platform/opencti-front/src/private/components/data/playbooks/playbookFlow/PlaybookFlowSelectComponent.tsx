@@ -86,7 +86,7 @@ const PlaybookFlowSelectComponent = ({
           setActive(0);
         }}
       />
-      {/* Always in the page, so a screen reader announces the message when a search empties the list. */}
+      {/* A live region present from the start, so screen readers announce the empty result (WCAG 4.1.3). */}
       <div role="status" style={flat.length === 0 ? { padding: '16px 8px' } : undefined}>
         {flat.length === 0 ? t_i18n('No component matches your search') : null}
       </div>

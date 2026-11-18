@@ -144,6 +144,8 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook, canEdit, running }
   // through this stable recorder.
   const { getNodes, getEdges } = useReactFlow();
   const historyRef = useRef<PlaybookHistoryControls | null>(null);
+  // The focusable wrapper of the flow: the single-key canvas shortcuts answer only inside it.
+  const canvasFocusRef = useRef<HTMLDivElement>(null);
   const historyRecorder = useMemo(() => ({
     snapshot: () => canvasSnapshot(getNodes(), getEdges()),
     record: (op: PlaybookOperation, before: PlaybookSnapshot, result?: PlaybookOperationResult) => historyRef.current?.record(op, before, result),
@@ -260,22 +262,15 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook, canEdit, running }
             </marker>
           </defs>
         </svg>
-        {/* The canvas takes the focus (a click on it, or Tab): the single-key shortcuts answer there only. */}
+        {/* Focusable so a click on the pane gives it the focus: F, V, H, +, - and ? answer here only. */}
         <div
-          data-playbook-canvas
+          ref={canvasFocusRef}
           data-testid="playbook-canvas"
           role="region"
-          aria-label={t_i18n('Playbook canvas')}
           // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
           tabIndex={0}
-          // A press on the pane, an edge or a card body gives the canvas the focus; a control keeps its own.
-          // Capture phase: the pane's zoom handler stops the press from bubbling.
-          onPointerDownCapture={(event) => {
-            if (!(event.target as HTMLElement).closest('button, input, textarea, [contenteditable="true"]')) {
-              event.currentTarget.focus({ preventScroll: true });
-            }
-          }}
-          style={{ position: 'relative', flex: 1, minHeight: 0, outline: 'none' }}
+          aria-label={t_i18n('Playbook canvas')}
+          style={{ position: 'relative', flex: 1, minHeight: 0 }}
         >
           <ReactFlow
             defaultNodes={flowNodes}
@@ -306,7 +301,7 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook, canEdit, running }
                 style={{ backgroundColor: theme.palette.background.paper }}
               />
             )}
-            <PlaybookFlowToolbar direction={direction} onDirectionChange={setDirection} history={canEdit ? history : undefined} />
+            <PlaybookFlowToolbar direction={direction} onDirectionChange={setDirection} history={canEdit ? history : undefined} canvasRef={canvasFocusRef} />
           </ReactFlow>
         </div>
         <PlaybookFlowAddComponents

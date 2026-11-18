@@ -18,14 +18,7 @@ import { useTheme } from '@mui/material/styles';
 import Dialog from '@common/dialog/Dialog';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
-import { displayShortcutKey, PLAYBOOK_SHORTCUTS } from './playbookShortcuts';
-
-// userAgentData is not in every browser (nor in the DOM typings yet): navigator.platform is the fallback.
-const currentPlatform = (): string | undefined => {
-  if (typeof navigator === 'undefined') return undefined;
-  const data = (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData;
-  return data?.platform || navigator.platform;
-};
+import { isApplePlatform, PLAYBOOK_SHORTCUTS, shortcutKeyLabel } from './playbookShortcuts';
 
 interface PlaybookFlowShortcutsDialogProps {
   open: boolean;
@@ -36,7 +29,8 @@ interface PlaybookFlowShortcutsDialogProps {
 const PlaybookFlowShortcutsDialog = ({ open, onClose }: PlaybookFlowShortcutsDialogProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const platform = currentPlatform();
+  // The modifier of undo and redo reads as the user's own key: the Command sign on macOS, Ctrl elsewhere.
+  const apple = isApplePlatform();
   const keyStyle: React.CSSProperties = {
     display: 'inline-block',
     minWidth: 20,
@@ -62,7 +56,7 @@ const PlaybookFlowShortcutsDialog = ({ open, onClose }: PlaybookFlowShortcutsDia
             <tr key={shortcut.action}>
               <td style={{ padding: '6px 0' }}>{t_i18n(shortcut.label)}</td>
               <td style={{ padding: '6px 0', textAlign: 'right' }}>
-                {shortcut.keys.map((key) => <kbd key={key} style={keyStyle}>{displayShortcutKey(key, platform)}</kbd>)}
+                {shortcut.keys.map((key) => <kbd key={key} style={keyStyle}>{shortcutKeyLabel(key, apple)}</kbd>)}
               </td>
             </tr>
           ))}

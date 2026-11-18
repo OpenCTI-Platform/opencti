@@ -175,9 +175,8 @@ test.describe('Playbook editor', { tag: ['@ee'] }, () => {
       }
       return true;
     };
-    // A toolbar button had the focus last: the shortcuts answer once the canvas has the focus again.
+    // A toolbar button had the focus last: the shortcuts still answer, the focus being on the canvas.
     await toolbarButton(page, 'Zoom in').click();
-    await clickEmptyCanvas(page);
     for (let round = 0; round < 2; round += 1) {
       await page.keyboard.press('h');
       await expect(checked('Horizontal layout')).toHaveAttribute('aria-checked', 'true');

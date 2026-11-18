@@ -21,16 +21,8 @@ export interface PlaybookShortcut {
   label: string;
 }
 
-// Stands for the platform modifier in the cheat sheet: shown as ⌘ on macOS and iOS, Ctrl elsewhere.
+// The platform modifier in a key list: shown as the key of the user's platform (see shortcutKeyLabel).
 export const MOD_KEY = 'Mod';
-
-export const isApplePlatform = (platform: string | undefined): boolean => /mac|iphone|ipad|ipod/i.test(platform ?? '');
-
-// The key a cheat sheet shows: the platform modifier resolved, any other key as written.
-export const displayShortcutKey = (key: string, platform: string | undefined): string => {
-  if (key !== MOD_KEY) return key;
-  return isApplePlatform(platform) ? '⌘' : 'Ctrl';
-};
 
 // The canvas shortcuts, in the order the cheat sheet lists them. Labels are catalog keys.
 export const PLAYBOOK_SHORTCUTS: PlaybookShortcut[] = [
@@ -44,6 +36,27 @@ export const PLAYBOOK_SHORTCUTS: PlaybookShortcut[] = [
   { action: 'cheatSheet', keys: ['?'], label: 'Keyboard shortcuts' },
 ];
 
+interface PlatformLike {
+  platform?: string;
+  userAgentData?: { platform?: string };
+}
+
+// True on macOS and iOS, where the shortcuts use Command instead of Control.
+export const isApplePlatform = (nav: PlatformLike | undefined = typeof navigator !== 'undefined' ? navigator as PlatformLike : undefined) => {
+  const platform = nav?.userAgentData?.platform || nav?.platform || '';
+  return /mac|iphone|ipad|ipod/i.test(platform);
+};
+
+// The label of one key of a shortcut: the platform modifier is the Command sign on macOS, Ctrl elsewhere.
+export const shortcutKeyLabel = (key: string, apple: boolean = isApplePlatform()) => {
+  if (key !== MOD_KEY) return key;
+  return apple ? '\u2318' : 'Ctrl';
+};
+
+// Undo and redo answer anywhere on the page (except in a field or over a dialog); every other shortcut
+// answers only while the focus is on the canvas.
+export const isGlobalShortcut = (action: PlaybookShortcutAction) => action === 'undo' || action === 'redo';
+
 interface ShortcutKeyEvent {
   key: string;
   ctrlKey?: boolean;
@@ -53,18 +66,34 @@ interface ShortcutKeyEvent {
   target?: EventTarget | null;
 }
 
-const isTypingTarget = (target: EventTarget | null | undefined) => {
-  const element = target as { tagName?: string; isContentEditable?: boolean } | null | undefined;
+interface TargetLike {
+  tagName?: string;
+  isContentEditable?: boolean;
+  getAttribute?: (name: string) => string | null;
+  closest?: (selectors: string) => unknown;
+}
+
+// Roles of the controls that read single keys themselves (typeahead of a select, a list, a menu).
+const FIELD_ROLES = new Set(['textbox', 'searchbox', 'combobox', 'listbox', 'option', 'spinbutton', 'slider', 'menu', 'menuitem']);
+const OVERLAY_SELECTOR = '[role="dialog"], [role="alertdialog"], [aria-modal="true"], .MuiDrawer-root, [role="combobox"], [role="listbox"], [role="menu"]';
+
+// A field, a control with its own typeahead, or anything inside a dialog or drawer keeps its keys.
+export const isFieldOrOverlayTarget = (target: EventTarget | null | undefined) => {
+  const element = target as TargetLike | null | undefined;
   if (!element) return false;
   if (element.isContentEditable) return true;
   const tag = (element.tagName ?? '').toUpperCase();
-  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+  const role = typeof element.getAttribute === 'function' ? element.getAttribute('role') : null;
+  if (role && FIELD_ROLES.has(role)) return true;
+  return typeof element.closest === 'function' && Boolean(element.closest(OVERLAY_SELECTOR));
 };
 
-// The shortcut a key press asks for, or null: never while typing in a field (the field keeps its own
-// undo), never with a modifier except Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z (Ctrl+Y too) for undo and redo.
+// The shortcut a key press asks for, or null: never in a field, a select, a list or a menu, never inside
+// a dialog or drawer (the control keeps its own keys and undo), never with a modifier except Mod+Z and
+// Shift+Mod+Z (Ctrl+Y too) for undo and redo.
 export const playbookShortcutFor = (event: ShortcutKeyEvent): PlaybookShortcutAction | null => {
-  if (isTypingTarget(event.target)) return null;
+  if (isFieldOrOverlayTarget(event.target)) return null;
   if ((event.ctrlKey || event.metaKey) && !event.altKey) {
     const key = event.key.toLowerCase();
     if (key === 'z') return event.shiftKey ? 'redo' : 'undo';
