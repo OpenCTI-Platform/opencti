@@ -374,6 +374,12 @@ flowchart TD
 
 An entity in this situation shows the badge **Status out of sync with the workflow**. Its next transition, or a bypass, puts it back in line.
 
+The **Entity status sync** switch, on the canvas of the entity type's **Workflow** tab, makes stream synchronizations match an incoming status by its name instead of dropping it.
+
+!!! note "Request access"
+
+    On Enterprise Edition, Request for information has a second workflow for [request access](../administration/request-access.md#request-access-with-a-workflow). The **Global** and **Request access** buttons of the Workflow tab switch between the two.
+
 #### Playbooks
 
 A [playbook](playbook-automation.md) component **Manipulate knowledge** can replace the processing status like any other attribute. In the replace action on the status, choose the **entity type** first: the status list then only shows the statuses of that type's workflow. Playbooks saved before this step existed have no entity type and keep working. By default this is a plain status change, handled as described above. A playbook can instead move the entity through the workflow engine, so that the *on exit* and *on enter* status actions run: in the configuration of the replace action on the processing status, set `apply_transition_actions` to `true`. This option is not shown in the playbook editor and needs the workflow feature enabled. The status is changed as the automation user; if the change cannot be applied, it is logged and the playbook goes on. An entity already in the target status is left unchanged.
