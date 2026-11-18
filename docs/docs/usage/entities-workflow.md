@@ -308,7 +308,7 @@ In the editor, the transition is labelled **closing reason required**. *Closed* 
 
     A closing reason can only be asked on a transition whose target is a **final status**: a status that no transition leaves. The switch is disabled otherwise, and the panel names the transitions that leave the status. Publishing is refused when a transition breaks this rule.
 
-    In the example of this page, *Closed* is left by `reopen`, so `close` cannot ask for a closing reason. To use one, remove `reopen`. Users with the *Bypass* capability can still move a closed entity back to another status.
+    In the example of this page, *Closed* is left by `reopen`, so `close` cannot ask for a closing reason. To use one, remove `reopen`. Users with the *Bypass all capabilities* capability can still move a closed entity back to another status.
 
 ### Choose a closing reason
 
@@ -342,11 +342,11 @@ A closed Incident response with the reason *Duplicate*: the **Closing reason** i
 - It stays while the entity remains in a final status.
 - It is cleared as soon as the entity moves to a status that can be left again.
 - It is never taken from a source entity when entities are merged: it follows the workflow state of the target.
-- It cannot be edited directly. Only a workflow transition or a user with the *Bypass* capability can change it.
+- It cannot be edited directly. Only a workflow transition or a user with the *Bypass all capabilities* capability can change it.
 
 !!! note "If the reason cannot be saved"
 
-    If the status changes but the closing reason could not be written, the entity shows a workflow error. A user with *Bypass* can clear it with **Clear**.
+    If the status changes but the closing reason could not be written, the entity shows a workflow error. A user with *Bypass all capabilities* can clear it with **Clear**.
 
 ## How workflows work with the rest of the platform
 

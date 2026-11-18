@@ -126,7 +126,7 @@ To decide a request you need edit access to it and the *Restrict organization ac
 
 1. OpenCTI first checks every requested entity: your access, any restriction, and your confidence level.
 2. Entities that are not containers are shared right away.
-3. Containers (a report, for example) are shared last by a [background task](background-tasks.md). The request enters *Approved* only when this task succeeds.
+3. Containers (a report, for example) are shared last by a [background task](../usage/background-tasks.md). The request enters *Approved* only when this task succeeds.
 
 If a container cannot be shared, the request is not decided and shows an error. The organizations granted directly are revoked again. You cannot decline or decide the request another way until you retry the same transition, which grants them again, or until a user with *Bypass all capabilities* clears the error, which revokes what is left. What the container task already shared before it failed stays shared.
 
