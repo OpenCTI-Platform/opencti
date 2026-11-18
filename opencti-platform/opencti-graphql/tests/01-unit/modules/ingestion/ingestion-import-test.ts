@@ -378,6 +378,27 @@ describe('importConfigPresetFeed review fixes', () => {
     expect(await importConfigPresetFeed(context, user, json, configuration, { ...overwrite, dryRun: true })).toMatchObject({ status: 'created' });
   });
 
+  it('imports the default of a query attribute a feed stored as a boolean or a number, as a string', async () => {
+    vi.mocked(createJsonMapperFromConfiguration).mockResolvedValue({ id: 'mapper-id' } as never);
+    vi.mocked(createIngestionAutomaticUser).mockResolvedValue({ id: 'service-account-id' } as never);
+    vi.mocked(addIngestionJson).mockResolvedValue({ id: 'created-id' } as never);
+    const configuration = jsonConfiguration({
+      headers: [],
+      query_attributes: [
+        { type: 'data', from: '$.next', to: 'cursor', data_operation: 'data', state_operation: 'replace', default: false, exposed: 'query_param' },
+        { type: 'data', from: '$.page', to: 'page', data_operation: 'data', state_operation: 'replace', default: 1, exposed: 'query_param' },
+      ],
+    });
+    expect(await importConfigPresetFeed(context, user, json, configuration, { ...overwrite, dryRun: true })).toMatchObject({ status: 'created' });
+    await importConfigPresetFeed(context, user, json, configuration, overwrite);
+    expect(addIngestionJson).toHaveBeenCalledWith(context, user, expect.objectContaining({
+      query_attributes: [
+        expect.objectContaining({ to: 'cursor', default: 'false' }),
+        expect.objectContaining({ to: 'page', default: '1' }),
+      ],
+    }));
+  });
+
   it('offers the blanked default of a query attribute sent in a sensitive header, and writes it', async () => {
     vi.mocked(createJsonMapperFromConfiguration).mockResolvedValue({ id: 'mapper-id' } as never);
     vi.mocked(createIngestionAutomaticUser).mockResolvedValue({ id: 'service-account-id' } as never);

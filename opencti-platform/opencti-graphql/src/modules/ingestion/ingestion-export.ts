@@ -101,7 +101,8 @@ export const exportJsonFeed = async (context: AuthContext, user: AuthUser, feed:
     verb: feed.verb,
     body: feed.body ?? null,
     headers: sanitizeExportedHeaders(feed.headers) ?? [],
-    query_attributes: (sanitizeExportedQueryAttributes(feed.query_attributes) ?? []) as unknown as JsonFeedImportConfiguration['query_attributes'],
+    query_attributes: (sanitizeExportedQueryAttributes(feed.query_attributes) ?? [])
+      .map((attribute) => ({ ...attribute, default: attribute.default == null ? attribute.default : String(attribute.default) })) as unknown as JsonFeedImportConfiguration['query_attributes'],
     pagination_with_sub_page: feed.pagination_with_sub_page ?? null,
     pagination_with_sub_page_attribute_path: feed.pagination_with_sub_page_attribute_path ?? null,
     pagination_with_sub_page_query_verb: feed.pagination_with_sub_page_query_verb || null,

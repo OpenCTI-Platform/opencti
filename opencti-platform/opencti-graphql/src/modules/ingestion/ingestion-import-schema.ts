@@ -28,7 +28,8 @@ const queryAttribute = z.strictObject({
   to: z.string().nullable().optional(),
   data_operation: z.string().nullable().optional(),
   state_operation: z.string().nullable().optional(),
-  default: z.string().nullable().optional(),
+  // A feed edited through the API can store a boolean or a number: read as the string the forms write
+  default: z.union([z.string(), z.number(), z.boolean()]).transform(String).nullable().optional(),
   exposed: z.string().nullable().optional(),
 });
 
