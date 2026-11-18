@@ -1,31 +1,7 @@
 import * as R from 'ramda';
-import {
-  cursorToOffset,
-  getIndicesToQuery,
-  inferIndexFromConceptType,
-  isEmptyField,
-  isNotEmptyField,
-  READ_DATA_INDICES,
-  READ_DATA_INDICES_WITHOUT_INFERRED,
-  READ_ENTITIES_INDICES,
-  READ_ENTITIES_INDICES_WITHOUT_INFERRED,
-  READ_INDEX_INFERRED_ENTITIES,
-  READ_INDEX_INFERRED_RELATIONSHIPS,
-  READ_INDEX_INTERNAL_OBJECTS,
-  READ_INDEX_INTERNAL_RELATIONSHIPS,
-  READ_INDEX_STIX_CORE_RELATIONSHIPS,
-  READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
-  READ_INDEX_STIX_CYBER_OBSERVABLES,
-  READ_INDEX_STIX_DOMAIN_OBJECTS,
-  READ_INDEX_STIX_META_OBJECTS,
-  READ_INDEX_STIX_META_RELATIONSHIPS,
-  READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
-  READ_RELATIONSHIPS_INDICES,
-  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
-} from './utils';
+import { cursorToOffset, getIndicesToQuery, isEmptyField, isNotEmptyField, READ_DATA_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from './utils';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import {
-  isStixRefRelationship,
   RELATION_BORN_IN,
   RELATION_CREATED_BY,
   RELATION_ETHNICITY,
@@ -35,19 +11,8 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
   RELATION_OBJECT_PARTICIPANT,
-  STIX_REF_RELATIONSHIP_TYPES,
 } from '../schema/stixRefRelationship';
-import {
-  buildRefRelationKey,
-  buildRefRelationSearchKey,
-  ENTITY_TYPE_IDENTITY,
-  ID_INFERRED,
-  ID_INTERNAL,
-  ID_STANDARD,
-  IDS_STIX,
-  isAbstract,
-  REF_RELATION_ID_FIELDS,
-} from '../schema/general';
+import { buildRefRelationKey, buildRefRelationSearchKey, ENTITY_TYPE_IDENTITY, ID_INFERRED, ID_INTERNAL, ID_STANDARD, IDS_STIX, REF_RELATION_ID_FIELDS } from '../schema/general';
 import {
   ATTRIBUTE_ABSTRACT,
   ATTRIBUTE_DESCRIPTION,
@@ -55,19 +20,16 @@ import {
   ATTRIBUTE_EXPLANATION,
   ATTRIBUTE_NAME,
   ENTITY_TYPE_LOCATION_COUNTRY,
-  isStixDomainObject,
   STIX_ORGANIZATIONS_RESTRICTED,
   STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
-import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
-import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { isBasicObject } from '../schema/stixCoreObject';
 import { BYPASS, computeUserMemberAccessIds, INTERNAL_USERS, isBypassUser, isServiceAccountUser, isUserHasCapabilities, MEMBER_ACCESS_ALL, SYSTEM_USER } from '../utils/access';
 import { runtimeFieldObservableValueScript } from '../utils/format';
-import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { refang } from '../utils/refang';
-import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
+import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isDateNumericOrBooleanAttribute, isObjectFlatAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { IDS_FILTER, TYPE_FILTER } from '../utils/filtering/filtering-constants';
@@ -82,8 +44,7 @@ import {
   standardId,
 } from '../schema/attribute-definition';
 import { connections as connectionsAttribute } from '../modules/attributes/basicRelationship-registrationAttributes';
-import { isInternalRelationship, RELATION_IN_PIR, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
-import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import { RELATION_IN_PIR, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
 import { buildDraftFilter, type BuildDraftFilterOpts } from './draft-utils';
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
@@ -91,7 +52,7 @@ import { RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-t
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase, BasicStoreEntity, BasicStoreEntityMarkingDefinition, BasicStoreObject, StoreMarkingDefinition } from '../types/store';
 import type { BasicStoreSettings } from '../types/settings';
-import { completeSpecialFilterKeys } from '../utils/filtering/filtering-completeSpecialFilterKeys';
+import type { completeSpecialFilterKeys } from '../utils/filtering/filtering-completeSpecialFilterKeys';
 import { IDS_ATTRIBUTES, KEYWORD_TERMS_ATTRIBUTES } from '../domain/attribute-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import type { FiltersWithNested } from './middleware-loader';
@@ -325,81 +286,6 @@ const getRuntimeUsers = async (context: AuthContext, user: AuthUser) => {
 const getRuntimeMarkings = async (context: AuthContext, user: AuthUser) => {
   const identities = await getEntitiesListFromCache<BasicStoreEntityMarkingDefinition>(context, user, ENTITY_TYPE_MARKING_DEFINITION);
   return R.mergeAll(identities.map((i) => ({ [i.internal_id]: i.definition })));
-};
-const withInferencesEntities = (indices: string[], withInferences: boolean) => {
-  return withInferences ? [READ_INDEX_INFERRED_ENTITIES, ...indices] : indices;
-};
-const withInferencesRels = (indices: string[], withInferences: boolean) => {
-  return withInferences ? [READ_INDEX_INFERRED_RELATIONSHIPS, ...indices] : indices;
-};
-export const computeQueryIndices = (
-  indices: string[] | string | undefined | null,
-  typeOrTypes: string[] | string | undefined | null,
-  withInferences = true,
-): string[] | string | undefined | null => {
-  const types = (Array.isArray(typeOrTypes) || isEmptyField(typeOrTypes)) ? typeOrTypes : [typeOrTypes] as string[];
-  // If indices are explicitly defined, just rely on the definition
-  if (isEmptyField(indices)) {
-    // If not and have no clue about the expected types, ask for all indices.
-    // Worst case scenario that need to be avoided.
-    if (isEmptyField(types)) {
-      return withInferences ? READ_DATA_INDICES : READ_DATA_INDICES_WITHOUT_INFERRED;
-    }
-    // If types are defined we need to infer from them the correct indices
-    const definedTypes = types as string[];
-    return R.uniq(definedTypes.map((findType) => {
-      // If defined types are abstract, try to restrict the indices as much as possible
-      if (isAbstract(findType)) {
-        // For objects
-        if (isBasicObject(findType)) {
-          if (isInternalObject(findType)) {
-            return withInferencesEntities([READ_INDEX_INTERNAL_OBJECTS], withInferences);
-          }
-          if (isStixMetaObject(findType)) {
-            return withInferencesEntities([READ_INDEX_STIX_META_OBJECTS], withInferences);
-          }
-          if (isStixDomainObject(findType)) {
-            return withInferencesEntities([READ_INDEX_STIX_DOMAIN_OBJECTS], withInferences);
-          }
-          if (isStixCoreObject(findType)) {
-            return withInferencesEntities([READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES], withInferences);
-          }
-          if (isStixObject(findType)) {
-            return withInferencesEntities([READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES], withInferences);
-          }
-          return withInferences ? READ_ENTITIES_INDICES : READ_ENTITIES_INDICES_WITHOUT_INFERRED;
-        }
-        // For relationships
-        if (isBasicRelationship(findType) || STIX_REF_RELATIONSHIP_TYPES.includes(findType)) {
-          if (isInternalRelationship(findType)) {
-            return withInferencesRels([READ_INDEX_INTERNAL_RELATIONSHIPS], withInferences);
-          }
-          if (isStixSightingRelationship(findType)) {
-            return withInferencesRels([READ_INDEX_STIX_SIGHTING_RELATIONSHIPS], withInferences);
-          }
-          if (isStixCoreRelationship(findType)) {
-            return withInferencesRels([READ_INDEX_STIX_CORE_RELATIONSHIPS], withInferences);
-          }
-          if (isStixRefRelationship(findType) || STIX_REF_RELATIONSHIP_TYPES.includes(findType)) {
-            return withInferencesRels([READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS], withInferences);
-          }
-          if (isStixRelationship(findType)) {
-            return withInferencesRels([READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS,
-              READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS], withInferences);
-          }
-          return withInferences ? READ_RELATIONSHIPS_INDICES : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED;
-        }
-        // Fallback
-        throw UnsupportedError('Fail to compute indices for unknown type', { type: findType });
-      }
-      // If concrete type, infer the index from the type
-      if (isBasicObject(findType)) {
-        return withInferencesEntities([`${inferIndexFromConceptType(findType)}*`], withInferences);
-      }
-      return withInferencesRels([`${inferIndexFromConceptType(findType)}*`], withInferences);
-    }).flat());
-  }
-  return indices;
 };
 // Default fetch used by loadThroughDenormalized
 // This rel_ must be low volume
@@ -1385,6 +1271,7 @@ export type EngineQueryDeps = {
   elPaginate: typeof elPaginate;
   elRawSearch: typeof elRawSearch;
   isRuntimeSortEnable: typeof isRuntimeSortEnable;
+  completeSpecialFilterKeys: typeof completeSpecialFilterKeys;
 };
 
 const getRuntimeEntities = async (context: AuthContext, user: AuthUser, entityType: string, deps: EngineQueryDeps) => {
@@ -1584,13 +1471,15 @@ export const isSearchingRelationships = (types: string[] | null | undefined) => 
 };
 // Resolve the connected elements matching the search that the user can access.
 // Relationships must not be found by searching the name or id of any other connected element.
+export type SearchRestrictions = { must: any[]; must_not: any[] };
+export type SearchConnectionsOpts = ProcessSearchArgs & BuildDraftFilterOpts & { withDraft?: boolean };
 export const elResolveSearchConnectionsRestrictions = async (
   context: AuthContext,
   user: AuthUser,
   search: string,
-  restrictions: { must: any[]; must_not: any[] },
+  restrictions: SearchRestrictions,
   relationshipsFilters: any[],
-  opts: ProcessSearchArgs & BuildDraftFilterOpts & { withDraft?: boolean },
+  opts: SearchConnectionsOpts,
   deps: Pick<EngineQueryDeps, 'elRawSearch'>,
 ): Promise<SearchConnectionsRestrictions> => {
   if (restrictions.must.length === 0 && restrictions.must_not.length === 0) {
@@ -1761,7 +1650,7 @@ export const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, o
   } : convertedFilters;
   // Handle filters
   if (completeFilters && isFilterGroupNotEmpty(completeFilters)) {
-    const finalFilters = await completeSpecialFilterKeys(context, user, completeFilters, { noRegardingOfFilterIdsCheck });
+    const finalFilters = await deps.completeSpecialFilterKeys(context, user, completeFilters, { noRegardingOfFilterIdsCheck });
     const { subQuery: filtersSubQuery } = buildSubQueryForFilterGroup(context, user, finalFilters);
     if (filtersSubQuery) {
       mustFilters.push(filtersSubQuery);

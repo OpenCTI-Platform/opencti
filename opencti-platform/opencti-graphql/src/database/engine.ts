@@ -112,11 +112,12 @@ import { pushAll, unshiftAll } from '../utils/arrayUtil';
 import { getRoleAssumerWithWebIdentity } from '../utils/awsSdk';
 import { elConvertHits, elConvertHitsToMap } from './engine-data-converter';
 import { engineMappingGenerator, getRetroCompatibleMappings } from './engine-mapping-generator';
+import { computeQueryIndices } from './engine-indices';
+import { completeSpecialFilterKeys } from '../utils/filtering/filtering-completeSpecialFilterKeys';
 import { ES_DEFAULT_PAGINATION, ES_MAX_PAGINATION, MAX_RUNTIME_RESOLUTION_SIZE } from './engine-config';
 import { AbortError } from 'node-fetch';
 import {
   buildDataRestrictions,
-  computeQueryIndices,
   REL_DEFAULT_FETCH,
   REL_COUNT_SCRIPT_FIELD,
   BASE_FIELDS,
@@ -127,6 +128,8 @@ import {
   NAMED_QUERIES_UNIQUENESS_SEPARATOR,
   elResolveSearchConnectionsRestrictions as buildSearchConnectionsRestrictions,
   type EngineQueryDeps,
+  type SearchConnectionsOpts,
+  type SearchRestrictions,
   type QueryBodyBuilderOpts,
   elQueryBodyBuilder as buildQueryBody,
 } from './engine-query-builder';
@@ -1543,7 +1546,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
   }
 };
 // The query builder gets the engine read functions injected, so that it never imports this module.
-const engineQueryDeps: EngineQueryDeps = { elFindByIds, elPaginate, elRawSearch, isRuntimeSortEnable };
+const engineQueryDeps: EngineQueryDeps = { elFindByIds, elPaginate, elRawSearch, isRuntimeSortEnable, completeSpecialFilterKeys };
 const elQueryBodyBuilder = (context: AuthContext, user: AuthUser, options: QueryBodyBuilderOpts) => {
   return buildQueryBody(context, user, options, engineQueryDeps);
 };
@@ -1551,9 +1554,9 @@ const elResolveSearchConnectionsRestrictions = (
   context: AuthContext,
   user: AuthUser,
   search: string,
-  restrictions: Parameters<typeof buildSearchConnectionsRestrictions>[3],
+  restrictions: SearchRestrictions,
   relationshipsFilters: any[],
-  opts: Parameters<typeof buildSearchConnectionsRestrictions>[5],
+  opts: SearchConnectionsOpts,
 ) => {
   return buildSearchConnectionsRestrictions(context, user, search, restrictions, relationshipsFilters, opts, engineQueryDeps);
 };
