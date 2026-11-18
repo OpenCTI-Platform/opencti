@@ -142,6 +142,8 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const isFail = file?.metaData?.errors && file.metaData.errors.length > 0;
   const isProgress = file?.uploadStatus === 'progress' || file?.uploadStatus === 'wait';
   const isOutdated = file?.uploadStatus === 'timeout';
+  // A failed, timed-out or still-uploading file cannot be opened nor downloaded
+  const isUnavailable = !!isFail || isOutdated || isProgress;
   const file_markings = file?.metaData?.file_markings;
   const fileMarkings = me.allowed_marking?.filter(({ id }) => (file_markings ?? []).includes(id)) ?? [];
 
@@ -238,8 +240,13 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     }
   };
 
+  // The warning dialog downloads on its own: refuse to open it when `handleLink` would refuse the download
+  const openDownloadWarning = () => {
+    if (isUnavailable) return;
+    setDisplayDownload(true);
+  };
   const handleLink = (url: string, inNewWindow = false) => {
-    if (isFail || isOutdated || isProgress) return;
+    if (isUnavailable) return;
     handleCloseDownload();
     handleClose();
     if (inNewWindow) {
@@ -265,7 +272,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   // A file flagged as potentially malicious is never opened in the browser: "Open in a new tab" shows the
   // download warning instead, and the line never links to the Content tab
   const canOpenInNewTab = !!openInNewTabAction && !isFail;
-  const linkToContentTab = openInNewTabAction && !isWarning && !isFail && !isOutdated && !isProgress
+  const linkToContentTab = openInNewTabAction && !isWarning && !isUnavailable
     ? contentTabLink
     : null;
   const isLineClickable = !openInNewTabAction || !!linkToContentTab;
@@ -281,7 +288,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
       return;
     }
     if (isWarning) {
-      setDisplayDownload(true);
+      openDownloadWarning();
     } else {
       handleLink(listUri, true);
     }
@@ -440,7 +447,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                     event.preventDefault();
                     event.stopPropagation();
                     if (isWarning) {
-                      setDisplayDownload(true);
+                      openDownloadWarning();
                     } else {
                       handleLink(`${APP_BASE_PATH}/storage/view/${encodedFilePath}`, true);
                     }
