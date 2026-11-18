@@ -686,3 +686,117 @@ describe('StixCyberObservable resolver promote to indicator behavior', () => {
     expect(queryResult.data.stixCyberObservable).toBeNull();
   });
 });
+
+describe('Network Traffic deduplication on import', () => {
+  // Same shape as the pycti import of a STIX bundle: refs are given by their bundle ids
+  const ipv4BundleId = 'ipv4-addr--041e5d33-1ef7-455f-a5e7-4ed863a9c95d';
+  const networkTrafficBundleId = 'network-traffic--0d1dcaf5-ccde-4aff-b9e5-f1e70698042f';
+  const otherNetworkTrafficBundleId = 'network-traffic--d2c21f07-e9d9-4fdd-af8e-9bb1b9501c81';
+  // STIX 2.1 deterministic ids, computed outside the platform
+  const ipv4StandardId = 'ipv4-addr--efb3cb24-5b02-57b0-adb6-64563650dafa';
+  const networkTrafficStandardId = 'network-traffic--2cc6d858-8854-576e-bad1-46d121fa8497';
+  let ipv4InternalId;
+  let networkTrafficInternalId;
+
+  const ADD_QUERY = gql`
+    mutation NetworkTrafficDeduplicationAdd(
+      $type: String!,
+      $stix_id: StixId,
+      $update: Boolean,
+      $x_opencti_score: Int,
+      $IPv4Addr: IPv4AddrAddInput,
+      $NetworkTraffic: NetworkTrafficAddInput
+    ) {
+      stixCyberObservableAdd(type: $type, stix_id: $stix_id, update: $update, x_opencti_score: $x_opencti_score, IPv4Addr: $IPv4Addr, NetworkTraffic: $NetworkTraffic) {
+        id
+        standard_id
+        x_opencti_stix_ids
+        x_opencti_score
+      }
+    }
+  `;
+
+  const EDIT_QUERY = gql`
+    mutation NetworkTrafficDeduplicationEdit($id: ID!, $input: [EditInput]!) {
+      stixCyberObservableEdit(id: $id) {
+        fieldPatch(input: $input) {
+          id
+          standard_id
+          x_opencti_stix_ids
+        }
+      }
+    }
+  `;
+
+  const DELETE_QUERY = gql`
+    mutation NetworkTrafficDeduplicationDelete($id: ID!) {
+      stixCyberObservableEdit(id: $id) {
+        delete
+      }
+    }
+  `;
+
+  const importNetworkTraffic = async (stixId, score) => {
+    const result = await queryAsAdminWithSuccess({
+      query: ADD_QUERY,
+      variables: { type: 'Network-Traffic', stix_id: stixId, update: true, x_opencti_score: score, NetworkTraffic: { networkDst: ipv4BundleId, protocols: ['tcp'] } },
+    });
+    return result.data.stixCyberObservableAdd;
+  };
+
+  it('should create the referenced IPv4 with its bundle id', async () => {
+    const result = await queryAsAdminWithSuccess({
+      query: ADD_QUERY,
+      variables: { type: 'IPv4-Addr', stix_id: ipv4BundleId, IPv4Addr: { value: '198.51.100.77' } },
+    });
+    const ipv4 = result.data.stixCyberObservableAdd;
+    expect(ipv4.standard_id).toEqual(ipv4StandardId);
+    expect(ipv4.x_opencti_stix_ids).toEqual([ipv4BundleId]);
+    ipv4InternalId = ipv4.id;
+  });
+
+  it('should create the network traffic with its STIX 2.1 id and only its bundle id as other id', async () => {
+    const networkTraffic = await importNetworkTraffic(networkTrafficBundleId, 50);
+    expect(networkTraffic.standard_id).toEqual(networkTrafficStandardId);
+    expect(networkTraffic.x_opencti_stix_ids).toEqual([networkTrafficBundleId]);
+    networkTrafficInternalId = networkTraffic.id;
+  });
+
+  it('should resolve the same traffic from another bundle after the referenced IPv4 changed', async () => {
+    await queryAsAdminWithSuccess({ query: EDIT_QUERY, variables: { id: ipv4InternalId, input: [{ key: 'x_opencti_score', value: [70] }] } });
+    const networkTraffic = await importNetworkTraffic(otherNetworkTrafficBundleId, 50);
+    expect(networkTraffic.id).toEqual(networkTrafficInternalId);
+    expect(networkTraffic.standard_id).toEqual(networkTrafficStandardId);
+    expect(networkTraffic.x_opencti_stix_ids).toEqual(expect.arrayContaining([networkTrafficBundleId, otherNetworkTrafficBundleId]));
+  });
+
+  it('should keep the standard id when the traffic is upserted with a non contributing change', async () => {
+    const networkTraffic = await importNetworkTraffic(networkTrafficStandardId, 80);
+    expect(networkTraffic.id).toEqual(networkTrafficInternalId);
+    expect(networkTraffic.standard_id).toEqual(networkTrafficStandardId);
+    expect(networkTraffic.x_opencti_score).toEqual(80);
+    expect(networkTraffic.x_opencti_stix_ids).toEqual(expect.arrayContaining([networkTrafficBundleId, otherNetworkTrafficBundleId]));
+  });
+
+  it('should keep the previous ids when a contributing field is added', async () => {
+    const result = await queryAsAdminWithSuccess({
+      query: EDIT_QUERY,
+      variables: { id: networkTrafficInternalId, input: [{ key: 'end', value: ['2026-11-18T12:00:00.000Z'] }] },
+    });
+    const networkTraffic = result.data.stixCyberObservableEdit.fieldPatch;
+    expect(networkTraffic.standard_id).not.toEqual(networkTrafficStandardId);
+    expect(networkTraffic.x_opencti_stix_ids).toEqual(expect.arrayContaining([networkTrafficStandardId, networkTrafficBundleId, otherNetworkTrafficBundleId]));
+  });
+
+  it('should resolve the first bundle again after the contributing field update', async () => {
+    const networkTraffic = await importNetworkTraffic(networkTrafficBundleId, 80);
+    expect(networkTraffic.id).toEqual(networkTrafficInternalId);
+  });
+
+  it('should delete the network traffic and the IPv4', async () => {
+    await queryAsAdminWithSuccess({ query: DELETE_QUERY, variables: { id: networkTrafficInternalId } });
+    await queryAsAdminWithSuccess({ query: DELETE_QUERY, variables: { id: ipv4InternalId } });
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: networkTrafficInternalId } });
+    expect(queryResult.data.stixCyberObservable).toBeNull();
+  });
+});
