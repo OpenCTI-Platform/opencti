@@ -7,7 +7,7 @@ import { resetXtmCounterpartCache } from './useXtmCounterparts';
 
 const mocks = vi.hoisted(() => ({
   connected: true,
-  counterparts: [] as Array<Record<string, string | null>>,
+  counterparts: [] as Array<Record<string, unknown>>,
   fail: false,
   lookups: 0,
 }));
@@ -34,6 +34,7 @@ const counterpart = {
   object_type: 'Vulnerability',
   object_name: 'PAN-OS GlobalProtect command injection',
   object_url: 'https://aev.example/admin/vulnerabilities/vuln-1',
+  facts: [] as Array<{ key: string; value: string }>,
 };
 
 describe('OpenAevCard', () => {
@@ -71,6 +72,39 @@ describe('OpenAevCard', () => {
     });
     expect(screen.queryByTestId('openaev-card')).not.toBeInTheDocument();
     expect(mocks.lookups).toBe(0);
+  });
+
+  it('shows the key facts of the counterpart, plural-aware, unknown ones dropped', async () => {
+    mocks.counterparts = [{
+      ...counterpart,
+      facts: [
+        { key: 'findings', value: '5' },
+        { key: 'affected_assets', value: '1' },
+        { key: 'unknown_fact', value: '9' },
+        { key: 'simulations', value: 'not a number' },
+      ],
+    }];
+    testRender(<OpenAevCard kind="VULNERABILITY" counterpartKey="CVE-2024-3400" />);
+    expect(await screen.findByTestId('openaev-card-facts')).toHaveTextContent('5 findings · 1 affected asset');
+  });
+
+  it('shows the simulations of a scenario and the date of the latest one', async () => {
+    mocks.counterparts = [{
+      ...counterpart,
+      key: 'intrusion-set--4f7e2a8c-1c5b-4b0e-9a8e-0c2d3e4f5a6b',
+      facts: [{ key: 'simulations', value: '1' }, { key: 'last_simulation', value: '2026-11-17T09:30:00Z' }],
+    }];
+    testRender(<OpenAevCard kind="THREAT" counterpartKey="intrusion-set--4f7e2a8c-1c5b-4b0e-9a8e-0c2d3e4f5a6b" />);
+    const facts = await screen.findByTestId('openaev-card-facts');
+    expect(facts).toHaveTextContent('1 simulation');
+    expect(facts).toHaveTextContent('Last simulation:');
+  });
+
+  it('draws no facts line when the counterpart has none', async () => {
+    mocks.counterparts = [counterpart];
+    testRender(<OpenAevCard kind="VULNERABILITY" counterpartKey="CVE-2024-3400" />);
+    expect(await screen.findByText(counterpart.object_name)).toBeInTheDocument();
+    expect(screen.queryByTestId('openaev-card-facts')).not.toBeInTheDocument();
   });
 
   it('degrades to "Not in OpenAEV" on a lookup error, never a page error', async () => {

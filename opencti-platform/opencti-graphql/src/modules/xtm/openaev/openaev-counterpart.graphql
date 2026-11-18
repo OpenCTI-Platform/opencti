@@ -19,6 +19,12 @@ type XtmConnection {
   url: String
 }
 
+# One key fact of a counterpart: a stable key (findings, affected_assets, simulations, last_simulation) and its value as text.
+type XtmCounterpartFact {
+  key: String!
+  value: String!
+}
+
 # An object of a connected XTM product matching one key of this platform.
 type XtmCounterpart {
   key: String!
@@ -27,6 +33,7 @@ type XtmCounterpart {
   object_type: String!
   object_name: String
   object_url: String!
+  facts: [XtmCounterpartFact!]!
 }
 
 type Query {

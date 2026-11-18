@@ -17,7 +17,37 @@ export interface XtmCounterpart {
   object_type: string;
   object_name: string | null;
   object_url: string;
+  facts: XtmCounterpartFact[];
 }
+
+export interface XtmCounterpartFact {
+  key: string;
+  value: string;
+}
+
+const MAX_FACTS = 10;
+const MAX_FACT_LENGTH = 64;
+const FACT_KEY_PATTERN = /^[a-z][a-z0-9_]*$/;
+
+/** The facts a product answered, kept only when well formed and short: they are shown as is. */
+export const sanitiseFacts = (facts: unknown): XtmCounterpartFact[] => {
+  if (!Array.isArray(facts)) {
+    return [];
+  }
+  const out: XtmCounterpartFact[] = [];
+  for (const fact of facts) {
+    const key = fact?.fact_key;
+    const value = fact?.fact_value;
+    if (typeof key === 'string' && typeof value === 'string' && FACT_KEY_PATTERN.test(key)
+      && key.length <= MAX_FACT_LENGTH && value.length > 0 && value.length <= MAX_FACT_LENGTH) {
+      out.push({ key, value });
+    }
+    if (out.length >= MAX_FACTS) {
+      break;
+    }
+  }
+  return out;
+};
 
 /**
  * A connected XTM product able to resolve counterparts. OpenAEV is the first; a third product
@@ -120,6 +150,7 @@ export const openAevProvider: CounterpartProvider = {
         object_type: o.object_type,
         object_name: o.object_name ?? null,
         object_url: o.object_url,
+        facts: sanitiseFacts(o.object_facts),
       }));
   },
 };

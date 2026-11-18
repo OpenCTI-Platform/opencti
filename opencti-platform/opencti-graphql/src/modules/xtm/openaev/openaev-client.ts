@@ -15,6 +15,8 @@ export interface OpenAevLocalObject {
   object_type: string;
   object_name: string | null;
   object_url: string;
+  // Key facts OpenAEV computed for the object (findings, simulations); absent on older versions.
+  object_facts?: { fact_key: string; fact_value: string }[] | null;
 }
 
 const trimSlash = (url: string) => url.replace(/\/+$/, '');

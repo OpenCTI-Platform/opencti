@@ -30,6 +30,10 @@ export const xtmCounterpartsQuery = graphql`
       object_type
       object_name
       object_url
+      facts {
+        key
+        value
+      }
     }
   }
 `;

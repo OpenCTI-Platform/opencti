@@ -20,7 +20,7 @@ vi.mock('../../../../src/utils/http-client', () => ({
 }));
 
 import { fetchOpenAevObjects, getOpenAevUrl, isOpenAevConnected, OPENAEV_DEFAULT_TENANT_ID } from '../../../../src/modules/xtm/openaev/openaev-client';
-import { findXtmConnections, findXtmCounterparts, openAevProvider, resetCounterpartCache } from '../../../../src/modules/xtm/openaev/openaev-counterpart-domain';
+import { findXtmConnections, findXtmCounterparts, openAevProvider, resetCounterpartCache, sanitiseFacts } from '../../../../src/modules/xtm/openaev/openaev-counterpart-domain';
 
 const remote = (key: string, extra: Record<string, unknown> = {}) => ({
   object_key: key,
@@ -128,7 +128,28 @@ describe('OpenAEV counterpart provider', () => {
       object_type: 'Vulnerability',
       object_name: null,
       object_url: 'https://aev.example.com/admin/assets/id-cve-2024-3400',
+      facts: [],
     }]);
+  });
+
+  it('keeps the well-formed key facts OpenAEV answers and drops the rest', async () => {
+    connect();
+    mocks.post.mockResolvedValue({
+      data: [remote('CVE-2024-3400', {
+        object_facts: [
+          { fact_key: 'findings', fact_value: '5' },
+          { fact_key: 'affected_assets', fact_value: '2' },
+          { fact_key: 'Bad Key', fact_value: '1' },
+          { fact_key: 'simulations', fact_value: 'x'.repeat(65) },
+          { fact_key: 'last_simulation', fact_value: 7 },
+          null,
+        ],
+      })],
+    });
+    const [found] = await openAevProvider.resolve('VULNERABILITY', ['CVE-2024-3400']);
+    expect(found.facts).toEqual([{ key: 'findings', value: '5' }, { key: 'affected_assets', value: '2' }]);
+    expect(sanitiseFacts('not a list')).toEqual([]);
+    expect(sanitiseFacts(Array.from({ length: 20 }, () => ({ fact_key: 'findings', fact_value: '1' })))).toHaveLength(10);
   });
 
   it('serves the GraphQL entry points through the registered provider', async () => {

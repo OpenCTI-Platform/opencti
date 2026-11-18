@@ -17,19 +17,49 @@ interface OpenAevCardProps {
   gridRow?: boolean;
 }
 
+type CounterpartFact = { key: string; value: string };
+type Translate = (message: string, options?: { values: Record<string, number> }) => string;
+
+// The facts OpenAEV computes (LocalObjectService): counts and the start of the latest simulation.
+// An unknown key or a value that is not a number is not shown.
+const COUNT_FACTS: Record<string, string> = {
+  findings: '{count, plural, one {# finding} other {# findings}}',
+  affected_assets: '{count, plural, one {# affected asset} other {# affected assets}}',
+  simulations: '{count, plural, one {# simulation} other {# simulations}}',
+};
+
+export const formatCounterpartFacts = (
+  facts: ReadonlyArray<CounterpartFact> | null | undefined,
+  t_i18n: Translate,
+  formatDate: (date: string) => string,
+): string[] => {
+  const out: string[] = [];
+  for (const fact of facts ?? []) {
+    const message = COUNT_FACTS[fact.key];
+    if (message) {
+      const count = Number(fact.value);
+      if (Number.isInteger(count) && count >= 0) out.push(t_i18n(message, { values: { count } }));
+    } else if (fact.key === 'last_simulation' && !Number.isNaN(Date.parse(fact.value))) {
+      out.push(`${t_i18n('Last simulation')}: ${formatDate(fact.value)}`);
+    }
+  }
+  return out;
+};
+
 /**
  * Overview card "In OpenAEV": on a match, the OpenAEV counterpart with the identifier both
- * platforms share and a link to it (its simulations, findings and expectation results live
- * there); without a match, a muted "Not in OpenAEV" line. Nothing is drawn while loading or when
+ * platforms share, its key facts (findings, affected assets, simulations and the latest one) and a
+ * link to it; without a match, a muted "Not in OpenAEV" line. Nothing is drawn while loading or when
  * OpenAEV is not connected: the hero action of the same page carries the "Connect OpenAEV" call
  * to action, so the overview does not repeat it.
  */
 const OpenAevCard: React.FC<OpenAevCardProps> = ({ kind, counterpartKey, gridRow = false }) => {
-  const { t_i18n } = useFormatter();
+  const { t_i18n, fd } = useFormatter();
   const state = useXtmCounterpart('openaev', kind, counterpartKey);
   if (state.status !== 'match' && state.status !== 'no_match') return null;
   const sharedKey = normaliseXtmKey(kind, counterpartKey);
   const match = state.status === 'match' ? state.counterpart : null;
+  const facts = match ? formatCounterpartFacts(match.facts, t_i18n, fd) : [];
 
   const card = (
     <Card
@@ -68,6 +98,11 @@ const OpenAevCard: React.FC<OpenAevCardProps> = ({ kind, counterpartKey, gridRow
           {sharedKey && (
             <Box sx={{ typography: 'caption', color: 'text.secondary' }}>
               {`${t_i18n('Shared identifier')}: ${sharedKey}`}
+            </Box>
+          )}
+          {facts.length > 0 && (
+            <Box sx={{ typography: 'caption', color: 'text.secondary' }} data-testid="openaev-card-facts">
+              {facts.join(' · ')}
             </Box>
           )}
         </Box>

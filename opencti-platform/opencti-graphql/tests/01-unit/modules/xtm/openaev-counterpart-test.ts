@@ -27,6 +27,7 @@ const counterpart = (key: string): XtmCounterpart => ({
   object_type: 'asset',
   object_name: key,
   object_url: `https://aev.example.com/admin/assets/id-${key}`,
+  facts: [],
 });
 
 const provider = (connected: boolean, found: string[]): CounterpartProvider & { resolve: ReturnType<typeof vi.fn> } => ({

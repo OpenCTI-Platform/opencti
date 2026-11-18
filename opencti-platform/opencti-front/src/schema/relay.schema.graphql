@@ -18517,12 +18517,18 @@ type XtmConnection {
 }
 
 type XtmCounterpart {
+  facts: [XtmCounterpartFact!]!
   key: String!
   object_id: String!
   object_name: String
   object_type: String!
   object_url: String!
   product: String!
+}
+
+type XtmCounterpartFact {
+  key: String!
+  value: String!
 }
 
 enum XtmCounterpartKind {
