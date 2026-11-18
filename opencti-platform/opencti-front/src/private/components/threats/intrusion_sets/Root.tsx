@@ -158,6 +158,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
             <StixDomainObjectHeader
               entityType="Intrusion-Set"
               stixDomainObject={intrusionSet}
+              openAevCounterpart={{ kind: 'THREAT', key: intrusionSet.standard_id }}
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <IntrusionSetEdition intrusionSetId={intrusionSet.id} />

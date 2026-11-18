@@ -162,6 +162,7 @@ const RootThreatActorIndividualComponent = ({
             <StixDomainObjectHeader
               entityType="Threat-Actor-Individual"
               stixDomainObject={threatActorIndividual}
+              openAevCounterpart={{ kind: 'THREAT', key: threatActorIndividual.standard_id }}
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <ThreatActorIndividualEdition

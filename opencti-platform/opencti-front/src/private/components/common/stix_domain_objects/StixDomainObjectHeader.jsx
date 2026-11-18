@@ -53,6 +53,7 @@ import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMe
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
+import OpenAevPivot from '../xtm/OpenAevPivot';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 
 export const stixDomainObjectMutation = graphql`
@@ -293,6 +294,8 @@ const StixDomainObjectHeader = (props) => {
     enableEnrollPlaybook,
     enableAuthorizedMembers,
     redirectToContent,
+    // { kind, key } of the object's OpenAEV counterpart (hostname, MITRE id, CVE id or STIX id)
+    openAevCounterpart,
   } = props;
   const currentAccessRight = useGetCurrentUserAccessRight(stixDomainObject.currentUserAccessRight);
   const enableManageAuthorizedMembers = currentAccessRight.canManage && enableAuthorizedMembers;
@@ -520,6 +523,9 @@ const StixDomainObjectHeader = (props) => {
         }
         rightActions={(
           <>
+            {openAevCounterpart && (
+              <OpenAevPivot kind={openAevCounterpart.kind} counterpartKey={openAevCounterpart.key} />
+            )}
             {disableSharing !== true && (
               <StixCoreObjectSharing
                 elementId={stixDomainObject.id}
