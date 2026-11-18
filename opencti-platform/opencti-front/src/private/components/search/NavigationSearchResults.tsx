@@ -21,7 +21,7 @@ const NavigationSearchResults = ({ keyword }: { keyword?: string | null }) => {
   if (matches.length === 0) return null;
   const results = matches.slice(0, PLATFORM_SEARCH_PAGE_MAX_RESULTS);
   const isCut = matches.length > PLATFORM_SEARCH_PAGE_MAX_RESULTS;
-  const hidden = showAll ? 0 : Math.max(results.length - INITIAL_COUNT, 0);
+  const hidden = Math.max(results.length - INITIAL_COUNT, 0);
 
   return (
     <Box
@@ -45,15 +45,15 @@ const NavigationSearchResults = ({ keyword }: { keyword?: string | null }) => {
           </ListItemButton>
         ))}
       </List>
-      {hidden > 0 && (
-        <Button variant="tertiary" size="small" onClick={() => setShowAll(true)} sx={{ mt: 1 }}>
-          {`${t_i18n('Show more')} (${hidden})`}
-        </Button>
-      )}
       {showAll && isCut && (
-        <Text variant="content-caption" as="p" style={{ margin: 0, marginTop: 8 }}>
+        <Text variant="content-caption" as="p" style={{ margin: 0, marginTop: 8, paddingLeft: 16 }}>
           {t_i18n('Showing at most {max} pages, refine your search to narrow them down', { values: { max: PLATFORM_SEARCH_PAGE_MAX_RESULTS } })}
         </Text>
+      )}
+      {hidden > 0 && (
+        <Button variant="tertiary" size="small" onClick={() => setShowAll(!showAll)} sx={{ mt: 1 }}>
+          {showAll ? t_i18n('Show less') : `${t_i18n('Show more')} (${hidden})`}
+        </Button>
       )}
     </Box>
   );
