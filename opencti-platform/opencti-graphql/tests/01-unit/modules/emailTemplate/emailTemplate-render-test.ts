@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LOCKED_USER_EMAIL_TEMPLATE_INPUT } from '../../../../src/database/locked-user-email-template-input';
-import { type LockedUserEmailData, type LockedUserLock, renderEmailTemplate } from '../../../../src/modules/emailTemplate/emailTemplate-render';
+import { buildTemplateRecipient, type LockedUserEmailData, type LockedUserLock, renderEmailTemplate } from '../../../../src/modules/emailTemplate/emailTemplate-render';
 
 const flags = vi.hoisted(() => ({ lockout: true }));
 vi.mock('../../../../src/config/conf', async (importOriginal) => ({
@@ -81,5 +81,17 @@ describe('Email template rendering', () => {
     expect(html).toContain('The account is locked until 2026-11-13 16:40 UTC.');
     expect(html).toContain('Platform url: https://opencti.example.com');
     expect(html).not.toContain('$');
+  });
+});
+
+describe('Email template recipient', () => {
+  it('should keep only the fields a template can show, without any API token', () => {
+    const recipient = buildTemplateRecipient({ ...RECIPIENT, api_token: 'secret', password: 'hash', account_lock_after_date: undefined } as Parameters<typeof buildTemplateRecipient>[0]);
+    expect(recipient).toEqual({ ...RECIPIENT, api_token: '', account_lock_after_date: '' });
+  });
+
+  it('should show the expiration date of the account as a day, from a date or its ISO string', () => {
+    expect(buildTemplateRecipient({ account_lock_after_date: '2027-03-01T10:00:00.000Z' }).account_lock_after_date).toEqual('2027-03-01');
+    expect(buildTemplateRecipient({ account_lock_after_date: new Date('2027-03-01T10:00:00.000Z') }).account_lock_after_date).toEqual('2027-03-01');
   });
 });

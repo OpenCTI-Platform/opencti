@@ -7,12 +7,24 @@ import {
   loadLocalAuthLockEmailTemplate,
   loadLocalAuthLockRecipients,
   selectLocalAuthLockRecipients,
+  sendLocalAuthLockEmails,
 } from '../../../src/domain/local-auth-lockout-notification';
+import { sendMail } from '../../../src/database/smtp';
 import { findLockedUserEmailTemplate } from '../../../src/modules/emailTemplate/emailTemplate-domain';
 import type { BasicStoreEntityEmailTemplate } from '../../../src/modules/emailTemplate/emailTemplate-types';
 import type { BasicStoreSettings } from '../../../src/types/settings';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 import { BYPASS, SETTINGS_SETACCESSES, SETTINGS_SETLABELS, VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
+
+vi.mock('../../../src/config/conf', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/config/conf')>()),
+  isFeatureEnabled: vi.fn(() => true),
+}));
+
+vi.mock('../../../src/database/smtp', () => ({
+  sendMail: vi.fn(),
+  smtpComputeFrom: vi.fn(async (from?: string) => `${from} <no-reply@opencti.io>`),
+}));
 
 vi.mock('../../../src/database/cache', () => ({
   getEntityFromCache: vi.fn(),
@@ -73,7 +85,9 @@ describe('Local authentication lockout - recipients of the lock email', () => {
     const expiredAdmin = buildUser('expired-admin', { capabilities: capabilities(SETTINGS_SETACCESSES), account_status: 'Expired' });
     const serviceAccount = buildUser('service-account', { capabilities: capabilities(BYPASS), user_service_account: true });
     const withoutEmail = buildUser('without-email', { capabilities: capabilities(BYPASS), user_email: '' });
-    expect(select([ACCESS_ADMIN, lockedAdmin, expiredAdmin, serviceAccount, withoutEmail])).toEqual(['access-admin']);
+    // Its expiration date has passed, but the expiration manager has not set it to Expired yet
+    const pastExpirationAdmin = buildUser('past-expiration-admin', { capabilities: capabilities(BYPASS), account_lock_after_date: new Date('2020-01-01') });
+    expect(select([ACCESS_ADMIN, lockedAdmin, expiredAdmin, serviceAccount, withoutEmail, pastExpirationAdmin])).toEqual(['access-admin']);
   });
 
   it('should leave out the locked user, even when it is an administrator', () => {
@@ -184,5 +198,62 @@ describe('Local authentication lockout - data of the lock email', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe('Local authentication lockout - sending the lock email', () => {
+  const context = {} as AuthContext;
+  const ADA = buildUser('ada', { capabilities: capabilities(SETTINGS_SETACCESSES), firstname: 'Ada', lastname: 'Admin' } as Partial<AuthUser>);
+  const GRACE = buildUser('grace', { capabilities: capabilities(BYPASS), firstname: 'Grace', lastname: 'Hopper' } as Partial<AuthUser>);
+  const LOCKED = { ...LOCKED_USER, firstname: 'John', lastname: 'Doe' };
+  const temporaryLock = { lockType: 'temporary' as const, maxAttempts: 10, remainingMs: 15 * 60 * 1000 };
+
+  const mockPlatform = (platformUsers: AuthUser[], template?: Partial<BasicStoreEntityEmailTemplate>) => {
+    vi.mocked(getEntityFromCache).mockResolvedValue({ platform_url: 'https://opencti.example.com' } as BasicStoreSettings);
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue(platformUsers);
+    vi.mocked(findLockedUserEmailTemplate).mockResolvedValue({ ...LOCKED_USER_EMAIL_TEMPLATE_INPUT, ...template } as BasicStoreEntityEmailTemplate);
+  };
+  const sentEmails = () => vi.mocked(sendMail).mock.calls.map(([args]) => args);
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    vi.mocked(sendMail).mockReset();
+  });
+
+  it('should send one email per administrator, rendered for its recipient', async () => {
+    mockPlatform([ADA, GRACE, LOCKED]);
+    await sendLocalAuthLockEmails(context, LOCKED, temporaryLock);
+    const emails = sentEmails();
+    expect(emails.map(({ to }) => to)).toEqual(['ada@opencti.io', 'grace@opencti.io']);
+    expect(emails[0]).toMatchObject({ from: 'OpenCTI Administrator <no-reply@opencti.io>', subject: LOCKED_USER_EMAIL_TEMPLATE_INPUT.email_object });
+    expect(emails[0].html).toContain('Dear Ada Admin,');
+    expect(emails[1].html).toContain('Dear Grace Hopper,');
+    expect(emails[0].html).toContain('The account of <strong>locked</strong> (locked@opencti.io) has been locked on');
+    expect(emails[0].html).toContain('after 10 failed authentication attempts.');
+    expect(emails[0].html).toContain('Platform url: https://opencti.example.com');
+  });
+
+  it('should never give an API token of the recipient', async () => {
+    mockPlatform([ADA], { template_body: '[$user.api_token]' });
+    await sendLocalAuthLockEmails(context, LOCKED, temporaryLock);
+    expect(sentEmails()[0].html).toEqual('[]');
+  });
+
+  it('should keep sending to the other administrators when an email fails', async () => {
+    const error = vi.spyOn(logApp, 'error').mockImplementation(() => undefined);
+    mockPlatform([ADA, GRACE]);
+    vi.mocked(sendMail).mockRejectedValueOnce(new Error('SMTP down'));
+    await sendLocalAuthLockEmails(context, LOCKED, temporaryLock);
+    expect(sentEmails().map(({ to }) => to)).toEqual(['ada@opencti.io', 'grace@opencti.io']);
+    expect(error).toHaveBeenCalledOnce();
+    expect(error.mock.calls[0][1]).toMatchObject({ recipient_id: 'ada', locked_user_id: 'locked' });
+  });
+
+  it('should send nothing, and log it, when no administrator can get the email', async () => {
+    const warn = vi.spyOn(logApp, 'warn').mockImplementation(() => undefined);
+    mockPlatform([LOCKED, LABELS_MANAGER]);
+    await sendLocalAuthLockEmails(context, LOCKED, temporaryLock);
+    expect(sendMail).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledOnce();
   });
 });
