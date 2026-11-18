@@ -1,5 +1,7 @@
 import * as R from 'ramda';
 import type { FileHandle } from 'fs/promises';
+import { GraphQLError } from 'graphql';
+import { FUNCTIONAL_ERROR } from '../../config/errors';
 import { FilterMode, type EditInput, type ImportWidgetInput, type MemberAccessInput } from '../../generated/graphql';
 import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
 import { createEntity, updateAttribute } from '../../database/middleware';
@@ -52,20 +54,26 @@ const prepareManifest = async (context: AuthContext, user: AuthUser, manifest: s
   if (!manifest) {
     return undefined;
   }
-  const taken = toB64(R.omit(bundleLeftOutKeys(withVariables), fromB64(manifest))) as string;
+  const taken = toB64(R.omit(withVariables ? ['presets'] : ['presets', 'variables'], fromB64(manifest))) as string;
   const validated = validateManifestVariables(taken);
   return convertDashboardManifestIds(context, user, validated, 'stix') as Promise<string>;
 };
 
-// What a bundle does not hold, so what it neither compares nor replaces on a dashboard: the presets, and the variables when the platform does not take them
-const bundleLeftOutKeys = (withVariables: boolean) => (withVariables ? ['presets'] : ['presets', 'variables']);
-const withoutLeftOutKeys = (encoded: string | undefined, withVariables: boolean) => R.omit(bundleLeftOutKeys(withVariables), fromB64(encoded));
-const isSameManifest = (stored: string | undefined, imported: string, withVariables: boolean) => {
-  return R.equals(withoutLeftOutKeys(stored, withVariables), withoutLeftOutKeys(imported, withVariables));
+// What a bundle does not hold, so what it neither compares nor replaces on a dashboard: the presets, and the variables when the platform does not take
+// them or when the bundle has none (no `variables` key: it comes from a platform without the feature flag, or from a dashboard that never had any).
+// A bundle of a platform with the flag writes `variables` as soon as the dashboard had some, an empty list included, so it can still clear them
+const bundleLeftOutKeys = (imported: string, withVariables: boolean) => {
+  return withVariables && 'variables' in fromB64<Record<string, unknown>>(imported) ? ['presets'] : ['presets', 'variables'];
 };
-// The dashboard keeps what the bundle does not hold: an overwrite does not erase its presets (nor its variables without the feature flag)
+const withoutLeftOutKeys = (encoded: string | undefined, leftOutKeys: string[]) => R.omit(leftOutKeys, fromB64(encoded));
+const isSameManifest = (stored: string | undefined, imported: string, withVariables: boolean) => {
+  const leftOutKeys = bundleLeftOutKeys(imported, withVariables);
+  return R.equals(withoutLeftOutKeys(stored, leftOutKeys), withoutLeftOutKeys(imported, leftOutKeys));
+};
+// The dashboard keeps what the bundle does not hold: an overwrite does not erase its presets (nor its variables without the feature flag,
+// nor when the bundle has none)
 const keepStoredLeftOutKeys = (stored: string | undefined, imported: string, withVariables: boolean) => {
-  const kept = stored ? R.pick(bundleLeftOutKeys(withVariables), fromB64<Record<string, unknown>>(stored)) : {};
+  const kept = stored ? R.pick(bundleLeftOutKeys(imported, withVariables), fromB64<Record<string, unknown>>(stored)) : {};
   return Object.keys(kept).length === 0 ? imported : toB64({ ...fromB64<Record<string, unknown>>(imported), ...kept }) as string;
 };
 // endregion
@@ -94,7 +102,8 @@ const buildPatch = (existing: BasicStoreEntityWorkspace, data: DashboardImportCo
 };
 
 // Written with updateAttribute, not workspaceEditField: that one keeps the variables of the stored manifest, the import replaces them.
-// The patch is built from the dashboard as stored under the lock, so that what was written since it was found (a preset saved meanwhile) is kept
+// The patch is built from the dashboard as stored under the lock, so that what was written since it was found (a preset saved meanwhile) is kept.
+// Returns 'gone' when the dashboard was deleted since it was found: nothing is written, the caller decides
 const patchDashboard = async (
   context: AuthContext,
   user: AuthUser,
@@ -102,9 +111,12 @@ const patchDashboard = async (
   data: DashboardImportConfiguration,
   manifest: string | undefined,
   withVariables: boolean,
-) => {
-  const element = await withWorkspaceManifestLock(existing.id, async () => {
-    const stored = await findById(context, user, existing.id) as BasicStoreEntityWorkspace;
+): Promise<'gone' | 'done'> => {
+  const result = await withWorkspaceManifestLock(existing.id, async () => {
+    const stored = await findById(context, user, existing.id) as BasicStoreEntityWorkspace | undefined;
+    if (!stored) {
+      return 'gone' as const;
+    }
     const patch = buildPatch(stored, data, manifest, withVariables);
     if (patch.length === 0) {
       return undefined;
@@ -112,8 +124,12 @@ const patchDashboard = async (
     const { element: updated } = await updateAttribute<StoreEntityWorkspace>(context, user, existing.id, ENTITY_TYPE_WORKSPACE, patch);
     return updated;
   });
+  if (result === 'gone') {
+    return 'gone';
+  }
+  const element = result;
   if (!element) {
-    return;
+    return 'done';
   }
   await publishUserAction({
     user,
@@ -124,6 +140,7 @@ const patchDashboard = async (
     context_data: { id: existing.id, entity_type: ENTITY_TYPE_WORKSPACE, input: sanitizeElementForPublishAction(element) },
   });
   await notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, element, user);
+  return 'done';
 };
 
 // endregion
@@ -152,7 +169,11 @@ export const importDashboard = async (
   try {
     manifest = await prepareManifest(context, user, data.manifest, withVariables);
   } catch (error) {
-    return refused('failed', 'invalid', configImportReasonValue(error instanceof Error ? error.message : 'Invalid dashboard manifest'), false, data);
+    // Only what the manifest breaks is a refusal of the item: a failure of the platform (a lookup of the ids that times out) stays an error
+    if (!(error instanceof GraphQLError && error.extensions.code === FUNCTIONAL_ERROR)) {
+      throw error;
+    }
+    return refused('failed', 'invalid', configImportReasonValue(error.message), false, data);
   }
   if (mode === ConfigImportMode.Copy) {
     const sameName = await findDashboardsByName(context, user, data.name);
@@ -200,8 +221,10 @@ export const importDashboard = async (
   if (patch.length === 0) {
     return refused('skipped', 'unchanged', CONFIG_IMPORT_UNCHANGED_REASON, true, data);
   }
-  if (!dryRun) {
-    await patchDashboard(context, user, existing, data, manifest, withVariables);
+  if (!dryRun && await patchDashboard(context, user, existing, data, manifest, withVariables) === 'gone') {
+    // Deleted since it was found: the name is free, as when the overwrite finds none
+    await createDashboard(context, user, data, manifest, data.name);
+    return { status: 'created', exists: false, configuration: data };
   }
   return { status: 'overwritten', exists: true, configuration: data };
 };

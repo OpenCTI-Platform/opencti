@@ -7,6 +7,7 @@ const state = vi.hoisted(() => ({ locked: false, readUnderLock: [] as boolean[] 
 vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/middleware')>()),
   updateAttribute: vi.fn(),
+  createEntity: vi.fn(),
 }));
 vi.mock('../../../../src/database/redis', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/redis')>()),
@@ -33,10 +34,12 @@ vi.mock('../../../../src/modules/workspace/workspace-utils', async (importOrigin
   convertDashboardIds: vi.fn(),
 }));
 
-import { updateAttribute } from '../../../../src/database/middleware';
+import { createEntity, updateAttribute } from '../../../../src/database/middleware';
 import { publishUserAction } from '../../../../src/listener/UserActionListener';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
+import { FunctionalError } from '../../../../src/config/errors';
 import { findAllWorkspaces, findById } from '../../../../src/modules/workspace/workspace-domain';
+import { convertDashboardIds } from '../../../../src/modules/workspace/workspace-utils';
 import { importDashboard } from '../../../../src/modules/workspace/workspace-import';
 import { fromB64, toB64 } from '../../../../src/utils/base64';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
@@ -48,7 +51,13 @@ const widgetOf = (entityType: string) => ({
   type: 'number',
   dataSelection: [{ filters: { mode: 'and', filters: [{ key: ['entity_type'], values: [entityType], operator: 'eq', mode: 'or' }], filterGroups: [] } }],
 });
-const manifestOf = (entityType: string, presets?: unknown[]) => toB64({ config: {}, widgets: { widget1: widgetOf(entityType) }, ...(presets ? { presets } : {}) }) as string;
+const manifestOf = (entityType: string, presets?: unknown[], variables?: unknown[]) => toB64({
+  config: {},
+  widgets: { widget1: widgetOf(entityType) },
+  ...(presets ? { presets } : {}),
+  ...(variables ? { variables } : {}),
+}) as string;
+const variableOf = (id: string, name: string) => ({ id, name, type: 'text', restriction: { mode: 'none' }, defaultValue: 'phishing' });
 const presetOf = (id: string) => ({ id, name: `Preset ${id}`, values: {}, config: { startDate: null, endDate: null, relativeDate: null } });
 const workspaceOf = (manifest: string) => ({ id: 'workspace-id', name: 'SOC overview', type: 'dashboard', manifest, restricted_members: [] });
 const imported = { name: 'SOC overview', manifest: manifestOf('Malware') };
@@ -90,5 +99,44 @@ describe('Overwrite of a dashboard by a bundle, what is written under the lock',
     expect(await importDashboard(context, user, imported, { mode: ConfigImportMode.Overwrite, dryRun: true })).toMatchObject({ status: 'overwritten' });
     expect(findById).not.toHaveBeenCalled();
     expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('keeps the variables of the dashboard when the bundle has none, and replaces them when it has some, an empty list included', async () => {
+    const variables = [variableOf('0b1c9a52-6f2b-4d5e-9a64-6c1f0a0f9a11', 'First')];
+    const variablesWritten = () => {
+      const [, , , , inputs] = vi.mocked(updateAttribute).mock.calls[0];
+      return fromB64(inputs.find(({ key }) => key === 'manifest')?.value?.[0] as string).variables;
+    };
+    vi.mocked(findAllWorkspaces).mockResolvedValue([workspaceOf(manifestOf('Report', undefined, variables))] as never);
+    vi.mocked(findById).mockImplementation(async () => workspaceOf(manifestOf('Report', undefined, variables)) as never);
+    // A bundle of a platform without the feature flag has no `variables`: they are neither compared nor wiped
+    expect(await importDashboard(context, user, { name: 'SOC overview', manifest: manifestOf('Report') }, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'skipped', code: 'unchanged' });
+    expect(await importDashboard(context, user, imported, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'overwritten' });
+    expect(variablesWritten()).toEqual(variables);
+    // A bundle that has `variables` replaces them, an empty list clears them
+    vi.mocked(updateAttribute).mockClear();
+    expect(await importDashboard(context, user, { name: 'SOC overview', manifest: manifestOf('Report', undefined, []) }, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'overwritten' });
+    expect(variablesWritten()).toEqual([]);
+  });
+
+  it('creates the dashboard when it was deleted between its search and the lock, instead of failing', async () => {
+    vi.mocked(findAllWorkspaces).mockResolvedValue([workspaceOf(manifestOf('Report'))] as never);
+    vi.mocked(findById).mockResolvedValue(undefined as never);
+    vi.mocked(createEntity).mockResolvedValue({ id: 'new-id', name: 'SOC overview' } as never);
+    expect(await importDashboard(context, user, imported, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'created', exists: false });
+    expect(updateAttribute).not.toHaveBeenCalled();
+    expect(createEntity).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Conversion of the manifest of a bundle, what is a refusal of the item', () => {
+  it('refuses an item whose manifest is invalid, but lets a failure of the platform be an error', async () => {
+    vi.mocked(findAllWorkspaces).mockResolvedValue([] as never);
+    const bad = { name: 'SOC overview', manifest: manifestOf('Report', undefined, [{ id: 'not-a-variable' }]) };
+    expect(await importDashboard(context, user, bad, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'failed', code: 'invalid', exists: false });
+    vi.mocked(convertDashboardIds).mockRejectedValueOnce(new Error('Elasticsearch timeout'));
+    await expect(importDashboard(context, user, imported, { mode: ConfigImportMode.Overwrite })).rejects.toThrow('Elasticsearch timeout');
+    vi.mocked(convertDashboardIds).mockRejectedValueOnce(FunctionalError('Duplicated dashboard variable id'));
+    expect(await importDashboard(context, user, imported, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'failed', code: 'invalid', reason: expect.stringContaining('Duplicated') });
   });
 });

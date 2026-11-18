@@ -102,6 +102,15 @@ describe('Dashboard import and export (configuration preset)', () => {
     expect(fromB64((await loadWorkspace(names[2])).manifest).variables.map(({ name }: { name: string }) => name)).toEqual(['First']);
     await importDashboard(testContext, ADMIN_USER, { name: names[2], manifest: manifestOf('entity_type', ['Report'], [variable('Second')]) }, { mode });
     expect(fromB64((await loadWorkspace(names[2])).manifest).variables.map(({ name }: { name: string }) => name)).toEqual(['Second']);
+    // A bundle without `variables` (from a platform without the feature flag) keeps them: they are neither compared nor wiped
+    expect(await importDashboard(testContext, ADMIN_USER, { name: names[2], manifest: manifestOf('entity_type', ['Report']) }, { mode })).toMatchObject({ status: 'skipped', code: 'unchanged' });
+    expect(await importDashboard(testContext, ADMIN_USER, { name: names[2], manifest: manifestOf('entity_type', ['Malware']) }, { mode })).toMatchObject({ status: 'overwritten' });
+    const kept = await loadWorkspace(names[2]);
+    expect(storedFilterValues(kept)).toEqual(['Malware']);
+    expect(fromB64(kept.manifest).variables.map(({ name }: { name: string }) => name)).toEqual(['Second']);
+    // An empty list is a bundle that has none on purpose: it clears them
+    await importDashboard(testContext, ADMIN_USER, { name: names[2], manifest: manifestOf('entity_type', ['Malware'], []) }, { mode });
+    expect(fromB64((await loadWorkspace(names[2])).manifest).variables).toEqual([]);
   });
 
   it('adds a copy under a free name', async () => {
