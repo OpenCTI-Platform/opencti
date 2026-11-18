@@ -3140,3 +3140,124 @@ plain `div` around it (`FDS-WORKAROUND #83`).
 **Removal test.** With `style` passed straight to `Combobox` and the wrapper
 removed, the "Create a vocabulary" drawer keeps a 20px gap between Description and
 Aliases.
+
+---
+
+## 84. `RichTextField`'s Ask AI cannot carry the product's gating, so OpenCTI lays its own button over the field
+
+**Needed.** The Ask AI button of an HTML field (report, grouping and case
+content, mappable content, the HTML file editor) is OpenCTI's `TextFieldAskAI`.
+It renders in three states the library button does not have: without Enterprise
+Edition it stays visible and its tooltip offers the upgrade (`EETooltip forAi`);
+while the XTM One terms are pending it is disabled for non-administrators, with
+"Ask Ariane isn't activated yet…" as its tooltip; and for an administrator a
+click opens the terms dialog instead of the menu.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.5.1,
+`components/rich-text-field/RichTextField.mjs`): the button renders only with
+`aiActions` and `onAiAction`, is inert below `aiMinLength` with the
+`askAiTooShort` label, and otherwise opens the action menu. There is no slot for
+a product tooltip on the button, no disabled-with-reason state, and no way to
+intercept the click before the menu opens.
+
+**What the product did.** `FDS-WORKAROUND #84`. The field gets no `aiActions`;
+`TextFieldAskAI` is positioned over the right end of the label row
+(`components/fields/RichTextField.tsx`) or of the toolbar (no label:
+`StixCoreObjectContent.jsx`), and `[role="status"]` / `[role="toolbar"]` get a
+32px right padding so the unsaved-changes text and the toolbar tools stay clear
+of it.
+
+**Ask.** Either a slot for the button's tooltip content plus a
+disabled-with-reason state, or an `onAiOpen` callback that can cancel the menu,
+so the product can gate the library button instead of drawing its own.
+
+**Removal test.** On a report creation form without Enterprise Edition, the
+library Ask AI button shows the upgrade tooltip; with XTM One terms pending, it
+is disabled for a non-administrator with the explanation as its tooltip; and no
+`TextFieldAskAI` is rendered by the two files above.
+
+---
+
+## 85. `RichTextField` does not expose its fullscreen state, so the mapping cannot tell where a selection was made
+
+**Needed.** On a container's mapping view, selecting text in the read-only
+content field (`readOnly` + `onTextSelection`) opens the drawer that maps the
+selection to an entity. In fullscreen, that drawer opens underneath the
+fullscreen dialog, out of sight. The product ignored selections made in
+fullscreen before the migration.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.5.2,
+`components/rich-text-field/RichTextField.mjs`): fullscreen is internal state
+(`isFullscreen`) with no callback and no controlled prop, and `onTextSelection`
+fires in fullscreen as well (the button is only off while `disabled`).
+
+**What the product did.** `FDS-WORKAROUND #85`
+(`components/fields/RichTextField.tsx`). The product forwards a selection only
+when its anchor node lies inside the product's own container. In fullscreen
+the library renders the editing area in its dialog, outside that container.
+
+**Ask.** An `onFullscreenChange(open)` callback, or a controlled `fullscreen`
+open state, so the host knows when the field is in fullscreen.
+
+**Removal test.** On a report's mapping view, a selection made in fullscreen
+does not open the mapping drawer, and the product no longer checks where the
+selection's anchor lies.
+
+---
+
+## 86. `RichTextField` flags the page break written by `@filigran/rich-text-editor` as removed HTML
+
+**Needed.** OpenCTI's built-in FINTEL templates (`opencti-graphql/src/utils/fintelTemplate/__executiveSummary.template.ts`,
+`__incidentCase.template.ts`) and every page break saved by the previous editor
+use `<div class="page-break" style="page-break-after:always;"><span style="display:none;">&nbsp;</span></div>`.
+The usage contract lists `div.page-break` among the stored HTML that "is kept".
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.5.2) by
+opening the built-in "Executive Summary" template: the `page-break` class is
+kept, but the inline `page-break-after` style and the hidden `span` are dropped
+from each of its 6 page breaks, and the field shows "Some HTML isn't supported
+and was removed" with its warning border. Nothing else in the template is lost.
+
+**What the product did.** Nothing is worked around. The saved markup is not a
+regression: compared in the browser against master, `@filigran/rich-text-editor`
+2.0.1 also emits `<div class="page-break"></div>` for these page breaks, without
+the style or the span. OpenCTI's PDF export keys on the `page-break` class only
+(`utils/htmlToPdf/utils/pdfPageBreaks.ts`). What is new is only the warning,
+shown on every template written before the migration.
+
+**Ask.** Parse the legacy page break as the library's own `pageBreak` node
+without reporting a loss: the style and the hidden span carry nothing the node
+does not already mean.
+
+**Removal test.** Opening the built-in "Executive Summary" template shows no
+"Some HTML isn't supported and was removed" message.
+
+---
+
+## 87. `RichTextField` drops the size of a resized image written by CKEditor
+
+**Needed.** OpenCTI's built-in "Built-In Template For Onboarding" email template
+shows the OpenCTI logo, a 1000×250 PNG, at 355px wide. The size is carried the
+CKEditor way: `<figure class="image image_resized" style="width:355px"><img width="1000" height="250" style="aspect-ratio:1000/250" …></figure>`.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.5.2) by
+opening that template: the field shows "Some HTML isn't supported and was
+removed", the `figure` wrapper and its `width` are dropped, and the image is
+kept at its intrinsic 1000px. After any edit, the HTML the field emits holds
+`<img width="1000">` with no figure, so saving the template would send the logo
+almost three times larger in every onboarding email. The usage contract lists
+`figure.table` among the legacy markup that is kept, but not `figure.image`.
+
+This is a regression: compared in the browser against master,
+`@filigran/rich-text-editor` 2.0.1 keeps the logo at 355px by moving the
+figure's width onto the image (`<img width="355" height="89">`).
+
+**What the product did.** Nothing is worked around; the built-in template is
+untouched until someone saves it.
+
+**Ask.** Read `figure.image` (with `image_resized` and its `width`) as an image
+of that width, as the library already does for its own resized images.
+
+**Removal test.** Opening the built-in onboarding email template shows the
+logo at 355px with no removal message, and the HTML emitted after an edit keeps
+that width.

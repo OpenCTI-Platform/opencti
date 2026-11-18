@@ -21,7 +21,7 @@ import { isEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import withRouter from '../../../../utils/compat_router/withRouter';
-import { RichTextEditor } from '@filigran/rich-text-editor';
+import { RichTextField } from '@filigran/design-system/rich-text-field';
 import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 import HtmlDisplay from '../../../../components/HtmlDisplay';
 import useAttributes from '../../../../utils/hooks/useAttributes';
@@ -90,9 +90,10 @@ const EditorContainer = styled('div')(({ theme }) => ({
 }));
 
 const HtmlEditorContainer = styled(EditorContainer)({
-  '& .MuiToggleButtonGroup-root.MuiToggleButtonGroup-horizontal': {
-    // reduce gap between buttons in the toolbar to let space for the AI button
-    gap: 0,
+  // FDS-WORKAROUND #84 (fds-migration/LIBRARY-FEEDBACK.md): leaves room at the
+  // end of the toolbar for the Ask AI button laid over it.
+  '& [role="toolbar"]': {
+    paddingRight: 32,
   },
 });
 
@@ -585,14 +586,14 @@ class StixCoreObjectContentComponent extends Component {
                 <HtmlEditorContainer
                   style={{ minHeight: height, height }}
                 >
-                  <RichTextEditor
-                    data={currentContent ?? ''}
-                    onChange={(_, adapter) => {
-                      this.setState({ currentContent: adapter.getData(), changed: true });
+                  <RichTextField
+                    aria-label={t('Content')}
+                    value={currentContent ?? ''}
+                    onValueChange={(html) => {
+                      this.setState({ currentContent: html, changed: true });
                     }}
-                    onBlur={(_, adapter) => {
-                      this.onHtmlFieldChange(adapter.getData());
-                    }}
+                    height={height - 80}
+                    fullscreen={false}
                   />
                   <TextFieldAskAI
                     currentValue={currentContent ?? ''}
@@ -601,7 +602,7 @@ class StixCoreObjectContentComponent extends Component {
                     }}
                     format="html"
                     variant="html"
-                    style={{ position: 'absolute', top: 10, right: 0 }}
+                    style={{ position: 'absolute', top: 2, right: 0 }}
                   />
                 </HtmlEditorContainer>
               </>
