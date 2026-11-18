@@ -579,6 +579,41 @@ export const isDateLimitSentinel = (attributeKey, inputData) => {
     || (dateForEndAttributes.includes(attributeKey) && isoDate === UNTIL_END_STR);
 };
 
+const LIMIT_DATE_PAIRS = {
+  first_seen: 'last_seen',
+  last_seen: 'first_seen',
+  start_time: 'stop_time',
+  stop_time: 'start_time',
+  valid_from: 'valid_until',
+  valid_until: 'valid_from',
+  first_observed: 'last_observed',
+  last_observed: 'first_observed',
+};
+
+// Keeping the stored date instead of a sentinel input is only safe when the stored date still bounds the period the
+// upsert produces: a start date moved after the stored end (or an end moved before the stored start) needs the sentinel,
+// else the update is rejected for an inverted period (e.g. an expired decay-excluded indicator upserted with a later
+// valid_from and no valid_until, issue #19796).
+export const isStoredLimitDateKeptValid = (attributeKey, resolvedElement, updatePatch) => {
+  const pairKey = LIMIT_DATE_PAIRS[attributeKey];
+  const storedValue = resolvedElement[attributeKey];
+  if (!pairKey || isEmptyField(storedValue)) {
+    return true;
+  }
+  const patchPairValue = updatePatch[pairKey];
+  const isPairMoved = pairKey in updatePatch && isNotEmptyField(patchPairValue) && !isDateLimitSentinel(pairKey, patchPairValue);
+  const pairValue = isPairMoved ? patchPairValue : resolvedElement[pairKey];
+  if (isEmptyField(pairValue)) {
+    return true;
+  }
+  const storedDate = utcDate(storedValue);
+  const pairDate = utcDate(pairValue);
+  if (!storedDate.isValid() || !pairDate.isValid()) {
+    return true;
+  }
+  return dateForStartAttributes.includes(attributeKey) ? !storedDate.isAfter(pairDate) : !storedDate.isBefore(pairDate);
+};
+
 export const generateAttributesInputsForUpsert = (context, _user, resolvedElement, type, updatePatch, confidenceForUpsert) => {
   const { isConfidenceMatch } = confidenceForUpsert;
   // -- Upsert attributes
@@ -601,7 +636,8 @@ export const generateAttributesInputsForUpsert = (context, _user, resolvedElemen
       // 3. Data from the inputs is not empty to prevent any data cleaning
       // 4. Data is not a start/end limit sentinel: a sentinel means 'no date given' and must never overwrite a stored date.
       //    A full synchronization (synchronized-upsert header) or a forced replace keeps its full-replace semantics.
-      const isSentinelInput = isDateLimitSentinel(attributeKey, inputData);
+      //    The sentinel is still applied when the stored date would no longer bound the new period (start after end).
+      const isSentinelInput = isDateLimitSentinel(attributeKey, inputData) && isStoredLimitDateKeptValid(attributeKey, resolvedElement, updatePatch);
       const canBeUpsert = isConfidenceMatch && attribute.upsert && isInputWithData && !isSentinelInput;
       // Upsert will be done if upsert is well-defined but also in full synchro mode or if the current value is empty
       if (!isOutDatedModification) {
