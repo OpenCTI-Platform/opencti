@@ -181,6 +181,8 @@ import {
   getConfigurationAdminEmail,
   getConfigurationAdminPassword,
   getConfigurationAdminToken,
+  isAdminExternallyManaged,
+  isAdminSecureByDefault,
   isLocalAuthForcedEnabledFromEnv,
   LOCAL_STRATEGY_IDENTIFIER,
   PROVIDERS,
@@ -857,6 +859,24 @@ export const generatePasswordMatchingPolicy = async (context: AuthContext) => {
   return password;
 };
 
+// Check the configured admin password against the local password policy, without ever logging the password:
+// a warning while app:admin:secure_by_default is false, a startup failure once it is true
+export const checkAdminPasswordPolicy = (context: AuthContext, policy: PasswordInlinePolicy, password: string, isExternallyManaged: boolean) => {
+  // An externally managed admin account is locked, its local password is never used
+  if (isExternallyManaged) {
+    return;
+  }
+  const failedRules = checkPasswordInlinePolicy(context, policy, password);
+  if (failedRules.length === 0) {
+    return;
+  }
+  if (isAdminSecureByDefault()) {
+    throw ConfigurationError('The admin password (app:admin:password) does not match the local password policy', { failed_rules: failedRules });
+  }
+  logApp.warn('[OPENCTI] The admin password (app:admin:password) does not match the local password policy (app:admin:secure_by_default=false). '
+    + 'The platform will refuse to start in an upcoming version: change the admin password, then set APP__ADMIN__SECURE_BY_DEFAULT=true to opt in now.', { failed_rules: failedRules });
+};
+
 export const checkPasswordFromPolicy = async (context: AuthContext, password: string) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const errors = checkPasswordInlinePolicy(context, settings, password);
@@ -1091,8 +1111,10 @@ export const sendEmailToUser = async (context: AuthContext, user: AuthUser, inpu
 };
 
 type AddUserInput = UserAddInput & { external?: boolean; internal_id?: string; api_token?: string };
+// skipPasswordPolicy: reserved to the admin initialization, which checks the password policy itself following app:admin:secure_by_default
+type AddUserOptions = { skipPasswordPolicy?: boolean };
 
-export const addUser = async (context: AuthContext, user: AuthUser, newUser: AddUserInput) => {
+export const addUser = async (context: AuthContext, user: AuthUser, newUser: AddUserInput, opts: AddUserOptions = {}) => {
   const userServiceAccount = newUser.user_service_account;
   if (!newUser.user_email && !userServiceAccount) {
     throw FunctionalError('User cannot be created without email');
@@ -1129,7 +1151,7 @@ export const addUser = async (context: AuthContext, user: AuthUser, newUser: Add
   // If user is external and password is not specified, associate a random password
   if ((newUser.external === true && isEmptyField(userPassword)) || userServiceAccount) {
     userPassword = uuid();
-  } else { // If local user, check the password policy
+  } else if (!opts.skipPasswordPolicy) { // If local user, check the password policy
     await checkPasswordFromPolicy(context, userPassword!);
   }
   const passwordValidUntil = await computePasswordValidUntilFromPolicy(context);
@@ -2722,7 +2744,9 @@ export const authenticateUserFromRequest = async (context: AuthContext, req: Ses
 };
 
 const initAdmin = async (context: AuthContext, email: string, password: string, tokenValue: string) => {
-  const isExternallyManaged = conf.get('app:admin:externally_managed') === true;
+  const isExternallyManaged = isAdminExternallyManaged();
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  checkAdminPasswordPolicy(context, settings, password.toString(), isExternallyManaged);
   let existingAdmin: Pick<BasicStoreEntityUser, 'id' | 'api_tokens'> | undefined = await findById(context, SYSTEM_USER, OPENCTI_ADMIN_UUID);
   if (existingAdmin) {
     // If admin user exists, just patch the fields
@@ -2750,7 +2774,8 @@ const initAdmin = async (context: AuthContext, email: string, password: string, 
         overrides: [],
       },
     };
-    existingAdmin = await addUser(context, SYSTEM_USER, userToCreate);
+    // The password policy is checked above, following app:admin:secure_by_default
+    existingAdmin = await addUser(context, SYSTEM_USER, userToCreate, { skipPasswordPolicy: true });
   }
   // Create base token if needed
   const tokenId = 'base_token_' + OPENCTI_ADMIN_UUID;

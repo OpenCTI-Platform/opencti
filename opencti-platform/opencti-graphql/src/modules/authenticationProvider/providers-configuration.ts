@@ -126,9 +126,15 @@ export const getConfigurationAdminToken = () => {
   return CONFIGURATION_ADMIN_TOKEN;
 };
 
-const CONFIGURATION_ADMIN_EXT = booleanConf('app:admin:externally_managed', false);
+// Read at call time, unlike the other admin settings, so that the tests can set it with conf.set
 export const isAdminExternallyManaged = () => {
-  return CONFIGURATION_ADMIN_EXT;
+  return booleanConf('app:admin:externally_managed', false);
+};
+
+// Secure by default switch of the admin account: read at call time, unlike the other secure by default switches
+// of conf.js, so that the tests can set it with conf.set
+export const isAdminSecureByDefault = () => {
+  return booleanConf('app:admin:secure_by_default', false);
 };
 
 export const isLocalAuthEnabledInEnv = (envProviders: Record<string, any>): boolean => {
