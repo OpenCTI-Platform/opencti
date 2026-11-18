@@ -11,6 +11,7 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import OpenAevCard from '../../common/xtm/OpenAevCard';
 
 export const attackPatternFragment = graphql`
   fragment AttackPattern_attackPattern on AttackPattern {
@@ -51,6 +52,7 @@ export const attackPatternFragment = graphql`
     }
     name
     aliases
+    x_mitre_id
     status {
       id
       order
@@ -146,6 +148,7 @@ const AttackPattern: React.FC<AttackPatternProps> = ({
             }
           })
         }
+        <OpenAevCard gridRow kind="ATTACK_PATTERN" counterpartKey={attackPattern.x_mitre_id} />
       </Grid>
     </div>
   );

@@ -10,6 +10,7 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import OpenAevCard from '../../common/xtm/OpenAevCard';
 
 const systemFragment = graphql`
   fragment System_system on System {
@@ -117,6 +118,7 @@ const System: React.FC<SystemProps> = ({
         <Grid size={6}>
           <StixCoreObjectLatestHistory stixCoreObjectId={system.id} />
         </Grid>
+        <OpenAevCard gridRow kind="ASSET" counterpartKey={system.name} />
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={system.id}
