@@ -361,8 +361,9 @@ describe('Config preset registry', () => {
         configuration: { name: 'SOC overview', description: 'What the SOC watches', tags: ['soc'], refresh_interval: 300 },
       });
       const executive = await exportConfigPresetItem(context, user, family, await findItem('dashboards', executiveDashboard.standard_id));
-      // Shared with everyone on the platform, as the file export of a dashboard: the bundle does not say it
-      expect(executive.configuration).toEqual({ name: 'Executive summary', description: '', tags: [] });
+      // Shared with everyone on the platform, as the file export of a dashboard: the bundle does not say it.
+      // The description, the tags and the refresh interval are written empty, so that an overwrite can clear them
+      expect(executive.configuration).toEqual({ name: 'Executive summary', description: '', tags: [], refresh_interval: 0 });
       expect(JSON.stringify([soc, executive])).not.toMatch(/creator-secret-id|created_at|dashboard-id/);
     });
 

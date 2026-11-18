@@ -23,7 +23,8 @@ import { findAllWorkspaces, findById, initializeAuthorizedMembers, sanitizeEleme
 import { DASHBOARD_NAME_MAX_LENGTH, type DashboardImportConfiguration, dashboardImportSchema } from './workspace-import-schema';
 import { type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE, type StoreEntityWorkspace } from './workspace-types';
 import { withWorkspaceManifestLock } from './workspace-variables-domain';
-import { DASHBOARD_VARIABLES_FEATURE_FLAG } from './workspace-variables-types';
+import { DASHBOARD_VARIABLES_FEATURE_FLAG, type StoreDashboardPreset, type StoreDashboardVariable } from './workspace-variables-types';
+import { pruneInvalidPresetValues, removeVariableFromPresets } from './workspace-presets-validation';
 import { preserveServerOwnedManifestKeys, validateManifestVariables } from './workspace-variables-utils';
 
 // The names the earlier items of the same dry run take, written or not: the dashboard of a name is imported once per import.
@@ -70,10 +71,25 @@ const isSameManifest = (stored: string | undefined, imported: string, withVariab
   const leftOutKeys = bundleLeftOutKeys(imported, withVariables);
   return R.equals(withoutLeftOutKeys(stored, leftOutKeys), withoutLeftOutKeys(imported, leftOutKeys));
 };
+// The presets of the dashboard once the variables of the bundle replace its own, kept consistent with them as the other paths do (the deletion
+// and the update of a variable, the file import): the value of a variable the bundle no longer has is removed, and so is one that the variable,
+// as the bundle defines it, no longer accepts (its type, its selection). The presets are otherwise kept
+const reconcilePresets = (presets: StoreDashboardPreset[], variables: StoreDashboardVariable[]) => {
+  const variableIds = new Set(variables.map(({ id }) => id));
+  const droppedIds = new Set(presets.flatMap(({ values }) => Object.keys(values)).filter((id) => !variableIds.has(id)));
+  const withoutDropped = [...droppedIds].reduce((kept, id) => removeVariableFromPresets(kept, id), presets);
+  return variables.reduce((kept, variable) => pruneInvalidPresetValues(kept, variable), withoutDropped);
+};
 // The dashboard keeps what the bundle does not hold: an overwrite does not erase its presets (nor its variables without the feature flag,
 // nor when the bundle has none)
 const keepStoredLeftOutKeys = (stored: string | undefined, imported: string, withVariables: boolean) => {
-  const kept = stored ? R.pick(bundleLeftOutKeys(imported, withVariables), fromB64<Record<string, unknown>>(stored)) : {};
+  const leftOutKeys = bundleLeftOutKeys(imported, withVariables);
+  const kept = stored ? R.pick(leftOutKeys, fromB64<Record<string, unknown>>(stored)) : {};
+  if (Array.isArray(kept.presets) && !leftOutKeys.includes('variables')) {
+    // The variables of the bundle replace the stored ones: they were validated by prepareManifest
+    const { variables } = fromB64<{ variables: StoreDashboardVariable[] }>(imported);
+    kept.presets = reconcilePresets(kept.presets as StoreDashboardPreset[], variables);
+  }
   return Object.keys(kept).length === 0 ? imported : toB64({ ...fromB64<Record<string, unknown>>(imported), ...kept }) as string;
 };
 // endregion

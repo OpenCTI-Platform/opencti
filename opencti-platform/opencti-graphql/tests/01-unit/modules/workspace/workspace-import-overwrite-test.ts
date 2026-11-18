@@ -140,3 +140,47 @@ describe('Conversion of the manifest of a bundle, what is a refusal of the item'
     expect(await importDashboard(context, user, imported, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'failed', code: 'invalid', reason: expect.stringContaining('Duplicated') });
   });
 });
+
+describe('Overwrite of a dashboard by a bundle that has variables, the presets it keeps', () => {
+  const first = variableOf('0b1c9a52-6f2b-4d5e-9a64-6c1f0a0f9a11', 'First');
+  const second = variableOf('1c2d0b63-7a3c-4e6f-8b75-7d2a1b1a0b22', 'Second');
+  const presetWith = (id: string, values: Record<string, string>) => ({ ...presetOf(id), values });
+  const presetsWritten = () => {
+    const [, , , , inputs] = vi.mocked(updateAttribute).mock.calls[0];
+    return fromB64(inputs.find(({ key }) => key === 'manifest')?.value?.[0] as string).presets;
+  };
+  const overwrite = (stored: string, variables: unknown[]) => {
+    vi.mocked(findAllWorkspaces).mockResolvedValue([workspaceOf(stored)] as never);
+    vi.mocked(findById).mockResolvedValue(workspaceOf(stored) as never);
+    return importDashboard(context, user, { name: 'SOC overview', manifest: manifestOf('Malware', undefined, variables) }, { mode: ConfigImportMode.Overwrite });
+  };
+
+  it('removes the value of a variable the bundle no longer has, and keeps the rest of the preset', async () => {
+    const stored = manifestOf('Report', [presetWith('p1', { [first.id]: 'phishing', [second.id]: 'malware' })], [first, second]);
+    expect(await overwrite(stored, [first])).toMatchObject({ status: 'overwritten' });
+    expect(presetsWritten()).toEqual([presetWith('p1', { [first.id]: 'phishing' })]);
+  });
+
+  it('removes the value that its variable, as the bundle defines it, no longer accepts', async () => {
+    const stored = manifestOf('Report', [presetWith('p1', { [first.id]: 'phishing', [second.id]: 'malware' })], [first, second]);
+    const narrowed = { ...first, restriction: { mode: 'selection', values: ['ransomware'] }, defaultValue: 'ransomware' };
+    expect(await overwrite(stored, [narrowed, second])).toMatchObject({ status: 'overwritten' });
+    expect(presetsWritten()).toEqual([presetWith('p1', { [second.id]: 'malware' })]);
+  });
+
+  it('keeps the presets as they are when the variables are the same', async () => {
+    const presets = [presetWith('p1', { [first.id]: 'phishing' })];
+    expect(await overwrite(manifestOf('Report', presets, [first]), [first])).toMatchObject({ status: 'overwritten' });
+    expect(presetsWritten()).toEqual(presets);
+  });
+
+  it('keeps the presets as they are when the bundle has no variables: the stored ones are kept too', async () => {
+    const presets = [presetWith('p1', { [first.id]: 'phishing' })];
+    vi.mocked(findAllWorkspaces).mockResolvedValue([workspaceOf(manifestOf('Report', presets, [first]))] as never);
+    vi.mocked(findById).mockResolvedValue(workspaceOf(manifestOf('Report', presets, [first])) as never);
+    expect(await importDashboard(context, user, imported, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'overwritten' });
+    const written = fromB64(vi.mocked(updateAttribute).mock.calls[0][4].find(({ key }) => key === 'manifest')?.value?.[0] as string);
+    expect(written.presets).toEqual(presets);
+    expect(written.variables).toEqual([first]);
+  });
+});

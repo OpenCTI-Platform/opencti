@@ -11,9 +11,9 @@ describe('Dashboard configuration of a bundle (schema)', () => {
     expect(dashboardImportSchema.parse(full)).toEqual(full);
   });
 
-  it('keeps the name as the platform stores it, and leaves a field that is null or absent to the dashboard', () => {
-    // A dashboard is found by its name: the one an export wrote must be the one the import looks for
-    expect(dashboardImportSchema.parse({ name: '  SOC overview  ' }).name).toBe('  SOC overview  ');
+  it('trims the name as the platform does at indexing, and leaves a field that is null or absent to the dashboard', () => {
+    // A dashboard is found by its name: the platform never stores one with spaces around it, so neither does the import look for one
+    expect(dashboardImportSchema.parse({ name: '  SOC overview  ' }).name).toBe('SOC overview');
     expect(dashboardImportSchema.parse({ name: 'x' }).name).toBe('x');
     const nulls = dashboardImportSchema.parse({ name: 'SOC overview', description: null, tags: null, refresh_interval: null, manifest: null });
     expect(nulls).toEqual({ name: 'SOC overview', description: null, tags: null, refresh_interval: null, manifest: null });

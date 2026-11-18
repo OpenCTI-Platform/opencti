@@ -28,10 +28,12 @@ const isValidManifest = (encoded: string | null | undefined) => {
 };
 
 export const dashboardImportSchema = z.strictObject({
-  // The name as the platform stores it: what the file import accepts (not blank) and the edition of a dashboard allows, neither trimmed nor given a minimum
-  // length, so that the dashboard an export wrote is found again by its name
+  // The name as the platform stores it: the platform trims every string at indexing, so a dashboard is never stored with spaces around its name.
+  // Trimmed here too, so that the dashboard an export wrote is found again by its name (else an overwrite would create a second one).
+  // Not blank (what the file import accepts), no minimum length (what the edition of a dashboard allows)
   name: z.string()
-    .refine((name) => name.trim().length > 0, 'Dashboard name is required')
+    .trim()
+    .refine((name) => name.length > 0, 'Dashboard name is required')
     .refine((name) => name.length <= DASHBOARD_NAME_MAX_LENGTH, `Dashboard name must be at most ${DASHBOARD_NAME_MAX_LENGTH} characters`),
   // Absent or null: a new dashboard is given none, and an existing one is left untouched. The same for every field below
   description: z.string().nullable().optional(),

@@ -129,30 +129,34 @@ describe('Dashboard import and export (configuration preset)', () => {
     expect(second.reason).toContain('Added as "Config preset dashboard fresh (1)"');
   });
 
-  it('finds again the dashboard whose name an export wrote as it is stored, with spaces around it included', async () => {
-    const name = `${PREFIX} padded `;
-    await addWorkspace(testContext, ADMIN_USER, { type: 'dashboard', name });
+  it('finds the dashboard by the name the platform stores, whatever the spaces around the name of the bundle: no duplicate', async () => {
+    const name = `${PREFIX} padded`;
+    // The platform trims the names at indexing
+    await addWorkspace(testContext, ADMIN_USER, { type: 'dashboard', name: `${name} ` });
     const [stored] = await findDashboardsByName(testContext, ADMIN_USER, name);
-    const exported = await exportDashboard(testContext, ADMIN_USER, stored);
-    expect(exported.name).toBe(name);
-    // The import overwrites it, it does not add a dashboard of the trimmed name next to it
-    expect(await importDashboard(testContext, ADMIN_USER, { ...exported, description: 'imported' }, { mode })).toMatchObject({ status: 'overwritten', exists: true });
-    expect((await findDashboardsByName(testContext, ADMIN_USER, name))[0]).toMatchObject({ description: 'imported' });
-    expect(await findDashboardsByName(testContext, ADMIN_USER, name.trim())).toEqual([]);
+    expect(stored.name).toBe(name);
+    // The import overwrites it, it does not add a second dashboard next to it
+    expect(await importDashboard(testContext, ADMIN_USER, { name: `  ${name} `, description: 'imported' }, { mode })).toMatchObject({ status: 'overwritten', exists: true });
+    expect(await findDashboardsByName(testContext, ADMIN_USER, name)).toMatchObject([{ description: 'imported' }]);
+    // A copy is named after the stored name too
+    expect(await importDashboard(testContext, ADMIN_USER, { name: ` ${name}  ` }, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'created', exists: true, reason: `Added as "${name} (1)"` });
+    // And the name of an export is the one of the bundle
+    expect((await exportDashboard(testContext, ADMIN_USER, stored)).name).toBe(name);
   });
 
-  it('clears the description and the tags of the dashboard when the bundle has none, as it exports them empty', async () => {
+  it('clears the description, the tags and the refresh interval of the dashboard when the bundle has none, as it exports them empty', async () => {
     const name = `${PREFIX} cleared`;
-    await importDashboard(testContext, ADMIN_USER, { name, description: 'A description', tags: ['soc'] }, { mode });
-    expect(await loadWorkspace(name)).toMatchObject({ description: 'A description', tags: ['soc'] });
-    // A dashboard without description nor tag exports them empty, and the import writes them
+    await importDashboard(testContext, ADMIN_USER, { name, description: 'A description', tags: ['soc'], refresh_interval: 300 }, { mode });
+    expect(await loadWorkspace(name)).toMatchObject({ description: 'A description', tags: ['soc'], refresh_interval: 300 });
+    // A dashboard without description, tag nor refresh interval exports them empty (0 is no refresh), and the import writes them
     const source = await addWorkspace(testContext, ADMIN_USER, { type: 'dashboard', name: `${PREFIX} cleared source` });
     const exported = await exportDashboard(testContext, ADMIN_USER, await loadWorkspace(source.name));
-    expect(exported).toMatchObject({ description: '', tags: [] });
+    expect(exported).toMatchObject({ description: '', tags: [], refresh_interval: 0 });
     expect(await importDashboard(testContext, ADMIN_USER, { ...exported, name }, { mode })).toMatchObject({ status: 'overwritten' });
     const cleared = await loadWorkspace(name);
     expect(cleared.description ?? '').toBe('');
     expect(cleared.tags ?? []).toEqual([]);
+    expect(cleared.refresh_interval ?? 0).toBe(0);
     // And the same import is then up to date
     expect(await importDashboard(testContext, ADMIN_USER, { ...exported, name }, { mode })).toMatchObject({ status: 'skipped', code: 'unchanged' });
   });
@@ -346,7 +350,7 @@ describe('Dashboard import and export (configuration preset)', () => {
     await patchAttribute(testContext, ADMIN_USER, (await loadWorkspace(names[7])).id, ENTITY_TYPE_WORKSPACE, {
       restricted_members: [{ id: ADMIN_USER.id, access_right: 'admin' }, { id: 'ALL', access_right: 'view' }],
     });
-    expect(await exportDashboard(testContext, ADMIN_USER, await loadWorkspace(names[7]))).toEqual({ name: names[7], description: '', tags: [] });
+    expect(await exportDashboard(testContext, ADMIN_USER, await loadWorkspace(names[7]))).toEqual({ name: names[7], description: '', tags: [], refresh_interval: 0 });
     // The bundle does not carry it: the key is refused, as every unknown one
     expect(await importDashboard(testContext, ADMIN_USER, { name: names[7], shared_with_all: 'view' }, { mode })).toMatchObject({ status: 'failed', code: 'invalid' });
     // A new dashboard is the importing user's, as with the file import
