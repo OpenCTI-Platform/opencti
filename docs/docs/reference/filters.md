@@ -11,7 +11,7 @@ Filters are used in many locations in the platform:
 - in dashboards: to create widget with only the entities matching the filters,
 - in feeds, TAXII collections, triggers, streams, playbooks, background tasks: to process only the data or events matching the filters.
 
-Depending on where they are used, filters are of two types: [dynamic filters](#dynamic-filters), which are not saved in the database, and [stored filters](#stored-filters), which are saved in the database.
+Depending on where they are used, filters are of two types: [dynamic filters](#dynamic-filters), which are used to filter lists and graphs in the UI and are not saved in the database, and [stored filters](#stored-filters), which are associated with an entity and saved in the database.
 
 ### Dynamic filters
 
