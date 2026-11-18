@@ -6,6 +6,8 @@ import type { StixRelation } from '../../types/stix-2-1-sro';
 import type { StixContainer } from '../../types/stix-2-1-sdo';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
+import { isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { isNotEmptyField } from '../../database/utils';
 import { detectObservableType, refangValues } from '../../utils/observable';
 import { createStixPattern } from '../../python/pythonBridge';
@@ -16,6 +18,16 @@ import { buildMaterializeOptions, materializeEntityFromFields } from './form-ent
 import { materializePendingRoots, type PendingUpload, withArtifactFileNotImported, withPendingExternalReferenceFiles } from './form-pending';
 
 const toStix = (entity: StoreEntity) => withArtifactFileNotImported(withPendingExternalReferenceFiles(convertStoreToStix_2_1(entity), entity));
+
+const withAutoCreateFlags = (schema: FormSchemaDefinition, mainEntityType: string, stixEntity: any) => {
+  if (schema.autoCreateIndicatorFromObservable && isStixCyberObservable(mainEntityType)) {
+    return { ...stixEntity, x_opencti_create_indicator: true };
+  }
+  if (schema.autoCreateObservableFromIndicator && mainEntityType === ENTITY_TYPE_INDICATOR) {
+    return { ...stixEntity, x_opencti_create_observables: true };
+  }
+  return stixEntity;
+};
 
 type MainEntitySourceMode = 'lookup' | 'multiple' | 'parsed' | 'default';
 
@@ -120,7 +132,7 @@ const entitySourceAdapters: Record<MainEntitySourceMode, EntitySourceAdapter> = 
           errorLabel: 'Main entity observable is not correctly formatted',
         }),
       );
-      mainStixEntities.push(toStix(mainEntity));
+      mainStixEntities.push(withAutoCreateFlags(schema, mainEntityType, toStix(mainEntity)));
       mainEntityStixId = mainEntity.standard_id;
     }
     return { mainStixEntities, mainEntityStixId };
