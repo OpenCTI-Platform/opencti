@@ -180,6 +180,45 @@ class TestConsumeQueueWiring:
         ]
         assert summary_calls(consumer)[0][0][1]["processed"] == 1
 
+    def test_summary_is_logged_while_a_long_message_is_processed(self):
+        consumer = make_consumer()
+        consumer.should_stop = False
+        clock = [0.0]
+
+        def advance_clock(_seconds):
+            clock[0] += 30.0
+
+        consumer.pika_connection.sleep.side_effect = advance_clock
+
+        # First message completes at once, the second one runs for 90 seconds
+        long_task = MagicMock()
+        long_task.running.side_effect = [True, True, True, False]
+
+        def submit(fn):
+            if not consumer._stats.processed:
+                fn()
+                done = MagicMock()
+                done.running.return_value = False
+                return done
+            return long_task
+
+        consumer.submit_fn = submit
+        consumer.channel.consume.return_value = iter(
+            [
+                (MagicMock(delivery_tag=1), MagicMock(), "body"),
+                (MagicMock(delivery_tag=2), MagicMock(), "body"),
+            ]
+        )
+
+        with patch("message_queue_consumer.time.monotonic", lambda: clock[0]):
+            consumer.consume_queue()
+
+        # Logged after 60s of waiting, not only when the long message ends at 90s
+        calls = summary_calls(consumer)
+        assert len(calls) == 1
+        assert calls[0][0][1]["processed"] == 1
+        assert calls[0][0][1]["interval_seconds"] == STATS_LOG_INTERVAL_SECONDS
+
 
 class TestShutdownAndResilience:
     def test_wait_for_completion_stops_and_joins_thread(self):

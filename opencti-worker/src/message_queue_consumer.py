@@ -173,6 +173,8 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
                 task_future = self.submit_fn(consume)
                 while task_future.running():  # Loop while the thread is processing
                     self.pika_connection.sleep(0.05)
+                    # Keep reporting completed work during a long processing
+                    self._maybe_log_stats(time.monotonic())
                 self.logger.debug("Message processed, thread terminated")
         except Exception as e:
             self.logger.error("Unhandled exception", {"exception": e})
