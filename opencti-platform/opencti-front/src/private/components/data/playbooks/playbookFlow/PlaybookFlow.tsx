@@ -30,6 +30,7 @@ import { PlaybookCanEditContext } from '../hooks/usePlaybookEditMode';
 import { useFormatter } from '../../../../../components/i18n';
 import { type PlaybookLayoutDirection, PlaybookLayoutDirectionContext, usePlaybookLayoutMode } from '../hooks/usePlaybookLayoutMode';
 import PlaybookFlowToolbar from './PlaybookFlowToolbar';
+import playbookFlowKeyboardProps from './playbookFlowKeyboard';
 import { categoryAccent, PLAYBOOK_ARROW_ID } from '../types/nodes/playbookNodeGeometry';
 import { PlaybookLastExecutionContext } from '../hooks/usePlaybookLastExecution';
 import { lastExecutionByNode, type PlaybookNodeLastExecution } from '../utils/playbookLastExecution';
@@ -282,6 +283,7 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook, canEdit, running }
             fitView={true}
             fitViewOptions={fitViewOptions}
             nodesDraggable={false}
+            {...playbookFlowKeyboardProps}
             nodesConnectable={canEdit}
             edgesUpdatable={canEdit}
             onConnect={canEdit ? onConnect : undefined}

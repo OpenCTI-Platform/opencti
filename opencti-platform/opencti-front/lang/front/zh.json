@@ -5846,6 +5846,7 @@
   "Unless you prevent the default groups assignation, the user will be created with the specified groups and the default groups.": "除非阻止分配默认组，否则创建的用户将包含指定组和默认组。",
   "Unlimited": "无限制",
   "Unlink": "取消链接",
+  "unmatch": "不匹配",
   "unmodified": "未修改",
   "Unpin": "取消固定位置",
   "unpredictable": "无法预知",

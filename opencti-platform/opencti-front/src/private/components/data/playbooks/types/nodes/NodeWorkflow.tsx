@@ -297,6 +297,9 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
               id={port.id}
               type="source"
               position={source}
+              // The horizontal pill caps its label at PLAYBOOK_PORT_PILL_MAX_WIDTH and lets pointer events
+              // through to this handle, so the full port name is read here on hover.
+              title={t_i18n(port.id)}
               style={{ ...(direction === 'horizontal' ? { top: anchor.y } : { left: anchor.x }), background: accent, border: 'none' }}
             />
             {portHasPill(port.id, ports.length) && (

@@ -5846,6 +5846,7 @@
   "Unless you prevent the default groups assignation, the user will be created with the specified groups and the default groups.": "デフォルトグループの割り当てを禁止しない限り、ユーザは指定されたグループとデフォルトグループで作成されます。",
   "Unlimited": "無制限",
   "Unlink": "リンクを解除する",
+  "unmatch": "不一致",
   "unmodified": "未修正",
   "Unpin": "ピン留めを解除",
   "unpredictable": "予測不能/不明",

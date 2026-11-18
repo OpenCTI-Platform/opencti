@@ -5846,6 +5846,7 @@
   "Unless you prevent the default groups assignation, the user will be created with the specified groups and the default groups.": "A meno che non si impedisca l'assegnazione dei gruppi predefiniti, l'utente verrà creato con i gruppi specificati e quelli predefiniti.",
   "Unlimited": "Illimitato",
   "Unlink": "Scollega",
+  "unmatch": "nessuna corrispondenza",
   "unmodified": "non modificato",
   "Unpin": "Sblocca",
   "unpredictable": "Imprevedibile/Sconosciuto",

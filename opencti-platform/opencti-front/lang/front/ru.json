@@ -5846,6 +5846,7 @@
   "Unless you prevent the default groups assignation, the user will be created with the specified groups and the default groups.": "Если вы не запретите назначение групп по умолчанию, пользователь будет создан с указанными группами и группами по умолчанию.",
   "Unlimited": "Неограниченное количество",
   "Unlink": "Разблокировать ссылку",
+  "unmatch": "нет совпадений",
   "unmodified": "немодифицированный",
   "Unpin": "Открепить",
   "unpredictable": "непредсказуемый",
