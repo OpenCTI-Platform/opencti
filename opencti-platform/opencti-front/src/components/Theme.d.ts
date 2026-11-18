@@ -46,6 +46,8 @@ declare module '@mui/material/Alert' {
 declare module '@mui/material/styles' {
   interface TypeBackground {
     nav: string;
+    // Both themes always set it (THEME_*_DEFAULT_ACCENT as fallback).
+    accent: string;
   }
 
   interface Palette {
