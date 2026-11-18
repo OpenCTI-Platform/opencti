@@ -62,7 +62,7 @@ const GraphToolbarContentTools = ({
     graphData,
     context,
     rawObjects,
-    editDisabledReason,
+    readOnly,
     graphState: {
       selectedNodes: rawSelectedNodes,
       selectedLinks: rawSelectedLinks,
@@ -124,10 +124,9 @@ const GraphToolbarContentTools = ({
   }
 
   const canAddRelation = objectsFrom.length > 0 && objectsTo.length > 0;
-  const linkDisabledReason = editDisabledReason ?? (canAddRelation ? undefined : t_i18n('Select the entities to link first'));
+  const linkDisabledReason = canAddRelation ? undefined : t_i18n('Select the entities to link first');
   let removeDisabledReason: string | undefined;
-  if (editDisabledReason) removeDisabledReason = editDisabledReason;
-  else if (selectionContainsInferred) removeDisabledReason = t_i18n('Inferred knowledge cannot be removed');
+  if (selectionContainsInferred) removeDisabledReason = t_i18n('Inferred knowledge cannot be removed');
   else if (!canDelete) removeDisabledReason = t_i18n('Select the elements to remove first');
 
   const removeFromAddPanel = (node: { id: string }) => {
@@ -170,16 +169,17 @@ const GraphToolbarContentTools = ({
       )}
       {entity && context === 'investigation' && (
         <>
-          <InvestigationAddStixCoreObjects
-            workspaceId={entity.id}
-            workspaceStixCoreObjects={rawObjects.map((o) => ({ node: o }))}
-            targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
-            onAdd={addNode}
-            onDelete={removeFromAddPanel}
-            open={isAddEntitiesOpen}
-            onOpenChange={setIsAddEntitiesOpen}
-            disabledReason={editDisabledReason}
-          />
+          {!readOnly && (
+            <InvestigationAddStixCoreObjects
+              workspaceId={entity.id}
+              workspaceStixCoreObjects={rawObjects.map((o) => ({ node: o }))}
+              targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
+              onAdd={addNode}
+              onDelete={removeFromAddPanel}
+              open={isAddEntitiesOpen}
+              onOpenChange={setIsAddEntitiesOpen}
+            />
+          )}
 
           <Security needs={[KNOWLEDGE]}>
             <InvestigationEnrichmentTool
@@ -197,7 +197,7 @@ const GraphToolbarContentTools = ({
         />
       )}
 
-      {onAddRelation && entity && (
+      {onAddRelation && entity && !readOnly && (
         <>
           <GraphToolbarItem
             Icon={<LinkOutlined />}
@@ -226,7 +226,6 @@ const GraphToolbarContentTools = ({
             nestedRelationExist={hasNested}
             openCreateNested={addNestedOpen}
             nestedEnabled={canAddRelation}
-            disabledReason={editDisabledReason}
             relationFromObjects={objectsFrom}
             relationToObjects={objectsTo}
             handleSetNestedRelationExist={setHasNested}
@@ -250,7 +249,7 @@ const GraphToolbarContentTools = ({
         </>
       )}
 
-      {entity && (
+      {entity && !readOnly && (
         <>
           <GraphToolbarItem
             Icon={<VisibilityOutlined />}
@@ -278,7 +277,7 @@ const GraphToolbarContentTools = ({
         </>
       )}
 
-      {(onDeleteRelation || onRemove) && entity && (
+      {(onDeleteRelation || onRemove) && entity && !readOnly && (
         <>
           <GraphToolbarItem
             Icon={<DeleteOutlined />}

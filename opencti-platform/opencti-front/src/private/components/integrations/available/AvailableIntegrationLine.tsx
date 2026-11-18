@@ -11,7 +11,7 @@ import { CatalogItem } from '@components/integrations/catalog/hooks/useIngestion
 import { getConnectorMetadata } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
 import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
 import useConnectorCompatibilityMessage from '@components/integrations/catalog/hooks/useConnectorCompatibilityMessage';
-import DisabledReasonTooltip from '@common/tooltip/DisabledReasonTooltip';
+import DisabledReasonTooltip from '@components/integrations/catalog/components/DisabledReasonTooltip';
 import { BuiltInIntegrationHubButton, BuiltInIntegrationImport, isImportableBuiltInKind } from '@components/integrations/available/BuiltInIntegrationImport';
 import { DeployedCountChip } from '@components/integrations/components/MarketplaceUi';
 import { LogoFiligranIcon } from 'filigran-icon';

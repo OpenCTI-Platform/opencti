@@ -2638,19 +2638,9 @@ its own.
 **Workaround.** FDS-WORKAROUND #68 at five sites, where the disabled
 control sits in a focusable `<span>` or `<div>` (`tabIndex={0}`) that takes
 the hover and the focus for the tooltip:
-- `DisabledReasonTooltip` (`@common/tooltip/DisabledReasonTooltip`), around
-  the library `Button` of the Deploy actions in `AvailableIntegrationLine`,
-  `IngestionCatalogConnectorHeader` and `IngestionCatalogCardDeployButton`,
-  and of the investigation actions a member cannot run: Add entities on the
-  empty graph (`GraphEmptyState`), Review all
-  (`InvestigationEnrichmentDrawer`), Expand and Mark as reviewed
-  (`InvestigationEnrichmentExpandEmpty`, `InvestigationExpandForm`), Add
-  (`InvestigationEnrichmentAddAllDialog`), and around the library
-  `IconButton` of the review and Delete actions of an enrichment
-  (`ConnectorWorkList`).
-  Given a `label`, as at every investigation site, the span carries
-  `role="button"`, that name, `aria-disabled` and the disabled reason, and
-  hides the control it wraps.
+- `DisabledReasonTooltip`, around the library `Button` of the Deploy
+  actions in `AvailableIntegrationLine`, `IngestionCatalogConnectorHeader`
+  and `IngestionCatalogCardDeployButton`.
 - `GraphToolbarItem`, around every disabled graph toolbar tool. It renders
   the library `IconButton` and `Tooltip`, which hit this same gap, so the
   span stays: it carries `role="button"`, `aria-disabled` and the disabled
@@ -2664,8 +2654,7 @@ the hover and the focus for the tooltip:
 - `WidgetBreakdownSelection`, around the breakdown controls (the field
   `Select`) of a widget with several datasets or counting distinct values.
 
-Except in `GraphToolbarItem` and in a `DisabledReasonTooltip` given a `label`,
-the wrapper is a focusable element with no role,
+Except in `GraphToolbarItem`, the wrapper is a focusable element with no role,
 which `jsx-a11y/no-noninteractive-tabindex` flags and is disabled there. At
 every site the Tab stop lands on that wrapper, not on the control.
 
@@ -2676,8 +2665,7 @@ and pointer events, and blocks activation in JavaScript, for example a
 trigger.
 
 **Removal test.** At a pin with that mode: pass the disabled state through
-it on the three Deploy buttons, on the investigation actions wrapped by
-`DisabledReasonTooltip` (their `label` then goes), on `GraphToolbarItem`, on the add-dataset
+it on the three Deploy buttons, on `GraphToolbarItem`, on the add-dataset
 buttons and the Distinct checkbox of a broken down widget and on the
 breakdown field select of a widget with two datasets; delete the wrappers
 with their markers and eslint-disable, and check that the tooltip shows on

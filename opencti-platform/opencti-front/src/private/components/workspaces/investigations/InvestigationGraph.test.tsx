@@ -15,10 +15,10 @@ vi.mock('../../../../components/graph/Graph', async () => {
   const { useGraphContext } = await import('../../../../components/graph/GraphContext');
   return {
     default: ({ onPositionsChanged }: { onPositionsChanged?: (positions: object) => void }) => {
-      const { editDisabledReason } = useGraphContext();
+      const { readOnly } = useGraphContext();
       return (
         <>
-          <span>{editDisabledReason ?? 'editable'}</span>
+          <span>{readOnly ? 'read only' : 'editable'}</span>
           <button type="button" onClick={() => onPositionsChanged?.({ malware: { id: 'malware', x: 1, y: 2 } })}>Move an entity</button>
         </>
       );
@@ -45,8 +45,6 @@ const InvestigationGraphOf = () => {
   return workspace ? <InvestigationGraph id="investigation-1" data={workspace} /> : null;
 };
 
-const CAPABILITY_REASON = 'You need the Create / Update investigations capability to change this investigation.';
-
 const renderGraph = (currentUserAccessRight: string, capabilities = ['INVESTIGATION_INUPDATE']) => {
   const relayEnv = createMockEnvironment();
   const resolve = (operation: OperationDescriptor) => MockPayloadGenerator.generate(operation, {
@@ -64,10 +62,10 @@ const renderGraph = (currentUserAccessRight: string, capabilities = ['INVESTIGAT
 };
 
 describe('InvestigationGraph', () => {
-  it('tells the graph that a view only member cannot change the investigation, and keeps the moves of the entities in the view', async () => {
+  it('makes the graph read only for a view only member, and keeps the moves of the entities in the view', async () => {
     savedPositions.mockClear();
     renderGraph('view');
-    expect(await screen.findByText('You have view access to this investigation')).toBeInTheDocument();
+    expect(await screen.findByText('read only')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Move an entity' }));
     expect(savedPositions).not.toHaveBeenCalled();
@@ -82,10 +80,10 @@ describe('InvestigationGraph', () => {
     expect(savedPositions).toHaveBeenCalledWith(expect.objectContaining({ variables: expect.objectContaining({ id: 'investigation-1' }) }));
   });
 
-  it('tells an editor without the capability to update investigations why the graph cannot change, and keeps the moves in the view', async () => {
+  it('makes the graph read only for an editor without the capability to update investigations, and keeps the moves in the view', async () => {
     savedPositions.mockClear();
     renderGraph('edit', ['INVESTIGATION']);
-    expect(await screen.findByText(CAPABILITY_REASON)).toBeInTheDocument();
+    expect(await screen.findByText('read only')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Move an entity' }));
     expect(savedPositions).not.toHaveBeenCalled();

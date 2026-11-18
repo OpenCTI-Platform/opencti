@@ -50,17 +50,4 @@ describe('InvestigationAddStixCoreObjects', () => {
     await user.click(screen.getByRole('button', { name: 'Close panel' }));
     expect(screen.queryByRole('dialog', { name: 'Add entities' })).not.toBeInTheDocument();
   });
-
-  it('disables the + button, saying why, when entities cannot be added', async () => {
-    const onOpenChange = vi.fn();
-    const { user } = testRender(
-      <InvestigationAddStixCoreObjects workspaceId="investigation-1" open={false} onOpenChange={onOpenChange} disabledReason="You have view access to this investigation" />,
-    );
-
-    const add = screen.getByRole('button', { name: ADD });
-    expect(add).toHaveAttribute('aria-disabled', 'true');
-    expect(add).toHaveAccessibleDescription('You have view access to this investigation');
-    await user.click(add);
-    expect(onOpenChange).not.toHaveBeenCalled();
-  });
 });

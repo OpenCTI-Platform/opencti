@@ -36,6 +36,7 @@ const ExpandState = () => {
     <>
       <span>{graphState.isExpandOpen ? 'expand open' : 'expand closed'}</span>
       <span>{`${graphState.selectedNodes.length} selected`}</span>
+      <span>{graphState.isAddEntitiesOpen ? 'add entities open' : 'add entities closed'}</span>
     </>
   );
 };
@@ -47,7 +48,6 @@ const doubleClick = (node: GraphNode) => act(() => {
   canvas.onNodeClick?.(node, click);
 });
 
-const VIEW_ONLY = 'You have view access to this investigation';
 const emotet = { id: 'malware', entity_type: 'Malware', name: 'Emotet', parent_types: ['Stix-Domain-Object'] } as unknown as ObjectToParse;
 const apt = { id: 'intrusion-set', entity_type: 'Intrusion-Set', name: 'APT-X', parent_types: ['Stix-Domain-Object'] } as unknown as ObjectToParse;
 
@@ -56,10 +56,10 @@ const openMenuFromKeyboard = (container: HTMLElement) => {
   fireEvent.keyDown(document, { key: 'F10', shiftKey: true });
 };
 
-const renderGraph = (editDisabledReason?: string, objects: ObjectToParse[] = []) => {
+const renderGraph = (readOnly?: boolean, objects: ObjectToParse[] = []) => {
   const parentRef = { current: document.createElement('div') };
   return testRender(
-    <GraphProvider objects={objects} context="investigation" editDisabledReason={editDisabledReason}>
+    <GraphProvider objects={objects} context="investigation" readOnly={readOnly}>
       <Graph parentRef={parentRef} />
       <ExpandState />
     </GraphProvider>,
@@ -73,8 +73,8 @@ describe('Graph of an investigation', () => {
     expect(screen.getByText('expand open')).toBeInTheDocument();
   });
 
-  it('keeps the expansion closed on a double click for a view only member, and the entity selected', () => {
-    renderGraph(VIEW_ONLY);
+  it('keeps the expansion closed on a double click for a member who cannot change the investigation, and the entity selected', () => {
+    renderGraph(true);
     doubleClick(graphNode({ id: 'malware' }));
     expect(screen.getByText('expand closed')).toBeInTheDocument();
     expect(screen.getByText('1 selected')).toBeInTheDocument();
@@ -83,30 +83,53 @@ describe('Graph of an investigation', () => {
   it('draws relationships between entities for an editor only', () => {
     renderGraph();
     expect(relationDrag.activated).toBe(true);
-    renderGraph(VIEW_ONLY);
+    renderGraph(true);
     expect(relationDrag.activated).toBe(false);
   });
 
-  it('disables creating a relationship from the menu of a view only member, saying why', async () => {
-    const { container } = renderGraph(VIEW_ONLY, [emotet, apt]);
+  it('offers adding entities to an empty investigation for an editor only', async () => {
+    renderGraph(true);
+    await screen.findByText('Read the documentation');
+    expect(screen.queryByRole('button', { name: 'Add entities' })).not.toBeInTheDocument();
+    renderGraph();
+    fireEvent.click(await screen.findByRole('button', { name: 'Add entities' }));
+    expect(screen.getAllByText('add entities open')).toHaveLength(1);
+  });
+
+  const openSelectionMenu = (readOnly?: boolean) => {
+    const { container } = renderGraph(readOnly, [emotet, apt]);
     act(() => {
       canvas.onNodeClick?.(graphNode({ id: 'malware' }), click);
       canvas.onNodeClick?.(graphNode({ id: 'intrusion-set' }), { ...click, shiftKey: true });
     });
     openMenuFromKeyboard(container);
+  };
 
-    const relate = await screen.findByRole('menuitem', { name: /^Create a relationship/ });
-    expect(relate).toHaveAttribute('aria-disabled', 'true');
-    expect(relate).toHaveTextContent(VIEW_ONLY);
-  });
-
-  it('disables "Expand this entity" in the menu of a view only member, saying why', async () => {
-    const { container } = renderGraph(VIEW_ONLY, [emotet]);
+  const openEntityMenu = (readOnly?: boolean) => {
+    const { container } = renderGraph(readOnly, [emotet]);
     act(() => canvas.onNodeClick?.(graphNode({ id: 'malware' }), click));
     openMenuFromKeyboard(container);
+  };
 
-    const expand = await screen.findByRole('menuitem', { name: /Expand this entity/ });
-    expect(expand).toHaveAttribute('aria-disabled', 'true');
-    expect(expand).toHaveTextContent(VIEW_ONLY);
+  it('offers creating a relationship from the menu of an editor', async () => {
+    openSelectionMenu();
+    expect(await screen.findByRole('menuitem', { name: /^Create a relationship/ })).toBeInTheDocument();
+  });
+
+  it('hides creating a relationship from the menu of a member who cannot change the investigation', async () => {
+    openSelectionMenu(true);
+    await screen.findByRole('menuitem', { name: /^Hide/ });
+    expect(screen.queryByRole('menuitem', { name: /^Create a relationship/ })).not.toBeInTheDocument();
+  });
+
+  it('offers "Expand this entity" in the menu of an editor', async () => {
+    openEntityMenu();
+    expect(await screen.findByRole('menuitem', { name: /Expand this entity/ })).toBeInTheDocument();
+  });
+
+  it('hides "Expand this entity" from the menu of a member who cannot change the investigation', async () => {
+    openEntityMenu(true);
+    await screen.findByRole('menuitem', { name: /Open in a new tab/ });
+    expect(screen.queryByRole('menuitem', { name: /Expand this entity/ })).not.toBeInTheDocument();
   });
 });

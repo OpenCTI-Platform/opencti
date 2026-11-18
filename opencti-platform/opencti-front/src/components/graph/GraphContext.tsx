@@ -50,8 +50,8 @@ interface GraphContextValue {
   context?: string;
   /** Name of what the graph shows, for the exported image. */
   title?: string;
-  /** Why the user cannot change what the graph holds: disables adding, expanding and removing, saying why. */
-  editDisabledReason?: string;
+  /** The user cannot change what the graph holds: the tools adding, expanding and removing are hidden. */
+  readOnly?: boolean;
 }
 
 const GraphContext = createContext<GraphContextValue | undefined>(undefined);
@@ -63,7 +63,7 @@ interface GraphProviderProps {
   context?: string;
   positions?: OctiGraphPositions;
   title?: string;
-  editDisabledReason?: string;
+  readOnly?: boolean;
 }
 
 const GraphStateProvider = ({
@@ -73,7 +73,7 @@ const GraphStateProvider = ({
   objects,
   positions,
   title,
-  editDisabledReason,
+  readOnly,
 }: GraphProviderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -249,7 +249,7 @@ const GraphStateProvider = ({
     timeRange,
     context,
     title,
-    editDisabledReason,
+    readOnly,
     isFullscreen,
     setIsFullscreen,
     rawPositions,
@@ -264,7 +264,7 @@ const GraphStateProvider = ({
     rawPositions,
     isFullscreen,
     title,
-    editDisabledReason,
+    readOnly,
   ]);
 
   return (

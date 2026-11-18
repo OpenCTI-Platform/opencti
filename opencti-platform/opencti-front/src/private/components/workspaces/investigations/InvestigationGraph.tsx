@@ -457,7 +457,7 @@ const InvestigationGraphComponent = ({
   const { t_i18n } = useFormatter();
   const view = useInvestigationView();
   const bannerHeight = useSettingsMessagesBannerHeight();
-  const { rawObjects, editDisabledReason } = useGraphContext();
+  const { rawObjects, readOnly } = useGraphContext();
 
   const {
     addLink,
@@ -497,7 +497,7 @@ const InvestigationGraphComponent = ({
 
   const savePositions = (positions: OctiGraphPositions) => {
     // The server refuses the positions of a member who cannot change the investigation: they stay in this view only.
-    if (editDisabledReason) return;
+    if (readOnly) return;
     commitEditPositions({
       variables: {
         id: investigation.id,
@@ -650,15 +650,11 @@ const InvestigationGraphLoader = ({
   pageSize,
   ...otherProps
 }: InvestigationGraphLoaderProps) => {
-  const { t_i18n } = useFormatter();
   const localStorageKey = `investigation-graph-${investigationId}`;
   const { currentUserAccessRight } = useFragment(investigationGraphFragment, otherProps.dataInvestigation);
   const { canEdit } = useGetCurrentUserAccessRight(currentUserAccessRight);
   // Every change to the graph goes through workspaceFieldPatch, which needs one of these capabilities.
   const canUpdateWorkspace = useGranted([EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]);
-  let editDisabledReason: string | undefined;
-  if (!canEdit) editDisabledReason = t_i18n('You have view access to this investigation');
-  else if (!canUpdateWorkspace) editDisabledReason = t_i18n('You need the Create / Update investigations capability to change this investigation.');
 
   const {
     data: { workspace },
@@ -701,7 +697,7 @@ const InvestigationGraphLoader = ({
       objects={objects}
       positions={positions}
       context="investigation"
-      editDisabledReason={editDisabledReason}
+      readOnly={!canEdit || !canUpdateWorkspace}
     >
       <InvestigationGraphComponent
         currentData={dataLoaded}

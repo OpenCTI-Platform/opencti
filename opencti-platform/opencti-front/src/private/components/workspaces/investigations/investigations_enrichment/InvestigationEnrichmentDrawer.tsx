@@ -17,7 +17,6 @@ import useInvestigationEnrichmentExpand from './useInvestigationEnrichmentExpand
 import InvestigationEnrichmentAddAllDialog from './InvestigationEnrichmentAddAllDialog';
 import { isNothingToExpand, toExpandElements } from './investigation-enrichment.utils';
 import Security from '../../../../../utils/Security';
-import DisabledReasonTooltip from '@common/tooltip/DisabledReasonTooltip';
 
 const dismissReviewMutation = graphql`
   mutation InvestigationEnrichmentDrawerDismissReview($workId: ID!, $status: WorkInvestigationStatus!) {
@@ -61,7 +60,7 @@ const InvestigationEnrichmentDrawer = ({
     graphIds,
     expandWorks,
   } = useInvestigationEnrichmentExpand(investigation.id, onExpand);
-  const { canLaunch, canEdit, reviewDisabledReason } = useInvestigationEnrichmentRights(investigation.currentUserAccessRight);
+  const { canLaunch, canEdit } = useInvestigationEnrichmentRights(investigation.currentUserAccessRight);
 
   const { graphState } = useGraphContext();
   const { selectedNodes, selectedLinks } = graphState;
@@ -141,15 +140,12 @@ const InvestigationEnrichmentDrawer = ({
             // Same rights as the review of one work, in its row of the list.
             <Security needs={['CONNECTORAPI', 'MODULES_MODMANAGE']}>
               <div className="flex justify-end">
-                <DisabledReasonTooltip reason={reviewDisabledReason ?? null} label={`${t_i18n('Review all')} (${reviewableWorks.length})`}>
-                  <Button
-                    priority="secondary"
-                    onClick={() => setWorksToReview(reviewableWorks)}
-                    disabled={!!reviewDisabledReason}
-                  >
-                    {t_i18n('Review all')} ({reviewableWorks.length})
-                  </Button>
-                </DisabledReasonTooltip>
+                <Button
+                  priority="secondary"
+                  onClick={() => setWorksToReview(reviewableWorks)}
+                >
+                  {t_i18n('Review all')} ({reviewableWorks.length})
+                </Button>
               </div>
             </Security>
           )}
@@ -178,14 +174,12 @@ const InvestigationEnrichmentDrawer = ({
         onExpand={onExpand}
         onBackToGraph={onClose}
         canEdit={canEdit}
-        reviewDisabledReason={reviewDisabledReason}
       />
 
       <InvestigationEnrichmentAddAllDialog
         work={workToAddAll}
         nothingToAdd={isNothingToExpand(toExpandElements(workToAddAll ? [workToAddAll] : []), graphIds)}
         canEdit={canEdit}
-        reviewDisabledReason={reviewDisabledReason}
         onConfirm={addAll}
         onDismiss={dismissReview}
         onClose={() => setWorkToAddAll(undefined)}

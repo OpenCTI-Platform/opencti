@@ -1,4 +1,3 @@
-import { ReactNode } from 'react';
 import { CheckCircleOutlined, DeleteOutlined, ExtensionOutlined, RefreshOutlined, WarningOutlined, DoNotDisturb, DataSaverOn, OpenWithOutlined } from '@mui/icons-material';
 import List from '@mui/material/List';
 import { Divider, Stack } from '@mui/material';
@@ -12,7 +11,6 @@ import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import Security from '../../../../utils/Security';
-import DisabledReasonTooltip from '@common/tooltip/DisabledReasonTooltip';
 import { KNOWLEDGE_KNENRICHMENT } from '../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { ConnectorWorkListDeleteMutation } from './__generated__/ConnectorWorkListDeleteMutation.graphql';
@@ -50,32 +48,6 @@ export interface ConnectorWorkListItem {
   works: ReadonlyArray<ConnectorWorkListWork>;
 }
 
-interface WorkActionProps {
-  label: string;
-  icon: ReactNode;
-  disabled?: boolean;
-  disabledReason?: string;
-  onClick: () => void;
-}
-
-/**
- * An action on a work. Disabled with a reason, it stays in the keyboard path and says why.
- */
-const WorkAction = ({ label, icon, disabled = false, disabledReason, onClick }: WorkActionProps) => {
-  if (disabledReason) {
-    return (
-      <DisabledReasonTooltip reason={disabledReason} label={label}>
-        <IconButton disabled aria-label={label}>{icon}</IconButton>
-      </DisabledReasonTooltip>
-    );
-  }
-  return (
-    <IconButton disabled={disabled} tooltip={label} aria-label={label} onClick={onClick}>
-      {icon}
-    </IconButton>
-  );
-};
-
 interface ConnectorWorkListProps {
   items: ReadonlyArray<ConnectorWorkListItem>;
   onRefresh: (connector: ConnectorWorkListConnector) => void;
@@ -85,10 +57,7 @@ interface ConnectorWorkListProps {
   onReview?: (workId: string) => void;
   onReviewAddAll?: (workId: string) => void;
   canEditInvestigation?: boolean;
-  /** Why the results cannot be reviewed, which disables the review actions and says so in their tooltip. */
-  reviewDisabledReason?: string;
-  /** Why the works cannot be deleted, which disables Delete and says so in its tooltip. */
-  deleteDisabledReason?: string;
+  canDelete?: boolean;
 }
 
 /**
@@ -103,8 +72,7 @@ const ConnectorWorkList = ({
   onReview,
   onReviewAddAll,
   canEditInvestigation = false,
-  reviewDisabledReason,
-  deleteDisabledReason,
+  canDelete = true,
 }: ConnectorWorkListProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n, nsdt } = useFormatter();
@@ -186,97 +154,105 @@ const ConnectorWorkList = ({
                   .sort((a, b) => (a?.timestamp ?? '').localeCompare(b?.timestamp ?? ''));
 
                 return (
-                  <ListItem
-                    key={work.id}
-                    dense
-                    divider
-                    secondaryAction={(
-                      <Security needs={['CONNECTORAPI', 'MODULES_MODMANAGE']}>
-                        <Stack
-                          direction="row"
-                          spacing={1}
-                        >
-                          {onReview && (
-                            <WorkAction
-                              label={t_i18n('Review results')}
-                              icon={<OpenWithOutlined fontSize="small" />}
-                              disabled={isFail}
-                              disabledReason={reviewDisabledReason}
-                              onClick={() => onReview(work.id)}
+                  <Tooltip key={work.id}>
+                    <TooltipTrigger asChild>
+                      <ListItem
+                        dense
+                        divider
+                        secondaryAction={(
+                          <Security needs={['CONNECTORAPI', 'MODULES_MODMANAGE']}>
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                            >
+                              {onReview && (
+                                <IconButton
+                                  disabled={isFail}
+                                  tooltip={t_i18n('Review results')}
+                                  aria-label={t_i18n('Review results')}
+                                  onClick={() => onReview?.(work.id)}
+                                >
+                                  <OpenWithOutlined fontSize="small" />
+                                </IconButton>
+                              )}
+                              <Security needs={[]} hasAccess={canEditInvestigation}>
+                                <>
+                                  {onReviewAddAll && (
+                                    <IconButton
+                                      disabled={isFail}
+                                      tooltip={t_i18n('Add all to graph')}
+                                      aria-label={t_i18n('Add all to graph')}
+                                      onClick={() => onReviewAddAll?.(work.id)}
+                                    >
+                                      <DataSaverOn fontSize="small" />
+                                    </IconButton>
+                                  )}
+                                  {onReviewDismiss && (
+                                    <IconButton
+                                      tooltip={t_i18n('Mark as reviewed')}
+                                      aria-label={t_i18n('Mark as reviewed')}
+                                      onClick={() => onReviewDismiss?.(work.id)}
+                                    >
+                                      <DoNotDisturb fontSize="small" />
+                                    </IconButton>
+                                  )}
+                                </>
+                              </Security>
+                              {canDelete && (
+                                <>
+                                  {(onReview || onReviewAddAll || onReviewDismiss) && (
+                                    <Divider orientation="vertical" flexItem />
+                                  )}
+                                  <IconButton
+                                    tooltip={t_i18n('Delete')}
+                                    aria-label={t_i18n('Delete')}
+                                    onClick={() => deleteWork(work.id)}
+                                  >
+                                    <DeleteOutlined />
+                                  </IconButton>
+                                </>
+                              )}
+                            </Stack>
+                          </Security>
+                        )}
+                      >
+                        <ListItemIcon>
+                          {isFail && (
+                            <WarningOutlined
+                              style={{
+                                fontSize: 15,
+                                color: theme.palette.error.main,
+                              }}
                             />
                           )}
-                          {canEditInvestigation && onReviewAddAll && (
-                            <WorkAction
-                              label={t_i18n('Add all to graph')}
-                              icon={<DataSaverOn fontSize="small" />}
-                              disabled={isFail}
-                              disabledReason={reviewDisabledReason}
-                              onClick={() => onReviewAddAll(work.id)}
+                          {!isFail && work.status === 'complete' && (
+                            <CheckCircleOutlined
+                              style={{
+                                fontSize: 15,
+                                color: theme.palette.success.main,
+                              }}
                             />
                           )}
-                          {canEditInvestigation && onReviewDismiss && (
-                            <WorkAction
-                              label={t_i18n('Mark as reviewed')}
-                              icon={<DoNotDisturb fontSize="small" />}
-                              disabledReason={reviewDisabledReason}
-                              onClick={() => onReviewDismiss(work.id)}
+                          {((!isFail && work.status === 'wait') || work.status === 'progress') && (
+                            <Spinner
+                              size="md"
+                              style={{ marginRight: 10 }}
                             />
                           )}
-                          {(onReview || onReviewAddAll || onReviewDismiss) && (
-                            <Divider orientation="vertical" flexItem />
-                          )}
-                          <WorkAction
-                            label={t_i18n('Delete')}
-                            icon={<DeleteOutlined />}
-                            disabledReason={deleteDisabledReason}
-                            onClick={() => deleteWork(work.id)}
-                          />
-                        </Stack>
-                      </Security>
-                    )}
-                  >
-                    {/* The messages of the work show on its status and date, apart from the tooltips of its actions. */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
-                          <ListItemIcon>
-                            {isFail && (
-                              <WarningOutlined
-                                style={{
-                                  fontSize: 15,
-                                  color: theme.palette.error.main,
-                                }}
-                              />
-                            )}
-                            {!isFail && work.status === 'complete' && (
-                              <CheckCircleOutlined
-                                style={{
-                                  fontSize: 15,
-                                  color: theme.palette.success.main,
-                                }}
-                              />
-                            )}
-                            {((!isFail && work.status === 'wait') || work.status === 'progress') && (
-                              <Spinner
-                                size="md"
-                                style={{ marginRight: 10 }}
-                              />
-                            )}
-                          </ListItemIcon>
-                          <ListItemText primary={nsdt(work.timestamp)} />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent style={{ maxWidth: 600 }}>
-                        {messages.length > 0
-                          ? messages.map((message, index) => (
-                              <div key={`${message?.timestamp}-${index}`}>
-                                [{nsdt(message?.timestamp)}] {message?.message}
-                              </div>
-                            ))
-                          : t_i18n(work.status)}
-                      </TooltipContent>
-                    </Tooltip>
-                  </ListItem>
+                        </ListItemIcon>
+                        <ListItemText primary={nsdt(work.timestamp)} />
+                      </ListItem>
+                    </TooltipTrigger>
+                    <TooltipContent style={{ maxWidth: 600 }}>
+                      {messages.length > 0
+                        ? messages.map((message, index) => (
+                            <div key={`${message?.timestamp}-${index}`}>
+                              [{nsdt(message?.timestamp)}] {message?.message}
+                            </div>
+                          ))
+                        : t_i18n(work.status)}
+                    </TooltipContent>
+                  </Tooltip>
                 );
               })}
             </List>

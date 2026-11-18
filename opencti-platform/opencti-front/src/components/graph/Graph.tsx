@@ -132,7 +132,7 @@ const Graph = ({
     graphData,
     context,
     title,
-    editDisabledReason,
+    readOnly,
     rawPositions,
     isFullscreen,
     setIsFullscreen,
@@ -465,8 +465,8 @@ const Graph = ({
       }
       nodeClicked.current = isDoubleClick ? {} : { node, time: now };
       if (isDoubleClick && context === 'investigation') {
-        // Without the right to expand, the double click keeps the selection of its first click.
-        if (!editDisabledReason) setIsExpandOpen(true);
+        // Read only, the double click keeps the selection of its first click.
+        if (!readOnly) setIsExpandOpen(true);
         return;
       }
     }
@@ -771,7 +771,7 @@ const Graph = ({
     return link && linkShown(link) ? { kind: 'link', link } : null;
   }, [card, displayData, shownNodeIds]);
 
-  const canRelate = context !== 'analyses' && context !== 'correlation';
+  const canRelate = context !== 'analyses' && context !== 'correlation' && !readOnly;
 
   // --- Context menu: what applies to the entity, group or relationship under the pointer, or to the
   // graph itself on the empty canvas, and to the selection while there is one. The hover card only previews.
@@ -818,11 +818,10 @@ const Graph = ({
     const other = otherSelected(node);
     return present([
       { id: 'open', label: t_i18n('Open in a new tab'), icon: <OpenInNewOutlined {...MENU_ICON} />, onSelect: () => openInNewTab(node.id) },
-      context === 'investigation' && {
+      context === 'investigation' && !readOnly && {
         id: 'expand',
         label: t_i18n('Expand this entity'),
         icon: <AccountTreeOutlined {...MENU_ICON} />,
-        disabledReason: editDisabledReason,
         onSelect: () => {
           selectNodes([node]);
           setIsExpandOpen(true);
@@ -845,7 +844,6 @@ const Graph = ({
         id: 'relate-to-selection',
         label: t_i18n('Create a relationship from the selection'),
         icon: <LinkOutlined {...MENU_ICON} />,
-        disabledReason: editDisabledReason,
         onSelect: () => {
           selectNodes([other, node]);
           setIsAddRelationOpen(true);
@@ -906,7 +904,6 @@ const Graph = ({
       id: 'relate-selection',
       label: t_i18n('Create a relationship'),
       icon: <LinkOutlined {...MENU_ICON} />,
-      disabledReason: editDisabledReason,
       onSelect: () => setIsAddRelationOpen(true),
     },
     !!startInvestigation && context !== 'investigation' && selectedEntityNodes.length > 0 && {
@@ -1012,8 +1009,8 @@ const Graph = ({
             <RelationSelection
               width={width}
               height={height}
-              // Drawing a relationship between two entities creates it: not for a member who cannot change the graph.
-              activated={!selectFree && !selectFreeRectangle && !editDisabledReason}
+              // Drawing a relationship between two entities creates it.
+              activated={!selectFree && !selectFreeRectangle && !readOnly}
               graphDataNodes={(graphData?.nodes ?? []).filter(isNodeShown)}
               graph={graphRef2D}
               setSelectedNodes={(nodes) => {
@@ -1071,8 +1068,7 @@ const Graph = ({
             context={context}
             onClearFilters={resetFilters}
             onShowHidden={showHiddenNodes}
-            onAddEntities={context === 'investigation' ? () => setIsAddEntitiesOpen(true) : undefined}
-            addEntitiesDisabledReason={editDisabledReason}
+            onAddEntities={context === 'investigation' && !readOnly ? () => setIsAddEntitiesOpen(true) : undefined}
           />
         )}
         {!mode3D && shownNodes.length > 0 && (showLegend ? (

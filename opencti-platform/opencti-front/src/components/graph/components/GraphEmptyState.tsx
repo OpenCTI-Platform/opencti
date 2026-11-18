@@ -2,7 +2,6 @@ import React from 'react';
 import { Button, Paper, Text } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../i18n';
-import DisabledReasonTooltip from '@common/tooltip/DisabledReasonTooltip';
 import type { Theme } from '../../Theme';
 
 /** Why nothing is drawn: no data yet, every entity filtered out, or every entity hidden. */
@@ -18,15 +17,13 @@ export interface GraphEmptyStateProps {
   onShowHidden: () => void;
   /** Opens the drawer adding entities, offered on first use when the graph can take entities (an investigation). */
   onAddEntities?: () => void;
-  /** Why entities cannot be added: disables the action and says so in its tooltip. */
-  addEntitiesDisabledReason?: string;
 }
 
 /**
  * Says why the graph draws nothing and offers the next action: adding entities or the documentation
  * on first use, clearing the filters when they leave nothing, showing the entities hidden from the view.
  */
-const GraphEmptyState = ({ kind, context, onClearFilters, onShowHidden, onAddEntities, addEntitiesDisabledReason }: GraphEmptyStateProps) => {
+const GraphEmptyState = ({ kind, context, onClearFilters, onShowHidden, onAddEntities }: GraphEmptyStateProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const firstUse: Record<string, string> = {
@@ -82,9 +79,7 @@ const GraphEmptyState = ({ kind, context, onClearFilters, onShowHidden, onAddEnt
               <a href={GRAPHS_DOCUMENTATION} target="_blank" rel="noopener noreferrer">{t_i18n('Read the documentation')}</a>
             </Button>
             {onAddEntities && (
-              <DisabledReasonTooltip reason={addEntitiesDisabledReason ?? null} label={t_i18n('Add entities')}>
-                <Button priority="primary" size="sm" onClick={onAddEntities} disabled={!!addEntitiesDisabledReason}>{t_i18n('Add entities')}</Button>
-              </DisabledReasonTooltip>
+              <Button priority="primary" size="sm" onClick={onAddEntities}>{t_i18n('Add entities')}</Button>
             )}
           </div>
         )}

@@ -28,11 +28,4 @@ describe('StixNestedRefRelationshipCreationFromKnowledgeGraph', () => {
     expect(tool).toHaveAttribute('aria-disabled', 'true');
     expect(tool).toHaveAccessibleDescription('A nested relationship is being created');
   });
-
-  it('says why the tool is disabled for a user who cannot change the graph, whatever the selection', () => {
-    testRender(<StixNestedRefRelationshipCreationFromKnowledgeGraph {...props} disabledReason="You have view access to this investigation" />);
-    const tool = screen.getByRole('button', { name: 'Create a nested relationship' });
-    expect(tool).toHaveAttribute('aria-disabled', 'true');
-    expect(tool).toHaveAccessibleDescription('You have view access to this investigation');
-  });
 });
