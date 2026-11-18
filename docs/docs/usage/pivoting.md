@@ -16,6 +16,8 @@ To access investigations, navigate to the top right corner of the toolbar:
 
     The same applies with edit access but without the `Create / Update investigations` capability.
 
+    Editing the selected entity or relationship changes the knowledge itself, not the investigation: it follows the `Update knowledge` capability, as on the entity's page, whatever your access to the investigation.
+
 
 ## Perform investigation
 

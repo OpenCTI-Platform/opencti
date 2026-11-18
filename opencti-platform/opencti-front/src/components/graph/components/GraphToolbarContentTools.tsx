@@ -20,7 +20,7 @@ import ContainerAddStixCoreObjectsInLine from '../../../private/components/commo
 import { getRelationshipMainRepresentative } from '../../../utils/defaultRepresentatives';
 import InvestigationEnrichmentTool from '../../../private/components/workspaces/investigations/investigations_enrichment/InvestigationEnrichmentTool';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 
 export interface GraphToolbarContentToolsProps {
   stixCoreObjectRefetchQuery?: GraphQLTaggedNode;
@@ -191,10 +191,13 @@ const GraphToolbarContentTools = ({
       )}
 
       {stixCoreObjectRefetchQuery && relationshipRefetchQuery && (
-        <GraphToolbarEditObject
-          stixCoreObjectRefetchQuery={stixCoreObjectRefetchQuery}
-          relationshipRefetchQuery={relationshipRefetchQuery}
-        />
+        // The pencil edits the knowledge itself, not the graph: same right as on the entity's page.
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <GraphToolbarEditObject
+            stixCoreObjectRefetchQuery={stixCoreObjectRefetchQuery}
+            relationshipRefetchQuery={relationshipRefetchQuery}
+          />
+        </Security>
       )}
 
       {onAddRelation && entity && !readOnly && (

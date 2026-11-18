@@ -1,7 +1,8 @@
 import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
-import testRender from '../../../utils/tests/test-render';
+import type { GraphQLTaggedNode } from 'relay-runtime';
+import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
 import { graphNode } from '../../../utils/tests/graphTestData';
 import { GraphProvider } from '../GraphContext';
 import GraphToolbarExpandTools from './GraphToolbarExpandTools';
@@ -20,6 +21,12 @@ vi.mock('@components/workspaces/investigations/InvestigationAddStixCoreObjects',
 }));
 vi.mock('../../../private/components/workspaces/investigations/investigations_enrichment/InvestigationEnrichmentTool', () => ({ default: () => null }));
 vi.mock('@components/events/stix_sighting_relationships/StixSightingRelationshipCreation', () => ({ default: () => null }));
+// The edition forms query the platform when they mount: only whether the pencil is offered matters here.
+vi.mock('@components/common/stix_domain_objects/StixDomainObjectEdition', () => ({ default: () => null }));
+vi.mock('@components/observations/stix_cyber_observables/StixCyberObservableEdition', () => ({ default: () => null }));
+vi.mock('@components/common/stix_core_relationships/StixCoreRelationshipEdition', () => ({ default: () => null }));
+vi.mock('@components/events/stix_sighting_relationships/StixSightingRelationshipEdition', () => ({ default: () => null }));
+vi.mock('@components/common/stix_nested_ref_relationships/StixNestedRefRelationshipEdition', () => ({ default: () => null }));
 vi.mock('@components/common/stix_core_relationships/StixCoreRelationshipCreation', () => ({ default: () => null }));
 vi.mock('@components/common/stix_nested_ref_relationships/StixNestedRefRelationshipCreation', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@components/common/stix_nested_ref_relationships/StixNestedRefRelationshipCreation')>()),
@@ -79,5 +86,32 @@ describe('Investigation tools of the graph toolbar', () => {
       expect(screen.getByRole('button', { name })).not.toHaveAttribute('aria-disabled');
     });
     expect(mocks.addEntities).toHaveBeenCalled();
+  });
+
+  describe('edit the selected item', () => {
+    const query = {} as GraphQLTaggedNode;
+    const EDIT = 'Edit the selected item';
+
+    // The pencil follows the capability to update knowledge, whatever the access to the investigation.
+    const renderAs = (capabilities: string[], readOnly: boolean) => testRender(
+      <GraphProvider objects={[emotet]} context="investigation" readOnly={readOnly}>
+        <SelectEntities nodes={[malware]} />
+        <GraphToolbarContentTools entity={{ id: 'investigation-1' }} onAddRelation={vi.fn()} stixCoreObjectRefetchQuery={query} relationshipRefetchQuery={query} />
+      </GraphProvider>,
+      { userContext: createMockUserContext({ me: { id: 'user-1', capabilities: capabilities.map((name) => ({ name })) } }) },
+    );
+
+    it('is hidden from an editor of the investigation who cannot update knowledge', () => {
+      renderAs(['INVESTIGATION_INUPDATE'], false);
+
+      expect(screen.getByRole('button', { name: 'Create a relationship' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: EDIT })).not.toBeInTheDocument();
+    });
+
+    it('is offered to a viewer of the investigation who can update knowledge', () => {
+      renderAs(['KNOWLEDGE_KNUPDATE'], true);
+
+      expect(screen.getByRole('button', { name: EDIT })).not.toHaveAttribute('aria-disabled');
+    });
   });
 });
