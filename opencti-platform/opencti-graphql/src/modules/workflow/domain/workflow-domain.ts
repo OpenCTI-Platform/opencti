@@ -832,15 +832,15 @@ const rollbackFailedMigration = async (
     ]);
     return;
   }
-  await deleteWorkflowDefinition(context, user, entityType, scope);
+  await unlinkWorkflowDefinitionUnderLock(context, user, entityType, scope);
   await deleteElementById(executionContext, executionUser, definitionId, ENTITY_TYPE_WORKFLOW_DEFINITION);
 };
 
 /**
  * One-shot migration of an entity type's legacy `Status` set of one scope into a workflow
- * definition: saved as a draft, then published when `publish` is true. Reuses
- * `setWorkflowDefinition` / `publishWorkflowDefinition`, so validation, EE checks and status
- * locking are the same as a hand-authored workflow. GLOBAL migrates the entity type's workflow;
+ * definition: saved as a draft, then published when `publish` is true. Runs the same save and
+ * publish steps as `setWorkflowDefinition` / `publishWorkflowDefinition`, so validation and EE
+ * checks are the same as a hand-authored workflow. GLOBAL migrates the entity type's workflow;
  * REQUEST_ACCESS (Case-Rfi only) migrates its request access statuses into the request access
  * workflow, with the configured approved / declined statuses as outcome states. Existing `Status`
  * records are reused, so no entity changes status.
@@ -852,7 +852,7 @@ const rollbackFailedMigration = async (
  *   all are checked before anything is saved. Publishing also needs the
  *   ENTITIES_WORKFLOW feature, without which the workflow is not applied to entity writes.
  * - Holds the entity type's workflow status lock from the existence check to the end of the publish
- *   and its rollback, so no save, restore or publish runs in between. When the publish fails before
+ *   and its rollback, so no save, restore, publish or delete runs in between. When the publish fails before
  *   writing, it removes the workflow it created, or restores the draft and history of the one it
  *   overwrote, so a retry starts from the same state.
  */
@@ -968,7 +968,6 @@ const saveWorkflowDraftUnderLock = async (
   definition: string,
   scope: StatusScope,
 ): Promise<{ result: EntitySettingWithWorkflowResponse; draftVersionId: string }> => {
-  assertScopeAllowed(entityType, scope);
   validateSetting(entityType, scope === StatusScope.RequestAccess ? 'request_access_workflow' : 'workflow_id');
 
   const entitySetting = await getWorkflowConfig(context, user, entityType);
@@ -1129,16 +1128,13 @@ export const setWorkflowDefinition = async (
   return result;
 };
 
-/**
- * Delete workflow definition for an entity type.
- */
-export const deleteWorkflowDefinition = async (
+// Unlinks the scope's workflow definition from the entity setting. The caller holds the status lock.
+const unlinkWorkflowDefinitionUnderLock = async (
   context: AuthContext,
   user: AuthUser,
   entityType: string,
-  scope: StatusScope = StatusScope.Global,
+  scope: StatusScope,
 ): Promise<BasicStoreEntityEntitySetting | undefined> => {
-  assertScopeAllowed(entityType, scope);
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   if (entitySetting && resolveScopedDefinitionId(entitySetting, scope)) {
     const executionContext = bypassDraftContext(context);
@@ -1151,6 +1147,19 @@ export const deleteWorkflowDefinition = async (
     return element as unknown as BasicStoreEntityEntitySetting;
   }
   return entitySetting;
+};
+
+/**
+ * Delete workflow definition for an entity type.
+ */
+export const deleteWorkflowDefinition = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  scope: StatusScope = StatusScope.Global,
+): Promise<BasicStoreEntityEntitySetting | undefined> => {
+  assertScopeAllowed(entityType, scope);
+  return withWorkflowStatusLock(entityType, () => unlinkWorkflowDefinitionUnderLock(context, user, entityType, scope));
 };
 
 /**
@@ -1325,7 +1334,7 @@ export const isStatusOrphaned = async (
  */
 export const getWorkflowStatusLockKey = (entityType: string): string => `workflow-status-lifecycle:${entityType}`;
 
-// Serializes every write to an entity type's workflow definitions (save, restore, publish, migration)
+// Serializes every write to an entity type's workflow definitions (save, restore, publish, delete, migration)
 // with the workflow status cleanup manager. A publish reads the draft under this lock, so no save can
 // replace it between that read and the publication. The cleanup manager shares it so it never deletes a
 // Status on a stale check while a publish clears its deletion mark and recreates its mapping: clearing
@@ -1474,7 +1483,6 @@ const publishWorkflowDraftUnderLock = async (
   entityType: string,
   scope: StatusScope = StatusScope.Global,
 ): Promise<EntitySettingWithWorkflowResponse> => {
-  assertScopeAllowed(entityType, scope);
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   if (!entitySetting) {
     throw FunctionalError('Entity setting not found for type', { entityType });
@@ -1698,7 +1706,6 @@ const restorePublishedWorkflowUnderLock = async (
   entityType: string,
   scope: StatusScope = StatusScope.Global,
 ): Promise<EntitySettingWithWorkflowResponse> => {
-  assertScopeAllowed(entityType, scope);
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   if (!entitySetting) {
     throw FunctionalError('Entity setting not found for type', { entityType });

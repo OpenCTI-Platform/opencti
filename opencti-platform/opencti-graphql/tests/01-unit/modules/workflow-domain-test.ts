@@ -910,6 +910,21 @@ describe('Workflow Domain', () => {
     expect(unlock).toHaveBeenCalledOnce();
   });
 
+  it('delete holds the workflow status lock of the entity type while it unlinks, and releases it on failure', async () => {
+    const unlock = vi.fn();
+    vi.mocked(lockResources).mockResolvedValueOnce({ unlock } as any);
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    vi.mocked(updateAttribute).mockImplementationOnce(async () => {
+      expect(unlock).not.toHaveBeenCalled();
+      throw new Error('unlink failed');
+    });
+
+    await expect(deleteWorkflowDefinition(mockContext, mockUser, 'Incident')).rejects.toThrow('unlink failed');
+
+    expect(lockResources).toHaveBeenCalledExactlyOnceWith(['workflow-status-lifecycle:Incident']);
+    expect(unlock).toHaveBeenCalledOnce();
+  });
+
   it('denies workflow bypass without BYPASS before accessing or changing an entity', async () => {
     await expect(setWorkflowStatus({} as any, { id: 'editor', capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] } as any, 'entity-id', 'status-id', false))
       .rejects.toThrow('BYPASS');
