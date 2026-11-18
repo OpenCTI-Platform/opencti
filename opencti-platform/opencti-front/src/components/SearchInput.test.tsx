@@ -128,6 +128,17 @@ describe('SearchInput (top bar) pages dropdown', () => {
 
     expect(screen.getByRole('combobox')).toHaveValue('');
   });
+
+  it('keeps the field and the list when a page row is clicked with a modifier (it opens in a new tab)', async () => {
+    const { user } = setup();
+    await user.type(screen.getByRole('combobox'), 'imp');
+    await user.keyboard('{Control>}');
+    await user.click(screen.getByRole('option', { name: /Import/ }));
+    await user.keyboard('{/Control}');
+
+    expect(screen.getByRole('combobox')).toHaveValue('imp');
+    expect(screen.getAllByRole('option').length).toBeGreaterThan(0);
+  });
 });
 
 describe('SearchInput (top bar) pages only', () => {

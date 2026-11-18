@@ -3147,7 +3147,7 @@ Aliases.
 
 **Where.** `SearchInput.jsx` (top bar variant) and
 `search/NavSearchSuggestions.tsx`. Typing in the top-bar search lists the
-platform pages matching the keyword, with a last `Search: <keyword>` row.
+platform pages matching the keyword, with a first `Search: <keyword>` row.
 The list is keyboard-navigable (ArrowUp/ArrowDown), Enter on a page opens it,
 and Enter with nothing highlighted starts the classic search.
 

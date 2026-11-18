@@ -2,8 +2,6 @@ import { ArchitectureOutlined } from '@mui/icons-material';
 import React from 'react';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
-import { useHiddenEntities } from '../../../utils/hooks/useEntitySettings';
-import useHelper from '../../../utils/hooks/useHelper';
 import type { MenuEntry, NavSection, NavSectionItem } from '../common/menus/menuEntry';
 import useVisibleEntries from '../common/menus/useVisibleEntries';
 import { allMenuEntries } from './menuEntries';
@@ -51,15 +49,8 @@ export interface RawNavGroup {
 const useNavMenu = (): NavGroup[] => {
   const { t_i18n } = useFormatter();
   const { me: { draftContext } } = useAuth();
-  const { isTrashEnable } = useHelper();
-  const hiddenEntities = useHiddenEntities();
   const visibleEntries = useVisibleEntries(allMenuEntries);
-
-  // Pages switched off by the platform settings rather than by their entry: hidden entity types (matched on the
-  // entry's own type, not on a shared URL: several types, e.g. every observable, resolve to one page), disabled trash.
-  const isVisible = (entry: MenuEntry) => visibleEntries.includes(entry)
-    && !(entry.entityType && hiddenEntities.includes(entry.entityType))
-    && !(entry.path === '/dashboard/trash' && !isTrashEnable());
+  const isVisible = (entry: MenuEntry) => visibleEntries.includes(entry);
 
   const pageItem = (entry: MenuEntry): NavSubItem => ({
     link: entry.path,

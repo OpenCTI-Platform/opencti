@@ -61,12 +61,13 @@ describe('filterNavGroups', () => {
 // Stix-Cyber-Observable (both resolve to the same URL), while hiding Stix-Cyber-Observable itself must.
 const hidden: string[] = [];
 vi.mock('../../../utils/hooks/useEntitySettings', () => ({ useHiddenEntities: () => hidden }));
+// The real gate (useVisibleEntries) runs: a BYPASS user passes the capability rules, so only the hidden types matter.
 vi.mock('../../../utils/hooks/useAuth', async (importOriginal) => ({
   ...(await importOriginal<object>()),
-  default: () => ({ me: { draftContext: null } }),
+  default: () => ({ me: { draftContext: null, capabilities: [{ name: 'BYPASS' }], capabilitiesInDraft: [] } }),
 }));
-vi.mock('../../../utils/hooks/useHelper', () => ({ default: () => ({ isTrashEnable: () => true }) }));
-vi.mock('../common/menus/useVisibleEntries', () => ({ default: (entries: unknown[]) => entries }));
+vi.mock('../../../utils/hooks/useHelper', () => ({ default: () => ({ isTrashEnable: () => true, isFeatureEnable: () => true }) }));
+vi.mock('../../../utils/hooks/useEnterpriseEdition', () => ({ default: () => true }));
 
 describe('Hook: useNavMenu hidden entity types', () => {
   const observablesLinks = () => testRenderHook(() => useNavMenu()).hook.result.current

@@ -11,8 +11,15 @@ vi.mock('./useNavMenu', () => ({
     { id: 'settings', items: [{ id: 'settings', label: 'Settings', icon: null, link: '/dashboard/settings', subItems }] },
   ],
 }));
-// Entries' own capability / feature flag checks are covered by useVisibleEntries: keep every entry here.
-vi.mock('../common/menus/useVisibleEntries', () => ({ default: (entries: unknown[]) => entries }));
+// The real gate (useVisibleEntries) runs, with a BYPASS user unless a test says otherwise: it passes every capability rule.
+let capabilities = ['BYPASS'];
+vi.mock('../../../utils/hooks/useAuth', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  default: () => ({ me: { draftContext: null, capabilities: capabilities.map((name) => ({ name })), capabilitiesInDraft: [] } }),
+}));
+vi.mock('../../../utils/hooks/useHelper', () => ({ default: () => ({ isTrashEnable: () => true, isFeatureEnable: () => true }) }));
+vi.mock('../../../utils/hooks/useEnterpriseEdition', () => ({ default: () => true }));
+vi.mock('../../../utils/hooks/useEntitySettings', () => ({ useHiddenEntities: () => [] }));
 
 const search = (keyword: string) => testRenderHook(() => useNavSearch(keyword)).hook.result.current.map(({ path }) => path);
 
@@ -126,6 +133,19 @@ describe('Hook: useNavSearch', () => {
     // Matched in the displayed label too: no hint.
     expect(hints('param')).toBeUndefined();
     expect(hints('param adv')).toEqual(['advanced']);
+  });
+
+  it('does not return a page whose capability the user is missing', () => {
+    subItems = [parameters, customization];
+    const retention = '/dashboard/settings/customization/retention';
+    try {
+      capabilities = ['SETTINGS_SETCUSTOMIZATION'];
+      expect(search('retention')).toContain(retention);
+      capabilities = ['SETTINGS_SETLABELS'];
+      expect(search('retention')).not.toContain(retention);
+    } finally {
+      capabilities = ['BYPASS'];
+    }
   });
 
   it('finds the Home page', () => {

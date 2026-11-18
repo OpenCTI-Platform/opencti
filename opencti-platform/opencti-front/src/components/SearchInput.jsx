@@ -237,6 +237,8 @@ const SearchInput = (props) => {
     focusMainContent();
   };
   const handlePageClick = (event) => {
+    // A click with a modifier opens the page in a new tab: this one keeps its field and its list.
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     closeSuggestions();
     setSearchValue('');
     focusMainContent(event);

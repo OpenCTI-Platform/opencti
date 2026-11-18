@@ -28,7 +28,7 @@ const subscribe = (listener: () => void) => {
  */
 export const notifySearchShortcutChange = () => listeners.forEach((listener) => listener());
 
-/** Saves the shortcut for this browser (`null` turns it off). ponytail: lost if the storage is refused, nothing falls back to memory. */
+/** Saves the shortcut for this browser (`null` turns it off). Lost if the storage is refused: nothing falls back to memory. */
 export const writeSearchShortcut = (shortcut: SearchShortcut | null) => {
   try {
     window.localStorage.setItem(STORAGE_KEY, serializeSearchShortcut(shortcut));
