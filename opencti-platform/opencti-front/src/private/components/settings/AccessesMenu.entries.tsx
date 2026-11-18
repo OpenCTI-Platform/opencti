@@ -86,7 +86,7 @@ const menuEntries: MenuEntry[] = [
     label: 'Email templates',
     icon: <EmailOutlined fontSize="medium" />,
     keywords: ['HTML', 'Layout', 'Notification'],
-    requiredCapabilities: [SETTINGS_SETACCESSES],
+    requiredCapabilities: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN],
     isEE: true,
   },
   {
