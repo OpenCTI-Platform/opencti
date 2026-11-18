@@ -2,7 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { logApp } from '../../../src/config/conf';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../../src/database/cache';
 import { LOCKED_USER_EMAIL_TEMPLATE_INPUT } from '../../../src/database/locked-user-email-template-input';
-import { loadLocalAuthLockEmailTemplate, loadLocalAuthLockRecipients, selectLocalAuthLockRecipients } from '../../../src/domain/local-auth-lockout-notification';
+import {
+  buildLocalAuthLockEmailData,
+  loadLocalAuthLockEmailTemplate,
+  loadLocalAuthLockRecipients,
+  selectLocalAuthLockRecipients,
+} from '../../../src/domain/local-auth-lockout-notification';
 import { findLockedUserEmailTemplate } from '../../../src/modules/emailTemplate/emailTemplate-domain';
 import type { BasicStoreEntityEmailTemplate } from '../../../src/modules/emailTemplate/emailTemplate-types';
 import type { BasicStoreSettings } from '../../../src/types/settings';
@@ -144,5 +149,40 @@ describe('Local authentication lockout - template of the lock email', () => {
       template_body: LOCKED_USER_EMAIL_TEMPLATE_INPUT.template_body,
     });
     expect(warn).toHaveBeenCalledOnce();
+  });
+});
+
+describe('Local authentication lockout - data of the lock email', () => {
+  const LOCK_DATE = new Date('2026-11-18T10:00:00.000Z');
+  const FIFTEEN_MINUTES_MS = 15 * 60 * 1000;
+  const lockedAccount = { name: 'jdoe', firstname: 'John', lastname: 'Doe', user_email: 'jdoe@opencti.io' };
+
+  it('should end a temporary lock after the lockout duration', () => {
+    const data = buildLocalAuthLockEmailData(lockedAccount, { lockType: 'temporary', maxAttempts: 10, remainingMs: FIFTEEN_MINUTES_MS }, LOCK_DATE);
+    expect(data).toEqual({
+      lockedUser: lockedAccount,
+      lock: { date: LOCK_DATE, attempts: 10, type: 'temporary', endDate: new Date('2026-11-18T10:15:00.000Z') },
+    });
+  });
+
+  it('should give no end to a permanent lock', () => {
+    const data = buildLocalAuthLockEmailData(lockedAccount, { lockType: 'permanent', maxAttempts: 3, remainingMs: 0 }, LOCK_DATE);
+    expect(data.lock).toEqual({ date: LOCK_DATE, attempts: 3, type: 'permanent' });
+  });
+
+  it('should keep only the name and the email of the locked user', () => {
+    const lockedUser = { ...buildUser('jdoe', { capabilities: capabilities(BYPASS) }), firstname: 'John', lastname: 'Doe' };
+    const data = buildLocalAuthLockEmailData(lockedUser, { lockType: 'permanent', maxAttempts: 3, remainingMs: 0 }, LOCK_DATE);
+    expect(data.lockedUser).toEqual({ name: 'jdoe', firstname: 'John', lastname: 'Doe', user_email: 'jdoe@opencti.io' });
+  });
+
+  it('should date the lock now by default', () => {
+    vi.useFakeTimers({ now: LOCK_DATE });
+    try {
+      const data = buildLocalAuthLockEmailData(lockedAccount, { lockType: 'permanent', maxAttempts: 3, remainingMs: 0 });
+      expect(data.lock.date).toEqual(LOCK_DATE);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
