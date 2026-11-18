@@ -27,7 +27,13 @@ The API also accepts HTTP basic authentication (`Authorization: Basic ...`) with
 
 1. Click the profile icon at the top right of the platform, then click **Profile**.
 2. In the **API access** card, click **Generate Token**. The button only shows when your role grants `Allow token usage`.
+
+    ![Generate Token button in the API access card of the profile](assets/profile-api-access.png)
+
 3. Enter a **Name** for the token, choose a **Duration** (30 days, 60 days, 90 days, 1 year or Unlimited), then click **Generate**.
+
+    ![Generate a new token form](assets/profile-generate-token.png)
+
 4. Copy the token right away. The platform shows it only once. It stores a hash of it and a masked form (its last 4 characters), so you cannot display it again: if you lose it, generate a new one.
 
 The same card lists your tokens, with their expiration date.
