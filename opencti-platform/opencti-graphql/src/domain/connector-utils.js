@@ -4,7 +4,7 @@ import { UnsupportedError } from '../config/errors';
 import { now } from '../utils/format';
 import { isEmptyField } from '../database/utils';
 import { getPlatformHttpProxyAgent, logApp, TLS_REJECT_UNAUTHORIZED } from '../config/conf';
-import { getDestinationCheckedAgent } from '../utils/http-client';
+import { getDestinationCheckedAgent, untilAborted } from '../utils/http-client';
 import { checkUrlDestination } from '../utils/internal-destination';
 
 // Feel free to migrate to typescript and move inside domain/connector.ts
@@ -30,13 +30,27 @@ export const createSyncHttpUri = (sync, state, testMode) => {
 const SYNC_FEATURE = 'Synchronizer';
 const SYNC_MAX_REDIRECTS = 5;
 const SYNC_REDIRECT_STATUSES = [301, 302, 303, 307, 308];
-const buildSyncFetch = (ssl, token) => {
+// Behind a proxy, the destination is resolved before the request: bounded like a connection (undici connect timeout)
+export const SYNC_RESOLUTION_TIMEOUT = 10000;
+// A DNS resolution cannot be canceled: stop waiting for it when the stream is closed or after SYNC_RESOLUTION_TIMEOUT
+const checkSyncDestination = async (url, viaProxy, signal) => {
+  const timeout = new AbortController();
+  const timer = setTimeout(() => timeout.abort(new Error(`Resolution of ${url.hostname} timed out after ${SYNC_RESOLUTION_TIMEOUT}ms`)), SYNC_RESOLUTION_TIMEOUT);
+  try {
+    const signals = signal ? [signal, timeout.signal] : [timeout.signal];
+    await untilAborted(checkUrlDestination(url, SYNC_FEATURE, viaProxy), AbortSignal.any(signals));
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
+export const buildSyncFetch = (ssl, token) => {
   return async (url, init) => {
     const requestOrigin = new URL(url).origin;
     let currentUrl = new URL(url);
     for (let redirectCount = 0; ; redirectCount += 1) {
       const proxyDispatcher = getPlatformHttpProxyAgent(currentUrl.href, true);
-      await checkUrlDestination(currentUrl, SYNC_FEATURE, proxyDispatcher !== undefined);
+      await checkSyncDestination(currentUrl, proxyDispatcher !== undefined, init.signal);
       const dispatcher = proxyDispatcher ?? getDestinationCheckedAgent(ssl, SYNC_FEATURE);
       // The token is only sent to the configured remote OpenCTI, not to another origin it redirects to
       const authorization = !isEmptyField(token) && currentUrl.origin === requestOrigin ? { authorization: `Bearer ${token}` } : {};

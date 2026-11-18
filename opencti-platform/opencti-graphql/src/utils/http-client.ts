@@ -380,7 +380,7 @@ export const getDestinationCheckedAgent = (rejectUnauthorized: boolean, feature:
 };
 
 // A DNS resolution cannot be canceled: stop waiting for it when the request is aborted or times out
-const untilAborted = async <T>(operation: Promise<T>, signal: AbortSignal | undefined): Promise<T> => {
+export const untilAborted = async <T>(operation: Promise<T>, signal: AbortSignal | undefined): Promise<T> => {
   if (!signal) {
     return operation;
   }
