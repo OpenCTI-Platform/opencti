@@ -1,0 +1,33 @@
+# The kinds of object OpenCTI and OpenAEV both hold, each matched on its natural key:
+# ASSET: System, Hostname, IPv4/IPv6-Addr, by the hostname of an OpenAEV asset
+# ATTACK_PATTERN: Attack-Pattern, by its MITRE id (x_mitre_id)
+# VULNERABILITY: Vulnerability, by its CVE id
+# THREAT: Report, Threat actor, Intrusion set, Malware, Campaign, by the STIX id an OpenAEV scenario was generated from
+enum XtmCounterpartKind {
+  ASSET
+  ATTACK_PATTERN
+  VULNERABILITY
+  THREAT
+}
+
+# Whether another XTM product is connected to this platform. Never carries a credential.
+type XtmConnection {
+  product: String!
+  connected: Boolean!
+  url: String
+}
+
+# An object of a connected XTM product matching one key of this platform.
+type XtmCounterpart {
+  key: String!
+  product: String!
+  object_id: String!
+  object_type: String!
+  object_name: String
+  object_url: String!
+}
+
+type Query {
+  xtmConnections: [XtmConnection!]! @auth
+  xtmCounterparts(kind: XtmCounterpartKind!, keys: [String!]!): [XtmCounterpart!]! @auth(for: [KNOWLEDGE])
+}
