@@ -2,6 +2,7 @@ import React from 'react';
 import { Field, Formik } from 'formik';
 import * as Yup from 'yup';
 import { graphql, useFragment } from 'react-relay';
+import { useFormatter } from '../../../../components/i18n';
 import { useEmailTemplateContext } from '@components/settings/email_template/EmailTemplateContext';
 import RichTextField from '../../../../components/fields/RichTextField';
 import { EmailTemplateContentEditor_template$key } from './__generated__/EmailTemplateContentEditor_template.graphql';
@@ -19,6 +20,7 @@ interface EmailTemplateContentEditorProps {
 const EmailTemplateContentEditor = ({
   data,
 }: EmailTemplateContentEditorProps) => {
+  const { t_i18n } = useFormatter();
   const template = useFragment(editorFragment, data);
   const { setEditorValue } = useEmailTemplateContext();
 
@@ -38,7 +40,10 @@ const EmailTemplateContentEditor = ({
           name="template_body"
           style={{ height: 'calc(100vh - 280px)' }}
           fullWidth
+          ariaLabel={t_i18n('Email body')}
           hasFullScreen={false}
+          pageBreak={false}
+          taskList={false}
           onChange={(_: string, val: string) => setEditorValue(val)}
         />
       )}

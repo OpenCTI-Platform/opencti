@@ -1039,6 +1039,19 @@
         "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariablesBar.tsx",
         "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableChip.tsx"
       ]
+    },
+    {
+      "component": "RichTextField",
+      "importFrom": "@filigran/design-system/rich-text-field",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "Every HTML rich text field: the Formik field (report, grouping, case and mappable content, workbench HTML attributes, default values, email and fintel templates), the HTML file editor and the AI response dialog. Replaces @filigran/rich-text-editor, whose colour popovers throw on MUI 9.5 (MenuItem outside a menu list, #19919). Ask AI stays OpenCTI's TextFieldAskAI, laid over the label row or the toolbar end: the library's Ask AI cannot show the EE upsell or the pending-terms tooltips.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/fields/RichTextField.tsx",
+        "opencti-platform/opencti-front/src/private/components/common/stix_core_objects/StixCoreObjectContent.tsx",
+        "opencti-platform/opencti-front/src/utils/ai/ResponseDialog.tsx"
+      ]
     }
   ]
 }

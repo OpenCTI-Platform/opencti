@@ -1,4 +1,4 @@
-import { TIPTAP_EDITOR_SELECTOR, MAX_WIDTH_PORTRAIT } from './constants';
+import { RICH_TEXT_CONTENT_SELECTOR, MAX_WIDTH_PORTRAIT } from './constants';
 
 /**
  * Loop through elements inside the editor to determine if it is
@@ -8,7 +8,7 @@ import { TIPTAP_EDITOR_SELECTOR, MAX_WIDTH_PORTRAIT } from './constants';
  */
 const determineOrientation = () => {
   let pdfElementMaxWidth = 0;
-  const elementEditor = document.querySelector(TIPTAP_EDITOR_SELECTOR);
+  const elementEditor = document.querySelector(RICH_TEXT_CONTENT_SELECTOR);
   if (elementEditor) {
     // We need to get tables and img width inside the editor in order to choose orientation.
     const tables = Array.from(elementEditor.querySelectorAll('table, figure.table') ?? []);
