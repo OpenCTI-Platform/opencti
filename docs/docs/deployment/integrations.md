@@ -65,6 +65,10 @@ For all previously explained capabilities, as they are over the HTTP protocol, 3
 
 		Generate a token from your profile: click the profile icon at the top right, select **Profile**, then click **Generate Token** in the **API access** section. Enter a name, choose a duration, and click **Generate**. Copy the token right away: OpenCTI shows it only once.
 
+		![Generate Token button in the API access section of the profile](assets/profile-api-access.png)
+
+		![Generate a new token form](assets/profile-generate-token.png)
+
 		Since OpenCTI 7.260224.0, OpenCTI stores only a hash of each token, so an existing token can no longer be displayed again (see [Tokens management](breaking-changes.md#tokens-management)). Generating and using a token both require the **Allow token usage** capability.
 
 2. Using basic authentication
