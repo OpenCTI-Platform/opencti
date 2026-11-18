@@ -2,17 +2,19 @@ import { FunctionalError } from '../../config/errors';
 import { idsValuesRemap } from '../../database/stix-2-1-converter';
 import { internalFindByIds } from '../../database/middleware-loader';
 import { ENTITY_TYPE_GROUP } from '../../schema/internalObject';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
+import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
+import { isInternalId, isStixId } from '../../schema/schemaUtils';
 import type { BasicStoreObject } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityForm, type FormFieldDefinition, FormFieldType, type FormSchemaDefinition } from './form-types';
 import { normalizeOptionId } from './form-utils';
 
 // What a form schema refers to by id, and how the export treats it:
-// - a marking or a group is written under its standard id, the same on every platform (the import resolves it back);
+// - a marking, a label or a group is written under its standard id, the same on every platform (the import resolves it back);
+//   a label given by its value (a name, not an id) is kept as it is;
 // - a user or an organization is never exported: the default that named it is left empty.
 // `member` is an authorized member whose type is told by the entity itself: a group is kept, a user or an organization is not.
-export type FormReferenceKind = 'marking' | 'group' | 'member';
+export type FormReferenceKind = 'marking' | 'label' | 'group' | 'member';
 
 // The id to write for a reference, or null when the reference is not exported
 export type FormReferenceResolver = (kind: FormReferenceKind, id: string) => string | null;
@@ -54,6 +56,13 @@ const rewriteField = (field: FormFieldDefinition, resolve: FormReferenceResolver
       delete field.defaultValue;
     } else {
       field.defaultValue = markings;
+    }
+  } else if (field.type === FormFieldType.ObjectLabel || attributeName === 'objectLabel') {
+    const labels = convertDefault(field.defaultValue, 'label', resolve);
+    if (labels === undefined) {
+      delete field.defaultValue;
+    } else {
+      field.defaultValue = labels;
     }
   } else if (field.type === FormFieldType.CreatedBy || IDENTITY_ATTRIBUTES.includes(attributeName)) {
     delete field.defaultValue;
@@ -131,9 +140,13 @@ export const rewriteFormSchemaReferences = (formSchema: FormSchemaDefinition, re
   return schema;
 };
 
-// The standard id of a marking or a group, and nothing else: another kind of entity is not exported
+// A label is an id or a value (its name): only an id is converted
+const isLabelValue = (kind: FormReferenceKind, id: string) => kind === 'label' && !isInternalId(id) && !isStixId(id);
+
+// The standard id of a marking, a label or a group, and nothing else: another kind of entity is not exported
 const KIND_ENTITY_TYPES: Record<FormReferenceKind, string[]> = {
   marking: [ENTITY_TYPE_MARKING_DEFINITION],
+  label: [ENTITY_TYPE_LABEL],
   group: [ENTITY_TYPE_GROUP],
   member: [ENTITY_TYPE_GROUP],
 };
@@ -149,8 +162,10 @@ export const convertFormSchemaIds = async (
 ): Promise<{ schema: FormSchemaDefinition; unresolved: number }> => {
   // First pass: the ids to resolve, all in one lookup
   const ids = new Set<string>();
-  rewriteFormSchemaReferences(formSchema, (_kind, id) => {
-    ids.add(id);
+  rewriteFormSchemaReferences(formSchema, (kind, id) => {
+    if (!isLabelValue(kind, id)) {
+      ids.add(id);
+    }
     return id;
   });
   const resolved = ids.size > 0 ? await internalFindByIds(context, user, [...ids], { baseData: true, toMap: true, mapWithAllIds: true }) : {};
@@ -158,6 +173,9 @@ export const convertFormSchemaIds = async (
   // Second pass: the ids of the entities that are kept
   let unresolved = 0;
   const schema = rewriteFormSchemaReferences(formSchema, (kind, id) => {
+    if (isLabelValue(kind, id)) {
+      return id;
+    }
     const entity = entities[id];
     const converted = entity && KIND_ENTITY_TYPES[kind].includes(entity.entity_type) ? idsValuesRemap([id], entities, from, true)[0] : undefined;
     if (!converted) {
