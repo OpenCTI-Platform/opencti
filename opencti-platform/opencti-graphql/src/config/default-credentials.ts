@@ -54,8 +54,16 @@ export const findDefaultCredentials = (): string[] => {
   return settings;
 };
 
-export const checkDefaultCredentials = () => {
-  const settings = findDefaultCredentials();
+// The MinIO keys a remote credentials provider should replace, still holding a known default once resolved.
+// The provider falls back to the configured keys when it fails, so the startup check cannot vouch for them.
+export const findResolvedMinioDefaultCredentials = (resolved: Record<string, unknown>): string[] => {
+  const remoteTargets = getMinioRemoteTargets();
+  return Object.entries(MINIO_REMOTE_TARGETS)
+    .filter(([, target]) => remoteTargets.includes(target) && isDefaultValue(resolved[target], MINIO_DEFAULTS))
+    .map(([key]) => key);
+};
+
+const reportDefaultCredentials = (settings: string[]) => {
   if (settings.length === 0) {
     return;
   }
@@ -64,4 +72,12 @@ export const checkDefaultCredentials = () => {
   }
   logApp.warn('[OPENCTI] Default credentials are configured, change them (app:credentials:secure_by_default=false). '
     + 'The platform will refuse to start with them in an upcoming version: set APP__CREDENTIALS__SECURE_BY_DEFAULT=true to opt in now.', { settings });
+};
+
+export const checkDefaultCredentials = () => {
+  reportDefaultCredentials(findDefaultCredentials());
+};
+
+export const checkResolvedMinioCredentials = (resolved: Record<string, unknown>) => {
+  reportDefaultCredentials(findResolvedMinioDefaultCredentials(resolved));
 };

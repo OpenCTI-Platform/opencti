@@ -137,6 +137,59 @@ describe('Default credentials', () => {
     expect(findDefaultCredentials()).toEqual(['minio:access_key', 'minio:secret_key']);
   });
 
+  describe('MinIO keys resolved by a remote credentials provider', () => {
+    const PROVIDER = {
+      MINIO__CREDENTIALS_PROVIDER__SELECTOR: 'cyberark',
+      MINIO__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS: '["accessKeyId","secretAccessKey"]',
+      MINIO__ACCESS_KEY: 'ChangeMe',
+      MINIO__SECRET_KEY: 'ChangeMe',
+    };
+
+    it('should find the configured defaults the provider fell back to after a failure', async () => {
+      const { findResolvedMinioDefaultCredentials } = await loadModules(PROVIDER);
+
+      // enrichWithRemoteCredentials returns the configured keys when the fetch fails
+      expect(findResolvedMinioDefaultCredentials({ accessKeyId: 'ChangeMe', secretAccessKey: 'ChangeMe' })).toEqual(['minio:access_key', 'minio:secret_key']);
+    });
+
+    it('should find a default returned by the provider itself', async () => {
+      const { findResolvedMinioDefaultCredentials } = await loadModules(PROVIDER);
+
+      expect(findResolvedMinioDefaultCredentials({ accessKeyId: 'opencti', secretAccessKey: 'MinioAdmin' })).toEqual(['minio:secret_key']);
+    });
+
+    it('should find nothing once the provider replaced the keys', async () => {
+      const { findResolvedMinioDefaultCredentials } = await loadModules(PROVIDER);
+
+      expect(findResolvedMinioDefaultCredentials({ accessKeyId: 'opencti', secretAccessKey: 'a-strong-remote-secret' })).toEqual([]);
+    });
+
+    it('should not report again a key the provider does not target, already checked at startup', async () => {
+      const { findResolvedMinioDefaultCredentials } = await loadModules({ ...PROVIDER, MINIO__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS: '["secretAccessKey"]' });
+
+      expect(findResolvedMinioDefaultCredentials({ accessKeyId: 'ChangeMe', secretAccessKey: 'ChangeMe' })).toEqual(['minio:secret_key']);
+    });
+
+    it('should find nothing without a supported remote credentials provider', async () => {
+      const { findResolvedMinioDefaultCredentials } = await loadModules({ ...PROVIDER, MINIO__CREDENTIALS_PROVIDER__SELECTOR: 'unknown' });
+
+      expect(findResolvedMinioDefaultCredentials({ accessKeyId: 'ChangeMe', secretAccessKey: 'ChangeMe' })).toEqual([]);
+    });
+
+    it('should warn after a provider failure when the switch is disabled', async () => {
+      const { checkResolvedMinioCredentials, warn } = await loadModules(PROVIDER);
+
+      expect(() => checkResolvedMinioCredentials({ accessKeyId: 'ChangeMe', secretAccessKey: 'ChangeMe' })).not.toThrow();
+      expect(warn).toHaveBeenCalledWith(expect.any(String), { settings: ['minio:access_key', 'minio:secret_key'] });
+    });
+
+    it('should refuse to start after a provider failure when the switch is enabled', async () => {
+      const { checkResolvedMinioCredentials } = await loadModules({ ...PROVIDER, APP__CREDENTIALS__SECURE_BY_DEFAULT: 'true' });
+
+      expect(() => checkResolvedMinioCredentials({ accessKeyId: 'ChangeMe', secretAccessKey: 'ChangeMe' })).toThrow(/Default credentials are configured/);
+    });
+  });
+
   describe('switch app:credentials:secure_by_default', () => {
     it('should be disabled by default', async () => {
       const { CREDENTIALS_SECURE_BY_DEFAULT } = await loadModules({});

@@ -17,6 +17,7 @@ import {
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { Upload } from '@aws-sdk/lib-storage';
 import { enrichWithRemoteCredentials } from '../config/credentials';
+import { checkResolvedMinioCredentials } from '../config/default-credentials';
 import conf, { booleanConf, logApp, logS3Debug } from '../config/conf';
 import { UnsupportedError } from '../config/errors';
 import type { AuthUser } from '../types/user';
@@ -67,6 +68,7 @@ const buildCredentialProvider = async () => {
   // If direct configuration
   const baseAuth = { accessKeyId: clientAccessKey, secretAccessKey: clientSecretKey };
   const userPasswordAuth = await enrichWithRemoteCredentials('minio', baseAuth);
+  checkResolvedMinioCredentials(userPasswordAuth);
   return () => {
     return {
       ...userPasswordAuth,
