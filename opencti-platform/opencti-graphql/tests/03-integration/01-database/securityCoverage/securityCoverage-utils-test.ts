@@ -201,7 +201,7 @@ describe('Security coverage has-covered cleanup when an entity leaves the covere
 
   it('should remove the has-covered of an artifact removed from a covered report by a field patch', async () => {
     const prefix = 'sc-cleanup-field-patch-artifact';
-    const [attackPattern] = await createAttackPatterns(prefix);
+    const attackPattern: BasicStoreEntity = await addAttackPattern(testContext, ADMIN_USER, { name: `${prefix} AP1` });
     // Artifacts are observables, but the assessed scope keeps them among the container refs
     const artifact: BasicStoreEntity = await addStixCyberObservable(testContext, ADMIN_USER, {
       type: ENTITY_HASHED_OBSERVABLE_ARTIFACT,
