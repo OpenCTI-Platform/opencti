@@ -431,14 +431,23 @@ type RoleSortKey = (role: BasicStoreEntity) => R.Ord;
 export const userRoles = async (context: AuthContext, _user: AuthUser, userId: string, opts: UserRolesArgs) => {
   const { orderBy, orderMode } = opts;
   const platformUsers = await getEntitiesMapFromCache<UserWithStoreRoles>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const userLoaded = platformUsers.get(userId)!;
+  const userLoaded = platformUsers.get(userId);
+  let roles: BasicStoreEntity[];
+  if (userLoaded) {
+    roles = userLoaded.roles ?? [];
+  } else {
+    // The users cache can miss the user while it is rebuilt (after a group membership change):
+    // resolve the roles from the database instead of failing the whole query
+    const [userRolesFromDb] = await batchRolesForUsers(context, SYSTEM_USER, [userId]);
+    roles = userRolesFromDb ?? [];
+  }
   if (orderBy) {
     if (orderMode === 'desc') {
-      return R.sortWith<BasicStoreEntity>([R.descend(R.prop(orderBy) as RoleSortKey)])(userLoaded.roles);
+      return R.sortWith<BasicStoreEntity>([R.descend(R.prop(orderBy) as RoleSortKey)])(roles);
     }
-    return R.sortWith<BasicStoreEntity>([R.ascend(R.prop(orderBy) as RoleSortKey)])(userLoaded.roles);
+    return R.sortWith<BasicStoreEntity>([R.ascend(R.prop(orderBy) as RoleSortKey)])(roles);
   }
-  return userLoaded.roles;
+  return roles;
 };
 
 export const userGroupsPaginated = async (context: AuthContext, user: AuthUser, userId: string, opts: EntityOptions<BasicGroupEntity>) => {
