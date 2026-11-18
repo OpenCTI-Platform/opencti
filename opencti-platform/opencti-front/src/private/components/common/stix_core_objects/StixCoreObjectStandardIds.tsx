@@ -1,29 +1,27 @@
 import Label from '../../../../components/common/label/Label';
-import Tooltip from '@mui/material/Tooltip';
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogTitle, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { InformationOutline } from 'mdi-material-ui';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { BrushOutlined, Delete } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import ItemCopy from '../../../../components/ItemCopy';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../components/Theme';
 import IconButton from '@common/button/IconButton';
-import Dialog from '@common/dialog/Dialog';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import { useState } from 'react';
 
 interface StixCoreObjectStandardIdsProps {
   standardId: string;
-  stixIds?: string[];
+  stixIds?: readonly string[] | null;
   deleteStixId?: (stixId: string) => void;
 }
 
-export const StixCoreObjectStandardIds = ({ standardId, stixIds = [], deleteStixId }: StixCoreObjectStandardIdsProps) => {
+export const StixCoreObjectStandardIds = ({ standardId, stixIds, deleteStixId }: StixCoreObjectStandardIdsProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
@@ -33,7 +31,7 @@ export const StixCoreObjectStandardIds = ({ standardId, stixIds = [], deleteStix
     setOpenStixIds((previousValue) => !previousValue);
   };
 
-  const otherStixIds = stixIds.filter((n) => n !== standardId);
+  const otherStixIds = (stixIds ?? []).filter((n) => n !== standardId);
 
   return (
     <>
@@ -41,12 +39,15 @@ export const StixCoreObjectStandardIds = ({ standardId, stixIds = [], deleteStix
         sx={{ marginTop: 2 }}
         action={(
           <>
-            <Tooltip
-              title={t_i18n(
-                'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-              )}
-            >
-              <InformationOutline fontSize="small" color="primary" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span style={{ display: 'inline-flex' }}>
+                  <InformationOutline fontSize="small" color="primary" />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                {t_i18n('In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.')}
+              </TooltipContent>
             </Tooltip>
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <IconButton
@@ -81,39 +82,40 @@ export const StixCoreObjectStandardIds = ({ standardId, stixIds = [], deleteStix
       >
         <ItemCopy content={standardId} />
       </div>
-      <Dialog
-        open={isStixIdsDialogOpen}
-        onClose={handleToggleOpenStixIds}
-        title={t_i18n('Other STIX IDs')}
-      >
-        <List>
-          {stixIds.map(
-            (stixId) => stixId.length > 0 && (
-              <ListItem
-                key={stixId}
-                disableGutters={true}
-                dense={true}
-                secondaryAction={deleteStixId && (
-                  <IconButton
-                    aria-label="delete"
-                    onClick={() => deleteStixId(stixId)}
+      <Dialog open={isStixIdsDialogOpen} onOpenChange={setOpenStixIds}>
+        <DialogContent size="md">
+          <DialogTitle>
+            <Text as="span" variant="title-md">{t_i18n('Other STIX IDs')}</Text>
+          </DialogTitle>
+          <DialogBody>
+            <List>
+              {otherStixIds.map(
+                (stixId) => stixId.length > 0 && (
+                  <ListItem
+                    key={stixId}
+                    disableGutters={true}
+                    dense={true}
+                    secondaryAction={deleteStixId && (
+                      <IconButton
+                        aria-label="delete"
+                        onClick={() => deleteStixId(stixId)}
+                      >
+                        <Delete />
+                      </IconButton>
+                    )}
                   >
-                    <Delete />
-                  </IconButton>
-                )}
-              >
-                <ListItemText primary={stixId} />
-              </ListItem>
-            ),
-          )}
-        </List>
-        <DialogActions>
-          <Button
-            onClick={handleToggleOpenStixIds}
-          >
-            {t_i18n('Close')}
-          </Button>
-        </DialogActions>
+                    <ListItemText primary={stixId} />
+                  </ListItem>
+                ),
+              )}
+            </List>
+          </DialogBody>
+          <DialogFooter>
+            <Button onClick={handleToggleOpenStixIds}>
+              {t_i18n('Close')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
     </>
   );
