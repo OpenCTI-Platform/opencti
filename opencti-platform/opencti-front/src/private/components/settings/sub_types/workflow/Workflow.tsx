@@ -199,11 +199,24 @@ const Workflow = ({
   // 2. Sync Placeholders (The effect is now tucked away)
   usePlaceholdersSync(nodes, edges);
 
-  // Store previous schema to avoid unnecessary mutations. It is the schema last sent, or loaded by
+  // Store previous schema to avoid unnecessary mutations. It is the schema last sent (a failed save
+  // puts back the one before it), or loaded by
   // a mount, refetch, reset or restore, and it holds the saved initial state: the autosave
   // mutation does not return initialState, so workflowDefinition.initialState keeps the value
   // fetched with the page.
   const previousSchemaRef = useRef<string | null>(null);
+  // Marks a schema as sent, and returns the undo to run when its save fails: the schema sent before
+  // is the last one saved again, so the next editor update resends the change. A schema sent since
+  // stays marked.
+  const markSchemaSent = (schemaString: string) => {
+    const previous = previousSchemaRef.current;
+    previousSchemaRef.current = schemaString;
+    return () => {
+      if (previousSchemaRef.current === schemaString) {
+        previousSchemaRef.current = previous;
+      }
+    };
+  };
   const savedInitialState = (): string | null | undefined => (previousSchemaRef.current
     ? JSON.parse(previousSchemaRef.current).initialState
     : workflowDefinition?.initialState);
@@ -278,10 +291,11 @@ const Workflow = ({
       return;
     }
 
-    previousSchemaRef.current = schemaString;
+    const unmarkSchemaSent = markSchemaSent(schemaString);
 
     saveWorkflowDefinition({
       variables: { entityType, definition: schemaString, scope },
+      onError: unmarkSchemaSent,
       onCompleted: (response) => {
         if (response.workflowDefinitionSet) {
           const { errors } = response.workflowDefinitionSet;
@@ -310,9 +324,11 @@ const Workflow = ({
     // after setNodes([]) / setEdges([]) and will see an identical string, preventing
     // a spurious follow-up mutation.
     const emptySchemaString = JSON.stringify(transformToWorkflowDefinition([], [], workflowDefinition));
-    previousSchemaRef.current = emptySchemaString;
+    const unmarkSchemaSent = markSchemaSent(emptySchemaString);
     saveWorkflowDefinition({
       variables: { entityType, definition: emptySchemaString, scope },
+      // The graph stays on screen, and it is still the saved draft.
+      onError: unmarkSchemaSent,
       onCompleted: (response) => {
         if (response.workflowDefinitionSet) {
           const { errors } = response.workflowDefinitionSet;
