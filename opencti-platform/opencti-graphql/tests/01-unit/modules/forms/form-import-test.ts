@@ -25,6 +25,7 @@ import {
   formOrganization,
   formUser,
   incidentForm,
+  phishingFormLabel,
   reportForm,
   reviewersFormGroup,
 } from '../configPreset/configPreset-formIntakes-fixtures';
@@ -36,7 +37,8 @@ const user = { id: 'admin-id', capabilities: [{ name: 'BYPASS' }] } as AuthUser;
 const targetGroup = { ...analystsFormGroup, id: 'e2a3b4c5-6d7e-4f80-91a2-b3c4d5e6f708', internal_id: 'e2a3b4c5-6d7e-4f80-91a2-b3c4d5e6f708' };
 const targetReviewers = { ...reviewersFormGroup, id: 'f3b4c5d6-7e8f-4091-a2b3-c4d5e6f70819', internal_id: 'f3b4c5d6-7e8f-4091-a2b3-c4d5e6f70819' };
 const targetMarking = { ...amberFormMarking, id: '04c5d6e7-8f90-41a2-b3c4-d5e6f708192a', internal_id: '04c5d6e7-8f90-41a2-b3c4-d5e6f708192a' };
-const TARGET_ENTITIES = [targetGroup, targetReviewers, targetMarking];
+const targetLabel = { ...phishingFormLabel, id: '15d6e7f8-9a01-42b3-84c5-e6f708192a3b', internal_id: '15d6e7f8-9a01-42b3-84c5-e6f708192a3b' };
+const TARGET_ENTITIES = [targetGroup, targetReviewers, targetMarking, targetLabel];
 
 const lookup = (entities: { id: string; standard_id: string }[]) => async (_ctx: unknown, _user: unknown, ids: string[]) => {
   const found = entities.flatMap((entity) => [[entity.id, entity], [entity.standard_id, entity]] as const).filter(([id]) => ids.includes(id));
@@ -75,6 +77,8 @@ describe('Form intake import', () => {
       const schema = JSON.parse(input.form_schema) as FormSchemaDefinition;
       // The ids of the platform, not the ones of the bundle
       expect(schema.fields.find(({ name }) => name === 'objectMarking')?.defaultValue).toEqual([targetMarking.internal_id]);
+      // The label that exists on the platform is found by its standard id, a label given by its value is kept
+      expect(schema.fields.find(({ name }) => name === 'objectLabel')?.defaultValue).toEqual([{ value: targetLabel.internal_id, label: 'phishing' }, 'intake']);
       const members = schema.draftDefaults?.authorizedMembers?.defaults;
       expect(members).toContainEqual({ value: targetGroup.internal_id, label: 'Analysts', type: 'Group', accessRight: 'edit', groupsRestriction: [] });
       expect(members).toContainEqual({ type: 'AUTHOR_ORG', intersectionGroup: targetGroup.internal_id });
@@ -97,6 +101,8 @@ describe('Form intake import', () => {
       expect(result).toMatchObject({ status: 'created', reason: 'Groups or markings not found are left out of the form' });
       const schema = JSON.parse(vi.mocked(addForm).mock.calls[0][2].form_schema) as FormSchemaDefinition;
       expect(schema.fields.find(({ name }) => name === 'objectMarking')?.defaultValue).toEqual([]);
+      // A label given by its value does not depend on the platform
+      expect(schema.fields.find(({ name }) => name === 'objectLabel')?.defaultValue).toEqual(['intake']);
       const serialized = JSON.stringify(schema);
       [analystsFormGroup.standard_id, amberFormMarking.standard_id].forEach((id) => expect(serialized).not.toContain(id));
       // What does not depend on the platform stays

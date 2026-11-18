@@ -18,6 +18,7 @@ import {
   FORM_REFERENCED_ENTITIES,
   formOrganization,
   formUser,
+  phishingFormLabel,
   incidentForm,
   incidentFormSchema,
   reportForm,
@@ -112,9 +113,10 @@ describe('Form intake export', () => {
     expect(members).not.toContainEqual({ type: 'AUTHOR_ORG', intersectionGroup: deletedGroupId });
   });
 
-  it('keeps the labels, which are values, and the rest of the schema as it is', async () => {
+  it('writes a label under its standard id, keeps a label given by its value, and the rest of the schema as it is', async () => {
     const schema = await exportedSchema();
-    expect(schema.fields.find(({ name }) => name === 'objectLabel')?.defaultValue).toEqual([{ value: 'phishing', label: 'phishing' }]);
+    expect(schema.fields.find(({ name }) => name === 'objectLabel')?.defaultValue).toEqual([{ value: phishingFormLabel.standard_id, label: 'phishing' }, 'intake']);
+    expect(JSON.stringify(schema)).not.toContain(phishingFormLabel.id);
     expect(schema).toMatchObject({ version: '2.0', mainEntityType: 'Incident', isDraftByDefault: true });
     expect(schema.fields.map(({ name }) => name)).toEqual(incidentFormSchema.fields.map(({ name }) => name));
   });

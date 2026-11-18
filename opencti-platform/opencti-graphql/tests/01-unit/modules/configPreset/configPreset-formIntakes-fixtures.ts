@@ -19,6 +19,12 @@ export const amberFormMarking = {
   standard_id: 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
   entity_type: 'Marking-Definition',
 };
+export const phishingFormLabel = {
+  id: 'd38e7f90-5b12-4a03-8ec5-819203142536',
+  internal_id: 'd38e7f90-5b12-4a03-8ec5-819203142536',
+  standard_id: 'label--4e5f6a7b-8c9d-5e0f-a1b2-3c4d5e6f7081',
+  entity_type: 'Label',
+};
 export const formUser = {
   id: '9f4a3b5c-1d7e-4c6f-8a81-4d5e6f708192',
   internal_id: '9f4a3b5c-1d7e-4c6f-8a81-4d5e6f708192',
@@ -35,7 +41,7 @@ export const formOrganization = {
 export const deletedGroupId = 'b16c5d7e-3f90-4e81-8ca3-6f7081920314';
 export const deletedMarkingId = 'c27d6e8f-4a01-4f92-9db4-708192031425';
 
-export const FORM_REFERENCED_ENTITIES = [analystsFormGroup, reviewersFormGroup, amberFormMarking, formUser, formOrganization];
+export const FORM_REFERENCED_ENTITIES = [analystsFormGroup, reviewersFormGroup, amberFormMarking, phishingFormLabel, formUser, formOrganization];
 
 const field = (name: string, type: string, extra: Record<string, unknown> = {}) => ({
   id: name,
@@ -76,7 +82,7 @@ export const incidentFormSchema = {
     field('name', 'text', { required: true }),
     field('createdBy', 'createdBy', { defaultValue: formOrganization.id }),
     field('objectMarking', 'objectMarking', { defaultValue: [amberFormMarking.id, { value: reviewersFormGroup.id }, deletedMarkingId] }),
-    field('objectLabel', 'objectLabel', { defaultValue: [{ value: 'phishing', label: 'phishing' }] }),
+    field('objectLabel', 'objectLabel', { defaultValue: [{ value: phishingFormLabel.id, label: 'phishing' }, 'intake'] }),
   ],
 };
 
