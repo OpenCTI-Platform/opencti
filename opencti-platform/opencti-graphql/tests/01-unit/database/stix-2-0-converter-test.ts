@@ -83,6 +83,12 @@ import { ORGANIZATION_INSTANCE, EXPECTED_ORGANIZATION } from './stix-2-0-convert
 import { SECURITY_PLATFORM_INSTANCE, EXPECTED_SECURITY_PLATFORM } from './stix-2-0-converter-fixtures/SDOs/entities/security-platform';
 import { EVENT_INSTANCE, EXPECTED_EVENT } from './stix-2-0-converter-fixtures/SDOs/entities/event';
 import { convertEventToStix_2_0 } from '../../../src/modules/event/event-converter';
+import { EXPECTED_LANGUAGE, LANGUAGE_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/entities/language';
+import { convertLanguageToStix_2_0 } from '../../../src/modules/language/language-converter';
+import { EXPECTED_SECURITY_COVERAGE, SECURITY_COVERAGE_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/analyses/security-coverage';
+import { EXPECTED_SECURITY_COVERAGE_RESULT, SECURITY_COVERAGE_RESULT_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/analyses/security-coverage-result';
+import { convertSecurityCoverageToStix_2_0 } from '../../../src/modules/securityCoverage/securityCoverage-converter';
+import { convertSecurityCoverageResultToStix_2_0 } from '../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-converter';
 import { REGION_INSTANCE, EXPECTED_REGION } from './stix-2-0-converter-fixtures/SDOs/locations/region';
 import { COUNTRY_INSTANCE, EXPECTED_COUNTRY } from './stix-2-0-converter-fixtures/SDOs/locations/country';
 import { CITY_INSTANCE, EXPECTED_CITY } from './stix-2-0-converter-fixtures/SDOs/locations/city';
@@ -285,6 +291,20 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Data Source', async () => {
     const result = convertDataSourceToStix_2_0(DATA_SOURCE_INSTANCE);
     expect(result).toEqual(EXPECTED_DATA_SOURCE);
+  });
+  // Language
+  it('should convert Language', async () => {
+    const result = convertLanguageToStix_2_0(LANGUAGE_INSTANCE);
+    expect(result).toEqual(EXPECTED_LANGUAGE);
+  });
+  // Security coverage
+  it('should convert Security Coverage', async () => {
+    const result = convertSecurityCoverageToStix_2_0(SECURITY_COVERAGE_INSTANCE);
+    expect(result).toEqual(EXPECTED_SECURITY_COVERAGE);
+  });
+  it('should convert Security Coverage Result', async () => {
+    const result = convertSecurityCoverageResultToStix_2_0(SECURITY_COVERAGE_RESULT_INSTANCE);
+    expect(result).toEqual(EXPECTED_SECURITY_COVERAGE_RESULT);
   });
   // Containers
   it('should convert Report', async () => {
@@ -601,6 +621,33 @@ describe('Stix 2.0 opencti converter - dispatch via convertStoreToStix_2_0', () 
     const result = convertStoreToStix_2_0(MALWARE_INSTANCE);
     expect(result.type).toBe('malware');
     expect((result as any).name).toBe('Malware Stix 2.0');
+    expect(result.spec_version).toBe('2.0');
+  });
+  it('should dispatch Language (SDO)', () => {
+    const result = convertStoreToStix_2_0(LANGUAGE_INSTANCE);
+    expect(result.type).toBe('language');
+    expect(result.spec_version).toBe('2.0');
+  });
+  it('should dispatch Security Coverage (SDO)', () => {
+    const result = convertStoreToStix_2_0(SECURITY_COVERAGE_INSTANCE);
+    expect(result.type).toBe('security-coverage');
+    expect((result as any).covered_ref).toBe('intrusion-set--738e5ee3-6781-5f4c-93b0-d914bbf0c1d3');
+    expect(result.spec_version).toBe('2.0');
+  });
+  it('should dispatch Security Coverage without covered object', () => {
+    const { objectCovered: _, ...instance } = SECURITY_COVERAGE_INSTANCE;
+    const result = convertStoreToStix_2_0(instance as typeof SECURITY_COVERAGE_INSTANCE);
+    expect(result).not.toHaveProperty('covered_ref');
+  });
+  it('should dispatch Security Coverage Result without coverage information', () => {
+    const { coverage_information: _, ...instance } = SECURITY_COVERAGE_RESULT_INSTANCE;
+    const result = convertStoreToStix_2_0(instance as typeof SECURITY_COVERAGE_RESULT_INSTANCE);
+    expect(result).not.toHaveProperty('coverage');
+  });
+  it('should dispatch Security Coverage Result (SDO)', () => {
+    const result = convertStoreToStix_2_0(SECURITY_COVERAGE_RESULT_INSTANCE);
+    expect(result.type).toBe('security-coverage-result');
+    expect((result as any).result_of_ref).toBe('security-coverage--8e2f1a3b-4c5d-5e6f-8a7b-9c0d1e2f3a4b');
     expect(result.spec_version).toBe('2.0');
   });
   // SCO

@@ -15433,6 +15433,7 @@ type SubAttackPatternForMatrix {
   attack_pattern_id: String!
   description: String
   name: String!
+  x_mitre_id: String
 }
 
 type SubType {
@@ -15695,8 +15696,6 @@ type System implements BasicObject & Identity & StixCoreObject & StixDomainObjec
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   x_opencti_aliases: [String]
-  x_opencti_system_category: String
-  x_opencti_system_subcategory: String
   x_opencti_closing_reason: String
   x_opencti_criticality: String
   x_opencti_environment: String
@@ -15710,6 +15709,8 @@ type System implements BasicObject & Identity & StixCoreObject & StixDomainObjec
   x_opencti_platform: String
   x_opencti_reliability: String
   x_opencti_stix_ids: [StixId]
+  x_opencti_system_category: String
+  x_opencti_system_subcategory: String
 }
 
 input SystemAddInput {
@@ -15741,8 +15742,6 @@ input SystemAddInput {
   update: Boolean
   upsertOperations: [EditInput!]
   x_opencti_aliases: [String]
-  x_opencti_system_category: String
-  x_opencti_system_subcategory: String
   x_opencti_criticality: String
   x_opencti_environment: String
   x_opencti_firstname: String
@@ -15753,6 +15752,8 @@ input SystemAddInput {
   x_opencti_platform: String
   x_opencti_reliability: String
   x_opencti_stix_ids: [StixId]
+  x_opencti_system_category: String
+  x_opencti_system_subcategory: String
   x_opencti_workflow_id: String
 }
 
@@ -18151,6 +18152,11 @@ enum WorkflowExecutionStatus {
 
 type WorkflowInstance {
   allowedTransitions: [WorkflowTransition!]!
+
+  """
+  Transitions the user is targeted by but whose entity conditions are not met yet
+  """
+  blockedTransitions: [WorkflowTransition!]!
   currentState: String!
   currentStatus: Status
   id: ID!
@@ -18248,6 +18254,7 @@ type WorkflowSerializedState {
   order: Int
   requestAccessOutcome: WorkflowRequestAccessOutcome
   statusId: String!
+  workflowStatusId: String
 }
 
 type WorkflowSerializedTransition {
@@ -18263,6 +18270,11 @@ type WorkflowSerializedTransition {
 
 type WorkflowTransition {
   actions: [String!]
+
+  """
+  Blocked transitions only: JSON filter group of the entity conditions not met yet
+  """
+  blockingConditions: String
   closingReason: String
   comment: String
   event: String!

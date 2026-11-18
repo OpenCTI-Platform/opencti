@@ -1,14 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import {
+  addCacheForEntity,
   getEntitiesListFromCache,
   getEntitiesMapFromCache,
   MAX_CACHE_DISCARDS,
   refreshCacheForEntity,
+  removeCacheForEntity,
   resetCacheForEntity,
   writeCacheForEntity,
 } from '../../../src/database/cache';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import type { AuthContext } from '../../../src/types/user';
+import type { BasicStoreCommon } from '../../../src/types/store';
 
 const testContext = {} as AuthContext;
 const ENTITY_TYPE_TEST_USER = 'TestUser';
@@ -53,6 +56,122 @@ describe('Cache entities map building', () => {
     expect(map.get('entity-internal-id')).toEqual(entity);
     expect(map.get('user--entity-standard-id')).toEqual(entity);
     expect(map.get('user--legacy-stix-id')).toEqual(entity);
+  });
+});
+
+describe('Cache entities map reuse', () => {
+  const buildEntity = (name: string, entityType: string) => ({
+    internal_id: `${name}-internal-id`,
+    standard_id: `user--${name}-standard-id`,
+    entity_type: entityType,
+  });
+
+  it('should build the map once and return the same map while the values do not change', async () => {
+    const type = 'TestReuseUser';
+    const entity = buildEntity('entity', type);
+    writeCacheForEntity(type, { values: [entity], fn: async () => [entity] });
+
+    const firstMap = await getEntitiesMapFromCache(testContext, SYSTEM_USER, type);
+    const secondMap = await getEntitiesMapFromCache(testContext, SYSTEM_USER, type);
+
+    expect(secondMap).toBe(firstMap);
+    expect(secondMap.get('entity-internal-id')).toEqual(entity);
+  });
+
+  it('should build the map again when an entity is added', async () => {
+    const type = 'TestAddUser';
+    const entityA = buildEntity('entity-a', type);
+    const entityB = buildEntity('entity-b', type);
+    // Like the users cache, the add function returns a new array with the added entity
+    const add = async (values: unknown[], instance: unknown) => [...values, instance];
+    writeCacheForEntity(type, { values: [entityA], fn: async () => [entityA], add });
+    const mapBefore = await getEntitiesMapFromCache(testContext, SYSTEM_USER, type);
+    expect(mapBefore.get('entity-b-internal-id')).toBeUndefined();
+
+    await addCacheForEntity(entityB as unknown as BasicStoreCommon);
+
+    const mapAfter = await getEntitiesMapFromCache(testContext, SYSTEM_USER, type);
+    expect(mapAfter).not.toBe(mapBefore);
+    expect(mapAfter.get('entity-a-internal-id')).toEqual(entityA);
+    expect(mapAfter.get('entity-b-internal-id')).toEqual(entityB);
+  });
+
+  it('should keep the map when an update leaves the values unchanged', async () => {
+    const type = 'TestUnchangedUser';
+    const entity = buildEntity('entity', type);
+    // Like the users cache receiving its own add event, the add function finds the entity and returns the same array
+    const add = async (values: unknown[]) => values;
+    writeCacheForEntity(type, { values: [entity], fn: async () => [entity], add });
+    const mapBefore = await getEntitiesMapFromCache(testContext, SYSTEM_USER, type);
+
+    await addCacheForEntity(entity as unknown as BasicStoreCommon);
+
+    expect(await getEntitiesMapFromCache(testContext, SYSTEM_USER, type)).toBe(mapBefore);
+  });
+
+  it('should build the map again when the values are refreshed, removed or reset', async () => {
+    const type = 'TestRefreshUser';
+    const entity = buildEntity('entity', type);
+    const renamedEntity = { ...entity, name: 'renamed' };
+    let loadedValues: unknown[] = [entity];
+    writeCacheForEntity(type, {
+      values: [entity],
+      fn: async () => loadedValues,
+      refresh: async () => [renamedEntity],
+      remove: async () => [],
+    });
+    const initialMap = await getEntitiesMapFromCache(testContext, SYSTEM_USER, type);
+
+    await refreshCacheForEntity(renamedEntity as unknown as BasicStoreCommon);
+    const refreshedMap = await getEntitiesMapFromCache(testContext, SYSTEM_USER, type);
+    expect(refreshedMap).not.toBe(initialMap);
+    expect(refreshedMap.get('entity-internal-id')).toEqual(renamedEntity);
+
+    await removeCacheForEntity(renamedEntity as unknown as BasicStoreCommon);
+    const removedMap = await getEntitiesMapFromCache(testContext, SYSTEM_USER, type);
+    expect(removedMap.get('entity-internal-id')).toBeUndefined();
+
+    const reloadedEntity = { ...entity, name: 'reloaded' };
+    loadedValues = [reloadedEntity];
+    resetCacheForEntity(type);
+    const reloadedMap = await getEntitiesMapFromCache(testContext, SYSTEM_USER, type);
+    expect(reloadedMap.get('entity-internal-id')).toEqual(reloadedEntity);
+  });
+
+  it.each([
+    ['reset', (type: string) => resetCacheForEntity(type)],
+    ['refresh', (_: string, entity: unknown) => refreshCacheForEntity(entity as BasicStoreCommon)],
+  ])('should not serve a map of the old values once a %s of the entry landed while a call was pending', async (_, update) => {
+    const type = 'TestPendingUser';
+    const oldEntity = buildEntity('old', type);
+    const newEntity = buildEntity('new', type);
+    writeCacheForEntity(type, { values: [oldEntity], fn: async () => [newEntity], refresh: async () => [newEntity] });
+
+    // The values are read when the call starts, then the same cache entry is updated before the call ends
+    const pendingMap = getEntitiesMapFromCache(testContext, SYSTEM_USER, type);
+    await update(type, newEntity);
+
+    const oldMap = await pendingMap;
+    expect(oldMap.get('old-internal-id')).toEqual(oldEntity);
+    const newMap = await getEntitiesMapFromCache(testContext, SYSTEM_USER, type);
+    expect(newMap.get('new-internal-id')).toEqual(newEntity);
+    expect(newMap.get('old-internal-id')).toBeUndefined();
+  });
+
+  it('should reject any change of the shared map or of the values it was built from', async () => {
+    const type = 'TestGuardedUser';
+    const entity = buildEntity('entity', type);
+    const values = [entity];
+    writeCacheForEntity(type, { values, fn: async () => values });
+
+    const map = await getEntitiesMapFromCache(testContext, SYSTEM_USER, type) as Map<string, unknown>;
+
+    expect(() => map.set('other-id', entity)).toThrow();
+    expect(() => map.delete('entity-internal-id')).toThrow();
+    expect(() => map.clear()).toThrow();
+    expect(() => values.push(entity)).toThrow(TypeError);
+    expect(map.get('entity-internal-id')).toEqual(entity);
+    expect(values).toEqual([entity]);
   });
 });
 

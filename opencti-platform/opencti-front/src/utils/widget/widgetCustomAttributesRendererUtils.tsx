@@ -15,6 +15,7 @@ import ItemIcon from '../../components/ItemIcon';
 import { Link } from 'react-router';
 import { WidgetHost } from 'src/utils/widget/widget';
 import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
+import type { VocabularyCategory } from 'src/utils/hooks/__generated__/useVocabularyEntriesQuery.graphql';
 
 type AttributeRenderer = (
   data: StixCoreObject,
@@ -90,6 +91,10 @@ const indicatorRenderers: EntityRenderers = {
   },
 };
 
+// VocabularyCategory enum members of the sophistication chips
+export const THREAT_ACTOR_GROUP_SOPHISTICATION_CATEGORY: VocabularyCategory = 'threat_actor_group_sophistication_ov';
+export const THREAT_ACTOR_INDIVIDUAL_SOPHISTICATION_CATEGORY: VocabularyCategory = 'threat_actor_individual_sophistication_ov';
+
 // ─── Threat Actor Group
 const threatActorGroupRenderers: EntityRenderers = {
   sophistication: (data) => {
@@ -98,7 +103,7 @@ const threatActorGroupRenderers: EntityRenderers = {
       <FieldOrEmpty source={value}>
         <ItemOpenVocab
           displayMode="chip"
-          type="threat-actor-group-sophistication-ov"
+          type={THREAT_ACTOR_GROUP_SOPHISTICATION_CATEGORY}
           value={value}
         />
       </FieldOrEmpty>
@@ -122,7 +127,7 @@ const threatActorIndividualRenderers: EntityRenderers = {
       <FieldOrEmpty source={value}>
         <ItemOpenVocab
           displayMode="chip"
-          type="threat-actor-individual-sophistication-ov"
+          type={THREAT_ACTOR_INDIVIDUAL_SOPHISTICATION_CATEGORY}
           value={value}
         />
       </FieldOrEmpty>

@@ -10,7 +10,7 @@ vi.mock('../../../../src/enterprise-edition/xtm_ca', () => ({
   },
 }));
 
-import { LICENSE_OID_XTM_OPENCTI_IDS, verifyXtmLicenseProof } from '../../../../src/modules/xtm/one/xtm-one-license';
+import { LICENSE_OID_XTM_LICENSE_MODEL, LICENSE_OID_XTM_OPENCTI_IDS, verifyXtmLicenseProof } from '../../../../src/modules/xtm/one/xtm-one-license';
 import type { XtmLicenseContext } from '../../../../src/modules/xtm/one/xtm-one-license';
 import { createTestCertificateAuthority, createTestXtmLicense, DAY } from '../../../utils/xtmLicenseHelper';
 import type { TestXtmLicenseOptions } from '../../../utils/xtmLicenseHelper';
@@ -157,6 +157,33 @@ describe('verifyXtmLicenseProof: the XTM license XTM One returns at registration
     it('for a license repeating an extension', () => {
       const duplicate = { id: LICENSE_OID_XTM_OPENCTI_IDS, value: `["${PLATFORM_ID}"]` };
       expect(verify({ openctiIds: ['platform-0002'], extraExtensions: [duplicate] }).reason).toBe('the XTM license repeats a certificate extension');
+    });
+  });
+
+  describe('reads the licence model (model 2: one Filigran License bound to the instance of its subject)', () => {
+    const model2 = { id: LICENSE_OID_XTM_LICENSE_MODEL, value: '2' };
+
+    it('grants a model 2 licence returned by XTM One whatever its subject: XTM One checked its own instance', () => {
+      expect(verify({ extraExtensions: [model2] }).granted).toBe(true);
+    });
+
+    it('grants a model 2 licence pasted in the platform it is issued for, or issued global', () => {
+      expect(verify({ extraExtensions: [model2], platform: PLATFORM_ID }, { pastedInPlatform: true }).granted).toBe(true);
+      expect(verify({ extraExtensions: [model2], platform: 'global' }, { pastedInPlatform: true }).granted).toBe(true);
+    });
+
+    it('refuses a model 2 licence pasted in a platform it is not issued for', () => {
+      expect(verify({ extraExtensions: [model2] }, { pastedInPlatform: true }).reason).toBe('the Filigran license is issued for another instance');
+    });
+
+    it('keeps a licence without model claim (issued before model 2) valid when pasted, whatever its subject', () => {
+      expect(verify({ openctiIds: [PLATFORM_ID] }, { pastedInPlatform: true }).granted).toBe(true);
+      expect(verify({}, { pastedInPlatform: true }).granted).toBe(true);
+    });
+
+    it('still applies the OpenCTI sub-license to a model 2 licence', () => {
+      expect(verify({ extraExtensions: [model2], platform: PLATFORM_ID, openctiIds: ['platform-0002'] }, { pastedInPlatform: true }).reason)
+        .toBe('the XTM license does not sub-license this OpenCTI platform');
     });
   });
 

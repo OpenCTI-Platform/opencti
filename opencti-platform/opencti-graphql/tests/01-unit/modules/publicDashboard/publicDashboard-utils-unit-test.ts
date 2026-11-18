@@ -1,6 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { getServedPublicManifest, omitViewerSwitches, sanitizePublicDashboardUriKey } from '../../../../src/modules/publicDashboard/publicDashboard-utils';
-import { ENABLED_FEATURE_FLAGS } from '../../../../src/config/conf';
 import { fromB64, toB64 } from '../../../../src/utils/base64';
 
 const UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -58,12 +57,6 @@ describe('getServedPublicManifest', () => {
   };
   const withoutBreakdown = { ...publicWidgets['widget-1'], parameters: { title: 'Reports', interval: 'week' } };
 
-  const previousEnabledFeatureFlags = [...ENABLED_FEATURE_FLAGS];
-
-  afterEach(() => {
-    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...previousEnabledFeatureFlags);
-  });
-
   it('should never serve the viewer switches of the dashboard: the public time filters stay read only', () => {
     const served = { 'widget-2': publicWidgets['widget-2'] };
     const dashboard = {
@@ -74,7 +67,6 @@ describe('getServedPublicManifest', () => {
       }) as string,
       private_manifest: toB64({ widgets: { 'widget-2': storedWidgets['widget-2'] }, config: { refresh_interval: 0 } }) as string,
     };
-    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, 'DASHBOARD_VARIABLES');
     expect(fromB64(getServedPublicManifest(dashboard) as string)).toEqual({ widgets: served, config: { refresh_interval: 0 } });
   });
 

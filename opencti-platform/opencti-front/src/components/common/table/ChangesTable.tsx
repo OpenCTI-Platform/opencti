@@ -18,9 +18,13 @@ export interface Change {
 interface ChangesTableProps {
   changes: readonly Change[];
   variant?: 'code' | 'text';
+  // Text variant only: wrap a long value in its cell instead of cutting it with an ellipsis
+  wrapValues?: boolean;
 }
 
-const ChangesTable: FunctionComponent<ChangesTableProps> = ({ changes, variant = 'code' }) => {
+const WRAPPED_VALUE_STYLE = { whiteSpace: 'normal', overflowWrap: 'anywhere' } as const;
+
+const ChangesTable: FunctionComponent<ChangesTableProps> = ({ changes, variant = 'code', wrapValues = false }) => {
   const { t_i18n } = useFormatter();
 
   const renderChangeValues = (values?: readonly string[] | null) => {
@@ -29,7 +33,7 @@ const ChangesTable: FunctionComponent<ChangesTableProps> = ({ changes, variant =
     }
     return values.map((s, i) => (
       <div key={i} style={{ marginBottom: i < values.length - 1 ? 8 : 0 }}>
-        <TruncatedRawValue value={s} variant={variant} />
+        <TruncatedRawValue value={s} variant={variant} style={wrapValues ? WRAPPED_VALUE_STYLE : undefined} />
       </div>
     ));
   };

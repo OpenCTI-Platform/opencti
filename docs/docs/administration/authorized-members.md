@@ -4,12 +4,16 @@
 
     Authorized members on Entities are under the "OpenCTI Enterprise Edition" license. Please read the information below to have all the information.
 
-
-You have two variations of Authorized Members within the application: 
-- Authorized Members on workspaces (Custom Dashboards, Investigations): By default, when a workspace is created, only the creator of the workspace has access to the workspace. Therefore, the Authorized Members aim to foster collaboration on Workspaces. As a result, these Authorized Members on Workspaces are under **Community Edition**
-- Authorized Members on entities (Feedbacks, Reports, Groupings, Incident Response, Request For Information, Organizations): By default, when entities are created in the platform, they are accessible to any users having the right marking (and the right Organization in the context of Org segregation). Authorized Members functionality in that case aims to restrict access to these entities. Given it is mainly useful in the context of organization segregation (where an entity is accessible to a whole organization while you want it to only be accessible to a specific subset of users of this same org), Authorized Members on Entities are under **Enterprise Edition**
-
 **Authorized members** allow to restrict access to an entity to certain users, groups, or organizations within the platform.
+
+There are two variations of Authorized Members, under different licenses:
+
+| Variation | Applies to | License | Purpose |
+|:----------|:-----------|:--------|:--------|
+| **On workspaces** | Custom dashboards, Investigations | Community Edition | By default, only the creator of a workspace has access to it. Authorized members let you share it with other users to collaborate on it. |
+| **On entities** | Feedbacks, Reports, Groupings, Incident responses, Requests for information, Organizations | Enterprise Edition | By default, any user with the right markings (and the right organization, with organization segregation) can access an entity. Authorized members restrict access to a subset of these users. |
+
+Authorized members on entities are mainly useful with [organization segregation](organization-segregation.md): when an entity is shared with a whole organization, they let you make it visible to only some users of that organization.
 
 Four levels of access are available:
 
@@ -40,7 +44,7 @@ To define authorized members, you need to click on the '**Manage Access Restrict
 
 ![authorized-members-pop-up.png](assets%2Fauthorized-members-pop-up.png)
 
-If you grant access to users belonging to an Organization, it is possible since version 6.6 of OpenCTI to restrict access even more specifically to users belonging to one or more groups, in order to provide more granularity in access control.
+If you grant access to users belonging to an Organization, you can restrict access even more specifically to users belonging to one or more groups, in order to provide more granularity in access control.
 
 ![authorized-members-group-intersection.png](assets%2Fauthorized-members-group-intersection.png)
 
@@ -72,7 +76,8 @@ Once authorized members are activated for these entities, data segregation by or
 
 ### Specific case of Authorized Members on Organization in the context of Organization segregation.
 
-In the context of Organization segregation, sometimes, as a Platform Organization, you do not want users to see all the organizations that exist in your database. This is the reason, since the 6.7.X, the Authorized Members on Organizations have been introduced:
+In the context of Organization segregation, sometimes, as a Platform Organization, you do not want users to see all the organizations that exist in your database. For this reason, you can set Authorized Members on Organizations:
+
 - A user with Can View will be able to see the organization in the knowledge list & security view. As a result, if the organization is in the Author field of an entity, or in the shared organization that the entity is shared with, the user will see the organization.
 - A user with Can Edit will be able to edit the organization (and see the organization).
 - A user with Can Manage will be able to manage access restrictions on this organization.

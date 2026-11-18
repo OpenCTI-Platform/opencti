@@ -68,7 +68,7 @@ Several actions can be performed from there:
     Some columns are always sortable (like dates or names columns).
     Some are never sortable (like labels).
 
-    Some columns are only sortable if runtime mapping is enabled, i.e. if the platform is with Elastic v >= 7.12 (not working with OpenSearch for instance). It is the case for columns whose content is calculated at runtime and not stored in the database: author, creator, observable value, markings, kill chain phases, assignee, participant, place of birth, ethnicity.
+    Some columns are only sortable if the platform uses Elasticsearch: they rely on runtime mappings, which OpenSearch does not support. It is the case for columns whose content is calculated at runtime and not stored in the database: author, creator, observable value, markings, kill chain phases, assignee, participant, place of birth, ethnicity.
     Indeed all those fields are not stored in the database and requires a resolution to fetch additional information useful for the sorting (like the creator name) from an id.
 
 - Modify filters to display entities corresponding to given criteria,
@@ -79,7 +79,7 @@ Several actions can be performed from there:
 
 While OpenCTI features numerous entities and tabs, many of them share similarities, with only minor differences arising from specific characteristics. These differences may involve the inclusion or exclusion of certain fields, depending on the nature of the entity.
 
-In this part will only be detailed a general outline of a "typical" OpenCTI page. The specifies of the different entities will be detailed in the corresponding pages below (Activities and Knowledge).
+In this part will only be detailed a general outline of a "typical" OpenCTI page. The specifics of the different entities are detailed in the "Explore by entity types" pages: [Analysis](exploring-analysis.md), [Cases](exploring-cases.md), [Events](exploring-events.md), [Observations](exploring-observations.md), [Threats](exploring-threats.md), [Arsenal](exploring-arsenal.md), [Techniques](exploring-techniques.md), [Entities](exploring-entities.md) and [Locations](exploring-locations.md).
 
 <figure markdown>
   ![Top menu of an entity](assets/top-menu.png)

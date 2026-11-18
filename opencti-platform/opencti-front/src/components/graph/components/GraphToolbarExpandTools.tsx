@@ -264,6 +264,7 @@ const GraphToolbarExpandTools = ({
   const {
     setLinearProgress,
     setIsExpandOpen,
+    resetFilters,
   } = useGraphInteractions();
 
   const [rollBackOpen, setRollBackOpen] = useState(false);
@@ -273,7 +274,7 @@ const GraphToolbarExpandTools = ({
   };
 
   const onExpand: InvestigationExpandDialogContentProps['onSubmit'] = async (
-    { entity_types, relationship_types },
+    { entity_types, relationship_types, reset_filters },
     { resetForm },
   ) => {
     if (entity_types.length === 0 && relationship_types.length === 0) {
@@ -308,6 +309,7 @@ const GraphToolbarExpandTools = ({
       allNewElements.push(...newElements);
     }
     onInvestigationExpand?.(allNewElements);
+    if (reset_filters) resetFilters();
     onExpandSubmit?.();
 
     resetForm();

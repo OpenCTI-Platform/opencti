@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
@@ -195,5 +196,56 @@ describe('DashboardVariableChip', () => {
     await user.click(screen.getByRole('button', { name: 'Delete variable' }));
     expect(onDelete).toHaveBeenCalledWith(sector);
     await waitFor(() => expect(screen.queryByRole('textbox')).not.toBeInTheDocument());
+  });
+});
+
+// The chip as the bar holds it: a changed value makes it modified, which wraps it in its dot badge, so React mounts a
+// new chip element while the popover is open (#20106).
+const StatefulChip = ({ onEdit }: { onEdit?: (variable: DashboardVariable) => void }) => {
+  const [value, setValue] = useState('Energy');
+  return (
+    <DashboardVariableChip
+      variable={sector}
+      value={value}
+      usedInWidgetIds={['w-1']}
+      modified={value !== sector.defaultValue}
+      onChange={setValue}
+      onEdit={onEdit}
+    />
+  );
+};
+
+describe('DashboardVariableChip focus', () => {
+  beforeEach(() => {
+    mockLabels.current = undefined;
+  });
+
+  // Changes the value in the popover: the chip becomes modified and is mounted again, the popover stays open.
+  const changeValue = async (user: ReturnType<typeof testRender>['user']) => {
+    await user.click(screen.getByRole('button', { name: 'Sector : Energy' }));
+    const input = screen.getByRole('textbox');
+    await user.clear(input);
+    await user.type(input, 'Finance');
+    await user.tab();
+    expect(screen.getByTestId('dashboard-variable-chip-Sector')).toHaveAttribute('data-modified', 'true');
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+  };
+
+  it('gives the focus back to the chip when the popover closes with Escape after a value change', async () => {
+    const { user } = testRender(<StatefulChip />);
+    await changeValue(user);
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('textbox')).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Sector : Finance' })).toHaveFocus());
+  });
+
+  it('leaves the focus to the page action when the popover closes on Edit variable', async () => {
+    const onEdit = vi.fn();
+    const { user } = testRender(<StatefulChip onEdit={onEdit} />);
+    await changeValue(user);
+    await user.click(screen.getByRole('button', { name: 'Edit variable' }));
+    expect(onEdit).toHaveBeenCalledWith(sector);
+    await waitFor(() => expect(screen.queryByRole('textbox')).not.toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'Sector : Finance' })).not.toHaveFocus();
   });
 });

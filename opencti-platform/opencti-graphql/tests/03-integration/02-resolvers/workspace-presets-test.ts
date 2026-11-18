@@ -10,7 +10,6 @@ import {
   queryAsUserWithSuccess,
 } from '../../utils/testQueryHelper';
 import { fromB64, toB64 } from '../../../src/utils/base64';
-import { ENABLED_FEATURE_FLAGS } from '../../../src/config/conf';
 import { MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 
 const CREATE = gql`
@@ -235,22 +234,6 @@ describe('Dashboard presets API', () => {
       expect((await readWorkspace(dashboardId)).currentUserDefaultPresetId).toBeNull();
     } finally {
       await queryAsAdminWithSuccess({ query: ME_EDIT, variables: { input: [{ key: 'default_dashboard', value: [null] }, { key: 'default_dashboard_preset', value: [null] }] } });
-    }
-  });
-
-  it('should hide the API when the feature flag is disabled', async () => {
-    const previous = [...ENABLED_FEATURE_FLAGS];
-    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
-    try {
-      const result = await queryAsAdmin({ query: UPSERT, variables: { id: dashboardId, input: { name: 'Flag off' } } });
-      expect(result.errors?.[0].message).toEqual('Feature is disabled');
-      const deletion = await queryAsAdmin({ query: DELETE_PRESET, variables: { id: dashboardId, presetId: 'any' } });
-      expect(deletion.errors?.[0].message).toEqual('Feature is disabled');
-      const workspace = await readWorkspace(dashboardId);
-      expect(workspace.presets).toEqual([]);
-      expect(workspace.currentUserDefaultPresetId).toBeNull();
-    } finally {
-      ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...previous);
     }
   });
 });

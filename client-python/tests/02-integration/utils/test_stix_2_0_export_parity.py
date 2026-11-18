@@ -73,6 +73,39 @@ PENDING_DIFFERENCES_BY_STIX_TYPE = {
         "x_opencti_order",
         "x_opencti_type",
     },
+    # The legacy export leaks two keys that the API computes from the results
+    # instead of reading the stored value: `coverage_information` (average of
+    # the results) and `external_uri` (URI of the only result). The backend
+    # leaves them out, as the 2.1 converter does: each result exports its own.
+    # Checked in `test_security_coverage_stix_2_0_export_matches_legacy_export`.
+    "security-coverage": {"coverage_information", "external_uri"},
+}
+
+
+def _coverage_from_legacy(coverage_information):
+    """Backend `coverage` of the legacy raw GraphQL `coverage_information`."""
+    return [
+        {"name": item["coverage_name"], "score": item["coverage_score"]}
+        for item in coverage_information
+    ]
+
+
+# Keys the legacy export outputs under another name or shape than the backend,
+# per STIX type: legacy key -> (backend key, conversion of the legacy value).
+# The legacy value is converted before the comparison, so that the key is
+# still compared on every object of every bundle.
+# TODO(stix-2-0-migration): validate them in the decision log.
+# - security-coverage: the legacy export names the covered object after its
+#   nested ref relationship, the backend uses `covered_ref`, the key the
+#   import reads (the import cannot create a coverage without it).
+# - security-coverage-result: same raw `coverage_information` leak as on
+#   `relationship`; the backend outputs `coverage` (`name`, `score`), the key
+#   the import reads.
+PENDING_RENAMED_LEGACY_KEYS_BY_STIX_TYPE = {
+    "security-coverage": {"object_covered_ref": ("covered_ref", lambda ref: ref)},
+    "security-coverage-result": {
+        "coverage_information": ("coverage", _coverage_from_legacy)
+    },
 }
 
 # Keys the legacy export leaves out because its GraphQL reader does not select
@@ -92,6 +125,10 @@ PENDING_DIFFERENCES_BY_STIX_TYPE = {
 # - email-mime-part-type: the reader does not select `content_type` and `body`.
 # - sighting: the reader does not select `revoked` (the import does not read
 #   it on a sighting either).
+# - security-coverage, security-coverage-result: the readers only select a
+#   few keys (no dates, labels, description...). The author, external
+#   references, files and organizations are lost on both paths: `prepare_export`
+#   rebuilds them from raw keys that these readers do not select either.
 PARTIAL_LEGACY_KEYS_BY_STIX_TYPE = {
     "identity": {"confidence", "revoked", "roles"},
     "infrastructure": {"aliases"},
@@ -100,6 +137,26 @@ PARTIAL_LEGACY_KEYS_BY_STIX_TYPE = {
     "artifact": {"x_opencti_additional_names"},
     "email-mime-part-type": {"content_type", "body"},
     "sighting": {"revoked"},
+    "security-coverage": {
+        "confidence",
+        "created",
+        "description",
+        "duration",
+        "labels",
+        "modified",
+        "periodicity",
+        "platforms_affinity",
+        "revoked",
+        "type_affinity",
+    },
+    "security-coverage-result": {
+        "confidence",
+        "created",
+        "description",
+        "labels",
+        "modified",
+        "revoked",
+    },
 }
 
 # Not STIX core objects: they are not exported on their own.
@@ -172,6 +229,14 @@ class _SecurityPlatformTest(_SimpleEntityTest):
         "description": "Security platform of the STIX 2.0 parity sweep",
         "security_platform_type": "SIEM",
     }
+
+
+class _LanguageTest(_SimpleEntityTest):
+    client_name = "language"
+    entity_data = {"name": "STIX 2.0 parity language"}
+
+    def data(self) -> Dict:
+        return {**self.entity_data, "aliases": _ALIASES}
 
 
 class _GroupingTest(_SimpleEntityTest):
@@ -328,6 +393,10 @@ class ExtraEntityTestCases:
     def case_report_with_note(api_client):
         return _ReportWithNoteTest(api_client)
 
+    @staticmethod
+    def case_language(api_client):
+        return _LanguageTest(api_client)
+
 
 def _export_entity_type(entity_case, entity):
     if isinstance(entity_case, StixCoreRelationshipTest):
@@ -361,9 +430,14 @@ def _differences(legacy_bundle, stix_2_0_bundle):
             "missing" if object_id in legacy_objects else "only in STIX 2.0"
         )
     for object_id in legacy_objects.keys() & stix_2_0_objects.keys():
-        legacy_object = _normalized(legacy_objects[object_id])
-        stix_2_0_object = _normalized(stix_2_0_objects[object_id])
         stix_type = object_id.split("--")[0]
+        legacy_object = dict(legacy_objects[object_id])
+        renamed_keys = PENDING_RENAMED_LEGACY_KEYS_BY_STIX_TYPE.get(stix_type, {})
+        for legacy_key, (key, convert) in renamed_keys.items():
+            if legacy_key in legacy_object:
+                legacy_object[key] = convert(legacy_object.pop(legacy_key))
+        legacy_object = _normalized(legacy_object)
+        stix_2_0_object = _normalized(stix_2_0_objects[object_id])
         partial_legacy_keys = PARTIAL_LEGACY_KEYS_BY_STIX_TYPE.get(stix_type, set())
         ignored = (
             ACCEPTED_DIFFERENCES
@@ -1514,3 +1588,117 @@ def test_relationship_list_stix_2_0_export_matches_legacy_export(
         assert {item["spec_version"] for item in exported.values()} == {"2.0"}
         differences = _differences(legacy_bundle, stix_2_0_bundle)
         assert differences == {}, json.dumps(differences, indent=1, default=str)
+
+
+SECURITY_COVERAGE_EXTERNAL_URI = "https://example.com/stix-2-0-parity/scenario"
+
+
+@pytest.fixture(scope="module")
+def security_coverage_graph(api_client, related_objects):
+    """A security coverage of an intrusion set, created as OpenAEV does.
+
+    The result data given to the coverage (`external_uri`, coverage
+    information and dates) makes the platform create exactly one result, so
+    that the API computes the coverage `external_uri` from it.
+
+    The intrusion set is TLP:RED, so that the access filter of the test
+    excludes the covered object from the full bundle.
+    """
+    red_marking = api_client.marking_definition.read(id=TLP_RED["id"])
+    covered = api_client.intrusion_set.create(
+        name="STIX 2.0 parity covered intrusion set",
+        objectMarking=[red_marking["id"]],
+    )
+    coverage = None
+    try:
+        coverage = api_client.security_coverage.create(
+            name="STIX 2.0 parity security coverage",
+            description="Security coverage of the STIX 2.0 parity sweep",
+            objectCovered=covered["id"],
+            external_uri=SECURITY_COVERAGE_EXTERNAL_URI,
+            auto_enrichment_disable=True,
+            periodicity="P1D",
+            duration="PT1H",
+            type_affinity="ENDPOINT",
+            platforms_affinity=["windows"],
+            coverage_last_result=_LAST,
+            coverage_valid_from=_FIRST,
+            coverage_valid_to=_LAST,
+            coverage_information=[
+                {"coverage_name": "PREVENTION", "coverage_score": 60},
+                {"coverage_name": "DETECTION", "coverage_score": 80},
+            ],
+            **{
+                key: related_objects[key]
+                for key in (
+                    "createdBy",
+                    "objectMarking",
+                    "objectLabel",
+                    "externalReferences",
+                )
+            },
+        )
+        [result] = api_client.security_coverage.read(id=coverage["id"])["results"]
+        result = api_client.security_coverage_result.read(id=result["id"])
+        yield {"coverage": coverage, "result": result}, red_marking, covered
+    finally:
+        if coverage is not None:
+            # Also deletes the result.
+            api_client.security_coverage.delete(id=coverage["id"])
+        api_client.stix_domain_object.delete(id=covered["id"])
+
+
+@pytest.mark.parametrize("mode", ["simple", "full"])
+@pytest.mark.parametrize("option", ["default", "no_custom_attributes", "access_filter"])
+@pytest.mark.parametrize("case", ["coverage", "result"])
+def test_security_coverage_stix_2_0_export_matches_legacy_export(
+    api_stix, security_coverage_graph, case, mode, option
+):
+    entities, red_marking, covered = security_coverage_graph
+    entity = entities[case]
+    options = {
+        "default": {},
+        "no_custom_attributes": {"no_custom_attributes": True},
+        "access_filter": {"access_filter": _access_filter_excluding(red_marking["id"])},
+    }[option]
+
+    legacy_bundle, stix_2_0_bundle = _export_both(
+        api_stix, entity["entity_type"], entity["id"], mode, **options
+    )
+
+    legacy = {item["id"]: item for item in legacy_bundle["objects"]}[
+        entity["standard_id"]
+    ]
+    exported = {item["id"]: item for item in stix_2_0_bundle["objects"]}[
+        entity["standard_id"]
+    ]
+    assert exported["spec_version"] == "2.0"
+    if case == "coverage":
+        # Only the legacy export leaks the values computed from the results.
+        assert legacy["coverage_information"]
+        assert legacy["external_uri"] == SECURITY_COVERAGE_EXTERNAL_URI
+        assert "coverage" not in exported
+        assert "coverage_information" not in exported
+        assert "external_uri" not in exported
+        # Both exports keep the ref to the covered object, even when the
+        # access filter excludes it: the filter applies to the markings of
+        # the nested ref relationship, not to its target.
+        assert exported["covered_ref"] == legacy["object_covered_ref"]
+        assert exported["covered_ref"] == covered["standard_id"]
+    else:
+        # Same coverage information, with the keys the import reads.
+        assert exported["coverage"]
+        assert _normalized(exported["coverage"]) == _normalized(
+            _coverage_from_legacy(legacy["coverage_information"])
+        )
+        assert exported["external_uri"] == SECURITY_COVERAGE_EXTERNAL_URI
+        assert exported["result_of_ref"] == entities["coverage"]["standard_id"]
+    if mode == "full":
+        bundles = (legacy_bundle, stix_2_0_bundle)
+        bundled = [{item["id"] for item in b["objects"]} for b in bundles]
+        if option == "access_filter":
+            assert all(covered["standard_id"] not in ids for ids in bundled)
+        elif case == "coverage":
+            assert all(covered["standard_id"] in ids for ids in bundled)
+    differences = _differences(legacy_bundle, stix_2_0_bundle)
+    assert differences == {}, json.dumps(differences, indent=1, default=str)

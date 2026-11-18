@@ -13,8 +13,8 @@ import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
-// 2 created by ingestionDeduplication-test (an import, then the same import after the deletion)
-testCreatedCounter['attack-pattern'] = 27;
+// 2 created by ingestionDeduplication-test (an import, then the same import after the deletion), +1 sub-technique created and deleted by attackPattern-test (x_mitre_id)
+testCreatedCounter['attack-pattern'] = 28;
 testCreatedCounter.campaign = 6;
 // 3 created by workflow-closing-reason-test merge and external status write cases
 testCreatedCounter['case-incident'] = 23;
@@ -40,7 +40,7 @@ testCreatedCounter.identity = 63;
 testCreatedCounter.imei = 3;
 testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 7;
-testCreatedCounter.indicator = 61;
+testCreatedCounter.indicator = 64;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
@@ -75,7 +75,7 @@ testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
 // Includes 5 created and deleted by stixRelationship-test, and 1 created by publicDashboard-test, deleted with its target (time series breakdown)
-testCreatedCounter.relationship = 154;
+testCreatedCounter.relationship = 155; // +1 subtechnique-of created by attackPattern-test, removed with its sub-technique
 // Includes 8 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
 // Plus 3 created and deleted by workflow-entity-write-test
 testCreatedCounter.report = 77;
@@ -89,14 +89,17 @@ testCreatedCounter['tracking-number'] = 1;
 // - 3 created and deleted by vocabulary-import-test
 testCreatedCounter.vocabulary = VOCABULARY_NUMBERS + 3;
 // 1 created and deleted by ingestionDeduplication-test (a type outside the deduplication allowlist)
-testCreatedCounter.vulnerability = 12;
+// 3 created and deleted by filterGroup-test (nil / not_nil operators on numbers)
+testCreatedCounter.vulnerability = 15;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
 testCreatedCounter['security-coverage'] = 27;
 testCreatedCounter['security-coverage-result'] = 22;
 
 export const testUpdatedCounter: Record<string, number> = {};
-testUpdatedCounter['marking-definition'] = 3;
+// Counts for:
+// - 2 by configPreset-import-markings-test (a built-in marking changed then imported back)
+testUpdatedCounter['marking-definition'] = 5;
 testUpdatedCounter.relationship = 9;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
@@ -117,7 +120,7 @@ testUpdatedCounter['data-source'] = 1;
 testUpdatedCounter['external-reference'] = 1;
 testUpdatedCounter.grouping = 3;
 testUpdatedCounter.incident = 4;
-testUpdatedCounter.indicator = 33;
+testUpdatedCounter.indicator = 35;
 // Counts for:
 // - 3 updated by killChainPhase-import-test
 testUpdatedCounter['kill-chain-phase'] = 3;
@@ -164,8 +167,8 @@ testMergedCounter['case-rfi'] = 1; // requestAccess-test merge of a decided RFI
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
-// 2 by ingestionDeduplication-test
-testDeletedCounter['attack-pattern'] = 22;
+// 2 by ingestionDeduplication-test, +1 sub-technique deleted by attackPattern-test (x_mitre_id)
+testDeletedCounter['attack-pattern'] = 23;
 testDeletedCounter.campaign = 2;
 // 2 by workflow-closing-reason-test merge and external status write cases, the merged source has no delete event
 testDeletedCounter['case-incident'] = 20;
@@ -187,7 +190,7 @@ testDeletedCounter.grouping = 2;
 // and 2 by ingestionDeduplication-domain-test
 testDeletedCounter.identity = 46;
 testDeletedCounter.incident = 6;
-testDeletedCounter.indicator = 33;
+testDeletedCounter.indicator = 36;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
@@ -231,7 +234,8 @@ testDeletedCounter.tool = 5;
 // - 3 deleted by vocabulary-import-test
 testDeletedCounter.vocabulary = 3;
 // 1 by ingestionDeduplication-test
-testDeletedCounter.vulnerability = 6;
+// 3 by filterGroup-test (nil / not_nil operators on numbers)
+testDeletedCounter.vulnerability = 9;
 testDeletedCounter.software = 1;
 testDeletedCounter.iccid = 4;
 testDeletedCounter.imei = 3;
