@@ -45,6 +45,8 @@ export const normaliseXtmKey = (kind: XtmCounterpartKind, key: string | null | u
 
 export const XTM_COUNTERPART_TTL_MS = 2 * 60 * 1000;
 const BATCH_DELAY_MS = 30;
+// The server answers at most 200 keys per lookup (MAX_COUNTERPART_KEYS): a longer batch is split.
+export const XTM_COUNTERPART_MAX_KEYS = 200;
 
 type Lookup = { at: number; value: XtmCounterpart | null };
 const counterpartCache = new Map<string, Lookup>();
@@ -67,15 +69,18 @@ const flush = (kind: XtmCounterpartKind) => {
   const waiting = pending.get(kind);
   pending.delete(kind);
   if (!waiting || waiting.size === 0) return;
-  const keys = [...waiting.keys()];
-  fetchQuery<useXtmCounterpartsCounterpartsQuery>(xtmCounterpartsQuery, { kind, keys })
-    .toPromise()
-    .then((data) => {
-      const found = new Map((data?.xtmCounterparts ?? []).map((c) => [c.key, c]));
-      keys.forEach((key) => waiting.get(key)?.(found.get(key) ?? null));
-    })
-    // A lookup failure shows no pivot, never a page error.
-    .catch(() => keys.forEach((key) => waiting.get(key)?.(null)));
+  const allKeys = [...waiting.keys()];
+  for (let start = 0; start < allKeys.length; start += XTM_COUNTERPART_MAX_KEYS) {
+    const keys = allKeys.slice(start, start + XTM_COUNTERPART_MAX_KEYS);
+    fetchQuery<useXtmCounterpartsCounterpartsQuery>(xtmCounterpartsQuery, { kind, keys })
+      .toPromise()
+      .then((data) => {
+        const found = new Map((data?.xtmCounterparts ?? []).map((c) => [c.key, c]));
+        keys.forEach((key) => waiting.get(key)?.(found.get(key) ?? null));
+      })
+      // A lookup failure shows no pivot, never a page error.
+      .catch(() => keys.forEach((key) => waiting.get(key)?.(null)));
+  }
 };
 
 /** Resolves one key, batched with every other key of the same kind asked within the same tick. */

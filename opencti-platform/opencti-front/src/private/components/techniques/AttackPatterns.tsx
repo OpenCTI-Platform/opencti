@@ -15,6 +15,8 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { Box, Stack } from '@mui/material';
+import OpenAevRowMark from '../common/xtm/OpenAevRowMark';
 
 const LOCAL_STORAGE_KEY = 'attackPattern';
 
@@ -130,7 +132,12 @@ const AttackPatterns = () => {
       percentWidth: 30,
       render: (data) => {
         const displayDraftChip = !!data.draftVersion;
-        return defaultRender(data.name, displayDraftChip);
+        return (
+          <Stack direction="row" sx={{ alignItems: 'center', minWidth: 0, maxWidth: '100%' }}>
+            <Box sx={{ minWidth: 0 }}>{defaultRender(data.name, displayDraftChip)}</Box>
+            <OpenAevRowMark kind="ATTACK_PATTERN" counterpartKey={data.x_mitre_id} />
+          </Stack>
+        );
       },
     },
     objectLabel: {},

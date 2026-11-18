@@ -14,6 +14,9 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { Box, Stack } from '@mui/material';
+import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
+import OpenAevRowMark from '../common/xtm/OpenAevRowMark';
 
 const LOCAL_STORAGE_KEY = 'vulnerabilities';
 
@@ -143,7 +146,15 @@ const Vulnerabilities = () => {
   );
 
   const dataColumns = {
-    name: { percentWidth: 28 },
+    name: {
+      percentWidth: 28,
+      render: (data: { name: string; draftVersion?: unknown }) => (
+        <Stack direction="row" sx={{ alignItems: 'center', minWidth: 0, maxWidth: '100%' }}>
+          <Box sx={{ minWidth: 0 }}>{defaultRender(data.name, !!data.draftVersion)}</Box>
+          <OpenAevRowMark kind="VULNERABILITY" counterpartKey={data.name} />
+        </Stack>
+      ),
+    },
     x_opencti_cvss_base_severity: {},
     objectLabel: {},
     created: {},
