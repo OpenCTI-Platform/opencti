@@ -6,6 +6,7 @@ import { isEmptyField } from '../database/utils';
 import { getPlatformHttpProxyAgent, logApp, TLS_REJECT_UNAUTHORIZED } from '../config/conf';
 import { getDestinationCheckedAgent, untilAborted } from '../utils/http-client';
 import { checkUrlDestination } from '../utils/internal-destination';
+import { getHttpMaxRedirects } from '../http/httpConfig';
 
 // Feel free to migrate to typescript and move inside domain/connector.ts
 export const httpBase = (baseUri) => (baseUri.endsWith('/') ? baseUri : `${baseUri}/`);
@@ -28,7 +29,6 @@ export const createSyncHttpUri = (sync, state, testMode) => {
 // The remote OpenCTI is a destination configured by users: internal networks are checked like the other synchronizer requests.
 // Redirects are followed here, so that each hop is checked and goes through the proxy selected for it.
 const SYNC_FEATURE = 'Synchronizer';
-const SYNC_MAX_REDIRECTS = 5;
 const SYNC_REDIRECT_STATUSES = [301, 302, 303, 307, 308];
 // Behind a proxy, the destination is resolved before the request: bounded like a connection (undici connect timeout)
 export const SYNC_RESOLUTION_TIMEOUT = 10000;
@@ -47,6 +47,7 @@ const checkSyncDestination = async (url, viaProxy, signal) => {
 export const buildSyncFetch = (ssl, token) => {
   return async (url, init) => {
     const requestOrigin = new URL(url).origin;
+    const maxRedirects = getHttpMaxRedirects();
     let currentUrl = new URL(url);
     for (let redirectCount = 0; ; redirectCount += 1) {
       const proxyDispatcher = getPlatformHttpProxyAgent(currentUrl.href, true);
@@ -56,11 +57,11 @@ export const buildSyncFetch = (ssl, token) => {
       const authorization = !isEmptyField(token) && currentUrl.origin === requestOrigin ? { authorization: `Bearer ${token}` } : {};
       const response = await fetch(currentUrl.href, { ...init, headers: { ...init.headers, ...authorization }, dispatcher, redirect: 'manual' });
       const location = response.headers.get('location');
-      if (!location || !SYNC_REDIRECT_STATUSES.includes(response.status)) {
+      if (maxRedirects === 0 || !location || !SYNC_REDIRECT_STATUSES.includes(response.status)) {
         return response;
       }
       await response.body?.cancel();
-      if (redirectCount >= SYNC_MAX_REDIRECTS) {
+      if (redirectCount >= maxRedirects) {
         throw new Error('Maximum number of redirects exceeded');
       }
       currentUrl = new URL(location, currentUrl);

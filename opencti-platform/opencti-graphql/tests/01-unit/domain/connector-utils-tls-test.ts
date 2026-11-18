@@ -3,6 +3,7 @@ import https from 'node:https';
 import type { AddressInfo } from 'node:net';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { testSync } from '../../../src/domain/connector-utils';
+import * as httpConfig from '../../../src/http/httpConfig';
 import { buildSelfSignedCertificate } from '../../utils/selfSignedCertificate';
 import { testContext, ADMIN_USER } from '../../utils/testQuery';
 
@@ -81,6 +82,7 @@ describe('testSync internal destinations', () => {
   afterEach(() => {
     outboundConfig.blocked = undefined;
     outboundConfig.allowList = undefined;
+    vi.restoreAllMocks();
   });
 
   it('should reject a remote OpenCTI on an internal network when internal destinations are blocked', async () => {
@@ -107,5 +109,11 @@ describe('testSync internal destinations', () => {
   it('should follow a redirect of the remote OpenCTI when internal destinations are not blocked', async () => {
     outboundConfig.blocked = false;
     await expect(testSync(testContext, ADMIN_USER, { uri: remoteUri, stream_id: 'redirect-to-ip-address', token: '', ssl_verify: false })).resolves.toBe('Connection success');
+  });
+
+  it('should not follow a redirect of the remote OpenCTI beyond the maximum number of redirects', async () => {
+    outboundConfig.blocked = false;
+    vi.spyOn(httpConfig, 'getHttpMaxRedirects').mockReturnValue(0);
+    await expect(testSync(testContext, ADMIN_USER, { uri: remoteUri, stream_id: 'redirect-to-ip-address', token: '', ssl_verify: false })).rejects.toThrow();
   });
 });
