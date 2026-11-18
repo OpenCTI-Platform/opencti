@@ -877,8 +877,37 @@ describe('Workflow bypass', () => {
 describe('Workflow Domain', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // clearAllMocks keeps implementations: a test's store fixture must not leak into the next test
+    vi.mocked(storeLoadById).mockReset();
+    vi.mocked(findByType).mockReset();
     // The real updateAttribute always resolves { element }; Status writes notify the cache with it.
     vi.mocked(updateAttribute).mockImplementation(async (_context, _user, id) => ({ element: { id } }) as any);
+  });
+
+  // The publish reads the workflow definition before its write and again after it: `before` until the
+  // definition is written, `after` from then on. Keyed on the id and the write rather than on the call
+  // order, so a change in how often the publish reads it does not shift the fixtures.
+  const mockWorkflowLoads = (before: { id: string }, after: object) => {
+    vi.mocked(storeLoadById).mockImplementation((async (_context: unknown, _user: unknown, id: string) => {
+      if (id !== before.id) return undefined;
+      const written = vi.mocked(updateAttribute).mock.calls.some((call) => call[2] === before.id);
+      return written ? after : before;
+    }) as any);
+  };
+
+  it.each([
+    ['save', () => setWorkflowDefinition(mockContext, mockUser, 'Incident', '{}')],
+    ['publish', () => publishWorkflowDefinition(mockContext, mockUser, 'Incident')],
+    ['restore', () => restorePublishedWorkflowDefinition(mockContext, mockUser, 'Incident')],
+  ])('%s holds the workflow status lock of the entity type, and releases it on failure', async (_name, write) => {
+    const unlock = vi.fn();
+    vi.mocked(lockResources).mockResolvedValueOnce({ unlock } as any);
+    (findByType as any).mockResolvedValue(undefined);
+
+    await expect(write()).rejects.toThrow('Entity setting not found for type');
+
+    expect(lockResources).toHaveBeenCalledExactlyOnceWith(['workflow-status-lifecycle:Incident']);
+    expect(unlock).toHaveBeenCalledOnce();
   });
 
   it('denies workflow bypass without BYPASS before accessing or changing an entity', async () => {
@@ -1345,24 +1374,19 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    // Read before the publish lock, then by the two draft rechecks made under it
     const workflowBeforePublish = {
       id: 'workflow-id',
       name: 'Test Workflow',
       draft_version: draftVersion,
       all_versions: [draftVersion],
     };
-    (storeLoadById as any)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        published_version: draftVersion,
-        draft_version: draftVersion,
-        all_versions: [draftVersion],
-      });
+    mockWorkflowLoads(workflowBeforePublish, {
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: draftVersion,
+      draft_version: draftVersion,
+      all_versions: [draftVersion],
+    });
 
     const result = await publishWorkflowDefinition(mockContext, mockUser, 'Incident');
 
@@ -1405,24 +1429,19 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    // Read before the publish lock, then by the two draft rechecks made under it
     const workflowBeforePublish = {
       id: 'workflow-id',
       name: 'Test Workflow',
       draft_version: draftVersion,
       all_versions: [draftVersion],
     };
-    (storeLoadById as any)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        published_version: draftVersion,
-        draft_version: draftVersion,
-        all_versions: [draftVersion],
-      });
+    mockWorkflowLoads(workflowBeforePublish, {
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: draftVersion,
+      draft_version: draftVersion,
+      all_versions: [draftVersion],
+    });
 
     // Only tpl-open already has a Status record for this entity type/scope.
     (fullEntitiesList as any).mockResolvedValue([
@@ -1461,24 +1480,19 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    // Read before the publish lock, then by the two draft rechecks made under it
     const workflowBeforePublish = {
       id: 'workflow-id',
       name: 'Test Workflow',
       draft_version: draftVersion,
       all_versions: [draftVersion],
     };
-    (storeLoadById as any)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        published_version: draftVersion,
-        draft_version: draftVersion,
-        all_versions: [draftVersion],
-      });
+    mockWorkflowLoads(workflowBeforePublish, {
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: draftVersion,
+      draft_version: draftVersion,
+      all_versions: [draftVersion],
+    });
 
     (fullEntitiesList as any).mockResolvedValue([
       { id: 'status-open', type: 'Incident', scope: StatusScope.Global, template_id: 'tpl-open', order: 0 },
@@ -1507,24 +1521,19 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    // Read before the publish lock, then by the two draft rechecks made under it
     const workflowBeforePublish = {
       id: 'workflow-id',
       name: 'Test Workflow',
       draft_version: draftVersion,
       all_versions: [draftVersion],
     };
-    (storeLoadById as any)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        published_version: draftVersion,
-        draft_version: draftVersion,
-        all_versions: [draftVersion],
-      });
+    mockWorkflowLoads(workflowBeforePublish, {
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: draftVersion,
+      draft_version: draftVersion,
+      all_versions: [draftVersion],
+    });
 
     // Both states already have a Status record, but tpl-progress carries a stale order (0
     // instead of the freshly computed 1).
@@ -1568,13 +1577,8 @@ describe('Workflow Domain', () => {
     };
     const updatedStatus = { id: 'status-progress', entity_type: ENTITY_TYPE_STATUS, order: 1 };
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    // Read before the publish lock, then by the two draft rechecks made under it
     const workflowBeforePublish = { id: 'workflow-id', name: 'Test Workflow', draft_version: draftVersion, all_versions: [draftVersion] };
-    (storeLoadById as any)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce({ id: 'workflow-id', name: 'Test Workflow', published_version: draftVersion, draft_version: draftVersion, all_versions: [draftVersion] });
+    mockWorkflowLoads(workflowBeforePublish, { id: 'workflow-id', name: 'Test Workflow', published_version: draftVersion, draft_version: draftVersion, all_versions: [draftVersion] });
     (fullEntitiesList as any).mockResolvedValue([
       { id: 'status-open', type: 'Incident', scope: StatusScope.Global, template_id: 'tpl-open', order: 0 },
       { id: 'status-progress', type: 'Incident', scope: StatusScope.Global, template_id: 'tpl-progress', order: 0 },
@@ -1619,7 +1623,6 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    // Read before the publish lock, then by the two draft rechecks made under it
     const workflowBeforePublish = {
       id: 'workflow-id',
       name: 'Draft workflow',
@@ -1627,17 +1630,13 @@ describe('Workflow Domain', () => {
       draft_version: draftVersion,
       all_versions: [draftVersion, publishedVersion],
     };
-    (storeLoadById as any)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Draft workflow',
-        published_version: draftVersion,
-        draft_version: null,
-        all_versions: [draftVersion, publishedVersion],
-      });
+    mockWorkflowLoads(workflowBeforePublish, {
+      id: 'workflow-id',
+      name: 'Draft workflow',
+      published_version: draftVersion,
+      draft_version: null,
+      all_versions: [draftVersion, publishedVersion],
+    });
 
     // All three states already have a matching, fully-mapped, unmarked Status record — matching
     // the real production dataset (existing DraftWorkspace installs already have complete mappings).
@@ -1682,24 +1681,19 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    // Read before the publish lock, then by the two draft rechecks made under it
     const workflowBeforePublish = {
       id: 'workflow-id',
       name: 'Test Workflow',
       draft_version: draftVersion,
       all_versions: [draftVersion],
     };
-    (storeLoadById as any)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        published_version: draftVersion,
-        draft_version: draftVersion,
-        all_versions: [draftVersion],
-      });
+    mockWorkflowLoads(workflowBeforePublish, {
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: draftVersion,
+      draft_version: draftVersion,
+      all_versions: [draftVersion],
+    });
 
     // Only tpl-a already has a Status record for this entity type/scope.
     (fullEntitiesList as any).mockResolvedValue([
@@ -1743,7 +1737,6 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    // Read before the publish lock, then by the two draft rechecks made under it
     const workflowBeforePublish = {
       id: 'workflow-id',
       name: 'Test Workflow',
@@ -1751,17 +1744,13 @@ describe('Workflow Domain', () => {
       draft_version: draftVersion,
       all_versions: [draftVersion, publishedVersion],
     };
-    (storeLoadById as any)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        published_version: draftVersion,
-        draft_version: null,
-        all_versions: [draftVersion, publishedVersion],
-      });
+    mockWorkflowLoads(workflowBeforePublish, {
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: draftVersion,
+      draft_version: null,
+      all_versions: [draftVersion, publishedVersion],
+    });
 
     (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[]) => {
       if (types[0] === ENTITY_TYPE_STATUS) {
@@ -1826,7 +1815,6 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    // Read before the publish lock, then by the two draft rechecks made under it
     const workflowBeforePublish = {
       id: 'workflow-id',
       name: 'Test Workflow',
@@ -1834,17 +1822,13 @@ describe('Workflow Domain', () => {
       draft_version: draftVersion,
       all_versions: [draftVersion, publishedVersion],
     };
-    (storeLoadById as any)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        published_version: draftVersion,
-        draft_version: null,
-        all_versions: [draftVersion, publishedVersion],
-      });
+    mockWorkflowLoads(workflowBeforePublish, {
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: draftVersion,
+      draft_version: null,
+      all_versions: [draftVersion, publishedVersion],
+    });
 
     (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[]) => {
       if (types[0] === ENTITY_TYPE_STATUS) {
@@ -1961,7 +1945,6 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    // Read before the publish lock, then by the two draft rechecks made under it
     const workflowBeforePublish = {
       id: 'workflow-id',
       name: 'Test Workflow',
@@ -1969,17 +1952,13 @@ describe('Workflow Domain', () => {
       draft_version: draftVersion,
       all_versions: [draftVersion, publishedVersion],
     };
-    (storeLoadById as any)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        published_version: draftVersion,
-        draft_version: null,
-        all_versions: [draftVersion, publishedVersion],
-      });
+    mockWorkflowLoads(workflowBeforePublish, {
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: draftVersion,
+      draft_version: null,
+      all_versions: [draftVersion, publishedVersion],
+    });
 
     (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[]) => {
       if (types[0] === ENTITY_TYPE_STATUS) {
@@ -2037,7 +2016,6 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    // Read before the publish lock, then by the two draft rechecks made under it
     const workflowBeforePublish = {
       id: 'workflow-id',
       name: 'Test Workflow',
@@ -2045,17 +2023,13 @@ describe('Workflow Domain', () => {
       draft_version: draftVersion,
       all_versions: [draftVersion, publishedVersion],
     };
-    (storeLoadById as any)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        published_version: draftVersion,
-        draft_version: null,
-        all_versions: [draftVersion, publishedVersion],
-      });
+    mockWorkflowLoads(workflowBeforePublish, {
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: draftVersion,
+      draft_version: null,
+      all_versions: [draftVersion, publishedVersion],
+    });
 
     (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[]) => {
       if (types[0] === ENTITY_TYPE_STATUS) {
@@ -2209,7 +2183,6 @@ describe('Workflow Domain', () => {
 
     // Mock with existing published_version that matches draft
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    // Read before the publish lock, then by the two draft rechecks made under it
     const workflowBeforePublish = {
       id: 'workflow-id',
       name: 'Same Content',
@@ -2217,17 +2190,13 @@ describe('Workflow Domain', () => {
       draft_version: version, // Draft is the same
       all_versions: [version],
     };
-    (storeLoadById as any)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Same Content',
-        published_version: version,
-        draft_version: null, // Should be cleared
-        all_versions: [version],
-      });
+    mockWorkflowLoads(workflowBeforePublish, {
+      id: 'workflow-id',
+      name: 'Same Content',
+      published_version: version,
+      draft_version: null, // Should be cleared
+      all_versions: [version],
+    });
 
     await publishWorkflowDefinition(mockContext, mockUser, 'Incident');
 
@@ -2424,7 +2393,6 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    // Read before the publish lock, then by the two draft rechecks made under it
     const workflowBeforePublish = {
       id: 'workflow-id',
       name: 'Test Workflow',
@@ -2432,17 +2400,13 @@ describe('Workflow Domain', () => {
       draft_version: draftVersion,
       all_versions: [draftVersion, publishedVersion],
     };
-    (storeLoadById as any)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        published_version: draftVersion,
-        draft_version: null,
-        all_versions: [draftVersion, publishedVersion],
-      });
+    mockWorkflowLoads(workflowBeforePublish, {
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: draftVersion,
+      draft_version: null,
+      all_versions: [draftVersion, publishedVersion],
+    });
 
     // An instance is in the ending state state-b, but that should not block publication
     (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[]) => {
@@ -2481,57 +2445,6 @@ describe('Workflow Domain', () => {
 
     expect(lockResources).toHaveBeenCalledWith(['workflow-status-lifecycle:Incident']);
     expect(unlock).toHaveBeenCalledOnce();
-  });
-
-  describe('when the draft changes while it is being published', () => {
-    const draftVersion = (id: string, statusId: string) => ({
-      id,
-      timestamp: '2024-01-01T00:00:00Z',
-      createdBy: 'user-1',
-      content: JSON.stringify({ initialState: statusId, states: [{ statusId }], transitions: [] }),
-      validation_errors: [],
-    });
-    const readDraft = draftVersion('draft-read', 'state-a');
-    const newerDraft = draftVersion('draft-newer', 'state-b');
-    const workflowWith = (draft: ReturnType<typeof draftVersion>) => ({
-      id: 'workflow-id',
-      name: 'Test Workflow',
-      draft_version: draft,
-      all_versions: [readDraft, newerDraft],
-    });
-
-    // `changed(loadUnderLock)`: whether the n-th workflow load made under the publish lock (0-based) sees the newer draft
-    const mockDraftChange = (changed: (loadUnderLock: number) => boolean) => {
-      let locked = false;
-      let loadsUnderLock = 0;
-      (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-      (fullEntitiesList as any).mockResolvedValue([]);
-      (lockResources as any).mockImplementationOnce(async () => {
-        locked = true;
-        return { unlock: vi.fn() };
-      });
-      (storeLoadById as any).mockImplementation(async (_context: unknown, _user: unknown, id: string) => {
-        if (id !== 'workflow-id') return undefined;
-        if (!locked) return workflowWith(readDraft);
-        const draft = changed(loadsUnderLock) ? newerDraft : readDraft;
-        loadsUnderLock += 1;
-        return workflowWith(draft);
-      });
-    };
-
-    it('refuses a draft another save or publish replaced before the lock was taken', async () => {
-      mockDraftChange(() => true);
-
-      await expect(publishWorkflowDefinition(mockContext, mockUser, 'Incident')).rejects.toThrow('its draft changed during the publish');
-      expect(updateAttribute).not.toHaveBeenCalled();
-    });
-
-    it('refuses a draft a save replaced during the publish', async () => {
-      mockDraftChange((loadUnderLock) => loadUnderLock > 0);
-
-      await expect(publishWorkflowDefinition(mockContext, mockUser, 'Incident')).rejects.toThrow('its draft changed during the publish');
-      expect(updateAttribute).not.toHaveBeenCalled();
-    });
   });
 
   it('should release the lock even when publish throws', async () => {
@@ -2666,23 +2579,18 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    // Read before the publish lock, then by the two draft rechecks made under it
     const workflowBeforePublish = {
       id: 'workflow-id',
       all_versions: [draftVersion],
       draft_version: draftVersion,
       published_version: null,
     };
-    (storeLoadById as any)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce(workflowBeforePublish)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        all_versions: [draftVersion],
-        draft_version: null,
-        published_version: draftVersion,
-      });
+    mockWorkflowLoads(workflowBeforePublish, {
+      id: 'workflow-id',
+      all_versions: [draftVersion],
+      draft_version: null,
+      published_version: draftVersion,
+    });
     (fullEntitiesList as any).mockResolvedValue([]);
 
     const result = await publishWorkflowDefinition(mockContext, mockUser, 'Incident');
@@ -6442,6 +6350,9 @@ describe('migrateWorkflowFromStatuses', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(storeLoadById).mockReset();
+    vi.mocked(findByType).mockReset();
+    vi.mocked(createEntity).mockReset();
     (fullEntitiesList as any).mockResolvedValue(legacyStatuses);
     (storeLoadByIds as any).mockResolvedValue(templates);
     const createdVersion = { id: 'v1', timestamp: '2024-01-01T00:00:00Z', createdBy: 'user-1', content: '{}', validation_errors: [] };
@@ -6501,88 +6412,107 @@ describe('migrateWorkflowFromStatuses', () => {
     expect(findByType).not.toHaveBeenCalled();
   });
 
-  it('holds a per-type migration lock from the existence check to the end, and releases it on failure', async () => {
+  // A store that reads back what was written, as the real one does: the rollback compares the stored
+  // draft with the one the migration saved, whose id is generated. `failPublish`: the write of the
+  // published version fails before it lands, or lands and the publish fails after it.
+  const mockStore = ({ setting = {}, workflow, failPublish }: { setting?: object; workflow?: { id: string }; failPublish?: 'before-write' | 'after-write' } = {}) => {
+    const state: { setting: any; workflows: Record<string, any> } = {
+      setting: { id: 'entity-setting-id', ...setting },
+      workflows: workflow ? { [workflow.id]: { ...workflow } } : {},
+    };
+    (findByType as any).mockImplementation(async () => ({ ...state.setting }));
+    (storeLoadById as any).mockImplementation(async (_context: unknown, _user: unknown, id: string) => (state.workflows[id] ? { ...state.workflows[id] } : undefined));
+    (createEntity as any).mockImplementation(async (_context: unknown, _user: unknown, input: object) => {
+      state.workflows['workflow-id'] = { id: 'workflow-id', ...input };
+      return { ...state.workflows['workflow-id'] };
+    });
+    (updateAttribute as any).mockImplementation(async (_context: unknown, _user: unknown, id: string, _type: string, inputs: any[]) => {
+      const target = id === state.setting.id ? state.setting : state.workflows[id];
+      if (!target) return { element: { id } };
+      const publishes = inputs.some((input) => input.key === 'published_version');
+      if (publishes && failPublish === 'before-write') throw new Error('publish write failed');
+      inputs.forEach((input) => {
+        target[input.key] = input.key === 'all_versions' ? input.value : (input.value[0] ?? null);
+      });
+      if (publishes && failPublish === 'after-write') throw new Error('failed after the publish write');
+      return { element: { ...target } };
+    });
+    return state;
+  };
+  const oldVersion = { id: 'old', timestamp: '2024-01-01T00:00:00Z', createdBy: 'user-1', content: '{"initialState":"x","states":[],"transitions":[]}', validation_errors: [] };
+
+  it('holds the workflow status lock of the entity type for the save, the publish and the rollback, and releases it', async () => {
     const unlock = vi.fn();
     vi.mocked(lockResources).mockResolvedValueOnce({ unlock } as any);
-    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'existing-workflow' });
+    mockStore({ failPublish: 'before-write' });
 
-    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', false)).rejects.toThrow('already has a workflow');
+    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', true)).rejects.toThrow('publish write failed');
 
-    expect(lockResources).toHaveBeenCalledWith(['workflow-migrate:Grouping']);
+    // Taken once: the save and the publish run under the migration's lock instead of taking it again
+    expect(lockResources).toHaveBeenCalledExactlyOnceWith(['workflow-status-lifecycle:Grouping']);
     expect(unlock).toHaveBeenCalledOnce();
   });
 
   it('removes the workflow it created when the publish fails, so a retry needs no overwrite', async () => {
-    (findByType as any)
-      .mockResolvedValueOnce({ id: 'entity-setting-id' })
-      .mockResolvedValueOnce({ id: 'entity-setting-id' })
-      .mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    // No draft version on the stored workflow: publishWorkflowDefinition throws after the save.
-    (storeLoadById as any).mockResolvedValue({ id: 'workflow-id' });
+    const state = mockStore({ failPublish: 'before-write' });
 
-    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', true)).rejects.toThrow('No draft version to publish');
+    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', true)).rejects.toThrow('publish write failed');
 
-    expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'entity-setting-id', 'EntitySetting', [{ key: 'workflow_id', value: [null] }]);
+    expect(state.setting.workflow_id).toBeNull();
     expect(deleteElementById).toHaveBeenCalledWith(mockContext, mockUser, 'workflow-id', 'WorkflowDefinition');
   });
 
-  it('restores the overwritten draft when the publish of an overwrite fails', async () => {
-    const oldVersion = { id: 'old', timestamp: '2024-01-01T00:00:00Z', createdBy: 'user-1', content: '{"initialState":"x","states":[],"transitions":[]}', validation_errors: [] };
-    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    (storeLoadById as any).mockResolvedValue({ id: 'workflow-id', name: 'Old', draft_version: oldVersion, all_versions: [oldVersion] });
-    // The migration lock is taken, then the publish fails on its status lock, after the draft was saved.
-    vi.mocked(lockResources)
-      .mockResolvedValueOnce({ unlock: vi.fn() } as any)
-      .mockRejectedValueOnce(new Error('status lock busy'));
+  it('removes the workflow it created in place of a missing linked one when the publish fails', async () => {
+    const state = mockStore({ setting: { workflow_id: 'missing-workflow' }, failPublish: 'before-write' });
 
-    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', true, true)).rejects.toThrow('status lock busy');
+    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', true, true)).rejects.toThrow('publish write failed');
+
+    expect(state.setting.workflow_id).toBeNull();
+    expect(deleteElementById).toHaveBeenCalledWith(mockContext, mockUser, 'workflow-id', 'WorkflowDefinition');
+  });
+
+  it('restores the overwritten draft and history when the publish of an overwrite fails', async () => {
+    const state = mockStore({ setting: { workflow_id: 'workflow-id' }, workflow: { id: 'workflow-id', name: 'Old', draft_version: oldVersion, all_versions: [oldVersion] } as any, failPublish: 'before-write' });
+
+    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', true, true)).rejects.toThrow('publish write failed');
+
+    expect(state.workflows['workflow-id']).toMatchObject({ name: 'Old', draft_version: oldVersion, all_versions: [oldVersion] });
+    expect(deleteElementById).not.toHaveBeenCalled();
+  });
+
+  it('clears the draft again when the overwritten workflow had none', async () => {
+    mockStore({ setting: { workflow_id: 'workflow-id' }, workflow: { id: 'workflow-id', name: 'Old', all_versions: [oldVersion] } as any, failPublish: 'before-write' });
+
+    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', true, true)).rejects.toThrow('publish write failed');
 
     expect(updateAttribute).toHaveBeenLastCalledWith(expect.anything(), expect.anything(), 'workflow-id', 'WorkflowDefinition', [
-      { key: 'draft_version', value: [oldVersion] },
+      { key: 'draft_version', value: [] },
       { key: 'all_versions', value: [oldVersion] },
       { key: 'name', value: ['Old'] },
     ]);
+  });
+
+  it.each([
+    ['it created', {}, false],
+    ['it overwrote', { setting: { workflow_id: 'workflow-id' }, workflow: { id: 'workflow-id', name: 'Old', draft_version: oldVersion, all_versions: [oldVersion] } }, true],
+  ])('leaves the workflow %s live when the publish fails after writing it', async (_case, store, overwrite) => {
+    const state = mockStore({ ...store, failPublish: 'after-write' } as any);
+
+    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', true, overwrite)).rejects.toThrow('failed after the publish write');
+
+    expect(state.setting.workflow_id).toBe('workflow-id');
+    expect(state.workflows['workflow-id'].published_version).toBeTruthy();
+    expect(state.workflows['workflow-id'].name).not.toBe('Old');
     expect(deleteElementById).not.toHaveBeenCalled();
   });
 
-  // A plain workflowDefinitionPublish can publish the migrated draft between the migration's save
-  // and its own publish, which then fails: once the store shows a published version, the workflow is live.
-  const publishedByConcurrentCall = (workflow: object) => () => Promise.resolve(
-    vi.mocked(lockResources).mock.calls.length >= 2 ? { ...workflow, published_version: { id: 'v-migrated' } } : workflow,
-  );
+  it('logs a rollback that fails and rethrows the publish error', async () => {
+    mockStore({ failPublish: 'before-write' });
+    vi.mocked(deleteElementById).mockRejectedValueOnce(new Error('delete failed'));
 
-  it('keeps the workflow it created when a concurrent publish made it live before its own publish failed', async () => {
-    (findByType as any)
-      .mockResolvedValueOnce({ id: 'entity-setting-id' })
-      .mockResolvedValueOnce({ id: 'entity-setting-id' })
-      .mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    const migrated = { id: 'v-migrated', timestamp: '2024-01-01T00:00:00Z', createdBy: 'user-1', content: '{}', validation_errors: [] };
-    (storeLoadById as any).mockImplementation(publishedByConcurrentCall({ id: 'workflow-id', draft_version: migrated, all_versions: [migrated] }));
-    vi.mocked(lockResources)
-      .mockResolvedValueOnce({ unlock: vi.fn() } as any)
-      .mockRejectedValueOnce(new Error('status lock busy'));
+    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', true)).rejects.toThrow('publish write failed');
 
-    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', true)).rejects.toThrow('status lock busy');
-
-    expect(deleteElementById).not.toHaveBeenCalled();
-    expect(updateAttribute).not.toHaveBeenCalledWith(expect.anything(), expect.anything(), 'entity-setting-id', 'EntitySetting', [{ key: 'workflow_id', value: [null] }]);
-  });
-
-  it('keeps an overwrite that a concurrent publish made live before its own publish failed', async () => {
-    const oldVersion = { id: 'old', timestamp: '2024-01-01T00:00:00Z', createdBy: 'user-1', content: '{"initialState":"x","states":[],"transitions":[]}', validation_errors: [] };
-    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    (storeLoadById as any).mockImplementation(publishedByConcurrentCall({ id: 'workflow-id', name: 'Old', draft_version: oldVersion, all_versions: [oldVersion] }));
-    vi.mocked(lockResources)
-      .mockResolvedValueOnce({ unlock: vi.fn() } as any)
-      .mockRejectedValueOnce(new Error('status lock busy'));
-
-    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', true, true)).rejects.toThrow('status lock busy');
-
-    expect(updateAttribute).not.toHaveBeenCalledWith(expect.anything(), expect.anything(), 'workflow-id', 'WorkflowDefinition', [
-      { key: 'draft_version', value: [oldVersion] },
-      { key: 'all_versions', value: [oldVersion] },
-      { key: 'name', value: ['Old'] },
-    ]);
+    expect(logApp.error).toHaveBeenCalledWith('Failed to roll back a workflow migration whose publish failed', expect.objectContaining({ entityType: 'Grouping' }));
   });
 
   it('throws when there are no GLOBAL legacy statuses', async () => {
@@ -6825,15 +6755,13 @@ describe('migrateWorkflowFromStatuses', () => {
     });
 
     it('removes only the request access definition it created when the publish fails', async () => {
-      (findByType as any)
-        .mockResolvedValueOnce(rfiSetting)
-        .mockResolvedValueOnce(rfiSetting)
-        .mockResolvedValue({ ...rfiSetting, request_access_workflow: { ...requestAccessConfiguration, workflow_definition_id: 'workflow-id' } });
-      (storeLoadById as any).mockResolvedValue({ id: 'workflow-id' });
+      // Fails before any write: with these fixtures the publish's outcome check refuses the migrated draft
+      const state = mockStore({ setting: rfiSetting });
 
-      await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Case-Rfi', true, false, StatusScope.RequestAccess)).rejects.toThrow('No draft version to publish');
+      await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Case-Rfi', true, false, StatusScope.RequestAccess)).rejects.toThrow('Cannot publish workflow with validation errors');
 
-      expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'entity-setting-id', 'EntitySetting', [{ key: 'request_access_workflow', value: [requestAccessConfiguration] }]);
+      expect(state.setting.request_access_workflow).toEqual(requestAccessConfiguration);
+      expect(state.setting.workflow_id).toBe('global-def');
       expect(deleteElementById).toHaveBeenCalledWith(mockContext, mockUser, 'workflow-id', 'WorkflowDefinition');
       expect(telemetryManager.addWorkflowRequestAccessMigrationCount).not.toHaveBeenCalled();
     });
