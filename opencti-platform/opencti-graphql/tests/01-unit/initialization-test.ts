@@ -26,6 +26,7 @@ describe('checkHttpSecurity', () => {
   it('should not warn when the HTTP switch is on', () => {
     // Given
     vi.spyOn(httpConfig, 'isHttpSecureByDefault').mockReturnValue(true);
+    vi.spyOn(httpConfig, 'getInvalidHttpMaxRedirects').mockReturnValue(undefined);
     const warn = vi.spyOn(logApp, 'warn').mockImplementation(() => {});
 
     // When
@@ -33,5 +34,19 @@ describe('checkHttpSecurity', () => {
 
     // Then
     expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('should warn at startup when the number of redirects is invalid', () => {
+    // Given
+    vi.spyOn(httpConfig, 'isHttpSecureByDefault').mockReturnValue(true);
+    vi.spyOn(httpConfig, 'getInvalidHttpMaxRedirects').mockReturnValue('3x');
+    vi.spyOn(httpConfig, 'getHttpMaxRedirects').mockReturnValue(5);
+    const warn = vi.spyOn(logApp, 'warn').mockImplementation(() => {});
+
+    // When
+    checkHttpSecurity();
+
+    // Then
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('app:http:max_redirects'), { value: '3x', default: 5 });
   });
 });

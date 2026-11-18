@@ -20,6 +20,8 @@ To prevent your public dashboards from being embedded in unauthorized websites, 
 
 For a fully secure platform, you should disable the loading of unsecure (HTTP) resources by setting `app:allow_unsecure_http_resources` to `false`, or `app:http:secure_by_default` to `true`.
 
+Setting `app:allow_unsecure_http_resources` to `false` explicitly also makes the browser upgrade every HTTP request of the platform to HTTPS (`upgrade-insecure-requests`): the platform must then be served over HTTPS, or its interface no longer loads. `app:http:secure_by_default` alone does not upgrade the requests.
+
 ## Session timeout
 
 To ensure that user sessions are not kept alive indefinitely, you should configure a session timeout (`app:session_timeout`) that matches your security policy.

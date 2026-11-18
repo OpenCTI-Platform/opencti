@@ -20,6 +20,13 @@ export const isUnsecureHttpResourceAllowed = () => {
   return IS_HTTP_ALLOWED;
 };
 
+// upgrade-insecure-requests also makes the browser load the platform's own resources over HTTPS,
+// which breaks a platform served over plain HTTP: only an explicit app:allow_unsecure_http_resources=false sends it, not the switch.
+const UPGRADE_INSECURE_REQUESTS: boolean = !booleanConf('app:allow_unsecure_http_resources', true);
+export const isUpgradeInsecureRequestsEnabled = () => {
+  return UPGRADE_INSECURE_REQUESTS;
+};
+
 export const isDevMode = () => {
   return DEV_MODE;
 };
@@ -61,11 +68,18 @@ export const getMaxPayloadBodySizeInBytes = () => {
 
 // Number of redirects followed by the outgoing requests of the platform HTTP client (feeds, synchronizers, notifiers...).
 // A value from a JSON file stays a string. Anything but a non-negative safe integer falls back to the default.
-const HTTP_MAX_REDIRECTS_CONF: string = String(nconf.get('app:http:max_redirects')).trim();
+const HTTP_MAX_REDIRECTS_RAW: unknown = nconf.get('app:http:max_redirects');
+const HTTP_MAX_REDIRECTS_CONF: string = String(HTTP_MAX_REDIRECTS_RAW).trim();
 const HTTP_MAX_REDIRECTS_PARSED: number = /^\d+$/.test(HTTP_MAX_REDIRECTS_CONF) ? Number(HTTP_MAX_REDIRECTS_CONF) : NaN;
-const HTTP_MAX_REDIRECTS: number = Number.isSafeInteger(HTTP_MAX_REDIRECTS_PARSED) ? HTTP_MAX_REDIRECTS_PARSED : (HTTP_SECURE_BY_DEFAULT ? 5 : 21);
+const IS_HTTP_MAX_REDIRECTS_VALID: boolean = Number.isSafeInteger(HTTP_MAX_REDIRECTS_PARSED);
+const HTTP_MAX_REDIRECTS: number = IS_HTTP_MAX_REDIRECTS_VALID ? HTTP_MAX_REDIRECTS_PARSED : (HTTP_SECURE_BY_DEFAULT ? 5 : 21);
 export const getHttpMaxRedirects = () => {
   return HTTP_MAX_REDIRECTS;
+};
+// Configured value replaced by the default, reported at startup so the admin knows it is not applied.
+export const getInvalidHttpMaxRedirects = (): string | undefined => {
+  const isConfigured = HTTP_MAX_REDIRECTS_RAW !== undefined && HTTP_MAX_REDIRECTS_CONF !== '';
+  return isConfigured && !IS_HTTP_MAX_REDIRECTS_VALID ? HTTP_MAX_REDIRECTS_CONF : undefined;
 };
 
 // Node.js defaults keepAliveTimeout to 5s, which is lower than the idle timeout of most load

@@ -18,11 +18,13 @@ describe('HTTP secure defaults', () => {
 
     expect(httpConfig.isHttpSecureByDefault()).toBe(false);
     expect(httpConfig.isUnsecureHttpResourceAllowed()).toBe(true);
+    expect(httpConfig.isUpgradeInsecureRequestsEnabled()).toBe(false);
     expect(httpConfig.getRateProtectionTimeWindowMs()).toBe(1000);
     expect(httpConfig.getRateProtectionMaxRequests()).toBe(10000);
     expect(httpConfig.getMaxPayloadBodySize()).toBe('50mb');
     expect(httpConfig.getMaxPayloadBodySizeInBytes()).toBe(50 * 1024 * 1024);
     expect(httpConfig.getHttpMaxRedirects()).toBe(21);
+    expect(httpConfig.getInvalidHttpMaxRedirects()).toBeUndefined();
   });
 
   it('should apply the secure defaults when enabled globally', async () => {
@@ -30,6 +32,8 @@ describe('HTTP secure defaults', () => {
 
     expect(httpConfig.isHttpSecureByDefault()).toBe(true);
     expect(httpConfig.isUnsecureHttpResourceAllowed()).toBe(false);
+    // The switch alone keeps a platform served over plain HTTP usable
+    expect(httpConfig.isUpgradeInsecureRequestsEnabled()).toBe(false);
     expect(httpConfig.getRateProtectionTimeWindowMs()).toBe(60000);
     expect(httpConfig.getRateProtectionMaxRequests()).toBe(30000);
     expect(httpConfig.getMaxPayloadBodySize()).toBe('10mb');
@@ -62,7 +66,9 @@ describe('HTTP secure defaults', () => {
 
     expect(httpConfig.isHttpSecureByDefault()).toBe(false);
     expect(httpConfig.isUnsecureHttpResourceAllowed()).toBe(false);
+    expect(httpConfig.isUpgradeInsecureRequestsEnabled()).toBe(true);
     expect(httpConfig.getHttpMaxRedirects()).toBe(0);
+    expect(httpConfig.getInvalidHttpMaxRedirects()).toBeUndefined();
   });
 
   it('should give the body size in bytes when the option is a number of bytes', async () => {
@@ -75,5 +81,13 @@ describe('HTTP secure defaults', () => {
     const httpConfig = await loadHttpConfig({ APP__HTTP__SECURE_BY_DEFAULT: 'true', APP__HTTP__MAX_REDIRECTS: maxRedirects });
 
     expect(httpConfig.getHttpMaxRedirects()).toBe(5);
+    expect(httpConfig.getInvalidHttpMaxRedirects()).toBeDefined();
+  });
+
+  it('should not report an empty number of redirects as invalid', async () => {
+    const httpConfig = await loadHttpConfig({ APP__HTTP__MAX_REDIRECTS: '' });
+
+    expect(httpConfig.getHttpMaxRedirects()).toBe(21);
+    expect(httpConfig.getInvalidHttpMaxRedirects()).toBeUndefined();
   });
 });
