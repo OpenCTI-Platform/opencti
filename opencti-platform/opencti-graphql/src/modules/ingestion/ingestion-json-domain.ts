@@ -37,6 +37,7 @@ import { getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { encryptIngestionCredential, decryptIngestionCredential, FEED_REQUEST_TIMEOUT } from './ingestion-common';
 import { extractContentFrom } from '../../utils/fileToContent';
+import { isSameUriDestination, isSensitiveParameterName, uriOrigin } from './ingestion-uri-credentials';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { FunctionalError } from '../../config/errors';
 import { convertRepresentationsIds } from '../internal/mapper-utils';
@@ -184,6 +185,27 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   const parsedUri = replaceVariables(ingestion.uri, queryVariables);
   // Re-validate after variable substitution to prevent placeholder bypass of deny list
   verifyIngestionUri(parsedUri);
+  // The credentials and headers of the feed go to its own server only: a variable must not change the server the URI points to
+  if (uriOrigin(parsedUri) !== uriOrigin(ingestion.uri)) {
+    throw FunctionalError('The URI of the feed points to another server once its variables are replaced', { uri: ingestion.uri });
+  }
+  // A next page on another server (a CDN) is fetched without the credentials nor the sensitive headers of the feed
+  let publicHttpClient: ReturnType<typeof getHttpClient> | undefined;
+  const subPageClient = (url: string) => {
+    if (isSameUriDestination(parsedUri, url)) {
+      return httpClient;
+    }
+    if (!publicHttpClient) {
+      const publicHeaders = new OpenCTIHeaders();
+      Object.entries(headers)
+        .filter(([name]) => name.toLowerCase() !== 'authorization' && !isSensitiveHeaderName(name))
+        .forEach(([name, value]) => {
+          publicHeaders[name] = value;
+        });
+      publicHttpClient = getHttpClient({ ...httpClientOptions, headers: publicHeaders, certificates: undefined });
+    }
+    return publicHttpClient;
+  };
   // Prepare body
   const bodyVariables = filterVariablesForAttributes(ingestion.query_attributes ?? [], variables, 'body');
   const parsedBody = replaceVariables(ingestion.body, bodyVariables);
@@ -211,7 +233,7 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
       verifyIngestionUri(url);
       logApp.info(`> Sub query: ${url}`);
       await wait(100); // Wait 100 ms between 2 calls
-      const { data: paginationData } = await httpClient.request({
+      const { data: paginationData } = await subPageClient(url).request({
         method: ingestion.pagination_with_sub_page_query_verb ?? ingestion.verb,
         url,
         data: ingestion.body,
@@ -274,9 +296,13 @@ export const sanitizeExportedHeaders = (headers: { name: string; value: string }
   return headers?.map((header) => (isSensitiveHeaderName(header.name) ? { ...header, value: '' } : header));
 };
 
-// A query attribute sends its default value as a header, a query parameter or in the body: a sensitive one is a credential too
+// A query attribute sends its default value as a header, a query parameter or in the body: a sensitive one is a credential too.
+// A header name is matched like the headers, so that a missed secret never goes out in clear; a parameter or body name by its words
 export const isSensitiveQueryAttribute = (attribute: { exposed?: string | null; to?: string | null }) => {
-  return !!attribute.to && isSensitiveHeaderName(attribute.to);
+  if (!attribute.to) {
+    return false;
+  }
+  return attribute.exposed === 'header' ? isSensitiveHeaderName(attribute.to) : isSensitiveParameterName(attribute.to);
 };
 export const sanitizeExportedQueryAttributes = <T extends { exposed?: string | null; to?: string | null; default?: string | null }>(attributes: T[] | undefined) => {
   return attributes?.map((attribute) => (isSensitiveQueryAttribute(attribute) ? { ...attribute, default: '' } : attribute));
@@ -332,7 +358,7 @@ export const jsonFeedExport = async (context: AuthContext, user: AuthUser, inges
       pagination_with_sub_page_attribute_path,
       pagination_with_sub_page_query_verb,
       headers: sanitizeExportedHeaders(headers),
-      query_attributes,
+      query_attributes: sanitizeExportedQueryAttributes(query_attributes),
       authentication_type,
       authentication_value: '',
       ssl_verify,

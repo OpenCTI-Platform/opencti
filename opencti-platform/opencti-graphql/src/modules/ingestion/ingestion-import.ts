@@ -34,7 +34,7 @@ import { addIngestionCsv, findAllCsvIngestion, ingestionCsvEditField } from './i
 import { addIngestionJson, findAllJsonIngestion, ingestionJsonEditField, isSensitiveHeaderName, isSensitiveQueryAttribute } from './ingestion-json-domain';
 import { findAllTaxiiIngestion, ingestionTaxiiAdd, ingestionTaxiiEditField } from './ingestion-taxii-domain';
 import { exportCsvFeed, exportJsonFeed, exportRssFeed, exportTaxiiFeed } from './ingestion-export';
-import { isSameUriDestination, uriCredentials, uriWithCredentials } from './ingestion-uri-credentials';
+import { encodeUriCredential, isSameUriDestination, uriCredentials, uriWithCredentials } from './ingestion-uri-credentials';
 import {
   type CsvFeedImportConfiguration,
   csvFeedImportSchema,
@@ -396,10 +396,11 @@ const feedCredentials = (configuration: FeedImportConfiguration, target?: Stored
     secret,
     type: 'string',
   }));
+  // A blank URI value can be empty on purpose (a paging parameter, a token as user name): it is required only when the feed held one
   const uri = uriCredentials(configuration.uri, kept?.uri).map(({ key, description, stored }) => ({
     key,
     description,
-    required: true,
+    required: stored !== '',
     stored: stored !== '',
     secret: true,
     type: 'string',
@@ -515,6 +516,16 @@ export const importConfigPresetFeed = async <C extends FeedImportConfiguration, 
   }
   const feedCredentialsList = feedCredentials(bundleFeed, target);
   const given = Object.fromEntries(Object.entries(credentials).filter(([key, value]) => value !== '' && feedCredentialsList.some((credential) => credential.key === key)));
+  // The platform's own export of the feed, nothing given: up to date, whatever the export blanked
+  const { confidence_level: confidence } = bundleFeed;
+  const feedUser = target?.user_id && confidence !== null && confidence !== undefined
+    ? await storeLoadById<BasicStoreEntityUser>(context, user, target.user_id, ENTITY_TYPE_USER)
+    : undefined;
+  const confidenceReason = feedUser && feedUser.user_confidence_level?.max_confidence !== confidence ? CONFIDENCE_NOT_CHANGED_REASON : undefined;
+  if (target && Object.keys(given).length === 0 && sameConfiguration(await adapter.exportFeed(context, user, target), bundleFeed)) {
+    const reason = joinConfigImportReasons([CONFIG_IMPORT_UNCHANGED_REASON, confidenceReason]);
+    return { status: 'skipped', code: 'unchanged', reason, exists: true, name, configuration: bundleFeed, credentials: shownCredentials };
+  }
   const destinationReason = target && !isSameUriDestination(target.uri, bundleFeed.uri) ? DESTINATION_CHANGED_REASON : undefined;
   const missingCredentials = feedCredentialsList.filter(({ key, required, stored }) => required && !stored && !given[key]);
   if (missingCredentials.length > 0) {
@@ -535,15 +546,6 @@ export const importConfigPresetFeed = async <C extends FeedImportConfiguration, 
   if (!target && !serviceAccountId && !ingestionGroupPlanned && await isIngestionGroupMissing(context, user)) {
     return refused('no_ingestion_group', NO_INGESTION_GROUP_REASON, exists, bundleFeed, shownCredentials);
   }
-  const { confidence_level: confidence } = bundleFeed;
-  const feedUser = target?.user_id && confidence !== null && confidence !== undefined
-    ? await storeLoadById<BasicStoreEntityUser>(context, user, target.user_id, ENTITY_TYPE_USER)
-    : undefined;
-  const confidenceReason = feedUser && feedUser.user_confidence_level?.max_confidence !== confidence ? CONFIDENCE_NOT_CHANGED_REASON : undefined;
-  if (target && Object.keys(given).length === 0 && sameConfiguration(await adapter.exportFeed(context, user, target), bundleFeed)) {
-    const reason = joinConfigImportReasons([CONFIG_IMPORT_UNCHANGED_REASON, confidenceReason]);
-    return { status: 'skipped', code: 'unchanged', reason, exists: true, name, configuration: bundleFeed, credentials: shownCredentials };
-  }
   const kept = keptTarget(bundleFeed, target);
   const keptHeaders = kept && 'headers' in kept ? kept.headers ?? [] : [];
   const headerValues = Object.fromEntries(('headers' in bundleFeed ? bundleFeed.headers : [])
@@ -556,7 +558,8 @@ export const importConfigPresetFeed = async <C extends FeedImportConfiguration, 
       const key = queryAttributeCredentialKey(attribute);
       return [key, given[key] || keptAttributes.find((stored) => queryAttributeCredentialKey(stored) === key)?.default || ''];
     }));
-  const uri = uriWithCredentials(bundleFeed.uri, Object.fromEntries(uriCredentials(bundleFeed.uri, kept?.uri).map(({ key, stored }) => [key, given[key] || stored])));
+  const uri = uriWithCredentials(bundleFeed.uri, Object.fromEntries(uriCredentials(bundleFeed.uri, kept?.uri)
+    .map(({ key, stored }) => [key, given[key] ? encodeUriCredential(given[key]) : stored])));
   const write: WriteContext = { dryRun, markingIds, authenticationValue, headerValues, queryDefaults, plannedMarkings };
   const { fields: specificFields, reasons, missingMarkings = [], rollback } = await adapter.fields(context, user, bundleFeed, write, target);
   if (missingMarkings.length > 0) {

@@ -400,14 +400,33 @@ describe('importConfigPresetFeed on a feed moved to another server', () => {
 });
 
 describe('importConfigPresetFeed URI secrets', () => {
-  it('asks for a sensitive URI parameter the bundle blanked, keeps the stored one on the same server, and writes it back', async () => {
+  it('offers a blanked URI value, writes the given one, and requires it only when the feed held one', async () => {
     const configuration = rssConfiguration({ uri: 'https://news.example.com/rss?token=&lang=en' });
-    expect(await importConfigPresetFeed(context, user, rss, configuration, overwrite))
-      .toMatchObject({ status: 'failed', code: 'credentials_required', reason: 'Configuration to provide: uri:query:token' });
+    const created = await importConfigPresetFeed(context, user, rss, configuration, { ...overwrite, dryRun: true });
+    expect(created).toMatchObject({ status: 'created' });
+    expect(created.credentials).toContainEqual(expect.objectContaining({ key: 'uri:query:token', required: false, stored: false }));
     await importConfigPresetFeed(context, user, rss, configuration, { ...overwrite, credentials: { 'uri:query:token': 't0k' } });
     expect(addIngestion).toHaveBeenCalledWith(context, user, expect.objectContaining({ uri: 'https://news.example.com/rss?token=t0k&lang=en' }));
     vi.mocked(findAllRssIngestion).mockResolvedValue([storedRss({ uri: 'https://news.example.com/rss?token=stored&lang=en' })] as never);
     expect(await importConfigPresetFeed(context, user, rss, configuration, overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
+    const copy = await importConfigPresetFeed(context, user, rss, configuration, { ...overwrite, dryRun: true, mode: ConfigImportMode.Copy });
+    expect(copy.credentials).toContainEqual(expect.objectContaining({ key: 'uri:query:token', required: true, stored: true }));
+  });
+
+  it.each([
+    'https://TOKEN@news.example.com/rss',
+    'https://news.example.com/rss?next_token=&lang=en',
+    'https://news.example.com/rss?q=a%20b&flag&offset=$offset',
+  ])('finds the platform export of %s already up to date', async (uri) => {
+    vi.mocked(findAllRssIngestion).mockResolvedValue([storedRss({ uri })] as never);
+    expect(await importConfigPresetFeed(context, user, rss, rssConfiguration({ uri }), overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
+  });
+
+  it('never keeps the stored URI secrets for a URI whose authority holds a variable', async () => {
+    const uri = 'https://$h:@news.example.com/rss';
+    vi.mocked(findAllRssIngestion).mockResolvedValue([storedRss({ uri: 'https://$h:pw@news.example.com/rss' })] as never);
+    const result = await importConfigPresetFeed(context, user, rss, rssConfiguration({ uri, description: 'Changed' }), { ...overwrite, dryRun: true });
+    expect(result.credentials).toContainEqual(expect.objectContaining({ key: 'uri:password', stored: false }));
   });
 });
 

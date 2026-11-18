@@ -40,7 +40,7 @@ describe('exportJsonFeed', () => {
     } as unknown as BasicStoreEntityIngestionJson;
     const exported = await exportJsonFeed(context, user, feed);
     expect(JSON.stringify(exported)).not.toContain(SECRET);
-    expect(exported.uri).toEqual('https://reader@api.example.com/indicators?apikey=&limit=10');
+    expect(exported.uri).toEqual('https://reader:@api.example.com/indicators?apikey=&limit=10');
     expect(exported.headers).toEqual([{ name: 'Accept', value: 'application/json' }, { name: 'Authorization', value: '' }]);
     expect(exported.query_attributes.map(({ to, default: value }) => [to, value])).toEqual([['X-Api-Token', ''], ['api_key', ''], ['cursor', 'first']]);
     expect(exported.json_mapper).toEqual({ name: 'Vendor mapper', variables: [], representations });
