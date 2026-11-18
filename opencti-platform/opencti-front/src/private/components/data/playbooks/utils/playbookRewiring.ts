@@ -13,11 +13,18 @@ export type PlaybookRewire = PlaybookRelink | PlaybookMove;
 const isStep = (node: Node | undefined): node is Node => Boolean(node && node.type !== 'placeholder');
 const isEntryPoint = (node: Node | undefined) => Boolean(node?.data?.component?.is_entry_point);
 
-// The links of the playbook: the edges between two steps, never the edges of the add buttons.
+// React Flow adds a connection drawn on the canvas to its own edges (defaultEdges) before it calls
+// onConnect, under an id of its own: it is not a link of the playbook until the server answers.
+const DRAWN_CONNECTION_PREFIX = 'reactflow__edge-';
+export const isDrawnConnection = (edge: Edge) => edge.id.startsWith(DRAWN_CONNECTION_PREFIX);
+export const withoutDrawnConnections = (edges: Edge[]) => edges.filter((e) => !isDrawnConnection(e));
+
+// The links of the playbook: the edges between two steps, never the edges of the add buttons nor a
+// connection React Flow drew before the server answered.
 export const toDefinitionLinks = (nodes: Node[], edges: Edge[]): PlaybookDefinitionEdge[] => {
   const steps = new Set(nodes.filter(isStep).map((n) => n.id));
   return edges
-    .filter((e) => e.type !== 'placeholder' && steps.has(e.source) && steps.has(e.target))
+    .filter((e) => e.type !== 'placeholder' && !isDrawnConnection(e) && steps.has(e.source) && steps.has(e.target))
     .map((e) => ({ id: e.id, from: { id: e.source, port: e.sourceHandle ?? 'out' }, to: { id: e.target } }));
 };
 

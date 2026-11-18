@@ -3,7 +3,7 @@ import { Connection, Edge, useReactFlow } from 'reactflow';
 import { graphql } from 'react-relay';
 import { commitMutation, MESSAGING$ } from '../../../../../relay/environment';
 import { useFormatter } from '../../../../../components/i18n';
-import { applyRewire, planConnect, planEdgeUpdate, PlaybookRewire, toDefinitionLinks } from '../utils/playbookRewiring';
+import { applyRewire, isDrawnConnection, planConnect, planEdgeUpdate, PlaybookRewire, toDefinitionLinks, withoutDrawnConnections } from '../utils/playbookRewiring';
 import { addPlaceholders } from '../utils/playbook';
 import type { PlaybookEdge, PlaybookNode, SetPlaybookAction, SetSelectedPlaybookEdge, SetSelectedPlaybookNode } from '../types/playbook-types';
 import type { PlaybookHistoryControls } from './usePlaybookHistory';
@@ -96,8 +96,13 @@ const usePlaybookRewiring = (
   }, [playbookId, apply, t_i18n, history]);
 
   const onConnect = useCallback((connection: Connection) => {
+    // React Flow already drew the connection as an edge of its own: it goes away at once, so the
+    // snapshot the history records is the playbook before the move (one parent for the moved step,
+    // hence an undo) and a refused connection leaves nothing on the canvas.
+    const edges = getEdges();
+    if (edges.some(isDrawnConnection)) setEdges(withoutDrawnConnections(edges));
     commit(planConnect(getNodes(), getEdges(), connection));
-  }, [commit, getNodes, getEdges]);
+  }, [commit, getNodes, getEdges, setEdges]);
 
   const onEdgeUpdate = useCallback((oldEdge: Edge, connection: Connection) => {
     commit(planEdgeUpdate(getNodes(), getEdges(), oldEdge, connection));
