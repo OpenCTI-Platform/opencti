@@ -1058,15 +1058,15 @@ describe('rabbitmq: queueDepths (task 0040 queue lease and prefetch by bytes)', 
     vi.restoreAllMocks();
   });
 
-  it('should read the ready, unacked and ready bytes of each queue, 0 when the broker omits one', async () => {
+  it('should read the ready, unacked, ready bytes and unacked bytes of each queue, 0 when the broker omits one', async () => {
     mockHttpClient.get.mockResolvedValue({ data: [
-      { name: 'push_a', messages_ready: 10, messages_unacknowledged: 2, message_bytes_ready: 4096 },
+      { name: 'push_a', messages_ready: 10, messages_unacknowledged: 2, message_bytes_ready: 4096, message_bytes_unacknowledged: 1024 },
       { name: 'push_b' },
     ] });
     const depths = await queueDepths();
-    expect(mockHttpClient.get.mock.calls[0][0]).toContain('columns=name,messages_ready,messages_unacknowledged,message_bytes_ready');
-    expect(depths.get('push_a')).toEqual({ ready: 10, unacked: 2, bytesReady: 4096 });
-    expect(depths.get('push_b')).toEqual({ ready: 0, unacked: 0, bytesReady: 0 });
+    expect(mockHttpClient.get.mock.calls[0][0]).toContain('columns=name,messages_ready,messages_unacknowledged,message_bytes_ready,message_bytes_unacknowledged');
+    expect(depths.get('push_a')).toEqual({ ready: 10, unacked: 2, bytesReady: 4096, bytesUnacked: 1024 });
+    expect(depths.get('push_b')).toEqual({ ready: 0, unacked: 0, bytesReady: 0, bytesUnacked: 0 });
   });
 
   it('should serve the lease and the prefetch plan of one tick with one read, for the max age after its answer', async () => {

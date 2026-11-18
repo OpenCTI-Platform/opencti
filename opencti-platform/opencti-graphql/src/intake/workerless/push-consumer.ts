@@ -70,6 +70,8 @@ export interface PushConsumer {
   refresh: () => Promise<void>;
   isOrdered: (queue: string) => boolean;
   isConsuming: (queue: string) => boolean;
+  // Stopped and draining: not consumed again before its channel is closed, even if listed again
+  isStopping: (queue: string) => boolean;
   // Its messages delivered here, not answered yet (the queue lease: a platform holding them is not idle)
   inFlight: (queue: string) => number;
   close: () => Promise<void>;
@@ -408,6 +410,7 @@ export const consumePushQueues = async (
     refresh,
     isOrdered: (queue) => order.isOrdered(queue),
     isConsuming: (queue) => consumed.has(queue),
+    isStopping: (queue) => consumed.get(queue)?.stopping ?? false,
     inFlight: (queue) => consumed.get(queue)?.inFlight ?? 0,
     close: async () => {
       alive = false;

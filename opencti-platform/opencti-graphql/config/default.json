@@ -375,7 +375,9 @@
     "push_queue_lease": false,
     "push_queue_lease_ttl_ms": 30000,
     "push_queue_steal_backlog_min": 100,
-    "push_queue_release_idle_ticks": 2
+    "push_queue_release_idle_ticks": 2,
+    "push_queue_shed": true,
+    "push_queue_steal_underloaded": true
   },
   "publisher_manager": {
     "enabled": true,

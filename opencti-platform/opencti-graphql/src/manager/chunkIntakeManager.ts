@@ -136,6 +136,9 @@ const PUSH_QUEUE_LEASE_OPTIONS = {
   ttlMs: boundedConf('chunk_intake_manager:push_queue_lease_ttl_ms', 30000, 2 * SCHEDULE_TIME),
   stealBacklogMin: boundedConf('chunk_intake_manager:push_queue_steal_backlog_min', 100, 1),
   releaseIdleTicks: boundedConf('chunk_intake_manager:push_queue_release_idle_ticks', 2, 1),
+  // rebalancing (queue-lease.ts): give back a queue when well above its share, steal when under half of it
+  shed: booleanConf('chunk_intake_manager:push_queue_shed', true),
+  stealUnderloaded: booleanConf('chunk_intake_manager:push_queue_steal_underloaded', true),
 };
 // Per-OPERATION transient policy (depth campaign v2, 2026-09-14: a 240-rejection burst of the
 // ES search pool cost 34 indicators at prefetch 48, where pycti's ladder retried them on
@@ -859,16 +862,18 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
     : null;
   queueLeaseCounter = meterManager.meterProvider.getMeter('opencti-chunk-intake').createCounter('opencti_workerless_queue_lease_total', {
     valueType: ValueType.INT,
-    description: 'Push queue lease events of the worker-less intake (taken, released, lost, steal_start, steal_stop)',
+    description: 'Push queue lease events of the worker-less intake (taken, released, lost, shed, steal_start, steal_stop, depths_unread, depths_read)',
   });
   const lease = SEQUENCER_CONFIG.multiWriter && PUSH_QUEUE_LEASE
     ? createQueueLease(SEQUENCER_CONFIG.nodeId, redisQueueLeaseStore, readQueueDepths, PUSH_QUEUE_LEASE_OPTIONS, (event, queue, detail) => {
         queueLeaseCounter?.add(1, { event });
-        logApp.info(`[OPENCTI-MODULE] Worker-less intake: queue lease ${event}`, { queue, node_id: SEQUENCER_CONFIG.nodeId, ...detail });
+        // a queue handed over beside a message never answered, or the management API unreachable: warn
+        const log = event === 'depths_unread' || detail?.still_draining ? logApp.warn : logApp.info;
+        log(`[OPENCTI-MODULE] Worker-less intake: queue lease ${event}`, { queue, node_id: SEQUENCER_CONFIG.nodeId, ...detail });
       })
     : null;
   // Bound once the consumer is started: the first tick of the lease takes no queue
-  let consumerView: ConsumerView = { isOrdered: () => false, isConsuming: () => false, inFlight: () => 0 };
+  let consumerView: ConsumerView = { isOrdered: () => false, isConsuming: () => false, isStopping: () => false, inFlight: () => 0 };
   const partition = !lease && SEQUENCER_CONFIG.multiWriter && PUSH_QUEUE_PARTITION.length > 0
     ? createPartitionSlot(PUSH_QUEUE_PARTITION.length, (slot) => lockResources([`${CHUNK_INTAKE_MANAGER_KEY}_partition_${slot}`], { retryCount: 0 })
         .catch((e: any) => (e?.name === TYPE_LOCK_ERROR ? null : Promise.reject(e))))

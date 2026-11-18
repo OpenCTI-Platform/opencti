@@ -624,6 +624,24 @@ describe('push consumer prefetch changes (task 0040)', () => {
     expect((connection.channels.get(1) as FakeChannel).consume).toHaveBeenCalledTimes(1);
   });
 
+  it('should report a stopped queue as stopping until its drain ends, not consumed again when listed again', async () => {
+    const { consumer, channel } = await start();
+    channel.settle();
+    channel.deliver(KB); // started: drained on stop
+    await flush();
+    queues = [];
+    await tick(consumer, channel);
+    expect(consumer.isConsuming('push_a')).toBe(true);
+    expect(consumer.isStopping('push_a')).toBe(true);
+    queues = ['push_a'];
+    await tick(consumer, channel);
+    expect(consumer.isStopping('push_a')).toBe(true);
+    expect(channel.consume).toHaveBeenCalledTimes(1);
+    await answer();
+    expect(consumer.isConsuming('push_a')).toBe(false);
+    expect(consumer.isStopping('push_a')).toBe(false);
+  });
+
   it('should forget the largest message of a queue calm for a long time: its size is unknown again', async () => {
     const { consumer, channel } = await startRaised();
     channel.deliver(512 * KB);

@@ -472,9 +472,14 @@ export const metrics = async (context, user) => {
 let queueDepthsRead = null;
 const readQueueDepths = async () => {
   const httpClient = await rabbitmqManagementClient();
-  const columns = 'name,messages_ready,messages_unacknowledged,message_bytes_ready';
+  const columns = 'name,messages_ready,messages_unacknowledged,message_bytes_ready,message_bytes_unacknowledged';
   const queues = await httpClient.get(`/api/queues${rabbitmqVhostPath}?columns=${columns}`, { timeout: 5000 }).then((response) => response.data);
-  return new Map(queues.map((q) => [q.name, { ready: q.messages_ready ?? 0, unacked: q.messages_unacknowledged ?? 0, bytesReady: q.message_bytes_ready ?? 0 }]));
+  return new Map(queues.map((q) => [q.name, {
+    ready: q.messages_ready ?? 0,
+    unacked: q.messages_unacknowledged ?? 0,
+    bytesReady: q.message_bytes_ready ?? 0,
+    bytesUnacked: q.message_bytes_unacknowledged ?? 0,
+  }]));
 };
 export const queueDepths = async (maxAgeMs = 5000) => {
   const last = queueDepthsRead;

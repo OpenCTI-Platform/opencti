@@ -601,7 +601,11 @@ const QUEUE_LEASE_RELEASE_SCRIPT = `
 if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) end
 return 0
 `;
-const QUEUE_LEASE_NODES_KEY = '{intake}:nodes';
+// the load of each platform, in bytes (task 0040 L3); the previous version publishes message counts in
+// '{intake}:nodes': its platforms are counted live during a rolling deploy, their load unknown (null), and this
+// version publishes its message count there too so that they count it (to drop once no node runs the previous version)
+const QUEUE_LEASE_NODES_KEY = '{intake}:nodes:bytes';
+const QUEUE_LEASE_LEGACY_NODES_KEY = '{intake}:nodes';
 const ORDERED_QUEUE_TTL_S = 86400;
 const buildQueueLeaseKey = (queue: string) => `{intake}:lease:${queue}`;
 const buildOrderedQueueKey = (queue: string) => `{intake}:ordered:${queue}`;
@@ -622,21 +626,36 @@ export const redisQueueLeaseStore = {
     queues.forEach((queue, i) => holders.set(queue, values[i] ?? null));
     return holders;
   },
-  // One field per platform run: `<backlog>:<published at>`
-  publishBacklog: async (token: string, backlog: number) => {
-    await getClientBase().hset(QUEUE_LEASE_NODES_KEY, token, `${backlog}:${Date.now()}`);
+  // One field per platform run: `<load>:<published at>`; both hashes in one transaction (same slot)
+  publishBacklog: async (token: string, load: number, messages: number) => {
+    const at = Date.now();
+    await execStrict(getClientBase().multi()
+      .hset(QUEUE_LEASE_NODES_KEY, token, `${load}:${at}`)
+      .hset(QUEUE_LEASE_LEGACY_NODES_KEY, token, `${messages}:${at}`));
   },
   liveBacklogs: async (ttlMs: number) => {
-    const fields = await getClientBase().hgetall(QUEUE_LEASE_NODES_KEY);
-    const live = new Map<string, number>();
-    const dead: string[] = [];
-    Object.entries(fields).forEach(([token, value]) => {
-      const [backlog, at] = value.split(':').map(Number);
-      if (Date.now() - at <= ttlMs) live.set(token, backlog);
-      else if (Date.now() - at > 10 * ttlMs) dead.push(token);
-    });
-    if (dead.length > 0) await getClientBase().hdel(QUEUE_LEASE_NODES_KEY, ...dead);
+    const live = new Map<string, number | null>();
+    // the fields published within ttlMs, by token; the ones dead for 10 TTLs removed
+    const read = async (key: string) => {
+      const fields = await getClientBase().hgetall(key);
+      const alive = new Map<string, number>();
+      const dead: string[] = [];
+      Object.entries(fields).forEach(([token, value]) => {
+        const [load, at] = value.split(':').map(Number);
+        if (Date.now() - at <= ttlMs) alive.set(token, load);
+        else if (Date.now() - at > 10 * ttlMs) dead.push(token);
+      });
+      if (dead.length > 0) await getClientBase().hdel(key, ...dead);
+      return alive;
+    };
+    (await read(QUEUE_LEASE_LEGACY_NODES_KEY)).forEach((_, token) => live.set(token, null));
+    (await read(QUEUE_LEASE_NODES_KEY)).forEach((load, token) => live.set(token, load));
     return live;
+  },
+  unpublish: async (token: string) => {
+    await execStrict(getClientBase().multi()
+      .hdel(QUEUE_LEASE_NODES_KEY, token)
+      .hdel(QUEUE_LEASE_LEGACY_NODES_KEY, token));
   },
   markOrdered: async (queues: string[]) => {
     const pipeline = getClientBase().pipeline();
