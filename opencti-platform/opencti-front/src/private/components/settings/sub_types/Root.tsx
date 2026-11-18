@@ -58,7 +58,9 @@ const RootSubType = () => {
           <Route
             path={SUBTYPE_TAB_WORKFLOW}
             element={isWorkflowUiEnabledForType(subTypeId, isFeatureEnable)
-              ? <SubTypeWorkflow entityType={subTypeId} />
+              ? (
+                  <SubTypeWorkflow entityType={subTypeId} heightOffset={290} />
+                )
               : <GlobalWorkflowSettingsCard />}
           />
           <Route path={SUBTYPE_TAB_TEMPLATES} element={<FintelTemplatesManager />} />

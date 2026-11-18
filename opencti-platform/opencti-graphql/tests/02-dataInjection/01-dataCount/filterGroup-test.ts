@@ -30,9 +30,12 @@ import { monthsAgo, utcDate, yearsAgo } from '../../../src/utils/format';
 
 // File to test dynamic filtering with different keys, operators, modes, combinations
 
+// Shape of the edges read in the lists returned by the queries below
+type NamedNodeEdge = { node: { name: string } };
+
 // Converting monthsAgo and yearsAgo to iso string to be used in tests
-const isoMonthsAgo = (months) => utcDate(monthsAgo(months)).toISOString();
-const isoYearsAgo = (years) => utcDate(yearsAgo(years)).toISOString();
+const isoMonthsAgo = (months: number) => utcDate(monthsAgo(months)).toISOString();
+const isoYearsAgo = (years: number) => utcDate(yearsAgo(years)).toISOString();
 
 // test queries involving dynamic filters
 
@@ -120,24 +123,24 @@ const READ_MARKING_QUERY = gql`
 `;
 
 describe('Complex filters combinations for elastic queries', () => {
-  let report1InternalId;
-  let report2InternalId;
-  let report3InternalId;
-  let report4InternalId;
-  let report5InternalId;
+  let report1InternalId: string;
+  let report2InternalId: string;
+  let report3InternalId: string;
+  let report4InternalId: string;
+  let report5InternalId: string;
   const report1StixId = 'report--994491f0-f114-4e41-bcf0-3288c0324f01';
   const report2StixId = 'report--994491f0-f114-4e41-bcf0-3288c0324f02';
   const report3StixId = 'report--994491f0-f114-4e41-bcf0-3288c0324f03';
   const report4StixId = 'report--994491f0-f114-4e41-bcf0-3288c0324f04';
   const report5StixId = 'report--994491f0-f114-4e41-bcf0-3288c0324f05';
-  let marking1StixId;
-  let marking1Id;
-  let marking2StixId;
-  let marking2Id;
-  let marking3StixId;
-  let marking3Id;
-  let locationInternalId;
-  let intrusionSetInternalId;
+  let marking1StixId: string;
+  let marking1Id: string;
+  let marking2StixId: string;
+  let marking2Id: string;
+  let marking3StixId: string;
+  let marking3Id: string;
+  let locationInternalId: string;
+  let intrusionSetInternalId: string;
   it('should testing environment created', async () => {
     const CREATE_QUERY = gql`
         mutation ReportAdd($input: ReportAddInput!) {
@@ -248,25 +251,25 @@ describe('Complex filters combinations for elastic queries', () => {
       variables: REPORT5,
     });
     expect(report1).not.toBeNull();
-    expect(report1.data.reportAdd).not.toBeNull();
-    expect(report1.data.reportAdd.name).toEqual('Report1');
+    expect(report1.data?.reportAdd).not.toBeNull();
+    expect(report1.data?.reportAdd.name).toEqual('Report1');
     expect(report2).not.toBeNull();
-    expect(report2.data.reportAdd).not.toBeNull();
-    expect(report2.data.reportAdd.name).toEqual('Report2');
+    expect(report2.data?.reportAdd).not.toBeNull();
+    expect(report2.data?.reportAdd.name).toEqual('Report2');
     expect(report3).not.toBeNull();
-    expect(report3.data.reportAdd).not.toBeNull();
-    expect(report3.data.reportAdd.name).toEqual('Report3');
+    expect(report3.data?.reportAdd).not.toBeNull();
+    expect(report3.data?.reportAdd.name).toEqual('Report3');
     expect(report4).not.toBeNull();
-    expect(report4.data.reportAdd).not.toBeNull();
-    expect(report4.data.reportAdd.name).toEqual('Report4');
+    expect(report4.data?.reportAdd).not.toBeNull();
+    expect(report4.data?.reportAdd.name).toEqual('Report4');
     expect(report5).not.toBeNull();
-    expect(report5.data.reportAdd).not.toBeNull();
-    expect(report5.data.reportAdd.name).toEqual('Report5');
-    report1InternalId = report1.data.reportAdd.id;
-    report2InternalId = report2.data.reportAdd.id;
-    report3InternalId = report3.data.reportAdd.id;
-    report4InternalId = report4.data.reportAdd.id;
-    report5InternalId = report5.data.reportAdd.id;
+    expect(report5.data?.reportAdd).not.toBeNull();
+    expect(report5.data?.reportAdd.name).toEqual('Report5');
+    report1InternalId = report1.data?.reportAdd.id;
+    report2InternalId = report2.data?.reportAdd.id;
+    report3InternalId = report3.data?.reportAdd.id;
+    report4InternalId = report4.data?.reportAdd.id;
+    report5InternalId = report5.data?.reportAdd.id;
     // Fetch a location and an intrusion set internal ids
     const location = await storeLoadById(testContext, ADMIN_USER, 'location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c', ENTITY_TYPE_LOCATION);
     locationInternalId = location.internal_id;
@@ -290,7 +293,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(0);
+    expect(queryResult.data?.reports.edges.length).toEqual(0);
   });
   it('should list entities according to filters: no filters', async () => {
     let queryResult = await queryAsAdmin({
@@ -304,9 +307,9 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(6); // the 5 reports created + the report in DATA-TEST-STIX2_v2.json
+    expect(queryResult.data?.reports.edges.length).toEqual(6); // the 5 reports created + the report in DATA-TEST-STIX2_v2.json
     queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY });
-    expect(queryResult.data.reports.edges.length).toEqual(6);
+    expect(queryResult.data?.reports.edges.length).toEqual(6);
   });
   it('should list entities according to filters: one filter', async () => {
     // report_types = threat-report
@@ -328,7 +331,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(4); // 3 of the created reports + the report in DATA-TEST-STIX2_v2.json
+    expect(queryResult.data?.reports.edges.length).toEqual(4); // 3 of the created reports + the report in DATA-TEST-STIX2_v2.json
   });
   it('should list entities according to filters: filters with different operators', async () => {
     // (report_types = threat-report) AND (report_types != internal-report)
@@ -356,9 +359,9 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(2); // report1 and the report in DATA-TEST-STIX2_v2.json
-    expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('Report1').toBeTruthy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
+    expect(queryResult.data?.reports.edges.length).toEqual(2); // report1 and the report in DATA-TEST-STIX2_v2.json
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report1')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('A demo report for testing purposes')).toBeTruthy();
   });
   it('should list entities according to filters: filters with different modes for the main filter group', async () => {
     // (published after 9 months ago) OR (published before 5 years ago)
@@ -386,10 +389,10 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(4); // report1, report3, report5 and report in DATA-TEST-STIX2_v2.json
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeTruthy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
+    expect(queryResult.data?.reports.edges.length).toEqual(4); // report1, report3, report5 and report in DATA-TEST-STIX2_v2.json
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report1')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report3')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('A demo report for testing purposes')).toBeTruthy();
     // (published after 9 months ago) AND (published before 5 years ago)
     queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
@@ -415,7 +418,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(0);
+    expect(queryResult.data?.reports.edges.length).toEqual(0);
   });
   it('should list entities according to filters: filters with different modes between the values of a filter', async () => {
     // (report_types = internal-report OR threat-report)
@@ -437,7 +440,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(5); // 4 of the reports created + the report in DATA-TEST-STIX2_v2.json
+    expect(queryResult.data?.reports.edges.length).toEqual(5); // 4 of the reports created + the report in DATA-TEST-STIX2_v2.json
     // (report_types = internal-report AND threat-report)
     queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
@@ -457,9 +460,9 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(2);
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report5')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.length).toEqual(2);
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report2')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report5')).toBeTruthy();
   });
   it('should list entities according to filters: filters and filter groups', async () => {
     // (report_types = threat-report AND published before 9 months ago)
@@ -487,9 +490,9 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(2);
-    expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('Report2').toBeTruthy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
+    expect(queryResult.data?.reports.edges.length).toEqual(2);
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report2')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('A demo report for testing purposes')).toBeTruthy();
     //  (published before 9 months ago) AND (report_types = threat-report OR objects malwareXX)
     queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
@@ -528,9 +531,9 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(2);
-    expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('Report2').toBeTruthy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
+    expect(queryResult.data?.reports.edges.length).toEqual(2);
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report2')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('A demo report for testing purposes')).toBeTruthy();
     // (marking = marking1 AND marking2) OR (report_types = threat-report AND published before 9 months ago)
     queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
@@ -569,11 +572,11 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(4);
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report4')).toBeTruthy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
+    expect(queryResult.data?.reports.edges.length).toEqual(4);
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report1')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report2')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report4')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('A demo report for testing purposes')).toBeTruthy();
   });
   it('should list entities according to filters: complex filter combination with groups and filters imbrication', async () => {
     const queryResult = await queryAsAdmin({
@@ -637,9 +640,9 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(2);
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report4')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.length).toEqual(2);
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report2')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report4')).toBeTruthy();
   });
   it('should list entities according to filters: complex filters combination with several groups at the same level', async () => {
     // [(confidence > 25) AND (marking = marking2)]
@@ -704,10 +707,10 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(3);
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report4')).toBeTruthy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
+    expect(queryResult.data?.reports.edges.length).toEqual(3);
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report4')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report1')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('A demo report for testing purposes')).toBeTruthy();
   });
   it('should list entities according to filters: filter with \'nil\' and \'not_nil\' operators on arrays', async () => {
     // test for 'nil': objectMarking is empty
@@ -729,9 +732,9 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(2);
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeTruthy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report5')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.length).toEqual(2);
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report3')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report5')).toBeTruthy();
     // test for 'not_nil': objectMarking is not empty
     queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
@@ -751,8 +754,8 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(4);
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeFalsy();
+    expect(queryResult.data?.reports.edges.length).toEqual(4);
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report3')).toBeFalsy();
   });
   it('should list entities according to filters: \'nil\' / \'not_nil\' operators on strings', async () => {
     // description is empty
@@ -774,10 +777,10 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(3);
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeTruthy(); // description is undefined
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report4')).toBeTruthy(); // description is empty string
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report5')).toBeTruthy(); // description is null
+    expect(queryResult.data?.reports.edges.length).toEqual(3);
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report3')).toBeTruthy(); // description is undefined
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report4')).toBeTruthy(); // description is empty string
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report5')).toBeTruthy(); // description is null
     // description is not empty
     queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
@@ -797,9 +800,9 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(3); // 'Report1', 'Report2', 'A demo for testing purpose'
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.length).toEqual(3); // 'Report1', 'Report2', 'A demo for testing purpose'
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report1')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report2')).toBeTruthy();
   });
   it('should list entities according to filters: \'nil\' / \'not_nil\' operators on dates', async () => {
     // start_time is empty
@@ -822,7 +825,7 @@ describe('Complex filters combinations for elastic queries', () => {
       },
     });
     // 4 relationships with no start_time + 4 relationships with start_time <= '1970-01-01T01:00:00.000Z'
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(8);
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(8);
     // stop_time is empty
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -843,7 +846,7 @@ describe('Complex filters combinations for elastic queries', () => {
       },
     });
     // 4 relationships with no stop_time + 3 with stop_time <= '1970-01-01T01:00:00.000Z' + 1 with stop_time = '5138-11-16T09:46:40.000Z'
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(8);
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(8);
     // stop_time is not empty
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -864,7 +867,73 @@ describe('Complex filters combinations for elastic queries', () => {
       },
     });
     // 24 relationships - 8 with empty stop_time
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(16);
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(16);
+  });
+  it('should list entities according to filters: \'nil\' / \'not_nil\' operators on numbers', async () => {
+    const VULNERABILITY_CREATE_QUERY = gql`
+      mutation VulnerabilityAdd($input: VulnerabilityAddInput!) {
+        vulnerabilityAdd(input: $input) {
+          id
+        }
+      }
+    `;
+    const VULNERABILITY_DELETE_QUERY = gql`
+      mutation vulnerabilityDelete($id: ID!) {
+        vulnerabilityEdit(id: $id) {
+          delete
+        }
+      }
+    `;
+    const VULNERABILITY_LIST_QUERY = gql`
+      query vulnerabilities($filters: FilterGroup) {
+        vulnerabilities(filters: $filters) {
+          edges {
+            node {
+              id
+              name
+            }
+          }
+        }
+      }
+    `;
+    // a score of 0 is a value: it must not be considered as empty
+    const vulnerabilitiesToCreate = [
+      { name: 'NumericNilVulnerabilityWithScore', x_opencti_cvss_base_score: 7.5 },
+      { name: 'NumericNilVulnerabilityWithZeroScore', x_opencti_cvss_base_score: 0 },
+      { name: 'NumericNilVulnerabilityWithoutScore' },
+    ];
+    const vulnerabilityNames = vulnerabilitiesToCreate.map((v) => v.name);
+    const vulnerabilityIds: string[] = [];
+    const listVulnerabilityNames = async (operator: string) => {
+      const queryResult = await queryAsAdmin({
+        query: VULNERABILITY_LIST_QUERY,
+        variables: {
+          filters: {
+            mode: 'and',
+            filters: [
+              { key: 'name', operator: 'eq', values: vulnerabilityNames, mode: 'or' },
+              { key: 'x_opencti_cvss_base_score', operator, values: [], mode: 'or' },
+            ],
+            filterGroups: [],
+          },
+        },
+      });
+      return queryResult.data?.vulnerabilities.edges.map((n: NamedNodeEdge) => n.node.name).sort();
+    };
+    try {
+      for (let i = 0; i < vulnerabilitiesToCreate.length; i += 1) {
+        const created = await queryAsAdmin({ query: VULNERABILITY_CREATE_QUERY, variables: { input: vulnerabilitiesToCreate[i] } });
+        vulnerabilityIds.push(created.data?.vulnerabilityAdd.id);
+      }
+      // x_opencti_cvss_base_score is empty
+      expect(await listVulnerabilityNames('nil')).toEqual(['NumericNilVulnerabilityWithoutScore']);
+      // x_opencti_cvss_base_score is not empty
+      expect(await listVulnerabilityNames('not_nil')).toEqual(['NumericNilVulnerabilityWithScore', 'NumericNilVulnerabilityWithZeroScore']);
+    } finally {
+      for (let i = 0; i < vulnerabilityIds.length; i += 1) {
+        await queryAsAdmin({ query: VULNERABILITY_DELETE_QUERY, variables: { id: vulnerabilityIds[i] } });
+      }
+    }
   });
   it('should list entities according to filters: aggregation with filters', async () => {
     // count the number of entities with each marking
@@ -872,7 +941,7 @@ describe('Complex filters combinations for elastic queries', () => {
       field: ID_INTERNAL,
       isTo: true,
       operation: 'count',
-      relationship_type: RELATION_OBJECT_MARKING,
+      relationship_type: [RELATION_OBJECT_MARKING],
       fromTypes: [ENTITY_TYPE_CONTAINER_REPORT],
       toRole: 'object-marking_to',
       toTypes: [ENTITY_TYPE_MARKING_DEFINITION],
@@ -905,9 +974,9 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(2);
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.length).toEqual(2);
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report1')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report2')).toBeTruthy();
   });
   it('should list entities according to filters: combinations of operators and modes with entity_type filter', async () => {
     // objective: test the correct injection of parent types
@@ -930,7 +999,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(0);
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(0);
     // (entity_type = Malware)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -950,7 +1019,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(2);
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(2);
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
       variables: {
@@ -969,7 +1038,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(2);
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(2);
     // (entity_type = Report OR container)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -989,7 +1058,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(9); // 9 containers: 5 reports in this file + 1 report, 1 note, 1 observed-data, 1 opinion in DATA-TEST-STIXv2_v2
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(9); // 9 containers: 5 reports in this file + 1 report, 1 note, 1 observed-data, 1 opinion in DATA-TEST-STIXv2_v2
     // (entity_type = Report AND container)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1009,7 +1078,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(6); // 5 reports created in this file + 1 report in DATA-TEST-STIXv2_v2
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(6); // 5 reports created in this file + 1 report in DATA-TEST-STIXv2_v2
     // (entity_type = Report AND Container AND Stix-Core-Object)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1029,7 +1098,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(6); // 5 reports created in this file + 1 report in DATA-TEST-STIXv2_v2
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(6); // 5 reports created in this file + 1 report in DATA-TEST-STIXv2_v2
     // (entity_type = Report AND Container AND Internal-Object)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1049,7 +1118,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(0); // reports are not internal objects
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(0); // reports are not internal objects
     // (entity_type = Malware OR Software)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1069,7 +1138,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(3); // 2 malware + 1 software (in DATA-TEST-STIX2_v2.json)
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(3); // 2 malware + 1 software (in DATA-TEST-STIX2_v2.json)
     // (entity_type = Malware) OR (entity_type = Software)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1102,7 +1171,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(3); // 2 malware + 1 software (in DATA-TEST-STIX2_v2.json)
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(3); // 2 malware + 1 software (in DATA-TEST-STIX2_v2.json)
     // (entity_type = Malware AND Software)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1122,7 +1191,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(0);
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(0);
     // (entity_type = Malware) AND (entity_type = Software)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1155,7 +1224,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(0);
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(0);
     // (entity_type != Malware OR != Software)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1175,7 +1244,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    const entitiesNumber = queryResult.data.globalSearch.edges.length; // all the entities
+    const entitiesNumber = queryResult.data?.globalSearch.edges.length; // all the entities
     // (entity_type != Malware AND != Software)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1195,7 +1264,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    const entitiesNumberWithoutMalwaresAndSoftware = queryResult.data.globalSearch.edges.length; // all the entities except Malwares and Softwares
+    const entitiesNumberWithoutMalwaresAndSoftware = queryResult.data?.globalSearch.edges.length; // all the entities except Malwares and Softwares
     expect(entitiesNumber - entitiesNumberWithoutMalwaresAndSoftware).toEqual(3); // 2 malwares + 1 software
     // (entity_type != Report AND != Container)
     queryResult = await queryAsAdmin({
@@ -1216,7 +1285,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    const entitiesExceptContainerNumber = queryResult.data.globalSearch.edges.length; // all the entities that are not containers
+    const entitiesExceptContainerNumber = queryResult.data?.globalSearch.edges.length; // all the entities that are not containers
     // (entity_type != Report OR != Container)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1236,7 +1305,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    const entitiesExceptReportsNumber = queryResult.data.globalSearch.edges.length; // all the entities that are not reports
+    const entitiesExceptReportsNumber = queryResult.data?.globalSearch.edges.length; // all the entities that are not reports
     expect(entitiesExceptReportsNumber - entitiesExceptContainerNumber).toEqual(3); // number of containers that are not reports: 3 = 1 note, 1 observed-data, 1 opinion
   });
   it('should list entities according to filters: combinations of operators and modes with the special filter key \'id\'', async () => {
@@ -1259,7 +1328,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(2);
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(2);
     // (id(stix/internal/standard) = internal-XX OR stix-XX)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1279,7 +1348,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(1);
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(1);
     // (id(stix/internal/standard) = internal-XX AND stix-XX) -> not supported
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1299,7 +1368,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.errors[0].message).toEqual('Unsupported filter: \'And\' operator between values of a filter with key = \'ids\' is not supported');
+    expect(queryResult.errors?.[0].message).toEqual('Unsupported filter: \'And\' operator between values of a filter with key = \'ids\' is not supported');
   });
   it('should list entities according to filters: combinations of operators and modes with the special filter key \'source_reliability\'', async () => {
     let queryResult = await queryAsAdmin({
@@ -1309,7 +1378,7 @@ describe('Complex filters combinations for elastic queries', () => {
         filters: undefined,
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(47);
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(47);
     // (source_reliability is empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1329,7 +1398,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(36); // 47 entities - 11 entities with a source reliability = 36
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(36); // 47 entities - 11 entities with a source reliability = 36
     // (source_reliability is not empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1349,7 +1418,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(11); // 11 entities with a source reliability
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(11); // 11 entities with a source reliability
     // (source_reliability = A - Completely reliable)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1369,7 +1438,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(6);
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(6);
     // (source_reliability != A - Completely reliable)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1389,7 +1458,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(41); // 47 entities - 6 entities with source reliability equals to A = 41
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(41); // 47 entities - 6 entities with source reliability equals to A = 41
     // (source_reliability = A - Completely reliable OR B - Usually reliable)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1409,7 +1478,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(11); // 6 entities with source_reliability A + 5 with source_reliability B
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(11); // 6 entities with source_reliability A + 5 with source_reliability B
     // (source_reliability = A - Completely reliable AND B - Usually reliable)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1429,7 +1498,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(0);
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(0);
     // (source_reliability != A - Completely reliable AND != B - Usually reliable)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1449,7 +1518,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    const numberOfEntitiesWithSourceReliabilityNotAAndNotB = queryResult.data.globalSearch.edges.length;
+    const numberOfEntitiesWithSourceReliabilityNotAAndNotB = queryResult.data?.globalSearch.edges.length;
     // (source_reliability != A - Completely reliable OR != B - Usually reliable)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1469,7 +1538,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    const numberOfEntitiesWithSourceReliabilityNotAOrNotB = queryResult.data.globalSearch.edges.length;
+    const numberOfEntitiesWithSourceReliabilityNotAOrNotB = queryResult.data?.globalSearch.edges.length;
     expect(numberOfEntitiesWithSourceReliabilityNotAOrNotB - numberOfEntitiesWithSourceReliabilityNotAAndNotB).toEqual(11); // number of entities with source_reliability A or B
   });
   it('should list entities according to filters: combinations of operators and modes with the special filter key \'computed_reliability\'', async () => {
@@ -1492,7 +1561,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(34); // 47 - 11 with a source reliability - 2 with a reliability (and no source reliability) = 34
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(34); // 47 - 11 with a source reliability - 2 with a reliability (and no source reliability) = 34
     // (computed_reliability is not empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1512,7 +1581,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(13); // 11 entities with a source reliability + 2 entities with a reliability = 13
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(13); // 11 entities with a source reliability + 2 entities with a reliability = 13
     // (computed_reliability = A - Completely reliable)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1532,7 +1601,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(7); // 6 entities with source reliability A + 1 entity with reliability A
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(7); // 6 entities with source reliability A + 1 entity with reliability A
     // (computed_reliability = A - Completely reliable OR B - Usually reliable)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1552,7 +1621,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(13); // 6 with source_reliability A + 3 with source_reliability B + 1 with reliability A + 1 with reliability B
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(13); // 6 with source_reliability A + 3 with source_reliability B + 1 with reliability A + 1 with reliability B
     // (computed_reliability = A - Completely reliable AND B - Usually reliable)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1572,7 +1641,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(0);
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(0);
   });
   it('should list entities according to filters: filters with a relationship_type key', async () => {
     // (objects = internal-id-of-a-location)
@@ -1594,7 +1663,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(1); // 1 report contains this location
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(1); // 1 report contains this location
     // (targets = internal-id-of-a-location)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1614,8 +1683,8 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(1); // 1 intrusion-set targets this location
-    expect(queryResult.data.globalSearch.edges[0].node.id).toEqual(intrusionSetInternalId);
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(1); // 1 intrusion-set targets this location
+    expect(queryResult.data?.globalSearch.edges[0].node.id).toEqual(intrusionSetInternalId);
   });
   it(`should list relationships according to filters: combinations of operators and modes with the special filter keys ${INSTANCE_RELATION_TYPES_FILTER}, ${RELATION_FROM_TYPES_FILTER}, ${RELATION_TO_TYPES_FILTER}`, async () => {
     // all stix core relationships
@@ -1626,7 +1695,7 @@ describe('Complex filters combinations for elastic queries', () => {
         filters: undefined,
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(24); // 24 stix core relationships
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(24); // 24 stix core relationships
     // (fromOrToTypes = Malware)
     // <-> fromType = Malware OR toType = Malware
     queryResult = await queryAsAdmin({
@@ -1647,7 +1716,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(4); // 4 relationship with fromType = Malware or toType = Malware
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(4); // 4 relationship with fromType = Malware or toType = Malware
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
       variables: {
@@ -1672,7 +1741,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(4); // 4 relationship with fromType = Malware or toType = Malware
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(4); // 4 relationship with fromType = Malware or toType = Malware
     // (fromOrToTypes != Malware-Analysis)
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -1693,7 +1762,7 @@ describe('Complex filters combinations for elastic queries', () => {
       },
     });
     // 24 relationships - 1 relationship (relationship--642f6fca-6c5a-495c-9419-9ee0a4a599ee) involving a Malware-Analysis
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(23);
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(23);
     // (fromTypes != Malware-Analysis)
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -1714,7 +1783,7 @@ describe('Complex filters combinations for elastic queries', () => {
       },
     });
     // 24 relationships - 1 relationship (relationship--642f6fca-6c5a-495c-9419-9ee0a4a599ee) with a Malware-Analysis as source ref
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(23);
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(23);
     // (fromTypes = Malware)
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -1734,7 +1803,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(2); // 2 relationships with a Malware as source ref
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(2); // 2 relationships with a Malware as source ref
     // (fromTypes = Malware OR Malware-Analysis)
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -1754,7 +1823,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(3); // 2 relationships with a Malware as source ref + 1 with Malware-Analysis
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(3); // 2 relationships with a Malware as source ref + 1 with Malware-Analysis
     // (fromTypes = Malware AND Malware-Analysis)
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -1774,7 +1843,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(0); // 0 relationships with a Malware and a Malware-Analysis as source ref
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(0); // 0 relationships with a Malware and a Malware-Analysis as source ref
     // (toTypes != Malware-Analysis)
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -1794,7 +1863,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(24); // all the relationships have no malware analysis as target ref
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(24); // all the relationships have no malware analysis as target ref
     // (fromOrToTypes = Attack-Pattern OR Malware)
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -1814,7 +1883,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(5);
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(5);
     // (fromOrToTypes = Attack-Pattern AND Malware)
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -1834,7 +1903,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(2);
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(2);
     // (fromOrToTypes != Attack-Pattern AND Malware)
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -1854,7 +1923,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(19); // (24 relationships) - (5 relationships involving malware or attack pattern) = 19
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(19); // (24 relationships) - (5 relationships involving malware or attack pattern) = 19
     // (fromOrToTypes is empty)
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -1874,7 +1943,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(0);
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(0);
     // (fromOrToId is empty)
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -1894,7 +1963,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(0);
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(0);
     // (fromOrToTypes is not empty)
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -1914,7 +1983,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(24);
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(24);
     // (fromOrToId is not empty)
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -1934,7 +2003,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(24);
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(24);
   });
   it(`should list relationships according to filters: combinations of operators and modes with the special filter keys ${RELATION_FROM_FILTER} and ${RELATION_TO_FILTER}`, async () => {
     // fromId is empty
@@ -1955,7 +2024,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(0); // no relationships have no source entity
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(0); // no relationships have no source entity
     // fromId is not empty
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -1974,7 +2043,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(24); // all the relationships (ie 24) have a source entity
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(24); // all the relationships (ie 24) have a source entity
     // fromId = locationId
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -1994,7 +2063,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(1); // 1 relationship with this location as source
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(1); // 1 relationship with this location as source
     // fromId != locationId
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -2014,7 +2083,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(23); // 24 relationships - 1 relationship with this location as source
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(23); // 24 relationships - 1 relationship with this location as source
     // fromId = locationId OR intrusionSetId
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -2034,7 +2103,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(4); // 1 relationship with the location as source + 3 relationships with the intrusion set as source
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(4); // 1 relationship with the location as source + 3 relationships with the intrusion set as source
     // fromId != locationId AND != intrusionSetId
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -2054,7 +2123,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(20); // 24 relationships - 4 relationship with the location or the intrusion set as source
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(20); // 24 relationships - 4 relationship with the location or the intrusion set as source
     // fromId = locationId AND intrusionSetId
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -2074,7 +2143,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(0); // 0 relationship with both a location and an intrusion set as source
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(0); // 0 relationship with both a location and an intrusion set as source
     // toId = locationId
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -2094,7 +2163,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(1); // 1 relationship with this location as target
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(1); // 1 relationship with this location as target
     // toId = locationId OR intrusionSetId
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -2114,7 +2183,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(3); // 1 relationship with the location as target + 2 relationships with the intrusion set as target
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(3); // 1 relationship with the location as target + 2 relationships with the intrusion set as target
     // toId = locationId AND intrusionSetId
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -2134,7 +2203,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(0); // 0 relationship with both a location and an intrusion set as target
+    expect(queryResult.data?.stixCoreRelationships.edges.length).toEqual(0); // 0 relationship with both a location and an intrusion set as target
   });
   it('should list entities according to filters: filters with not supported keys', async () => {
     // bad_filter_key = XX
@@ -2154,7 +2223,7 @@ describe('Complex filters combinations for elastic queries', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.errors.length).toEqual(1);
+    expect(queryResult.errors?.length).toEqual(1);
   });
   it('should list entities according to search filters with trunc word', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
@@ -2172,7 +2241,7 @@ describe('Complex filters combinations for elastic queries', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(1);
+    expect(queryResult.data?.reports.edges.length).toEqual(1);
   });
   it('should list entities according to search filters with trunc word and unordered', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
@@ -2190,7 +2259,7 @@ describe('Complex filters combinations for elastic queries', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(1);
+    expect(queryResult.data?.reports.edges.length).toEqual(1);
   });
   it('should not find entities according to search filters with trunc word and double quote', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
@@ -2208,7 +2277,7 @@ describe('Complex filters combinations for elastic queries', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(0);
+    expect(queryResult.data?.reports.edges.length).toEqual(0);
   });
   it('should find entities according to search filters with double quote', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
@@ -2226,7 +2295,7 @@ describe('Complex filters combinations for elastic queries', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(1);
+    expect(queryResult.data?.reports.edges.length).toEqual(1);
   });
   it('should not find any entities according to search filters which is not in any description', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
@@ -2243,7 +2312,7 @@ describe('Complex filters combinations for elastic queries', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(0);
+    expect(queryResult.data?.reports.edges.length).toEqual(0);
   });
   it('should find entities according to search filters with one existing word and another word which is not present in any description', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
@@ -2260,7 +2329,7 @@ describe('Complex filters combinations for elastic queries', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(3);
+    expect(queryResult.data?.reports.edges.length).toEqual(3);
   });
   it('should find entities according to search filters on short string', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
@@ -2278,7 +2347,7 @@ describe('Complex filters combinations for elastic queries', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(1);
+    expect(queryResult.data?.reports.edges.length).toEqual(1);
   });
   it('should find entities according to search filters on unordered short string', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
@@ -2296,7 +2365,7 @@ describe('Complex filters combinations for elastic queries', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(1);
+    expect(queryResult.data?.reports.edges.length).toEqual(1);
   });
   it('should not find entities according to search filters on trunc short string and double quotes', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
@@ -2314,7 +2383,7 @@ describe('Complex filters combinations for elastic queries', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(0);
+    expect(queryResult.data?.reports.edges.length).toEqual(0);
   });
   it('should find entities according to search filters on short string with double quotes', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
@@ -2332,7 +2401,7 @@ describe('Complex filters combinations for elastic queries', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(1);
+    expect(queryResult.data?.reports.edges.length).toEqual(1);
   });
   it('should not find any entities according to search filters on abracadra', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
@@ -2349,7 +2418,7 @@ describe('Complex filters combinations for elastic queries', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(0);
+    expect(queryResult.data?.reports.edges.length).toEqual(0);
   });
   it('should find one entity according to search filters on abracadra and testing', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
@@ -2366,7 +2435,7 @@ describe('Complex filters combinations for elastic queries', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(1);
+    expect(queryResult.data?.reports.edges.length).toEqual(1);
   });
   it('should list entities according to relative date time range filters', async () => {
     // published within [18 months ago, 3 months ago]
@@ -2386,7 +2455,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(3); // report1, report2, report4
+    expect(queryResult.data?.reports.edges.length).toEqual(3); // report1, report2, report4
     // published within last 3 years and now
     queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
@@ -2404,7 +2473,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(4); // the reports published in the last 3 years: report1, report2, report4, report5
+    expect(queryResult.data?.reports.edges.length).toEqual(4); // the reports published in the last 3 years: report1, report2, report4, report5
   });
   it('should list entities according filters with only_eq_to operator', async () => {
     // only_eq_to operator with several filter keys: not supported
@@ -2424,7 +2493,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.errors[0].message).toEqual('Filter must have only one field');
+    expect(queryResult.errors?.[0].message).toEqual('Filter must have only one field');
     // report_types only_eq_to internal-report
     queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
@@ -2442,8 +2511,8 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(1);
-    expect(queryResult.data.reports.edges[0].node.name).toEqual('Report3');
+    expect(queryResult.data?.reports.edges.length).toEqual(1);
+    expect(queryResult.data?.reports.edges[0].node.name).toEqual('Report3');
     // marking only_eq_to marking2 (to test only_eq_to with a relation ref filter)
     queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
@@ -2461,8 +2530,8 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(1);
-    expect(queryResult.data.reports.edges[0].node.name).toEqual('Report2');
+    expect(queryResult.data?.reports.edges.length).toEqual(1);
+    expect(queryResult.data?.reports.edges[0].node.name).toEqual('Report2');
     // report_types only_eq_to internal-report OR threat-report
     // It corresponds to the reports with report_types exactly equal to ['internal-report'] or to ['threat-report']
     queryResult = await queryAsAdmin({
@@ -2481,10 +2550,10 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(3);
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeTruthy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('A demo report for testing purposes')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.length).toEqual(3);
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report3')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report1')).toBeTruthy();
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('A demo report for testing purposes')).toBeTruthy();
     // marking only_eq_to marking1 AND marking2
     // It corresponds to the reports with exactly 2 markings, one being marking1 and the other being marking2
     queryResult = await queryAsAdmin({
@@ -2503,8 +2572,8 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(1);
-    expect(queryResult.data.reports.edges[0].node.name).toEqual('Report1');
+    expect(queryResult.data?.reports.edges.length).toEqual(1);
+    expect(queryResult.data?.reports.edges[0].node.name).toEqual('Report1');
   });
   it('should list entities according filters with not_only_eq_to operator', async () => {
     // not_only_eq_to operator with several filter keys: not supported
@@ -2524,7 +2593,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.errors[0].message).toEqual('Filter must have only one field');
+    expect(queryResult.errors?.[0].message).toEqual('Filter must have only one field');
     // reports with report_types not_only_eq_to internal-report
     queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
@@ -2542,8 +2611,8 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(5); // 6 reports - 1 report with report_types only equal to internal-report (report3)
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeFalsy();
+    expect(queryResult.data?.reports.edges.length).toEqual(5); // 6 reports - 1 report with report_types only equal to internal-report (report3)
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report3')).toBeFalsy();
     // report_types not_only_eq_to internal-report OR threat-report
     // It corresponds to the reports WITHOUT report_types exactly equal to ['internal-report'] or to ['threat-report']
     queryResult = await queryAsAdmin({
@@ -2562,10 +2631,10 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(3); // 6 reports - 3 reports with report_types only equal to ['internal-report'] or to ['threat-report']
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeFalsy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeFalsy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('A demo report for testing purposes')).toBeFalsy();
+    expect(queryResult.data?.reports.edges.length).toEqual(3); // 6 reports - 3 reports with report_types only equal to ['internal-report'] or to ['threat-report']
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report3')).toBeFalsy();
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report1')).toBeFalsy();
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('A demo report for testing purposes')).toBeFalsy();
     // marking not_only_eq_to marking1 AND marking2
     // It corresponds to the reports WITHOUT exactly 2 markings, one being marking1 and the other being marking2
     queryResult = await queryAsAdmin({
@@ -2584,8 +2653,8 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(5); // 6 reports - 1 report matching only_eq_to marking1 AND and marking2 (report1)
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeFalsy();
+    expect(queryResult.data?.reports.edges.length).toEqual(5); // 6 reports - 1 report matching only_eq_to marking1 AND and marking2 (report1)
+    expect(queryResult.data?.reports.edges.map((n: NamedNodeEdge) => n.node.name).includes('Report1')).toBeFalsy();
   });
 
   it('should test environment deleted', async () => {
@@ -2640,28 +2709,28 @@ describe('Complex filters combinations for elastic queries', () => {
     let queryResult;
     queryResult = await queryAsAdmin({ query: READ_REPORT_QUERY, variables: { id: report1StixId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.report).toBeNull();
+    expect(queryResult.data?.report).toBeNull();
     queryResult = await queryAsAdmin({ query: READ_REPORT_QUERY, variables: { id: report2StixId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.report).toBeNull();
+    expect(queryResult.data?.report).toBeNull();
     queryResult = await queryAsAdmin({ query: READ_REPORT_QUERY, variables: { id: report3StixId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.report).toBeNull();
+    expect(queryResult.data?.report).toBeNull();
     queryResult = await queryAsAdmin({ query: READ_REPORT_QUERY, variables: { id: report4StixId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.report).toBeNull();
+    expect(queryResult.data?.report).toBeNull();
     queryResult = await queryAsAdmin({ query: READ_REPORT_QUERY, variables: { id: report5StixId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.report).toBeNull();
+    expect(queryResult.data?.report).toBeNull();
     queryResult = await queryAsAdmin({ query: READ_MARKING_QUERY, variables: { id: marking1StixId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.markingDefinition).toBeNull();
+    expect(queryResult.data?.markingDefinition).toBeNull();
     queryResult = await queryAsAdmin({ query: READ_MARKING_QUERY, variables: { id: marking2StixId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.markingDefinition).toBeNull();
+    expect(queryResult.data?.markingDefinition).toBeNull();
     queryResult = await queryAsAdmin({ query: READ_MARKING_QUERY, variables: { id: marking3StixId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.markingDefinition).toBeNull();
+    expect(queryResult.data?.markingDefinition).toBeNull();
   });
 
   it('should list scos with bulk search keyword filter', async () => {
@@ -2677,7 +2746,7 @@ describe('Complex filters combinations for elastic queries', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(2); // one country with 'France' name + 1 observable with 'azerty' value
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(2); // one country with 'France' name + 1 observable with 'azerty' value
   });
 });
 
@@ -2716,26 +2785,26 @@ describe('Complex filters regarding of for elastic queries', () => {
       };
     };
     const baseQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false) } });
-    const globalCount = baseQueryResult.data.globalSearch.edges.length;
+    const globalCount = baseQueryResult.data?.globalSearch.edges.length;
     expect(globalCount).toEqual(3);
     const eqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'eq') } });
-    expect(eqQueryResult.data.globalSearch.edges.length).toEqual(2);
-    expect(eqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
-    expect(eqQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    expect(eqQueryResult.data?.globalSearch.edges.length).toEqual(2);
+    expect(eqQueryResult.data?.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
+    expect(eqQueryResult.data?.globalSearch.edges[1].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
     const eqOrQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'eq', 'or') } });
-    expect(eqOrQueryResult.data.globalSearch.edges.length).toEqual(5);
+    expect(eqOrQueryResult.data?.globalSearch.edges.length).toEqual(5);
     // Note: T1369 attack pattern's standard_id (5d51528f-...) now sorts before T1368 (b7f107ad-...)
     // after x_mitre_id was made case-insensitive (#16132), hence the edges[0]/[1] swap vs previous values.
-    expect(eqOrQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('attack-pattern--5d51528f-84fc-575c-a120-1dd45f0836e5');
-    expect(eqOrQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('attack-pattern--b7f107ad-4327-5546-8eaf-d4139cd57498');
-    expect(eqOrQueryResult.data.globalSearch.edges[2].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
-    expect(eqOrQueryResult.data.globalSearch.edges[3].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
-    expect(eqOrQueryResult.data.globalSearch.edges[4].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+    expect(eqOrQueryResult.data?.globalSearch.edges[0].node.standard_id).toEqual('attack-pattern--5d51528f-84fc-575c-a120-1dd45f0836e5');
+    expect(eqOrQueryResult.data?.globalSearch.edges[1].node.standard_id).toEqual('attack-pattern--b7f107ad-4327-5546-8eaf-d4139cd57498');
+    expect(eqOrQueryResult.data?.globalSearch.edges[2].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
+    expect(eqOrQueryResult.data?.globalSearch.edges[3].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    expect(eqOrQueryResult.data?.globalSearch.edges[4].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
     const notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq') } });
-    expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(1);
-    expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+    expect(notEqQueryResult.data?.globalSearch.edges.length).toEqual(1);
+    expect(notEqQueryResult.data?.globalSearch.edges[0].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
     const notEqOrQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq', 'or') } });
-    expect(notEqOrQueryResult.data.globalSearch.edges.length).toEqual(40);
+    expect(notEqOrQueryResult.data?.globalSearch.edges.length).toEqual(40);
   });
   it('should list entities using complex regarding of filter', async () => {
     const attackPattern = await storeLoadById(testContext, ADMIN_USER, 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17', ENTITY_TYPE_ATTACK_PATTERN);
@@ -2771,23 +2840,23 @@ describe('Complex filters regarding of for elastic queries', () => {
       };
     };
     const baseQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false) } });
-    const globalCount = baseQueryResult.data.globalSearch.edges.length;
+    const globalCount = baseQueryResult.data?.globalSearch.edges.length;
     expect(globalCount).toEqual(3);
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'eq') } });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(1);
-    expect(queryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(1);
+    expect(queryResult.data?.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
     const queryEqOrResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'eq', 'or') } });
-    expect(queryEqOrResult.data.globalSearch.edges.length).toEqual(3);
+    expect(queryEqOrResult.data?.globalSearch.edges.length).toEqual(3);
     const notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq') } });
-    expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(2);
-    expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
-    expect(notEqQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+    expect(notEqQueryResult.data?.globalSearch.edges.length).toEqual(2);
+    expect(notEqQueryResult.data?.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
+    expect(notEqQueryResult.data?.globalSearch.edges[1].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
     const notEqOrQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq', 'or') } });
-    expect(notEqOrQueryResult.data.globalSearch.edges.length).toEqual(42);
+    expect(notEqOrQueryResult.data?.globalSearch.edges.length).toEqual(42);
   });
   it('should list entities using complex regarding of filter with force direction', async () => {
     const attackPattern = await storeLoadById(testContext, ADMIN_USER, 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17', ENTITY_TYPE_ATTACK_PATTERN);
-    const generateFilters = (reverse, withRegardingOf = true, regardingOfOperator = 'eq', mainMode = 'and') => {
+    const generateFilters = (reverse: boolean, withRegardingOf = true, regardingOfOperator = 'eq', mainMode = 'and') => {
       return {
         mode: mainMode,
         filters: [
@@ -2820,27 +2889,27 @@ describe('Complex filters regarding of for elastic queries', () => {
       };
     };
     const baseQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false, false) } });
-    const globalCount = baseQueryResult.data.globalSearch.edges.length;
+    const globalCount = baseQueryResult.data?.globalSearch.edges.length;
     expect(globalCount).toEqual(3);
     // reverse = true
     const queryResultReverse = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, true, 'eq') } });
-    expect(queryResultReverse.data.globalSearch.edges.length).toEqual(1);
-    expect(queryResultReverse.data.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    expect(queryResultReverse.data?.globalSearch.edges.length).toEqual(1);
+    expect(queryResultReverse.data?.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
     const queryResultReverseOr = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, true, 'eq', 'or') } });
-    expect(queryResultReverseOr.data.globalSearch.edges.length).toEqual(3);
+    expect(queryResultReverseOr.data?.globalSearch.edges.length).toEqual(3);
     const notEqQueryResultReverse = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, true, 'not_eq') } });
-    expect(notEqQueryResultReverse.data.globalSearch.edges.length).toEqual(2);
-    expect(notEqQueryResultReverse.data.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
-    expect(notEqQueryResultReverse.data.globalSearch.edges[1].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+    expect(notEqQueryResultReverse.data?.globalSearch.edges.length).toEqual(2);
+    expect(notEqQueryResultReverse.data?.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
+    expect(notEqQueryResultReverse.data?.globalSearch.edges[1].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
     // reverse = false
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false, true, 'eq') } });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(0); // 0 instead of 1 because of the reverse that implies a post filtering
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(0); // 0 instead of 1 because of the reverse that implies a post filtering
     const queryResultOr = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false, true, 'eq', 'or') } });
-    expect(queryResultOr.data.globalSearch.edges.length).toEqual(3);
+    expect(queryResultOr.data?.globalSearch.edges.length).toEqual(3);
     const notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false, true, 'not_eq') } });
-    expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(2); // 2 here as post filtering is not applied on not_eq
-    expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
-    expect(notEqQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+    expect(notEqQueryResult.data?.globalSearch.edges.length).toEqual(2); // 2 here as post filtering is not applied on not_eq
+    expect(notEqQueryResult.data?.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
+    expect(notEqQueryResult.data?.globalSearch.edges[1].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
   });
   it('should list entities using basic regarding of dynamic filter', async () => {
     const generateFilters = (withRegardingOf = true, regardingOfOperator = 'eq', mainMode = 'and') => {
@@ -2893,21 +2962,21 @@ describe('Complex filters regarding of for elastic queries', () => {
       };
     };
     const baseQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false) } });
-    const globalCount = baseQueryResult.data.globalSearch.edges.length;
+    const globalCount = baseQueryResult.data?.globalSearch.edges.length;
     expect(globalCount).toEqual(2);
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'eq') } });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(1);
-    expect(queryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    expect(queryResult.data?.globalSearch.edges.length).toEqual(1);
+    expect(queryResult.data?.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
     const queryResultOr = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'eq', 'or') } });
-    expect(queryResultOr.data.globalSearch.edges.length).toEqual(2);
+    expect(queryResultOr.data?.globalSearch.edges.length).toEqual(2);
     const notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq') } });
-    expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(1);
-    expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+    expect(notEqQueryResult.data?.globalSearch.edges.length).toEqual(1);
+    expect(notEqQueryResult.data?.globalSearch.edges[0].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
     const notEqOrQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq', 'or') } });
-    expect(notEqOrQueryResult.data.globalSearch.edges.length).toEqual(42);
+    expect(notEqOrQueryResult.data?.globalSearch.edges.length).toEqual(42);
   });
   it('should list entities using multi relationships regarding of filter', async () => {
-    const generateFilters = (withRegardingOf = true, relationships = [], regardingOfOperator = 'eq', mainMode = 'and') => {
+    const generateFilters = (withRegardingOf = true, relationships: string[] = [], regardingOfOperator = 'eq', mainMode = 'and') => {
       return {
         mode: mainMode,
         filters: [
@@ -2940,7 +3009,7 @@ describe('Complex filters regarding of for elastic queries', () => {
       };
     };
     const baseQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false) } });
-    const globalCount = baseQueryResult.data.globalSearch.edges.length;
+    const globalCount = baseQueryResult.data?.globalSearch.edges.length;
     expect(globalCount).toEqual(2);
     // Paradise Ransomware / malware--faa5b705-cf44-4e50-8472-29e5fec43c3c [standard_id = malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714]
     // - uses > attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc
@@ -2949,29 +3018,29 @@ describe('Complex filters regarding of for elastic queries', () => {
     // Spelevo EK / malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88 [standard_id = malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85]
     // - related-to > malware-analysis--8fd6fcd4-81a9-4937-92b8-4e1cbe68f263"
     let eqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, ['uses'], 'eq') } });
-    expect(eqQueryResult.data.globalSearch.edges.length).toEqual(1);
+    expect(eqQueryResult.data?.globalSearch.edges.length).toEqual(1);
     const eqOrQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, ['uses'], 'eq', 'or') } });
-    expect(eqOrQueryResult.data.globalSearch.edges.length).toEqual(5);
+    expect(eqOrQueryResult.data?.globalSearch.edges.length).toEqual(5);
     // Same edges[0]/[1] swap as above: T1369 (5d51528f-...) sorts before T1368 (b7f107ad-...) after #16132.
-    expect(eqOrQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('attack-pattern--5d51528f-84fc-575c-a120-1dd45f0836e5');
-    expect(eqOrQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('attack-pattern--b7f107ad-4327-5546-8eaf-d4139cd57498');
-    expect(eqOrQueryResult.data.globalSearch.edges[2].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
-    expect(eqOrQueryResult.data.globalSearch.edges[3].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
-    expect(eqOrQueryResult.data.globalSearch.edges[4].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+    expect(eqOrQueryResult.data?.globalSearch.edges[0].node.standard_id).toEqual('attack-pattern--5d51528f-84fc-575c-a120-1dd45f0836e5');
+    expect(eqOrQueryResult.data?.globalSearch.edges[1].node.standard_id).toEqual('attack-pattern--b7f107ad-4327-5546-8eaf-d4139cd57498');
+    expect(eqOrQueryResult.data?.globalSearch.edges[2].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
+    expect(eqOrQueryResult.data?.globalSearch.edges[3].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    expect(eqOrQueryResult.data?.globalSearch.edges[4].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
     eqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, ['uses', 'related-to'], 'eq') } });
-    expect(eqQueryResult.data.globalSearch.edges.length).toEqual(2);
-    expect(eqQueryResult.data.globalSearch.edges[0].node.representative.main).toEqual('Paradise Ransomware');
-    expect(eqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
-    expect(eqQueryResult.data.globalSearch.edges[1].node.representative.main).toEqual('Spelevo EK');
-    expect(eqQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+    expect(eqQueryResult.data?.globalSearch.edges.length).toEqual(2);
+    expect(eqQueryResult.data?.globalSearch.edges[0].node.representative.main).toEqual('Paradise Ransomware');
+    expect(eqQueryResult.data?.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    expect(eqQueryResult.data?.globalSearch.edges[1].node.representative.main).toEqual('Spelevo EK');
+    expect(eqQueryResult.data?.globalSearch.edges[1].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
     let notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, ['uses', 'related-to'], 'not_eq') } });
-    expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(0);
+    expect(notEqQueryResult.data?.globalSearch.edges.length).toEqual(0);
     notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, ['uses'], 'not_eq') } });
-    expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(1);
-    expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+    expect(notEqQueryResult.data?.globalSearch.edges.length).toEqual(1);
+    expect(notEqQueryResult.data?.globalSearch.edges[0].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
   });
   it('should list entities using multi ids regarding of filter', async () => {
-    const generateFilters = (withRegardingOf = true, ids = [], regardingOfOperator = 'eq', mainMode = 'and') => {
+    const generateFilters = (withRegardingOf = true, ids: string[] = [], regardingOfOperator = 'eq', mainMode = 'and') => {
       return {
         mode: mainMode,
         filters: [
@@ -3004,7 +3073,7 @@ describe('Complex filters regarding of for elastic queries', () => {
       };
     };
     const baseQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false) } });
-    const globalCount = baseQueryResult.data.globalSearch.edges.length;
+    const globalCount = baseQueryResult.data?.globalSearch.edges.length;
     // console.log(JSON.stringify(baseQueryResult, null, 2));
     expect(globalCount).toEqual(2);
     // Paradise Ransomware / malware--faa5b705-cf44-4e50-8472-29e5fec43c3c [standard_id = malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714]
@@ -3016,20 +3085,20 @@ describe('Complex filters regarding of for elastic queries', () => {
     const targetAttack = await storeLoadById(testContext, ADMIN_USER, 'attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc', ENTITY_TYPE_ATTACK_PATTERN);
     let eqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, [targetAttack.internal_id], 'eq') } });
     // console.log(JSON.stringify(eqQueryResult, null, 2));
-    expect(eqQueryResult.data.globalSearch.edges.length).toEqual(1);
+    expect(eqQueryResult.data?.globalSearch.edges.length).toEqual(1);
     const malwareAnalysis = await storeLoadById(testContext, ADMIN_USER, 'malware-analysis--8fd6fcd4-81a9-4937-92b8-4e1cbe68f263', ENTITY_TYPE_MALWARE_ANALYSIS);
     eqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, [targetAttack.internal_id, malwareAnalysis.internal_id], 'eq') } });
-    expect(eqQueryResult.data.globalSearch.edges.length).toEqual(2);
-    expect(eqQueryResult.data.globalSearch.edges[0].node.representative.main).toEqual('Paradise Ransomware');
-    expect(eqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
-    expect(eqQueryResult.data.globalSearch.edges[1].node.representative.main).toEqual('Spelevo EK');
-    expect(eqQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+    expect(eqQueryResult.data?.globalSearch.edges.length).toEqual(2);
+    expect(eqQueryResult.data?.globalSearch.edges[0].node.representative.main).toEqual('Paradise Ransomware');
+    expect(eqQueryResult.data?.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    expect(eqQueryResult.data?.globalSearch.edges[1].node.representative.main).toEqual('Spelevo EK');
+    expect(eqQueryResult.data?.globalSearch.edges[1].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
     const eqOrQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, [targetAttack.internal_id, malwareAnalysis.internal_id], 'eq', 'or') } });
-    expect(eqOrQueryResult.data.globalSearch.edges.length).toEqual(4);
+    expect(eqOrQueryResult.data?.globalSearch.edges.length).toEqual(4);
     let notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, [targetAttack.internal_id], 'not_eq') } });
-    expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(1);
+    expect(notEqQueryResult.data?.globalSearch.edges.length).toEqual(1);
     notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, [targetAttack.internal_id, malwareAnalysis.internal_id], 'not_eq') } });
-    expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(0);
+    expect(notEqQueryResult.data?.globalSearch.edges.length).toEqual(0);
   });
   it('should list entities using regarding of filter with inferred subfilter set to false', async () => {
     const generateFilters = (withRegardingOf = true, regardingOfOperator = 'eq', isInferredSubFilterValue = false) => {
@@ -3070,12 +3139,12 @@ describe('Complex filters regarding of for elastic queries', () => {
     };
     // with inferred subfilter value = false
     const eqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'eq', false) } });
-    expect(eqQueryResult.data.globalSearch.edges.length).toEqual(2);
-    expect(eqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
-    expect(eqQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    expect(eqQueryResult.data?.globalSearch.edges.length).toEqual(2);
+    expect(eqQueryResult.data?.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
+    expect(eqQueryResult.data?.globalSearch.edges[1].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
     const notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq', false) } });
-    expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(1);
-    expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+    expect(notEqQueryResult.data?.globalSearch.edges.length).toEqual(1);
+    expect(notEqQueryResult.data?.globalSearch.edges[0].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
   });
 });
 
@@ -3109,7 +3178,7 @@ describe('User filter tests', () => {
   `;
   const authUser = getFakeAuthUser('Platform administrator');
   authUser.capabilities = [{ name: SETTINGS_SET_ACCESSES }];
-  const createdUsers = [];
+  const createdUsers: { id: string }[] = [];
 
   beforeAll(async () => {
     const serviceAccountUser = {
@@ -3169,7 +3238,7 @@ describe('User filter tests', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.users.edges.length).toEqual(1);
+    expect(queryResult.data?.users.edges.length).toEqual(1);
   });
   it('should list Users with no service account', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY,
@@ -3186,7 +3255,7 @@ describe('User filter tests', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.users.edges.length).toEqual(TESTING_USERS.length + 1 + 2); // admin + test users + 2 created above
+    expect(queryResult.data?.users.edges.length).toEqual(TESTING_USERS.length + 1 + 2); // admin + test users + 2 created above
   });
   it('should list Users with no service account', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY,
@@ -3203,7 +3272,7 @@ describe('User filter tests', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.users.edges.length).toEqual(TESTING_USERS.length + 1 + 2); // admin + test users + 2 created above
+    expect(queryResult.data?.users.edges.length).toEqual(TESTING_USERS.length + 1 + 2); // admin + test users + 2 created above
   });
   it('should list Users with or without service account === all Users', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY,
@@ -3220,7 +3289,7 @@ describe('User filter tests', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.users.edges.length).toEqual(TESTING_USERS.length + 1 + 3); // admin + test users + 3 created above
+    expect(queryResult.data?.users.edges.length).toEqual(TESTING_USERS.length + 1 + 3); // admin + test users + 3 created above
   });
   it('should list Users with and without service account === No User', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY,
@@ -3237,6 +3306,6 @@ describe('User filter tests', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.users.edges.length).toEqual(0);
+    expect(queryResult.data?.users.edges.length).toEqual(0);
   });
 });

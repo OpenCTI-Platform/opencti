@@ -64,7 +64,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { styled, useTheme } from '@mui/material/styles';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import DateTimePicker from '../../../components/common/input/picker/BaseDateTimePicker';
 import { BankMinus, BankPlus, CloudRefreshOutline, LabelOutline } from 'mdi-material-ui';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';

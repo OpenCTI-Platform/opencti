@@ -994,7 +994,7 @@ export const getAvailableOperatorForFilterKey = (
     return ['gt', 'gte', 'lt', 'lte', 'nil', 'not_nil', 'within', ...changeOperators];
   }
   if (isNumericFilter(filterType)) {
-    return ['gt', 'gte', 'lt', 'lte', 'eq', 'not_eq', ...changeOperators];
+    return ['gt', 'gte', 'lt', 'lte', 'eq', 'not_eq', 'nil', 'not_nil', ...changeOperators];
   }
   if (filterType === 'boolean') {
     return ['eq', 'not_eq', ...changeOperators];

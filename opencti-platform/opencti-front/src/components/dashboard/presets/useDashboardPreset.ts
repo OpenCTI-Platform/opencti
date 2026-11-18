@@ -8,7 +8,6 @@ import { dashboardTimeRangeStorageKey, writeStoredTimeRange } from '../dashboard
 interface UseDashboardPresetOptions {
   // The home dashboard and a user without the selector only ever see the default preset: nothing local is read or written.
   ignoreLocalValues?: boolean;
-  enabled?: boolean;
   // The preset this dashboard opens on for the current user (their own choice, or the one of their group).
   defaultPresetId?: string | null;
 }
@@ -21,12 +20,12 @@ interface UseDashboardPresetOptions {
 export const useDashboardPreset = (
   workspaceId: string,
   presets: readonly DashboardPreset[],
-  { ignoreLocalValues = false, enabled = true, defaultPresetId = null }: UseDashboardPresetOptions = {},
+  { ignoreLocalValues = false, defaultPresetId = null }: UseDashboardPresetOptions = {},
 ) => {
   const { me } = useAuth();
   const key = dashboardPresetStorageKey(me.id, workspaceId);
   const load = () => {
-    if (ignoreLocalValues || !enabled) return null;
+    if (ignoreLocalValues) return null;
     const fromUrl = parsePresetParam(window.location.search);
     const stored = readStoredPresetId(key);
     // A shared address opens the view of its preset: the values and range this user had kept on another preset are
@@ -42,15 +41,15 @@ export const useDashboardPreset = (
     // The preset of the address is kept even when unknown: it applies once the presets of the dashboard hold it.
     return fromUrl ?? stored;
   };
-  const [state, setState] = useState(() => ({ key, ignoreLocalValues, enabled, stored: load() }));
+  const [state, setState] = useState(() => ({ key, ignoreLocalValues, stored: load() }));
   let { stored } = state;
-  if (state.key !== key || state.ignoreLocalValues !== ignoreLocalValues || state.enabled !== enabled) {
+  if (state.key !== key || state.ignoreLocalValues !== ignoreLocalValues) {
     stored = load();
-    setState({ key, ignoreLocalValues, enabled, stored });
+    setState({ key, ignoreLocalValues, stored });
   }
 
   const presetIds = presets.map((preset) => preset.id).join();
-  const effectiveDefaultId = enabled && defaultPresetId && presets.some((preset) => preset.id === defaultPresetId) ? defaultPresetId : null;
+  const effectiveDefaultId = defaultPresetId && presets.some((preset) => preset.id === defaultPresetId) ? defaultPresetId : null;
   // A stored preset that was deleted meanwhile falls back to the default one; no preset chosen explicitly does not.
   let activeId: string | null = effectiveDefaultId;
   if (stored === NO_PRESET_ID) activeId = null;
@@ -70,30 +69,29 @@ export const useDashboardPreset = (
   // default preset meanwhile, so does the publication form for an unknown preset in the address, and the preset
   // applies once the dashboard holds it.
   useEffect(() => {
-    if (!enabled) return;
     if (!ignoreLocalValues) {
       if (!stored) writePresetParam(null);
       else if (stored === NO_PRESET_ID || presets.some((preset) => preset.id === stored)) writePresetParam(stored);
     } else if (parsePresetParam(window.location.search)) writePresetParam(null);
-  }, [stored, ignoreLocalValues, enabled, presetIds]);
+  }, [stored, ignoreLocalValues, presetIds]);
 
   const commit = useCallback((next: string | null) => {
     writeStoredPresetId(key, next);
     writePresetParam(next);
-    setState({ key, ignoreLocalValues, enabled, stored: next });
-  }, [key, ignoreLocalValues, enabled]);
+    setState({ key, ignoreLocalValues, stored: next });
+  }, [key, ignoreLocalValues]);
 
   // Selects a preset for this user (null: back to the default preset, or none).
   const select = useCallback((presetId: string | null) => {
-    if (ignoreLocalValues || !enabled) return;
+    if (ignoreLocalValues) return;
     commit(presetId === effectiveDefaultId ? null : presetId);
-  }, [commit, ignoreLocalValues, enabled, effectiveDefaultId]);
+  }, [commit, ignoreLocalValues, effectiveDefaultId]);
 
   // Selects no preset: the defaults of the dashboard, also for a user with a default preset.
   const selectNone = useCallback(() => {
-    if (ignoreLocalValues || !enabled) return;
+    if (ignoreLocalValues) return;
     commit(effectiveDefaultId ? NO_PRESET_ID : null);
-  }, [commit, ignoreLocalValues, enabled, effectiveDefaultId]);
+  }, [commit, ignoreLocalValues, effectiveDefaultId]);
 
   return { activePreset, defaultPreset, select, selectNone };
 };

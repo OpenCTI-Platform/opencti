@@ -40,11 +40,10 @@ const MANIFEST = toB64(JSON.stringify({
 
 const LOADER_QUERY = 'PublicDashboardPublishedValuesQuery';
 
-const renderForm = async (flags: string[], { resolveLoader = true } = {}) => {
+const renderForm = async ({ resolveLoader = true } = {}) => {
   const rendered = testRender(<PublicDashboardCreationForm dashboard_id="dashboard-1" />, {
     userContext: createMockUserContext({
       me: { id: 'user-1', name: 'admin' },
-      settings: { platform_feature_flags: flags.map((id) => ({ id, enable: true })) },
     }),
   });
   act(() => {
@@ -52,16 +51,14 @@ const renderForm = async (flags: string[], { resolveLoader = true } = {}) => {
       data: { workspaces: { edges: [{ node: { id: 'dashboard-1', name: 'Dashboard', currentUserAccessRight: 'admin', manifest: MANIFEST } }] } },
     });
   });
-  if (flags.includes('DASHBOARD_VARIABLES')) {
-    // The published values section loads the selected dashboard, with its variables and presets, on its own.
-    await waitFor(() => expect(rendered.relayEnv.mock.getAllOperations().some((op) => op.request.node.operation.name === LOADER_QUERY)).toBe(true));
-    if (!resolveLoader) return rendered;
-    act(() => {
-      rendered.relayEnv.mock.resolveMostRecentOperation({
-        data: { workspace: { id: 'dashboard-1', manifest: MANIFEST, variables: [{ id: SECTOR, usedInWidgetIds: ['widget-1'] }], presets: [] } },
-      });
+  // The published values section loads the selected dashboard, with its variables and presets, on its own.
+  await waitFor(() => expect(rendered.relayEnv.mock.getAllOperations().some((op) => op.request.node.operation.name === LOADER_QUERY)).toBe(true));
+  if (!resolveLoader) return rendered;
+  act(() => {
+    rendered.relayEnv.mock.resolveMostRecentOperation({
+      data: { workspace: { id: 'dashboard-1', manifest: MANIFEST, variables: [{ id: SECTOR, usedInWidgetIds: ['widget-1'] }], presets: [] } },
     });
-  }
+  });
   return rendered;
 };
 
@@ -82,7 +79,7 @@ describe('PublicDashboardCreationForm', () => {
   });
 
   it('should publish the values chosen in the published values section, with the time range and the time zone', async () => {
-    const { user } = await renderForm(['DASHBOARD_VARIABLES']);
+    const { user } = await renderForm();
     const sector = await screen.findByDisplayValue('Finance');
     await user.clear(sector);
     await user.type(sector, 'Energy');
@@ -100,7 +97,7 @@ describe('PublicDashboardCreationForm', () => {
   });
 
   it('keeps Create disabled until the published values of the selected dashboard are loaded', async () => {
-    const { user, relayEnv } = await renderForm(['DASHBOARD_VARIABLES'], { resolveLoader: false });
+    const { user, relayEnv } = await renderForm({ resolveLoader: false });
     await user.type(screen.getByLabelText('Name'), 'Finance view');
     await user.click(screen.getByRole('button', { name: 'Pick a marking' }));
     const create = screen.getByRole('button', { name: 'Create' });
@@ -120,7 +117,7 @@ describe('PublicDashboardCreationForm', () => {
   });
 
   it('should keep Create disabled while a date picker shows a date it refuses', async () => {
-    const { user } = await renderForm(['DASHBOARD_VARIABLES']);
+    const { user } = await renderForm();
     await screen.findByDisplayValue('Finance');
     // The manifest range is relative: the pickers are not in use, a refused date there does not count
     await user.type(screen.getByLabelText('Name'), 'Finance view');
@@ -136,7 +133,7 @@ describe('PublicDashboardCreationForm', () => {
 
   it('should block the publication on a refused date when the range is absolute', async () => {
     localStorage.setItem('dashboard-time-range-user-1-dashboard-1', JSON.stringify({ relativeDate: null, startDate: null, endDate: null }));
-    const { user } = await renderForm(['DASHBOARD_VARIABLES']);
+    const { user } = await renderForm();
     await screen.findByDisplayValue('Finance');
     await user.type(screen.getByLabelText('Name'), 'Finance view');
     await user.click(screen.getByRole('button', { name: 'Pick a marking' }));
@@ -157,7 +154,6 @@ describe('PublicDashboardCreationForm', () => {
     const rendered = testRender(<PublicDashboardCreationForm />, {
       userContext: createMockUserContext({
         me: { id: 'user-1', name: 'admin' },
-        settings: { platform_feature_flags: [{ id: 'DASHBOARD_VARIABLES', enable: true }] },
       }),
     });
     act(() => {
@@ -191,19 +187,5 @@ describe('PublicDashboardCreationForm', () => {
     await pick('Second dashboard', 'dashboard-2');
     await waitFor(() => expect(create).toBeEnabled());
     expect(screen.queryByTestId('public-dashboard-published-date-error')).toBeNull();
-  });
-
-  it('should neither show the section nor send its values without the feature flag', async () => {
-    const { user } = await renderForm([]);
-    await screen.findByLabelText('Name');
-    expect(screen.queryByTestId('public-dashboard-published-values')).toBeNull();
-    const input = await fillAndSubmit(user);
-    expect(input).toEqual({
-      name: 'Finance view',
-      enabled: true,
-      uri_key: 'finance-view',
-      dashboard_id: 'dashboard-1',
-      allowed_markings_ids: ['marking-id'],
-    });
   });
 });

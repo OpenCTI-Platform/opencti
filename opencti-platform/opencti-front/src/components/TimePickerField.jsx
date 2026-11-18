@@ -1,10 +1,10 @@
 import React from 'react';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { fieldToTimePicker } from 'formik-mui-lab';
 import { useField } from 'formik';
 import * as R from 'ramda';
 import { useIntl } from 'react-intl';
 import { isAcceptedFromView, parse } from '../utils/Time';
+import TimePicker from './common/input/picker/BaseTimePicker';
 
 const timeFormatsMap = {
   'de-de': 'HH:mm',
