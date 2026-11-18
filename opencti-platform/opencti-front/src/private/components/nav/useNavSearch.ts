@@ -8,40 +8,52 @@ export interface NavSearchResult {
   label: string;
   /** Labels of the parent pages, e.g. ['Data', 'Import'] */
   parents: string[];
+  /** Why the page matches when the displayed label and breadcrumb do not say it: the matched keywords / English breadcrumb words. */
+  hints?: string[];
 }
 
 /**
- * `names`: the page label, in the user language and in English. `context`: what else finds the page besides its
- * (translated) `parents`: English breadcrumb and keywords. Entries may be undefined (no English label known).
+ * `names`: the page label, in the user language and in English. Besides its (translated) `parents`, a page is found by
+ * its `keywords` (user language first, then English) and its English `breadcrumb`. Entries may be undefined (no English
+ * label known).
  */
-type Node = NavSearchResult & { names: (string | undefined)[]; context: (string | undefined)[] };
+type Node = Omit<NavSearchResult, 'hints'> & {
+  names: (string | undefined)[];
+  keywords: (string | undefined)[];
+  breadcrumb: (string | undefined)[];
+};
 
 /** Consumers display at most this many pages: the hook returns them all so they can tell when the list is cut. */
 export const PLATFORM_SEARCH_PAGE_MAX_RESULTS = 10;
 
 // Case and accent insensitive: labels are translated, "parametres" must find "Paramètres".
 const fold = (text: string) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
-// "&" stays inside a word ("c&c", "att&ck"); a lone "&" is not a word.
-const words = (text: string) => fold(text).split(/[^\p{L}\p{N}&]+/u).filter((word) => /[\p{L}\p{N}]/u.test(word));
+// "&" stays inside a word ("c&c", "att&ck"); a lone "&" is not a word. `folded` is what is compared, `shown` what a
+// hint displays: lower case (keywords reuse the casing of the translation keys) but with its accents.
+const words = (text: string) => text
+  .split(/[^\p{L}\p{N}\p{M}&]+/u)
+  .filter((word) => /[\p{L}\p{N}]/u.test(word))
+  .map((word) => ({ folded: fold(word), shown: word.toLowerCase() }));
 
 const useNavSearch = (keyword?: string | null): NavSearchResult[] => {
   const { t_i18n } = useFormatter();
   const navGroups = useNavMenu();
   const entries = useVisibleEntries(allMenuEntries);
 
-  const tokens = words(keyword ?? '');
+  const tokens = words(keyword ?? '').map(({ folded }) => folded);
   if (tokens.length === 0) return [];
 
   // Left bar: already filtered by permissions and hidden entities. Translation keys are the English texts, so the
   // English label/keywords are searched too: a user can type the English name whatever the platform language.
   const navNodes: Node[] = navGroups.flatMap((group) => group.items.flatMap((item) => [
-    { path: item.link, label: item.label, parents: [], names: [item.label, item.englishLabel], context: item.keywords ?? [] },
+    { path: item.link, label: item.label, parents: [], names: [item.label, item.englishLabel], keywords: item.keywords ?? [], breadcrumb: [] },
     ...(item.subItems ?? []).map((sub) => ({
       path: sub.link,
       label: sub.label,
       parents: [item.label],
       names: [sub.label, sub.englishLabel],
-      context: [item.englishLabel, ...(sub.keywords ?? [])],
+      keywords: sub.keywords ?? [],
+      breadcrumb: [item.englishLabel],
     })),
   ]));
 
@@ -63,7 +75,8 @@ const useNavSearch = (keyword?: string | null): NavSearchResult[] => {
         label: names[0],
         parents: standaloneParents.map((p) => t_i18n(p)),
         names,
-        context: [...standaloneParents, ...keywords],
+        keywords,
+        breadcrumb: standaloneParents,
       }];
     }
     const section = sectionOf(entry.path);
@@ -73,7 +86,8 @@ const useNavSearch = (keyword?: string | null): NavSearchResult[] => {
       label: names[0],
       parents: [...section.parents, section.label],
       names,
-      context: [...section.english, ...keywords],
+      keywords,
+      breadcrumb: section.english,
     }];
   });
 
@@ -81,17 +95,30 @@ const useNavSearch = (keyword?: string | null): NavSearchResult[] => {
   [...navNodes, ...entryNodes].forEach((node) => byPath.set(node.path, node));
 
   // Every typed word must start a word of the page: of its label (rank 0), or of its breadcrumb / keywords (rank 1).
-  const startsAWord = (pool: string[]) => tokens.every((token) => pool.some((w) => w.startsWith(token)));
-  const matchRank = (node: Node) => {
-    const nameWords = words(node.names.join(' '));
-    if (startsAWord(nameWords)) return 0;
-    return startsAWord([...nameWords, ...words([...node.parents, ...node.context].join(' '))]) ? 1 : -1;
+  // A word found only in the English label, a keyword or the English breadcrumb is not visible in the result: it comes
+  // back as a hint (in the language typed: the pools are ordered user language first).
+  const match = (node: Node): { rank: number; hints: string[] } | undefined => {
+    const folded = (text: (string | undefined)[]) => words(text.join(' ')).map((w) => w.folded);
+    const visible = [...folded(node.names.slice(0, 1)), ...folded(node.parents)];
+    const hidden = words([...node.names.slice(1), ...node.keywords, ...node.breadcrumb].join(' '));
+    const hints = new Set<string>();
+    const found = tokens.every((token) => {
+      if (visible.some((w) => w.startsWith(token))) return true;
+      const hit = hidden.find((w) => w.folded.startsWith(token));
+      if (hit) hints.add(hit.shown);
+      return !!hit;
+    });
+    if (!found) return undefined;
+    const names = folded(node.names);
+    return { rank: tokens.every((token) => names.some((w) => w.startsWith(token))) ? 0 : 1, hints: [...hints] };
   };
   return [...byPath.values()]
-    .map((node) => ({ node, rank: matchRank(node) }))
-    .filter(({ rank }) => rank >= 0)
+    .flatMap((node) => {
+      const result = match(node);
+      return result ? [{ node, ...result }] : [];
+    })
     .sort((a, b) => a.rank - b.rank)
-    .map(({ node: { path, label, parents } }) => ({ path, label, parents }));
+    .map(({ node: { path, label, parents }, hints }) => (hints.length > 0 ? { path, label, parents, hints } : { path, label, parents }));
 };
 
 export default useNavSearch;

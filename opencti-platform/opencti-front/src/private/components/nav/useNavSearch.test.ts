@@ -96,6 +96,38 @@ describe('Hook: useNavSearch', () => {
     ['sso', 'SSO'].forEach((typed) => expect(search(typed)).toContain('/dashboard/settings/accesses/authentications'));
   });
 
+  it('hints the keyword that matched when neither the label nor the breadcrumb say why', () => {
+    subItems = [{ link: '/dashboard/x', label: 'Parameters', keywords: ['themes', 'Dependencies'] }];
+    const hints = (keyword: string) => testRenderHook(() => useNavSearch(keyword)).hook.result.current
+      .find(({ path }) => path === '/dashboard/x')?.hints;
+    // Lower case, whatever the casing of the keyword ('Dependencies').
+    expect(hints('the')).toEqual(['themes']);
+    expect(hints('DEPEND')).toEqual(['dependencies']);
+    // The label says it: no hint.
+    expect(hints('param')).toBeUndefined();
+    // One hint per typed word that only a keyword explains.
+    expect(hints('param the')).toEqual(['themes']);
+  });
+
+  it('hints the word of the language typed, with its accents', () => {
+    // Keyword translated as in a French UI, the English one stays searchable too.
+    subItems = [{ link: '/dashboard/x', label: 'Réglages', keywords: ['thème', 'theme'] }];
+    const hints = (keyword: string) => testRenderHook(() => useNavSearch(keyword)).hook.result.current
+      .find(({ path }) => path === '/dashboard/x')?.hints;
+    expect(hints('the')).toEqual(['thème']);
+    expect(hints('thè')).toEqual(['thème']);
+  });
+
+  it('hints the English label word when it is the English label that matched', () => {
+    subItems = [{ link: '/dashboard/x', label: 'Paramètres avancés', englishLabel: 'Advanced parameters' }];
+    const hints = (keyword: string) => testRenderHook(() => useNavSearch(keyword)).hook.result.current
+      .find(({ path }) => path === '/dashboard/x')?.hints;
+    expect(hints('adv')).toEqual(['advanced']);
+    // Matched in the displayed label too: no hint.
+    expect(hints('param')).toBeUndefined();
+    expect(hints('param adv')).toEqual(['advanced']);
+  });
+
   it('finds the Home page', () => {
     subItems = [];
     expect(search('home')).toEqual(['/dashboard']);

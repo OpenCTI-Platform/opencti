@@ -38,9 +38,9 @@ const NavigationSearchResults = ({ keyword }: { keyword?: string | null }) => {
         {t_i18n('Application pages')}
       </Text>
       <List disablePadding aria-labelledby={TITLE_ID}>
-        {(showAll ? results : results.slice(0, INITIAL_COUNT)).map(({ path, label, parents }) => (
+        {(showAll ? results : results.slice(0, INITIAL_COUNT)).map(({ path, label, parents, hints }) => (
           <ListItemButton key={path} component={Link} to={path} onClick={focusMainContent} sx={{ borderRadius: 1 }}>
-            <NavSearchResultContent label={label} parents={parents} iconWidth={48} />
+            <NavSearchResultContent label={label} parents={parents} hints={hints} iconWidth={48} />
             <ChevronRightOutlined fontSize="small" color="disabled" />
           </ListItemButton>
         ))}

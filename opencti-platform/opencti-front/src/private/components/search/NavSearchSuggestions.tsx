@@ -82,7 +82,7 @@ const NavSearchSuggestions = ({ keyword, anchorEl, activeIndex, showSearchRow = 
               <ListItemText primary={`${t_i18n('Search')}: ${keyword}`} />
             </ListItemButton>
           )}
-          {pages.map(({ path, label, parents }, index) => (
+          {pages.map(({ path, label, parents, hints }, index) => (
             // A real link: the Link navigates (plain click) and the browser handles Cmd/Ctrl-click (new tab).
             <ListItemButton
               key={path}
@@ -95,7 +95,7 @@ const NavSearchSuggestions = ({ keyword, anchorEl, activeIndex, showSearchRow = 
               selected={index + firstPageRow === activeIndex}
               onClick={onPageClick}
             >
-              <NavSearchResultContent label={label} parents={parents} iconWidth={40} />
+              <NavSearchResultContent label={label} parents={parents} hints={hints} iconWidth={40} />
             </ListItemButton>
           ))}
         </List>
