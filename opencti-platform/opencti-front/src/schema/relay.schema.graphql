@@ -18526,6 +18526,7 @@ type XtmCounterpart {
 }
 
 enum XtmCounterpartKind {
+  ALERT
   ASSET
   ATTACK_PATTERN
   THREAT

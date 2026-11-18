@@ -2,7 +2,7 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import { fetchOpenAevObjects, getOpenAevUrl, isOpenAevConnected, type OpenAevObjectPath } from './openaev-client';
 
 // Same keys and normalisation as OpenAEV's CounterpartKind, so both sides cache the same entry.
-export type CounterpartKind = 'ASSET' | 'ATTACK_PATTERN' | 'VULNERABILITY' | 'THREAT';
+export type CounterpartKind = 'ASSET' | 'ATTACK_PATTERN' | 'VULNERABILITY' | 'THREAT' | 'ALERT';
 
 export interface XtmConnection {
   product: string;
@@ -37,11 +37,23 @@ export const COUNTERPART_CACHE_TTL_MS = 2 * 60 * 1000;
 const CVE_PATTERN = /^CVE-\d{4}-\d{4,}$/;
 const MITRE_PATTERN = /^[TS]\d{4}(\.\d{3})?$|^(TA|M|G|S|C)\d{4}$/;
 const STIX_ID_PATTERN = /^[a-z][a-z0-9-]*--[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const MAX_KEY_LENGTH = 512;
+// An alert link is the URL of the alert in the security platform a collector read it from.
+const MAX_ALERT_LINK_LENGTH = 2048;
+
+const isHttpUrl = (value: string): boolean => {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
 
 /** The key as both products store it, or null when it can never match. */
 export const normaliseCounterpartKey = (kind: CounterpartKind, key: string | null | undefined): string | null => {
   const trimmed = (key ?? '').trim();
-  if (trimmed.length === 0 || trimmed.length > 512) {
+  if (trimmed.length === 0 || trimmed.length > (kind === 'ALERT' ? MAX_ALERT_LINK_LENGTH : MAX_KEY_LENGTH)) {
     return null;
   }
   switch (kind) {
@@ -59,6 +71,9 @@ export const normaliseCounterpartKey = (kind: CounterpartKind, key: string | nul
       const lower = trimmed.toLowerCase();
       return STIX_ID_PATTERN.test(lower) ? lower : null;
     }
+    case 'ALERT':
+      // Kept as written: OpenAEV matches the link exactly (CounterpartKind.ALERT).
+      return isHttpUrl(trimmed) ? trimmed : null;
     default:
       return null;
   }
@@ -83,6 +98,7 @@ const OPENAEV_PATHS: Record<CounterpartKind, OpenAevObjectPath> = {
   ATTACK_PATTERN: 'attack-patterns',
   VULNERABILITY: 'vulnerabilities',
   THREAT: 'threats',
+  ALERT: 'alerts',
 };
 
 export const openAevProvider: CounterpartProvider = {

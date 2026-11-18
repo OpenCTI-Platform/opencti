@@ -11,6 +11,7 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { Incident_incident$key } from './__generated__/Incident_incident.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import OpenAevAlertCard from '../../common/xtm/OpenAevAlertCard';
 
 const incidentFragment = graphql`
   fragment Incident_incident on Incident {
@@ -70,6 +71,13 @@ const incidentFragment = graphql`
       }
     }
     workflowEnabled
+    openAevAlertLinks: externalReferences(first: 50) {
+      edges {
+        node {
+          url
+        }
+      }
+    }
     ...WorkflowStatusStixDomainObject_data
     ...IncidentDetails_incident
   }
@@ -163,6 +171,10 @@ const Incident: React.FC<IncidentProps> = ({
             }
           })
         }
+        <OpenAevAlertCard
+          gridRow
+          alertLinks={(incident.openAevAlertLinks?.edges ?? []).map((edge) => edge?.node.url)}
+        />
       </Grid>
     </>
   );

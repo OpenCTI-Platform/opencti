@@ -6,7 +6,7 @@ import { getHttpClient } from '../../../utils/http-client';
 export const OPENAEV_DEFAULT_TENANT_ID = '2cffad3a-0001-4078-b0e2-ef74274022c3';
 const OPENAEV_TIMEOUT_MS = 5000;
 
-export type OpenAevObjectPath = 'assets' | 'attack-patterns' | 'vulnerabilities' | 'threats';
+export type OpenAevObjectPath = 'assets' | 'attack-patterns' | 'vulnerabilities' | 'threats' | 'alerts';
 
 // One object OpenAEV holds for a key we asked for (OpenAEV LocalObjectOutput).
 export interface OpenAevLocalObject {

@@ -54,6 +54,15 @@ describe('XTM counterparts: key normalisation', () => {
     expect(normaliseCounterpartKey('ASSET', null)).toBeNull();
   });
 
+  it('keeps an alert link as written and drops anything that is not an http(s) URL', () => {
+    const link = 'https://edr.example.com/alerts/AbC-123?tenant=Main';
+    expect(normaliseCounterpartKey('ALERT', `  ${link} `)).toBe(link);
+    expect(normaliseCounterpartKey('ALERT', 'alert-123')).toBeNull();
+    expect(normaliseCounterpartKey('ALERT', 'javascript:alert(1)')).toBeNull();
+    expect(normaliseCounterpartKey('ALERT', `https://edr.example.com/${'a'.repeat(2048)}`)).toBeNull();
+    expect(normaliseCounterpartKey('ALERT', `https://edr.example.com/${'a'.repeat(600)}`)).not.toBeNull();
+  });
+
   it('dedupes and caps the batch', () => {
     expect(normaliseCounterpartKeys('VULNERABILITY', ['CVE-2024-1111', 'cve-2024-1111', 'bad'])).toEqual(['CVE-2024-1111']);
     const many = Array.from({ length: 300 }, (_, i) => `host-${i}`);

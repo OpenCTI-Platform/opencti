@@ -3,11 +3,13 @@
 # ATTACK_PATTERN: Attack-Pattern, by its MITRE id (x_mitre_id)
 # VULNERABILITY: Vulnerability, by its CVE id
 # THREAT: Report, Threat actor, Intrusion set, Malware, Campaign, by the STIX id an OpenAEV scenario was generated from
+# ALERT: Incident, Sighting, by an external reference URL equal to the link of an alert an OpenAEV collector matched
 enum XtmCounterpartKind {
   ASSET
   ATTACK_PATTERN
   VULNERABILITY
   THREAT
+  ALERT
 }
 
 # Whether another XTM product is connected to this platform. Never carries a credential.

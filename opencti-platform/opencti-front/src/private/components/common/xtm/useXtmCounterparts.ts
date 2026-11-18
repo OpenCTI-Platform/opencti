@@ -39,6 +39,8 @@ export const xtmCounterpartsQuery = graphql`
 export const normaliseXtmKey = (kind: XtmCounterpartKind, key: string | null | undefined): string | null => {
   const trimmed = (key ?? '').trim();
   if (trimmed.length === 0) return null;
+  // An alert link is matched exactly by OpenAEV: its path and query are case-sensitive.
+  if (kind === 'ALERT') return /^https?:\/\//i.test(trimmed) ? trimmed : null;
   if (kind === 'ASSET' || kind === 'THREAT') return trimmed.toLowerCase();
   return trimmed.toUpperCase();
 };
