@@ -5564,7 +5564,9 @@ const elDeleteElementsBatched = async (
 ) => {
   const rootIds = elements.map((e) => e.internal_id);
   const batchSize = cascadePageSize(opts.batchSize);
-  if (!isDeleteControlBypassed(user)) {
+  const withControls = !isDeleteControlBypassed(user);
+  if (withControls) {
+    // Refuse up front, before anything is deleted, if any relation of the cascade fails the controls
     await preflightRelationsCascade(context, user, elements, { withControls: true, batchSize });
   }
   let isHeavy = false;
@@ -5586,6 +5588,11 @@ const elDeleteElementsBatched = async (
   const onPage = async (page: BasicStoreRelation[], removedIds: Set<string>) => {
     // The lock can be lost during the pre-flight or while reading the page: never write without it
     opts.signal?.throwIfAborted();
+    // A relation created after the pre-flight was never checked: never delete it without the controls.
+    // If one fails, the delete stops there, with the pages already deleted, as an interrupted delete does.
+    if (withControls) {
+      await controlRelationsToDelete(context, user, page);
+    }
     // Clean up the denormalized rel_ of the elements that remain, then delete the page
     const elementsImpact = await computeDeleteElementsImpacts(page, [], removedIds);
     await elRemoveRelationConnection(context, user, elementsImpact, opts);
@@ -5660,6 +5667,14 @@ export const elDeleteElements = async (
   }
   // Trash: the cascade is below the cap and the controls passed, it can be loaded in one go
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, SYSTEM_USER, elements);
+  // Relations can be created after the pre-flight: check the snapshot itself before anything is written
+  const maxRelations = opts.maxSnapshotRelations ?? DELETE_MAX_SNAPSHOT_RELATIONS;
+  if (relations.length > maxRelations) {
+    throw FunctionalError('Cannot move element to trash: too many related relations, delete it permanently', { ids: elements.map((e) => e.internal_id), max_relations: maxRelations });
+  }
+  if (!isDeleteControlBypassed(user)) {
+    await controlRelationsToDelete(context, user, relations);
+  }
   // Compute the id that needs to be removed from rel
   const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type)) as BasicStoreRelation[];
   // Update all rel connections that will remain

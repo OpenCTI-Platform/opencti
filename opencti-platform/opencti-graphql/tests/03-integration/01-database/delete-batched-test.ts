@@ -9,6 +9,8 @@ import { RELATION_RELATED_TO } from '../../../src/schema/stixCoreRelationship';
 import { ABSTRACT_BASIC_RELATIONSHIP } from '../../../src/schema/general';
 import { FilterMode } from '../../../src/generated/graphql';
 import type { BasicStoreBase } from '../../../src/types/store';
+import type { AuthUser } from '../../../src/types/user';
+import { generateInternalId } from '../../../src/schema/identifier';
 
 type Built = { element: Record<string, any>; relations?: Record<string, any>[] };
 
@@ -117,6 +119,24 @@ describe('Batched delete of heavily-referenced elements', () => {
 
     expect(await findLive(author.internal_id)).toHaveLength(1);
     expect(await countConnectedRelations(author.internal_id)).toBe(MALWARES_COUNT + 2);
+
+    // Cleanup
+    const liveMalwares = await elFindByIds(testContext, ADMIN_USER, malwares.map((m) => m.internal_id), { indices: READ_DATA_INDICES }) as BasicStoreBase[];
+    await elDeleteElements(testContext, ADMIN_USER, [author, ...liveMalwares]);
+  });
+
+  it('should refuse the delete of a user who cannot delete one of the relations, before deleting anything', async () => {
+    const { author, malwares } = await createAuthorWithRelations('Restricted delete author');
+    // Not a bypass user, and not the technical creator of the relations
+    const userId = generateInternalId();
+    const restrictedUser = { ...ADMIN_USER, id: userId, internal_id: userId, capabilities: [{ name: 'KNOWLEDGE' }], restrict_delete: true } as AuthUser;
+
+    const restrictedDelete = elDeleteElements(testContext, restrictedUser, [author], { batchSize: 2 });
+    await expect(restrictedDelete).rejects.toThrow('Restricted to delete this element (not the technical creator)');
+
+    expect(await findLive(author.internal_id)).toHaveLength(1);
+    expect(await countConnectedRelations(author.internal_id)).toBe(MALWARES_COUNT + 2);
+    expect(await countAuthoredMalwares(author.internal_id)).toBe(MALWARES_COUNT);
 
     // Cleanup
     const liveMalwares = await elFindByIds(testContext, ADMIN_USER, malwares.map((m) => m.internal_id), { indices: READ_DATA_INDICES }) as BasicStoreBase[];
