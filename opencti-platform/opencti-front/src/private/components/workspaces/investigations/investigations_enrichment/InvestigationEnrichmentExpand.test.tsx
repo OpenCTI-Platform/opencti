@@ -1,6 +1,6 @@
 import React from 'react';
 import { act } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../../utils/tests/test-render';
 import InvestigationEnrichmentExpand from './InvestigationEnrichmentExpand';
 import { InvestigationEnrichmentWork } from './investigation-enrichment.types';
@@ -78,21 +78,32 @@ const renderExpand = () => testRender(
 );
 
 describe('InvestigationEnrichmentExpand', () => {
+  beforeEach(() => vi.clearAllMocks());
+
   it('resets the graph filters after the expand when Reset filters is on', async () => {
-    mocks.resetFilters.mockClear();
     renderExpand();
 
     await submitExpand(true);
 
     expect(mocks.expandWorks).toHaveBeenCalled();
     expect(mocks.resetFilters).toHaveBeenCalledTimes(1);
+    expect(mocks.resetFilters.mock.invocationCallOrder[0]).toBeGreaterThan(mocks.expandWorks.mock.invocationCallOrder[0]);
   });
 
   it('keeps the graph filters when Reset filters is off', async () => {
-    mocks.resetFilters.mockClear();
     renderExpand();
 
     await submitExpand(false);
+
+    expect(mocks.expandWorks).toHaveBeenCalled();
+    expect(mocks.resetFilters).not.toHaveBeenCalled();
+  });
+
+  it('keeps the graph filters when the expand fails', async () => {
+    mocks.expandWorks.mockRejectedValueOnce(new Error('expand failed'));
+    renderExpand();
+
+    await expect(submitExpand(true)).rejects.toThrow('expand failed');
 
     expect(mocks.resetFilters).not.toHaveBeenCalled();
   });
