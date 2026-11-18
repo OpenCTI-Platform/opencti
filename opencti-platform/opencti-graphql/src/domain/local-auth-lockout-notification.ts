@@ -2,7 +2,7 @@
 // When the final action locks an existing account, the administrators who can unlock it get an email.
 // An unknown email never sends anything: there is no account to unlock.
 
-import conf, { ACCOUNT_STATUS_ACTIVE, logApp } from '../config/conf';
+import conf, { logApp } from '../config/conf';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { LOCKED_USER_EMAIL_TEMPLATE_INPUT } from '../database/locked-user-email-template-input';
 import type { LocalAuthLockType } from '../database/redis';
@@ -10,21 +10,22 @@ import { isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { findLockedUserEmailTemplate } from '../modules/emailTemplate/emailTemplate-domain';
 import type { LockedUserEmailData, LockedUserLock } from '../modules/emailTemplate/emailTemplate-render';
-import type { BasicStoreEntityEmailTemplate } from '../modules/emailTemplate/emailTemplate-types';
+import { type EmailTemplateContent, sendEmailTemplateToRecipient } from '../modules/emailTemplate/emailTemplate-send';
+import type { BasicStoreEntityOrganization } from '../modules/organization/organization-types';
 import { type BasicStoreEntityUser, ENTITY_TYPE_USER } from '../modules/user/user-types';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
-import { isServiceAccountUser, isUserHasCapability, SETTINGS_SETACCESSES, SYSTEM_USER } from '../utils/access';
+import { isServiceAccountUser, isUserAccountActive, isUserHasCapability, SETTINGS_SETACCESSES, SYSTEM_USER } from '../utils/access';
 
 // Same limit as the other emails sent to every administrator
 const MAX_RECIPIENTS: number = conf.get('smtp:email_max_cc_size') || 500;
 
 type LockRecipientsOptions = { withOrganizationAdmins: boolean; maxRecipients: number };
 
-// Only an active account with an email, never a service account. The locked user is left out:
-// the email asks the administrators to check the lock, and to unlock the account if needed
+// Only an active account (neither expired nor with another status) with an email, never a service account.
+// The locked user is left out: the email asks the administrators to check the lock, and to unlock the account if needed
 const canReceiveLockEmail = (user: AuthUser, lockedUser: AuthUser) => user.id !== lockedUser.id
-  && user.account_status === ACCOUNT_STATUS_ACTIVE
+  && isUserAccountActive(user)
   && !isServiceAccountUser(user)
   && isNotEmptyField(user.user_email);
 
@@ -61,11 +62,9 @@ export const loadLocalAuthLockRecipients = async (context: AuthContext, lockedUs
   });
 };
 
-export type LocalAuthLockEmailTemplate = Pick<BasicStoreEntityEmailTemplate, 'email_object' | 'sender_email' | 'template_body'>;
-
 // The built-in template, as the administrators edited it. Once deleted, the email still goes with its default content
 // until the next startup creates it again: a security alert must never be lost silently
-export const loadLocalAuthLockEmailTemplate = async (context: AuthContext): Promise<LocalAuthLockEmailTemplate> => {
+export const loadLocalAuthLockEmailTemplate = async (context: AuthContext): Promise<EmailTemplateContent> => {
   const template = await findLockedUserEmailTemplate(context);
   if (template) {
     return template;
@@ -89,4 +88,31 @@ export const buildLocalAuthLockEmailData = (lockedUser: LockedAccount, { lockTyp
     ? { date, attempts: maxAttempts, type: 'temporary', endDate: new Date(date.getTime() + remainingMs) }
     : { date, attempts: maxAttempts, type: 'permanent' };
   return { lockedUser: { name, firstname, lastname, user_email }, lock };
+};
+
+// One email per administrator, rendered for its recipient, never with an API token. Sent one after the other,
+// as each send opens its own SMTP connection.
+// A recipient whose email fails never stops the others: each failure is logged, with the id of the recipient but not its email
+export const sendLocalAuthLockEmails = async (context: AuthContext, lockedUser: AuthUser, lock: LocalAuthLock) => {
+  const recipients = await loadLocalAuthLockRecipients(context, lockedUser);
+  if (recipients.length === 0) {
+    logApp.warn('Local authentication lockout: no administrator can get the email of a lock', { locked_user_id: lockedUser.id });
+    return;
+  }
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const template = await loadLocalAuthLockEmailTemplate(context);
+  const lockedUserData = buildLocalAuthLockEmailData(lockedUser, lock);
+  for (const recipient of recipients) {
+    try {
+      // The user cache resolves the organizations of each user, with their name
+      const organizations = recipient.organizations as BasicStoreEntityOrganization[];
+      await sendEmailTemplateToRecipient(template, { ...recipient, organizations }, { platformUrl: settings.platform_url, category: 'local-auth-lock', lockedUserData });
+    } catch (error) {
+      logApp.error('Local authentication lockout: the email of a lock cannot be sent to an administrator', {
+        cause: error,
+        recipient_id: recipient.id,
+        locked_user_id: lockedUser.id,
+      });
+    }
+  }
 };

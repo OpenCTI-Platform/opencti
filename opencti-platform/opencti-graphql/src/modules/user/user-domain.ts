@@ -162,14 +162,12 @@ import type { ProviderUserInfo } from '../authenticationProvider/providers-confi
 import { DRAFT_STATUS_OPEN } from '../draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { addCapabilitiesInDraftUpdatedCount, addServiceAccountIntoUserCount, addUserEmailSendCount, addUserIntoServiceAccountCount } from '../../manager/telemetryManager';
-import { sendMail, smtpComputeFrom } from '../../database/smtp';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../emailTemplate/emailTemplate-types';
 import { doYield } from '../../utils/eventloop-utils';
 import { disablePublicSharingForDeletedUser } from '../dataSharing/dataSharing-utils';
 import { deleteAllIngestionDeduplicationRulesForUser } from '../ingestionDeduplication/ingestionDeduplicationRule-domain';
-import { sanitizeUser } from '../../utils/templateContextSanitizer';
-import { type LockedUserEmailData, renderEmailTemplate } from '../emailTemplate/emailTemplate-render';
+import { sendEmailTemplateToRecipient } from '../emailTemplate/emailTemplate-send';
 import { totp } from '../../utils/totp';
 import { pushAll } from '../../utils/arrayUtil';
 import { USER_MERGED_INTO_FIELD } from '../userMerge/userMerge-types';
@@ -1020,8 +1018,7 @@ type MailTargetUser = Omit<AuthUser, 'organizations' | 'account_lock_after_date'
   account_lock_after_date: string | undefined;
 };
 
-// lockedUserData: the account locked by the local authentication lockout, for its $locked_user and $lock variables
-export const sendEmailToUser = async (context: AuthContext, user: AuthUser, input: SendUserMailInput, lockedUserData?: LockedUserEmailData) => {
+export const sendEmailToUser = async (context: AuthContext, user: AuthUser, input: SendUserMailInput) => {
   await checkEnterpriseEdition(context);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
 
@@ -1032,45 +1029,20 @@ export const sendEmailToUser = async (context: AuthContext, user: AuthUser, inpu
     throw UnsupportedError('Target user not found', { id: input.target_user_id });
   }
 
-  const organizationNames = (targetUser.organizations ?? []).map((org) => org.name);
-
   const emailTemplate = await internalLoadById<BasicStoreEntityEmailTemplate>(context, user, input.email_template_id);
   if (!emailTemplate || emailTemplate.entity_type !== ENTITY_TYPE_EMAIL_TEMPLATE) {
     throw UnsupportedError('Invalid email template', { id: input.email_template_id });
   }
 
-  const templateUser = {
-    ...sanitizeUser(targetUser),
-    api_token: '', // empty token by default
-    account_lock_after_date: targetUser.account_lock_after_date
-      ? DateTime.fromISO(targetUser.account_lock_after_date).toFormat('yyyy-MM-dd') : '',
-  };
-
   // If the template asks for a user token, we need to generate a new one.
+  let apiToken: string | undefined;
   if (emailTemplate.template_body.includes('$user.api_token')) {
     const inputToken: TokenAddInput = { name: 'Template generated token' };
     const token = await addUserTokenByAdmin(context, user, input.target_user_id, inputToken);
-    templateUser.api_token = token.plaintext_token;
+    apiToken = token.plaintext_token;
   }
 
-  const renderedHtml = await renderEmailTemplate(emailTemplate.template_body, {
-    platformUrl: settings.platform_url,
-    user: templateUser,
-    organizationNames,
-    lockedUserData,
-  });
-
-  const sendMailArgs = {
-    from: await smtpComputeFrom(emailTemplate.sender_email),
-    to: targetUser.user_email,
-    subject: emailTemplate.email_object,
-    html: renderedHtml,
-  };
-
-  await sendMail(sendMailArgs, {
-    identifier: `user-${targetUser.id}`,
-    category: 'user-notification',
-  });
+  await sendEmailTemplateToRecipient(emailTemplate, targetUser, { platformUrl: settings.platform_url, category: 'user-notification', apiToken });
   await addUserEmailSendCount();
   await publishUserAction({
     user,
