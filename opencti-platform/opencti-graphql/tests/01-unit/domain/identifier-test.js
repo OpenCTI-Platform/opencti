@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { generateAliasesId, generateHashedObservableStandardIds, generateStandardId, normalizeName } from '../../../src/schema/identifier';
+import {
+  generateAliasesId,
+  generateHashedObservableStandardIds,
+  generateStandardId,
+  getStaticMarkingAliasStixIds,
+  MARKING_TLP_AMBER,
+  MARKING_TLP_AMBER_STRICT,
+  MARKING_TLP_CLEAR,
+  MARKING_TLP_GREEN,
+  MARKING_TLP_RED,
+  normalizeName,
+} from '../../../src/schema/identifier';
 import { cleanStixIds } from '../../../src/database/stix';
 import { generateInternalType } from '../../../src/schema/schemaUtils';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
@@ -228,6 +239,22 @@ describe('identifier', () => {
     expect(noAliasId).toBeUndefined();
     const aliasId = generateAliasesId(['CVE-2019-12345'], instance).at(0);
     expect(aliasId).toEqual('vulnerability--f140924c-f52e-5b3a-b8bb-37a97cee7063');
+  });
+
+  it('should static TLP markings keep their ids and alias the OASIS TLP 2.0 ids', () => {
+    const tlp = (definition) => generateStandardId('Marking-Definition', { definition_type: 'TLP', definition });
+    expect(tlp('TLP:CLEAR')).toEqual(MARKING_TLP_CLEAR);
+    expect(tlp('TLP:WHITE')).toEqual(MARKING_TLP_CLEAR);
+    expect(tlp('TLP:GREEN')).toEqual(MARKING_TLP_GREEN);
+    expect(tlp('TLP:AMBER')).toEqual(MARKING_TLP_AMBER);
+    expect(tlp('TLP:AMBER+STRICT')).toEqual(MARKING_TLP_AMBER_STRICT);
+    expect(tlp('TLP:RED')).toEqual(MARKING_TLP_RED);
+    expect(getStaticMarkingAliasStixIds(MARKING_TLP_CLEAR)).toEqual(['marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487']);
+    expect(getStaticMarkingAliasStixIds(MARKING_TLP_GREEN)).toEqual(['marking-definition--bab4a63c-aed9-4cf5-a766-dfca5abac2bb']);
+    expect(getStaticMarkingAliasStixIds(MARKING_TLP_AMBER)).toEqual(['marking-definition--55d920b0-5e8b-4f79-9ee9-91f868d9b421']);
+    expect(getStaticMarkingAliasStixIds(MARKING_TLP_AMBER_STRICT)).toEqual(['marking-definition--939a9414-2ddd-4d32-a0cd-375ea402b003']);
+    expect(getStaticMarkingAliasStixIds(MARKING_TLP_RED)).toEqual(['marking-definition--e828b379-4e03-4974-9ac4-e53a884c97c1']);
+    expect(getStaticMarkingAliasStixIds('marking-definition--35ee3df2-dc60-4bf3-9b57-98222b827a83')).toEqual([]);
   });
 
   it('should stix id v5 always added', () => {
