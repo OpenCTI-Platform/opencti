@@ -149,11 +149,11 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
   };
   const isImported = (item: PreviewItem) => selected.has(item.key) && !isCredentialsLocked(item);
   const importedItems = items.filter(isImported);
-  const importedKeys = new Set(importedItems.map(({ key }) => key));
   // Created (a new item, or a copy), the item writes with a service account the user chooses when the platform has no default group for them
   const needsServiceAccount = (item: PreviewItem) => item.serviceAccountRequired && isImported(item) && (!item.exists || modeOf(item) === 'COPY');
   const isServiceAccountMissing = importedItems.some((item) => needsServiceAccount(item) && !serviceAccounts[item.key]);
-  const conflictKeys = partialImportConflictKeys(items, importedKeys);
+  // The selected items, those a copy locks until their secrets are entered included: an overwrite keeps the stored ones and unlocks them
+  const conflictKeys = partialImportConflictKeys(items, selected);
 
   // The preview of the file, every item selected
   const loadPreview = (value: File) => {

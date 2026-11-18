@@ -34,6 +34,12 @@ const PREVIEW_QUERY = gql`
   }
 `;
 
+const CONFLICT_PREVIEW_QUERY = gql`
+  query ConfigPresetFeedsConflictPreview($file_id: ID!) {
+    configPresetImportPreview(file_id: $file_id) { types { key items { key exists conflict } } }
+  }
+`;
+
 const PARTIAL_PREVIEW_MUTATION = gql`
   mutation ConfigPresetFeedsPartialPreview($file: Upload!, $type: ID!) {
     configPresetPartialImportPreview(file: $file, type: $type) {
@@ -162,6 +168,24 @@ describe('Config preset: feeds', () => {
   it('skips the feeds already up to date', async () => {
     const { results } = await runImport(await upload(), true);
     expect(results.map(({ key, status }) => [key, status])).toEqual([[RSS_NAME, 'SKIPPED'], [TAXII_NAME, 'SKIPPED']]);
+  });
+
+  it('offers a choice for a feed of the bundle whose name an earlier one takes, so that it can be imported as a copy', async () => {
+    const rssFile = await exportItem('rssFeeds', RSS_NAME);
+    const name = `${RSS_NAME} duplicated in the bundle`;
+    const configuration = { ...rssFile.configuration, name };
+    const duplicates = {
+      'metadata.json': metadataFile(),
+      [`integrations/rss_feeds/${name}.json`]: itemFile(rssFile.type, name, configuration),
+      [`integrations/rss_feeds/${name} (other).json`]: itemFile(rssFile.type, `${name} (other)`, configuration),
+    };
+    const uploaded = await queryAsAdminWithSuccess({ query: UPLOAD_MUTATION, variables: { file: createUploadFromBuffer(await buildZip(duplicates), 'bundle.zip') } });
+    const preview = await queryAsAdminWithSuccess({ query: CONFLICT_PREVIEW_QUERY, variables: { file_id: uploaded.data?.configPresetImportUpload.id } });
+    const rss = preview.data?.configPresetImportPreview.types.find(({ key }: { key: string }) => key === 'rssFeeds');
+    expect(rss.items).toEqual([
+      { key: name, exists: false, conflict: false },
+      { key: `${name} (other)`, exists: false, conflict: true },
+    ]);
   });
 
   it('adds a stopped copy with the credentials given at import, never written in the session nor in the report', async () => {

@@ -193,7 +193,8 @@ const missingDefaultValues = async (context: AuthContext, user: AuthUser, repres
 
 const missingDefaultValuesReasons = (keys: string[]) => (keys.length > 0 ? [`Mapper default values not found: ${configImportReasonValue(keys.join(', '))}`] : []);
 
-const toInputValue = (value: unknown) => (Array.isArray(value) ? value : [value ?? null]);
+// A null clears the field: [null] would be written as a value (false for a boolean)
+const toInputValue = (value: unknown) => (Array.isArray(value) ? value : (value == null ? [] : [value]));
 
 const commonFields = (configuration: FeedImportConfiguration, name: string): FeedFields => ({
   name,
@@ -542,18 +543,20 @@ const writeFeed = async <C extends FeedImportConfiguration, F extends StoredFeed
     }
     return { ...result, feed: target };
   }
-  const running = { ingestion_running: false };
+  // A feed created without a value keeps the default of its type: a null would be indexed as false (ssl_verify off)
+  const { ssl_verify: sslVerify, ...withoutSslVerify } = fields;
+  const createdFields = { ...withoutSslVerify, ...(sslVerify != null ? { ssl_verify: sslVerify } : {}), ingestion_running: false };
   if (serviceAccountId) {
-    return { ...result, feed: await adapter.add(context, user, { ...fields, ...running, user_id: serviceAccountId, automatic_user: false }) };
+    return { ...result, feed: await adapter.add(context, user, { ...createdFields, user_id: serviceAccountId }) };
   }
   const serviceAccountName = (await freeServiceAccountName(context, name)) ?? `[F] ${name}`;
   const confidenceLevel = confidence ?? undefined;
   if (adapter.supportsAutomaticUser) {
-    return { ...result, feed: await adapter.add(context, user, { ...fields, ...running, user_id: serviceAccountName, automatic_user: true, confidence_level: confidenceLevel }) };
+    return { ...result, feed: await adapter.add(context, user, { ...createdFields, user_id: serviceAccountName, automatic_user: true, confidence_level: confidenceLevel }) };
   }
   const serviceAccount = await createIngestionAutomaticUser(context, user, { userName: serviceAccountName, serviceAccount: true, confidenceLevel });
   try {
-    return { ...result, feed: await adapter.add(context, user, { ...fields, ...running, user_id: serviceAccount.id }) };
+    return { ...result, feed: await adapter.add(context, user, { ...createdFields, user_id: serviceAccount.id }) };
   } catch (error) {
     await userDelete(context, SYSTEM_USER, serviceAccount.id);
     throw error;

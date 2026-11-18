@@ -248,6 +248,25 @@ describe('ConfigPresetPartialImport', () => {
       });
     });
 
+    it('offers the same mode for all the feeds a copy locks until their secrets are entered, and an overwrite unlocks them', async () => {
+      const locked = (key: string) => ({
+        key,
+        label: key,
+        translatable: false,
+        exists: true,
+        conflict: true,
+        serviceAccountRequired: false,
+        credentials: [{ key: 'token', required: true, stored: true, ...basic }],
+      });
+      const rendered = await renderFeeds([locked('Partner'), locked('Vendor')]);
+      expect(screen.getByRole('checkbox', { name: 'Partner' })).toHaveAttribute('data-state', 'unchecked');
+      await rendered.user.click(screen.getByRole('combobox', { name: 'TAXII feeds: Apply to all' }));
+      await rendered.user.click(await screen.findByRole('option', { name: 'Overwrite' }));
+      expect(screen.getByRole('checkbox', { name: 'Partner' })).toHaveAttribute('data-state', 'checked');
+      expect(screen.getByRole('checkbox', { name: 'Vendor' })).toHaveAttribute('data-state', 'checked');
+      expect(screen.getByTestId('config-preset-partial-import-submit')).toBeEnabled();
+    });
+
     it('asks again for a stored secret on a copy, never on an overwrite', async () => {
       const rendered = await renderFeeds([
         {

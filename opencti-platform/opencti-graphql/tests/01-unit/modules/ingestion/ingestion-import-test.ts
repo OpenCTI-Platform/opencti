@@ -201,7 +201,6 @@ describe('importConfigPresetFeed creation', () => {
       description: 'Daily news',
       scheduling_period: 'PT1H',
       uri: 'https://news.example.com/rss',
-      ssl_verify: null,
       report_types: ['threat-report'],
       object_marking_refs: [socMarking.id],
       created_by_ref: null,
@@ -210,11 +209,15 @@ describe('importConfigPresetFeed creation', () => {
       automatic_user: true,
       confidence_level: 60,
     });
+    // Without a value in the bundle, the feed keeps the default of its type: a null would be indexed as false
+    expect(vi.mocked(addIngestion).mock.calls[0][2]).not.toHaveProperty('ssl_verify');
   });
 
   it('runs a created feed with the service account chosen in the preview', async () => {
     await importConfigPresetFeed(context, user, rss, rssConfiguration(), { ...overwrite, serviceAccountId: feedUser.id });
-    expect(addIngestion).toHaveBeenCalledWith(context, user, expect.objectContaining({ user_id: feedUser.id, automatic_user: false }));
+    expect(addIngestion).toHaveBeenCalledWith(context, user, expect.objectContaining({ user_id: feedUser.id }));
+    // Not an attribute of the feeds: the JSON feed would write it as such
+    expect(vi.mocked(addIngestion).mock.calls[0][2]).not.toHaveProperty('automatic_user');
   });
 
   it('asks for a service account without a default group for ingestion users, unless the import creates one', async () => {
@@ -244,6 +247,13 @@ describe('importConfigPresetFeed with feeds of the same name', () => {
     expect(input.map(({ key }) => key)).not.toEqual(expect.arrayContaining(['user_id']));
     expect(input.map(({ key }) => key)).not.toContain('ingestion_running');
     expect(addIngestion).not.toHaveBeenCalled();
+  });
+
+  it('clears the SSL verification of the overwritten feed when the bundle has none, instead of writing false', async () => {
+    vi.mocked(findAllRssIngestion).mockResolvedValue([storedRss({ ssl_verify: false })] as never);
+    expect(await importConfigPresetFeed(context, user, rss, rssConfiguration(), overwrite)).toMatchObject({ status: 'overwritten' });
+    const [, , , input] = vi.mocked(ingestionEditField).mock.calls[0];
+    expect(input).toEqual([{ key: 'ssl_verify', value: [] }]);
   });
 
   it('skips a feed that is already up to date, and tells when the confidence of its user differs', async () => {

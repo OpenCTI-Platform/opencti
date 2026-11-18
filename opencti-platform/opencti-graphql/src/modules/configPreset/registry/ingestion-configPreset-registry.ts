@@ -86,7 +86,8 @@ const feedImporter = (familyId: string, kind: FeedKind): ConfigPresetImporter =>
       if (result.status === 'created' && !result.exists) {
         plan.created.add(configPresetPlanKey(familyId, item.id));
       }
-      return { ...toComputedItem(label, result), credentials: result.credentials, serviceAccountRequired };
+      // A feed refused because an earlier item of the bundle takes its name conflicts with it: the user can import it as a copy
+      return { ...toComputedItem(label, result), conflict: result.exists || result.code === 'ambiguous', credentials: result.credentials, serviceAccountRequired };
     },
     apply: async (context, user, item, computed, mode, plan) => {
       const { feedAdapterOf, importConfigPresetFeed } = await loadFeedImport();
