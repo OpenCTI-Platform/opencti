@@ -18152,6 +18152,11 @@ enum WorkflowExecutionStatus {
 
 type WorkflowInstance {
   allowedTransitions: [WorkflowTransition!]!
+
+  """
+  Transitions the user is targeted by but whose entity conditions are not met yet
+  """
+  blockedTransitions: [WorkflowTransition!]!
   currentState: String!
   currentStatus: Status
   id: ID!
@@ -18249,6 +18254,7 @@ type WorkflowSerializedState {
   order: Int
   requestAccessOutcome: WorkflowRequestAccessOutcome
   statusId: String!
+  workflowStatusId: String
 }
 
 type WorkflowSerializedTransition {
@@ -18264,6 +18270,11 @@ type WorkflowSerializedTransition {
 
 type WorkflowTransition {
   actions: [String!]
+
+  """
+  Blocked transitions only: JSON filter group of the entity conditions not met yet
+  """
+  blockingConditions: String
   closingReason: String
   comment: String
   event: String!

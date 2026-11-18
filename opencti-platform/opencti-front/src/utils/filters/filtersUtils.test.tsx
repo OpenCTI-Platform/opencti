@@ -1685,7 +1685,7 @@ describe('getAvailableOperatorForFilter', () => {
     });
 
     it('should return the numeric operators for integer and float filters', () => {
-      const numericOperators = ['gt', 'gte', 'lt', 'lte', 'eq', 'not_eq'];
+      const numericOperators = ['gt', 'gte', 'lt', 'lte', 'eq', 'not_eq', 'nil', 'not_nil'];
       ['integer', 'float'].forEach((type) => {
         const filterDefinition = buildFilterDefinition({ filterKey: 'confidence', type });
         expect(getAvailableOperatorForFilter(filterDefinition)).toEqual(numericOperators);

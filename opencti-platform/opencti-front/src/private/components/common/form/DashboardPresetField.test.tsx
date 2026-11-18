@@ -7,10 +7,10 @@ import DashboardPresetField from './DashboardPresetField';
 const QUERY = 'DashboardPresetFieldQuery';
 const presets = [{ id: 'p1', name: 'Energy' }, { id: 'p2', name: 'Finance' }];
 
-const renderField = (props: Partial<React.ComponentProps<typeof DashboardPresetField>> = {}, flags = ['DASHBOARD_VARIABLES']) => {
+const renderField = (props: Partial<React.ComponentProps<typeof DashboardPresetField>> = {}) => {
   const onChange = vi.fn();
   const rendered = testRender(<DashboardPresetField dashboardId="dashboard-1" value={null} onChange={onChange} {...props} />, {
-    userContext: createMockUserContext({ me: { id: 'user-1', name: 'admin' }, settings: { platform_feature_flags: flags.map((id) => ({ id, enable: true })) } }),
+    userContext: createMockUserContext({ me: { id: 'user-1', name: 'admin' } }),
   });
   const resolve = () => act(() => {
     const operation = rendered.relayEnv.mock.getAllOperations().find((op) => op.request.node.operation.name === QUERY);
@@ -20,9 +20,7 @@ const renderField = (props: Partial<React.ComponentProps<typeof DashboardPresetF
 };
 
 describe('DashboardPresetField', () => {
-  it('renders nothing without the feature flag, nor without a dashboard', () => {
-    renderField({}, []);
-    expect(screen.queryByTestId('dashboard-preset-field')).toBeNull();
+  it('renders nothing without a dashboard', () => {
     renderField({ dashboardId: null });
     expect(screen.queryByTestId('dashboard-preset-field')).toBeNull();
   });
@@ -35,8 +33,8 @@ describe('DashboardPresetField', () => {
     await user.click(trigger);
     await user.click(await screen.findByRole('option', { name: 'Energy' }));
     expect(onChange).toHaveBeenLastCalledWith('p1');
-    await user.click(screen.getByRole('combobox'));
-    await user.click(await screen.findByRole('option', { name: /No preset/ }));
+    // The clear control of the library select stands for No preset
+    await user.click(screen.getByRole('button', { name: 'No preset' }));
     expect(onChange).toHaveBeenLastCalledWith(null);
   });
 

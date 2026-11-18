@@ -38,6 +38,7 @@ const InvestigationEnrichmentExpand = ({
     setSelectedNodes,
     setSelectedLinks,
     setIsExpandOpen,
+    resetFilters,
   } = useGraphInteractions();
   const {
     graphIds,
@@ -77,7 +78,7 @@ const InvestigationEnrichmentExpand = ({
    * then marks the works as reviewed.
    */
   const onSubmitExpand: InvestigationExpandFormProps['onSubmit'] = async (
-    { entity_types, relationship_types },
+    { entity_types, relationship_types, reset_filters },
     { resetForm },
   ) => {
     if (works.length === 0 || (entity_types.length === 0 && relationship_types.length === 0)) {
@@ -89,6 +90,7 @@ const InvestigationEnrichmentExpand = ({
       entityTypes: entity_types.map((o) => o.value),
       relationshipTypes: relationship_types.map((o) => o.value),
     });
+    if (reset_filters) resetFilters();
     resetForm();
     onDismiss(workIds);
     onBackToGraph?.();

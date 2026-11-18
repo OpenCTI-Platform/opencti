@@ -9,6 +9,8 @@ import {
   generateMessageFromChanges,
   generateRestoreMessage,
   humanizeRawValue,
+  toHistoryPlainText,
+  truncateHistoryValue,
 } from '../../../src/database/data-changes';
 import {
   type AttributeDefinition,
@@ -389,6 +391,76 @@ describe('generateMessageFromChanges edge cases', () => {
       { field: ENTITY_TYPE_MALWARE + '--name', changes_added: [{ raw: 'extra' }], changes_removed: [] }, // 4th, only counted
     ];
     const message = generateMessageFromChanges({}, changes);
-    expect(message).toContain('and 1 more operations');
+    expect(message).toContain(' and 1 more operation');
+    expect(message).not.toContain('operations');
+  });
+  it('should pluralize the remaining operations', () => {
+    const changes: Change[] = [
+      { field: ENTITY_TYPE_MALWARE + '--description', changes_added: [{ raw: 'desc' }], changes_removed: [] },
+      { field: ENTITY_TYPE_MALWARE + '--name', changes_added: [{ raw: 'a' }], changes_removed: [] },
+      { field: ENTITY_TYPE_MALWARE + '--name', changes_added: [{ raw: 'b' }], changes_removed: [] },
+      { field: ENTITY_TYPE_MALWARE + '--name', changes_added: [{ raw: 'c' }], changes_removed: [] },
+      { field: ENTITY_TYPE_MALWARE + '--name', changes_added: [{ raw: 'd' }], changes_removed: [] },
+    ];
+    expect(generateMessageFromChanges({}, changes)).toMatch(/ and 2 more operations$/);
+  });
+});
+
+describe('generateMessageFromChanges plain text values', () => {
+  it('should strip html and line breaks from a rich text value and cut it on a word', () => {
+    const changes: Change[] = [
+      {
+        field: ENTITY_TYPE_MALWARE + '--description',
+        changes_added: [{ raw: '<h1>CERT-FR Advisory</h1>\n<p>Subject: Multiple vulnerabilities in a well known product</p>' }],
+        changes_removed: [],
+      },
+    ];
+    const message = generateMessageFromChanges({}, changes);
+    expect(message).toEqual('replaces `CERT-FR Advisory Subject: Multiple vulnerabilities…` in `Description`');
+    expect(message).not.toMatch(/[<>\n]/);
+  });
+  it('should collapse a multi-line markdown value on one line', () => {
+    const changes: Change[] = [
+      {
+        field: ENTITY_TYPE_MALWARE + '--description',
+        changes_added: [{ raw: '# Title\n\n- **first** point\n- [a link](https://example.com)' }],
+        changes_removed: [],
+      },
+    ];
+    expect(generateMessageFromChanges({}, changes)).toEqual('replaces `Title first point a link` in `Description`');
+  });
+  it('should neutralize backticks that would break the code span', () => {
+    const changes: Change[] = [
+      {
+        field: ENTITY_TYPE_MALWARE + '--description',
+        changes_added: [{ raw: 'run `whoami` then ```ls```' }],
+        changes_removed: [],
+      },
+    ];
+    expect(generateMessageFromChanges({}, changes)).toEqual('replaces `run \'whoami\' then \'ls\'` in `Description`');
+  });
+  it('should write nothing for a value made only of markup', () => {
+    const changes: Change[] = [
+      {
+        field: ENTITY_TYPE_MALWARE + '--description',
+        changes_added: [{ raw: '<p>\n</p>' }],
+        changes_removed: [],
+      },
+    ];
+    expect(generateMessageFromChanges({}, changes)).toEqual('replaces `nothing` in `Description`');
+  });
+  it('should keep short and plain values untouched', () => {
+    expect(toHistoryPlainText('APT 28 > APT 29')).toEqual('APT 28 > APT 29');
+    expect(toHistoryPlainText('a &amp; b')).toEqual('a & b');
+    expect(truncateHistoryValue('short')).toEqual('short');
+    expect(toHistoryPlainText('__init__ module')).toEqual('__init__ module');
+  });
+  it('should cut on the last word boundary before the limit', () => {
+    const value = 'An advisory about several vulnerabilities affecting products';
+    expect(truncateHistoryValue(value)).toEqual('An advisory about several vulnerabilities…');
+  });
+  it('should cut a value without spaces at the limit', () => {
+    const value = 'x'.repeat(80);
+    expect(truncateHistoryValue(value)).toEqual(`${'x'.repeat(50)}…`);
   });
 });

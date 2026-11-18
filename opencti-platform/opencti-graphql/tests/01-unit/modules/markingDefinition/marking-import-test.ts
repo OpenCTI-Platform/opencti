@@ -14,7 +14,7 @@ vi.mock('../../../../src/modules/user/sensitive-config-import', async (importOri
 import { addAllowedMarkingDefinition, findById, markingDefinitionEditField } from '../../../../src/domain/markingDefinition';
 import { findAllGroups } from '../../../../src/domain/group';
 import { isConfigImportSensitiveChangeAllowed } from '../../../../src/modules/user/sensitive-config-import';
-import { BUILT_IN_MARKING_STANDARD_IDS, importMarking, markingStandardId } from '../../../../src/modules/markingDefinition/marking-import';
+import { importMarking, markingStandardId } from '../../../../src/modules/markingDefinition/marking-import';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
@@ -57,12 +57,14 @@ describe('importMarking', () => {
     results.forEach((result) => expect(result).toMatchObject({ status: 'created' }));
   });
 
-  it('skips the built-in markings, the same on every platform', async () => {
-    expect(BUILT_IN_MARKING_STANDARD_IDS).toHaveLength(9);
-    const result = await importMarking(context, user, markingConfiguration({ definition_type: 'TLP', definition: 'TLP:RED' }), overwrite);
-    expect(result).toMatchObject({ status: 'skipped', code: 'built_in', reason: 'Built-in marking', exists: true });
-    expect(findById).not.toHaveBeenCalled();
-    expectNothingWritten();
+  it('overwrites the color and the order of a built-in marking like any other', async () => {
+    const tlpRed = { id: 'tlp-red-id', standard_id: markingStandardId('TLP', 'TLP:RED'), definition_type: 'TLP', definition: 'TLP:RED', x_opencti_color: '#c62828', x_opencti_order: 5 };
+    vi.mocked(findById).mockResolvedValue(tlpRed as never);
+    const configuration = markingConfiguration({ definition_type: 'TLP', definition: 'TLP:RED', x_opencti_color: '#ff0000', x_opencti_order: 5 });
+    const result = await importMarking(context, user, configuration, overwrite);
+    expect(result).toMatchObject({ status: 'overwritten', exists: true });
+    expect(findById).toHaveBeenCalledWith(context, user, tlpRed.standard_id);
+    expect(markingDefinitionEditField).toHaveBeenCalledWith(context, user, tlpRed.id, [{ key: 'x_opencti_color', value: ['#ff0000'] }]);
   });
 
   it('creates a marking that is absent, and writes nothing on a dry run', async () => {
@@ -107,9 +109,23 @@ describe('importMarking', () => {
     vi.mocked(findById).mockResolvedValue(existing as never);
     expect(await importMarking(context, user, markingConfiguration(), { mode: ConfigImportMode.Add })).toMatchObject({ status: 'failed', code: 'exists' });
     vi.mocked(isConfigImportSensitiveChangeAllowed).mockResolvedValue(false);
-    const result = await importMarking(context, user, markingConfiguration(), overwrite);
+    const result = await importMarking(context, user, markingConfiguration({ x_opencti_color: '#654321' }), overwrite);
     expect(result).toMatchObject({ status: 'failed', code: 'sensitive_config', reason: 'Requires the right to manage the sensitive configuration' });
     expect(isConfigImportSensitiveChangeAllowed).toHaveBeenCalledWith(context, user, 'markings', existing.standard_id);
+    expectNothingWritten();
+  });
+
+  it('skips an unchanged marking without the right to manage the sensitive configuration, as nothing is written', async () => {
+    vi.mocked(findById).mockResolvedValue(existing as never);
+    vi.mocked(isConfigImportSensitiveChangeAllowed).mockResolvedValue(false);
+    expect(await importMarking(context, user, markingConfiguration(), overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
+    expect(isConfigImportSensitiveChangeAllowed).not.toHaveBeenCalled();
+    expectNothingWritten();
+  });
+
+  it('refuses to create a marking the user cannot change', async () => {
+    vi.mocked(isConfigImportSensitiveChangeAllowed).mockResolvedValue(false);
+    expect(await importMarking(context, user, markingConfiguration(), overwrite)).toMatchObject({ status: 'failed', code: 'sensitive_config', exists: false });
     expectNothingWritten();
   });
 });

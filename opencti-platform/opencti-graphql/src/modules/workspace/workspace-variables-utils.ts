@@ -2,7 +2,6 @@ import * as R from 'ramda';
 import { type DashboardPreset, type DashboardVariable, DashboardVariableRestrictionMode, DashboardVariableType, type EditInput, VocabularyCategory } from '../../generated/graphql';
 import { fromB64, toB64 } from '../../utils/base64';
 import { FunctionalError } from '../../config/errors';
-import { isFeatureEnabled } from '../../config/conf';
 import type { AuthUser } from '../../types/user';
 import { computeDashboardVariablesUsage } from '../dashboard/dashboard-variables-resolution';
 import { DASHBOARD_MANIFEST_SERVER_OWNED_KEYS, type StoreDashboardManifest, type StoreDashboardPreset, type StoreDashboardVariable } from './workspace-variables-types';
@@ -25,14 +24,17 @@ const decodeDashboardManifest = (workspace: WorkspaceLike): StoreDashboardManife
   if (workspace.type !== 'dashboard' || !workspace.manifest) return null;
   const cached = decodedManifests.get(workspace);
   if (cached && cached.encoded === workspace.manifest) return cached.manifest;
-  const manifest = fromB64<StoreDashboardManifest>(workspace.manifest);
+  // These fields are read on every dashboard: a manifest that cannot be decoded gives no variable nor preset instead
+  // of failing the non-null fields, and with them the whole workspace.
+  const manifest = parseManifestObject(workspace.manifest) as StoreDashboardManifest | null;
+  if (!manifest) return null;
   decodedManifests.set(workspace, { encoded: workspace.manifest, manifest });
   return manifest;
 };
 
 export const toGraphqlDashboardVariables = (workspace: WorkspaceLike): DashboardVariable[] => {
   const manifest = decodeDashboardManifest(workspace);
-  if (!manifest || !manifest.variables || manifest.variables.length === 0) return [];
+  if (!manifest || !Array.isArray(manifest.variables) || manifest.variables.length === 0) return [];
   const usage = computeDashboardVariablesUsage(manifest.widgets);
   return manifest.variables.map((variable) => {
     const { restriction } = variable;
@@ -56,8 +58,8 @@ export const toGraphqlDashboardVariables = (workspace: WorkspaceLike): Dashboard
 
 export const toGraphqlDashboardPresets = (workspace: WorkspaceLike): DashboardPreset[] => {
   const manifest = decodeDashboardManifest(workspace);
-  if (!manifest) return [];
-  return (manifest.presets ?? []).map((preset) => ({
+  if (!manifest || !Array.isArray(manifest.presets)) return [];
+  return manifest.presets.map((preset) => ({
     id: preset.id,
     name: preset.name,
     values: Object.entries(preset.values ?? {}).map(([variableId, value]) => ({ variableId, value })),
@@ -89,7 +91,8 @@ export const findCurrentUserDefaultPresetId = (user: AuthUser, workspace: Worksp
   const holder = holders.find((candidate) => candidate.default_dashboard === workspace.id);
   if (!holder?.default_dashboard_preset) return null;
   const manifest = decodeDashboardManifest(workspace);
-  return (manifest?.presets ?? []).some((preset) => preset.id === holder.default_dashboard_preset) ? holder.default_dashboard_preset : null;
+  const presets = Array.isArray(manifest?.presets) ? manifest.presets : [];
+  return presets.some((preset) => preset.id === holder.default_dashboard_preset) ? holder.default_dashboard_preset : null;
 };
 
 const parseManifestObject = (encoded: string): Record<string, unknown> | null => {
@@ -266,10 +269,10 @@ export const hasDashboardVariableWidget = (widgets: unknown) => findDashboardVar
 /**
  * The manifest of a custom view, on every way in (creation, edition, duplication, configuration and widget import):
  * dashboard variables do not exist there, so a widget using one would never show data and is refused, and the
- * server-owned keys are removed (see stripServerOwnedManifestKeys). Nothing is refused without the feature.
+ * server-owned keys are removed (see stripServerOwnedManifestKeys).
  */
 export const sanitizeCustomViewManifest = (encoded: string | null | undefined) => {
-  const refusedWidgets = encoded && isFeatureEnabled('DASHBOARD_VARIABLES') ? findDashboardVariableWidgets(parseManifestObject(encoded)?.widgets) : [];
+  const refusedWidgets = encoded ? findDashboardVariableWidgets(parseManifestObject(encoded)?.widgets) : [];
   if (refusedWidgets.length > 0) {
     // Named in the message, the one the user is shown: a view saved before the refusal is refused on any change until
     // these widgets are removed or changed.
