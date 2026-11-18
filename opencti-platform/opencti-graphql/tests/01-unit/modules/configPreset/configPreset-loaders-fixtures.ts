@@ -14,6 +14,7 @@ import { ALL_CASE_TEMPLATES, ALL_TASK_TEMPLATES } from './configPreset-caseTempl
 import { ALL_CONNECTORS } from './configPreset-connectors-fixtures';
 import { ALL_RSS_FEEDS, ALL_TAXII_FEEDS } from './configPreset-feeds-fixtures';
 import { ALL_EMAIL_TEMPLATES } from './configPreset-emailTemplates-fixtures';
+import { ALL_FINTEL_DESIGNS } from './configPreset-fintelDesigns-fixtures';
 
 interface ListingArgs {
   search?: string | null;
@@ -39,6 +40,7 @@ const FIXTURE_ENTITIES: Record<string, { id: string; name?: string; definition?:
   IngestionJson: [],
   IngestionTaxii: ALL_TAXII_FEEDS,
   EmailTemplate: ALL_EMAIL_TEMPLATES,
+  FintelDesign: ALL_FINTEL_DESIGNS,
 };
 const labelOf = (entity: { name?: string; definition?: string; value?: string }) => entity.name ?? entity.definition ?? entity.value ?? '';
 
