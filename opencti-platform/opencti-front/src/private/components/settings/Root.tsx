@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
-import { SETTINGS_FILEINDEXING, SETTINGS_SUPPORT, SETTINGS_SETPARAMETERS, SETTINGS_SETMANAGEXTMHUB } from '../../../utils/hooks/useGranted';
+import { SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB } from '../../../utils/hooks/useGranted';
 import { capabilitiesOf } from '../nav/menuEntries';
 import Loader from '../../../components/Loader';
 import useSettingsFallbackUrl from '../../../utils/hooks/useSettingsFallbackUrl';
@@ -43,7 +43,7 @@ const Root = () => {
             path="/"
             element={(
               <Security
-                needs={[SETTINGS_SETPARAMETERS]}
+                needs={capabilitiesOf('/dashboard/settings', { exact: true })}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <Settings />
@@ -72,7 +72,7 @@ const Root = () => {
           <Route
             path="/file_indexing"
             element={(
-              <Security needs={[SETTINGS_FILEINDEXING]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/file_indexing')} placeholder={<Navigate to={fallbackUrl} />}>
                 <FileIndexing />
               </Security>
             )}

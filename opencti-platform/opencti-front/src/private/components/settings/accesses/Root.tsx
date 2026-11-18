@@ -69,7 +69,7 @@ const RootAccesses = () => {
             path="/"
             element={(
               <Security
-                needs={[SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS, SETTINGS_SETDISSEMINATION, SETTINGS_SETAUTH, VIRTUAL_ORGANIZATION_ADMIN]}
+                needs={capabilitiesOf('/dashboard/settings/accesses')}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <AccessesRedirect />
@@ -80,7 +80,7 @@ const RootAccesses = () => {
             path="/users"
             element={(
               <Security
-                needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
+                needs={capabilitiesOf('/dashboard/settings/accesses/users')}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <Users />
@@ -91,7 +91,7 @@ const RootAccesses = () => {
             path="/users/:userId/*"
             element={(
               <Security
-                needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
+                needs={capabilitiesOf('/dashboard/settings/accesses/users')}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <RootUser />
@@ -102,7 +102,7 @@ const RootAccesses = () => {
             path="/organizations"
             element={(
               <Security
-                needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
+                needs={capabilitiesOf('/dashboard/settings/accesses/organizations')}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <SettingsOrganizations />
@@ -113,7 +113,7 @@ const RootAccesses = () => {
             path="/organizations/:organizationId/*"
             element={(
               <Security
-                needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
+                needs={capabilitiesOf('/dashboard/settings/accesses/organizations')}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <RootSettingsOrganization />
@@ -146,7 +146,7 @@ const RootAccesses = () => {
             path="/groups"
             element={(
               <Security
-                needs={[SETTINGS_SETACCESSES]}
+                needs={capabilitiesOf('/dashboard/settings/accesses/groups')}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <Groups />
@@ -157,7 +157,7 @@ const RootAccesses = () => {
             path="/groups/:groupId/*"
             element={(
               <Security
-                needs={[SETTINGS_SETACCESSES]}
+                needs={capabilitiesOf('/dashboard/settings/accesses/groups')}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <RootGroup />
@@ -168,7 +168,7 @@ const RootAccesses = () => {
             path="/sessions"
             element={(
               <Security
-                needs={[SETTINGS_SETACCESSES]}
+                needs={capabilitiesOf('/dashboard/settings/accesses/sessions')}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <Sessions />
@@ -179,7 +179,7 @@ const RootAccesses = () => {
             path="/policies"
             element={(
               <Security
-                needs={[SETTINGS_SETACCESSES]}
+                needs={capabilitiesOf('/dashboard/settings/accesses/policies')}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <Policies />
@@ -190,7 +190,7 @@ const RootAccesses = () => {
             path="/marking"
             element={(
               <Security
-                needs={[SETTINGS_SETMARKINGS]}
+                needs={capabilitiesOf('/dashboard/settings/accesses/marking')}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <MarkingDefinitions />
@@ -201,7 +201,7 @@ const RootAccesses = () => {
             path="/dissemination_list"
             element={(
               <Security
-                needs={[SETTINGS_SETDISSEMINATION]}
+                needs={capabilitiesOf('/dashboard/settings/accesses/dissemination_list')}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <DisseminationLists />
@@ -234,7 +234,7 @@ const RootAccesses = () => {
             path="/authentications"
             element={(
               <Security
-                needs={[SETTINGS_SETAUTH]}
+                needs={capabilitiesOf('/dashboard/settings/accesses/authentications')}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <SSODefinitions />
@@ -245,7 +245,7 @@ const RootAccesses = () => {
             path="/smtp"
             element={(
               <Security
-                needs={[SETTINGS_SETACCESSES]}
+                needs={capabilitiesOf('/dashboard/settings/accesses/smtp')}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <SmtpConfiguration />
