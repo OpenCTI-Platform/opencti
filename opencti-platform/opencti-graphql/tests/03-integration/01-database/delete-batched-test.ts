@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { buildEntityData, buildRelationData } from '../../../src/database/data-builder';
-import { elCount, elDeleteElements, elFindByIds, elIndexElements, elMarkElementsAsDraftDelete } from '../../../src/database/engine';
-import { READ_DATA_INDICES, READ_ENTITIES_INDICES, READ_RELATIONSHIPS_INDICES } from '../../../src/database/utils';
+import { elCount, elDeleteElements, elFindByIds, elIndexElements, elMarkElementsAsDraftDelete, elPaginate } from '../../../src/database/engine';
+import { processDeleteOperation } from '../../../src/modules/deleteOperation/deleteOperation-domain';
+import { type BasicStoreEntityDeleteOperation, ENTITY_TYPE_DELETE_OPERATION } from '../../../src/modules/deleteOperation/deleteOperation-types';
+import { READ_DATA_INDICES, READ_ENTITIES_INDICES, READ_INDEX_INTERNAL_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../../../src/database/utils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { RELATION_RELATED_TO } from '../../../src/schema/stixCoreRelationship';
@@ -141,5 +143,26 @@ describe('Batched delete of heavily-referenced elements', () => {
     // Cleanup
     const liveMalwares = await elFindByIds(testContext, ADMIN_USER, malwares.map((m) => m.internal_id), { indices: READ_DATA_INDICES }) as BasicStoreBase[];
     await elDeleteElements(testContext, ADMIN_USER, [author, ...liveMalwares]);
+  });
+
+  it('should move to the trash a cascade exactly at the cap, each relation kept once', async () => {
+    const { author, malwares } = await createAuthorWithRelations('Trash at cap author');
+    // 9 distinct relations; the created-by of the related-to is reachable from the author and from the related-to
+    const relationsCount = MALWARES_COUNT + 2;
+
+    await elDeleteElements(testContext, ADMIN_USER, [author], { forceDelete: false, maxSnapshotRelations: relationsCount });
+
+    expect(await findLive(author.internal_id)).toHaveLength(0);
+    const filters = { mode: FilterMode.And, filters: [{ key: ['main_entity_id'], values: [author.internal_id] }], filterGroups: [] };
+    const operations = await elPaginate(testContext, ADMIN_USER, READ_INDEX_INTERNAL_OBJECTS, {
+      types: [ENTITY_TYPE_DELETE_OPERATION], filters, connectionFormat: false,
+    }) as BasicStoreEntityDeleteOperation[];
+    expect(operations).toHaveLength(1);
+    expect(operations[0].deleted_elements).toHaveLength(relationsCount + 1);
+
+    // Cleanup: purge the trash
+    await processDeleteOperation(testContext, ADMIN_USER, operations[0].internal_id);
+    const liveMalwares = await elFindByIds(testContext, ADMIN_USER, malwares.map((m) => m.internal_id), { indices: READ_DATA_INDICES }) as BasicStoreBase[];
+    await elDeleteElements(testContext, ADMIN_USER, liveMalwares);
   });
 });

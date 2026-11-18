@@ -5460,16 +5460,19 @@ type CascadeOpts = {
   includeDeletedInDraft?: boolean;
   // Called once with the first hits of the roots, before anything is processed
   onFirstRootHits?: (hits: BasicStoreRelation[]) => Promise<void>;
+  // Called with each page before its children are read. Returns false to stop.
+  onEnterPage?: (page: BasicStoreRelation[]) => Promise<boolean>;
 };
 
 /**
  * Depth-first traversal of the relations connected to parentIds, then of the relations connected to those, and so on.
  * Pages of MAX_BULK_OPERATIONS relations are read with a search_after cursor that only moves forward, so a page
  * deleted by onPage is never read again from the start.
- * onPage receives each page once all of its children are handled, with the ids of everything on the current path
- * (roots, ancestor pages and this page): those are being removed and must not be cleaned up.
+ * onEnterPage receives each page before its children are read, onPage once all of its children are handled.
+ * onPage also receives the ids of everything on the current path (roots, ancestor pages and this page): those are
+ * being removed and must not be cleaned up. This set is shared along the traversal, not copied per level.
  * At any time only one page per level of the current path is kept in memory.
- * Returns false if onPage asked to stop.
+ * Returns false if onEnterPage or onPage asked to stop.
  */
 const traverseRelationsCascade = async (
   context: AuthContext,
@@ -5495,11 +5498,19 @@ const traverseRelationsCascade = async (
     if (page.length === 0) {
       return true;
     }
-    const removedIds = new Set(ancestors);
-    page.forEach((relation) => removedIds.add(relation.internal_id));
-    const childrenOpts = { batchSize: opts.batchSize, includeDeletedInDraft: opts.includeDeletedInDraft };
-    const childrenCompleted = await traverseRelationsCascade(context, page.map((r) => r.internal_id), removedIds, onPage, childrenOpts);
-    completed = childrenCompleted && await onPage(page, removedIds);
+    if (opts.onEnterPage && !(await opts.onEnterPage(page))) {
+      completed = false;
+      return false;
+    }
+    // The page joins the current path while its children are handled, and leaves it once it is processed
+    page.forEach((relation) => ancestors.add(relation.internal_id));
+    try {
+      const childrenOpts = { batchSize: opts.batchSize, includeDeletedInDraft: opts.includeDeletedInDraft, onEnterPage: opts.onEnterPage };
+      const childrenCompleted = await traverseRelationsCascade(context, page.map((r) => r.internal_id), ancestors, onPage, childrenOpts);
+      completed = childrenCompleted && await onPage(page, ancestors);
+    } finally {
+      page.forEach((relation) => ancestors.delete(relation.internal_id));
+    }
     await doYield();
     return completed;
   };
@@ -5545,15 +5556,17 @@ const preflightRelationsCascade = async (
 ) => {
   const { withControls, maxRelations, batchSize, includeDeletedInDraft } = opts;
   let count = 0;
-  const onPage = async (page: BasicStoreRelation[]) => {
+  // Counted and controlled before going deeper, so that the cap stops a deep cascade as early as a wide one
+  const onEnterPage = async (page: BasicStoreRelation[]) => {
     if (withControls) {
       await controlRelationsToDelete(context, user, page);
     }
     count += page.length;
     return maxRelations === undefined || count <= maxRelations;
   };
+  const onPage = async () => true;
   const rootIds = elements.map((e) => e.internal_id);
-  return traverseRelationsCascade(context, rootIds, new Set(rootIds), onPage, { batchSize, includeDeletedInDraft });
+  return traverseRelationsCascade(context, rootIds, new Set(rootIds), onPage, { batchSize, includeDeletedInDraft, onEnterPage });
 };
 
 const elDeleteElementsBatched = async (
@@ -5665,8 +5678,11 @@ export const elDeleteElements = async (
   if (!opts.snapshotChecked) {
     await elControlSnapshotDelete(context, user, elements, { ...opts, isDraftDelete: false });
   }
-  // Trash: the cascade is below the cap and the controls passed, it can be loaded in one go
-  const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, SYSTEM_USER, elements);
+  // Trash: the cascade is below the cap and the controls passed, it can be loaded in one go.
+  // A relation reachable from two parents is listed twice: keep it once.
+  const snapshot = await getRelationsToRemove(context, SYSTEM_USER, elements);
+  const relations = R.uniqBy((r) => r.internal_id, snapshot.relations);
+  const { relationsToRemoveMap } = snapshot;
   // Relations can be created after the pre-flight: check the snapshot itself before anything is written
   const maxRelations = opts.maxSnapshotRelations ?? DELETE_MAX_SNAPSHOT_RELATIONS;
   if (relations.length > maxRelations) {
