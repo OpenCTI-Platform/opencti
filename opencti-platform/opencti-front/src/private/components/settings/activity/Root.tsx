@@ -2,7 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import Loader from '../../../../components/Loader';
 import ActivityMenu from '../ActivityMenu';
-import { SETTINGS_SECURITYACTIVITY } from '../../../../utils/hooks/useGranted';
+import { capabilitiesOf } from '../../nav/menuEntries';
 import useSettingsFallbackUrl from '../../../../utils/hooks/useSettingsFallbackUrl';
 
 const Security = lazy(() => import('../../../../utils/Security'));
@@ -25,7 +25,7 @@ const RootActivity = () => {
           <Route
             path="/audit"
             element={(
-              <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/activity/audit')} placeholder={<Navigate to={fallbackUrl} />}>
                 <Audit />
               </Security>
             )}
@@ -33,7 +33,7 @@ const RootActivity = () => {
           <Route
             path="/configuration"
             element={(
-              <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/activity/configuration')} placeholder={<Navigate to={fallbackUrl} />}>
                 <Configuration />
               </Security>
             )}
@@ -41,7 +41,7 @@ const RootActivity = () => {
           <Route
             path="/alerting"
             element={(
-              <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/activity/alerting')} placeholder={<Navigate to={fallbackUrl} />}>
                 <Alerting />
               </Security>
             )}

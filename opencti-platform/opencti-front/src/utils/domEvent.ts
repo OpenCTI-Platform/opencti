@@ -58,4 +58,13 @@ export const onActivationKey = (action: (event: KeyboardEvent) => void) => (even
   }
 };
 
+// An input method (Chinese, Japanese, Korean...) owns the keys while it composes text: arrows pick a candidate, Enter
+// confirms the text, Escape cancels it. A key handler must leave those events alone (no preventDefault, no action).
+// keyCode 229 is the fallback for Safari: it fires compositionend before the confirming Enter, so isComposing is
+// already false on that key, but its keyCode is still 229.
+export const isImeComposing = (event: KeyboardEvent | globalThis.KeyboardEvent) => {
+  const { isComposing } = 'nativeEvent' in event ? event.nativeEvent : event;
+  return isComposing || event.keyCode === 229;
+};
+
 export default stopEvent;
