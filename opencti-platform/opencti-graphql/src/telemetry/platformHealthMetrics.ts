@@ -114,7 +114,7 @@ const logDependencySuccess = (dependency: HealthDependency, now: number) => {
   }
 };
 
-export const refreshDependencyStatus = async (): Promise<void> => {
+const probeDependencies = async (): Promise<void> => {
   await Promise.all(HEALTH_DEPENDENCIES.map(async (dependency) => {
     try {
       await withTimeout(dependencyProbes[dependency](), `Timeout checking ${dependency} health`);
@@ -128,6 +128,20 @@ export const refreshDependencyStatus = async (): Promise<void> => {
       logDependencyFailure(dependency, error, now);
     }
   }));
+};
+
+// A refresh can last up to the probe timeout, longer than a short configured check interval.
+// A refresh asked for while one is running joins it rather than starting another, so the results
+// of two refreshes never land out of order (a stale failure after a newer success would open an outage).
+let runningRefresh: Promise<void> | null = null;
+
+export const refreshDependencyStatus = (): Promise<void> => {
+  if (!runningRefresh) {
+    runningRefresh = probeDependencies().finally(() => {
+      runningRefresh = null;
+    });
+  }
+  return runningRefresh;
 };
 
 const isNullableNumber = (value: unknown): value is number | null => value === null || typeof value === 'number';

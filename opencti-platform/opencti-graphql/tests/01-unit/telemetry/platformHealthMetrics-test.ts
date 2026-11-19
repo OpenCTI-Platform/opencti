@@ -292,6 +292,28 @@ describe('platformHealthMetrics: dependency outage logging', () => {
     expect(errorSpy).toHaveBeenCalledTimes(2);
   });
 
+  it('should join the running refresh instead of probing again while it is not finished', async () => {
+    let failProbe: (error: Error) => void = () => {};
+    vi.mocked(rabbitMQIsAlive).mockImplementation(() => new Promise((_, reject) => {
+      failProbe = reject;
+    }));
+
+    const first = refreshDependencyStatus();
+    const second = refreshDependencyStatus();
+    expect(second).toBe(first);
+    expect(rabbitMQIsAlive).toHaveBeenCalledTimes(1);
+
+    failProbe(Error('RabbitMQ seems down'));
+    await first;
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+
+    // Once it's finished, the next refresh probes again
+    vi.mocked(rabbitMQIsAlive).mockResolvedValue(true);
+    await refreshDependencyStatus();
+    expect(rabbitMQIsAlive).toHaveBeenCalledTimes(2);
+    expect(infoSpy).toHaveBeenCalledWith('[HEALTH] Dependency reachable again', expect.objectContaining({ dependency: 'rabbitmq', failedChecks: 1 }));
+  });
+
   it('should log an error when the dependency is already unreachable at startup', async () => {
     vi.mocked(rabbitMQIsAlive).mockRejectedValue(Error('RabbitMQ seems down'));
 
