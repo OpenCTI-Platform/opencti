@@ -237,18 +237,20 @@ describe('logWorkflowMigrationSummary', () => {
     expect(logMigration.error).not.toHaveBeenCalled();
   });
 
-  it('logs an ERROR instead of a WARN when a request access scope failed', () => {
+  it('logs a WARN, not an ERROR, with the legacy flow note when a request access scope failed', () => {
     logWorkflowMigrationSummary([
       result('Report', 'failed', StatusScope.Global, 'boom'),
       result('Case-Rfi', 'failed', StatusScope.RequestAccess, 'Enterprise edition is not enabled'),
     ]);
-    expect(logMigration.error).toHaveBeenCalledTimes(1);
-    const failure = vi.mocked(logMigration.error).mock.calls[0][0];
+    expect(logMigration.warn).toHaveBeenCalledTimes(1);
+    const failure = vi.mocked(logMigration.warn).mock.calls[0][0];
     expect(failure).toContain('Report');
     expect(failure).toContain('boom');
     expect(failure).toContain('Case-Rfi');
     expect(failure).toContain('Enterprise edition is not enabled');
-    expect(logMigration.warn).not.toHaveBeenCalled();
+    expect(failure).toContain('request access flow keeps running on its legacy statuses');
+    expect(failure).toContain('migrateWorkflowFromStatuses');
+    expect(logMigration.error).not.toHaveBeenCalled();
   });
 
   it('logs no failure line when nothing failed', () => {

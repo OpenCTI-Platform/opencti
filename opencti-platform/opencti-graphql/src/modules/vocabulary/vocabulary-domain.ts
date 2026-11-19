@@ -3,7 +3,7 @@ import { createEntity, deleteElementById, updateAttribute } from '../../database
 import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput, VocabularyCategory } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
 import { countAllThings, type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, isVocabularyCategoryEnabled, type StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
+import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, type StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { elRawUpdateByQuery } from '../../database/engine';
@@ -53,10 +53,6 @@ export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, 
   const categoryDefinition = getVocabularyCategory(vocabulary.category);
   if (!categoryDefinition) {
     throw UnsupportedError(`Cant find category for vocabulary ${vocabulary.name}`);
-  }
-  // A hidden category's field is not registered, so no filter can count it
-  if (!isVocabularyCategoryEnabled(vocabularyDefinitions[categoryDefinition.key])) {
-    return 0;
   }
   return countAllThings(context, user, {
     filters: {
