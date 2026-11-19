@@ -9,3 +9,54 @@ export const normalizeSamlPemValue = <T extends string | null | undefined>(value
   const normalized = value.replace(/\r\n?/g, '\n').trim();
   return (normalized.length > 0 ? normalized : undefined) as T;
 };
+
+const PEM_CERTIFICATE_REGEX = /-----BEGIN CERTIFICATE-----[\s\S]*?-----END CERTIFICATE-----/g;
+
+// A value that already holds a PEM block is kept as is, with any text around it, so that node-saml reports that text.
+const toPemCertificate = (value: string): string => {
+  if (value.includes('-----BEGIN')) {
+    return value;
+  }
+  const lines = value.replace(/\s+/g, '').match(/.{1,64}/g) ?? [];
+  return ['-----BEGIN CERTIFICATE-----', ...lines, '-----END CERTIFICATE-----'].join('\n');
+};
+
+// Values from a YAML or JSON list are not checked: anything that is not a non-blank string is ignored.
+const cleanCertificates = (values: unknown[]): string[] => {
+  return values
+    .filter((value): value is string => typeof value === 'string')
+    .map((value) => normalizeSamlPemValue(value))
+    .filter((value): value is string => !!value);
+};
+
+// Text left outside the PEM blocks is kept, so that node-saml reports it instead of it being silently dropped.
+const splitCertificateText = (value: string): string[] => {
+  const normalized = normalizeSamlPemValue(value);
+  if (!normalized) {
+    return [];
+  }
+  const blocks = normalized.match(PEM_CERTIFICATE_REGEX) ?? [];
+  const rest = normalized.replace(PEM_CERTIFICATE_REGEX, '').trim();
+  return rest.length > 0 ? [...blocks, rest] : blocks;
+};
+
+// An IdP can publish several certificates (certificate rotation), and node-saml accepts a list.
+// idp_certificate is a String in the GraphQL schema, so several certificates are stored as PEM blocks in a single string.
+export const joinSamlIdpCertificates = (value: string | unknown[]): string => {
+  if (!Array.isArray(value)) {
+    return value;
+  }
+  const certificates = cleanCertificates(value);
+  if (certificates.length <= 1) {
+    return certificates[0] ?? '';
+  }
+  return certificates.map(toPemCertificate).join('\n');
+};
+
+// Gives node-saml one certificate, or the list when several PEM certificates are stored.
+// A list can also come from a provider migrated before the certificates were joined.
+// Without certificate, node-saml gets an empty string and reports that idpCert is required.
+export const splitSamlIdpCertificates = (value: string | unknown[]): string | string[] => {
+  const certificates = Array.isArray(value) ? cleanCertificates(value) : splitCertificateText(value);
+  return certificates.length > 1 ? certificates : (certificates[0] ?? '');
+};
