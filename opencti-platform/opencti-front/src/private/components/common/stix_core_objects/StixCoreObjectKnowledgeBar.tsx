@@ -25,12 +25,13 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
   fragment StixCoreObjectKnowledgeBar_stixCoreObject on StixCoreObject
   @argumentDefinitions(
     relatedRelationshipTypes: { type: "[String]", defaultValue: ["related-to"] }
-    # see buildObservablesKnowledgeBarFilters, the default is its result for ["related-to"]
+    # see buildObservablesKnowledgeBarFilters, the default is its result for ["related-to"]: keep the same
+    # shape (key as an array), or a refresh would write to another Relay cache entry than the one displayed
     observablesFilters: {
       type: "FilterGroup"
       defaultValue: {
         mode: and
-        filters: [{ key: "regardingOf", values: [{ key: "relationship_type", values: ["related-to"] }] }]
+        filters: [{ key: ["regardingOf"], values: [{ key: "relationship_type", values: ["related-to"] }] }]
         filterGroups: []
       }
     }
@@ -80,6 +81,8 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
       operation: count
       types: ["Stix-Cyber-Observable"]
       filters: $observablesFilters
+      # one bucket per observable type, summed below: the default limit (10) would drop types
+      limit: 100
     ) {
       label
       value
