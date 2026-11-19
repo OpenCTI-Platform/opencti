@@ -1,5 +1,5 @@
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import { ENTITY_TYPE_VOCABULARY, isVocabularyCategoryEnabled, type StixVocabulary, type StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
+import { ENTITY_TYPE_VOCABULARY, type StixVocabulary, type StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
 import convertVocabularyToStix from './vocabulary-converter';
 import { ABSTRACT_STIX_META_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
@@ -9,9 +9,8 @@ const generateInputDependencyKeys = () => {
     .flatMap((definition) => definition.fields.map(({ key }) => ({
       src: key,
       // Read on use: some categories resolve their entity types once every module is registered.
-      // A disabled category applies to no type.
       get types() {
-        return isVocabularyCategoryEnabled(definition) ? definition.entity_types : [];
+        return definition.entity_types;
       },
     })));
 };

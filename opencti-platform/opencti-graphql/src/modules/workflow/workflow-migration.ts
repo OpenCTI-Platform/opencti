@@ -76,14 +76,14 @@ export const migrateAllWorkflowDefinitions = async (context: AuthContext, user: 
 
 export const logWorkflowMigrationSummary = (results: WorkflowMigrationResult[]): void => {
   const counts = OUTCOMES.map((outcome) => `${outcome}=${results.filter((result) => result.outcome === outcome).length}`);
-  logMigration.info(`[MIGRATION] Workflow definitions > ${counts.join(', ')}`);
+  logMigration.info(`[MIGRATION] Workflow definitions (counted per type and scope) > ${counts.join(', ')}`);
   const failed = results.filter((result) => result.outcome === 'failed');
   if (failed.length === 0) return;
   const failures = failed.map((result) => `${result.entityType} (${result.scope}): ${result.reason}`).join('; ');
-  // A failed request access scope leaves requests with no flow to run: it is more serious than a type kept on legacy statuses
-  if (failed.some((result) => result.scope === StatusScope.RequestAccess)) {
-    logMigration.error(`[MIGRATION] Workflow definitions not migrated, including a request access workflow: ${failures}`);
-  } else {
-    logMigration.warn(`[MIGRATION] Workflow definitions not migrated: ${failures}`);
-  }
+  // Requests keep running on the legacy request access flow while no REQUEST_ACCESS definition is published,
+  // so a failed scope is not fatal: it stays on its legacy statuses until an administrator retries the migration
+  const requestAccessNote = failed.some((result) => result.scope === StatusScope.RequestAccess)
+    ? ' | The request access flow keeps running on its legacy statuses until an administrator retries through the migrateWorkflowFromStatuses mutation'
+    : '';
+  logMigration.warn(`[MIGRATION] Workflow definitions not migrated: ${failures}${requestAccessNote}`);
 };
