@@ -58,9 +58,6 @@ export const DASHBOARD_VARIABLE_ID_TYPES: ReadonlySet<DashboardVariableTypeName>
   'entity', 'label', 'marking', 'user', 'group', 'status', 'killChainPhase',
 ]);
 
-// The feature flag of the dashboard variables (the API is hidden by @ff on the schema, see workspace.graphql)
-export const DASHBOARD_VARIABLES_FEATURE_FLAG = 'DASHBOARD_VARIABLES';
-
 export const DASHBOARD_VARIABLES_MAX_COUNT = 50;
 export const DASHBOARD_VARIABLE_NAME_MAX_LENGTH = 200;
 export const DASHBOARD_VARIABLE_SELECTION_MAX_VALUES = 200;

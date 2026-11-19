@@ -1,19 +1,15 @@
 import * as R from 'ramda';
 import pjson from '../../../package.json';
-import { isFeatureEnabled } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { fromB64, toB64 } from '../../utils/base64';
 import { convertDashboardManifestIds, exportDashboardWidget } from '../dashboard/dashboard-utils';
 import type { BasicStoreEntityWorkspace } from './workspace-types';
-import { DASHBOARD_VARIABLES_FEATURE_FLAG } from './workspace-variables-types';
 
-// The manifest of a bundle. The variables travel only with the feature flag of the dashboard variables, their ids converted as the ones of the
-// widgets (convertDashboardManifestIds); without the flag they are left out, the platform that imports them could not show them.
+// The manifest of a bundle. The variables travel with it, their ids converted as the ones of the widgets (convertDashboardManifestIds).
 // The presets, which are sets of values of the variables, are not part of a bundle
 const toBundleManifest = async (context: AuthContext, user: AuthUser, encoded: string) => {
-  const withVariables = isFeatureEnabled(DASHBOARD_VARIABLES_FEATURE_FLAG);
-  const manifest = toB64(R.omit(withVariables ? ['presets'] : ['presets', 'variables'], fromB64(encoded))) as string;
+  const manifest = toB64(R.omit(['presets'], fromB64(encoded))) as string;
   return convertDashboardManifestIds(context, user, manifest, 'internal', { keepMissingSavedFilters: true });
 };
 

@@ -1,7 +1,6 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { patchAttribute } from '../../../../src/database/middleware';
-import { ENABLED_FEATURE_FLAGS } from '../../../../src/config/conf';
 import { findLabelPaginated } from '../../../../src/domain/label';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import { dashboardsFamily } from '../../../../src/modules/configPreset/registry/dashboards-configPreset-registry';
@@ -106,7 +105,7 @@ describe('Dashboard import and export (configuration preset)', () => {
     expect(fromB64((await loadWorkspace(names[2])).manifest).variables.map(({ name }: { name: string }) => name)).toEqual(['First']);
     await importDashboard(testContext, ADMIN_USER, { name: names[2], manifest: manifestOf('entity_type', ['Report'], [variable('Second')]) }, { mode });
     expect(fromB64((await loadWorkspace(names[2])).manifest).variables.map(({ name }: { name: string }) => name)).toEqual(['Second']);
-    // A bundle without `variables` (from a platform without the feature flag) keeps them: they are neither compared nor wiped
+    // A bundle without `variables` (from an earlier platform, or a dashboard that had none) keeps them: they are neither compared nor wiped
     expect(await importDashboard(testContext, ADMIN_USER, { name: names[2], manifest: manifestOf('entity_type', ['Report']) }, { mode })).toMatchObject({ status: 'skipped', code: 'unchanged' });
     expect(await importDashboard(testContext, ADMIN_USER, { name: names[2], manifest: manifestOf('entity_type', ['Malware']) }, { mode })).toMatchObject({ status: 'overwritten' });
     const kept = await loadWorkspace(names[2]);
@@ -262,7 +261,7 @@ describe('Dashboard import and export (configuration preset)', () => {
     expect(storedFilterValues(await loadWorkspace(names[5]))).toEqual([MISSING_LABEL_ID]);
   });
 
-  it('converts the ids held by the variables as the ones of the filters, and takes the variables only with their feature flag', async () => {
+  it('converts the ids held by the variables as the ones of the filters', async () => {
     const label = await existingLabel();
     const name = `${PREFIX} variables`;
     const variablesOf = (workspace: { manifest?: string }) => fromB64(workspace.manifest).variables;
@@ -283,24 +282,6 @@ describe('Dashboard import and export (configuration preset)', () => {
     expect(imported).toMatchObject({ status: 'created' });
     expect(imported.reason).toBeUndefined();
     expect(variablesOf(await loadWorkspace(`${PREFIX} variables copy`))[0]).toMatchObject({ defaultValue: label.id, restriction: { values: [label.id] } });
-
-    // Without the feature flag the variables stay out of the bundle: not exported, not imported, and the ones of a dashboard are not replaced
-    const enabled = [...ENABLED_FEATURE_FLAGS];
-    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
-    try {
-      expect(variablesOf(await exportDashboard(testContext, ADMIN_USER, stored))).toBeUndefined();
-      await importDashboard(testContext, ADMIN_USER, { ...exported, name: `${PREFIX} variables off` }, { mode });
-      expect(variablesOf(await loadWorkspace(`${PREFIX} variables off`))).toBeUndefined();
-      const overwrite = await importDashboard(testContext, ADMIN_USER, { name, manifest: manifestOf('entity_type', ['Malware'], []) }, { mode });
-      expect(overwrite).toMatchObject({ status: 'overwritten' });
-      const overwritten = await loadWorkspace(name);
-      expect(storedFilterValues(overwritten)).toEqual(['Malware']);
-      expect(variablesOf(overwritten)).toHaveLength(2);
-      // The variables of the bundle do not make a dashboard that has the same widgets differ
-      expect(await importDashboard(testContext, ADMIN_USER, { name, manifest: manifestOf('entity_type', ['Malware'], [textVariable]) }, { mode })).toMatchObject({ status: 'skipped', code: 'unchanged' });
-    } finally {
-      ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...enabled);
-    }
 
     // A reference the platform does not have is kept as it is, as in the filters
     const missing = { ...variable, restriction: { mode: 'selection', values: [MISSING_LABEL_ID] }, defaultValue: MISSING_LABEL_ID };

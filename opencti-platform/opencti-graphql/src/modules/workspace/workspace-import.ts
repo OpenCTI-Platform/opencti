@@ -3,7 +3,7 @@ import type { FileHandle } from 'fs/promises';
 import { GraphQLError } from 'graphql';
 import { FUNCTIONAL_ERROR } from '../../config/errors';
 import { FilterMode, type EditInput, type ImportWidgetInput, type MemberAccessInput } from '../../generated/graphql';
-import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
+import { BUS_TOPICS } from '../../config/conf';
 import { createEntity, updateAttribute } from '../../database/middleware';
 import { notify } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -23,7 +23,7 @@ import { findAllWorkspaces, findById, initializeAuthorizedMembers, sanitizeEleme
 import { DASHBOARD_NAME_MAX_LENGTH, type DashboardImportConfiguration, dashboardImportSchema } from './workspace-import-schema';
 import { type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE, type StoreEntityWorkspace } from './workspace-types';
 import { withWorkspaceManifestLock } from './workspace-variables-domain';
-import { DASHBOARD_VARIABLES_FEATURE_FLAG, type StoreDashboardPreset, type StoreDashboardVariable } from './workspace-variables-types';
+import { type StoreDashboardPreset, type StoreDashboardVariable } from './workspace-variables-types';
 import { pruneInvalidPresetValues, removeVariableFromPresets } from './workspace-presets-validation';
 import { preserveServerOwnedManifestKeys, validateManifestVariables } from './workspace-variables-utils';
 
@@ -49,26 +49,25 @@ export const findDashboardsByName = async (context: AuthContext, user: AuthUser,
 
 // region manifest
 // The manifest with the ids of this platform. A reference it does not have is kept as it is, as the file import does.
-// The variables are taken only with the feature flag of the dashboard variables: validated as the typed API does, before any id is resolved,
-// then converted as the ids of the widgets. Without the flag they are left out. The presets are never taken
-const prepareManifest = async (context: AuthContext, user: AuthUser, manifest: string | null | undefined, withVariables: boolean) => {
+// The variables are validated as the typed API does, before any id is resolved, then converted as the ids of the widgets. The presets are never taken
+const prepareManifest = async (context: AuthContext, user: AuthUser, manifest: string | null | undefined) => {
   if (!manifest) {
     return undefined;
   }
-  const taken = toB64(R.omit(withVariables ? ['presets'] : ['presets', 'variables'], fromB64(manifest))) as string;
+  const taken = toB64(R.omit(['presets'], fromB64(manifest))) as string;
   const validated = validateManifestVariables(taken);
   return convertDashboardManifestIds(context, user, validated, 'stix') as Promise<string>;
 };
 
-// What a bundle does not hold, so what it neither compares nor replaces on a dashboard: the presets, and the variables when the platform does not take
-// them or when the bundle has none (no `variables` key: it comes from a platform without the feature flag, or from a dashboard that never had any).
-// A bundle of a platform with the flag writes `variables` as soon as the dashboard had some, an empty list included, so it can still clear them
-const bundleLeftOutKeys = (imported: string, withVariables: boolean) => {
-  return withVariables && 'variables' in fromB64<Record<string, unknown>>(imported) ? ['presets'] : ['presets', 'variables'];
+// What a bundle does not hold, so what it neither compares nor replaces on a dashboard: the presets, and the variables when the bundle has none
+// (no `variables` key: it comes from a platform before the dashboard variables, or from a dashboard that never had any).
+// A bundle writes `variables` as soon as the dashboard had some, an empty list included, so it can still clear them
+const bundleLeftOutKeys = (imported: string) => {
+  return 'variables' in fromB64<Record<string, unknown>>(imported) ? ['presets'] : ['presets', 'variables'];
 };
 const withoutLeftOutKeys = (encoded: string | undefined, leftOutKeys: string[]) => R.omit(leftOutKeys, fromB64(encoded));
-const isSameManifest = (stored: string | undefined, imported: string, withVariables: boolean) => {
-  const leftOutKeys = bundleLeftOutKeys(imported, withVariables);
+const isSameManifest = (stored: string | undefined, imported: string) => {
+  const leftOutKeys = bundleLeftOutKeys(imported);
   return R.equals(withoutLeftOutKeys(stored, leftOutKeys), withoutLeftOutKeys(imported, leftOutKeys));
 };
 // The presets of the dashboard once the variables of the bundle replace its own, kept consistent with them as the other paths do (the deletion
@@ -80,10 +79,9 @@ const reconcilePresets = (presets: StoreDashboardPreset[], variables: StoreDashb
   const withoutDropped = [...droppedIds].reduce((kept, id) => removeVariableFromPresets(kept, id), presets);
   return variables.reduce((kept, variable) => pruneInvalidPresetValues(kept, variable), withoutDropped);
 };
-// The dashboard keeps what the bundle does not hold: an overwrite does not erase its presets (nor its variables without the feature flag,
-// nor when the bundle has none)
-const keepStoredLeftOutKeys = (stored: string | undefined, imported: string, withVariables: boolean) => {
-  const leftOutKeys = bundleLeftOutKeys(imported, withVariables);
+// The dashboard keeps what the bundle does not hold: an overwrite does not erase its presets (nor its variables when the bundle has none)
+const keepStoredLeftOutKeys = (stored: string | undefined, imported: string) => {
+  const leftOutKeys = bundleLeftOutKeys(imported);
   const kept = stored ? R.pick(leftOutKeys, fromB64<Record<string, unknown>>(stored)) : {};
   if (Array.isArray(kept.presets) && !leftOutKeys.includes('variables')) {
     // The variables of the bundle replace the stored ones: they were validated by prepareManifest
@@ -106,13 +104,13 @@ const createDashboard = (context: AuthContext, user: AuthUser, data: DashboardIm
 
 // The fields an import writes on an existing dashboard: what the bundle sets and the dashboard does not have. A value that is null or absent leaves
 // the one of the dashboard untouched. The members of the dashboard are never touched
-const buildPatch = (existing: BasicStoreEntityWorkspace, data: DashboardImportConfiguration, manifest: string | undefined, withVariables: boolean) => {
+const buildPatch = (existing: BasicStoreEntityWorkspace, data: DashboardImportConfiguration, manifest: string | undefined) => {
   const patch: EditInput[] = [];
   if (data.description != null && data.description !== (existing.description ?? '')) patch.push({ key: 'description', value: [data.description] });
   if (data.tags != null && !R.equals([...data.tags].sort(), [...(existing.tags ?? [])].sort())) patch.push({ key: 'tags', value: data.tags });
   if (data.refresh_interval != null && data.refresh_interval !== (existing.refresh_interval ?? 0)) patch.push({ key: 'refresh_interval', value: [data.refresh_interval] });
-  if (manifest && !isSameManifest(existing.manifest, manifest, withVariables)) {
-    patch.push({ key: 'manifest', value: [keepStoredLeftOutKeys(existing.manifest, manifest, withVariables)] });
+  if (manifest && !isSameManifest(existing.manifest, manifest)) {
+    patch.push({ key: 'manifest', value: [keepStoredLeftOutKeys(existing.manifest, manifest)] });
   }
   return patch;
 };
@@ -126,14 +124,13 @@ const patchDashboard = async (
   existing: BasicStoreEntityWorkspace,
   data: DashboardImportConfiguration,
   manifest: string | undefined,
-  withVariables: boolean,
 ): Promise<'gone' | 'done'> => {
   const result = await withWorkspaceManifestLock(existing.id, async () => {
     const stored = await findById(context, user, existing.id) as BasicStoreEntityWorkspace | undefined;
     if (!stored) {
       return 'gone' as const;
     }
-    const patch = buildPatch(stored, data, manifest, withVariables);
+    const patch = buildPatch(stored, data, manifest);
     if (patch.length === 0) {
       return undefined;
     }
@@ -168,7 +165,7 @@ const patchDashboard = async (
 // Copy creates the dashboard under a free name (`name (1)`, ...), whether the name is taken or not.
 // A name that an earlier item of the same import already took is a duplicate: refused, as the later item would overwrite the dashboard of the earlier one.
 // The ids of the filters are converted to this platform's: a reference it does not have is kept as it is, as the file import does.
-// The variables, with the feature flag of the dashboard variables only, are converted the same way and replace the ones of an overwritten dashboard.
+// The variables are converted the same way and replace the ones of an overwritten dashboard.
 export const importDashboard = async (
   context: AuthContext,
   user: AuthUser,
@@ -180,10 +177,9 @@ export const importDashboard = async (
     return refused('failed', 'invalid', configImportValidationReason(parsed.error), false);
   }
   const { data } = parsed;
-  const withVariables = isFeatureEnabled(DASHBOARD_VARIABLES_FEATURE_FLAG);
   let manifest: string | undefined;
   try {
-    manifest = await prepareManifest(context, user, data.manifest, withVariables);
+    manifest = await prepareManifest(context, user, data.manifest);
   } catch (error) {
     // Only what the manifest breaks is a refusal of the item: a failure of the platform (a lookup of the ids that times out) stays an error
     if (!(error instanceof GraphQLError && error.extensions.code === FUNCTIONAL_ERROR)) {
@@ -233,11 +229,11 @@ export const importDashboard = async (
   if (mode === ConfigImportMode.Add) {
     return refused('failed', 'exists', 'Dashboard already exists', true, data);
   }
-  const patch = buildPatch(existing, data, manifest, withVariables);
+  const patch = buildPatch(existing, data, manifest);
   if (patch.length === 0) {
     return refused('skipped', 'unchanged', CONFIG_IMPORT_UNCHANGED_REASON, true, data);
   }
-  if (!dryRun && await patchDashboard(context, user, existing, data, manifest, withVariables) === 'gone') {
+  if (!dryRun && await patchDashboard(context, user, existing, data, manifest) === 'gone') {
     // Deleted since it was found: the name is free, as when the overwrite finds none
     await createDashboard(context, user, data, manifest, data.name);
     return { status: 'created', exists: false, configuration: data };

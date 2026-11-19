@@ -109,7 +109,7 @@ describe('Overwrite of a dashboard by a bundle, what is written under the lock',
     };
     vi.mocked(findAllWorkspaces).mockResolvedValue([workspaceOf(manifestOf('Report', undefined, variables))] as never);
     vi.mocked(findById).mockImplementation(async () => workspaceOf(manifestOf('Report', undefined, variables)) as never);
-    // A bundle of a platform without the feature flag has no `variables`: they are neither compared nor wiped
+    // A bundle with no `variables` key (an earlier platform, or a dashboard that had none): they are neither compared nor wiped
     expect(await importDashboard(context, user, { name: 'SOC overview', manifest: manifestOf('Report') }, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'skipped', code: 'unchanged' });
     expect(await importDashboard(context, user, imported, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'overwritten' });
     expect(variablesWritten()).toEqual(variables);
