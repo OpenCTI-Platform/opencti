@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { up } from '../../../src/migrations/1795000000000-migrate-workflow-definitions';
+import { up } from '../../../src/migrations/1795084122000-migrate-workflow-definitions';
 import { logMigration } from '../../../src/config/conf';
 import { StatusScope } from '../../../src/generated/graphql';
 import { logWorkflowMigrationSummary, migrateAllWorkflowDefinitions } from '../../../src/modules/workflow/workflow-migration';
