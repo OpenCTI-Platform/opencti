@@ -50,7 +50,7 @@ Each step is drawn as a card: its icon and colour give its category (entry point
 - **Insert a step between two steps**: hover the link between them and click the **+** in its middle.
 - **Replace, configure or delete a step**: right-click the step (or use its **⋮** menu).
 - **Delete one step, keep the steps after it**: deleting a step that has steps after it asks what to delete. **Delete this step only** (the default) removes the step and links each step that followed it to the step before it, on the same output. **Delete this step and the N steps after it** removes the whole branch. The entry point can only be deleted with its branch, since its steps would have no parent. A step with nothing after it is deleted after a simple confirmation.
-- **Rewire without deleting**: drag the end of a link onto another step to reconnect it, or drag from a free output onto a step to move that step and its branch under this output. A change that would create a loop or leave a step without a parent is refused.
+- **Rewire without deleting**: each step has one link in. To move a step, and the steps after it, under another output, drag from that output onto the step, or from the step's input onto the output. Hover a connection point to see what a drag from it does. A move that would create a loop is refused, and **Ctrl/Cmd+Z** puts a moved step back.
 - **Undo and redo**: use the toolbar buttons, **Ctrl/Cmd+Z** and **Shift+Ctrl/Cmd+Z**. Deleting a step that had steps after it cannot be undone and clears the undo history.
 
 ### View mode and edit mode

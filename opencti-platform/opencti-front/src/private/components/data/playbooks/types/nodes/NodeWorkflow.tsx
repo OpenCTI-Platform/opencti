@@ -11,8 +11,9 @@ import { useFormatter } from '../../../../../../components/i18n';
 import { truncate } from '../../../../../../utils/String';
 import type { Theme } from '../../../../../../components/Theme';
 import { usePlaybookHandlePositions } from '../../hooks/usePlaybookLayoutMode';
-import { categoryAccent, outPorts, PLAYBOOK_CARD, portAnchor, portHasPill } from './playbookNodeGeometry';
+import { categoryAccent, outPorts, PLAYBOOK_CARD, PLAYBOOK_HANDLE_DOT, portAnchor, portHasPill } from './playbookNodeGeometry';
 import PlaybookPortHandle from './PlaybookPortHandle';
+import PlaybookHandleHint from './PlaybookHandleHint';
 import { usePlaybookNodeLastExecution } from '../../hooks/usePlaybookLastExecution';
 import { formatStepDuration } from '../../utils/playbookLastExecution';
 import { playbookNodeSummary, type PlaybookNodeSummary } from '../../utils/playbookNodeSummary';
@@ -37,6 +38,10 @@ const NodeWorkflow = ({ id, data, isConnectable }: NodeProps) => {
   // A port connects only in edit mode: React Flow's own flag (nodesConnectable) is not enough once the
   // mode is switched at runtime, so the edit-mode context gates every handle of the card too.
   const canConnect = isConnectable && rewiring;
+  // What a drag from an output does, whether a link already leaves from it or not.
+  const outputHint = canConnect
+    ? t_i18n('Drag onto a step to move it, and the steps after it, under this output.')
+    : undefined;
   const component = data.component;
   const accent = categoryAccent(theme, component?.category);
   const displayDescription = data.description || component?.description;
@@ -291,7 +296,21 @@ const NodeWorkflow = ({ id, data, isConnectable }: NodeProps) => {
         </Tooltip>
       )}
       {!isEntryPoint && (
-        <Handle type="target" position={target} isConnectable={canConnect} style={{ background: accent, border: 'none' }} />
+        <PlaybookHandleHint
+          side={target}
+          hint={canConnect
+            ? t_i18n('Drag onto an output to replace this step\'s input.')
+            : undefined}
+        >
+          <Handle
+            type="target"
+            position={target}
+            isConnectable={canConnect}
+            isConnectableStart={canConnect}
+            className="playbook-handle-dot"
+            style={{ background: accent, border: 'none', width: PLAYBOOK_HANDLE_DOT, height: PLAYBOOK_HANDLE_DOT }}
+          />
+        </PlaybookHandleHint>
       )}
       {ports.map((port, index) => {
         const anchor = portAnchor(index, ports.length, direction);
@@ -314,19 +333,28 @@ const NodeWorkflow = ({ id, data, isConnectable }: NodeProps) => {
               isConnectable={canConnect}
               opensSettings={nodeOpensSettings}
               onOpen={openConfiguration}
+              hint={outputHint}
             />
           );
         }
         return (
-          <Handle
-            key={port.id}
-            id={port.id}
-            type="source"
-            position={source}
-            title={portName}
-            isConnectable={canConnect}
-            style={{ ...(direction === 'horizontal' ? { top: anchor.y } : { left: anchor.x }), background: accent, border: 'none' }}
-          />
+          <PlaybookHandleHint key={port.id} side={source} hint={outputHint}>
+            <Handle
+              id={port.id}
+              type="source"
+              position={source}
+              title={outputHint ? undefined : portName}
+              isConnectable={canConnect}
+              className="playbook-handle-dot"
+              style={{
+                ...(direction === 'horizontal' ? { top: anchor.y } : { left: anchor.x }),
+                background: accent,
+                border: 'none',
+                width: PLAYBOOK_HANDLE_DOT,
+                height: PLAYBOOK_HANDLE_DOT,
+              }}
+            />
+          </PlaybookHandleHint>
         );
       })}
     </div>

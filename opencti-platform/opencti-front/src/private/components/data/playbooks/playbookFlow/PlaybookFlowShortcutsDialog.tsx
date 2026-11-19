@@ -45,8 +45,8 @@ const PlaybookFlowShortcutsDialog = ({ open, onClose }: PlaybookFlowShortcutsDia
   };
   const gestures = [
     { gesture: t_i18n('Right click on a step'), label: t_i18n('Open the step menu') },
-    { gesture: t_i18n('Drag the end of a link'), label: t_i18n('Reconnect the link') },
-    { gesture: t_i18n('Drag from an output to a step'), label: t_i18n('Move the step and its branch') },
+    { gesture: t_i18n('Drag from an output onto a step'), label: t_i18n('Move the step and the steps after it under that output') },
+    { gesture: t_i18n('Drag from a step\'s input onto an output'), label: t_i18n('Move the step and the steps after it under that output') },
   ];
   return (
     <Dialog open={open} onClose={onClose} title={t_i18n('Keyboard shortcuts')} size="small" showCloseButton>

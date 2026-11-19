@@ -215,7 +215,9 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook, canEdit, running }
   }, [canEdit, setAction, setSelectedNode, setSelectedEdge]);
 
   // Rewiring by drag: only in edit mode; view mode and users without Manage Playbooks get a read-only canvas.
-  const { onConnect, onEdgeUpdate } = usePlaybookRewiring(
+  // A step has one link in: it moves by a drag between one of its points and an output, never by
+  // dragging the end of a link (that end sits on the input and would hide it).
+  const { onConnect } = usePlaybookRewiring(
     playbook.id,
     setAction,
     setSelectedEdge,
@@ -252,6 +254,13 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook, canEdit, running }
             <Alert severity="warning" title={t_i18n('This playbook is running: your changes apply immediately.')} />
           </div>
         )}
+        {/* A connection point grows under the pointer, and while a drag hovers a point it can drop on. */}
+        <style>{`
+          .playbook-handle-dot { transition: scale 120ms ease; }
+          .playbook-handle-dot.connectable:hover, .playbook-handle-dot.valid { scale: 1.5; }
+          .playbook-port-pill.connectable:hover, .playbook-port-pill.valid { box-shadow: 0 0 0 2px var(--playbook-port-accent); }
+        `}
+        </style>
         <svg style={{ position: 'absolute', width: 0, height: 0 }} aria-hidden="true">
           <defs>
             <marker
@@ -289,9 +298,8 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook, canEdit, running }
             nodesDraggable={false}
             {...playbookFlowKeyboardProps}
             nodesConnectable={canEdit}
-            edgesUpdatable={canEdit}
+            edgesUpdatable={false}
             onConnect={onConnect}
-            onEdgeUpdate={onEdgeUpdate}
             zoomOnDoubleClick={false}
             onMoveStart={onMoveStart}
             proOptions={proOptions}

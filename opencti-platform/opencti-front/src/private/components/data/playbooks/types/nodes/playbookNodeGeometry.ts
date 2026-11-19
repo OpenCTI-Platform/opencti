@@ -30,6 +30,8 @@ export const PLAYBOOK_SIBLING_GAP = 56;
 // In the horizontal layout a port pill lies along the link: capped at this width, so the add button
 // of a labelled port can start past it in every language.
 export const PLAYBOOK_PORT_PILL_MAX_WIDTH = 80;
+// An input or unlabelled output dot: large enough to be seen and grabbed.
+export const PLAYBOOK_HANDLE_DOT = 10;
 
 type Port = { id: string; type: string };
 
