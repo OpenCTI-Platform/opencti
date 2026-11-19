@@ -13,6 +13,7 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   fullEntitiesList: vi.fn(),
   fullRelationsList: vi.fn(),
   fullEntitiesThroughRelationsToList: vi.fn(),
+  internalFindByIds: vi.fn(),
   pageEntitiesConnection: vi.fn(),
   storeLoadById: vi.fn(),
 }));
@@ -70,6 +71,7 @@ import { exportConnector } from '../../../../src/modules/connector/connector-exp
 import { customEmailTemplate, otherEmailTemplate } from './configPreset-emailTemplates-fixtures';
 import { defaultFintelDesign, nightFintelDesign, PNG_LOGO } from './configPreset-fintelDesigns-fixtures';
 import { FINTEL_DESIGN_LOGO_MAX_SIZE } from '../../../../src/modules/fintelDesign/fintelDesign-logo';
+import { incidentForm, reportForm } from './configPreset-formIntakes-fixtures';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'admin-id', capabilities: [{ name: 'BYPASS' }] } as AuthUser;
@@ -222,6 +224,14 @@ describe('Config preset registry', () => {
         itemIds: [fraudCaseTemplate.standard_id, phishingCaseTemplate.standard_id],
       },
       { id: 'connectors', label: 'Connectors', description: 'Managed connectors and their parameters, without their secrets', group: 'integrations', itemIds: ['mitre'] },
+      // The form intakes by name
+      {
+        id: 'formIntakes',
+        label: 'Form intakes',
+        description: 'Form intakes and their schema',
+        group: 'integrations',
+        itemIds: [incidentForm.standard_id, reportForm.standard_id],
+      },
       // Every rule the platform declares, by its id
       {
         id: 'ruleEngine',
@@ -283,13 +293,15 @@ describe('Config preset registry', () => {
       ['Fraud investigation', false],
       ['Phishing triage', false],
       ['MITRE', false],
+      ['Incident intake', false],
+      ['Report intake', false],
       ...RULES_DECLARATION.map(({ name }) => [name, true]),
       ['Filigran report', false],
       ['Night briefing', false],
     ]);
   });
 
-  it('writes one distinct JSON file per item, in the folder of its category, a theme, a label, an exclusion list, a phase, a status template or a case template by its standard id, a vocabulary category by its name', async () => {
+  it('writes one distinct JSON file per item, in the folder of its category, a theme, a label, an exclusion list, a phase, a status template, a case template or a form intake by its standard id, a vocabulary category by its name', async () => {
     const paths = (await Promise.all(CONFIG_PRESET_FAMILIES.map(async (family) => {
       const items = await family.resolveItems(context, user, null, []);
       return items.map((item) => configPresetItemFilePath(family, item));
@@ -330,6 +342,8 @@ describe('Config preset registry', () => {
       `taxonomy/case_templates/${fraudCaseTemplate.standard_id}.json`,
       `taxonomy/case_templates/${phishingCaseTemplate.standard_id}.json`,
       'integrations/connectors/mitre.json',
+      `integrations/form_intakes/${incidentForm.standard_id}.json`,
+      `integrations/form_intakes/${reportForm.standard_id}.json`,
       ...RULES_DECLARATION.map(({ id }) => `automation_rules/rule_engine/${id}.json`),
       `customization/fintel_designs/${defaultFintelDesign.standard_id}.json`,
       `customization/fintel_designs/${nightFintelDesign.standard_id}.json`,
@@ -589,6 +603,47 @@ describe('Config preset registry', () => {
       expect(await ids(null, [])).toEqual([otherEmailTemplate.standard_id, customEmailTemplate.standard_id]);
       expect(await ids(null, [otherEmailTemplate.standard_id])).toEqual([customEmailTemplate.standard_id]);
       expect(await ids([customEmailTemplate.standard_id], [])).toEqual([customEmailTemplate.standard_id]);
+      vi.mocked(fullEntitiesList).mockClear();
+      expect(await ids([], [])).toEqual([]);
+      expect(fullEntitiesList).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('form intakes', () => {
+    const formIntakes = findFamily('formIntakes');
+    const pageIds = async (args: Parameters<typeof formIntakes.listItems>[2]) => (await formIntakes.listItems(context, user, args)).edges.map(({ node }) => node.id);
+
+    it('is exported into the Integrations folder and offers to overwrite a form or to add a copy of it', () => {
+      expect(formIntakes.directory).toBe('integrations/form_intakes');
+      expect(formIntakes.importModes).toEqual(['OVERWRITE', 'COPY']);
+    });
+
+    it('lists the state of the form, and exports the import format only, with the standard id of the form', async () => {
+      expect((await findItem('formIntakes', incidentForm.standard_id)).isEnabled).toBe(true);
+      expect((await findItem('formIntakes', reportForm.standard_id)).isEnabled).toBe(false);
+      const file = await exportConfigPresetItem(context, user, formIntakes, await findItem('formIntakes', incidentForm.standard_id));
+      expect(file).toMatchObject({
+        type: 'integrations.formIntakes',
+        id: incidentForm.standard_id,
+        configuration: { name: 'Incident intake', description: 'Reports an incident', active: true },
+      });
+      expect(typeof (file.configuration as { form_schema: unknown }).form_schema).toBe('object');
+      expect(JSON.stringify(file)).not.toMatch(/creator|created_at|internal_id/);
+    });
+
+    it('applies ids and excluded ids to the form intakes, and lists none for an empty list of ids', async () => {
+      expect(await pageIds({ ids: [reportForm.standard_id] })).toEqual([reportForm.standard_id]);
+      expect(await pageIds({ excludedIds: [reportForm.standard_id] })).toEqual([incidentForm.standard_id]);
+      vi.mocked(pageEntitiesConnection).mockClear();
+      // No ids: no query, whose empty filter would match every form
+      expect(await pageIds({ ids: [] })).toEqual([]);
+      expect(pageEntitiesConnection).not.toHaveBeenCalled();
+    });
+
+    it('resolves the form intakes to export, with the same rules as the listing', async () => {
+      const ids = async (selected: string[] | null, excluded: string[]) => (await formIntakes.resolveItems(context, user, selected, excluded)).map((item) => item.id);
+      expect(await ids(null, [reportForm.standard_id])).toEqual([incidentForm.standard_id]);
+      expect(await ids([reportForm.standard_id], [])).toEqual([reportForm.standard_id]);
       vi.mocked(fullEntitiesList).mockClear();
       expect(await ids([], [])).toEqual([]);
       expect(fullEntitiesList).not.toHaveBeenCalled();

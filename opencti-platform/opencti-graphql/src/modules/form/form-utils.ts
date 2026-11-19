@@ -15,6 +15,15 @@ export const convertIdentityClass = (entityType: string, entity: StoreEntity) =>
   }
 };
 
+// The id an option of a form holds: a plain id, or an object { value | id, label, ... } as the pickers store it
+export const normalizeOptionId = (option: unknown): string | undefined => {
+  if (typeof option === 'object' && option !== null) {
+    const optionValue = (option as { value?: string; id?: string }).value || (option as { value?: string; id?: string }).id;
+    return typeof optionValue === 'string' && optionValue.length > 0 ? optionValue : undefined;
+  }
+  return typeof option === 'string' && option.length > 0 ? option : undefined;
+};
+
 export const loadFormEntity = (context: AuthContext, user: AuthUser, id: string, type: string) => {
   return storeLoadById<StoreEntityForm>(context, user, id, type);
 };

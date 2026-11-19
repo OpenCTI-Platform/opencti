@@ -94,6 +94,8 @@ export interface ConfigPresetImportPlan {
   fintelDesignNames?: Set<string>;
   // The ids of the fintel designs the earlier items of a dry run would rename: their current name is free again. The preview only
   renamedFintelDesignIds?: Set<string>;
+  // The names (normalized) with the main entity type of the form intakes the earlier items of an import hold, dry run or not
+  formIntakeKeys?: Set<string>;
   // The standard ids of the roles the earlier items of a dry run would create
   roleIds?: Set<string>;
   // The standard ids of the groups the earlier items of a dry run would create
