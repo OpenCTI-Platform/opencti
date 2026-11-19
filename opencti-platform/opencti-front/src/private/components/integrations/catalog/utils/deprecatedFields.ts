@@ -146,9 +146,13 @@ export const getDeprecatedDescriptorsForEdition = (
 export const shouldShowDeprecatedAlert = (descriptors: DeprecatedFieldDescriptor[]) => descriptors.length > 0;
 
 /**
- * Filters edition payload values by keeping all non-deprecated fields and only
- * deprecated fields that are still configured with non-default values.
- * A cleared non-deprecated field is sent empty so the backend does not keep its stored value.
+ * Builds the edition payload. The backend keeps the stored value of a key the payload omits,
+ * so every configuration key of the form is sent, deprecated ones included:
+ * - a field is sent with its value, or empty when cleared: an explicit empty value means empty,
+ *   never the default (a field reset to its default is sent with that default value)
+ * - a deprecated field without default (default undefined) is hidden and never kept: it is sent empty,
+ *   so that its legacy value is cleaned. A deprecated field with default:null keeps its configured value
+ * Only the keys of the form are sent: a field that was never set stays unset.
  * JsonForms removes a field cleared to undefined from the form data, so configuration keys
  * loaded on open (initialValues) and now absent are treated as cleared.
  */
@@ -162,29 +166,15 @@ export const filterValuesForEditionPayload = (
     if (properties[key] && !(key in values)) values[key] = undefined;
   });
 
-  const deprecatedDescriptors = getDeprecatedDescriptorsForEdition(properties, values);
-  const keepDeprecatedKeys = new Set(
-    deprecatedDescriptors.map((descriptor) => descriptor.key),
-  );
-
-  const isKept = (key: string) => {
+  const toPayloadValue = (key: string, value: unknown) => {
     const property = properties[key];
-    if (!isDeprecated(property)) return true;
-
-    // Deprecated fields explicitly configured with default:null are hidden in
-    // edition visibility rules, but must be preserved when already configured.
-    // Fields with truly missing defaults (undefined) remain filtered out.
-    if (property.default === null) {
-      return !isEmptyValue(values[key]);
-    }
-
-    return keepDeprecatedKeys.has(key);
+    if (!property) return value;
+    if (isDeprecated(property) && property.default === undefined) return '';
+    return value ?? '';
   };
 
   return Object.fromEntries(
-    Object.entries(values)
-      .filter(([key]) => isKept(key))
-      .map(([key, value]) => [key, properties[key] ? value ?? '' : value]),
+    Object.entries(values).map(([key, value]) => [key, toPayloadValue(key, value)]),
   );
 };
 

@@ -70,10 +70,12 @@ describe('deprecatedFields utils', () => {
       expect(payload).toEqual({
         ACTIVE_NAME: 'my-connector',
         DEPRECATED_WITH_DEFAULT_STRING: 'custom-legacy',
+        DEPRECATED_WITH_DEFAULT_INTEGER: '1800',
+        DEPRECATED_NO_DEFAULT: '',
       });
     });
 
-    it('drops deprecated fields when values are empty or default-equivalent', () => {
+    it('sends deprecated fields with their value when empty or default-equivalent', () => {
       const simulatedConnectorValues = {
         ACTIVE_NAME: 'my-connector',
         DEPRECATED_WITH_DEFAULT_STRING: 'legacy-default',
@@ -90,7 +92,12 @@ describe('deprecatedFields utils', () => {
 
       const payload = filterValuesForEditionPayload(simulatedConnectorValues, connectorProperties);
 
-      expect(payload).toEqual({ ACTIVE_NAME: 'my-connector' });
+      expect(payload).toEqual({
+        ACTIVE_NAME: 'my-connector',
+        DEPRECATED_WITH_DEFAULT_STRING: 'legacy-default',
+        DEPRECATED_WITH_DEFAULT_INTEGER: '1800',
+        DEPRECATED_NO_DEFAULT: '',
+      });
     });
   });
 
@@ -289,7 +296,7 @@ describe('deprecatedFields utils', () => {
       NORMAL_FIELD: makeStringProp({ deprecated: false }),
     };
 
-    it('keeps visible deprecated fields and drops hidden deprecated fields', () => {
+    it('sends deprecated fields with their value and cleans a deprecated field without default', () => {
       const payload = filterValuesForEditionPayload(
         {
           name: 'connector',
@@ -303,8 +310,43 @@ describe('deprecatedFields utils', () => {
       expect(payload).toEqual({
         name: 'connector',
         DEPRECATED_WITH_DEFAULT: 'custom',
+        DEPRECATED_NO_DEFAULT: '',
         NORMAL_FIELD: 'ok',
       });
+    });
+
+    it('sends the default of a deprecated field reset from a custom value to its default', () => {
+      const payload = filterValuesForEditionPayload(
+        { NORMAL_FIELD: 'ok', DEPRECATED_WITH_DEFAULT: 'same' },
+        properties,
+        { NORMAL_FIELD: 'ok', DEPRECATED_WITH_DEFAULT: 'custom' },
+      );
+
+      expect(payload).toEqual({ NORMAL_FIELD: 'ok', DEPRECATED_WITH_DEFAULT: 'same' });
+    });
+
+    it('sends empty, never its default, a deprecated field cleared from a custom value', () => {
+      const payload = filterValuesForEditionPayload(
+        { DEPRECATED_WITH_DEFAULT: '', DEPRECATED_ARRAY: [] },
+        {
+          ...properties,
+          DEPRECATED_ARRAY: {
+            type: 'array',
+            deprecated: true,
+            default: ['a', 'b'],
+            description: 'deprecated array',
+          } as unknown as IngestionTypedProperty,
+        },
+        { DEPRECATED_WITH_DEFAULT: 'custom', DEPRECATED_ARRAY: 'c' },
+      );
+
+      expect(payload).toEqual({ DEPRECATED_WITH_DEFAULT: '', DEPRECATED_ARRAY: [] });
+    });
+
+    it('does not send a deprecated field that was never set', () => {
+      const payload = filterValuesForEditionPayload({ NORMAL_FIELD: 'ok' }, properties, { NORMAL_FIELD: 'ok' });
+
+      expect(payload).toEqual({ NORMAL_FIELD: 'ok' });
     });
 
     it('detects deprecated keys cleared for reset confirmation', () => {
@@ -426,7 +468,7 @@ describe('deprecatedFields utils', () => {
       });
     });
 
-    it('sends cleared non-deprecated fields as empty and drops cleared deprecated fields', () => {
+    it('sends cleared fields as empty, a cleared deprecated field with default:null included', () => {
       const payload = filterValuesForEditionPayload(
         {
           NORMAL_FIELD: undefined,
@@ -448,6 +490,7 @@ describe('deprecatedFields utils', () => {
       expect(payload).toEqual({
         NORMAL_FIELD: '',
         ARRAY_FIELD: [],
+        DEPRECATED_NULL_DEFAULT: '',
       });
     });
 
@@ -484,14 +527,14 @@ describe('deprecatedFields utils', () => {
         expect(payload).toEqual({ NORMAL_FIELD: 'ok' });
       });
 
-      it('still drops a deprecated key loaded on open and now absent', () => {
+      it('sends empty a deprecated key loaded on open and now absent', () => {
         const payload = filterValuesForEditionPayload(
           { NORMAL_FIELD: 'ok' },
           removalProperties,
           { NORMAL_FIELD: 'ok', DEPRECATED_WITH_DEFAULT: 'custom' },
         );
 
-        expect(payload).toEqual({ NORMAL_FIELD: 'ok' });
+        expect(payload).toEqual({ NORMAL_FIELD: 'ok', DEPRECATED_WITH_DEFAULT: '' });
       });
     });
   });
