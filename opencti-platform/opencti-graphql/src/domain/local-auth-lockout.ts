@@ -11,6 +11,7 @@ import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { type LocalAuthLockoutTimings, type LocalAuthLockType, redisClearLocalAuthLockout, redisRecordLocalAuthAttempt, redisReleaseLocalAuthAttempt } from '../database/redis';
 import { LocalAuthLockoutFinalAction } from '../generated/graphql';
 import { publishUserAction, type UserLockSource } from '../listener/UserActionListener';
+import { type LocalAuthLock, sendLocalAuthLockEmails } from './local-auth-lockout-notification';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { ENTITY_TYPE_USER } from '../modules/user/user-types';
@@ -150,6 +151,15 @@ const publishLocalAuthLock = async (email: string, user: AuthUser | undefined, t
   }
 };
 
+// The administrators get an email for each lock of an existing account. Sent in the background: the lock error never waits
+// for the emails, and an email that cannot be sent is only logged
+const notifyLocalAuthLock = (user: AuthUser, lock: LocalAuthLock) => {
+  const context = executionContext('local_auth_lockout');
+  sendLocalAuthLockEmails(context, user, lock).catch((error) => {
+    logApp.error('Local authentication lockout: the emails of a lock cannot be sent', { cause: error, locked_user_id: user.id });
+  });
+};
+
 // Returns undefined when the lockout is disabled, so that the login keeps its previous behavior.
 // The built-in admin (app:admin) is a break-glass account, never locked out: if every administrator gets locked,
 // it is enabled again in the configuration to unlock them. Once other administrators exist, it should be disabled
@@ -169,7 +179,8 @@ export const loadLocalAuthLockout = async (email: string, userId?: string) => {
     // Counts the attempt as a failure before the password or the MFA code is checked, and throws the lock error during a lock.
     // Returns what to do if the check fails: whether the account must be set to Locked (permanent final action),
     // and reject, which returns the error to throw: the lock error once the max attempts are reached
-    // (below, the usual authentication failure). The attempt that reaches them publishes the lock in the activity.
+    // (below, the usual authentication failure). The attempt that reaches them publishes the lock in the activity,
+    // and emails the administrators when the account exists.
     // If the check succeeds, release undoes this attempt only: its failure in its own window, and its lock,
     // but never the failures of a later window nor the lock of a concurrent failure
     recordAttempt: async () => {
@@ -185,6 +196,10 @@ export const loadLocalAuthLockout = async (email: string, userId?: string) => {
             return AuthenticationFailure();
           }
           await publishLocalAuthLock(email, user, timings, origin);
+          // An unknown email has no account to unlock: no email, so that it reveals nothing either
+          if (user) {
+            notifyLocalAuthLock(user, { lockType, maxAttempts: timings.maxAttempts, remainingMs });
+          }
           return LocalAuthLocked(lockType, remainingMs);
         },
         release: () => redisReleaseLocalAuthAttempt(emailHash, { attemptToken, windowId }),
