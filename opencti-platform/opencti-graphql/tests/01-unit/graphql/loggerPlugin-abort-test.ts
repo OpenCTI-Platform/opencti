@@ -24,7 +24,7 @@ vi.mock('../../../src/listener/UserActionListener', () => ({
 
 import loggerPlugin from '../../../src/graphql/loggerPlugin';
 import { logApp } from '../../../src/config/conf';
-import { DatabaseError } from '../../../src/config/errors';
+import { DatabaseError, FUNCTIONAL_ERRORS, LockTimeoutError } from '../../../src/config/errors';
 import { wrapEngineError } from '../../../src/database/engine';
 
 const buildRequestContext = (graphQLError: unknown) => ({
@@ -56,6 +56,29 @@ describe('loggerPlugin - severity of an abort-before-ES-call failure', () => {
   it('a search aborted before reaching Elasticsearch (via wrapEngineError, as used by elFindByIds/elPaginate) is logged via logApp.warn, not logApp.error', async () => {
     const abortCause = new AbortError('The http call was aborted before el request started.');
     const graphQLError = wrapEngineError('Fail to execute engine pagination', abortCause);
+
+    const listener = loggerPlugin.requestDidStart();
+    await listener.willSendResponse(buildRequestContext(graphQLError));
+
+    expect(logApp.warn).toHaveBeenCalledTimes(1);
+    expect(logApp.error).not.toHaveBeenCalled();
+  });
+});
+
+describe('loggerPlugin - severity of a lock timeout', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('the code of a LockTimeoutError is a functional error', () => {
+    const lockError = LockTimeoutError({ participantIds: ['synthetic-id'] });
+
+    expect(FUNCTIONAL_ERRORS).toContain(lockError.extensions.code);
+  });
+
+  it('a LockTimeoutError is logged via logApp.warn, not logApp.error', async () => {
+    // Lock timeouts are transient and retried by the workers: they must not be logged at error level
+    const graphQLError = LockTimeoutError({ participantIds: ['synthetic-id'] });
 
     const listener = loggerPlugin.requestDidStart();
     await listener.willSendResponse(buildRequestContext(graphQLError));
