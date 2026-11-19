@@ -429,3 +429,55 @@ describe('importConfigPresetConnector overwrite of the parameters the bundle doe
     expect(result).toMatchObject({ status: 'overwritten' });
   });
 });
+
+describe('importConfigPresetConnector unchanged check of the lists', () => {
+  // A list missing and a list stored empty differ: the connector applies its default to a missing list
+  const withLists = {
+    ...contract,
+    config_schema: {
+      ...contract.config_schema,
+      properties: {
+        ...contract.config_schema.properties,
+        MITRE_REQUIRED_TYPES: { type: 'array', items: { type: 'string' }, default: ['a', 'b'], description: 'Required list, with a default' },
+        MITRE_OPTIONAL_TYPES: { type: 'array', items: { type: 'string' }, default: ['a', 'b'], description: 'Optional list, with a default' },
+      },
+      required: ['MITRE_API_KEY', 'MITRE_REQUIRED_TYPES'],
+    },
+  };
+  const target = (configuration: { key: string; value: string }[]) => ({
+    ...mitreConnector,
+    manager_contract: withLists,
+    manager_contract_configuration: [{ key: 'MITRE_API_KEY', value: 'encrypted-secret', encrypted: true }, { key: 'MITRE_INTERVAL', value: '7' }, ...configuration],
+  });
+  const bundleWith = (configuration: { key: string; value: string }[]) => connectorConfiguration({
+    manager_contract_configuration: [{ key: 'MITRE_INTERVAL', value: '7' }, ...configuration],
+  });
+
+  it('overwrites a required list holding its default when the bundle empties it, as the overwrite stores it empty', async () => {
+    withConnectors([target([{ key: 'MITRE_REQUIRED_TYPES', value: 'a,b' }])]);
+    const result = await importConfigPresetConnector(context, user, bundleWith([{ key: 'MITRE_REQUIRED_TYPES', value: '' }]), overwrite);
+    expect(result).toMatchObject({ status: 'overwritten' });
+  });
+
+  it('skips a required list already stored empty', async () => {
+    withConnectors([target([{ key: 'MITRE_REQUIRED_TYPES', value: '' }])]);
+    const result = await importConfigPresetConnector(context, user, bundleWith([{ key: 'MITRE_REQUIRED_TYPES', value: '' }]), overwrite);
+    expect(result).toMatchObject({ status: 'skipped', code: 'unchanged' });
+    expectNothingWritten();
+  });
+
+  it('overwrites an optional list that is not stored when the bundle empties it, as the overwrite stores it empty', async () => {
+    withConnectors([target([{ key: 'MITRE_REQUIRED_TYPES', value: 'a,b' }])]);
+    const configuration = bundleWith([{ key: 'MITRE_REQUIRED_TYPES', value: 'a,b' }, { key: 'MITRE_OPTIONAL_TYPES', value: '' }]);
+    const result = await importConfigPresetConnector(context, user, configuration, overwrite);
+    expect(result).toMatchObject({ status: 'overwritten' });
+  });
+
+  it('skips an optional list already stored empty', async () => {
+    withConnectors([target([{ key: 'MITRE_REQUIRED_TYPES', value: 'a,b' }, { key: 'MITRE_OPTIONAL_TYPES', value: '' }])]);
+    const configuration = bundleWith([{ key: 'MITRE_REQUIRED_TYPES', value: 'a,b' }, { key: 'MITRE_OPTIONAL_TYPES', value: '' }]);
+    const result = await importConfigPresetConnector(context, user, configuration, overwrite);
+    expect(result).toMatchObject({ status: 'skipped', code: 'unchanged' });
+    expectNothingWritten();
+  });
+});

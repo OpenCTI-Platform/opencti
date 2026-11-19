@@ -1,6 +1,6 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { findCatalogByCatalogId, findLatestCompatibleCatalogContractByImageName } from '../catalog/catalog-repository';
-import { computeConnectorTargetContract, getContractConfigSchemaWithoutExcludedRuntimeVars, getDefaultValueAsString } from '../catalog/catalog-domain';
+import { computeConnectorTargetContract, getContractConfigSchemaWithoutExcludedRuntimeVars, getDefaultValueAsString, isRemovedWhenEmptied } from '../catalog/catalog-domain';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
 import { CONFIG_IMPORT_UNCHANGED_REASON, configImportValidationReason, freeConfigImportName, joinConfigImportReasons } from '../configImport/configImport-utils';
 import { userAlreadyExists } from '../user/user-domain';
@@ -72,11 +72,13 @@ type ConnectorConfigSchema = ReturnType<typeof getContractConfigSchemaWithoutExc
  * Tells whether overwriting a connector with a bundle would leave its parameters as they are,
  * so that the import can skip it as unchanged.
  *
- * The comparison runs over the keys of both sides, and a parameter missing on one side counts as empty:
- * the overwrite sends empty every stored parameter the bundle does not carry.
+ * The comparison runs over the keys of both sides. Every one of them is sent by the overwrite: with its bundle value,
+ * with its current value for a parameter the import keeps, else empty, as the overwrite empties every stored parameter
+ * the bundle does not carry. An empty value is then resolved as resolveConfigurationValue does: removed for a parameter
+ * removed when emptied, stored empty for a list with a default, the default for a required parameter, else removed.
  *
- * The value the overwrite stores for a key is its bundle value, else the current value for a parameter the import keeps,
- * else the default of a required parameter, else empty.
+ * A list missing and a list stored empty differ (the connector applies its default to a missing list), so lists are
+ * compared with their presence. Any other parameter missing counts as empty.
  *
  * @param current - The non-secret parameters stored on the connector to overwrite.
  * @param bundle - The non-secret parameters carried by the bundle.
@@ -92,16 +94,26 @@ const isSameConfiguration = (
 ) => {
   const currentValues = new Map(current.map(({ key, value }) => [key, value ?? '']));
   const bundleValues = new Map(bundle.map(({ key, value }) => [key, value]));
-  const expectedOf = (key: string, currentValue: string) => {
+  const isList = (key: string) => configSchema.properties[key]?.type === 'array';
+  // What the overwrite stores for a key, undefined when it is removed
+  const expectedOf = (key: string, currentValue: string | undefined) => {
     const bundleValue = bundleValues.get(key) ?? '';
     if (bundleValue !== '') return bundleValue;
     if (isKept(key)) return currentValue;
-    return configSchema.required.includes(key) ? (getDefaultValueAsString(configSchema.properties[key]) ?? '') : '';
+    const property = configSchema.properties[key];
+    const isRequired = configSchema.required.includes(key);
+    if (isRemovedWhenEmptied(property, isRequired)) return undefined;
+    const defaultValue = getDefaultValueAsString(property);
+    if (defaultValue === null) return undefined;
+    return isList(key) ? '' : defaultValue;
   };
   const keys = new Set([...currentValues.keys(), ...bundleValues.keys()]);
   return [...keys].every((key) => {
-    const currentValue = currentValues.get(key) ?? '';
-    return currentValue === expectedOf(key, currentValue);
+    const currentValue = currentValues.get(key);
+    const expectedValue = expectedOf(key, currentValue);
+    return isList(key)
+      ? currentValue === expectedValue
+      : (currentValue ?? '') === (expectedValue ?? '');
   });
 };
 
