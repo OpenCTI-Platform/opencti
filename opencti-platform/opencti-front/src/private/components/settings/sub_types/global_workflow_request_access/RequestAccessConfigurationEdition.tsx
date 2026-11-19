@@ -17,7 +17,7 @@ import { RequestAccessConfigurationEditionMutation, RequestAccessConfigureInput 
 const requestAccessConfigurationMutation = graphql`
     mutation RequestAccessConfigurationEditionMutation($input: RequestAccessConfigureInput!) {
         requestAccessConfigure(input: $input) {
-            ...RequestAccessStatusFragment_requestAccess
+            ...RequestAccessConfigurationEdition_requestAccess
         }
     }
 `;
