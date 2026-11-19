@@ -17,6 +17,7 @@ AP1 = "attack-pattern--0f20e3cb-245b-4a61-8a91-2d93f7b6e1b8"
 VULN = "vulnerability--3ba4b52a-3c26-4dab-8791-e73a2c7bbc78"
 IDENTITY = "identity--5a6d1c0e-2b7f-4e83-9d41-6c8b0a7e2f35"
 REPORT = "report--c1f4a8d2-6e3b-4b97-8a05-1d2e7f9b3c64"
+OBSERVABLE = "file--4e3a6c5b-7d8e-4f90-a1b2-c3d4e5f60718"
 
 
 def _to_stix_payload():
@@ -33,7 +34,6 @@ def _to_stix_payload():
                 "phase_name": "exploitation",
             },
         ],
-        "x_observable_refs": [],
         "x_source_refs": [IDENTITY],
         "x_fingerprint": "0123456789abcdef0123456789abcdef",
     }
@@ -68,6 +68,7 @@ class FakePlatform:
             {
                 "implements-technique": [AP1],
                 "exploits": [VULN],
+                "has-observable": [OBSERVABLE],
             }
             if relationships is None
             else relationships
@@ -129,6 +130,8 @@ def test_export_expands_stored_links(procedure_api_mocks):
     assert stix["type"] == "x-opencti-procedure"
     assert stix["x_technique_refs"] == [AP1]
     assert stix["x_vulnerability_refs"] == [VULN]
+    # Observables are has-observable relationships, expanded back into x_observable_refs
+    assert stix["x_observable_refs"] == [OBSERVABLE]
     assert stix["tactics"] == ["execution"]  # lockheed phase excluded
     assert stix["x_source_refs"] == [IDENTITY, REPORT]
 
@@ -151,7 +154,7 @@ def test_export_queries_links_of_the_procedure(procedure_api_mocks):
         for operation, variables in procedure_api_mocks.platform.calls
         if operation == "StixCoreRelationships"
     )
-    assert set(calls) == {"implements-technique", "exploits"}
+    assert set(calls) == {"implements-technique", "exploits", "has-observable"}
     for variables in calls.values():
         assert variables["fromId"] == PROCEDURE_INTERNAL_ID
     reports_call = [
@@ -313,7 +316,8 @@ def test_export_sends_access_filter_with_relationship_and_report_lookups(
         for operation, variables in calls
         if operation == "StixCoreRelationships"
     ]
-    assert len(relationship_calls) == 2
+    # implements-technique, exploits and has-observable
+    assert len(relationship_calls) == 3
     for variables in relationship_calls:
         assert variables["filters"] == ACCESS_FILTER
     report_calls = [
@@ -351,7 +355,7 @@ def test_generate_export_passes_access_filter_to_the_links(procedure_api_mocks):
         for operation, variables in procedure_api_mocks.platform.calls
         if operation == "StixCoreRelationships"
     ]
-    assert link_lookups == [ACCESS_FILTER, ACCESS_FILTER]
+    assert link_lookups == [ACCESS_FILTER, ACCESS_FILTER, ACCESS_FILTER]
 
 
 def test_export_omits_x_source_refs_when_empty():
@@ -376,23 +380,36 @@ def _nested_ref(relationship_type, standard_id):
 
 
 ALL_NESTED_REFS = [
-    _nested_ref("procedure-observable", OBSERVABLE_GREEN),
-    _nested_ref("procedure-observable", OBSERVABLE_RED),
     _nested_ref("procedure-command", COMMAND_RED),
     _nested_ref("procedure-source", IDENTITY),
 ]
-# The TLP:RED observables are excluded by the export access filter
-ALLOWED_NESTED_REFS = [ALL_NESTED_REFS[0], ALL_NESTED_REFS[3]]
+# The TLP:RED command is excluded by the export access filter
+ALLOWED_NESTED_REFS = [ALL_NESTED_REFS[1]]
 
 
 def _export_with_nested_refs(access_filter):
     payload = _to_stix_payload()
-    payload["x_observable_refs"] = [OBSERVABLE_GREEN, OBSERVABLE_RED]
     payload["x_command_ref"] = COMMAND_RED
     mocks = _make_mocks(stix=payload)
     original_query = mocks.client.query
 
     def query(query_text, variables=None):
+        filtered = (variables or {}).get("filters") is not None
+        if (
+            "StixCoreRelationships" in query_text
+            and (variables or {}).get("relationship_type") == "has-observable"
+        ):
+            # The TLP:RED observable is excluded by the export access filter
+            targets = (
+                [OBSERVABLE_GREEN] if filtered else [OBSERVABLE_GREEN, OBSERVABLE_RED]
+            )
+            return {
+                "data": {
+                    "stixCoreRelationships": _edges(
+                        *[_relationship(target) for target in targets]
+                    )
+                }
+            }
         if "StixNestedRefRelationships" in query_text:
             filtered = (variables or {}).get("filters") is not None
             nested_refs = ALLOWED_NESTED_REFS if filtered else ALL_NESTED_REFS

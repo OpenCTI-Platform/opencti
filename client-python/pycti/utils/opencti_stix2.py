@@ -270,12 +270,12 @@ _STIX_2_0_LEGACY_NESTED_REF_KEYS = {
 _STIX_2_0_NESTED_REF_KEY_PREFIXES = {"object-covered": "covered"}
 
 # Procedure nested ref relationship type -> key prefix of its ref in the export.
-# `Procedure.to_stix_export` already carries these refs (`x_observable_refs`,
-# `x_command_ref`, `x_source_refs`), resolved with the user's rights only, so
-# `prepare_export` does not add the legacy keys but applies the export access
-# filter to them.
+# `Procedure.to_stix_export` already carries these refs (`x_command_ref`,
+# `x_source_refs`), resolved with the user's rights only, so `prepare_export`
+# does not add the legacy keys but applies the export access filter to them.
+# Observables are has-observable relationships: their `x_observable_refs` is
+# built from a relationship lookup that already applies the access filter.
 _PROCEDURE_NESTED_REF_KEYS = {
-    "procedure-observable": "x_observable",
     "procedure-command": "x_command",
     "procedure-source": "x_source",
 }
