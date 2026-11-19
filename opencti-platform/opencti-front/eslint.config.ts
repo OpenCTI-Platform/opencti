@@ -136,6 +136,7 @@ export default defineConfig([
       '@stylistic/jsx-curly-newline': 'off',
       '@stylistic/jsx-one-expression-per-line': 'off',
       '@stylistic/multiline-ternary': 'off',
+      // Added to the recommended config in @stylistic v6; enabling it would rewrap about 1,900 lists across the repository.
       '@stylistic/list-style': 'off',
       '@stylistic/brace-style': ['error', '1tbs'],
       '@stylistic/arrow-parens': ['error', 'always'],
