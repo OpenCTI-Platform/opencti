@@ -17,7 +17,11 @@ import { getAllDisabledManagers, getAllEnabledManagers } from '../../src/manager
 
 const registeredManagerIds = () => [...getAllEnabledManagers(), ...getAllDisabledManagers()].map(({ manager }) => manager.id);
 
-describe('Composition root', () => {
+// These checks need a fresh process, as test:ci-unit gives each file. vitest.config.dev.ts registers every module
+// first, in a worker whose modules all the test files share.
+const alreadyRegistered = modules.has(ENTITY_TYPE_DATA_SANITY_EXECUTION);
+
+describe.skipIf(alreadyRegistered)('Composition root', () => {
   it('should not register anything on import', () => {
     // Not through schemaTypesDefinition: reading it would lock the types before registerModules()
     expect(modules.has(ENTITY_TYPE_DATA_SANITY_EXECUTION)).toBe(false);

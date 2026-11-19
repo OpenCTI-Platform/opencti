@@ -12,8 +12,8 @@ import { schemaAttributesDefinition } from '../../../../src/schema/schema-attrib
 import { ENTITY_TYPE_ACTIVITY } from '../../../../src/schema/internalObject';
 import type { ObjectAttribute } from '../../../../src/schema/attribute-definition';
 
-// The abstract types only, among them the Activity attributes the presence events publish
-registerModules([]);
+// Among them the Activity attributes the presence events publish
+registerModules();
 
 const GRACE_PERIOD = vi.hoisted(() => 30000);
 
@@ -33,6 +33,8 @@ vi.mock('../../../../src/listener/UserActionListener', () => ({
 
 vi.mock('../../../../src/database/redis', () => ({
   getClusterInstances: vi.fn(),
+  // Read at import by the platform health metrics, which the composition root's telemetry managers import
+  redisIsAlive: vi.fn(),
 }));
 
 vi.mock('../../../../src/modules/user/user-domain', () => ({
