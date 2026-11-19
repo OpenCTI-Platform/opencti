@@ -41,6 +41,7 @@ interface CaseTemplateFieldComponentProps {
   queryRef: PreloadedQuery<CaseTemplateFieldQuery>;
   label?: string;
   isDisabled?: boolean;
+  required?: boolean;
 }
 
 const CaseTemplateFieldComponent: FunctionComponent<CaseTemplateFieldComponentProps> = ({
@@ -51,6 +52,7 @@ const CaseTemplateFieldComponent: FunctionComponent<CaseTemplateFieldComponentPr
   queryRef,
   label,
   isDisabled,
+  required = false,
 }) => {
   const { t_i18n } = useFormatter();
 
@@ -78,6 +80,7 @@ const CaseTemplateFieldComponent: FunctionComponent<CaseTemplateFieldComponentPr
         }}
         style={containerStyle}
         disabled={isDisabled}
+        required={required}
         noOptionsText={t_i18n('No available options')}
         options={caseTemplates}
         renderOption={(option) => (

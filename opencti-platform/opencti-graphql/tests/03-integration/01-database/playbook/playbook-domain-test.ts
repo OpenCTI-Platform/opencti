@@ -1,5 +1,6 @@
 import { afterAll, describe, expect, it } from 'vitest';
-import { findById, playbookDelete, playbookImport } from '../../../../src/modules/playbook/playbook-domain';
+import { findById, playbookAdd, playbookDelete, playbookDuplicate, playbookImport } from '../../../../src/modules/playbook/playbook-domain';
+import { patchAttribute } from '../../../../src/database/middleware';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { open } from 'fs/promises';
 import { ENTITY_TYPE_PLAYBOOK } from '../../../../src/modules/playbook/playbook-types';
@@ -28,10 +29,24 @@ describe('playbook-domain', () => {
       await expect(playbookImport(testContext, ADMIN_USER, fileHandle)).rejects.toThrowError('Invalid import type, must be playbook');
     });
 
+    it('should refuse an imported playbook whose node configuration is not valid JSON', async () => {
+      const fileUrl = new URL('testData/imported-playbook-with-malformed-node-configuration.json', import.meta.url);
+      const fileHandle = open(fileUrl);
+
+      await expect(playbookImport(testContext, ADMIN_USER, fileHandle)).rejects.toThrowError('Playbook node configuration is not valid JSON');
+    });
+
+    it('should refuse an imported playbook whose node filters are not valid JSON', async () => {
+      const fileUrl = new URL('testData/imported-playbook-with-malformed-node-filters.json', import.meta.url);
+      const fileHandle = open(fileUrl);
+
+      await expect(playbookImport(testContext, ADMIN_USER, fileHandle)).rejects.toThrowError('Playbook node filters are not valid JSON');
+    });
+
     it('should update correctly a playbook imported with the old configuration', async () => {
       const fileUrl = new URL('testData/imported-playbook-with-old-scope.json', import.meta.url);
       const fileHandle = open(fileUrl);
-      const updatedPlaybookDefinition = '{"nodes":[{"id":"ce1413d0-d93b-45ae-9cda-24fea1ab67b7","name":"Listen knowledge events","position":{"x":0,"y":0},"component_id":"PLAYBOOK_INTERNAL_DATA_STREAM","configuration":"{\\"create\\":true,\\"update\\":true,\\"delete\\":false,\\"filters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"canEnrollManually\\":true}"},{"id":"01c5e873-df20-41db-805b-00ac26d0de88","name":"Apply predefined rule","position":{"x":0,"y":150},"component_id":"PLAYBOOK_RULE_COMPONENT","configuration":"{\\"rule\\":\\"resolve_container\\",\\"inferences\\":false}"},{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"Container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"actions\\":[],\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"container_type\\":\\"Feedback\\",\\"applyToElements\\":\\"all-except-main\\"}"},{"id":"2853a108-7d66-4904-aefa-67259308338a","name":"Send for ingestion","position":{"x":-100,"y":450},"component_id":"PLAYBOOK_INGESTION_COMPONENT","configuration":"{}"}],"links":[]}';
+      const updatedPlaybookDefinition = '{"nodes":[{"id":"ce1413d0-d93b-45ae-9cda-24fea1ab67b7","name":"Listen knowledge events","position":{"x":0,"y":0},"component_id":"PLAYBOOK_INTERNAL_DATA_STREAM","configuration":"{\\"create\\":true,\\"update\\":true,\\"delete\\":false,\\"filters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"canEnrollManually\\":true}"},{"id":"01c5e873-df20-41db-805b-00ac26d0de88","name":"Apply predefined rule","position":{"x":0,"y":150},"component_id":"PLAYBOOK_RULE_COMPONENT","configuration":"{\\"rule\\":\\"resolve_container\\",\\"inferences\\":false}"},{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","name":"Container wrapper","position":{"x":-100,"y":300},"component_id":"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT","configuration":"{\\"actions\\":[],\\"applyWithFilters\\":\\"{\\\\\\"mode\\\\\\":\\\\\\"and\\\\\\",\\\\\\"filters\\\\\\":[],\\\\\\"filterGroups\\\\\\":[]}\\",\\"container_type\\":\\"Feedback\\",\\"applyToElements\\":\\"all-except-main\\"}"},{"id":"2853a108-7d66-4904-aefa-67259308338a","name":"Send for ingestion","position":{"x":-100,"y":450},"component_id":"PLAYBOOK_INGESTION_COMPONENT","configuration":"{}"}],"links":[{"id":"5b0c2c1e-7a41-4c2e-9f3a-1d6e8b2a0001","from":{"id":"ce1413d0-d93b-45ae-9cda-24fea1ab67b7","port":"out"},"to":{"id":"01c5e873-df20-41db-805b-00ac26d0de88"}},{"id":"5b0c2c1e-7a41-4c2e-9f3a-1d6e8b2a0002","from":{"id":"01c5e873-df20-41db-805b-00ac26d0de88","port":"out"},"to":{"id":"78411f5e-e053-4e03-92c5-748845ec2de9"}},{"id":"5b0c2c1e-7a41-4c2e-9f3a-1d6e8b2a0003","from":{"id":"78411f5e-e053-4e03-92c5-748845ec2de9","port":"out"},"to":{"id":"2853a108-7d66-4904-aefa-67259308338a"}}]}';
 
       const importPlaybookId = await playbookImport(testContext, ADMIN_USER, fileHandle);
       playbookCreatedIds.push(importPlaybookId);
@@ -44,6 +59,64 @@ describe('playbook-domain', () => {
       expect(playbook.playbook_start).toEqual('ce1413d0-d93b-45ae-9cda-24fea1ab67b7');
       expect(playbook.entity_type).toEqual(ENTITY_TYPE_PLAYBOOK);
       expect(playbook.id).toEqual(importPlaybookId);
+    });
+  });
+
+  describe('playbookDuplicate', () => {
+    const playbookCreatedIds: string[] = [];
+    const entryNode = (configuration: string) => ({
+      id: 'b3d4e5f6-0a1b-4c2d-8e3f-9a0b1c2d3e4f',
+      name: 'Listen knowledge events',
+      position: { x: 0, y: 0 },
+      component_id: 'PLAYBOOK_INTERNAL_DATA_STREAM',
+      configuration,
+    });
+    const storeDefinition = async (configuration: string) => {
+      const playbook = await playbookAdd(testContext, ADMIN_USER, { name: 'duplicate source' });
+      playbookCreatedIds.push(playbook.id);
+      // Written below the domain checks on purpose: a definition stored before
+      // the node configuration check existed can still hold a malformed step.
+      const playbook_definition = JSON.stringify({ nodes: [entryNode(configuration)], links: [] });
+      await patchAttribute(testContext, ADMIN_USER, playbook.id, ENTITY_TYPE_PLAYBOOK, { playbook_definition });
+      return playbook.id;
+    };
+
+    afterAll(async () => {
+      for (const id of playbookCreatedIds) {
+        await playbookDelete(testContext, ADMIN_USER, id);
+      }
+    });
+
+    it('should duplicate a playbook whose node configurations are valid JSON', async () => {
+      const sourceId = await storeDefinition(JSON.stringify({ create: true, update: true, delete: false }));
+      const copyId = await playbookDuplicate(testContext, ADMIN_USER, sourceId);
+      playbookCreatedIds.push(copyId);
+
+      const copy = await findById(testContext, ADMIN_USER, copyId);
+      expect(copy.name).toEqual('duplicate source - copy');
+      expect(JSON.parse(copy.playbook_definition).nodes).toHaveLength(1);
+    });
+
+    it('should refuse to duplicate a playbook whose node configuration is not valid JSON', async () => {
+      const sourceId = await storeDefinition('{"create":true,');
+
+      await expect(playbookDuplicate(testContext, ADMIN_USER, sourceId)).rejects.toThrowError('Playbook node configuration is not valid JSON');
+    });
+
+    it('should refuse to duplicate a playbook whose node applyWithFilters is not valid JSON', async () => {
+      const sourceId = await storeDefinition(JSON.stringify({ create: true, applyWithFilters: '{"mode":"and","filters":[' }));
+
+      await expect(playbookDuplicate(testContext, ADMIN_USER, sourceId)).rejects.toThrowError('Playbook node filters are not valid JSON');
+    });
+
+    it('should duplicate a playbook whose node filters are empty or valid JSON', async () => {
+      const filters = JSON.stringify({ mode: 'and', filters: [], filterGroups: [] });
+      const sourceId = await storeDefinition(JSON.stringify({ create: true, filters, applyWithFilters: '' }));
+      const copyId = await playbookDuplicate(testContext, ADMIN_USER, sourceId);
+      playbookCreatedIds.push(copyId);
+
+      const copy = await findById(testContext, ADMIN_USER, copyId);
+      expect(JSON.parse(copy.playbook_definition).nodes).toHaveLength(1);
     });
   });
 });

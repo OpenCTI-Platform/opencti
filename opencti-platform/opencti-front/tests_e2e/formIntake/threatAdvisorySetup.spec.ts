@@ -124,7 +124,7 @@ test('Create and activate the Threat Advisory Report access-restrictions playboo
 
   await test.step('Activate the playbook', async () => {
     await playbook.startPlaybook();
-    await expect(page.getByText('Playbook is running')).toBeVisible();
+    await expect(page.getByText('Playbook is running', { exact: true })).toBeVisible();
   });
 
   // logout() above destroys the shared admin session server-side - restore it for downstream specs.
