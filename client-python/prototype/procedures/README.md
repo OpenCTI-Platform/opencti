@@ -71,6 +71,20 @@ python client-python/prototype/procedures/seed_procedures.py \
     client-python/prototype/procedures/data/example-procedure-library.json
 ```
 
+## Observables
+
+A procedure's observables are `has-observable` relationships (procedure →
+observable), the name used in the procedure white paper. On import,
+`x_observable_refs` creates them; on export, `x_observable_refs` is rebuilt
+from them, and a bundle export with relationships also carries the
+relationship objects. They show as "has observable" links in an
+investigation. The command (`x_command_ref`) and the sources
+(`x_source_refs`) stay refs of the procedure.
+
+Procedures saved before this change hold an older observable ref the platform
+no longer reads: they cannot be exported or updated until that data is removed
+and the procedures are imported again.
+
 ## Fingerprints
 
 An imported `x_fingerprint` is kept as is and not checked against the
