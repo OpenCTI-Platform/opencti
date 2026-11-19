@@ -56,14 +56,14 @@ const RichTextFormikField = ({
   const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
   const unsavedChanges = lastSavedValue !== undefined && lastSavedValue !== value;
   const showAskAi = !!askAi && enabled && configured;
-  // FDS-WORKAROUND #84 (fds-migration/LIBRARY-FEEDBACK.md): the Ask AI button
+  // FDS-WORKAROUND #85 (fds-migration/LIBRARY-FEEDBACK.md): the Ask AI button
   // sits over the right end of the label row when there is one, otherwise over
   // the right end of the toolbar.
   const hasLabelRow = !!label || unsavedChanges;
   // Mapping: a disabled field that reports selections stays selectable, which
   // the design system calls read-only (RULE-07).
   const readOnly = !!disabled && !!onTextSelection;
-  // FDS-WORKAROUND #85 (fds-migration/LIBRARY-FEEDBACK.md): in fullscreen the
+  // FDS-WORKAROUND #86 (fds-migration/LIBRARY-FEEDBACK.md): in fullscreen the
   // editing area moves into a dialog outside this container, and that dialog
   // would cover the mapping drawer a selection opens. Selections made there
   // are ignored, as before the migration.

@@ -29,6 +29,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/material/styles';
 import React, { useEffect, useState } from 'react';
+import { Switch, Text, Tooltip as FdsTooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import { interval } from 'rxjs';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -39,6 +40,7 @@ import { FIVE_SECONDS } from '../../../../utils/Time';
 import Drawer from '../../common/drawer/Drawer';
 import PlaybookPopover from './PlaybookPopover';
 import { PlaybookHeader_playbook$data } from './__generated__/PlaybookHeader_playbook.graphql';
+import type { PlaybookEditorMode } from './hooks/usePlaybookEditMode';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -50,12 +52,40 @@ const playbookHeaderRefetchQuery = graphql`
   }
 `;
 
+// The creator and last-modified line under the title. The first creator is the one who created the
+// playbook; without one (an old playbook, a creator removed) the line starts at the date.
+export const PlaybookMetadataLine = ({ creatorName, createdAt, updatedAt }: {
+  creatorName?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+}) => {
+  const { t_i18n, fsd, mhd } = useFormatter();
+  const theme = useTheme<Theme>();
+  // Whole sentences in the catalogs (word order differs by language); the name is a rich value.
+  const name = creatorName ? <Text variant="content-compact-medium" as="span" key="name">{creatorName}</Text> : null;
+  const created = name
+    ? t_i18n('Created by {name} on {date}', { values: { name, date: fsd(createdAt) } })
+    : t_i18n('Created on {date}', { values: { date: fsd(createdAt) } });
+  return (
+    <Text variant="content-compact" data-testid="playbook-metadata-line" style={{ color: theme.palette.text?.secondary, margin: 0 }}>
+      {created}
+      {' \u00b7 '}
+      {t_i18n('Last modified {date}', { values: { date: mhd(updatedAt) } })}
+    </Text>
+  );
+};
+
 const PlaybookHeaderComponent = ({
   playbook,
   relay,
+  mode,
+  onModeChange,
 }: {
   playbook: PlaybookHeader_playbook$data;
   relay: RelayRefetchProp;
+  mode?: PlaybookEditorMode;
+  // Given only to users who can manage playbooks: the others stay in view mode with no switch.
+  onModeChange?: (mode: PlaybookEditorMode) => void;
 }) => {
   const theme = useTheme<Theme>();
   const inlineStyles = {
@@ -89,27 +119,61 @@ const PlaybookHeaderComponent = ({
           gap: 1,
         }}
       >
-        <Stack
-          direction="row"
-          sx={{
-            alignItems: 'center',
-            gap: 1,
-            flex: 1,
-          }}
-        >
-          <TitleMainEntity>
-            {playbook.name}
-          </TitleMainEntity>
-          <Tag
-            {...(playbook.playbook_running ? inlineStyles.green : inlineStyles.red)}
-            label={
-              playbook.playbook_running
-                ? t_i18n('Playbook is running')
-                : t_i18n('Playbook is stopped')
-            }
-            labelTextTransform="none"
+        <Stack sx={{ flex: 1, minWidth: 0, gap: 0.5 }}>
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              gap: 1,
+              minWidth: 0,
+            }}
+          >
+            {/* One line whatever the width and the language: a long name ends with an ellipsis
+                and the tooltip gives it whole, the status tag never shrinks. */}
+            <FdsTooltip>
+              <TooltipTrigger asChild>
+                <span style={{ display: 'block', minWidth: 0 }}>
+                  <TitleMainEntity
+                    sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                  >
+                    {playbook.name}
+                  </TitleMainEntity>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{playbook.name}</TooltipContent>
+            </FdsTooltip>
+            <Tag
+              style={{ flexShrink: 0 }}
+              {...(playbook.playbook_running ? inlineStyles.green : inlineStyles.red)}
+              label={
+                playbook.playbook_running
+                  ? t_i18n('Playbook is running')
+                  : t_i18n('Playbook is stopped')
+              }
+              labelTextTransform="none"
+            />
+          </Stack>
+          <PlaybookMetadataLine
+            creatorName={playbook.creators?.[0]?.name}
+            createdAt={playbook.created_at}
+            updatedAt={playbook.updated_at}
           />
         </Stack>
+        {onModeChange && (
+          <FdsTooltip>
+            <TooltipTrigger asChild>
+              <span style={{ display: 'inline-flex' }}>
+                <Switch
+                  data-testid="playbook-edit-mode"
+                  label={t_i18n('Edit mode')}
+                  checked={mode === 'edit'}
+                  onCheckedChange={(checked) => onModeChange(checked ? 'edit' : 'view')}
+                />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{mode === 'edit' ? t_i18n('Edit mode') : t_i18n('View only')}</TooltipContent>
+          </FdsTooltip>
+        )}
         <ToggleButtonGroup
           size="small"
           color="secondary"
@@ -252,6 +316,12 @@ const PlaybookHeader = createRefetchContainer(
         entity_type
         name
         description
+        created_at
+        updated_at
+        creators {
+          id
+          name
+        }
         playbook_running
         queue_messages
         last_executions {

@@ -330,7 +330,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
         />
       )}
       {format === 'html' && (
-        // FDS-WORKAROUND #84 (fds-migration/LIBRARY-FEEDBACK.md): leaves room at
+        // FDS-WORKAROUND #85 (fds-migration/LIBRARY-FEEDBACK.md): leaves room at
         // the end of the toolbar for the legacy Ask AI button laid over it.
         <Box sx={isLegacyMode ? { '& [role="toolbar"]': { paddingRight: '32px' } } : undefined}>
           <RichTextField

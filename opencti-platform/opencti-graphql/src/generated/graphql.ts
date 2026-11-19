@@ -18173,6 +18173,8 @@ export type Mutation = {
   playbookFieldPatch?: Maybe<Playbook>;
   playbookImport: Scalars['String']['output'];
   playbookInsertNode: PlaybookInsertResult;
+  playbookMoveNode: Scalars['String']['output'];
+  playbookRelink: Scalars['String']['output'];
   playbookReplaceNode: Scalars['String']['output'];
   playbookStepExecution?: Maybe<Scalars['Boolean']['output']>;
   playbookUpdatePositions?: Maybe<Scalars['ID']['output']>;
@@ -20139,6 +20141,7 @@ export type MutationPlaybookDeleteLinkArgs = {
 
 export type MutationPlaybookDeleteNodeArgs = {
   id: Scalars['ID']['input'];
+  keepChildren?: InputMaybe<Scalars['Boolean']['input']>;
   nodeId: Scalars['ID']['input'];
 };
 
@@ -20173,6 +20176,23 @@ export type MutationPlaybookInsertNodeArgs = {
   input: PlaybookAddNodeInput;
   parentNodeId: Scalars['ID']['input'];
   parentPortId: Scalars['ID']['input'];
+};
+
+
+export type MutationPlaybookMoveNodeArgs = {
+  id: Scalars['ID']['input'];
+  nodeId: Scalars['ID']['input'];
+  parentNodeId: Scalars['ID']['input'];
+  parentPortId: Scalars['ID']['input'];
+};
+
+
+export type MutationPlaybookRelinkArgs = {
+  fromNodeId?: InputMaybe<Scalars['ID']['input']>;
+  fromPortId?: InputMaybe<Scalars['ID']['input']>;
+  id: Scalars['ID']['input'];
+  linkId: Scalars['ID']['input'];
+  toNodeId: Scalars['ID']['input'];
 };
 
 
@@ -24774,6 +24794,8 @@ export type PlaybookAddNodeInput = {
   configuration?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
+  parentNodeId?: InputMaybe<Scalars['ID']['input']>;
+  parentPortId?: InputMaybe<Scalars['ID']['input']>;
   position: PositionInput;
 };
 
@@ -50760,6 +50782,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   playbookFieldPatch?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookFieldPatchArgs, 'id' | 'input'>>;
   playbookImport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookImportArgs, 'file'>>;
   playbookInsertNode?: Resolver<ResolversTypes['PlaybookInsertResult'], ParentType, ContextType, RequireFields<MutationPlaybookInsertNodeArgs, 'childNodeId' | 'id' | 'input' | 'parentNodeId' | 'parentPortId'>>;
+  playbookMoveNode?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookMoveNodeArgs, 'id' | 'nodeId' | 'parentNodeId' | 'parentPortId'>>;
+  playbookRelink?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookRelinkArgs, 'id' | 'linkId' | 'toNodeId'>>;
   playbookReplaceNode?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookReplaceNodeArgs, 'id' | 'input' | 'nodeId'>>;
   playbookStepExecution?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationPlaybookStepExecutionArgs, 'bundle' | 'data_instance_id' | 'event_id' | 'execution_id' | 'execution_start' | 'playbook_id' | 'previous_bundle' | 'previous_step_id' | 'step_id'>>;
   playbookUpdatePositions?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPlaybookUpdatePositionsArgs, 'id' | 'positions'>>;

@@ -123,7 +123,7 @@ const EditorContainer = styled('div')(({ theme }) => ({
 }));
 
 const HtmlEditorContainer = styled(EditorContainer)({
-  // FDS-WORKAROUND #84 (fds-migration/LIBRARY-FEEDBACK.md): leaves room at the
+  // FDS-WORKAROUND #85 (fds-migration/LIBRARY-FEEDBACK.md): leaves room at the
   // end of the toolbar for the Ask AI button laid over it.
   '& [role="toolbar"]': {
     paddingRight: 32,

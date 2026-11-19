@@ -3143,7 +3143,44 @@ Aliases.
 
 ---
 
-## 84. `RichTextField`'s Ask AI cannot carry the product's gating, so OpenCTI lays its own button over the field
+## 84. No component pairs `SearchField` with a suggestions dropdown, so the top-bar pages list is a MUI `Popper`
+
+**Where.** `SearchInput.jsx` (top bar variant) and
+`search/NavSearchSuggestions.tsx`. Typing in the top-bar search lists the
+platform pages matching the keyword, with a first `Search: <keyword>` row.
+The list is keyboard-navigable (ArrowUp/ArrowDown), Enter on a page opens it,
+and Enter with nothing highlighted starts the classic search.
+
+**Gap.** `Combobox` owns its own input (`ComboboxInput`) and treats Enter as
+"pick the highlighted option": there is always a value to commit, and no
+"nothing highlighted, Enter submits the typed text" state. `SearchField`, the
+field this bar uses (#20, #54), has no listbox or popup slot, no
+`aria-activedescendant` wiring and no highlighted-row state. `HeaderSearch`
+does not fit either (#54). So neither can host a free-text search with a
+suggestions list.
+
+**Workaround.** `SearchField` stays the input. A MUI `Popper` (not in the
+enforced list) renders the rows from `List` and `ListItemButton`. The field
+and rows are wired by hand: `role="combobox"`, `aria-expanded`,
+`aria-controls`, `aria-activedescendant`, and `role="listbox"` / `"option"` on
+the rows. The surface is a `Box` rather than `Paper`, which is enforced.
+Marked `FDS-WORKAROUND #84`.
+
+**Ask.** Either a `suggestions` slot on `SearchField` (and `HeaderSearch`)
+that owns the popup, the ARIA wiring and the highlighted row, with Enter
+submitting the typed text when no row is highlighted. Or a `Combobox` mode
+where the input value is free text and Enter submits it unless an option is
+highlighted.
+
+**Removal test.** Replace the `Popper` by the library slot: typing must list
+the pages, ArrowDown must highlight the first row (the screen reader announces
+it), Enter on a page opens it, Enter with no highlight starts the classic
+search, Escape closes the list without clearing the field, and a click on a
+row must not blur the input first.
+
+---
+
+## 85. `RichTextField`'s Ask AI cannot carry the product's gating, so OpenCTI lays its own button over the field
 
 **Needed.** The Ask AI button of an HTML field (report, grouping and case
 content, mappable content, the HTML file editor) is OpenCTI's `TextFieldAskAI`.
@@ -3160,7 +3197,7 @@ click opens the terms dialog instead of the menu.
 a product tooltip on the button, no disabled-with-reason state, and no way to
 intercept the click before the menu opens.
 
-**What the product did.** `FDS-WORKAROUND #84`. The field gets no `aiActions`;
+**What the product did.** `FDS-WORKAROUND #85`. The field gets no `aiActions`;
 `TextFieldAskAI` is positioned over the right end of the label row
 (`components/fields/RichTextField.tsx`) or of the toolbar (no label:
 `StixCoreObjectContent.tsx`), and `[role="status"]` / `[role="toolbar"]` get a
@@ -3178,7 +3215,7 @@ is disabled for a non-administrator with the explanation as its tooltip; and no
 
 ---
 
-## 85. `RichTextField` does not expose its fullscreen state, so the mapping cannot tell where a selection was made
+## 86. `RichTextField` does not expose its fullscreen state, so the mapping cannot tell where a selection was made
 
 **Needed.** On a container's mapping view, selecting text in the read-only
 content field (`readOnly` + `onTextSelection`) opens the drawer that maps the
@@ -3191,7 +3228,7 @@ fullscreen before the migration.
 (`isFullscreen`) with no callback and no controlled prop, and `onTextSelection`
 fires in fullscreen as well (the button is only off while `disabled`).
 
-**What the product did.** `FDS-WORKAROUND #85`
+**What the product did.** `FDS-WORKAROUND #86`
 (`components/fields/RichTextField.tsx`). The product forwards a selection only
 when its anchor node lies inside the product's own container. In fullscreen
 the library renders the editing area in its dialog, outside that container.
