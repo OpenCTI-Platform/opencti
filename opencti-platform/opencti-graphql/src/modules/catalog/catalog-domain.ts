@@ -387,6 +387,8 @@ export const computeConnectorTargetContract = (
   currentManagerContractConfiguration?: ConnectorContractConfiguration[],
 ): ConnectorContractConfiguration[] => {
   const targetConfig = getContractConfigSchemaWithoutExcludedRuntimeVars(targetContract.config_schema);
+  // A current configuration is given when an existing connector is edited, never at creation
+  const isEdition = currentManagerContractConfiguration !== undefined;
   let passwordCount = 0;
   let defaultedCount = 0;
   let reusedCount = 0;
@@ -421,6 +423,12 @@ export const computeConnectorTargetContract = (
       && (propSchema.default === undefined || propSchema.default === null)
     ) {
       return; // Skip this field entirely
+    }
+
+    // On edition, an optional field neither sent nor stored stays unset: its default is applied at creation only.
+    // A field explicitly emptied in a previous edition is not stored, and must not come back with its default
+    if (isEdition && !isRequired && !inputConfig && !hasExisting) {
+      return;
     }
 
     if (!hasInput && !hasExisting && (propSchema.default !== undefined && propSchema.default !== null)) {

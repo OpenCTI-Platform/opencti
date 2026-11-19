@@ -32,8 +32,10 @@ const contract = {
         default: ['malware_families', 'attack_techniques', 'threat_actors'],
         description: 'Sub-entities to fetch for vulnerabilities',
       },
+      GTI_RELATIONSHIP_FILTER: { type: 'string', default: 'all', description: 'Optional filter with a default' },
+      GTI_INTERVAL: { type: 'integer', default: 60, description: 'Required interval with a default' },
     },
-    required: ['GTI_API_KEY'],
+    required: ['GTI_API_KEY', 'GTI_INTERVAL'],
     additionalProperties: false,
   },
 } as unknown as Pick<CatalogContract, 'config_schema' | 'slug' | 'title'>;
@@ -44,6 +46,8 @@ const storedConfiguration: ConnectorContractConfiguration[] = [
   { key: 'GTI_IMPORT_THREAT_ACTORS', value: 'true' },
   { key: 'GTI_IMPORT_MALWARE_FAMILIES', value: 'true' },
   { key: 'GTI_VULNERABILITY_SUBENTITIES', value: 'malware_families' },
+  { key: 'GTI_RELATIONSHIP_FILTER', value: 'custom' },
+  { key: 'GTI_INTERVAL', value: '120' },
 ];
 
 const valueOf = (configurations: ConnectorContractConfiguration[], key: string) => {
@@ -73,6 +77,39 @@ describe('computeConnectorTargetContract - partial edition', () => {
     expect(valueOf(result, 'GTI_IMPORT_REPORTS')).toBe('true');
   });
 
+  it('should not write the default of an optional key that was never set', () => {
+    const input: ContractConfigInput[] = [{ key: 'GTI_IMPORT_REPORTS', value: 'true' }];
+    const neverConfigured: ConnectorContractConfiguration[] = [storedConfiguration[0]];
+
+    const result = computeConnectorTargetContract(input, contract, publicKey, neverConfigured);
+
+    expect(valueOf(result, 'GTI_IMPORT_REPORTS')).toBe('true');
+    expect(result.find((c) => c.key === 'GTI_IMPORT_THREAT_ACTORS')).toBeUndefined();
+    expect(result.find((c) => c.key === 'GTI_VULNERABILITY_SUBENTITIES')).toBeUndefined();
+    expect(result.find((c) => c.key === 'GTI_RELATIONSHIP_FILTER')).toBeUndefined();
+    // A required key still falls back to its default
+    expect(valueOf(result, 'GTI_INTERVAL')).toBe('60');
+  });
+
+  it('should keep a cleared field cleared across an unrelated edit', () => {
+    const clearInput: ContractConfigInput[] = [
+      { key: 'GTI_RELATIONSHIP_FILTER', value: '' },
+      { key: 'GTI_VULNERABILITY_SUBENTITIES', value: '' },
+    ];
+    const afterClear = computeConnectorTargetContract(clearInput, contract, publicKey, storedConfiguration);
+
+    expect(afterClear.find((c) => c.key === 'GTI_RELATIONSHIP_FILTER')).toBeUndefined();
+    expect(valueOf(afterClear, 'GTI_VULNERABILITY_SUBENTITIES')).toBe('');
+
+    const unrelatedInput: ContractConfigInput[] = [{ key: 'GTI_IMPORT_REPORTS', value: 'false' }];
+    const afterUnrelatedEdit = computeConnectorTargetContract(unrelatedInput, contract, publicKey, afterClear);
+
+    expect(valueOf(afterUnrelatedEdit, 'GTI_IMPORT_REPORTS')).toBe('false');
+    expect(afterUnrelatedEdit.find((c) => c.key === 'GTI_RELATIONSHIP_FILTER')).toBeUndefined();
+    expect(valueOf(afterUnrelatedEdit, 'GTI_VULNERABILITY_SUBENTITIES')).toBe('');
+    expect(valueOf(afterUnrelatedEdit, 'GTI_INTERVAL')).toBe('120');
+  });
+
   it('should still apply defaults on creation', () => {
     const input: ContractConfigInput[] = [{ key: 'GTI_API_KEY', value: 'my-key' }];
 
@@ -80,5 +117,7 @@ describe('computeConnectorTargetContract - partial edition', () => {
 
     expect(valueOf(result, 'GTI_IMPORT_REPORTS')).toBe('false');
     expect(valueOf(result, 'GTI_VULNERABILITY_SUBENTITIES')).toBe('malware_families,attack_techniques,threat_actors');
+    expect(valueOf(result, 'GTI_RELATIONSHIP_FILTER')).toBe('all');
+    expect(valueOf(result, 'GTI_INTERVAL')).toBe('60');
   });
 });
