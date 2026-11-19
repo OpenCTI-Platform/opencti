@@ -14047,6 +14047,7 @@ type SmtpConfiguration {
   oauth_user: String
   port: Int
   reject_unauthorized: Boolean
+  require_tls: Boolean
   sender_email_address: String
   smtp_enabled: Boolean!
   use_db_config: Boolean!
@@ -14067,6 +14068,7 @@ input SmtpConfigurationAddInput {
   password: String
   port: Int
   reject_unauthorized: Boolean
+  require_tls: Boolean
   sender_email_address: String
   smtp_enabled: Boolean
   use_db_config: Boolean

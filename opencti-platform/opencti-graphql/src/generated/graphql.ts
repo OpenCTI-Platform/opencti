@@ -32424,6 +32424,7 @@ export type SmtpConfiguration = {
   oauth_user?: Maybe<Scalars['String']['output']>;
   port?: Maybe<Scalars['Int']['output']>;
   reject_unauthorized?: Maybe<Scalars['Boolean']['output']>;
+  require_tls?: Maybe<Scalars['Boolean']['output']>;
   sender_email_address?: Maybe<Scalars['String']['output']>;
   smtp_enabled: Scalars['Boolean']['output'];
   use_db_config: Scalars['Boolean']['output'];
@@ -32444,6 +32445,7 @@ export type SmtpConfigurationAddInput = {
   password?: InputMaybe<Scalars['String']['input']>;
   port?: InputMaybe<Scalars['Int']['input']>;
   reject_unauthorized?: InputMaybe<Scalars['Boolean']['input']>;
+  require_tls?: InputMaybe<Scalars['Boolean']['input']>;
   sender_email_address?: InputMaybe<Scalars['String']['input']>;
   smtp_enabled?: InputMaybe<Scalars['Boolean']['input']>;
   use_db_config?: InputMaybe<Scalars['Boolean']['input']>;
@@ -53970,6 +53972,7 @@ export type SmtpConfigurationResolvers<ContextType = any, ParentType extends Res
   oauth_user?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   port?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   reject_unauthorized?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  require_tls?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   sender_email_address?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   smtp_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   use_db_config?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;

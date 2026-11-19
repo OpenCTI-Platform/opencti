@@ -28,6 +28,7 @@ export const smtpConfigurationEditMutation = graphql`
       port
       use_ssl
       reject_unauthorized
+      require_tls
       auth_type
       username
       oauth_user
@@ -46,6 +47,7 @@ export interface SmtpConfigurationData {
   port?: number | null;
   use_ssl?: boolean | null;
   reject_unauthorized?: boolean | null;
+  require_tls?: boolean | null;
   auth_type?: string | null;
   username?: string | null;
   oauth_user?: string | null;
@@ -68,6 +70,7 @@ interface SmtpConfigurationFormValues {
   port: number | '';
   use_ssl: boolean;
   reject_unauthorized: boolean;
+  require_tls: boolean;
   auth_type: 'basic' | 'oauth2';
   username: string;
   password: string;
@@ -126,6 +129,9 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
     port: smtpConfiguration?.port ?? '',
     use_ssl: smtpConfiguration?.use_ssl ?? false,
     reject_unauthorized: smtpConfiguration?.reject_unauthorized ?? true,
+    // The backend returns the value in effect. Without a configuration, it follows tls:reject_unauthorized,
+    // false until the secure-by-default release.
+    require_tls: smtpConfiguration?.require_tls ?? false,
     auth_type: (smtpConfiguration?.auth_type as 'basic' | 'oauth2' | undefined) ?? 'basic',
     username: smtpConfiguration?.username ?? '',
     password: '',
@@ -148,6 +154,10 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
       reject_unauthorized: values.reject_unauthorized,
       auth_type: values.auth_type,
     };
+    // Only stored once changed: until then, the configuration keeps following tls:reject_unauthorized
+    if (values.require_tls !== initialValues.require_tls) {
+      input.require_tls = values.require_tls;
+    }
     if (values.auth_type === 'basic') {
       input.username = values.username || null;
       input.password = values.password;
@@ -246,6 +256,15 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
             type="checkbox"
             name="reject_unauthorized"
             label={t_i18n('Reject unauthorized certificates')}
+            containerstyle={fieldSpacingContainerStyle}
+          />
+          <Field
+            component={SwitchField}
+            type="checkbox"
+            name="require_tls"
+            label={t_i18n('Require STARTTLS')}
+            tooltip={t_i18n('Without SSL/TLS, emails are not sent when the server does not upgrade the connection with STARTTLS. Against a network attacker, this protects the credentials only when unauthorized certificates are rejected.')}
+            disabled={values.use_ssl || undefined}
             containerstyle={fieldSpacingContainerStyle}
           />
           <Field

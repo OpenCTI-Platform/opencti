@@ -41,6 +41,7 @@ const smtpConfigurationQuery = graphql`
         port
         use_ssl
         reject_unauthorized
+        require_tls
         auth_type
         username
         oauth_user
@@ -209,6 +210,10 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
               <TableRow>
                 <TableCell>{t_i18n('Reject unauthorized certificates')}</TableCell>
                 <TableCell>{renderBoolean(smtpConfiguration?.reject_unauthorized)}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>{t_i18n('Require STARTTLS')}</TableCell>
+                <TableCell>{renderBoolean(smtpConfiguration?.use_ssl ? null : smtpConfiguration?.require_tls)}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>{t_i18n('Authentication type')}</TableCell>
