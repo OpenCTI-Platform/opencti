@@ -303,8 +303,9 @@ export const createQueueLease = (
       // Shedding: well above its share for a few ticks while another is well under, one queue at a time, one with
       // messages ready (what moves: its unacked ones are answered here), whose move narrows the gap with the least
       // loaded (no ping-pong), that the least loaded takes by its own rule (fits its share) and after which this
-      // platform stays at least as loaded (not the least loaded: it does not take it back by its own rule), the
-      // closest to half of the gap; not a queue it took back after shedding it (SHED_TAKEN_BACK_TICKS)
+      // platform stays more loaded than the least loaded was (its load under the gap: a queue as large as the gap,
+      // a lone queue included, would only swap the loads and be shed back; it is joined by stealing), the closest to
+      // half of the gap; not a queue it took back after shedding it (SHED_TAKEN_BACK_TICKS)
       const over = options.shed && others.length > 0 && own > SHED_ABOVE * share && minOther < UNDER * share;
       overTicks = over ? overTicks + 1 : 0;
       if (overTicks >= SHED_TICKS && !shedDraining) {
@@ -312,7 +313,7 @@ export const createQueueLease = (
         // never a queue marked ordered (the held ones its consumer saw carrying events were marked above)
         const movable = [...held].filter((queue) => !movedRecently(takenAt, queue) && tick - (takenBackAt.get(queue) ?? -Infinity) >= SHED_TAKEN_BACK_TICKS
           && ready(queue) >= options.stealBacklogMin && readyLoad(queue) < gap
-          && minOther + readyLoad(queue) / 2 <= share && own - load(queue) >= minOther);
+          && minOther + readyLoad(queue) / 2 <= share && own - load(queue) > minOther);
         const marked = movable.length > 0 ? await store.ordered(movable) : new Set<string>();
         const shed = movable.filter((queue) => !marked.has(queue)).sort((a, b) => Math.abs(readyLoad(a) - gap / 2) - Math.abs(readyLoad(b) - gap / 2))[0];
         if (shed) {

@@ -807,15 +807,42 @@ describe('queue lease rebalancing, review round 1 fixes (task 0040)', () => {
 
   it('should shed a queue whose ready bytes are under the gap, whatever its messages in flight here', async () => {
     const depths = new Map<string, QueueDepth>([
+      ['q1', { ready: 300, unacked: 800 }], // load 1100 (under the gap), ready 300
+      ['q2', { ready: 100, unacked: 0 }],
+    ]);
+    const { store, a, queues } = await settled([1100, 100], depths);
+    for (let i = 0; i < 3; i += 1) {
+      await store.publishBacklog('b:other', 50, 0);
+      await a.tick(queues, view(queues));
+    }
+    expect(a.events.filter(([event]) => event === 'shed')).toEqual([['shed', 'q1']]); // gap 1150: 300 moves
+  });
+
+  it('should not shed a queue as large as the gap: the move would swap the loads, then come back', async () => {
+    const depths = new Map<string, QueueDepth>([
       ['q1', { ready: 300, unacked: 900 }], // load 1200 (= the gap), ready 300
       ['q2', { ready: 100, unacked: 0 }],
     ]);
     const { store, a, queues } = await settled([1200, 100], depths);
-    for (let i = 0; i < 3; i += 1) {
+    for (let i = 0; i < 6; i += 1) {
       await store.publishBacklog('b:other', 100, 0);
       await a.tick(queues, view(queues));
     }
-    expect(a.events.filter(([event]) => event === 'shed')).toEqual([['shed', 'q1']]); // gap 1200: 300 moves
+    // q2 moves (the gap narrows to 1000), q1 stays
+    expect(a.events.filter(([event]) => event === 'shed')).toEqual([['shed', 'q2']]);
+  });
+
+  it('should keep a lone queue larger than a share on one holder, the idle platform joining it (no ping-pong)', async () => {
+    // the misp queue of the mix1500k topology run: one queue, part of it in flight; shed, it went back and forth
+    const queues = ['q1'];
+    const c = cluster(new Map([['q1', { ready: 10000, unacked: 500 }]]), queues);
+    c.add('a');
+    c.add('b');
+    for (let i = 0; i < 40; i += 1) await c.round();
+    expect(c.count('shed')).toBe(0);
+    expect(c.count('taken')).toBe(1);
+    const consumers = [...c.nodes.values()].filter(({ listed }) => listed.includes('q1'));
+    expect(consumers).toHaveLength(2); // its holder and the stealer
   });
 
   it('should take a queue larger than twice its share when it holds nothing, other loads unknown', async () => {
