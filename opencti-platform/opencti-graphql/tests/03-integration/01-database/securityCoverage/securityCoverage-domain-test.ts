@@ -292,7 +292,10 @@ describe('SecurityCoverage domain', () => {
         procedureObservables: [command.id, ipv4.id],
       });
       const [implementsTechnique] = await fullRelationsList(testContext, ADMIN_USER, RELATION_IMPLEMENTS_TECHNIQUE, { fromId: procedure.id });
-      return { attackPattern, command, ipv4, procedure, implementsTechnique };
+      const hasObservables = await fullRelationsList(testContext, ADMIN_USER, 'has-observable', { fromId: procedure.id });
+      // The command and the IPv4 address are both observables of the procedure
+      expect(hasObservables).toHaveLength(2);
+      return { attackPattern, command, ipv4, procedure, implementsTechnique, hasObservables };
     };
     const deleteProcedureWithRefs = async (refs: Awaited<ReturnType<typeof createProcedureWithRefs>>) => {
       await deleteElementById(testContext, ADMIN_USER, refs.procedure.id, ENTITY_TYPE_PROCEDURE);
@@ -325,6 +328,7 @@ describe('SecurityCoverage domain', () => {
         refs.attackPattern.standard_id,
         refs.command.standard_id,
         refs.ipv4.standard_id,
+        ...refs.hasObservables.map((relation) => relation.standard_id),
       ];
       expect(bundleIds).toEqual(expect.arrayContaining(expectedIds));
       // Every object is sent once, even when reached through several paths
@@ -357,6 +361,7 @@ describe('SecurityCoverage domain', () => {
         refs.attackPattern.standard_id,
         refs.command.standard_id,
         refs.ipv4.standard_id,
+        ...refs.hasObservables.map((relation) => relation.standard_id),
       ]));
       expect(bundleIds.length).toEqual(new Set(bundleIds).size);
 

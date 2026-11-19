@@ -19,20 +19,20 @@ import {
 } from './securityCoverage-types';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
-import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { createEntity, deleteElementById, distributionRelations, storeLoadByIdsWithRefs, storeLoadByIdWithRefs } from '../../database/middleware';
 import { type SecurityCoverageAddInput } from '../../generated/graphql';
 import type { BasicStoreEntity, BasicStoreObject, BasicStoreRelation, StoreCommon, StoreObject, StoreRelation } from '../../types/store';
 import type { StixObject } from '../../types/stix-2-1-common';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { STIX_SPEC_VERSION } from '../../database/stix';
-import { RELATION_HAS_COVERED, RELATION_IMPLEMENTS_TECHNIQUE, RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
+import { RELATION_HAS_COVERED, RELATION_HAS_OBSERVABLE, RELATION_IMPLEMENTS_TECHNIQUE, RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
 import { stixRefsExtractor } from '../../schema/stixEmbeddedRelationship';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INTRUSION_SET } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
-import { ENTITY_TYPE_PROCEDURE, INPUT_PROCEDURE_COMMAND, INPUT_PROCEDURE_OBSERVABLES, type StoreEntityProcedure } from '../procedure/procedure-types';
+import { ENTITY_TYPE_PROCEDURE, INPUT_PROCEDURE_COMMAND, type StoreEntityProcedure } from '../procedure/procedure-types';
 import {
   ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
   INPUT_RESULT_OF,
@@ -147,12 +147,11 @@ export const addSecurityCoverage = async (
   );
 };
 
-// Procedures are sent with what OpenAEV needs to test them:
-// their implements-technique relationships, attack patterns, command and observables.
+// Procedures are sent with what OpenAEV needs to test them: their command, plus their implements-technique
+// and has-observable relationships with the attack patterns and observables they point to.
 const procedureContextIds = (procedure: StoreEntityProcedure) => {
   const command = procedure[INPUT_PROCEDURE_COMMAND];
-  const observables = procedure[INPUT_PROCEDURE_OBSERVABLES] ?? [];
-  return [...observables, ...(command ? [command] : [])].map((observable) => observable.id);
+  return command ? [command.id] : [];
 };
 
 export const securityCoverageStixBundle = async (context: AuthContext, user: AuthUser, SecurityCoverageId: string) => {
@@ -197,9 +196,9 @@ export const securityCoverageStixBundle = async (context: AuthContext, user: Aut
   }
   if (procedures.length > 0) {
     const procedureTargetIds = new Set<string>(procedures.flatMap(procedureContextIds));
-    await fullRelationsList(context, user, RELATION_IMPLEMENTS_TECHNIQUE, {
+    await fullRelationsList(context, user, [RELATION_IMPLEMENTS_TECHNIQUE, RELATION_HAS_OBSERVABLE], {
       fromId: procedures.map((procedure) => procedure.id),
-      toTypes: [ENTITY_TYPE_ATTACK_PATTERN],
+      toTypes: [ENTITY_TYPE_ATTACK_PATTERN, ABSTRACT_STIX_CYBER_OBSERVABLE],
       callback: async (relationships: StoreRelation[]) => {
         const relations = await storeLoadByIdsWithRefs<StoreRelation>(context, user, relationships.map((r: StoreRelation) => r.id));
         relations.forEach((relation) => {

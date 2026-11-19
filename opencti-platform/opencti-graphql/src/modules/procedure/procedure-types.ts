@@ -44,7 +44,6 @@ export interface StoreEntityProcedure extends StoreEntity {
   x_execution_start: Date;
   x_execution_end: Date;
   x_fingerprint: string;
-  [INPUT_PROCEDURE_OBSERVABLES]: Array<BasicStoreEntity>;
   [INPUT_PROCEDURE_COMMAND]: BasicStoreEntity;
   [INPUT_PROCEDURE_SOURCES]: Array<BasicStoreEntity>;
 }
