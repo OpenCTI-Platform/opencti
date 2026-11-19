@@ -92,6 +92,16 @@ class FakePlatform:
                     )
                 }
             }
+        if operation == "StixCoreObjects":
+            # Lookup of relationship targets under the access filter: all readable here
+            ids = variables["filters"]["filterGroups"][0]["filters"][0]["values"]
+            return {
+                "data": {
+                    "stixCoreObjects": _edges(
+                        *[{"id": "id-" + i, "standard_id": i} for i in ids]
+                    )
+                }
+            }
         if operation == "Reports":
             return {
                 "data": {
@@ -399,14 +409,27 @@ def _export_with_nested_refs(access_filter):
             "StixCoreRelationships" in query_text
             and (variables or {}).get("relationship_type") == "has-observable"
         ):
-            # The TLP:RED observable is excluded by the export access filter
-            targets = (
-                [OBSERVABLE_GREEN] if filtered else [OBSERVABLE_GREEN, OBSERVABLE_RED]
-            )
+            # The has-observable relationships carry no marking: the access
+            # filter on them lets both through, whatever the observables' markings.
             return {
                 "data": {
                     "stixCoreRelationships": _edges(
-                        *[_relationship(target) for target in targets]
+                        *[
+                            _relationship(target)
+                            for target in [OBSERVABLE_GREEN, OBSERVABLE_RED]
+                        ]
+                    )
+                }
+            }
+        if "query StixCoreObjects(" in query_text:
+            # Lookup of the targets themselves: the TLP:RED observable is
+            # excluded by the export access filter
+            ids = variables["filters"]["filterGroups"][0]["filters"][0]["values"]
+            allowed = [i for i in ids if i != OBSERVABLE_RED] if filtered else ids
+            return {
+                "data": {
+                    "stixCoreObjects": _edges(
+                        *[{"id": "id-" + i, "standard_id": i} for i in allowed]
                     )
                 }
             }

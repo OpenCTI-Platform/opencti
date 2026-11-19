@@ -578,7 +578,8 @@ class Procedure:
     ):
         """Standard ids of the targets of the relationships of a procedure.
 
-        Targets the user cannot read are skipped. Order is kept, duplicates removed.
+        Targets the user cannot read, or that the export access filter
+        excludes, are skipped. Order is kept, duplicates removed.
         """
         relationships = self.opencti.stix_core_relationship.list(
             fromId=entity_id,
@@ -592,7 +593,19 @@ class Procedure:
             target_id = (relationship.get("to") or {}).get("standard_id")
             if target_id is not None and target_id not in target_ids:
                 target_ids.append(target_id)
-        return target_ids
+        if access_filter is None or len(target_ids) == 0:
+            return target_ids
+        # The access filter matched the relationships' own markings: check the
+        # targets too, so that an excluded target is not referenced.
+        allowed = self.opencti.stix_core_object.list(
+            filters=self.opencti.stix2.prepare_id_filters_export(
+                target_ids, access_filter
+            ),
+            customAttributes="standard_id",
+            getAll=True,
+        )
+        allowed_ids = {target.get("standard_id") for target in allowed}
+        return [target_id for target_id in target_ids if target_id in allowed_ids]
 
     def _list_report_ids(self, entity_id, access_filter=None):
         """Standard ids of the reports that contain a procedure."""
