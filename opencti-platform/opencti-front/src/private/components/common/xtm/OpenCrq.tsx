@@ -1,0 +1,218 @@
+import React from 'react';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
+import Card from '@common/card/Card';
+import { useFormatter } from '../../../../components/i18n';
+import { OcrqLogo } from '../../../../static/images/logo_ocrq';
+import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
+import { OPENAEV_CONNECT_DOC_URL, useCompactPivot, withTooltip } from './OpenAevPivot';
+import useXtmCounterpart, { normaliseXtmKey, XtmCounterpartKind } from './useXtmCounterparts';
+
+// The OpenCRQ side of the cross-platform pivots: same controls, states and wording as the OpenAEV
+// ones (OpenAevPivot, OpenAevCard, OpenAevRowMark), the OpenCRQ mark, and the risk OpenCRQ
+// quantifies for the object (the risk scenarios it drives, their annual loss expectancy and, for a
+// CVE, the loss avoided by fixing it). OpenCRQ holds threats (STIX id), vulnerabilities (CVE) and
+// assets (hostname); attack patterns and alerts have no OpenCRQ counterpart.
+
+export const OPENCRQ_PRODUCT = 'opencrq';
+// The OpenCRQ connection of OpenCTI lives in its configuration (xtm:opencrq_url, xtm:opencrq_token),
+// documented on the same XTM page as the OpenAEV one.
+export const OPENCRQ_CONNECT_DOC_URL = OPENAEV_CONNECT_DOC_URL;
+export const OPENCRQ_KINDS: ReadonlyArray<XtmCounterpartKind> = ['THREAT', 'VULNERABILITY', 'ASSET'];
+export const isOpenCrqKind = (kind: XtmCounterpartKind | null | undefined) => !!kind && OPENCRQ_KINDS.includes(kind);
+
+interface OpenCrqProps {
+  kind: XtmCounterpartKind;
+  // The natural key both platforms share: hostname, CVE id or STIX id.
+  counterpartKey: string | null | undefined;
+}
+
+type CounterpartFact = { key: string; value: string };
+type Translate = (message: string, options?: { values: Record<string, number> }) => string;
+
+// Amounts are whole units of the OpenCRQ tenant's currency, shown compact (125K) as OpenAEV does.
+const MONEY_FACTS: Record<string, string> = {
+  annual_loss: 'Annual loss expectancy',
+  fix_value: 'Loss avoided by fixing',
+};
+
+/** The facts OpenCRQ answered, known keys with a numeric value only, in display order. */
+export const formatOpenCrqFacts = (
+  facts: ReadonlyArray<CounterpartFact> | null | undefined,
+  t_i18n: Translate,
+  n: (value: number) => string,
+): string[] => {
+  const byKey = new Map((facts ?? []).map((f) => [f.key, Number(f.value)]));
+  const out: string[] = [];
+  const scenarios = byKey.get('risk_scenarios');
+  if (scenarios !== undefined && Number.isInteger(scenarios) && scenarios >= 0) {
+    out.push(t_i18n('{count, plural, one {# risk scenario} other {# risk scenarios}}', { values: { count: scenarios } }));
+  }
+  Object.entries(MONEY_FACTS).forEach(([key, label]) => {
+    const value = byKey.get(key);
+    if (value !== undefined && Number.isFinite(value) && value >= 0) out.push(`${t_i18n(label)}: ${n(value)}`);
+  });
+  return out;
+};
+
+/**
+ * Hero action of an object OpenCRQ can also hold, beside "Open in OpenAEV": "Open in OpenCRQ" on a
+ * match, a disabled "Not in OpenCRQ" without one, and "Connect OpenCRQ" when OpenCRQ is not
+ * connected (disabled, with a read-only hint, for a user who cannot configure the platform).
+ * Silent while loading. Below 1280 px the same states render as the framed icon button.
+ */
+export const OpenCrqPivot: React.FC<OpenCrqProps> = ({ kind, counterpartKey }) => {
+  const { t_i18n } = useFormatter();
+  const canConfigure = useGranted([SETTINGS_SETPARAMETERS]);
+  const state = useXtmCounterpart(OPENCRQ_PRODUCT, kind, counterpartKey);
+  const compact = useCompactPivot();
+
+  let label: string;
+  let tooltip: string;
+  let href: string | undefined;
+  let disabled = false;
+  switch (state.status) {
+    case 'match':
+      label = t_i18n('Open in OpenCRQ');
+      tooltip = state.counterpart.object_name ? `${label}: ${state.counterpart.object_name}` : label;
+      href = state.counterpart.object_url;
+      break;
+    case 'no_match':
+      label = t_i18n('Not in OpenCRQ');
+      tooltip = label;
+      disabled = true;
+      break;
+    case 'not_connected':
+      label = t_i18n('Connect OpenCRQ');
+      if (canConfigure) {
+        tooltip = t_i18n('Connect OpenCRQ to pivot to this object and see the risk it drives');
+        href = OPENCRQ_CONNECT_DOC_URL;
+      } else {
+        tooltip = t_i18n('OpenCRQ is not connected: ask an administrator to connect it');
+        disabled = true;
+      }
+      break;
+    default:
+      return null;
+  }
+  const ariaLabel = state.status === 'not_connected' && disabled ? t_i18n('OpenCRQ is not connected') : label;
+  const link = href ? { href, target: '_blank', rel: 'noopener noreferrer' } : {};
+
+  if (compact) {
+    return (
+      <IconButton
+        variant="secondary"
+        size="default"
+        disabled={disabled}
+        aria-label={ariaLabel}
+        tooltip={tooltip}
+        data-testid="opencrq-pivot"
+        {...link}
+      >
+        <OcrqLogo />
+      </IconButton>
+    );
+  }
+  return withTooltip(
+    tooltip,
+    <Button
+      variant="secondary"
+      startIcon={<OcrqLogo />}
+      disabled={disabled}
+      aria-label={disabled ? ariaLabel : undefined}
+      data-testid="opencrq-pivot"
+      {...link}
+    >
+      {label}
+    </Button>,
+  );
+};
+
+/**
+ * Overview card "In OpenCRQ": on a match, the OpenCRQ counterpart with the identifier both
+ * platforms share and the risk it drives (risk scenarios, annual loss expectancy, loss avoided by
+ * fixing); without a match, a muted "Not in OpenCRQ" line. Informational, no link of its own (the
+ * hero pivot is the single action). Nothing while loading or when OpenCRQ is not connected (the
+ * hero carries the call to action). A threat is matched on its STIX id: no shared identifier line.
+ */
+export const OpenCrqCard: React.FC<OpenCrqProps & { gridRow?: boolean }> = ({ kind, counterpartKey, gridRow = false }) => {
+  const { t_i18n, n } = useFormatter();
+  const state = useXtmCounterpart(OPENCRQ_PRODUCT, kind, counterpartKey);
+  if (state.status !== 'match' && state.status !== 'no_match') return null;
+  const sharedKey = kind === 'THREAT' ? null : normaliseXtmKey(kind, counterpartKey);
+  const match = state.status === 'match' ? state.counterpart : null;
+  const facts = match ? formatOpenCrqFacts(match.facts, t_i18n, n) : [];
+
+  const card = (
+    <Card title={t_i18n('In OpenCRQ')}>
+      <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }} data-testid="opencrq-card">
+        <Box aria-hidden sx={{ display: 'inline-flex', flexShrink: 0, opacity: match ? 1 : 0.5, '& svg': { width: 24, height: 24 } }}>
+          <OcrqLogo />
+        </Box>
+        <Box sx={{ minWidth: 0 }}>
+          <Box
+            title={match?.object_name ?? undefined}
+            sx={{ typography: 'body2', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+          >
+            {match ? (match.object_name ?? t_i18n('Open in OpenCRQ')) : t_i18n('Not in OpenCRQ')}
+          </Box>
+          {sharedKey && (
+            <Box sx={{ typography: 'caption', color: 'text.secondary' }}>
+              {`${t_i18n('Shared identifier')}: ${sharedKey}`}
+            </Box>
+          )}
+          {facts.length > 0 && (
+            <Box sx={{ typography: 'caption', color: 'text.secondary' }} data-testid="opencrq-card-facts">
+              {facts.join(' · ')}
+            </Box>
+          )}
+        </Box>
+      </Stack>
+    </Card>
+  );
+  return gridRow ? <Grid size={12}>{card}</Grid> : card;
+};
+
+/**
+ * List-row mark of an object OpenCRQ also holds: a small OpenCRQ mark linking to the counterpart.
+ * Nothing while loading, without a match or when OpenCRQ is not connected (the hero carries the
+ * CTA). The lookups of every row go out batched with the OpenAEV ones, one query per kind.
+ */
+export const OpenCrqRowMark: React.FC<OpenCrqProps> = ({ kind, counterpartKey }) => {
+  const { t_i18n } = useFormatter();
+  const state = useXtmCounterpart(OPENCRQ_PRODUCT, kind, counterpartKey);
+  if (state.status !== 'match') return null;
+  const { object_name, object_url } = state.counterpart;
+  const label = object_name ? `${t_i18n('Open in OpenCRQ')}: ${object_name}` : t_i18n('Open in OpenCRQ');
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Box
+          component="a"
+          href={object_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={t_i18n('Open in OpenCRQ')}
+          // The row is itself a link: the mark opens OpenCRQ without opening the row.
+          onClick={(event: React.MouseEvent) => event.stopPropagation()}
+          data-testid="opencrq-row-mark"
+          sx={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            flexShrink: 0,
+            ml: 0.5,
+            verticalAlign: 'middle',
+            '& svg': { width: 16, height: 16 },
+          }}
+        >
+          <OcrqLogo />
+        </Box>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  );
+};

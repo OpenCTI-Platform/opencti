@@ -6555,5 +6555,15 @@
   "Email security": "Seguridad del correo electrónico",
   "LLM firewall": "Cortafuegos LLM",
   "AI gateway": "Puerta de enlace de IA",
-  "Vulnerability scanner": "Escáner de vulnerabilidades"
+  "Vulnerability scanner": "Escáner de vulnerabilidades",
+  "Open in OpenCRQ": "Abrir en OpenCRQ",
+  "Not in OpenCRQ": "No está en OpenCRQ",
+  "Connect OpenCRQ": "Conectar OpenCRQ",
+  "Connect OpenCRQ to pivot to this object and see the risk it drives": "Conecte OpenCRQ para pivotar hacia este objeto y ver el riesgo que genera",
+  "OpenCRQ is not connected": "OpenCRQ no está conectado",
+  "OpenCRQ is not connected: ask an administrator to connect it": "OpenCRQ no está conectado: pida a un administrador que lo conecte",
+  "In OpenCRQ": "En OpenCRQ",
+  "{count, plural, one {# risk scenario} other {# risk scenarios}}": "{count, plural, one {# escenario de riesgo} other {# escenarios de riesgo}}",
+  "Annual loss expectancy": "Pérdida anual esperada",
+  "Loss avoided by fixing": "Pérdida evitada al corregir"
 }

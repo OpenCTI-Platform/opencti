@@ -1,5 +1,6 @@
 import React from 'react';
 import OpenAevCard, { openAevCardAnchorKey } from '../../common/xtm/OpenAevCard';
+import { OpenCrqCard } from '../../common/xtm/OpenCrq';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
@@ -75,7 +76,12 @@ const IntrusionSet: React.FC<IntrusionSetProps> = ({ intrusionSetData }) => {
   const intrusionSet = useFragment<IntrusionSet_intrusionSet$key>(intrusionSetFragment, intrusionSetData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(intrusionSet.entity_type);
   const openAevAnchor = openAevCardAnchorKey(overviewLayoutCustomization);
-  const openAevCard = <OpenAevCard gridRow kind="THREAT" counterpartKey={intrusionSet.standard_id} />;
+  const openAevCard = (
+    <>
+      <OpenAevCard gridRow kind="THREAT" counterpartKey={intrusionSet.standard_id} />
+      <OpenCrqCard gridRow kind="THREAT" counterpartKey={intrusionSet.standard_id} />
+    </>
+  );
   return (
     <>
       <Grid

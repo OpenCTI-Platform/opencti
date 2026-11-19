@@ -6555,5 +6555,15 @@
   "Email security": "E-Mail-Sicherheit",
   "LLM firewall": "LLM-Firewall",
   "AI gateway": "KI-Gateway",
-  "Vulnerability scanner": "Schwachstellenscanner"
+  "Vulnerability scanner": "Schwachstellenscanner",
+  "Open in OpenCRQ": "In OpenCRQ öffnen",
+  "Not in OpenCRQ": "Nicht in OpenCRQ",
+  "Connect OpenCRQ": "OpenCRQ verbinden",
+  "Connect OpenCRQ to pivot to this object and see the risk it drives": "Verbinden Sie OpenCRQ, um zu diesem Objekt zu wechseln und das Risiko zu sehen, das es verursacht",
+  "OpenCRQ is not connected": "OpenCRQ ist nicht verbunden",
+  "OpenCRQ is not connected: ask an administrator to connect it": "OpenCRQ ist nicht verbunden: Bitten Sie einen Administrator, es zu verbinden",
+  "In OpenCRQ": "In OpenCRQ vorhanden",
+  "{count, plural, one {# risk scenario} other {# risk scenarios}}": "{count, plural, one {# Risikoszenario} other {# Risikoszenarien}}",
+  "Annual loss expectancy": "Erwarteter jährlicher Verlust",
+  "Loss avoided by fixing": "Durch Behebung vermiedener Verlust"
 }

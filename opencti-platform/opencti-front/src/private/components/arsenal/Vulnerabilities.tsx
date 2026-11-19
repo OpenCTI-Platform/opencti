@@ -17,6 +17,7 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 import { Box, Stack } from '@mui/material';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import OpenAevRowMark from '../common/xtm/OpenAevRowMark';
+import { OpenCrqRowMark } from '../common/xtm/OpenCrq';
 
 const LOCAL_STORAGE_KEY = 'vulnerabilities';
 
@@ -152,6 +153,7 @@ const Vulnerabilities = () => {
         <Stack direction="row" sx={{ alignItems: 'center', minWidth: 0, maxWidth: '100%' }}>
           <Box sx={{ minWidth: 0 }}>{defaultRender(data.name, !!data.draftVersion)}</Box>
           <OpenAevRowMark kind="VULNERABILITY" counterpartKey={data.name} />
+          <OpenCrqRowMark kind="VULNERABILITY" counterpartKey={data.name} />
         </Stack>
       ),
     },

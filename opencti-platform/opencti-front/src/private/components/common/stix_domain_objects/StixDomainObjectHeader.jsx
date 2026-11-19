@@ -54,6 +54,7 @@ import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObject
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
 import OpenAevPivot from '../xtm/OpenAevPivot';
+import { isOpenCrqKind, OpenCrqPivot } from '../xtm/OpenCrq';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 
 export const stixDomainObjectMutation = graphql`
@@ -525,6 +526,9 @@ const StixDomainObjectHeader = (props) => {
           <>
             {openAevCounterpart && (
               <OpenAevPivot kind={openAevCounterpart.kind} counterpartKey={openAevCounterpart.key} />
+            )}
+            {openAevCounterpart && isOpenCrqKind(openAevCounterpart.kind) && (
+              <OpenCrqPivot kind={openAevCounterpart.kind} counterpartKey={openAevCounterpart.key} />
             )}
             {disableSharing !== true && (
               <StixCoreObjectSharing

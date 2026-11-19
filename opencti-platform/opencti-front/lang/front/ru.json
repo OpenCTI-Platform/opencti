@@ -6555,5 +6555,15 @@
   "Email security": "Защита электронной почты",
   "LLM firewall": "Межсетевой экран LLM",
   "AI gateway": "ИИ-шлюз",
-  "Vulnerability scanner": "Сканер уязвимостей"
+  "Vulnerability scanner": "Сканер уязвимостей",
+  "Open in OpenCRQ": "Открыть в OpenCRQ",
+  "Not in OpenCRQ": "Нет в OpenCRQ",
+  "Connect OpenCRQ": "Подключить OpenCRQ",
+  "Connect OpenCRQ to pivot to this object and see the risk it drives": "Подключите OpenCRQ, чтобы перейти к этому объекту и увидеть связанный с ним риск",
+  "OpenCRQ is not connected": "OpenCRQ не подключен",
+  "OpenCRQ is not connected: ask an administrator to connect it": "OpenCRQ не подключен: попросите администратора подключить его",
+  "In OpenCRQ": "В OpenCRQ",
+  "{count, plural, one {# risk scenario} other {# risk scenarios}}": "{count, plural, one {# сценарий риска} few {# сценария риска} many {# сценариев риска} other {# сценария риска}}",
+  "Annual loss expectancy": "Ожидаемые годовые потери",
+  "Loss avoided by fixing": "Потери, предотвращённые исправлением"
 }

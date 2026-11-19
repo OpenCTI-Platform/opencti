@@ -18,6 +18,7 @@ import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import OpenAevRowMark from '../../common/xtm/OpenAevRowMark';
+import { OpenCrqRowMark } from '../../common/xtm/OpenCrq';
 
 const BodyItem = styled('div')(bodyItemStyle);
 
@@ -80,6 +81,7 @@ export const SystemLine: FunctionComponent<SystemLineProps> = ({
               {data.name}
               {data.draftVersion && (<DraftChip />)}
               <OpenAevRowMark kind="ASSET" counterpartKey={data.name} />
+              <OpenCrqRowMark kind="ASSET" counterpartKey={data.name} />
             </BodyItem>
             <BodyItem
               style={{ width: dataColumns.x_opencti_criticality.width }}

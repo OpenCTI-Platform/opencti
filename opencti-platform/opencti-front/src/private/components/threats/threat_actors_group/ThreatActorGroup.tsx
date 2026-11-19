@@ -1,5 +1,6 @@
 import React from 'react';
 import OpenAevCard, { openAevCardAnchorKey } from '../../common/xtm/OpenAevCard';
+import { OpenCrqCard } from '../../common/xtm/OpenCrq';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import { ThreatActorGroup_ThreatActorGroup$key } from '@components/threats/threat_actors_group/__generated__/ThreatActorGroup_ThreatActorGroup.graphql';
@@ -80,7 +81,12 @@ const ThreatActorGroup: React.FC<ThreatActorGroupProps> = ({ threatActorGroupDat
   );
   const overviewLayoutCustomization = useOverviewLayoutCustomization(threatActorGroup.entity_type);
   const openAevAnchor = openAevCardAnchorKey(overviewLayoutCustomization);
-  const openAevCard = <OpenAevCard gridRow kind="THREAT" counterpartKey={threatActorGroup.standard_id} />;
+  const openAevCard = (
+    <>
+      <OpenAevCard gridRow kind="THREAT" counterpartKey={threatActorGroup.standard_id} />
+      <OpenCrqCard gridRow kind="THREAT" counterpartKey={threatActorGroup.standard_id} />
+    </>
+  );
 
   return (
     <div data-testid="threat-actor-group-details-page">

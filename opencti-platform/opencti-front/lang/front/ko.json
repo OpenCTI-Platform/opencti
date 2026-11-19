@@ -6555,5 +6555,15 @@
   "Email security": "이메일 보안",
   "LLM firewall": "LLM 방화벽",
   "AI gateway": "AI 게이트웨이",
-  "Vulnerability scanner": "취약점 스캐너"
+  "Vulnerability scanner": "취약점 스캐너",
+  "Open in OpenCRQ": "OpenCRQ에서 열기",
+  "Not in OpenCRQ": "OpenCRQ에 없음",
+  "Connect OpenCRQ": "OpenCRQ 연결",
+  "Connect OpenCRQ to pivot to this object and see the risk it drives": "OpenCRQ를 연결하여 이 객체로 이동하고 관련 위험을 확인하세요",
+  "OpenCRQ is not connected": "OpenCRQ가 연결되지 않았습니다",
+  "OpenCRQ is not connected: ask an administrator to connect it": "OpenCRQ가 연결되지 않았습니다. 관리자에게 연결을 요청하세요",
+  "In OpenCRQ": "OpenCRQ 내",
+  "{count, plural, one {# risk scenario} other {# risk scenarios}}": "{count, plural, other {위험 시나리오 #건}}",
+  "Annual loss expectancy": "연간 예상 손실",
+  "Loss avoided by fixing": "수정으로 방지되는 손실"
 }

@@ -30,11 +30,11 @@ const subscribeCompact = (onChange: () => void) => {
 const readCompact = () => typeof window !== 'undefined'
   && typeof window.matchMedia === 'function'
   && window.matchMedia(OPENAEV_PIVOT_COMPACT_QUERY).matches;
-const useCompactPivot = () => useSyncExternalStore(subscribeCompact, readCompact, () => false);
+export const useCompactPivot = () => useSyncExternalStore(subscribeCompact, readCompact, () => false);
 
 // A tooltip on a wrapping span: a disabled button receives no pointer events, so a tooltip anchored
 // on the control itself would never show.
-const withTooltip = (title: string, control: React.ReactElement) => (
+export const withTooltip = (title: string, control: React.ReactElement) => (
   <Tooltip>
     <TooltipTrigger asChild>
       <span style={{ display: 'inline-flex' }}>{control}</span>

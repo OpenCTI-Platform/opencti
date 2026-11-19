@@ -6555,5 +6555,15 @@
   "Email security": "电子邮件安全",
   "LLM firewall": "LLM 防火墙",
   "AI gateway": "AI 网关",
-  "Vulnerability scanner": "漏洞扫描器"
+  "Vulnerability scanner": "漏洞扫描器",
+  "Open in OpenCRQ": "在 OpenCRQ 中打开",
+  "Not in OpenCRQ": "不在 OpenCRQ 中",
+  "Connect OpenCRQ": "连接 OpenCRQ",
+  "Connect OpenCRQ to pivot to this object and see the risk it drives": "连接 OpenCRQ 以跳转到此对象并查看其带来的风险",
+  "OpenCRQ is not connected": "OpenCRQ 未连接",
+  "OpenCRQ is not connected: ask an administrator to connect it": "OpenCRQ 未连接：请联系管理员进行连接",
+  "In OpenCRQ": "在 OpenCRQ 中",
+  "{count, plural, one {# risk scenario} other {# risk scenarios}}": "{count, plural, other {# 个风险场景}}",
+  "Annual loss expectancy": "年度预期损失",
+  "Loss avoided by fixing": "修复可避免的损失"
 }
