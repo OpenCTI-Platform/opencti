@@ -3,12 +3,15 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { graphql, createRefetchContainer } from 'react-relay';
 import { interval } from 'rxjs';
+import { useLocation } from 'react-router';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import Card from '@common/card/Card';
 import FileLine from './FileLine';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
+import { isEmptyField } from '../../../../utils/utils';
+import { getContentTabFilePath } from '../stix_core_objects/StixCoreObjectContentFileUtils';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -20,6 +23,7 @@ const FileExternalReferencesViewerBase = ({
   relay,
   t,
 }) => {
+  const { pathname } = useLocation();
   const { id, externalReferences } = entity;
   const sortByLastModified = R.sortBy(R.prop('lastModified'));
   const allFiles = R.pipe(
@@ -52,6 +56,11 @@ const FileExternalReferencesViewerBase = ({
                 file={file}
                 connectors={connectors && connectors[file.metaData.mimetype]}
                 handleOpenImport={handleOpenImport}
+                openInNewTabAction
+                // The Content tab skips the files linked back to an external reference
+                contentTabLink={isEmptyField(file.metaData?.external_reference_id)
+                  ? getContentTabFilePath(pathname, entity.entity_type, file.id, file.metaData?.mimetype)
+                  : null}
               />
             ))}
           </List>
@@ -108,6 +117,7 @@ const FileExternalReferencesViewer = createRefetchContainer(
                     ...FileLine_file
                     metaData {
                       mimetype
+                      external_reference_id
                     }
                   }
                 }

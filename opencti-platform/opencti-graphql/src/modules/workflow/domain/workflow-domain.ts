@@ -803,23 +803,44 @@ export const getWorkflowMigrationPreview = async (
   return { byScope, publishedByScope };
 };
 
-const getWorkflowMigrateLockKey = (entityType: string): string => `workflow-migrate:${entityType}`;
-
-// Undoes a first-time migration whose publish failed: the type goes back to having no workflow for
-// the scope, so a retry does not need `overwrite`.
-const removeMigratedWorkflow = async (context: AuthContext, user: AuthUser, entityType: string, scope: StatusScope) => {
-  const entitySetting = await getWorkflowConfig(context, user, entityType);
-  const definitionId = resolveScopedDefinitionId(entitySetting, scope);
+// Undoes a migration whose publish failed, so a retry starts from the same state. The caller still
+// holds the status lock. It acts only while the migrated draft is still the current draft: a publish
+// that failed after writing has cleared it and made the workflow live, which must stay as it is.
+// - It overwrote a workflow: that workflow gets back its draft (or none) and version history, so the
+//   hand-authored draft it replaced is not lost.
+// - Otherwise (no workflow, or a link to a missing one): the definition it created is unlinked and
+//   deleted, so a retry does not need `overwrite`.
+const rollbackFailedMigration = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  scope: StatusScope,
+  migratedDraftId: string,
+  previous: WorkflowDefinitionEntity | undefined,
+) => {
+  const executionContext = bypassDraftContext(context);
+  const executionUser = bypassDraftUser(user);
+  const definitionId = resolveScopedDefinitionId(await getWorkflowConfig(context, user, entityType), scope);
   if (!definitionId) return;
-  await deleteWorkflowDefinition(context, user, entityType, scope);
-  await deleteElementById(bypassDraftContext(context), bypassDraftUser(user), definitionId, ENTITY_TYPE_WORKFLOW_DEFINITION);
+  const current = await storeLoadById(executionContext, executionUser, definitionId, ENTITY_TYPE_WORKFLOW_DEFINITION) as WorkflowDefinitionEntity | undefined;
+  if (current?.draft_version?.id !== migratedDraftId) return;
+  if (previous) {
+    await updateAttribute(executionContext, executionUser, previous.id, ENTITY_TYPE_WORKFLOW_DEFINITION, [
+      { key: 'draft_version', value: previous.draft_version ? [previous.draft_version] : [] },
+      { key: 'all_versions', value: previous.all_versions ?? [] },
+      { key: 'name', value: [previous.name] },
+    ]);
+    return;
+  }
+  await unlinkWorkflowDefinitionUnderLock(context, user, entityType, scope);
+  await deleteElementById(executionContext, executionUser, definitionId, ENTITY_TYPE_WORKFLOW_DEFINITION);
 };
 
 /**
  * One-shot migration of an entity type's legacy `Status` set of one scope into a workflow
- * definition: saved as a draft, then published when `publish` is true. Reuses
- * `setWorkflowDefinition` / `publishWorkflowDefinition`, so validation, EE checks and status
- * locking are the same as a hand-authored workflow. GLOBAL migrates the entity type's workflow;
+ * definition: saved as a draft, then published when `publish` is true. Runs the same save and
+ * publish steps as `setWorkflowDefinition` / `publishWorkflowDefinition`, so validation and EE
+ * checks are the same as a hand-authored workflow. GLOBAL migrates the entity type's workflow;
  * REQUEST_ACCESS (Case-Rfi only) migrates its request access statuses into the request access
  * workflow, with the configured approved / declined statuses as outcome states. Existing `Status`
  * records are reused, so no entity changes status.
@@ -830,8 +851,10 @@ const removeMigratedWorkflow = async (context: AuthContext, user: AuthUser, enti
  *   definition the preview flagged with another blocking diagnostic, nor one that fails validation:
  *   all are checked before anything is saved. Publishing also needs the
  *   ENTITIES_WORKFLOW feature, without which the workflow is not applied to entity writes.
- * - Runs under a per-type lock from the existence check to the publish, and removes the workflow it
- *   created when the publish fails, so a retry starts from the same state.
+ * - Holds the entity type's workflow status lock from the existence check to the end of the publish
+ *   and its rollback, so no save, restore, publish or delete runs in between. When the publish fails before
+ *   writing, it removes the workflow it created, or restores the draft and history of the one it
+ *   overwrote, so a retry starts from the same state.
  */
 export const migrateWorkflowFromStatuses = async (
   context: AuthContext,
@@ -845,18 +868,22 @@ export const migrateWorkflowFromStatuses = async (
   if (publish && !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
     throw FunctionalError('Cannot publish a migrated workflow while the ENTITIES_WORKFLOW feature is disabled; migrate without publishing', { entityType });
   }
-  const lock = await lockResources([getWorkflowMigrateLockKey(entityType)]);
-  try {
+  return withWorkflowStatusLock(entityType, async () => {
     const entitySetting = await getWorkflowConfig(context, user, entityType);
     if (!entitySetting) {
       throw FunctionalError('Entity setting not found for type', { entityType });
     }
     const existingDefinitionId = resolveScopedDefinitionId(entitySetting, scope);
+    // Loaded once: it decides whether the migration may replace it, and is the snapshot a failed
+    // publish restores. The lock keeps it current until then.
+    const previousWorkflow = existingDefinitionId
+      ? await storeLoadById(bypassDraftContext(context), bypassDraftUser(user), existingDefinitionId, ENTITY_TYPE_WORKFLOW_DEFINITION) as WorkflowDefinitionEntity | undefined
+      : undefined;
     if (existingDefinitionId) {
       if (!overwrite) {
         throw FunctionalError('Entity type already has a workflow, migration would overwrite it (pass overwrite: true to replace it)', { entityType, scope });
       }
-      if (await getWorkflowPublishedVersionId(context, user, entitySetting, scope)) {
+      if (previousWorkflow?.published_version) {
         throw FunctionalError('Entity type already has a published workflow; migration only replaces a workflow that was never published', { entityType, scope });
       }
     }
@@ -909,13 +936,16 @@ export const migrateWorkflowFromStatuses = async (
       }
     }
 
-    let result = await setWorkflowDefinition(context, user, entityType, definitionContent, scope);
+    const saved = await saveWorkflowDraftUnderLock(context, user, entityType, definitionContent, scope);
+    let { result } = saved;
     if (publish) {
       try {
-        result = await publishWorkflowDefinition(context, user, entityType, scope);
+        result = await publishWorkflowDraftUnderLock(context, user, entityType, scope);
       } catch (error) {
-        if (!existingDefinitionId) {
-          await removeMigratedWorkflow(context, user, entityType, scope);
+        try {
+          await rollbackFailedMigration(context, user, entityType, scope, saved.draftVersionId, previousWorkflow);
+        } catch (rollbackError) {
+          logApp.error('Failed to roll back a workflow migration whose publish failed', { cause: rollbackError, entityType, scope });
         }
         throw error;
       }
@@ -925,22 +955,19 @@ export const migrateWorkflowFromStatuses = async (
       addWorkflowRequestAccessMigrationCount();
     }
     return result;
-  } finally {
-    await lock.unlock();
-  }
+  });
 };
 
-/**
- * Create or update workflow definition for an entity type.
- */
-export const setWorkflowDefinition = async (
+// Saves the definition as the new draft. The caller holds the status lock (see withWorkflowStatusLock).
+// Also returns the id of the draft version it wrote, so a caller can tell whether that draft is still
+// the current one later on.
+const saveWorkflowDraftUnderLock = async (
   context: AuthContext,
   user: AuthUser,
   entityType: string,
   definition: string,
-  scope: StatusScope = StatusScope.Global,
-): Promise<EntitySettingWithWorkflowResponse> => {
-  assertScopeAllowed(entityType, scope);
+  scope: StatusScope,
+): Promise<{ result: EntitySettingWithWorkflowResponse; draftVersionId: string }> => {
   validateSetting(entityType, scope === StatusScope.RequestAccess ? 'request_access_workflow' : 'workflow_id');
 
   const entitySetting = await getWorkflowConfig(context, user, entityType);
@@ -1035,12 +1062,13 @@ export const setWorkflowDefinition = async (
       // Check if draft matches published
       const published = updatedWorkflow.published_version?.id === versionData.id;
 
-      return {
+      const result = {
         ...entitySetting,
         workflow_id: existingDefinitionId,
         errors,
         published,
       } as EntitySettingWithWorkflowResponse;
+      return { result, draftVersionId: versionData.id };
     }
   }
 
@@ -1075,25 +1103,38 @@ export const setWorkflowDefinition = async (
   const published = false;
 
   const elementWithSetting = element as unknown as BasicStoreEntityEntitySetting;
-  return {
+  const result = {
     id: elementWithSetting.id,
     workflow_id: workflowDefinition.id,
     target_type: elementWithSetting.target_type,
     errors,
     published,
   } as EntitySettingWithWorkflowResponse;
+  return { result, draftVersionId: versionData.id };
 };
 
 /**
- * Delete workflow definition for an entity type.
+ * Create or update workflow definition for an entity type.
  */
-export const deleteWorkflowDefinition = async (
+export const setWorkflowDefinition = async (
   context: AuthContext,
   user: AuthUser,
   entityType: string,
+  definition: string,
   scope: StatusScope = StatusScope.Global,
-): Promise<BasicStoreEntityEntitySetting | undefined> => {
+): Promise<EntitySettingWithWorkflowResponse> => {
   assertScopeAllowed(entityType, scope);
+  const { result } = await withWorkflowStatusLock(entityType, () => saveWorkflowDraftUnderLock(context, user, entityType, definition, scope));
+  return result;
+};
+
+// Unlinks the scope's workflow definition from the entity setting. The caller holds the status lock.
+const unlinkWorkflowDefinitionUnderLock = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  scope: StatusScope,
+): Promise<BasicStoreEntityEntitySetting | undefined> => {
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   if (entitySetting && resolveScopedDefinitionId(entitySetting, scope)) {
     const executionContext = bypassDraftContext(context);
@@ -1106,6 +1147,19 @@ export const deleteWorkflowDefinition = async (
     return element as unknown as BasicStoreEntityEntitySetting;
   }
   return entitySetting;
+};
+
+/**
+ * Delete workflow definition for an entity type.
+ */
+export const deleteWorkflowDefinition = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  scope: StatusScope = StatusScope.Global,
+): Promise<BasicStoreEntityEntitySetting | undefined> => {
+  assertScopeAllowed(entityType, scope);
+  return withWorkflowStatusLock(entityType, () => unlinkWorkflowDefinitionUnderLock(context, user, entityType, scope));
 };
 
 /**
@@ -1274,11 +1328,26 @@ export const isStatusOrphaned = async (
 };
 
 /**
- * Lock key shared by `publishWorkflowDefinition` and the workflow status cleanup manager, so
+ * Lock key shared by every workflow definition write and the workflow status cleanup manager, so
  * cleanup cannot hard-delete a `Status` while a republish is concurrently restoring/recreating it
  * for the same entity type (and vice versa).
  */
 export const getWorkflowStatusLockKey = (entityType: string): string => `workflow-status-lifecycle:${entityType}`;
+
+// Serializes every write to an entity type's workflow definitions (save, restore, publish, delete, migration)
+// with the workflow status cleanup manager. A publish reads the draft under this lock, so no save can
+// replace it between that read and the publication. The cleanup manager shares it so it never deletes a
+// Status on a stale check while a publish clears its deletion mark and recreates its mapping: clearing
+// `to_be_deleted_at` does not cancel a deletion already in progress. The lock is not reentrant: code
+// holding it calls the `...UnderLock` variants, never the exported functions.
+const withWorkflowStatusLock = async <T>(entityType: string, fn: () => Promise<T>): Promise<T> => {
+  const lock = await lockResources([getWorkflowStatusLockKey(entityType)]);
+  try {
+    return await fn();
+  } finally {
+    await lock.unlock();
+  }
+};
 
 const findStatusesByTemplateIds = (
   context: AuthContext,
@@ -1405,16 +1474,15 @@ const syncRequestAccessLegacyStatusIds = async (
   ]);
 };
 
-/**
- * Publish the draft workflow definition (copy draft_version to published_version).
- */
-export const publishWorkflowDefinition = async (
+// Publishes the draft (copies draft_version to published_version). The caller holds the status lock
+// (see withWorkflowStatusLock): no save, restore or other publish can change the draft meanwhile, so the
+// draft read here is the one that goes live.
+const publishWorkflowDraftUnderLock = async (
   context: AuthContext,
   user: AuthUser,
   entityType: string,
   scope: StatusScope = StatusScope.Global,
 ): Promise<EntitySettingWithWorkflowResponse> => {
-  assertScopeAllowed(entityType, scope);
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   if (!entitySetting) {
     throw FunctionalError('Entity setting not found for type', { entityType });
@@ -1464,145 +1532,136 @@ export const publishWorkflowDefinition = async (
     });
   }
 
-  // Hold a lock shared with the workflow status cleanup manager through reconciliation, full-status-
-  // mapping and the publication update below. Without it, cleanup could check a Status, a republish
-  // here could clear its deletion mark and recreate its mapping, and cleanup would still delete it
-  // based on its now-stale check — clearing `to_be_deleted_at` does not cancel a deletion in progress.
-  const lock = await lockResources([getWorkflowStatusLockKey(entityType)]);
-  try {
-    if (scope === StatusScope.RequestAccess) {
-      const parseContent = (raw: unknown): WorkflowDefinitionData | undefined => {
-        try {
-          return (typeof raw === 'string' ? JSON.parse(raw) : raw) as WorkflowDefinitionData;
-        } catch (_) {
-          return undefined;
-        }
-      };
-      const newDefinitionData = parseContent(draftVersion.content);
-      const outcomeErrors = !newDefinitionData ? [] : await findRequestAccessOutcomeViolations(
-        executionContext,
-        executionUser,
-        entityType,
-        workflowDefinitionEntity.id,
-        workflowDefinitionEntity.published_version ? parseContent(workflowDefinitionEntity.published_version.content) : undefined,
-        newDefinitionData,
-      );
-      if (outcomeErrors.length > 0) {
-        throw FunctionalError('Cannot publish workflow with validation errors', {
-          entityType,
-          errorCount: outcomeErrors.length,
-          errors: outcomeErrors,
-        });
-      }
-    }
-    // Re-check at publish time: ensure the draft does not remove non-ending states that still have
-    // active workflow instances. The validation_errors on the draft were computed at save time and
-    // may be stale (instances may have moved into those states since the draft was saved).
-    if (workflowDefinitionEntity.published_version) {
-      let oldDef: any;
-      let newDef: any;
+  if (scope === StatusScope.RequestAccess) {
+    const parseContent = (raw: unknown): WorkflowDefinitionData | undefined => {
       try {
-        const rawOld = workflowDefinitionEntity.published_version.content;
-        oldDef = typeof rawOld === 'string' ? JSON.parse(rawOld) : rawOld;
-        const rawNew = draftVersion.content;
-        newDef = typeof rawNew === 'string' ? JSON.parse(rawNew) : rawNew;
+        return (typeof raw === 'string' ? JSON.parse(raw) : raw) as WorkflowDefinitionData;
       } catch (_) {
-        oldDef = null;
-        newDef = null;
+        return undefined;
       }
-
-      if (oldDef && newDef) {
-        // Same rule as validation (shared function): instances in a removed non-ending state block the
-        // removal, ending states and completed instances do not.
-        const { states: blockingStates, instances: blockingInstances } = await findInstancesBlockingStateRemoval(
-          executionContext,
-          executionUser,
-          oldDef,
-          newDef,
-          workflowDefinitionEntity.id,
-        );
-        if (blockingInstances.length > 0) {
-          throw FunctionalError(
-            'Cannot publish workflow: the following statuses are in use and cannot be removed. Move all items out of those statuses first.',
-            { removedStates: blockingStates, entityType: ENTITY_TYPE_STATUS_TEMPLATE },
-          );
-        }
-
-        // Same guard as validation's STATUS_IN_USE, re-checked here under the status lock: entities may
-        // have moved into a removed status between the validation above and this point.
-        const oldStatusIds = extractCanonicalStateIds(oldDef as Parameters<typeof extractCanonicalStateIds>[0]);
-        const newStatusIds = extractCanonicalStateIds(newDef as Parameters<typeof extractCanonicalStateIds>[0]);
-        const removedStatusIds = [...oldStatusIds].filter((sid) => !newStatusIds.has(sid));
-
-        if (removedStatusIds.length > 0) {
-          const removedStatuses = await fullEntitiesList<BasicWorkflowStatus>(executionContext, executionUser, [ENTITY_TYPE_STATUS], {
-            filters: {
-              mode: FilterMode.And,
-              filters: [
-                { key: ['type'], values: [entityType] },
-                { key: ['scope'], values: [scope] },
-                { key: ['template_id'], values: removedStatusIds, operator: FilterOperator.Eq, mode: FilterMode.Or },
-              ],
-              filterGroups: [],
-            },
-          });
-
-          for (const status of removedStatuses) {
-            const referencedByEntity = await isStatusReferencedByEntity(executionContext, executionUser, entityType, status.id);
-            if (referencedByEntity) {
-              throw FunctionalError(
-                'Cannot publish workflow: the following statuses are still assigned to entities and cannot be removed.',
-                { removedStatus: status.template_id, entityType: ENTITY_TYPE_STATUS },
-              );
-            }
-          }
-        }
-
-        // Republish orphan reconciliation: any Status no longer mapped by the new definition is
-        // marked for deferred deletion (grace period) unless still referenced by an entity or by a
-        // request-access workflow config; a Status still pending deletion that is reintroduced by
-        // the new definition has its pending mark cleared (restore wins over a concurrent purge).
-        await reconcileOrphanedStatuses(executionContext, executionUser, entityType, oldDef, newDef, scope);
-      }
-    }
-
-    // Validate consistency BEFORE publishing
-    const allVersions = workflowDefinitionEntity.all_versions || [];
-    const draftInHistory = allVersions.some((version: WorkflowVersion) => version.id === draftVersion.id);
-    if (!draftInHistory) {
-      throw FunctionalError('Consistency error: Cannot publish draft_version that is not in all_versions', {
-        draftVersionId: draftVersion.id,
+    };
+    const newDefinitionData = parseContent(draftVersion.content);
+    const outcomeErrors = !newDefinitionData ? [] : await findRequestAccessOutcomeViolations(
+      executionContext,
+      executionUser,
+      entityType,
+      workflowDefinitionEntity.id,
+      workflowDefinitionEntity.published_version ? parseContent(workflowDefinitionEntity.published_version.content) : undefined,
+      newDefinitionData,
+    );
+    if (outcomeErrors.length > 0) {
+      throw FunctionalError('Cannot publish workflow with validation errors', {
+        entityType,
+        errorCount: outcomeErrors.length,
+        errors: outcomeErrors,
       });
     }
-
-    // Full-mapping invariant: every state in the definition being published must map to a real
-    // Status record, creating any missing ones before the definition is marked published.
-    let publishedDefinitionData: WorkflowDefinitionData | null = null;
-    try {
-      const rawContent = draftVersion.content;
-      publishedDefinitionData = typeof rawContent === 'string' ? JSON.parse(rawContent) : rawContent;
-    } catch (_) {
-      // Malformed content will already have failed validation earlier; nothing to reconcile here.
-    }
-    if (publishedDefinitionData) {
-      await ensureFullStatusMapping(executionContext, executionUser, entityType, publishedDefinitionData, scope);
-      if (scope === StatusScope.RequestAccess) {
-        await syncRequestAccessLegacyStatusIds(executionContext, executionUser, entityType, publishedDefinitionData);
-      }
-    }
-
-    // CONSISTENCY GUARANTEE: published_version will be in all_versions (already there via draft)
-    // Copy draft_version to published_version and clear the draft (no more unpublished changes).
-    const updates: EditInput[] = [
-      // Fresh validation passed above: the errors stored at save time no longer hold
-      { key: 'published_version', value: [{ ...draftVersion, validation_errors: [] }] },
-      { key: 'draft_version', value: [] },
-    ];
-
-    await updateAttribute(executionContext, executionUser, workflowDefinitionEntity.id, ENTITY_TYPE_WORKFLOW_DEFINITION, updates);
-  } finally {
-    await lock.unlock();
   }
+  // Re-check at publish time: ensure the draft does not remove non-ending states that still have
+  // active workflow instances. The validation_errors on the draft were computed at save time and
+  // may be stale (instances may have moved into those states since the draft was saved).
+  if (workflowDefinitionEntity.published_version) {
+    let oldDef: any;
+    let newDef: any;
+    try {
+      const rawOld = workflowDefinitionEntity.published_version.content;
+      oldDef = typeof rawOld === 'string' ? JSON.parse(rawOld) : rawOld;
+      const rawNew = draftVersion.content;
+      newDef = typeof rawNew === 'string' ? JSON.parse(rawNew) : rawNew;
+    } catch (_) {
+      oldDef = null;
+      newDef = null;
+    }
+
+    if (oldDef && newDef) {
+      // Same rule as validation (shared function): instances in a removed non-ending state block the
+      // removal, ending states and completed instances do not.
+      const { states: blockingStates, instances: blockingInstances } = await findInstancesBlockingStateRemoval(
+        executionContext,
+        executionUser,
+        oldDef,
+        newDef,
+        workflowDefinitionEntity.id,
+      );
+      if (blockingInstances.length > 0) {
+        throw FunctionalError(
+          'Cannot publish workflow: the following statuses are in use and cannot be removed. Move all items out of those statuses first.',
+          { removedStates: blockingStates, entityType: ENTITY_TYPE_STATUS_TEMPLATE },
+        );
+      }
+
+      // Same guard as validation's STATUS_IN_USE, re-checked here under the status lock: entities may
+      // have moved into a removed status between the validation above and this point.
+      const oldStatusIds = extractCanonicalStateIds(oldDef as Parameters<typeof extractCanonicalStateIds>[0]);
+      const newStatusIds = extractCanonicalStateIds(newDef as Parameters<typeof extractCanonicalStateIds>[0]);
+      const removedStatusIds = [...oldStatusIds].filter((sid) => !newStatusIds.has(sid));
+
+      if (removedStatusIds.length > 0) {
+        const removedStatuses = await fullEntitiesList<BasicWorkflowStatus>(executionContext, executionUser, [ENTITY_TYPE_STATUS], {
+          filters: {
+            mode: FilterMode.And,
+            filters: [
+              { key: ['type'], values: [entityType] },
+              { key: ['scope'], values: [scope] },
+              { key: ['template_id'], values: removedStatusIds, operator: FilterOperator.Eq, mode: FilterMode.Or },
+            ],
+            filterGroups: [],
+          },
+        });
+
+        for (const status of removedStatuses) {
+          const referencedByEntity = await isStatusReferencedByEntity(executionContext, executionUser, entityType, status.id);
+          if (referencedByEntity) {
+            throw FunctionalError(
+              'Cannot publish workflow: the following statuses are still assigned to entities and cannot be removed.',
+              { removedStatus: status.template_id, entityType: ENTITY_TYPE_STATUS },
+            );
+          }
+        }
+      }
+
+      // Republish orphan reconciliation: any Status no longer mapped by the new definition is
+      // marked for deferred deletion (grace period) unless still referenced by an entity or by a
+      // request-access workflow config; a Status still pending deletion that is reintroduced by
+      // the new definition has its pending mark cleared (restore wins over a concurrent purge).
+      await reconcileOrphanedStatuses(executionContext, executionUser, entityType, oldDef, newDef, scope);
+    }
+  }
+
+  // Validate consistency BEFORE publishing
+  const allVersions = workflowDefinitionEntity.all_versions || [];
+  const draftInHistory = allVersions.some((version: WorkflowVersion) => version.id === draftVersion.id);
+  if (!draftInHistory) {
+    throw FunctionalError('Consistency error: Cannot publish draft_version that is not in all_versions', {
+      draftVersionId: draftVersion.id,
+    });
+  }
+
+  // Full-mapping invariant: every state in the definition being published must map to a real
+  // Status record, creating any missing ones before the definition is marked published.
+  let publishedDefinitionData: WorkflowDefinitionData | null = null;
+  try {
+    const rawContent = draftVersion.content;
+    publishedDefinitionData = typeof rawContent === 'string' ? JSON.parse(rawContent) : rawContent;
+  } catch (_) {
+    // Malformed content will already have failed validation earlier; nothing to reconcile here.
+  }
+  if (publishedDefinitionData) {
+    await ensureFullStatusMapping(executionContext, executionUser, entityType, publishedDefinitionData, scope);
+    if (scope === StatusScope.RequestAccess) {
+      await syncRequestAccessLegacyStatusIds(executionContext, executionUser, entityType, publishedDefinitionData);
+    }
+  }
+
+  // CONSISTENCY GUARANTEE: published_version will be in all_versions (already there via draft)
+  // Copy draft_version to published_version and clear the draft (no more unpublished changes).
+  const updates: EditInput[] = [
+    // Fresh validation passed above: the errors stored at save time no longer hold
+    { key: 'published_version', value: [{ ...draftVersion, validation_errors: [] }] },
+    { key: 'draft_version', value: [] },
+  ];
+
+  await updateAttribute(executionContext, executionUser, workflowDefinitionEntity.id, ENTITY_TYPE_WORKFLOW_DEFINITION, updates);
 
   const updatedWorkflow = await storeLoadById(
     executionContext,
@@ -1629,16 +1688,24 @@ export const publishWorkflowDefinition = async (
 };
 
 /**
- * Restore the workflow draft to match the currently published version.
- * Clears draft_version so getWorkflowDefinition(allowDraft: true) falls back to published_version.
+ * Publish the draft workflow definition (copy draft_version to published_version).
  */
-export const restorePublishedWorkflowDefinition = async (
+export const publishWorkflowDefinition = async (
   context: AuthContext,
   user: AuthUser,
   entityType: string,
   scope: StatusScope = StatusScope.Global,
 ): Promise<EntitySettingWithWorkflowResponse> => {
   assertScopeAllowed(entityType, scope);
+  return withWorkflowStatusLock(entityType, () => publishWorkflowDraftUnderLock(context, user, entityType, scope));
+};
+
+const restorePublishedWorkflowUnderLock = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  scope: StatusScope = StatusScope.Global,
+): Promise<EntitySettingWithWorkflowResponse> => {
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   if (!entitySetting) {
     throw FunctionalError('Entity setting not found for type', { entityType });
@@ -1684,6 +1751,20 @@ export const restorePublishedWorkflowDefinition = async (
     errors: [],
     published: true,
   } as EntitySettingWithWorkflowResponse;
+};
+
+/**
+ * Restore the workflow draft to match the currently published version.
+ * Clears draft_version so getWorkflowDefinition(allowDraft: true) falls back to published_version.
+ */
+export const restorePublishedWorkflowDefinition = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  scope: StatusScope = StatusScope.Global,
+): Promise<EntitySettingWithWorkflowResponse> => {
+  assertScopeAllowed(entityType, scope);
+  return withWorkflowStatusLock(entityType, () => restorePublishedWorkflowUnderLock(context, user, entityType, scope));
 };
 
 /**

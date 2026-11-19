@@ -28,12 +28,17 @@ const PirRadialScore = ({ value }: PirRadialScoreProps) => {
   return (
     <Chart
       options={{
+        chart: {
+          offsetY: -6,
+          sparkline: {
+            enabled: true,
+          },
+        },
         plotOptions: {
           radialBar: {
             startAngle: -100,
             endAngle: 100,
-            offsetX: -17,
-            offsetY: -10,
+            offsetX: -15,
             hollow: {
               size: '35%',
             },
@@ -69,8 +74,8 @@ const PirRadialScore = ({ value }: PirRadialScoreProps) => {
       }}
       series={[value]}
       type="radialBar"
-      width="80px"
-      height="80px"
+      width="72px"
+      height="64px"
     />
   );
 };

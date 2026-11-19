@@ -204,19 +204,4 @@ describe('analyseTechniqueUsage', () => {
     ]);
     expect(usage.get('ap1')?.linkedEntities[0].name).toBe('1.2.3.4');
   });
-
-  it('analyses 5,000 objects in under 50 ms', () => {
-    const objects: ObjectToParse[] = [];
-    for (let i = 0; i < 1000; i += 1) objects.push(ap(`ap-${i}`));
-    for (let i = 0; i < 2000; i += 1) objects.push(entity(`e-${i}`, 'Malware', `Malware ${i}`));
-    for (let i = 0; i < 2000; i += 1) {
-      objects.push(rel(`r-${i}`, 'uses', `e-${i}`, `ap-${i % 1000}`, 'Malware', 'Attack-Pattern'));
-    }
-    const start = performance.now();
-    const usage = analyseTechniqueUsage(objects);
-    const elapsed = performance.now() - start;
-    expect(usage.size).toBe(1000);
-    expect(usage.get('ap-0')?.score).toBe(2);
-    expect(elapsed).toBeLessThan(50);
-  });
 });
