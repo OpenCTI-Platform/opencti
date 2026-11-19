@@ -466,6 +466,65 @@ describe('buildMainStixEntities', () => {
       const entityPassedToComplete = vi.mocked(completeEntity).mock.calls[0][1];
       expect(entityPassedToComplete.name).toBeUndefined();
     });
+
+    it('should ask the import to create the indicator of each observable when autoCreateIndicatorFromObservable is on', async () => {
+      vi.mocked(refangValues).mockReturnValue(['1.1.1.1', '2.2.2.2']);
+      vi.mocked(isStixCyberObservable).mockReturnValue(true);
+
+      const schema = makeSchema({
+        mainEntityMultiple: true,
+        mainEntityFieldMode: 'parsed',
+        mainEntityParseFieldMapping: 'value',
+        autoCreateIndicatorFromObservable: true,
+        fields: [],
+      });
+      const values = { mainEntityParsed: ['1.1.1.1', '2.2.2.2'] };
+
+      const { mainStixEntities } = await buildMainStixEntities(context, user, schema, values, 'IPv4-Addr');
+
+      expect(mainStixEntities).toHaveLength(2);
+      expect(mainStixEntities.every((stixEntity) => stixEntity.x_opencti_create_indicator === true)).toBe(true);
+      expect(mainStixEntities.some((stixEntity) => 'x_opencti_create_observables' in stixEntity)).toBe(false);
+    });
+
+    it('should not ask for indicators when autoCreateIndicatorFromObservable is off', async () => {
+      vi.mocked(refangValues).mockReturnValue(['1.1.1.1']);
+      vi.mocked(isStixCyberObservable).mockReturnValue(true);
+
+      const schema = makeSchema({
+        mainEntityMultiple: true,
+        mainEntityFieldMode: 'parsed',
+        mainEntityParseFieldMapping: 'value',
+        autoCreateIndicatorFromObservable: false,
+        fields: [],
+      });
+      const values = { mainEntityParsed: ['1.1.1.1'] };
+
+      const { mainStixEntities } = await buildMainStixEntities(context, user, schema, values, 'IPv4-Addr');
+
+      expect('x_opencti_create_indicator' in mainStixEntities[0]).toBe(false);
+    });
+
+    it('should ask the import to create the observables of each indicator when autoCreateObservableFromIndicator is on', async () => {
+      vi.mocked(refangValues).mockReturnValue(['evil.com']);
+      vi.mocked(isStixCyberObservable).mockReturnValue(false);
+
+      const schema = makeSchema({
+        mainEntityMultiple: true,
+        mainEntityFieldMode: 'parsed',
+        mainEntityParseFieldMapping: 'pattern',
+        mainEntityAutoConvertToStixPattern: true,
+        autoCreateObservableFromIndicator: true,
+        autoCreateIndicatorFromObservable: true,
+        fields: [],
+      });
+      const values = { mainEntityParsed: ['evil.com'] };
+
+      const { mainStixEntities } = await buildMainStixEntities(context, user, schema, values, 'Indicator');
+
+      expect(mainStixEntities[0].x_opencti_create_observables).toBe(true);
+      expect('x_opencti_create_indicator' in mainStixEntities[0]).toBe(false);
+    });
   });
 
   describe('simple entity (no lookup, no multiple)', () => {
