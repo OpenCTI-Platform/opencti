@@ -1,9 +1,10 @@
 import { useReactFlow, type Edge, type Node } from 'reactflow';
 import { useState } from 'react';
 import { graphql } from 'react-relay';
-import { commitMutation } from '../../../../../relay/environment';
+import { commitMutation, fetchQuery } from '../../../../../relay/environment';
 import type { PlaybookHistoryControls } from './usePlaybookHistory';
 import { placeholderEdgeIdOf, placeholderIdOf } from '../utils/playbook';
+import { insertedLinkIds, linkIdFromDefinition } from '../utils/playbookLinkIds';
 import type {
   PlaybookAction,
   PlaybookComponent,
@@ -60,6 +61,16 @@ export const useManipulateComponentsInsertNodeMutation = graphql`
     ) {
       nodeId
       linkId
+    }
+  }
+`;
+
+// The stored definition, read after playbookAddNode to get the id the server gave the new link.
+export const useManipulateComponentsPlaybookDefinitionQuery = graphql`
+  query useManipulateComponentsPlaybookDefinitionQuery($id: String!) {
+    playbook(id: $id) {
+      id
+      playbook_definition
     }
   }
 `;
@@ -253,10 +264,12 @@ const useManipulateComponents = (playbook: { id: string }, history?: HistoryReco
       type: 'workflow',
       data: stepData(component, name, configuration, description),
     });
-    // Connect the parent node to the new node using the existing link
+    // The ids as playbookInsertNode stores them: the link parent -> new step is a new one (result.linkId),
+    // the former link keeps its id and now leaves the new step.
+    const ids = insertedLinkIds(edge.id, result);
     newEdges = newEdges.map((e) => {
       if (e.source === edge.source && e.sourceHandle === edge.sourceHandle && e.target === targetNode.id) {
-        return { ...e, type: 'workflow', target: result.nodeId, data: { openConfig: openEdge } };
+        return { ...e, id: ids.toNewStep ?? e.id, type: 'workflow', target: result.nodeId, data: { openConfig: openEdge } };
       }
       return e;
     });
@@ -272,7 +285,7 @@ const useManipulateComponents = (playbook: { id: string }, history?: HistoryReco
     } else {
       // Otherwise its first port leads to the step that was below the link.
       newEdges.push({
-        id: result.linkId ?? `${result.nodeId}-${firstPort.id}-${edge.target}`,
+        id: ids.fromNewStep,
         type: 'workflow',
         source: result.nodeId,
         sourceHandle: firstPort.id,
@@ -395,6 +408,17 @@ const useManipulateComponents = (playbook: { id: string }, history?: HistoryReco
   });
 
   // region backend graph
+  // playbookAddNode answers the step id only: the id of the link to its parent is read from the
+  // stored definition, so a rewiring of that link right after (no reload) names the stored link.
+  const storedLinkId = async (parentNodeId: string, parentPortId: string, nodeId: string): Promise<string | undefined> => {
+    try {
+      const response = await fetchQuery(useManipulateComponentsPlaybookDefinitionQuery, { id: playbook.id }, { fetchPolicy: 'network-only' })
+        .toPromise() as { playbook?: { playbook_definition?: string | null } | null } | undefined;
+      return linkIdFromDefinition(response?.playbook?.playbook_definition, parentNodeId, parentPortId, nodeId);
+    } catch {
+      return undefined;
+    }
+  };
   const addNodeFromPlaceholder = (node: PlaybookNode, component: PlaybookComponent, name: string, config: PlaybookConfig | null, description?: string) => {
     const jsonConfig = config ? JSON.stringify(config) : null;
     const position = { x: node.position.x, y: node.position.y };
@@ -422,15 +446,14 @@ const useManipulateComponents = (playbook: { id: string }, history?: HistoryReco
             ...(parent ?? {}),
           }, before, { nodeId });
         }
-        applyAddNodeFromPlaceholder(
-          node,
-          { nodeId, linkId: parent ? `${parent.parentNodeId}-${parent.parentPortId}-${nodeId}` : undefined },
-          component,
-          name,
-          config,
-          description,
-        );
         closeSelection();
+        if (!parent) {
+          applyAddNodeFromPlaceholder(node, { nodeId }, component, name, config, description);
+          return;
+        }
+        storedLinkId(parent.parentNodeId, parent.parentPortId, nodeId).then((linkId) => {
+          applyAddNodeFromPlaceholder(node, { nodeId, linkId }, component, name, config, description);
+        });
       },
     });
   };
@@ -472,16 +495,10 @@ const useManipulateComponents = (playbook: { id: string }, history?: HistoryReco
             parentPortId,
           }, before, { nodeId });
         }
-        applyAddNode(
-          node,
-          { nodeId, linkId: `${parentNode.id}-${parentPortId}-${nodeId}` },
-          component,
-          name,
-          config,
-          originEdge,
-          description,
-        );
         closeSelection();
+        storedLinkId(parentNode.id, parentPortId, nodeId).then((linkId) => {
+          applyAddNode(node, { nodeId, linkId }, component, name, config, originEdge, description);
+        });
       },
     });
   };
