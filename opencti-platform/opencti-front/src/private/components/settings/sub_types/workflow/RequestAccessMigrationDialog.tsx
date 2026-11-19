@@ -8,6 +8,7 @@ import { ErrorBoundary } from '../../../Error';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import RequestAccessOutcomeRepair from './RequestAccessOutcomeRepair';
 import { REQUEST_ACCESS_ENTITY_TYPE } from './utils';
 import { RequestAccessMigrationDialogPreviewQuery } from './__generated__/RequestAccessMigrationDialogPreviewQuery.graphql';
 import { RequestAccessMigrationDialogMutation } from './__generated__/RequestAccessMigrationDialogMutation.graphql';
@@ -73,10 +74,12 @@ const MigrationPreview = ({ onClose, onMigrated }: MigrationPreviewProps) => {
   const { t_i18n } = useFormatter();
   const [publish, setPublish] = useState(true);
   const [replaceDraftConfirmed, setReplaceDraftConfirmed] = useState(false);
+  // Bumped after the outcome statuses are repaired, so the preview is read again.
+  const [fetchKey, setFetchKey] = useState(0);
   const { workflowMigrationPreview, statusTemplates } = useLazyLoadQuery<RequestAccessMigrationDialogPreviewQuery>(
     requestAccessMigrationPreviewQuery,
     { entityType: REQUEST_ACCESS_ENTITY_TYPE },
-    { fetchPolicy: 'network-only' },
+    { fetchPolicy: 'network-only', fetchKey },
   );
   const [commitMigration, migrating] = useApiMutation<RequestAccessMigrationDialogMutation>(requestAccessMigrationMutation);
 
@@ -155,6 +158,9 @@ const MigrationPreview = ({ onClose, onMigrated }: MigrationPreviewProps) => {
           style={{ marginBottom: 8 }}
         />
       ))}
+      {diagnostics.some((diagnostic) => diagnostic.type === 'REQUEST_ACCESS_OUTCOME_INVALID') && (
+        <RequestAccessOutcomeRepair onRepaired={() => setFetchKey((key) => key + 1)} />
+      )}
       <Text variant="title-sm" as="h3" style={{ marginTop: 16 }}>{t_i18n('States')}</Text>
       <ul data-testid="request-access-migration-states" style={{ listStyle: 'none', padding: 0, margin: '8px 0' }}>
         {states.map((state) => (
