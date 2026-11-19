@@ -1,12 +1,20 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { Field, Form, Formik } from 'formik';
 import * as React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import RichTextField from './RichTextField';
 import testRender from '../../utils/tests/test-render';
 
-vi.mock('../../utils/hooks/useAI', () => ({ default: () => ({ enabled: false, configured: false }) }));
+const ai = vi.hoisted(() => ({ enabled: false, configured: false }));
+vi.mock('../../utils/hooks/useAI', () => ({ default: () => ai }));
+
+// Ask AI runs Relay mutations; this stands in for it and returns a fixed answer.
+vi.mock('@components/common/form/TextFieldAskAI', () => ({
+  default: ({ setFieldValue }: { setFieldValue: (value: string) => void }) => (
+    <button type="button" onClick={() => setFieldValue('<p>From AI</p>')}>Ask AI</button>
+  ),
+}));
 
 const renderField = (props: Record<string, unknown> = {}, content = '<p>Hello</p>') => testRender(
   <Formik initialValues={{ content }} onSubmit={() => {}}>
@@ -82,5 +90,45 @@ describe('RichTextField', () => {
   it('disables the field otherwise', async () => {
     renderField({ disabled: true });
     expect(await editingArea()).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('reports focus, and submits the value on blur (edit forms save on blur)', async () => {
+    const onFocus = vi.fn();
+    const onSubmit = vi.fn();
+    renderField({ onFocus, onSubmit });
+    const area = await editingArea();
+    // Events rather than area.focus(): a real focus makes ProseMirror scroll to
+    // the selection, which jsdom cannot measure (no Range.getClientRects).
+    fireEvent.focus(area);
+    fireEvent.focusIn(area);
+    await waitFor(() => expect(onFocus).toHaveBeenCalledWith('content'));
+    fireEvent.blur(area);
+    fireEvent.focusOut(area);
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith('content', '<p>Hello</p>'));
+  });
+
+  describe('Ask AI', () => {
+    afterEach(() => {
+      ai.enabled = false;
+      ai.configured = false;
+    });
+
+    it('is hidden while AI is not configured', async () => {
+      ai.enabled = true;
+      renderField({ askAi: true });
+      await editingArea();
+      expect(screen.queryByRole('button', { name: 'Ask AI' })).not.toBeInTheDocument();
+    });
+
+    it('writes the answer to the field and submits it', async () => {
+      ai.enabled = true;
+      ai.configured = true;
+      const onSubmit = vi.fn();
+      const { user } = renderField({ askAi: true, onSubmit });
+      await editingArea();
+      await user.click(screen.getByRole('button', { name: 'Ask AI' }));
+      expect(onSubmit).toHaveBeenCalledWith('content', '<p>From AI</p>');
+      await waitFor(async () => expect(await editingArea()).toHaveTextContent('From AI'));
+    });
   });
 });
