@@ -21636,10 +21636,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"seroval@npm:1.6.11":
-  version: 1.6.11
-  resolution: "seroval@npm:1.6.11"
-  checksum: 10c0/343af2590cf6d9a6da392967325d2930481c5e970b3c33f69db3f7e7d0544b835a46ce922c640e35ad4a75e5b90d8068ee9880d64439840a36c2e64591963c28
+"seroval@npm:1.8.1":
+  version: 1.8.1
+  resolution: "seroval@npm:1.8.1"
+  checksum: 10c0/1be1ab89bc22ca60f5c2eee32c354ec7d31bf3da8bf9289cb4a7d47c407677f151d6d780659deed70dcdbf00241382e1eb42f0c4c342fd6e1fad6250a7a1e647
   languageName: node
   linkType: hard
 
