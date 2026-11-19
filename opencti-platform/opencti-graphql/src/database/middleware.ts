@@ -3737,7 +3737,9 @@ const replaceSingleRelationRef = async (
   const participantIds = [from.internal_id].filter((id) => !locks.includes(id));
   let lock;
   try {
-    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    // task 0040 multi_writer: under an applying batch, a key the batch holds is a no-op and another one is refused at
+    // once; without it the source, locked up front by the batch after a first refusal, waited for itself every batch
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user), sequencer: sequencerLockArgs(context) });
     // A concurrent replacement may have set the same target while this one was waiting for the lock
     const source = await storeLoadByIdWithRefs(context, user, from.internal_id) as Record<string, any>;
     if (source?.[key]?.internal_id === to.internal_id) {
