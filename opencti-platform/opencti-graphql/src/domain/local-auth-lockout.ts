@@ -186,6 +186,8 @@ export const loadLocalAuthLockout = async (email: string, userId?: string) => {
     recordAttempt: async () => {
       const attemptToken = uuid();
       const { allowed, remainingMs, lockType, isFinal, windowId } = await redisRecordLocalAuthAttempt(emailHash, timings, attemptToken);
+      // remainingMs runs from now: the email of a lock, sent later, gives the end of the lock from this date
+      const lockDate = new Date();
       if (!allowed) {
         throw LocalAuthLocked(lockType, remainingMs);
       }
@@ -198,7 +200,7 @@ export const loadLocalAuthLockout = async (email: string, userId?: string) => {
           await publishLocalAuthLock(email, user, timings, origin);
           // An unknown email has no account to unlock: no email, so that it reveals nothing either
           if (user) {
-            notifyLocalAuthLock(user, { lockType, maxAttempts: timings.maxAttempts, remainingMs });
+            notifyLocalAuthLock(user, { lockType, maxAttempts: timings.maxAttempts, date: lockDate, remainingMs });
           }
           return LocalAuthLocked(lockType, remainingMs);
         },

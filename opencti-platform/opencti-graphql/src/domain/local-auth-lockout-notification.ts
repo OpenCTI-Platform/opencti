@@ -77,14 +77,15 @@ export const loadLocalAuthLockEmailTemplate = async (context: AuthContext): Prom
   return LOCKED_USER_EMAIL_TEMPLATE_INPUT;
 };
 
-// The lock set by the attempt that reached the max attempts: its final action, and the time it lasts (the lockout duration)
-export type LocalAuthLock = { lockType: LocalAuthLockType; maxAttempts: number; remainingMs: number };
+// The lock set by the attempt that reached the max attempts: its final action, when it was set, and the time it lasts
+// from then (the lockout duration). Its date is the one of the lock, not of the email: the email is sent later, in the background
+export type LocalAuthLock = { lockType: LocalAuthLockType; maxAttempts: number; date: Date; remainingMs: number };
 type LockedAccount = Pick<BasicStoreEntityUser, 'name' | 'user_email'> & Partial<Pick<BasicStoreEntityUser, 'firstname' | 'lastname'>>;
 
 // The data of the $locked_user and $lock variables. Only the attempt that reaches the max attempts locks the account,
 // so the attempts are the max attempts. A temporary lock ends after the lockout duration, a permanent lock has no end:
 // an administrator must unlock the account
-export const buildLocalAuthLockEmailData = (lockedUser: LockedAccount, { lockType, maxAttempts, remainingMs }: LocalAuthLock, date = new Date()): LockedUserEmailData => {
+export const buildLocalAuthLockEmailData = (lockedUser: LockedAccount, { lockType, maxAttempts, date, remainingMs }: LocalAuthLock): LockedUserEmailData => {
   const { name, firstname, lastname, user_email } = lockedUser;
   const lock: LockedUserLock = lockType === 'temporary'
     ? { date, attempts: maxAttempts, type: 'temporary', endDate: new Date(date.getTime() + remainingMs) }
@@ -103,12 +104,13 @@ export const buildSampleLocalAuthLockEmailData = (settings: LockoutPolicySetting
   const maxAttempts = settings.local_auth_lockout_max_attempts ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_max_attempts;
   const durationMinutes = settings.local_auth_lockout_duration ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_duration;
   const lockType = finalAction === LocalAuthLockoutFinalAction.Permanent ? 'permanent' : 'temporary';
-  return buildLocalAuthLockEmailData(SAMPLE_LOCKED_USER, { lockType, maxAttempts, remainingMs: durationMinutes * 60 * 1000 }, date);
+  return buildLocalAuthLockEmailData(SAMPLE_LOCKED_USER, { lockType, maxAttempts, date, remainingMs: durationMinutes * 60 * 1000 });
 };
 
 // One email per administrator, rendered for its recipient, never with an API token. Sent one after the other,
 // as each send opens its own SMTP connection.
-// A recipient whose email fails never stops the others: each failure is logged, with the id of the recipient but not its email
+// A recipient whose email fails never stops the others. The failures are logged once, after the last send, as a warning:
+// the SMTP server is an external dependency, and a down server must not log one error per administrator
 export const sendLocalAuthLockEmails = async (context: AuthContext, lockedUser: AuthUser, lock: LocalAuthLock) => {
   const recipients = await loadLocalAuthLockRecipients(context, lockedUser);
   if (recipients.length === 0) {
@@ -118,17 +120,24 @@ export const sendLocalAuthLockEmails = async (context: AuthContext, lockedUser: 
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const template = await loadLocalAuthLockEmailTemplate(context);
   const lockedUserData = buildLocalAuthLockEmailData(lockedUser, lock);
+  let errorsCount = 0;
+  let firstError: unknown;
   for (const recipient of recipients) {
     try {
       // The user cache resolves the organizations of each user, with their name
       const organizations = recipient.organizations as BasicStoreEntityOrganization[];
       await sendEmailTemplateToRecipient(template, { ...recipient, organizations }, { platformUrl: settings.platform_url, category: 'local-auth-lock', lockedUserData });
     } catch (error) {
-      logApp.error('Local authentication lockout: the email of a lock cannot be sent to an administrator', {
-        cause: error,
-        recipient_id: recipient.id,
-        locked_user_id: lockedUser.id,
-      });
+      errorsCount += 1;
+      firstError ??= error;
     }
+  }
+  if (errorsCount > 0) {
+    logApp.warn('Local authentication lockout: the email of a lock cannot be sent to some administrators', {
+      cause: firstError,
+      locked_user_id: lockedUser.id,
+      errors_count: errorsCount,
+      total_count: recipients.length,
+    });
   }
 };
