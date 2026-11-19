@@ -33,7 +33,7 @@ test('Testing content customization for Report', { tag: ['@ce'] }, async ({ page
     await page.getByRole('tab', { name: 'Attributes' }).click();
     await page.getByRole('button', { name: 'Content' }).click();
     // Update the default value for content
-    await page.getByLabel('Editing area: main').fill('Content from customization');
+    await page.getByRole('textbox', { name: 'Default value', exact: true }).fill('Content from customization');
     await page.getByRole('button', { name: 'Update' }).click();
 
     // Go back to the Report page
