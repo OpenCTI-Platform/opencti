@@ -3,10 +3,10 @@
 <p align="center">
   <a href="https://github.com/OpenCTI-Platform/opencti/stargazers"><img src="https://img.shields.io/github/stars/OpenCTI-Platform/opencti?style=flat-square&labelColor=0A0C1C&logo=github&logoColor=white&color=001BDA" alt="stars"></a>
   <a href="https://github.com/OpenCTI-Platform/opencti/releases/latest"><img src="https://img.shields.io/github/v/release/OpenCTI-Platform/opencti?style=flat-square&labelColor=0A0C1C&color=001BDA" alt="release"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0%20%2B%20EE-0FBCFF?style=flat-square&labelColor=0A0C1C" alt="license"></a>
-  <a href="https://docs.opencti.io"><img src="https://img.shields.io/badge/docs-docs.opencti.io-0FBCFF?style=flat-square&labelColor=0A0C1C" alt="docs"></a>
-  <a href="https://hub.docker.com/r/opencti/platform"><img src="https://img.shields.io/docker/pulls/opencti/platform?style=flat-square&labelColor=0A0C1C&logo=docker&logoColor=white&color=00F1BD" alt="docker pulls"></a>
-  <a href="https://community.filigran.io"><img src="https://img.shields.io/badge/slack-community-00F1BD?style=flat-square&labelColor=0A0C1C&logo=slack&logoColor=white" alt="slack"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0%20%2B%20EE-001BDA?style=flat-square&labelColor=0A0C1C" alt="license"></a>
+  <a href="https://docs.opencti.io"><img src="https://img.shields.io/badge/docs-docs.opencti.io-001BDA?style=flat-square&labelColor=0A0C1C" alt="docs"></a>
+  <a href="https://hub.docker.com/r/opencti/platform"><img src="https://img.shields.io/docker/pulls/opencti/platform?style=flat-square&labelColor=0A0C1C&logo=docker&logoColor=white&color=001BDA" alt="docker pulls"></a>
+  <a href="https://community.filigran.io"><img src="https://img.shields.io/badge/slack-community-001BDA?style=flat-square&labelColor=0A0C1C&logo=slack&logoColor=white" alt="slack"></a>
 </p>
 
 <p align="center"><b>The open source threat intelligence platform at the heart of Continuous Threat Exposure Management.</b></p>
@@ -226,8 +226,8 @@ OpenCTI is open source under the [Apache 2.0 license](LICENSE); the Enterprise E
 
 OpenCTI is designed and developed by [Filigran](https://filigran.io), the company behind the [XTM Platform](https://filigran.io) for Agentic CTEM.
 
-<a href="https://filigran.io"><picture>
+<picture>
   <source media="(prefers-color-scheme: dark)" srcset="./.github/img/readme/filigran-dark.svg">
   <source media="(prefers-color-scheme: light)" srcset="./.github/img/readme/filigran-light.svg">
   <img alt="Filigran" src="./.github/img/readme/filigran-light.svg" width="240">
-</picture></a>
+</picture>
