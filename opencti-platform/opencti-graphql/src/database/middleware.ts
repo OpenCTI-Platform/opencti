@@ -187,7 +187,7 @@ import {
   resolveAliasesField,
   STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
 import conf, { BUS_TOPICS, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
@@ -2151,6 +2151,11 @@ export const filterTargetByExisting = async (
   return { deletions: markingTargetDeletions, redirects: filtered };
 };
 
+// Meta objects that can be merged besides the STIX core objects.
+// A kill chain phase is only referenced through its kill-chain-phase refs, which the merge redirects to the target;
+// the standard id of a source lands in the x_opencti_stix_ids of the target, so a later import of a source resolves to it.
+const MERGEABLE_META_OBJECT_TYPES = [ENTITY_TYPE_VOCABULARY, ENTITY_TYPE_KILL_CHAIN_PHASE];
+
 const mergeEntitiesRaw = async (
   context: AuthContext,
   user: AuthUser,
@@ -2188,7 +2193,7 @@ const mergeEntitiesRaw = async (
     throw FunctionalError('Cannot merge entities of different types', { dest: targetType, source: sourceTypes });
   }
   // Check supported entities
-  if (!isStixCoreObject(targetEntity.entity_type) && targetEntity.entity_type !== ENTITY_TYPE_VOCABULARY) {
+  if (!isStixCoreObject(targetEntity.entity_type) && !MERGEABLE_META_OBJECT_TYPES.includes(targetEntity.entity_type)) {
     throw FunctionalError('Unsupported entity type for merging', { type: targetType });
   }
   // For vocabularies, extra elastic query is required
