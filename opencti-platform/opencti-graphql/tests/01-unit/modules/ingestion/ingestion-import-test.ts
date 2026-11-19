@@ -51,6 +51,7 @@ import {
   feedAdapterOf,
   importConfigPresetFeed,
   SSL_VERIFY_DISABLED_REASON,
+  URI_PARAMETERS_LEFT_EMPTY_REASON,
 } from '../../../../src/modules/ingestion/ingestion-import';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
@@ -143,7 +144,7 @@ const pagedJsonConfiguration = (overrides: Record<string, unknown> = {}) => json
 
 const MAPPER_AUTHOR_ID = 'identity--11111111-1111-4111-8111-111111111111';
 const MAPPER_MARKING_ID = 'marking-definition--22222222-2222-4222-8222-222222222222';
-const csvConfiguration = () => ({
+const csvConfiguration = (overrides: Record<string, unknown> = {}) => ({
   name: 'Vendor CSV',
   uri: 'https://csv.example.com/indicators.csv',
   authentication_type: 'none',
@@ -161,6 +162,7 @@ const csvConfiguration = () => ({
       ],
     }],
   },
+  ...overrides,
 });
 
 const rss = feedAdapterOf('rss');
@@ -410,7 +412,64 @@ describe('importConfigPresetFeed URI secrets', () => {
     vi.mocked(findAllRssIngestion).mockResolvedValue([storedRss({ uri: 'https://news.example.com/rss?token=stored&lang=en' })] as never);
     expect(await importConfigPresetFeed(context, user, rss, configuration, overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
     const copy = await importConfigPresetFeed(context, user, rss, configuration, { ...overwrite, dryRun: true, mode: ConfigImportMode.Copy });
-    expect(copy.credentials).toContainEqual(expect.objectContaining({ key: 'uri:query:token', required: true, stored: true }));
+    expect(copy.credentials).toContainEqual(expect.objectContaining({ key: 'uri:query:token', required: false, stored: true }));
+    expect(copy).toMatchObject({ status: 'created', reason: expect.stringContaining(`${URI_PARAMETERS_LEFT_EMPTY_REASON}: token`) });
+  });
+
+  const uriFeedTypes = [
+    { type: 'RSS', adapter: rss, configuration: (uri: string) => rssConfiguration({ uri }), stored: (uri: string) => storedRss({ uri }), list: findAllRssIngestion },
+    { type: 'CSV', adapter: csv, configuration: (uri: string) => csvConfiguration({ uri }), stored: (uri: string) => ({ ...storedRss({ uri }), name: 'Vendor CSV' }), list: findAllCsvIngestion },
+    {
+      type: 'JSON',
+      adapter: json,
+      configuration: (uri: string) => jsonConfiguration({ uri, headers: [] }),
+      stored: (uri: string) => ({ ...storedJson({ uri }), query_attributes: [] }),
+      list: findAllJsonIngestion,
+    },
+    {
+      type: 'TAXII',
+      adapter: taxii,
+      configuration: (uri: string) => taxiiConfiguration({ uri, authentication_type: 'none' }),
+      stored: (uri: string) => storedTaxii({ uri, authentication_type: 'none' }),
+      list: findAllTaxiiIngestion,
+    },
+  ];
+  const uriHosts: Record<string, string> = { RSS: 'news.example.com/rss', CSV: 'csv.example.com/indicators.csv', JSON: 'api.example.com/indicators', TAXII: 'taxii.example.com' };
+  const allowMapperDefaults = () => vi.mocked(internalFindByIds).mockImplementation(async (_context, _user, ids) => {
+    return Object.fromEntries((ids as string[]).map((id) => [id, { id }])) as never;
+  });
+
+  describe.each(uriFeedTypes)('$type feed', ({ type, adapter, configuration, stored, list }) => {
+    const host = uriHosts[type];
+    beforeEach(() => {
+      allowMapperDefaults();
+    });
+
+    it('requires the blanked password of a new feed, and of a copy even when the feed of the same name holds one', async () => {
+      const created = await importConfigPresetFeed(context, user, adapter, configuration(`https://reader:@${host}`), { ...overwrite, dryRun: true });
+      expect(created).toMatchObject({ status: 'failed', code: 'credentials_required', reason: expect.stringContaining('uri:password') });
+      expect(created.credentials).toContainEqual(expect.objectContaining({ key: 'uri:password', required: true, stored: false }));
+      vi.mocked(list).mockResolvedValue([stored(`https://reader:pass123@${host}`)] as never);
+      const copied = await importConfigPresetFeed(context, user, adapter, configuration(`https://reader:@${host}`), { ...copy, dryRun: true });
+      expect(copied).toMatchObject({ status: 'failed', code: 'credentials_required' });
+      const given = await importConfigPresetFeed(context, user, adapter, configuration(`https://reader:@${host}`), { ...copy, dryRun: true, credentials: { 'uri:password': 'pw' } });
+      expect(given.status).toBe('created');
+    });
+
+    it('offers a blanked parameter without blocking, and tells it is left empty, on a new feed and on a copy', async () => {
+      const created = await importConfigPresetFeed(context, user, adapter, configuration(`https://${host}?token=`), { ...overwrite, dryRun: true });
+      expect(created).toMatchObject({ status: 'created', reason: expect.stringContaining(`${URI_PARAMETERS_LEFT_EMPTY_REASON}: token`) });
+      expect(created.credentials).toContainEqual(expect.objectContaining({ key: 'uri:query:token', required: false, stored: false }));
+      vi.mocked(list).mockResolvedValue([stored(`https://${host}?token=ABC123`)] as never);
+      const copied = await importConfigPresetFeed(context, user, adapter, configuration(`https://${host}?token=`), { ...copy, dryRun: true });
+      expect(copied).toMatchObject({ status: 'created', reason: expect.stringContaining(`${URI_PARAMETERS_LEFT_EMPTY_REASON}: token`) });
+    });
+
+    it.each([`https://TOKEN123@${host}`, `https://${host}?next_token=`])('imports %s without asking anything', async (uri) => {
+      const created = await importConfigPresetFeed(context, user, adapter, configuration(uri), { ...overwrite, dryRun: true });
+      expect(created.status).toBe('created');
+      expect((created.credentials ?? []).filter(({ required }) => required)).toEqual([]);
+    });
   });
 
   it.each([
@@ -427,6 +486,18 @@ describe('importConfigPresetFeed URI secrets', () => {
     vi.mocked(findAllRssIngestion).mockResolvedValue([storedRss({ uri: 'https://$h:pw@news.example.com/rss' })] as never);
     const result = await importConfigPresetFeed(context, user, rss, rssConfiguration({ uri, description: 'Changed' }), { ...overwrite, dryRun: true });
     expect(result.credentials).toContainEqual(expect.objectContaining({ key: 'uri:password', stored: false }));
+  });
+});
+
+describe('importConfigPresetFeed query attribute defaults', () => {
+  it('finds a JSON feed whose default the platform stored as a boolean up to date when only the mapper differs', async () => {
+    const attribute = { type: 'data', from: '$.sort', to: 'sort_order', data_operation: 'data', state_operation: 'replace', exposed: 'query_param' };
+    vi.mocked(fullEntitiesList).mockResolvedValue([vendorMapper('[{"id":"other"}]')] as never);
+    vi.mocked(findJsonMapperById).mockResolvedValue(vendorMapper('[{"id":"other"}]') as never);
+    vi.mocked(findAllJsonIngestion).mockResolvedValue([storedJson({ headers: [], query_attributes: [{ ...attribute, default: false }] })] as never);
+    const result = await importConfigPresetFeed(context, user, json, jsonConfiguration({ headers: [], query_attributes: [{ ...attribute, default: 'false' }] }), overwrite);
+    expect(result).toMatchObject({ status: 'skipped', code: 'unchanged' });
+    expect(ingestionJsonEditField).not.toHaveBeenCalled();
   });
 });
 

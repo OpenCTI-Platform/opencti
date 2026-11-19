@@ -6123,6 +6123,7 @@
   "Uploading...": "Uploading...",
   "Uptime": "Uptime",
   "URI key": "URI key",
+  "URI parameters left empty: {parameters}": "URI parameters left empty: {parameters}",
   "URL": "URL",
   "Usage": "Usage",
   "Usage · {period}": "Usage · {period}",

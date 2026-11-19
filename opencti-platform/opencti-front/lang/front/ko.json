@@ -6123,6 +6123,7 @@
   "Uploading...": "업로드 중...",
   "Uptime": "가동 시간",
   "URI key": "URI 키",
+  "URI parameters left empty: {parameters}": "비워 둔 URI 매개변수: {parameters}",
   "URL": "URL",
   "Usage": "사용",
   "Usage · {period}": "사용량 · {period}",

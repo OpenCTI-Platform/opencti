@@ -99,6 +99,7 @@ describe('ConfigPresetResultLine', () => {
     ['Feed name already exists', 'Feed name already exists'],
     ['Several feeds have this name: import it as a copy', 'Several feeds have this name: import it as a copy'],
     ['Author not found: Filigran', 'Author not found: Filigran'],
+    ['URI parameters left empty: token, next_token', 'URI parameters left empty: token, next_token'],
     ['JSON mapper created: Vendor mapper', 'JSON mapper created: Vendor mapper'],
     ['Mapper default values not found: createdBy', 'Mapper default values not found: createdBy'],
   ])('translates the reason %s', (reason, text) => {

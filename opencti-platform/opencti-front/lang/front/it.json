@@ -6123,6 +6123,7 @@
   "Uploading...": "Caricamento in corso...",
   "Uptime": "Tempo di attività",
   "URI key": "Chiave URI",
+  "URI parameters left empty: {parameters}": "Parametri dell'URI lasciati vuoti: {parameters}",
   "URL": "URL",
   "Usage": "Utilizzo",
   "Usage · {period}": "Utilizzo · {period}",

@@ -34,7 +34,7 @@ import { addIngestionCsv, findAllCsvIngestion, ingestionCsvEditField } from './i
 import { addIngestionJson, findAllJsonIngestion, ingestionJsonEditField, isSensitiveHeaderName, isSensitiveQueryAttribute } from './ingestion-json-domain';
 import { findAllTaxiiIngestion, ingestionTaxiiAdd, ingestionTaxiiEditField } from './ingestion-taxii-domain';
 import { exportCsvFeed, exportJsonFeed, exportRssFeed, exportTaxiiFeed } from './ingestion-export';
-import { encodeUriCredential, isSameUriDestination, uriCredentials, uriWithCredentials } from './ingestion-uri-credentials';
+import { encodeUriCredential, isSameUriDestination, URI_PASSWORD_CREDENTIAL_KEY, uriCredentials, uriParameterNameOf, uriWithCredentials } from './ingestion-uri-credentials';
 import {
   type CsvFeedImportConfiguration,
   csvFeedImportSchema,
@@ -123,6 +123,7 @@ const queryAttributeCredentialKey = (attribute: { exposed?: string | null; to?: 
 };
 
 export const DESTINATION_CHANGED_REASON = 'The URI points to another server: the stored credentials are not kept';
+export const URI_PARAMETERS_LEFT_EMPTY_REASON = 'URI parameters left empty';
 export const SSL_VERIFY_DISABLED_REASON = 'The verification of the SSL certificate is disabled';
 
 const MAX_CONFIGURATION_DEPTH = 32;
@@ -396,11 +397,12 @@ const feedCredentials = (configuration: FeedImportConfiguration, target?: Stored
     secret,
     type: 'string',
   }));
-  // A blank URI value can be empty on purpose (a paging parameter, a token as user name): it is required only when the feed held one
+  // The export blanks a password only by writing `user:@host`: it is asked again. A blank parameter can be empty on purpose
+  // (`?next_token=`) and the import cannot tell it from a blanked one: it is offered, never required
   const uri = uriCredentials(configuration.uri, kept?.uri).map(({ key, description, stored }) => ({
     key,
     description,
-    required: stored !== '',
+    required: key === URI_PASSWORD_CREDENTIAL_KEY,
     stored: stored !== '',
     secret: true,
     type: 'string',
@@ -437,6 +439,14 @@ const sameFieldValue = (key: string, current: unknown, next: unknown) => {
   if (key === 'added_after_start') {
     const time = (value: unknown) => (value ? new Date(value as string).getTime() : null);
     return time(current) === time(next);
+  }
+  // The platform stores a query attribute default as a boolean: compared as the string the export writes
+  if (key === 'query_attributes' && Array.isArray(current) && Array.isArray(next)) {
+    const withStringDefaults = (attributes: unknown[]) => attributes.map((attribute) => {
+      const { default: value, ...rest } = attribute as { default?: unknown };
+      return withoutNil({ ...rest, default: value === null || value === undefined ? null : String(value) });
+    });
+    return R.equals(withStringDefaults(current), withStringDefaults(next));
   }
   // An empty list and an absent field are the same: a feed without markings may have none stored
   const normalized = (value: unknown) => (Array.isArray(value) && value.length === 0 ? null : withoutNil(value ?? null));
@@ -558,8 +568,10 @@ export const importConfigPresetFeed = async <C extends FeedImportConfiguration, 
       const key = queryAttributeCredentialKey(attribute);
       return [key, given[key] || keptAttributes.find((stored) => queryAttributeCredentialKey(stored) === key)?.default || ''];
     }));
-  const uri = uriWithCredentials(bundleFeed.uri, Object.fromEntries(uriCredentials(bundleFeed.uri, kept?.uri)
-    .map(({ key, stored }) => [key, given[key] ? encodeUriCredential(given[key]) : stored])));
+  const uriSecrets = uriCredentials(bundleFeed.uri, kept?.uri);
+  const uri = uriWithCredentials(bundleFeed.uri, Object.fromEntries(uriSecrets.map(({ key, stored }) => [key, given[key] ? encodeUriCredential(given[key]) : stored])));
+  const emptyParameters = uriSecrets.filter(({ key, stored }) => !given[key] && stored === '').map(({ key }) => uriParameterNameOf(key)).filter((parameter) => !!parameter);
+  const emptyParametersReason = emptyParameters.length > 0 ? `${URI_PARAMETERS_LEFT_EMPTY_REASON}: ${configImportReasonValue(emptyParameters.join(', '))}` : undefined;
   const write: WriteContext = { dryRun, markingIds, authenticationValue, headerValues, queryDefaults, plannedMarkings };
   const { fields: specificFields, reasons, missingMarkings = [], rollback } = await adapter.fields(context, user, bundleFeed, write, target);
   if (missingMarkings.length > 0) {
@@ -572,7 +584,7 @@ export const importConfigPresetFeed = async <C extends FeedImportConfiguration, 
     const reason = joinConfigImportReasons([CONFIG_IMPORT_UNCHANGED_REASON, confidenceReason, ...reasons]);
     return { status: 'skipped', code: 'unchanged', reason, exists: true, name, configuration: bundleFeed, credentials: shownCredentials };
   }
-  const reason = joinConfigImportReasons([name !== bundleFeed.name ? `Added as "${name}"` : undefined, destinationReason, sslReason, confidenceReason, ...reasons]);
+  const reason = joinConfigImportReasons([name !== bundleFeed.name ? `Added as "${name}"` : undefined, destinationReason, emptyParametersReason, sslReason, confidenceReason, ...reasons]);
   const result: FeedImportResult = { status: target ? 'overwritten' : 'created', exists, name, configuration: bundleFeed, reason, credentials: shownCredentials };
   if (dryRun) {
     return result;

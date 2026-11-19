@@ -6123,6 +6123,7 @@
   "Uploading...": "正在上传...",
   "Uptime": "正常运行时间",
   "URI key": "URI 密钥",
+  "URI parameters left empty: {parameters}": "保留为空的 URI 参数：{parameters}",
   "URL": "URL",
   "Usage": "用法",
   "Usage · {period}": "使用情况 · {period}",

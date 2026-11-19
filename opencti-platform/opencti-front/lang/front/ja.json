@@ -6123,6 +6123,7 @@
   "Uploading...": "アップロード中...",
   "Uptime": "稼働時間",
   "URI key": "URIキー",
+  "URI parameters left empty: {parameters}": "空のままの URI パラメーター: {parameters}",
   "URL": "URL",
   "Usage": "使用方法",
   "Usage · {period}": "使用状況 · {period}",

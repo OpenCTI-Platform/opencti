@@ -24,6 +24,7 @@ export const isSensitiveParameterName = (name: string) => {
 export const URI_PASSWORD_CREDENTIAL_KEY = 'uri:password';
 const URI_PARAMETER_CREDENTIAL_PREFIX = 'uri:query:';
 export const uriParameterCredentialKey = (name: string) => `${URI_PARAMETER_CREDENTIAL_PREFIX}${name}`;
+export const uriParameterNameOf = (key: string) => (key.startsWith(URI_PARAMETER_CREDENTIAL_PREFIX) ? key.slice(URI_PARAMETER_CREDENTIAL_PREFIX.length) : undefined);
 
 const URI_PATTERN = /^([a-z][a-z\d+.-]*:\/\/)([^/?#]*)([^?#]*)(?:\?([^#]*))?(#.*)?$/i;
 

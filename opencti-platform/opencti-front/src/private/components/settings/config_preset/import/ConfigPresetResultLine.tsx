@@ -126,6 +126,10 @@ const translateKnownReason = (t_i18n: Translate, reason: string): string | undef
   if (missingCredentials) {
     return t_i18n('Configuration to provide: {keys}', { values: { keys: missingCredentials } });
   }
+  const emptyUriParameters = reason.match(/^URI parameters left empty: (.+)$/)?.[1];
+  if (emptyUriParameters) {
+    return t_i18n('URI parameters left empty: {parameters}', { values: { parameters: emptyUriParameters } });
+  }
   const missingAuthor = reason.match(/^Author not found: (.+)$/)?.[1];
   if (missingAuthor) {
     return t_i18n('Author not found: {name}', { values: { name: missingAuthor } });
