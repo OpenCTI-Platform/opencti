@@ -2812,12 +2812,12 @@ const updateAttributeRaw = async (
     const aliasesInput = R.find((e) => e.key === aliasField, preparedElements);
     if (nameInput || aliasesInput) {
       const askedModificationName = nameInput ? R.head(nameInput.value) : undefined;
+      const targetName = askedModificationName ?? aliasedInstance.name;
       // Cleanup the alias input.
       if (aliasesInput) {
         const preparedAliases = (aliasesInput.value ?? [])
           .filter((a) => isNotEmptyField(a))
-          .filter((a) => normalizeName(a) !== normalizeName(aliasedInstance.name)
-            && normalizeName(a) !== normalizeName(askedModificationName))
+          .filter((a) => normalizeName(a) !== normalizeName(targetName))
           .map((a) => a.trim());
         aliasesInput.value = R.uniqBy((e) => normalizeName(e), preparedAliases);
       }
@@ -2827,7 +2827,7 @@ const updateAttributeRaw = async (
         // If name change, we need to add the old name in aliases
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        const aliases = [...(aliasedInstance[aliasField] ?? [])];
+        let aliases = [...(aliasedInstance[aliasField] ?? [])];
         if (upsert) {
           // For upsert, we concatenate everything to be none destructive
           pushAll(aliases, (aliasesInput ? aliasesInput.value : []));
@@ -2842,7 +2842,9 @@ const updateAttributeRaw = async (
             const generatedAliasesInput = { key: aliasField, value: uniqAliases };
             preparedElements.push(generatedAliasesInput);
           }
-        } else if (!aliasesInput) {
+        } else if (aliasesInput) {
+          aliases = aliasesInput.value;
+        } else {
           // Name change can create a duplicate with aliases
           // If it's the case aliases must be also patched.
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment

@@ -867,6 +867,21 @@ describe('Create entities', () => {
     expect(readAttackPattern).toBeUndefined();
   });
 
+  it('should keep previous name as alias when name and aliases are replaced together', async () => {
+    const input = { name: 'Ingress Tool Transfer TEST', x_mitre_id: 'T99105' };
+    const createdAttackPattern = await createEntity(testContext, ADMIN_USER, input, ENTITY_TYPE_ATTACK_PATTERN);
+    const inputs = [
+      { key: 'name', value: ['T99105'] },
+      { key: 'aliases', value: ['Ingress Tool Transfer TEST'] },
+    ];
+    await updateAttribute(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN, inputs);
+    const readAttackPattern = await storeLoadById(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
+    expect(readAttackPattern.name).toEqual('T99105');
+    expect(readAttackPattern.aliases).toEqual(['Ingress Tool Transfer TEST']);
+    expect(readAttackPattern.i_aliases_ids.length).toEqual(1);
+    await deleteElementById(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
+  });
+
   // prerequisite to proper restoration after logical delete: we can createEntity with a fixed internal_id
   it('should createEntity with given internal_id', async () => {
     const attackPatternInternalId = generateInternalId();
