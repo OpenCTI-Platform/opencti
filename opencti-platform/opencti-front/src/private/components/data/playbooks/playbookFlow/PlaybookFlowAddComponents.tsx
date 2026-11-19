@@ -14,23 +14,31 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { useEffect, useState } from 'react';
-import { Edge } from 'reactflow';
 import PlaybookFlowSelectComponent from './PlaybookFlowSelectComponent';
 import Drawer from '../../../common/drawer/Drawer';
 import { useFormatter } from '../../../../../components/i18n';
 import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
 import PlaybookFlowForm from './PlaybookFlowForm';
-import { PlaybookComponent, PlaybookComponents, PlaybookNode } from '../types/playbook-types';
+import type {
+  PlaybookAction,
+  PlaybookComponent,
+  PlaybookComponents,
+  PlaybookConfigHandler,
+  PlaybookEdge,
+  PlaybookNode,
+  SetSelectedPlaybookEdge,
+  SetSelectedPlaybookNode,
+} from '../types/playbook-types';
 
 interface PlaybookFlowAddComponentsProps {
-  action: string | null;
+  action: PlaybookAction | null;
   selectedNode: PlaybookNode | null;
-  selectedEdge: Edge | null;
-  setSelectedNode: (node: null) => void; // null as type because useManipulateComponents is in JS
-  setSelectedEdge: (node: null) => void; // null as type because useManipulateComponents is in JS
+  selectedEdge: PlaybookEdge | null;
+  setSelectedNode: SetSelectedPlaybookNode;
+  setSelectedEdge: SetSelectedPlaybookEdge;
   playbookComponents: PlaybookComponents;
-  onConfigAdd: (component: unknown, name: string, config: unknown, description?: string) => void;
-  onConfigReplace: (component: unknown, name: string, config: unknown, description?: string) => void;
+  onConfigAdd: PlaybookConfigHandler;
+  onConfigReplace: PlaybookConfigHandler;
 }
 
 const PlaybookFlowAddComponents = ({

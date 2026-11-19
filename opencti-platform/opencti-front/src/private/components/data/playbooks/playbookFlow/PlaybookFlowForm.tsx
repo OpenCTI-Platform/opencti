@@ -26,7 +26,15 @@ import { parse } from '../../../../../utils/Time';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../../utils/filters/useFiltersState';
-import type { PlaybookBundleElementsToApply, PlaybookComponentConfigSchema, PlaybookComponents, PlaybookConfig, PlaybookNode } from '../types/playbook-types';
+import type {
+  PlaybookAction,
+  PlaybookBundleElementsToApply,
+  PlaybookComponentConfigSchema,
+  PlaybookComponents,
+  PlaybookConfig,
+  PlaybookConfigHandler,
+  PlaybookNode,
+} from '../types/playbook-types';
 import PlaybookFlowFieldAccessRestrictions from './playbookFlowFields/PlaybookFlowFieldAccessRestrictions';
 import PlaybookFlowFieldArray, { PlaybookFlowFieldArrayProps } from './playbookFlowFields/PlaybookFlowFieldArray';
 import PlaybookFlowFieldAuthorizedMembers from './playbookFlowFields/PlaybookFlowFieldAuthorizedMembers';
@@ -43,7 +51,7 @@ import PlaybookFlowFieldTargets from './playbookFlowFields/PlaybookFlowFieldTarg
 import PlaybookFlowFieldTriggerTime from './playbookFlowFields/PlaybookFlowFieldTriggerTime';
 import PlaybookFlowFieldActions from './playbookFlowFields/playbookFlowFieldsActions/PlaybookFlowFieldActions';
 import { isPlaybookUpdateActionValid, PlaybookUpdateActionsForm } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
-import { computeInitialComponentConfigValues } from './playbookComponents-utils';
+import { computeInitialComponentConfigValues, isRequiredChoiceMissing, missingRequiredChoices, requiredChoiceFields } from './playbookComponents-utils';
 
 export type PlaybookFlowFormData
   // Component: update knowledge
@@ -66,12 +74,12 @@ export type PlaybookFlowFormData
     };
 
 interface PlaybookFlowFormProps {
-  action: string | null;
+  action: PlaybookAction | null;
   selectedNode: PlaybookNode | null;
   playbookComponents: PlaybookComponents;
   componentId: string | null;
-  onConfigAdd: (component: unknown, name: string, config: unknown, description?: string) => void;
-  onConfigReplace: (component: unknown, name: string, config: unknown, description?: string) => void;
+  onConfigAdd: PlaybookConfigHandler;
+  onConfigReplace: PlaybookConfigHandler;
   handleClose: () => void;
 }
 
@@ -149,8 +157,15 @@ const PlaybookFlowForm = ({
 
   const requiredProperties = configurationSchema?.required ?? [];
 
+  // A required choice (a connector, notifiers, organizations...) left empty is a field error and keeps
+  // the submit disabled; the server refuses such a step with the same rule (#8353).
+  const requiredChoices = requiredChoiceFields(configurationSchema);
   const addComponentValidation = Yup.object().shape({
     name: Yup.string().trim().required(t_i18n('This field is required')),
+    ...Object.fromEntries(requiredChoices.map((field) => [
+      field,
+      Yup.mixed().test('required-choice', t_i18n('This field is required'), (value) => !isRequiredChoiceMissing(configurationSchema, field, value)),
+    ])),
   });
 
   const initialValues = computeInitialComponentConfigValues({ action, currentConfig, configurationSchema, nodeData, selectedComponent });
@@ -165,6 +180,7 @@ const PlaybookFlowForm = ({
       >
         {({ submitForm, handleReset, isSubmitting, values }) => {
           const actionsAreValid = (values.actions ?? []).every(isPlaybookUpdateActionValid);
+          const choicesAreSet = missingRequiredChoices(configurationSchema, values as unknown as Record<string, unknown>).length === 0;
 
           return (
             <Form>
@@ -193,7 +209,7 @@ const PlaybookFlowForm = ({
                     return <PlaybookFlowFieldAccessRestrictions key={propName} />;
                   }
                   if (propName === 'authorized_members') {
-                    return <PlaybookFlowFieldAuthorizedMembers key={propName} />;
+                    return <PlaybookFlowFieldAuthorizedMembers key={propName} required={requiredProperties.includes(propName)} />;
                   }
                   if (propName === 'run_as') {
                     return (
@@ -212,6 +228,7 @@ const PlaybookFlowForm = ({
                         name={propName}
                         label={t_i18n(property.$ref)}
                         style={fieldSpacingContainerStyle}
+                        required={requiredProperties.includes(propName)}
                       />
                     );
                   }
@@ -225,6 +242,7 @@ const PlaybookFlowForm = ({
                         label={t_i18n('Type affinity')}
                         fullWidth={true}
                         containerstyle={{ width: '100%', marginTop: 20 }}
+                        required={requiredProperties.includes(propName)}
                       >
                         <SelectItem key="ENDPOINT" value="ENDPOINT">
                           {t_i18n('Endpoint')}
@@ -241,20 +259,21 @@ const PlaybookFlowForm = ({
                         label={t_i18n(property.$ref)}
                         containerStyle={fieldSpacingContainerStyle}
                         multiple={true}
+                        required={requiredProperties.includes(propName)}
                       />
                     );
                   }
                   if (propName === 'organizations') {
-                    return <PlaybookFlowFieldOrganizations key={propName} />;
+                    return <PlaybookFlowFieldOrganizations key={propName} required={requiredProperties.includes(propName)} />;
                   }
                   if (propName === 'inPirFilters') {
                     return <PlaybookFlowFieldInPirFilters key={propName} />;
                   }
                   if (propName === 'targets') {
-                    return <PlaybookFlowFieldTargets key={propName} />;
+                    return <PlaybookFlowFieldTargets key={propName} required={requiredProperties.includes(propName)} />;
                   }
                   if (propName === 'caseTemplates') {
-                    return <PlaybookFlowFieldCaseTemplates key={propName} />;
+                    return <PlaybookFlowFieldCaseTemplates key={propName} required={requiredProperties.includes(propName)} />;
                   }
                   if (propName === 'filters') {
                     return (
@@ -276,10 +295,10 @@ const PlaybookFlowForm = ({
                     );
                   }
                   if (propName === 'period') {
-                    return <PlaybookFlowFieldPeriod key={propName} />;
+                    return <PlaybookFlowFieldPeriod key={propName} required={requiredProperties.includes(propName)} />;
                   }
                   if (propName === 'triggerTime') {
-                    return <PlaybookFlowFieldTriggerTime key={propName} />;
+                    return <PlaybookFlowFieldTriggerTime key={propName} required={requiredProperties.includes(propName)} />;
                   }
                   if (propName === 'actions') {
                     return (
@@ -295,6 +314,7 @@ const PlaybookFlowForm = ({
                         key={propName}
                         name={propName}
                         label={t_i18n(property.$ref ?? propName)}
+                        required={requiredProperties.includes(propName)}
                       />
                     );
                   }
@@ -331,6 +351,7 @@ const PlaybookFlowForm = ({
                         label={t_i18n(property.$ref ?? propName)}
                         options={(property.items?.oneOf ?? []) as PlaybookFlowFieldArrayProps['options']}
                         multiple
+                        required={requiredProperties.includes(propName)}
                       />
                     );
                   }
@@ -342,6 +363,7 @@ const PlaybookFlowForm = ({
                       label={t_i18n(property.$ref ?? propName)}
                       multiline={isTextarea}
                       rows={isTextarea ? 3 : undefined}
+                      required={requiredProperties.includes(propName)}
                     />
                   );
                 },
@@ -356,7 +378,7 @@ const PlaybookFlowForm = ({
                 </Button>
                 <Button
                   onClick={submitForm}
-                  disabled={!actionsAreValid || isSubmitting}
+                  disabled={!actionsAreValid || !choicesAreSet || isSubmitting}
                 >
                   {selectedNode?.data?.component?.id
                     ? t_i18n('Update')
