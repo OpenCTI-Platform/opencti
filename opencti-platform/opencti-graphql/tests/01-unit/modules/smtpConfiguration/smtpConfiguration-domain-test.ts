@@ -3,6 +3,7 @@ import * as Cache from '../../../../src/database/cache';
 import * as Middleware from '../../../../src/database/middleware';
 import {
   getSmtpConfiguration,
+  getSmtpConfigurationDefaults,
   smtpConfigurationDelete,
   smtpConfigurationEdit,
   smtpConfigurationRefreshTokenUpdate,
@@ -103,6 +104,14 @@ describe('getSmtpConfiguration', () => {
     vi.mocked(Cache.getEntityFromCache).mockResolvedValue({ ...MOCK_SETTINGS, smtp_configuration: undefined });
     const result = await getSmtpConfiguration(mockContext, mockUser);
     expect(result).toBeNull();
+  });
+});
+
+// ---------- getSmtpConfigurationDefaults ----------
+
+describe('getSmtpConfigurationDefaults', () => {
+  it('should follow tls:reject_unauthorized for require_tls', () => {
+    expect(getSmtpConfigurationDefaults()).toEqual({ require_tls: false });
   });
 });
 

@@ -49,6 +49,9 @@ const smtpConfigurationQuery = graphql`
         oauth_issuer
         oauth_refresh_token_expires_at
     }
+    smtpConfigurationDefaults {
+        require_tls
+    }
   }
 `;
 
@@ -68,7 +71,7 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
   refetch,
 }) => {
   const { t_i18n, nsdt } = useFormatter();
-  const { smtpConfiguration } = usePreloadedQuery(smtpConfigurationQuery, smtpConfigurationQueryRef);
+  const { smtpConfiguration, smtpConfigurationDefaults } = usePreloadedQuery(smtpConfigurationQuery, smtpConfigurationQueryRef);
 
   const [formOpen, setFormOpen] = useState(false);
   const [testDialogOpen, setTestDialogOpen] = useState(false);
@@ -272,6 +275,7 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
             >
               <SmtpConfigurationForm
                 smtpConfiguration={smtpConfiguration ?? null}
+                defaults={smtpConfigurationDefaults}
                 onCompleted={handleFormCompleted}
                 onCancel={() => setFormOpen(false)}
               />

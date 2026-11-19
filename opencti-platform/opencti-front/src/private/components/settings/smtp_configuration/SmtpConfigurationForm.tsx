@@ -56,8 +56,14 @@ export interface SmtpConfigurationData {
   oauth_refresh_token_expires_at?: string | null;
 }
 
+export interface SmtpConfigurationDefaults {
+  require_tls: boolean;
+}
+
 interface SmtpConfigurationFormProps {
   smtpConfiguration: SmtpConfigurationData | null;
+  // Values the configuration follows while it does not store its own, also when it does not exist yet
+  defaults: SmtpConfigurationDefaults;
   onCompleted: () => void;
   onCancel: () => void;
 }
@@ -113,6 +119,7 @@ const validationSchema = Yup.object().shape({
 
 const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
   smtpConfiguration,
+  defaults,
   onCompleted,
   onCancel,
 }) => {
@@ -129,9 +136,8 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
     port: smtpConfiguration?.port ?? '',
     use_ssl: smtpConfiguration?.use_ssl ?? false,
     reject_unauthorized: smtpConfiguration?.reject_unauthorized ?? true,
-    // The backend returns the value in effect. Without a configuration, it follows tls:reject_unauthorized,
-    // false until the secure-by-default release.
-    require_tls: smtpConfiguration?.require_tls ?? false,
+    // The backend returns the value in effect, and the inherited one when no configuration exists
+    require_tls: smtpConfiguration?.require_tls ?? defaults.require_tls,
     auth_type: (smtpConfiguration?.auth_type as 'basic' | 'oauth2' | undefined) ?? 'basic',
     username: smtpConfiguration?.username ?? '',
     password: '',

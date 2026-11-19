@@ -48,11 +48,16 @@ const validateSmtpConfigurationInput = (input: SmtpConfigurationAddInput) => {
   }
 };
 
+// Values a configuration follows while it does not store its own, also when no configuration exists yet
+export const getSmtpConfigurationDefaults = () => ({
+  require_tls: TLS_REJECT_UNAUTHORIZED,
+});
+
 // Configurations stored before require_tls existed follow the global default: expose the value in effect,
 // so that the form does not show, then save, another one.
 const withEffectiveRequireTls = (config: SmtpConfiguration): SmtpConfiguration => ({
   ...config,
-  require_tls: config.require_tls ?? TLS_REJECT_UNAUTHORIZED,
+  require_tls: config.require_tls ?? getSmtpConfigurationDefaults().require_tls,
 });
 
 // No feature-flag guard: also used internally by database/smtp.js and boot-time checks.

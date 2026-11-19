@@ -12295,6 +12295,7 @@ type Query {
   sessions: [UserSession]
   settings: Settings!
   smtpConfiguration: SmtpConfiguration
+  smtpConfigurationDefaults: SmtpConfigurationDefaults!
   status(id: String!): Status
   statusTemplate(id: String!): StatusTemplate
   statusTemplates(after: ID, first: Int, orderBy: StatusTemplateOrdering, orderMode: OrderingMode, search: String): StatusTemplateConnection
@@ -14074,6 +14075,10 @@ input SmtpConfigurationAddInput {
   use_db_config: Boolean
   use_ssl: Boolean
   username: String
+}
+
+type SmtpConfigurationDefaults {
+  require_tls: Boolean!
 }
 
 type Software implements BasicObject & StixCoreObject & StixCyberObservable & StixObject {

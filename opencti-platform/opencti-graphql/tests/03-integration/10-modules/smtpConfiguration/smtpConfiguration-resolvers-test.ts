@@ -26,6 +26,14 @@ const SMTP_CONFIGURATION_QUERY = gql`
   }
 `;
 
+const SMTP_CONFIGURATION_DEFAULTS_QUERY = gql`
+  query SmtpConfigurationDefaultsTest {
+    smtpConfigurationDefaults {
+      require_tls
+    }
+  }
+`;
+
 const SMTP_CONFIGURATION_EDIT_MUTATION = gql`
   mutation SmtpConfigurationEditTest($input: SmtpConfigurationAddInput!) {
     smtpConfigurationEdit(input: $input) {
@@ -66,6 +74,17 @@ describe('SmtpConfiguration resolvers', () => {
 
     it('should be forbidden for users without SETTINGS_SETACCESSES capability', async () => {
       await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: SMTP_CONFIGURATION_QUERY });
+    });
+  });
+
+  describe('Query smtpConfigurationDefaults', () => {
+    it('should return require_tls following tls:reject_unauthorized, before any configuration is set', async () => {
+      const result = await queryAsAdminWithSuccess({ query: SMTP_CONFIGURATION_DEFAULTS_QUERY });
+      expect(result.data.smtpConfigurationDefaults).toEqual({ require_tls: TLS_REJECT_UNAUTHORIZED });
+    });
+
+    it('should be forbidden for users without SETTINGS_SETACCESSES capability', async () => {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: SMTP_CONFIGURATION_DEFAULTS_QUERY });
     });
   });
 

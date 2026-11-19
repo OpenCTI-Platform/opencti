@@ -18,6 +18,11 @@ type SmtpConfiguration {
   oauth_refresh_token_expires_at: DateTime
 }
 
+# Values a configuration follows while it does not store its own
+type SmtpConfigurationDefaults {
+  require_tls: Boolean!
+}
+
 enum SmtpAuthType {
   basic
   oauth2
@@ -46,6 +51,7 @@ input SmtpConfigurationAddInput {
 
 extend type Query {
   smtpConfiguration: SmtpConfiguration @auth(for: [SETTINGS_SETACCESSES])
+  smtpConfigurationDefaults: SmtpConfigurationDefaults! @auth(for: [SETTINGS_SETACCESSES])
 }
 
 extend type Mutation {
