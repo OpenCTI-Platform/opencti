@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import '../../../../src/modules/index';
+import { USER_MERGE_FILTER_TARGETS } from '../../../../src/modules/userMerge/userMerge-filterTargets';
 import { findRegisterRow } from '../../../../src/modules/userMerge/userMerge-register';
 import { discoverUserIdAttributes } from '../../../../src/modules/userMerge/userMerge-scalarDiscovery';
 import { userMergeScalarResolution } from '../../../../src/modules/userMerge/userMerge-scalarTargets';
 import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
 import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
+import type { AttributeDefinition, MappingDefinition } from '../../../../src/schema/attribute-definition';
 
 describe('userMerge schema discovery', () => {
   it('should give a disposition to every attribute the schema declares as a user reference', () => {
@@ -116,5 +118,77 @@ describe('userMerge schema discovery', () => {
     userMergeScalarResolution().excluded.forEach((exclusion) => {
       expect(exclusion.detail.length, exclusion.key).toBeGreaterThan(0);
     });
+  });
+});
+
+/**
+ * A stored filter names users by value — `creator_id`, `objectAssignee`, `workflow_assignee`… — so
+ * the schema discovery above cannot see it: the attribute is a string, not a typed reference. The
+ * filter handler works from a hand-written list instead, and this suite is what keeps that list
+ * from falling behind the schema.
+ *
+ * A filter attribute is recognised by its name, the convention every one of them follows today.
+ */
+const FILTER_ATTRIBUTE = /filters$/;
+
+/**
+ * Filter attributes the merge deliberately leaves alone, each with the register row that says so.
+ * An attribute is listed here only when rewriting it would be wrong, not to make this suite pass.
+ */
+const UNREWRITTEN_FILTER_ATTRIBUTES: { path: string; entityTypes: string[]; registerRow: string }[] = [
+  // Frozen snapshot of a recorded action, never re-executed.
+  { path: 'context_data.filters', entityTypes: ['Activity', 'History', 'PirHistory'], registerRow: 'history.context-data-raw-payload' },
+  // Provenance of a past export: rewriting it would misreport what was exported.
+  { path: 'metaData.list_filters', entityTypes: ['InternalFile'], registerRow: 'internal-file.list-filters' },
+];
+
+const collectFilterAttributes = (attribute: AttributeDefinition | MappingDefinition, parentPath?: string): string[] => {
+  const path = parentPath ? `${parentPath}.${attribute.name}` : attribute.name;
+  if (attribute.type === 'string' && FILTER_ATTRIBUTE.test(attribute.name)) {
+    return [path];
+  }
+  if (attribute.type === 'object' && 'mappings' in attribute && Array.isArray(attribute.mappings)) {
+    return attribute.mappings.flatMap((mapping) => collectFilterAttributes(mapping, path));
+  }
+  return [];
+};
+
+const discoverFilterAttributes = (): { entityType: string; path: string }[] => {
+  return schemaAttributesDefinition.getRegisteredTypes().flatMap((entityType) => {
+    const attributes = Array.from(schemaAttributesDefinition.getAttributes(entityType).values());
+    return attributes.flatMap((attribute) => collectFilterAttributes(attribute)).map((path) => ({ entityType, path }));
+  });
+};
+
+describe('userMerge stored filters inventory', () => {
+  it('should find the stored filters in the schema', () => {
+    expect(discoverFilterAttributes()).toContainEqual({ entityType: 'Trigger', path: 'filters' });
+  });
+
+  it('should rewrite or deliberately leave every stored filter of the schema', () => {
+    const answered = (entityType: string, path: string) => {
+      return USER_MERGE_FILTER_TARGETS.some((target) => target.entityType === entityType && target.path === path)
+        || UNREWRITTEN_FILTER_ATTRIBUTES.some((entry) => entry.path === path && entry.entityTypes.includes(entityType));
+    };
+    const unanswered = discoverFilterAttributes()
+      .filter(({ entityType, path }) => !answered(entityType, path))
+      .map(({ entityType, path }) => `${entityType}.${path}`);
+    expect(unanswered, 'stored filters the user merge does not know: add them to USER_MERGE_FILTER_TARGETS with a register row').toEqual([]);
+  });
+
+  it('should name register rows that exist for the filters it leaves alone', () => {
+    UNREWRITTEN_FILTER_ATTRIBUTES.forEach((entry) => {
+      expect(findRegisterRow(entry.registerRow), entry.path).toBeDefined();
+    });
+  });
+
+  // A target whose attribute was renamed or removed would rewrite nothing and say nothing.
+  it('should point every filter target at an attribute the schema still declares', () => {
+    const discovered = discoverFilterAttributes();
+    USER_MERGE_FILTER_TARGETS
+      .filter((target) => target.shape === 'field')
+      .forEach((target) => {
+        expect(discovered, target.id).toContainEqual({ entityType: target.entityType, path: target.path });
+      });
   });
 });

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { buildDataRestrictions } from '../../../src/database/engine';
+import { buildDataRestrictions } from '../../../src/database/engine-query-builder';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../../src/database/cache';
 import { BYPASS } from '../../../src/utils/access';
 import type { AuthContext, AuthUser } from '../../../src/types/user';

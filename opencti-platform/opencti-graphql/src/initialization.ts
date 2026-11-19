@@ -24,6 +24,7 @@ import { initializeStreamStack } from './database/stream/stream-handler';
 import { initializeAuthenticationProviders } from './modules/authenticationProvider/providers';
 import { initializeAdminUser } from './modules/user/user-domain';
 import { cleanUpPasswordHistoryWhenDisabled } from './modules/user/user-password-history';
+import { getHttpMaxRedirects, getInvalidHttpMaxRedirects, isHttpSecureByDefault } from './http/httpConfig';
 import type { BasicStoreEntityMigrationStatus } from './types/store';
 import type { BasicStoreSettings } from './types/settings';
 import type { AuthContext } from './types/user';
@@ -49,6 +50,20 @@ export const checkGraphqlSecurity = () => {
   if (!GRAPHQL_SECURE_BY_DEFAULT) {
     logApp.warn('[OPENCTI] GraphQL secure defaults are disabled for the protections that do not set their own option (app:graphql:secure_by_default=false). '
       + 'They will be enabled by default in an upcoming version: set APP__GRAPHQL__SECURE_BY_DEFAULT=true to opt in now.');
+  }
+};
+
+export const checkHttpSecurity = () => {
+  if (!isHttpSecureByDefault()) {
+    logApp.warn('[OPENCTI] HTTP secure defaults are disabled for the protections that do not set their own option (app:http:secure_by_default=false). '
+      + 'They will be enabled by default in an upcoming version: set APP__HTTP__SECURE_BY_DEFAULT=true to opt in now.');
+  }
+  const invalidMaxRedirects = getInvalidHttpMaxRedirects();
+  if (invalidMaxRedirects !== undefined) {
+    logApp.warn('[OPENCTI] Invalid value for app:http:max_redirects, it must be a non-negative integer: using the default instead.', {
+      value: invalidMaxRedirects,
+      default: getHttpMaxRedirects(),
+    });
   }
 };
 

@@ -31,6 +31,7 @@ import {
   type UserInfoMappingInput,
 } from '../../generated/graphql';
 import { resolveProviderIdentifier } from './authenticationProvider-domain';
+import { cleanSamlCertificates, joinSamlIdpCertificates } from './saml-pem-utils';
 
 // ---------------------------------------------------------------------------
 // ConfigExtractor — tracks which keys are consumed during conversion
@@ -510,6 +511,19 @@ export const convertOidcEnvConfig = (envKey: string, entry: EnvProviderEntry): C
 // SAML conversion
 // ---------------------------------------------------------------------------
 
+// signing_cert and decryption_cert hold one certificate of the platform itself: node-saml's publicCert option takes a single one.
+// A list would be stored as is and break the authentication settings page, so only its first certificate is kept.
+const toSingleCertificate = (key: string, value: unknown, warnings: string[]): string | null => {
+  if (!Array.isArray(value)) {
+    return value as string | null;
+  }
+  const certificates = cleanSamlCertificates(value);
+  if (certificates.length > 1) {
+    warnings.push(`${key} is a list of ${certificates.length} certificates, only the first one is kept.`);
+  }
+  return certificates[0] ?? null;
+};
+
 export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): ConvertedSamlProvider => {
   const ext = new ConfigExtractor(entry.config ?? {});
   const warnings: string[] = [];
@@ -520,12 +534,12 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   // -- First-class configuration fields --
   const issuer = ext.get<string>('issuer', '');
   const entryPoint = ext.get<string>('entry_point', '');
-  const idpCertificate = ext.get<string>('cert', '');
+  const idpCertificate = joinSamlIdpCertificates(ext.get<string | string[]>('cert', ''));
   const privateKey = ext.get<string | null>('private_key', null);
   const logoutRemote = ext.get<boolean>('logout_remote', false);
   const wantAssertionsSigned = ext.get<boolean>('want_assertions_signed', false);
   const wantAuthnResponseSigned = ext.get<boolean>('want_authn_response_signed', false);
-  const signingCert = ext.get<string | null>('signing_cert', null);
+  const signingCert = toSingleCertificate('signing_cert', ext.get<string | string[] | null>('signing_cert', null), warnings);
   const ssoBindingType = ext.get<string | null>('sso_binding_type', null);
   const forceAuthn = ext.get<boolean>('force_authn', false);
 
@@ -547,7 +561,7 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const disableRequestAcsUrl = ext.get<boolean>('disable_request_acs_url', false);
   const skipRequestCompression = ext.get<boolean>('skip_request_compression', false);
   const decryptionPvk = ext.get<string | null>('decryption_pvk', null);
-  const decryptionCert = ext.get<string | null>('decryption_cert', null);
+  const decryptionCert = toSingleCertificate('decryption_cert', ext.get<string | string[] | null>('decryption_cert', null), warnings);
 
   // Callback URL — if set in env config, store it as an override
   const samlCallbackUrl = ext.get<string | null>('saml_callback_url', null);

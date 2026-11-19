@@ -85,6 +85,7 @@ describe('buildHelmetParameters coverage', () => {
   it('should most secure option works fine', () => {
     vi.spyOn(httpConfig, 'isDevMode').mockReturnValue(false);
     vi.spyOn(httpConfig, 'isUnsecureHttpResourceAllowed').mockReturnValue(false);
+    vi.spyOn(httpConfig, 'isUpgradeInsecureRequestsEnabled').mockReturnValue(true);
     vi.spyOn(httpConfig, 'getPublicAuthorizedDomainsFromConfiguration').mockReturnValue('');
 
     const publicHelmetParam = buildPublicHelmetParameters();
@@ -148,6 +149,7 @@ describe('buildHelmetParameters coverage', () => {
   it('should less secure options work fine', () => {
     vi.spyOn(httpConfig, 'isDevMode').mockReturnValue(true);
     vi.spyOn(httpConfig, 'isUnsecureHttpResourceAllowed').mockReturnValue(true);
+    vi.spyOn(httpConfig, 'isUpgradeInsecureRequestsEnabled').mockReturnValue(false);
     vi.spyOn(httpConfig, 'getPublicAuthorizedDomainsFromConfiguration').mockReturnValue('https://myctidomain.com');
     const publicHelmetParam = buildPublicHelmetParameters();
     expect(publicHelmetParam).toStrictEqual({
@@ -204,6 +206,25 @@ describe('buildHelmetParameters coverage', () => {
         policy: 'strict-origin-when-cross-origin',
       },
       xFrameOptions: { action: 'deny' },
+    });
+  });
+});
+
+describe('buildHelmetParameters with the HTTP switch only', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should drop the HTTP sources without upgrading the platform own requests', () => {
+    vi.spyOn(httpConfig, 'isUnsecureHttpResourceAllowed').mockReturnValue(false);
+    vi.spyOn(httpConfig, 'isUpgradeInsecureRequestsEnabled').mockReturnValue(false);
+
+    [buildPublicHelmetParameters(), buildDefaultHelmetParameters()].forEach((helmetParam) => {
+      const directives = (helmetParam.contentSecurityPolicy as { directives: Record<string, unknown> }).directives;
+      expect(directives.connectSrc).not.toContain('http://*');
+      expect(directives.connectSrc).not.toContain('ws://*');
+      expect(directives.imgSrc).not.toContain('http://*');
+      expect(directives.upgradeInsecureRequests).toBeNull();
     });
   });
 });
