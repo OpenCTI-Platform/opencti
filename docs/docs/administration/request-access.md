@@ -83,13 +83,23 @@ A request for information belongs to one scope for its whole life. A request cre
 
 In the **Request access** scope, a **Validator group** select sets the group of validators. It saves when you change it. A request cannot be created while no validator group is set.
 
+![Request access scope with the validator group and the migration button](assets/request-access/workflow-scopes.jpg)
+
 ### Set up the workflow
 
 1. **Migrate the legacy statuses (optional).** Click **Migrate request access statuses**. The preview shows the Approved and Declined statuses and the *Accept* and *Reject* transitions that will be created, and lists any blocking problem. The statuses already in use are reused, so existing requests keep their status. The **Publish immediately** switch is on by default: the migrated workflow is published at once, and new requests follow it. Turn it off to review the result as a draft first. The migration replaces the current draft of the request access workflow, and asks for a confirmation when a draft already exists.
+
+    ![Migration of the request access statuses](assets/request-access/workflow-migration.jpg)
+
 2. **Edit the workflow.** Add intermediate statuses if you need a review step, for example *Under review* between the first status and the outcomes.
 3. **Mark the two outcomes.** On a status, the **Request outcome** select marks it as *Approved* or *Declined*. Exactly one status of each kind is needed.
 4. **Share on approval.** When you set a status as *Approved*, the **Share requested entities** action is added on enter, as its last action. It stays there: change the request outcome to remove it.
+
+    ![Approved status with the request outcome and the share action](assets/request-access/workflow-approved-status.jpg)
+
 5. **Publish (if not already done).** From then on, new requests follow this workflow.
+
+![Published request access workflow](assets/request-access/workflow-published.jpg)
 
 !!! note "Publishing rules"
 
@@ -119,6 +129,10 @@ The requested entities are listed in the related entities of the request, as bef
 ### Accept or decline a request
 
 Open the request. The processing banner shows one button per transition you are allowed to take from the current status, and no button once the request is decided. On *Accept*, the banner states the effect, for example *This will share 3 requested entities with Org A and notify the applicant*.
+
+![Processing banner of a request](assets/request-access/request-processing-banner.jpg)
+
+![Confirmation of an accepted request](assets/request-access/accept-confirmation.jpg)
 
 To decide a request you need edit access to it and the *Restrict organization access* capability, and it cannot be decided from inside a [draft](../usage/draft-workflow.md).
 

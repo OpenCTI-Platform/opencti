@@ -92,7 +92,7 @@ Click a transition to name it and configure it. To remove a status, a transition
 Example: an Incident response workflow with four statuses (*New*, *In progress*, *Analyzed*, *Closed*) and four transitions, before publishing.
 
 - *New* has no incoming transition, so it is the starting status.
-- Loops are allowed: `reopen` leads back from *Closed* and is drawn beside its source.
+- Loops are allowed: a `reopen` transition can lead back from *Closed* and is drawn beside its source.
 - The orange **Publish** button means the draft has unpublished changes.
 
 ### Configure a transition
@@ -161,7 +161,7 @@ Open the **Publish** menu to find two more actions.
 
 !!! tip "Status order is computed for you"
 
-    Lists sort entities by status order. With a workflow, you no longer set this order by hand: at publish time OpenCTI orders statuses by their distance from the starting status, ignoring backward transitions. In the example above, *New* is 1, *In progress* 2, *Analyzed* 3 and *Closed* 4, even with the `reopen` loop.
+    Lists sort entities by status order. With a workflow, you no longer set this order by hand: at publish time OpenCTI orders statuses by their distance from the starting status, ignoring backward transitions. In the example above, *New* is 1, *In progress* 2, *Analyzed* 3 and *Closed* 4, and a backward transition such as `reopen` does not change it.
 
 ## Conditions and actions
 
@@ -224,7 +224,7 @@ Once a workflow is published, analysts change the status from the **Processing s
 
 ![Next status menu](assets/entities-workflow-08-next-status-menu.jpg)
 
-The user only sees the transitions they are allowed to take from the current status. A single transition is shown as one button; two or more are grouped in a **Next status** menu, with one entry per transition, named as in the editor (here *Back* and *Close*). A dialog opens only when the transition needs input, such as a comment, a closing reason or organizations.
+The user only sees the transitions they are allowed to take from the current status. A single transition is shown as one button; two or more are grouped in a **Next status** menu, with one entry per transition, named as in the editor (here *Analyze* and *Close*). A dialog opens only when the transition needs input, such as a comment, a closing reason or organizations.
 
 ### Take a transition
 
@@ -308,7 +308,7 @@ In the editor, the transition is labelled **closing reason required**. *Closed* 
 
     A closing reason can only be asked on a transition whose target is a **final status**: a status that no transition leaves. The switch is disabled otherwise, and the panel names the transitions that leave the status. Publishing is refused when a transition breaks this rule.
 
-    In the example of this page, *Closed* is left by `reopen`, so `close` cannot ask for a closing reason. To use one, remove `reopen`. Users with the *Bypass all capabilities* capability can still move a closed entity back to another status.
+    If a status is left by a transition such as `reopen`, no transition into it can ask for a closing reason. To use one, remove the outgoing transition. Users with the *Bypass all capabilities* capability can still move a closed entity back to another status.
 
 ### Choose a closing reason
 
