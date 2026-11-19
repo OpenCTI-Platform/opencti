@@ -168,6 +168,7 @@ import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../emailTemplate/emailTemplate-types
 import { doYield } from '../../utils/eventloop-utils';
 import { disablePublicSharingForDeletedUser } from '../dataSharing/dataSharing-utils';
 import { deleteAllIngestionDeduplicationRulesForUser } from '../ingestionDeduplication/ingestionDeduplicationRule-domain';
+import type { LockedUserEmailData } from '../emailTemplate/emailTemplate-render';
 import { sendEmailTemplateToRecipient } from '../emailTemplate/emailTemplate-send';
 import { totp } from '../../utils/totp';
 import { pushAll } from '../../utils/arrayUtil';
@@ -1064,7 +1065,9 @@ type MailTargetUser = Omit<AuthUser, 'organizations' | 'account_lock_after_date'
   account_lock_after_date: string | undefined;
 };
 
-export const sendEmailToUser = async (context: AuthContext, user: AuthUser, input: SendUserMailInput) => {
+// lockedUserData: the values of the $locked_user and $lock variables. Only the "Send test email" button of a template
+// passes them, with an example lock, so that the administrator sees what the email of a lock looks like
+export const sendEmailToUser = async (context: AuthContext, user: AuthUser, input: SendUserMailInput, lockedUserData?: LockedUserEmailData) => {
   await checkEnterpriseEdition(context);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
 
@@ -1088,7 +1091,7 @@ export const sendEmailToUser = async (context: AuthContext, user: AuthUser, inpu
     apiToken = token.plaintext_token;
   }
 
-  await sendEmailTemplateToRecipient(emailTemplate, targetUser, { platformUrl: settings.platform_url, category: 'user-notification', apiToken });
+  await sendEmailTemplateToRecipient(emailTemplate, targetUser, { platformUrl: settings.platform_url, category: 'user-notification', apiToken, lockedUserData });
   await addUserEmailSendCount();
   await publishUserAction({
     user,
