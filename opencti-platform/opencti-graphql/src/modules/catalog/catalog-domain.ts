@@ -191,6 +191,15 @@ export const getDefaultValueAsString = (propSchema: any): string | null => {
 };
 
 /**
+ * Tells whether an emptied value of a property is removed from the configuration rather than stored:
+ * true for an optional property that is neither a list (stored empty, an empty list being a meaningful setting)
+ * nor a password (whose stored value is kept). A required property falls back to its default.
+ */
+export const isRemovedWhenEmptied = (propSchema: any, isRequired: boolean) => {
+  return propSchema.format !== 'password' && propSchema.type !== 'array' && !isRequired;
+};
+
+/**
  * Resolve the final configuration value for a property
  * - key omitted from the input: keep the stored value, or fall back to the default when nothing is stored
  * - key provided with an empty value: an array is stored as empty (an empty list is a meaningful setting
@@ -215,7 +224,7 @@ export const resolveConfigurationValue = (
       return existingConfig;
     }
     // Explicitly emptied optional non-array field: clean it
-    if (inputConfig && !isPassword && propSchema.type !== 'array' && !isRequired) {
+    if (inputConfig && isRemovedWhenEmptied(propSchema, isRequired)) {
       return null;
     }
     const defaultValue = getDefaultValueAsString(propSchema);

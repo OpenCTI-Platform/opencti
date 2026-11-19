@@ -11,7 +11,7 @@ import type { BasicStoreEntityUser } from '../user/user-types';
 import { managedConnectorAdd, managedConnectorEdit, sanitizeContainerName } from './connector-domain';
 import { findConnectorManagers, findConnectors } from './connector-repository';
 import type { BasicStoreEntityConnector } from './connector-types';
-import { connectorSecretKeys } from './connector-export';
+import { connectorSecretKeys, isBundleParameter } from './connector-export';
 import { type ConnectorImportConfiguration, connectorImportSchema } from './connector-import-schema';
 
 export interface ConnectorImportLoaded {
@@ -202,15 +202,15 @@ export const importConfigPresetConnector = async (
   if (!target && !serviceAccountId && !ingestionGroupPlanned && (await findDefaultIngestionGroups(context, user)).length === 0) {
     return refused('no_ingestion_group', NO_INGESTION_GROUP_REASON, !!existing, bundleConnector, connectorCredentials);
   }
-  const parameters = bundleConnector.manager_contract_configuration.filter(({ key }) => configSchema.properties[key] && !secretKeys.includes(key));
+  const isParameter = isBundleParameter(configSchema, secretKeys);
+  const parameters = bundleConnector.manager_contract_configuration.filter(isParameter);
   const isKept = (key: string) => (secretKeys.includes(key) || missingParameterKeys.includes(key)) && !given.some((credential) => credential.key === key);
   const keptValues = (target?.manager_contract_configuration ?? [])
     .filter(({ key, value, encrypted }) => !encrypted && value && isKept(key))
     .map(({ key, value }) => ({ key, value: value as string }));
   const sentValues = [...parameters, ...given.map(({ key }) => ({ key, value: credentials[key] })), ...keptValues];
   // The non-secret parameters stored on the target: the ones the overwrite empties, and the ones compared to the bundle
-  const currentParameters = (target?.manager_contract_configuration ?? [])
-    .filter(({ key, encrypted }) => !encrypted && configSchema.properties[key] && !secretKeys.includes(key));
+  const currentParameters = (target?.manager_contract_configuration ?? []).filter(isParameter);
   // The bundle replaces the parameters: a stored one it does not carry is sent empty, so that an optional parameter
   // is emptied (an array is stored empty, never reset to its default) and a required one falls back to its default.
   // The secrets and the values kept above are never emptied

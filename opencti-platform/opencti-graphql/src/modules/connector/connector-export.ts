@@ -2,7 +2,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { SYSTEM_USER } from '../../utils/access';
-import { getContractConfigSchemaWithoutExcludedRuntimeVars } from '../catalog/catalog-domain';
+import { getContractConfigSchemaWithoutExcludedRuntimeVars, isRemovedWhenEmptied } from '../catalog/catalog-domain';
 import type { BasicStoreEntityConnector } from './connector-types';
 import type { ConnectorImportConfiguration } from './connector-import-schema';
 
@@ -14,17 +14,26 @@ export const connectorSecretKeys = (configSchema: ReturnType<typeof getContractC
     .map(([key]) => key);
 };
 
+/**
+ * Tells whether a configuration entry is a parameter a bundle carries: a parameter of the contract,
+ * neither a secret nor encrypted. The export writes these parameters, and the import compares and overwrites the same ones.
+ */
+export const isBundleParameter = (configSchema: ReturnType<typeof getContractConfigSchemaWithoutExcludedRuntimeVars>, secretKeys: string[]) => {
+  return ({ key, encrypted }: { key: string; encrypted?: boolean | null }) => !encrypted && !secretKeys.includes(key) && Boolean(configSchema.properties[key]);
+};
+
 export const exportConnector = async (context: AuthContext, connector: BasicStoreEntityConnector): Promise<ConnectorImportConfiguration> => {
   const configSchema = getContractConfigSchemaWithoutExcludedRuntimeVars(connector.manager_contract?.config_schema);
   const secretKeys = connectorSecretKeys(configSchema);
   const configurations = connector.manager_contract_configuration ?? [];
   const users = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  // An optional non-list parameter with a default is not stored once cleared (a list is stored empty).
-  // It is exported empty, so that an import keeps it cleared instead of applying its default
+  // A parameter removed when emptied is not stored once cleared. When it has a default, it is exported empty,
+  // so that an import keeps it cleared instead of applying its default
   const storedKeys = new Set(configurations.map(({ key }) => key));
+  const hasDefault = (property: { default?: unknown }) => property.default !== undefined && property.default !== null;
   const clearedParameters = Object.entries(configSchema.properties)
-    .filter(([key, property]) => !storedKeys.has(key) && !secretKeys.includes(key) && !configSchema.required.includes(key)
-      && property.type !== 'array' && property.default !== undefined && property.default !== null)
+    .filter(([key, property]) => !storedKeys.has(key) && !secretKeys.includes(key) && hasDefault(property)
+      && isRemovedWhenEmptied(property, configSchema.required.includes(key)))
     .map(([key]) => ({ key, value: '' }));
   return {
     name: connector.title ?? connector.name,
@@ -33,7 +42,7 @@ export const exportConnector = async (context: AuthContext, connector: BasicStor
     confidence_level: users.get(connector.connector_user_id)?.user_confidence_level?.max_confidence ?? null,
     manager_contract_configuration: [
       ...configurations
-        .filter(({ key, encrypted }) => !encrypted && !secretKeys.includes(key) && configSchema.properties[key])
+        .filter(isBundleParameter(configSchema, secretKeys))
         .map(({ key, value }) => ({ key, value: value ?? '' })),
       ...clearedParameters,
     ],
