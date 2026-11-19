@@ -26,6 +26,7 @@
   "Playbook name already exists": "Playbook-Name existiert bereits",
   "playbooks": "Playbooks",
   "References not found: {references}": "Referenzen nicht gefunden: {references}",
+  "Running: the new definition applies at once": "Läuft: Die neue Definition gilt sofort",
   "Select one of the two options below.": "Wählen Sie eine der beiden Optionen unten aus.",
   "Select the playbooks to import from a full configuration bundle (zip)": "Wählen Sie die zu importierenden Playbooks aus einem vollständigen Konfigurationspaket (zip)",
   "Several platform nodes serve the API: no session is logged out when its last tab is closed.": "Mehrere Plattformknoten stellen die API bereit: Keine Sitzung wird beim Schließen ihres letzten Tabs abgemeldet.",

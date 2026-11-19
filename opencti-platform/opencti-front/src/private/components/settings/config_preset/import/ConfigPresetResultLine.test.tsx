@@ -98,6 +98,7 @@ describe('ConfigPresetResultLine', () => {
     ['Playbook already exists', 'Playbook already exists'],
     ['Playbook name already exists', 'Playbook name already exists'],
     ['Several playbooks have this name: import it as a copy', 'Several playbooks have this name: import it as a copy'],
+    ['Running: the new definition applies at once', 'Running: the new definition applies at once'],
     ['Users not found: Jane', 'Users not found: Jane'],
     ['References not found: TLP:RED, ACME', 'References not found: TLP:RED, ACME'],
   ])('translates the reason %s', (reason, text) => {

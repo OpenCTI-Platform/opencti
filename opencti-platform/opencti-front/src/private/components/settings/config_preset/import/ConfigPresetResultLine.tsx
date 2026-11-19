@@ -104,6 +104,7 @@ const translateKnownReason = (t_i18n: Translate, reason: string): string | undef
     case 'Playbook already exists': return t_i18n('Playbook already exists');
     case 'Playbook name already exists': return t_i18n('Playbook name already exists');
     case 'Several playbooks have this name: import it as a copy': return t_i18n('Several playbooks have this name: import it as a copy');
+    case 'Running: the new definition applies at once': return t_i18n('Running: the new definition applies at once');
     default: break;
   }
   const missingUsers = reason.match(/^Users not found: (.+)$/)?.[1];

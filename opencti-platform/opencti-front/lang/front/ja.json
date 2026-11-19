@@ -26,6 +26,7 @@
   "Playbook name already exists": "このプレイブック名は既に存在します",
   "playbooks": "プレイブック",
   "References not found: {references}": "参照が見つかりません: {references}",
+  "Running: the new definition applies at once": "実行中: 新しい定義はすぐに適用されます",
   "Select one of the two options below.": "以下の2つのオプションのいずれかを選択してください。",
   "Select the playbooks to import from a full configuration bundle (zip)": "完全な構成バンドル (zip) からインポートするプレイブックを選択します",
   "Several platform nodes serve the API: no session is logged out when its last tab is closed.": "複数のプラットフォームノードがAPIを提供しています：最後のタブを閉じてもセッションはログアウトされません。",

@@ -229,7 +229,7 @@ describe('Config preset registry', () => {
       {
         id: 'playbooks',
         label: 'Playbooks',
-        description: 'Playbook definitions, imported as stopped',
+        description: 'Playbook definitions, created stopped',
         group: 'automationRules',
         itemIds: ['Enrich reports', 'Enrich reports (1)', 'Triage/Phishing'],
       },

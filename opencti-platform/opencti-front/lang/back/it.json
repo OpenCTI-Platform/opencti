@@ -931,7 +931,7 @@
   "Platform(s) affinity": "Affinità con le piattaforme",
   "Platforms": "Piattaforme",
   "Playbook definition": "Definizione del playbook",
-  "Playbook definitions, imported as stopped": "Definizioni dei playbook, importati in stato arrestato",
+  "Playbook definitions, created stopped": "Definizioni dei playbook, creati in stato arrestato",
   "Playbook running": "Playbook in esecuzione",
   "Playbook supported": "Playbook supportato",
   "Playbooks": "Playbook",

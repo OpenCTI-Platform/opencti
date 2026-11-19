@@ -18,7 +18,7 @@ vi.mock('../../../../src/modules/playbook/components/ai-agent-shared', async (im
 import { fullEntitiesList, internalFindByIdsMapped } from '../../../../src/database/middleware-loader';
 import { playbookAddFromImport, playbookEdit } from '../../../../src/modules/playbook/playbook-domain';
 import { sanitizeDefinitionRunAs } from '../../../../src/modules/playbook/components/ai-agent-shared';
-import { AMBIGUOUS_PLAYBOOK_REASON, importConfigPresetPlaybook } from '../../../../src/modules/playbook/playbook-import';
+import { AMBIGUOUS_PLAYBOOK_REASON, importConfigPresetPlaybook, RUNNING_PLAYBOOK_REASON } from '../../../../src/modules/playbook/playbook-import';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
@@ -178,11 +178,18 @@ describe('Playbook import of a configuration preset', () => {
   it('overwrites only the fields that differ, and keeps the running state of the playbook', async () => {
     withPlatform([storedPlaybook({ description: 'Old' })]);
     const dryRun = await importConfigPresetPlaybook(context, user, bundlePlaybook(), { mode: ConfigImportMode.Overwrite, dryRun: true });
-    expect(dryRun).toMatchObject({ status: 'overwritten', exists: true });
+    expect(dryRun).toMatchObject({ status: 'overwritten', exists: true, reason: RUNNING_PLAYBOOK_REASON });
     expect(playbookEdit).not.toHaveBeenCalled();
     await importConfigPresetPlaybook(context, user, bundlePlaybook(), { mode: ConfigImportMode.Overwrite });
     expect(playbookEdit).toHaveBeenCalledWith(context, user, 'playbook-id', [{ key: 'description', value: ['Enrich the incoming reports'] }]);
     expect(playbookAddFromImport).not.toHaveBeenCalled();
+  });
+
+  it('tells nothing about the running state when the overwritten playbook is stopped', async () => {
+    withPlatform([storedPlaybook({ description: 'Old', playbook_running: false })]);
+    const result = await importConfigPresetPlaybook(context, user, bundlePlaybook(), { mode: ConfigImportMode.Overwrite, dryRun: true });
+    expect(result).toMatchObject({ status: 'overwritten' });
+    expect(result.reason).toBeUndefined();
   });
 
   it('overwrites the definition when a node differs', async () => {
