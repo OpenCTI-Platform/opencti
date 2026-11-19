@@ -291,6 +291,19 @@ export const getWorkflowConfig = async (
 };
 
 /**
+ * Entity setting of the exact type, read from the cache: no search. The engine resolves a definition from the setting
+ * of the concrete type (see getWorkflowConfig), so unlike getEntitySettingFromCache this does not inherit the abstract
+ * relationship or observable setting. The cache refreshes on bus events: a setting changed a moment ago may be stale.
+ */
+const getCachedEntitySettingOfType = async (
+  context: AuthContext,
+  targetType: string,
+): Promise<BasicStoreEntityEntitySetting | undefined> => {
+  const entitySettings = await getEntitiesListFromCache<BasicStoreEntityEntitySetting>(context, SYSTEM_USER, ENTITY_TYPE_ENTITY_SETTING);
+  return entitySettings.find((entitySetting) => entitySetting.target_type === targetType);
+};
+
+/**
  * Id of the workflow definition an entity setting holds for a scope. There is no fallback between
  * scopes: a request-access lookup never resolves to the Global definition, nor the reverse.
  */
@@ -2957,6 +2970,9 @@ export const initializeEntityWorkflow = async (
   if (getDraftContext(context, user)) return;
   const executionContext = bypassDraftContext(context);
   const executionUser = bypassDraftUser(user);
+  // Hot path of every entity creation: an instance can only be created while a definition exists, so a type without
+  // one returns here, before any search
+  if (!hasWorkflowDefinition(await getCachedEntitySettingOfType(executionContext, entity.entity_type))) return;
   const entitySetting = await getWorkflowConfig(executionContext, executionUser, entity.entity_type);
   const resolved = await resolveEntityDefinition(executionContext, executionUser, entity, entitySetting);
   if (!resolved.definitionData) return;
@@ -3297,6 +3313,10 @@ export const cleanupEntityWorkflow = async (
   if (entity.entity_type === ENTITY_TYPE_WORKFLOW_INSTANCE) return;
   const executionContext = bypassDraftContext(context);
   const executionUser = bypassDraftUser(user);
+  // A type with no entity setting of its own (relationships such as `uses`, `related-to`) never held a workflow
+  // instance. A type whose definition was unlinked can still have instances left behind, so a type that has a
+  // setting keeps the search.
+  if (!await getCachedEntitySettingOfType(executionContext, entity.entity_type)) return;
   const effectiveEntityId = entity.internal_id || entity.id;
   const instanceEntity = await findWorkflowInstanceEntity(executionContext, executionUser, effectiveEntityId);
   if (!instanceEntity) return;

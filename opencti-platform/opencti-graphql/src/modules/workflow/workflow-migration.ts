@@ -1,6 +1,8 @@
 import { logMigration } from '../../config/conf';
 import { fullEntitiesList } from '../../database/middleware-loader';
 import { StatusScope } from '../../generated/graphql';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
@@ -20,6 +22,16 @@ export type WorkflowMigrationResult = {
 };
 
 const OUTCOMES: WorkflowMigrationOutcome[] = ['migrated', 'has_workflow', 'no_statuses', 'failed'];
+
+const SKIPPED_ENTITY_TYPES = new Set<string>([
+  // The workflow of a draft must contain a validateDraft action, a migrated one never has it
+  ENTITY_TYPE_DRAFT_WORKSPACE,
+  // Abstract relationship settings are only inherited defaults: the engine resolves the workflow of the concrete
+  // relationship type (exact lookup), so a definition published here is never used, and it would make the
+  // relationship edition forms read-only
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  STIX_SIGHTING_RELATIONSHIP,
+]);
 
 // Entity settings exist for every entity type, but only some of them hold a workflow.
 const hasWorkflowSetting = (entityType: string): boolean => {
@@ -64,8 +76,7 @@ export const migrateAllWorkflowDefinitions = async (context: AuthContext, user: 
   const entitySettings = await fullEntitiesList<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING]);
   const results: WorkflowMigrationResult[] = [];
   for (const { target_type: entityType } of entitySettings) {
-    // The workflow of a draft must contain a validateDraft action, a migrated one never has it
-    if (entityType === ENTITY_TYPE_DRAFT_WORKSPACE || !hasWorkflowSetting(entityType)) continue;
+    if (SKIPPED_ENTITY_TYPES.has(entityType) || !hasWorkflowSetting(entityType)) continue;
     results.push(await migrateScope(context, user, entityType, StatusScope.Global));
     if (entityType === ENTITY_TYPE_CONTAINER_CASE_RFI) {
       results.push(await migrateScope(context, user, entityType, StatusScope.RequestAccess));

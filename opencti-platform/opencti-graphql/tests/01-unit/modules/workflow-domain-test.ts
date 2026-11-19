@@ -4580,9 +4580,22 @@ describe('getMassWorkflowTransitions', () => {
   });
 });
 
+// The workflow guard of `initializeEntityWorkflow` / `cleanupEntityWorkflow` reads the entity settings from the cache,
+// the status lookup reads the statuses from the same cache: answer each by the requested type
+const WORKFLOW_ENTITY_SETTINGS = [
+  { target_type: 'Incident', workflow_id: 'workflow-def-id' },
+  { target_type: 'Case-Rfi', workflow_id: 'global-def', request_access_workflow: { workflow_definition_id: 'ra-def' } },
+];
+const mockCacheContent = (statuses: unknown[] = [], entitySettings: unknown[] = WORKFLOW_ENTITY_SETTINGS) => {
+  (getEntitiesListFromCache as any).mockImplementation((_context: unknown, _user: unknown, type: string) => {
+    return Promise.resolve(type === ENTITY_TYPE_ENTITY_SETTING ? entitySettings : statuses);
+  });
+};
+
 describe('cleanupEntityWorkflow', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockCacheContent();
   });
 
   it('is a no-op when the deleted entity is itself a WorkflowInstance', async () => {
@@ -4608,6 +4621,25 @@ describe('cleanupEntityWorkflow', () => {
       },
     });
     expect(deleteElementById).not.toHaveBeenCalled();
+  });
+
+  it('skips the instance search for a type that has no entity setting', async () => {
+    mockCacheContent([], []);
+    const entity = { id: 'rel-id', internal_id: 'rel-id', entity_type: 'uses' };
+
+    await cleanupEntityWorkflow(mockContext, mockUser, entity);
+
+    expect(loadEntity).not.toHaveBeenCalled();
+    expect(deleteElementById).not.toHaveBeenCalled();
+  });
+
+  it('keeps searching the instance of a type whose workflow was unlinked, so no instance is orphaned', async () => {
+    mockCacheContent([], [{ target_type: 'Incident' }]);
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', entity_type: ENTITY_TYPE_WORKFLOW_INSTANCE });
+
+    await cleanupEntityWorkflow(mockContext, mockUser, { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
+
+    expect(deleteElementById).toHaveBeenCalledWith(mockContext, mockUser, 'inst-id', ENTITY_TYPE_WORKFLOW_INSTANCE);
   });
 
   it('deletes the WorkflowInstance found for the deleted entity', async () => {
@@ -4652,6 +4684,7 @@ describe('cleanupEntityWorkflow', () => {
 describe('initializeEntityWorkflow — creation-time status resolution', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockCacheContent();
   });
 
   const definitionContent = JSON.stringify({
@@ -4667,6 +4700,20 @@ describe('initializeEntityWorkflow — creation-time status resolution', () => {
     (createRelation as any).mockResolvedValue({});
   };
 
+  it.each([
+    ['has no entity setting', []],
+    ['has an entity setting without a workflow', [{ target_type: 'Incident' }]],
+  ])('returns before any store search when the type %s', async (_label, entitySettings) => {
+    setupCommon();
+    mockCacheContent([], entitySettings);
+
+    await initializeEntityWorkflow(mockContext, mockUser, { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' });
+
+    expect(findByType).not.toHaveBeenCalled();
+    expect(loadEntity).not.toHaveBeenCalled();
+    expect(createEntity).not.toHaveBeenCalled();
+  });
+
   it('case (a): an explicit status that resolves to a valid state starts the instance there, with no projection write', async () => {
     setupCommon();
     (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
@@ -4675,7 +4722,7 @@ describe('initializeEntityWorkflow — creation-time status resolution', () => {
       }
       return Promise.resolve(null);
     });
-    (getEntitiesListFromCache as any).mockResolvedValue([
+    mockCacheContent([
       { id: 'status-reviewing-id', internal_id: 'status-reviewing-id', template_id: 'reviewing', scope: StatusScope.Global },
     ]);
 
@@ -4703,7 +4750,7 @@ describe('initializeEntityWorkflow — creation-time status resolution', () => {
       }
       return Promise.resolve(null);
     });
-    (getEntitiesListFromCache as any).mockResolvedValue([
+    mockCacheContent([
       { id: 'status-foreign-id', internal_id: 'status-foreign-id', template_id: 'some-other-state', scope: StatusScope.Global },
     ]);
 
@@ -4729,7 +4776,7 @@ describe('initializeEntityWorkflow — creation-time status resolution', () => {
       }
       return Promise.resolve(undefined);
     });
-    (getEntitiesListFromCache as any).mockResolvedValue([]); // status lookup misses entirely
+    mockCacheContent([]); // status lookup misses entirely
 
     const entity = {
       id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident', x_opencti_workflow_id: 'status-does-not-exist',
@@ -4758,7 +4805,7 @@ describe('initializeEntityWorkflow — creation-time status resolution', () => {
       }
       return Promise.resolve(null);
     });
-    (getEntitiesListFromCache as any).mockResolvedValue([
+    mockCacheContent([
       { id: 'status-reviewing-id', internal_id: 'status-reviewing-id', template_id: 'reviewing', scope: StatusScope.Global },
     ]);
 
@@ -7326,7 +7373,7 @@ describe('Instance scope as the single source of truth', () => {
     __resetReadRepairRateLimitForTest();
     (booleanConf as any).mockReturnValue(false);
     (findStatusesByType as any).mockResolvedValue(statuses);
-    (getEntitiesListFromCache as any).mockResolvedValue(statuses);
+    mockCacheContent(statuses);
     (loadEntity as any).mockResolvedValue(null);
     (createEntity as any).mockResolvedValue({ id: 'instance-id', internal_id: 'instance-id' });
     (createRelation as any).mockResolvedValue({});
@@ -7387,7 +7434,7 @@ describe('Instance scope as the single source of truth', () => {
 
   it('creates the instance with the scope that resolved the definition, even when the status maps to no state', async () => {
     (findByType as any).mockResolvedValue(bothDefinitions);
-    (getEntitiesListFromCache as any).mockResolvedValue([status('ra-unmapped', 'unmapped', StatusScope.RequestAccess)]);
+    mockCacheContent([status('ra-unmapped', 'unmapped', StatusScope.RequestAccess)]);
 
     await initializeEntityWorkflow(mockContext, mockUser, { ...rfi, x_opencti_workflow_id: 'ra-unmapped' });
 
@@ -7508,7 +7555,7 @@ describe('Instance scope as the single source of truth', () => {
         return Promise.resolve(null);
       });
       const reviewStatuses = [...statuses, status('global-review', 'review', StatusScope.Global), status('ra-review', 'review', StatusScope.RequestAccess)];
-      (getEntitiesListFromCache as any).mockResolvedValue(reviewStatuses);
+      mockCacheContent(reviewStatuses);
       (findStatusesByType as any).mockResolvedValue(reviewStatuses);
     };
 

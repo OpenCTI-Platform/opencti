@@ -7,6 +7,8 @@ import { updateAttribute } from '../../../src/database/middleware';
 import { wait } from '../../../src/database/utils';
 import { createStatus, createStatusTemplate, statusTemplateDelete } from '../../../src/domain/status';
 import { StatusScope } from '../../../src/generated/graphql';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../../src/schema/general';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
 import { ENTITY_TYPE_CONTAINER_OPINION } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../../../src/modules/case/case-rft/case-rft-types';
@@ -154,6 +156,12 @@ describe('Workflow definitions migration', () => {
 
   it('never migrates DraftWorkspace', async () => {
     expect(firstRun.some(({ entityType }) => entityType === 'DraftWorkspace')).toBe(false);
+  });
+
+  it('never migrates the abstract relationship settings', async () => {
+    const migratedTypes = firstRun.map(({ entityType }) => entityType);
+    expect(migratedTypes).not.toContain(ABSTRACT_STIX_CORE_RELATIONSHIP);
+    expect(migratedTypes).not.toContain(STIX_SIGHTING_RELATIONSHIP);
   });
 
   it('is idempotent: a second run migrates nothing and keeps the published workflow', async () => {
