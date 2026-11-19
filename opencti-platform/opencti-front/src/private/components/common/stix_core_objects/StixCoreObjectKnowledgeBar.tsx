@@ -189,7 +189,7 @@ const StixCoreObjectKnowledgeBar = ({
 }: StixCoreObjectKnowledgeBarProps) => {
   const theme = useTheme<Theme>();
   const draftContext = useDraftContext();
-  const { bannerSettings, schema } = useAuth();
+  const { bannerSettings } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { height: topBannerHeight } = useTopBanner();
   const {
@@ -428,7 +428,9 @@ const StixCoreObjectKnowledgeBar = ({
           label: 'Observables',
           iconType: 'Stix-Cyber-Observable',
           path: 'observables',
-          count: sumEntitiesByKeys(distributions.observables, [...schema.scos.map((s) => s.id), 'Stixfile', 'Ipv4-Addr', 'Ipv6-Addr']),
+          // the distribution only holds observables: sum every bucket, as its labels are pascalized
+          // (Ssh-Key, Ai-Prompt...) and would not match all the observable type names of the schema
+          count: sumEntitiesByKeys(distributions.observables),
         },
         {
           label: 'Infrastructures',
