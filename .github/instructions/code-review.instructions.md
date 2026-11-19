@@ -47,6 +47,15 @@ and every new nested `mappings` entry of the feature sets `featureFlag: <FLAG_CO
 A missing one silently adds the field to the ElasticSearch mapping with the flag off.
 See [Feature Flags](backend/patterns/feature-flags.md).
 
+## User References
+When a change stores a user id, check that it is declared in
+`src/modules/userMerge/userMerge-register.ts`. This applies to an attribute, a stored filter, or
+an id inside a JSON or Base64 payload such as a manifest, a configuration or `default_values`.
+
+A JSON payload is the case no test catches. If the id gives the user ownership, access or an
+identity to run as, the row must be `transfer` and covered by a handler.
+See [User References](backend/patterns/user-references.md).
+
 ## Review Style
 - Be specific and actionable in feedback
 - Explain the "why" behind recommendations

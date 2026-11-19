@@ -123,7 +123,7 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
                       }
                     }}
                   >
-                    <StixCoreObjectHistoryLine key={log.id} node={log} isRelation={isRelationLog} />
+                    <StixCoreObjectHistoryLine key={log.id} node={log} isRelation={isRelationLog} hasDetails={hasChanges} />
                   </ListItemButton>
                 </ListItem>
               </React.Fragment>

@@ -186,6 +186,12 @@ For OpenID, the following fields are mandatory (indicated with a "*" in the form
 - Client ID: The ID of your client access on the Identity Provider
 - Client secret: The secret of your client access on the Identity Provider
 
+##### Token endpoint authentication method
+
+By default, OpenCTI sends the client secret in the body of the token request (`client_secret_post`). Some Identity Providers (e.g. Okta, Authelia) only accept it in the `Authorization` header and reject the request with `invalid_client`. In that case, add an **Extra Configuration** field (see "Add a custom field not present in SAML, LDAP, OpenID" below) with key `token_endpoint_auth_method` and value `client_secret_basic`.
+
+Supported values: `client_secret_basic`, `client_secret_post`. Any other value is ignored and a warning is written to the authentication logs.
+
 #### SAML
 
 For SAML, the following fields are mandatory (indicated with a "*" in the form):

@@ -6,7 +6,7 @@ hide:
 
 # OpenCTI Documentation Space
 
-Welcome to the OpenCTI Documentation space. Here you will be able to find all documents, meeting notes and presentations about the platform.
+Welcome to the OpenCTI Documentation space. It covers how to deploy and configure the platform, how to use and administrate it, the technical reference of its data and APIs, and how to develop on it.
 
 
 !!! info "Release notes"
@@ -17,7 +17,7 @@ Welcome to the OpenCTI Documentation space. Here you will be able to find all do
 
 OpenCTI is an open source platform allowing organizations to manage their cyber threat intelligence knowledge and observables. It has been created in order to structure, store, organize and visualize technical and non-technical information about cyber threats.
 
-!!! tip "Docker deployment of the full XTM suite (OpenCTI - OpenAEV - OpenGRC)"
+!!! tip "Docker deployment of the full XTM suite (OpenCTI - OpenAEV - XTM One - XTM Composer)"
 
     If you're looking for information about the deployment of the full eXtended Threat Management (XTM) suite using Docker, please refer [to this repository and documentation](https://github.com/FiligranHQ/xtm-docker).
 
@@ -51,6 +51,24 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
     segregation, put retention policies and custom taxonomies.
 
     [:octicons-arrow-right-24:{ .middle } Customize](administration/introduction.md)
+
+-   :material-book-open-variant:{ .lg .middle } __Reference__
+
+    ---
+
+    Look up the technical reference: the GraphQL API, filters, data
+    streaming, the data model and taxonomies.
+
+    [:octicons-arrow-right-24:{ .middle } Look up](reference/api.md)
+
+-   :material-code-braces:{ .lg .middle } __Development__
+
+    ---
+
+    Set up a development environment, work on the platform, use the
+    Python library and build your own connectors.
+
+    [:octicons-arrow-right-24:{ .middle } Develop](development/platform.md)
 
 </div>
 

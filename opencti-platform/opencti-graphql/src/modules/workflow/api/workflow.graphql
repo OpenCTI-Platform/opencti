@@ -16,6 +16,7 @@ enum WorkflowRequestAccessOutcome {
 
 type WorkflowSerializedState {
     statusId: String!
+    workflowStatusId: String
     order: Int
     onEnter: [WorkflowActionConfig!]
     onExit: [WorkflowActionConfig!]
@@ -164,6 +165,8 @@ type WorkflowTransition {
     requiresUnshareOrganizationInput: Boolean
     # Outcome marked on the target state of a request access transition, null for any other transition.
     requestAccessOutcome: WorkflowRequestAccessOutcome
+    """Blocked transitions only: JSON filter group of the entity conditions not met yet"""
+    blockingConditions: String
 }
 
 type WorkflowBypassStatus {
@@ -187,6 +190,8 @@ type WorkflowInstance {
     currentState: String!
     currentStatus: Status
     allowedTransitions: [WorkflowTransition!]!
+    """Transitions the user is targeted by but whose entity conditions are not met yet"""
+    blockedTransitions: [WorkflowTransition!]!
     lastHistoryEntry: WorkflowLastHistoryEntry
     pendingStatus: WorkflowExecutionStatus
     pendingError: String
@@ -200,8 +205,8 @@ extend type DraftWorkspace {
 
 extend type Query {
     workflowDefinition(entityType: String!, allowDraft: Boolean, scope: StatusScope): WorkflowSchema @auth(for: [SETTINGS_SETCUSTOMIZATION])
-    workflowDefinitionPublished(entityType: String!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
-    workflowStatuses(entityType: String!): [Status!]! @auth(for: [KNOWLEDGE_KNUPDATE]) @ff(flags: ["ENTITIES_WORKFLOW"], softFail: true, defaultValue: "[]")
+    workflowDefinitionPublished(entityType: String!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE])
+    workflowStatuses(entityType: String!): [Status!]! @auth(for: [KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE]) @ff(flags: ["ENTITIES_WORKFLOW"], softFail: true, defaultValue: "[]")
     workflowMassTransitions(entityType: String!, entityIds: [String!], filters: String, search: String, excludedIds: [String!]): [WorkflowTransition!]! @auth(for: [KNOWLEDGE_KNUPDATE]) @ff(flags: ["ENTITIES_WORKFLOW"], softFail: true, defaultValue: "[]")
     workflowMigrationPreview(entityType: String!): WorkflowMigrationPreview @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowInstance(entityId: String!): WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE], forDraft: [KNOWLEDGE_KNUPDATE])

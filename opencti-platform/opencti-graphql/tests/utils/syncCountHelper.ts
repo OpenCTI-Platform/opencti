@@ -40,7 +40,7 @@ testCreatedCounter.identity = 63;
 testCreatedCounter.imei = 3;
 testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 7;
-testCreatedCounter.indicator = 61;
+testCreatedCounter.indicator = 64;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
@@ -89,14 +89,17 @@ testCreatedCounter['tracking-number'] = 1;
 // - 3 created and deleted by vocabulary-import-test
 testCreatedCounter.vocabulary = VOCABULARY_NUMBERS + 3;
 // 1 created and deleted by ingestionDeduplication-test (a type outside the deduplication allowlist)
-testCreatedCounter.vulnerability = 12;
+// 3 created and deleted by filterGroup-test (nil / not_nil operators on numbers)
+testCreatedCounter.vulnerability = 15;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
 testCreatedCounter['security-coverage'] = 27;
 testCreatedCounter['security-coverage-result'] = 22;
 
 export const testUpdatedCounter: Record<string, number> = {};
-testUpdatedCounter['marking-definition'] = 3;
+// Counts for:
+// - 2 by configPreset-import-markings-test (a built-in marking changed then imported back)
+testUpdatedCounter['marking-definition'] = 5;
 testUpdatedCounter.relationship = 9;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
@@ -117,7 +120,7 @@ testUpdatedCounter['data-source'] = 1;
 testUpdatedCounter['external-reference'] = 1;
 testUpdatedCounter.grouping = 3;
 testUpdatedCounter.incident = 4;
-testUpdatedCounter.indicator = 33;
+testUpdatedCounter.indicator = 35;
 // Counts for:
 // - 3 updated by killChainPhase-import-test
 testUpdatedCounter['kill-chain-phase'] = 3;
@@ -187,7 +190,7 @@ testDeletedCounter.grouping = 2;
 // and 2 by ingestionDeduplication-domain-test
 testDeletedCounter.identity = 46;
 testDeletedCounter.incident = 6;
-testDeletedCounter.indicator = 33;
+testDeletedCounter.indicator = 36;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
@@ -231,7 +234,8 @@ testDeletedCounter.tool = 5;
 // - 3 deleted by vocabulary-import-test
 testDeletedCounter.vocabulary = 3;
 // 1 by ingestionDeduplication-test
-testDeletedCounter.vulnerability = 6;
+// 3 by filterGroup-test (nil / not_nil operators on numbers)
+testDeletedCounter.vulnerability = 9;
 testDeletedCounter.software = 1;
 testDeletedCounter.iccid = 4;
 testDeletedCounter.imei = 3;

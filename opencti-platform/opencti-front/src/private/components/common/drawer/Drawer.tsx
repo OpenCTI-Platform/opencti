@@ -2,7 +2,7 @@ import DrawerHeader from '@common/drawer/DrawerHeader';
 import DrawerMUI from '@mui/material/Drawer';
 import { styled, useTheme } from '@mui/material/styles';
 import { fdsLayerClass, layerInputVars, SURFACE_LAYER } from '../../../../utils/fdsLayer';
-import React, { CSSProperties, forwardRef, isValidElement, useEffect, useState } from 'react';
+import React, { CSSProperties, forwardRef, isValidElement, useEffect, useId, useState } from 'react';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -80,6 +80,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
   } = useAuth();
 
   const theme = useTheme<Theme>();
+  const titleId = useId();
   const [open, setOpen] = useState(defaultOpen);
   useEffect(() => {
     if (open !== defaultOpen) {
@@ -196,7 +197,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
             ref,
             className: fdsLayerClass(SURFACE_LAYER),
             'aria-modal': 'true',
-            'aria-labelledby': 'drawer-title',
+            'aria-labelledby': titleId,
             role: 'dialog',
             sx: {
               ...layerInputVars,
@@ -217,6 +218,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
       >
         <DrawerHeader
           title={title}
+          titleId={titleId}
           endContent={(
             <>
               {context && <SubscriptionAvatars context={context} />}

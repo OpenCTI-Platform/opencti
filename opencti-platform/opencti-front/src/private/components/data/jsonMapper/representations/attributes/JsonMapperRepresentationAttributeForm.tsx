@@ -96,7 +96,7 @@ const JsonMapperRepresentationAttributeForm: FunctionComponent<
           fullWidth={true}
         />
       </div>
-      <div>
+      <div style={{ alignSelf: 'end' }}>
         {
           (schemaAttribute.type === 'date' || schemaAttribute.multiple || schemaAttribute.editDefault)
           && (

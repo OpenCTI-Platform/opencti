@@ -15,6 +15,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import type { Theme } from '../../../../components/Theme';
+import { toSingleLineHistoryMessage } from '../../common/history/historyMessage';
 
 const Container = styled('div')({
   marginBottom: 5,
@@ -42,10 +43,12 @@ const Content = styled('div')({
 });
 
 const Description = styled('div')({
-  height: '100%',
+  lineHeight: '24px',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
+  // The text must flow inline in this box for the ellipsis to apply
+  '& .markdown, & .markdown p': { display: 'inline' },
 });
 
 const LogDate = styled('div')({
@@ -346,27 +349,32 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
           <LogDate>{ftdt(log.timestamp)}</LogDate>
           <Tooltip
             slotProps={{
+              // The values are data (names, ids, statuses): keep their case, the theme lowercases tooltips
+              popper: { sx: { textTransform: 'none' } },
               tooltip: {
                 sx: {
                   maxWidth: '80%',
                   lineHeight: 2,
                   padding: '10px',
+                  textTransform: 'none',
                 },
               },
             }}
             title={(
               <MarkdownDisplay
-                content={`\`${log.user?.name}\` ${log.context_data?.message}`}
+                content={`\`${log.user?.name ?? ''}\` ${toSingleLineHistoryMessage(log.context_data?.message)}`}
                 remarkGfmPlugin={true}
                 commonmark={true}
+                removeLineBreaks={true}
               />
             )}
           >
             <Description>
               <MarkdownDisplay
-                content={`\`${log.user?.name}\` ${log.context_data?.message}`}
+                content={`\`${log.user?.name ?? ''}\` ${toSingleLineHistoryMessage(log.context_data?.message)}`}
                 remarkGfmPlugin={true}
                 commonmark={true}
+                removeLineBreaks={true}
               />
             </Description>
           </Tooltip>

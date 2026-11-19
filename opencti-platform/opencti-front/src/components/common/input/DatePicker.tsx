@@ -1,12 +1,12 @@
 import React from 'react';
-import { DatePicker as MuiDatePicker, DatePickerProps } from '@mui/x-date-pickers/DatePicker';
 import { useTheme } from '@mui/material/styles';
 import { PickersTextFieldProps } from '@mui/x-date-pickers/PickersTextField';
 import { Theme } from '../../Theme';
+import BaseDatePicker, { BaseDatePickerProps } from './picker/BaseDatePicker';
 
 // Narrowed to the object form, so the wrapper can merge its own field props in.
-type FieldDatePickerProps = Omit<DatePickerProps, 'slotProps'> & {
-  slotProps?: Omit<NonNullable<DatePickerProps['slotProps']>, 'textField'> & {
+type FieldDatePickerProps = Omit<BaseDatePickerProps, 'slotProps'> & {
+  slotProps?: Omit<NonNullable<BaseDatePickerProps['slotProps']>, 'textField'> & {
     textField?: Partial<PickersTextFieldProps>;
   };
 };
@@ -19,7 +19,7 @@ const DatePicker: React.FC<FieldDatePickerProps> = ({
   const { value } = datePickerProps;
 
   return (
-    <MuiDatePicker
+    <BaseDatePicker
       {...datePickerProps}
       slotProps={{
         ...slotProps,

@@ -11,6 +11,7 @@ import { createRedisClient } from '../../src/database/redis';
 import { logApp, environment } from '../../src/config/conf';
 import cacheManager from '../../src/manager/cacheManager';
 import { initDefaultNotifiers } from '../../src/modules/notifier/notifier-domain';
+import { initLockedUserEmailTemplate } from '../../src/modules/emailTemplate/emailTemplate-domain';
 import { initializeInternalQueues } from '../../src/modules/connector/connector-rabbitmq';
 import { executionContext } from '../../src/utils/access';
 import { initializeData } from '../../src/database/data-initialization';
@@ -49,6 +50,8 @@ const initializePlatform = async () => {
   await initializeData(context, true);
   await initializeAdminUser(context);
   await initDefaultNotifiers(context);
+  // As platformInit: the built-in template exists only behind the feature flag of the local authentication lockout
+  await initLockedUserEmailTemplate(context);
   await initializeAuthenticationProviders(context);
   logApp.info(`[vitest-global-setup] Platform initialized in ${new Date().getTime() - stopTime} ms`);
 };

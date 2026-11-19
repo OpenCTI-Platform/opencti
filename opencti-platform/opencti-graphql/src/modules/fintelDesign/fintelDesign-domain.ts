@@ -1,3 +1,4 @@
+import { Readable } from 'node:stream';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityFintelDesign, ENTITY_TYPE_FINTEL_DESIGN, type StoreEntityFintelDesign } from './fintelDesign-types';
@@ -12,6 +13,7 @@ import { guessMimeType } from '../../database/file-storage';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { lockResources } from '../../lock/master-lock';
+import { FINTEL_DESIGN_LOGO_FOLDER, readFintelDesignLogoUpload } from './fintelDesign-logo';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string): Promise<BasicStoreEntityFintelDesign> => {
   await checkEnterpriseEdition(context);
@@ -23,7 +25,8 @@ export const findFintelDesignPaginated = async (context: AuthContext, user: Auth
   return pageEntitiesConnection<BasicStoreEntityFintelDesign>(context, user, [ENTITY_TYPE_FINTEL_DESIGN], opts);
 };
 
-export const addFintelDesign = async (context: AuthContext, user: AuthUser, fintelDesign: FintelDesignAddInput) => {
+// standard_id is not part of FintelDesignAddInput: only internal callers (the import of a configuration preset) set it
+export const addFintelDesign = async (context: AuthContext, user: AuthUser, fintelDesign: FintelDesignAddInput & { standard_id?: string }) => {
   await checkEnterpriseEdition(context);
   const fintelDesignWithDefault = { ...fintelDesign, default: fintelDesign.default ?? false };
 
@@ -58,31 +61,33 @@ export const addFintelDesign = async (context: AuthContext, user: AuthUser, fint
   }
 };
 
+// The designs marked as the default: one, except while a new default takes the place of the previous one. The id excluded is the new one
+const findDefaultFintelDesigns = (context: AuthContext, user: AuthUser, { excludedId, baseData = false }: { excludedId?: string; baseData?: boolean } = {}) => {
+  return fullEntitiesList<BasicStoreEntityFintelDesign>(context, user, [ENTITY_TYPE_FINTEL_DESIGN], {
+    baseData,
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['default'], values: [true] },
+        ...(excludedId ? [{ key: ['id'], values: [excludedId], operator: FilterOperator.NotEq }] : []),
+      ],
+      filterGroups: [],
+    },
+  });
+};
+
+// The default design of the platform, undefined when it has none
+export const findDefaultFintelDesign = async (context: AuthContext, user: AuthUser): Promise<BasicStoreEntityFintelDesign | undefined> => {
+  const [defaultDesign] = await findDefaultFintelDesigns(context, user);
+  return defaultDesign;
+};
+
 const applyUniqueDefaultFintelDesignConstraint = async (
   context: AuthContext,
   user: AuthUser,
   newDefaultDesignId: string,
 ): Promise<StoreEntityFintelDesign[]> => {
-  const previousDefaultDesigns = await fullEntitiesList<BasicStoreEntityFintelDesign>(
-    context,
-    user,
-    [ENTITY_TYPE_FINTEL_DESIGN],
-    {
-      baseData: true,
-      filters: {
-        filters: [{
-          key: ['default'],
-          values: [true],
-        }, {
-          key: ['id'],
-          values: [newDefaultDesignId],
-          operator: FilterOperator.NotEq,
-        }],
-        filterGroups: [],
-        mode: FilterMode.And,
-      },
-    },
-  );
+  const previousDefaultDesigns = await findDefaultFintelDesigns(context, user, { excludedId: newDefaultDesignId, baseData: true });
 
   if (previousDefaultDesigns.length === 0) {
     return [];
@@ -110,8 +115,10 @@ const uploadFintelDesignFile = async (context: AuthContext, user: AuthUser, fint
   if (!mimeType.includes('image/')) {
     throw UnsupportedError('Fintel design logo file format must be image/', { mimeType });
   }
-  const fintelDesignLogoFile = { ...fullFile, filename: `${fintelDesignId}` };
-  const { upload } = await uploadToStorage(context, user, 'fintelDesigns', fintelDesignLogoFile, {});
+  // The size, the format and the completeness are checked on the bytes really read, before anything is stored
+  const content = await readFintelDesignLogoUpload(fullFile.createReadStream());
+  const fintelDesignLogoFile = { ...fullFile, filename: `${fintelDesignId}`, createReadStream: () => Readable.from([content]) };
+  const { upload } = await uploadToStorage(context, user, FINTEL_DESIGN_LOGO_FOLDER, fintelDesignLogoFile, {});
   return { upload };
 };
 
