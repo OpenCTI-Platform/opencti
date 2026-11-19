@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { ADMIN_USER, testContext } from '../../../utils/testQuery';
+import { ADMIN_USER, buildStandardUser, testContext } from '../../../utils/testQuery';
 import { addKillChainPhase, killChainPhaseDelete } from '../../../../src/domain/killChainPhase';
 import { addAttackPattern } from '../../../../src/domain/attackPattern';
 import { stixObjectMerge } from '../../../../src/domain/stix';
@@ -35,6 +35,15 @@ describe('Kill chain phase merge', () => {
     if (await storeLoadById(testContext, ADMIN_USER, target.id, ENTITY_TYPE_KILL_CHAIN_PHASE)) {
       await killChainPhaseDelete(testContext, ADMIN_USER, target.id);
     }
+  });
+
+  it('refuses the merge to a user who can merge knowledge but cannot manage kill chain phases', async () => {
+    // The default standard user holds KNOWLEDGE_KNUPDATE_KNMERGE but not SETTINGS_SETKILLCHAINPHASES
+    const knowledgeMerger = buildStandardUser([]);
+    await expect(stixObjectMerge(testContext, knowledgeMerger, target.id, [source.id])).rejects.toThrowError('You are not allowed to merge kill chain phases.');
+    // Nothing was written: the source and its refs are untouched
+    expect(await storeLoadById(testContext, ADMIN_USER, source.internal_id, ENTITY_TYPE_KILL_CHAIN_PHASE)).toBeDefined();
+    expect(await phaseIdsOf(onSource.id)).toEqual([source.internal_id]);
   });
 
   it('moves the objects of the sources to the target and keeps the source ids on it', async () => {

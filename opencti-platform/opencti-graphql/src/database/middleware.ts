@@ -209,6 +209,7 @@ import {
   KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
   RULE_MANAGER_USER,
+  SETTINGS_SETKILLCHAINPHASES,
   SYSTEM_USER,
   userFilterStoreElements,
   validateUserAccessOperation,
@@ -2562,6 +2563,11 @@ export const mergeEntities = async (
   mergedInstances.forEach((instance) => controlUserConfidenceAgainstElement(user, instance));
   if (mergedInstances.some((o) => o.entity_type === ENTITY_TYPE_VOCABULARY && Boolean((o as BasicStoreEntityVocabulary).builtIn))) {
     throw FunctionalError('Cannot merge builtin vocabularies');
+  }
+  // Merging kill chain phases deletes the sources: it changes the taxonomy, so it needs the right to manage it, like editing a phase
+  const isKillChainPhaseMerge = mergedInstances.some((o) => o.entity_type === ENTITY_TYPE_KILL_CHAIN_PHASE);
+  if (isKillChainPhaseMerge && !isUserHasCapability(user, SETTINGS_SETKILLCHAINPHASES, { forceCapabilityInDraft: !!getDraftContext(context, user) })) {
+    throw ForbiddenAccess('You are not allowed to merge kill chain phases.', { capability: SETTINGS_SETKILLCHAINPHASES });
   }
   // We need to lock all elements not locked yet.
   const { locks = [] } = opts;
