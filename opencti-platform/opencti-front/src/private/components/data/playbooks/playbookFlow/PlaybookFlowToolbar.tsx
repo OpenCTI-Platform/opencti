@@ -98,8 +98,14 @@ const PlaybookFlowToolbar = ({ direction, onDirectionChange, history, canvasRef 
             </IconButton>
           </>
         )}
+        {/* `isolated`, the design system's use case for a run standing on the page ground on its own: the
+            toolbar floats on the canvas and owns no surface. The default `integrated` run fills its tiles at
+            elevation layer-2 and hovers at layer-3, which is darker in dark mode (#13213e to #0d172b): the
+            hover read as a fade. Isolated is an outline with no fill that hovers with --bg-input-hover, so
+            it lights up on hover like the icon buttons beside it, in both themes. */}
         <ButtonGroup
           size="md"
+          usecase="isolated"
           value={direction}
           onValueChange={(value: string) => {
             // A click on the item already selected answers an empty value: the layout stays as it is.

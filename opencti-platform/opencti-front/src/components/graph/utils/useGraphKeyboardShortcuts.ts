@@ -1,4 +1,8 @@
 import { MutableRefObject, useEffect, useRef } from 'react';
+import { isEditable, isOverlayOpen } from '../../../utils/keyboard';
+
+// Re-exported: these helpers moved to utils/keyboard, shared with the global search shortcut.
+export { isOverlayOpen };
 
 export interface GraphShortcutHandlers {
   fit: () => void;
@@ -19,21 +23,6 @@ export interface GraphShortcutHandlers {
   showShortcuts: () => void;
   openContextMenu: () => void;
 }
-
-const isEditable = (target: EventTarget | null) => {
-  if (!(target instanceof HTMLElement)) return false;
-  return target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
-};
-
-const OVERLAY_SELECTOR = '.MuiDialog-root, .MuiDrawer-modal, .MuiPopover-root, [role="dialog"][aria-modal="true"], [role="menu"]';
-const HIDDEN_SELECTOR = '.MuiModal-hidden, [aria-hidden="true"], [hidden]';
-
-/**
- * A dialog, drawer or menu open over the graph owns the keyboard. Overlays kept mounted while
- * closed (`keepMounted`, for example the export loader of the container header) do not count.
- */
-export const isOverlayOpen = (root: ParentNode = document) => Array.from(root.querySelectorAll(OVERLAY_SELECTOR))
-  .some((overlay) => !overlay.closest(HIDDEN_SELECTOR));
 
 /** The shortcut a key event stands for, or `null`; kept apart from the listener so it can be tested. */
 export const shortcutOf = (event: Pick<KeyboardEvent, 'key' | 'shiftKey' | 'ctrlKey' | 'metaKey' | 'altKey'>): keyof GraphShortcutHandlers | null => {
