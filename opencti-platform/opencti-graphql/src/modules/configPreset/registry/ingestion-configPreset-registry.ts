@@ -1,7 +1,7 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ConfigImportMode } from '../../configImport/configImport-types';
 import { freeConfigImportName } from '../../configImport/configImport-utils';
-import { BUILT_IN_MARKING_STANDARD_IDS } from '../../markingDefinition/marking-import';
+import { getBuiltInMarkingStandardIds } from '../../markingDefinition/marking-import';
 import type { FeedKind } from '../../ingestion/ingestion-import';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter, ConfigPresetImportPlan } from '../import/configPreset-import-types';
@@ -28,6 +28,7 @@ const feedItems = async (context: AuthContext, user: AuthUser, kind: FeedKind): 
   const ids = new Set<string>();
   const fileNames = new Set<string>();
   const items: ConfigPresetItemDefinition[] = [];
+  const builtInMarkingStandardIds = getBuiltInMarkingStandardIds();
   for (let i = 0; i < feeds.length; i += 1) {
     const feed = feeds[i];
     const id = await freeConfigImportName(feed.name, async (candidate) => ids.has(candidate));
@@ -42,7 +43,7 @@ const feedItems = async (context: AuthContext, user: AuthUser, kind: FeedKind): 
         translatable: false,
         fileName: `${fileName}.json`,
         dependsOn: markingIds
-          .filter((standardId) => !BUILT_IN_MARKING_STANDARD_IDS.includes(standardId))
+          .filter((standardId) => !builtInMarkingStandardIds.includes(standardId))
           .map((standardId) => ({ type: MARKINGS_FAMILY_ID, id: standardId })),
         exporter: async (ctx, usr) => adapter.exportFeed(ctx, usr, feed),
       });
