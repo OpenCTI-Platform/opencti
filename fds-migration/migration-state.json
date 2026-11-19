@@ -195,18 +195,6 @@
         "imported-from-library",
         "no-hardcoded-padding"
       ],
-      "reason": "H9 — pilot lot, padding={16}; radius dropped, 4px is the library default (measured)",
-      "files": [
-        "opencti-platform/opencti-front/src/private/components/settings/sub_types/global_workflow_request_access/RequestAccessSettings.tsx"
-      ]
-    },
-    {
-      "component": "Paper",
-      "importFrom": "@filigran/design-system",
-      "guards": [
-        "imported-from-library",
-        "no-hardcoded-padding"
-      ],
       "reason": "N7 — asymmetric 20/20/0/20 converted to a uniform padding={16} arbitrated from the board (16, not the nearest 24, for homogeneity across the three asymmetric sites)",
       "files": [
         "opencti-platform/opencti-front/src/private/components/common/stix_domain_objects/StixDomainObjectAuthorKnowledge.jsx"
