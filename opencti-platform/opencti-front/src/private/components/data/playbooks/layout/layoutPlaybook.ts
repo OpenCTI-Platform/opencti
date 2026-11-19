@@ -1,6 +1,5 @@
 import type { XYPosition } from 'reactflow';
 import { orderLayers } from '../../../settings/sub_types/workflow/layout/order';
-import { placeX } from '../../../settings/sub_types/workflow/layout/place';
 import type { Graph, GraphEdge, GraphNode, LayerNode, RankedGraph, Segment } from '../../../settings/sub_types/workflow/layout/types';
 
 // Deterministic layered layout of a playbook definition. Pure: no React, no store, no write.
@@ -36,6 +35,9 @@ export interface PlaybookLayoutOptions {
   nodeSize?: { width: number; height: number };
   // [gap between siblings, gap between ranks], in pixels
   spacing?: [number, number];
+  // Offset of the out port `index` of `count` from the card centre, across the flow (x when
+  // vertical, y when horizontal). Defaults to ports spread evenly over the card breadth.
+  portOffset?: (index: number, count: number) => number;
 }
 
 export interface PlaybookLayoutResult {
@@ -140,6 +142,141 @@ export const countCrossings = (result: PlaybookLayoutResult, links: PlaybookLayo
     }
   }
   return crossings;
+};
+
+// Straight links within a compact band (Sam, 19 Nov 2026: "compact, no drift ... we should do our
+// best to have links straight, but of course, layout first and no drift. Be smart").
+// 1. Hard constraints: the gap between siblings and every centre inside one band as wide as the widest
+//    rank plus a quarter card (one port offset). A chain of steps therefore never drifts: the width of
+//    the picture is the width of its widest rank, whatever the depth.
+// 2. Within them, a bounded beam search over the ranks, top-down, maximises the score of the picture:
+//    straight links first (the child's input under the port that feeds it), minus a crossing penalty,
+//    then the shortest elbows. For each kept picture of the ranks above, a rank tries its orders (the
+//    crossing-reduced order, plus the permutations of a small rank that keep the port order of every
+//    parent) and, for each node, the positions that make one of the links of the rank straight; the
+//    positions are then packed into the band. Links only join consecutive ranks (long links go through
+//    dummies), so a picture is summed up by its last rank: the search keeps the best BEAM of them.
+//    Deterministic: every candidate list is built in a fixed order and ties break on the elbow length,
+//    then on the order the candidates were generated in.
+interface StraightLink { id: string; chain: string[]; offset: number }
+
+const BEAM = 16;
+// Sam's order (19 Nov 2026): straight links first, then short elbows, then few crossings. A crossing
+// costs half a straight link, so a straight link wins over a crossing and two crossings cancel it.
+const CROSSING_PENALTY = 0.5;
+const MAX_PERMUTED_RANK = 4;
+const MAX_COMBINATIONS = 384;
+
+const permutations = (list: string[]): string[][] => {
+  if (list.length <= 1) return [list.slice()];
+  const result: string[][] = [];
+  list.forEach((head, i) => {
+    permutations([...list.slice(0, i), ...list.slice(i + 1)]).forEach((tail) => result.push([head, ...tail]));
+  });
+  return result;
+};
+
+const segmentsCross = (a: number, b: number, c: number, d: number) => (a - c) * (b - d) < 0;
+
+const placeStraight = (
+  layers: string[][],
+  sep: (a: string, b: string) => number,
+  straightLinks: StraightLink[],
+  slack: number,
+): Map<string, number> => {
+  const spans = layers.map((layer) => layer.slice(1).reduce((sum, id, i) => sum + sep(layer[i], id), 0));
+  const band = Math.max(0, ...spans) + slack;
+  // Incoming segments of every node, from the rank above: [source, offset of the port across the flow].
+  const incoming = new Map<string, [string, number][]>();
+  straightLinks.forEach((l) => l.chain.slice(1).forEach((v, i) => {
+    if (!incoming.has(v)) incoming.set(v, []);
+    incoming.get(v)!.push([l.chain[i], i === 0 ? l.offset : 0]);
+  }));
+  // Pack wanted positions into the band, in the given order, as close to them as the gaps allow.
+  const pack = (order: string[], wanted: number[]) => {
+    const xs: number[] = [];
+    order.forEach((id, i) => xs.push(i === 0 ? Math.max(0, wanted[0]) : Math.max(wanted[i], xs[i - 1] + sep(order[i - 1], id))));
+    for (let i = order.length - 1; i >= 0; i -= 1) {
+      xs[i] = Math.min(xs[i], i === order.length - 1 ? band : xs[i + 1] - sep(order[i], order[i + 1]));
+    }
+    return xs;
+  };
+  // Orders of a rank: the crossing-reduced one first, then the permutations of a small rank that keep
+  // the port order of every parent (out left of unmodified / no-match).
+  const ordersOf = (layer: string[]) => {
+    if (layer.length > MAX_PERMUTED_RANK) return [layer];
+    const keepsPorts = (order: string[]) => order.every((a, i) => order.slice(i + 1).every((b) => {
+      const fromA = incoming.get(a) ?? [];
+      const fromB = incoming.get(b) ?? [];
+      return fromA.every(([ua, oa]) => fromB.every(([ub, ob]) => ua !== ub || oa <= ob));
+    }));
+    const key = layer.join('|');
+    return [layer, ...permutations(layer).filter((o) => o.join('|') !== key && keepsPorts(o))];
+  };
+  interface Picture { score: number; elbows: number; x: Map<string, number> }
+  const first = layers[0] ?? [];
+  let beams: Picture[] = [...new Set([0, (band - spans[0]) / 2, band - spans[0]])].map((start) => {
+    const xs = pack(first, first.map(() => start));
+    return { score: 0, elbows: 0, x: new Map(first.map((id, i) => [id, xs[i]])) };
+  });
+  layers.slice(1).forEach((layer) => {
+    const orders = ordersOf(layer);
+    const next = new Map<string, Picture>();
+    beams.forEach((picture) => {
+      const target = (v: string) => (incoming.get(v) ?? []).map(([u, o]) => picture.x.get(u)! + o);
+      // A small rank aims each node at any port of the rank (a node may make room for its neighbour's
+      // straight link); a wide one at its own ports only. Both sides of the band are always tried.
+      const shared = [...new Set(layer.flatMap(target))];
+      const candidatesOf = (v: string) => {
+        const own = target(v);
+        const mean = own.length ? [own.reduce((s, t) => s + t, 0) / own.length] : [band / 2];
+        const list = layer.length <= 3 ? [...shared, ...mean, 0, band] : [...own, ...mean];
+        return [...new Set(list)].sort((a, b) => a - b);
+      };
+      const candidates = new Map(layer.map((v) => [v, candidatesOf(v)]));
+      orders.forEach((order) => {
+        // Every combination of candidates, bounded: past the bound, the later nodes keep their first ones.
+        let combos: number[][] = [[]];
+        order.forEach((v) => {
+          const list = candidates.get(v)!;
+          const room = Math.max(1, Math.floor(MAX_COMBINATIONS / combos.length));
+          const kept = list.length <= room ? list : list.slice(0, room);
+          combos = combos.flatMap((c) => kept.map((t) => [...c, t]));
+        });
+        combos.forEach((wanted) => {
+          const xs = pack(order, wanted);
+          let straight = 0;
+          let elbows = 0;
+          const segments: [number, number][] = [];
+          order.forEach((v, i) => (incoming.get(v) ?? []).forEach(([u, o]) => {
+            const from = picture.x.get(u)! + o;
+            const gap = Math.abs(from - xs[i]);
+            if (gap < 0.5) straight += 1;
+            elbows += gap;
+            segments.push([from, xs[i]]);
+          }));
+          let crossings = 0;
+          for (let a = 0; a < segments.length; a += 1) {
+            for (let b = a + 1; b < segments.length; b += 1) {
+              if (segmentsCross(segments[a][0], segments[a][1], segments[b][0], segments[b][1])) crossings += 1;
+            }
+          }
+          const score = picture.score + straight - CROSSING_PENALTY * crossings;
+          const total = picture.elbows + elbows;
+          const key = order.map((v, i) => `${v}@${Math.round(xs[i])}`).sort().join('|');
+          const known = next.get(key);
+          if (!known || score > known.score + 1e-9 || (Math.abs(score - known.score) < 1e-9 && total < known.elbows - 1e-6)) {
+            const x = new Map(picture.x);
+            order.forEach((v, i) => x.set(v, xs[i]));
+            next.set(key, { score, elbows: total, x });
+          }
+        });
+      });
+    });
+    // Stable sort: equal pictures keep the order they were generated in.
+    beams = [...next.values()].sort((a, b) => b.score - a.score || a.elbows - b.elbows).slice(0, BEAM);
+  });
+  return beams[0].x;
 };
 
 export const layoutPlaybook = (
@@ -284,7 +421,31 @@ export const layoutPlaybook = (
     maxRank,
   };
   const ordering = orderLayers(graph, ranked);
-  const x = placeX(ranked, ordering, gapSibling);
+  const sep = (a: string, b: string) => {
+    const A = layered.get(a)!;
+    const B = layered.get(b)!;
+    return A.w / 2 + B.w / 2 + (A.dummy || B.dummy ? gapSibling * 0.4 : gapSibling);
+  };
+  const portCount = (id: string) => {
+    const node = nodes.find((n) => n.id === id);
+    const outs = ((node && components.get(node.component_id)?.ports) || []).filter((p) => p.type === 'out');
+    return Math.max(outs.length, Math.max(1, ...links.filter((l) => l.from.id === id).map((l) => portIndex(components, node, l.from.port) + 1)));
+  };
+  const defaultPortOffset = (index: number, count: number) => (breadth / count) * (index + 0.5) - breadth / 2;
+  const portOffset = options.portOffset ?? defaultPortOffset;
+  const byNode = new Map(nodes.map((n) => [n.id, n]));
+  const linkOffset = new Map(links.map((l) => [l.id, portOffset(portIndex(components, byNode.get(l.from.id), l.from.port), portCount(l.from.id))]));
+  // Several ports of one step feeding the same child (out and unmodified both to the next step): the
+  // child aims at the middle of those ports, so the pair is drawn symmetric and the chain stays on one line.
+  const pairs = new Map<string, StraightLink & { offsets: number[] }>();
+  links.filter((l) => chains.has(l.id)).forEach((l) => {
+    const key = `${l.from.id}>${l.to.id}`;
+    const found = pairs.get(key);
+    if (found) found.offsets.push(linkOffset.get(l.id)!);
+    else pairs.set(key, { id: l.id, chain: chains.get(l.id)!, offset: 0, offsets: [linkOffset.get(l.id)!] });
+  });
+  const straightLinks = [...pairs.values()].map(({ id, chain, offsets }) => ({ id, chain, offset: offsets.reduce((s, o) => s + o, 0) / offsets.length }));
+  const x = placeStraight(ordering.layers, sep, straightLinks, breadth / 4);
   const pitch = depth + gapRank;
   const toFlow = (cx: number, r: number, w: number, h: number): XYPosition => {
     // Whole pixels: a card, its ports and the links that reach them share one integer line.
