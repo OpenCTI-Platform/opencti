@@ -145,16 +145,38 @@ export const countCrossings = (result: PlaybookLayoutResult, links: PlaybookLayo
 };
 
 // Straight links within a compact band (Sam, 19 Nov 2026: "compact, no drift ... we should do our
-// best to have links straight, but of course, layout first and no drift").
-// 1. Hard constraints: the rank order of the crossing reduction, the gap between siblings, and every
-//    centre inside one band as wide as the widest rank plus a quarter card (one port offset). A chain
-//    of steps therefore never drifts: the width of the picture is the width of its widest rank.
-// 2. Within them, as many links as possible are made straight (the child's input under the port that
-//    feeds it): links are taken greedily, in a few deterministic priority orders, each kept only when
-//    the system of difference constraints stays feasible; the order that keeps the most wins.
-// 3. The groups the straight links tie together are then moved, inside the room left, towards the
-//    ports of their elbowed links, so the elbows that remain are short.
+// best to have links straight, but of course, layout first and no drift. Be smart").
+// 1. Hard constraints: the gap between siblings and every centre inside one band as wide as the widest
+//    rank plus a quarter card (one port offset). A chain of steps therefore never drifts: the width of
+//    the picture is the width of its widest rank, whatever the depth.
+// 2. Within them, a bounded beam search over the ranks, top-down, maximises the score of the picture:
+//    straight links first (the child's input under the port that feeds it), minus a crossing penalty,
+//    then the shortest elbows. For each kept picture of the ranks above, a rank tries its orders (the
+//    crossing-reduced order, plus the permutations of a small rank that keep the port order of every
+//    parent) and, for each node, the positions that make one of the links of the rank straight; the
+//    positions are then packed into the band. Links only join consecutive ranks (long links go through
+//    dummies), so a picture is summed up by its last rank: the search keeps the best BEAM of them.
+//    Deterministic: every candidate list is built in a fixed order and ties break on the elbow length,
+//    then on the order the candidates were generated in.
 interface StraightLink { id: string; chain: string[]; offset: number }
+
+const BEAM = 16;
+// Sam's order (19 Nov 2026): straight links first, then short elbows, then few crossings. A crossing
+// costs half a straight link, so a straight link wins over a crossing and two crossings cancel it.
+const CROSSING_PENALTY = 0.5;
+const MAX_PERMUTED_RANK = 4;
+const MAX_COMBINATIONS = 384;
+
+const permutations = (list: string[]): string[][] => {
+  if (list.length <= 1) return [list.slice()];
+  const result: string[][] = [];
+  list.forEach((head, i) => {
+    permutations([...list.slice(0, i), ...list.slice(i + 1)]).forEach((tail) => result.push([head, ...tail]));
+  });
+  return result;
+};
+
+const segmentsCross = (a: number, b: number, c: number, d: number) => (a - c) * (b - d) < 0;
 
 const placeStraight = (
   layers: string[][],
@@ -162,149 +184,99 @@ const placeStraight = (
   straightLinks: StraightLink[],
   slack: number,
 ): Map<string, number> => {
-  const ids = layers.flat();
-  const index = new Map(ids.map((id, i) => [id, i]));
-  const n = ids.length;
-  const source = n; // the band origin
   const spans = layers.map((layer) => layer.slice(1).reduce((sum, id, i) => sum + sep(layer[i], id), 0));
   const band = Math.max(0, ...spans) + slack;
-  // Constraint x[to] >= x[from] + weight, as edges of a longest-path problem from the origin.
-  const out: { to: number; w: number }[][] = Array.from({ length: n + 1 }, () => []);
-  const addConstraint = (from: number, to: number, w: number) => out[from].push({ to, w });
-  ids.forEach((_, i) => {
-    addConstraint(source, i, 0);
-    addConstraint(i, source, -band);
-  });
-  layers.forEach((layer) => layer.slice(1).forEach((id, i) => addConstraint(index.get(layer[i])!, index.get(id)!, sep(layer[i], id))));
-  const base = out.map((list) => list.length);
-  const segmentsOf = (l: StraightLink) => l.chain.slice(1).map((v, i) => ({ u: index.get(l.chain[i])!, v: index.get(v)!, w: i === 0 ? l.offset : 0 }));
-
-  // Incremental longest paths: the origin rising above 0 means the constraints are infeasible.
-  const relax = (dist: number[], starts: number[]) => {
-    const queue = starts.slice();
-    const queued = new Set(queue);
-    let steps = 0;
-    const limit = (n + 1) * (n + 1) * 4;
-    while (queue.length) {
-      const a = queue.shift()!;
-      queued.delete(a);
-      for (const { to, w } of out[a]) {
-        if (dist[a] + w > dist[to] + 1e-6) {
-          dist[to] = dist[a] + w;
-          if (dist[source] > 1e-6) return false;
-          if (!queued.has(to)) {
-            queue.push(to);
-            queued.add(to);
-          }
-        }
-      }
-      steps += 1;
-      if (steps > limit) return false;
-    }
-    return true;
-  };
-  const solve = (order: StraightLink[]) => {
-    out.forEach((list, i) => {
-      list.length = base[i];
-    });
-    const dist = new Array<number>(n + 1).fill(0);
-    // Every node starts the first pass: a constraint between two nodes at 0 propagates only from a queued node.
-    relax(dist, [...ids.keys(), source]);
-    const kept: StraightLink[] = [];
-    order.forEach((l) => {
-      const segments = segmentsOf(l);
-      const saved = dist.slice();
-      segments.forEach(({ u, v, w }) => {
-        addConstraint(u, v, w);
-        addConstraint(v, u, -w);
-      });
-      if (relax(dist, segments.flatMap(({ u, v }) => [u, v]))) {
-        kept.push(l);
-      } else {
-        // Undo in the reverse order of the pushes: a chain through dummies shares its inner nodes.
-        segments.slice().reverse().forEach(({ u, v }) => {
-          out[v].pop();
-          out[u].pop();
-        });
-        saved.forEach((d, i) => {
-          dist[i] = d;
-        });
-      }
-    });
-    return { kept, dist };
-  };
-  const singlePort = (l: StraightLink) => (l.offset === 0 ? 0 : 1);
-  const orders = [
-    straightLinks,
-    straightLinks.slice().sort((a, b) => singlePort(a) - singlePort(b)),
-    straightLinks.slice().reverse(),
-  ];
-  let best = solve(orders[0]);
-  for (let i = 1; i < orders.length; i += 1) {
-    const attempt = solve(orders[i]);
-    if (attempt.kept.length > best.kept.length) best = attempt;
-  }
-  // Rebuild the constraint set of the winner (solve leaves the last attempt's).
-  const winner = solve(best.kept);
-
-  // Rigid groups tied by straight links: a group moves as one, so its links stay straight.
-  const parent = ids.map((_, i) => i);
-  const find = (i: number): number => {
-    let r = i;
-    while (parent[r] !== r) r = parent[r];
-    return r;
-  };
-  const x = winner.dist.slice(0, n);
-  winner.kept.forEach((l) => segmentsOf(l).forEach(({ u, v }) => {
-    const ru = find(u);
-    const rv = find(v);
-    if (ru !== rv) parent[Math.max(ru, rv)] = Math.min(ru, rv);
+  // Incoming segments of every node, from the rank above: [source, offset of the port across the flow].
+  const incoming = new Map<string, [string, number][]>();
+  straightLinks.forEach((l) => l.chain.slice(1).forEach((v, i) => {
+    if (!incoming.has(v)) incoming.set(v, []);
+    incoming.get(v)!.push([l.chain[i], i === 0 ? l.offset : 0]);
   }));
-  ids.forEach((_, i) => find(i));
-  const groups = new Map<number, number[]>();
-  ids.forEach((_, i) => {
-    const root = find(i);
-    if (!groups.has(root)) groups.set(root, []);
-    groups.get(root)!.push(i);
+  // Pack wanted positions into the band, in the given order, as close to them as the gaps allow.
+  const pack = (order: string[], wanted: number[]) => {
+    const xs: number[] = [];
+    order.forEach((id, i) => xs.push(i === 0 ? Math.max(0, wanted[0]) : Math.max(wanted[i], xs[i - 1] + sep(order[i - 1], id))));
+    for (let i = order.length - 1; i >= 0; i -= 1) {
+      xs[i] = Math.min(xs[i], i === order.length - 1 ? band : xs[i + 1] - sep(order[i], order[i + 1]));
+    }
+    return xs;
+  };
+  // Orders of a rank: the crossing-reduced one first, then the permutations of a small rank that keep
+  // the port order of every parent (out left of unmodified / no-match).
+  const ordersOf = (layer: string[]) => {
+    if (layer.length > MAX_PERMUTED_RANK) return [layer];
+    const keepsPorts = (order: string[]) => order.every((a, i) => order.slice(i + 1).every((b) => {
+      const fromA = incoming.get(a) ?? [];
+      const fromB = incoming.get(b) ?? [];
+      return fromA.every(([ua, oa]) => fromB.every(([ub, ob]) => ua !== ub || oa <= ob));
+    }));
+    const key = layer.join('|');
+    return [layer, ...permutations(layer).filter((o) => o.join('|') !== key && keepsPorts(o))];
+  };
+  interface Picture { score: number; elbows: number; x: Map<string, number> }
+  const first = layers[0] ?? [];
+  let beams: Picture[] = [...new Set([0, (band - spans[0]) / 2, band - spans[0]])].map((start) => {
+    const xs = pack(first, first.map(() => start));
+    return { score: 0, elbows: 0, x: new Map(first.map((id, i) => [id, xs[i]])) };
   });
-  const straight = new Set(winner.kept.map((l) => l.id));
-  const pulls: { u: number; v: number; w: number }[] = straightLinks
-    .filter((l) => !straight.has(l.id))
-    .map((l) => ({ u: index.get(l.chain[0])!, v: index.get(l.chain[1])!, w: l.offset }));
-  const layerOf = new Map<number, { layer: string[]; at: number }>();
-  layers.forEach((layer) => layer.forEach((id, at) => layerOf.set(index.get(id)!, { layer, at })));
-  for (let pass = 0; pass < 4; pass += 1) {
-    [...groups.keys()].sort((a, b) => a - b).forEach((root) => {
-      const members = groups.get(root)!;
-      const inGroup = new Set(members);
-      let lo = -Infinity;
-      let hi = Infinity;
-      members.forEach((m) => {
-        lo = Math.max(lo, -x[m]);
-        hi = Math.min(hi, band - x[m]);
-        const { layer, at } = layerOf.get(m)!;
-        if (at > 0) {
-          const left = index.get(layer[at - 1])!;
-          if (!inGroup.has(left)) lo = Math.max(lo, x[left] + sep(layer[at - 1], layer[at]) - x[m]);
-        }
-        if (at < layer.length - 1) {
-          const right = index.get(layer[at + 1])!;
-          if (!inGroup.has(right)) hi = Math.min(hi, x[right] - sep(layer[at], layer[at + 1]) - x[m]);
-        }
-      });
-      const wanted: number[] = [];
-      pulls.forEach(({ u, v, w }) => {
-        if (inGroup.has(v) && !inGroup.has(u)) wanted.push(x[u] + w - x[v]);
-        else if (inGroup.has(u) && !inGroup.has(v)) wanted.push(x[v] - w - x[u]);
-      });
-      if (wanted.length === 0 || lo > hi) return;
-      const shift = Math.min(hi, Math.max(lo, wanted.reduce((s, d) => s + d, 0) / wanted.length));
-      members.forEach((m) => {
-        x[m] += shift;
+  layers.slice(1).forEach((layer) => {
+    const orders = ordersOf(layer);
+    const next = new Map<string, Picture>();
+    beams.forEach((picture) => {
+      const target = (v: string) => (incoming.get(v) ?? []).map(([u, o]) => picture.x.get(u)! + o);
+      // A small rank aims each node at any port of the rank (a node may make room for its neighbour's
+      // straight link); a wide one at its own ports only. Both sides of the band are always tried.
+      const shared = [...new Set(layer.flatMap(target))];
+      const candidatesOf = (v: string) => {
+        const own = target(v);
+        const mean = own.length ? [own.reduce((s, t) => s + t, 0) / own.length] : [band / 2];
+        const list = layer.length <= 3 ? [...shared, ...mean, 0, band] : [...own, ...mean];
+        return [...new Set(list)].sort((a, b) => a - b);
+      };
+      const candidates = new Map(layer.map((v) => [v, candidatesOf(v)]));
+      orders.forEach((order) => {
+        // Every combination of candidates, bounded: past the bound, the later nodes keep their first ones.
+        let combos: number[][] = [[]];
+        order.forEach((v) => {
+          const list = candidates.get(v)!;
+          const room = Math.max(1, Math.floor(MAX_COMBINATIONS / combos.length));
+          const kept = list.length <= room ? list : list.slice(0, room);
+          combos = combos.flatMap((c) => kept.map((t) => [...c, t]));
+        });
+        combos.forEach((wanted) => {
+          const xs = pack(order, wanted);
+          let straight = 0;
+          let elbows = 0;
+          const segments: [number, number][] = [];
+          order.forEach((v, i) => (incoming.get(v) ?? []).forEach(([u, o]) => {
+            const from = picture.x.get(u)! + o;
+            const gap = Math.abs(from - xs[i]);
+            if (gap < 0.5) straight += 1;
+            elbows += gap;
+            segments.push([from, xs[i]]);
+          }));
+          let crossings = 0;
+          for (let a = 0; a < segments.length; a += 1) {
+            for (let b = a + 1; b < segments.length; b += 1) {
+              if (segmentsCross(segments[a][0], segments[a][1], segments[b][0], segments[b][1])) crossings += 1;
+            }
+          }
+          const score = picture.score + straight - CROSSING_PENALTY * crossings;
+          const total = picture.elbows + elbows;
+          const key = order.map((v, i) => `${v}@${Math.round(xs[i])}`).sort().join('|');
+          const known = next.get(key);
+          if (!known || score > known.score + 1e-9 || (Math.abs(score - known.score) < 1e-9 && total < known.elbows - 1e-6)) {
+            const x = new Map(picture.x);
+            order.forEach((v, i) => x.set(v, xs[i]));
+            next.set(key, { score, elbows: total, x });
+          }
+        });
       });
     });
-  }
-  return new Map(ids.map((id, i) => [id, x[i]]));
+    // Stable sort: equal pictures keep the order they were generated in.
+    beams = [...next.values()].sort((a, b) => b.score - a.score || a.elbows - b.elbows).slice(0, BEAM);
+  });
+  return beams[0].x;
 };
 
 export const layoutPlaybook = (

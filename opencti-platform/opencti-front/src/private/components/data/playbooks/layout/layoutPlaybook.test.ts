@@ -136,8 +136,9 @@ const MATCHER_CHAIN = (() => {
 describe('layoutPlaybook', () => {
   describe('chained matchers (12 sources)', () => {
     const { width } = PLAYBOOK_NODE_SIZE;
+    const vertical = layoutPlaybook(MATCHER_CHAIN.nodes, MATCHER_CHAIN.links, COMPONENTS, { mode: 'vertical' });
     const portX = (id: string, port: string) => {
-      const p = layoutPlaybook(MATCHER_CHAIN.nodes, MATCHER_CHAIN.links, COMPONENTS, { mode: 'vertical' }).positions.get(id)!;
+      const p = vertical.positions.get(id)!;
       const outs = COMPONENTS.find((c) => c.id === MATCHER_CHAIN.nodes.find((n) => n.id === id)!.component_id)!.ports!.filter((q) => q.type === 'out');
       const index = Math.max(0, outs.findIndex((q) => q.id === port));
       return p.x + (width / outs.length) * (index + 0.5);
@@ -160,13 +161,16 @@ describe('layoutPlaybook', () => {
       });
     });
 
-    // Measured on this fixture: 12 of 36 links straight inside the compact band (master: none, with
-    // the staircase). With the crossing-free rank order (End, Label, Match), a straight link for the
-    // rest would push the chain one step across per level: those stay short elbows.
-    it('keeps at least a third of the links straight (child input under the port that feeds it)', () => {
-      const result = layoutPlaybook(MATCHER_CHAIN.nodes, MATCHER_CHAIN.links, COMPONENTS, { mode: 'vertical' });
-      const straight = MATCHER_CHAIN.links.filter((l) => Math.abs(portX(l.from.id, l.from.port) - (result.positions.get(l.to.id)!.x + width / 2)) < 1);
-      expect(straight.length * 3).toBeGreaterThanOrEqual(MATCHER_CHAIN.links.length);
+    // Measured on this fixture: master draws none straight (the staircase), the first band-bounded
+    // placement 12 of 36 with no crossing. The beam search puts straight links first (Sam, 19 Nov
+    // 2026), keeps every port order (out left of no-match), and reaches 15 of 36 with 4 crossings.
+    it('keeps at least 15 of the 36 links straight (child input under the port that feeds it), with at most 4 crossings', () => {
+      const straight = MATCHER_CHAIN.links.filter((l) => Math.abs(portX(l.from.id, l.from.port) - (vertical.positions.get(l.to.id)!.x + width / 2)) < 1);
+      // Crossings as drawn: from the port of the source card to the input of the target card.
+      const drawn = MATCHER_CHAIN.links.map((l) => [portX(l.from.id, l.from.port), vertical.positions.get(l.to.id)!.x + width / 2, vertical.ranks.get(l.from.id)!]);
+      const crossings = drawn.flatMap((a, i) => drawn.slice(i + 1).filter((b) => a[2] === b[2] && (a[0] - b[0]) * (a[1] - b[1]) < 0));
+      expect(straight.length).toBeGreaterThanOrEqual(15);
+      expect(crossings.length).toBeLessThanOrEqual(4);
     });
 
     it('places a single-port child straight under its port when the room allows it', () => {
