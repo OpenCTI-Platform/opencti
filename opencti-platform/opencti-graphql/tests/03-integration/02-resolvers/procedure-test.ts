@@ -316,6 +316,14 @@ describe('Procedure resolver', () => {
     expect(stix).not.toHaveProperty('x_log_source_refs');
   });
 
+  it('reports a missing observable as a missing reference, so the import worker retries it', async () => {
+    const result = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: { input: { name: 'Procedure before its observable', procedureObservables: ['ipv4-addr--8f2b3c4d-5e6f-5a7b-9c8d-0e1f2a3b4c5d'] } },
+    });
+    expect(result.errors?.[0]?.extensions?.code).toBe('MISSING_REFERENCE_ERROR');
+  });
+
   it('adds and removes observables through has-observable relationships', async () => {
     const p = await addProcedureAsAdmin({ name: 'Procedure with editable observables', procedureObservables: [observableId] });
     await queryAsAdminWithSuccess({
