@@ -1,3 +1,4 @@
+import { performance } from 'node:perf_hooks';
 import amqp from 'amqplib/callback_api';
 import { logApp } from '../../config/conf';
 import { rabbitmqConnectionOptions, rabbitmqUri } from '../../database/rabbitmq';
@@ -158,12 +159,15 @@ export const consumePushQueues = async (
   // them all, a later event given back while an earlier one still commits could be written first by another
   // platform. On a closed channel the broker already redelivers them all: none is started, ordered or not.
   const givenBack = (queue: string, entry: ConsumedQueue) => !entry.open || (entry.stopping && !isOrderedQueue(queue, entry));
-  const handle = async (queue: string, entry: ConsumedQueue, channel: amqp.Channel, message: amqp.Message, data: Record<string, any> | null) => {
+  const handle = async (queue: string, entry: ConsumedQueue, channel: amqp.Channel, message: amqp.Message, data: Record<string, any> | null, deliveredAt: number) => {
     const bytes = message.content.length;
     const stopped = () => givenBack(queue, entry);
     let outcome: PushOutcome = stoppedOutcome();
+    const turn = performance.now();
+    deps.onStage?.('scheduled', (turn - deliveredAt) / 1000, queue);
     // a waiter for the bytes is abandoned when its queue stops (stopQueue)
     if (!stopped() && await budget.acquire(bytes, entry)) {
+      deps.onStage?.('budget', (performance.now() - turn) / 1000, queue);
       try {
         outcome = await handlePushMessage(data, queue, deps, stopped);
       } catch (cause) {
@@ -252,6 +256,7 @@ export const consumePushQueues = async (
         }
         entry.inFlight += 1;
         entry.idleTicks = 0;
+        const deliveredAt = performance.now();
         const bytes = message.content.length;
         deliveredBytes += bytes;
         deliveredMessages += 1;
@@ -263,7 +268,7 @@ export const consumePushQueues = async (
           entry.largest = Math.max(entry.largest, message.content.length);
           retarget(queue, entry, prefetchFor(inputOf(queue, entry), entry.shares, prefetchOptions), true);
         }
-        order.schedule(queue, isEvent, () => handle(queue, entry, channel, message, data))
+        order.schedule(queue, isEvent, () => handle(queue, entry, channel, message, data, deliveredAt))
           .catch((cause) => logApp.error(`${LOG_PREFIX} push message scheduling failed`, { queue, cause }))
           .finally(() => {
             deliveredBytes -= bytes;

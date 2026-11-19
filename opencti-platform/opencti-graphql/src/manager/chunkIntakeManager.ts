@@ -9,6 +9,7 @@
 // Flow control is a single valve: rabbit prefetch x chunk size = the intents offered to the
 // sequencer loop, replacing the worker-side pf / chunk-size / http-pool / queue_max_intents
 // quadruple that drove every feeding artifact measured on the HTTP topology.
+import { monitorEventLoopDelay } from 'node:perf_hooks';
 import { ValueType } from '@opentelemetry/api';
 import type { Counter, Gauge, Histogram } from '@opentelemetry/api';
 import { type ManagerDefinition, registerManager } from './managerModule';
@@ -40,7 +41,7 @@ import { createIntakeContext } from '../intake/intake-context';
 import { consumePushQueues, type PushConsumer } from '../intake/workerless/push-consumer';
 import { PREFETCH_LIMIT } from '../intake/workerless/push-prefetch';
 import { createQueueLease, type ConsumerView, type QueueLease } from '../intake/workerless/queue-lease';
-import { createLimiter, PushRefusedError } from '../intake/workerless/push-intake';
+import { createLimiter, type Limiter, PushRefusedError } from '../intake/workerless/push-intake';
 import { createReleaseScheduler, type ReleaseScheduler } from '../intake/workerless/release-scheduler';
 import { createImportContext, type ImportContext } from '../intake/stix-import/context';
 import { type ImportClient, ImportClientError, type ImportLogger } from '../intake/stix-import/types';
@@ -837,11 +838,19 @@ let queueLeaseCounter: Counter | null = null;
 let workerlessScheduler: ReleaseScheduler | null = null;
 // task 0040 memory breakdown: the consumer of this platform, read by the bytes gauge
 let workerlessConsumer: PushConsumer | null = null;
+// task 0040 where the time goes: the transformation limiter of the running consumer, and the seconds per stage
+let workerlessTransformations: Limiter | null = null;
+let pushStageSeconds: Histogram | null = null;
 let workerlessGaugeRegistered = false;
 const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
   pushMessagesCounter = meterManager.meterProvider.getMeter('opencti-chunk-intake').createCounter('opencti_workerless_intake_messages_total', {
     valueType: ValueType.INT,
     description: 'Push messages of the worker-less intake, by outcome (written, undecodable, transformation_failed, transient, unknown_writer, work_not_alive, draft_locked, stopped: given back unstarted, its queue stopping, channel_closed: not started, its channel closed by the broker)',
+  });
+  pushStageSeconds = meterManager.meterProvider.getMeter('opencti-chunk-intake').createHistogram('opencti_workerless_intake_stage_seconds', {
+    valueType: ValueType.DOUBLE,
+    description: 'Seconds a push message spends in each stage (scheduled, budget, transform_wait, transform, write_context, operations, report: push-intake.ts PushStage), by push queue',
+    advice: { explicitBucketBoundaries: [0.001, 0.01, 0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10, 30, 60, 120, 300] },
   });
   // pycti keeps its caches for the life of the worker, one per draft
   const contexts = new Map<string, ImportContext>();
@@ -950,6 +959,25 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
       result.observe(memory.handlingBytes, { state: 'handling' });
       result.observe(workerlessConsumer.takeLargestDelivered(), { state: 'largest_delivered' });
     });
+    // task 0040: the longest event loop block since the previous collection (nodejs_eventloop_lag_max_seconds is the
+    // max since the process start: one block at startup hides every later one)
+    const loopDelay = monitorEventLoopDelay({ resolution: 20 });
+    loopDelay.enable();
+    meterManager.meterProvider.getMeter('opencti-chunk-intake').createObservableGauge('opencti_workerless_eventloop_delay_max_seconds', {
+      valueType: ValueType.DOUBLE,
+      description: 'Longest event loop delay since the previous collection, in seconds (resolution 20 ms)',
+    }).addCallback((result) => {
+      result.observe(loopDelay.max / 1e9);
+      loopDelay.reset();
+    });
+    meterManager.meterProvider.getMeter('opencti-chunk-intake').createObservableGauge('opencti_workerless_intake_transformations', {
+      valueType: ValueType.INT,
+      description: 'Transformations of push messages running and waiting for a slot (push_transform_concurrency bounds the running ones)',
+    }).addCallback((result) => {
+      if (!workerlessTransformations) return;
+      result.observe(workerlessTransformations.running(), { state: 'running' });
+      result.observe(workerlessTransformations.waiting(), { state: 'waiting' });
+    });
     meterManager.meterProvider.getMeter('opencti-chunk-intake').createObservableGauge('opencti_workerless_intake_messages_held', {
       valueType: ValueType.INT,
       description: 'Push messages held by the worker-less consumer (delivered: not answered yet, waiting: delivered, waiting for the byte budget)',
@@ -989,19 +1017,22 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
       if (result.status === 'rejected') logApp.warn('[OPENCTI-MODULE] Worker-less intake: claim not released, it expires', { cause: result.reason });
     });
   };
+  const transformations = createLimiter(PUSH_TRANSFORM_CONCURRENCY);
+  workerlessTransformations = transformations;
   let started: PushConsumer;
   try {
     started = await consumePushQueues(
       listQueues,
       {
         scheduler,
-        transformations: createLimiter(PUSH_TRANSFORM_CONCURRENCY),
+        transformations,
         isTransient: isTransientOperationError,
         readsClient: readsClientFor,
         contextFor,
         writeContext,
         runOperation: runIntakeOperation,
         report,
+        onStage: (stage, seconds, queue) => pushStageSeconds?.record(seconds, { stage, queue }),
       },
       {
         prefetch: PUSH_PREFETCH,

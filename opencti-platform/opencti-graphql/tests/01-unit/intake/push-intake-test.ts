@@ -87,6 +87,17 @@ describe('Worker-less push message', () => {
     expect(h.reported).toHaveLength(1);
   });
 
+  it('should time each stage of a written message, in order (task 0040)', async () => {
+    const h = intake();
+    const stages: string[] = [];
+    const deps: PushIntakeDeps = { ...h.deps, onStage: (stage, seconds, queue) => {
+      expect(seconds).toBeGreaterThanOrEqual(0);
+      stages.push(`${queue} ${stage}`);
+    } };
+    await handlePushMessage(pushMessage(bundleOf(malware(1))), 'queue-a', deps);
+    expect(stages).toEqual(['queue-a transform_wait', 'queue-a transform', 'queue-a write_context', 'queue-a operations', 'queue-a report']);
+  });
+
   it('should start an object once the author it references in the bundle is queued, not before', async () => {
     let queueAuthor: () => void = () => {};
     const authorQueued = new Promise<void>((resolve) => {

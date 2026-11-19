@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { performance } from 'node:perf_hooks';
 import { DRAFT_LOCKED_ERROR, WORK_NOT_ALIVE_ERROR } from '../../config/errors';
 import { type ChunkOperation, substituteEchoIds } from '../../graphql/chunk-executor';
 import { intentSourceOf } from '../../database/sequencer/sequencer-intent';
@@ -67,7 +68,15 @@ export interface PushIntakeDeps {
   runOperation: (run: PushOperationRun) => Promise<PushOperationOutcome>;
   // The operations' outcomes, once all are terminal (metrics, work)
   report: (key: string, context: AuthContext, user: AuthUser, envelope: IntakeEnvelope, operations: ChunkOperation[], outcomes: PushOperationOutcome[]) => Promise<void>;
+  // task 0040 where a message spends its time: seconds of each stage it went through
+  onStage?: (stage: PushStage, seconds: number, queue: string) => void;
 }
+
+// scheduled: from its delivery to its turn (queue order); budget: waiting for the byte budget (push-consumer.ts);
+// transform_wait: waiting for a transformation slot; transform: the bundle to operations; write_context: the intake
+// context rules; operations: admitted until all its operations are terminal; report: outcomes and work
+export type PushStage = 'scheduled' | 'budget' | 'transform_wait' | 'transform' | 'write_context' | 'operations' | 'report';
+const secondsSince = (start: number) => (performance.now() - start) / 1000;
 
 // stopped: given back unstarted, its queue stopping; channel_closed: not started, its channel closed by the broker,
 // which redelivers it (push-consumer.ts)
@@ -232,7 +241,17 @@ export const handlePushMessage = async (data: Record<string, any> | null, queue:
   let operations: ChunkOperation[];
   try {
     const context = { ...deps.contextFor(decoded.draftId), client: deps.readsClient(envelope) };
-    const captured = await deps.transformations.run(async () => (stopped() ? null : captureOperations(context, bundle, update, decoded.types)));
+    const queued = performance.now();
+    const captured = await deps.transformations.run(async () => {
+      deps.onStage?.('transform_wait', secondsSince(queued), queue);
+      if (stopped()) return null;
+      const start = performance.now();
+      try {
+        return await captureOperations(context, bundle, update, decoded.types);
+      } finally {
+        deps.onStage?.('transform', secondsSince(start), queue);
+      }
+    });
     if (!captured) return stoppedOutcome(objects);
     ({ operations } = captured);
   } catch (error: any) {
@@ -260,8 +279,10 @@ export const handlePushMessage = async (data: Record<string, any> | null, queue:
   }
   if (stopped()) return stoppedOutcome(objects);
   let written: { context: AuthContext; user: AuthUser };
+  const contextStart = performance.now();
   try {
     written = await deps.writeContext(envelope, operations, resolved.values());
+    deps.onStage?.('write_context', secondsSince(contextStart), queue);
   } catch (error: any) {
     const reason = refusalOf(error);
     if (reason) return refused(reason, objects);
@@ -270,6 +291,7 @@ export const handlePushMessage = async (data: Record<string, any> | null, queue:
   }
   const { context, user } = written;
   const key = randomUUID();
+  const admitted = performance.now();
   const outcomes = await deps.scheduler.admit<PushOperationOutcome>({
     source: queue,
     lane: intentSourceOf(user),
@@ -285,7 +307,10 @@ export const handlePushMessage = async (data: Record<string, any> | null, queue:
       return outcome;
     },
   });
+  deps.onStage?.('operations', secondsSince(admitted), queue);
+  const reportStart = performance.now();
   await deps.report(key, context, user, envelope, operations, outcomes);
+  deps.onStage?.('report', secondsSince(reportStart), queue);
   return { ack: true, reason: 'written', operations: operations.length, objects };
 };
 

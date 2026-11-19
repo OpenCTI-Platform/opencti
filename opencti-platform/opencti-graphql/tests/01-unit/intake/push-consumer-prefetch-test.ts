@@ -209,6 +209,19 @@ describe('push consumer prefetch changes (task 0040)', () => {
     expect(consumer.memory()).toEqual({ deliveredBytes: 0, deliveredMessages: 0, handlingBytes: 0, waitingMessages: 0 });
   });
 
+  it('should time the wait of a message for its turn and for the byte budget (task 0040)', async () => {
+    const stages: string[] = [];
+    const consumer = await consumePushQueues(async () => queues, { onStage: (stage: string, _seconds: number, queue: string) => stages.push(`${queue} ${stage}`) } as any, { ...baseOptions, readSizes }, () => {});
+    await flush();
+    const channel = connection.channels.get(0) as FakeChannel;
+    channel.settle();
+    channel.deliver(KB);
+    await flush();
+    expect(stages).toEqual(['push_a scheduled', 'push_a budget']);
+    await answer();
+    await consumer.close();
+  });
+
   it('should create the first consumer with the prefetch planned while its channel opened', async () => {
     const { channel } = await start();
     expect(channel.credits()).toEqual([50]); // 25 raised x2 by the first plan, before the channel answered
