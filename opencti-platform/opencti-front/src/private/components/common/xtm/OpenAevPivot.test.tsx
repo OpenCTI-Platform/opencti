@@ -1,8 +1,8 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
-import OpenAevPivot, { OPENAEV_CONNECT_DOC_URL } from './OpenAevPivot';
+import OpenAevPivot, { OPENAEV_CONNECT_DOC_URL, OPENAEV_PIVOT_COMPACT_QUERY } from './OpenAevPivot';
 import { normaliseXtmKey, resetXtmCounterpartCache } from './useXtmCounterparts';
 
 const mocks = vi.hoisted(() => ({
@@ -104,6 +104,41 @@ describe('OpenAevPivot', () => {
     const lookups = mocks.calls.filter((c) => c.isLookup);
     expect(lookups).toHaveLength(1);
     expect(lookups[0].variables).toEqual({ kind: 'ATTACK_PATTERN', keys: ['T1059', 'T1003'] });
+  });
+
+  describe('below 1280 px', () => {
+    const originalMatchMedia = window.matchMedia;
+    beforeEach(() => {
+      window.matchMedia = ((query: string) => ({
+        matches: query === OPENAEV_PIVOT_COMPACT_QUERY,
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+      })) as typeof window.matchMedia;
+    });
+    afterEach(() => {
+      window.matchMedia = originalMatchMedia;
+    });
+
+    it('renders the match as an icon-only link named "Open in OpenAEV", so a long title keeps its room', async () => {
+      mocks.counterparts = [counterpart];
+      testRender(<OpenAevPivot kind="ATTACK_PATTERN" counterpartKey="T1059" />);
+      const link = await screen.findByRole('link', { name: 'Open in OpenAEV' });
+      expect(link).toHaveAttribute('href', counterpart.object_url);
+      expect(link).not.toHaveTextContent('Open in OpenAEV');
+    });
+
+    it('renders the connect call to action as an icon-only link named "Connect OpenAEV"', async () => {
+      mocks.connected = false;
+      testRender(<OpenAevPivot kind="ASSET" counterpartKey="srv-01" />);
+      const link = await screen.findByRole('link', { name: 'Connect OpenAEV' });
+      expect(link).toHaveAttribute('href', OPENAEV_CONNECT_DOC_URL);
+      expect(link).not.toHaveTextContent('Connect OpenAEV');
+    });
   });
 
   it('normalises keys like the server', () => {
