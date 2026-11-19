@@ -71,6 +71,12 @@ vi.mock('../../../Error', () => ({
   ErrorBoundary: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+vi.mock('./RequestAccessOutcomeRepair', () => ({
+  default: ({ onRepaired }: { onRepaired: () => void }) => (
+    <button data-testid="outcome-repair" onClick={onRepaired}>repair</button>
+  ),
+}));
+
 const mockCommit = vi.fn();
 vi.mock('../../../../../utils/hooks/useApiMutation', () => ({
   default: () => [mockCommit, false],
@@ -116,6 +122,28 @@ describe('RequestAccessMigrationDialog', () => {
     expect(blocking).toHaveTextContent('Approved and Declined statuses are the same');
     expect(blocking).toHaveTextContent('Blocking');
     expect(confirmButton()).toBeDisabled();
+  });
+
+  it('offers the outcome repair only when the outcome statuses are invalid', () => {
+    mockPreview = diagnosticsOf([{ type: 'DUPLICATE_ORDER', message: 'Two statuses share the same order' }]);
+    const { unmount } = renderDialog();
+    expect(screen.queryByTestId('outcome-repair')).not.toBeInTheDocument();
+    unmount();
+
+    mockPreview = diagnosticsOf([{ type: 'REQUEST_ACCESS_OUTCOME_INVALID', message: 'Approved and Declined statuses are the same' }]);
+    renderDialog();
+    expect(screen.getByTestId('outcome-repair')).toBeInTheDocument();
+  });
+
+  it('reads the preview again once the outcome statuses are repaired', async () => {
+    const user = userEvent.setup();
+    mockPreview = diagnosticsOf([{ type: 'REQUEST_ACCESS_OUTCOME_INVALID', message: 'Approved and Declined statuses are the same' }]);
+    renderDialog();
+    expect(mockQuery.mock.calls.at(-1)?.[2]).toEqual({ fetchPolicy: 'network-only', fetchKey: 0 });
+
+    await user.click(screen.getByTestId('outcome-repair'));
+
+    expect(mockQuery.mock.calls.at(-1)?.[2]).toEqual({ fetchPolicy: 'network-only', fetchKey: 1 });
   });
 
   it('enables confirm when no blocking diagnostic remains', () => {
