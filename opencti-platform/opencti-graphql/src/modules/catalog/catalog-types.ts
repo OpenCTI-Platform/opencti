@@ -143,6 +143,8 @@ export interface CatalogContractEntityFields {
     properties: {
       [key: string]: TypedProperty;
     };
+    // Order of the properties, kept for the contracts embedded in a connector (see withConfigSchemaPropertiesOrder)
+    properties_order?: string[];
     required: string[];
     additionalProperties: boolean;
   };

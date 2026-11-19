@@ -88,7 +88,7 @@ class SyncLineLineComponent extends Component {
   }
 
   render() {
-    const { node, dataColumns, paginationOptions, t, nsdt, n } = this.props;
+    const { node, dataColumns, paginationOptions, t, ftdt, n } = this.props;
     const health = this.computeConsumerHealth();
     return (
       <>
@@ -142,7 +142,7 @@ class SyncLineLineComponent extends Component {
                   <BodyItem
                     style={{ width: dataColumns.current_state_date.width }}
                   >
-                    {nsdt(node.current_state_date)}
+                    {ftdt(node.current_state_date)}
                   </BodyItem>
                   <ProducerItem
                     style={{ width: dataColumns.producer.width }}
@@ -177,7 +177,7 @@ SyncLineLineComponent.propTypes = {
   node: PropTypes.object,
   paginationOptions: PropTypes.object,
   me: PropTypes.object,
-  fd: PropTypes.func,
+  ftd: PropTypes.func,
 };
 
 const SyncLineFragment = createFragmentContainer(SyncLineLineComponent, {

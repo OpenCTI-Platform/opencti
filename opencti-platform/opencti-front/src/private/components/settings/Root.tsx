@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
 import {
   SETTINGS_SETCUSTOMIZATION,
+  SETTINGS_SETCUSTOMFIELDS,
   SETTINGS_SETLABELS,
   SETTINGS_SECURITYACTIVITY,
   SETTINGS_FILEINDEXING,
@@ -116,7 +117,14 @@ const Root = () => {
             path="/vocabularies/*"
             element={(
               <Security
-                needs={[SETTINGS_SETLABELS, SETTINGS_SETKILLCHAINPHASES, SETTINGS_SETSTATUSTEMPLATES, SETTINGS_SETCASETEMPLATES, SETTINGS_SETVOCABULARIES]}
+                needs={[
+                  SETTINGS_SETLABELS,
+                  SETTINGS_SETKILLCHAINPHASES,
+                  SETTINGS_SETSTATUSTEMPLATES,
+                  SETTINGS_SETCASETEMPLATES,
+                  SETTINGS_SETVOCABULARIES,
+                  SETTINGS_SETCUSTOMFIELDS,
+                ]}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <RootVocabularies />

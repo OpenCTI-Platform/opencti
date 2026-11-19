@@ -1,6 +1,8 @@
 # coding: utf-8
 import json
 
+from pycti.utils.opencti_stix2_utils import query_to_stix
+
 
 class StixCoreObject:
     """Main StixCoreObject class for OpenCTI
@@ -64,6 +66,15 @@ class StixCoreObject:
                     x_opencti_firstname
                     x_opencti_lastname
                 }
+                ... on System {
+                    x_opencti_system_category
+                    x_opencti_system_subcategory
+                    x_opencti_internet_facing
+                    x_opencti_criticality
+                    x_opencti_environment
+                    x_opencti_owner
+                    x_opencti_platform
+                }
             }
             objectMarking {
                 id
@@ -102,6 +113,7 @@ class StixCoreObject:
                     field_id
                     field_name
                     int_value
+                    float_value
                     string_value
                     boolean_value
                     date_value
@@ -243,6 +255,13 @@ class StixCoreObject:
                 description
                 contact_information
                 x_opencti_aliases
+                x_opencti_system_category
+                x_opencti_system_subcategory
+                x_opencti_internet_facing
+                x_opencti_criticality
+                x_opencti_environment
+                x_opencti_owner
+                x_opencti_platform
             }
             ... on Indicator {
                 pattern_type
@@ -553,6 +572,17 @@ class StixCoreObject:
                             id
                             name
                             size
+                            objectMarking {
+                                id
+                                standard_id
+                                entity_type
+                                definition_type
+                                definition
+                                created
+                                modified
+                                x_opencti_order
+                                x_opencti_color
+                            }
                         }
                     }
                 }
@@ -771,6 +801,15 @@ class StixCoreObject:
                     x_opencti_firstname
                     x_opencti_lastname
                 }
+                ... on System {
+                    x_opencti_system_category
+                    x_opencti_system_subcategory
+                    x_opencti_internet_facing
+                    x_opencti_criticality
+                    x_opencti_environment
+                    x_opencti_owner
+                    x_opencti_platform
+                }
             }
             objectMarking {
                 id
@@ -811,6 +850,17 @@ class StixCoreObject:
                                         mimetype
                                         version
                                     }
+                                    objectMarking {
+                                        id
+                                        standard_id
+                                        entity_type
+                                        definition_type
+                                        definition
+                                        created
+                                        modified
+                                        x_opencti_order
+                                        x_opencti_color
+                                    }
                                 }
                             }
                         }
@@ -822,6 +872,7 @@ class StixCoreObject:
                     field_id
                     field_name
                     int_value
+                    float_value
                     string_value
                     boolean_value
                     date_value
@@ -987,6 +1038,13 @@ class StixCoreObject:
                 description
                 contact_information
                 x_opencti_aliases
+                x_opencti_system_category
+                x_opencti_system_subcategory
+                x_opencti_internet_facing
+                x_opencti_criticality
+                x_opencti_environment
+                x_opencti_owner
+                x_opencti_platform
             }
             ... on Indicator {
                 pattern_type
@@ -1297,6 +1355,17 @@ class StixCoreObject:
                             id
                             name
                             size
+                            objectMarking {
+                                id
+                                standard_id
+                                entity_type
+                                definition_type
+                                definition
+                                created
+                                modified
+                                x_opencti_order
+                                x_opencti_color
+                            }
                         }
                     }
                 }
@@ -1637,6 +1706,21 @@ class StixCoreObject:
             )
             return None
 
+    def to_stix(self, **kwargs):
+        """Get the STIX representation of a Stix-Core-Object from the backend.
+
+        :param id: the id of the Stix-Core-Object
+        :type id: str
+        :param version: the STIX version (``stix_2_0`` or ``stix_2_1``),
+            defaults to the backend default (``stix_2_1``)
+        :type version: str
+        :return: STIX object, or ``None`` if not found
+        :rtype: dict or None
+        """
+        return query_to_stix(
+            self.opencti, "stixCoreObject", kwargs.get("id"), kwargs.get("version")
+        )
+
     def list_files(self, **kwargs):
         """List files of a Stix-Core-Object.
 
@@ -1790,6 +1874,7 @@ class StixCoreObject:
                                         field_id
                                         field_name
                                         int_value
+                                        float_value
                                         string_value
                                         boolean_value
                                         date_value
@@ -2088,13 +2173,16 @@ class StixCoreObject:
         :type element_id: str
         :param connector_id: the connector id
         :type connector_id: str
+        :param investigation_id: (optional) the investigation the enrichment is triggered from
+        :type investigation_id: str
         """
         element_id = kwargs.get("element_id", None)
         connector_id = kwargs.get("connector_id", None)
+        investigation_id = kwargs.get("investigation_id", None)
         query = """
-            mutation StixCoreObjectEdit($id: ID!, $connectorId: ID!) {
+            mutation StixCoreObjectEdit($id: ID!, $connectorId: ID!, $investigationId: ID) {
                 stixCoreObjectEdit(id: $id) {
-                    askEnrichment(connectorId: $connectorId) {
+                    askEnrichment(connectorId: $connectorId, investigationId: $investigationId) {
                       id
                     }
                 }
@@ -2105,6 +2193,7 @@ class StixCoreObject:
             {
                 "id": element_id,
                 "connectorId": connector_id,
+                "investigationId": investigation_id,
             },
         )
 
@@ -2115,13 +2204,16 @@ class StixCoreObject:
         :type element_id: str
         :param connector_ids: list of connector ids
         :type connector_ids: list
+        :param investigation_id: (optional) the investigation the enrichment is triggered from
+        :type investigation_id: str
         """
         element_id = kwargs.get("element_id", None)
         connector_ids = kwargs.get("connector_ids", None)
+        investigation_id = kwargs.get("investigation_id", None)
         query = """
-            mutation StixCoreObjectEdit($id: ID!, $connectorIds: [ID!]!) {
+            mutation StixCoreObjectEdit($id: ID!, $connectorIds: [ID!]!, $investigationId: ID) {
                 stixCoreObjectEdit(id: $id) {
-                    askEnrichments(connectorIds: $connectorIds) {
+                    askEnrichments(connectorIds: $connectorIds, investigationId: $investigationId) {
                       id
                     }
                 }
@@ -2132,6 +2224,7 @@ class StixCoreObject:
             {
                 "id": element_id,
                 "connectorIds": connector_ids,
+                "investigationId": investigation_id,
             },
         )
 

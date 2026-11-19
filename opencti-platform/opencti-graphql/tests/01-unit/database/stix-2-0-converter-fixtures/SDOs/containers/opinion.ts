@@ -6,6 +6,7 @@ export const OPINION_INSTANCE = {
   entity_type: 'Opinion',
   opinion: 'agree',
   explanation: 'my opinion',
+  authors: ['John Doe'],
   confidence: 75,
   created: '2025-06-26T15:36:22.864Z',
   modified: '2025-06-26T15:37:27.254Z',
@@ -37,6 +38,7 @@ export const EXPECTED_OPINION = {
   created: '2025-06-26T15:36:22.864Z',
   modified: '2025-06-26T15:37:27.254Z',
   explanation: 'my opinion',
+  authors: ['John Doe'],
   opinion: 'agree',
   labels: [
     'opinion',

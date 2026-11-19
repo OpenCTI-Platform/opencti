@@ -36,9 +36,16 @@ type NewsFeedItemEdge {
   node: NewsFeedItem!
 }
 
+enum NewsFeedCategory {
+  BLOG_POST
+  RESOURCE
+}
+
 type NewsFeedCount {
   user_id: String
   count: Int
+  blog_post_count: Int
+  resource_count: Int
 }
 
 type Query {
@@ -50,11 +57,11 @@ type Query {
     filters: FilterGroup
     search: String
   ): NewsFeedItemConnection @auth
-  myUnreadNewsFeedsCount: Int @auth
+  myUnreadNewsFeedsCount(category: NewsFeedCategory): Int @auth
 }
 
 type Mutation {
-  markAllNewsFeedItemsAsRead: Boolean @auth
+  markAllNewsFeedItemsAsRead(category: NewsFeedCategory): Boolean @auth
 }
 
 type Subscription {

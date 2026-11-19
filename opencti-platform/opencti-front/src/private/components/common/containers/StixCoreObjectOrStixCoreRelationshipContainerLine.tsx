@@ -45,7 +45,7 @@ interface StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps {
 export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: FunctionComponent<
   StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
 > = ({ node, dataColumns, onLabelClick, redirectionMode }) => {
-  const { fd } = useFormatter();
+  const { ftd } = useFormatter();
 
   const isContainer = typesWithFintelTemplates.includes(node.entity_type);
   let redirectionLink = `${resolveLink(node.entity_type)}/${node.id}`;
@@ -96,7 +96,7 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: Functio
             <BodyItem
               style={{ width: dataColumns.created.width }}
             >
-              {fd(node.first_observed || node.published || node.created)}
+              {ftd(node.first_observed || node.published || node.created)}
             </BodyItem>
             <BodyItem
               style={{ width: dataColumns.x_opencti_workflow_id.width }}

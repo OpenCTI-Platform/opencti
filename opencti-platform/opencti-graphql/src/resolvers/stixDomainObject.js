@@ -26,10 +26,11 @@ import {
 } from '../domain/stixDomainObject';
 import { findById as findStatusById, findByType } from '../domain/status';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
-import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, INPUT_ASSIGNEE, INPUT_PARTICIPANT } from '../schema/general';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { stixDomainObjectOptions as StixDomainObjectsOptions } from '../schema/stixDomainObjectOptions';
 import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectImportPushRef, stixCoreObjectsExportPush } from '../domain/stixCoreObject';
-import { loadAssignees } from '../database/members';
+import { loadAssignees, loadParticipants } from '../database/members';
 
 const stixDomainObjectResolvers = {
   Query: {
@@ -60,7 +61,16 @@ const stixDomainObjectResolvers = {
     },
     avatar: (stixDomainObject) => stixDomainObjectAvatar(stixDomainObject),
     status: (stixDomainObject, _, context) => (stixDomainObject.x_opencti_workflow_id ? findStatusById(context, context.user, stixDomainObject.x_opencti_workflow_id) : null),
-    objectAssignee: async (stixDomainObject, _, context) => loadAssignees(context, context.user, stixDomainObject),
+    objectAssignee: async (stixDomainObject, _, context) => {
+      // The API declares the field on every domain object, the DB schema only on those that can be assigned (not a Note, for instance)
+      if (!schemaRelationsRefDefinition.getRelationRef(stixDomainObject.entity_type, INPUT_ASSIGNEE)) return [];
+      return loadAssignees(context, context.user, stixDomainObject);
+    },
+    objectParticipant: async (stixDomainObject, _, context) => {
+      // Same API/schema misalignment as objectAssignee: only some entity types (Feedback, for instance, is not one) carry the participant ref
+      if (!schemaRelationsRefDefinition.getRelationRef(stixDomainObject.entity_type, INPUT_PARTICIPANT)) return [];
+      return loadParticipants(context, context.user, stixDomainObject);
+    },
     workflowEnabled: async (stixDomainObject, _, context) => {
       const statusesType = await findByType(context, context.user, stixDomainObject.entity_type);
       return statusesType.length > 0;

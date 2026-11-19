@@ -2,16 +2,17 @@
 
 Every graph of the platform (container knowledge and correlation graphs, investigations, the graph
 view of the Analyses tab) is drawn by the shared component `src/components/graph/`. A feature that
-has a state to show on the nodes, or an action to offer from a node, plugs into it through two
-registries instead of editing the graph:
+has a state to show on the nodes, or an action to offer from a node or the selection, plugs into it
+through three registries instead of editing the graph:
 
 - `badges/graphBadgeRegistry.ts`: badges drawn above the nodes (in the image export too), listed in
   the hover card, the legend and the accessible list; the legend of the image export lists the
   entity types and line styles only;
 - `badges/graphNodeActionRegistry.ts`: actions of the context menu of a node (the hover card only
-  previews).
+  previews);
+- `badges/graphSelectionActionRegistry.ts`: actions of the Selection section of the context menu.
 
-Both are soft checks: a feature whose data is absent from a graph shows nothing there, and nothing
+All are soft checks: a feature whose data is absent from a graph shows nothing there, and nothing
 it registers can break the drawing.
 
 ## Badge provider contract
@@ -81,3 +82,15 @@ returns its `options(node, t_i18n)`: the menu opens them as a submenu and calls 
 the key picked. Use it for actions that belong to a feature, such as opening the Changes tab of an
 entity or planning a hunt from it; generic graph actions (open, expand, pin, hide, layouts, paths)
 are built in.
+
+## Selection actions
+
+`registerGraphSelectionAction` adds an item to the Selection section of the context menu, shown
+while something is selected, with the same soft check as node actions: `isAvailable(selection, context)`
+where `selection` holds the selected `nodes` and `links`, then an `onSelect(selection)` callback or
+`options(selection, t_i18n)` for a submenu (no `href`). Unlike node actions, an action that applies but
+cannot run now returns its `disabledReason(selection, t_i18n)`: the menu shows it disabled, with the
+reason under its name and no submenu. An action that depends on the state of a component registers
+from an effect of that component and returns the removal function as the effect cleanup; it registers
+again under the same id when what it offers changes, so that an open menu follows. The enrichment of
+an investigation selection (`InvestigationEnrichmentMenuAction.tsx`) is the example.

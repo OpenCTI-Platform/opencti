@@ -64,7 +64,7 @@ export const IndividualLine: FunctionComponent<IndividualLineProps> = ({
   node,
   onLabelClick,
 }) => {
-  const { fd } = useFormatter();
+  const { ftd } = useFormatter();
   const data = useFragment(individualLineFragment, node);
   return (
     <ListItemButton
@@ -97,12 +97,12 @@ export const IndividualLine: FunctionComponent<IndividualLineProps> = ({
             <BodyItem
               style={{ width: dataColumns.created.width }}
             >
-              {fd(data.created)}
+              {ftd(data.created)}
             </BodyItem>
             <BodyItem
               style={{ width: dataColumns.modified.width }}
             >
-              {fd(data.modified)}
+              {ftd(data.modified)}
             </BodyItem>
           </div>
         )}

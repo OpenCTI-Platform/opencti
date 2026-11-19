@@ -95,7 +95,7 @@ export const rssHttpClientOptions = (ingestion: BasicStoreEntityIngestionRss) =>
     responseType: 'text',
     headers: { 'User-Agent': RSS_FEED_USER_AGENT },
     timeout: FEED_REQUEST_TIMEOUT,
-    rejectUnauthorized: ingestion.ssl_verify ?? false,
+    rejectUnauthorized: ingestion.ssl_verify,
   };
   return httpClientOptions;
 };

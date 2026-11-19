@@ -4,7 +4,7 @@ import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 import { now, sinceNowInMs } from '../../utils/format';
-import { isEmptyField } from '../../database/utils';
+import { isEmptyField, REDACTED_INFORMATION } from '../../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE } from '../../schema/general';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../../utils/access';
 import { notify } from '../../database/redis';
@@ -69,9 +69,11 @@ import { addConnectorDeployedCount } from '../../manager/telemetryManager';
 import {
   computeConnectorTargetContract,
   encryptValue,
+  getContractConfigSchemaWithoutExcludedRuntimeVars,
   mapContractEntityFieldsToEmbeddedConnectorManagerContract,
   mapContractEntityFieldsToGraphqlCatalogContract,
 } from '../../modules/catalog/catalog-domain';
+import { connectorSecretKeys } from './connector-export';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { createOnTheFlyUser } from '../../modules/user/user-domain';
 import { filter, includes, map, pipe } from 'ramda';
@@ -95,7 +97,7 @@ import conf, { booleanConf, DECOUPLING_VERSIONS_FEATURE_FLAG, isFeatureEnabled }
 import { findConnectorById, findConnectorManagerById, findConnectorManagers, findConnectors, findManagedConnectors } from './connector-repository';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 
-const sanitizeContainerName = (label: string): string => {
+export const sanitizeContainerName = (label: string): string => {
   let sanitized = label
     .replace(/[^a-zA-Z0-9]+/g, '-')
     .toLowerCase()
@@ -931,13 +933,21 @@ export const managedConnectorAdd = async (
   // Increment telemetry for connector deployed via composer
   await addConnectorDeployedCount();
   // Publish
+  const secretKeys = [
+    ...connectorSecretKeys(getContractConfigSchemaWithoutExcludedRuntimeVars(targetContract.config_schema)),
+    ...contractConfigurations.filter(({ encrypted }) => encrypted).map(({ key }) => key),
+  ];
+  const auditInput = {
+    ...input,
+    manager_contract_configuration: input.manager_contract_configuration.map(({ key, value }) => ({ key, value: secretKeys.includes(key) ? REDACTED_INFORMATION : value })),
+  };
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'create',
     event_access: 'administration',
     message: `creates ${ENTITY_TYPE_CONNECTOR} \`${createdConnector.name}\``,
-    context_data: { id: createdConnector.internal_id, entity_type: ENTITY_TYPE_CONNECTOR, input },
+    context_data: { id: createdConnector.internal_id, entity_type: ENTITY_TYPE_CONNECTOR, input: auditInput },
   });
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, createdConnector, user);
@@ -1336,8 +1346,8 @@ export const autoUpgradeManagedConnectors = async (
       for (const managedConnector of managedConnectors) {
         const upgradedSuccessfully = await autoUpgradeManagedConnector(context, user, managedConnector);
         hasErrors ||= !upgradedSuccessfully;
-      };
-    };
+      }
+    }
     if (shouldUpdateReadiness) {
       await redisSetManagedConnectorAutoUpgradeStatus({
         status: hasErrors ? 'failed' : 'ready',

@@ -1,8 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import Button from '@common/button/Button';
-import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../../components/i18n';
-import type { Theme } from '../../../../../components/Theme';
 import AlertLiveCreation from './AlertLiveCreation';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 import { AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiveCreationActivityMutation.graphql';
@@ -27,7 +25,6 @@ const AlertCreation: FunctionComponent<TriggerCreationProps> = ({
   open,
 }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   // Live
   const [openLive, setOpenLive] = useState(false);
   const handleOpenCreateLive = () => {
@@ -39,9 +36,8 @@ const AlertCreation: FunctionComponent<TriggerCreationProps> = ({
     setOpenDigest(true);
   };
   return (
-    <div style={{ marginLeft: theme.spacing(1) }}>
+    <>
       <Button
-        sx={{ marginRight: theme.spacing(1) }}
         onClick={handleOpenCreateDigest}
       >
         {t_i18n('Create {entity_type}', {
@@ -76,7 +72,7 @@ const AlertCreation: FunctionComponent<TriggerCreationProps> = ({
         open={openDigest}
         handleClose={() => setOpenDigest(false)}
       />
-    </div>
+    </>
   );
 };
 

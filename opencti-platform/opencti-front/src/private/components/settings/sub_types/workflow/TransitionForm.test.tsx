@@ -1,10 +1,10 @@
 import React from 'react';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { Formik, Form } from 'formik';
 import TransitionForm from './TransitionForm';
-import testRender from '../../../../../utils/tests/test-render';
-import { WorkflowActionType, CommentMode } from './utils';
+import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
+import { WorkflowActionType, CommentMode, type TargetStatusExits } from './utils';
 import type { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
@@ -36,16 +36,26 @@ vi.mock('../../../common/form/ObjectOrganizationField', () => ({
   default: () => <div data-testid="object-organization-field" />,
 }));
 
+vi.mock('../../../../../utils/hooks/useHelper', () => ({
+  default: () => ({ isFeatureEnable: () => true }),
+}));
+
 // ---------------------------------------------------------------------------
 // Helper: render TransitionForm inside a Formik context
 // ---------------------------------------------------------------------------
-const renderForm = (initialValues: Partial<WorkflowEditionFormValues>, onSubmit = vi.fn(), entityType = 'DraftWorkspace') => {
+const renderForm = (
+  initialValues: Partial<WorkflowEditionFormValues>,
+  onSubmit = vi.fn(),
+  entityType = 'DraftWorkspace',
+  targetStatusExits?: TargetStatusExits,
+) => {
   return testRender(
     <Formik initialValues={initialValues as WorkflowEditionFormValues} onSubmit={onSubmit}>
       <Form>
-        <TransitionForm entityType={entityType} />
+        <TransitionForm entityType={entityType} targetStatusExits={targetStatusExits} />
       </Form>
     </Formik>,
+    { userContext: createMockUserContext({ schema: { sdos: [{ id: 'Case-Incident', label: 'Case-Incident' }] } }) },
   );
 };
 
@@ -240,6 +250,69 @@ describe('TransitionForm – action toggles', () => {
     });
   });
 
+  it('"Reset authorized members" switch is checked when action is present', () => {
+    renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [{ type: WorkflowActionType.resetAuthorizedMembers }] });
+    const resetSwitch = screen.getByRole('switch', { name: /reset authorized members/i });
+    expect((resetSwitch as HTMLInputElement).checked).toBe(true);
+  });
+
+  it('toggling "Reset authorized members" ON adds a reset action without params', async () => {
+    const onSubmit = vi.fn();
+    const { user } = renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, onSubmit);
+
+    await user.click(screen.getByRole('switch', { name: /reset authorized members/i }));
+
+    document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
+
+    await waitFor(() => {
+      expect(onSubmit.mock.calls[0][0].syncActions).toEqual([{ type: WorkflowActionType.resetAuthorizedMembers }]);
+    });
+  });
+
+  it('toggling "Reset authorized members" ON replaces "Update authorized members" but keeps other actions', async () => {
+    const onSubmit = vi.fn();
+    const { user } = renderForm({
+      event: 'approve',
+      comment: CommentMode.disabled,
+      syncActions: [
+        { type: WorkflowActionType.validateDraft },
+        { type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [] } },
+      ],
+    }, onSubmit);
+
+    await user.click(screen.getByRole('switch', { name: /reset authorized members/i }));
+
+    document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
+
+    await waitFor(() => {
+      const types = (onSubmit.mock.calls[0][0].syncActions as { type: string }[]).map((a) => a.type);
+      expect(types).toEqual([WorkflowActionType.validateDraft, WorkflowActionType.resetAuthorizedMembers]);
+    });
+  });
+
+  it('toggling "Update authorized members" ON replaces "Reset authorized members"', async () => {
+    const onSubmit = vi.fn();
+    const { user } = renderForm({
+      event: 'approve',
+      comment: CommentMode.disabled,
+      syncActions: [{ type: WorkflowActionType.resetAuthorizedMembers }],
+    }, onSubmit);
+
+    await user.click(screen.getByRole('switch', { name: /update authorized members/i }));
+
+    document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
+
+    await waitFor(() => {
+      const types = (onSubmit.mock.calls[0][0].syncActions as { type: string }[]).map((a) => a.type);
+      expect(types).toEqual([WorkflowActionType.updateAuthorizedMembers]);
+    });
+  });
+
+  it('hides "Reset authorized members" for an entity type without authorized members', () => {
+    renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, vi.fn(), 'Malware');
+    expect(screen.queryByRole('switch', { name: /reset authorized members/i })).toBeNull();
+  });
+
   it('"Validate draft" switch is unchecked when action is absent', () => {
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] });
     const vdSwitch = screen.getByRole('switch', { name: /validate draft/i });
@@ -431,5 +504,46 @@ describe('TransitionForm – entityType-based section visibility', () => {
   it('renders "Authorized members" section for a Container entityType that supports authorized members', () => {
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, vi.fn(), 'Report');
     expect(screen.queryByRole('heading', { name: /authorized members/i })).not.toBeNull();
+  });
+});
+
+describe('TransitionForm – closing reason section', () => {
+  beforeEach(() => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+  });
+
+  it('is hidden for entity types without a closing reason', () => {
+    renderForm({ event: 'approve', syncActions: [] });
+    expect(screen.queryByRole('switch', { name: /enable closing reason/i })).toBeNull();
+  });
+
+  it('is disabled by default on domain objects', () => {
+    renderForm({ event: 'close', syncActions: [] }, vi.fn(), 'Case-Incident');
+    expect(screen.getByRole('switch', { name: /enable closing reason/i })).not.toBeChecked();
+    expect(within(screen.getByTestId('workflow-transition-required-closing-reason-toggle')).getByRole('switch')).toBeDisabled();
+  });
+
+  it('sets closingReason to "required" when enabled then required', async () => {
+    const onSubmit = vi.fn();
+    const { user } = renderForm({ event: 'close', syncActions: [] }, onSubmit, 'Case-Incident');
+
+    await user.click(screen.getByRole('switch', { name: /enable closing reason/i }));
+    await user.click(within(screen.getByTestId('workflow-transition-required-closing-reason-toggle')).getByRole('switch'));
+    document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
+
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ closingReason: CommentMode.required }), expect.anything());
+    });
+  });
+
+  it('cannot be enabled on a transition into a status other transitions leave', () => {
+    renderForm({ event: 'close', syncActions: [] }, vi.fn(), 'Case-Incident', { status: 'Closed', events: ['reopen', 'archive'] });
+    expect(screen.getByRole('switch', { name: /enable closing reason/i })).toBeDisabled();
+    expect(screen.getByText("Only on a transition into a final state: 'Closed' is left by 'reopen', 'archive'.")).toBeTruthy();
+  });
+
+  it('can still be turned off when it was enabled before the status was left by a transition', () => {
+    renderForm({ event: 'close', syncActions: [], closingReason: CommentMode.allowed }, vi.fn(), 'Case-Incident', { status: 'Closed', events: ['reopen'] });
+    expect(screen.getByRole('switch', { name: /enable closing reason/i })).toBeEnabled();
   });
 });

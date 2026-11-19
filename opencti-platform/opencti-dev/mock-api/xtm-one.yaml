@@ -1,0 +1,179 @@
+openapi: 3.0.0
+info:
+  title: XTM One Mock
+  description: The XTM One endpoints that the playbook AI agent components and the chatbot call
+  version: 1.0.0
+servers:
+  - url: /slow
+    description: Agent calls answered after the delay set in xtm-one.js
+  - url: /fast
+    description: Agent calls answered at once
+paths:
+  /api/v1/platform/register:
+    post:
+      summary: Platform registration, sent by the platform on every tick
+      responses:
+        '200':
+          description: Registration that grants nothing, so the Enterprise Edition still comes from the platform license only
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ee_sources:
+                    type: array
+                    items:
+                      type: string
+                  intent_catalog:
+                    type: array
+                    items:
+                      type: object
+              example:
+                status: "registered"
+                version: "mock"
+                platform_identifier: "opencti"
+                ee_enabled: false
+                ee_sources: []
+                xtm_license_pem: null
+                user_integrations: 0
+                chat_web_token: null
+                intent_catalog: []
+  /api/v1/intents/catalog:
+    get:
+      summary: Agents bound to an intent
+      parameters:
+        - name: vertical
+          in: query
+          schema:
+            type: string
+        - name: intent
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Intent catalog
+          content:
+            application/json:
+              schema:
+                type: array
+              example:
+                - agents:
+                    - agent_slug: "slow-agent"
+                      agent_name: "Slow agent"
+  /api/v1/platform/chat/messages:
+    post:
+      summary: Agent call, streamed for the chatbot and not streamed for the playbook components
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agent_slug:
+                  type: string
+                content:
+                  type: string
+                stream:
+                  type: boolean
+      responses:
+        '200':
+          description: Not streamed, no content (the transform step routes to unmodified); streamed, a fixed answer set in xtm-one.js
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                content: null
+            text/event-stream:
+              schema:
+                type: string
+  /api/v1/platform/chat/sessions:
+    post:
+      summary: Chatbot session
+      responses:
+        '200':
+          description: A new empty conversation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      type: object
+              example:
+                conversation_id: "00000000-0000-4000-8000-000000000001"
+                messages: []
+                agent_id: null
+                agent_name: "XTM One mock"
+    get:
+      summary: Chatbot conversation history
+      responses:
+        '200':
+          description: No past conversation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  conversations:
+                    type: array
+                    items:
+                      type: object
+              example:
+                conversations: []
+  /api/v1/platform/chat/conversations/{conversationId}/pending-approvals:
+    get:
+      summary: Tool approvals a chatbot turn is waiting on
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Nothing waits for an approval
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  proposals:
+                    type: array
+                    items:
+                      type: object
+              example:
+                conversation_id: "00000000-0000-4000-8000-000000000001"
+                proposals: []
+                turn: "idle"
+  /api/v1/platform/chat/quota:
+    get:
+      summary: Chatbot quota indicator
+      responses:
+        '200':
+          description: No quota to show (null, set in xtm-one.js), so the chatbot hides the indicator
+          content:
+            application/json:
+              schema:
+                type: object
+                nullable: true
+  /api/v1/platform/chat/prompts:
+    get:
+      summary: Chatbot suggested prompts
+      responses:
+        '200':
+          description: No suggested prompt
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  prompts:
+                    type: array
+                    items:
+                      type: object
+              example:
+                prompts: []

@@ -7,7 +7,7 @@ Three types of tasks are done in the background:
 - user tasks.
 
 Rule tasks can be seen and activated in Settings > Customization > Rules engine.
-Knowledge and user tasks can be seen and managed in Data > Background Tasks. The scope of each task is indicated.
+Knowledge and user tasks can be seen and managed in Data > Processing > Tasks. The scope of each task is indicated.
 
 ![Background_tasks](assets/background-tasks.png)
 
@@ -19,11 +19,18 @@ If a rule task is enabled, it leads to the scan of the whole platform data and t
 
 Knowledge tasks are background tasks updating or deleting entities and correspond to mass operations on these data. To create one, select entities via the checkboxes in an entity list, and choose the action to perform via the toolbar.
 
+Before launching the task, OpenCTI shows its scope and actions and asks for a confirmation. An enrichment launches without this confirmation when it targets 1000 elements or fewer, from an entity list or from an investigation. Above 1000 elements, every task asks for a confirmation and warns about the number of targeted entities.
+
+The update action can also add, replace or remove the value of a [custom field](../administration/custom-fields.md).
+
+Restoring or permanently deleting several objects from the [Trash](delete-restore.md#trash) also runs as a knowledge task.
+
 ### Rights
 
-- To create a knowledge task, the user should have the capability to Update Knowledge (or the capability to delete knowledge if the task action is a deletion).
-- To see a knowledge task in the Background task section, the user should be the creator of the task, or have the KNOWLEDGE capability.
-- To delete a knowledge task from the Background task section, the user should be the creator of the task, or have the KNOWLEDGE_UPDATE capability.
+The rights below use the capability names of [Users and Role Based Access Control](../administration/users.md#list-of-capabilities).
+
+- To create a knowledge task, the user should have the `Create / Update knowledge` capability. A deletion, a restore or a permanent deletion from the Trash also requires `Delete knowledge`, and a merge requires `Merge knowledge`.
+- The Data > Processing > Tasks page requires the `Create / Update knowledge` capability. On this page, a user sees and manages only the tasks they created. Users with `Bypass all capabilities` see and manage the tasks of every user.
 
 ## User tasks
 
@@ -32,4 +39,4 @@ User tasks are background tasks updating or deleting notifications. It can be do
 ### Rights
 
 - A user can create a user task on its own notifications only.
-- To see or delete a user task, the user should be the creator of the task or have the SET_ACCESS capability.
+- In Data > Processing > Tasks (which requires the `Create / Update knowledge` capability), a user sees and manages only the user tasks they created. Users with `Bypass all capabilities` see and manage the tasks of every user.

@@ -55,6 +55,7 @@ export const EXPECTED_REPORT = {
     'internal-report',
   ],
   published: '2025-06-26T14:32:10.000Z',
+  content: '<p>some content for my report about &nbsp;Disco Team Threat Actor Group</p>',
   x_opencti_workflow_id: 'b29268cc-bb75-4f28-96c9-4cb48e549dff',
   labels: [
     'report',

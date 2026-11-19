@@ -51,7 +51,7 @@ export const PositionLine: FunctionComponent<PositionLineProps> = ({
   dataColumns,
   node,
 }) => {
-  const { fd } = useFormatter();
+  const { ftd } = useFormatter();
   const data = useFragment(positionLineFragment, node);
   return (
     <ListItemButton
@@ -75,12 +75,12 @@ export const PositionLine: FunctionComponent<PositionLineProps> = ({
             <BodyItem
               style={{ width: dataColumns.created.width }}
             >
-              {fd(data.created)}
+              {ftd(data.created)}
             </BodyItem>
             <BodyItem
               style={{ width: dataColumns.modified.width }}
             >
-              {fd(data.modified)}
+              {ftd(data.modified)}
             </BodyItem>
           </>
         )}

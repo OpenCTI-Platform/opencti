@@ -51,6 +51,7 @@ export const MESSAGING$ = {
     MESSENGER$.next(messages);
   },
   notifySuccess: (text: unknown) => MESSENGER$.next([{ type: 'message', text }]),
+  notifyWarning: (text: unknown) => MESSENGER$.next([{ type: 'warning', text }]),
   notifyNLQ: (text: unknown) => MESSENGER$.next([{ type: 'nlq', text }]),
   toggleNav: new Subject(),
   redirect: new Subject(),
@@ -82,6 +83,13 @@ const subscribeFn = (request: RequestParameters, variables: Variables) => {
     // Lazy creation of the subscription client to connect only after auth
     subscriptionClient = createClient({
       url: subscriptionUrl,
+      // Never give up reconnecting: the socket is also the presence of the tab for the platform
+      // (logout when the last tab is closed), a tab without socket would silently stop being tracked.
+      retryAttempts: Infinity,
+      // Exponential backoff with jitter, capped to keep reconnecting promptly after a long outage
+      retryWait: (retries) => new Promise((resolve) => {
+        setTimeout(resolve, Math.min(1000 * 2 ** retries, 10000) + Math.floor(Math.random() * 2700 + 300));
+      }),
     });
   }
   const client = subscriptionClient;
@@ -106,10 +114,15 @@ const network = new RelayNetworkLayer([fetchMiddleware, uploadMiddleware()], {
   subscribeFn: subscribeFn as unknown as SubscribeFunction,
 });
 const store = new Store(new RecordSource());
-const namespacedTypenames = new Set(['MeUser', 'PublicSettings']);
-const getDataID = (fieldValue: { id?: string } | null | undefined, typeName: string) => {
+// Connector: a sync's built-in twin connector shares the sync id (queue key), so
+// it must not collide with the Synchronizer record in the store.
+const namespacedTypenames = new Set(['MeUser', 'PublicSettings', 'Connector']);
+// Dashboard variables and presets keep their ids through duplication and import: two dashboards share them, so they
+// are never normalized by id (Relay then keys them under their dashboard).
+const unkeyedTypenames = new Set(['DashboardVariable', 'DashboardPreset']);
+export const getDataID = (fieldValue: { id?: string } | null | undefined, typeName: string) => {
   const id = fieldValue?.id;
-  if (!id) return null;
+  if (!id || unkeyedTypenames.has(typeName)) return null;
   if (namespacedTypenames.has(typeName)) {
     return `${typeName}:${id}`;
   }
@@ -151,7 +164,7 @@ export const QueryRenderer = ({
   );
 };
 
-const buildErrorMessages = (error: RelayError) => (error.res.errors ?? []).map(
+export const buildErrorMessages = (error: RelayError) => (error.res.errors ?? []).map(
   (e) => ({
     type: 'error',
     text: e?.data?.reason ?? e.message,
@@ -265,6 +278,7 @@ export const handleErrorInForm = (
       (e) => ({
         type: 'error',
         text: e?.data?.reason ?? e.message,
+        fullError: e,
       }));
     MESSAGING$.messages.next(messages);
   }
@@ -278,6 +292,7 @@ export const handleError = (error: any) => {
       (e) => ({
         type: 'error',
         text: e?.data?.message ?? e.message,
+        fullError: e,
       }));
     MESSAGING$.messages.next(messages);
   }

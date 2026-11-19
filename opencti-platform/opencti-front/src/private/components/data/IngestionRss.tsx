@@ -90,13 +90,13 @@ const IngestionRss = () => {
       label: 'Last run',
       percentWidth: 20,
       isSortable: false,
-      render: ({ last_execution_date }, helpers) => defaultRender(last_execution_date ? helpers.fd(last_execution_date) : null),
+      render: ({ last_execution_date }, helpers) => defaultRender(last_execution_date ? helpers.ftd(last_execution_date) : null),
     },
     current_state_date: {
       label: 'Current state',
       percentWidth: 20,
       isSortable: false,
-      render: ({ current_state_date }, helpers) => defaultRender(current_state_date ? helpers.fd(current_state_date) : null),
+      render: ({ current_state_date }, helpers) => defaultRender(current_state_date ? helpers.ftd(current_state_date) : null),
     },
   };
   const preloadedPaginationProps = {

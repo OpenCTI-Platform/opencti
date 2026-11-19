@@ -60,6 +60,12 @@ The ingestion manager in OpenCTI is a component that manages the ingestion of da
 
 More information can be found [here](../../usage/getting-started.md).
 
+## Ingestion health manager
+
+The ingestion health manager evaluates every minute the health of each connector, feed and synchronization, and logs an activity event when a health status changes.
+
+More information can be found [here](../../administration/ingestion-health.md).
+
 ## Playbook manager
 
 The playbook manager handles the automation scenarios which can be fully customized and enabled by platform administrators to enrich, filter and modify the data created or updated in the platform.

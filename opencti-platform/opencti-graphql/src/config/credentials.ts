@@ -1,4 +1,4 @@
-import conf, { loadCert, logApp } from './conf';
+import conf, { booleanConf, loadCert, logApp, TLS_REJECT_UNAUTHORIZED } from './conf';
 import { type Certificates, type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { isNotEmptyField } from '../database/utils';
 
@@ -23,7 +23,7 @@ export const enrichWithRemoteCredentials = async (prefix: string, baseConfigurat
       const object = conf.get(`${prefix}:credentials_provider:${provider}:object`);
       // https options
       let certs: Certificates | undefined;
-      const rejectUnauthorized = conf.get(`${prefix}:credentials_provider:https_cert:reject_unauthorized`) || false;
+      const rejectUnauthorized = booleanConf(`${prefix}:credentials_provider:https_cert:reject_unauthorized`, TLS_REJECT_UNAUTHORIZED);
       if (conf.get(`${prefix}:credentials_provider:https_cert:crt`)) {
         certs = {
           cert: conf.get(`${prefix}:credentials_provider:https_cert:crt`),

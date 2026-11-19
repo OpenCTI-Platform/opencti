@@ -576,7 +576,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
   connectionKey,
 }: SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineProps) => {
   const theme = useTheme<Theme>();
-  const { t_i18n, fsd } = useFormatter();
+  const { t_i18n, ftd } = useFormatter();
 
   const data = useFragment<SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine_node$key>(SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment, node);
 
@@ -669,7 +669,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
                 style={{ width: dataColumns.created_at.width }}
               >
                 <BodyItemText>
-                  {fsd(data.created_at)}
+                  {ftd(data.created_at)}
                 </BodyItemText>
               </BodyItem>
             </Stack>

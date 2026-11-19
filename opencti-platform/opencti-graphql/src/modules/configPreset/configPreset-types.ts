@@ -1,5 +1,7 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicConnection } from '../../types/store';
+import type { ConfigPresetImporter } from './import/configPreset-import-types';
+import type { ConfigImportMode } from '../configImport/configImport-types';
 
 export type ConfigPresetConfiguration = Record<string, unknown>;
 
@@ -8,9 +10,11 @@ export interface ConfigPresetItemFile {
   openCTI_version: string;
   // `<group id>.<category id>`
   type: string;
-  // Bundle id of the item
+  // Id of the item, the same on every platform
   id: string;
   configuration: ConfigPresetConfiguration;
+  // Path from the zip root of the attachment written next to this file (the values of an exclusion list), when the item has one
+  attachment?: string;
 }
 
 // An item of a type, by API ids
@@ -20,10 +24,8 @@ export interface ConfigPresetItemReference {
 }
 
 export interface ConfigPresetItemDefinition {
-  // API id: the category id for a singleton, the internal id for an entity
+  // The category id for a singleton, the standard id for an entity: the same in the API and in the bundle, and on every platform
   id: string;
-  // Id in the bundle, the same on every platform: the standard id for an entity, the API id when absent
-  bundleId?: string;
   label: string;
   // True when the label is a static string the UI translates; false when it is user data (an entity name)
   translatable: boolean;
@@ -31,10 +33,22 @@ export interface ConfigPresetItemDefinition {
   fileName?: string;
   // The platform default (the default theme)
   isDefault?: boolean;
+  // A setting that is on or off: whether it is on, shown under its label; null when it is not set
+  isEnabled?: boolean | null;
   // Items exported with this one, whatever the selection
   dependsOn?: ConfigPresetItemReference[];
   // Returns the allowlisted configuration of the item, never secrets
   exporter: (context: AuthContext, user: AuthUser) => Promise<ConfigPresetConfiguration>;
+  // A file written as is next to the JSON of the item, in the folder of the family: it is not JSON, or too big for the configuration
+  // (a JSON entry of the bundle holds 5 MB at most: an attachment has its own limit)
+  attachment?: ConfigPresetItemAttachment;
+}
+
+export interface ConfigPresetItemAttachment {
+  // File name in the folder of the family
+  name: string;
+  // The bytes of the attachment, read when the item is written in the zip
+  read: (context: AuthContext, user: AuthUser) => Promise<Buffer>;
 }
 
 export interface ConfigPresetListItemsArgs {
@@ -69,4 +83,10 @@ export interface ConfigPresetFamilyDefinition {
   listItems: (context: AuthContext, user: AuthUser, args: ConfigPresetListItemsArgs) => Promise<BasicConnection<ConfigPresetItemDefinition>>;
   // Every exportable item (ids null) or only the given ones, without the excluded ones: what the export writes
   resolveItems: (context: AuthContext, user: AuthUser, ids: string[] | null, excludedIds: string[]) => Promise<ConfigPresetItemDefinition[]>;
+  // How the items of this family are imported; a family without importer is reported as not importable
+  importer?: ConfigPresetImporter;
+  // What an import can do with the items that already exist: OVERWRITE when absent. The dialog offers a choice from two modes.
+  importModes?: ConfigImportMode[];
+  // The family is part of the Enterprise Edition: a platform without it neither exports its items nor imports them
+  requiresEnterpriseEdition?: boolean;
 }

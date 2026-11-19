@@ -1233,6 +1233,32 @@ describe('Upsert and merge entities', () => {
     await deleteElementById(testContext, ADMIN_USER, threat01.id, ENTITY_TYPE_THREAT_ACTOR_GROUP); // delete 1 and 3
     await deleteElementById(testContext, ADMIN_USER, threat02.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
   });
+  it('should upsert without confidence keep the existing confidence', async () => {
+    const pattern = '[ipv4-addr:value = \'198.51.100.31\']';
+    // 01. Create the indicator with a confidence lower than the user's max confidence (100)
+    const created = await addIndicator(testContext, ADMIN_USER, { name: 'UPSERT_NO_CONFIDENCE', description: 'UPSERT_NO_CONFIDENCE', pattern, pattern_type: 'stix', confidence: 50 });
+    expect(created.confidence).toEqual(50);
+    // 02. Upsert without confidence: other attributes are updated, the confidence is kept
+    const upsertNoConfidence = { name: 'UPSERT_NO_CONFIDENCE', pattern, pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr' };
+    const upserted = await addIndicator(testContext, ADMIN_USER, upsertNoConfidence);
+    expect(upserted.id).toEqual(created.id);
+    let loadIndicator = await storeLoadById(testContext, ADMIN_USER, created.id, ENTITY_TYPE_INDICATOR);
+    expect(loadIndicator.x_opencti_main_observable_type).toEqual('IPv4-Addr');
+    expect(loadIndicator.confidence).toEqual(50);
+    // 03. Upsert with an explicit confidence: the confidence is updated
+    await addIndicator(testContext, ADMIN_USER, { name: 'UPSERT_NO_CONFIDENCE', pattern, pattern_type: 'stix', confidence: 80 });
+    loadIndicator = await storeLoadById(testContext, ADMIN_USER, created.id, ENTITY_TYPE_INDICATOR);
+    expect(loadIndicator.confidence).toEqual(80);
+    // 04. Upsert without confidence by a user under the existing confidence: nothing is updated
+    const lowConfidenceUser = buildStandardUser([], [], [], 30);
+    const upsertLowConfidence = { name: 'UPSERT_NO_CONFIDENCE', pattern, pattern_type: 'stix', description: 'UPSERT_NO_CONFIDENCE LOW' };
+    await addIndicator(testContext, lowConfidenceUser, upsertLowConfidence);
+    loadIndicator = await storeLoadById(testContext, ADMIN_USER, created.id, ENTITY_TYPE_INDICATOR);
+    expect(loadIndicator.confidence).toEqual(80);
+    expect(loadIndicator.description).toEqual('UPSERT_NO_CONFIDENCE');
+    // Cleanup
+    await deleteElementById(testContext, ADMIN_USER, created.id, ENTITY_TYPE_INDICATOR);
+  });
   it('should reports keep their author after organizations merging', async () => {
     // 01. Create organizations
     const organization1 = await createOrganization({ name: 'organization1' });

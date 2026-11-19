@@ -9,6 +9,7 @@ import { EnvironmentConfig } from 'relay-runtime';
 import userEvent from '@testing-library/user-event';
 import { RelayMockEnvironment } from 'relay-test-utils/lib/RelayModernMockEnvironment';
 import { UserContext, UserContextType } from '../hooks/useAuth';
+import { DEFAULT_DATE_DISPLAY } from '../dateDisplay';
 import AppIntlProvider from '../../components/AppIntlProvider';
 import ThemeDark from '../../components/ThemeDark';
 
@@ -47,6 +48,7 @@ export const createMockUserContext = (options?: CreateUserContextOptions): UserC
     locale: 'en-us',
     tz: 'UTC',
     unitSystem: 'Metric',
+    dateDisplay: DEFAULT_DATE_DISPLAY,
     me: (me ?? {
       name: 'admin',
       user_email: 'admin@opencti.io',

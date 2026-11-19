@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import { CheckCircleOutlined, RadioButtonUnchecked } from '@mui/icons-material';
+import { CheckCircleOutlined, HistoryOutlined, RadioButtonUnchecked } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from './i18n';
 
@@ -13,11 +13,15 @@ export interface PasswordPolicies {
   minWords?: number | null;
   minLowercase?: number | null;
   minUppercase?: number | null;
+  // Counts the current password: 1 refuses the current one only
+  historyCount?: number | null;
 }
 
 interface PasswordPoliciesAlertProps {
   policies: PasswordPolicies;
   value?: string;
+  // 'admin' when the password is set for someone else, which changes the history wording
+  audience?: 'self' | 'admin';
 }
 
 export const countSymbols = (s: string) => (s.match(/[^a-zA-Z0-9]/g) ?? []).length;
@@ -26,10 +30,26 @@ export const countWords = (s: string) => s.split(/[\s-]+/).filter(Boolean).lengt
 export const countLowercase = (s: string) => (s.match(/[a-z]/g) ?? []).length;
 export const countUppercase = (s: string) => (s.match(/[A-Z]/g) ?? []).length;
 
-const PasswordPoliciesAlert: FunctionComponent<PasswordPoliciesAlertProps> = ({ policies, value }) => {
+export const passwordHistoryRuleLabel = (
+  t_i18n: (message: string, options?: { values: Record<string, number> }) => string,
+  historyCount: number,
+  audience: 'self' | 'admin',
+) => {
+  const values = { values: { count: historyCount } };
+  if (audience === 'admin') {
+    return historyCount === 1
+      ? t_i18n('Must be different from the current password')
+      : t_i18n('Must be different from the last {count} passwords', values);
+  }
+  return historyCount === 1
+    ? t_i18n('Must be different from your current password')
+    : t_i18n('Must be different from your last {count} passwords', values);
+};
+
+const PasswordPoliciesAlert: FunctionComponent<PasswordPoliciesAlertProps> = ({ policies, value, audience = 'self' }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
-  const { minLength, maxLength, minSymbols, minNumbers, minWords, minLowercase, minUppercase } = policies;
+  const { minLength, maxLength, minSymbols, minNumbers, minWords, minLowercase, minUppercase, historyCount } = policies;
   const hasPolicy = (
     (minLength ?? 0) > 0
     || (maxLength ?? 0) > 0
@@ -38,6 +58,7 @@ const PasswordPoliciesAlert: FunctionComponent<PasswordPoliciesAlertProps> = ({ 
     || (minWords ?? 0) > 0
     || (minLowercase ?? 0) > 0
     || (minUppercase ?? 0) > 0
+    || (historyCount ?? 0) > 0
   );
 
   if (!hasPolicy) return null;
@@ -78,6 +99,15 @@ const PasswordPoliciesAlert: FunctionComponent<PasswordPoliciesAlertProps> = ({ 
         {(minWords ?? 0) > 0 && <PolicyLine met={checks.minWords} label={`${t_i18n('Number of words (split on hyphen, space) must be greater or equals to')} ${minWords}`} />}
         {(minLowercase ?? 0) > 0 && <PolicyLine met={checks.minLowercase} label={`${t_i18n('Number of lowercase chars must be greater or equals to')} ${minLowercase}`} />}
         {(minUppercase ?? 0) > 0 && <PolicyLine met={checks.minUppercase} label={`${t_i18n('Number of uppercase chars must be greater or equals to')} ${minUppercase}`} />}
+        {(historyCount ?? 0) > 0 && (
+          // Only the server knows the previous passwords, so this rule never gets a live tick
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {isLive && <HistoryOutlined fontSize="small" style={{ color: theme.palette.text.secondary }} />}
+            <span style={{ color: isLive ? theme.palette.text.secondary : 'inherit' }}>
+              {passwordHistoryRuleLabel(t_i18n, historyCount ?? 0, audience)}
+            </span>
+          </div>
+        )}
       </div>
     </Alert>
   );

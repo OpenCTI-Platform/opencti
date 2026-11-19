@@ -24,7 +24,7 @@ interface GroupLineProps {
 }
 
 const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
-  const { fd, t_i18n } = useFormatter();
+  const { ftd, t_i18n } = useFormatter();
   const { dataColumns, node } = props;
   const { isSensitive } = useSensitiveModifications('groups', node.standard_id);
 
@@ -85,12 +85,12 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
             <BodyItem
               style={{ width: dataColumns.created_at.width }}
             >
-              {fd(node.created_at)}
+              {ftd(node.created_at)}
             </BodyItem>
             <BodyItem
               style={{ width: dataColumns.updated_at.width }}
             >
-              {fd(node.updated_at)}
+              {ftd(node.updated_at)}
             </BodyItem>
           </>
         )}

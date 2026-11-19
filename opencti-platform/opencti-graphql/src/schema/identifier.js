@@ -56,6 +56,7 @@ export const REVOKED = 'revoked';
 export const X_MITRE_ID_FIELD = 'x_mitre_id';
 export const X_DETECTION = 'x_opencti_detection';
 export const X_WORKFLOW_ID = 'x_opencti_workflow_id';
+export const X_CLOSING_REASON = 'x_opencti_closing_reason';
 export const X_SCORE = 'x_opencti_score';
 // endregion
 
@@ -148,10 +149,10 @@ const stixBaseCyberObservableContribution = {
     from(from) {
       return from?.standard_id;
     },
-    src(src) {
+    [INPUT_SRC](src) {
       return src?.standard_id;
     },
-    dst(dst) {
+    [INPUT_DST](dst) {
       return dst?.standard_id;
     },
     hashes(data) {

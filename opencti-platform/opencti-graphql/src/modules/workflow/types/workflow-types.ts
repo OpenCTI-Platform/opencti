@@ -33,7 +33,14 @@ export interface AsyncActionSlot {
   workId: string; // The Work entity id for live progress lookup
   type: string; // e.g. 'asyncBulkAction'
   status: 'pending' | 'success' | 'failed';
+  taskId?: string; // The BackgroundTask id, when the action queued one the workflow may have to cancel (shareRequestedEntities)
 }
+
+/**
+ * Event of the record that only tracks the container share tasks and direct grants a failed transition could not
+ * undo. It is not a transition: its completion never projects a state, replays actions or writes history.
+ */
+export const WORKFLOW_CLEANUP_EVENT = 'event_failed_share_cleanup';
 
 /**
  * The full pending-transition record persisted on WorkflowInstance while async tasks run.
@@ -47,11 +54,41 @@ export interface WorkflowPendingTransition {
   triggeredAt: string; // ISO 8601
   runtimeParams: Record<string, unknown>;
   comment?: string;
+  closingReason?: string | null;
   asyncActions: AsyncActionSlot[];
   syncActions: WorkflowActionConfig[];
   onEnterActions?: WorkflowActionConfig[]; // onEnter actions of the target state, serialized so phase 2 can replay them.
+  /** Request-access definitions only: the decision recorded once the target outcome state is entered. */
+  requestAccessOutcome?: 'APPROVED' | 'DECLINED';
+  /** Request-access bypass out of an outcome state: the request is reset to NEW once the target state is entered. */
+  requestAccessStatus?: 'NEW';
   draftEntityIds?: string[];
+  /**
+   * Organizations the request access share granted directly on plain entities while its container share tasks run.
+   * Only the grants this transition added: an organization the entity was already shared with is not recorded.
+   * Revoked when a container task fails or an admin clears the pending state.
+   */
+  requestAccessDirectGrants?: RequestAccessDirectGrant[];
 }
+
+export interface RequestAccessDirectGrant {
+  entityId: string;
+  organizationIds: string[];
+}
+
+/**
+ * Merges request access direct grant records, one entry per entity with the union of its organizations.
+ */
+export const mergeRequestAccessDirectGrants = (...records: (RequestAccessDirectGrant[] | undefined)[]): RequestAccessDirectGrant[] => {
+  const organizationsByEntity = new Map<string, Set<string>>();
+  for (const grant of records.flatMap((record) => record ?? [])) {
+    if (grant.organizationIds.length === 0) continue;
+    const organizationIds = organizationsByEntity.get(grant.entityId) ?? new Set<string>();
+    grant.organizationIds.forEach((organizationId) => organizationIds.add(organizationId));
+    organizationsByEntity.set(grant.entityId, organizationIds);
+  }
+  return [...organizationsByEntity.entries()].map(([entityId, organizationIds]) => ({ entityId, organizationIds: [...organizationIds] }));
+};
 
 /**
  * Information available during workflow execution (conditions and side effects).
@@ -62,6 +99,20 @@ export interface Context {
   context?: any;
   /** Mutable accumulator: asyncBulkAction pushes slots here; engine reads them after phase 1. */
   pendingAsyncSlots?: AsyncActionSlot[];
+  /**
+   * Opt-in accumulator for onEnter actions: an action whose background tasks the transition must wait for
+   * (only shareRequestedEntities) pushes its slots here, and the transition suspends after that action.
+   * asyncBulkAction never pushes here, so in onEnter it fires its task and the transition completes.
+   */
+  suspendingAsyncSlots?: AsyncActionSlot[];
+  /** Direct grants of a request access share that waits for its container tasks, persisted on the pending transition. */
+  requestAccessDirectGrants?: RequestAccessDirectGrant[];
+  /** Container share tasks a refused request access share could not delete: the transition records them so an admin clear retries. */
+  undeletedShareSlots?: AsyncActionSlot[];
+  /** Direct grants a refused request access share could not undo: the transition records them so an admin clear revokes them. */
+  unrevokedDirectGrants?: RequestAccessDirectGrant[];
+  /** Audience pass: knowledge (entity data) filters count as met, only user / group / organization / role filters are evaluated. */
+  assumeKnowledgeConditionsMet?: boolean;
   [key: string]: any;
 }
 
@@ -87,7 +138,10 @@ export interface Transition<TContext extends Context = Context> {
   to?: State | null;
   event: Event;
   comment?: string;
+  closingReason?: string;
   conditions?: ConditionValidator<TContext>[];
+  /** The stored condition filters; their part left for the entity to meet is shown when the transition is blocked. */
+  conditionFilters?: FilterGroup | null;
   /** Phase 1: async effects (background tasks). State does NOT advance until all succeed. */
   asyncSideEffects?: SideEffect<TContext>[];
   /** Phase 2: sync effects run after all async succeed (or immediately if no async). */
@@ -133,10 +187,16 @@ export interface TriggerResult {
   /** Present when the transition spawned async background tasks. */
   executionStatus?: 'pending' | 'completed' | 'error';
   asyncActionSlots?: AsyncActionSlot[];
+  /** Set when an onEnter action of the target state suspended the transition: how many onEnter actions already ran. */
+  completedOnEnterActions?: number;
+  /** The entity was already in the target status: no action ran and no history was recorded. */
+  unchanged?: boolean;
 }
 
 // Keep in sync with COMMENT_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.graphql.ts
 export const COMMENT_MAX_LENGTH = 1000;
+
+export const CLOSING_REASON_MAX_LENGTH = 255;
 
 /**
  * Workflow validation error structure
@@ -152,7 +212,7 @@ export interface WorkflowValidationError {
  */
 export interface WorkflowActionConfig {
   type: string;
-  params?: string;
+  params?: unknown;
 }
 
 export interface WorkflowConditionConfig {
@@ -168,6 +228,8 @@ export interface WorkflowSerializedState {
   order?: number;
   onEnter?: WorkflowActionConfig[];
   onExit?: WorkflowActionConfig[];
+  /** Request-access definitions only: marks the state reached when the request is approved or declined. */
+  requestAccessOutcome?: 'APPROVED' | 'DECLINED';
 }
 
 export interface WorkflowSerializedTransition {
@@ -175,6 +237,7 @@ export interface WorkflowSerializedTransition {
   to: string | null;
   event: string;
   comment?: string;
+  closingReason?: string;
   /** Phase 1: async background task actions. Run before syncActions. */
   asyncActions?: WorkflowActionConfig[];
   /** Phase 2: sync actions. Run after all asyncActions succeed (or immediately if no asyncActions). */

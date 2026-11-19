@@ -32,7 +32,7 @@ const EntitiesStixDomainObjectLineComponent = ({
   onToggleShiftEntity,
   index,
 }) => {
-  const { fd } = useFormatter();
+  const { ftd } = useFormatter();
   const link = `${resolveLink(node.entity_type)}/${node.id}`;
   return (
     <ListItemButton
@@ -94,7 +94,7 @@ const EntitiesStixDomainObjectLineComponent = ({
             <BodyItem
               style={{ width: dataColumns.created_at.width }}
             >
-              {fd(node.created_at)}
+              {ftd(node.created_at)}
             </BodyItem>
             <BodyItem
               style={{ width: dataColumns.objectMarking.width }}

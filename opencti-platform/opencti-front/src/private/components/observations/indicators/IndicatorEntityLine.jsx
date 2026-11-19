@@ -25,7 +25,7 @@ const BodyItem = styled('div')(bodyItemStyle);
 class IndicatorEntityLineComponent extends Component {
   render() {
     const {
-      fsd,
+      ftd,
       t,
       dataColumns,
       node,
@@ -115,12 +115,12 @@ class IndicatorEntityLineComponent extends Component {
                 <BodyItem
                   style={{ width: dataColumns.start_time.width }}
                 >
-                  {fsd(node.start_time)}
+                  {ftd(node.start_time)}
                 </BodyItem>
                 <BodyItem
                   style={{ width: dataColumns.stop_time.width }}
                 >
-                  {fsd(node.stop_time)}
+                  {ftd(node.stop_time)}
                 </BodyItem>
                 <BodyItem
                   style={{ width: dataColumns.confidence.width }}
@@ -141,7 +141,7 @@ IndicatorEntityLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   t: PropTypes.func,
-  fsd: PropTypes.func,
+  ftd: PropTypes.func,
   displayRelation: PropTypes.bool,
   entityId: PropTypes.string,
 };

@@ -42,7 +42,7 @@ interface RetentionLineProps {
 }
 
 export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColumns, node, paginationOptions }) => {
-  const { nsdt, n, t_i18n } = useFormatter();
+  const { ftdt, n, t_i18n } = useFormatter();
   const data = useFragment(RetentionLineFragment, node);
 
   const isActive = data.active;
@@ -90,7 +90,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
             <BodyItem
               style={{ width: dataColumns.last_execution_date.width }}
             >
-              {nsdt(data.last_execution_date)}
+              {ftdt(data.last_execution_date)}
             </BodyItem>
             <BodyItem
               style={{ width: dataColumns.remaining_count.width }}

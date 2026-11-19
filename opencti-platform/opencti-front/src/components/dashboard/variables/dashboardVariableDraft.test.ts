@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { DASHBOARD_VARIABLES_LIMITS, draftToVariable, emptyDraft, validateDraft, variableToDraft, type DashboardVariableDraft } from './dashboardVariableDraft';
 import { DASHBOARD_VARIABLE_TYPES, type DashboardVariable, type DashboardVariableType } from '../dashboard-types';
-import type { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
+import type { Filter, FilterGroup } from '../../../utils/filters/filtersHelpers-types';
+import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const t_i18n = (s: string) => s;
 
@@ -55,6 +56,16 @@ describe('dashboardVariableDraft round trip', () => {
       restriction: { mode: 'none' },
       defaultValue: 'abc',
     });
+  });
+
+  it('builds a filters restriction with an empty rule when none was edited yet', () => {
+    const draft = validDraft({ type: 'entity', entityTypes: ['Sector'], restrictionMode: 'filters', filters: undefined });
+    expect(draftToVariable(draft, 'i').restriction).toEqual({ mode: 'filters', filters: emptyFilterGroup });
+  });
+
+  it('sends only the restriction of the current mode', () => {
+    const draft = validDraft({ type: 'label', restrictionMode: 'none', selectionValues: ['a'], filters: emptyFilterGroup });
+    expect(draftToVariable(draft, 'i').restriction).toEqual({ mode: 'none' });
   });
 
   it('drops the fields that do not belong to the selected type', () => {
@@ -172,6 +183,87 @@ describe('validateDraft', () => {
   it('does not apply the quota when editing an existing variable', () => {
     const existing = Array.from({ length: DASHBOARD_VARIABLES_LIMITS.variables }, (_, i) => makeVariable('text', { id: `v${i}`, name: `Name ${i}` }));
     expect(validateDraft(validDraft({ id: 'v3', name: 'Name 3' }), existing, t_i18n)).toEqual({});
+  });
+
+  describe('selection restriction', () => {
+    const selectionDraft = (overrides: Partial<DashboardVariableDraft> = {}) => validDraft({
+      type: 'entity',
+      entityTypes: ['Sector'],
+      restrictionMode: 'selection',
+      selectionValues: ['id-1', 'id-2'],
+      defaultValue: 'id-1',
+      ...overrides,
+    });
+
+    it('accepts a valid selection', () => {
+      expect(validateDraft(selectionDraft(), [], t_i18n)).toEqual({});
+    });
+
+    it('refuses an empty selection', () => {
+      expect(validateDraft(selectionDraft({ selectionValues: [] }), [], t_i18n).selectionValues).toBe('Select at least one value');
+    });
+
+    it('refuses a selection beyond 200 values', () => {
+      const values = Array.from({ length: DASHBOARD_VARIABLES_LIMITS.selectionValues + 1 }, (_, i) => `id-${i + 1}`);
+      expect(validateDraft(selectionDraft({ selectionValues: values }), [], t_i18n).selectionValues)
+        .toBe('A selection cannot hold more than 200 values');
+      expect(validateDraft(selectionDraft({ selectionValues: values.slice(1), defaultValue: 'id-2' }), [], t_i18n)).toEqual({});
+    });
+
+    it('refuses a default value outside of the selection', () => {
+      expect(validateDraft(selectionDraft({ selectionValues: ['id-2'] }), [], t_i18n).defaultValue)
+        .toBe('The default value must belong to the selection');
+    });
+
+    it('refuses a selection value referencing another variable', () => {
+      expect(validateDraft(selectionDraft({ selectionValues: ['id-1', '$var:x'] }), [], t_i18n).selectionValues)
+        .toBe('A value cannot reference another variable');
+    });
+  });
+
+  describe('filters restriction', () => {
+    const rule: FilterGroup = {
+      mode: 'and',
+      filters: [{ key: 'objectLabel', values: ['label-1'], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    };
+    const filtersDraft = (overrides: Partial<DashboardVariableDraft> = {}) => validDraft({
+      type: 'entity',
+      entityTypes: ['Sector'],
+      restrictionMode: 'filters',
+      filters: rule,
+      defaultValue: 'id-1',
+      ...overrides,
+    });
+
+    it('accepts a valid filters rule', () => {
+      expect(validateDraft(filtersDraft(), [], t_i18n)).toEqual({});
+    });
+
+    it('refuses a filters restriction on a type other than entity', () => {
+      expect(validateDraft(filtersDraft({ type: 'label' }), [], t_i18n).filters)
+        .toBe('Only an entity variable can be restricted by filter');
+    });
+
+    it('refuses an empty filters rule', () => {
+      expect(validateDraft(filtersDraft({ filters: emptyFilterGroup }), [], t_i18n).filters).toBe('At least one filter is required');
+      const valueless: FilterGroup = { ...rule, filters: [{ key: 'objectLabel', values: [], operator: 'eq', mode: 'or' }] };
+      expect(validateDraft(filtersDraft({ filters: valueless }), [], t_i18n).filters).toBe('At least one filter is required');
+    });
+
+    it('refuses a filters rule referencing another variable, at any depth', () => {
+      const tokenFilter: Filter = { key: 'objectLabel', values: ['$var:x'], operator: 'eq', mode: 'or' };
+      expect(validateDraft(filtersDraft({ filters: { ...rule, filters: [tokenFilter] } }), [], t_i18n).filters)
+        .toBe('A filter cannot reference another variable');
+      const nested: FilterGroup = { ...rule, filterGroups: [{ mode: 'or', filters: [tokenFilter], filterGroups: [] }] };
+      expect(validateDraft(filtersDraft({ filters: nested }), [], t_i18n).filters)
+        .toBe('A filter cannot reference another variable');
+    });
+  });
+
+  it('ignores the selection and the filters of another mode', () => {
+    const draft = validDraft({ type: 'label', restrictionMode: 'none', selectionValues: [], filters: emptyFilterGroup, defaultValue: 'id-1' });
+    expect(validateDraft(draft, [], t_i18n)).toEqual({});
   });
 });
 

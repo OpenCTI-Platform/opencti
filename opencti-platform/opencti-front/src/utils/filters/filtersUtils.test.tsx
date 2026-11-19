@@ -1617,6 +1617,14 @@ describe('useStixFilters', () => {
     expect(hook.result.current).toContain('x_opencti_ssvc_automatable');
     expect(hook.result.current).toContain('x_opencti_ssvc_technical_impact');
   });
+
+  it('should include the closing reason filter key', () => {
+    const { hook } = testRenderHook(
+      () => useStixFilters(),
+      { userContext: createMockUserContext({ settings: { platform_feature_flags: [] } }) },
+    );
+    expect(hook.result.current).toContain('x_opencti_closing_reason');
+  });
 });
 
 describe('getAvailableOperatorForFilter', () => {
@@ -1677,7 +1685,7 @@ describe('getAvailableOperatorForFilter', () => {
     });
 
     it('should return the numeric operators for integer and float filters', () => {
-      const numericOperators = ['gt', 'gte', 'lt', 'lte', 'eq', 'not_eq'];
+      const numericOperators = ['gt', 'gte', 'lt', 'lte', 'eq', 'not_eq', 'nil', 'not_nil'];
       ['integer', 'float'].forEach((type) => {
         const filterDefinition = buildFilterDefinition({ filterKey: 'confidence', type });
         expect(getAvailableOperatorForFilter(filterDefinition)).toEqual(numericOperators);

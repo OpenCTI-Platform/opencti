@@ -10,7 +10,8 @@ export const validateFormSubmission = (
   const errors: string[] = [];
 
   // Main entity
-  if (schema.mainEntityLookup && isEmptyField(values.mainEntityLookup)) {
+  // Objects prepared on the fly (pending) are created on submission, they satisfy a required lookup
+  if (schema.mainEntityLookup && isEmptyField(values.mainEntityLookup) && isEmptyField(values.mainEntityLookupPending)) {
     errors.push('Required field "mainEntityLookup" is missing');
   }
   if (!schema.mainEntityLookup && schema.mainEntityMultiple && schema.mainEntityFieldMode === 'multiple') {
@@ -59,7 +60,7 @@ export const validateFormSubmission = (
   if (schema.additionalEntities) {
     for (let index = 0; index < schema.additionalEntities.length; index += 1) {
       const additionalEntity = schema.additionalEntities[index];
-      if (additionalEntity.lookup && isEmptyField(values[`additional_${additionalEntity.id}_lookup`]) && (additionalEntity?.minAmount ?? 0) > 0) {
+      if (additionalEntity.lookup && isEmptyField(values[`additional_${additionalEntity.id}_lookup`]) && isEmptyField(values[`additional_${additionalEntity.id}_lookup_pending`]) && (additionalEntity?.minAmount ?? 0) > 0) {
         errors.push(`Required field "additional_${additionalEntity.id}_lookup" is missing`);
       }
       if (!additionalEntity.lookup && additionalEntity.multiple && additionalEntity.fieldMode === 'multiple') {

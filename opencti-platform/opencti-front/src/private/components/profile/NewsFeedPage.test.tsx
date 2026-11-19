@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, screen } from '@testing-library/react';
 import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
+import { UserContext } from '../../../utils/hooks/useAuth';
 import NewsFeedPage from './NewsFeedPage';
 
 const mockCommitMutation = vi.fn();
@@ -44,7 +45,13 @@ vi.mock('@common/card/Card', () => ({
 }));
 
 vi.mock('./NewsFeed', () => ({
-  default: () => <div data-testid="news-feed-list" />,
+  default: ({ markBlogPostsAsRead }: { markBlogPostsAsRead?: boolean }) => (
+    <div data-testid="news-feed-list" data-mark-blog-posts-as-read={String(!!markBlogPostsAsRead)} />
+  ),
+}));
+
+vi.mock('./NewsFeedBlogPosts', () => ({
+  default: () => <div data-testid="news-feed-blog-posts" />,
 }));
 
 vi.mock('./NewsFeedSettings', () => ({
@@ -64,10 +71,12 @@ const renderPage = (options?: {
   settings?: Record<string, unknown>;
   me?: Record<string, unknown>;
   unreadCount?: number | null;
+  unreadBlogPostsCount?: number | null;
 }) => {
   const settings = options?.settings ?? REGISTERED_SETTINGS;
   mockUseLazyLoadQuery.mockReturnValue({
-    myUnreadNewsFeedsCount: options?.unreadCount ?? 0,
+    myUnreadResourcesCount: options?.unreadCount ?? 0,
+    myUnreadBlogPostsCount: options?.unreadBlogPostsCount ?? 0,
     settings,
   });
   return testRender(<NewsFeedPage />, {
@@ -78,11 +87,19 @@ const renderPage = (options?: {
   });
 };
 
-const emitNewsFeedNumber = (count: number | null) => act(() => {
-  subscriptionOnNext?.({ newsFeedsNumber: count === null ? null : { count } });
+const emitNewsFeedNumber = (resourceCount: number | null, blogPostCount: number | null = null) => act(() => {
+  subscriptionOnNext?.({
+    newsFeedsNumber: resourceCount === null && blogPostCount === null
+      ? null
+      : { resource_count: resourceCount, blog_post_count: blogPostCount },
+  });
 });
 
-const getBadge = () => document.querySelector('[aria-label$="items"]');
+const BLOG_POST_SETTINGS = { ...REGISTERED_SETTINGS, xtm_hub_available_news_feed_types: ['BLOG_POST'] };
+
+const getTabBadge = (tabName: RegExp) => screen.getByRole('tab', { name: tabName }).querySelector('[aria-label$="items"]');
+const getBadge = () => getTabBadge(/News feed/);
+const getBlogPostsBadge = () => getTabBadge(/Blogpost/);
 
 describe('NewsFeedPage', () => {
   beforeEach(() => {
@@ -100,6 +117,33 @@ describe('NewsFeedPage', () => {
     renderPage();
     expect(screen.getByRole('tab', { name: /News feed/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Settings/ })).toBeInTheDocument();
+  });
+
+  it('does not render the blogposts tab when the platform does not support the blogposts', () => {
+    renderPage();
+    expect(screen.queryByRole('tab', { name: /Blogpost/ })).not.toBeInTheDocument();
+  });
+
+  it('renders the blogposts tab when the platform supports the blogposts', () => {
+    renderPage({ settings: { ...REGISTERED_SETTINGS, xtm_hub_available_news_feed_types: ['BLOG_POST'] } });
+    expect(screen.getByRole('tab', { name: /Blogpost/ })).toBeInTheDocument();
+  });
+
+  it('makes the news feed mark the blogposts as read when the blogposts tab is not available', () => {
+    renderPage();
+    expect(screen.getByTestId('news-feed-list')).toHaveAttribute('data-mark-blog-posts-as-read', 'true');
+  });
+
+  it('keeps the blogposts unread on the news feed when the blogposts tab is available', () => {
+    renderPage({ settings: BLOG_POST_SETTINGS });
+    expect(screen.getByTestId('news-feed-list')).toHaveAttribute('data-mark-blog-posts-as-read', 'false');
+  });
+
+  it('displays the blogposts when the blogposts tab is selected', async () => {
+    const { user } = renderPage({ settings: { ...REGISTERED_SETTINGS, xtm_hub_available_news_feed_types: ['BLOG_POST'] } });
+    await user.click(screen.getByRole('tab', { name: /Blogpost/ }));
+    expect(screen.getByTestId('news-feed-blog-posts')).toBeInTheDocument();
+    expect(screen.queryByTestId('news-feed-list')).not.toBeInTheDocument();
   });
 
   it('displays the news feed list by default', () => {
@@ -154,6 +198,30 @@ describe('NewsFeedPage', () => {
     expect(getBadge()).not.toBeInTheDocument();
   });
 
+  it('displays the unread blogposts count on the blogposts tab only', () => {
+    renderPage({ settings: BLOG_POST_SETTINGS, unreadCount: 2, unreadBlogPostsCount: 5 });
+    expect(getBlogPostsBadge()).toHaveTextContent('5');
+    expect(getBadge()).toHaveTextContent('2');
+  });
+
+  it('does not count the blogposts on the news feed tab', () => {
+    renderPage({ settings: BLOG_POST_SETTINGS, unreadCount: 0, unreadBlogPostsCount: 5 });
+    expect(getBadge()).not.toBeInTheDocument();
+    expect(getBlogPostsBadge()).toHaveTextContent('5');
+  });
+
+  it('hides the blogposts badge when there is no unread blogpost', () => {
+    renderPage({ settings: BLOG_POST_SETTINGS, unreadCount: 3, unreadBlogPostsCount: 0 });
+    expect(getBlogPostsBadge()).not.toBeInTheDocument();
+  });
+
+  it('updates each badge with its own live count', () => {
+    renderPage({ settings: BLOG_POST_SETTINGS, unreadCount: 2, unreadBlogPostsCount: 5 });
+    emitNewsFeedNumber(7, 0);
+    expect(getBadge()).toHaveTextContent('7');
+    expect(getBlogPostsBadge()).not.toBeInTheDocument();
+  });
+
   it('hides the disconnected banner when the platform is registered', () => {
     renderPage();
     expect(screen.queryByText('XTM Hub is disconnected')).not.toBeInTheDocument();
@@ -192,6 +260,38 @@ describe('NewsFeedPage', () => {
     renderPage({ unreadCount: 4 });
     emitNewsFeedNumber(null);
     expect(getBadge()).toHaveTextContent('4');
+  });
+
+  it('does not reuse the stale live counts when the news feed is enabled again', () => {
+    let setUnsubscribed: (value: boolean) => void = () => {};
+    mockUseLazyLoadQuery.mockReturnValue({
+      myUnreadResourcesCount: 4,
+      myUnreadBlogPostsCount: 2,
+      settings: BLOG_POST_SETTINGS,
+    });
+    const Harness = () => {
+      const [unsubscribed, setValue] = useState(false);
+      setUnsubscribed = setValue;
+      return (
+        <UserContext.Provider
+          value={createMockUserContext({
+            settings: BLOG_POST_SETTINGS,
+            me: { id: 'user-1', unsubscribed_news_feed_types: unsubscribed ? ['*'] : [] },
+          })}
+        >
+          <NewsFeedPage />
+        </UserContext.Provider>
+      );
+    };
+    testRender(<Harness />);
+    emitNewsFeedNumber(9, 8);
+    expect(getBadge()).toHaveTextContent('9');
+    expect(getBlogPostsBadge()).toHaveTextContent('8');
+
+    act(() => setUnsubscribed(true));
+    act(() => setUnsubscribed(false));
+    expect(getBadge()).toHaveTextContent('4');
+    expect(getBlogPostsBadge()).toHaveTextContent('2');
   });
 
   it('ignores the live count when the platform is not registered', () => {

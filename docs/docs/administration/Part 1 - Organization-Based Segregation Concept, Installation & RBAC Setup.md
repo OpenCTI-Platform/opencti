@@ -170,3 +170,5 @@ Because segregation can cause a user to be unable to see (or re-create) knowledg
 - Segregation and Authorized Members can combine, but **Authorized Members takes precedence** and effectively opts an entity out of organization-based sharing once activated.
 
 ---
+
+**Next:** [Part 2 - Customizing the Platform as the Main Organization](Part%202%20-%20Customizing%20the%20Platform%20as%20the%20Main%20Organization.md) | **Overview:** [Organization segregation](organization-segregation.md)

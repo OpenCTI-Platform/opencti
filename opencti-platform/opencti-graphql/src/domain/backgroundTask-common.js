@@ -5,6 +5,7 @@ import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { now } from '../utils/format';
 import {
+  isBypassUser,
   isOnlyOrgaAdmin,
   isUserHasCapability,
   KNOWLEDGE_KNASKIMPORT,
@@ -17,7 +18,7 @@ import {
 import { isKnowledge, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
-import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { INDEX_INTERNAL_OBJECTS, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
 import { publishUserAction } from '../listener/UserActionListener';
 import { internalFindByIds, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
@@ -31,8 +32,11 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { TYPE_FILTER, USER_ID_FILTER } from '../utils/filtering/filtering-constants';
 import { createWork } from './work';
+import { validateEnrichmentInvestigation } from '../modules/workspace/investigation-enrichment';
 import { getBestBackgroundConnectorId } from '../database/rabbitmq';
 import { addUserBackgroundTaskCount } from '../manager/telemetryManager';
+import { ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../config/conf';
+import { COMMENT_MAX_LENGTH } from '../modules/workflow/types/workflow-types';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -64,13 +68,66 @@ export const ACTION_TYPE_RULE_ELEMENT_RESCAN = 'RULE_ELEMENT_RESCAN';
 export const ACTION_TYPE_ENROLL_PLAYBOOK = 'ENROLL_PLAYBOOK';
 export const ACTION_TYPE_REMOVE_CUSTOM_FIELD_VALUES = 'REMOVE_CUSTOM_FIELD_VALUES';
 export const ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES = 'ADD_RELATED_COVERED_ENTITIES';
+// Internal routing types, never sent by clients: derived from a REPLACE on the workflow status field
+export const ACTION_TYPE_WORKFLOW_BYPASS = 'WORKFLOW_BYPASS';
+export const ACTION_TYPE_WORKFLOW_TRANSITION = 'WORKFLOW_TRANSITION';
+
+const isWorkflowStatusAction = (action) => {
+  return action.type === ACTION_TYPE_REPLACE && action.context?.field === 'x_opencti_workflow_id';
+};
+// Real transition triggered by its event name, only applied to elements in an eligible state
+export const isWorkflowTransitionAction = (action) => {
+  return isWorkflowStatusAction(action) && isNotEmptyField(action.context?.options?.eventName);
+};
+// Forced status change through the workflow engine, with or without the onExit/onEnter actions
+export const isWorkflowBypassAction = (action) => {
+  return isWorkflowStatusAction(action) && !isWorkflowTransitionAction(action)
+    && typeof action.context?.options?.applyTransitionActions === 'boolean';
+};
 
 const isDeleteRestrictedAction = ({ type }) => {
   return type === ACTION_TYPE_DELETE || type === ACTION_TYPE_RESTORE || type === ACTION_TYPE_COMPLETE_DELETE;
 };
 const areParentTypesKnowledge = (parentTypes) => parentTypes && parentTypes.flat().every((type) => isKnowledge(type));
 
-// check a user has the right to create a list or a query background task
+const checkWorkflowActionsValidity = (context, user, actions) => {
+  // An empty event name must not fall back to a plain replace, which would clear the status
+  if (actions.some((a) => isWorkflowStatusAction(a) && a.context.options && 'eventName' in a.context.options && !isWorkflowTransitionAction(a))) {
+    throw FunctionalError('A workflow transition action requires an event name');
+  }
+  // With the workflow, a status only changes through a transition, unless the user can bypass it (drafts have no workflow)
+  const hasDirectStatusAction = actions.some((a) => a.context?.field === 'x_opencti_workflow_id' && !isWorkflowTransitionAction(a));
+  if (hasDirectStatusAction && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) && !getDraftContext(context, user) && !isBypassUser(user)) {
+    throw ForbiddenAccess();
+  }
+  const hasBypassAction = actions.some((a) => isWorkflowBypassAction(a));
+  const hasTransitionAction = actions.some((a) => isWorkflowTransitionAction(a));
+  if (!hasBypassAction && !hasTransitionAction) {
+    return;
+  }
+  if (!isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    throw FunctionalError('ENTITIES_WORKFLOW is disabled');
+  }
+  if (getDraftContext(context, user)) {
+    throw FunctionalError('Cannot change workflow status in draft');
+  }
+  if (actions.filter((a) => a.context?.field === 'x_opencti_workflow_id').length > 1) {
+    throw FunctionalError('A single task cannot perform several actions on the workflow status');
+  }
+  if (hasBypassAction && !isBypassUser(user)) {
+    throw ForbiddenAccess();
+  }
+  if (actions.some((a) => isWorkflowBypassAction(a) && (a.context.values?.length !== 1 || !isNotEmptyField(a.context.values[0])))) {
+    throw FunctionalError('A workflow status action requires exactly one target status');
+  }
+  if (actions.some((a) => isWorkflowTransitionAction(a) && (a.context.options.comment?.trim().length ?? 0) > COMMENT_MAX_LENGTH)) {
+    throw FunctionalError(`Comment exceeds maximum allowed length of ${COMMENT_MAX_LENGTH} characters.`);
+  }
+};
+
+/**
+ * Check a user has the right to create a list or a query background task.
+ */
 export const checkActionValidity = async (context, user, input, scope, taskType) => {
   const { actions, filters: baseFilterString, ids } = input;
   // check actions validity
@@ -82,8 +139,12 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
   if (severalReplaceOnSameKey || replaceAndOtherActionOnSameKey) {
     throw FunctionalError('A single task cannot perform several actions on the same field if one action is a replace.', { data: replaceActionsFields });
   }
+  checkWorkflowActionsValidity(context, user, actions);
   // check rights
   const baseFilterObject = baseFilterString ? JSON.parse(baseFilterString) : undefined;
+  if (taskType === TASK_TYPE_QUERY && !isFilterGroupNotEmpty(baseFilterObject)) {
+    throw FunctionalError('A background task of type query should have at least one filter.');
+  }
   const filters = isFilterGroupNotEmpty(baseFilterObject)
     ? (baseFilterObject?.filters ?? [])
     : [];
@@ -116,7 +177,16 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
         throw ForbiddenAccess();
       }
     }
-    // 2.4. Check the targeted entities are of type Knowledge
+    // 2.4. If enrichment is linked to an investigation, the user must be allowed to enrich and to edit the investigation
+    const enrichmentInvestigationIds = uniq(
+      actions
+        .filter((a) => a.type === ACTION_TYPE_ENRICHMENT && a.context?.options?.investigationId) // Keep only enrichment with investigation ID
+        .map((a) => a.context.options.investigationId), // Then keep only the investigation ID
+    );
+    for (let index = 0; index < enrichmentInvestigationIds.length; index += 1) {
+      await validateEnrichmentInvestigation(context, user, enrichmentInvestigationIds[index]);
+    }
+    // 2.5. Check the targeted entities are of type Knowledge
     if (taskType === TASK_TYPE_QUERY) {
       const acceptedInternalTypes = entityTypeFiltersValues.every((type) => type === ENTITY_TYPE_DELETE_OPERATION || type === ENTITY_TYPE_DRAFT_WORKSPACE);
       const parentTypes = entityTypeFiltersValues.map((n) => getParentTypes(n));

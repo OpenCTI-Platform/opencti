@@ -42,6 +42,7 @@ export const vocabFragment = graphql`
     builtIn
     order
     is_hidden
+    color
     category {
       key
       closed
@@ -68,9 +69,13 @@ const useVocabularyCategory = () => {
   );
   const vocabularyCategories = () => data.vocabularyCategories.map(({ key }) => key);
   const categories = vocabularyCategories();
-  const typeToCategory = (type: string): VocabularyCategory => {
+  // The category a type names, hyphenated or not (malware-type-ov, malware_type_ov), or undefined when the platform has none
+  const findCategory = (type: string): VocabularyCategory | undefined => {
     const formattedType = type.toLowerCase().replaceAll('-', '_');
-    const value = categories.find((v) => v === formattedType);
+    return categories.find((v) => v === formattedType);
+  };
+  const typeToCategory = (type: string): VocabularyCategory => {
+    const value = findCategory(type);
     if (!value) {
       throw new ApplicationError(`Invalid vocabulary category ${type}`);
     }
@@ -102,6 +107,7 @@ const useVocabularyCategory = () => {
     isVocabularyField,
     isClosedCategory,
     fieldToCategory,
+    findCategory,
     typeToCategory,
     categoriesOptions: categories.map((cat) => ({ value: cat, label: cat })),
   };

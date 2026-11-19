@@ -5,10 +5,11 @@ import { EMPTY_VALUE } from '../utils/String';
 import { useTheme } from '@mui/material/styles';
 
 const ItemDueDate = ({ due_date, variant }: { due_date: string | null; variant: string }) => {
-  const { fld, fldt } = useFormatter();
+  const { ftd, fldt } = useFormatter();
   const theme = useTheme();
   const isoDate = new Date().toISOString();
-  const label = variant === 'inList' ? fld(due_date) : fldt(due_date);
+  // In lists, the due date follows the date display of tables, with its long month by default.
+  const label = variant === 'inList' ? ftd(due_date, 'long') : fldt(due_date);
   if (due_date) {
     return (
       <Tag

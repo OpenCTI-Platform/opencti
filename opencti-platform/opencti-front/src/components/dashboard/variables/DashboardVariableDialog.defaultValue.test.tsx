@@ -46,11 +46,15 @@ describe('DashboardVariableDialog default value', () => {
     await user.clear(defaultValue);
     expect(defaultValue).toHaveValue('');
     await waitFor(() => expect(submit).toBeDisabled());
+    // Marked required, and the reason Create is disabled is given under the field
+    expect(defaultValue).toBeRequired();
+    expect(screen.getByText('Default value is required')).toBeInTheDocument();
     await user.click(submit);
     expect(mocks.upsert).not.toHaveBeenCalled();
 
     await user.type(defaultValue, 'Finance');
     await waitFor(() => expect(submit).toBeEnabled());
+    expect(screen.queryByText('Default value is required')).not.toBeInTheDocument();
     await user.click(submit);
     await waitFor(() => expect(mocks.upsert).toHaveBeenCalledWith({ ...sector, name: 'Sectors', defaultValue: 'Finance' }));
   });

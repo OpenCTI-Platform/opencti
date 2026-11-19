@@ -43,7 +43,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
     const {
       stixCyberObservableId,
       t,
-      fsd,
+      ftd,
       paginationOptions,
       data,
       displayRelation,
@@ -164,12 +164,12 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                         <BodyItem
                           style={{ width: '10%' }}
                         >
-                          {fsd(node.start_time)}
+                          {ftd(node.start_time)}
                         </BodyItem>
                         <BodyItem
                           style={{ width: '10%' }}
                         >
-                          {fsd(node.stop_time)}
+                          {ftd(node.stop_time)}
                         </BodyItem>
                         <BodyItem
                           style={{ width: '12%' }}

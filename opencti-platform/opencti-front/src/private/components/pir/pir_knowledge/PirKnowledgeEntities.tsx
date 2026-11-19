@@ -151,7 +151,7 @@ interface PirKnowledgeEntitiesProps {
 type PirInformation = NonNullable<PirKnowledgeEntities_SourceFlaggedFragment$data['pirInformation']>;
 
 const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHeaderButtons }: PirKnowledgeEntitiesProps) => {
-  const { fd } = useFormatter();
+  const { ftd } = useFormatter();
   const computeLink = useComputeLink();
 
   const {
@@ -222,7 +222,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
       label: 'Last score evolution',
       percentWidth: 11,
       isSortable: true,
-      render: ({ pirInformation }) => defaultRender(fd(pirInformation.last_pir_score_date)),
+      render: ({ pirInformation }) => defaultRender(ftd(pirInformation.last_pir_score_date)),
     },
     entity_type: { percentWidth: 10 },
     name: { percentWidth: 20 },

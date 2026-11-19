@@ -218,7 +218,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
     isTo,
   },
 ) => {
-  const { t_i18n, nsdt } = useFormatter();
+  const { t_i18n, ftdt } = useFormatter();
   const data = useFragment<EntityStixSightingRelationshipLine_node$key>(
     EntityStixSightingRelationshipLineFragment,
     node,
@@ -293,12 +293,12 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
               <BodyItem
                 style={{ width: dataColumns.first_seen.width }}
               >
-                {nsdt(data.first_seen)}
+                {ftdt(data.first_seen)}
               </BodyItem>
               <BodyItem
                 style={{ width: dataColumns.last_seen.width }}
               >
-                {nsdt(data.last_seen)}
+                {ftdt(data.last_seen)}
               </BodyItem>
               <BodyItem
                 style={{ width: dataColumns.confidence.width }}

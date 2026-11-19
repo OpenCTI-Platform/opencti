@@ -297,11 +297,11 @@ describe('Ingestion Json domain - pagination with sub-page coverage', async () =
       // no next_url → pagination stops
     };
 
-    const callMock = vi.fn()
+    const requestMock = vi.fn()
       .mockResolvedValueOnce({ data: page1Data, headers: {} })
       .mockResolvedValueOnce({ data: page2Data, headers: {} });
 
-    vi.spyOn(httpClientModule, 'getHttpClient').mockReturnValue({ call: callMock } as any);
+    vi.spyOn(httpClientModule, 'getHttpClient').mockReturnValue({ request: requestMock } as any);
 
     const input: IngestionJsonAddInput = {
       authentication_type: IngestionAuthType.None,
@@ -319,7 +319,7 @@ describe('Ingestion Json domain - pagination with sub-page coverage', async () =
     const parsedObjects = JSON.parse(result.objects);
 
     // Both pages were fetched
-    expect(callMock).toHaveBeenCalledTimes(2);
+    expect(requestMock).toHaveBeenCalledTimes(2);
     // 5 tools from page 1 + 5 tools from page 2 = 10 total
     expect(result.nbEntities).toBe(10);
     expect(result.nbRelationships).toBe(0);
@@ -338,11 +338,11 @@ describe('Ingestion Json domain - pagination with sub-page coverage', async () =
       objects: Array.from({ length: 20 }, (_, i) => ({ type: 'tool', name: `tool-p2-${i + 1}` })),
     };
 
-    const callMock = vi.fn()
+    const requestMock = vi.fn()
       .mockResolvedValueOnce({ data: page1Data, headers: {} })
       .mockResolvedValueOnce({ data: page2Data, headers: {} });
 
-    vi.spyOn(httpClientModule, 'getHttpClient').mockReturnValue({ call: callMock } as any);
+    vi.spyOn(httpClientModule, 'getHttpClient').mockReturnValue({ request: requestMock } as any);
 
     const input: IngestionJsonAddInput = {
       authentication_type: IngestionAuthType.None,
@@ -410,7 +410,7 @@ describe('Ingestion Json domain - ingestionJsonTester mutation (testJsonIngestio
   });
 
   const buildMockHttpClient = (responseData: unknown) => ({
-    call: vi.fn().mockResolvedValue({ data: responseData, headers: {} }),
+    request: vi.fn().mockResolvedValue({ data: responseData, headers: {} }),
   });
 
   it('should testJsonIngestionMapping return parsed entities from the mocked HTTP response', async () => {

@@ -21,7 +21,7 @@ An administrator can mark a Custom View as **Default** — in that case, its tab
 
 ## Managing Custom Views
 
-Custom Views are managed from **Settings > Customization > Entity Type > Custom Views**.
+Custom Views are managed from **Settings > Customization > Entity types > [entity type] > Custom Views**.
 
 The settings page lists all existing Custom Views with the following columns:
 
@@ -42,7 +42,7 @@ The default Custom View is displayed with a yellow icon.
 
 ## Creating a Custom View
 
-1. Navigate to **Settings > Customization > Entity Type > Custom Views**.
+1. Navigate to **Settings > Customization > Entity types > [entity type] > Custom Views**.
 2. Click the **+** button (Add a custom view).
 3. Fill in the form:<br/>
     - **Name** *(required)* — minimum 2 characters, shown as the tab label, <br/>
@@ -119,7 +119,7 @@ You can also export individual widgets from a Custom View using the **Export wid
 
 ### Import a Custom View
 
-1. Navigate to **Settings > Customization > Entity type > Custom Views**.
+1. Navigate to **Settings > Customization > Entity types > [entity type] > Custom Views**.
 2. Click on the **Import a custom view** button ![Import](assets/custom-views-import.png){ .off-glb }.
 3. Upload the `.json` file previously exported from another instance.
 4. The view is created in a **disabled** state. Review the configuration and enable it when ready.
@@ -143,4 +143,5 @@ You can also select custom views from the XTM Hub by clicking the **Import from 
 - [Custom dashboards](dashboards.md)
 - [Widget creation](widgets.md)
 - [Tips for widget creation](tips-widget-creation.md)
+- [Time series breakdown](time-series-breakdown.md)
 - [Entity types customization](../administration/entities.md)

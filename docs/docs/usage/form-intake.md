@@ -5,7 +5,7 @@ The Form Intake allows administrators to design structured forms that analysts f
 
 ## Key features
 
-- Visual form designer with field configuration and reordering of 16 supported field types (text, date, select, toggle, lookup, vocabulary, etc.)
+- Visual form designer with field configuration and reordering of 15 supported field types (text, date and time, select, toggle, open vocabulary, files, etc.)
 - Field width control (full, half, third)
 - 4 entity creation modes: Single, Multiple, Parsed, and Lookup
 - Add additional entities and relationships in a single form
@@ -19,13 +19,25 @@ More details on our [Role-Based access control here](../administration/users.md)
 |Action |Details |Required Capability| Control of capabilities in Draft mode (EE) |
 |:------|:-------|:---------------------|---------------|
 |Manage form intakes|Create, edit, delete, activate/deactivate, export, import|Manage ingestion|Capability not existing|
-|Submit form intakes|Fill and submit forms|Create / Update knowledge| Create / Update knowledge (creation forced to draft)|
-|View form intakes list| |Manage ingestion or Create / Update knowledge|Create / Update knowledge (creation forced to draft)|
+|Submit form intakes|Fill and submit forms|Create / Update knowledge or Create knowledge via Form Intake| Create / Update knowledge or Create knowledge via Form Intake (creation forced to draft)|
+|View form intakes list| |Manage ingestion, Create / Update knowledge or Create knowledge via Form Intake|Create / Update knowledge or Create knowledge via Form Intake (creation forced to draft)|
 
 
 When draft creation is enforced, form submissions create entities in a draft workspace for review before publication to knowledge.
 Administrators can optionally allow users to skip draft mode per submission.
-The form intake Authorize Members choice is hidden when the user does not have 'Authorized Members update' rights in draft context. See [Override of capabilities in draft](https://docs.opencti.io/latest/administration/users/?h=capab#override-of-capabilities-in-draft) for details on controlling users capabilities in draft mode.
+The form intake Authorize Members choice is hidden when the user does not have 'Authorized Members update' rights in draft context. See [Control of Capabilities in Draft mode](../administration/users.md#control-of-capabilities-in-draft-mode) for details on controlling users capabilities in draft mode.
+
+
+### Create knowledge via Form Intake
+
+The capability **Create knowledge via Form Intake** lets a user submit form intakes without the general Create / Update knowledge capability.
+Like the other capabilities that can be controlled in draft, it is granted per scope (main, draft). With the capability only in draft, the submission is always made in a draft.
+Roles that had Create / Update knowledge received it automatically at upgrade, in each scope where they had Create / Update knowledge.
+
+- While a submission is imported, the user can create knowledge as with Create / Update knowledge. Every other right still applies (markings, confidence, organization, draft).
+- Such a submission never changes the knowledge that already exists: when an object of the form already exists (e.g. a malware with the same name), it is used as it is, without updating or merging it, and the relationships and containers of the form still point to it. A user who also has Create / Update knowledge in the destination updates existing objects as before.
+- Creating a new label through a form requires the **Manage labels** capability.
+- The import dialog of the top bar and the form intake buttons of the entity lists are available to these users. The other import modes (file upload, step-by-step) still need the **Import knowledge** capability.
 
 
 # Defining a Form Intake
@@ -50,6 +62,7 @@ This has been built to offer advanced users the option to directly submit their 
 
 However, if your user is only able to create data via draft, due to the [user's specific draft capabilities (enterprise edition)](../administration/users.md) then the user will not be able to untick the box.
 By default, the form intake will be accessible to the user and the form intake output will result in a draft creation.
+A user who also has **Create knowledge via Form Intake** in the main scope is not forced into a draft: the submission can be made in main.
 
 ### Advanced draft settings
 
@@ -100,10 +113,10 @@ For each main entity, you can configure multiple fields:
 
 - **Entity Lookup** (disabled by default): if enabled, users will be forced to choose from existing entities. Another field will appear when you enable this field: **Disable on-the-fly entity creation**
 - **Disable on-the-fly entity creation** (disabled by default): Enable this If you want your users to only select an existing entity. 
-- **Allow multiple instancess of main entity** (disabled by default): Enable this if you want to allow your users to be able to enter the same entity multiple times.  When enabled **multiple instancess mode** will appear. 
+- **Allow multiple instances of main entity** (disabled by default): Enable this if you want to allow your users to be able to enter the same entity multiple times.  When enabled and **Entity Lookup** is disabled, the **Multiple Mode** option appears. 
 
 #### Multiple Mode for Main Entity
-When enabled multiple instancess of the same entity type can be created. 
+When enabled, multiple instances of the same entity type can be created. 
 You can choose between 'Multiple fields' or 'Parsed values'.
 
    - **Multiple fields** (default): users are presented with a button to create a new instance of the same type of entity.
@@ -150,22 +163,23 @@ Options for each field:
 
 We support the following field types: 
 
-|Field | Type |	Description|
-|:-----|:-----|:-----------|
-|Text |	Single-line |text input|
-|Text Area	|Multi-line text input|
-|Number	|Numeric input|
-|Date & Time|	Date and time picker|
-|Checkbox	|Boolean checkbox|
-|Toggle	|Boolean| on/off switch (respects defaultValue — e.g., Malware is_family)|
-|Select	|Single-value| dropdown with predefined options|
-|Multi-select|	Multi-value dropdown|
-|Open Vocabulary|	|Vocabulary-based field with predefined values from OpenCTI vocabularies (auto-detected based on entity type and attribute)|
-|Created By|	|Set the author/creator identity|
-|Object Marking	||Apply marking definitions (TLP, PAP)|
-|Object Label	||Apply labels to created entities|
-|External References|	|Add external references|
-|Files	| |Attach files|
+|Field type | Description|
+|:----------|:-----------|
+|Text | Single-line text input|
+|Text Area | Multi-line text input|
+|Number | Numeric input|
+|Date & Time | Date and time picker|
+|Checkbox | Boolean checkbox|
+|Toggle | Boolean on/off switch (respects defaultValue — e.g., Malware is_family)|
+|Select | Single-value dropdown with predefined options|
+|Multi-Select | Multi-value dropdown|
+|Open Vocabulary | Vocabulary-based field with predefined values from OpenCTI vocabularies (auto-detected based on entity type and attribute)|
+|Created By | Set the author/creator identity|
+|Object Marking | Apply marking definitions (TLP, PAP)|
+|Object Label | Apply labels to created entities|
+|External References | Add external references|
+|Files | Attach files|
+|Types | Observable type selector, applied automatically to the main observable type attribute of an Indicator|
 
 **Warning:** If you have defined additional mandatory fields for an entity (e.g. description) and your description is not added, your entity will not be created. 
 
@@ -179,8 +193,8 @@ Additional entities can be created of the same type.
 
 In addition to the various modes allowed to add additional entities, you have two other options: 
 
-- If you enable the option **"allow multiple instancess"**, then you can specify that this entity is optional by entering 0 in the minimum amount field. This means that you do not require an entity to be created.
-- If you disable the option **"allow multiple instancess"**, then another option is offered to you: **required**. This means that the entity must be provided to submit the form.
+- If you enable the option **"Allow multiple instances"**, then you can specify that this entity is optional by entering 0 in the minimum amount field. This means that you do not require an entity to be created.
+- If you disable the option **"Allow multiple instances"**, then another option is offered to you: **required**. This means that the entity must be provided to submit the form.
 
 The display **label for entity** allows you to set labels so that users who aren't experts in STIX 2.1 can  use the form. For example you can set a label to "attacker" to use in place of intrusion set.
 
@@ -207,7 +221,25 @@ Forms can be submitted from three locations:
 - Import dialog — Select "Import using a Form" in the import file dialog (displays full-width).
 - Ingestion/form intake: when you click directly on the form intake you created, the form is prompted to you.
 
-Note: The form intake button is hidden if the user does not have Create/update capabilities.
+Note: The form intake button is hidden if the user has neither the Create/update nor the Create knowledge via Form Intake capability.
+
+## Creating objects on the fly
+
+While you fill in a form, you can create objects on the fly from its fields: entities, observables, labels and external references, with their attached files and markdown images.
+These objects are **not created immediately**. They are kept in your browser, and they are only created, together with the rest of the submission, when you submit the form.
+
+- Leaving or cancelling the form creates nothing: the objects you prepared are discarded.
+- The objects follow the destination of the submission: they are created in the main knowledge, or in the draft created by the submission.
+- When you create an object from within the creation of another one, the nested object is kept inside its parent until the parent is accepted.
+- Authors cannot be created in a form, only selected among existing ones.
+- The "Create and map" option is not offered inside a form. Map the entity after the submission.
+- These options of the creation dialogs are not offered inside a form either: creating an indicator from an observable or observables from an indicator, case templates, authorized members, the entities contained in a feedback, and custom fields. Set them after the submission.
+- Observed data cannot be created in a form, as its observed objects must exist when it is created. Create it after the submission.
+- An Artifact created in a form is stored as uploaded: an archive protected by the `infected` password is not extracted, as it is when the Artifact is created outside a form ([#19285](https://github.com/OpenCTI-Platform/opencti/issues/19285)).
+
+!!! note "Asynchronous processing"
+
+    The submission is processed asynchronously. A success message means that the submission has been queued, not that all objects already exist.
 
 ## Submission process
 When a form is submitted, the following 7-step pipeline executes:

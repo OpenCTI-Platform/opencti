@@ -118,7 +118,11 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
           sx={{ zIndex: 2 }}
           title={t_i18n('The user\'s Max Confidence Level overrides Max Confidence Level inherited from user\'s groups')}
         >
-          <InformationOutline fontSize="small" color="primary" />
+          <InformationOutline
+            fontSize="small"
+            color="primary"
+            sx={{ position: 'relative', top: '-4px' }}
+          />
         </Tooltip>
       </Box>
       <Field

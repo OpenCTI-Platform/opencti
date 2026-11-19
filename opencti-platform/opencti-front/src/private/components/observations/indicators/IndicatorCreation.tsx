@@ -23,6 +23,7 @@ import { parse } from '../../../../utils/Time';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import { useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
@@ -101,6 +102,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(INDICATOR_TYPE);
+  const { isDeferredMode } = useDeferredCreation();
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     indicator_types: Yup.array().nullable(),
@@ -373,14 +375,16 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             fullWidth={true}
             containerstyle={{ marginTop: 20 }}
           />
-          <Field
-            component={SwitchField}
-            type="checkbox"
-            name="createObservables"
-            label={t_i18n('Create observables from this indicator')}
-            fullWidth={true}
-            containerstyle={{ marginTop: 10 }}
-          />
+          {!isDeferredMode && (
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="createObservables"
+              label={t_i18n('Create observables from this indicator')}
+              fullWidth={true}
+              containerstyle={{ marginTop: 10 }}
+            />
+          )}
           <CustomFieldValuesCreation />
           <FormButtonContainer>
             <Button

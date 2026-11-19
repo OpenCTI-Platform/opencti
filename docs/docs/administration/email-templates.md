@@ -8,6 +8,7 @@
 Email templates have been built in order to send administrative emails to your users. These templates cannot be used in the context of knowledge notification email (for instance, cannot be used to notify that a new report has been created).
 
 The use cases that this feature will enable you to reach are:
+
 - the ability to send an email automatically when a user is created
 - send an email to a subset of users (your admins, for instance), to notify them about a process change
 - send an email to all the users of the platform to notify them of a future downtime due to some maintenance

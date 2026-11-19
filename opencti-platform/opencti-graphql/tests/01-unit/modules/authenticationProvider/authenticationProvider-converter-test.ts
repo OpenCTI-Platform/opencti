@@ -720,6 +720,23 @@ describe('convertSamlEnvConfig', () => {
     expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual([]);
   });
 
+  it('should store a list of IdP certificates as PEM blocks in a single string', () => {
+    const entry: EnvProviderEntry = {
+      strategy: 'SamlStrategy',
+      config: {
+        issuer: 'openctisaml',
+        entry_point: 'https://idp.example.com/saml',
+        cert: ['MIIDcert1', 'MIIDcert2'],
+      },
+    };
+
+    const result = convertSamlEnvConfig('saml', entry);
+
+    expect(result.configuration.idp_certificate).toBe(
+      '-----BEGIN CERTIFICATE-----\nMIIDcert1\n-----END CERTIFICATE-----\n-----BEGIN CERTIFICATE-----\nMIIDcert2\n-----END CERTIFICATE-----',
+    );
+  });
+
   it('should convert SAML config with all first-class boolean fields', () => {
     const entry: EnvProviderEntry = {
       identifier: 'saml2',

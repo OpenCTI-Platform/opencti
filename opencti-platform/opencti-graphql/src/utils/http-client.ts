@@ -1,8 +1,9 @@
 import { PassThrough, Readable } from 'node:stream';
 import type { ReadableStream as NodeReadableStream } from 'node:stream/web';
 import { Agent, type Dispatcher, fetch, FormData, Headers, type Response } from 'undici';
-import { getPlatformHttpProxyAgent } from '../config/conf';
+import { getPlatformHttpProxyAgent, TLS_REJECT_UNAUTHORIZED } from '../config/conf';
 import { fromBase64, isNotEmptyField } from '../database/utils';
+import { getHttpMaxRedirects } from '../http/httpConfig';
 
 export class OpenCTIHeaders {
   [name: string]: string;
@@ -18,7 +19,7 @@ export type HttpResponseType = 'json' | 'arraybuffer' | 'text' | 'stream';
 
 export interface GetHttpClient {
   baseURL?: string;
-  rejectUnauthorized?: boolean;
+  rejectUnauthorized?: boolean | null;
   timeout?: number;
   responseType: HttpResponseType;
   headers?: Record<string, string>;
@@ -86,7 +87,6 @@ export const getResponseError = (error: unknown): HttpResponseError | null => {
 };
 
 const DEFAULT_ACCEPT = 'application/json, text/plain, */*';
-const DEFAULT_MAX_REDIRECTS = 21;
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 const METHODS_WITH_DEFAULT_FORM_CONTENT_TYPE = new Set(['POST', 'PUT', 'PATCH']);
 const METHODS_WITHOUT_BODY = new Set(['GET', 'HEAD']);
@@ -410,12 +410,12 @@ const toTransportError = (error: unknown, timeout: number, timeoutSignal: AbortS
 };
 
 export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, responseType, certificates, auth, beforeRedirect }: GetHttpClient) => {
-  const clientAgent = getAgent(rejectUnauthorized === true, certificates);
+  const clientAgent = getAgent(rejectUnauthorized ?? TLS_REJECT_UNAUTHORIZED, certificates);
   const defaultAgent = getAgent(true, undefined);
   const request = async (config: HttpRequestConfig, useClientTransport: boolean): Promise<HttpResponse> => {
     const method = (config.method ?? 'GET').toUpperCase();
     const requestTimeout = config.timeout ?? timeout ?? 0;
-    const maxRedirects = config.maxRedirects ?? DEFAULT_MAX_REDIRECTS;
+    const maxRedirects = config.maxRedirects ?? getHttpMaxRedirects();
     const requestHeaders = buildHeaders(headers, config.headers);
     const watchdog = requestTimeout > 0 ? createTimeoutWatchdog(requestTimeout) : undefined;
     const signals = [watchdog?.signal, config.signal].filter((s): s is AbortSignal => s !== undefined);
@@ -500,7 +500,9 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, r
     return httpResponse;
   };
   return {
+    // Ignores the client TLS options, certificates and proxy: reserved for webhooks, use request otherwise
     call: (config: HttpRequestConfig) => request(config, false),
+    request: async (config: HttpRequestConfig) => request(config, true),
     get: async (url: string, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'GET' }, true),
     post: async (url: string, data: unknown, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'POST', data }, true),
     delete: async (url: string, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'DELETE' }, true),
