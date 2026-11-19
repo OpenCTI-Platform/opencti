@@ -89,7 +89,7 @@ type SamlCommonConfiguration = MappingConfiguration & {
   logout_remote: boolean;
   want_assertions_signed: boolean;
   want_authn_response_signed: boolean;
-  signing_cert?: string;
+  signing_cert?: string | string[]; // a list for providers migrated before #20166
   sso_binding_type: string;
   force_reauthentication: boolean;
   identifier_format?: string;
@@ -99,7 +99,7 @@ type SamlCommonConfiguration = MappingConfiguration & {
   disable_requested_authn_context: boolean;
   disable_request_acs_url: boolean;
   skip_request_compression: boolean;
-  decryption_cert?: string;
+  decryption_cert?: string | string[]; // a list for providers migrated before #20166
 };
 
 export type SamlStoreConfiguration = SamlCommonConfiguration & {

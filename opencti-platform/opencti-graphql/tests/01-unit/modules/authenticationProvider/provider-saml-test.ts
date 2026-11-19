@@ -15,11 +15,12 @@ const secretsProvider: SecretProvider = {
   mandatory: async () => '',
 };
 
-const samlConfiguration = (idp_certificate: string | string[]) => ({
+const samlConfiguration = (idp_certificate: string | string[], others: Partial<SamlStoreConfiguration> = {}) => ({
   issuer: 'opencti',
   entry_point: 'https://idp.example.com/sso',
   idp_certificate,
   extra_conf: [],
+  ...others,
 }) as unknown as SamlStoreConfiguration;
 
 const meta = { name: 'SAML', identifier: 'saml' };
@@ -51,6 +52,16 @@ describe('buildSAMLOptions', () => {
     const options = await buildSAMLOptions(meta, samlConfiguration([RAW_CERT_1, RAW_CERT_2]), secretsProvider);
     expect(options.idpCert).toEqual([RAW_CERT_1, RAW_CERT_2]);
   });
+
+  it('gives node-saml the signing certificate', async () => {
+    const options = await buildSAMLOptions(meta, samlConfiguration(RAW_CERT_1, { signing_cert: toPem(RAW_CERT_1) }), secretsProvider);
+    expect(options.publicCert).toBe(toPem(RAW_CERT_1));
+  });
+
+  it('gives node-saml the first signing certificate of a list stored by an older migration', async () => {
+    const options = await buildSAMLOptions(meta, samlConfiguration(RAW_CERT_1, { signing_cert: [toPem(RAW_CERT_1), toPem(RAW_CERT_2)] }), secretsProvider);
+    expect(options.publicCert).toBe(toPem(RAW_CERT_1));
+  });
 });
 
 describe('IdP certificates read by node-saml', () => {
@@ -78,5 +89,22 @@ describe('SamlConfiguration.idp_certificate resolver', () => {
 
   it('returns a list stored by an older migration as PEM blocks in a single string', () => {
     expect(resolveIdpCertificate(samlConfiguration([RAW_CERT_1, RAW_CERT_2]))).toBe(`${toPem(RAW_CERT_1)}\n${toPem(RAW_CERT_2)}`);
+  });
+});
+
+describe('SamlConfiguration.signing_cert and decryption_cert resolvers', () => {
+  const resolveSigningCert = authenticationProviderResolver.SamlConfiguration?.signing_cert as (parent: unknown) => string | undefined;
+  const resolveDecryptionCert = authenticationProviderResolver.SamlConfiguration?.decryption_cert as (parent: unknown) => string | undefined;
+
+  it('returns a stored certificate unchanged', () => {
+    const configuration = samlConfiguration(RAW_CERT_1, { signing_cert: RAW_CERT_1, decryption_cert: RAW_CERT_2 });
+    expect(resolveSigningCert(configuration)).toBe(RAW_CERT_1);
+    expect(resolveDecryptionCert(configuration)).toBe(RAW_CERT_2);
+  });
+
+  it('returns the first certificate of a list stored by an older migration', () => {
+    const configuration = samlConfiguration(RAW_CERT_1, { signing_cert: [RAW_CERT_1, RAW_CERT_2], decryption_cert: [RAW_CERT_2, RAW_CERT_1] });
+    expect(resolveSigningCert(configuration)).toBe(RAW_CERT_1);
+    expect(resolveDecryptionCert(configuration)).toBe(RAW_CERT_2);
   });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { joinSamlIdpCertificates, normalizeSamlPemValue, splitSamlIdpCertificates } from '../../../../src/modules/authenticationProvider/saml-pem-utils';
+import { firstSamlCertificate, joinSamlIdpCertificates, normalizeSamlPemValue, splitSamlIdpCertificates } from '../../../../src/modules/authenticationProvider/saml-pem-utils';
 
 const PEM = '-----BEGIN PRIVATE KEY-----\nMIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEA\n-----END PRIVATE KEY-----';
 // Same pattern as node-saml keyInfoToPem: strict RFC 7468 framing, at most one trailing newline
@@ -102,5 +102,22 @@ describe('splitSamlIdpCertificates', () => {
 
   it('gives back the certificates joined by joinSamlIdpCertificates', () => {
     expect(splitSamlIdpCertificates(joinSamlIdpCertificates([RAW_CERT_1, RAW_CERT_2]))).toEqual([PEM_CERT_1, PEM_CERT_2]);
+  });
+});
+
+describe('firstSamlCertificate', () => {
+  it('keeps a single certificate unchanged and gives undefined for a missing value', () => {
+    expect(firstSamlCertificate(RAW_CERT_1)).toBe(RAW_CERT_1);
+    expect(firstSamlCertificate(null)).toBeUndefined();
+    expect(firstSamlCertificate(undefined)).toBeUndefined();
+  });
+
+  it('keeps the first certificate of a list stored by an older migration', () => {
+    expect(firstSamlCertificate(['  ', 42, `\n${PEM_CERT_1}\r\n`, PEM_CERT_2])).toBe(PEM_CERT_1);
+  });
+
+  it('returns undefined for a list without certificate', () => {
+    expect(firstSamlCertificate([])).toBeUndefined();
+    expect(firstSamlCertificate(['', null])).toBeUndefined();
   });
 });
