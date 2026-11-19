@@ -1151,6 +1151,34 @@ const unlinkWorkflowDefinitionUnderLock = async (
 };
 
 /**
+ * Drafts persist their workflow status (`x_opencti_workflow_id`). Without a workflow there is no
+ * state to show, so deleting the DraftWorkspace workflow clears it: filters and distributions then
+ * treat every draft as having no status, as they did before the projection existed.
+ */
+const clearDraftWorkflowStatuses = async () => {
+  try {
+    await elRawUpdateByQuery({
+      index: READ_INDEX_INTERNAL_OBJECTS,
+      refresh: true,
+      conflicts: 'proceed',
+      body: {
+        script: { source: 'ctx._source.remove(\'x_opencti_workflow_id\')' },
+        query: {
+          bool: {
+            must: [
+              { term: { 'entity_type.keyword': { value: ENTITY_TYPE_DRAFT_WORKSPACE } } },
+              { exists: { field: 'x_opencti_workflow_id' } },
+            ],
+          },
+        },
+      },
+    });
+  } catch (error) {
+    logApp.warn('[OPENCTI-MODULE] Failed to clear the workflow state of existing drafts', { cause: error });
+  }
+};
+
+/**
  * Delete workflow definition for an entity type.
  */
 export const deleteWorkflowDefinition = async (
@@ -1160,7 +1188,13 @@ export const deleteWorkflowDefinition = async (
   scope: StatusScope = StatusScope.Global,
 ): Promise<BasicStoreEntityEntitySetting | undefined> => {
   assertScopeAllowed(entityType, scope);
-  return withWorkflowStatusLock(entityType, () => unlinkWorkflowDefinitionUnderLock(context, user, entityType, scope));
+  return withWorkflowStatusLock(entityType, async () => {
+    const entitySetting = await unlinkWorkflowDefinitionUnderLock(context, user, entityType, scope);
+    if (entityType === 'DraftWorkspace' && scope === StatusScope.Global) {
+      await clearDraftWorkflowStatuses();
+    }
+    return entitySetting;
+  });
 };
 
 /**
