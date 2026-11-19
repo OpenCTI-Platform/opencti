@@ -31,7 +31,6 @@ If OpenCTI helps your team, **[star the repository](https://github.com/OpenCTI-P
 - [Why OpenCTI](#why-opencti)
 - [Capabilities](#capabilities)
 - [OpenCTI in the XTM Platform](#opencti-in-the-xtm-platform)
-- [Coming in the next releases](#coming-in-the-next-releases)
 - [Editions](#editions)
 - [Quick start](#quick-start)
 - [Documentation and demonstration](#documentation-and-demonstration)
@@ -60,7 +59,7 @@ Exposure management starts with the threat. Before you can decide which exposure
 
 **Dashboards.** Custom dashboards with widgets on any query, dashboard variables and saved variable presets, time series broken down by field, and public dashboards to share a view outside the platform.
 
-**Automation and drafts.** Playbooks to qualify, enrich and route incoming knowledge (Enterprise Edition), drafts to review an import or a change before it reaches the graph, decay rules that age indicators out on schedule.
+**Automation and drafts.** Playbooks to qualify, enrich and route incoming knowledge (Enterprise Edition), built in a visual editor with a deterministic layout and direct rewiring of every step, drafts to review an import or a change before it reaches the graph, decay rules that age indicators out on schedule.
 
 **Priority intelligence requirements.** Define what your organization needs to know and let OpenCTI score and surface the threats that match (Enterprise Edition).
 
@@ -75,16 +74,9 @@ OpenCTI is one of the XTM Platform products, each strong on its own and stronger
 | Product | Role in CTEM | With OpenCTI |
 |---|---|---|
 | **OpenCTI** | Scope and discover: know the threats that matter | The threat knowledge every other product consumes |
-| **[OpenAEV](https://github.com/OpenAEV-Platform/openaev)** | Validate: test your defenses against those threats | Scenarios generated from OpenCTI threats and reports; security coverage results written back to OpenCTI |
+| **[OpenAEV](https://github.com/OpenAEV-Platform/openaev)** | Validate: test your defenses against those threats | Scenarios generated from OpenCTI threats and reports; security coverage results written back to OpenCTI; every object both products know (assets, attack patterns, vulnerabilities, threats, incidents) shows its OpenAEV counterpart, a one-click pivot and the actions to run next |
 | **OpenCRQ** | Prioritize: quantify the risk in financial terms | Reads OpenCTI intelligence through its OpenCTI connection |
 | **XTM One** | Mobilize: the agentic core across the platform | OpenCTI registers with XTM One, which powers Ariane and the AI agents across products |
-
-## Coming in the next releases
-
-These features are in open pull requests and are not released yet:
-
-- **OpenAEV counterparts and pivots** ([#20153](https://github.com/OpenCTI-Platform/opencti/pull/20153), preview): every object OpenCTI and OpenAEV both know (assets, attack patterns, vulnerabilities, threats, incidents) shows its OpenAEV counterpart, a one-click pivot and the actions to run next.
-- **Next-generation playbook editor** ([#19969](https://github.com/OpenCTI-Platform/opencti/pull/19969), in review): a deterministic layout and direct rewiring of playbook steps.
 
 ## Editions
 
