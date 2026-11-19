@@ -1,12 +1,19 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   addSecurityCoverage,
+  findById,
+  findCoveredEntities,
+  findCoveredEntitiesDistribution,
   getSecurityCoverageResultIds,
   listSecurityCoverageResults,
   securityCoverageDelete,
   securityCoverageStixBundle,
 } from '../../../../src/modules/securityCoverage/securityCoverage-domain';
-import { createHasCoveredRelTask, editSecurityCoverageResult } from '../../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-domain';
+import {
+  addSecurityCoverageResult,
+  createHasCoveredRelTask,
+  editSecurityCoverageResult,
+} from '../../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-domain';
 import { addAttackPattern } from '../../../../src/domain/attackPattern';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { addReport, reportDeleteWithElements } from '../../../../src/domain/report';
@@ -18,7 +25,10 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organ
 import { addSecurityPlatform } from '../../../../src/modules/securityPlatform/securityPlatform-domain';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../../src/modules/securityPlatform/securityPlatform-types';
 import type { StoreEntity, StoreEntityReport } from '../../../../src/types/store';
-import type { StixSecurityCoverage } from '../../../../src/modules/securityCoverage/securityCoverage-types';
+import type { BasicStoreEntitySecurityCoverage, StixSecurityCoverage } from '../../../../src/modules/securityCoverage/securityCoverage-types';
+import type { BasicStoreEntitySecurityCoverageResult } from '../../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import { addStixCoreRelationship } from '../../../../src/domain/stixCoreRelationship';
+import { RELATION_HAS_COVERED } from '../../../../src/schema/stixCoreRelationship';
 import { findBackgroundTaskPaginated } from '../../../../src/domain/backgroundTask';
 import { fullRelationsList } from '../../../../src/database/middleware-loader';
 import { storeLoadByIdWithRefs } from '../../../../src/database/middleware';
@@ -26,6 +36,7 @@ import { isStixRefRelationship, RELATION_OBJECT } from '../../../../src/schema/s
 import { INPUT_OBJECTS } from '../../../../src/schema/general';
 import { addWorkspace, workspaceDelete } from '../../../../src/modules/workspace/workspace-domain';
 import { knowledgeAddFromInvestigation } from '../../../../src/domain/container';
+import { FilterMode } from '../../../../src/generated/graphql';
 
 describe('SecurityCoverage domain', () => {
   // Creating has-covered relationships from filters spawns a QUERY background task,
@@ -460,6 +471,98 @@ describe('SecurityCoverage domain', () => {
       expect(task.task_excluded_ids).toEqual([attackPattern3.standard_id]);
 
       await cleanup(securityCoverage.id, reportWithTargets, [attackPattern1, attackPattern2, attackPattern3]);
+    });
+  });
+
+  describe('Covered entities scoped to one result', () => {
+    let scA: BasicStoreEntitySecurityCoverage;
+    let scB: BasicStoreEntitySecurityCoverage;
+    let scrParis: BasicStoreEntitySecurityCoverageResult;
+    let scrLyon: BasicStoreEntitySecurityCoverageResult;
+    let scrOther: BasicStoreEntitySecurityCoverageResult;
+    let ap: StoreEntity;
+    let otherReport: StoreEntityReport;
+
+    const byResult = (resultId: string) => ({
+      mode: FilterMode.And,
+      filters: [{ key: ['fromId'], values: [resultId] }],
+      filterGroups: [],
+    });
+
+    beforeAll(async () => {
+      // No external_uri: no SecurityCoverageResult is created automatically
+      const createdA = await addSecurityCoverage(adminContext, ADMIN_USER, { ...BASE_INPUT(), name: 'sc-scope' });
+      scrParis = await addSecurityCoverageResult(adminContext, ADMIN_USER, { resultOf: createdA.id, name: 'OAEV Paris', external_uri: 'https://paris.oaev.test' });
+      scrLyon = await addSecurityCoverageResult(adminContext, ADMIN_USER, { resultOf: createdA.id, name: 'OAEV Lyon', external_uri: 'https://lyon.oaev.test' });
+      // The standard id of a SecurityCoverage is built from its covered entity: a second one needs its own covered entity
+      otherReport = await addReport(testContext, ADMIN_USER, { name: 'Other report for SC scope tests', published: '2026-04-24T19:15:00.000Z' });
+      const createdB = await addSecurityCoverage(adminContext, ADMIN_USER, { ...BASE_INPUT(), name: 'sc-other', objectCovered: otherReport.standard_id });
+      scrOther = await addSecurityCoverageResult(adminContext, ADMIN_USER, { resultOf: createdB.id, name: 'OAEV Other', external_uri: 'https://other.oaev.test' });
+      ap = await addAttackPattern(testContext, ADMIN_USER, { name: 'AP scope test', x_mitre_id: 'T9999.991' });
+      await addStixCoreRelationship(testContext, ADMIN_USER, {
+        fromId: scrParis.id,
+        toId: ap.id,
+        relationship_type: RELATION_HAS_COVERED,
+        coverage_information: [{ coverage_name: 'detection', coverage_score: 80 }],
+      });
+      await addStixCoreRelationship(testContext, ADMIN_USER, {
+        fromId: scrLyon.id,
+        toId: ap.id,
+        relationship_type: RELATION_HAS_COVERED,
+        coverage_information: [{ coverage_name: 'detection', coverage_score: 20 }],
+      });
+      // A has-covered of the other coverage, on the same entity: it must only be excluded by the coverage scope
+      await addStixCoreRelationship(testContext, ADMIN_USER, {
+        fromId: scrOther.id,
+        toId: ap.id,
+        relationship_type: RELATION_HAS_COVERED,
+        coverage_information: [{ coverage_name: 'detection', coverage_score: 50 }],
+      });
+      // Reload: findCoveredEntities reads the result ids on the SecurityCoverage entity
+      scA = await findById(testContext, ADMIN_USER, createdA.id);
+      scB = await findById(testContext, ADMIN_USER, createdB.id);
+      expect(scB.id).not.toEqual(scA.id);
+    });
+
+    afterAll(async () => {
+      await securityCoverageDelete(testContext, ADMIN_USER, scA.id);
+      await securityCoverageDelete(testContext, ADMIN_USER, scB.id);
+      await stixDomainObjectDelete(testContext, ADMIN_USER, ap.id, ENTITY_TYPE_ATTACK_PATTERN);
+      await reportDeleteWithElements(testContext, ADMIN_USER, otherReport.standard_id);
+    });
+
+    it('should return the has-covered of every result without filter', async () => {
+      const { count, entities } = await findCoveredEntities(testContext, ADMIN_USER, scA, ENTITY_TYPE_ATTACK_PATTERN, {});
+      expect(count).toBe(2);
+      expect(entities.map((e) => e.coverage_information?.[0].coverage_score).sort((a, b) => (a ?? 0) - (b ?? 0))).toEqual([20, 80]);
+    });
+
+    it('should only return the has-covered of the selected result', async () => {
+      const { count, entities } = await findCoveredEntities(testContext, ADMIN_USER, scA, ENTITY_TYPE_ATTACK_PATTERN, { filters: byResult(scrParis.id) });
+      expect(count).toBe(1);
+      expect(entities[0].coverage_information).toEqual([{ coverage_name: 'detection', coverage_score: 80 }]);
+    });
+
+    it('should not leak the has-covered of another coverage', async () => {
+      const { count } = await findCoveredEntities(testContext, ADMIN_USER, scA, ENTITY_TYPE_ATTACK_PATTERN, { filters: byResult(scrOther.id) });
+      expect(count).toBe(0);
+      // The data exists on the other coverage: only the coverage scope excludes it
+      const other = await findCoveredEntities(testContext, ADMIN_USER, scB, ENTITY_TYPE_ATTACK_PATTERN, {});
+      expect(other.count).toBe(1);
+      expect(other.entities[0].coverage_information).toEqual([{ coverage_name: 'detection', coverage_score: 50 }]);
+    });
+
+    it('should scope the tested entities distribution to the selected result', async () => {
+      const args = { field: 'entity_type', operation: 'count', relationship_type: [RELATION_HAS_COVERED] };
+      const all = await findCoveredEntitiesDistribution(testContext, ADMIN_USER, scA, args);
+      const paris = await findCoveredEntitiesDistribution(testContext, ADMIN_USER, scA, { ...args, fromId: [scrParis.id] });
+      expect(all).toEqual([{ label: 'Attack-Pattern', value: 2 }]);
+      expect(paris).toEqual([{ label: 'Attack-Pattern', value: 1 }]);
+    });
+
+    it('should not widen the scope beyond the coverage when fromId is empty', async () => {
+      const args = { field: 'entity_type', operation: 'count', relationship_type: [RELATION_HAS_COVERED], fromId: [] };
+      expect(await findCoveredEntitiesDistribution(testContext, ADMIN_USER, scA, args)).toEqual([{ label: 'Attack-Pattern', value: 2 }]);
     });
   });
 });

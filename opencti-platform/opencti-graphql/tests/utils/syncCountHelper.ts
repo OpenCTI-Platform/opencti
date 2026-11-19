@@ -14,7 +14,8 @@ import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
 // 2 created by ingestionDeduplication-test (an import, then the same import after the deletion), +1 sub-technique created and deleted by attackPattern-test (x_mitre_id)
-testCreatedCounter['attack-pattern'] = 28;
+// +1 created and deleted by securityCoverage-domain-test (covered entities scoped to one result)
+testCreatedCounter['attack-pattern'] = 29;
 testCreatedCounter.campaign = 6;
 // 3 created by workflow-closing-reason-test merge and external status write cases
 testCreatedCounter['case-incident'] = 23;
@@ -77,10 +78,12 @@ testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
 // Includes 5 created and deleted by stixRelationship-test, and 1 created by publicDashboard-test, deleted with its target (time series breakdown)
-testCreatedCounter.relationship = 155; // +1 subtechnique-of created by attackPattern-test, removed with its sub-technique
+// +3 has-covered created by securityCoverage-domain-test (covered entities scoped to one result), removed in cascade with their security coverage result
+testCreatedCounter.relationship = 158; // +1 subtechnique-of created by attackPattern-test, removed with its sub-technique
 // Includes 8 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
 // Plus 3 created and deleted by workflow-entity-write-test
-testCreatedCounter.report = 77;
+// Plus 1 created and deleted by securityCoverage-domain-test (second covered entity, covered entities scoped to one result)
+testCreatedCounter.report = 78;
 testCreatedCounter.sighting = 8; // 3 created and deleted by relations-deduplication-test
 testCreatedCounter.software = 2;
 testCreatedCounter.task = 1;
@@ -95,8 +98,10 @@ testCreatedCounter.vocabulary = VOCABULARY_NUMBERS + 3;
 testCreatedCounter.vulnerability = 15;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['security-coverage'] = 27;
-testCreatedCounter['security-coverage-result'] = 22;
+// - 2 created and deleted by securityCoverage-domain-test (covered entities scoped to one result)
+testCreatedCounter['security-coverage'] = 29;
+// - 3 created and deleted by securityCoverage-domain-test (covered entities scoped to one result)
+testCreatedCounter['security-coverage-result'] = 25;
 
 export const testUpdatedCounter: Record<string, number> = {};
 // Counts for:
@@ -173,7 +178,8 @@ testMergedCounter['case-rfi'] = 1; // requestAccess-test merge of a decided RFI
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
 // 2 by ingestionDeduplication-test, +1 sub-technique deleted by attackPattern-test (x_mitre_id)
-testDeletedCounter['attack-pattern'] = 23;
+// +1 created and deleted by securityCoverage-domain-test (covered entities scoped to one result)
+testDeletedCounter['attack-pattern'] = 24;
 testDeletedCounter.campaign = 2;
 // 2 by workflow-closing-reason-test merge and external status write cases, the merged source has no delete event
 testDeletedCounter['case-incident'] = 20;
@@ -231,7 +237,8 @@ testDeletedCounter['phone-number'] = 2;
 testDeletedCounter.relationship = 10; // includes 5 created and deleted by stixRelationship-test (time series breakdown)
 // Includes 8 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
 // Plus 3 created and deleted by workflow-entity-write-test
-testDeletedCounter.report = 68;
+// Plus 1 created and deleted by securityCoverage-domain-test (second covered entity, covered entities scoped to one result)
+testDeletedCounter.report = 69;
 testDeletedCounter.sighting = 5; // 3 created and deleted by relations-deduplication-test
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;
@@ -249,8 +256,10 @@ testDeletedCounter.imei = 3;
 testDeletedCounter.imsi = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testDeletedCounter['security-coverage'] = 25;
-testDeletedCounter['security-coverage-result'] = 20;
+// - 2 created and deleted by securityCoverage-domain-test (covered entities scoped to one result)
+testDeletedCounter['security-coverage'] = 27;
+// - 3 created and deleted by securityCoverage-domain-test (covered entities scoped to one result)
+testDeletedCounter['security-coverage-result'] = 23;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
   const allRecordKeys = Object.keys(eventCounter);
