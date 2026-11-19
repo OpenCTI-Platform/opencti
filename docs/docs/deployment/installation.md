@@ -333,12 +333,14 @@ corepack --version
 #0.34.0
 ```
 
-Once Node.js is setup, you can build and run with (from inside the `opencti/opencti-platform/opencti-graphql` folder):
+Once Node.js is setup, you can build and run with (from inside the `opencti/opencti-platform/opencti-graphql` folder, replacing `{RELEASE_VERSION}` with the version you install):
 ```bash
 yarn install
-yarn build
+TAG_VERSION={RELEASE_VERSION} yarn build
 yarn serv
 ```
+
+`TAG_VERSION` makes `yarn build` fetch the connectors catalog of that release; without it, the build fetches the catalog of the connectors `master` branch.
 
 The default username and password are those you have put in the `config/production.json` file.
 
@@ -348,8 +350,12 @@ The OpenCTI worker is used to write the data coming from the RabbitMQ messages b
 
 #### Configure the worker
 
+The release file does not contain the worker `requirements.txt` and `config.yml.sample`: download them from the release tag (replace `{RELEASE_VERSION}` with the version you install).
+
 ```bash
 cd ../../worker
+wget -O requirements.txt https://raw.githubusercontent.com/OpenCTI-Platform/opencti/{RELEASE_VERSION}/opencti-worker/requirements.txt
+wget -O config.yml.sample https://raw.githubusercontent.com/OpenCTI-Platform/opencti/{RELEASE_VERSION}/opencti-worker/config.yml.sample
 pip3 install -r requirements.txt
 cp config.yml.sample config.yml
 ```

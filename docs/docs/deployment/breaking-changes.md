@@ -15,9 +15,12 @@ This table regroups all the breaking changes introduced, with the corresponding 
 | [SSO, cryptography and tokens management](#cryptography-and-tokens-management)                                      | -             | 7.260224.0 |
 | [Update license for SSO (& migration to UI)](#SSO-update-license)                                                   |               | 7.260224.0 |
 | [XTM Composer version compatibility](#xtm-composer-version-compatibility)                                           | -             | 7.260224.0 |
+| [Python 3.9 not supported anymore](#python-3-9-support-removed)                                                     | -             | 7.260224.0 |
 | [GenerationScenario Mutations in OpenCTI - OpenBAS](#generation-scenario-mutation-openti-openbas-with-placeholders) | 6.5           | 6.8        |
+| [Metrics renamed in the Python client](#client-python-metrics-renaming)                                             | -             | 6.8        |
 | [Removing bi-directional stream connectors](#removing-some-stream-connectors)                                       | 6.3           | 6.6        |
 | [Promote Observable API](#change-to-the-observable-promote-API)                                                     | 6.2           | 6.8        |
+| [Webhook templates restricted to authorized functions](#webhook-template-restrictions)                              | -             | 6.4.11     |
 | [SAML authentication parameters](#change-to-SAML-authentication)                                                    |               | 6.2        |
 | [Major changes to Filtering API](#new-filtering-API)                                                                |               | 5.12       |
 
@@ -111,8 +114,32 @@ All existing tokens are automatically migrated to the new system.
     - `MeUser.api_token` → `MeUser.api_tokens`
     - `token_renew()` method removed, replaced by `create_token()` / `remove_token()`
 
+<a id="python-3-9-support-removed"></a>
 #### Python 3.9 not supported anymore
-Please review any script that may use some functionalities available in this version .
+
+Starting with **OpenCTI 7.260224.0**, the Python client (`pycti`) supports Python 3.10, 3.11 and 3.12, the versions
+its tests run on. Python 3.9 is no longer tested or supported.
+
+Move to Python 3.10 or later every component that runs `pycti` with Python 3.9:
+
+- your own scripts that use `pycti`,
+- connectors that you run outside Docker,
+- workers and the platform Python modules (`src/python`) of a [manual installation](installation.md#manual-installation).
+
+The official worker Docker image ships Python 3.12 and needs no change.
+
+## OpenCTI 6.8
+
+### Breaking change
+
+<a id="client-python-metrics-renaming"></a>
+#### Metrics renamed in the Python client
+
+The Prometheus metrics that the Python client (`pycti`) exposes for connectors now follow the Prometheus naming
+best practices: for example, `bundle_send` becomes `bundles_sent_total`. Update the dashboards and alerts that use
+the former names.
+
+For more details, see [this migration guide](./breaking-changes/6.8-client-python-metrics.md).
 
 ## OpenCTI 6.5
 
@@ -131,6 +158,7 @@ For more details, see [this migration guide](./breaking-changes/6.5-generation-s
 
 ### Breaking change
 
+<a id="webhook-template-restrictions"></a>
 Webhook template are now restricted to a list of authorized functions.
 A new template cannot be created if it contains unauthorized function, and existing templates cannot be updated with unauthorized functions.
 
@@ -140,6 +168,11 @@ For example:
 ```bash
 APP__NOTIFIER_AUTHORIZED_FUNCTIONS="[\"if\", \"for\", \"forEach\", \"while\", \"stringify\", \"Date\", \"toLocaleString\"]"
 ```
+
+!!! note "Since OpenCTI 6.8.16"
+
+    The platform no longer reads `app:notifier_authorized_functions` (`APP__NOTIFIER_AUTHORIZED_FUNCTIONS`):
+    notification templates run in a sandbox, and this setting has no effect.
 
 
 ## OpenCTI 6.3
