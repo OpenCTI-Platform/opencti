@@ -9,10 +9,11 @@ import {
   findAuthenticationProviderByIdPaginated,
   getAvailableSecrets,
 } from './authenticationProvider-domain';
-import type { BasicStoreEntityAuthenticationProvider } from './authenticationProvider-types';
+import type { BasicStoreEntityAuthenticationProvider, SamlStoreConfiguration } from './authenticationProvider-types';
 import { DatabaseError } from '../../config/errors';
 import { isProviderRegisteredByInternalId } from './providers-configuration';
 import { isProviderStarting } from './providers';
+import { firstSamlCertificate, joinSamlIdpCertificates } from './saml-pem-utils';
 
 const levelToLevel = (level: string) => {
   switch (level) {
@@ -90,6 +91,12 @@ const authenticationProviderResolver: Resolvers = {
       }
       return obj.type;
     },
+  },
+  SamlConfiguration: {
+    // Providers migrated before #20159 and #20166 can store several certificates as a list
+    idp_certificate: (parent) => joinSamlIdpCertificates((parent as SamlStoreConfiguration).idp_certificate),
+    signing_cert: (parent) => firstSamlCertificate((parent as SamlStoreConfiguration).signing_cert),
+    decryption_cert: (parent) => firstSamlCertificate((parent as SamlStoreConfiguration).decryption_cert),
   },
   Mutation: {
     oidcProviderAdd: (_, { input }, context) => {

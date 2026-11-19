@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { BasicStoreCommon, BasicStoreIdentifier } from '../types/store';
-import { logApp } from '../config/conf';
+import { DEV_MODE, logApp } from '../config/conf';
 import { DatabaseError, UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -240,16 +240,44 @@ export const getEntitiesListFromCache = async <T extends BasicStoreIdentifier | 
   return data as T[];
 };
 
+// Map <id, instance> of the entities, keyed by the array of cached values it was built from.
+// Every change of the cached values produces a new array (the cache handlers never change an array in place),
+// so a map always matches the array it is keyed by, and is dropped by the garbage collector with that array.
+const entitiesMaps = new WeakMap<object, ReadonlyMap<string, unknown>>();
+
+const rejectSharedEntitiesChange = () => {
+  throw UnsupportedError('Entities from the cache are shared by every caller and must not be modified');
+};
+
+// Development and test only: the array and its map are shared by every caller on the node until the values change,
+// so changing them in place would leak into every other request, and would leave the map out of sync with its array.
+const guardSharedEntities = (values: object, entitiesMap: Map<string, unknown>) => {
+  Object.freeze(values);
+  Object.assign(entitiesMap, { set: rejectSharedEntitiesChange, delete: rejectSharedEntitiesChange, clear: rejectSharedEntitiesChange });
+};
+
 // get a map <id, instance> of the entities in the cache for a given type
+// The map is shared by all the callers until the values change: it must not be modified.
+// Exception: the resolved filters are stored as a map, returned as is, and their refresh updates that map in place.
 export const getEntitiesMapFromCache = async <T extends BasicStoreIdentifier | StixObject>(
   context: AuthContext, user: AuthUser, type: string,
-): Promise<Map<string | StixId, T>> => {
+): Promise<ReadonlyMap<string | StixId, T>> => {
   const data = await getEntitiesFromCache(context, user, type);
   // Filters is already a map
   if (type === ENTITY_TYPE_RESOLVED_FILTERS) {
     return data as Map<string, T>; // map of <standard_id, instance>
   }
-  return buildStoreEntityMap(data as BasicStoreIdentifier[]); // map of <id, instance> for all the instance ids (internal_id, standard_id, stix ids)
+  const cachedMap = entitiesMaps.get(data);
+  if (cachedMap) {
+    return cachedMap as ReadonlyMap<string | StixId, T>;
+  }
+  // map of <id, instance> for all the instance ids (internal_id, standard_id, stix ids)
+  const entitiesMap = buildStoreEntityMap(data as BasicStoreIdentifier[]);
+  if (DEV_MODE) {
+    guardSharedEntities(data, entitiesMap);
+  }
+  entitiesMaps.set(data, entitiesMap);
+  return entitiesMap;
 };
 
 export const getEntityFromCache = async <T extends BasicStoreIdentifier>(context: AuthContext, user: AuthUser, type: string): Promise<T> => {
