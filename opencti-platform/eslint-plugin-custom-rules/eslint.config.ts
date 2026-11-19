@@ -50,7 +50,7 @@ export default defineConfig([
       '@stylistic/member-delimiter-style': ['error', { singleline: { requireLast: false } }],
       '@stylistic/semi': ['error', 'always'],
       '@stylistic/multiline-ternary': 'off',
-      // Added to the recommended config in @stylistic v6; enabling it would rewrap about 1,900 lists across the repository.
+      // Added to the recommended config in @stylistic v6; it reports almost nothing here, off to match opencti-front and opencti-graphql.
       '@stylistic/list-style': 'off',
       // Rule files import each other with a real `.ts` extension, which Node's ESM
       // resolver requires when it strips their types.
