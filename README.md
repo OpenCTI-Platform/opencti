@@ -59,7 +59,7 @@ Exposure management starts with the threat. Before you can decide which exposure
 
 **Dashboards.** Custom dashboards with widgets on any query, dashboard variables and saved variable presets, time series broken down by field, and public dashboards to share a view outside the platform.
 
-**Automation and drafts.** Playbooks to qualify, enrich and route incoming knowledge (Enterprise Edition), built in a visual editor with a deterministic layout and direct rewiring of every step, drafts to review an import or a change before it reaches the graph, decay rules that age indicators out on schedule.
+**Automation and drafts.** Playbooks to qualify, enrich and route new knowledge (Enterprise Edition), built in a visual editor with a deterministic layout and direct rewiring of every step, drafts to review an import or a change before it reaches the graph, decay rules that age indicators out on schedule.
 
 **Priority intelligence requirements.** Define what your organization needs to know and let OpenCTI score and surface the threats that match (Enterprise Edition).
 
