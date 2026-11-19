@@ -46,7 +46,8 @@ testCreatedCounter.infrastructure = 1;
 // - 2 created and deleted by enrichment-liveness-test
 // - 1 created and deleted by stixRelationship-test (time series breakdown)
 testCreatedCounter['intrusion-set'] = 55;
-testCreatedCounter['ipv4-addr'] = 1;
+// 1 created and deleted by stixCyberObservable-test (network traffic deduplication)
+testCreatedCounter['ipv4-addr'] = 2;
 // Counts for:
 // - 1 created and deleted by form-submission-test
 // - 3 created and deleted by killChainPhase-import-test
@@ -66,7 +67,8 @@ testCreatedCounter.malware = 77; // 2 by the request access workflow tests
 testCreatedCounter['malware-analysis'] = 3;
 testCreatedCounter['marking-definition'] = 29;
 testCreatedCounter.narrative = 1;
-testCreatedCounter['network-traffic'] = 1;
+// 1 created and deleted by stixCyberObservable-test (network traffic deduplication)
+testCreatedCounter['network-traffic'] = 2;
 testCreatedCounter.note = 7;
 // 1 in the dataset + 2 created by observedData-domain-test
 testCreatedCounter['observed-data'] = 3;
@@ -140,7 +142,10 @@ testUpdatedCounter['ssh-key'] = 1;
 // 43 case-rfi and 2 case-rft updated by the request access workflow tests (status transitions, decisions)
 testUpdatedCounter['case-rfi'] = 48;
 testUpdatedCounter['case-rft'] = 2;
-testUpdatedCounter['ipv4-addr'] = 4;
+// 1 updated by stixCyberObservable-test (network traffic deduplication)
+testUpdatedCounter['ipv4-addr'] = 5;
+// 3 updated by stixCyberObservable-test (2 upserts and 1 contributing field update in network traffic deduplication)
+testUpdatedCounter['network-traffic'] = 3;
 testUpdatedCounter.tool = 10;
 testUpdatedCounter.sighting = 7; // 2 upserts in relations-deduplication-test
 testUpdatedCounter['threat-actor'] = 18;
@@ -196,7 +201,8 @@ testDeletedCounter.infrastructure = 1;
 // - 2 created and deleted by enrichment-liveness-test
 // - 1 created and deleted by stixRelationship-test (time series breakdown)
 testDeletedCounter['intrusion-set'] = 53;
-testDeletedCounter['ipv4-addr'] = 1;
+// 1 created and deleted by stixCyberObservable-test (network traffic deduplication)
+testDeletedCounter['ipv4-addr'] = 2;
 // Counts for:
 // - 1 created and deleted by form-submission-test
 // - 3 deleted by killChainPhase-import-test
@@ -215,7 +221,8 @@ testDeletedCounter.malware = 50; // 2 by the request access workflow tests
 testDeletedCounter['malware-analysis'] = 2;
 testDeletedCounter['marking-definition'] = 18;
 testDeletedCounter.narrative = 1;
-testDeletedCounter['network-traffic'] = 1;
+// 1 created and deleted by stixCyberObservable-test (network traffic deduplication)
+testDeletedCounter['network-traffic'] = 2;
 testDeletedCounter.note = 6;
 testDeletedCounter['observed-data'] = 2; // created and deleted by observedData-domain-test
 testDeletedCounter.opinion = 4;
