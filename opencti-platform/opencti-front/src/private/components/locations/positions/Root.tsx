@@ -17,7 +17,7 @@ import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import StixCoreObjectKnowledgeBar, { buildObservablesKnowledgeBarFilters } from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import { useFormatter } from '../../../../components/i18n';
@@ -45,7 +45,7 @@ const subscription = graphql`
 `;
 
 const positionQuery = graphql`
-  query RootPositionQuery($id: String!, $observablesRelationshipTypes: [String!]) {
+  query RootPositionQuery($id: String!, $observablesFilters: FilterGroup) {
     position(id: $id) {
       id
       draftVersion {
@@ -57,7 +57,7 @@ const positionQuery = graphql`
       x_opencti_aliases
       currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
-      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(observablesRelationshipTypes: $observablesRelationshipTypes)
+      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(observablesFilters: $observablesFilters)
       ...Position_position
       ...PositionKnowledge_position
       ...FileImportViewer_entity
@@ -226,7 +226,7 @@ const Root = () => {
   const { positionId } = useParams() as { positionId: string };
   const queryRef = useQueryLoading<RootPositionQuery>(positionQuery, {
     id: positionId,
-    observablesRelationshipTypes: POSITION_OBSERVABLES_RELATIONSHIP_TYPES,
+    observablesFilters: buildObservablesKnowledgeBarFilters(POSITION_OBSERVABLES_RELATIONSHIP_TYPES),
   });
 
   return (

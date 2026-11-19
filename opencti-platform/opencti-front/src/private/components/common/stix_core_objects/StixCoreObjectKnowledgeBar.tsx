@@ -25,7 +25,15 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
   fragment StixCoreObjectKnowledgeBar_stixCoreObject on StixCoreObject
   @argumentDefinitions(
     relatedRelationshipTypes: { type: "[String]", defaultValue: ["related-to"] }
-    observablesRelationshipTypes: { type: "[String]", defaultValue: ["related-to"] }
+    # see buildObservablesKnowledgeBarFilters, the default is its result for ["related-to"]
+    observablesFilters: {
+      type: "FilterGroup"
+      defaultValue: {
+        mode: and
+        filters: [{ key: "regardingOf", values: [{ key: "relationship_type", values: ["related-to"] }] }]
+        filterGroups: []
+      }
+    }
   ) {
     id
     # distribution of entities without "related to" relationship
@@ -64,13 +72,14 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
       label
       value
     }
-    # distribution for observables, restricted to the relationship types the Observables list view shows (#19499)
-    # Uses stixCoreRelationshipsDistribution rather than stixCoreObjectsDistribution, which also matches
-    # every denormalized ref (created-by included) and so counted observables the entity only authored.
-    observablesDistribution: stixCoreRelationshipsDistribution(
+    # distribution for observables, with the regardingOf filter of the Observables list (#19499):
+    # distinct observables linked through the relationship types that list shows. Without it, the
+    # distribution matches every ref of the entity, created-by included.
+    observablesDistribution: stixCoreObjectsDistribution(
       field: "entity_type"
       operation: count
-      relationship_type: $observablesRelationshipTypes
+      types: ["Stix-Cyber-Observable"]
+      filters: $observablesFilters
     ) {
       label
       value
@@ -95,16 +104,27 @@ const stixCoreObjectKnowledgeBarRefreshQuery = graphql`
   query StixCoreObjectKnowledgeBarRefreshQuery(
     $id: String!
     $relatedRelationshipTypes: [String!]
-    $observablesRelationshipTypes: [String!]
+    $observablesFilters: FilterGroup
   ) {
     stixCoreObject(id: $id) {
       ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(
         relatedRelationshipTypes: $relatedRelationshipTypes
-        observablesRelationshipTypes: $observablesRelationshipTypes
+        observablesFilters: $observablesFilters
       )
     }
   }
 `;
+
+const DEFAULT_OBSERVABLES_RELATIONSHIP_TYPES = ['related-to'];
+
+// Filter of the Observables counter: the regardingOf filter of the Observables entities list, whose id
+// the API sets to the entity. A root query that passes other relationship types than the default
+// builds its observablesFilters fragment argument with this function.
+export const buildObservablesKnowledgeBarFilters = (relationshipTypes: string[]) => ({
+  mode: 'and' as const,
+  filters: [{ key: ['regardingOf'], values: [{ key: 'relationship_type', values: relationshipTypes }] }],
+  filterGroups: [],
+});
 
 type ObjectsDistribution = StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsWithoutRelatedToDistribution']
   | StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsRelatedDistribution']
@@ -118,7 +138,7 @@ interface StixCoreObjectKnowledgeBarProps {
   attribution?: string[];
   relatedRelationshipTypes?: string[];
   // Must match the relationshipTypes of the entity's Observables view and the
-  // observablesRelationshipTypes argument its root query passes to the fragment
+  // observablesFilters argument its root query passes to the fragment
   observablesRelationshipTypes?: string[];
 }
 
@@ -185,7 +205,7 @@ const StixCoreObjectKnowledgeBar = ({
         {
           id,
           relatedRelationshipTypes: relatedRelationshipTypes ?? ['related-to'],
-          observablesRelationshipTypes: observablesRelationshipTypes ?? ['related-to'],
+          observablesFilters: buildObservablesKnowledgeBarFilters(observablesRelationshipTypes ?? DEFAULT_OBSERVABLES_RELATIONSHIP_TYPES),
         },
         { fetchPolicy: 'network-only' },
       ).subscribe({

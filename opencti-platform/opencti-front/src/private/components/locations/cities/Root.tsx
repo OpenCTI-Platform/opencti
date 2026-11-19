@@ -13,7 +13,7 @@ import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDom
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import StixCoreObjectKnowledgeBar, { buildObservablesKnowledgeBarFilters } from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import { RootCityQuery } from './__generated__/RootCityQuery.graphql';
@@ -45,7 +45,7 @@ const subscription = graphql`
 `;
 
 const cityQuery = graphql`
-  query RootCityQuery($id: String!, $observablesRelationshipTypes: [String!]) {
+  query RootCityQuery($id: String!, $observablesFilters: FilterGroup) {
     city(id: $id) {
       id
       entity_type
@@ -58,7 +58,7 @@ const cityQuery = graphql`
       x_opencti_graph_data
       currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
-      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(observablesRelationshipTypes: $observablesRelationshipTypes)
+      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(observablesFilters: $observablesFilters)
       ...City_city
       ...CityKnowledge_city
       ...FileImportViewer_entity
@@ -210,7 +210,7 @@ const RootCityComponent = ({ queryRef, cityId }: RootCityComponentProps) => {
 
 const RootCity = () => {
   const { cityId } = useParams() as { cityId: string };
-  const queryRef = useQueryLoading<RootCityQuery>(cityQuery, { id: cityId, observablesRelationshipTypes: CITY_OBSERVABLES_RELATIONSHIP_TYPES });
+  const queryRef = useQueryLoading<RootCityQuery>(cityQuery, { id: cityId, observablesFilters: buildObservablesKnowledgeBarFilters(CITY_OBSERVABLES_RELATIONSHIP_TYPES) });
   return (
     <>
       {queryRef && (

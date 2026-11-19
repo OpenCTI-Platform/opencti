@@ -17,7 +17,7 @@ import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDom
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import ThreatActorIndividualKnowledge, { THREAT_ACTOR_INDIVIDUAL_OBSERVABLES_RELATIONSHIP_TYPES } from './ThreatActorIndividualKnowledge';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import StixCoreObjectKnowledgeBar, { buildObservablesKnowledgeBarFilters } from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
@@ -50,7 +50,7 @@ const ThreatActorIndividualQuery = graphql`
   query RootThreatActorIndividualQuery(
     $id: String!
     $relatedRelationshipTypes: [String!]
-    $observablesRelationshipTypes: [String!]
+    $observablesFilters: FilterGroup
   ) {
     threatActorIndividual(id: $id) {
       id
@@ -67,7 +67,7 @@ const ThreatActorIndividualQuery = graphql`
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(
         relatedRelationshipTypes: $relatedRelationshipTypes
-        observablesRelationshipTypes: $observablesRelationshipTypes
+        observablesFilters: $observablesFilters
       )
       ...ThreatActorIndividual_ThreatActorIndividual
       ...ThreatActorIndividualKnowledge_ThreatActorIndividual
@@ -246,7 +246,7 @@ const Root = () => {
     {
       id: threatActorIndividualId,
       relatedRelationshipTypes: THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES,
-      observablesRelationshipTypes: THREAT_ACTOR_INDIVIDUAL_OBSERVABLES_RELATIONSHIP_TYPES,
+      observablesFilters: buildObservablesKnowledgeBarFilters(THREAT_ACTOR_INDIVIDUAL_OBSERVABLES_RELATIONSHIP_TYPES),
     },
   );
   return (

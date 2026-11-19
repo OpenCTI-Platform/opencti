@@ -15,7 +15,7 @@ import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import StixCoreObjectKnowledgeBar, { buildObservablesKnowledgeBarFilters } from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -44,7 +44,7 @@ const subscription = graphql`
 `;
 
 const channelQuery = graphql`
-  query RootChannelQuery($id: String!, $observablesRelationshipTypes: [String!]) {
+  query RootChannelQuery($id: String!, $observablesFilters: FilterGroup) {
     channel(id: $id) {
       id
       draftVersion {
@@ -58,7 +58,7 @@ const channelQuery = graphql`
       x_opencti_graph_data
       currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
-      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(observablesRelationshipTypes: $observablesRelationshipTypes)
+      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(observablesFilters: $observablesFilters)
       ...Channel_channel
       ...ChannelKnowledge_channel
       ...FileImportViewer_entity
@@ -214,7 +214,7 @@ const Root = () => {
   const { channelId } = useParams() as { channelId: string };
   const queryRef = useQueryLoading<RootChannelQuery>(channelQuery, {
     id: channelId,
-    observablesRelationshipTypes: CHANNEL_OBSERVABLES_RELATIONSHIP_TYPES,
+    observablesFilters: buildObservablesKnowledgeBarFilters(CHANNEL_OBSERVABLES_RELATIONSHIP_TYPES),
   });
 
   return (

@@ -14,7 +14,7 @@ import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDom
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import StixCoreObjectKnowledgeBar, { buildObservablesKnowledgeBarFilters } from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import { RootCountriesSubscription } from '../countries/__generated__/RootCountriesSubscription.graphql';
@@ -47,7 +47,7 @@ const subscription = graphql`
 `;
 
 const regionQuery = graphql`
-  query RootRegionQuery($id: String!, $observablesRelationshipTypes: [String!]) {
+  query RootRegionQuery($id: String!, $observablesFilters: FilterGroup) {
     region(id: $id) {
       id
       entity_type
@@ -60,7 +60,7 @@ const regionQuery = graphql`
       x_opencti_graph_data
       currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
-      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(observablesRelationshipTypes: $observablesRelationshipTypes)
+      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(observablesFilters: $observablesFilters)
       ...Region_region
       ...RegionKnowledge_region
       ...FileImportViewer_entity
@@ -219,7 +219,7 @@ const RootRegion = () => {
   const { regionId } = useParams() as { regionId: string };
   const queryRef = useQueryLoading<RootRegionQuery>(regionQuery, {
     id: regionId,
-    observablesRelationshipTypes: REGION_OBSERVABLES_RELATIONSHIP_TYPES,
+    observablesFilters: buildObservablesKnowledgeBarFilters(REGION_OBSERVABLES_RELATIONSHIP_TYPES),
   });
   return (
     <>

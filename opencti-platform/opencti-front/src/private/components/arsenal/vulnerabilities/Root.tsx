@@ -15,7 +15,7 @@ import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import StixCoreObjectKnowledgeBar, { buildObservablesKnowledgeBarFilters } from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -44,7 +44,7 @@ const subscription = graphql`
 `;
 
 const vulnerabilityQuery = graphql`
-  query RootVulnerabilityQuery($id: String!, $observablesRelationshipTypes: [String!]) {
+  query RootVulnerabilityQuery($id: String!, $observablesFilters: FilterGroup) {
     vulnerability(id: $id) {
       id
       draftVersion {
@@ -58,7 +58,7 @@ const vulnerabilityQuery = graphql`
       x_opencti_graph_data
       currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
-      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(observablesRelationshipTypes: $observablesRelationshipTypes)
+      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(observablesFilters: $observablesFilters)
       ...Vulnerability_vulnerability
       ...VulnerabilityKnowledge_vulnerability
       ...FileImportViewer_entity
@@ -218,7 +218,7 @@ const Root = () => {
   const { vulnerabilityId } = useParams() as { vulnerabilityId: string };
   const queryRef = useQueryLoading<RootVulnerabilityQuery>(vulnerabilityQuery, {
     id: vulnerabilityId,
-    observablesRelationshipTypes: VULNERABILITY_OBSERVABLES_RELATIONSHIP_TYPES,
+    observablesFilters: buildObservablesKnowledgeBarFilters(VULNERABILITY_OBSERVABLES_RELATIONSHIP_TYPES),
   });
 
   return (
