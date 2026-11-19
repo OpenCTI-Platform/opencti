@@ -134,6 +134,33 @@ const RELATIONSHIPS_QUERY = gql`
   }
 `;
 
+const RELATIONSHIP_ADD = gql`
+  mutation procedureRelationshipAdd($input: StixCoreRelationshipAddInput!) {
+    stixCoreRelationshipAdd(input: $input) {
+      id
+    }
+  }
+`;
+
+const RELATIONSHIP_DELETE = gql`
+  mutation procedureRelationshipDelete($fromId: StixRef!, $toId: StixRef!, $relationship_type: String!) {
+    stixCoreRelationshipDelete(fromId: $fromId, toId: $toId, relationship_type: $relationship_type)
+  }
+`;
+
+const hasObservableTargets = async (procedureId: string) => {
+  const filters = {
+    mode: 'and',
+    filters: [
+      { key: ['fromId'], values: [procedureId] },
+      { key: ['relationship_type'], values: ['has-observable'] },
+    ],
+    filterGroups: [],
+  };
+  const result = await queryAsAdmin({ query: RELATIONSHIPS_QUERY, variables: { filters } });
+  return result.data?.stixCoreRelationships.edges.map((e: { node: { to: { id: string } } }) => e.node.to.id);
+};
+
 const KILL_CHAIN_PHASE_ADD = gql`
   mutation KillChainPhaseAdd($input: KillChainPhaseAddInput!) {
     killChainPhaseAdd(input: $input) {
@@ -172,7 +199,6 @@ describe('Procedure resolver', () => {
   let organizationId: string;
   let killChainPhaseId: string;
   let fullProcedureId: string;
-  let observableStandardId: string;
   let processStandardId: string;
   let organizationStandardId: string;
   let attackPatternId: string;
@@ -184,7 +210,6 @@ describe('Procedure resolver', () => {
       variables: { type: 'IPv4-Addr', IPv4Addr: { value: '198.51.100.27' } },
     });
     observableId = observable.data?.stixCyberObservableAdd.id;
-    observableStandardId = observable.data?.stixCyberObservableAdd.standard_id;
     const process = await queryAsAdminWithSuccess({
       query: OBSERVABLE_ADD,
       variables: { type: 'Process', Process: { command_line: 'cmd.exe /c powershell -enc SQBFAFgA' } },
@@ -244,7 +269,7 @@ describe('Procedure resolver', () => {
     expect(b.id).toBe(a.id);
   });
 
-  it('stores observable, command and source refs and kill chain phases', async () => {
+  it('stores observables as has-observable relationships, the command and source refs and kill chain phases', async () => {
     const p = await addProcedureAsAdmin({
       name: 'Encoded PowerShell from cmd.exe',
       x_mitre_platforms: ['windows'],
@@ -257,15 +282,19 @@ describe('Procedure resolver', () => {
     const procedure = await readProcedure(fullProcedureId);
     expect(procedure.x_mitre_platforms).toEqual(['windows']);
     expect(procedure.procedureObservables.edges.map((e: { node: { id: string } }) => e.node.id)).toEqual([observableId]);
+    expect(await hasObservableTargets(fullProcedureId)).toEqual([observableId]);
     expect(procedure.procedureCommand.id).toBe(processId);
     expect(procedure.procedureSources.map((s: { id: string }) => s.id)).toEqual([organizationId]);
     expect(procedure.killChainPhases.map((k: { id: string }) => k.id)).toEqual([killChainPhaseId]);
   });
 
-  it('lists procedures filtered by procedureObservables', async () => {
+  it('lists the procedures that have an observable', async () => {
     const filters = {
       mode: 'and',
-      filters: [{ key: ['procedureObservables'], values: [observableId] }],
+      filters: [{
+        key: ['regardingOf'],
+        values: [{ key: 'id', values: [observableId] }, { key: 'relationship_type', values: ['has-observable'] }],
+      }],
       filterGroups: [],
     };
     const result = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10, filters } });
@@ -277,13 +306,29 @@ describe('Procedure resolver', () => {
     const procedure = await readProcedure(fullProcedureId);
     const stix = JSON.parse(procedure.toStix);
     expect(stix.type).toBe('x-opencti-procedure');
-    expect(stix.x_observable_refs).toEqual([observableStandardId]);
+    // Observables are has-observable relationships: pycti adds x_observable_refs on export, the backend has no relationships to read.
+    expect(stix).not.toHaveProperty('x_observable_refs');
     expect(stix.x_command_ref).toEqual(processStandardId);
     expect(stix.x_source_refs).toEqual([organizationStandardId]);
     expect(stix.platforms).toEqual(['windows']);
     expect(stix.kill_chain_phases).toEqual([{ kill_chain_name: 'mitre-attack', phase_name: 'procedure-test-phase' }]);
     expect(stix).not.toHaveProperty('x_mitre_platforms');
     expect(stix).not.toHaveProperty('x_log_source_refs');
+  });
+
+  it('adds and removes observables through has-observable relationships', async () => {
+    const p = await addProcedureAsAdmin({ name: 'Procedure with editable observables', procedureObservables: [observableId] });
+    await queryAsAdminWithSuccess({
+      query: RELATIONSHIP_ADD,
+      variables: { input: { fromId: p.id, toId: processId, relationship_type: 'has-observable' } },
+    });
+    expect((await hasObservableTargets(p.id)).sort()).toEqual([observableId, processId].sort());
+    await queryAsAdminWithSuccess({
+      query: RELATIONSHIP_DELETE,
+      variables: { fromId: p.id, toId: observableId, relationship_type: 'has-observable' },
+    });
+    const procedure = await readProcedure(p.id);
+    expect(procedure.procedureObservables.edges.map((e: { node: { id: string } }) => e.node.id)).toEqual([processId]);
   });
 
   it('creates an implements-technique relationship per technique', async () => {

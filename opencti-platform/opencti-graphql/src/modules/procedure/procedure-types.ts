@@ -7,9 +7,8 @@ export const ENTITY_TYPE_PROCEDURE = 'Procedure';
 export const STIX_TYPE_PROCEDURE = 'x-opencti-procedure';
 
 // region Refs
+// Observables are has-observable relationships; the input keeps this name and creates them.
 export const INPUT_PROCEDURE_OBSERVABLES = 'procedureObservables';
-export const RELATION_PROCEDURE_OBSERVABLE = 'procedure-observable';
-export const ATTRIBUTE_OBSERVABLE_REFS = 'x_observable_refs';
 
 export const INPUT_PROCEDURE_COMMAND = 'procedureCommand';
 export const RELATION_PROCEDURE_COMMAND = 'procedure-command';
@@ -31,7 +30,6 @@ export interface BasicStoreEntityProcedure extends BasicStoreEntity {
   x_execution_start: Date;
   x_execution_end: Date;
   x_fingerprint: string;
-  [RELATION_PROCEDURE_OBSERVABLE]: Array<string>;
   [RELATION_PROCEDURE_COMMAND]: string;
   [RELATION_PROCEDURE_SOURCE]: Array<string>;
 }
@@ -59,7 +57,6 @@ export interface StixProcedure extends StixDomainObject {
   x_procedure_type: string;
   platforms: Array<string>;
   kill_chain_phases: Array<StixInternalKillChainPhase>;
-  [ATTRIBUTE_OBSERVABLE_REFS]: Array<StixId>;
   [ATTRIBUTE_COMMAND_REF]: StixId | undefined;
   [ATTRIBUTE_SOURCE_REFS]: Array<StixId>;
   first_observed: StixDate;
