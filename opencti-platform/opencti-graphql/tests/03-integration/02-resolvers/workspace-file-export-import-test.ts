@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import pjson from '../../../package.json';
 import { elLoadById } from '../../../src/database/engine';
-import { addLabel, labelDelete } from '../../../src/domain/label';
+import { findLabelPaginated } from '../../../src/domain/label';
 import { addSavedFilter, deleteSavedFilter } from '../../../src/modules/savedFilter/savedFilter-domain';
 import { fromB64, toB64 } from '../../../src/utils/base64';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
@@ -92,8 +92,9 @@ describe('Single-file export and import of a dashboard and of a widget', () => {
   let sourceManifest: { widgets: Record<string, Widget>; config: unknown };
 
   beforeAll(async () => {
-    const label = await addLabel(testContext, ADMIN_USER, { value: 'file-export-import-label', color: '#ff0000' });
-    labelId = label.id;
+    // A label of the platform, never created nor deleted here: the label events of the stream are counted by the stream tests (tests/10-streams)
+    const page = await findLabelPaginated(testContext, ADMIN_USER, { first: 1 });
+    labelId = page.edges[0].node.id;
     const marking = await elLoadById(testContext, ADMIN_USER, 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9') as { internal_id: string };
     markingId = marking.internal_id;
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85') as { internal_id: string };
@@ -125,7 +126,6 @@ describe('Single-file export and import of a dashboard and of a widget', () => {
       await remove(id);
     }
     await deleteSavedFilter(testContext, ADMIN_USER, savedFilterId).catch(() => undefined);
-    await labelDelete(testContext, ADMIN_USER, labelId).catch(() => undefined);
   });
 
   it('exports a file of the exact shape older platforms and XTM Hub rely on', async () => {

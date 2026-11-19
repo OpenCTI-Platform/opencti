@@ -2,7 +2,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { patchAttribute } from '../../../../src/database/middleware';
 import { ENABLED_FEATURE_FLAGS } from '../../../../src/config/conf';
-import { addLabel, labelDelete } from '../../../../src/domain/label';
+import { findLabelPaginated } from '../../../../src/domain/label';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import { dashboardsFamily } from '../../../../src/modules/configPreset/registry/dashboards-configPreset-registry';
 import { exportConfigPresetItem } from '../../../../src/modules/configPreset/configPreset-registry';
@@ -42,6 +42,15 @@ const manifestOf = (key: string, values: string[], variables?: unknown[]) => toB
   ...(variables ? { variables } : {}),
 }) as string;
 
+// A label of the platform, never created nor deleted here: the label events of the stream are counted by the stream tests (tests/10-streams),
+// which run after this file and read every event since the start
+const existingLabel = async () => {
+  const page = await findLabelPaginated(testContext, ADMIN_USER, { first: 1 });
+  return page.edges[0].node as { id: string; standard_id: string };
+};
+// The standard id of a label the platform does not have
+const MISSING_LABEL_ID = 'label--7d9e2b34-5c1a-4f6e-9a3b-0e8c4d2f1a65';
+
 const loadWorkspace = async (name: string) => {
   const [workspace] = await findDashboardsByName(testContext, ADMIN_USER, name);
   return workspace;
@@ -54,17 +63,12 @@ const storedFilterValues = (workspace: BasicStoreEntityWorkspace) => {
 };
 
 describe('Dashboard import and export (configuration preset)', () => {
-  const labelValue = `${PREFIX} label`;
-  let labelId: string | undefined;
   const names = [`${PREFIX} one`, `${PREFIX} one (1)`, `${PREFIX} two`, `${PREFIX} round trip`, `${PREFIX} imported`, `${PREFIX} dangling`, `${PREFIX} ambiguous`, `${PREFIX} shared`];
 
   afterAll(async () => {
     const workspaces = await findAllWorkspaces(testContext, ADMIN_USER, {}) as BasicStoreEntityWorkspace[];
     for (const workspace of workspaces.filter(({ name }) => name.startsWith(PREFIX))) {
       await workspaceDelete(testContext, ADMIN_USER, workspace.id);
-    }
-    if (labelId) {
-      await labelDelete(testContext, ADMIN_USER, labelId).catch(() => undefined);
     }
   });
 
@@ -232,8 +236,7 @@ describe('Dashboard import and export (configuration preset)', () => {
   });
 
   it('exports the ids of the filters as standard ids and imports them back as the ids of the platform', async () => {
-    const label = await addLabel(testContext, ADMIN_USER, { value: labelValue, color: '#ff0000' });
-    labelId = label.id;
+    const label = await existingLabel();
     await importDashboard(testContext, ADMIN_USER, { name: names[3], manifest: manifestOf('objectLabel', [label.standard_id]) }, { mode });
     const stored = await loadWorkspace(names[3]);
     expect(storedFilterValues(stored)).toEqual([label.id]);
@@ -252,64 +255,59 @@ describe('Dashboard import and export (configuration preset)', () => {
     expect(imported.reason).toBeUndefined();
     expect(storedFilterValues(await loadWorkspace(names[4]))).toEqual([label.id]);
 
-    // On a platform that has not, the reference is kept as it is, as the file import does
-    await labelDelete(testContext, ADMIN_USER, label.id);
-    const dangling = await importDashboard(testContext, ADMIN_USER, { ...exported, name: names[5] }, { mode });
+    // On a platform that has not the label, the reference is kept as it is, as the file import does
+    const dangling = await importDashboard(testContext, ADMIN_USER, { name: names[5], manifest: manifestOf('objectLabel', [MISSING_LABEL_ID]) }, { mode });
     expect(dangling).toMatchObject({ status: 'created' });
     expect(dangling.reason).toBeUndefined();
-    expect(storedFilterValues(await loadWorkspace(names[5]))).toEqual([label.standard_id]);
+    expect(storedFilterValues(await loadWorkspace(names[5]))).toEqual([MISSING_LABEL_ID]);
   });
 
   it('converts the ids held by the variables as the ones of the filters, and takes the variables only with their feature flag', async () => {
-    const label = await addLabel(testContext, ADMIN_USER, { value: `${PREFIX} variable label`, color: '#00ff00' });
+    const label = await existingLabel();
     const name = `${PREFIX} variables`;
     const variablesOf = (workspace: { manifest?: string }) => fromB64(workspace.manifest).variables;
     const variable = { id: '5a1f0c2e-7b3d-4e8a-9c4b-1d2e3f4a5b6c', name: 'Label', type: 'label', restriction: { mode: 'selection', values: [label.id] }, defaultValue: label.id };
     const textVariable = { id: '6b2a1d3f-8c4e-4f9b-8d5c-2e3f4a5b6c7d', name: 'Text', type: 'text', restriction: { mode: 'none' }, defaultValue: 'phishing' };
+    await importDashboard(testContext, ADMIN_USER, { name, manifest: manifestOf('entity_type', ['Report'], [variable, textVariable]) }, { mode });
+    const stored = await loadWorkspace(name);
+    expect(variablesOf(stored)[0]).toMatchObject({ defaultValue: label.id, restriction: { mode: 'selection', values: [label.id] } });
+
+    // Exported as standard ids, a literal left as it is
+    const exported = await exportDashboard(testContext, ADMIN_USER, stored);
+    expect(variablesOf(exported)[0]).toMatchObject({ defaultValue: label.standard_id, restriction: { mode: 'selection', values: [label.standard_id] } });
+    expect(variablesOf(exported)[1]).toMatchObject({ defaultValue: 'phishing' });
+    expect(JSON.stringify(exported)).not.toContain(label.id);
+
+    // Imported as the ids of the platform, with no warning
+    const imported = await importDashboard(testContext, ADMIN_USER, { ...exported, name: `${PREFIX} variables copy` }, { mode });
+    expect(imported).toMatchObject({ status: 'created' });
+    expect(imported.reason).toBeUndefined();
+    expect(variablesOf(await loadWorkspace(`${PREFIX} variables copy`))[0]).toMatchObject({ defaultValue: label.id, restriction: { values: [label.id] } });
+
+    // Without the feature flag the variables stay out of the bundle: not exported, not imported, and the ones of a dashboard are not replaced
+    const enabled = [...ENABLED_FEATURE_FLAGS];
+    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
     try {
-      await importDashboard(testContext, ADMIN_USER, { name, manifest: manifestOf('entity_type', ['Report'], [variable, textVariable]) }, { mode });
-      const stored = await loadWorkspace(name);
-      expect(variablesOf(stored)[0]).toMatchObject({ defaultValue: label.id, restriction: { mode: 'selection', values: [label.id] } });
-
-      // Exported as standard ids, a literal left as it is
-      const exported = await exportDashboard(testContext, ADMIN_USER, stored);
-      expect(variablesOf(exported)[0]).toMatchObject({ defaultValue: label.standard_id, restriction: { mode: 'selection', values: [label.standard_id] } });
-      expect(variablesOf(exported)[1]).toMatchObject({ defaultValue: 'phishing' });
-      expect(JSON.stringify(exported)).not.toContain(label.id);
-
-      // Imported as the ids of the platform, with no warning
-      const imported = await importDashboard(testContext, ADMIN_USER, { ...exported, name: `${PREFIX} variables copy` }, { mode });
-      expect(imported).toMatchObject({ status: 'created' });
-      expect(imported.reason).toBeUndefined();
-      expect(variablesOf(await loadWorkspace(`${PREFIX} variables copy`))[0]).toMatchObject({ defaultValue: label.id, restriction: { values: [label.id] } });
-
-      // Without the feature flag the variables stay out of the bundle: not exported, not imported, and the ones of a dashboard are not replaced
-      const enabled = [...ENABLED_FEATURE_FLAGS];
-      ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
-      try {
-        expect(variablesOf(await exportDashboard(testContext, ADMIN_USER, stored))).toBeUndefined();
-        await importDashboard(testContext, ADMIN_USER, { ...exported, name: `${PREFIX} variables off` }, { mode });
-        expect(variablesOf(await loadWorkspace(`${PREFIX} variables off`))).toBeUndefined();
-        const overwrite = await importDashboard(testContext, ADMIN_USER, { name, manifest: manifestOf('entity_type', ['Malware'], []) }, { mode });
-        expect(overwrite).toMatchObject({ status: 'overwritten' });
-        const overwritten = await loadWorkspace(name);
-        expect(storedFilterValues(overwritten)).toEqual(['Malware']);
-        expect(variablesOf(overwritten)).toHaveLength(2);
-        // The variables of the bundle do not make a dashboard that has the same widgets differ
-        expect(await importDashboard(testContext, ADMIN_USER, { name, manifest: manifestOf('entity_type', ['Malware'], [textVariable]) }, { mode })).toMatchObject({ status: 'skipped', code: 'unchanged' });
-      } finally {
-        ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...enabled);
-      }
-
-      // A reference the platform does not have is kept as it is, as in the filters
-      await labelDelete(testContext, ADMIN_USER, label.id);
-      const dangling = await importDashboard(testContext, ADMIN_USER, { ...exported, name: `${PREFIX} variables dangling` }, { mode });
-      expect(dangling).toMatchObject({ status: 'created' });
-      expect(dangling.reason).toBeUndefined();
-      expect(variablesOf(await loadWorkspace(`${PREFIX} variables dangling`))[0]).toMatchObject({ defaultValue: label.standard_id });
+      expect(variablesOf(await exportDashboard(testContext, ADMIN_USER, stored))).toBeUndefined();
+      await importDashboard(testContext, ADMIN_USER, { ...exported, name: `${PREFIX} variables off` }, { mode });
+      expect(variablesOf(await loadWorkspace(`${PREFIX} variables off`))).toBeUndefined();
+      const overwrite = await importDashboard(testContext, ADMIN_USER, { name, manifest: manifestOf('entity_type', ['Malware'], []) }, { mode });
+      expect(overwrite).toMatchObject({ status: 'overwritten' });
+      const overwritten = await loadWorkspace(name);
+      expect(storedFilterValues(overwritten)).toEqual(['Malware']);
+      expect(variablesOf(overwritten)).toHaveLength(2);
+      // The variables of the bundle do not make a dashboard that has the same widgets differ
+      expect(await importDashboard(testContext, ADMIN_USER, { name, manifest: manifestOf('entity_type', ['Malware'], [textVariable]) }, { mode })).toMatchObject({ status: 'skipped', code: 'unchanged' });
     } finally {
-      await labelDelete(testContext, ADMIN_USER, label.id).catch(() => undefined);
+      ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...enabled);
     }
+
+    // A reference the platform does not have is kept as it is, as in the filters
+    const missing = { ...variable, restriction: { mode: 'selection', values: [MISSING_LABEL_ID] }, defaultValue: MISSING_LABEL_ID };
+    const dangling = await importDashboard(testContext, ADMIN_USER, { name: `${PREFIX} variables dangling`, manifest: manifestOf('entity_type', ['Report'], [missing]) }, { mode });
+    expect(dangling).toMatchObject({ status: 'created' });
+    expect(dangling.reason).toBeUndefined();
+    expect(variablesOf(await loadWorkspace(`${PREFIX} variables dangling`))[0]).toMatchObject({ defaultValue: MISSING_LABEL_ID });
   });
 
   it('does not export nor import the presets, and an overwrite keeps the presets of the dashboard', async () => {
