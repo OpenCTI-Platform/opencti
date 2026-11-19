@@ -411,6 +411,10 @@ export const getPublishBlockingDiagnostics = (diagnostics: WorkflowMigrationDiag
   return diagnostics.filter((diagnostic) => PUBLISH_BLOCKING_DIAGNOSTIC_TYPES.includes(diagnostic.type));
 };
 
+// Message of the error `pickMigrationScope` throws when a scope has no statuses: callers that need to
+// tell this case from a real failure compare against it.
+export const NO_LEGACY_STATUSES_MESSAGE = 'No legacy statuses to migrate';
+
 /**
  * Picks the result of one scope out of a conversion result, and throws when that scope has no
  * statuses to migrate. GLOBAL is an entity type's workflow; REQUEST_ACCESS is the request access
@@ -423,7 +427,7 @@ export const pickMigrationScope = (
 ): WorkflowMigrationConversionResult => {
   const result = byScope[scope];
   if (!result || result.definition.states.length === 0) {
-    throw FunctionalError('No legacy statuses to migrate', { entityType, scope });
+    throw FunctionalError(NO_LEGACY_STATUSES_MESSAGE, { entityType, scope });
   }
   return result;
 };
