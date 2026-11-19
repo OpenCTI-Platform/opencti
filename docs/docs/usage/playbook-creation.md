@@ -26,6 +26,8 @@ Each playbook needs to have four steps to be complete:
 
 Assign a name and description to each playbook.
 
+A new playbook opens in edit mode, so you can start adding steps straight away. See [View mode and edit mode](#view-mode-and-edit-mode).
+
 ![Create a new playbook dialog with name and description fields](assets/playbook_create.png)
 
 ## Step 1: Set your event source
@@ -81,6 +83,8 @@ Finish your playbook by processing the bundle with at least one of the following
 - **Send to AI** sends the STIX bundle to an XTM One AI agent as the final step of the playbook. This requires access to XTM One.
 
 These components will complete a branch of your playbook. See the [Playbook components](playbook-components.md) page for full details of the available components. If you want to both send for ingestion and send a notification, add a second step on the same output: an output can feed several steps.
+
+![One output of a step feeding both Send to notifier and Send for ingestion](assets/playbooks/playbook-end-steps.png)
 
 ## Step 4: Start your playbook
 
