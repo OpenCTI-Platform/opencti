@@ -15,6 +15,7 @@
   "Playbook name already exists": "Ce nom de playbook existe déjà",
   "playbooks": "playbooks",
   "References not found: {references}": "Références introuvables : {references}",
+  "Running: the new definition applies at once": "En cours d'exécution : la nouvelle définition s'applique immédiatement",
   "Select the playbooks to import from a full configuration bundle (zip)": "Sélectionnez les playbooks à importer depuis un bundle de configuration complet (zip)",
   "Several playbooks have this name: import it as a copy": "Plusieurs playbooks portent ce nom : importez-le en copie",
   "Users not found: {users}": "Utilisateurs introuvables : {users}",

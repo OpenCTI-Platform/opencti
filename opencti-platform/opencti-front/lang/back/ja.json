@@ -947,7 +947,7 @@
   "Platform(s) affinity": "プラットフォーム",
   "Platforms": "必要なパーミッション",
   "Playbook definition": "プレイブックの定義",
-  "Playbook definitions, imported as stopped": "プレイブックの定義（停止状態でインポート）",
+  "Playbook definitions, created stopped": "プレイブックの定義（停止状態で作成）",
   "Playbook running": "プレイブックの実行",
   "Playbook supported": "対応プレイブック",
   "Playbooks": "プレイブック",

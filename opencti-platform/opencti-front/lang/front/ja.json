@@ -15,6 +15,7 @@
   "Playbook name already exists": "このプレイブック名は既に存在します",
   "playbooks": "プレイブック",
   "References not found: {references}": "参照が見つかりません: {references}",
+  "Running: the new definition applies at once": "実行中: 新しい定義はすぐに適用されます",
   "Select the playbooks to import from a full configuration bundle (zip)": "完全な構成バンドル (zip) からインポートするプレイブックを選択します",
   "Several playbooks have this name: import it as a copy": "この名前のプレイブックが複数あります：コピーとしてインポートしてください",
   "Users not found: {users}": "ユーザーが見つかりません: {users}",

@@ -15,6 +15,7 @@
   "Playbook name already exists": "剧本名称已存在",
   "playbooks": "剧本",
   "References not found: {references}": "未找到引用：{references}",
+  "Running: the new definition applies at once": "运行中：新定义将立即生效",
   "Select the playbooks to import from a full configuration bundle (zip)": "从完整的配置包 (zip) 中选择要导入的剧本",
   "Several playbooks have this name: import it as a copy": "有多个剧本使用此名称：请作为副本导入",
   "Users not found: {users}": "未找到用户：{users}",

@@ -28,6 +28,7 @@ export type PlaybookImportResult = ConfigImportResult<PlaybookImportConfiguratio
 };
 
 export const AMBIGUOUS_PLAYBOOK_REASON = 'Several playbooks have this name: import it as a copy';
+export const RUNNING_PLAYBOOK_REASON = 'Running: the new definition applies at once';
 
 const refused = (code: PlaybookImportCode, reason: string, exists: boolean, configuration?: PlaybookImportConfiguration): PlaybookImportResult => {
   return { status: 'failed', code, reason, exists, configuration };
@@ -111,7 +112,9 @@ export const importConfigPresetPlaybook = async (
     if (!dryRun) {
       await playbookEdit(context, user, target.id, input);
     }
-    return { status: 'overwritten', exists, name, configuration: bundlePlaybook, reason, playbook: target };
+    // An overwritten playbook keeps its running state: a running one applies the new definition at once
+    const overwriteReason = joinConfigImportReasons([target.playbook_running ? RUNNING_PLAYBOOK_REASON : undefined, reason]);
+    return { status: 'overwritten', exists, name, configuration: bundlePlaybook, reason: overwriteReason, playbook: target };
   }
   const result: PlaybookImportResult = { status: 'created', exists, name, configuration: bundlePlaybook, reason };
   if (dryRun) {

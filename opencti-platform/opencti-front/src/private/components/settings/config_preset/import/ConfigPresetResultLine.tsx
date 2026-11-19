@@ -108,6 +108,7 @@ const translateKnownReason = (t_i18n: Translate, reason: string): string | undef
     case 'Playbook already exists': return t_i18n('Playbook already exists');
     case 'Playbook name already exists': return t_i18n('Playbook name already exists');
     case 'Several playbooks have this name: import it as a copy': return t_i18n('Several playbooks have this name: import it as a copy');
+    case 'Running: the new definition applies at once': return t_i18n('Running: the new definition applies at once');
     case 'Feed already exists': return t_i18n('Feed already exists');
     case 'Feed name already exists': return t_i18n('Feed name already exists');
     case 'Several feeds have this name: import it as a copy': return t_i18n('Several feeds have this name: import it as a copy');

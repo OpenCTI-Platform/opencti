@@ -77,7 +77,7 @@ const playbooksImporter: ConfigPresetImporter = {
 export const playbooksFamily: ConfigPresetFamilyDefinition = {
   id: PLAYBOOKS_FAMILY_ID,
   label: 'Playbooks',
-  description: 'Playbook definitions, imported as stopped',
+  description: 'Playbook definitions, created stopped',
   group: automationRulesGroup,
   directory: 'automation_rules/playbooks',
   importer: playbooksImporter,

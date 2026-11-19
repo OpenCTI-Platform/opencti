@@ -15,6 +15,7 @@
   "Playbook name already exists": "Плейбук с таким именем уже существует",
   "playbooks": "плейбуки",
   "References not found: {references}": "Ссылки не найдены: {references}",
+  "Running: the new definition applies at once": "Запущен: новое определение применяется сразу",
   "Select the playbooks to import from a full configuration bundle (zip)": "Выберите плейбуки для импорта из полного пакета конфигурации (zip)",
   "Several playbooks have this name: import it as a copy": "Это имя носят несколько плейбуков: импортируйте его как копию",
   "Users not found: {users}": "Пользователи не найдены: {users}",

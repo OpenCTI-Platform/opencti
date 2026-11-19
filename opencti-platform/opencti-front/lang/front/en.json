@@ -14,6 +14,7 @@
   "Playbook name already exists": "Playbook name already exists",
   "playbooks": "playbooks",
   "References not found: {references}": "References not found: {references}",
+  "Running: the new definition applies at once": "Running: the new definition applies at once",
   "Select the playbooks to import from a full configuration bundle (zip)": "Select the playbooks to import from a full configuration bundle (zip)",
   "Several playbooks have this name: import it as a copy": "Several playbooks have this name: import it as a copy",
   "Users not found: {users}": "Users not found: {users}",
