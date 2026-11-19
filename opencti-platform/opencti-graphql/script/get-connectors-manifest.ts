@@ -3,8 +3,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const CONNECTORS_RAW_URL = 'https://raw.githubusercontent.com/OpenCTI-Platform/connectors';
-const MASTER_MANIFEST_URL = `${CONNECTORS_RAW_URL}/refs/heads/master/manifest.json`;
+const branchManifestUrl = (branch: string) => `${CONNECTORS_RAW_URL}/refs/heads/${branch}/manifest.json`;
 const tagManifestUrl = (tag: string) => `${CONNECTORS_RAW_URL}/refs/tags/${tag}/manifest.json`;
+const MASTER_MANIFEST_URL = branchManifestUrl('master');
 
 // --lts: rolling builds of an LTS branch use the manifest of the last LTS release (package.json version)
 // instead of the master one, so that xtm-composer deploys LTS connectors.
@@ -14,6 +15,10 @@ const getPackageVersion = (): string => {
   const packageJsonPath = fileURLToPath(new URL('../package.json', import.meta.url));
   return JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')).version;
 };
+
+// An LTS line is maintained on a `lts/<release>` branch in both the platform and connectors repositories,
+// with versions `<release>`, then `<release>-lts.<n>` (formerly `<release>-lts<n>`).
+const getLtsBranch = (version: string): string => `lts/${version.replace(/-lts\.?\d+$/, '')}`;
 
 interface ManifestSource {
   url: string;
@@ -30,8 +35,10 @@ const getManifestSource = (): ManifestSource => {
     return { url: tagManifestUrl(process.env.TAG_VERSION) };
   }
   if (IS_LTS) {
-    // The connectors tag may not exist yet (version bumped during a release, before the connectors tag)
-    return { url: tagManifestUrl(getPackageVersion()), fallbackUrl: MASTER_MANIFEST_URL };
+    // The connectors tag may not exist yet (version bumped during a release, before the connectors tag):
+    // fall back to the connectors LTS branch, never to master, whose connectors may not support this LTS
+    const version = getPackageVersion();
+    return { url: tagManifestUrl(version), fallbackUrl: branchManifestUrl(getLtsBranch(version)) };
   }
   // rolling
   return { url: MASTER_MANIFEST_URL };
