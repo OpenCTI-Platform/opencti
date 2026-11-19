@@ -22,11 +22,12 @@ import { vocabulariesFamily } from './registry/vocabularies-configPreset-registr
 import { statusTemplatesFamily } from './registry/statusTemplates-configPreset-registry';
 import { caseTemplatesFamily } from './registry/caseTemplates-configPreset-registry';
 import { fintelDesignsFamily } from './registry/fintelDesigns-configPreset-registry';
+import { dashboardsFamily } from './registry/dashboards-configPreset-registry';
 
 export { BRANDING_FAMILY_ID } from './registry/common-configPreset-registry';
 
 // In registry order, the categories of the spec table: Platform settings (platform, branding, messages, whitemark), then Data model, then Security & Access,
-// then Taxonomy, then Customization, then Integrations, then Automation & Rules.
+// then Taxonomy, then Customization, then Dashboards (after the labels and phases their filters point to), then Integrations, then Automation & Rules.
 // Each family is defined in its own file under registry/.
 export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   platformFamily,
@@ -45,6 +46,7 @@ export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   vocabulariesFamily,
   statusTemplatesFamily,
   caseTemplatesFamily,
+  dashboardsFamily,
   connectorsFamily,
   playbooksFamily,
   ruleEngineFamily,

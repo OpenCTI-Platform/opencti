@@ -14,6 +14,7 @@ import { ALL_CASE_TEMPLATES, ALL_TASK_TEMPLATES } from './configPreset-caseTempl
 import { ALL_CONNECTORS } from './configPreset-connectors-fixtures';
 import { ALL_EMAIL_TEMPLATES } from './configPreset-emailTemplates-fixtures';
 import { ALL_FINTEL_DESIGNS } from './configPreset-fintelDesigns-fixtures';
+import { ALL_DASHBOARDS } from './configPreset-dashboards-fixtures';
 import { ALL_PLAYBOOKS } from './configPreset-playbooks-fixtures';
 
 interface ListingArgs {
@@ -37,6 +38,7 @@ const FIXTURE_ENTITIES: Record<string, { id: string; name?: string; definition?:
   Connector: ALL_CONNECTORS,
   EmailTemplate: ALL_EMAIL_TEMPLATES,
   FintelDesign: ALL_FINTEL_DESIGNS,
+  Workspace: ALL_DASHBOARDS,
   Playbook: ALL_PLAYBOOKS,
 };
 const labelOf = (entity: { name?: string; definition?: string; value?: string }) => entity.name ?? entity.definition ?? entity.value ?? '';
