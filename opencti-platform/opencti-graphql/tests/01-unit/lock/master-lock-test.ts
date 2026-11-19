@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EventEmitter } from 'events';
 import { GraphQLError } from 'graphql';
+import { ExecutionError } from '@sesamecare-oss/redlock';
 import { LOCK_ERROR, LockTimeoutError, TYPE_LOCK_ERROR } from '../../../src/config/errors';
 import { serializeChildLockError } from '../../../src/lock/child-lock-error';
 
@@ -77,6 +78,9 @@ describe('master-lock', () => {
     expect(rejection).toBeInstanceOf(GraphQLError);
     expect((rejection as GraphQLError).message).toBe(childError.message);
     expect((rejection as GraphQLError).extensions.code).toBe(LOCK_ERROR);
+    // The rebuilt stack ends with the frames of the caller of lockResources
+    const callerFrames = (rejection as GraphQLError).stack?.split('--- lock operation requested by ---')[1];
+    expect(callerFrames).toContain('master-lock-test.ts');
   });
 
   it('should reject with an error keeping its name when the child fails to acquire the lock', async () => {
@@ -84,8 +88,8 @@ describe('master-lock', () => {
 
     const lockPromise = lockResources(['synthetic-id']);
     const { operation } = fakeForkedProcess.send.mock.calls[0][0];
-    const childError = { name: TYPE_LOCK_ERROR, message: 'The operation was unable to achieve a quorum during its retry window.' };
-    answerFromChild(fakeForkedProcess, { operation, type: 'lock', success: false, error: childError });
+    const childError = new ExecutionError('The operation was unable to achieve a quorum during its retry window.', []);
+    answerFromChild(fakeForkedProcess, { operation, type: 'lock', success: false, error: serializeChildLockError(childError) });
 
     const rejection = await lockPromise.catch((err: unknown) => err);
     expect(rejection).toBeInstanceOf(Error);

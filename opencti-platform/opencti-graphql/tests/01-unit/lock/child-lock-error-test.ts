@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { GraphQLError } from 'graphql';
 import { ExecutionError } from '@sesamecare-oss/redlock';
 import { DATABASE_ERROR, DatabaseError, LOCK_ERROR, LockTimeoutError, TYPE_LOCK_ERROR } from '../../../src/config/errors';
-import { type ChildLockError, rebuildChildLockError, serializeChildLockError } from '../../../src/lock/child-lock-error';
+import { captureCallerStack, type ChildLockError, rebuildChildLockError, serializeChildLockError } from '../../../src/lock/child-lock-error';
 
 // The child locking process talks to its parent over IPC with the default json serialization
 const sendOverIpc = (err: unknown): ChildLockError => JSON.parse(JSON.stringify(serializeChildLockError(err)));
@@ -57,6 +57,19 @@ describe('child lock error', () => {
 
     expect(rebuilt).toBeInstanceOf(Error);
     expect(rebuilt.message).toBe('synthetic failure');
+  });
+
+  it('should rebuild the stack from the child stack followed by the caller frames', () => {
+    const sent = LockTimeoutError({ participantIds: ['synthetic-id'] });
+    const syntheticCaller = () => captureCallerStack();
+    const callerStack = syntheticCaller();
+
+    const rebuilt = rebuildChildLockError(sendOverIpc(sent), callerStack);
+
+    expect(rebuilt.stack?.startsWith(sent.stack as string)).toBe(true);
+    expect(rebuilt.stack).toContain('--- lock operation requested by ---');
+    expect(rebuilt.stack).toContain('syntheticCaller');
+    expect(rebuilt.stack?.indexOf('syntheticCaller')).toBeGreaterThan((sent.stack as string).length);
   });
 
   it('should rebuild an error when the child sent nothing', () => {

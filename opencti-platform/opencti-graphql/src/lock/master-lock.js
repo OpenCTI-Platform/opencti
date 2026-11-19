@@ -4,7 +4,7 @@ import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { lockResource } from '../database/redis';
 import { meterManager } from '../config/tracing';
-import { rebuildChildLockError } from './child-lock-error';
+import { captureCallerStack, rebuildChildLockError } from './child-lock-error';
 
 // Global variable for the child process
 const USE_CHILD_LOCK = booleanConf('app:child_locking_process:enabled', false);
@@ -93,6 +93,7 @@ const removeAllCallbacksForOperation = (operation) => {
 
 // Unlock definition
 const childUnlockResources = async (operation) => {
+  const callerStack = captureCallerStack();
   return new Promise((resolve, reject) => {
     // Set up the unlock callback
     lockProcess.callbacks.set(`${operation}-unlock`, (msg) => {
@@ -102,7 +103,7 @@ const childUnlockResources = async (operation) => {
       if (msg.success) {
         resolve(msg);
       } else {
-        reject(rebuildChildLockError(msg.error));
+        reject(rebuildChildLockError(msg.error, callerStack));
       }
     });
     // Send the unlock operation to the child process
@@ -116,6 +117,7 @@ const childLockResources = async (ids, args = {}) => {
     throw UnsupportedError('Lock child fork not initialize');
   }
   const operation = crypto.randomUUID(); // Use crypto to fast ramdom generation
+  const callerStack = captureCallerStack();
   const controller = new AbortController();
   const { signal } = controller;
   return new Promise((resolve, reject) => {
@@ -132,7 +134,7 @@ const childLockResources = async (ids, args = {}) => {
       } else {
         // Cleanup the callback map
         removeAllCallbacksForOperation(operation);
-        reject(rebuildChildLockError(msg.error));
+        reject(rebuildChildLockError(msg.error, callerStack));
       }
     });
     // Send the lock operation to the child process
