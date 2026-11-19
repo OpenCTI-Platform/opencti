@@ -1,19 +1,24 @@
 name: OpenCTI CD Release
-run-name: OpenCTI CD Release ${{ inputs.tag }}${{ inputs.correlation_id && format(' [{0}]', inputs.correlation_id) || '' }}
+run-name: OpenCTI CD Release ${{ inputs.tag || github.ref_name }}${{ inputs.correlation_id && format(' [{0}]', inputs.correlation_id) || '' }}
 # Release pipeline for OpenCTI tags (X.Y.Z and X.Y.Z-lts.N)
 #
-# Started by the release script, or by hand, never by the tag push: the release script starts the run that
-# publishes, a build on tag push would only duplicate it.
-#
-# Publication (pycti to PyPI) requires ALL of the following, checked by the "validate" job:
-#   - the "dry_run" input explicitly unchecked
-#   - the repository variable GH_RELEASE_PUBLISH_ENABLED is set to 'true'
+# Publication (pycti to PyPI) requires the repository variable GH_RELEASE_PUBLISH_ENABLED set to 'true', and
+# is decided by the "validate" job:
+#   - on tag push: publishes. While the variable is unset, CircleCI publishes and tag pushes are dry runs.
+#   - on workflow_dispatch: publishes only with the "dry_run" input explicitly unchecked, and fails instead of
+#     falling back to a dry run when the variable is unset. On tag push the input is empty, and in GitHub
+#     expressions null == false is TRUE: the event_name checks keep the two cases apart.
 # On top of that, publication jobs run in protected environments ("pypi") that hold the credentials or
 # OIDC bindings, so dry-run jobs never get access to them.
 #
 # /!\ The release repository looks up this workflow by its name: if you rename it, update the release scripts.
 
 on:
+  push:
+    tags:
+      # GitHub filter patterns are globs, the strict format is checked by the "validate" job
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-lts.[0-9]+'
   workflow_dispatch:
     inputs:
       tag:
@@ -39,7 +44,7 @@ permissions:
 concurrency:
   # A publishing run must not queue behind a dry run of the same tag: that one waits for the connectors
   # release, which waits for pycti on PyPI, which this publishing run provides
-  group: cd-release-${{ inputs.tag }}-${{ inputs.dry_run == false && 'publish' || 'dry-run' }}
+  group: cd-release-${{ inputs.tag || github.ref_name }}-${{ ((github.event_name == 'push' && vars.GH_RELEASE_PUBLISH_ENABLED == 'true') || (github.event_name == 'workflow_dispatch' && inputs.dry_run == false)) && 'publish' || 'dry-run' }}
   cancel-in-progress: false
 
 jobs:
@@ -60,12 +65,15 @@ jobs:
       - name: Decide publication
         id: mode
         env:
+          EVENT_NAME: ${{ github.event_name }}
           DRY_RUN: ${{ inputs.dry_run }}
           PUBLISH_ENABLED: ${{ vars.GH_RELEASE_PUBLISH_ENABLED }}
         run: |
           set -euo pipefail
           PUBLISH=false
-          if [ "${DRY_RUN}" == "false" ]; then
+          if [ "${EVENT_NAME}" == "push" ]; then
+            [ "${PUBLISH_ENABLED}" == "true" ] && PUBLISH=true
+          elif [ "${DRY_RUN}" == "false" ]; then
             # Fail rather than fall back to a dry run: the caller expects a publication
             if [ "${PUBLISH_ENABLED}" != "true" ]; then
               echo "::error::dry_run is unchecked but the repository variable GH_RELEASE_PUBLISH_ENABLED is not 'true'"
@@ -78,7 +86,7 @@ jobs:
       - name: Validate tag format
         id: tag
         env:
-          TAG: ${{ inputs.tag }}
+          TAG: ${{ inputs.tag || github.ref_name }}
         run: |
           set -euo pipefail
           if [[ ! "${TAG}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-lts\.[0-9]+)?$ ]]; then
@@ -131,12 +139,32 @@ jobs:
           fi
           echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
+      - name: Check the tag is on a release branch
+        if: steps.mode.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+          COMMIT_SHA: ${{ steps.versions.outputs.commit_sha }}
+        run: |
+          set -euo pipefail
+          # The pypi environment accepts any release tag: only a commit of master or lts/* may be published
+          for BRANCH in master $(gh api --paginate "repos/${GITHUB_REPOSITORY}/branches" --jq '.[].name | select(startswith("lts/"))'); do
+            STATUS="$(gh api "repos/${GITHUB_REPOSITORY}/compare/${COMMIT_SHA}...${BRANCH}" --jq '.status')"
+            if [ "${STATUS}" == "identical" ] || [ "${STATUS}" == "ahead" ]; then
+              echo "${TAG} (${COMMIT_SHA}) is on ${BRANCH}"
+              exit 0
+            fi
+          done
+          echo "::error::${TAG} (${COMMIT_SHA}) is on neither master nor an lts/* branch: it is not published"
+          exit 1
+
       - name: Summary
         env:
           TAG: ${{ steps.tag.outputs.tag }}
           PYCTI_VERSION: ${{ steps.tag.outputs.pycti_version }}
           IS_LTS: ${{ steps.tag.outputs.is_lts }}
           COMMIT_SHA: ${{ steps.versions.outputs.commit_sha }}
+          EVENT_NAME: ${{ github.event_name }}
           PUBLISH: ${{ steps.mode.outputs.publish }}
         run: |
           MODE="🧪 dry-run (nothing will be published)"
@@ -146,6 +174,7 @@ jobs:
             echo ""
             echo "| | |"
             echo "|---|---|"
+            echo "| Trigger | \`${EVENT_NAME}\` |"
             echo "| Commit | \`${COMMIT_SHA}\` |"
             echo "| pycti version | \`${PYCTI_VERSION}\` |"
             echo "| LTS | ${IS_LTS} |"
@@ -161,7 +190,7 @@ jobs:
     name: Check PyPI credentials
     runs-on: ubuntu-26.04
     timeout-minutes: 10
-    if: inputs.check_credentials
+    if: github.event_name == 'workflow_dispatch' && inputs.check_credentials
     environment: pypi
     permissions:
       id-token: write # PyPI trusted publishing (OIDC)
@@ -362,8 +391,8 @@ jobs:
   # -----------------------
   # Docker images
   # -----------------------
-  # Local actions (./.github/actions/*) are taken from the workflow ref (the dispatched branch); they check out
-  # the validated commit themselves to build the release sources.
+  # Local actions (./.github/actions/*) are taken from the workflow ref (the tag on push, the dispatched branch
+  # on workflow_dispatch); they check out the validated commit themselves to build the release sources.
   build-builder:
     name: Build builder image
     runs-on: ubuntu-26.04
