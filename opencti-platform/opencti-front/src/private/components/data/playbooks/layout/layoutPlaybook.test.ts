@@ -117,6 +117,9 @@ const FIXTURES = [
   ...Array.from({ length: 60 }, (_, i) => ({ name: `random ${i + 1}`, ...randomPlaybook(i + 1, 5 + (i % 30)) })),
 ];
 const MODES: PlaybookLayoutMode[] = ['vertical', 'horizontal'];
+// The property tests below run the beam-search layout hundreds of times (about 4.5 s alone); under the
+// full suite's CI load that passed 15 s, so they get a wider timeout.
+const HEAVY_TIMEOUT_MS = 60000;
 
 // The chained-matcher playbook of #19969's follow-up: an entry step, then 12 sources, each a
 // Match whose out port feeds a Label/Score/Author step ending in an ingestion, and whose no-match
@@ -195,7 +198,7 @@ describe('layoutPlaybook', () => {
       }
     }));
     expect(offenders).toEqual([]);
-  });
+  }, HEAVY_TIMEOUT_MS);
 
   it('ignores saved positions in the automatic modes (a refresh never moves anything)', () => {
     const moved = REPORT_PIPELINE.nodes.map((n, i) => ({ ...n, position: { x: i * 999, y: -i * 37 } }));
@@ -218,7 +221,7 @@ describe('layoutPlaybook', () => {
       });
     }));
     expect(offenders).toEqual([]);
-  });
+  }, HEAVY_TIMEOUT_MS);
 
   it('places a node with several incoming links once, on the rank after its deepest parent', () => {
     const result = layoutPlaybook(REPORT_PIPELINE.nodes, REPORT_PIPELINE.links, COMPONENTS, { mode: 'vertical' });
