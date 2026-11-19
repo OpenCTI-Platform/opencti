@@ -1,0 +1,10 @@
+{
+  "openCTI_version": "7.261101.0",
+  "type": "playbook",
+  "configuration": {
+    "name": "malformed node filters",
+    "description": "",
+    "playbook_start": "7a1c3e5f-2b4d-4f6a-8c9e-0d1f2a3b4c5d",
+    "playbook_definition": "{\"nodes\":[{\"id\":\"7a1c3e5f-2b4d-4f6a-8c9e-0d1f2a3b4c5d\",\"name\":\"Listen knowledge events\",\"position\":{\"x\":0,\"y\":0},\"component_id\":\"PLAYBOOK_INTERNAL_DATA_STREAM\",\"configuration\":\"{\\\"create\\\":true,\\\"update\\\":true,\\\"delete\\\":false,\\\"filters\\\":\\\"{\\\\\\\"mode\\\\\\\":\\\\\\\"and\\\\\\\",\\\\\\\"filters\\\\\\\":[],\\\\\\\"filterGroups\\\\\\\":[]\\\"}\"}],\"links\":[]}"
+  }
+}

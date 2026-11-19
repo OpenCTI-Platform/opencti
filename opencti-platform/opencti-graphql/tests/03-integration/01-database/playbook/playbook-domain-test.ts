@@ -36,6 +36,13 @@ describe('playbook-domain', () => {
       await expect(playbookImport(testContext, ADMIN_USER, fileHandle)).rejects.toThrowError('Playbook node configuration is not valid JSON');
     });
 
+    it('should refuse an imported playbook whose node filters are not valid JSON', async () => {
+      const fileUrl = new URL('testData/imported-playbook-with-malformed-node-filters.json', import.meta.url);
+      const fileHandle = open(fileUrl);
+
+      await expect(playbookImport(testContext, ADMIN_USER, fileHandle)).rejects.toThrowError('Playbook node filters are not valid JSON');
+    });
+
     it('should update correctly a playbook imported with the old configuration', async () => {
       const fileUrl = new URL('testData/imported-playbook-with-old-scope.json', import.meta.url);
       const fileHandle = open(fileUrl);
@@ -94,6 +101,22 @@ describe('playbook-domain', () => {
       const sourceId = await storeDefinition('{"create":true,');
 
       await expect(playbookDuplicate(testContext, ADMIN_USER, sourceId)).rejects.toThrowError('Playbook node configuration is not valid JSON');
+    });
+
+    it('should refuse to duplicate a playbook whose node applyWithFilters is not valid JSON', async () => {
+      const sourceId = await storeDefinition(JSON.stringify({ create: true, applyWithFilters: '{"mode":"and","filters":[' }));
+
+      await expect(playbookDuplicate(testContext, ADMIN_USER, sourceId)).rejects.toThrowError('Playbook node filters are not valid JSON');
+    });
+
+    it('should duplicate a playbook whose node filters are empty or valid JSON', async () => {
+      const filters = JSON.stringify({ mode: 'and', filters: [], filterGroups: [] });
+      const sourceId = await storeDefinition(JSON.stringify({ create: true, filters, applyWithFilters: '' }));
+      const copyId = await playbookDuplicate(testContext, ADMIN_USER, sourceId);
+      playbookCreatedIds.push(copyId);
+
+      const copy = await findById(testContext, ADMIN_USER, copyId);
+      expect(JSON.parse(copy.playbook_definition).nodes).toHaveLength(1);
     });
   });
 });

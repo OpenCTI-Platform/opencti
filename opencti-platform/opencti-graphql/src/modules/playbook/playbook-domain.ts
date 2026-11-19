@@ -257,6 +257,8 @@ export const assertPlaybookDefinitionIsValid = (definition: ComponentDefinition)
   });
 };
 
+const PLAYBOOK_NODE_FILTER_FIELDS = ['filters', 'applyWithFilters'];
+
 const assertPlaybookDefinitionStringIsValid = (rawDefinition: string | null | undefined) => {
   if (!rawDefinition) {
     return;
@@ -271,15 +273,34 @@ const assertPlaybookDefinitionStringIsValid = (rawDefinition: string | null | un
   // patch) never go through assertNodeConfigurationIsComplete, so each step
   // configuration string is parsed here: a malformed one would be stored and
   // only fail when the playbook runs or the editor opens the step.
+  // The filter strings a step carries (filters, applyWithFilters) are parsed
+  // too: a step configuration can be valid JSON around a filter that is not,
+  // which the runtime and the cache only meet later. Syntax only: the keys and
+  // ids a filter names vary per platform and are adjusted after an import.
   (definition.nodes ?? []).forEach((node) => {
     if (!node?.configuration) {
       return;
     }
+    let configuration: unknown;
     try {
-      JSON.parse(node.configuration);
+      configuration = JSON.parse(node.configuration);
     } catch {
       throw FunctionalError('Playbook node configuration is not valid JSON', { node_id: node.id, component_id: node.component_id });
     }
+    if (!configuration || typeof configuration !== 'object') {
+      return;
+    }
+    PLAYBOOK_NODE_FILTER_FIELDS.forEach((field) => {
+      const value = (configuration as Record<string, unknown>)[field];
+      if (typeof value !== 'string' || value === '') {
+        return;
+      }
+      try {
+        JSON.parse(value);
+      } catch {
+        throw FunctionalError('Playbook node filters are not valid JSON', { node_id: node.id, component_id: node.component_id, field });
+      }
+    });
   });
   assertPlaybookDefinitionIsValid(definition);
 };

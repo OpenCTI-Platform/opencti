@@ -574,6 +574,28 @@ describe('Playbook resolver standard behavior', () => {
       expect(() => JSON.parse(storedNode.configuration)).not.toThrow();
     });
 
+    it('should refuse node filters that are not valid JSON through the field patch', async () => {
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      const malformed = {
+        ...playbookDef,
+        nodes: playbookDef.nodes.map((n: { id: string; configuration: string }) => (n.id === matchingNodeId
+          ? { ...n, configuration: JSON.stringify({ ...JSON.parse(n.configuration), filters: '{"mode":"and","filters":[]' }) }
+          : n)),
+      };
+      await queryAsAdminWithError(
+        {
+          query: UPDATE_PLAYBOOK,
+          variables: { id: playbookId, input: [{ key: 'playbook_definition', value: [JSON.stringify(malformed)] }] },
+        },
+        'Playbook node filters are not valid JSON',
+        FUNCTIONAL_ERROR,
+      );
+      const storedDef = await readPlaybookDefinition(playbookId);
+      const storedNode = storedDef.nodes.find((n: { id: string }) => n.id === matchingNodeId);
+      const originalNode = playbookDef.nodes.find((n: { id: string }) => n.id === matchingNodeId);
+      expect(storedNode.configuration).toEqual(originalNode.configuration);
+    });
+
     it('should accept a valid definition through the field patch', async () => {
       const playbookDef = await readPlaybookDefinition(playbookId);
       await queryAsAdminWithSuccess({
