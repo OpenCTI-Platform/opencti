@@ -241,12 +241,14 @@ describe('copyFileFromSyncReference', () => {
     expect(result?.upload.metaData.creator_id).toEqual('original-creator');
   });
 
-  it('does not delete the staged source when the copy itself fails', async () => {
+  it('throws a storage failure instead of returning null, so it is not taken for a refusal, and keeps the staged source', async () => {
+    const unlock = vi.fn();
+    vi.mocked(lockResources).mockResolvedValue({ unlock });
     vi.mocked(rawCopyFile).mockRejectedValue(new Error('S3 unavailable'));
 
-    const result = await copyFileFromSyncReference(context, user, buildCopyProps({}));
+    await expect(copyFileFromSyncReference(context, user, buildCopyProps({}))).rejects.toThrow('S3 unavailable');
 
-    expect(result).toBeNull();
+    expect(unlock).toHaveBeenCalledTimes(1);
     expect(indexFileToDocument).not.toHaveBeenCalled();
     expect(deleteFileFromStorage).not.toHaveBeenCalled();
   });
@@ -385,7 +387,7 @@ describe('copyFileFromSyncReference', () => {
     vi.mocked(deleteFileFromStorage).mockRejectedValueOnce(new Error('S3 unavailable'));
     await copyFileFromSyncReference(context, user, buildCopyProps({}));
     vi.mocked(rawCopyFile).mockRejectedValueOnce(new Error('S3 unavailable'));
-    await copyFileFromSyncReference(context, user, buildCopyProps({}));
+    await expect(copyFileFromSyncReference(context, user, buildCopyProps({}))).rejects.toThrow();
     vi.mocked(downloadFileWithoutLogging).mockResolvedValueOnce(null);
     await copyFileFromSyncReference(context, user, buildCopyProps({}));
     vi.mocked(lockResources).mockRejectedValueOnce(buildLockError());

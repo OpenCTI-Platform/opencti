@@ -664,11 +664,9 @@ export const copyFileFromSyncReference = async (
     logApp.warn('[FILE STORAGE] Rejected sync file reference copy: storage_key is already being consumed', { cause: lockErr, syncId: copyProps.syncId });
     return null;
   }
+  // A storage failure propagates like on a direct upload: only a refusal returns null
   try {
     return await copyClaimedSyncFile(context, user, validatedCopyProps);
-  } catch (err) {
-    logApp.error('[FILE STORAGE] Cannot copy referenced sync file in S3', { cause: err, syncId: copyProps.syncId, filePath: copyProps.filePath });
-    return null;
   } finally {
     await lock.unlock();
   }

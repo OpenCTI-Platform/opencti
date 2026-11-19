@@ -12,6 +12,8 @@ import { deleteFileFromStorage, downloadFileWithoutLogging, rawUpload, streamToS
 import { findById as findDocumentById } from '../../src/modules/internal/document/document-domain';
 import { SYNC_INFLIGHT_STORAGE_PATH } from '../../src/modules/internal/document/document-types';
 import { ENTITY_TYPE_SYNC } from '../../src/schema/internalObject';
+import { ENTITY_IPV4_ADDR } from '../../src/schema/stixCyberObservable';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../src/schema/stixMetaObject';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../src/schema/stixDomainObject';
 import type { FileRefInput } from '../../src/generated/graphql';
 import type { BasicStoreEntity } from '../../src/types/store';
@@ -38,6 +40,22 @@ interface ImportPushRefQueryData {
 
 interface ImportPushRefEdit {
   importPushRef: ImportedEntity | null;
+}
+
+interface ObservableAddQueryData {
+  stixCyberObservableAdd: ImportedEntity;
+}
+
+interface ExternalReferenceAddQueryData {
+  externalReferenceAdd: ImportedEntity;
+}
+
+interface ObservableImportPushRefQueryData {
+  stixCyberObservableEdit: ImportPushRefEdit;
+}
+
+interface ExternalReferenceImportPushRefQueryData {
+  externalReferenceEdit: ImportPushRefEdit;
 }
 
 interface StagedFileRef {
@@ -69,6 +87,42 @@ const IMPORT_PUSH_QUERY = gql`
 const IMPORT_PUSH_REF_QUERY = gql`
   mutation ImportPushRef($id: ID!, $fileRef: FileRefInput!) {
     stixDomainObjectEdit(id: $id) {
+      importPushRef(fileRef: $fileRef) {
+        id
+      }
+    }
+  }
+`;
+
+const OBSERVABLE_ADD_QUERY = gql`
+  mutation ObservableAdd($IPv4Addr: IPv4AddrAddInput) {
+    stixCyberObservableAdd(type: "IPv4-Addr", IPv4Addr: $IPv4Addr) {
+      id
+    }
+  }
+`;
+
+const EXTERNAL_REFERENCE_ADD_QUERY = gql`
+  mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) {
+    externalReferenceAdd(input: $input) {
+      id
+    }
+  }
+`;
+
+const OBSERVABLE_IMPORT_PUSH_REF_QUERY = gql`
+  mutation ObservableImportPushRef($id: ID!, $fileRef: FileRefInput!) {
+    stixCyberObservableEdit(id: $id) {
+      importPushRef(fileRef: $fileRef) {
+        id
+      }
+    }
+  }
+`;
+
+const EXTERNAL_REFERENCE_IMPORT_PUSH_REF_QUERY = gql`
+  mutation ExternalReferenceImportPushRef($id: ID!, $fileRef: FileRefInput!) {
+    externalReferenceEdit(id: $id) {
       importPushRef(fileRef: $fileRef) {
         id
       }
@@ -125,6 +179,8 @@ describe('importPushRef resolver', () => {
   let otherSyncId: string;
   let reportId: string;
   let fileId: string;
+  let observableId: string;
+  let externalReferenceId: string;
   const stagedKeys: string[] = [];
 
   const stage = async (stagingSyncId: string, content: string): Promise<string> => {
@@ -146,11 +202,22 @@ describe('importPushRef resolver', () => {
     });
     reportId = reportResult.data?.reportAdd.id as string;
     fileId = `import/Report/${reportId}/${FILE_NAME}`;
+    const observableResult = await queryAsAdmin<ObservableAddQueryData>({ query: OBSERVABLE_ADD_QUERY, variables: { IPv4Addr: { value: '198.51.100.42' } } });
+    observableId = observableResult.data?.stixCyberObservableAdd.id as string;
+    const externalReferenceResult = await queryAsAdmin<ExternalReferenceAddQueryData>({
+      query: EXTERNAL_REFERENCE_ADD_QUERY,
+      variables: { input: { source_name: 'import-push-ref-source', url: 'https://example.com/import-push-ref' } },
+    });
+    externalReferenceId = externalReferenceResult.data?.externalReferenceAdd.id as string;
   });
 
   afterAll(async () => {
     await deleteFile(testContext, ADMIN_USER, fileId, { forceDelete: true });
     await deleteElementById(testContext, ADMIN_USER, reportId, ENTITY_TYPE_CONTAINER_REPORT);
+    await deleteFile(testContext, ADMIN_USER, `import/${ENTITY_IPV4_ADDR}/${observableId}/${FILE_NAME}`, { forceDelete: true });
+    await deleteElementById(testContext, ADMIN_USER, observableId, ENTITY_IPV4_ADDR);
+    await deleteFile(testContext, ADMIN_USER, `import/${ENTITY_TYPE_EXTERNAL_REFERENCE}/${externalReferenceId}/${FILE_NAME}`, { forceDelete: true });
+    await deleteElementById(testContext, ADMIN_USER, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
     for (let index = 0; index < stagedKeys.length; index += 1) {
       await deleteFileFromStorage(stagedKeys[index]);
     }
@@ -226,5 +293,38 @@ describe('importPushRef resolver', () => {
     expect(JSON.stringify(pushRefResult.errors)).not.toContain(storageKey);
     expect(await readObject(storageKey)).toEqual('staged for the sync user only');
     expect(await readObject(fileId)).toEqual(SYNC_CONTENT);
+  });
+
+  it('attaches a staged file to an observable through stixCyberObservableEdit', async () => {
+    const storageKey = await stage(syncId, 'staged for an observable');
+    const fileRef = buildFileRef({ syncId, storageKey, version: '2024-01-01T00:00:00.000Z' });
+
+    const pushRefResult = await queryAsAdmin<ObservableImportPushRefQueryData>({ query: OBSERVABLE_IMPORT_PUSH_REF_QUERY, variables: { id: observableId, fileRef } });
+
+    const observableFileId = `import/${ENTITY_IPV4_ADDR}/${observableId}/${FILE_NAME}`;
+    expect(pushRefResult.errors).toBeUndefined();
+    expect(pushRefResult.data?.stixCyberObservableEdit.importPushRef?.id).toEqual(observableFileId);
+    const observable = await storeLoadById<BasicStoreEntity>(testContext, ADMIN_USER, observableId, ENTITY_IPV4_ADDR);
+    expect(observable.x_opencti_files?.map((file) => file.id)).toContain(observableFileId);
+    expect(await readObject(observableFileId)).toEqual('staged for an observable');
+    expect(await readObject(storageKey)).toBeNull();
+  });
+
+  it('attaches a staged file to an external reference through externalReferenceEdit', async () => {
+    const storageKey = await stage(syncId, 'staged for an external reference');
+    const fileRef = buildFileRef({ syncId, storageKey, version: '2024-01-01T00:00:00.000Z' });
+
+    const pushRefResult = await queryAsAdmin<ExternalReferenceImportPushRefQueryData>({
+      query: EXTERNAL_REFERENCE_IMPORT_PUSH_REF_QUERY,
+      variables: { id: externalReferenceId, fileRef },
+    });
+
+    const referenceFileId = `import/${ENTITY_TYPE_EXTERNAL_REFERENCE}/${externalReferenceId}/${FILE_NAME}`;
+    expect(pushRefResult.errors).toBeUndefined();
+    expect(pushRefResult.data?.externalReferenceEdit.importPushRef?.id).toEqual(referenceFileId);
+    const externalReference = await storeLoadById<BasicStoreEntity>(testContext, ADMIN_USER, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
+    expect(externalReference.x_opencti_files?.map((file) => file.id)).toContain(referenceFileId);
+    expect(await readObject(referenceFileId)).toEqual('staged for an external reference');
+    expect(await readObject(storageKey)).toBeNull();
   });
 });
