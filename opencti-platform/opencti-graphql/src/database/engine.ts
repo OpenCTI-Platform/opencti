@@ -1546,7 +1546,15 @@ export const elPaginate = async <T extends BasicStoreBase>(
   }
 };
 // The query builder gets the engine read functions injected, so that it never imports this module.
-const engineQueryDeps: EngineQueryDeps = { elFindByIds, elPaginate, elRawSearch, isRuntimeSortEnable, completeSpecialFilterKeys };
+const engineQueryDeps: EngineQueryDeps = {
+  elFindByIds,
+  elPaginate,
+  elRawSearch,
+  isRuntimeSortEnable,
+  // Read at call time: engine and filtering-completeSpecialFilterKeys import each other, so the binding
+  // may not be initialized yet while this module loads.
+  completeSpecialFilterKeys: (...args: Parameters<typeof completeSpecialFilterKeys>) => completeSpecialFilterKeys(...args),
+};
 const elQueryBodyBuilder = (context: AuthContext, user: AuthUser, options: QueryBodyBuilderOpts) => {
   return buildQueryBody(context, user, options, engineQueryDeps);
 };

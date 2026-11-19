@@ -1469,10 +1469,10 @@ export const isSearchingRelationships = (types: string[] | null | undefined) => 
   // Only a search restricted to objects is sure to never return relationships
   return isEmptyField(types) || !R.flatten(types as string[]).every((type) => isBasicObject(type));
 };
-// Resolve the connected elements matching the search that the user can access.
-// Relationships must not be found by searching the name or id of any other connected element.
 export type SearchRestrictions = { must: any[]; must_not: any[] };
 export type SearchConnectionsOpts = ProcessSearchArgs & BuildDraftFilterOpts & { withDraft?: boolean };
+// Resolve the connected elements matching the search that the user can access.
+// Relationships must not be found by searching the name or id of any other connected element.
 export const elResolveSearchConnectionsRestrictions = async (
   context: AuthContext,
   user: AuthUser,
