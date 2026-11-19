@@ -33,7 +33,10 @@ const NodeWorkflow = ({ id, data, isConnectable }: NodeProps) => {
   const { getNode } = useReactFlow();
   const { direction, target, source } = usePlaybookHandlePositions();
   // View mode: the card shows the step, a click opens nothing and it carries no menu.
-  const { nodeMenu, nodeOpensSettings } = usePlaybookCanvasAffordances();
+  const { nodeMenu, nodeOpensSettings, rewiring } = usePlaybookCanvasAffordances();
+  // A port connects only in edit mode: React Flow's own flag (nodesConnectable) is not enough once the
+  // mode is switched at runtime, so the edit-mode context gates every handle of the card too.
+  const canConnect = isConnectable && rewiring;
   const component = data.component;
   const accent = categoryAccent(theme, component?.category);
   const displayDescription = data.description || component?.description;
@@ -288,7 +291,7 @@ const NodeWorkflow = ({ id, data, isConnectable }: NodeProps) => {
         </Tooltip>
       )}
       {!isEntryPoint && (
-        <Handle type="target" position={target} style={{ background: accent, border: 'none' }} />
+        <Handle type="target" position={target} isConnectable={canConnect} style={{ background: accent, border: 'none' }} />
       )}
       {ports.map((port, index) => {
         const anchor = portAnchor(index, ports.length, direction);
@@ -308,7 +311,7 @@ const NodeWorkflow = ({ id, data, isConnectable }: NodeProps) => {
               accent={accent}
               textColor={theme.palette.text?.primary}
               background={theme.palette.background.default}
-              isConnectable={isConnectable}
+              isConnectable={canConnect}
               opensSettings={nodeOpensSettings}
               onOpen={openConfiguration}
             />
@@ -321,6 +324,7 @@ const NodeWorkflow = ({ id, data, isConnectable }: NodeProps) => {
             type="source"
             position={source}
             title={portName}
+            isConnectable={canConnect}
             style={{ ...(direction === 'horizontal' ? { top: anchor.y } : { left: anchor.x }), background: accent, border: 'none' }}
           />
         );

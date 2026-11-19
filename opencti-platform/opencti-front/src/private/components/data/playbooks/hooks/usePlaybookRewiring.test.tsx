@@ -42,11 +42,12 @@ interface Probe {
   // What React Flow does when a connection is drawn on the canvas: the connection is added to its
   // edges (defaultEdges), then onConnect is called.
   draw: (connection: Connection) => void;
+  update: (oldEdge: Edge, connection: Connection) => void;
   history: () => PlaybookHistory;
   edges: () => Edge[];
 }
 
-const Rewiring = forwardRef<Probe>((_, ref) => {
+const Rewiring = forwardRef<Probe, { canEdit?: boolean }>(({ canEdit = true }, ref) => {
   const { getNodes, getEdges, setEdges } = useReactFlow();
   const historyRef = useRef<PlaybookHistory>(emptyHistory());
   // The recorder the editor gives the hook: the real canvas snapshot and the real history.
@@ -56,12 +57,13 @@ const Rewiring = forwardRef<Probe>((_, ref) => {
       historyRef.current = recordOperation(historyRef.current, op, before, outPortsOf, result);
     },
   }));
-  const { onConnect } = usePlaybookRewiring('playbook', vi.fn(), vi.fn(), vi.fn(), recorder);
+  const { onConnect, onEdgeUpdate } = usePlaybookRewiring('playbook', vi.fn(), vi.fn(), vi.fn(), recorder, canEdit);
   useImperativeHandle(ref, () => ({
     draw: (connection: Connection) => {
       setEdges(addEdge(connection, getEdges()));
       onConnect(connection);
     },
+    update: (oldEdge: Edge, connection: Connection) => onEdgeUpdate(oldEdge, connection),
     history: () => historyRef.current,
     edges: () => getEdges(),
   }));
@@ -69,16 +71,23 @@ const Rewiring = forwardRef<Probe>((_, ref) => {
 });
 Rewiring.displayName = 'Rewiring';
 
-const renderCanvas = () => {
+const canvas = (probe: React.RefObject<Probe | null>, canEdit: boolean) => (
+  <div style={{ width: 800, height: 600 }}>
+    <ReactFlow defaultNodes={NODES} defaultEdges={EDGES}>
+      <Rewiring ref={probe} canEdit={canEdit} />
+    </ReactFlow>
+  </div>
+);
+
+const renderCanvas = (canEdit = true) => {
   const probe = React.createRef<Probe>();
-  render(
-    <div style={{ width: 800, height: 600 }}>
-      <ReactFlow defaultNodes={NODES} defaultEdges={EDGES}>
-        <Rewiring ref={probe} />
-      </ReactFlow>
-    </div>,
-  );
-  return probe;
+  const { rerender } = render(canvas(probe, canEdit));
+  return {
+    get current() {
+      return probe.current;
+    },
+    switchMode: (next: boolean) => rerender(canvas(probe, next)),
+  };
 };
 
 // The server accepts the move and answers the id of the new link.
@@ -122,5 +131,31 @@ describe('a step moved by drawing a connection', () => {
     act(() => probe.current?.draw({ source: 'b', sourceHandle: 'out', target: 'a', targetHandle: null }));
     expect(commitMutation).not.toHaveBeenCalled();
     expect(probe.current!.edges().some((e) => e.id.startsWith('reactflow__edge-'))).toBe(false);
+  });
+});
+
+describe('view mode', () => {
+  afterEach(() => commitMutation.mockReset());
+
+  it('saves nothing when a connection is drawn after switching from edit to view mode', () => {
+    serverMoves('l9');
+    const probe = renderCanvas(true);
+    act(() => probe.switchMode(false));
+    act(() => probe.current?.draw({ source: 'b', sourceHandle: 'out', target: 'c', targetHandle: null }));
+    act(() => probe.current?.update(EDGES[2], { source: 'a', sourceHandle: 'no-match', target: 'b', targetHandle: null }));
+    expect(commitMutation).not.toHaveBeenCalled();
+    expect(probe.current!.history().past).toHaveLength(0);
+    const ids = probe.current!.edges().filter((e) => e.type !== 'placeholder').map((e) => e.id).sort();
+    expect(ids).toEqual(['l1', 'l2', 'l3']);
+  });
+
+  it('saves nothing when view mode is the landing mode, and saves again back in edit mode', () => {
+    serverMoves('l9');
+    const probe = renderCanvas(false);
+    act(() => probe.current?.draw({ source: 'b', sourceHandle: 'out', target: 'c', targetHandle: null }));
+    expect(commitMutation).not.toHaveBeenCalled();
+    act(() => probe.switchMode(true));
+    act(() => probe.current?.draw({ source: 'b', sourceHandle: 'out', target: 'c', targetHandle: null }));
+    expect(commitMutation).toHaveBeenCalledTimes(1);
   });
 });

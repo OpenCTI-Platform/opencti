@@ -221,6 +221,7 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook, canEdit, running }
     setSelectedEdge,
     setSelectedNode,
     historyRecorder,
+    canEdit,
   );
   // Undo / redo of the session (Ctrl/Cmd+Z, Shift+Ctrl/Cmd+Z), through inverse operations.
   const history = usePlaybookHistory(
@@ -289,8 +290,8 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook, canEdit, running }
             {...playbookFlowKeyboardProps}
             nodesConnectable={canEdit}
             edgesUpdatable={canEdit}
-            onConnect={canEdit ? onConnect : undefined}
-            onEdgeUpdate={canEdit ? onEdgeUpdate : undefined}
+            onConnect={onConnect}
+            onEdgeUpdate={onEdgeUpdate}
             zoomOnDoubleClick={false}
             onMoveStart={onMoveStart}
             proOptions={proOptions}

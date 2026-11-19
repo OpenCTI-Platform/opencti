@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Connection, Edge, useReactFlow } from 'reactflow';
 import { graphql } from 'react-relay';
 import { commitMutation, MESSAGING$ } from '../../../../../relay/environment';
@@ -25,15 +25,22 @@ export const usePlaybookRewiringMoveNodeMutation = graphql`
 // Drag a link end to another step, or draw a connection from an out port to a step: one write
 // (playbookRelink or playbookMoveNode), nothing deleted. A drop the plan refuses (a cycle, a step
 // left without a parent, the entry point as a target) does nothing and says why.
+// The handlers stay the same functions whatever the mode: React Flow 11 keeps the last handler it was
+// given when the prop turns undefined, so view mode is enforced here (canEdit read at call time).
 const usePlaybookRewiring = (
   playbookId: string,
   setAction: SetPlaybookAction,
   setSelectedEdge: SetSelectedPlaybookEdge,
   setSelectedNode: SetSelectedPlaybookNode,
   history?: PlaybookHistoryRecorder,
+  canEdit = true,
 ) => {
   const { t_i18n } = useFormatter();
   const { getNodes, getEdges, setNodes, setEdges } = useReactFlow();
+  const canEditRef = useRef(canEdit);
+  useEffect(() => {
+    canEditRef.current = canEdit;
+  }, [canEdit]);
 
   const apply = useCallback((rewire: PlaybookRewire, newLinkId: string) => {
     const nodes = getNodes() as PlaybookNode[];
@@ -101,10 +108,13 @@ const usePlaybookRewiring = (
     // hence an undo) and a refused connection leaves nothing on the canvas.
     const edges = getEdges();
     if (edges.some(isDrawnConnection)) setEdges(withoutDrawnConnections(edges));
+    // View mode: nothing is saved, whether it is the landing mode or reached with the switch.
+    if (!canEditRef.current) return;
     commit(planConnect(getNodes(), getEdges(), connection));
   }, [commit, getNodes, getEdges, setEdges]);
 
   const onEdgeUpdate = useCallback((oldEdge: Edge, connection: Connection) => {
+    if (!canEditRef.current) return;
     commit(planEdgeUpdate(getNodes(), getEdges(), oldEdge, connection));
   }, [commit, getNodes, getEdges]);
 
