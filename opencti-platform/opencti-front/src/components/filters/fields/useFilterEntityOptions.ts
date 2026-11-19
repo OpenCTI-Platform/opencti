@@ -103,7 +103,8 @@ const useFilterEntityOptions = ({
     ? getVariableOptions(variables, valueFilterDefinition, { isSubTypeOf })
     : [];
 
-  const entitiesOptionsFromSearch = getOptionsFromEntities(entities, searchScope, searchKey);
+  const inputValue = autocompleteInputValues[searchKey] || '';
+  const entitiesOptionsFromSearch = getOptionsFromEntities(entities, searchScope, searchKey, inputValue);
   const allOptions: FilterOptionValue[] = [
     ...variableOptions,
     ...(shouldAddSelfId
@@ -134,7 +135,7 @@ const useFilterEntityOptions = ({
     searchKey,
     options,
     selectedOptions,
-    inputValue: autocompleteInputValues[searchKey] || '',
+    inputValue,
     setInputValue,
     triggerSearch,
     searchScope,

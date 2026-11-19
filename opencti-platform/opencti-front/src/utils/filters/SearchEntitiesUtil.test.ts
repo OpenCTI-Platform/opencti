@@ -1,0 +1,95 @@
+import { describe, expect, it } from 'vitest';
+import type { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
+import { getOptionsFromEntities } from './SearchEntitiesUtil';
+import { ME_FILTER_VALUE } from './filtersUtils';
+
+const entity = (label: string, type: string, value = `${type}--${label}`): FilterOptionValue => ({
+  label,
+  value,
+  type,
+  parentTypes: ['Stix-Domain-Object'],
+});
+
+const labels = (options: FilterOptionValue[]) => options.map((o) => o.label);
+
+describe('getOptionsFromEntities', () => {
+  describe('when nothing is typed', () => {
+    it('orders the groups then the labels alphabetically', () => {
+      const entities = {
+        id: [entity('Zeus', 'Malware'), entity('APT28', 'Intrusion-Set'), entity('Agent Tesla', 'Malware')],
+      };
+      const expected = ['APT28', 'Agent Tesla', 'Zeus'];
+      expect(labels(getOptionsFromEntities(entities, {}, 'id'))).toEqual(expected);
+      expect(labels(getOptionsFromEntities(entities, {}, 'id', ''))).toEqual(expected);
+      expect(labels(getOptionsFromEntities(entities, {}, 'id', '   '))).toEqual(expected);
+    });
+
+    it('keeps "No label" and the dynamic @me user at the top', () => {
+      const labelEntities = {
+        objectLabel: [
+          { label: 'malicious', value: 'l1', type: 'Label' },
+          { label: 'No label', value: null, type: 'Label' },
+          { label: 'abuse', value: 'l2', type: 'Label' },
+        ] as FilterOptionValue[],
+      };
+      expect(labels(getOptionsFromEntities(labelEntities, {}, 'objectLabel'))).toEqual(['No label', 'abuse', 'malicious']);
+
+      const userEntities = {
+        creator_id: [
+          { label: 'Admin', value: 'u1', type: 'User', group: 'User' },
+          { label: 'me', value: ME_FILTER_VALUE, type: 'User', group: 'User' },
+        ] as FilterOptionValue[],
+      };
+      expect(labels(getOptionsFromEntities(userEntities, {}, 'creator_id'))).toEqual(['me', 'Admin']);
+    });
+  });
+
+  describe('when a term is typed', () => {
+    it('keeps the order of the search within a group', () => {
+      const entities = {
+        id: [entity('Lazarus', 'Malware'), entity('Black Lazarus loader', 'Malware'), entity('Alazarusoft', 'Malware')],
+      };
+      expect(labels(getOptionsFromEntities(entities, {}, 'id', 'lazarus'))).toEqual(['Lazarus', 'Black Lazarus loader', 'Alazarusoft']);
+    });
+
+    it('groups the entities by type, in the order of the first entity of each group', () => {
+      const entities = {
+        id: [
+          entity('APT', 'Intrusion-Set'),
+          entity('Mimikatz usage by APT groups', 'Attack-Pattern'),
+          entity('APT28', 'Intrusion-Set'),
+          entity('Captain', 'Attack-Pattern'),
+        ],
+      };
+      const options = getOptionsFromEntities(entities, {}, 'id', 'apt');
+      expect(labels(options)).toEqual(['APT', 'APT28', 'Mimikatz usage by APT groups', 'Captain']);
+      expect(options.map((o) => o.group)).toEqual(['Intrusion-Set', 'Intrusion-Set', 'Attack-Pattern', 'Attack-Pattern']);
+    });
+
+    it('keeps "No label" and the dynamic @me user at the top', () => {
+      const labelEntities = {
+        objectLabel: [
+          { label: 'malicious', value: 'l1', type: 'Label' },
+          { label: 'No label', value: null, type: 'Label' },
+          { label: 'mal', value: 'l2', type: 'Label' },
+        ] as FilterOptionValue[],
+      };
+      expect(labels(getOptionsFromEntities(labelEntities, {}, 'objectLabel', 'mal'))).toEqual(['No label', 'malicious', 'mal']);
+
+      const userEntities = {
+        creator_id: [
+          { label: 'Admin', value: 'u1', type: 'User', group: 'User' },
+          { label: 'me', value: ME_FILTER_VALUE, type: 'User', group: 'User' },
+        ] as FilterOptionValue[],
+      };
+      expect(labels(getOptionsFromEntities(userEntities, {}, 'creator_id', 'admin'))).toEqual(['me', 'Admin']);
+    });
+  });
+
+  it('only keeps the entities of the search scope', () => {
+    const entities = {
+      id: [entity('Zeus', 'Malware'), entity('APT28', 'Intrusion-Set')],
+    };
+    expect(labels(getOptionsFromEntities(entities, { id: ['Malware'] }, 'id'))).toEqual(['Zeus']);
+  });
+});

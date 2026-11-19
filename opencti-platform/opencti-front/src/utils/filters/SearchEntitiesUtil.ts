@@ -1,10 +1,25 @@
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import { isStixObjectTypes, ME_FILTER_VALUE } from './filtersUtils';
 
+// "No label" and the dynamic @me user stay at the top of the list, whatever is typed
+const pinnedRank = (option: FilterOptionValue) => {
+  if (!option.value) return 0;
+  if (option.value === ME_FILTER_VALUE) return 1;
+  return 2;
+};
+
+/**
+ * Options of the entities found by the search, "No label" and the dynamic @me user first.
+ * When a term is typed, the options keep the order the search returned them in: the most relevant first, as the search
+ * engine ranks its results by score. Options of the same group are kept together, as an autocomplete only groups
+ * consecutive options, and the groups come in the order of their first option, so the group of the most relevant
+ * entity comes first. When nothing is typed, there is no relevance to keep: groups then labels are alphabetical.
+ */
 export const getOptionsFromEntities = (
   entities: Record<string, FilterOptionValue[]>,
   searchScope: Record<string, string[]>,
   filterKey: string,
+  searchTerm = '',
 ): FilterOptionValue[] => {
   let filteredOptions: FilterOptionValue[] = [];
   if (isStixObjectTypes.includes(filterKey)) {
@@ -17,30 +32,18 @@ export const getOptionsFromEntities = (
   } else if (entities[filterKey]) {
     filteredOptions = entities[filterKey];
   }
-  return filteredOptions.map((f) => {
-    if (f.group) {
-      return f;
-    }
-    if (f.parentTypes) {
-      // In case of entity we group by type
-      return { ...f, group: f.type };
-    }
-    return f;
-  })
-    .sort((a, b) => {
-      // In case value is null, for "no label" case we want it at the top of the list
-      if (!b.value) {
-        return 1;
-      }
-      // In case value is dynamic @me filter, for user id filter we want it at the top of the list
-      if (a.value === ME_FILTER_VALUE) {
-        return -1;
-      }
-      // order by group
-      if (a.group && b.group && a.group !== b.group) {
-        return a.group.localeCompare(b.group);
-      }
-      // order by label
-      return a.label.localeCompare(b.label);
-    });
+  // In case of entity we group by type
+  const options = filteredOptions.map((f) => (!f.group && f.parentTypes ? { ...f, group: f.type } : f));
+  if (!searchTerm.trim()) {
+    return options.sort((a, b) => pinnedRank(a) - pinnedRank(b)
+      || (a.group ?? '').localeCompare(b.group ?? '')
+      || (a.label ?? '').localeCompare(b.label ?? ''));
+  }
+  const groupOrder = new Map<string, number>();
+  options.forEach(({ group }) => {
+    if (!groupOrder.has(group ?? '')) groupOrder.set(group ?? '', groupOrder.size);
+  });
+  // The sort is stable: within a group, the options keep the order of the search
+  return options.sort((a, b) => pinnedRank(a) - pinnedRank(b)
+    || (groupOrder.get(a.group ?? '') ?? 0) - (groupOrder.get(b.group ?? '') ?? 0));
 };
