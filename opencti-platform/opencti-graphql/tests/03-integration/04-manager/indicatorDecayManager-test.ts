@@ -1,5 +1,6 @@
-import { describe, it, vi, expect } from 'vitest';
+import { afterAll, describe, it, vi, expect } from 'vitest';
 import { indicatorDecayHandler } from '../../../src/manager/indicatorDecayManager';
+import * as indicatorDomain from '../../../src/modules/indicator/indicator-domain';
 import type { BasicStoreEntityIndicator } from '../../../src/modules/indicator/indicator-types';
 import { logApp } from '../../../src/config/conf';
 
@@ -11,21 +12,21 @@ const getMockIndicator = () => {
   return indicator as BasicStoreEntityIndicator;
 };
 indicatorList.push(getMockIndicator());
-vi.mock('../../../src/modules/indicator/indicator-domain', () => {
-  return {
-    findIndicatorsForDecay: vi.fn()
-      .mockImplementation(() => {
-        return indicatorList;
-      }),
-    updateIndicatorDecayScore: vi.fn()
-      .mockImplementationOnce(() => { /* Do nothing */ })
-      .mockImplementationOnce(() => {
-        throw new Error('Second time test is throwing error');
-      }),
-  };
-});
+// Spied, not mocked: the test setup registers the module descriptors, the indicator one with this manager, so the
+// manager and the domain it imports are already evaluated in the worker every test file shares
+const findIndicatorsForDecaySpy = vi.spyOn(indicatorDomain, 'findIndicatorsForDecay').mockResolvedValue(indicatorList);
+const updateIndicatorDecayScoreSpy = vi.spyOn(indicatorDomain, 'updateIndicatorDecayScore')
+  .mockImplementationOnce(async () => null)
+  .mockImplementationOnce(async () => {
+    throw new Error('Second time test is throwing error');
+  });
 
 describe('Testing indicatorDecayManager', () => {
+  afterAll(() => {
+    findIndicatorsForDecaySpy.mockRestore();
+    updateIndicatorDecayScoreSpy.mockRestore();
+  });
+
   it('should process indicator that requires decay.', async () => {
     const logAppErrorSpy = vi.spyOn(logApp, 'error');
     const logAppWarnSpy = vi.spyOn(logApp, 'warn');
