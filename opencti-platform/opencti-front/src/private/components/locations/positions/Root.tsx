@@ -10,7 +10,7 @@ import StixCoreRelationshipCreationFromEntityHeader from '@components/common/sti
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Position from './Position';
-import PositionKnowledge from './PositionKnowledge';
+import PositionKnowledge, { POSITION_OBSERVABLES_RELATIONSHIP_TYPES } from './PositionKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
@@ -45,7 +45,7 @@ const subscription = graphql`
 `;
 
 const positionQuery = graphql`
-  query RootPositionQuery($id: String!) {
+  query RootPositionQuery($id: String!, $observablesRelationshipTypes: [String!]) {
     position(id: $id) {
       id
       draftVersion {
@@ -57,7 +57,7 @@ const positionQuery = graphql`
       x_opencti_aliases
       currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
-      ...StixCoreObjectKnowledgeBar_stixCoreObject
+      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(observablesRelationshipTypes: $observablesRelationshipTypes)
       ...Position_position
       ...PositionKnowledge_position
       ...FileImportViewer_entity
@@ -128,6 +128,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
                     'observables',
                   ]}
                   data={position}
+                  observablesRelationshipTypes={POSITION_OBSERVABLES_RELATIONSHIP_TYPES}
                 />
               )}
             />
@@ -225,6 +226,7 @@ const Root = () => {
   const { positionId } = useParams() as { positionId: string };
   const queryRef = useQueryLoading<RootPositionQuery>(positionQuery, {
     id: positionId,
+    observablesRelationshipTypes: POSITION_OBSERVABLES_RELATIONSHIP_TYPES,
   });
 
   return (

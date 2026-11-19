@@ -8,7 +8,7 @@ import CreateRelationshipContextProvider from '@components/common/stix_core_rela
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Channel from './Channel';
-import ChannelKnowledge from './ChannelKnowledge';
+import ChannelKnowledge, { CHANNEL_OBSERVABLES_RELATIONSHIP_TYPES } from './ChannelKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
@@ -44,7 +44,7 @@ const subscription = graphql`
 `;
 
 const channelQuery = graphql`
-  query RootChannelQuery($id: String!) {
+  query RootChannelQuery($id: String!, $observablesRelationshipTypes: [String!]) {
     channel(id: $id) {
       id
       draftVersion {
@@ -58,7 +58,7 @@ const channelQuery = graphql`
       x_opencti_graph_data
       currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
-      ...StixCoreObjectKnowledgeBar_stixCoreObject
+      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(observablesRelationshipTypes: $observablesRelationshipTypes)
       ...Channel_channel
       ...ChannelKnowledge_channel
       ...FileImportViewer_entity
@@ -128,6 +128,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
                     'channels',
                   ]}
                   data={channel}
+                  observablesRelationshipTypes={CHANNEL_OBSERVABLES_RELATIONSHIP_TYPES}
                 />
               )}
             />
@@ -213,6 +214,7 @@ const Root = () => {
   const { channelId } = useParams() as { channelId: string };
   const queryRef = useQueryLoading<RootChannelQuery>(channelQuery, {
     id: channelId,
+    observablesRelationshipTypes: CHANNEL_OBSERVABLES_RELATIONSHIP_TYPES,
   });
 
   return (

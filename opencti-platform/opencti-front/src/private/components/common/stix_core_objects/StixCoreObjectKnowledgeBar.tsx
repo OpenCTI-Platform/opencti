@@ -25,6 +25,7 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
   fragment StixCoreObjectKnowledgeBar_stixCoreObject on StixCoreObject
   @argumentDefinitions(
     relatedRelationshipTypes: { type: "[String]", defaultValue: ["related-to"] }
+    observablesRelationshipTypes: { type: "[String]", defaultValue: ["related-to"] }
   ) {
     id
     # distribution of entities without "related to" relationship
@@ -63,10 +64,13 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
       label
       value
     }
-    # distribution for observable and indicator type
-    stixCoreObjectsDistribution(
-      field: "entity_type",
-      operation: count,
+    # distribution for observables, restricted to the relationship types the Observables list view shows (#19499)
+    # Uses stixCoreRelationshipsDistribution rather than stixCoreObjectsDistribution, which also matches
+    # every denormalized ref (created-by included) and so counted observables the entity only authored.
+    observablesDistribution: stixCoreRelationshipsDistribution(
+      field: "entity_type"
+      operation: count
+      relationship_type: $observablesRelationshipTypes
     ) {
       label
       value
@@ -88,16 +92,23 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
 `;
 
 const stixCoreObjectKnowledgeBarRefreshQuery = graphql`
-  query StixCoreObjectKnowledgeBarRefreshQuery($id: String!, $relatedRelationshipTypes: [String!]) {
+  query StixCoreObjectKnowledgeBarRefreshQuery(
+    $id: String!
+    $relatedRelationshipTypes: [String!]
+    $observablesRelationshipTypes: [String!]
+  ) {
     stixCoreObject(id: $id) {
-      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(relatedRelationshipTypes: $relatedRelationshipTypes)
+      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(
+        relatedRelationshipTypes: $relatedRelationshipTypes
+        observablesRelationshipTypes: $observablesRelationshipTypes
+      )
     }
   }
 `;
 
 type ObjectsDistribution = StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsWithoutRelatedToDistribution']
   | StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsRelatedDistribution']
-  | StixCoreObjectKnowledgeBar_stixCoreObject$data['stixCoreObjectsDistribution']
+  | StixCoreObjectKnowledgeBar_stixCoreObject$data['observablesDistribution']
   | StixCoreObjectKnowledgeBar_stixCoreObject$data['indicatorsDistribution'];
 
 interface StixCoreObjectKnowledgeBarProps {
@@ -106,6 +117,9 @@ interface StixCoreObjectKnowledgeBarProps {
   data: StixCoreObjectKnowledgeBar_stixCoreObject$key;
   attribution?: string[];
   relatedRelationshipTypes?: string[];
+  // Must match the relationshipTypes of the entity's Observables view and the
+  // observablesRelationshipTypes argument its root query passes to the fragment
+  observablesRelationshipTypes?: string[];
 }
 
 interface SectionConfig {
@@ -148,6 +162,7 @@ const StixCoreObjectKnowledgeBar = ({
   data,
   attribution,
   relatedRelationshipTypes,
+  observablesRelationshipTypes,
 }: StixCoreObjectKnowledgeBarProps) => {
   const theme = useTheme<Theme>();
   const draftContext = useDraftContext();
@@ -158,7 +173,7 @@ const StixCoreObjectKnowledgeBar = ({
     id,
     relationshipsWithoutRelatedToDistribution,
     relationshipsRelatedDistribution,
-    stixCoreObjectsDistribution,
+    observablesDistribution,
     indicatorsDistribution,
   } = useFragment(stixCoreObjectKnowledgeBarFragment, data);
 
@@ -167,7 +182,11 @@ const StixCoreObjectKnowledgeBar = ({
       fetchQuery<StixCoreObjectKnowledgeBarRefreshQuery>(
         environment,
         stixCoreObjectKnowledgeBarRefreshQuery,
-        { id, relatedRelationshipTypes: relatedRelationshipTypes ?? ['related-to'] },
+        {
+          id,
+          relatedRelationshipTypes: relatedRelationshipTypes ?? ['related-to'],
+          observablesRelationshipTypes: observablesRelationshipTypes ?? ['related-to'],
+        },
         { fetchPolicy: 'network-only' },
       ).subscribe({
         error: (error: unknown) => console.error('Knowledge bar refresh failed', error),
@@ -175,7 +194,7 @@ const StixCoreObjectKnowledgeBar = ({
     };
     window.addEventListener(KnowledgeBarRefreshEvent, onKnowledgeBarRefresh);
     return () => window.removeEventListener(KnowledgeBarRefreshEvent, onKnowledgeBarRefresh);
-  }, [id, relatedRelationshipTypes]);
+  }, [id, relatedRelationshipTypes, observablesRelationshipTypes]);
 
   const indexEntities = (distribution: ObjectsDistribution): Record<string, number> => (
     distribution?.reduce((acc, item) => ({
@@ -187,7 +206,7 @@ const StixCoreObjectKnowledgeBar = ({
   const distributions = {
     withoutRelated: indexEntities(relationshipsWithoutRelatedToDistribution),
     related: indexEntities(relationshipsRelatedDistribution),
-    coreObjects: indexEntities(stixCoreObjectsDistribution),
+    observables: indexEntities(observablesDistribution),
     indicators: indexEntities(indicatorsDistribution),
   };
 
@@ -386,7 +405,7 @@ const StixCoreObjectKnowledgeBar = ({
           label: 'Observables',
           iconType: 'Stix-Cyber-Observable',
           path: 'observables',
-          count: sumEntitiesByKeys(distributions.coreObjects, [...schema.scos.map((s) => s.id), 'Stixfile', 'Ipv4-Addr', 'Ipv6-Addr']),
+          count: sumEntitiesByKeys(distributions.observables, [...schema.scos.map((s) => s.id), 'Stixfile', 'Ipv4-Addr', 'Ipv6-Addr']),
         },
         {
           label: 'Infrastructures',

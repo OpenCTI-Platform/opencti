@@ -8,7 +8,7 @@ import AIInsights from '@components/common/ai/AIInsights';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import Region from './Region';
-import RegionKnowledge from './RegionKnowledge';
+import RegionKnowledge, { REGION_OBSERVABLES_RELATIONSHIP_TYPES } from './RegionKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
@@ -47,7 +47,7 @@ const subscription = graphql`
 `;
 
 const regionQuery = graphql`
-  query RootRegionQuery($id: String!) {
+  query RootRegionQuery($id: String!, $observablesRelationshipTypes: [String!]) {
     region(id: $id) {
       id
       entity_type
@@ -60,7 +60,7 @@ const regionQuery = graphql`
       x_opencti_graph_data
       currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
-      ...StixCoreObjectKnowledgeBar_stixCoreObject
+      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(observablesRelationshipTypes: $observablesRelationshipTypes)
       ...Region_region
       ...RegionKnowledge_region
       ...FileImportViewer_entity
@@ -130,6 +130,7 @@ const RootRegionComponent = ({ queryRef, regionId }: RootRegionComponentProps) =
                     'observables',
                   ]}
                   data={region}
+                  observablesRelationshipTypes={REGION_OBSERVABLES_RELATIONSHIP_TYPES}
                 />
               )}
             />
@@ -218,6 +219,7 @@ const RootRegion = () => {
   const { regionId } = useParams() as { regionId: string };
   const queryRef = useQueryLoading<RootRegionQuery>(regionQuery, {
     id: regionId,
+    observablesRelationshipTypes: REGION_OBSERVABLES_RELATIONSHIP_TYPES,
   });
   return (
     <>

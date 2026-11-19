@@ -8,7 +8,7 @@ import StixCoreRelationshipCreationFromEntityHeader from '@components/common/sti
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Vulnerability from './Vulnerability';
-import VulnerabilityKnowledge from './VulnerabilityKnowledge';
+import VulnerabilityKnowledge, { VULNERABILITY_OBSERVABLES_RELATIONSHIP_TYPES } from './VulnerabilityKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
@@ -44,7 +44,7 @@ const subscription = graphql`
 `;
 
 const vulnerabilityQuery = graphql`
-  query RootVulnerabilityQuery($id: String!) {
+  query RootVulnerabilityQuery($id: String!, $observablesRelationshipTypes: [String!]) {
     vulnerability(id: $id) {
       id
       draftVersion {
@@ -58,7 +58,7 @@ const vulnerabilityQuery = graphql`
       x_opencti_graph_data
       currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
-      ...StixCoreObjectKnowledgeBar_stixCoreObject
+      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(observablesRelationshipTypes: $observablesRelationshipTypes)
       ...Vulnerability_vulnerability
       ...VulnerabilityKnowledge_vulnerability
       ...FileImportViewer_entity
@@ -128,6 +128,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
                     'infrastructures',
                   ]}
                   data={vulnerability}
+                  observablesRelationshipTypes={VULNERABILITY_OBSERVABLES_RELATIONSHIP_TYPES}
                 />
               )}
             />
@@ -217,6 +218,7 @@ const Root = () => {
   const { vulnerabilityId } = useParams() as { vulnerabilityId: string };
   const queryRef = useQueryLoading<RootVulnerabilityQuery>(vulnerabilityQuery, {
     id: vulnerabilityId,
+    observablesRelationshipTypes: VULNERABILITY_OBSERVABLES_RELATIONSHIP_TYPES,
   });
 
   return (
