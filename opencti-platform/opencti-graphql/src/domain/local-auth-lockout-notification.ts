@@ -7,6 +7,7 @@ import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache'
 import { LOCKED_USER_EMAIL_TEMPLATE_INPUT } from '../database/locked-user-email-template-input';
 import type { LocalAuthLockType } from '../database/redis';
 import { isNotEmptyField } from '../database/utils';
+import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { LocalAuthLockoutFinalAction } from '../generated/graphql';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { findLockedUserEmailTemplate } from '../modules/emailTemplate/emailTemplate-domain';
@@ -65,8 +66,13 @@ export const loadLocalAuthLockRecipients = async (context: AuthContext, lockedUs
 };
 
 // The built-in template, as the administrators edited it. Once deleted, the email still goes with its default content
-// until the next startup creates it again: a security alert must never be lost silently
-export const loadLocalAuthLockEmailTemplate = async (context: AuthContext): Promise<EmailTemplateContent> => {
+// until the next startup creates it again: a security alert must never be lost silently.
+// The email templates are an Enterprise Edition feature: on CE, the default content, even when the template was edited
+// before the platform went back to CE, as its administrators can no longer see nor edit it
+export const loadLocalAuthLockEmailTemplate = async (context: AuthContext, settings: BasicStoreSettings): Promise<EmailTemplateContent> => {
+  if (!isEnterpriseEditionFromSettings(settings)) {
+    return LOCKED_USER_EMAIL_TEMPLATE_INPUT;
+  }
   const template = await findLockedUserEmailTemplate(context);
   if (template) {
     return template;
@@ -118,9 +124,9 @@ export const sendLocalAuthLockEmails = async (context: AuthContext, lockedUser: 
     return;
   }
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const template = await loadLocalAuthLockEmailTemplate(context);
+  const template = await loadLocalAuthLockEmailTemplate(context, settings);
   const lockedUserData = buildLocalAuthLockEmailData(lockedUser, lock);
-  let errorsCount = 0;
+  const failedRecipientIds: string[] = [];
   let firstError: unknown;
   for (const recipient of recipients) {
     try {
@@ -128,15 +134,16 @@ export const sendLocalAuthLockEmails = async (context: AuthContext, lockedUser: 
       const organizations = recipient.organizations as BasicStoreEntityOrganization[];
       await sendEmailTemplateToRecipient(template, { ...recipient, organizations }, { platformUrl: settings.platform_url, category: 'local-auth-lock', lockedUserData });
     } catch (error) {
-      errorsCount += 1;
+      failedRecipientIds.push(recipient.id);
       firstError ??= error;
     }
   }
-  if (errorsCount > 0) {
+  if (failedRecipientIds.length > 0) {
     logApp.warn('Local authentication lockout: the email of a lock cannot be sent to some administrators', {
       cause: firstError,
       locked_user_id: lockedUser.id,
-      errors_count: errorsCount,
+      failed_recipient_ids: failedRecipientIds,
+      errors_count: failedRecipientIds.length,
       total_count: recipients.length,
     });
   }

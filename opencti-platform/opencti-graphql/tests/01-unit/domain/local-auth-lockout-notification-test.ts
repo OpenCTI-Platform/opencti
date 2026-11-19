@@ -143,22 +143,32 @@ describe('Local authentication lockout - loading the recipients of the lock emai
 
 describe('Local authentication lockout - template of the lock email', () => {
   const context = {} as AuthContext;
+  const EE_SETTINGS = { valid_enterprise_edition: true } as BasicStoreSettings;
+  const CE_SETTINGS = { valid_enterprise_edition: false } as BasicStoreSettings;
+  const editedTemplate = { ...LOCKED_USER_EMAIL_TEMPLATE_INPUT, email_object: 'Account locked', template_body: '<p>$locked_user.name</p>' };
 
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.mocked(findLockedUserEmailTemplate).mockReset();
   });
 
   it('should use the built-in template as the administrators edited it', async () => {
-    const editedTemplate = { ...LOCKED_USER_EMAIL_TEMPLATE_INPUT, email_object: 'Account locked', template_body: '<p>$locked_user.name</p>' };
     vi.mocked(findLockedUserEmailTemplate).mockResolvedValue(editedTemplate as BasicStoreEntityEmailTemplate);
-    const template = await loadLocalAuthLockEmailTemplate(context);
+    const template = await loadLocalAuthLockEmailTemplate(context, EE_SETTINGS);
     expect(template).toMatchObject({ email_object: 'Account locked', template_body: '<p>$locked_user.name</p>' });
+  });
+
+  it('should send the default content on CE, even when the template was edited before', async () => {
+    vi.mocked(findLockedUserEmailTemplate).mockResolvedValue(editedTemplate as BasicStoreEntityEmailTemplate);
+    const template = await loadLocalAuthLockEmailTemplate(context, CE_SETTINGS);
+    expect(template).toEqual(LOCKED_USER_EMAIL_TEMPLATE_INPUT);
+    expect(findLockedUserEmailTemplate).not.toHaveBeenCalled();
   });
 
   it('should send the default content, and log it, when the built-in template was deleted', async () => {
     const warn = vi.spyOn(logApp, 'warn').mockImplementation(() => undefined);
     vi.mocked(findLockedUserEmailTemplate).mockResolvedValue(undefined);
-    const template = await loadLocalAuthLockEmailTemplate(context);
+    const template = await loadLocalAuthLockEmailTemplate(context, EE_SETTINGS);
     expect(template).toMatchObject({
       email_object: LOCKED_USER_EMAIL_TEMPLATE_INPUT.email_object,
       sender_email: LOCKED_USER_EMAIL_TEMPLATE_INPUT.sender_email,
@@ -211,7 +221,7 @@ describe('Local authentication lockout - sending the lock email', () => {
   const temporaryLock = { lockType: 'temporary' as const, maxAttempts: 10, date: new Date(), remainingMs: 15 * 60 * 1000 };
 
   const mockPlatform = (platformUsers: AuthUser[], template?: Partial<BasicStoreEntityEmailTemplate>) => {
-    vi.mocked(getEntityFromCache).mockResolvedValue({ platform_url: 'https://opencti.example.com' } as BasicStoreSettings);
+    vi.mocked(getEntityFromCache).mockResolvedValue({ platform_url: 'https://opencti.example.com', valid_enterprise_edition: true } as BasicStoreSettings);
     vi.mocked(getEntitiesListFromCache).mockResolvedValue(platformUsers);
     vi.mocked(findLockedUserEmailTemplate).mockResolvedValue({ ...LOCKED_USER_EMAIL_TEMPLATE_INPUT, ...template } as BasicStoreEntityEmailTemplate);
   };
@@ -249,7 +259,7 @@ describe('Local authentication lockout - sending the lock email', () => {
     await sendLocalAuthLockEmails(context, LOCKED, temporaryLock);
     expect(sentEmails().map(({ to }) => to)).toEqual(['ada@opencti.io', 'grace@opencti.io']);
     expect(warn).toHaveBeenCalledOnce();
-    expect(warn.mock.calls[0][1]).toMatchObject({ locked_user_id: 'locked', errors_count: 1, total_count: 2 });
+    expect(warn.mock.calls[0][1]).toMatchObject({ locked_user_id: 'locked', failed_recipient_ids: ['ada'], errors_count: 1, total_count: 2 });
     expect(error).not.toHaveBeenCalled();
   });
 
@@ -261,7 +271,7 @@ describe('Local authentication lockout - sending the lock email', () => {
     vi.mocked(sendMail).mockRejectedValue(smtpDown);
     await sendLocalAuthLockEmails(context, LOCKED, temporaryLock);
     expect(warn).toHaveBeenCalledOnce();
-    expect(warn.mock.calls[0][1]).toEqual({ cause: smtpDown, locked_user_id: 'locked', errors_count: 2, total_count: 2 });
+    expect(warn.mock.calls[0][1]).toEqual({ cause: smtpDown, locked_user_id: 'locked', failed_recipient_ids: ['ada', 'grace'], errors_count: 2, total_count: 2 });
     expect(error).not.toHaveBeenCalled();
   });
 
