@@ -28,7 +28,8 @@ import {
   ENTITY_TYPE_TOOL,
 } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_VULNERABILITY } from '../../../src/modules/vulnerability/vulnerability-types';
-import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_MUTEX, ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
+import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_IPV4_ADDR, ENTITY_MUTEX, ENTITY_NETWORK_TRAFFIC, ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
+import { INPUT_DST, INPUT_SRC } from '../../../src/schema/stixRefRelationship';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../../../src/modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../../../src/modules/administrativeArea/administrativeArea-types';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
@@ -392,5 +393,64 @@ describe('Function generateHashedObservableStandardIds - all supported hashes', 
       entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE,
     });
     expect(ids.length).toBe(1);
+  });
+});
+
+// Expected ids follow the STIX 2.1 deterministic id algorithm (uuidv5, OASIS namespace, canonical JSON), computed outside the platform
+const IPV4_A_STANDARD_ID = 'ipv4-addr--40495fb2-6385-5166-bb8f-bf50ce06f444';
+const IPV4_B_STANDARD_ID = 'ipv4-addr--11e01d68-39f3-5730-b866-9a20c44fea75';
+
+const buildResolvedIpv4 = (request) => ({
+  _id: request.internalId,
+  _index: 'opencti_stix_cyber_observables-000001',
+  id: request.internalId,
+  internal_id: request.internalId,
+  standard_id: generateStandardId(ENTITY_IPV4_ADDR, { value: request.value }),
+  entity_type: ENTITY_IPV4_ADDR,
+  value: request.value,
+  updated_at: request.updatedAt,
+  i_group: { id: `ipv4-addr--${request.internalId}`, destKey: INPUT_DST, multiple: false },
+});
+
+describe('Network Traffic standard id', () => {
+  const ipv4A = buildResolvedIpv4({ value: '198.51.100.10', internalId: 'e5a2f0f4-6b1e-4a43-9a64-2f1c1d1a0001', updatedAt: '2026-11-18T10:00:00.000Z' });
+  const ipv4B = buildResolvedIpv4({ value: '203.0.113.20', internalId: 'e5a2f0f4-6b1e-4a43-9a64-2f1c1d1a0002', updatedAt: '2026-11-18T10:00:00.000Z' });
+
+  it('should resolve the referenced IPv4 to its standard id', () => {
+    expect(ipv4A.standard_id).toEqual(IPV4_A_STANDARD_ID);
+    expect(ipv4B.standard_id).toEqual(IPV4_B_STANDARD_ID);
+  });
+
+  it('should generate the STIX 2.1 id from the dst_ref standard id and protocols', () => {
+    const standardId = generateStandardId(ENTITY_NETWORK_TRAFFIC, { [INPUT_DST]: ipv4A, protocols: ['tcp'] });
+    expect(standardId).toEqual('network-traffic--6fef32e0-fd42-53ef-be0d-9058f4d2c526');
+  });
+
+  it('should generate the STIX 2.1 id from every contributing field', () => {
+    const input = { [INPUT_SRC]: ipv4A, [INPUT_DST]: ipv4B, src_port: 51000, dst_port: 443, protocols: ['ipv4', 'tcp'] };
+    expect(generateStandardId(ENTITY_NETWORK_TRAFFIC, input)).toEqual('network-traffic--5c6bb5e1-29a5-566c-91b3-5ca81140bfa9');
+  });
+
+  it('should keep the same id when the referenced IPv4 changes outside its standard id', () => {
+    const ipv4ALater = { ...ipv4A, updated_at: '2026-11-18T11:30:00.000Z', i_group: { id: IPV4_A_STANDARD_ID, destKey: INPUT_DST, multiple: false } };
+    const ipv4AFromStore = { ...ipv4A, i_relation: { internal_id: 'relation-id', entity_type: 'dst' } };
+    const first = generateStandardId(ENTITY_NETWORK_TRAFFIC, { [INPUT_DST]: ipv4A, protocols: ['tcp'] });
+    const later = generateStandardId(ENTITY_NETWORK_TRAFFIC, { [INPUT_DST]: ipv4ALater, protocols: ['tcp'] });
+    const fromStore = generateStandardId(ENTITY_NETWORK_TRAFFIC, { [INPUT_DST]: ipv4AFromStore, protocols: ['tcp'] });
+    expect(later).toEqual(first);
+    expect(fromStore).toEqual(first);
+  });
+
+  it('should not mix up src_ref and dst_ref', () => {
+    const asDst = generateStandardId(ENTITY_NETWORK_TRAFFIC, { [INPUT_DST]: ipv4A, protocols: ['tcp'] });
+    const asSrc = generateStandardId(ENTITY_NETWORK_TRAFFIC, { [INPUT_SRC]: ipv4A, protocols: ['tcp'] });
+    expect(asSrc).toEqual('network-traffic--d0658d2d-f7c7-5f54-b912-f9f3e2f571a4');
+    expect(asSrc).not.toEqual(asDst);
+  });
+
+  it('should change the id when the referenced address changes', () => {
+    const toA = generateStandardId(ENTITY_NETWORK_TRAFFIC, { [INPUT_DST]: ipv4A, protocols: ['tcp'] });
+    const toB = generateStandardId(ENTITY_NETWORK_TRAFFIC, { [INPUT_DST]: ipv4B, protocols: ['tcp'] });
+    expect(toB).not.toEqual(toA);
   });
 });

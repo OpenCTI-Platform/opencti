@@ -61,11 +61,15 @@ In a FIPS 140 compliant environment, prefer an S3 endpoint that is already valid
 
 ### Platform
 
-For the platform, we provide [FIPS 140-3 compliant Docker images](https://hub.docker.com/r/opencti/platform/tags?page=1&name=fips). Just use the appropriate tag to ensure you are deploying the FIPS 140-3 compliant version and follow the [standard Docker deployment](../deployment/installation.md) procedure. 
+For the platform, we provide [FIPS 140-3 compliant Docker images](https://hub.docker.com/r/opencti/platform/tags?page=1&name=fips). Use the tag `{version}-fips` instead of `{version}`, for example `opencti/platform:7.261116.0-fips` or, for an LTS release, `opencti/platform:7.260811.0-lts.2-fips`, and follow the [standard Docker deployment](../deployment/installation.md) procedure. The `latest-fips` tag points to the latest release, LTS releases excluded.
 
 ### Worker
 
-For the worker, we provide [FIPS 140-3 compliant Docker images](https://hub.docker.com/r/opencti/worker/tags?page=1&name=fips). Just use the appropriate tag to ensure you are deploying the FIPS 140-3 compliant version and follow the [standard Docker deployment](../deployment/installation.md) procedure.
+For the worker, we provide [FIPS 140-3 compliant Docker images](https://hub.docker.com/r/opencti/worker/tags?page=1&name=fips). Use the same tag format as the platform, `{version}-fips`, for example `opencti/worker:7.261116.0-fips`, and follow the [standard Docker deployment](../deployment/installation.md) procedure.
+
+!!! note "Architecture"
+
+    The FIPS 140-3 compliant images of the platform and the worker are built for `linux/amd64` only. There is no `arm64` variant.
 
 ### Connectors
 

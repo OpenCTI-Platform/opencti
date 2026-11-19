@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { registerModules } from '../../../src/composition-root';
-import { buildLocalMustFilter, elGenerateFullTextSearchShould, isSearchingRelationships, specialElasticCharsEscape } from '../../../src/database/engine';
+import { buildLocalMustFilter, elGenerateFullTextSearchShould, isSearchingRelationships, specialElasticCharsEscape } from '../../../src/database/engine-query-builder';
 import { isNotEmptyField } from '../../../src/database/utils';
 import { adaptFilterToIdsFilterKey } from '../../../src/utils/filtering/filtering-completeSpecialFilterKeys';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, ABSTRACT_STIX_META_RELATIONSHIP } from '../../../src/schema/general';
