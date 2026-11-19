@@ -46,13 +46,14 @@ describe('OpenAevCard', () => {
     mocks.lookups = 0;
   });
 
-  it('shows the counterpart, the shared identifier and a link to it on a match', async () => {
+  it('shows the counterpart and the shared identifier on a match, with no link of its own (the hero pivot is the single one)', async () => {
     mocks.counterparts = [counterpart];
     testRender(<OpenAevCard kind="VULNERABILITY" counterpartKey="cve-2024-3400" />);
     expect(await screen.findByText('In OpenAEV')).toBeInTheDocument();
     expect(screen.getByText(counterpart.object_name)).toBeInTheDocument();
     expect(screen.getByText('Shared identifier: CVE-2024-3400')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Open in OpenAEV' })).toHaveAttribute('href', counterpart.object_url);
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Open in OpenAEV' })).not.toBeInTheDocument();
   });
 
   it('shows a muted "Not in OpenAEV" without a link when connected without a match', async () => {
@@ -98,6 +99,8 @@ describe('OpenAevCard', () => {
     const facts = await screen.findByTestId('openaev-card-facts');
     expect(facts).toHaveTextContent('1 simulation');
     expect(facts).toHaveTextContent('Last simulation:');
+    // A STIX id means nothing to an analyst: the threat card shows no shared identifier line.
+    expect(screen.queryByText(/Shared identifier/)).not.toBeInTheDocument();
   });
 
   it('draws no facts line when the counterpart has none', async () => {

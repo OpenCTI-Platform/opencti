@@ -3,7 +3,6 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Card from '@common/card/Card';
-import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import { OaevLogo } from '../../../../static/images/logo_oaev';
 import useXtmCounterpart, { normaliseXtmKey, XtmCounterpartKind } from './useXtmCounterparts';
@@ -60,34 +59,23 @@ export const openAevCardAnchorKey = (layout: ReadonlyArray<{ key: string }>): st
 
 /**
  * Overview card "In OpenAEV": on a match, the OpenAEV counterpart with the identifier both
- * platforms share, its key facts (findings, affected assets, simulations and the latest one) and a
- * link to it; without a match, a muted "Not in OpenAEV" line. Nothing is drawn while loading or when
- * OpenAEV is not connected: the hero action of the same page carries the "Connect OpenAEV" call
- * to action, so the overview does not repeat it.
+ * platforms share and its key facts (findings, affected assets, simulations and the latest one);
+ * without a match, a muted "Not in OpenAEV" line. The card is informational: the hero pivot of the
+ * same page is the single "Open in OpenAEV" action, so the card carries no link of its own. Nothing
+ * is drawn while loading or when OpenAEV is not connected: the hero action carries the "Connect
+ * OpenAEV" call to action, so the overview does not repeat it. A threat is matched on its STIX id,
+ * which means nothing to an analyst: its name identifies it, so no shared identifier line is shown.
  */
 const OpenAevCard: React.FC<OpenAevCardProps> = ({ kind, counterpartKey, gridRow = false }) => {
   const { t_i18n, fd } = useFormatter();
   const state = useXtmCounterpart('openaev', kind, counterpartKey);
   if (state.status !== 'match' && state.status !== 'no_match') return null;
-  const sharedKey = normaliseXtmKey(kind, counterpartKey);
+  const sharedKey = kind === 'THREAT' ? null : normaliseXtmKey(kind, counterpartKey);
   const match = state.status === 'match' ? state.counterpart : null;
   const facts = match ? formatCounterpartFacts(match.facts, t_i18n, fd) : [];
 
   const card = (
-    <Card
-      title={t_i18n('In OpenAEV')}
-      action={match && (
-        <Button
-          variant="secondary"
-          size="small"
-          href={match.object_url}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {t_i18n('Open in OpenAEV')}
-        </Button>
-      )}
-    >
+    <Card title={t_i18n('In OpenAEV')}>
       <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }} data-testid="openaev-card">
         <Box
           aria-hidden
