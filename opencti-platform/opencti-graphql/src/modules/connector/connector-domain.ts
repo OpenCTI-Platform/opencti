@@ -457,7 +457,6 @@ export const computeManagerConnectorExcerpt = async (_context: AuthContext, _use
 
 const COMPOSER_TOKEN_REDIS_EXPIRATION = conf.get('app:composer_token_expiration') ?? 604800;
 interface CachedComposerToken {
-  token_id: string;
   key_fingerprint: string;
   encrypted_token: string;
 }
@@ -468,7 +467,7 @@ const parseCachedComposerToken = (value: string | null): CachedComposerToken | n
   }
   try {
     const record = JSON.parse(value);
-    if (typeof record?.token_id === 'string' && typeof record?.key_fingerprint === 'string' && typeof record?.encrypted_token === 'string') {
+    if (typeof record?.key_fingerprint === 'string' && typeof record?.encrypted_token === 'string') {
       return record;
     }
     return null;
@@ -493,18 +492,18 @@ const computeConnectorTokenConfiguration = async (context: AuthContext, connecto
     const key = `composer:${connectorEntity.catalog_id}:token:${connectorEntity.connector_user_id}`;
     const keyFingerprint = shortHash(manager.public_key);
     const cached = parseCachedComposerToken(await redisClient.get(key));
-    // Serve the cache only for the live token, encrypted with the current manager key: a key rotation (even back to a
-    // previous key) or a revoked token must regenerate, not serve a value Composer cannot decrypt or use
-    if (existingToken && cached && cached.token_id === existingToken.id && cached.key_fingerprint === keyFingerprint) {
+    // Serve the cache only when encrypted with the current manager key. A single record, overwritten on every rotation:
+    // a key coming back (A -> B -> A) must not find the token the B rotation revoked
+    if (existingToken && cached && cached.key_fingerprint === keyFingerprint) {
       await redisClient.expire(key, COMPOSER_TOKEN_REDIS_EXPIRATION);
       return cached.encrypted_token;
     }
     if (existingToken) {
       await revokeUserTokenByAdmin(context, SYSTEM_USER, connectorEntity.connector_user_id, existingToken.id);
     }
-    const { token_id, plaintext_token } = await addUserTokenByAdmin(context, SYSTEM_USER, connectorEntity.connector_user_id, { name: tokenName } as any);
+    const { plaintext_token } = await addUserTokenByAdmin(context, SYSTEM_USER, connectorEntity.connector_user_id, { name: tokenName } as any);
     const encryptedToken = encryptValue(manager.public_key, plaintext_token);
-    const record: CachedComposerToken = { token_id, key_fingerprint: keyFingerprint, encrypted_token: encryptedToken };
+    const record: CachedComposerToken = { key_fingerprint: keyFingerprint, encrypted_token: encryptedToken };
     await redisClient.setex(key, COMPOSER_TOKEN_REDIS_EXPIRATION, JSON.stringify(record));
     return encryptedToken;
   } catch (error) {

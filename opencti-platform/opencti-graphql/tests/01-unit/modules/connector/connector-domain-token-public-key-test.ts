@@ -129,6 +129,17 @@ describe('managed connector token encryption', () => {
     expect(mockAddUserTokenByAdmin).toHaveBeenCalledTimes(3);
   });
 
+  it('should keep serving the cached token when the user holds several Composer tokens', async () => {
+    expect(await readToken()).toBe('public-key-1|plaintext-1');
+    // Connectors sharing a user can each create a token with the same name: the first one found is not the cached one
+    userTokens.unshift({ id: 'token-other', name: 'Composer managed token' });
+
+    expect(await readToken()).toBe('public-key-1|plaintext-1');
+    expect(await readToken()).toBe('public-key-1|plaintext-1');
+    expect(mockRevokeUserTokenByAdmin).not.toHaveBeenCalled();
+    expect(mockAddUserTokenByAdmin).toHaveBeenCalledTimes(1);
+  });
+
   it('should regenerate the token when the cache holds a value written before the record format', async () => {
     expect(await readToken()).toBe('public-key-1|plaintext-1');
     // Before the fix, the bare encrypted token was cached, whatever the key it was encrypted with
