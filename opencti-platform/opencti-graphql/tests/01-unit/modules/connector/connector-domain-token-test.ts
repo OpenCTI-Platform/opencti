@@ -197,6 +197,16 @@ describe('managed connector token', () => {
     expect(mockAddUserTokenByAdmin).toHaveBeenCalledTimes(2);
   });
 
+  it('should delete a managed connector whose user no longer exists, without revoking any token', async () => {
+    await readToken(managedConnector('connector-a', 'catalog-x'));
+    mockInternalDeleteElementById.mockResolvedValueOnce({ element: managedConnector('connector-b', 'catalog-y', 'deleted-user') });
+
+    expect(await connectorDelete(context, user, 'connector-b')).toBe('connector-b');
+
+    expect(mockRevokeUserTokenByAdmin).not.toHaveBeenCalled();
+    expect(redisStore.has('composer:connector:connector-a:token:user-1')).toBe(true);
+  });
+
   it('should still delete a managed connector whose token cannot be revoked', async () => {
     const connectorA = managedConnector('connector-a', 'catalog-x');
     await readToken(connectorA);
