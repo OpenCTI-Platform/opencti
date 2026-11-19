@@ -84,7 +84,7 @@ export const samlSecretFields = ['private_key', 'decryption_pvk'];
 type SamlCommonConfiguration = MappingConfiguration & {
   issuer: string;
   entry_point: string;
-  idp_certificate: string;
+  idp_certificate: string | string[]; // a list for providers migrated before #20159
   callback_url?: string;
   logout_remote: boolean;
   want_assertions_signed: boolean;

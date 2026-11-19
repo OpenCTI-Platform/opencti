@@ -31,6 +31,7 @@ import {
   type UserInfoMappingInput,
 } from '../../generated/graphql';
 import { resolveProviderIdentifier } from './authenticationProvider-domain';
+import { joinSamlIdpCertificates } from './saml-pem-utils';
 
 // ---------------------------------------------------------------------------
 // ConfigExtractor — tracks which keys are consumed during conversion
@@ -520,7 +521,7 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   // -- First-class configuration fields --
   const issuer = ext.get<string>('issuer', '');
   const entryPoint = ext.get<string>('entry_point', '');
-  const idpCertificate = ext.get<string>('cert', '');
+  const idpCertificate = joinSamlIdpCertificates(ext.get<string | string[]>('cert', ''));
   const privateKey = ext.get<string | null>('private_key', null);
   const logoutRemote = ext.get<boolean>('logout_remote', false);
   const wantAssertionsSigned = ext.get<boolean>('want_assertions_signed', false);
