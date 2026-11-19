@@ -89,15 +89,36 @@ const isDeleteRestrictedAction = ({ type }) => {
 };
 const areParentTypesKnowledge = (parentTypes) => parentTypes && parentTypes.flat().every((type) => isKnowledge(type));
 
-const checkWorkflowActionsValidity = (context, user, actions) => {
+// A direct status change is only refused on types that have a published workflow. Fails closed when the
+// targets cannot be resolved to concrete types (no type filter, abstract type): any of them may have one.
+const allTargetsWithoutWorkflow = async (context, user, targetTypes) => {
+  if (targetTypes.length === 0) {
+    return false;
+  }
+  // Dynamic import: workflow-domain imports this module
+  const { getWorkflowConfig, hasPublishedWorkflowDefinition } = await import('../modules/workflow/domain/workflow-domain');
+  for (let index = 0; index < targetTypes.length; index += 1) {
+    const entitySetting = await getWorkflowConfig(context, user, targetTypes[index]);
+    if (!entitySetting || await hasPublishedWorkflowDefinition(context, user, targetTypes[index])) {
+      return false;
+    }
+  }
+  return true;
+};
+
+const checkWorkflowActionsValidity = async (context, user, actions, resolveTargetTypes) => {
   // An empty event name must not fall back to a plain replace, which would clear the status
   if (actions.some((a) => isWorkflowStatusAction(a) && a.context.options && 'eventName' in a.context.options && !isWorkflowTransitionAction(a))) {
     throw FunctionalError('A workflow transition action requires an event name');
   }
-  // With the workflow, a status only changes through a transition, unless the user can bypass it (drafts have no workflow)
+  // With a published workflow, a status only changes through a transition, unless the user can bypass it
+  // (drafts have no workflow, and types without a published workflow keep the free status change)
   const hasDirectStatusAction = actions.some((a) => a.context?.field === 'x_opencti_workflow_id' && !isWorkflowTransitionAction(a));
   if (hasDirectStatusAction && !getDraftContext(context, user) && !isBypassUser(user)) {
-    throw ForbiddenAccess();
+    const targetTypes = uniq(await resolveTargetTypes());
+    if (!(await allTargetsWithoutWorkflow(context, user, targetTypes))) {
+      throw ForbiddenAccess();
+    }
   }
   const hasBypassAction = actions.some((a) => isWorkflowBypassAction(a));
   const hasTransitionAction = actions.some((a) => isWorkflowTransitionAction(a));
@@ -135,9 +156,17 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
   if (severalReplaceOnSameKey || replaceAndOtherActionOnSameKey) {
     throw FunctionalError('A single task cannot perform several actions on the same field if one action is a replace.', { data: replaceActionsFields });
   }
-  checkWorkflowActionsValidity(context, user, actions);
-  // check rights
   const baseFilterObject = baseFilterString ? JSON.parse(baseFilterString) : undefined;
+  const resolveTargetTypes = async () => {
+    if (taskType === TASK_TYPE_LIST) {
+      const objects = await internalFindByIds(context, user, ids, { includeDeletedInDraft: true });
+      return objects.map((o) => o?.entity_type).filter(Boolean);
+    }
+    const filterGroup = isFilterGroupNotEmpty(baseFilterObject) ? baseFilterObject : undefined;
+    return findFiltersFromKey(filterGroup?.filters ?? [], TYPE_FILTER).map((f) => f.values).flat();
+  };
+  await checkWorkflowActionsValidity(context, user, actions, resolveTargetTypes);
+  // check rights
   if (taskType === TASK_TYPE_QUERY && !isFilterGroupNotEmpty(baseFilterObject)) {
     throw FunctionalError('A background task of type query should have at least one filter.');
   }
