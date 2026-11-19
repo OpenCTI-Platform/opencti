@@ -267,6 +267,20 @@ const assertPlaybookDefinitionStringIsValid = (rawDefinition: string | null | un
   } catch {
     throw FunctionalError('Playbook definition is not valid JSON');
   }
+  // The whole-definition paths (import, duplicate, playbook_definition field
+  // patch) never go through assertNodeConfigurationIsComplete, so each step
+  // configuration string is parsed here: a malformed one would be stored and
+  // only fail when the playbook runs or the editor opens the step.
+  (definition.nodes ?? []).forEach((node) => {
+    if (!node?.configuration) {
+      return;
+    }
+    try {
+      JSON.parse(node.configuration);
+    } catch {
+      throw FunctionalError('Playbook node configuration is not valid JSON', { node_id: node.id, component_id: node.component_id });
+    }
+  });
   assertPlaybookDefinitionIsValid(definition);
 };
 
