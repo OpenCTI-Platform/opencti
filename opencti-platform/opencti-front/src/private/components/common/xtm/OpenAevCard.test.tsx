@@ -2,7 +2,7 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
-import OpenAevCard from './OpenAevCard';
+import OpenAevCard, { openAevCardAnchorKey } from './OpenAevCard';
 import { resetXtmCounterpartCache } from './useXtmCounterparts';
 
 const mocks = vi.hoisted(() => ({
@@ -111,5 +111,21 @@ describe('OpenAevCard', () => {
     mocks.fail = true;
     testRender(<OpenAevCard kind="ASSET" counterpartKey="srv-01" />);
     expect(await screen.findByText('Not in OpenAEV')).toBeInTheDocument();
+  });
+});
+
+describe('openAevCardAnchorKey', () => {
+  it('places the card after the later of Details and Basic information, above Notes', () => {
+    expect(openAevCardAnchorKey([
+      { key: 'details' },
+      { key: 'basicInformation' },
+      { key: 'latestCreatedRelationships' },
+      { key: 'notes' },
+    ])).toBe('basicInformation');
+    expect(openAevCardAnchorKey([{ key: 'basicInformation' }, { key: 'details' }, { key: 'notes' }])).toBe('details');
+  });
+
+  it('has no anchor when the layout shows neither, so the card closes the grid', () => {
+    expect(openAevCardAnchorKey([{ key: 'notes' }])).toBeNull();
   });
 });

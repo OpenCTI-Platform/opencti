@@ -59,6 +59,8 @@ describe('OpenAevPivot', () => {
     const link = await screen.findByRole('link', { name: 'Open in OpenAEV' });
     expect(link).toHaveAttribute('href', counterpart.object_url);
     expect(link).toHaveAttribute('target', '_blank');
+    // A framed text button, like the other text actions of the header, never an icon alone.
+    expect(link).toHaveTextContent('Open in OpenAEV');
   });
 
   it('shows a disabled "Not in OpenAEV" when connected without a match', async () => {
@@ -71,6 +73,7 @@ describe('OpenAevPivot', () => {
     testRender(<OpenAevPivot kind="ASSET" counterpartKey="srv-01" />);
     const link = await screen.findByRole('link', { name: 'Connect OpenAEV' });
     expect(link).toHaveAttribute('href', OPENAEV_CONNECT_DOC_URL);
+    expect(link).toHaveTextContent('Connect OpenAEV');
     // Not connected: no counterpart lookup is sent.
     expect(mocks.calls.filter((c) => c.isLookup)).toHaveLength(0);
   });

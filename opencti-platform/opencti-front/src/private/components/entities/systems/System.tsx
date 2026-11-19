@@ -99,6 +99,8 @@ const System: React.FC<SystemProps> = ({
             stixDomainObject={system}
           />
         </Grid>
+        {/* Right under Details and Basic information, above the lists; Notes stays last. */}
+        <OpenAevCard gridRow kind="ASSET" counterpartKey={system.name} />
         {viewAs === 'knowledge' && (
           <Grid size={6}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
@@ -118,7 +120,6 @@ const System: React.FC<SystemProps> = ({
         <Grid size={6}>
           <StixCoreObjectLatestHistory stixCoreObjectId={system.id} />
         </Grid>
-        <OpenAevCard gridRow kind="ASSET" counterpartKey={system.name} />
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={system.id}

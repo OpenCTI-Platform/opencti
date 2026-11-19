@@ -1,4 +1,5 @@
 import React from 'react';
+import OpenAevCard, { openAevCardAnchorKey } from '../../common/xtm/OpenAevCard';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
@@ -148,6 +149,8 @@ const ThreatActorIndividual: React.FC<ThreatActorIndividualProps> = ({ threatAct
     threatActorIndividualData,
   );
   const overviewLayoutCustomization = useOverviewLayoutCustomization(threatActorIndividual.entity_type);
+  const openAevAnchor = openAevCardAnchorKey(overviewLayoutCustomization);
+  const openAevCard = <OpenAevCard gridRow kind="THREAT" counterpartKey={threatActorIndividual.standard_id} />;
 
   return (
     <div data-testid="threat-actor-individual-details-page">
@@ -162,17 +165,23 @@ const ThreatActorIndividual: React.FC<ThreatActorIndividualProps> = ({ threatAct
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} size={width}>
-                    <ThreatActorIndividualDetails
-                      threatActorIndividualData={threatActorIndividual}
-                    />
-                  </Grid>
+                  <React.Fragment key={key}>
+                    <Grid size={width}>
+                      <ThreatActorIndividualDetails
+                        threatActorIndividualData={threatActorIndividual}
+                      />
+                    </Grid>
+                    {key === openAevAnchor && openAevCard}
+                  </React.Fragment>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} size={width}>
-                    <StixDomainObjectOverview stixDomainObject={threatActorIndividual} />
-                  </Grid>
+                  <React.Fragment key={key}>
+                    <Grid size={width}>
+                      <StixDomainObjectOverview stixDomainObject={threatActorIndividual} />
+                    </Grid>
+                    {key === openAevAnchor && openAevCard}
+                  </React.Fragment>
                 );
               case 'demographics':
                 if (hasDemographicsOrBiographics(threatActorIndividual)) {
@@ -243,6 +252,7 @@ const ThreatActorIndividual: React.FC<ThreatActorIndividualProps> = ({ threatAct
             }
           })
         }
+        {openAevAnchor === null && openAevCard}
       </Grid>
     </div>
   );

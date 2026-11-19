@@ -1,4 +1,5 @@
 import React from 'react';
+import OpenAevCard, { openAevCardAnchorKey } from '../../common/xtm/OpenAevCard';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
@@ -74,6 +75,8 @@ const CampaignComponent = ({
 
   const campaign = useFragment<Campaign_campaign$key>(campaignFragment, campaignData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(campaign.entity_type);
+  const openAevAnchor = openAevCardAnchorKey(overviewLayoutCustomization);
+  const openAevCard = <OpenAevCard gridRow kind="THREAT" counterpartKey={campaign.standard_id} />;
 
   return (
     <div data-testid="campaign-details-page">
@@ -87,15 +90,21 @@ const CampaignComponent = ({
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} size={width}>
-                    <CampaignDetails campaign={campaign} />
-                  </Grid>
+                  <React.Fragment key={key}>
+                    <Grid size={width}>
+                      <CampaignDetails campaign={campaign} />
+                    </Grid>
+                    {key === openAevAnchor && openAevCard}
+                  </React.Fragment>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} size={width}>
-                    <StixDomainObjectOverview stixDomainObject={campaign} />
-                  </Grid>
+                  <React.Fragment key={key}>
+                    <Grid size={width}>
+                      <StixDomainObjectOverview stixDomainObject={campaign} />
+                    </Grid>
+                    {key === openAevAnchor && openAevCard}
+                  </React.Fragment>
                 );
               case 'latestCreatedRelationships':
                 return (
@@ -144,6 +153,7 @@ const CampaignComponent = ({
             }
           })
         }
+        {openAevAnchor === null && openAevCard}
       </Grid>
     </div>
   );
