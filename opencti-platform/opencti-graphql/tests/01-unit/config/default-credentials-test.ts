@@ -115,7 +115,7 @@ describe('Default credentials', () => {
     // A JSON configuration file can hold the string "true" (the environment is parsed into a boolean): initAdmin compares the flag to the true boolean.
     const { default: conf } = await import('../../../src/config/conf');
     const get = conf.get.bind(conf);
-    vi.spyOn(conf, 'get').mockImplementation((key: string) => (key === 'app:admin:externally_managed' ? 'true' : get(key)));
+    vi.spyOn(conf, 'get').mockImplementation((key?: string) => (key === 'app:admin:externally_managed' ? 'true' : get(key)));
 
     expect(findDefaultCredentials()).toEqual(['app:admin:password']);
   });
