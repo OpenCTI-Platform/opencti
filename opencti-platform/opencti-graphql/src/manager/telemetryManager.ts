@@ -109,6 +109,9 @@ type DataShareLike = BasicStoreEntity & { stream_public?: boolean; enabled?: boo
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
 const SCHEDULE_TIME = conf.get('telemetry_manager:interval') || 60000; // 1 minute default
 const TELEMETRY_MANAGER_ENABLED = booleanConf('telemetry_manager:enabled', true);
+// Unset by default: the Filigran metrics are only exposed to Prometheus when a port is configured.
+const TELEMETRY_PROMETHEUS_PORT = conf.get('telemetry_manager:exporter_prometheus');
+const TELEMETRY_PROMETHEUS_HOST = conf.get('telemetry_manager:exporter_prometheus_host') || '0.0.0.0';
 const FILIGRAN_OTLP_TELEMETRY = DEV_MODE
   ? 'https://telemetry.staging.filigran.io/v1/metrics'
   : 'https://telemetry.filigran.io/v1/metrics';
@@ -416,15 +419,21 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   filigranMetricReaders.push(fileExporterReader);
   logApp.info('[TELEMETRY] File exporter activated');
   // endregion
+  // region Prometheus exporter, to read the Filigran metrics locally
+  if (TELEMETRY_PROMETHEUS_PORT) {
+    // Always pass a host: since @opentelemetry/exporter-prometheus 0.300.0, an unset host listens on localhost only.
+    const prometheusExporter = new PrometheusExporter({
+      host: TELEMETRY_PROMETHEUS_HOST,
+      port: TELEMETRY_PROMETHEUS_PORT,
+    });
+    filigranMetricReaders.push(prometheusExporter);
+    logApp.info('[TELEMETRY] Prometheus exporter activated', { host: TELEMETRY_PROMETHEUS_HOST, port: TELEMETRY_PROMETHEUS_PORT });
+  }
+  // endregion
   // region OTLP Exporter
   try {
     const connectivityQuery = await getHttpClient({ responseType: 'json' }).post(FILIGRAN_OTLP_TELEMETRY, {});
     if (connectivityQuery.status === 200) {
-      if (DEV_MODE) {
-        // To get filigran metrics on Prometheus during development
-        const prometheusExporter = new PrometheusExporter({ port: 14270 });
-        filigranMetricReaders.push(prometheusExporter);
-      }
       // OtlpExporterReader can be deactivated if connectivity fail at manager start.
       const OtlpExporterReader = new BatchExportingMetricReader({
         exporter: new OTLPMetricExporter({
