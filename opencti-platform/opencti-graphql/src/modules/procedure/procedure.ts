@@ -3,22 +3,19 @@ import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { createdAt, creators, updatedAt } from '../../schema/attribute-definition';
 import { createdBy, killChainPhases, objectLabel, objectMarking, objectOrganization } from '../../schema/stixRefRelationship';
-import { ENTITY_PROCESS, isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { ENTITY_PROCESS } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_MALWARE, ENTITY_TYPE_TOOL, isStixDomainObjectIdentity } from '../../schema/stixDomainObject';
-import { RELATION_EXPLOITS, RELATION_IMPLEMENTS_TECHNIQUE, RELATION_USES } from '../../schema/stixCoreRelationship';
+import { RELATION_EXPLOITS, RELATION_HAS_OBSERVABLE, RELATION_IMPLEMENTS_TECHNIQUE, RELATION_USES } from '../../schema/stixCoreRelationship';
 import { REL_EXTENDED, REL_NEW } from '../../database/stix';
 import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
 import convertProcedureToStix from './procedure-converter';
 import {
   ATTRIBUTE_COMMAND_REF,
-  ATTRIBUTE_OBSERVABLE_REFS,
   ATTRIBUTE_SOURCE_REFS,
   ENTITY_TYPE_PROCEDURE,
   INPUT_PROCEDURE_COMMAND,
-  INPUT_PROCEDURE_OBSERVABLES,
   INPUT_PROCEDURE_SOURCES,
   RELATION_PROCEDURE_COMMAND,
-  RELATION_PROCEDURE_OBSERVABLE,
   RELATION_PROCEDURE_SOURCE,
   type StixProcedure,
   type StoreEntityProcedure,
@@ -80,24 +77,14 @@ const PROCEDURE_DEFINITION: ModuleDefinition<StoreEntityProcedure, StixProcedure
         { name: ENTITY_TYPE_VULNERABILITY, type: REL_EXTENDED },
       ],
     },
+    {
+      name: RELATION_HAS_OBSERVABLE,
+      targets: [
+        { name: ABSTRACT_STIX_CYBER_OBSERVABLE, type: REL_NEW },
+      ],
+    },
   ],
   relationsRefs: [
-    {
-      name: INPUT_PROCEDURE_OBSERVABLES,
-      type: 'ref',
-      databaseName: RELATION_PROCEDURE_OBSERVABLE,
-      stixName: ATTRIBUTE_OBSERVABLE_REFS,
-      label: 'Observables',
-      mandatoryType: 'no',
-      editDefault: false,
-      multiple: true,
-      upsert: true,
-      isRefExistingForTypes(this, _, toType) {
-        return isStixCyberObservable(toType);
-      },
-      isFilterable: true,
-      toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE],
-    },
     {
       name: INPUT_PROCEDURE_COMMAND,
       type: 'ref',

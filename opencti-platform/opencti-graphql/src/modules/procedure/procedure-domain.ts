@@ -17,19 +17,12 @@ import type { DomainFindById } from '../../domain/domainTypes';
 import { ENTITY_PROCESS } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../../schema/stixMetaObject';
-import { RELATION_IMPLEMENTS_TECHNIQUE } from '../../schema/stixCoreRelationship';
+import { RELATION_HAS_OBSERVABLE, RELATION_IMPLEMENTS_TECHNIQUE } from '../../schema/stixCoreRelationship';
 import { FunctionalError } from '../../config/errors';
 import type { BasicStoreEntityKillChainPhase } from '../killChainPhase/killChainPhase-types';
 import { computeProcedureFingerprint } from './procedure-fingerprint';
 import type { BasicStoreCommon, BasicStoreEntity } from '../../types/store';
-import {
-  type BasicStoreEntityProcedure,
-  ENTITY_TYPE_PROCEDURE,
-  RELATION_PROCEDURE_COMMAND,
-  RELATION_PROCEDURE_OBSERVABLE,
-  RELATION_PROCEDURE_SOURCE,
-  STIX_TYPE_PROCEDURE,
-} from './procedure-types';
+import { type BasicStoreEntityProcedure, ENTITY_TYPE_PROCEDURE, RELATION_PROCEDURE_COMMAND, RELATION_PROCEDURE_SOURCE, STIX_TYPE_PROCEDURE } from './procedure-types';
 
 export const findProcedureById: DomainFindById<BasicStoreEntityProcedure> = (context: AuthContext, user: AuthUser, procedureId: string) => {
   return storeLoadById(context, user, procedureId, ENTITY_TYPE_PROCEDURE);
@@ -65,6 +58,18 @@ const loadTechniques = async (context: AuthContext, user: AuthUser, techniqueIds
   return techniques;
 };
 
+const loadObservables = async (context: AuthContext, user: AuthUser, observableIds: string[]) => {
+  const observables: BasicStoreCommon[] = [];
+  for (let i = 0; i < observableIds.length; i += 1) {
+    const observable = await storeLoadById(context, user, observableIds[i], ABSTRACT_STIX_CYBER_OBSERVABLE);
+    if (!observable) {
+      throw FunctionalError('Cannot find the observable of the procedure', { id: observableIds[i] });
+    }
+    observables.push(observable);
+  }
+  return observables;
+};
+
 const loadMitrePhaseNames = async (context: AuthContext, user: AuthUser, killChainPhaseIds: string[]) => {
   const phaseNames: string[] = [];
   for (let i = 0; i < killChainPhaseIds.length; i += 1) {
@@ -77,9 +82,10 @@ const loadMitrePhaseNames = async (context: AuthContext, user: AuthUser, killCha
 };
 
 export const addProcedure = async (context: AuthContext, user: AuthUser, input: ProcedureAddInput): Promise<BasicStoreEntityProcedure> => {
-  // techniques are not an attribute of the procedure (implements-technique relationships)
-  const { techniques: techniqueIds, ...procedureInput } = input;
+  // techniques and observables are not attributes of the procedure (implements-technique and has-observable relationships)
+  const { techniques: techniqueIds, procedureObservables: observableIds, ...procedureInput } = input;
   const techniques = await loadTechniques(context, user, nonEmptyStrings(techniqueIds));
+  const observables = await loadObservables(context, user, nonEmptyStrings(observableIds));
   const procedureToCreate: Record<string, unknown> = { ...procedureInput, standard_id: procedureStandardId(input.stix_id) };
   // The fingerprint is set at creation only: an imported value is kept, edits never recompute it.
   if (!input.x_fingerprint) {
@@ -94,12 +100,15 @@ export const addProcedure = async (context: AuthContext, user: AuthUser, input: 
   for (let i = 0; i < techniques.length; i += 1) {
     await createRelation(context, user, { fromId: created.id, toId: techniques[i].id, relationship_type: RELATION_IMPLEMENTS_TECHNIQUE });
   }
+  for (let i = 0; i < observables.length; i += 1) {
+    await createRelation(context, user, { fromId: created.id, toId: observables[i].id, relationship_type: RELATION_HAS_OBSERVABLE });
+  }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
 export const procedureObservablesPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, procedureId: string,
   args: EntityOptions<BasicStoreCommon>) => {
-  return pageRegardingEntitiesConnection<T>(context, user, procedureId, RELATION_PROCEDURE_OBSERVABLE, ABSTRACT_STIX_CYBER_OBSERVABLE, false, args);
+  return pageRegardingEntitiesConnection<T>(context, user, procedureId, RELATION_HAS_OBSERVABLE, ABSTRACT_STIX_CYBER_OBSERVABLE, false, args);
 };
 
 export const procedureCommand = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, procedureId: string) => {
