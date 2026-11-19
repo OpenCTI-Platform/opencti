@@ -10,7 +10,7 @@ import { CONFIG_IMPORT_UNCHANGED_REASON, configImportReasonValue, configImportVa
 import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } from '../user/sensitive-config-import';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { findById as findThemeById } from '../theme/theme-domain';
-import { isPasswordPolicySatisfiable, propagatePasswordValidityChange } from '../user/user-domain';
+import { ADMIN_PASSWORD_POLICY_MISMATCH_REASON, adminPasswordPolicyFailedRules, isPasswordPolicySatisfiable, propagatePasswordValidityChange } from '../user/user-domain';
 import { SETTINGS_MESSAGES_FIELDS, SETTINGS_PLATFORM_FIELDS, SETTINGS_POLICIES_FIELDS, SETTINGS_WHITEMARK_FIELDS } from './settings-export';
 import { messageConfigurationSchemas, platformConfigurationSchema, policiesConfigurationSchema, whitemarkConfigurationSchema } from './settings-import-schema';
 
@@ -167,6 +167,10 @@ export const importPolicies = async (
   const policy = { ...current, ...Object.fromEntries(input.map(({ key, value }) => [key, value[0]])) } as BasicStoreSettings;
   if (!isPasswordPolicySatisfiable(policy)) {
     return failed('invalid', UNSATISFIABLE_PASSWORD_POLICY_REASON, parsed.data);
+  }
+  // With app:admin:secure_by_default, a password policy that the configured admin password does not match would make the platform refuse to start
+  if (adminPasswordPolicyFailedRules(context, policy).length > 0) {
+    return failed('invalid', ADMIN_PASSWORD_POLICY_MISMATCH_REASON, parsed.data);
   }
   // Why the main organization of the bundle is left out, when it is
   let leftOutReason: string | undefined;

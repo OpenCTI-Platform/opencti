@@ -4,7 +4,13 @@ import { createEntity, patchAttribute } from '../../../../src/database/middlewar
 import { storeLoadById } from '../../../../src/database/middleware-loader';
 import { elLoadBy } from '../../../../src/database/engine';
 import { getEntityFromCache } from '../../../../src/database/cache';
-import { checkAdminPasswordPolicy, initializeAdminUser } from '../../../../src/modules/user/user-domain';
+import {
+  ADMIN_PASSWORD_POLICY_MISMATCH_REASON,
+  adminPasswordPolicyFailedRules,
+  checkAdminPasswordPolicy,
+  checkPolicyAcceptsAdminPassword,
+  initializeAdminUser,
+} from '../../../../src/modules/user/user-domain';
 import { testContext } from '../../../utils/testQuery';
 
 // Distinctive, so that the tests can check it never leaks into the logs or the error
@@ -63,7 +69,7 @@ describe('checkAdminPasswordPolicy', () => {
     setSwitch(false);
 
     // When
-    checkAdminPasswordPolicy(testContext, strictPolicy, 'Compliant-Passw0rd', false);
+    checkAdminPasswordPolicy(testContext, strictPolicy, 'Compliant-Passw0rd');
 
     // Then
     expect(warn).not.toHaveBeenCalled();
@@ -74,7 +80,7 @@ describe('checkAdminPasswordPolicy', () => {
     setSwitch(true);
 
     // When / Then
-    expect(() => checkAdminPasswordPolicy(testContext, strictPolicy, 'Compliant-Passw0rd', false)).not.toThrow();
+    expect(() => checkAdminPasswordPolicy(testContext, strictPolicy, 'Compliant-Passw0rd')).not.toThrow();
     expect(warn).not.toHaveBeenCalled();
   });
 
@@ -83,7 +89,7 @@ describe('checkAdminPasswordPolicy', () => {
     setSwitch(true);
 
     // When / Then
-    expect(() => checkAdminPasswordPolicy(testContext, {}, 'a', false)).not.toThrow();
+    expect(() => checkAdminPasswordPolicy(testContext, {}, 'a')).not.toThrow();
     expect(warn).not.toHaveBeenCalled();
   });
 
@@ -92,7 +98,7 @@ describe('checkAdminPasswordPolicy', () => {
     setSwitch(false);
 
     // When
-    checkAdminPasswordPolicy(testContext, strictPolicy, WEAK_PASSWORD, false);
+    checkAdminPasswordPolicy(testContext, strictPolicy, WEAK_PASSWORD);
 
     // Then
     expect(warn).toHaveBeenCalledTimes(1);
@@ -109,7 +115,7 @@ describe('checkAdminPasswordPolicy', () => {
     // When
     let error: any;
     try {
-      checkAdminPasswordPolicy(testContext, strictPolicy, WEAK_PASSWORD, false);
+      checkAdminPasswordPolicy(testContext, strictPolicy, WEAK_PASSWORD);
     } catch (e) {
       error = e;
     }
@@ -118,15 +124,6 @@ describe('checkAdminPasswordPolicy', () => {
     expect(error.extensions.code).toBe('CONFIGURATION_ERROR');
     expect(error.extensions.data.failed_rules).toEqual(['size must be >= 15', 'number of digits must be >= 1', 'number of upper chars must be >= 1']);
     expect(containsPassword({ message: error.message, extensions: error.extensions })).toBe(false);
-    expect(warn).not.toHaveBeenCalled();
-  });
-
-  it('should skip the check when the admin is externally managed, switch on', () => {
-    // Given
-    setSwitch(true);
-
-    // When / Then
-    expect(() => checkAdminPasswordPolicy(testContext, strictPolicy, WEAK_PASSWORD, true)).not.toThrow();
     expect(warn).not.toHaveBeenCalled();
   });
 });
@@ -170,6 +167,8 @@ describe('initializeAdminUser', () => {
     await expect(initializeAdminUser(testContext)).rejects.toThrow(CREATION_REACHED);
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('app:admin:secure_by_default=false'), expect.anything());
     expect(createEntity).toHaveBeenCalledTimes(1);
+    // The check and the password validity of the created account
+    expect(getEntityFromCache).toHaveBeenCalledTimes(2);
   });
 
   it('should skip the check when the admin is externally managed, switch on', async () => {
@@ -178,9 +177,64 @@ describe('initializeAdminUser', () => {
     conf.set(EXTERNALLY_MANAGED, true);
     vi.mocked(storeLoadById).mockResolvedValue(undefined as never);
 
-    // When / Then
+    // When / Then: the settings are read once, for the password validity of the created account, and not for the check
     await expect(initializeAdminUser(testContext)).rejects.toThrow(CREATION_REACHED);
+    expect(getEntityFromCache).toHaveBeenCalledTimes(1);
     expect(warn).not.toHaveBeenCalled();
     expect(createEntity).toHaveBeenCalledWith(expect.anything(), expect.anything(), expect.objectContaining({ account_status: 'Locked' }), 'User', { complete: true });
+  });
+});
+
+describe('checkPolicyAcceptsAdminPassword', () => {
+  // A policy that no configured admin password matches
+  const unreachablePolicy = { password_policy_min_length: 200 };
+
+  afterEach(() => {
+    conf.clear(SWITCH);
+    conf.clear(EXTERNALLY_MANAGED);
+  });
+
+  it('should accept any policy, switch off', () => {
+    // Given
+    setSwitch(false);
+
+    // When / Then
+    expect(adminPasswordPolicyFailedRules(testContext, unreachablePolicy)).toEqual([]);
+    expect(() => checkPolicyAcceptsAdminPassword(testContext, unreachablePolicy)).not.toThrow();
+  });
+
+  it('should accept any policy when the admin is externally managed, switch on', () => {
+    // Given
+    setSwitch(true);
+    conf.set(EXTERNALLY_MANAGED, true);
+
+    // When / Then
+    expect(adminPasswordPolicyFailedRules(testContext, unreachablePolicy)).toEqual([]);
+    expect(() => checkPolicyAcceptsAdminPassword(testContext, unreachablePolicy)).not.toThrow();
+  });
+
+  it('should accept a policy the admin password matches, switch on', () => {
+    // Given
+    setSwitch(true);
+
+    // When / Then
+    expect(() => checkPolicyAcceptsAdminPassword(testContext, {})).not.toThrow();
+  });
+
+  it('should refuse a policy the admin password does not match, switch on', () => {
+    // Given
+    setSwitch(true);
+
+    // When
+    let error: any;
+    try {
+      checkPolicyAcceptsAdminPassword(testContext, unreachablePolicy);
+    } catch (e) {
+      error = e;
+    }
+
+    // Then
+    expect(error.message).toBe(ADMIN_PASSWORD_POLICY_MISMATCH_REASON);
+    expect(error.extensions.data.failed_rules).toEqual(['size must be >= 200']);
   });
 });

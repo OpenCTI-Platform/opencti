@@ -40,6 +40,7 @@ import { buildAvailableProviders } from './setting-auth';
 import { LOCAL_AUTH_LOCKOUT_KEYS } from './local-auth-lockout';
 import { CguStatus, PlatformEeSource } from '../generated/graphql';
 import { checkDateDisplayInput } from '../utils/dateDisplay';
+import { checkPolicyAcceptsAdminPassword } from '../modules/user/user-domain';
 import { getXtmOneRegistrationVersion, refreshXtmLicenseProof } from '../modules/xtm/one/xtm-one';
 
 export const getMemoryStatistics = () => {
@@ -389,6 +390,12 @@ export const settingsEditField = async (context, user, settingsId, input) => {
     if (invalidEntries.length > 0) {
       throw UnsupportedError(`Invalid IP address or CIDR entries in allow list: ${invalidEntries.join(', ')}`);
     }
+  }
+
+  // With app:admin:secure_by_default, a password policy that the configured admin password does not match would make the platform refuse to start
+  const passwordPolicyEdits = data.filter((inputData) => inputData.key.startsWith('password_policy_'));
+  if (passwordPolicyEdits.length > 0) {
+    checkPolicyAcceptsAdminPassword(context, { ...settings, ...Object.fromEntries(passwordPolicyEdits.map((inputData) => [inputData.key, inputData.value?.[0]])) });
   }
 
   await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, data);

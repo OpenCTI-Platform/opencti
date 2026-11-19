@@ -861,11 +861,7 @@ export const generatePasswordMatchingPolicy = async (context: AuthContext) => {
 
 // Check the configured admin password against the local password policy, without ever logging the password:
 // a warning while app:admin:secure_by_default is false, a startup failure once it is true
-export const checkAdminPasswordPolicy = (context: AuthContext, policy: PasswordInlinePolicy, password: string, isExternallyManaged: boolean) => {
-  // An externally managed admin account is locked, its local password is never used
-  if (isExternallyManaged) {
-    return;
-  }
+export const checkAdminPasswordPolicy = (context: AuthContext, policy: PasswordInlinePolicy, password: string) => {
   const failedRules = checkPasswordInlinePolicy(context, policy, password);
   if (failedRules.length === 0) {
     return;
@@ -875,6 +871,26 @@ export const checkAdminPasswordPolicy = (context: AuthContext, policy: PasswordI
   }
   logApp.warn('[OPENCTI] The admin password (app:admin:password) does not match the local password policy (app:admin:secure_by_default=false). '
     + 'The platform will refuse to start in an upcoming version: change the admin password, then set APP__ADMIN__SECURE_BY_DEFAULT=true to opt in now.', { failed_rules: failedRules });
+};
+
+export const ADMIN_PASSWORD_POLICY_MISMATCH_REASON = 'The configured admin password (app:admin:password) does not match this password policy, '
+  + 'and app:admin:secure_by_default is enabled: the platform would refuse to start. Change the admin password first';
+
+// The rules of a new local password policy that the configured admin password fails, once app:admin:secure_by_default is enabled:
+// such a policy would make the platform refuse to start on the next restart. Empty when the switch is off or the admin is externally managed
+export const adminPasswordPolicyFailedRules = (context: AuthContext, policy: PasswordInlinePolicy) => {
+  if (!isAdminSecureByDefault() || isAdminExternallyManaged()) {
+    return [];
+  }
+  return checkPasswordInlinePolicy(context, policy, String(getConfigurationAdminPassword() ?? ''));
+};
+
+// Refuse a new local password policy that the configured admin password does not match, once app:admin:secure_by_default is enabled
+export const checkPolicyAcceptsAdminPassword = (context: AuthContext, policy: PasswordInlinePolicy) => {
+  const failedRules = adminPasswordPolicyFailedRules(context, policy);
+  if (failedRules.length > 0) {
+    throw FunctionalError(ADMIN_PASSWORD_POLICY_MISMATCH_REASON, { failed_rules: failedRules });
+  }
 };
 
 export const checkPasswordFromPolicy = async (context: AuthContext, password: string) => {
@@ -1111,10 +1127,11 @@ export const sendEmailToUser = async (context: AuthContext, user: AuthUser, inpu
 };
 
 type AddUserInput = UserAddInput & { external?: boolean; internal_id?: string; api_token?: string };
-// skipPasswordPolicy: reserved to the admin initialization, which checks the password policy itself following app:admin:secure_by_default
-type AddUserOptions = { skipPasswordPolicy?: boolean };
+// skipPasswordPolicy: only for the admin initialization, which checks the password policy itself following app:admin:secure_by_default
+type CreateUserOptions = { skipPasswordPolicy?: boolean };
 
-export const addUser = async (context: AuthContext, user: AuthUser, newUser: AddUserInput, opts: AddUserOptions = {}) => {
+// Not exported: addUser is the entry point, without the options
+const createUser = async (context: AuthContext, user: AuthUser, newUser: AddUserInput, opts: CreateUserOptions = {}) => {
   const userServiceAccount = newUser.user_service_account;
   if (!newUser.user_email && !userServiceAccount) {
     throw FunctionalError('User cannot be created without email');
@@ -1243,6 +1260,10 @@ export const addUser = async (context: AuthContext, user: AuthUser, newUser: Add
     }
   }
   return element;
+};
+
+export const addUser = async (context: AuthContext, user: AuthUser, newUser: AddUserInput) => {
+  return createUser(context, user, newUser);
 };
 
 export const roleEditField = async (context: AuthContext, user: AuthUser, roleId: string, input: EditInput[]) => {
@@ -2745,8 +2766,11 @@ export const authenticateUserFromRequest = async (context: AuthContext, req: Ses
 
 const initAdmin = async (context: AuthContext, email: string, password: string, tokenValue: string) => {
   const isExternallyManaged = isAdminExternallyManaged();
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  checkAdminPasswordPolicy(context, settings, password.toString(), isExternallyManaged);
+  // An externally managed admin account is locked: its local password is never used, so it is not checked
+  if (!isExternallyManaged) {
+    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    checkAdminPasswordPolicy(context, settings, password.toString());
+  }
   let existingAdmin: Pick<BasicStoreEntityUser, 'id' | 'api_tokens'> | undefined = await findById(context, SYSTEM_USER, OPENCTI_ADMIN_UUID);
   if (existingAdmin) {
     // If admin user exists, just patch the fields
@@ -2775,7 +2799,7 @@ const initAdmin = async (context: AuthContext, email: string, password: string, 
       },
     };
     // The password policy is checked above, following app:admin:secure_by_default
-    existingAdmin = await addUser(context, SYSTEM_USER, userToCreate, { skipPasswordPolicy: true });
+    existingAdmin = await createUser(context, SYSTEM_USER, userToCreate, { skipPasswordPolicy: true });
   }
   // Create base token if needed
   const tokenId = 'base_token_' + OPENCTI_ADMIN_UUID;
