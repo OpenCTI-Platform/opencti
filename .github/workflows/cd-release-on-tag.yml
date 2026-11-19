@@ -1,25 +1,19 @@
 name: OpenCTI CD Release
-run-name: OpenCTI CD Release ${{ inputs.tag || github.ref_name }}
+run-name: OpenCTI CD Release ${{ inputs.tag }}${{ inputs.correlation_id && format(' [{0}]', inputs.correlation_id) || '' }}
 # Release pipeline for OpenCTI tags (X.Y.Z and X.Y.Z-lts.N)
 #
-# DRY-RUN ONLY for now: the publish-pycti job is commented out, nothing can be published.
+# Started by the release script, or by hand, never by the tag push: the release script starts the run that
+# publishes, a build on tag push would only duplicate it.
 #
-# When publication is enabled, it must require ALL of the following:
-#   - the run was started manually (workflow_dispatch). Tag pushes are ALWAYS dry-run.
-#   - a "dry_run" boolean input (default true) explicitly unchecked. On tag push it is empty, and in
-#     GitHub expressions null == false is TRUE: the event_name check is what keeps tag pushes in dry-run.
-#   - the repository variable RELEASE_PUBLISH_ENABLED is set to 'true'
-# On top of that, publication jobs run in protected environments (e.g. "pypi") that hold the credentials,
-# so dry-run jobs never get access to them.
+# Publication (pycti to PyPI) requires ALL of the following, checked by the "validate" job:
+#   - the "dry_run" input explicitly unchecked
+#   - the repository variable GH_RELEASE_PUBLISH_ENABLED is set to 'true'
+# On top of that, publication jobs run in protected environments ("pypi") that hold the credentials or
+# OIDC bindings, so dry-run jobs never get access to them.
 #
 # /!\ The release repository looks up this workflow by its name: if you rename it, update the release scripts.
 
 on:
-  push:
-    tags:
-      # GitHub filter patterns are globs, the strict format is checked by the "validate" job
-      - '[0-9]+.[0-9]+.[0-9]+'
-      - '[0-9]+.[0-9]+.[0-9]+-lts.[0-9]+'
   workflow_dispatch:
     inputs:
       tag:
@@ -30,12 +24,22 @@ on:
         description: "Also check the PyPI trusted publisher in the pypi environment (nothing is published)"
         type: boolean
         default: false
+      dry_run:
+        description: "Dry run: build and check everything, publish nothing"
+        type: boolean
+        default: true
+      correlation_id:
+        description: "Set by the release script to find this run after dispatching it"
+        type: string
+        required: false
 
 permissions:
   contents: read
 
 concurrency:
-  group: cd-release-${{ inputs.tag || github.ref_name }}
+  # A publishing run must not queue behind a dry run of the same tag: that one waits for the connectors
+  # release, which waits for pycti on PyPI, which this publishing run provides
+  group: cd-release-${{ inputs.tag }}-${{ inputs.dry_run == false && 'publish' || 'dry-run' }}
   cancel-in-progress: false
 
 jobs:
@@ -51,11 +55,30 @@ jobs:
       pycti_version: ${{ steps.tag.outputs.pycti_version }}
       is_lts: ${{ steps.tag.outputs.is_lts }}
       commit_sha: ${{ steps.versions.outputs.commit_sha }}
+      publish: ${{ steps.mode.outputs.publish }}
     steps:
+      - name: Decide publication
+        id: mode
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          PUBLISH_ENABLED: ${{ vars.GH_RELEASE_PUBLISH_ENABLED }}
+        run: |
+          set -euo pipefail
+          PUBLISH=false
+          if [ "${DRY_RUN}" == "false" ]; then
+            # Fail rather than fall back to a dry run: the caller expects a publication
+            if [ "${PUBLISH_ENABLED}" != "true" ]; then
+              echo "::error::dry_run is unchecked but the repository variable GH_RELEASE_PUBLISH_ENABLED is not 'true'"
+              exit 1
+            fi
+            PUBLISH=true
+          fi
+          echo "publish=${PUBLISH}" >> "$GITHUB_OUTPUT"
+
       - name: Validate tag format
         id: tag
         env:
-          TAG: ${{ inputs.tag || github.ref_name }}
+          TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
           if [[ ! "${TAG}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-lts\.[0-9]+)?$ ]]; then
@@ -114,18 +137,19 @@ jobs:
           PYCTI_VERSION: ${{ steps.tag.outputs.pycti_version }}
           IS_LTS: ${{ steps.tag.outputs.is_lts }}
           COMMIT_SHA: ${{ steps.versions.outputs.commit_sha }}
-          EVENT_NAME: ${{ github.event_name }}
+          PUBLISH: ${{ steps.mode.outputs.publish }}
         run: |
+          MODE="🧪 dry-run (nothing will be published)"
+          [ "${PUBLISH}" == "true" ] && MODE="🚀 publication (pycti to PyPI)"
           {
             echo "## OpenCTI release ${TAG}"
             echo ""
             echo "| | |"
             echo "|---|---|"
-            echo "| Trigger | \`${EVENT_NAME}\` |"
             echo "| Commit | \`${COMMIT_SHA}\` |"
             echo "| pycti version | \`${PYCTI_VERSION}\` |"
             echo "| LTS | ${IS_LTS} |"
-            echo "| Mode | 🧪 dry-run (nothing will be published) |"
+            echo "| Mode | ${MODE} |"
           } >> "$GITHUB_STEP_SUMMARY"
 
   # -----------------------
@@ -137,7 +161,7 @@ jobs:
     name: Check PyPI credentials
     runs-on: ubuntu-26.04
     timeout-minutes: 10
-    if: github.event_name == 'workflow_dispatch' && inputs.check_credentials
+    if: inputs.check_credentials
     environment: pypi
     permissions:
       id-token: write # PyPI trusted publishing (OIDC)
@@ -218,8 +242,9 @@ jobs:
     name: Publish pycti (dry-run)
     runs-on: ubuntu-26.04
     timeout-minutes: 10
-    # wait-connectors: on a tag push CircleCI may not have published pycti yet, the comparison would see a 404
+    # wait-connectors: pycti is on PyPI once the connectors are released, before that the comparison would see a 404
     needs: [validate, build-pycti, wait-connectors]
+    if: needs.validate.outputs.publish != 'true'
     steps:
       - name: Download pycti distribution
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
@@ -287,31 +312,32 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-  # Publication disabled until the dry run is validated: no job of this workflow can publish anything.
-  # Re-enabling it also needs the guard of the header (dry_run input and a "publish" output of validate).
-  # publish-pycti:
-  #   name: Publish pycti
-  #   runs-on: ubuntu-26.04
-  #   timeout-minutes: 15
-  #   needs: [validate, build-pycti]
-  #   if: needs.validate.outputs.publish == 'true'
-  #   # Protected environment: holds the PyPI trusted publisher binding, can require reviewers.
-  #   environment:
-  #     name: pypi
-  #     url: https://pypi.org/project/pycti/${{ needs.validate.outputs.pycti_version }}/
-  #   permissions:
-  #     id-token: write # PyPI trusted publishing (OIDC)
-  #   steps:
-  #     - name: Download pycti distribution
-  #       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
-  #       with:
-  #         name: pycti-dist
-  #         path: dist/
+  publish-pycti:
+    name: Publish pycti
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    # Not after wait-connectors: the release script tags connectors only once pycti is on PyPI
+    needs: [validate, build-pycti]
+    if: needs.validate.outputs.publish == 'true'
+    # Protected environment: holds the PyPI trusted publisher binding, can require reviewers.
+    environment:
+      name: pypi
+      url: https://pypi.org/project/pycti/${{ needs.validate.outputs.pycti_version }}/
+    permissions:
+      id-token: write # PyPI trusted publishing (OIDC)
+    steps:
+      - name: Download pycti distribution
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        with:
+          name: pycti-dist
+          path: dist/
 
-  #     - name: Publish to PyPI
-  #       uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
-  #       with:
-  #         packages-dir: dist/
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          packages-dir: dist/
+          # A re-run of the same release must not fail on the files the first attempt uploaded
+          skip-existing: true
 
   # -----------------------
   # Wait for the connectors release
@@ -336,8 +362,8 @@ jobs:
   # -----------------------
   # Docker images
   # -----------------------
-  # Local actions (./.github/actions/*) are taken from the workflow ref (the tag on push, the dispatched branch
-  # on workflow_dispatch); they check out the validated commit themselves to build the release sources.
+  # Local actions (./.github/actions/*) are taken from the workflow ref (the dispatched branch); they check out
+  # the validated commit themselves to build the release sources.
   build-builder:
     name: Build builder image
     runs-on: ubuntu-26.04
@@ -888,12 +914,15 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.validate.outputs.tag }}
+          PUBLISH: ${{ needs.validate.outputs.publish }}
         run: |
           set -euo pipefail
+          INTRO="🧪 Dry run: these are the files a publication would use."
+          [ "${PUBLISH}" == "true" ] && INTRO="🚀 pycti is published to PyPI by this run."
           {
             echo "## Artifacts for ${TAG}"
             echo ""
-            echo "🧪 Dry run: these are the files a publication would use. Images are published from the release repository, not from here."
+            echo "${INTRO} Images are published from the release repository, not from here."
             echo ""
             echo "| Artifact | Size (MB) |"
             echo "|---|---|"
