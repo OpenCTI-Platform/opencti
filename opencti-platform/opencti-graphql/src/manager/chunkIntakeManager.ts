@@ -835,6 +835,8 @@ let pushMessagesCounter: Counter | null = null;
 let queueLeaseCounter: Counter | null = null;
 // The scheduler of the running consumer, read by the gauge registered once (a re-election builds a new one)
 let workerlessScheduler: ReleaseScheduler | null = null;
+// task 0040 memory breakdown: the consumer of this platform, read by the bytes gauge
+let workerlessConsumer: PushConsumer | null = null;
 let workerlessGaugeRegistered = false;
 const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
   pushMessagesCounter = meterManager.meterProvider.getMeter('opencti-chunk-intake').createCounter('opencti_workerless_intake_messages_total', {
@@ -938,6 +940,25 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
       const stats: Record<string, number> = workerlessScheduler?.stats() ?? {};
       Object.entries(stats).forEach(([state, value]) => result.observe(value, { state }));
     });
+    meterManager.meterProvider.getMeter('opencti-chunk-intake').createObservableGauge('opencti_workerless_intake_bytes', {
+      valueType: ValueType.INT,
+      description: 'Raw bytes of the push messages held by the worker-less consumer (delivered: not answered yet, handling: admitted by the byte budget, largest_delivered: since the last collection)',
+    }).addCallback((result) => {
+      if (!workerlessConsumer) return;
+      const memory = workerlessConsumer.memory();
+      result.observe(memory.deliveredBytes, { state: 'delivered' });
+      result.observe(memory.handlingBytes, { state: 'handling' });
+      result.observe(workerlessConsumer.takeLargestDelivered(), { state: 'largest_delivered' });
+    });
+    meterManager.meterProvider.getMeter('opencti-chunk-intake').createObservableGauge('opencti_workerless_intake_messages_held', {
+      valueType: ValueType.INT,
+      description: 'Push messages held by the worker-less consumer (delivered: not answered yet, waiting: delivered, waiting for the byte budget)',
+    }).addCallback((result) => {
+      if (!workerlessConsumer) return;
+      const memory = workerlessConsumer.memory();
+      result.observe(memory.deliveredMessages, { state: 'delivered' });
+      result.observe(memory.waitingMessages, { state: 'waiting' });
+    });
   }
   // The write context of a message: the chunk context rules (intake-context.ts), its refusals
   const writeContext = async (envelope: IntakeEnvelope, operations: ChunkOperation[], memberIds: Iterable<string>) => {
@@ -1005,6 +1026,7 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
   }
   const consumer = started;
   consumerView = consumer;
+  workerlessConsumer = consumer;
   return {
     ...consumer,
     alive: () => consumer.alive() && !leadership?.lost() && !partition?.lost(),

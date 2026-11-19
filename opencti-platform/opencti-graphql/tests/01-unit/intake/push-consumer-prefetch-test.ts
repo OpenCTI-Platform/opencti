@@ -197,6 +197,18 @@ describe('push consumer prefetch changes (task 0040)', () => {
     vi.restoreAllMocks();
   });
 
+  it('should count the raw bytes it holds, delivered then handled, down to zero once answered (task 0040 memory)', async () => {
+    const { consumer, channel } = await startRaised();
+    channel.deliver(3 * KB);
+    channel.deliver(KB);
+    await flush();
+    expect(consumer.memory()).toEqual({ deliveredBytes: 4 * KB, deliveredMessages: 2, handlingBytes: 4 * KB, waitingMessages: 0 });
+    expect(consumer.takeLargestDelivered()).toBe(3 * KB);
+    expect(consumer.takeLargestDelivered()).toBe(0); // since the previous call
+    await answer();
+    expect(consumer.memory()).toEqual({ deliveredBytes: 0, deliveredMessages: 0, handlingBytes: 0, waitingMessages: 0 });
+  });
+
   it('should create the first consumer with the prefetch planned while its channel opened', async () => {
     const { channel } = await start();
     expect(channel.credits()).toEqual([50]); // 25 raised x2 by the first plan, before the channel answered

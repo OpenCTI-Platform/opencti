@@ -74,7 +74,20 @@ export interface PushConsumer {
   isStopping: (queue: string) => boolean;
   // Its messages delivered here, not answered yet (the queue lease: a platform holding them is not idle)
   inFlight: (queue: string) => number;
+  // task 0040 memory breakdown: the raw bytes held by the consumer, all queues, and the largest message delivered
+  // since the previous call
+  memory: () => PushConsumerMemory;
+  takeLargestDelivered: () => number;
   close: () => Promise<void>;
+}
+
+export interface PushConsumerMemory {
+  // delivered and not answered (waiting for the byte budget or handled), and their count
+  deliveredBytes: number;
+  deliveredMessages: number;
+  // handled now (admitted by the byte budget), and the messages waiting for it
+  handlingBytes: number;
+  waitingMessages: number;
 }
 
 // RabbitMQ binds a prefetch to a consumer when it is created and a live basic.qos does not change it; after a
@@ -121,6 +134,9 @@ export const consumePushQueues = async (
   const order = createQueueOrder();
   const consumed = new Map<string, ConsumedQueue>();
   const toldOrdered = new Set<string>();
+  let deliveredBytes = 0;
+  let deliveredMessages = 0;
+  let largestDeliveredBytes = 0;
   let alive = true;
   let sizesUnread = false;
   const connection = await new Promise<amqp.Connection>((resolve, reject) => {
@@ -236,6 +252,10 @@ export const consumePushQueues = async (
         }
         entry.inFlight += 1;
         entry.idleTicks = 0;
+        const bytes = message.content.length;
+        deliveredBytes += bytes;
+        deliveredMessages += 1;
+        largestDeliveredBytes = Math.max(largestDeliveredBytes, bytes);
         if (isEvent) entry.ordered = true;
         if (prefetchPlanned && (isEvent || message.content.length > entry.largest)) {
           // a larger message (or the first event) lowers the queue's prefetch at once, a smaller one waits for the
@@ -245,7 +265,11 @@ export const consumePushQueues = async (
         }
         order.schedule(queue, isEvent, () => handle(queue, entry, channel, message, data))
           .catch((cause) => logApp.error(`${LOG_PREFIX} push message scheduling failed`, { queue, cause }))
-          .finally(() => answered(queue, entry));
+          .finally(() => {
+            deliveredBytes -= bytes;
+            deliveredMessages -= 1;
+            answered(queue, entry);
+          });
       }, { noAck: false }, (consumeError, ok) => {
         if (consumeError) return; // the channel is closed with the error, its entry with it
         entry.phase = 'consuming';
@@ -412,6 +436,12 @@ export const consumePushQueues = async (
     isConsuming: (queue) => consumed.has(queue),
     isStopping: (queue) => consumed.get(queue)?.stopping ?? false,
     inFlight: (queue) => consumed.get(queue)?.inFlight ?? 0,
+    memory: () => ({ deliveredBytes, deliveredMessages, handlingBytes: budget.inFlight(), waitingMessages: budget.waiting() }),
+    takeLargestDelivered: () => {
+      const largest = largestDeliveredBytes;
+      largestDeliveredBytes = 0;
+      return largest;
+    },
     close: async () => {
       alive = false;
       [...consumed].filter(([, entry]) => !entry.stopping).forEach(([queue, entry]) => stopQueue(queue, entry));
