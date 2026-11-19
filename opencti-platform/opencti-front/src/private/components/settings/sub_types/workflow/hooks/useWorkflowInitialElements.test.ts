@@ -139,6 +139,19 @@ describe('useWorkflowInitialElements', () => {
     });
   });
 
+  it('should default conditions to an empty object when the API returns null (migrated transitions)', () => {
+    const migratedDefinition: SubTypeWorkflowQuery$data['workflowDefinition'] = {
+      ...mockWorkflowDefinition!,
+      transitions: [{ ...mockWorkflowDefinition!.transitions[0], conditions: null }],
+    };
+    const { result } = renderHook(() =>
+      useWorkflowInitialElements(migratedDefinition, mockStatusTemplates, mockMembers),
+    );
+
+    const transitionNode = result.current.initialNodes.find((n: Node) => n.type === WorkflowNodeType.transition);
+    expect(transitionNode?.data.conditions).toEqual({});
+  });
+
   it('should enrich authorized members actions with member data', () => {
     const { result } = renderHook(() =>
       useWorkflowInitialElements(mockWorkflowDefinition, mockStatusTemplates, mockMembers),
