@@ -18173,8 +18173,6 @@ export type Mutation = {
   playbookFieldPatch?: Maybe<Playbook>;
   playbookImport: Scalars['String']['output'];
   playbookInsertNode: PlaybookInsertResult;
-  playbookMoveNode: Scalars['String']['output'];
-  playbookRelink: Scalars['String']['output'];
   playbookReplaceNode: Scalars['String']['output'];
   playbookStepExecution?: Maybe<Scalars['Boolean']['output']>;
   playbookUpdatePositions?: Maybe<Scalars['ID']['output']>;
@@ -20141,7 +20139,6 @@ export type MutationPlaybookDeleteLinkArgs = {
 
 export type MutationPlaybookDeleteNodeArgs = {
   id: Scalars['ID']['input'];
-  keepChildren?: InputMaybe<Scalars['Boolean']['input']>;
   nodeId: Scalars['ID']['input'];
 };
 
@@ -20176,23 +20173,6 @@ export type MutationPlaybookInsertNodeArgs = {
   input: PlaybookAddNodeInput;
   parentNodeId: Scalars['ID']['input'];
   parentPortId: Scalars['ID']['input'];
-};
-
-
-export type MutationPlaybookMoveNodeArgs = {
-  id: Scalars['ID']['input'];
-  nodeId: Scalars['ID']['input'];
-  parentNodeId: Scalars['ID']['input'];
-  parentPortId: Scalars['ID']['input'];
-};
-
-
-export type MutationPlaybookRelinkArgs = {
-  fromNodeId?: InputMaybe<Scalars['ID']['input']>;
-  fromPortId?: InputMaybe<Scalars['ID']['input']>;
-  id: Scalars['ID']['input'];
-  linkId: Scalars['ID']['input'];
-  toNodeId: Scalars['ID']['input'];
 };
 
 
@@ -24794,8 +24774,6 @@ export type PlaybookAddNodeInput = {
   configuration?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
-  parentNodeId?: InputMaybe<Scalars['ID']['input']>;
-  parentPortId?: InputMaybe<Scalars['ID']['input']>;
   position: PositionInput;
 };
 
@@ -35490,8 +35468,6 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  x_opencti_system_category?: Maybe<Scalars['String']['output']>;
-  x_opencti_system_subcategory?: Maybe<Scalars['String']['output']>;
   x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_criticality?: Maybe<Scalars['String']['output']>;
   x_opencti_environment?: Maybe<Scalars['String']['output']>;
@@ -35505,6 +35481,8 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   x_opencti_platform?: Maybe<Scalars['String']['output']>;
   x_opencti_reliability?: Maybe<Scalars['String']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
+  x_opencti_system_category?: Maybe<Scalars['String']['output']>;
+  x_opencti_system_subcategory?: Maybe<Scalars['String']['output']>;
 };
 
 
@@ -35695,8 +35673,6 @@ export type SystemAddInput = {
   update?: InputMaybe<Scalars['Boolean']['input']>;
   upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  x_opencti_system_category?: InputMaybe<Scalars['String']['input']>;
-  x_opencti_system_subcategory?: InputMaybe<Scalars['String']['input']>;
   x_opencti_criticality?: InputMaybe<Scalars['String']['input']>;
   x_opencti_environment?: InputMaybe<Scalars['String']['input']>;
   x_opencti_firstname?: InputMaybe<Scalars['String']['input']>;
@@ -35707,6 +35683,8 @@ export type SystemAddInput = {
   x_opencti_platform?: InputMaybe<Scalars['String']['input']>;
   x_opencti_reliability?: InputMaybe<Scalars['String']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_system_category?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_system_subcategory?: InputMaybe<Scalars['String']['input']>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -40390,6 +40368,8 @@ export enum WorkflowExecutionStatus {
 export type WorkflowInstance = {
   __typename?: 'WorkflowInstance';
   allowedTransitions: Array<WorkflowTransition>;
+  /** Transitions the user is targeted by but whose entity conditions are not met yet */
+  blockedTransitions: Array<WorkflowTransition>;
   currentState: Scalars['String']['output'];
   currentStatus?: Maybe<Status>;
   id: Scalars['ID']['output'];
@@ -40496,6 +40476,7 @@ export type WorkflowSerializedState = {
   order?: Maybe<Scalars['Int']['output']>;
   requestAccessOutcome?: Maybe<WorkflowRequestAccessOutcome>;
   statusId: Scalars['String']['output'];
+  workflowStatusId?: Maybe<Scalars['String']['output']>;
 };
 
 export type WorkflowSerializedTransition = {
@@ -40513,6 +40494,8 @@ export type WorkflowSerializedTransition = {
 export type WorkflowTransition = {
   __typename?: 'WorkflowTransition';
   actions?: Maybe<Array<Scalars['String']['output']>>;
+  /** Blocked transitions only: JSON filter group of the entity conditions not met yet */
+  blockingConditions?: Maybe<Scalars['String']['output']>;
   closingReason?: Maybe<Scalars['String']['output']>;
   comment?: Maybe<Scalars['String']['output']>;
   event: Scalars['String']['output'];
@@ -43048,7 +43031,7 @@ export type ResolversTypes = ResolversObject<{
   WorkflowDefinitionMutationResult: ResolverTypeWrapper<WorkflowDefinitionMutationResult>;
   WorkflowEntityRef: ResolverTypeWrapper<WorkflowEntityRef>;
   WorkflowExecutionStatus: WorkflowExecutionStatus;
-  WorkflowInstance: ResolverTypeWrapper<Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversTypes['Status']> }>;
+  WorkflowInstance: ResolverTypeWrapper<Omit<WorkflowInstance, 'allowedTransitions' | 'blockedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversTypes['WorkflowTransition']>, blockedTransitions: Array<ResolversTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversTypes['Status']> }>;
   WorkflowLastHistoryEntry: ResolverTypeWrapper<WorkflowLastHistoryEntry>;
   WorkflowMigrationDiagnostic: ResolverTypeWrapper<WorkflowMigrationDiagnostic>;
   WorkflowMigrationDiagnosticType: WorkflowMigrationDiagnosticType;
@@ -44129,7 +44112,7 @@ export type ResolversParentTypes = ResolversObject<{
   WorkflowBypassStatus: Omit<WorkflowBypassStatus, 'status'> & { status: ResolversParentTypes['Status'] };
   WorkflowDefinitionMutationResult: WorkflowDefinitionMutationResult;
   WorkflowEntityRef: WorkflowEntityRef;
-  WorkflowInstance: Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversParentTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversParentTypes['Status']> };
+  WorkflowInstance: Omit<WorkflowInstance, 'allowedTransitions' | 'blockedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversParentTypes['WorkflowTransition']>, blockedTransitions: Array<ResolversParentTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversParentTypes['Status']> };
   WorkflowLastHistoryEntry: WorkflowLastHistoryEntry;
   WorkflowMigrationDiagnostic: WorkflowMigrationDiagnostic;
   WorkflowMigrationPreview: WorkflowMigrationPreview;
@@ -50777,8 +50760,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   playbookFieldPatch?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookFieldPatchArgs, 'id' | 'input'>>;
   playbookImport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookImportArgs, 'file'>>;
   playbookInsertNode?: Resolver<ResolversTypes['PlaybookInsertResult'], ParentType, ContextType, RequireFields<MutationPlaybookInsertNodeArgs, 'childNodeId' | 'id' | 'input' | 'parentNodeId' | 'parentPortId'>>;
-  playbookMoveNode?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookMoveNodeArgs, 'id' | 'nodeId' | 'parentNodeId' | 'parentPortId'>>;
-  playbookRelink?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookRelinkArgs, 'id' | 'linkId' | 'toNodeId'>>;
   playbookReplaceNode?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookReplaceNodeArgs, 'id' | 'input' | 'nodeId'>>;
   playbookStepExecution?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationPlaybookStepExecutionArgs, 'bundle' | 'data_instance_id' | 'event_id' | 'execution_id' | 'execution_start' | 'playbook_id' | 'previous_bundle' | 'previous_step_id' | 'step_id'>>;
   playbookUpdatePositions?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPlaybookUpdatePositionsArgs, 'id' | 'positions'>>;
@@ -54965,8 +54946,6 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  x_opencti_system_category?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_system_subcategory?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_criticality?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_environment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -54980,6 +54959,8 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   x_opencti_platform?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_reliability?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
+  x_opencti_system_category?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_system_subcategory?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -56548,6 +56529,7 @@ export type WorkflowEntityRefResolvers<ContextType = any, ParentType extends Res
 
 export type WorkflowInstanceResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowInstance'] = ResolversParentTypes['WorkflowInstance']> = ResolversObject<{
   allowedTransitions?: Resolver<Array<ResolversTypes['WorkflowTransition']>, ParentType, ContextType>;
+  blockedTransitions?: Resolver<Array<ResolversTypes['WorkflowTransition']>, ParentType, ContextType>;
   currentState?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   currentStatus?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -56630,6 +56612,7 @@ export type WorkflowSerializedStateResolvers<ContextType = any, ParentType exten
   order?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   requestAccessOutcome?: Resolver<Maybe<ResolversTypes['WorkflowRequestAccessOutcome']>, ParentType, ContextType>;
   statusId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  workflowStatusId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type WorkflowSerializedTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowSerializedTransition'] = ResolversParentTypes['WorkflowSerializedTransition']> = ResolversObject<{
@@ -56645,6 +56628,7 @@ export type WorkflowSerializedTransitionResolvers<ContextType = any, ParentType 
 
 export type WorkflowTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowTransition'] = ResolversParentTypes['WorkflowTransition']> = ResolversObject<{
   actions?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  blockingConditions?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   closingReason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   comment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
