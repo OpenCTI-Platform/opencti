@@ -1,5 +1,6 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { fetchOpenAevObjects, getOpenAevUrl, isOpenAevConnected, type OpenAevObjectPath } from './openaev-client';
+import { fetchOpenCrqObjects, getOpenCrqUrl, isOpenCrqConnected, type OpenCrqLookupKind } from './opencrq-client';
 
 // Same keys and normalisation as OpenAEV's CounterpartKind, so both sides cache the same entry.
 export type CounterpartKind = 'ASSET' | 'ATTACK_PATTERN' | 'VULNERABILITY' | 'THREAT' | 'ALERT';
@@ -29,15 +30,18 @@ const MAX_FACTS = 10;
 const MAX_FACT_LENGTH = 64;
 const FACT_KEY_PATTERN = /^[a-z][a-z0-9_]*$/;
 
-/** The facts a product answered, kept only when well formed and short: they are shown as is. */
+/**
+ * The facts a product answered, kept only when well formed and short: they are shown as is.
+ * OpenAEV answers { fact_key, fact_value }, OpenCRQ { key, value }.
+ */
 export const sanitiseFacts = (facts: unknown): XtmCounterpartFact[] => {
   if (!Array.isArray(facts)) {
     return [];
   }
   const out: XtmCounterpartFact[] = [];
   for (const fact of facts) {
-    const key = fact?.fact_key;
-    const value = fact?.fact_value;
+    const key = fact?.fact_key ?? fact?.key;
+    const value = fact?.fact_value ?? fact?.value;
     if (typeof key === 'string' && typeof value === 'string' && FACT_KEY_PATTERN.test(key)
       && key.length <= MAX_FACT_LENGTH && value.length > 0 && value.length <= MAX_FACT_LENGTH) {
       out.push({ key, value });
@@ -155,7 +159,34 @@ export const openAevProvider: CounterpartProvider = {
   },
 };
 
-const PROVIDERS: CounterpartProvider[] = [openAevProvider];
+const OPENCRQ_KINDS: ReadonlySet<CounterpartKind> = new Set<OpenCrqLookupKind>(['THREAT', 'VULNERABILITY', 'ASSET']);
+
+export const openCrqProvider: CounterpartProvider = {
+  product: 'opencrq',
+  url: getOpenCrqUrl,
+  isConnected: isOpenCrqConnected,
+  supports: (kind) => OPENCRQ_KINDS.has(kind),
+  resolve: async (kind, keys) => {
+    const objects = await fetchOpenCrqObjects(kind as OpenCrqLookupKind, keys);
+    const asked = new Set(keys);
+    return objects
+      .filter((o) => o && typeof o.object_id === 'string' && typeof o.object_url === 'string')
+      // OpenCRQ answers keys in its own case (STIX ids and hostnames lower, CVEs upper): normalise them back.
+      .map((o) => ({ ...o, key: normaliseCounterpartKey(kind, o.object_key) ?? o.object_key }))
+      .filter((o) => asked.has(o.key))
+      .map((o) => ({
+        key: o.key,
+        product: 'opencrq',
+        object_id: o.object_id,
+        object_type: o.object_type,
+        object_name: o.object_name ?? null,
+        object_url: o.object_url,
+        facts: sanitiseFacts(o.object_facts),
+      }));
+  },
+};
+
+const PROVIDERS: CounterpartProvider[] = [openAevProvider, openCrqProvider];
 
 // Short-TTL cache, per product, kind and key: a found counterpart or a known miss (null). The
 // lookups use the platform's own connection token, so the answer does not depend on the reader;

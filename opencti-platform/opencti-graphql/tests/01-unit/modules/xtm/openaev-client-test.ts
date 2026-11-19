@@ -155,9 +155,15 @@ describe('OpenAEV counterpart provider', () => {
   it('serves the GraphQL entry points through the registered provider', async () => {
     const context = {} as any;
     const user = {} as any;
-    expect(await findXtmConnections(context, user)).toEqual([{ product: 'openaev', connected: false, url: null }]);
+    expect(await findXtmConnections(context, user)).toEqual([
+      { product: 'openaev', connected: false, url: null },
+      { product: 'opencrq', connected: false, url: null },
+    ]);
     connect();
-    expect(await findXtmConnections(context, user)).toEqual([{ product: 'openaev', connected: true, url: 'https://aev.example.com' }]);
+    expect(await findXtmConnections(context, user)).toEqual([
+      { product: 'openaev', connected: true, url: 'https://aev.example.com' },
+      { product: 'opencrq', connected: false, url: null },
+    ]);
     mocks.post.mockResolvedValue({ data: [remote('T1059.001', { object_type: 'AttackPattern' })] });
     const found = await findXtmCounterparts(context, user, 'ATTACK_PATTERN', ['t1059.001', 'Phishing']);
     expect(found.map((c) => c.key)).toEqual(['T1059.001']);
