@@ -254,7 +254,7 @@ const useManipulateComponents = (playbook: { id: string }, history?: HistoryReco
     configuration: PlaybookConfig | null,
     description?: string,
   ) => {
-    let newNodes: CanvasNode[] = getNodes() as CanvasNode[];
+    const newNodes: CanvasNode[] = getNodes() as CanvasNode[];
     let newEdges: Edge[] = getEdges();
     const targetNode = getNode(edge.target);
     if (!targetNode) return;
@@ -267,36 +267,41 @@ const useManipulateComponents = (playbook: { id: string }, history?: HistoryReco
     // The ids as playbookInsertNode stores them: the link parent -> new step is a new one (result.linkId),
     // the former link keeps its id and now leaves the new step.
     const ids = insertedLinkIds(edge.id, result);
+    const firstPort = component.ports.at(0);
+    if (!firstPort) {
+      // An end step (no out port) goes on a new branch of the same output: the link to the step
+      // that was below it and every step after it stay, as playbookInsertNode stores them.
+      newEdges.push({
+        id: ids.toNewStep ?? `${edge.source}-${edge.sourceHandle}-${result.nodeId}`,
+        type: 'workflow',
+        source: edge.source,
+        sourceHandle: edge.sourceHandle,
+        target: result.nodeId,
+        data: { openConfig: openEdge },
+      });
+      setNodes(newNodes);
+      setEdges(newEdges as PlaybookEdge[]);
+      return;
+    }
     newEdges = newEdges.map((e) => {
       if (e.source === edge.source && e.sourceHandle === edge.sourceHandle && e.target === targetNode.id) {
         return { ...e, id: ids.toNewStep ?? e.id, type: 'workflow', target: result.nodeId, data: { openConfig: openEdge } };
       }
       return e;
     });
-    const firstPort = component.ports.at(0);
-    if (!firstPort) {
-      // A step without ports ends the branch: everything below it goes.
-      newNodes = newNodes.filter((n) => n.id !== targetNode.id);
-      newEdges = newEdges.filter((n) => n.target !== targetNode.id);
-      const edgesToDelete = newEdges.filter((n) => n.source === targetNode.id);
-      const deleteResult = deleteEdgesAndAllChildren(newNodes, newEdges, edgesToDelete);
-      newNodes = deleteResult.nodes;
-      newEdges = deleteResult.edges;
-    } else {
-      // Otherwise its first port leads to the step that was below the link.
-      newEdges.push({
-        id: ids.fromNewStep,
-        type: 'workflow',
-        source: result.nodeId,
-        sourceHandle: firstPort.id,
-        target: edge.target,
-        data: { openConfig: openEdge },
-      });
-      if (component.ports.length > 1) {
-        const children = placeholdersOn(result.nodeId, component.ports.slice(1), targetNode.position);
-        newNodes.push(...children.nodes);
-        newEdges.push(...children.edges);
-      }
+    // Its first port leads to the step that was below the link.
+    newEdges.push({
+      id: ids.fromNewStep,
+      type: 'workflow',
+      source: result.nodeId,
+      sourceHandle: firstPort.id,
+      target: edge.target,
+      data: { openConfig: openEdge },
+    });
+    if (component.ports.length > 1) {
+      const children = placeholdersOn(result.nodeId, component.ports.slice(1), targetNode.position);
+      newNodes.push(...children.nodes);
+      newEdges.push(...children.edges);
     }
     setNodes(newNodes);
     setEdges(newEdges as PlaybookEdge[]);
@@ -510,6 +515,10 @@ const useManipulateComponents = (playbook: { id: string }, history?: HistoryReco
       return;
     }
     const position = { x: targetNode.position.x, y: targetNode.position.y };
+    const parentNodeId = edge.source;
+    const parentPortId = edge.sourceHandle;
+    const isEndStep = component.ports.length === 0;
+    const before = isEndStep ? history?.snapshot() : undefined;
     commitMutation({
       mutation: useManipulateComponentsInsertNodeMutation,
       variables: {
@@ -520,8 +529,22 @@ const useManipulateComponents = (playbook: { id: string }, history?: HistoryReco
         input: { name, component_id: component.id, position, configuration: jsonConfig, description },
       },
       onCompleted: (insertResult: { playbookInsertNode: CreatedStep }) => {
-        // An insertion on a link has no single inverse operation: the history ends here.
-        history?.reset();
+        if (isEndStep) {
+          // An end step is added as a new branch on the link's output: its inverse is a delete,
+          // like a step added from a port.
+          if (before) {
+            history?.record({
+              kind: 'add',
+              nodeId: insertResult.playbookInsertNode.nodeId,
+              node: stepSpec(component, name, position, jsonConfig, description),
+              parentNodeId,
+              parentPortId,
+            }, before, { nodeId: insertResult.playbookInsertNode.nodeId });
+          }
+        } else {
+          // An insertion between two steps has no single inverse operation: the history ends here.
+          history?.reset();
+        }
         applyInsertNode(edge, insertResult.playbookInsertNode, component, name, config, description);
         closeSelection();
       },

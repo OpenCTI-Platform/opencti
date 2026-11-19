@@ -468,9 +468,9 @@ export const playbookInsertNode = async (
     configuration: input.configuration ?? '{}', // TODO Check valid json
     description: input.description || undefined,
   });
-  // Replace node with new position
+  // Replace node with new position (an end step goes on a new branch: the child stays where it is)
   definition.nodes = definition.nodes.map((n) => {
-    if (n.id === childNodeId) {
+    if (n.id === childNodeId && relatedComponent.ports.length > 0) {
       return {
         ...n,
         position: {
@@ -511,16 +511,9 @@ export const playbookInsertNode = async (
       }
       return n;
     });
-  } else {
-    // Delete the child node ID
-    definition.nodes = definition.nodes.filter((n) => n.id !== childNodeId);
-    // Also delete all links going to this node (all links from this node are deleted after)
-    definition.links = definition.links.filter((n) => n.to.id !== childNodeId);
-    const linksToDelete = definition.links.filter((n) => n.from.id === childNodeId);
-    const result = deleteLinksAndAllChildren(definition, linksToDelete);
-    definition.nodes = result.nodes;
-    definition.links = result.links;
   }
+  // An end-of-playbook step (no out port) cannot lead to the child: it is added as a new branch
+  // on the same parent port, and the link parent -> child and every step after it are kept.
   assertPlaybookDefinitionIsValid(definition);
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);

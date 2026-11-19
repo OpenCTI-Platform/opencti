@@ -789,6 +789,39 @@ describe('Playbook resolver standard behavior', () => {
       const insertedNode = playbookDef.nodes.find((n: { id: string }) => n.id === insertedNodeId);
       expect(insertedNode?.description).toBeUndefined();
     });
+
+    it('should add an end-of-playbook step as a new branch and keep the steps below the link', async () => {
+      await clearPlaybook(playbookId);
+      entryNodeId = await addEntryNode(playbookId);
+      matchingNodeId = await addMatchingNode(playbookId, entryNodeId);
+      const secondMatchingNodeId = await addMatchingNode(playbookId, matchingNodeId, 'below-the-link');
+      linkId = await findLinkId(playbookId, entryNodeId, matchingNodeId);
+
+      const insertResult = await queryAsAdminWithSuccess({
+        query: INSERT_NODE_PLAYBOOK,
+        variables: {
+          id: playbookId,
+          parentNodeId: entryNodeId,
+          parentPortId: 'out',
+          childNodeId: matchingNodeId,
+          input: { component_id: 'PLAYBOOK_INGESTION_COMPONENT', configuration: '{}', name: 'end-step', position: { x: 4, y: 4 } },
+        },
+      });
+      const endNodeId = insertResult.data?.playbookInsertNode.nodeId;
+      expect(endNodeId).toBeDefined();
+
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      const nodeIds = playbookDef.nodes.map((n: { id: string }) => n.id);
+      expect(nodeIds).toEqual(expect.arrayContaining([entryNodeId, matchingNodeId, secondMatchingNodeId, endNodeId]));
+      const links = playbookDef.links as { id: string; from: { id: string; port: string }; to: { id: string } }[];
+      // The former link and the step after it are kept
+      expect(links.find((l) => l.id === linkId)).toMatchObject({ from: { id: entryNodeId, port: 'out' }, to: { id: matchingNodeId } });
+      expect(links.some((l) => l.from.id === matchingNodeId && l.to.id === secondMatchingNodeId)).toBe(true);
+      // The end step hangs on the same output as a new branch
+      const endLink = links.find((l) => l.to.id === endNodeId);
+      expect(endLink).toMatchObject({ id: insertResult.data?.playbookInsertNode.linkId, from: { id: entryNodeId, port: 'out' } });
+      expect(links.some((l) => l.from.id === endNodeId)).toBe(false);
+    });
   });
 
   describe('playbookAddLink', () => {
