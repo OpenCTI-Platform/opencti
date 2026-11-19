@@ -3,7 +3,7 @@ import { useReactFlow, useStore, useNodesInitialized, Node, Edge, ReactFlowState
 import { timer } from 'd3-timer';
 import { layoutPlaybook, PlaybookLayoutComponent, PlaybookLayoutLink, PlaybookLayoutNode } from '../layout/layoutPlaybook';
 import type { PlaybookLayoutDirection } from './usePlaybookLayoutMode';
-import { outPorts, PLAYBOOK_CARD, PLAYBOOK_SIBLING_GAP, portAddPosition, portHasPill } from '../types/nodes/playbookNodeGeometry';
+import { outPorts, PLAYBOOK_CARD, PLAYBOOK_SIBLING_GAP, portAddPosition, portAnchor, portHasPill } from '../types/nodes/playbookNodeGeometry';
 import { PLAYBOOK_LANDING, playbookLandingViewport, playbookMiniMapClear } from '../utils/playbookLanding';
 
 // [gap between siblings, gap between ranks]: room for the port pills and the add buttons. The
@@ -38,7 +38,16 @@ export const layoutNodes = (nodes: Node[], edges: Edge[], direction: PlaybookLay
   const links: PlaybookLayoutLink[] = edges
     .filter((edge) => stepIds.has(edge.source) && stepIds.has(edge.target))
     .map((edge) => ({ id: edge.id, from: { id: edge.source, port: edge.sourceHandle ?? 'out' }, to: { id: edge.target } }));
-  const result = layoutPlaybook(layoutInput, links, [...components.values()], { mode: direction, nodeSize: PLAYBOOK_CARD, spacing: direction === 'horizontal' ? PLAYBOOK_LAYOUT_SPACING_HORIZONTAL : PLAYBOOK_LAYOUT_SPACING });
+  // The layout aims each child at the port the card draws, so a link it keeps straight is straight on screen.
+  const portOffset = (index: number, count: number) => (direction === 'horizontal'
+    ? portAnchor(index, count, 'horizontal').y - PLAYBOOK_CARD.height / 2
+    : portAnchor(index, count, 'vertical').x - PLAYBOOK_CARD.width / 2);
+  const result = layoutPlaybook(layoutInput, links, [...components.values()], {
+    mode: direction,
+    nodeSize: PLAYBOOK_CARD,
+    spacing: direction === 'horizontal' ? PLAYBOOK_LAYOUT_SPACING_HORIZONTAL : PLAYBOOK_LAYOUT_SPACING,
+    portOffset,
+  });
 
   const parentOf = new Map<string, Edge>();
   edges.forEach((edge) => {

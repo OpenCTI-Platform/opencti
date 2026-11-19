@@ -1,6 +1,5 @@
 import type { XYPosition } from 'reactflow';
 import { orderLayers } from '../../../settings/sub_types/workflow/layout/order';
-import { placeX } from '../../../settings/sub_types/workflow/layout/place';
 import type { Graph, GraphEdge, GraphNode, LayerNode, RankedGraph, Segment } from '../../../settings/sub_types/workflow/layout/types';
 
 // Deterministic layered layout of a playbook definition. Pure: no React, no store, no write.
@@ -36,6 +35,9 @@ export interface PlaybookLayoutOptions {
   nodeSize?: { width: number; height: number };
   // [gap between siblings, gap between ranks], in pixels
   spacing?: [number, number];
+  // Offset of the out port `index` of `count` from the card centre, across the flow (x when
+  // vertical, y when horizontal). Defaults to ports spread evenly over the card breadth.
+  portOffset?: (index: number, count: number) => number;
 }
 
 export interface PlaybookLayoutResult {
@@ -140,6 +142,169 @@ export const countCrossings = (result: PlaybookLayoutResult, links: PlaybookLayo
     }
   }
   return crossings;
+};
+
+// Straight links within a compact band (Sam, 19 Nov 2026: "compact, no drift ... we should do our
+// best to have links straight, but of course, layout first and no drift").
+// 1. Hard constraints: the rank order of the crossing reduction, the gap between siblings, and every
+//    centre inside one band as wide as the widest rank plus a quarter card (one port offset). A chain
+//    of steps therefore never drifts: the width of the picture is the width of its widest rank.
+// 2. Within them, as many links as possible are made straight (the child's input under the port that
+//    feeds it): links are taken greedily, in a few deterministic priority orders, each kept only when
+//    the system of difference constraints stays feasible; the order that keeps the most wins.
+// 3. The groups the straight links tie together are then moved, inside the room left, towards the
+//    ports of their elbowed links, so the elbows that remain are short.
+interface StraightLink { id: string; chain: string[]; offset: number }
+
+const placeStraight = (
+  layers: string[][],
+  sep: (a: string, b: string) => number,
+  straightLinks: StraightLink[],
+  slack: number,
+): Map<string, number> => {
+  const ids = layers.flat();
+  const index = new Map(ids.map((id, i) => [id, i]));
+  const n = ids.length;
+  const source = n; // the band origin
+  const spans = layers.map((layer) => layer.slice(1).reduce((sum, id, i) => sum + sep(layer[i], id), 0));
+  const band = Math.max(0, ...spans) + slack;
+  // Constraint x[to] >= x[from] + weight, as edges of a longest-path problem from the origin.
+  const out: { to: number; w: number }[][] = Array.from({ length: n + 1 }, () => []);
+  const addConstraint = (from: number, to: number, w: number) => out[from].push({ to, w });
+  ids.forEach((_, i) => {
+    addConstraint(source, i, 0);
+    addConstraint(i, source, -band);
+  });
+  layers.forEach((layer) => layer.slice(1).forEach((id, i) => addConstraint(index.get(layer[i])!, index.get(id)!, sep(layer[i], id))));
+  const base = out.map((list) => list.length);
+  const segmentsOf = (l: StraightLink) => l.chain.slice(1).map((v, i) => ({ u: index.get(l.chain[i])!, v: index.get(v)!, w: i === 0 ? l.offset : 0 }));
+
+  // Incremental longest paths: the origin rising above 0 means the constraints are infeasible.
+  const relax = (dist: number[], starts: number[]) => {
+    const queue = starts.slice();
+    const queued = new Set(queue);
+    let steps = 0;
+    const limit = (n + 1) * (n + 1) * 4;
+    while (queue.length) {
+      const a = queue.shift()!;
+      queued.delete(a);
+      for (const { to, w } of out[a]) {
+        if (dist[a] + w > dist[to] + 1e-6) {
+          dist[to] = dist[a] + w;
+          if (dist[source] > 1e-6) return false;
+          if (!queued.has(to)) {
+            queue.push(to);
+            queued.add(to);
+          }
+        }
+      }
+      steps += 1;
+      if (steps > limit) return false;
+    }
+    return true;
+  };
+  const solve = (order: StraightLink[]) => {
+    out.forEach((list, i) => {
+      list.length = base[i];
+    });
+    const dist = new Array<number>(n + 1).fill(0);
+    // Every node starts the first pass: a constraint between two nodes at 0 propagates only from a queued node.
+    relax(dist, [...ids.keys(), source]);
+    const kept: StraightLink[] = [];
+    order.forEach((l) => {
+      const segments = segmentsOf(l);
+      const saved = dist.slice();
+      segments.forEach(({ u, v, w }) => {
+        addConstraint(u, v, w);
+        addConstraint(v, u, -w);
+      });
+      if (relax(dist, segments.flatMap(({ u, v }) => [u, v]))) {
+        kept.push(l);
+      } else {
+        // Undo in the reverse order of the pushes: a chain through dummies shares its inner nodes.
+        segments.slice().reverse().forEach(({ u, v }) => {
+          out[v].pop();
+          out[u].pop();
+        });
+        saved.forEach((d, i) => {
+          dist[i] = d;
+        });
+      }
+    });
+    return { kept, dist };
+  };
+  const singlePort = (l: StraightLink) => (l.offset === 0 ? 0 : 1);
+  const orders = [
+    straightLinks,
+    straightLinks.slice().sort((a, b) => singlePort(a) - singlePort(b)),
+    straightLinks.slice().reverse(),
+  ];
+  let best = solve(orders[0]);
+  for (let i = 1; i < orders.length; i += 1) {
+    const attempt = solve(orders[i]);
+    if (attempt.kept.length > best.kept.length) best = attempt;
+  }
+  // Rebuild the constraint set of the winner (solve leaves the last attempt's).
+  const winner = solve(best.kept);
+
+  // Rigid groups tied by straight links: a group moves as one, so its links stay straight.
+  const parent = ids.map((_, i) => i);
+  const find = (i: number): number => {
+    let r = i;
+    while (parent[r] !== r) r = parent[r];
+    return r;
+  };
+  const x = winner.dist.slice(0, n);
+  winner.kept.forEach((l) => segmentsOf(l).forEach(({ u, v }) => {
+    const ru = find(u);
+    const rv = find(v);
+    if (ru !== rv) parent[Math.max(ru, rv)] = Math.min(ru, rv);
+  }));
+  ids.forEach((_, i) => find(i));
+  const groups = new Map<number, number[]>();
+  ids.forEach((_, i) => {
+    const root = find(i);
+    if (!groups.has(root)) groups.set(root, []);
+    groups.get(root)!.push(i);
+  });
+  const straight = new Set(winner.kept.map((l) => l.id));
+  const pulls: { u: number; v: number; w: number }[] = straightLinks
+    .filter((l) => !straight.has(l.id))
+    .map((l) => ({ u: index.get(l.chain[0])!, v: index.get(l.chain[1])!, w: l.offset }));
+  const layerOf = new Map<number, { layer: string[]; at: number }>();
+  layers.forEach((layer) => layer.forEach((id, at) => layerOf.set(index.get(id)!, { layer, at })));
+  for (let pass = 0; pass < 4; pass += 1) {
+    [...groups.keys()].sort((a, b) => a - b).forEach((root) => {
+      const members = groups.get(root)!;
+      const inGroup = new Set(members);
+      let lo = -Infinity;
+      let hi = Infinity;
+      members.forEach((m) => {
+        lo = Math.max(lo, -x[m]);
+        hi = Math.min(hi, band - x[m]);
+        const { layer, at } = layerOf.get(m)!;
+        if (at > 0) {
+          const left = index.get(layer[at - 1])!;
+          if (!inGroup.has(left)) lo = Math.max(lo, x[left] + sep(layer[at - 1], layer[at]) - x[m]);
+        }
+        if (at < layer.length - 1) {
+          const right = index.get(layer[at + 1])!;
+          if (!inGroup.has(right)) hi = Math.min(hi, x[right] - sep(layer[at], layer[at + 1]) - x[m]);
+        }
+      });
+      const wanted: number[] = [];
+      pulls.forEach(({ u, v, w }) => {
+        if (inGroup.has(v) && !inGroup.has(u)) wanted.push(x[u] + w - x[v]);
+        else if (inGroup.has(u) && !inGroup.has(v)) wanted.push(x[v] - w - x[u]);
+      });
+      if (wanted.length === 0 || lo > hi) return;
+      const shift = Math.min(hi, Math.max(lo, wanted.reduce((s, d) => s + d, 0) / wanted.length));
+      members.forEach((m) => {
+        x[m] += shift;
+      });
+    });
+  }
+  return new Map(ids.map((id, i) => [id, x[i]]));
 };
 
 export const layoutPlaybook = (
@@ -284,7 +449,31 @@ export const layoutPlaybook = (
     maxRank,
   };
   const ordering = orderLayers(graph, ranked);
-  const x = placeX(ranked, ordering, gapSibling);
+  const sep = (a: string, b: string) => {
+    const A = layered.get(a)!;
+    const B = layered.get(b)!;
+    return A.w / 2 + B.w / 2 + (A.dummy || B.dummy ? gapSibling * 0.4 : gapSibling);
+  };
+  const portCount = (id: string) => {
+    const node = nodes.find((n) => n.id === id);
+    const outs = ((node && components.get(node.component_id)?.ports) || []).filter((p) => p.type === 'out');
+    return Math.max(outs.length, Math.max(1, ...links.filter((l) => l.from.id === id).map((l) => portIndex(components, node, l.from.port) + 1)));
+  };
+  const defaultPortOffset = (index: number, count: number) => (breadth / count) * (index + 0.5) - breadth / 2;
+  const portOffset = options.portOffset ?? defaultPortOffset;
+  const byNode = new Map(nodes.map((n) => [n.id, n]));
+  const linkOffset = new Map(links.map((l) => [l.id, portOffset(portIndex(components, byNode.get(l.from.id), l.from.port), portCount(l.from.id))]));
+  // Several ports of one step feeding the same child (out and unmodified both to the next step): the
+  // child aims at the middle of those ports, so the pair is drawn symmetric and the chain stays on one line.
+  const pairs = new Map<string, StraightLink & { offsets: number[] }>();
+  links.filter((l) => chains.has(l.id)).forEach((l) => {
+    const key = `${l.from.id}>${l.to.id}`;
+    const found = pairs.get(key);
+    if (found) found.offsets.push(linkOffset.get(l.id)!);
+    else pairs.set(key, { id: l.id, chain: chains.get(l.id)!, offset: 0, offsets: [linkOffset.get(l.id)!] });
+  });
+  const straightLinks = [...pairs.values()].map(({ id, chain, offsets }) => ({ id, chain, offset: offsets.reduce((s, o) => s + o, 0) / offsets.length }));
+  const x = placeStraight(ordering.layers, sep, straightLinks, breadth / 4);
   const pitch = depth + gapRank;
   const toFlow = (cx: number, r: number, w: number, h: number): XYPosition => {
     // Whole pixels: a card, its ports and the links that reach them share one integer line.

@@ -118,7 +118,64 @@ const FIXTURES = [
 ];
 const MODES: PlaybookLayoutMode[] = ['vertical', 'horizontal'];
 
+// The chained-matcher playbook of #19969's follow-up: an entry step, then 12 sources, each a
+// Match whose out port feeds a Label/Score/Author step ending in an ingestion, and whose no-match
+// port feeds the next source's Match. Every rank holds 2 or 3 steps.
+const SOURCES = ['tor', 'binarydef', 'mirai', 'proofpoint', 'blocklistde', 'dshield', 'spamhaus', 'cibadguys', 'greensnow', 'digitalside', 'botscout', 'ipsum'];
+const MATCHER_CHAIN = (() => {
+  const nodes: PlaybookLayoutNode[] = [node('a-promote', 'LISTEN')];
+  const links: PlaybookLayoutLink[] = [];
+  SOURCES.forEach((s, i) => {
+    nodes.push(node(`m-${s}`, 'MATCH'), node(`l-${s}`, 'MANIPULATE'), node(`e-${s}`, 'INGEST'));
+    links.push(link(i === 0 ? 'a-promote' : `m-${SOURCES[i - 1]}`, i === 0 ? 'out' : 'no-match', `m-${s}`));
+    links.push(link(`m-${s}`, 'out', `l-${s}`), link(`l-${s}`, 'out', `e-${s}`));
+  });
+  return { nodes, links };
+})();
+
 describe('layoutPlaybook', () => {
+  describe('chained matchers (12 sources)', () => {
+    const { width } = PLAYBOOK_NODE_SIZE;
+    const portX = (id: string, port: string) => {
+      const p = layoutPlaybook(MATCHER_CHAIN.nodes, MATCHER_CHAIN.links, COMPONENTS, { mode: 'vertical' }).positions.get(id)!;
+      const outs = COMPONENTS.find((c) => c.id === MATCHER_CHAIN.nodes.find((n) => n.id === id)!.component_id)!.ports!.filter((q) => q.type === 'out');
+      const index = Math.max(0, outs.findIndex((q) => q.id === port));
+      return p.x + (width / outs.length) * (index + 0.5);
+    };
+
+    it('does not drift: the picture is as wide as its widest rank, whatever the depth', () => {
+      MODES.forEach((mode) => {
+        const result = layoutPlaybook(MATCHER_CHAIN.nodes, MATCHER_CHAIN.links, COMPONENTS, { mode });
+        const across = [...result.positions.values()].map((p) => (mode === 'horizontal' ? p.y : p.x));
+        const breadth = mode === 'horizontal' ? PLAYBOOK_NODE_SIZE.height : width;
+        const widestRank = Math.max(...[...new Set(result.ranks.values())].map((r) => [...result.ranks.values()].filter((q) => q === r).length));
+        // widest rank, its sibling gaps, plus one port offset (a quarter card) of room to keep links straight
+        const bound = widestRank * breadth + (widestRank - 1) * 48 + breadth / 4;
+        expect(Math.max(...across) - Math.min(...across) + breadth).toBeLessThanOrEqual(bound + 1);
+        // the last source sits no further across than the first ones: no staircase
+        const first = mode === 'horizontal' ? result.positions.get('m-binarydef')!.y : result.positions.get('m-binarydef')!.x;
+        const last = mode === 'horizontal' ? result.positions.get('m-ipsum')!.y : result.positions.get('m-ipsum')!.x;
+        expect(Math.abs(last - first)).toBeLessThanOrEqual(bound);
+        expect(overlaps(result.positions)).toEqual([]);
+      });
+    });
+
+    // Measured on this fixture: 12 of 36 links straight inside the compact band (master: none, with
+    // the staircase). With the crossing-free rank order (End, Label, Match), a straight link for the
+    // rest would push the chain one step across per level: those stay short elbows.
+    it('keeps at least a third of the links straight (child input under the port that feeds it)', () => {
+      const result = layoutPlaybook(MATCHER_CHAIN.nodes, MATCHER_CHAIN.links, COMPONENTS, { mode: 'vertical' });
+      const straight = MATCHER_CHAIN.links.filter((l) => Math.abs(portX(l.from.id, l.from.port) - (result.positions.get(l.to.id)!.x + width / 2)) < 1);
+      expect(straight.length * 3).toBeGreaterThanOrEqual(MATCHER_CHAIN.links.length);
+    });
+
+    it('places a single-port child straight under its port when the room allows it', () => {
+      const result = layoutPlaybook(REPORT_PIPELINE.nodes.slice(0, 3), REPORT_PIPELINE.links.slice(0, 2), COMPONENTS, { mode: 'vertical' });
+      expect(result.positions.get('b-scrape')!.x).toBe(result.positions.get('a-listen')!.x);
+      expect(result.positions.get('c-qualify')!.x).toBe(result.positions.get('b-scrape')!.x);
+    });
+  });
+
   it('lays out an empty playbook as nothing', () => {
     const result = layoutPlaybook([], [], COMPONENTS, { mode: 'vertical' });
     expect(result.positions.size).toBe(0);
