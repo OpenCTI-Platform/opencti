@@ -38,18 +38,36 @@ describe('Default credentials', () => {
   it.each([
     ['app:admin:password', 'changeme', 'APP__ADMIN__PASSWORD'],
     ['app:health_access_key', 'changeme', 'APP__HEALTH_ACCESS_KEY'],
-    ['rabbitmq:username', 'guest', 'RABBITMQ__USERNAME'],
-    ['rabbitmq:username', 'changeme', 'RABBITMQ__USERNAME'],
     ['rabbitmq:password', 'guest', 'RABBITMQ__PASSWORD'],
     ['rabbitmq:password', 'changeme', 'RABBITMQ__PASSWORD'],
-    ['minio:access_key', 'minioadmin', 'MINIO__ACCESS_KEY'],
-    ['minio:access_key', 'ChangeMe', 'MINIO__ACCESS_KEY'],
     ['minio:secret_key', 'minioadmin', 'MINIO__SECRET_KEY'],
     ['minio:secret_key', 'ChangeMe', 'MINIO__SECRET_KEY'],
   ])('should find %s set to %s', async (setting, value, envKey) => {
     const { findDefaultCredentials } = await loadModules({ [envKey]: value });
 
     expect(findDefaultCredentials()).toEqual([setting]);
+  });
+
+  it.each([
+    ['rabbitmq:username', 'rabbitmq:password', 'guest', 'RABBITMQ__USERNAME', 'RABBITMQ__PASSWORD'],
+    ['rabbitmq:username', 'rabbitmq:password', 'changeme', 'RABBITMQ__USERNAME', 'RABBITMQ__PASSWORD'],
+    ['minio:access_key', 'minio:secret_key', 'minioadmin', 'MINIO__ACCESS_KEY', 'MINIO__SECRET_KEY'],
+    ['minio:access_key', 'minio:secret_key', 'ChangeMe', 'MINIO__ACCESS_KEY', 'MINIO__SECRET_KEY'],
+  ])('should find %s with %s both set to %s', async (userSetting, passwordSetting, value, userEnvKey, passwordEnvKey) => {
+    const { findDefaultCredentials } = await loadModules({ [userEnvKey]: value, [passwordEnvKey]: value });
+
+    expect(findDefaultCredentials()).toEqual([userSetting, passwordSetting]);
+  });
+
+  it.each([
+    ['rabbitmq:username', 'guest', 'RABBITMQ__USERNAME'],
+    ['rabbitmq:username', 'changeme', 'RABBITMQ__USERNAME'],
+    ['minio:access_key', 'minioadmin', 'MINIO__ACCESS_KEY'],
+    ['minio:access_key', 'ChangeMe', 'MINIO__ACCESS_KEY'],
+  ])('should accept %s set to %s with a strong password, as the pair is not a default', async (_setting, value, envKey) => {
+    const { findDefaultCredentials } = await loadModules({ [envKey]: value });
+
+    expect(findDefaultCredentials()).toEqual([]);
   });
 
   it.each(['changeme', 'ChangeMe', 'CHANGEME', 'cHaNgEmE', ' changeme '])('should ignore the case of %s', async (value) => {
@@ -92,6 +110,16 @@ describe('Default credentials', () => {
     expect(findDefaultCredentials()).toEqual([]);
   });
 
+  it('should check the admin password when externally_managed is the string "true", which initAdmin does not lock', async () => {
+    const { findDefaultCredentials } = await loadModules({ APP__ADMIN__PASSWORD: 'changeme' });
+    // A JSON configuration file can hold the string "true" (the environment is parsed into a boolean): initAdmin compares the flag to the true boolean.
+    const { default: conf } = await import('../../../src/config/conf');
+    const get = conf.get.bind(conf);
+    vi.spyOn(conf, 'get').mockImplementation((key: string) => (key === 'app:admin:externally_managed' ? 'true' : get(key)));
+
+    expect(findDefaultCredentials()).toEqual(['app:admin:password']);
+  });
+
   it('should only check the known defaults of each setting', async () => {
     const { findDefaultCredentials } = await loadModules({ APP__ADMIN__PASSWORD: 'guest', RABBITMQ__PASSWORD: 'minioadmin' });
 
@@ -111,11 +139,11 @@ describe('Default credentials', () => {
   });
 
   it.each([
-    ['both keys', 'MINIO__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS', '["accessKeyId","secretAccessKey"]', []],
-    ['both keys, from the generic option', 'MINIO__CREDENTIALS_PROVIDER__FIELD_TARGETS', '["accessKeyId","secretAccessKey"]', []],
-    ['the secret key only', 'MINIO__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS', '["secretAccessKey"]', ['minio:access_key']],
-    ['the access key only', 'MINIO__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS', '["accessKeyId"]', ['minio:secret_key']],
-  ])('should skip the MinIO keys a remote credentials provider replaces: %s', async (_label, targetsKey, targets, expected) => {
+    ['both keys', 'MINIO__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS', '["accessKeyId","secretAccessKey"]'],
+    ['both keys, from the generic option', 'MINIO__CREDENTIALS_PROVIDER__FIELD_TARGETS', '["accessKeyId","secretAccessKey"]'],
+    ['the secret key only', 'MINIO__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS', '["secretAccessKey"]'],
+    ['the access key only', 'MINIO__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS', '["accessKeyId"]'],
+  ])('should leave the MinIO keys to their resolution with a remote credentials provider targeting %s', async (_label, targetsKey, targets) => {
     const { findDefaultCredentials } = await loadModules({
       MINIO__CREDENTIALS_PROVIDER__SELECTOR: 'cyberark',
       [targetsKey]: targets,
@@ -123,7 +151,7 @@ describe('Default credentials', () => {
       MINIO__SECRET_KEY: 'ChangeMe',
     });
 
-    expect(findDefaultCredentials()).toEqual(expected);
+    expect(findDefaultCredentials()).toEqual([]);
   });
 
   it('should check the MinIO keys with an unsupported remote credentials provider, which falls back to them', async () => {
@@ -164,10 +192,16 @@ describe('Default credentials', () => {
       expect(findResolvedMinioDefaultCredentials({ accessKeyId: 'opencti', secretAccessKey: 'a-strong-remote-secret' })).toEqual([]);
     });
 
-    it('should not report again a key the provider does not target, already checked at startup', async () => {
+    it('should accept a default access key with a strong resolved secret key, as the pair is not a default', async () => {
+      const { findResolvedMinioDefaultCredentials } = await loadModules(PROVIDER);
+
+      expect(findResolvedMinioDefaultCredentials({ accessKeyId: 'minioadmin', secretAccessKey: 'a-strong-remote-secret' })).toEqual([]);
+    });
+
+    it('should also check the key the provider does not target, left to this check at startup', async () => {
       const { findResolvedMinioDefaultCredentials } = await loadModules({ ...PROVIDER, MINIO__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS: '["secretAccessKey"]' });
 
-      expect(findResolvedMinioDefaultCredentials({ accessKeyId: 'ChangeMe', secretAccessKey: 'ChangeMe' })).toEqual(['minio:secret_key']);
+      expect(findResolvedMinioDefaultCredentials({ accessKeyId: 'ChangeMe', secretAccessKey: 'ChangeMe' })).toEqual(['minio:access_key', 'minio:secret_key']);
     });
 
     it('should find nothing without a supported remote credentials provider', async () => {
@@ -180,13 +214,13 @@ describe('Default credentials', () => {
       const { checkResolvedMinioCredentials, warn } = await loadModules(PROVIDER);
 
       expect(() => checkResolvedMinioCredentials({ accessKeyId: 'ChangeMe', secretAccessKey: 'ChangeMe' })).not.toThrow();
-      expect(warn).toHaveBeenCalledWith(expect.any(String), { settings: ['minio:access_key', 'minio:secret_key'] });
+      expect(warn).toHaveBeenCalledWith(expect.stringMatching(/remote credentials provider/), { settings: ['minio:access_key', 'minio:secret_key'] });
     });
 
     it('should refuse to start after a provider failure when the switch is enabled', async () => {
       const { checkResolvedMinioCredentials } = await loadModules({ ...PROVIDER, APP__CREDENTIALS__SECURE_BY_DEFAULT: 'true' });
 
-      expect(() => checkResolvedMinioCredentials({ accessKeyId: 'ChangeMe', secretAccessKey: 'ChangeMe' })).toThrow(/Default credentials are configured/);
+      expect(() => checkResolvedMinioCredentials({ accessKeyId: 'ChangeMe', secretAccessKey: 'ChangeMe' })).toThrow(/Default MinIO keys are in use with the remote credentials provider/);
     });
   });
 
@@ -233,7 +267,7 @@ describe('Default credentials', () => {
     });
 
     it('should name the settings, never the values, in the error', async () => {
-      const { checkDefaultCredentials } = await loadModules({ APP__CREDENTIALS__SECURE_BY_DEFAULT: 'true', RABBITMQ__USERNAME: 'guest' });
+      const { checkDefaultCredentials } = await loadModules({ APP__CREDENTIALS__SECURE_BY_DEFAULT: 'true', RABBITMQ__USERNAME: 'guest', RABBITMQ__PASSWORD: 'guest' });
 
       let thrown: unknown;
       try {
@@ -241,7 +275,7 @@ describe('Default credentials', () => {
       } catch (error) {
         thrown = error;
       }
-      expect(thrown).toMatchObject({ extensions: { data: { settings: ['rabbitmq:username'] } } });
+      expect(thrown).toMatchObject({ extensions: { data: { settings: ['rabbitmq:username', 'rabbitmq:password'] } } });
       expect(JSON.stringify(thrown)).not.toMatch(/guest/i);
     });
   });
