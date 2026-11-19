@@ -22,7 +22,7 @@ import { checkSavedFilterGroupForStixMatch, isStixMatchFilterGroup } from '../ut
 import { STIX_TYPE_RELATION } from '../schema/general';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { AuthContext } from '../types/user';
-import { FunctionalError, UNSUPPORTED_ERROR } from '../config/errors';
+import { error, FunctionalError, UNSUPPORTED_ERROR } from '../config/errors';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type ParsedPir, type ParsedPirCriterion, type StoreEntityPir } from '../modules/pir/pir-types';
 import { constructFinalPirFilters, parsePir } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
@@ -94,35 +94,76 @@ const pirUnflagElementFromQueue = async (
   await pushBundleToWorker(context, PIR_MANAGER_USER, pir.internal_id, message);
 };
 
-// Ids of the Pirs already reported as not matchable, to warn once per Pir instead of on every manager run.
-const reportedUnmatchablePirIds = new Set<string>();
+// A skipped Pir is reported again at this interval, so the warning stays in recent logs.
+export const PIR_NOT_MATCHABLE_WARNING_INTERVAL = 60 * 60 * 1000; // 1 hour
+
+type PirStreamMatchability = { matchable: true } | {
+  matchable: false;
+  cause: GraphQLError; // Why the Pir cannot be matched, without the filter values
+  filtersLocation: string; // Which filters of the Pir cannot be matched
+  lastWarnedAt?: number;
+};
+
+// The filters of a Pir cannot be modified after its creation (see updatePir),
+// so whether a Pir can be matched on stream events is checked once and kept by Pir id.
+const pirStreamMatchabilities = new Map<string, PirStreamMatchability>();
+
+const checkPirStreamMatchability = async (context: AuthContext, pir: ParsedPir): Promise<PirStreamMatchability> => {
+  const pirFilterGroups = [
+    { filtersLocation: 'pir_filters', filterGroup: constructFinalPirFilters(pir.pir_type, pir.pir_filters) },
+    ...pir.pir_criteria.map((criterion, index) => ({ filtersLocation: `pir_criteria[${index}]`, filterGroup: criterion.filters })),
+  ];
+  for (const { filtersLocation, filterGroup } of pirFilterGroups) {
+    try {
+      await checkSavedFilterGroupForStixMatch(context, PIR_MANAGER_USER, filterGroup);
+    } catch (err) {
+      // Only an invalid filter makes the Pir not matchable, any other error must surface as before
+      if (!(err instanceof GraphQLError && err.extensions.code === UNSUPPORTED_ERROR)) throw err;
+      // Keep only the filter key: the other error data (filter, availableFilters) may hold intelligence values
+      const { key } = (err.extensions.data ?? {}) as { key?: string };
+      const cause = error(UNSUPPORTED_ERROR, err.message, { key });
+      cause.stack = err.stack;
+      return { matchable: false, cause, filtersLocation };
+    }
+  }
+  return { matchable: true };
+};
 
 /**
  * Check that the filters of a PIR can be evaluated on stream events.
  * A PIR created through the API may hold filters not supported in stix matching:
  * it would fail on every batch without ever moving its lastEventId, so it must be skipped.
+ * A skipped PIR is reported with a warning every PIR_NOT_MATCHABLE_WARNING_INTERVAL.
  *
  * @param context To call internal stuff.
  * @param pir The PIR to check.
  * @returns true if the PIR filters and criteria can be evaluated on stream events.
  */
 export const isPirMatchableOnStream = async (context: AuthContext, pir: ParsedPir) => {
-  try {
-    await checkSavedFilterGroupForStixMatch(context, PIR_MANAGER_USER, constructFinalPirFilters(pir.pir_type, pir.pir_filters));
-    for (const criterion of pir.pir_criteria) {
-      await checkSavedFilterGroupForStixMatch(context, PIR_MANAGER_USER, criterion.filters);
-    }
-    return true;
-  } catch (err) {
-    // Only an invalid filter makes the Pir not matchable, any other error must surface as before
-    if (!(err instanceof GraphQLError && err.extensions.code === UNSUPPORTED_ERROR)) throw err;
-    if (!reportedUnmatchablePirIds.has(pir.id)) {
-      reportedUnmatchablePirIds.add(pir.id);
-      const cause = new GraphQLError(err.message, { extensions: { code: err.extensions.code } });
-      cause.stack = err.stack;
-      logApp.warn('[OPENCTI-MODULE] Pir filter keys are not compatible with stix filtering, Pir skipped', { cause, pirId: pir.id });
-    }
-    return false;
+  let matchability = pirStreamMatchabilities.get(pir.id);
+  if (!matchability) {
+    matchability = await checkPirStreamMatchability(context, pir);
+    pirStreamMatchabilities.set(pir.id, matchability);
+  }
+  if (matchability.matchable) return true;
+  const now = Date.now();
+  if (matchability.lastWarnedAt === undefined || now - matchability.lastWarnedAt >= PIR_NOT_MATCHABLE_WARNING_INTERVAL) {
+    matchability.lastWarnedAt = now;
+    const { cause, filtersLocation } = matchability;
+    logApp.warn('[OPENCTI-MODULE] Pir filters cannot be evaluated on stream events, Pir skipped', { cause, pirId: pir.id, filtersLocation });
+  }
+  return false;
+};
+
+/**
+ * Forget the stream matchability of the PIRs that no longer exist.
+ *
+ * @param existingPirIds Ids of all the current PIRs.
+ */
+export const forgetDeletedPirsStreamMatchability = (existingPirIds: string[]) => {
+  const existingPirIdsSet = new Set(existingPirIds);
+  for (const pirId of pirStreamMatchabilities.keys()) {
+    if (!existingPirIdsSet.has(pirId)) pirStreamMatchabilities.delete(pirId);
   }
 };
 
@@ -199,6 +240,7 @@ const processStreamEventsForPir = (context: AuthContext, pir: BasicStoreEntityPi
 export const pirManagerHandler = async () => {
   const context = executionContext(PIR_MANAGER_CONTEXT);
   const allPirs = await getEntitiesListFromCache<BasicStoreEntityPir>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR);
+  forgetDeletedPirsStreamMatchability(allPirs.map((pir) => pir.id));
 
   // Loop through all Pirs by group
   await BluePromise.map(allPirs, async (pir) => {
