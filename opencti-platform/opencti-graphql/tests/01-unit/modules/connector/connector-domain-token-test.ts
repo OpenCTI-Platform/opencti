@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import type { BasicStoreEntityConnector } from '../../../../src/modules/connector/connector-types';
+import { ENTITY_TYPE_USER } from '../../../../src/modules/user/user-types';
 
 const {
   mockGetEntitiesMapFromCache,
@@ -8,6 +9,8 @@ const {
   mockAddUserTokenByAdmin,
   mockRevokeUserTokenByAdmin,
   mockInternalDeleteElementById,
+  mockStoreLoadById,
+  mockLockResources,
   redisStore,
 } = vi.hoisted(() => ({
   mockGetEntitiesMapFromCache: vi.fn(),
@@ -15,12 +18,14 @@ const {
   mockAddUserTokenByAdmin: vi.fn(),
   mockRevokeUserTokenByAdmin: vi.fn(),
   mockInternalDeleteElementById: vi.fn(),
+  mockStoreLoadById: vi.fn(),
+  mockLockResources: vi.fn(),
   redisStore: new Map<string, string>(),
 }));
 
 vi.mock('../../../../src/lock/master-lock', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/lock/master-lock')>()),
-  lockResources: vi.fn().mockResolvedValue({ unlock: vi.fn() }),
+  lockResources: mockLockResources,
 }));
 
 vi.mock('../../../../src/database/cache', async (importOriginal) => ({
@@ -58,6 +63,11 @@ vi.mock('../../../../src/modules/catalog/catalog-domain', async (importOriginal)
 vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/middleware')>()),
   internalDeleteElementById: mockInternalDeleteElementById,
+}));
+
+vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
+  storeLoadById: mockStoreLoadById,
 }));
 
 vi.mock('../../../../src/domain/work', async (importOriginal) => ({
@@ -99,6 +109,9 @@ const managedConnector = (id: string, catalogId: string, userId = 'user-1') => (
 
 // Tokens of the user, kept in sync by the add and revoke mocks
 let userTokens: { id: string; name: string }[];
+// Connectors deleted from the database, while a configuration read may still hold them
+let deletedConnectorIds: Set<string>;
+const loadUser = (userId: string) => (userId === 'user-1' ? { id: 'user-1', internal_id: 'user-1', api_tokens: userTokens } : undefined);
 
 const readToken = async (connectorEntity: BasicStoreEntityConnector) => {
   const configuration = await computeManagedConnectorContractConfiguration(context, user, connectorEntity);
@@ -110,10 +123,16 @@ describe('managed connector token', () => {
     vi.clearAllMocks();
     redisStore.clear();
     userTokens = [];
+    deletedConnectorIds = new Set();
     let tokenCount = 0;
-    mockGetEntitiesMapFromCache.mockImplementation(async () => new Map([
-      ['user-1', { id: 'user-1', internal_id: 'user-1', api_tokens: userTokens }],
-    ]));
+    mockLockResources.mockResolvedValue({ unlock: vi.fn() });
+    mockGetEntitiesMapFromCache.mockImplementation(async () => new Map([['user-1', loadUser('user-1')]]));
+    mockStoreLoadById.mockImplementation(async (_context, _user, id, type) => {
+      if (type === ENTITY_TYPE_USER) {
+        return loadUser(id);
+      }
+      return deletedConnectorIds.has(id) ? undefined : { id, internal_id: id };
+    });
     mockFindConnectorManagers.mockResolvedValue([{ public_key: 'public-key' }]);
     mockAddUserTokenByAdmin.mockImplementation(async (_context, _user, _userId, { name }) => {
       tokenCount += 1;
@@ -180,6 +199,14 @@ describe('managed connector token', () => {
     expect(mockAddUserTokenByAdmin).toHaveBeenCalledTimes(1);
   });
 
+  it('should not issue a token for a connector deleted while its configuration is read', async () => {
+    const connectorA = managedConnector('connector-a', 'catalog-x');
+    deletedConnectorIds.add('connector-a');
+
+    await expect(readToken(connectorA)).rejects.toThrow('Managed connector not found');
+    expect(mockAddUserTokenByAdmin).not.toHaveBeenCalled();
+  });
+
   it('should revoke the token of a deleted managed connector, and only this one', async () => {
     const connectorA = managedConnector('connector-a', 'catalog-x');
     const connectorB = managedConnector('connector-b', 'catalog-y');
@@ -195,6 +222,21 @@ describe('managed connector token', () => {
     // Connector B keeps receiving its still valid token
     expect(await readToken(connectorB)).toBe('public-key|plaintext-2');
     expect(mockAddUserTokenByAdmin).toHaveBeenCalledTimes(2);
+  });
+
+  it('should revoke every token of a deleted managed connector, under the token lock', async () => {
+    const connectorA = managedConnector('connector-a', 'catalog-x');
+    await readToken(connectorA);
+    await readToken(managedConnector('connector-b', 'catalog-y'));
+    // A stale users cache can have let configuration reads issue several tokens for the same connector
+    userTokens.push({ id: 'token-duplicate', name: 'Composer managed token connector-a' });
+    mockInternalDeleteElementById.mockResolvedValueOnce({ element: connectorA });
+    mockLockResources.mockClear();
+
+    expect(await connectorDelete(context, user, 'connector-a')).toBe('connector-a');
+
+    expect(mockLockResources).toHaveBeenCalledWith(['manager-configuration-connector-a']);
+    expect(userTokens.map(({ id }) => id)).toEqual(['token-2']);
   });
 
   it('should delete a managed connector whose user no longer exists, without revoking any token', async () => {

@@ -35,6 +35,12 @@ vi.mock('../../../../src/database/redis', async (importOriginal) => ({
   }),
 }));
 
+// The connector is still in the database: a token can be issued for it
+vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
+  storeLoadById: async (_context: unknown, _user: unknown, id: string) => ({ id, internal_id: id }),
+}));
+
 vi.mock('../../../../src/modules/connector/connector-repository', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/connector/connector-repository')>()),
   findConnectorManagers: mockFindConnectorManagers,

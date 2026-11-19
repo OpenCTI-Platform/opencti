@@ -459,6 +459,8 @@ const COMPOSER_TOKEN_REDIS_EXPIRATION = conf.get('app:composer_token_expiration'
 // One token per connector: managed connectors running as the same user must not revoke each other's token
 const composerTokenName = (connectorId: string) => `Composer managed token ${connectorId}`;
 const composerTokenKey = (connectorId: string, userId: string) => `composer:connector:${connectorId}:token:${userId}`;
+// Held to issue a connector's token and to revoke it on deletion
+const composerTokenLockId = (connectorId: string) => `manager-configuration-${connectorId}`;
 interface CachedComposerToken {
   key_fingerprint: string;
   encrypted_token: string;
@@ -479,7 +481,7 @@ const parseCachedComposerToken = (value: string | null): CachedComposerToken | n
   }
 };
 const computeConnectorTokenConfiguration = async (context: AuthContext, connectorEntity: BasicStoreEntityConnector) => {
-  const resourceId = `manager-configuration-${connectorEntity.internal_id}`;
+  const resourceId = composerTokenLockId(connectorEntity.internal_id);
   let lock;
   try {
     lock = await lockResources([resourceId]);
@@ -504,6 +506,11 @@ const computeConnectorTokenConfiguration = async (context: AuthContext, connecto
       await redisClient.expire(key, COMPOSER_TOKEN_REDIS_EXPIRATION);
       return cached.encrypted_token;
     }
+    // A configuration read can hold a connector loaded before its deletion: never issue a token for a deleted connector
+    const liveConnector = await storeLoadById(context, SYSTEM_USER, connectorEntity.internal_id, ENTITY_TYPE_CONNECTOR);
+    if (!liveConnector) {
+      throw FunctionalError('Managed connector not found', { connectorId: connectorEntity.internal_id });
+    }
     if (existingToken) {
       await revokeUserTokenByAdmin(context, SYSTEM_USER, targetUser.internal_id, existingToken.id);
     }
@@ -522,18 +529,35 @@ const computeConnectorTokenConfiguration = async (context: AuthContext, connecto
   }
 };
 
+// Under the token lock, with the user read from the database (the users cache can miss a token just issued):
+// a configuration read in flight cannot leave a valid token behind for a deleted connector
 const revokeConnectorToken = async (context: AuthContext, connectorEntity: BasicStoreEntityConnector) => {
-  const users = await getEntitiesMapFromCache<BasicStoreEntityUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const targetUser = connectorEntity.connector_user_id ? users.get(connectorEntity.connector_user_id) : undefined;
-  if (!targetUser) {
+  if (!connectorEntity.connector_user_id) {
     return;
   }
-  const tokenName = composerTokenName(connectorEntity.internal_id);
-  const existingToken = (targetUser.api_tokens ?? []).find((token) => token.name === tokenName);
-  if (existingToken) {
-    await revokeUserTokenByAdmin(context, SYSTEM_USER, targetUser.internal_id, existingToken.id);
+  const resourceId = composerTokenLockId(connectorEntity.internal_id);
+  let lock;
+  try {
+    lock = await lockResources([resourceId]);
+    const targetUser = await storeLoadById<BasicStoreEntityUser>(context, SYSTEM_USER, connectorEntity.connector_user_id, ENTITY_TYPE_USER);
+    if (!targetUser) {
+      return;
+    }
+    const tokenName = composerTokenName(connectorEntity.internal_id);
+    // Every token of this connector: a stale users cache can have let configuration reads issue several
+    const connectorTokens = (targetUser.api_tokens ?? []).filter((token) => token.name === tokenName);
+    for (const token of connectorTokens) {
+      await revokeUserTokenByAdmin(context, SYSTEM_USER, targetUser.internal_id, token.id);
+    }
+    await getClientBase().del(composerTokenKey(connectorEntity.internal_id, targetUser.internal_id));
+  } catch (error) {
+    if ((error as { name?: string }).name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds: [resourceId] });
+    }
+    throw error;
+  } finally {
+    await lock?.unlock();
   }
-  await getClientBase().del(composerTokenKey(connectorEntity.internal_id, targetUser.internal_id));
 };
 
 export const computeManagerConnectorConfiguration = async (
