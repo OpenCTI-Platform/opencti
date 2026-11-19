@@ -18,6 +18,9 @@ export class SequencerQueue {
 
   private bytes = 0;
 
+  // task 0040 no-op tag: the queued intents not tagged likely no-op (the release set point counts these)
+  private untagged = 0;
+
   // FIFO of submitters waiting for a free slot (queue full)
   private slotWaiters: Array<() => void> = [];
 
@@ -45,6 +48,10 @@ export class SequencerQueue {
 
   size() {
     return this.count;
+  }
+
+  untaggedSize() {
+    return this.untagged;
   }
 
   hasCandidate(id: string): boolean {
@@ -85,6 +92,7 @@ export class SequencerQueue {
     }
     this.count += 1;
     this.bytes += intent.sizeBytes;
+    if (!intent.likelyNoop) this.untagged += 1;
     this.indexAdd(intent);
     sequencerMetrics.queueDepth(this.count);
     sequencerMetrics.queueBytes(this.bytes);
@@ -107,6 +115,7 @@ export class SequencerQueue {
         }
         this.count -= 1;
         this.bytes -= intent.sizeBytes;
+        if (!intent.likelyNoop) this.untagged -= 1;
         this.indexRemove(intent);
         sequencerMetrics.queueDepth(this.count);
         sequencerMetrics.queueBytes(this.bytes);
@@ -199,6 +208,7 @@ export class SequencerQueue {
         }
         this.count += 1;
         this.bytes += next.sizeBytes;
+        if (!next.likelyNoop) this.untagged += 1;
         this.indexAdd(next);
         sequencerMetrics.queueDepth(this.count);
         sequencerMetrics.queueBytes(this.bytes);

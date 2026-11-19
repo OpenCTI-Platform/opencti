@@ -55,7 +55,19 @@ import { sequencerIdentityMap, startIdentityMapInvalidation } from './sequencer-
 import { buildBatchPlan, canonicalKey, classifyPhase } from './sequencer-batch-plan';
 import { computeBatchLockKeys, computeOwnLockKeys, getCurrentBatchLock, setCurrentBatchLock } from './sequencer-batch-lock';
 import { mergedSourceKeys, newEndpointShares, preShareEndpoints, releaseEndpointShares, startEndpointShareRenewal } from './sequencer-endpoint-shares';
-import { isNoopOfServedBasis, NOOP_TOKEN_SOURCE_EXCLUDES, NoopMemo, NoopMemoDiag, noopRecordOf, noopTokenOf, settleNoopRecords, takeNoopMemoHits } from './sequencer-noop-memo';
+import {
+  capWeight,
+  fillWeighted,
+  isLikelyNoop,
+  isNoopOfServedBasis,
+  NOOP_TOKEN_SOURCE_EXCLUDES,
+  NoopMemo,
+  NoopMemoDiag,
+  noopRecordOf,
+  noopTokenOf,
+  settleNoopRecords,
+  takeNoopMemoHits,
+} from './sequencer-noop-memo';
 import type { NoopDiagOutcome, NoopRecord, NoopTarget, NoopToken, NoopVersionsOf } from './sequencer-noop-memo';
 import type { CoalesceGroup } from './sequencer-batch-plan';
 import type { IntentKind, SequencerIntent } from './sequencer-intent';
@@ -241,7 +253,11 @@ export const describeIntentLocation = (ids: string[]): IntentLocation => {
 };
 // Intents waiting in the queue, and the listeners told when the loop took a batch from it (the
 // worker-less intake releases operations against the queue depth, intake/workerless)
-export const sequencerQueueDepth = () => queue.size();
+// task 0040 no-op tag: under noop_tag_caps the release set point counts the untagged intents only
+const noopTagCapsOn = () => SEQUENCER_CONFIG.noopMemo && SEQUENCER_CONFIG.noopTagCaps;
+const noopTagWeight = (intent: SequencerIntent) => capWeight(intent, noopTagCapsOn());
+const noopTagCeiling = () => (noopTagCapsOn() ? SEQUENCER_CONFIG.noopTagCeilingRatio * SEQUENCER_CONFIG.maxBatchSize : Infinity);
+export const sequencerQueueDepth = () => (noopTagCapsOn() ? queue.untaggedSize() : queue.size());
 const queueTakenListeners = new Set<() => void>();
 export const onSequencerQueueTaken = (listener: () => void) => {
   queueTakenListeners.add(listener);
@@ -995,15 +1011,15 @@ const runBatchLoop = async () => {
     // B10: whatever the lanes and the parked set assembled, the queue gets at least its
     // share of the cap every cycle (a batch may exceed the cap by that share): the queued
     // producers the waiters depend on are always reached
-    const drainTarget = Math.max(SEQUENCER_CONFIG.maxBatchSize, batch.length + laneAdmitCap);
-    while (batch.length < drainTarget) {
-      const next = queue.tryPop();
-      if (!next) break;
-      // queue wait is recorded on FIRST entry into a batch only (deferred and parked
-      // re-entries would recount and dominate the histogram)
+    // task 0040 no-op tag: the cap and the drain count weighted slots (a likely no-op takes none under
+    // noop_tag_caps), the cycle holds at most the ceiling
+    const batchWeight = batch.reduce((acc, intent) => acc + noopTagWeight(intent), 0);
+    const drainTarget = Math.max(SEQUENCER_CONFIG.maxBatchSize, batchWeight + laneAdmitCap);
+    // queue wait is recorded on FIRST entry into a batch only (deferred and parked
+    // re-entries would recount and dominate the histogram)
+    fillWeighted(batch, () => queue.tryPop(), drainTarget, noopTagCeiling(), noopTagWeight, (next) => {
       sequencerMetrics.queueWait((Date.now() - next.arrivedAt) / 1000);
-      batch.push(next);
-    }
+    });
     if (batch.length === 0) continue;
     sequencerMetrics.queueDepth(queue.size());
     notifyQueueTaken();
@@ -1015,6 +1031,10 @@ const runBatchLoop = async () => {
           logApp.warn('[SEQUENCER] no-op memo versions unreadable, the batch applies', { cause: err });
           return { hits: [], rest: batch, misses: null };
         });
+      if (noopTagCapsOn()) {
+        const tagMisses = rest.filter((intent) => intent.likelyNoop).length;
+        if (tagMisses > 0) sequencerMetrics.mapEvent('noop_tag_miss', tagMisses);
+      }
       if (misses) {
         if (misses.ineligible > 0) sequencerMetrics.mapEvent('noop_memo_ineligible', misses.ineligible);
         if (misses.noEntry > 0) sequencerMetrics.mapEvent('noop_memo_no_entry', misses.noEntry);
@@ -1523,12 +1543,9 @@ const runBatchLoop = async () => {
       if (SEQUENCER_CONFIG.resolveAhead) {
         aheadGrab = (async () => {
           const grabbed: SequencerIntent[] = [];
-          while (grabbed.length < SEQUENCER_CONFIG.maxBatchSize) {
-            const next = queue.tryPop();
-            if (!next) break;
+          fillWeighted(grabbed, () => queue.tryPop(), SEQUENCER_CONFIG.maxBatchSize, noopTagCeiling(), noopTagWeight, (next) => {
             sequencerMetrics.queueWait((Date.now() - next.arrivedAt) / 1000);
-            grabbed.push(next);
-          }
+          });
           if (grabbed.length > 0) {
             try {
               await warmResolveAhead(grabbed);
@@ -1715,6 +1732,10 @@ export const submitIntent = async (context: AuthContext, user: AuthUser, args: S
   }
   ensureLoop();
   const intent = buildIntent({ ...args, user, context });
+  if (noopTagCapsOn() && isLikelyNoop(intent, noopMemo, noopMemoTypes)) {
+    intent.likelyNoop = true;
+    sequencerMetrics.mapEvent('noop_tagged');
+  }
   await queue.put(intent);
   // the caller's pre-loop phase ends here (chunk intake pacing, see chunkIntakeManager)
   if (typeof context.onIntentQueued === 'function') {

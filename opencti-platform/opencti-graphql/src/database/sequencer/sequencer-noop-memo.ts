@@ -152,7 +152,44 @@ export class NoopMemo {
   delete(key: string) {
     this.entries.delete(key);
   }
+
+  // without moving the entry in the LRU
+  has(key: string): boolean {
+    return this.entries.has(key);
+  }
 }
+
+// task 0040 no-op tag: an intent whose memo entry exists when it is queued (no engine read). A hint for the batch
+// caps only: takeNoopMemoHits at the batch start stays the check that settles an intent. Same keying as there:
+// only the types an apply already ended as a no-op.
+export const isLikelyNoop = (intent: SequencerIntent, memo: NoopMemo, keyedTypes: Set<string>): boolean => {
+  if (!keyedTypes.has(intent.type)) return false;
+  const key = noopMemoKey(intent);
+  return key !== null && memo.has(key);
+};
+
+// The slots an intent takes in the batch caps: none for a likely no-op under the tag caps
+export const capWeight = (intent: SequencerIntent, tagCaps: boolean): number => (tagCaps && intent.likelyNoop ? 0 : 1);
+
+// Takes from `next` into `batch` while the batch weighs less than `target` and holds less than `ceiling` intents
+// (what the batch already holds counts against both); onTaken sees each intent taken
+export const fillWeighted = (
+  batch: SequencerIntent[],
+  next: () => SequencerIntent | undefined,
+  target: number,
+  ceiling: number,
+  weightOf: (intent: SequencerIntent) => number,
+  onTaken?: (intent: SequencerIntent) => void,
+): void => {
+  let weight = batch.reduce((acc, intent) => acc + weightOf(intent), 0);
+  while (weight < target && batch.length < ceiling) {
+    const intent = next();
+    if (!intent) break;
+    onTaken?.(intent);
+    batch.push(intent);
+    weight += weightOf(intent);
+  }
+};
 
 const distinctTargets = (entries: NoopMemoEntry[]): NoopTarget[] => {
   const targets = new Map<string, NoopTarget>();

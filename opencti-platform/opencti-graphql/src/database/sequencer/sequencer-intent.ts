@@ -51,6 +51,9 @@ export interface SequencerIntent {
   // task 0040 multi_writer step 2: keys an apply-time lock site could not take at once (held by
   // another platform): the next batch locks them up front, before it holds anything
   extraLockKeys?: string[];
+  // task 0040 no-op tag: its no-op memo entry existed when it was queued (a hint, sequencer-noop-memo.ts
+  // isLikelyNoop): it takes no slot in the batch caps under noop_tag_caps
+  likelyNoop?: boolean;
   // stripSink: the loop's per-apply sink, set on the applying context (sequencer-strip-sink.ts);
   // noopSink: the elements the apply upserted without change, by internal id (sequencer-noop-memo.ts)
   apply: (stripSink?: StrippedRef[], noopSink?: Map<string, object>) => Promise<any>;
