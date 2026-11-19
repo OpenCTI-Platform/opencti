@@ -1,4 +1,5 @@
 import conf, { booleanConf, logApp } from './conf';
+import { getRemoteCredentialsProviderFields, getRemoteCredentialsProviderSelector, isSupportedRemoteCredentialsProvider } from './credentials';
 import { ConfigurationError } from './errors';
 
 // Known default values, compared in lower case: `changeme` covers ChangeMe, CHANGEME...
@@ -7,8 +8,6 @@ const CHANGE_ME = 'changeme';
 const HEALTH_DISABLED_VALUE = 'ChangeMe';
 const RABBITMQ_DEFAULTS = [CHANGE_ME, 'guest'];
 const MINIO_DEFAULTS = [CHANGE_ME, 'minioadmin'];
-// Remote credentials provider supported by enrichWithRemoteCredentials (credentials.ts).
-const SUPPORTED_REMOTE_PROVIDER = 'cyberark';
 // The MinIO keys, and the fields of the resolved credentials that hold them.
 const MINIO_ACCESS_KEY = { key: 'minio:access_key', field: 'accessKeyId' };
 const MINIO_SECRET_KEY = { key: 'minio:secret_key', field: 'secretAccessKey' };
@@ -27,13 +26,13 @@ const findDefaultPair = (user: { key: string; value: unknown }, password: { key:
   return isDefaultValue(user.value, defaults) ? [user.key, password.key] : [password.key];
 };
 
-// Same lookup as getRemoteCredentialsProviderFields (credentials.ts), not imported to keep this module free of the database layer.
+// The MinIO fields a remote credentials provider replaces, from the same lookup as enrichWithRemoteCredentials.
 const getMinioRemoteTargets = (): string[] => {
-  const provider = conf.get('minio:credentials_provider:selector');
-  if (provider !== SUPPORTED_REMOTE_PROVIDER) {
+  const provider = getRemoteCredentialsProviderSelector('minio');
+  if (!isSupportedRemoteCredentialsProvider(provider)) {
     return [];
   }
-  return conf.get(`minio:credentials_provider:${provider}:field_targets`) || conf.get('minio:credentials_provider:field_targets') || [];
+  return getRemoteCredentialsProviderFields('minio', provider);
 };
 
 const findMinioDefaultPair = (accessKey: unknown, secretKey: unknown) => {
