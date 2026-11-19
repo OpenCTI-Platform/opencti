@@ -18,9 +18,11 @@ docker ps | grep xtm-composer
 # View logs
 docker logs xtm-composer
 
-# Test connectivity
-docker exec xtm-composer curl -s http://localhost:8080/health
+# Check that XTM Composer is registered in OpenCTI
+docker logs xtm-composer 2>&1 | grep "Manager registered"
 ```
+
+XTM Composer does not expose any HTTP port or health endpoint: check it through the container status and its logs.
 
 ##### Portainer verification
 1. Access Portainer dashboard
@@ -166,9 +168,9 @@ manager:
   credentials_key_filepath: "/path/to/private_key_4096.pem"
 ```
 
-For Docker deployments, ensure the volume mount is correct:
+For Docker deployments, ensure the volume mount is correct and that `credentials_key_filepath` points to the path inside the container:
 ```bash
-docker run -v /local/path/key.pem:/keys/private_key.pem ...
+docker run -v /local/path/key.pem:/keys/private_key.pem -e MANAGER__CREDENTIALS_KEY_FILEPATH=/keys/private_key.pem ...
 ```
 
 ## Orchestration issues
@@ -304,7 +306,7 @@ If your configuration file isn't being loaded:
    export COMPOSER_ENV=production  # Loads config/production.yaml
    ```
 
-2. **Verify File Location**: Configuration files should be in `/config` directory
+2. **Verify File Location**: Configuration files must be in the `config` folder of the working directory (`/opt/xtm-composer/config` in the Docker image). Mount a single file there: mounting a directory hides the `default.yaml` of the image
 3. **Check YAML Syntax**: Validate your YAML file for syntax errors
 
 ## Logging and debugging
@@ -337,19 +339,24 @@ docker logs -f xtm-composer
 # Kubernetes
 kubectl logs -f deployment/xtm-composer -n xtm-composer
 
-# Binary/File-based
-tail -f /var/log/xtm-composer/composer.log
+# Binary (log file in the logs folder next to the xtm-composer executable)
+tail -f logs/xtm-composer.log
+
+# Docker image (log file inside the container)
+docker exec xtm-composer tail -f /usr/local/bin/logs/xtm-composer.log
 ```
 
 ### Common log messages
 
-**"Successfully connected to OpenCTI"**: Connection established successfully
+**"Starting XTM composer"**: XTM Composer has started
 
-**"Failed to connect to platform"**: Check connection settings and network
+**"Manager registered"**: XTM Composer is registered in the platform (manager ID in the `manager_id` field)
 
-**"Manager registered with ID"**: XTM Composer successfully registered
+**"Fail to fetch version, check your configuration"**: XTM Composer cannot reach the platform. Check the URL, the token and the network
 
-**"Invalid authentication"**: Check API token and credentials
+**"Fail to ping api"** or **"Error registering connector manager"**: A request to the platform failed. Check the `error` field
+
+**"Fail to fetch connectors"**: XTM Composer cannot read the connectors to deploy. Check the `error` field
 
 **"Reboot loop detected"**: Container is continuously restarting
 

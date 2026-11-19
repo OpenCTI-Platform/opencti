@@ -103,9 +103,10 @@ opencti:
 ```bash
 docker run -d \
   --name xtm-composer \
-  -v $(pwd)/config:/config \
+  -v $(pwd)/config/production.yaml:/opt/xtm-composer/config/production.yaml \
   -v $(pwd)/private_key_4096.pem:/keys/private_key.pem \
   -e COMPOSER_ENV=production \
+  -e MANAGER__CREDENTIALS_KEY_FILEPATH=/keys/private_key.pem \
   filigran/xtm-composer:latest
 ```
 
@@ -123,24 +124,21 @@ Check the logs to verify XTM Composer is connected to OpenCTI:
 # Docker
 docker logs xtm-composer
 
-# Binary/Systemd
-tail -f /var/log/xtm-composer/composer.log
+# Binary (log file in the logs folder next to the xtm-composer executable)
+tail -f logs/xtm-composer.log
 ```
 
-You should see messages like:
-```
-INFO  Starting XTM Composer
-INFO  Connecting to OpenCTI at https://opencti.example.com
-INFO  Successfully connected to OpenCTI
-INFO  Manager registered with ID: my-manager-001
-```
+The logs use the JSON format by default. Look for these messages:
+
+- `Starting XTM composer`: XTM Composer has started.
+- `Manager registered`: XTM Composer is registered in OpenCTI, with the manager ID in the `manager_id` field.
 
 ## Step 6: Verify in OpenCTI
 
 1. Log into your OpenCTI instance
-2. Navigate to **Data > Connectors**
-3. You should see your XTM Composer manager listed
-4. Connectors managed by XTM Composer will show the manager ID
+2. Navigate to **Integrations > Available**
+3. Click **Deploy** on a connector card. With an Enterprise Edition license, the deployment form shows a **Create** button only when an XTM Composer is registered and active
+4. Connectors deployed this way appear in **Integrations > Deployed**, with an icon whose tooltip reads *Managed by the connector manager*
 
 ## Common configuration examples
 
@@ -176,7 +174,7 @@ manager:
     level: warn
     format: json
     directory: true
-    console: false
+    console: true
 
 opencti:
   enable: true

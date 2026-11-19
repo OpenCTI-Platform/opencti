@@ -39,7 +39,7 @@ The OpenCTI Integration Manager is a deployment tool that simplifies the managem
 
 ## Browsing the connector catalog
 
-- Navigate to **Data > Ingestion > Connector Catalog**
+- Navigate to **Integrations > Available**
 
 - Use the search bar to find connectors by name or description. You can also apply filters (e.g., by connector type or use case).
 
