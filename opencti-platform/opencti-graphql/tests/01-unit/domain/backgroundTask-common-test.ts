@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   ACTION_TYPE_ADD,
   ACTION_TYPE_REMOVE,
@@ -16,6 +16,12 @@ import { TYPE_FILTER, USER_ID_FILTER } from '../../../src/utils/filtering/filter
 import { BackgroundTaskScope } from '../../../src/generated/graphql';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
+
+const workflowMocks = vi.hoisted(() => ({
+  getWorkflowConfig: vi.fn(),
+  hasPublishedWorkflowDefinition: vi.fn(),
+}));
+vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => workflowMocks);
 
 const filterEntityType = (entityType: string) => {
   return JSON.stringify({
@@ -122,6 +128,12 @@ describe('Background task validity check (checkActionValidity)', () => {
     };
     const buildInput = (actions: object[]) => ({ actions, filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT) });
 
+    beforeEach(() => {
+      // Default: a concrete type with a published workflow
+      workflowMocks.getWorkflowConfig.mockReset().mockResolvedValue({ id: 'entity-setting-id' });
+      workflowMocks.hasPublishedWorkflowDefinition.mockReset().mockResolvedValue(true);
+    });
+
     it('should accept a workflow bypass action for a bypass user', async () => {
       await expect(checkActionValidity(testContext, ADMIN_USER, buildInput([bypassAction]), scope, type)).resolves.toEqual(undefined);
     });
@@ -182,6 +194,38 @@ describe('Background task validity check (checkActionValidity)', () => {
     it.each([ACTION_TYPE_REPLACE, ACTION_TYPE_ADD, ACTION_TYPE_REMOVE])('should refuse a direct status %s to a user without BYPASS capability', async (actionType) => {
       const statusAction = { type: actionType, context: { field: 'x_opencti_workflow_id', values: ['status-id'] } };
       await expect(checkActionValidity(testContext, userUpdate, buildInput([statusAction]), scope, type))
+        .rejects.toThrowError('You are not allowed to do this.');
+    });
+
+    it('should accept a direct status replace on a type without a published workflow', async () => {
+      workflowMocks.hasPublishedWorkflowDefinition.mockResolvedValue(false);
+      const statusAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: ['status-id'] } };
+      await expect(checkActionValidity(testContext, userUpdate, buildInput([statusAction]), scope, type)).resolves.toEqual(undefined);
+      expect(workflowMocks.hasPublishedWorkflowDefinition).toHaveBeenCalledWith(testContext, userUpdate, ENTITY_TYPE_CONTAINER_REPORT);
+    });
+
+    it('should refuse a direct status replace when the query has no type filter', async () => {
+      workflowMocks.hasPublishedWorkflowDefinition.mockResolvedValue(false);
+      const statusAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: ['status-id'] } };
+      const filters = JSON.stringify({ mode: 'and', filters: [{ key: ['objectLabel'], values: ['label-id'], operator: 'eq', mode: 'or' }], filterGroups: [] });
+      const input = { actions: [statusAction], filters };
+      await expect(checkActionValidity(testContext, userUpdate, input, scope, type))
+        .rejects.toThrowError('You are not allowed to do this.');
+    });
+
+    it('should refuse a direct status replace on a type that has no entity setting (abstract type)', async () => {
+      workflowMocks.getWorkflowConfig.mockResolvedValue(undefined);
+      workflowMocks.hasPublishedWorkflowDefinition.mockResolvedValue(false);
+      const statusAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: ['status-id'] } };
+      await expect(checkActionValidity(testContext, userUpdate, buildInput([statusAction]), scope, type))
+        .rejects.toThrowError('You are not allowed to do this.');
+    });
+
+    it('should refuse a direct status replace if one of several target types has a published workflow', async () => {
+      workflowMocks.hasPublishedWorkflowDefinition.mockImplementation(async (_c: unknown, _u: unknown, entityType: string) => entityType === 'Malware');
+      const statusAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: ['status-id'] } };
+      const filters = JSON.stringify({ mode: 'and', filters: [{ key: [TYPE_FILTER], values: [ENTITY_TYPE_CONTAINER_REPORT, 'Malware'], operator: 'eq', mode: 'or' }], filterGroups: [] });
+      await expect(checkActionValidity(testContext, userUpdate, { actions: [statusAction], filters }, scope, type))
         .rejects.toThrowError('You are not allowed to do this.');
     });
 

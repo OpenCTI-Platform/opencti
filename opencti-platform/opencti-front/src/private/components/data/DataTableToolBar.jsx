@@ -474,9 +474,12 @@ class DataTableToolBar extends Component {
         .toPromise()
         .then((data) => {
           if (queryId !== this.workflowQueryId) return;
+          const published = data?.workflowDefinitionPublished === true;
           this.setState({
-            workflowPublished: data?.workflowDefinitionPublished === true,
-            workflowBypass: canBypassWorkflow && data?.workflowDefinitionPublished === true,
+            workflowPublished: published,
+            workflowBypass: canBypassWorkflow && published,
+            // Without a published workflow the status keeps its free change, whatever the user's bypass right
+            directStatusAllowed: canReplaceStatusDirectly({ workflowEnabled: published, canBypassWorkflow }),
             workflowLoading: false,
             transitionOptions: buildTransitionOptions(data?.workflowMassTransitions ?? []),
             workflowStatusOptions: buildWorkflowStatusOptions(data?.workflowStatuses ?? []),
