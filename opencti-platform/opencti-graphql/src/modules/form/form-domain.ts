@@ -492,9 +492,9 @@ export const buildDraftPlan = (
   return { draftInput };
 };
 
-export type SubmissionPlan
-  = | { bundle: any; mainEntityStixId: string | undefined; finalIsDraft: true; draftPlan: DraftPlan }
-    | { bundle: any; mainEntityStixId: string | undefined; finalIsDraft: false; draftPlan: null };
+export type SubmissionPlan =
+  | { bundle: any; mainEntityStixId: string | undefined; finalIsDraft: true; draftPlan: DraftPlan }
+  | { bundle: any; mainEntityStixId: string | undefined; finalIsDraft: false; draftPlan: null };
 
 // planSubmission is the decision step: it resolves the submitted form values into the concrete
 // STIX bundle and (when applicable) draft-workspace input that commitSubmission will persist.

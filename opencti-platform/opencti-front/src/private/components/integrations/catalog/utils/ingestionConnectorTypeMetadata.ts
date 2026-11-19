@@ -10,14 +10,14 @@ import {
 } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 
-export type IngestionConnectorType
-  = | 'INTERNAL_ENRICHMENT'
-    | 'INTERNAL_ANALYSIS'
-    | 'INTERNAL_INGESTION'
-    | 'EXTERNAL_IMPORT'
-    | 'INTERNAL_EXPORT_FILE'
-    | 'INTERNAL_IMPORT_FILE'
-    | 'STREAM';
+export type IngestionConnectorType =
+  | 'INTERNAL_ENRICHMENT'
+  | 'INTERNAL_ANALYSIS'
+  | 'INTERNAL_INGESTION'
+  | 'EXTERNAL_IMPORT'
+  | 'INTERNAL_EXPORT_FILE'
+  | 'INTERNAL_IMPORT_FILE'
+  | 'STREAM';
 
 const CONNECTOR_TYPE_ICONS: Record<IngestionConnectorType, SvgIconComponent> = {
   EXTERNAL_IMPORT: CloudDownloadOutlined,

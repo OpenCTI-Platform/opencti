@@ -71,6 +71,7 @@ export default defineConfig([
 
     rules: {
       '@stylistic/multiline-ternary': 'off',
+      '@stylistic/list-style': 'off',
       '@stylistic/brace-style': ['error', '1tbs'],
       '@stylistic/arrow-parens': ['error', 'always'],
       '@stylistic/space-before-blocks': 'error',

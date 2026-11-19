@@ -11,9 +11,9 @@ import { buildGraphPalette, dataColorOutline } from '../utils/graphPalette';
 import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
 import { isGroupLink } from '../utils/graphCollapse';
 
-export type GraphHoverCardTarget
-  = | { kind: 'node'; node: GraphNode }
-    | { kind: 'link'; link: GraphLink };
+export type GraphHoverCardTarget =
+  | { kind: 'node'; node: GraphNode }
+  | { kind: 'link'; link: GraphLink };
 
 export interface GraphHoverCardProps {
   target: GraphHoverCardTarget;

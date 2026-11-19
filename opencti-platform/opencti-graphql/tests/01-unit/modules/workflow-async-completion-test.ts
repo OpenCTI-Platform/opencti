@@ -722,7 +722,7 @@ describe('reportWorkflowAsyncActionResult', () => {
       // Should still proceed with the minimal stub
       expect(capturedEntity).toEqual({ id: 'entity-id' });
       // And the error should be logged
-      expect((logApp.warn as any)).toHaveBeenCalledWith(
+      expect(logApp.warn as any).toHaveBeenCalledWith(
         expect.stringContaining('Failed to load full entity'),
         expect.objectContaining({ entityId: 'entity-id' }),
       );

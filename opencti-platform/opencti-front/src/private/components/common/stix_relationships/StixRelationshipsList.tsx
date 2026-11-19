@@ -4538,7 +4538,7 @@ const buildQueryVariables = (
 
   return {
     first: selection.number ?? 50,
-    orderBy: (dateAttribute as StixRelationshipsOrdering),
+    orderBy: dateAttribute as StixRelationshipsOrdering,
     orderMode: (selection.sort_mode ?? 'desc') as OrderingMode,
     filters,
     dynamicFrom,
