@@ -737,6 +737,26 @@ describe('convertSamlEnvConfig', () => {
     );
   });
 
+  it('should keep the first certificate of a signing_cert or decryption_cert list, with a warning', () => {
+    const entry: EnvProviderEntry = {
+      strategy: 'SamlStrategy',
+      config: {
+        issuer: 'openctisaml',
+        entry_point: 'https://idp.example.com/saml',
+        cert: 'MIIDcert',
+        signing_cert: ['SIGNING_CERT_1', 'SIGNING_CERT_2'],
+        decryption_cert: ['DECRYPTION_CERT_1', 42],
+      },
+    };
+
+    const result = convertSamlEnvConfig('saml', entry);
+
+    expect(result.configuration.signing_cert).toBe('SIGNING_CERT_1');
+    expect(result.configuration.decryption_cert).toBe('DECRYPTION_CERT_1');
+    expect(result.warnings).toContain('signing_cert is a list of 2 certificates, only the first one is kept.');
+    expect(result.warnings.some((warning) => warning.startsWith('decryption_cert'))).toBe(false);
+  });
+
   it('should convert SAML config with all first-class boolean fields', () => {
     const entry: EnvProviderEntry = {
       identifier: 'saml2',

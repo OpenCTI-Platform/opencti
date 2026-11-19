@@ -7,7 +7,7 @@ import { createMapper } from './mappings-utils';
 import { flatExtraConf, retrieveSecrets } from './authenticationProvider-domain';
 import { getBaseUrl } from '../../config/conf';
 import { handleProviderLogin } from './providers';
-import { normalizeSamlPemValue, splitSamlIdpCertificates } from './saml-pem-utils';
+import { firstSamlCertificate, normalizeSamlPemValue, splitSamlIdpCertificates } from './saml-pem-utils';
 
 export const buildSAMLOptions = async (meta: ProviderMeta, conf: SamlStoreConfiguration, secretsProvider: SecretProvider): Promise<PassportSamlConfig> => ({
   name: meta.name,
@@ -18,7 +18,7 @@ export const buildSAMLOptions = async (meta: ProviderMeta, conf: SamlStoreConfig
   callbackUrl: conf.callback_url ?? `${getBaseUrl()}/auth/${meta.identifier}/callback`,
   wantAssertionsSigned: conf.want_assertions_signed,
   wantAuthnResponseSigned: conf.want_authn_response_signed,
-  publicCert: normalizeSamlPemValue(conf.signing_cert),
+  publicCert: normalizeSamlPemValue(firstSamlCertificate(conf.signing_cert)),
   authnRequestBinding: conf.sso_binding_type,
   forceAuthn: conf.force_reauthentication,
   identifierFormat: conf.identifier_format,

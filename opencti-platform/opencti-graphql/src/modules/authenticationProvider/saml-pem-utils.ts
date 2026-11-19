@@ -22,7 +22,7 @@ const toPemCertificate = (value: string): string => {
 };
 
 // Values from a YAML or JSON list are not checked: anything that is not a non-blank string is ignored.
-const cleanCertificates = (values: unknown[]): string[] => {
+export const cleanSamlCertificates = (values: unknown[]): string[] => {
   return values
     .filter((value): value is string => typeof value === 'string')
     .map((value) => normalizeSamlPemValue(value))
@@ -46,7 +46,7 @@ export const joinSamlIdpCertificates = (value: string | unknown[]): string => {
   if (!Array.isArray(value)) {
     return value;
   }
-  const certificates = cleanCertificates(value);
+  const certificates = cleanSamlCertificates(value);
   if (certificates.length <= 1) {
     return certificates[0] ?? '';
   }
@@ -57,6 +57,12 @@ export const joinSamlIdpCertificates = (value: string | unknown[]): string => {
 // A list can also come from a provider migrated before the certificates were joined.
 // Without certificate, node-saml gets an empty string and reports that idpCert is required.
 export const splitSamlIdpCertificates = (value: string | unknown[]): string | string[] => {
-  const certificates = Array.isArray(value) ? cleanCertificates(value) : splitCertificateText(value);
+  const certificates = Array.isArray(value) ? cleanSamlCertificates(value) : splitCertificateText(value);
   return certificates.length > 1 ? certificates : (certificates[0] ?? '');
+};
+
+// signing_cert and decryption_cert hold one certificate of the platform itself: node-saml's publicCert option takes a single one.
+// A list can come from a provider migrated before #20166, only its first certificate is used.
+export const firstSamlCertificate = (value: string | unknown[] | null | undefined): string | undefined => {
+  return (Array.isArray(value) ? cleanSamlCertificates(value)[0] : value) ?? undefined;
 };
