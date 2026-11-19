@@ -18,7 +18,7 @@ import { ENTITY_PROCESS } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../../schema/stixMetaObject';
 import { RELATION_HAS_OBSERVABLE, RELATION_IMPLEMENTS_TECHNIQUE } from '../../schema/stixCoreRelationship';
-import { FunctionalError } from '../../config/errors';
+import { FunctionalError, MissingReferenceError } from '../../config/errors';
 import type { BasicStoreEntityKillChainPhase } from '../killChainPhase/killChainPhase-types';
 import { computeProcedureFingerprint } from './procedure-fingerprint';
 import type { BasicStoreCommon, BasicStoreEntity } from '../../types/store';
@@ -63,7 +63,8 @@ const loadObservables = async (context: AuthContext, user: AuthUser, observableI
   for (let i = 0; i < observableIds.length; i += 1) {
     const observable = await storeLoadById(context, user, observableIds[i], ABSTRACT_STIX_CYBER_OBSERVABLE);
     if (!observable) {
-      throw FunctionalError('Cannot find the observable of the procedure', { id: observableIds[i] });
+      // A missing reference, not a functional error: the import worker retries it once the observable is in.
+      throw MissingReferenceError({ unresolvedIds: [observableIds[i]], doc_code: 'ELEMENT_NOT_FOUND' });
     }
     observables.push(observable);
   }
