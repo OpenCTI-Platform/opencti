@@ -31,7 +31,7 @@ const makeEntity = (entityType = 'Report', requestAccess = false, scope: string 
   __fragments: { WorkflowStatusStixDomainObject_data: {} },
 });
 
-const renderOverview = ({ enabled = true, configured = true, capabilities = ['KNOWLEDGE_KNUPDATE'], entityType = 'Report', requestAccess = false, scope = null as string | null, currentUserAccessRight = 'edit' } = {}) => {
+const renderOverview = ({ configured = true, capabilities = ['KNOWLEDGE_KNUPDATE'], entityType = 'Report', requestAccess = false, scope = null as string | null, currentUserAccessRight = 'edit' } = {}) => {
   const entity = { ...makeEntity(entityType, requestAccess, scope), currentUserAccessRight };
   const resolved = {
     id: entity.id, entity_type: entityType, currentUserAccessRight,
@@ -46,7 +46,6 @@ const renderOverview = ({ enabled = true, configured = true, capabilities = ['KN
   testRender(<StixDomainObjectOverview stixDomainObject={entity} displayOpinions={false} />, {
     userContext: createMockUserContext({
       me: { id: 'user-1', capabilities: capabilities.map((name) => ({ name })), capabilitiesInDraft: [] },
-      settings: { platform_feature_flags: enabled ? [{ id: 'ENTITIES_WORKFLOW', enable: true }] : [] },
       entitySettings: { edges: [] },
     }),
   });
@@ -56,13 +55,6 @@ const renderOverview = ({ enabled = true, configured = true, capabilities = ['KN
 beforeEach(() => vi.clearAllMocks());
 
 describe('StixDomainObjectOverview workflow', () => {
-  it('retains the legacy status with the flag off without reading the workflow fragment', () => {
-    renderOverview({ enabled: false });
-    expect(screen.getByText('Legacy status')).toBeVisible();
-    expect(readFragment).not.toHaveBeenCalled();
-    expect(transitions).not.toHaveBeenCalled();
-  });
-
   it('retains the legacy status and hides actions without a configured workflow', () => {
     renderOverview({ configured: false, capabilities: ['BYPASS'] });
     expect(screen.getByText('Legacy status')).toBeVisible();

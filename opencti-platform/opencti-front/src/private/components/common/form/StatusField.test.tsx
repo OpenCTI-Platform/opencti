@@ -14,11 +14,6 @@ vi.mock('../../../../relay/environment', async () => {
   };
 });
 
-vi.mock('../workflow/workflowFeatureFlag', async () => {
-  const actual = await vi.importActual('../workflow/workflowFeatureFlag');
-  return { ...actual, isWorkflowUiEnabledForType: () => true };
-});
-
 const mockStatusesResponse = {
   statuses: {
     edges: [

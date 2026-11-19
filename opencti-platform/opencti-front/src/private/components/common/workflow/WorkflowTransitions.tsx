@@ -30,9 +30,7 @@ import { TransitionFormValues, useTransitionWizard } from './useTransitionWizard
 import { isBypassUser } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { Close } from 'mdi-material-ui';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import { isWorkflowUiEnabledForType } from './workflowFeatureFlag';
 import type { WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
 import type { WorkflowStatusEntityQuery } from './__generated__/WorkflowStatusEntityQuery.graphql';
 import useInterval from '../../../../utils/hooks/useInterval';
@@ -101,7 +99,6 @@ const WorkflowErrorHint = ({ message, severity }: { message: string; severity: '
 
 interface WorkflowTransitionsProps {
   data: WorkflowStatus_data$key;
-  entityType?: string;
 }
 
 export type WorkflowAllowedTransition = NonNullable<WorkflowStatus_data$data['workflowInstance']>['allowedTransitions'][number];
@@ -120,7 +117,6 @@ interface WorkflowTransitionsViewProps {
   draftId?: string;
   processingCount?: number;
   workflowInstance: WorkflowStatus_data$data['workflowInstance'];
-  entityType: string;
   refreshing?: boolean;
   onCompleted?: () => void;
   onFailed?: () => void;
@@ -135,7 +131,6 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
   draftId,
   processingCount = 0,
   workflowInstance,
-  entityType,
   refreshing = false,
   onCompleted,
   onFailed,
@@ -143,7 +138,6 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
   buttonSize,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const [menuOpen, setMenuOpen] = useState(false);
   const { me } = useAuth();
   const isBypass = isBypassUser(me);
@@ -179,7 +173,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
     prevPendingTransitionRef.current = pendingTransition;
   });
 
-  if (!workflowInstance || !isWorkflowUiEnabledForType(entityType, isFeatureEnable)) {
+  if (!workflowInstance) {
     return null;
   }
 
@@ -494,7 +488,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
   );
 };
 
-export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = ({ data, entityType = 'DraftWorkspace' }) => {
+export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = ({ data }) => {
   const draft = useFragment<WorkflowStatus_data$key>(workflowStatusFragment, data);
   return (
     <WorkflowTransitionsView
@@ -504,7 +498,6 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
       draftId={draft.id}
       processingCount={draft.processingCount}
       workflowInstance={draft.workflowInstance}
-      entityType={entityType}
     />
   );
 };
@@ -516,19 +509,17 @@ const WorkflowPendingPoll = ({ refresh }: { refresh: () => void }) => {
 
 export const WorkflowTransitionsForEntity: FunctionComponent<{
   data: WorkflowStatusStixDomainObject_data$key;
-  entityType: string;
   transitionButtons?: TransitionButtonsOptions;
   // Reload the transitions when one fails, as a concurrent change may have made them stale
   refreshOnFailure?: boolean;
-}> = ({ data, entityType, transitionButtons, refreshOnFailure = false }) => {
+}> = ({ data, transitionButtons, refreshOnFailure = false }) => {
   const entity = useFragment<WorkflowStatusStixDomainObject_data$key>(workflowStatusStixDomainObjectFragment, data);
   const environment = useRelayEnvironment();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const { canEdit } = useGetCurrentUserAccessRight(entity.currentUserAccessRight);
   // Inside a draft only the draft's own workflow moves: the entity keeps showing its status, read only.
   const draftContext = useDraftContext();
-  const enabled = !draftContext && canEdit && isWorkflowUiEnabledForType(entityType, isFeatureEnable) && !!entity.workflowInstance;
+  const enabled = !draftContext && canEdit && !!entity.workflowInstance;
   const request = useRef<Subscription | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshFailed, setRefreshFailed] = useState(false);
@@ -580,12 +571,11 @@ export const WorkflowTransitionsForEntity: FunctionComponent<{
     <>
       {entity.workflowInstance?.pendingStatus === 'pending' && !refreshFailed && <WorkflowPendingPoll refresh={refresh} />}
       {refreshFailed && <Button variant="secondary" onClick={refresh}>{t_i18n('Retry')}</Button>}
-      <WorkflowBypassStatus key={`bypass-${entity.id}`} data={data} entityType={entityType} refreshing={refreshing} onCompleted={refresh} />
+      <WorkflowBypassStatus key={`bypass-${entity.id}`} data={data} refreshing={refreshing} onCompleted={refresh} />
       <WorkflowTransitionsView
         key={entity.id}
         entityId={entity.id}
         workflowInstance={entity.workflowInstance}
-        entityType={entityType}
         refreshing={refreshing}
         onCompleted={refresh}
         onFailed={refreshOnFailure ? refresh : undefined}

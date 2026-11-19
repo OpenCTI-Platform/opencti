@@ -13,16 +13,14 @@ import WorkflowFieldList from './WorkflowFieldList';
 import { AUTHORIZED_MEMBERS_EXCLUSIVE_ACTIONS, CommentMode, CommentModeType, FEATURE_NAME, type TargetStatusExits, WorkflowActionType, WorkflowDataType } from './utils';
 import { AUTHORIZED_MEMBERS_ENTITY_TYPES } from '../../../../../utils/authorizedMembers';
 import useAuth from '../../../../../utils/hooks/useAuth';
-import useHelper from '../../../../../utils/hooks/useHelper';
-import { isClosingReasonEnabledForType } from '../../../common/workflow/workflowFeatureFlag';
 
 const TransitionForm = ({ entityType, targetStatusExits }: { entityType: string; targetStatusExits?: TargetStatusExits }) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { values, setFieldValue } = useFormikContext<WorkflowEditionFormValues>();
   const { schema } = useAuth();
-  const { isFeatureEnable } = useHelper();
-  const showClosingReason = isClosingReasonEnabledForType(entityType, isFeatureEnable, schema.sdos);
+  // The closing reason is stored in x_opencti_closing_reason, which only domain objects carry.
+  const showClosingReason = schema.sdos.some((sdo) => sdo.id === entityType);
   const hasUpdateAuthorizedMembers = values.syncActions?.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
   const hasResetAuthorizedMembers = values.syncActions?.some((a) => a.type === WorkflowActionType.resetAuthorizedMembers);
   const hasValidateDraft = values.syncActions?.some((a) => a.type === WorkflowActionType.validateDraft);
