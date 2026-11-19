@@ -359,3 +359,73 @@ describe('importConfigPresetConnector overwrite and copy', () => {
     expect(second).toMatchObject({ status: 'failed', code: 'name_conflict', exists: false });
   });
 });
+
+describe('importConfigPresetConnector overwrite of the parameters the bundle does not carry', () => {
+  const withParameters = {
+    ...contract,
+    config_schema: {
+      ...contract.config_schema,
+      properties: {
+        ...contract.config_schema.properties,
+        MITRE_PROXY_URL: { type: 'string', description: 'Optional, without default' },
+        MITRE_FILTER: { type: 'string', default: 'all', description: 'Optional, with a default' },
+        MITRE_TYPES: { type: 'array', items: { type: 'string' }, default: ['a', 'b'], description: 'Optional list, with a default' },
+        MITRE_LIMIT: { type: 'integer', default: 500, description: 'Required, with a default' },
+        MITRE_SCORE: { type: 'integer', description: 'Required, without default' },
+      },
+      required: ['MITRE_API_KEY', 'MITRE_LIMIT', 'MITRE_SCORE'],
+    },
+  };
+  const target = (configuration: { key: string; value: string; encrypted?: boolean }[]) => ({
+    ...mitreConnector,
+    manager_contract: withParameters,
+    manager_contract_configuration: [{ key: 'MITRE_API_KEY', value: 'encrypted-secret', encrypted: true }, ...configuration],
+  });
+  const bundle = connectorConfiguration({ manager_contract_configuration: [{ key: 'MITRE_INTERVAL', value: '7' }] });
+
+  it('sends empty the stored parameters the bundle does not carry, never the secrets nor the values the import keeps', async () => {
+    withConnectors([target([
+      { key: 'MITRE_INTERVAL', value: '14' },
+      { key: 'MITRE_PROXY_URL', value: 'http://proxy' },
+      { key: 'MITRE_FILTER', value: 'custom' },
+      { key: 'MITRE_TYPES', value: 'a' },
+      { key: 'MITRE_LIMIT', value: '1000' },
+      { key: 'MITRE_SCORE', value: '80' },
+    ])]);
+    const result = await importConfigPresetConnector(context, user, bundle, overwrite);
+    expect(result).toMatchObject({ status: 'overwritten' });
+    // An optional parameter is emptied (a list is stored empty, not reset to its default), a required one falls back to its default
+    expect(vi.mocked(managedConnectorEdit).mock.calls[0][2].manager_contract_configuration).toEqual([
+      { key: 'MITRE_INTERVAL', value: '7' },
+      { key: 'MITRE_SCORE', value: '80' },
+      { key: 'MITRE_PROXY_URL', value: '' },
+      { key: 'MITRE_FILTER', value: '' },
+      { key: 'MITRE_TYPES', value: '' },
+      { key: 'MITRE_LIMIT', value: '' },
+    ]);
+  });
+
+  it('skips a connector the same bundle already overwrote', async () => {
+    // What the first overwrite stored: optional parameters removed or emptied, the required one at its default, the kept value
+    withConnectors([target([
+      { key: 'MITRE_INTERVAL', value: '7' },
+      { key: 'MITRE_TYPES', value: '' },
+      { key: 'MITRE_LIMIT', value: '500' },
+      { key: 'MITRE_SCORE', value: '80' },
+    ])]);
+    const result = await importConfigPresetConnector(context, user, bundle, overwrite);
+    expect(result).toMatchObject({ status: 'skipped', code: 'unchanged' });
+    expectNothingWritten();
+  });
+
+  it('still overwrites a connector with a parameter the bundle does not carry', async () => {
+    withConnectors([target([
+      { key: 'MITRE_INTERVAL', value: '7' },
+      { key: 'MITRE_TYPES', value: 'a' },
+      { key: 'MITRE_LIMIT', value: '500' },
+      { key: 'MITRE_SCORE', value: '80' },
+    ])]);
+    const result = await importConfigPresetConnector(context, user, bundle, overwrite);
+    expect(result).toMatchObject({ status: 'overwritten' });
+  });
+});
