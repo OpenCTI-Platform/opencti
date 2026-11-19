@@ -8,18 +8,18 @@ import {
   findDefaultExcludedFields,
   findDefaultTtl,
   findHashableFields,
-  findIngestionDeduplicationRules,
+  findUserIngestionDeduplicationRules,
   findUserIngestionUsages,
 } from './ingestionDeduplicationRule-domain';
 
 const ingestionDeduplicationRuleResolver: Resolvers = {
   Query: {
-    ingestionDeduplicationRules: (_, { userId }, context) => findIngestionDeduplicationRules(context, userId),
+    ingestionDeduplicationRules: (_, { userId }, context) => findUserIngestionDeduplicationRules(context, userId),
     ingestionDeduplicationAllowedTypes: () => findAllowedTypes(),
     ingestionDeduplicationDefaultTtl: () => findDefaultTtl(),
     ingestionDeduplicationDefaultExcludedFields: () => findDefaultExcludedFields(),
     ingestionDeduplicationFields: (_, { entityType }, __, info) => findHashableFields(info.schema, entityType),
-    ingestionDeduplicationUserUsages: (_, { userId, excludeConnectorId }, context) => findUserIngestionUsages(context, context.user, userId, excludeConnectorId),
+    ingestionDeduplicationUserUsages: (_, { userId }, context) => findUserIngestionUsages(context, context.user, userId),
   },
   IngestionDeduplicationRule: {
     user: (rule, _, context) => loadCreator(context, context.user, rule.user_id),
