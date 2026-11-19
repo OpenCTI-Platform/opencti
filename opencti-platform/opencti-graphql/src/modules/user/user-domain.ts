@@ -30,7 +30,7 @@ import {
 } from '../../config/errors';
 import { checkDateDisplayInput } from '../../utils/dateDisplay';
 import { ipMatchesWhitelist, isUserExcluded } from '../../http/ipWhitelistMiddleware';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
+import { addCacheForEntity, getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { checkApiBasicAuthAllowed, checkApiBasicAuthTwoFactor, warnApiBasicAuthTwoFactor } from './user-basic-auth';
 import { elLoadBy, elRawDeleteByQuery, elRawUpdateByQuery } from '../../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../../database/middleware';
@@ -2726,7 +2726,8 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: Express
 
 export const JWT_TOKEN_PREFIX = 'ey';
 type SessionEndRequest = { sessionID?: string; session?: { user?: unknown; regenerate?: (callback: (err?: unknown) => void) => void } };
-type SessionAuthRequest = OriginRequest & { session?: { user?: { id: string; session_creation?: string }; destroy: (callback: (err?: unknown) => void) => void } };
+type RequestSession = { destroy: (callback: (err?: unknown) => void) => void };
+type SessionAuthRequest = OriginRequest & { session?: RequestSession & { user?: { id: string; session_creation?: string } } };
 
 // The ended session must not stay on the request: the end of the request would save it again.
 // The request gets a new empty session instead, as the rest of the request may still use one: a login
@@ -2793,7 +2794,7 @@ export const endStreamSessionOverMaxLifetime = async (context: AuthContext, req:
   return true;
 };
 
-const destroyRequestSession = async (session: NonNullable<SessionAuthRequest['session']>) => {
+const destroyRequestSession = async (session: RequestSession) => {
   await new Promise<void>((resolve) => {
     session.destroy((err) => {
       if (err) {
@@ -2802,6 +2803,35 @@ const destroyRequestSession = async (session: NonNullable<SessionAuthRequest['se
       resolve();
     });
   });
+};
+
+// Resolves the platform user bound to an existing session, for the http requests and the websocket subscriptions.
+// The session content alone is not an identity (no name, capabilities, groups or markings): it is only completed
+// with the user of the users cache. A user missing from the cache of this node may only be late to reach it
+// (created or changed on another node): it is then loaded from the database and added to the cache.
+// Only a user that no longer exists (deleted, merged, data reset...) ends the session.
+export const resolveSessionUser = async <T extends { id: string }>(context: AuthContext, session: RequestSession, sessionUser: T) => {
+  const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const cachedUser = platformUsers.get(sessionUser.id);
+  if (cachedUser) {
+    return { ...sessionUser, ...cachedUser };
+  }
+  const storedUser = await internalLoadById<BasicStoreEntityUser>(context, SYSTEM_USER, sessionUser.id, { type: ENTITY_TYPE_USER });
+  if (!storedUser) {
+    logApp.warn('[AUTH] Session user no longer exists, session destroyed', { user_id: sessionUser.id });
+    await destroyRequestSession(session);
+    return undefined;
+  }
+  logApp.warn('[AUTH] Session user missing from the users cache, adding it', { user_id: sessionUser.id });
+  await addCacheForEntity(storedUser);
+  const refreshedUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const refreshedUser = refreshedUsers.get(sessionUser.id);
+  if (!refreshedUser) {
+    // The user exists: the session is kept, the next request tries again
+    logApp.warn('[AUTH] Session user cannot be added to the users cache', { user_id: sessionUser.id });
+    return undefined;
+  }
+  return { ...sessionUser, ...refreshedUser };
 };
 // This method can only be used in createAuthenticatedContext
 // If you need to check auth and create context, use directly createAuthenticatedContext method
@@ -2829,23 +2859,16 @@ export const authenticateUserFromRequest = async (context: AuthContext, req: Ses
   const sessionUser = req.session?.user;
   // region If user already have a session
   if (sessionUser) {
-    const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-    const logged = platformUsers.get(sessionUser.id);
     // The maximum lifetime is counted from the login: the activity of the user never extends it
     if (isSessionOverMaxLifetime(sessionUser)) {
       // The user of the session may no longer be in the cache: the logout is recorded with its session identity
+      const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+      const logged = platformUsers.get(sessionUser.id);
       await endSessionOverMaxLifetime(req, userWithOrigin(req, { ...sessionUser, ...logged }) as AuthUser);
       return undefined;
     }
-    if (!logged) {
-      // The session outlives its user (deleted, merged, data reset...): the session content alone
-      // is not an identity, it has no name, capabilities, groups or markings.
-      logApp.warn('[AUTH] Session user missing from the users cache, session destroyed', { user_id: sessionUser.id });
-      await destroyRequestSession(req.session!);
-      return undefined;
-    }
-    const authUser = { ...sessionUser, ...logged };
-    return userWithOrigin(req, authUser);
+    const authUser = await resolveSessionUser(context, req.session!, sessionUser);
+    return authUser ? userWithOrigin(req, authUser) : undefined;
   }
   // endregion
   // region Direct authentication
