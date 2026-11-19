@@ -9,8 +9,9 @@ import type { ProcedureEditionOverview_procedure$key } from './__generated__/Pro
 
 type Option = { value: string; label: string };
 
-const { mockFieldPatch, nextSelection, Empty } = vi.hoisted(() => ({
+const { mockFieldPatch, mockSaveObservables, nextSelection, Empty } = vi.hoisted(() => ({
   mockFieldPatch: vi.fn(),
+  mockSaveObservables: vi.fn(),
   nextSelection: {} as Record<string, unknown>,
   // Fields not under test render nothing
   Empty: () => null,
@@ -31,6 +32,9 @@ vi.mock('../../../../utils/hooks/useFormEditor', () => ({
     changeExternalReferences: vi.fn(),
   }),
 }));
+
+// Observables are has-observable relationships, saved apart from the field patch.
+vi.mock('./ProcedureObservablesEditor', () => ({ saveProcedureObservables: mockSaveObservables }));
 
 vi.mock('../../../../utils/hooks/useEntitySettings', () => ({
   useIsMandatoryAttribute: () => ({ mandatoryAttributes: [] }),
@@ -105,22 +109,25 @@ const patchedInputs = () => mockFieldPatch.mock.calls.map(([{ variables }]) => v
 describe('Component: ProcedureEditionOverview, ref fields', () => {
   beforeEach(() => {
     mockFieldPatch.mockReset();
+    mockSaveObservables.mockReset();
   });
 
-  it('sends only a remove for the observable taken out of the selection', async () => {
+  it('removes the has-observable relationship of the observable taken out of the selection', async () => {
     nextSelection.procedureObservables = [option('obs-1')];
     renderForm();
     fireEvent.click(screen.getByText('select procedureObservables'));
-    await waitFor(() => expect(mockFieldPatch).toHaveBeenCalledTimes(1));
-    expect(patchedInputs()).toEqual([[{ key: 'procedureObservables', value: ['obs-2'], operation: 'remove' }]]);
+    await waitFor(() => expect(mockSaveObservables).toHaveBeenCalledTimes(1));
+    expect(mockSaveObservables).toHaveBeenCalledWith('procedure-1', { added: [], removed: ['obs-2'] });
+    expect(mockFieldPatch).not.toHaveBeenCalled();
   });
 
-  it('sends only an add for the observable put in the selection', async () => {
+  it('adds a has-observable relationship for the observable put in the selection', async () => {
     nextSelection.procedureObservables = [option('obs-1'), option('obs-2'), option('obs-3')];
     renderForm();
     fireEvent.click(screen.getByText('select procedureObservables'));
-    await waitFor(() => expect(mockFieldPatch).toHaveBeenCalledTimes(1));
-    expect(patchedInputs()).toEqual([[{ key: 'procedureObservables', value: ['obs-3'], operation: 'add' }]]);
+    await waitFor(() => expect(mockSaveObservables).toHaveBeenCalledTimes(1));
+    expect(mockSaveObservables).toHaveBeenCalledWith('procedure-1', { added: ['obs-3'], removed: [] });
+    expect(mockFieldPatch).not.toHaveBeenCalled();
   });
 
   it('patches the sources with the changed ids only', async () => {
@@ -142,7 +149,7 @@ describe('Component: ProcedureEditionOverview, ref fields', () => {
     expect(patchedInputs()).toEqual([[{ key: 'procedureCommand', value: [] }]]);
   });
 
-  it('submits the changed ids only when references are enforced, never a whole multiple ref', async () => {
+  it('saves the changed observables on submit when references are enforced, outside the field patch', async () => {
     nextSelection.procedureObservables = [option('obs-1')];
     renderForm(true);
     fireEvent.click(screen.getByText('select procedureObservables'));
@@ -151,6 +158,7 @@ describe('Component: ProcedureEditionOverview, ref fields', () => {
     await waitFor(() => expect(mockFieldPatch).toHaveBeenCalledTimes(1));
     const [input] = patchedInputs();
     const refInputs = input.filter(({ key }: { key: string }) => ['procedureObservables', 'procedureSources', 'externalReferences'].includes(key));
-    expect(refInputs).toEqual([{ key: 'procedureObservables', value: ['obs-2'], operation: 'remove' }]);
+    expect(refInputs).toEqual([]);
+    expect(mockSaveObservables).toHaveBeenCalledWith('procedure-1', { added: [], removed: ['obs-2'] });
   });
 });

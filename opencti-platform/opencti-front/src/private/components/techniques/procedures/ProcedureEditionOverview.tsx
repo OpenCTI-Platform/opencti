@@ -27,6 +27,7 @@ import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { ProcedureEditionOverview_procedure$key } from './__generated__/ProcedureEditionOverview_procedure.graphql';
+import { saveProcedureObservables } from './ProcedureObservablesEditor';
 
 const procedureMutationFieldPatch = graphql`
   mutation ProcedureEditionOverviewFieldPatchMutation(
@@ -170,12 +171,19 @@ const PROCEDURE_TYPE = 'Procedure';
 
 const toIds = (value: FieldOption | FieldOption[] | null | undefined) => [value ?? []].flat().map((option) => option.value);
 
-// Patch of a multiple ref from its previous to its next selection: add and remove the changed ids, never replace.
-const buildRefsPatch = (key: string, previous: FieldOption[], next: FieldOption[]) => {
+// Ids put in and taken out of a multiple selection.
+const diffIds = (previous: FieldOption[], next: FieldOption[]) => {
   const previousIds = toIds(previous);
   const nextIds = toIds(next);
-  const added = nextIds.filter((id) => !previousIds.includes(id));
-  const removed = previousIds.filter((id) => !nextIds.includes(id));
+  return {
+    added: nextIds.filter((id) => !previousIds.includes(id)),
+    removed: previousIds.filter((id) => !nextIds.includes(id)),
+  };
+};
+
+// Patch of a multiple ref from its previous to its next selection: add and remove the changed ids, never replace.
+const buildRefsPatch = (key: string, previous: FieldOption[], next: FieldOption[]) => {
+  const { added, removed } = diffIds(previous, next);
   return [
     ...(added.length > 0 ? [{ key, value: added, operation: 'add' as const }] : []),
     ...(removed.length > 0 ? [{ key, value: removed, operation: 'remove' as const }] : []),
@@ -297,11 +305,12 @@ const ProcedureEditionOverview: FunctionComponent<ProcedureEditionOverviewProps>
         x_execution_start: formatDate(values.x_execution_start),
         x_execution_end: formatDate(values.x_execution_end),
       }).map(([key, value]) => ({ key, value: adaptFieldValue(value) })),
-      ...buildRefsPatch('procedureObservables', initialValues.procedureObservables, procedureObservables),
       ...buildRefsPatch('procedureSources', initialValues.procedureSources, procedureSources),
       ...buildRefsPatch('externalReferences', initialValues.externalReferences, externalReferences),
     ];
 
+    // Observables are has-observable relationships: saved apart, they cannot carry the commit message.
+    saveProcedureObservables(procedure.id, diffIds(initialValues.procedureObservables, procedureObservables));
     editor.fieldPatch({
       variables: {
         id: procedure.id,
@@ -337,9 +346,13 @@ const ProcedureEditionOverview: FunctionComponent<ProcedureEditionOverviewProps>
   // Multiple refs are patched with the added and removed ids only: the form loads one page of them.
   const handleSubmitRefs = (name: string, value: FieldOption | FieldOption[] | null) => {
     if (!enableReferences) {
+      if (name === 'procedureObservables') {
+        saveProcedureObservables(procedure.id, diffIds(initialValues.procedureObservables, [value ?? []].flat()));
+        return;
+      }
       const input = name === 'procedureCommand'
         ? [{ key: name, value: toIds(value) }]
-        : buildRefsPatch(name, initialValues[name as 'procedureObservables' | 'procedureSources'], [value ?? []].flat());
+        : buildRefsPatch(name, initialValues.procedureSources, [value ?? []].flat());
       if (input.length === 0) return;
       procedureValidator
         .validateAt(name, { [name]: value })
