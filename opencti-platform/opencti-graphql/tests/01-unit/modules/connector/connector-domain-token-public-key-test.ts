@@ -88,7 +88,7 @@ describe('managed connector token encryption', () => {
     mockAddUserTokenByAdmin.mockImplementation(async (_context, _user, _userId, { name }) => {
       tokenCount += 1;
       userTokens.push({ id: `token-${tokenCount}`, name });
-      return { plaintext_token: `plaintext-${tokenCount}` };
+      return { token_id: `token-${tokenCount}`, plaintext_token: `plaintext-${tokenCount}` };
     });
     mockRevokeUserTokenByAdmin.mockImplementation(async (_context, _user, _userId, tokenId) => {
       userTokens = userTokens.filter(({ id }) => id !== tokenId);
@@ -114,6 +114,29 @@ describe('managed connector token encryption', () => {
     expect(userTokens.map(({ id }) => id)).toEqual(['token-2']);
     expect(await readToken()).toBe('public-key-2|plaintext-2');
     expect(mockAddUserTokenByAdmin).toHaveBeenCalledTimes(2);
+  });
+
+  it('should not serve a revoked token when the manager key comes back to a previous one', async () => {
+    expect(await readToken()).toBe('public-key-1|plaintext-1');
+    mockFindConnectorManagers.mockResolvedValue([{ public_key: 'public-key-2' }]);
+    expect(await readToken()).toBe('public-key-2|plaintext-2');
+    mockFindConnectorManagers.mockResolvedValue([{ public_key: 'public-key-1' }]);
+
+    // token-1 was revoked by the first rotation: a new token is encrypted with the key back in use
+    expect(await readToken()).toBe('public-key-1|plaintext-3');
+    expect(userTokens.map(({ id }) => id)).toEqual(['token-3']);
+    expect(await readToken()).toBe('public-key-1|plaintext-3');
+    expect(mockAddUserTokenByAdmin).toHaveBeenCalledTimes(3);
+  });
+
+  it('should regenerate the token when the cache holds a value written before the record format', async () => {
+    expect(await readToken()).toBe('public-key-1|plaintext-1');
+    // Before the fix, the bare encrypted token was cached, whatever the key it was encrypted with
+    redisStore.set('composer:catalog-x:token:user-1', 'previous-public-key|plaintext-1');
+
+    expect(await readToken()).toBe('public-key-1|plaintext-2');
+    expect(mockRevokeUserTokenByAdmin).toHaveBeenCalledWith(context, expect.anything(), 'user-1', 'token-1');
+    expect(userTokens.map(({ id }) => id)).toEqual(['token-2']);
   });
 
   it('should fail with a functional error, without touching the token, when no connector manager is registered', async () => {
