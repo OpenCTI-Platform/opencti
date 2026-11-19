@@ -47,6 +47,20 @@ export const workflowStatusWorkflowInstanceFragment = graphql`
       closingReason
       requiresShareOrganizationInput
       requiresUnshareOrganizationInput
+      requestAccessOutcome
+      toStatus {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+    }
+    blockedTransitions {
+      event
+      toState
+      blockingConditions
       toStatus {
         id
         order
@@ -76,6 +90,13 @@ export const workflowStatusStixDomainObjectFragment = graphql`
     entity_type
     currentUserAccessRight
     x_opencti_closing_reason
+    updated_at
+    objectAssignee {
+      id
+    }
+    objectParticipant {
+      id
+    }
     workflowInstance {
       ...WorkflowStatus_workflowInstance @relay(mask: false)
     }

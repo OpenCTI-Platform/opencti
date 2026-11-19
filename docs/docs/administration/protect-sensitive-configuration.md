@@ -16,6 +16,7 @@ When a configuration is sensitive, it remains visible to user with access rights
 possible actions are disabled.
 
 The sensitive configurations identified are:
+
 - Modification of specific roles and groups
 - Activation/deactivation of inference rules
 - Main platform Organization modification
@@ -25,13 +26,14 @@ The sensitive configurations identified are:
 
 ## Configuration
 
-The configuration is done in the application configuration file. By default (in ``default.json``), ``platform_protected_sensitive_config`` is enabled.
+The configuration is done in the application configuration file. By default (in ``default.json``), ``protected_sensitive_config`` is enabled. See the [Protect Sensitive Configurations parameters](../deployment/configuration.md#protect-sensitive-configurations) for the list of keys and their environment variables.
 
 It is possible to activate it around specific areas in the platform, as listed previously. It is also possible to choose which `Roles`, `Groups`  or `Marking definitions` will be protected.
 
 By default, built-in `Groups` , `Roles` and `Markings` are protected:
-- Roles ``default``, ``administrator`` and ``connector``
-- Groups ``default``, ``administrators`` and ``connectors``
+
+- Roles ``Default``, ``Administrator`` and ``Connector``
+- Groups ``Default``, ``Administrators`` and ``Connectors``
 - Marking definitions ``TLP`` and ``PAP``
 
 Once the platform is running, a platform administrator can restrict access to the sensitive configuration scoped in the platform settings through a capability in the RBAC, via ``Settings > Security > Roles > Capabilities list``.
@@ -43,10 +45,10 @@ Only users with `Allow modification of sensitive configuration` capability enabl
 
 ## Recommended approach to give yourself access to danger zone
 
-1. With a user having the capability “Manage credentials” or “Bypass all capabilities”, go into parameters/security
+1. With a user having the capability “Manage credentials” or “Bypass all capabilities”, go to Settings > Security > Roles
 2. Create a new role called “Danger Zone Administration”
 3. Give it the capability “Allow modification of sensitive configuration”
-4. Create a group “Danger Zone Administrator”
+4. In Settings > Security > Groups, create a group “Danger Zone Administrator” with this role
 5. Add a user of your choice (yourself for instance): at this stage, you should be able to manage any area under danger zone.
 
 ## Recommended approach to give administrator group access to danger zone
@@ -59,30 +61,29 @@ Only users with `Allow modification of sensitive configuration` capability enabl
 
 1. Edit your config file to apply this configuration
 
-```jsx
+```json
 "protected_sensitive_config": {
-      "enabled": false,
-      "markings": {
-        "enabled": true,
-        "protected_definitions": ["TLP:CLEAR", "TLP:GREEN", "TLP:AMBER", "TLP:AMBER+STRICT", "TLP:RED", "PAP:CLEAR", "PAP:GREEN", "PAP:AMBER", "PAP:AMBER"]
-      },
-      "groups": {
-        "enabled": true,
-        "protected_names": ["Administrators", "Connectors", "Default"]
-      },
-      "roles": {
-        "enabled": true,
-        "protected_names": ["Administrator", "Connector", "Default"]
-      },
-      "rules": {
-        "enabled": true
-      },
-      "ce_ee_toggle": {
-        "enabled": true
-      },
-      "file_indexing": {
-        "enabled": true
-      }
-    }
+  "enabled": false,
+  "markings": {
+    "enabled": true,
+    "protected_definitions": ["TLP:CLEAR", "TLP:GREEN", "TLP:AMBER", "TLP:AMBER+STRICT", "TLP:RED", "PAP:CLEAR", "PAP:GREEN", "PAP:AMBER", "PAP:RED"]
   },
+  "groups": {
+    "enabled": true,
+    "protected_names": ["Administrators", "Connectors", "Default"]
+  },
+  "roles": {
+    "enabled": true,
+    "protected_names": ["Administrator", "Connector", "Default"]
+  },
+  "rules": {
+    "enabled": true
+  },
+  "ce_ee_toggle": {
+    "enabled": true
+  },
+  "file_indexing": {
+    "enabled": true
+  }
+}
 ```

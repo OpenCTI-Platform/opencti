@@ -26,7 +26,16 @@ import {
 import { extractEntityRepresentativeName } from './entity-representative';
 import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
 import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
-import { cleanupEntityWorkflow, initializeEntityWorkflow, syncWorkflowInstanceFromExternalWrite } from '../modules/workflow/domain/workflow-domain';
+import {
+  assertExternalStatusCreateAllowed,
+  isRequestAccessOutcomeStatus,
+  assertExternalRequestAccessWriteAllowed,
+  assertExternalRequestAccessCreateAllowed,
+  assertExternalStatusWriteAllowed,
+  cleanupEntityWorkflow,
+  initializeEntityWorkflow,
+  syncWorkflowInstanceFromExternalWrite,
+} from '../modules/workflow/domain/workflow-domain';
 import {
   BREAKDOWN_REFUSAL_REASONS,
   computeAverage,
@@ -178,7 +187,7 @@ import {
   resolveAliasesField,
   STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
 import conf, { BUS_TOPICS, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
@@ -200,6 +209,7 @@ import {
   KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
   RULE_MANAGER_USER,
+  SETTINGS_SETKILLCHAINPHASES,
   SYSTEM_USER,
   userFilterStoreElements,
   validateUserAccessOperation,
@@ -2142,6 +2152,11 @@ export const filterTargetByExisting = async (
   return { deletions: markingTargetDeletions, redirects: filtered };
 };
 
+// Meta objects that can be merged besides the STIX core objects.
+// A kill chain phase is only referenced through its kill-chain-phase refs, which the merge redirects to the target;
+// the standard id of a source lands in the x_opencti_stix_ids of the target, so a later import of a source resolves to it.
+const MERGEABLE_META_OBJECT_TYPES = [ENTITY_TYPE_VOCABULARY, ENTITY_TYPE_KILL_CHAIN_PHASE];
+
 const mergeEntitiesRaw = async (
   context: AuthContext,
   user: AuthUser,
@@ -2179,7 +2194,7 @@ const mergeEntitiesRaw = async (
     throw FunctionalError('Cannot merge entities of different types', { dest: targetType, source: sourceTypes });
   }
   // Check supported entities
-  if (!isStixCoreObject(targetEntity.entity_type) && targetEntity.entity_type !== ENTITY_TYPE_VOCABULARY) {
+  if (!isStixCoreObject(targetEntity.entity_type) && !MERGEABLE_META_OBJECT_TYPES.includes(targetEntity.entity_type)) {
     throw FunctionalError('Unsupported entity type for merging', { type: targetType });
   }
   // For vocabularies, extra elastic query is required
@@ -2441,8 +2456,15 @@ const mergeEntitiesRaw = async (
         updateAttributes.push({ key: targetFieldKey, value: multipleValues, operation: EditOperation.Add });
       }
     } else if (isEmptyField(mergedEntityCurrentFieldValue) && isNotEmptyField(sourceFieldValue)) {
-      // Single value. Put the data in the merged field only if empty.
-      updateAttributes.push({ key: targetFieldKey, value: [sourceFieldValue] });
+      // A merge never decides a request: an Approved / Declined status of a source is not copied, only a transition or a bypass reaches it.
+      // Its decided request record stays behind with it, so the target never looks decided without its outcome transition.
+      const isOutcomeField = targetFieldKey === X_WORKFLOW_ID || targetFieldKey === 'x_opencti_request_access';
+      const isCopiedOutcome = isOutcomeField && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)
+        && await isRequestAccessOutcomeStatus(context, targetType, (takenFrom as Record<string, any>)[X_WORKFLOW_ID]);
+      if (!isCopiedOutcome) {
+        // Single value. Put the data in the merged field only if empty.
+        updateAttributes.push({ key: targetFieldKey, value: [sourceFieldValue] });
+      }
     }
   }
 
@@ -2541,6 +2563,11 @@ export const mergeEntities = async (
   mergedInstances.forEach((instance) => controlUserConfidenceAgainstElement(user, instance));
   if (mergedInstances.some((o) => o.entity_type === ENTITY_TYPE_VOCABULARY && Boolean((o as BasicStoreEntityVocabulary).builtIn))) {
     throw FunctionalError('Cannot merge builtin vocabularies');
+  }
+  // Merging kill chain phases deletes the sources: it changes the taxonomy, so it needs the right to manage it, like editing a phase
+  const isKillChainPhaseMerge = mergedInstances.some((o) => o.entity_type === ENTITY_TYPE_KILL_CHAIN_PHASE);
+  if (isKillChainPhaseMerge && !isUserHasCapability(user, SETTINGS_SETKILLCHAINPHASES, { forceCapabilityInDraft: !!getDraftContext(context, user) })) {
+    throw ForbiddenAccess('You are not allowed to merge kill chain phases.', { capability: SETTINGS_SETKILLCHAINPHASES });
   }
   // We need to lock all elements not locked yet.
   const { locks = [] } = opts;
@@ -3043,8 +3070,8 @@ type UpdateAttributeMetaResolvedOpts = EventOpts & {
   bypassValidation?: boolean;
   // Skip the re-alignment of the individual joined on a user's email, for a caller that owns that individual itself
   skipUserIndividualSync?: boolean;
-  // Set by the workflow projection: its own write is not synced back as an external write,
-  // and it is the only non-bypass writer of the closing reason
+  // Set by the workflow engine writes (projection, outcomes): they are neither checked nor synced back as external writes,
+  // and they are the only non-bypass writers of the closing reason
   workflowInternalWrite?: boolean;
   // Set by the workflow projection: the transition stands for the external references that an enforced status change asks for
   skipReferenceEnforcement?: boolean;
@@ -3111,6 +3138,24 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   // The closing reason is owned by the workflow: only a transition or a bypass user can change it
   if (!opts.workflowInternalWrite && !isBypassUser(user) && updates.some((e) => e.key === X_CLOSING_REASON)) {
     throw FunctionalError('Closing reason can only be changed through a workflow transition', { id: initial.internal_id });
+  }
+  if (!opts.workflowInternalWrite && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    // A patch can carry several inputs for one key and the last one wins: every status input is checked
+    const statusIdOfInput = (input: EditInput) => (input.operation === EditOperation.Remove ? null : (input.value?.[0] ?? null));
+    const workflowStatusInputs = updates.filter((input) => input.key === X_WORKFLOW_ID);
+    for (let index = 0; index < workflowStatusInputs.length; index += 1) {
+      await assertExternalStatusWriteAllowed(context, user, initial as BasicStoreBase, statusIdOfInput(workflowStatusInputs[index]));
+    }
+    const requestAccessInputs = updates.filter((input) => input.key === 'x_opencti_request_access');
+    if (requestAccessInputs.length > 0) {
+      const lastStatusInput = workflowStatusInputs.at(-1);
+      await assertExternalRequestAccessWriteAllowed(
+        context,
+        initial as BasicStoreEntity,
+        requestAccessInputs.map((input) => (input.operation === EditOperation.Remove ? null : (input.value?.[0] ?? null))),
+        lastStatusInput ? statusIdOfInput(lastStatusInput) : undefined,
+      );
+    }
   }
 
   await rewriteEmbeddedDataUriImagesInUpdateInputs(context, user, updates, {
@@ -4625,6 +4670,15 @@ const internalCreateEntityRaw = async (
       }
       const cleanInputPatch = cleanEntityForIdsCollision(resolvedInput, type, selectedTarget, filteredEntities);
       return upsertElement(context, user, selectedTarget, type, cleanInputPatch, { ...opts, locks: participantIds });
+    }
+    // A creation must not supply an outcome status of the request access workflow. Checked here, past every
+    // upsert branch, so that restoring or re-importing an existing decided request is not refused.
+    // A request record is refused whatever the supplied status: only the request access form creates one.
+    if (!opts.workflowInternalWrite && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+      if (resolvedInput[X_WORKFLOW_ID]) {
+        await assertExternalStatusCreateAllowed(context, type, resolvedInput[X_WORKFLOW_ID]);
+      }
+      await assertExternalRequestAccessCreateAllowed(context, user, type, resolvedInput.x_opencti_request_access);
     }
     // Create the object
     const dataEntity = await buildEntityData(context, user, resolvedInput, type, opts) as { element: Record<string, any>; relations: Record<string, any>[] };

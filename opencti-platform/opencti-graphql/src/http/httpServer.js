@@ -35,7 +35,9 @@ import {
   logMalformedRequest,
   normalizeUploadError,
 } from './httpUtils';
+import { getMaxPayloadBodySize } from './httpConfig';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
+import { onSessionPresenceClose, onSessionPresenceConnect } from '../modules/session/session-presence-ws';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -126,7 +128,16 @@ const createHttpServer = async () => {
   wsServer.on('error', (e) => {
     throw e;
   });
-  const serverCleanup = useServer(createSubscriptionServerOptions({ schema, protection, context: extractWsSessionContext }), wsServer);
+  // Like express does for every http request, give the upgrade request the express request API
+  // (ip resolved behind the trusted proxies, header()...). Registered before the graphql-ws listener.
+  wsServer.on('connection', (_socket, request) => {
+    Object.setPrototypeOf(request, app.request);
+  });
+  const serverCleanup = useServer({
+    ...createSubscriptionServerOptions({ schema, protection, context: extractWsSessionContext }),
+    onConnect: onSessionPresenceConnect,
+    onClose: onSessionPresenceClose,
+  }, wsServer);
 
   apolloServer.addPlugin(ApolloServerPluginDrainHttpServer({ httpServer }));
   apolloServer.addPlugin({
@@ -152,7 +163,7 @@ const createHttpServer = async () => {
   });
   await apolloServer.start();
 
-  const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
+  const requestSizeLimit = getMaxPayloadBodySize();
   app.use(express.json({ limit: requestSizeLimit }));
   const uploadFileSizeLimit = nconf.get('app:max_upload_file_size') || DEFAULT_MAX_UPLOAD_FILE_SIZE;
   const uploadMaxFiles = nconf.get('app:max_upload_files') || DEFAULT_MAX_UPLOAD_FILES;

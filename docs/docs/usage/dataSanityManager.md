@@ -2,9 +2,19 @@
 
 The goal of the data sanity manager is to run periodic or on-demand operations to improve data consistency.
 
+## Schedule and configuration
+
+The [data sanity manager](../deployment/advanced/managers.md#data-sanity-manager) runs every 10 minutes by default. At each cycle, it runs the operations that never ran, and the operations requested with [`dataSanityOperationRequestRun`](#request-to-run-an-operation). An operation that already ran does not run again until it is requested.
+
+| Parameter                                  | Environment variable                          | Default value         | Description                                                                 |
+|:-------------------------------------------|:----------------------------------------------|:----------------------|:----------------------------------------------------------------------------|
+| data_sanity_manager:enabled                | DATA_SANITY_MANAGER__ENABLED                  | `true`                | Enable/disable the data sanity manager                                      |
+| data_sanity_manager:interval               | DATA_SANITY_MANAGER__INTERVAL                 | 600000                | Interval between two cycles of the manager (in ms)                          |
+| data_sanity_manager:stale_running_threshold | DATA_SANITY_MANAGER__STALE_RUNNING_THRESHOLD | 86400000 (24 hours)   | Time after which a running operation is considered stale (in ms)            |
+
 ## GraphQL API
 
-There is no graphical interface yet, but here is some graphQL queries that can be used.
+There is no graphical interface yet: use the GraphQL queries below. Run them on the `/graphql` endpoint of the platform, for example from the [GraphQL playground](../development/api-usage.md) at `https://[your-opencti-instance]/public/graphql`. Every query and mutation requires the `Bypass all capabilities` capability (see [Users and Role Based Access Control](../administration/users.md#list-of-capabilities)).
 
 ### Estimate impacted data
 
@@ -31,8 +41,8 @@ Variables:
 
 ### Stop an execution that is stale
 
-If there is some issue with an operation, and a restart has been done on the platform. After a while the operation will be detected as stale and restarted. If there is a need to avoid this restart the operation can be stopped.
-After that the operation can be started again using `dataSanityOperationRequestRun` on demand.
+If the platform restarts while an operation is running, the operation stays marked as running. After 24 hours, the manager considers it stale and runs it again at its next cycle. To change this delay, set `data_sanity_manager:stale_running_threshold` (see [Schedule and configuration](#schedule-and-configuration)). To avoid this new run, stop the operation.
+After that, you can start the operation again on demand with `dataSanityOperationRequestRun`.
 
 ```graphql
 mutation DataSanityOperationStop($operation_name: String!) {

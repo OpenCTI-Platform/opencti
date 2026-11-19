@@ -19,6 +19,7 @@ import {
   type NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE,
   SIMPLIFIED_EMAIL_TEMPLATE,
 } from '../modules/notifier/notifier-statics';
+import { compileTitleVariables, normalizeEmailSubject, TITLE_VARIABLES_DATA_KEY } from '../modules/notifier/notifier-title-variables';
 import { type BasicStoreEntityNotifier, ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -61,7 +62,7 @@ export async function processNotificationData(
   notificationMap: Map<string, BasicStoreEntityTrigger>,
   user: NotificationUser,
   data: NotificationData[],
-  usersMap: Map<string, AuthUser>,
+  usersMap: ReadonlyMap<string, AuthUser>,
 ) {
   // Keyed by element names: without prototype, a name such as constructor or __proto__ does not resolve to an inherited property
   const generatedContent: Record<string, NotificationContentEvent[]> = Object.create(null);
@@ -106,7 +107,7 @@ export type NotificationTemplateMarking = Pick<StoreMarkingDefinition, 'id' | 's
 **/
 export function resolveNotificationDataMarkings(
   data: NotificationData[],
-  markingsMap: Map<string, StoreMarkingDefinition>,
+  markingsMap: ReadonlyMap<string, StoreMarkingDefinition>,
   user: AuthUser | undefined,
 ): NotificationData[] {
   const canSeeAllMarkings = !!user && isBypassUser(user);
@@ -203,8 +204,12 @@ export async function handleEmailNotification(
     url_suffix: urlSuffix,
   };
 
-  const renderedTitle = await safeRender(title, sanitizedData, {
+  // `$variables` are resolved against the same data as the body and passed as data, never spliced into the template.
+  // The subject is plain text: no HTML escaping, and normalized to one line so a value can't inject a header.
+  const { template: titleTemplate, values: titleValues } = compileTitleVariables(title ?? '', sanitizedData);
+  const renderedTitle = await safeRender(titleTemplate, { ...sanitizedData, [TITLE_VARIABLES_DATA_KEY]: titleValues }, {
     useNotificationTool: true,
+    usePlainTextEscape: true,
   });
   const renderedEmail = await safeRender(template, sanitizedData, {
     useNotificationTool: true,
@@ -213,7 +218,7 @@ export async function handleEmailNotification(
   const emailPayload = {
     from: await smtpComputeFrom(),
     to: user.user_email,
-    subject: renderedTitle,
+    subject: normalizeEmailSubject(renderedTitle),
     html: renderedEmail,
   };
 
@@ -291,7 +296,7 @@ export const internalProcessNotification = async (
   notifier: BasicStoreEntityNotifier | NotifierTestInput,
   notificationData: NotificationData[],
   triggerList: BasicStoreEntityTrigger[],
-  usersMap: Map<string, AuthUser>,
+  usersMap: ReadonlyMap<string, AuthUser>,
 ): Promise<void> => {
   // A service account has no mailbox and no UI: it is reached through a webhook notifier only.
   if (notificationUser.user_service_account && notifier.notifier_connector_id !== NOTIFIER_CONNECTOR_WEBHOOK) {
@@ -342,7 +347,7 @@ export const processNotificationEvent = async (
   notificationId: string,
   user: NotificationUser,
   notificationData: NotificationData[],
-  usersMap: Map<string, AuthUser>,
+  usersMap: ReadonlyMap<string, AuthUser>,
 ): Promise<void> => {
   const storeSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
 
@@ -383,7 +388,7 @@ export const processNotificationEvent = async (
 
 const createFullNotificationMessage = (
   notificationMessage: string,
-  usersMap: Map<string, AuthUser>,
+  usersMap: ReadonlyMap<string, AuthUser>,
   streamMessage?: string,
   origin?: Partial<UserOrigin>,
   eventType?: string,

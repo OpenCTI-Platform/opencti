@@ -1,6 +1,6 @@
 # Getting started
 
-This guide aims to give you a full overview of the OpenCTI features and workflows. The platform can be used in various contexts to handle threats management use cases from a technical to a more strategic level. OpenCTI has been designed as a knowledge graph, taking inputs (threat intelligence feeds, sightings & alerts, vulnerabilities, assets, artifacts, etc.) and generating outputs based on built-in capabilities and / or connectors.
+This page introduces the main use cases of OpenCTI and describes the welcome dashboard you see when you log in. The platform can be used in various contexts to handle threats management use cases from a technical to a more strategic level. OpenCTI has been designed as a knowledge graph, taking inputs (threat intelligence feeds, sightings & alerts, vulnerabilities, assets, artifacts, etc.) and generating outputs based on built-in capabilities and / or connectors.
 
 Here are some examples of use cases:
 
@@ -46,3 +46,13 @@ The welcome page gives any visitor on the OpenCTI platform an overview of what's
 !!! info "Explore the platform"
 
     To start exploring the platform and understand how information is structured, we recommend starting with the [overview documentation page](overview.md).
+
+## What's next
+
+- [Overview](overview.md): understand how knowledge is structured and what a typical entity page contains.
+- [Data model](data-model.md): learn the entities and relationships OpenCTI uses to represent threat intelligence.
+- [Automated import](import/getting-started.md), [Import from files](import-files.md) and [Manual creations](manual-creation.md): bring knowledge into the platform.
+- [Search for knowledge](search.md) and the "Explore by entity types" pages, starting with [Analysis](exploring-analysis.md): find and explore knowledge.
+- [Case management](case-management.md): handle incidents and requests with all their context.
+- [Custom dashboards](dashboards.md): build your own dashboards on a subset of data.
+- [Manual export](export.md): export knowledge and generate finished intelligence.

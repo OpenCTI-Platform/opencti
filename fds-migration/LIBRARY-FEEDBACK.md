@@ -2365,6 +2365,11 @@ specified with text segments. It uses the library group with two glyphs, each
 named by its `aria-label` and a library `Tooltip` (marked `FDS-WORKAROUND`).
 With a text item, drop the glyphs and the tooltips and show both words.
 
+**Also at.** `WorkflowScopeSwitch.tsx` (Settings > Customization > Case-Rfi > Workflow): the
+"Global" / "Request access workflow" switch of the workflow editor header. It uses the
+library group with two glyphs, each named by its `aria-label` and a library `Tooltip` (marked
+`FDS-WORKAROUND`). With a text item, drop the glyphs and the tooltips and show both words.
+
 ## 64. `MenuItem` has no destructive tone, so a Delete row cannot read as dangerous
 
 **Needed.** A row menu that ends with a Delete command shows that row in the
@@ -2916,3 +2921,222 @@ do so.
 
 **Removal test.** On a decimal custom field holding `0.125`, a click on the up
 arrow sets `1.125` and logs no error.
+
+---
+
+## 78. A clearable `Select` with a value is narrower than its own trigger, so a flex row overlaps it
+
+**Where it bit.** The dashboard preset selector (`DashboardPresetSelector.tsx`)
+is a clearable `Select` followed, in a flex row, by the *Save as preset* button
+and the rename and delete icon buttons. As soon as a preset is selected the
+button's icon is drawn under the trigger's chevron: the row has lost 24px, the
+32px the library takes minus the row's 8px gap. Measured at library `1.3.0`.
+
+**What the library does.** `SelectTrigger` (RULE-12, `Select.rfc.md` §6.1)
+renders the clear control as a flex *sibling* of the trigger, pulled back over
+it with `-ml-14` (56px) for a `sm` `IconButton` of `w-6` (24px). The wrapper
+`span.flex` therefore measures trigger width + 24 − 56 = trigger − 32px, and the
+trigger's last 32px (the `size-6` chevron box and its `pr-2`) overflow the
+wrapper. In a block layout nothing follows, so nothing shows; as a direct item
+of a flex row, the next sibling starts 32px inside the trigger. The wrapper is
+rendered unconditionally, but the shortfall only exists while `canClear` is
+true (a value, not disabled), so the row jumps by 32px when a value is set or
+cleared.
+
+**What the product did.** The `Select` sits in an `inline-flex` span that pads
+its right by 32px exactly when the library shows the clear control (a value,
+not disabled), mirroring `canClear`. Marker `FDS-WORKAROUND #78` on the span;
+`DashboardPresetSelector.test.tsx` locks the padding in the three states.
+
+**Asked.** Keep the clear control inside the trigger's box so the wrapper hugs
+the trigger: either give the wrapper the trigger's width (`w-fit` on the wrapper
+with the trigger `w-full`, the clear absolutely positioned in that wrapper), or
+make the negative margin equal to the control's own width plus the reserved
+`pl-6`, so the wrapper ends at the trigger's right edge. The RFC's flex-row
+trap note describes a wrapper that is too wide; this is the same wrapper being
+too narrow.
+
+**Removal condition.** The wrapper rendered by `SelectTrigger` with `clearable`
+and a value measures the same width as its trigger button (compare
+`getBoundingClientRect().width` of the trigger and of its parent). When it
+does, drop the span and the test case.
+
+**Status in this product.** No workaround left: the unified dashboard context
+bar (issue 18808) replaced the preset `Select` with a `Menu` pill, so the span
+and its test case are gone. The library gap itself stands for any clearable
+`Select` placed in a flex row.
+
+---
+
+## 79. `Menu` needs its own trigger, so one menu shared by hundreds of cells cannot convert
+
+Raised by the investigation tactics matrix (matrix view and frequency heatmap),
+measured against the installed `@filigran/design-system` 1.2.0 types.
+
+**Needed.** In the ATT&CK matrix, clicking a technique cell opens a menu (*View*,
+and *Add* on the screens that can add). A matrix holds several hundred cells, so
+the screen keeps **one** menu and moves it: `AttackPatternsMatrixColumns.tsx`
+stores the clicked cell as `anchorEl` and the technique as
+`selectedAttackPattern`, and renders a single MUI `Menu` anchored to that element.
+Each cell is also the trigger of its own `Tooltip` (the linked-entities list) and
+is a native `<button>` that the keyboard activates with Enter.
+
+**Today.** `Menu` is a Radix dropdown: `MenuTrigger` is the element that opens the
+menu and must be rendered inside the `Menu` root, "always meant to be used with
+`asChild` around a real library component". `Menu` takes a controlled `open` and
+`onOpenChange`, and no anchor: there is no `anchorEl`, no virtual or detached
+trigger and no `MenuAnchor` part. A menu cannot be positioned on an element
+that is not its own trigger.
+
+**Workaround.** None in the library; the screen stays on MUI `Menu` and
+`MenuItem` (existing imports, no new one). Converting would mean one `Menu` root
+per cell, each wrapping a cell that already carries a `TooltipTrigger asChild`
+and the `handleOpen` click, so several hundred roots, and the shared selection
+state would be lost.
+
+**Ask.** A way to open a `Menu` from an element it does not wrap: an `anchor`
+(element, ref or `{ x, y }` rect) prop on `Menu` or `MenuContent`, or a
+`MenuAnchor` part, as Radix `Popper` already offers underneath. Opening from a
+click on a cell would then be `open` plus the clicked element.
+
+**Related.** #70 asks for the same anchor for the graph context menu at the
+pointer; one `anchor` on `Menu` would close both.
+
+**Removal test.** At a pin where `Menu` can anchor to an arbitrary element:
+replace the MUI `Menu` in `AttackPatternsMatrixColumns.tsx` by the library one
+anchored to `anchorEl`. On the investigation matrix, a click and the Enter key
+on a cell must both open *View* next to that cell, and *Add* must stay on the
+report and entity matrices, with one `Menu` root in the DOM.
+
+---
+
+## 80. The flame icon of the heatmap toggle has no library mapping
+
+Raised by the same screen. The matrix toolbar toggles a frequency heatmap with an
+icon button that shows a flame.
+
+**Needed.** A flame glyph for the heatmap toggle.
+
+**Today.** `Icon` has no flame, fire or heat name. The design handoff has one:
+`icon-mapping.json` lists `custom/fire` with `lucideName: null` and
+`status: "no-lucide"`, so it is a custom drawing that the library does not
+ship as a component or an `Icon` name.
+
+**Workaround.** The toggle is a library `IconButton active` and its glyph is
+MUI's `LocalFireDepartmentOutlined`, passed through the `icon` slot (an existing
+dependency; no new MUI component is imported). Every other glyph of that
+toolbar is a library `Icon`.
+
+**Ask.** Ship `custom/fire` as a library icon (an `Icon` name, or a custom icon
+export next to `Icon`), so a product does not mix a MUI glyph into a library
+button.
+
+**Removal test.** At a pin where the icon exists: replace the
+`LocalFireDepartmentOutlined` import in
+`workspaces/investigations/matrix/InvestigationMatrix.tsx` by the library glyph
+and confirm that the heatmap toggle still shows it at the same size, in both
+themes, in the off, on and disabled states.
+
+---
+
+## 81. There is no data-visualisation colour scale
+
+Raised by the same screen. The heatmap colours each technique by how many
+entities of the investigation use it, from low to high, and draws a legend of
+that scale.
+
+**Needed.** An ordered, sequential scale for data (five steps, low to high) whose
+steps keep a readable label in the light and dark themes, plus the rule that
+says how to use it. The heatmap needs a label of one ink on every step, at least
+4.5:1, and the cell borders at least 3:1.
+
+**Today.** The library ships the colour families (`--yellow-300`, `--yellow-400`,
+`--orange-400`, `--orange-500`, `--red-400`...) and the semantic roles
+(`--border-elevation-default`...), and no scale: no token names a data step and
+no ordering is defined.
+
+**Workaround.** `heatScale.ts` picks five existing family tokens in order, as
+`var(--...)` references and no hex, and fills the cells with the solid token.
+The `--black-1000` label is 5.6:1 or more on every step, in both themes. (The
+second step and the label ink are substitutes: see #82.) The product defines
+the scale; it does not invent a token value.
+
+**Ask.** A sequential data-visualisation scale in the tokens (for example
+`--dataviz-seq-1` to `--dataviz-seq-5`), with a value per theme designed in Figma
+so that one label ink holds 4.5:1 on every step, and a line in the design
+guidelines on how a product draws the legend.
+
+**Removal test.** At a pin where the scale exists: replace `HEAT_STOPS` in
+`heatScale.ts` by the library tokens, and confirm the label contrast (4.5:1) on
+every step and the border contrast (3:1) in both themes, by the same manual
+check as the heatmap review.
+
+---
+
+## 82. Primitive tokens in `theme.css` are missing from the compiled `dist/index.css`
+
+Raised by the same screen, after a review found three colours that never
+resolved in the browser.
+
+**Needed.** Every primitive colour token the library publishes is usable as
+`var(--token)` once the product loads the library stylesheet. The product loads
+only `@filigran/design-system/dist/index.css` (`src/front.tsx`).
+
+**Today.** At 1.2.0, `dist/tokens/theme.css`, `llms-full.txt` and the generated
+token data (`fds-tokens.generated.ts`) define `--yellow-500` (`#eaa510`),
+`--black-800` (`#000000e5`) and `--black-900` (`#000000f2`), but
+`dist/index.css` does not. It holds `--yellow-{200,300,400,600,800}` and
+`--black-{100,200,300,400,1000}` only. The header of `dist/index.css` says
+Tailwind v4, which emits only the theme variables the library itself uses, so
+any primitive no library component uses is dropped from the build. A `var()`
+on a dropped token is invalid at computed-value time: a fill goes transparent
+and a text colour falls back to the inherited one, with no error. Unit tests
+and a `toHaveCSS` against a colour resolved in the same page cannot see it,
+because both sides resolve to the same nothing.
+
+**Workaround.** The matrix uses the nearest token that is compiled, with the
+same intent, and a unit test (`investigations/matrix/matrixTokens.test.ts`)
+fails when a `var(--…)` of the matrix code is not defined in
+`dist/index.css`:
+
+- Heat step 2: `--yellow-400` instead of `--yellow-500` (it keeps the
+  luminance order between `--yellow-300` and `--orange-400`).
+- Heat label ink: `--black-1000` instead of `--black-900`.
+- Investigation badge background: `--gray-800` instead of `--black-800`
+  (text `--gray-100`, 11.5:1).
+
+**Ask.** Either compile every primitive of `theme.css` into `dist/index.css`
+(Tailwind `@theme static`, or a plain `:root` block), or publish `theme.css`
+as an entry point a product imports next to `index.css`, and state which file
+is the token source in the README.
+
+**Removal test.** At a pin where `dist/index.css` defines all three: switch
+back to `--yellow-500`, `--black-900` and `--black-800` if the design asks for
+them, run `matrixTokens.test.ts`, recompute the label contrast table of the
+heatmap review (4.5:1 on every step, both themes), and check the cells, the
+legend and the badge in a browser in both themes.
+
+---
+
+## 83. `Combobox` takes no `style`, so a form's field spacing is dropped
+
+**Needed.** OpenCTI forms space their fields with an inline `style` handed to the
+Formik field (`fieldSpacingContainerStyle`, `{ marginTop: 20 }`).
+`AutocompleteFreeSoloField.jsx` renders the library `Combobox`, and the vocabulary
+drawers pass such a style to it: `VocabularyCreation.tsx` (Aliases) and
+`VocabularyEdition.tsx`.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.5.1,
+`components/combobox/Combobox.mjs`): `ComboboxProps` has `className`, set on the
+`data-combobox-root` div, but no `style`, and the remaining props go to the
+combobox engine, not to the DOM. The style was dropped, so Aliases sat flush under
+Description in the "Create a vocabulary" drawer.
+
+**What the product did.** `className` is passed to `Combobox`. A `style` goes on a
+plain `div` around it (`FDS-WORKAROUND #83`).
+
+**Ask.** Accept `style` on `Combobox` and set it on the root, next to `className`.
+
+**Removal test.** With `style` passed straight to `Combobox` and the wrapper
+removed, the "Create a vocabulary" drawer keeps a 20px gap between Description and
+Aliases.

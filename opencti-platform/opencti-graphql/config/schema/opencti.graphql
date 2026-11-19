@@ -161,6 +161,11 @@ enum XTMHubRegistrationStatus {
   lost_connectivity
 }
 
+enum XTMHubCommercialModel {
+  saas
+  other
+}
+
 # noinspection GraphQLSchemaValidation
 input FilterGroup {
   mode: FilterMode!
@@ -1571,6 +1576,9 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   caller_ip: String
   platform_messages: [SettingsMessage!]
   platform_session_max_concurrent: Int
+  platform_session_presence_enabled: Boolean! @ff(flags: ["SESSION_PRESENCE"], softFail: true, defaultValue: "false")
+  # False while several nodes serve the API: no session is then logged out when its last tab is closed
+  platform_session_presence_supported: Boolean! @ff(flags: ["SESSION_PRESENCE"], softFail: true, defaultValue: "false")
   messages_administration: [SettingsMessage!] @auth(for: [SETTINGS_SETPARAMETERS])
   analytics_google_analytics_v4: String
   playground_enabled: Boolean!
@@ -1588,6 +1596,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   xtm_hub_registration_status: XTMHubRegistrationStatus
   xtm_hub_backend_is_reachable: Boolean
   xtm_hub_available_news_feed_types: [String!]
+  xtm_hub_commercial_model: XTMHubCommercialModel
   # Notifiers
   platform_notifier_auto_trigger_assignee: Boolean!
   # AI insight
@@ -1653,6 +1662,7 @@ type Group implements InternalObject & BasicObject {
   auto_new_marking: Boolean
   description: String
   default_dashboard: Workspace
+  default_dashboard_preset: String
   members(
     first: Int
     after: ID
@@ -2939,6 +2949,7 @@ type SubAttackPatternForMatrix {
   attack_pattern_id: String!
   name: String!
   description: String
+  x_mitre_id: String
 }
 type AttackPatternsByKillChain {
   kill_chain_id: String!

@@ -25,6 +25,7 @@ import type {
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesUploadStixCoreObjectMutation.graphql';
 import { stixCoreObjectContentFilesUploadStixCoreObjectMutation } from './StixCoreObjectContentFiles';
 import { stixCoreObjectMappableContentFieldPatchMutation } from './StixCoreObjectMappableContent';
+import { isContainerWithContent } from './StixCoreObjectContentFileUtils';
 import FilesNativeField from '../form/FilesNativeField';
 import { useFormatter } from '../../../../components/i18n';
 import ResponseDialog, { type ResponseAgentAction } from '../../../../utils/ai/ResponseDialog';
@@ -50,8 +51,6 @@ interface StixCoreObjectAskAiProps {
   optionsOpen: boolean;
   handleCloseOptions: () => void;
 }
-
-const isContainerWithContent = (type: string) => ['Report', 'Grouping', 'Case-Incident', 'Case-Rfi', 'Case-Rft'].includes(type);
 
 const stixCoreObjectAskAIContainerReportMutation = graphql`
   mutation StixCoreObjectAskAIContainerReportMutation($id: ID!, $containerId: String!, $paragraphs: Int, $tone: Tone, $format: Format, $language: String) {

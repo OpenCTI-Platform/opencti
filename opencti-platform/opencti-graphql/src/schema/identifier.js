@@ -149,10 +149,10 @@ const stixBaseCyberObservableContribution = {
     from(from) {
       return from?.standard_id;
     },
-    src(src) {
+    [INPUT_SRC](src) {
       return src?.standard_id;
     },
-    dst(dst) {
+    [INPUT_DST](dst) {
       return dst?.standard_id;
     },
     hashes(data) {
