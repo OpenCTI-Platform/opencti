@@ -623,8 +623,9 @@ const useSearchEntities = ({
         type,
       }));
       // always add myself to the possible creators (to be able to add a trigger even if I have not yet created any objects)
+      // the added options come first: the options keep their order when a term is typed (getOptionsFromEntities)
       if (!newOptions.find((usr) => usr.value === me.id)) {
-        newOptions.push({
+        newOptions.unshift({
           label: me.name,
           value: me.id,
           type,
@@ -632,7 +633,7 @@ const useSearchEntities = ({
       }
       // add @me value for filters with user id as values, except in stix playbook components
       if (type === 'User' && searchContext.elementType !== 'Playbook-Stix-Component') {
-        newOptions.push(meEntity);
+        newOptions.unshift(meEntity);
       }
 
       setCacheEntities({ ...cacheEntities, [key]: newOptions });
