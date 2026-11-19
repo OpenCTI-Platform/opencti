@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { schemaTypesDefinition, withinRegistration } from '../../../src/schema/schema-types';
 
-// Nothing else is imported: the types registry starts empty and writable.
-describe('Types registry usage protection', () => {
+// Nothing else is imported: the types registry starts empty and writable, unless the test files share their modules
+// with modules already registered (vitest.config.dev.ts). Not read through the API, which would lock the registry.
+const sharedRegistry = Object.keys(schemaTypesDefinition.types).length > 0;
+
+describe.skipIf(sharedRegistry)('Types registry usage protection', () => {
   it('should stay writable through registration reads and lock on the first other read', () => {
     schemaTypesDefinition.register('Parent', ['Child-A']);
     expect(withinRegistration(() => schemaTypesDefinition.isTypeIncludedIn('Child-A', 'Parent'))).toBe(true);

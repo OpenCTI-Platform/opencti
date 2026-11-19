@@ -4,7 +4,8 @@ import type { GraphQLError } from 'graphql';
 // ── Infrastructure stubs ─────────────────────────────────────────────────────
 
 vi.mock('../../../src/database/engine');
-vi.mock('../../../src/database/redis', () => ({ notify: vi.fn(), redisAddDeletions: vi.fn() }));
+// redisIsAlive: read at import by the platform health metrics, which the composition root's telemetry managers import
+vi.mock('../../../src/database/redis', () => ({ notify: vi.fn(), redisAddDeletions: vi.fn(), redisIsAlive: vi.fn() }));
 vi.mock('../../../src/database/cache', () => ({
   getEntitiesMapFromCache: vi.fn(),
   getEntityFromCache: vi.fn(),
