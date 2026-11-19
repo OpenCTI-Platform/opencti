@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { ADMIN_USER } from '../../../utils/testQuery';
 import { extractWsSessionContext } from '../../../../src/http/httpServer';
 
@@ -47,6 +47,18 @@ describe('httpServer', () => {
 
     it('should throw an error with broken context', async () => {
       await expect(extractWsSessionContext(brokenContext)).rejects.toThrow('User must be authenticated');
+    });
+
+    it('should refuse a session whose user does not exist, and destroy the session', async () => {
+      const destroy = vi.fn((callback: (err?: unknown) => void) => callback());
+      const unknownUserContext = {
+        extra: {
+          request: { session: { user: { id: '5f0c4a3e-1b7d-4c2e-9a8f-6d3b2e1c0a99' }, destroy } },
+          socket: { _socket: { remoteAddress: '::1' } },
+        },
+      };
+      await expect(extractWsSessionContext(unknownUserContext)).rejects.toThrow('User must be authenticated');
+      expect(destroy).toHaveBeenCalledTimes(1);
     });
   });
 });
