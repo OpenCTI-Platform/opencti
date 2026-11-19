@@ -11,6 +11,7 @@ import * as userActionListener from '../../../src/listener/UserActionListener';
 import * as work from '../../../src/domain/work';
 import * as streamHandler from '../../../src/database/stream/stream-handler';
 import { batchInternalRels, stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectImportPushRef, stixCoreObjectsExportPush } from '../../../src/domain/stixCoreObject';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import type { BasicStoreEntity } from '../../../src/types/store';
 import type { FileRefInput } from '../../../src/generated/graphql';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../../src/schema/stixMetaObject';
@@ -158,6 +159,18 @@ describe('stix core object domain import push ref', () => {
 
     await expect(importPushRef).rejects.toThrow('Cannot copy referenced sync file');
     await expect(importPushRef).rejects.toHaveProperty('extensions.data', { http_status: 400, genre: 'BUSINESS', syncId: 'sync--1' });
+    expect(updateEventSpy).not.toHaveBeenCalled();
+    expect(unlock).toHaveBeenCalledTimes(1);
+  });
+
+  it('lets a storage failure through as it is, not as the refusal, and still unlocks', async () => {
+    const { unlock, copySpy, updateEventSpy } = setupImportPushRef();
+    const storageFailure = new Error('S3 unavailable');
+    copySpy.mockRejectedValue(storageFailure);
+
+    const importPushRef = stixCoreObjectImportPushRef(testContext, ADMIN_USER, 'report--1', FILE_REF, undefined);
+
+    await expect(importPushRef).rejects.toBe(storageFailure);
     expect(updateEventSpy).not.toHaveBeenCalled();
     expect(unlock).toHaveBeenCalledTimes(1);
   });

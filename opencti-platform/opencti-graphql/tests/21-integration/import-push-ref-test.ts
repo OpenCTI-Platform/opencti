@@ -6,7 +6,7 @@ import Upload from 'graphql-upload/Upload.mjs';
 import { ADMIN_USER, testContext, USER_CONNECTOR } from '../utils/testQuery';
 import { queryAsAdmin, queryAsUser } from '../utils/testQueryHelper';
 import { createEntity, deleteElementById } from '../../src/database/middleware';
-import { storeLoadById } from '../../src/database/middleware-loader';
+import { internalLoadById, storeLoadById } from '../../src/database/middleware-loader';
 import { deleteFile } from '../../src/database/file-storage';
 import { deleteFileFromStorage, downloadFileWithoutLogging, rawUpload, streamToString } from '../../src/database/raw-file-storage';
 import { findById as findDocumentById } from '../../src/modules/internal/document/document-domain';
@@ -15,6 +15,7 @@ import { ENTITY_TYPE_SYNC } from '../../src/schema/internalObject';
 import { ENTITY_IPV4_ADDR } from '../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../src/schema/stixMetaObject';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../src/schema/stixDomainObject';
+import { MARKING_TLP_GREEN } from '../../src/schema/identifier';
 import type { FileRefInput } from '../../src/generated/graphql';
 import type { BasicStoreEntity } from '../../src/types/store';
 
@@ -213,6 +214,7 @@ describe('importPushRef resolver', () => {
 
   afterAll(async () => {
     await deleteFile(testContext, ADMIN_USER, fileId, { forceDelete: true });
+    await deleteFile(testContext, ADMIN_USER, `embedded/Report/${reportId}/${FILE_NAME}`, { forceDelete: true });
     await deleteElementById(testContext, ADMIN_USER, reportId, ENTITY_TYPE_CONTAINER_REPORT);
     await deleteFile(testContext, ADMIN_USER, `import/${ENTITY_IPV4_ADDR}/${observableId}/${FILE_NAME}`, { forceDelete: true });
     await deleteElementById(testContext, ADMIN_USER, observableId, ENTITY_IPV4_ADDR);
@@ -326,5 +328,20 @@ describe('importPushRef resolver', () => {
     expect(externalReference.x_opencti_files?.map((file) => file.id)).toContain(referenceFileId);
     expect(await readObject(referenceFileId)).toEqual('staged for an external reference');
     expect(await readObject(storageKey)).toBeNull();
+  });
+
+  it('stores the staged file under embedded/ with the given markings', async () => {
+    const marking = await internalLoadById<BasicStoreEntity>(testContext, ADMIN_USER, MARKING_TLP_GREEN);
+    const storageKey = await stage(syncId, 'staged embedded file');
+    const fileRef = { ...buildFileRef({ syncId, storageKey, version: '2024-01-01T00:00:00.000Z' }), embedded: true, file_markings: [MARKING_TLP_GREEN] };
+
+    const pushRefResult = await queryAsAdmin<ImportPushRefQueryData>({ query: IMPORT_PUSH_REF_QUERY, variables: { id: reportId, fileRef } });
+
+    const embeddedFileId = `embedded/Report/${reportId}/${FILE_NAME}`;
+    expect(pushRefResult.errors).toBeUndefined();
+    expect(pushRefResult.data?.stixDomainObjectEdit.importPushRef?.id).toEqual(embeddedFileId);
+    const embeddedDocument = await findDocumentById(testContext, ADMIN_USER, embeddedFileId);
+    expect(embeddedDocument.metaData.file_markings).toEqual([marking.internal_id]);
+    expect(await readObject(embeddedFileId)).toEqual('staged embedded file');
   });
 });
