@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { Link, MemoryRouter, useLocation } from 'react-router';
-import { navigationClickHandlers, onActivationKey, openInNewTab, stopLinkNavigation } from './domEvent';
+import { isImeComposing, navigationClickHandlers, onActivationKey, openInNewTab, stopLinkNavigation } from './domEvent';
 
 vi.mock('../relay/environment', () => ({ APP_BASE_PATH: '/opencti' }));
 
@@ -176,5 +176,29 @@ describe('onActivationKey', () => {
     const notCancelled = fireEvent.keyDown(button, { key: 'a' });
     expect(action).not.toHaveBeenCalled();
     expect(notCancelled).toBe(true);
+  });
+});
+
+describe('isImeComposing', () => {
+  it.each([
+    [{ isComposing: true }, true],
+    [{ keyCode: 229 }, true],
+    [{ key: 'Enter' }, false],
+  ])('on a native event %j: %s', (init, expected) => {
+    expect(isImeComposing(new KeyboardEvent('keydown', init))).toBe(expected);
+  });
+
+  it.each([
+    [{ isComposing: true }, true],
+    [{ keyCode: 229 }, true],
+    [{ key: 'Enter' }, false],
+  ])('on a React event %j: %s', (init, expected) => {
+    let result: boolean | undefined;
+    const onKeyDown = (event: React.KeyboardEvent) => {
+      result = isImeComposing(event);
+    };
+    render(<input aria-label="field" onKeyDown={onKeyDown} />);
+    fireEvent.keyDown(screen.getByLabelText('field'), init);
+    expect(result).toBe(expected);
   });
 });

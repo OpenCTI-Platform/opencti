@@ -4,8 +4,6 @@ import {
   investigationDuplicate,
   findWorkspacePaginated,
   findById,
-  generateWidgetExportConfiguration,
-  generateWorkspaceExportConfiguration,
   getCurrentUserAccessRight,
   getOwnerId,
   isDashboardShared,
@@ -15,9 +13,9 @@ import {
   workspaceEditAuthorizedMembers,
   workspaceEditContext,
   workspaceEditField,
-  workspaceImportConfiguration,
-  workspaceImportWidgetConfiguration,
 } from './workspace-domain';
+import { generateWidgetExportConfiguration, generateWorkspaceExportConfiguration } from './workspace-export';
+import { workspaceImportConfiguration, workspaceImportWidgetConfiguration } from './workspace-import';
 import { fetchEditContext } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ENTITY_TYPE_WORKSPACE } from './workspace-types';

@@ -23,7 +23,7 @@ interface TriggerTimeForm {
   period: string;
 }
 
-const PlaybookFlowFieldTriggerTime = () => {
+const PlaybookFlowFieldTriggerTime = ({ required = false }: { required?: boolean }) => {
   const { t_i18n } = useFormatter();
   const { values } = useFormikContext<TriggerTimeForm>();
 
@@ -36,6 +36,7 @@ const PlaybookFlowFieldTriggerTime = () => {
           variant="outlined"
           component={SelectFieldFds}
           label={t_i18n('Week day')}
+          required={required}
           containerstyle={fieldSpacingContainerStyle}
         >
           <SelectItem value="1">{t_i18n('Monday')}</SelectItem>
@@ -55,6 +56,7 @@ const PlaybookFlowFieldTriggerTime = () => {
           variant="outlined"
           component={SelectFieldFds}
           label={t_i18n('Month day')}
+          required={required}
           containerstyle={fieldSpacingContainerStyle}
         >
           {Array.from(Array(31).keys()).map((idx) => (
@@ -72,6 +74,7 @@ const PlaybookFlowFieldTriggerTime = () => {
           component={TimePickerField}
           textFieldProps={{
             label: t_i18n('Time'),
+            required,
             variant: 'outlined',
             fullWidth: true,
             style: fieldSpacingContainerStyle,

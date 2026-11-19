@@ -5,7 +5,7 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import testRender from '../../../utils/tests/test-render';
 import MadeByFiligran from './MadeByFiligran';
-import { isRouteSelected, NavBarView, NavBarViewProps } from './NavBar';
+import { findSectionToOpen, isRouteSelected, isSubItemSelected, NavBarView, NavBarViewProps, openSection } from './NavBar';
 import { NavGroup } from './useNavMenu';
 
 const groups: NavGroup[] = [
@@ -22,8 +22,8 @@ const groups: NavGroup[] = [
         icon: null,
         link: '/dashboard/threats',
         subItems: [
-          { type: 'Threat-Actor-Group', link: '/dashboard/threats/threat_actors_group', label: 'Threat actors (group)' },
-          { type: 'Campaign', link: '/dashboard/threats/campaigns', label: 'Campaigns' },
+          { link: '/dashboard/threats/threat_actors_group', label: 'Threat actors (group)' },
+          { link: '/dashboard/threats/campaigns', label: 'Campaigns' },
         ],
       },
     ],
@@ -75,6 +75,13 @@ describe('NavBarView', () => {
     expect(isRouteSelected('/dashboard/data/import/draft/abc', '/dashboard/data')).toBe(false);
     expect(isRouteSelected('/dashboard/data/entities', '/dashboard/data')).toBe(true);
     expect(isRouteSelected('/dashboard/workspaces/dashboards_public', '/dashboard/workspaces/dashboards', true)).toBe(false);
+  });
+
+  it('selects a row standing for several pages on any of them, not only the one it leads to', () => {
+    const row = { link: '/dashboard/data/import/files', label: 'Import', paths: ['/dashboard/data/import/files', '/dashboard/data/import/draft'] };
+    expect(isSubItemSelected('/dashboard/data/import/draft/abc', row)).toBe(true);
+    expect(isSubItemSelected('/dashboard/data/processing/tasks', row)).toBe(false);
+    expect(isSubItemSelected('/dashboard/analyses/reports/abc', { link: '/dashboard/analyses/reports', label: 'Reports' })).toBe(true);
   });
 
   it('renders submenu entries as real links too', () => {
@@ -256,6 +263,25 @@ describe('NavBarView accent compensation', () => {
       [...(nav?.getAttribute('style') ?? '').matchAll(tint)].map((m) => m[0]),
     );
     expect([...reDerived].sort()).toEqual([...consumed].sort());
+  });
+});
+
+describe('section to open for the current page', () => {
+  it('finds the section of a sub-item page, or of a page below it', () => {
+    expect(findSectionToOpen(groups, '/dashboard/threats/campaigns')).toBe('threats');
+    expect(findSectionToOpen(groups, '/dashboard/threats/campaigns/abc')).toBe('threats');
+  });
+
+  it('finds nothing for a leaf entry, an unknown page or a look-alike prefix', () => {
+    expect(findSectionToOpen(groups, '/dashboard')).toBeUndefined();
+    expect(findSectionToOpen(groups, '/dashboard/elsewhere')).toBeUndefined();
+    expect(findSectionToOpen(groups, '/dashboard/threats/campaigns_old')).toBeUndefined();
+  });
+
+  it('opens it alone when sections auto collapse, next to the others otherwise', () => {
+    expect(openSection(['data'], 'threats', true)).toEqual(['threats']);
+    expect(openSection(['data'], 'threats', false)).toEqual(['data', 'threats']);
+    expect(openSection(['threats', 'data'], 'threats', false)).toEqual(['data', 'threats']);
   });
 });
 
