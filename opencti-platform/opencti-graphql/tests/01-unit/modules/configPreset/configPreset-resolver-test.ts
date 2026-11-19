@@ -64,6 +64,7 @@ import { customStatusTemplate, defaultStatusTemplate } from './configPreset-stat
 import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemplates-fixtures';
 import { customEmailTemplate, otherEmailTemplate } from './configPreset-emailTemplates-fixtures';
 import { defaultFintelDesign, nightFintelDesign } from './configPreset-fintelDesigns-fixtures';
+import { executiveDashboard, socDashboard } from './configPreset-dashboards-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -292,6 +293,15 @@ describe('Config preset exportable types query', () => {
         itemsPageInfo: onePage(2),
       },
       {
+        key: 'dashboards',
+        label: 'Custom dashboards',
+        description: '',
+        group: { key: 'dashboards', label: 'Dashboards' },
+        // By name, the investigation is not a dashboard
+        items: [statusTemplateItem(executiveDashboard), statusTemplateItem(socDashboard)],
+        itemsPageInfo: onePage(2),
+      },
+      {
         key: 'connectors',
         label: 'Connectors',
         description: 'Managed connectors and their parameters, without their secrets',
@@ -402,7 +412,7 @@ describe('Config preset exportable types query', () => {
     expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
       ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['emailTemplates', true], ['labels', false], ['exclusionLists', false], ['killChainPhases', false],
-      ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['connectors', true],
+      ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['dashboards', false], ['connectors', true],
       ['rssFeeds', false], ['csvFeeds', false], ['jsonFeeds', false], ['taxiiFeeds', false], ['ruleEngine', false], ['fintelDesigns', true],
     ]);
     expect(types.find((type) => type.key === 'emailTemplates')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
@@ -454,6 +464,7 @@ describe('Config preset exportable types query', () => {
       ['vocabularies', 'taxonomy'],
       ['statusTemplates', 'taxonomy'],
       ['caseTemplates', 'taxonomy'],
+      ['dashboards', 'dashboards'],
       ['connectors', 'integrations'],
       ['rssFeeds', 'integrations'],
       ['csvFeeds', 'integrations'],
@@ -513,7 +524,7 @@ describe('Config preset exportable items query', () => {
   });
 
   it('rejects an unknown type', async () => {
-    const result = await queryItems({ type: 'dashboards' });
+    const result = await queryItems({ type: 'unknownType' });
     expect(result.errors?.[0].message).toBe('Unknown configuration preset type');
   });
 

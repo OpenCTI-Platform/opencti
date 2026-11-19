@@ -12,6 +12,11 @@ export const getRemoteCredentialsProviderFields = (prefix: string, provider: str
   return conf.get(`${prefix}:credentials_provider:${provider}:field_targets`) || conf.get(`${prefix}:credentials_provider:field_targets`) || [];
 };
 
+// The providers handled by enrichWithRemoteCredentials: any other one falls back to the configured credentials.
+export const isSupportedRemoteCredentialsProvider = (provider: string | undefined): provider is string => {
+  return provider === CYBERARK_PROVIDER;
+};
+
 export const enrichWithRemoteCredentials = async (prefix: string, baseConfiguration: any) => {
   const provider = getRemoteCredentialsProviderSelector(prefix);
   if (provider) {
