@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render } from '@testing-library/react';
 import ReactFlow, { Position, type Node, type NodeProps } from 'reactflow';
 import PlaybookPortHandle from './PlaybookPortHandle';
+import { playbookHandleHint } from './PlaybookHandleHint';
 
 const onOpen = vi.fn();
 
@@ -72,6 +73,12 @@ describe('labelled port pill', () => {
     const { getByTestId } = renderCanvas({ nodesConnectable: false, onConnectStart });
     pressOn(getByTestId('playbook-port-reduce-unmatch'));
     expect(onConnectStart).not.toHaveBeenCalled();
+  });
+
+  it('says what a drag from a connection point does in edit mode only', () => {
+    expect(playbookHandleHint(true, 'drag hint')).toBe('drag hint');
+    // View mode: no hint, so the pill keeps its full name as its title and nothing suggests a drag.
+    expect(playbookHandleHint(false, 'drag hint')).toBeUndefined();
   });
 
   it('opens the step configuration on a click', () => {

@@ -1,14 +1,13 @@
 import type { Connection, Edge, Node } from 'reactflow';
 import type { PlaybookDefinitionEdge } from '../types/playbook-types';
 
-// Rewiring a playbook on the canvas: a link dragged to another step or port (playbookRelink),
-// a step attached under another out port by drawing a connection to it (playbookMoveNode).
+// Rewiring a playbook on the canvas: a step attached under another out port by a drag between one of
+// its points and that port, whichever end the drag starts from (playbookMoveNode). A step has one link
+// in, so the end of a link is never dragged on its own (it would sit on the input and hide it).
 // The plan is computed here, pure and testable; the server checks the same invariants again
 // (one entry point, no cycle, every step reachable) and is the authority.
 
-type PlaybookRelink = { kind: 'relink'; linkId: string; toNodeId: string; fromNodeId?: string; fromPortId?: string };
-type PlaybookMove = { kind: 'move'; nodeId: string; parentNodeId: string; parentPortId: string };
-export type PlaybookRewire = PlaybookRelink | PlaybookMove;
+export type PlaybookRewire = { kind: 'move'; nodeId: string; parentNodeId: string; parentPortId: string };
 
 const isStep = (node: Node | undefined): node is Node => Boolean(node && node.type !== 'placeholder');
 const isEntryPoint = (node: Node | undefined) => Boolean(node?.data?.component?.is_entry_point);
@@ -49,7 +48,7 @@ export const reaches = (links: PlaybookDefinitionEdge[], from: string, to: strin
   return false;
 };
 
-const endpoints = (nodes: Node[], connection: Connection | Edge) => {
+const endpoints = (nodes: Node[], connection: Connection) => {
   const source = nodes.find((n) => n.id === connection.source);
   const target = nodes.find((n) => n.id === connection.target);
   const port = connection.sourceHandle;
@@ -60,7 +59,8 @@ const endpoints = (nodes: Node[], connection: Connection | Edge) => {
   return isOutPort ? { source, target, port } : null;
 };
 
-// A new connection drawn from an out port to a step: the step (and its branch) moves under that port.
+// A connection drawn between an out port and a step (from either end: React Flow hands it over with the
+// out port as its source): the step (and its branch) moves under that port.
 export const planConnect = (nodes: Node[], edges: Edge[], connection: Connection): PlaybookRewire | null => {
   const ends = endpoints(nodes, connection);
   if (!ends) return null;
@@ -76,42 +76,8 @@ export const planConnect = (nodes: Node[], edges: Edge[], connection: Connection
   return { kind: 'move', nodeId: ends.target.id, parentNodeId: ends.source.id, parentPortId: ends.port };
 };
 
-// An existing link whose end was dragged to another step, or whose start was dragged to another port.
-export const planEdgeUpdate = (nodes: Node[], edges: Edge[], oldEdge: Edge, connection: Connection): PlaybookRewire | null => {
-  if (oldEdge.type === 'placeholder') return null;
-  const ends = endpoints(nodes, connection);
-  if (!ends) return null;
-  const sourceChanged = ends.source.id !== oldEdge.source || ends.port !== oldEdge.sourceHandle;
-  const targetChanged = ends.target.id !== oldEdge.target;
-  if (!sourceChanged && !targetChanged) return null;
-  const links = toDefinitionLinks(nodes, edges);
-  const others = links.filter((l) => l.id !== oldEdge.id);
-  if (others.some((l) => l.from.id === ends.source.id && l.from.port === ends.port && l.to.id === ends.target.id)) {
-    return null; // the same link already exists
-  }
-  if (targetChanged && !others.some((l) => l.to.id === oldEdge.target)) {
-    return null; // the former target would be left without a parent
-  }
-  if (reaches(others, ends.target.id, ends.source.id)) {
-    return null; // cycle
-  }
-  return {
-    kind: 'relink',
-    linkId: oldEdge.id,
-    toNodeId: ends.target.id,
-    ...(sourceChanged ? { fromNodeId: ends.source.id, fromPortId: ends.port } : {}),
-  };
-};
-
-// The links after the server accepted the rewiring; newLinkId is the id the server answered.
+// The links after the server accepted the move; newLinkId is the id the server answered.
 export const applyRewire = (links: PlaybookDefinitionEdge[], rewire: PlaybookRewire, newLinkId: string): PlaybookDefinitionEdge[] => {
-  if (rewire.kind === 'relink') {
-    return links.map((l) => (l.id !== rewire.linkId ? l : {
-      id: l.id,
-      from: rewire.fromNodeId && rewire.fromPortId ? { id: rewire.fromNodeId, port: rewire.fromPortId } : l.from,
-      to: { id: rewire.toNodeId },
-    }));
-  }
   return [
     ...links.filter((l) => l.to.id !== rewire.nodeId),
     { id: newLinkId, from: { id: rewire.parentNodeId, port: rewire.parentPortId }, to: { id: rewire.nodeId } },

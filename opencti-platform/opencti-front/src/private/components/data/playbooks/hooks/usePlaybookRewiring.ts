@@ -3,13 +3,15 @@ import { Connection, Edge, useReactFlow } from 'reactflow';
 import { graphql } from 'react-relay';
 import { commitMutation, MESSAGING$ } from '../../../../../relay/environment';
 import { useFormatter } from '../../../../../components/i18n';
-import { applyRewire, isDrawnConnection, planConnect, planEdgeUpdate, PlaybookRewire, toDefinitionLinks, withoutDrawnConnections } from '../utils/playbookRewiring';
+import { applyRewire, isDrawnConnection, planConnect, PlaybookRewire, toDefinitionLinks, withoutDrawnConnections } from '../utils/playbookRewiring';
 import { addPlaceholders } from '../utils/playbook';
 import type { PlaybookEdge, PlaybookNode, SetPlaybookAction, SetSelectedPlaybookEdge, SetSelectedPlaybookNode } from '../types/playbook-types';
 import type { PlaybookHistoryControls } from './usePlaybookHistory';
 
 type PlaybookHistoryRecorder = Pick<PlaybookHistoryControls, 'record' | 'snapshot'>;
 
+// The canvas no longer starts a relink (link ends are not draggable); the undo history keeps the
+// operation and replays it with this mutation.
 export const usePlaybookRewiringRelinkMutation = graphql`
   mutation usePlaybookRewiringRelinkMutation($id: ID!, $linkId: ID!, $toNodeId: ID!, $fromNodeId: ID, $fromPortId: ID) {
     playbookRelink(id: $id, linkId: $linkId, toNodeId: $toNodeId, fromNodeId: $fromNodeId, fromPortId: $fromPortId)
@@ -22,9 +24,9 @@ export const usePlaybookRewiringMoveNodeMutation = graphql`
   }
 `;
 
-// Drag a link end to another step, or draw a connection from an out port to a step: one write
-// (playbookRelink or playbookMoveNode), nothing deleted. A drop the plan refuses (a cycle, a step
-// left without a parent, the entry point as a target) does nothing and says why.
+// Draw a connection between an out port and a step, from either end: one write (playbookMoveNode),
+// nothing deleted. A drop the plan refuses (a cycle, the entry point as a target) does nothing and
+// says why.
 // The handlers stay the same functions whatever the mode: React Flow 11 keeps the last handler it was
 // given when the prop turns undefined, so view mode is enforced here (canEdit read at call time).
 const usePlaybookRewiring = (
@@ -70,22 +72,6 @@ const usePlaybookRewiring = (
       return;
     }
     const before = history?.snapshot();
-    if (rewire.kind === 'relink') {
-      commitMutation({
-        mutation: usePlaybookRewiringRelinkMutation,
-        variables: { id: playbookId, linkId: rewire.linkId, toNodeId: rewire.toNodeId, fromNodeId: rewire.fromNodeId, fromPortId: rewire.fromPortId },
-        onCompleted: () => {
-          const from = before?.links.find((l) => l.id === rewire.linkId)?.from;
-          const fromNodeId = rewire.fromNodeId ?? from?.id;
-          const fromPortId = rewire.fromPortId ?? from?.port;
-          if (history && before && fromNodeId && fromPortId) {
-            history.record({ kind: 'relink', linkId: rewire.linkId, toNodeId: rewire.toNodeId, fromNodeId, fromPortId }, before);
-          }
-          apply(rewire, rewire.linkId);
-        },
-      });
-      return;
-    }
     commitMutation({
       mutation: usePlaybookRewiringMoveNodeMutation,
       variables: { id: playbookId, nodeId: rewire.nodeId, parentNodeId: rewire.parentNodeId, parentPortId: rewire.parentPortId },
@@ -113,12 +99,7 @@ const usePlaybookRewiring = (
     commit(planConnect(getNodes(), getEdges(), connection));
   }, [commit, getNodes, getEdges, setEdges]);
 
-  const onEdgeUpdate = useCallback((oldEdge: Edge, connection: Connection) => {
-    if (!canEditRef.current) return;
-    commit(planEdgeUpdate(getNodes(), getEdges(), oldEdge, connection));
-  }, [commit, getNodes, getEdges]);
-
-  return { onConnect, onEdgeUpdate };
+  return { onConnect };
 };
 
 export default usePlaybookRewiring;

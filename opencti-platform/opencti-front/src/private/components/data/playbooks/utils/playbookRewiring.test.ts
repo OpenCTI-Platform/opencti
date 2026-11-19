@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Edge, Node } from 'reactflow';
-import { applyRewire, planConnect, planEdgeUpdate, reaches, toDefinitionLinks } from './playbookRewiring';
+import { applyRewire, planConnect, reaches, toDefinitionLinks } from './playbookRewiring';
 
 const component = (id: string, outs: string[], is_entry_point = false) => ({
   id,
@@ -53,25 +53,15 @@ describe('playbook rewiring plan', () => {
     expect(planConnect(NODES, EDGES, { source: 'b', sourceHandle: 'out', target: 'c', targetHandle: null })).toBeNull();
   });
 
-  it('re-points a link end with one playbookRelink when the former target keeps a parent', () => {
-    expect(planEdgeUpdate(NODES, EDGES, EDGES[4], { source: 'd', sourceHandle: 'out', target: 'c', targetHandle: null }))
-      .toEqual({ kind: 'relink', linkId: 'l5', toNodeId: 'c' });
-  });
-
-  it('re-points the source port of a link', () => {
-    expect(planEdgeUpdate(NODES, EDGES, EDGES[1], { source: 'b', sourceHandle: 'no-match', target: 'c', targetHandle: null }))
-      .toEqual({ kind: 'relink', linkId: 'l2', toNodeId: 'c', fromNodeId: 'b', fromPortId: 'no-match' });
-  });
-
-  it('refuses a relink that leaves its former target without a parent', () => {
-    expect(planEdgeUpdate(NODES, EDGES, EDGES[1], { source: 'b', sourceHandle: 'out', target: 'd', targetHandle: null })).toBeNull();
+  it('moves a step with two parents under one output, whichever end the drag started from', () => {
+    // A drag from e's input onto d.out reaches onConnect as source d.out, target e: e keeps d alone.
+    expect(planConnect(NODES, EDGES, { source: 'd', sourceHandle: 'out', target: 'e', targetHandle: null }))
+      .toEqual({ kind: 'move', nodeId: 'e', parentNodeId: 'd', parentPortId: 'out' });
   });
 
   it('applies the server answer to the links', () => {
     const links = toDefinitionLinks(NODES, EDGES);
     const moved = applyRewire(links, { kind: 'move', nodeId: 'e', parentNodeId: 'b', parentPortId: 'out' }, 'new');
     expect(moved.filter((l) => l.to.id === 'e')).toEqual([{ id: 'new', from: { id: 'b', port: 'out' }, to: { id: 'e' } }]);
-    const relinked = applyRewire(links, { kind: 'relink', linkId: 'l2', toNodeId: 'c', fromNodeId: 'b', fromPortId: 'no-match' }, 'l2');
-    expect(relinked.find((l) => l.id === 'l2')).toEqual({ id: 'l2', from: { id: 'b', port: 'no-match' }, to: { id: 'c' } });
   });
 });

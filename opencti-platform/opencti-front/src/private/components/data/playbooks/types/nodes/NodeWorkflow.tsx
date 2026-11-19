@@ -13,7 +13,7 @@ import type { Theme } from '../../../../../../components/Theme';
 import { usePlaybookHandlePositions } from '../../hooks/usePlaybookLayoutMode';
 import { categoryAccent, outPorts, PLAYBOOK_CARD, PLAYBOOK_HANDLE_DOT, portAnchor, portHasPill } from './playbookNodeGeometry';
 import PlaybookPortHandle from './PlaybookPortHandle';
-import PlaybookHandleHint from './PlaybookHandleHint';
+import PlaybookHandleHint, { playbookHandleHint } from './PlaybookHandleHint';
 import { usePlaybookNodeLastExecution } from '../../hooks/usePlaybookLastExecution';
 import { formatStepDuration } from '../../utils/playbookLastExecution';
 import { playbookNodeSummary, type PlaybookNodeSummary } from '../../utils/playbookNodeSummary';
@@ -39,9 +39,7 @@ const NodeWorkflow = ({ id, data, isConnectable }: NodeProps) => {
   // mode is switched at runtime, so the edit-mode context gates every handle of the card too.
   const canConnect = isConnectable && rewiring;
   // What a drag from an output does, whether a link already leaves from it or not.
-  const outputHint = canConnect
-    ? t_i18n('Drag onto a step to move it, and the steps after it, under this output.')
-    : undefined;
+  const outputHint = playbookHandleHint(canConnect, t_i18n('Drag onto a step to move it, and the steps after it, under this output.'));
   const component = data.component;
   const accent = categoryAccent(theme, component?.category);
   const displayDescription = data.description || component?.description;
@@ -298,9 +296,7 @@ const NodeWorkflow = ({ id, data, isConnectable }: NodeProps) => {
       {!isEntryPoint && (
         <PlaybookHandleHint
           side={target}
-          hint={canConnect
-            ? t_i18n('Drag onto an output to replace this step\'s input.')
-            : undefined}
+          hint={playbookHandleHint(canConnect, t_i18n('Drag onto an output to replace this step\'s input.'))}
         >
           <Handle
             type="target"
