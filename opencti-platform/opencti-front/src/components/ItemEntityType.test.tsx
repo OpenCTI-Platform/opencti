@@ -6,10 +6,10 @@ import ItemEntityType from './ItemEntityType';
 
 describe('ItemEntityType', () => {
   it.each([
-    ['procedure-observable', 'Observables'],
+    ['has-observable', 'has observable'],
     ['procedure-command', 'Command'],
     ['procedure-source', 'Sources'],
-  ])('translates the %s nested reference label', (relationshipType, label) => {
+  ])('translates the %s relationship label', (relationshipType, label) => {
     testRender(<ItemEntityType entityType={relationshipType} />);
     expect(screen.getByText(label)).toBeInTheDocument();
   });

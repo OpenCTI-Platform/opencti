@@ -29,12 +29,20 @@ vi.mock('../../../../components/dataGrid/DataTable', () => ({
 }));
 
 describe('buildObservableProceduresFilters', () => {
-  it('filters procedures by observable or command ref', () => {
+  it('finds the procedures that have the observable, or run it as their command', () => {
     expect(buildObservableProceduresFilters('obs-1')).toEqual({
       mode: 'or',
       filterGroups: [],
       filters: [
-        { key: ['procedureObservables'], values: ['obs-1'], operator: 'eq', mode: 'or' },
+        {
+          key: ['regardingOf'],
+          values: [
+            { key: 'id', values: ['obs-1'] },
+            { key: 'relationship_type', values: ['has-observable'] },
+          ],
+          operator: 'eq',
+          mode: 'or',
+        },
         { key: ['procedureCommand'], values: ['obs-1'], operator: 'eq', mode: 'or' },
       ],
     });

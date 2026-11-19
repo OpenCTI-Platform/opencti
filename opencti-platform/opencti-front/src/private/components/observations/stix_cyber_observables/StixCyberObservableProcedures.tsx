@@ -17,12 +17,20 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
 const LOCAL_STORAGE_KEY = 'StixCyberObservableProcedures';
 
-// A procedure references an observable either in its observables or as its command.
+// A procedure refers to an observable through a has-observable relationship, or runs it as its command.
 export const buildObservableProceduresFilters = (observableId: string): FilterGroup => ({
   mode: 'or',
   filterGroups: [],
   filters: [
-    { key: ['procedureObservables'], values: [observableId], operator: 'eq', mode: 'or' },
+    {
+      key: ['regardingOf'],
+      values: [
+        { key: 'id', values: [observableId] },
+        { key: 'relationship_type', values: ['has-observable'] },
+      ],
+      operator: 'eq',
+      mode: 'or',
+    },
     { key: ['procedureCommand'], values: [observableId], operator: 'eq', mode: 'or' },
   ],
 });
