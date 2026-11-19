@@ -88,6 +88,9 @@
         "exporter_prometheus_host": "0.0.0.0"
       }
     },
+    "credentials": {
+      "secure_by_default": false
+    },
     "health_access_key": "ChangeMe",
     "health_monitoring": {
       "dependency_check_interval": 30000,
