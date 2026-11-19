@@ -66,6 +66,37 @@ describe('getOptionsFromEntities', () => {
       expect(options.map((o) => o.group)).toEqual(['Intrusion-Set', 'Intrusion-Set', 'Attack-Pattern', 'Attack-Pattern']);
     });
 
+    it('orders the groups by their first entity whose label contains the term, as the others are not shown', () => {
+      const entities = {
+        id: [
+          entity('Hidden Cobra', 'Intrusion-Set'), // found by the search on its aliases, hidden by the autocomplete
+          entity('Lazarus', 'Malware'),
+          entity('Lazarus Group Campaign', 'Intrusion-Set'),
+        ],
+      };
+      const options = getOptionsFromEntities(entities, {}, 'id', 'lazarus');
+      expect(labels(options)).toEqual(['Lazarus', 'Hidden Cobra', 'Lazarus Group Campaign']);
+    });
+
+    it('compares the labels to the term case and accent insensitively', () => {
+      const entities = {
+        id: [entity('Aurora', 'Intrusion-Set'), entity('Opération Aurora', 'Campaign')],
+      };
+      expect(labels(getOptionsFromEntities(entities, {}, 'id', 'OPERATION'))).toEqual(['Opération Aurora', 'Aurora']);
+    });
+
+    it('orders a group without any shown entity by its first entity, after the groups with shown entities', () => {
+      const entities = {
+        id: [
+          entity('Hidden Cobra', 'Intrusion-Set'),
+          entity('Dropper', 'Malware'),
+          entity('Lazarus', 'Campaign'),
+        ],
+      };
+      const options = getOptionsFromEntities(entities, {}, 'id', 'lazarus');
+      expect(labels(options)).toEqual(['Lazarus', 'Hidden Cobra', 'Dropper']);
+    });
+
     it('keeps "No label" and the dynamic @me user at the top', () => {
       const labelEntities = {
         objectLabel: [

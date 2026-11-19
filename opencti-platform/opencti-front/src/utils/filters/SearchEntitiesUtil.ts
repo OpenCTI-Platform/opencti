@@ -1,7 +1,8 @@
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import { isStixObjectTypes, ME_FILTER_VALUE } from './filtersUtils';
+import { removeAccentsAndLowerCase } from '../String';
 
-// "No label" and the dynamic @me user stay at the top of the list, whatever is typed
+// "No label" and the dynamic @me user stay at the top of the list
 const pinnedRank = (option: FilterOptionValue) => {
   if (!option.value) return 0;
   if (option.value === ME_FILTER_VALUE) return 1;
@@ -12,8 +13,8 @@ const pinnedRank = (option: FilterOptionValue) => {
  * Options of the entities found by the search, "No label" and the dynamic @me user first.
  * When a term is typed, the options keep the order the search returned them in: the most relevant first, as the search
  * engine ranks its results by score. Options of the same group are kept together, as an autocomplete only groups
- * consecutive options, and the groups come in the order of their first option, so the group of the most relevant
- * entity comes first. When nothing is typed, there is no relevance to keep: groups then labels are alphabetical.
+ * consecutive options, and the groups come in the order of their first shown option, so the group of the most relevant
+ * shown entity comes first. When nothing is typed, there is no relevance to keep: groups then labels are alphabetical.
  */
 export const getOptionsFromEntities = (
   entities: Record<string, FilterOptionValue[]>,
@@ -39,8 +40,14 @@ export const getOptionsFromEntities = (
       || (a.group ?? '').localeCompare(b.group ?? '')
       || (a.label ?? '').localeCompare(b.label ?? ''));
   }
+  // The autocomplete then only shows the options whose label contains the typed term, case and accent insensitive
+  // (default filter of MUI Autocomplete). An entity the search found on another attribute (description, aliases)
+  // is hidden, so it must not move its group up: a group comes in the order of its first shown option, then of its
+  // first option if none is shown.
+  const term = removeAccentsAndLowerCase(searchTerm);
+  const isShown = (option: FilterOptionValue) => removeAccentsAndLowerCase(option.label ?? '').includes(term);
   const groupOrder = new Map<string, number>();
-  options.forEach(({ group }) => {
+  [...options.filter(isShown), ...options].forEach(({ group }) => {
     if (!groupOrder.has(group ?? '')) groupOrder.set(group ?? '', groupOrder.size);
   });
   // The sort is stable: within a group, the options keep the order of the search
