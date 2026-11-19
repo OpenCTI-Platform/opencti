@@ -1,4 +1,5 @@
 import { GraphQLError } from 'graphql';
+import { AbortError } from 'node-fetch';
 
 // region DOC CODE
 // Doc codes are a stable contract, they identify a precise error.
@@ -223,6 +224,18 @@ export const ClientAbortError = (reason?: string, data?: any) => error(CLIENT_AB
   genre: CATEGORY_BUSINESS,
   ...data,
 });
+
+// Raw error of an engine call aborted because the caller disconnected. Covers both
+// engine clients: node-fetch's AbortError (ElkClient) and OpenSearch's RequestAbortedError.
+export const isClientAbortError = (err: any): boolean => {
+  return err instanceof AbortError || err?.name === 'AbortError' || err?.name === 'RequestAbortedError';
+};
+
+// Whether a failure only means that the caller went away: either the raw engine error
+// or the ClientAbortError it is wrapped into (see wrapEngineError in database/engine.ts).
+export const isClientAbort = (err: any): boolean => {
+  return err?.extensions?.code === CLIENT_ABORT_ERROR || isClientAbortError(err);
+};
 
 export const DRAFT_LOCKED_ERROR = 'DRAFT_LOCKED';
 export const DraftLockedError = (reason?: string, data?: any) => error(DRAFT_LOCKED_ERROR, reason ?? 'Draft is in a locked state, no request can be done within this draft', {
