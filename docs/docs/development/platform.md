@@ -4,7 +4,7 @@
 This summary should give you a detailed setup description for initiating the OpenCTI setup environment 
 necessary for developing on the OpenCTI platform, a client library or the connectors. 
 This page document how to set up an "All-in-One" development **environment** for OpenCTI. 
-The devenv will contain data of 3 different repositories:
+The devenv will contain data of 2 different repositories:
 
 - Platform and Client python: [https://github.com/OpenCTI-Platform/opencti](https://github.com/OpenCTI-Platform/opencti)
 - Connectors: [https://github.com/OpenCTI-Platform/connectors](https://github.com/OpenCTI-Platform/connectors)
@@ -67,7 +67,7 @@ At minimum adapt the admin part for the password and token.
 ```json
     "admin": {
       "email": "admin@opencti.io",
-      "password": "MyNewPassord",
+      "password": "MyNewPassword",
       "token": "UUID generated with https://www.uuidgenerator.net"
     }
 ```
@@ -110,13 +110,13 @@ yarn start
 The platform will start logging some interesting information
 
 ```log
-{"category":"APP","level":"info","message":"[OPENCTI] Starting platform","timestamp":"2023-07-02T16:37:10.984Z","version":"5.8.7"}
-{"category":"APP","level":"info","message":"[OPENCTI] Checking dependencies statuses","timestamp":"2023-07-02T16:37:10.987Z","version":"5.8.7"}
-{"category":"APP","level":"info","message":"[SEARCH] Elasticsearch (8.5.2) client selected / runtime sorting enabled","timestamp":"2023-07-02T16:37:11.014Z","version":"5.8.7"}
-{"category":"APP","level":"info","message":"[CHECK] Search engine is alive","timestamp":"2023-07-02T16:37:11.015Z","version":"5.8.7"}
+{"category":"APP","environment":"development","level":"info","message":"[OPENCTI] Starting platform","source":"backend","timestamp":"2026-11-16T13:51:47.634Z","version":"7.261116.0"}
+{"category":"APP","level":"info","message":"[OPENCTI] Checking dependencies statuses","source":"backend","timestamp":"2026-11-16T13:51:47.638Z","version":"7.261116.0"}
 ...
-{"category":"APP","level":"info","message":"[INIT] Platform initialization done","timestamp":"2023-07-02T16:37:11.622Z","version":"5.8.7"}
-{"category":"APP","level":"info","message":"[OPENCTI] API ready on port 4000","timestamp":"2023-07-02T16:37:12.382Z","version":"5.8.7"}
+{"category":"APP","level":"info","message":"[SEARCH][CHECK] Search Engine is alive. elk (8.19.25) client selected / runtime sorting enabled / attachment processor enabled","source":"backend","timestamp":"2026-11-16T13:51:48.234Z","version":"7.261116.0"}
+...
+{"category":"APP","level":"info","message":"[INIT] Platform initialization done","source":"backend","timestamp":"2026-11-16T13:52:12.151Z","version":"7.261116.0"}
+{"category":"APP","level":"info","message":"[OPENCTI] API ready on port 4000","source":"backend","timestamp":"2026-11-16T13:52:13.533Z","version":"7.261116.0"}
 ```
 
 OpenCTI api should be now up and running on [http://127.0.0.1:4000](http://127.0.0.1:4000). Note that without frontend started only api call are avlaible. Please follow next section for a complete development setup.
@@ -182,7 +182,7 @@ Tests are using dedicated indices in the Elastic database (prefixed with `test-*
 
 The following command will run the complete test suite using vitest, which might take more than 30 minutes.
 It starts by cleaning up the test database and seeding a minimal dataset.
-The file `vitest.config.test.ts` can be edited to run only a specific file pattern.
+To run only a specific file pattern while developing, edit `vitest.config.dev.ts`, used by `yarn test:dev`.
 
 `yarn test:dev`
 
@@ -214,7 +214,7 @@ yarn test:ci-integration
 yarn test:ci-integration-sync
 
 # Run data injection + rule tests
-test:ci-rules-and-others
+yarn test:ci-rules-and-others
 ```
 Those command works also for a single file, for example to run only one unit test:
 
@@ -233,7 +233,7 @@ cd ~/opencti/opencti-worker/src
 python3 -m venv .venv --prompt "worker"
 source .venv/bin/activate
 pip3 install --upgrade pip wheel setuptools
-pip3 install -r requirements.txt
+pip3 install -r ../requirements.txt
 deactivate
 ```
 

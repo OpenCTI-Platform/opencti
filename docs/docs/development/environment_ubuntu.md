@@ -24,21 +24,33 @@ $ sudo sysctl -w vm.max_map_count=262144
 
 ## NodeJS and yarn
 
-The platform is developed on NodeJS technology, so you need to install node and corepack to be able to use Yarn.
+The platform is developed on NodeJS technology. It requires Node.js 22.18.0 or later (the `engines` field of `package.json`), and the standard Docker image and the CI use Node.js 22.
+The `nodejs` package of the Ubuntu archive can be older (Ubuntu 24.04 ships Node.js 18), so install Node.js 22 from [NodeSource](https://github.com/nodesource/distributions):
+
+```bash
+$ curl -fsSL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh
+$ sudo -E bash nodesource_setup.sh
+$ sudo apt-get install -y nodejs
+```
+
+The repository pins its Yarn version in the `packageManager` field of `package.json`, and corepack runs that version for you.
 Please ensure Yarn v1 is not installed since it will conflict with corepack and recent version of Yarn.
 
 ```bash
-$ sudo apt-get install nodejs
-$ npm uninstall -g yarn
-$ npm install -g corepack 
+$ sudo npm uninstall -g yarn
+$ sudo npm install -g corepack
+$ sudo corepack enable
 ```
 
 ## Python runtime
 
-For worker and connectors, a python runtime is needed.
+For worker and connectors, a python runtime is needed. Use Python 3.10, 3.11 or 3.12: the CI tests the Python client (pycti) with these versions.
+The `venv` module creates the Python virtual environments used on the [platform development](platform.md) page.
+
+The `node-calls-python` dependency is a native module compiled during `yarn install` (`re2` is also compiled when no prebuilt binary is available), so you also need a C++ toolchain and the Python headers.
 
 ```bash
-$ sudo apt-get install python3 python3-pip
+$ sudo apt-get install python3 python3-pip python3-venv python3-dev build-essential
 ```
 
 ## Git and dev tool
