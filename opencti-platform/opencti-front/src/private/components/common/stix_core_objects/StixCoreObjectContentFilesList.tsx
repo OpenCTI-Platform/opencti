@@ -3,7 +3,6 @@ import { List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
 import moment from 'moment/moment';
 import { MoreVert, SendOutlined } from '@mui/icons-material';
 import React, { Fragment, MouseEvent, useState } from 'react';
-import { FileOutline, FilePdfBox, LanguageHtml5, LanguageMarkdownOutline, NoteTextOutline } from 'mdi-material-ui';
 import { FileLineDeleteMutation as deleteMutation } from '@components/common/files/FileLine';
 import { FileLineDeleteMutation } from '@components/common/files/__generated__/FileLineDeleteMutation.graphql';
 import MenuItem from '@mui/material/MenuItem';
@@ -26,21 +25,9 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import EETooltip from '../entreprise_edition/EETooltip';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import IconButton from '../../../../components/common/button/IconButton';
-
-const renderIcon = (mimeType: string) => {
-  switch (mimeType) {
-    case 'text/plain':
-      return <NoteTextOutline />;
-    case 'application/pdf':
-      return <FilePdfBox />;
-    case 'text/markdown':
-      return <LanguageMarkdownOutline />;
-    case 'text/html':
-      return <LanguageHtml5 />;
-    default:
-      return <FileOutline />;
-  }
-};
+import StixCoreObjectContentFileIcon from './StixCoreObjectContentFileIcon';
+import { isContentTabImage } from './StixCoreObjectContentFileUtils';
+import FileDownloadWarningDialog, { isPotentiallyMaliciousFile } from '../files/FileDownloadWarningDialog';
 
 export interface ContentFile {
   id: string;
@@ -126,6 +113,14 @@ const StixCoreObjectContentFilesList = ({
 
   const canDownloadAsPdf = menuFile?.metaData?.mimetype === 'text/html' || menuFile?.metaData?.mimetype === 'text/markdown';
 
+  // Same warning as the Data tab before getting a file that may be malicious (Artifact, binary)
+  const isMenuFileUnsafe = !!menuFile && isPotentiallyMaliciousFile(menuFile.id, stixCoreObjectType === 'Artifact');
+  const [downloadWarningFileId, setDownloadWarningFileId] = useState<string | null>(null);
+  const openDownloadWarning = (fileId: string) => {
+    closePopover();
+    setDownloadWarningFileId(fileId);
+  };
+
   return (
     <List>
       {files.length === 0 && <ListItem dense={true} divider={true} />}
@@ -177,7 +172,7 @@ const StixCoreObjectContentFilesList = ({
                   disabled={deleting}
                 >
                   <ListItemIcon>
-                    {renderIcon(fileMimeType)}
+                    <StixCoreObjectContentFileIcon mimeType={fileMimeType} />
                   </ListItemIcon>
                   <ListItemText
                     sx={{
@@ -238,7 +233,12 @@ const StixCoreObjectContentFilesList = ({
         // slide the drawer into its gutter.
         disableScrollLock
       >
-        {menuFile && (
+        {menuFile && isMenuFileUnsafe && (
+          <MenuItem onClick={() => openDownloadWarning(menuFile.id)}>
+            {t_i18n('Download file')}
+          </MenuItem>
+        )}
+        {menuFile && !isMenuFileUnsafe && (
           <MenuItem
             component={Link}
             to={`/storage/get/${encodeURIComponent(menuFile.id)}`}
@@ -247,6 +247,22 @@ const StixCoreObjectContentFilesList = ({
             rel="noopener noreferrer"
           >
             {t_i18n('Download file')}
+          </MenuItem>
+        )}
+        {menuFile && isMenuFileUnsafe && isContentTabImage(menuFile.metaData?.mimetype) && (
+          <MenuItem onClick={() => openDownloadWarning(menuFile.id)}>
+            {t_i18n('Open in a new tab')}
+          </MenuItem>
+        )}
+        {menuFile && !isMenuFileUnsafe && isContentTabImage(menuFile.metaData?.mimetype) && (
+          <MenuItem
+            component={Link}
+            to={`/storage/view/${encodeURIComponent(menuFile.id)}`}
+            onClick={closePopover}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t_i18n('Open in a new tab')}
           </MenuItem>
         )}
         {!draftContext && canDownloadAsPdf && (
@@ -282,6 +298,11 @@ const StixCoreObjectContentFilesList = ({
           message={t_i18n('Do you want to delete this file?')}
         />
       </Menu>
+      <FileDownloadWarningDialog
+        fileId={downloadWarningFileId}
+        open={!!downloadWarningFileId}
+        onClose={() => setDownloadWarningFileId(null)}
+      />
     </List>
   );
 };

@@ -14,6 +14,7 @@ import {
   getRateProtectionUserAgentSkipPrefixes,
   isDevMode,
   isUnsecureHttpResourceAllowed,
+  isUpgradeInsecureRequestsEnabled,
 } from './httpConfig';
 import type { HelmetOptions } from 'helmet';
 import { type Options, ipKeyGenerator } from 'express-rate-limit';
@@ -214,7 +215,7 @@ export const buildPublicHelmetParameters = (): HelmetOptions => {
         workerSrc: ["'self'", 'blob:'],
         frameSrc: allowedFrameSrc,
         frameAncestors: frameAncestorDomains,
-        upgradeInsecureRequests: isUnsecureHttpResourceAllowed() ? null : [],
+        upgradeInsecureRequests: isUpgradeInsecureRequestsEnabled() ? [] : null,
       },
     },
     // false means disable the header when frame-ancestors allows external domains
@@ -243,7 +244,7 @@ export const buildDefaultHelmetParameters = (): HelmetOptions => {
         objectSrc: buildObjectSrc(),
         workerSrc: ["'self'", 'blob:'],
         frameAncestors: "'none'",
-        upgradeInsecureRequests: isUnsecureHttpResourceAllowed() ? null : [],
+        upgradeInsecureRequests: isUpgradeInsecureRequestsEnabled() ? [] : null,
       },
     },
     xFrameOptions: { action: 'deny' },

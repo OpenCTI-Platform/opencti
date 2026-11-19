@@ -2948,6 +2948,8 @@ class DataTableToolBar extends Component {
                           secondary={truncate(
                             element.description
                             || element.x_opencti_description
+                            // Kill chain phases sharing a phase name only differ by their kill chain
+                            || element.kill_chain_name
                             || '',
                             60,
                           )}

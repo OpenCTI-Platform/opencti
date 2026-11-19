@@ -199,11 +199,17 @@ const Workflow = ({
   // 2. Sync Placeholders (The effect is now tucked away)
   usePlaceholdersSync(nodes, edges);
 
-  // Store previous schema to avoid unnecessary mutations. It is the schema last sent, or loaded by
-  // a mount, refetch, reset or restore, and it holds the saved initial state: the autosave
-  // mutation does not return initialState, so workflowDefinition.initialState keeps the value
-  // fetched with the page.
+  // Store previous schema to avoid unnecessary mutations. It is the schema last queued for saving
+  // (a failed save puts back the saved one), or loaded by a mount, refetch or restore, and it holds
+  // the saved initial state: the autosave mutation does not return initialState, so
+  // workflowDefinition.initialState keeps the value fetched with the page.
   const previousSchemaRef = useRef<string | null>(null);
+  // The schema the server holds: confirmed by a save, or loaded by a mount, refetch or restore.
+  const savedSchemaRef = useRef<string | null>(null);
+  const loadSavedSchema = (schemaString: string) => {
+    previousSchemaRef.current = schemaString;
+    savedSchemaRef.current = schemaString;
+  };
   const savedInitialState = (): string | null | undefined => (previousSchemaRef.current
     ? JSON.parse(previousSchemaRef.current).initialState
     : workflowDefinition?.initialState);
@@ -238,6 +244,63 @@ const Workflow = ({
     validationErrors: workflowDefinition?.errors ? [...workflowDefinition.errors as WorkflowValidationError[]] : [],
   });
 
+  // Saves go out one at a time: the server takes them under a lock that serves its waiters in no
+  // particular order, so two saves in flight could land in the wrong order. A change made while a
+  // save is in flight waits, and only the latest one waiting is sent once that save settles.
+  const saveInFlightRef = useRef(false);
+  const nextSaveRef = useRef<{ schema: string; onSaved?: () => void } | null>(null);
+  // A publish waits until every queued save is done, and is dropped if one fails.
+  const publishAfterSavesRef = useRef(false);
+  const sendSave = (schema: string, onSaved?: () => void) => {
+    saveInFlightRef.current = true;
+    const sendNext = () => {
+      const next = nextSaveRef.current;
+      nextSaveRef.current = null;
+      if (next) {
+        sendSave(next.schema, next.onSaved);
+        return true;
+      }
+      saveInFlightRef.current = false;
+      return false;
+    };
+    saveWorkflowDefinition({
+      variables: { entityType, definition: schema, scope },
+      onError: () => {
+        if (sendNext()) return;
+        // Nothing newer to send: the next editor update resends the change, and a publish waits for it.
+        previousSchemaRef.current = savedSchemaRef.current;
+        publishAfterSavesRef.current = false;
+      },
+      onCompleted: (response) => {
+        savedSchemaRef.current = schema;
+        if (response.workflowDefinitionSet) {
+          const { errors } = response.workflowDefinitionSet;
+          const validationErrors = (errors ?? [])
+            .filter((e) => e !== null && e !== undefined)
+            .map((e) => ({
+              type: e!.type,
+              message: e!.message,
+              path: e!.path?.map((p) => ({ id: p.id, entity_type: p.entity_type })),
+            }));
+          // Stay in draft mode until explicitly published
+          setWorkflowDefinitionStatus((prev) => ({ ...prev, hasUnpublishedChanges: true, validationErrors }));
+        }
+        onSaved?.();
+        if (sendNext() || !publishAfterSavesRef.current) return;
+        publishAfterSavesRef.current = false;
+        publish();
+      },
+    });
+  };
+  const queueSave = (schema: string, onSaved?: () => void) => {
+    previousSchemaRef.current = schema;
+    if (saveInFlightRef.current) {
+      nextSaveRef.current = { schema, onSaved };
+    } else {
+      sendSave(schema, onSaved);
+    }
+  };
+
   // 4. When Relay delivers fresh data after a parent refetch (e.g., after restore),
   //    reset the React Flow state to reflect the new workflow definition.
   const isInitialMountRef = useRef(true);
@@ -248,9 +311,10 @@ const Workflow = ({
     }
     setNodes(initialNodes);
     setEdges(initialEdges);
-    previousSchemaRef.current = JSON.stringify(
+    nextSaveRef.current = null;
+    loadSavedSchema(JSON.stringify(
       transformToWorkflowDefinition(initialNodes, initialEdges, workflowDefinition),
-    );
+    ));
     // Sync publish status with the freshly fetched definition (e.g. after restore)
     setWorkflowDefinitionStatus({
       hasUnpublishedChanges: !(workflowDefinition?.published ?? false),
@@ -265,42 +329,22 @@ const Workflow = ({
   useEffect(() => {
     if (previousSchemaRef.current === null) {
       const initialSchema = transformToWorkflowDefinition(initialNodes, initialEdges, workflowDefinition);
-      previousSchemaRef.current = JSON.stringify(initialSchema);
+      loadSavedSchema(JSON.stringify(initialSchema));
     }
   }, []);
 
-  useEffect(() => {
-    const finalSchema = transformToWorkflowDefinition(nodes, edges, { ...workflowDefinition, initialState: savedInitialState() });
-    const schemaString = JSON.stringify(finalSchema);
+  // The schema of the graph on screen
+  const editorSchema = () => JSON.stringify(
+    transformToWorkflowDefinition(nodes, edges, { ...workflowDefinition, initialState: savedInitialState() }),
+  );
 
+  useEffect(() => {
+    const schemaString = editorSchema();
     // Only save if schema has actually changed
     if (previousSchemaRef.current === schemaString) {
       return;
     }
-
-    previousSchemaRef.current = schemaString;
-
-    saveWorkflowDefinition({
-      variables: { entityType, definition: schemaString, scope },
-      onCompleted: (response) => {
-        if (response.workflowDefinitionSet) {
-          const { errors } = response.workflowDefinitionSet;
-          if (errors && errors.length > 0) {
-            const validationErrors = errors
-              .filter((e) => e !== null && e !== undefined)
-              .map((e) => ({
-                type: e!.type,
-                message: e!.message,
-                path: e!.path?.map((p) => ({ id: p.id, entity_type: p.entity_type })),
-              }));
-            setWorkflowDefinitionStatus((prev) => ({ ...prev, hasUnpublishedChanges: true, validationErrors }));
-          } else {
-            // No errors, but stay in draft mode until explicitly published
-            setWorkflowDefinitionStatus((prev) => ({ ...prev, hasUnpublishedChanges: true, validationErrors: [] }));
-          }
-        }
-      },
-    });
+    queueSave(schemaString);
   }, [nodes, edges, entityType]);
 
   // Handle reset action — clears the draft to an empty schema without touching the published version
@@ -310,35 +354,32 @@ const Workflow = ({
     // after setNodes([]) / setEdges([]) and will see an identical string, preventing
     // a spurious follow-up mutation.
     const emptySchemaString = JSON.stringify(transformToWorkflowDefinition([], [], workflowDefinition));
-    previousSchemaRef.current = emptySchemaString;
-    saveWorkflowDefinition({
-      variables: { entityType, definition: emptySchemaString, scope },
-      onCompleted: (response) => {
-        if (response.workflowDefinitionSet) {
-          const { errors } = response.workflowDefinitionSet;
-          if (errors && errors.length > 0) {
-            const validationErrors = errors
-              .filter((e) => e !== null && e !== undefined)
-              .map((e) => ({
-                type: e!.type,
-                message: e!.message,
-                path: e!.path?.map((p) => ({ id: p.id, entity_type: p.entity_type })),
-              }));
-            setWorkflowDefinitionStatus((prev) => ({ ...prev, hasUnpublishedChanges: true, validationErrors }));
-          } else {
-            setWorkflowDefinitionStatus((prev) => ({ ...prev, hasUnpublishedChanges: true, validationErrors: [] }));
-          }
-        }
-        setNodes([]);
-        setEdges([]);
-      },
+    // The graph stays on screen until the reset is saved: if it fails, the graph is still the saved draft.
+    queueSave(emptySchemaString, () => {
+      setNodes([]);
+      setEdges([]);
     });
   };
 
   // Handle publish action
   // Always ask the server: the errors stored at save time may no longer hold (e.g. the entities
   // left a removed status since), and publish re-validates the draft against the live data.
+  // The server publishes its draft: the graph on screen is saved first, and a failed save cancels the publish.
   const handlePublish = () => {
+    // A save in flight already carries the latest change (or a reset the graph has not caught up with yet).
+    if (!saveInFlightRef.current) {
+      const schemaString = editorSchema();
+      if (schemaString !== savedSchemaRef.current) {
+        queueSave(schemaString);
+      }
+    }
+    if (saveInFlightRef.current) {
+      publishAfterSavesRef.current = true;
+      return;
+    }
+    publish();
+  };
+  const publish = () => {
     commitPublish({
       variables: { entityType, scope },
       onCompleted: () => {
@@ -389,9 +430,10 @@ const Workflow = ({
         // that returns identical data. Calling setNodes here is the reliable path.
         setNodes(initialNodes);
         setEdges(initialEdges);
-        previousSchemaRef.current = JSON.stringify(
+        nextSaveRef.current = null;
+        loadSavedSchema(JSON.stringify(
           transformToWorkflowDefinition(initialNodes, initialEdges, workflowDefinition),
-        );
+        ));
         setWorkflowDefinitionStatus({ hasUnpublishedChanges: false, hasPublishedVersion: true, validationErrors: [] });
         // Also refetch in case the store is stale (e.g. published version changed
         // after the initial page load). The sync useEffect handles that case.

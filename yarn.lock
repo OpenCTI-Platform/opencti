@@ -9490,10 +9490,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"amqplib@npm:2.3.1":
-  version: 2.3.1
-  resolution: "amqplib@npm:2.3.1"
-  checksum: 10c0/ea0847c5080ae0fb256b36c58f9dd82a650cc75c2f062771c4681c87099daa99f48afc0b43d10944468b3bc9c86d074054c0db76d5155fbbfe693b47152cd323
+"amqplib@npm:2.3.3":
+  version: 2.3.3
+  resolution: "amqplib@npm:2.3.3"
+  checksum: 10c0/3f4b9d02b57e48f7437a197c1ee7cd5bba5ea84263f7c1b7cd4afb4bfe603492a3d446b21cdf8fb318e93afe32f3231171629bc7302bb30131c5974a0bb3dda7
   languageName: node
   linkType: hard
 
@@ -11005,10 +11005,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"convert@npm:8.0.2":
-  version: 8.0.2
-  resolution: "convert@npm:8.0.2"
-  checksum: 10c0/e369a6e9af5c47fd06ed83cda03f727a1f2b601e2c26423772bda7367f47a370ba8c79ebd250773eae0ebda0aff01fdd018f812bf88c86f7c10f911e7fe97203
+"convert@npm:8.1.0":
+  version: 8.1.0
+  resolution: "convert@npm:8.1.0"
+  checksum: 10c0/e44b395eb6f716783886758aa2dd20ddcee93d99881a58f428aaf884d0021d70b125121428c3e5a6be8d254549a7d6bf71ce3648dcad44b88982c1bf4e3fbc90
   languageName: node
   linkType: hard
 
@@ -18027,10 +18027,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:10.5.0":
-  version: 10.5.0
-  resolution: "nodemailer@npm:10.5.0"
-  checksum: 10c0/be28cb193ef2b6ba8f37e24d5e3624b7413842eb2e31e0165d732389a256d864f3426283e0a0029c456b0c9dc5dfded16ba8e367e4e6e7543f717a35036c5667
+"nodemailer@npm:10.6.0":
+  version: 10.6.0
+  resolution: "nodemailer@npm:10.6.0"
+  checksum: 10c0/11922d84f8a0b17e35c2f8de2cf54a264b55dc1173a486bd27fa00a61f0275a319715372e98c613d02a9ff5e6d5b4bed67dcfb5e18f58c8f8f5c88095d501d45
   languageName: node
   linkType: hard
 
@@ -18603,7 +18603,7 @@ __metadata:
     analytics: "npm:0.8.19"
     apexcharts: "npm:4.7.0"
     babel-plugin-relay: "npm:21.0.1"
-    convert: "npm:8.0.2"
+    convert: "npm:8.1.0"
     d3-hierarchy: "npm:3.1.3"
     d3-scale: "npm:4.0.3"
     d3-timer: "npm:3.0.2"
@@ -18773,7 +18773,7 @@ __metadata:
     ae-cvss-calculator: "npm:1.0.13"
     ajv: "npm:8.20.0"
     ajv-formats: "npm:3.0.1"
-    amqplib: "npm:2.3.1"
+    amqplib: "npm:2.3.3"
     antlr4: "npm:4.13.2"
     archiver: "npm:8.0.0"
     archiver-zip-encrypted: "npm:2.0.0"
@@ -18789,7 +18789,7 @@ __metadata:
     compression: "npm:1.8.2"
     content-disposition: "npm:3.0.0"
     content-type: "npm:3.1.1"
-    convert: "npm:8.0.2"
+    convert: "npm:8.1.0"
     cors: "npm:2.8.6"
     csv-parse: "npm:7.0.3"
     dataloader: "npm:2.2.3"
@@ -18844,7 +18844,7 @@ __metadata:
     node-fetch: "npm:3.3.2"
     node-forge: "npm:1.4.3"
     node-gyp-build: "npm:4.8.4"
-    nodemailer: "npm:10.5.0"
+    nodemailer: "npm:10.6.0"
     openai: "npm:7.57.0"
     openid-client: "npm:6.9.0"
     openid-clientv5: "npm:openid-client@5.7.1"
@@ -18858,7 +18858,7 @@ __metadata:
     passport-local: "npm:1.0.0"
     python-shell: "npm:5.0.0"
     ramda: "npm:0.32.0"
-    rate-limiter-flexible: "npm:11.4.1"
+    rate-limiter-flexible: "npm:11.5.0"
     re2: "npm:1.27.1"
     sanitize-html: "npm:2.18.2"
     semver: "npm:7.8.6"
@@ -20201,10 +20201,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rate-limiter-flexible@npm:11.4.1":
-  version: 11.4.1
-  resolution: "rate-limiter-flexible@npm:11.4.1"
-  checksum: 10c0/b395ea485019b68ab8c145d90d4f4dc70a9b523a0e4864a95cef567a814196e9d86b119613bb16b533299ba8c34c87eea05b5717c1c315b48dec8c2df103b8da
+"rate-limiter-flexible@npm:11.5.0":
+  version: 11.5.0
+  resolution: "rate-limiter-flexible@npm:11.5.0"
+  checksum: 10c0/d9bcfb15de1ef6fd4e4bb6df9aa551053612f0684534dfe6c53ccaf829f062d2fc3ddfede7b192609d19c050f6be0ab9ceb347b41de5fbf13b8ef5cfbf93d778
   languageName: node
   linkType: hard
 
@@ -21636,10 +21636,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"seroval@npm:~1.5.0":
-  version: 1.5.6
-  resolution: "seroval@npm:1.5.6"
-  checksum: 10c0/47e4fb25305bf05fdf300cac6b0d4aaaaf1e12f15c819195afcdf512d88901a3f1f7754ac5a2de740cc0bb04e912c653fbf0129fb3e4c81ce12809e6aa5815e3
+"seroval@npm:1.8.1":
+  version: 1.8.1
+  resolution: "seroval@npm:1.8.1"
+  checksum: 10c0/1be1ab89bc22ca60f5c2eee32c354ec7d31bf3da8bf9289cb4a7d47c407677f151d6d780659deed70dcdbf00241382e1eb42f0c4c342fd6e1fad6250a7a1e647
   languageName: node
   linkType: hard
 
