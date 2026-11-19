@@ -73,10 +73,10 @@ vi.mock('react-router', async (importOriginal) => {
   return { ...actual, useNavigate: () => mockNavigate };
 });
 
-vi.mock('../../../../utils/hooks/useGranted', () => ({
+vi.mock('../../../../utils/hooks/useGranted', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../utils/hooks/useGranted')>()),
   default: () => permissions.mandatoryFields,
   isBypassUser: () => permissions.bypass,
-  KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS: 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS',
 }));
 
 vi.mock('../../../../relay/environment', async (importOriginal) => {

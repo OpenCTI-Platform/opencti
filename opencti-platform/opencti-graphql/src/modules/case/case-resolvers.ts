@@ -8,6 +8,8 @@ import type { BasicStoreEntityTask } from '../task/task-types';
 import { loadParticipants } from '../../database/members';
 import { storeLoadById } from '../../database/middleware-loader';
 import { FunctionalError } from '../../config/errors';
+import { INPUT_PARTICIPANT } from '../../schema/general';
+import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 
 const caseResolvers: Resolvers = {
   Query: {
@@ -24,7 +26,11 @@ const caseResolvers: Resolvers = {
       return 'Unknown';
     },
     tasks: (current, args, context) => caseTasksPaginated<BasicStoreEntityTask>(context, context.user, current.id, args),
-    objectParticipant: async (container, _, context) => loadParticipants(context, context.user, container),
+    objectParticipant: async (container, _, context) => {
+      // The API declares the field on every case, the DB schema only on those that can have participants (not a Feedback, for instance)
+      if (!schemaRelationsRefDefinition.getRelationRef(container.entity_type, INPUT_PARTICIPANT)) return [];
+      return loadParticipants(context, context.user, container);
+    },
   },
   CasesOrdering: {
     creator: 'creator_id',

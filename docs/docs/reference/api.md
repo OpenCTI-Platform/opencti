@@ -3,23 +3,164 @@
 OpenCTI provides a comprehensive API based on GraphQL, allowing users to perform various actions programmatically. The API enables users to interact with OpenCTI's functionality and data, offering a powerful tool for automation, integration, and customization. All actions that can be performed through the platform's graphical interface are also achievable via the API.
 
 
+## Endpoint
+
+The API has a single endpoint for all queries and mutations: `https://<your OpenCTI host>/graphql`. When the platform runs under a base path (`app:base_path`, for example `/opencti`), the base path comes first: `https://<your OpenCTI host>/opencti/graphql`.
+
+Send each request with the `POST` method and a JSON body that holds the `query` and, optionally, its `variables`. The endpoint answers methods other than `POST` (and the `OPTIONS` preflight) with `405 Method Not Allowed`.
+
+
 ## Authentication
 
-Access to the OpenCTI API requires authentication using standard authentication mechanisms. Access rights to data via the API will be determined by the access privileges of the user associated with the API key. For authentication, users need to include the following headers in their API requests:
+The API acts on behalf of a user: what a request can read or change depends on the capabilities, groups, organizations and markings of that user. To authenticate a request, send an API token of that user in the `Authorization` header:
 
-```html
-Content-Type: application/json
-Authorization: Bearer [API key]
 ```
+Content-Type: application/json
+Authorization: Bearer <your API token>
+```
+
+To create and use API tokens, the user's role must grant the `Allow token usage` capability, found under `API usage with authorization header` (see [the list of capabilities](../administration/users.md#list-of-capabilities)). A request with an unknown or expired token, or with the token of a user who lacks this capability, is handled as an unauthenticated request: it gets the error `You must be logged in to do this.`
+
+The API also accepts HTTP basic authentication (`Authorization: Basic ...`) with the email and local password of a user whose role grants the `Allow basic auth usage` capability. This page uses tokens.
+
+### Generate a token
+
+1. Click the profile icon at the top right of the platform, then click **Profile**.
+2. In the **API access** card, click **Generate Token**. The button only shows when your role grants `Allow token usage`.
+
+    ![Generate Token button in the API access card of the profile](assets/profile-api-access.png)
+
+3. Enter a **Name** for the token, choose a **Duration** (30 days, 60 days, 90 days, 1 year or Unlimited), then click **Generate**.
+
+    ![Generate a new token form](assets/profile-generate-token.png)
+
+4. Copy the token right away. The platform shows it only once. It stores a hash of it and a masked form (its last 4 characters), so you cannot display it again: if you lose it, generate a new one.
+
+The same card lists your tokens, with their expiration date.
+
+!!! note "Tokens since OpenCTI 7.260224.0"
+
+    Since OpenCTI 7.260224.0, a user can hold several tokens, each with its own duration, and tokens can no longer be displayed after their creation. See [Tokens management](../deployment/breaking-changes.md#tokens-management) in the breaking changes.
+
+### Test your token
+
+Set `OPENCTI_URL` to the address of your platform (with its base path, if any) and `OPENCTI_TOKEN` to your token, then ask the platform for its version:
+
+```bash
+export OPENCTI_URL="https://opencti.example.com"
+export OPENCTI_TOKEN="<your API token>"
+
+curl -X POST "$OPENCTI_URL/graphql" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $OPENCTI_TOKEN" \
+  -d '{"query": "{ about { version } }"}'
+```
+
+The `about` query requires an authenticated user, so a valid token returns the version, for example `{"data":{"about":{"version":"..."}}}`, and an invalid one returns the `You must be logged in to do this.` error.
 
 
 ## Documentation
 
-The OpenCTI API consists of various endpoints corresponding to different functionalities and operations within the platform. These endpoints allow users to perform actions such as querying data, creating or updating entities, and more. Users can refer to the [Understand GraphQL](api.md#understand-graphql-section) section to understand how it works.
+The API exposes queries to read data and mutations to create, update or delete it, all on the same endpoint. To understand how GraphQL works, see the [Understand GraphQL](api.md#understand-graphql-section) section.
 
-Documentation for the OpenCTI API, including schema definitions, the list of filters available and queryable fields, is available through the OpenCTI platform. It can be found on the [GraphQL playground](../development/api-usage.md). However, query examples and mutation examples are not yet available. In the meantime, users can explore the available endpoints and their functionality by inspecting network traffic in the browser's developer tools or by examining the source code of the [Python client](../development/python.md).
+The schema lists every query, mutation, type, field and filter of the API. You can read it in two places:
+
+- In the [GraphQL playground](../development/api-usage.md) of your platform (`https://<your OpenCTI host>/public/graphql`, after the base path if any), when the playground is enabled, with the documentation explorer and autocompletion. Both need introspection, which is disabled by default: an administrator allows it by setting `app:graphql:playground:force_disabled_introspection` to `false` (see the [configuration](../deployment/configuration.md#technical-customization) page).
+- In the OpenCTI repository, as a single file. See [GraphQL schema](data-model.md#graphql-schema) in the data model reference.
+
+For filters, see the [filters](filters.md) reference. For more examples, see the [Python client examples](https://github.com/OpenCTI-Platform/opencti/tree/master/client-python/examples) and the source code of the [Python client](../development/python.md).
 
 ![GraphQL query](assets/graphql_query.png)
+
+
+## Examples
+
+Run these examples in the GraphQL playground, or send them with `curl` as in [Test your token](#test-your-token): the JSON body holds the query in `query` and its variables in `variables`.
+
+### List the latest reports
+
+This query returns the five most recently published reports. It needs the `Access knowledge` capability.
+
+```graphql
+query LatestReports {
+  reports(first: 5, orderBy: published, orderMode: desc) {
+    pageInfo {
+      globalCount
+    }
+    edges {
+      node {
+        id
+        standard_id
+        name
+        published
+        report_types
+        createdBy {
+          name
+        }
+      }
+    }
+  }
+}
+```
+
+To narrow the results, add the `search` or `filters` arguments (see the [filters](filters.md) reference).
+
+### Read one report
+
+This query reads one report from its ID. The `id` variable accepts the OpenCTI ID (`id`) or the STIX ID (`standard_id`) of the report. It needs the `Access knowledge` capability.
+
+```graphql
+query OneReport($id: String!) {
+  report(id: $id) {
+    id
+    name
+    description
+    published
+    objectLabel {
+      value
+    }
+  }
+}
+```
+
+Variables:
+
+```json
+{
+  "id": "<ID of the report>"
+}
+```
+
+The answer holds `"report": null` when no report has this ID or when you cannot access it.
+
+### Create a report
+
+This mutation creates a report. `name` and `published` are the only fields the schema requires. If your administrator made other attributes mandatory in the entity customization, provide them too, unless your role grants `Bypass mandatory fields`. Likewise, if external references are enforced for reports, provide `externalReferences`, unless your role grants `Bypass enforced reference`. It needs the `Create / Update knowledge` capability.
+
+```graphql
+mutation CreateReport($input: ReportAddInput!) {
+  reportAdd(input: $input) {
+    id
+    standard_id
+    name
+  }
+}
+```
+
+Variables:
+
+```json
+{
+  "input": {
+    "name": "My first report",
+    "published": "2026-01-15T00:00:00.000Z",
+    "report_types": ["threat-report"]
+  }
+}
+```
+
+The platform identifies a report by its name and publication date. If a report with the same name (case-insensitive, ignoring leading and trailing spaces) and the same `published` date already exists, the mutation does not create a second one. It updates the existing report with your input, within the limits of your confidence level, and returns it. If you cannot access that existing report, the mutation fails.
+
 
 
 <a id="understand-graphql-section"></a>

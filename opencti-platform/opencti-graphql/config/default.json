@@ -14,7 +14,6 @@
       "reject_unauthorized": true,
       "cookie_secure": false
     },
-    "allow_unsecure_http_resources": true,
     "uri_deny_list": [],
     "public_dashboard_authorized_domains": "",
     "app_logs": {
@@ -49,6 +48,9 @@
     "event_loop_logs": {
       "enabled": false,
       "max_time": 1000
+    },
+    "http": {
+      "secure_by_default": false
     },
     "graphql": {
       "secure_by_default": false,
@@ -107,10 +109,6 @@
     "session_manager": "shared",
     "session_presence": {
       "grace_period": 30000
-    },
-    "rate_protection": {
-      "time_window": 1,
-      "max_requests": 10000
     },
     "concurrency": {
       "retry_count": 100,
@@ -305,7 +303,6 @@
     "interval": 60000,
     "cron_max_size": 500,
     "log_max_size": 10000,
-    "callback_continuation_max_concurrency": 10,
     "realtime_priority": false
   },
   "hub_registration_manager": {

@@ -7,16 +7,17 @@ import {
   ENTITY_TYPE_SECURITY_COVERAGE,
   INPUT_COVERED,
   RELATION_COVERED,
+  type Stix2SecurityCoverage,
   type StixSecurityCoverage,
   type StoreEntitySecurityCoverage,
 } from './securityCoverage-types';
-import convertSecurityCoverageToStix from './securityCoverage-converter';
+import convertSecurityCoverageToStix, { convertSecurityCoverageToStix_2_0 } from './securityCoverage-converter';
 import { createdBy, objectLabel, objectMarking, objectOrganization } from '../../schema/stixRefRelationship';
 import { COVERED_ENTITIES_TYPE, securityCoverageStixBundle } from './securityCoverage-domain';
 import type { StoreEntity } from '../../types/store';
 import { ATTRIBUTE_RESULT_OF, ENTITY_TYPE_SECURITY_COVERAGE_RESULT, INPUT_RESULT_OF, RELATION_RESULT_OF } from './securityCoverageResult/securityCoverageResult-types';
 
-const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage, StixSecurityCoverage> = {
+const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage, StixSecurityCoverage, Stix2SecurityCoverage> = {
   type: {
     id: 'security-coverage',
     name: ENTITY_TYPE_SECURITY_COVERAGE,
@@ -98,6 +99,7 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
     return stix.name;
   },
   converter_2_1: convertSecurityCoverageToStix,
+  converter_2_0: convertSecurityCoverageToStix_2_0,
   bundleResolver: securityCoverageStixBundle,
 };
 

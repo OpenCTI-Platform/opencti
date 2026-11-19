@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { act, fireEvent, screen } from '@testing-library/react';
+import { act, fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useFragment, useLazyLoadQuery } from 'react-relay';
 import { MockPayloadGenerator } from 'relay-test-utils';
@@ -26,7 +26,12 @@ const instance = (pendingStatus: string | null, name = 'A') => ({
   pendingStatus, pendingError: pendingStatus === 'error' ? 'Action failed' : null,
   pendingTransition: pendingStatus === 'pending' ? { event: 'approve', toState: 'B', triggeredAt: null, syncActions: [], asyncActions: [] } : null,
   allowedTransitions: [{ event: 'approve', toState: 'B', actions: [], comment: null, closingReason: null, requiresShareOrganizationInput: false, requiresUnshareOrganizationInput: false, requestAccessOutcome: null, toStatus: status('B') }],
+  blockedTransitions: [] as BlockedTransitions,
 });
+
+type BlockedTransitions = NonNullable<WorkflowStatusStixDomainObject_data$data['workflowInstance']>['blockedTransitions'];
+const assigneeCondition = { mode: 'and', filters: [{ key: ['objectAssignee'], values: ['@me'], operator: 'eq', mode: 'or' }], filterGroups: [] };
+const blockedAnswer = { event: 'answer', toState: 'C', blockingConditions: JSON.stringify(assigneeCondition), toStatus: status('C') };
 
 const Harness = () => {
   const query = useLazyLoadQuery<RootReportQuery>(reportQuery, { id: 'entity-1' });
@@ -42,16 +47,17 @@ const Harness = () => {
 };
 
 const setup = async (pendingStatus: string | null = 'pending', enabled = true, access = 'edit', capability = 'KNOWLEDGE_KNUPDATE',
-  allowedTransitions: NonNullable<WorkflowStatusStixDomainObject_data$data['workflowInstance']>['allowedTransitions'] = instance(null).allowedTransitions) => {
+  allowedTransitions: NonNullable<WorkflowStatusStixDomainObject_data$data['workflowInstance']>['allowedTransitions'] = instance(null).allowedTransitions,
+  draftContext: { id: string; name: string } | null = null, blockedTransitions: BlockedTransitions = []) => {
   vi.useFakeTimers();
   const rendered = testRender(<Suspense><Harness /></Suspense>, {
     userContext: createMockUserContext({
-      me: { capabilities: [{ name: capability }], capabilitiesInDraft: [] },
+      me: { capabilities: [{ name: capability }], capabilitiesInDraft: [], draftContext },
       settings: { platform_feature_flags: enabled ? [{ id: 'ENTITIES_WORKFLOW', enable: true }] : [] },
     }),
   });
   await act(async () => rendered.relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
-    Report: () => ({ id: 'entity-1', currentUserAccessRight: access, status: status('A'), workflowInstance: { ...instance(pendingStatus), allowedTransitions } }),
+    Report: () => ({ id: 'entity-1', currentUserAccessRight: access, status: status('A'), workflowInstance: { ...instance(pendingStatus), allowedTransitions, blockedTransitions } }),
   })));
   return rendered;
 };
@@ -66,6 +72,18 @@ const resolveRefresh = async (relayEnv: ReturnType<typeof testRender>['relayEnv'
 };
 
 afterEach(() => vi.useRealTimers());
+
+describe('WorkflowTransitionsForEntity in a draft', () => {
+  it('shows the status but no transition, bypass or clear control', async () => {
+    await setup('error', true, 'admin', 'BYPASS', instance(null).allowedTransitions, { id: 'draft-1', name: 'Draft' });
+
+    expect(screen.getByText('A')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'approve' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Clear' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('workflow-transitions-error')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Change status')).not.toBeInTheDocument();
+  });
+});
 
 describe('WorkflowTransitionsForEntity refresh', () => {
   it.each([2, 3])('opens a menu for %s entity transitions without executing any of them', async (count) => {
@@ -222,6 +240,44 @@ describe('WorkflowTransitionsForEntity refresh', () => {
     expect(mutation?.request.variables.closingReason).toBeNull();
   });
 
+  // A condition such as "assignee is @me" depends on these fields, and our own edits never come back through the subscription
+  it.each(['objectAssignee', 'objectParticipant'])('refetches the allowed transitions when %s changes in Relay', async (field) => {
+    const { relayEnv } = await setup(null);
+    expect(screen.getByRole('button', { name: 'approve' })).toBeVisible();
+    act(() => relayEnv.commitUpdate((store) => {
+      const user = store.create('user-1', 'User');
+      user.setValue('user-1', 'id');
+      store.get('entity-1')?.setLinkedRecords([user], field);
+    }));
+    const operation = relayEnv.mock.getMostRecentOperation();
+    expect(operation.request.node.params.name).toBe('WorkflowStatusEntityQuery');
+    const transitions = instance(null).allowedTransitions;
+    await act(async () => relayEnv.mock.resolve(operation, {
+      data: { stixDomainObject: { __typename: 'Report', id: 'entity-1', entity_type: 'Report', currentUserAccessRight: 'edit', status: status('A'), workflowInstance: {
+        ...instance(null), allowedTransitions: [...transitions, { ...transitions[0], event: 'answer' }],
+      } } },
+    }));
+    expect(screen.getByRole('button', { name: 'Next status' })).toBeVisible();
+    expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+  });
+
+  // Labels, markings, confidence... can all flip a knowledge condition: the modification date moves on every edit
+  it('refetches the allowed transitions when the entity is modified', async () => {
+    const { relayEnv } = await setup(null);
+    act(() => relayEnv.commitUpdate((store) => {
+      store.get('entity-1')?.setValue('2026-11-16T10:00:00.000Z', 'updated_at');
+    }));
+    expect(relayEnv.mock.getMostRecentOperation().request.node.params.name).toBe('WorkflowStatusEntityQuery');
+  });
+
+  it('does not refetch the allowed transitions when another field changes', async () => {
+    const { relayEnv } = await setup(null);
+    act(() => relayEnv.commitUpdate((store) => {
+      store.get('entity-1')?.setValue('Renamed', 'name');
+    }));
+    expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+  });
+
   it('cancels polling and the active refresh on unmount', async () => {
     const { relayEnv, unmount } = await setup();
     act(() => vi.advanceTimersByTime(FIVE_SECONDS));
@@ -229,5 +285,36 @@ describe('WorkflowTransitionsForEntity refresh', () => {
     unmount();
     act(() => vi.advanceTimersByTime(FIVE_SECONDS * 2));
     expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+  });
+});
+
+describe('WorkflowTransitionsForEntity blocked transitions', () => {
+  it('shows a blocked transition as a disabled menu item', async () => {
+    const { relayEnv, user } = await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', instance(null).allowedTransitions, null, [blockedAnswer]);
+    vi.useRealTimers();
+    await user.click(screen.getByRole('button', { name: 'Next status' }));
+    expect(screen.getAllByRole('menuitem')).toHaveLength(2);
+    const blocked = screen.getByRole('menuitem', { name: 'answer' });
+    expect(blocked).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(blocked);
+    expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('shows the blocked reason on hover', async () => {
+    const { user } = await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', instance(null).allowedTransitions, null, [blockedAnswer]);
+    vi.useRealTimers();
+    await user.click(screen.getByRole('button', { name: 'Next status' }));
+    await user.hover(screen.getByTestId('workflow-blocked-transition-answer'));
+    expect((await screen.findAllByText('Requires'))[0]).toBeInTheDocument();
+  });
+
+  it('renders a disabled button when the only transition is blocked', async () => {
+    await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', [], null, [blockedAnswer]);
+    const blocked = screen.getByRole('button', { name: 'answer' });
+    expect(blocked).toBeDisabled();
+    // A lock tells a blocked action apart from the status chip next to it
+    expect(within(blocked).getByTestId('LockOutlinedIcon')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Next status' })).toBeNull();
   });
 });

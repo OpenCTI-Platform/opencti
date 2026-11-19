@@ -31,4 +31,12 @@ describe('playbook update actions with custom fields', () => {
     expect(isPlaybookUpdateActionValid({ op: 'remove', attribute: 'objectLabel', value: [] })).toBe(false);
     expect(isPlaybookUpdateActionValid({ op: 'replace', attribute: 'x_opencti_detection' })).toBe(true);
   });
+
+  it('requires a status for a status replace, and keeps an old one saved without entity type', () => {
+    const status = [{ label: 'In progress', value: 'status-id', patch_value: 'status-id' }];
+    expect(isPlaybookUpdateActionValid({ op: 'replace', attribute: 'x_opencti_workflow_id', value: status })).toBe(true);
+    expect(isPlaybookUpdateActionValid({ op: 'replace', attribute: 'x_opencti_workflow_id' })).toBe(false);
+    expect(isPlaybookUpdateActionValid({ op: 'replace', attribute: 'x_opencti_workflow_id', value: status, entity_type: 'Report' })).toBe(true);
+    expect(isPlaybookUpdateActionValid({ op: 'replace', attribute: 'x_opencti_workflow_id', entity_type: 'Report' })).toBe(false);
+  });
 });

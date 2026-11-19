@@ -136,7 +136,7 @@ export const resolveFilterGroup = async (
 /**
  * Build a resolution map thanks to the cache
  */
-const buildResolutionMapForFilter = async (context: AuthContext, user: AuthUser, filter: Filter, cache: Map<string, StixObject>): Promise<FilterResolutionMap> => {
+const buildResolutionMapForFilter = async (context: AuthContext, user: AuthUser, filter: Filter, cache: ReadonlyMap<string, StixObject>): Promise<FilterResolutionMap> => {
   const map: Map<string, string> = new Map();
   if (Object.keys(STIX_RESOLUTION_MAP_PATHS).includes(filter.key[0])) {
     for (let index = 0; index < filter.values.length; index += 1) {
@@ -184,7 +184,7 @@ export const buildResolutionMapForFilterGroup = async (
   context: AuthContext,
   user: AuthUser,
   filterGroup: FilterGroup,
-  cache: Map<string, StixObject>,
+  cache: ReadonlyMap<string, StixObject>,
 ): Promise<FilterResolutionMap> => {
   const filtersMaps = await Promise.all(filterGroup.filters.map((f) => buildResolutionMapForFilter(context, user, f, cache)));
   const filterGroupsMaps = await Promise.all(filterGroup.filterGroups.map((fg) => buildResolutionMapForFilterGroup(context, user, fg, cache)));

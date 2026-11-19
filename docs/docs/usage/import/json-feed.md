@@ -5,14 +5,14 @@ JSON feed ingester enables users to import any Web JSON API.
 <a id="best-practices-section"></a>
 ## Best practices
 
-In OpenCTI, the **Integrations** section — accessible from the main navigation bar on the left — provides users with built-in functions for automated data import. These functions are designed for specific purposes and can be configured to seamlessly ingest data into the platform. Feeds and connectors are managed from the **Integrations** page, which is split into a **Deployed** tab (the feeds and connectors running on your platform) and an **Available** tab (the catalog of connectors and built-in feeds you can deploy). To create a new feed, open the **Available** tab and use the creation button on the corresponding built-in card. For a detailed description of these two tabs and their filters, see [Getting started](getting-started.md#the-integrations-menu). Here, we'll explore the configuration process for the five built-in functions: Live Streams, TAXII Feeds, TAXII Push, RSS Feeds, and JSON/CSV Feeds.
+In OpenCTI, the **Integrations** section — accessible from the main navigation bar on the left — provides users with built-in functions for automated data import. These functions are designed for specific purposes and can be configured to seamlessly ingest data into the platform. Feeds and connectors are managed from the **Integrations** page, which is split into a **Deployed** tab (the feeds and connectors running on your platform) and an **Available** tab (the catalog of connectors and built-in feeds you can deploy). To create a new feed, open the **Available** tab and use the creation button on the corresponding built-in card. For a detailed description of these two tabs and their filters, see [Getting started](getting-started.md#the-integrations-menu). This page covers the configuration of JSON Feeds. For the other built-in import methods, see [Automated import](getting-started.md).
 
 Ensuring a secure and well-organized environment is paramount in OpenCTI. Here are two recommended best practices to enhance security, traceability, and overall organizational clarity:
 
-1. Create a dedicated user for each source: Generate a user specifically for feed import, following the convention `[F] Source name` for clear identification. Assign the user to the "Connectors" group to streamline user management and permission related to data creation. Please [see here](../../deployment/connectors.md#connector-token-section) for more information on this good practice.
+1. Create a dedicated [Service account](../../administration/users.md#service-account) for each source: Generate a technical user (or Service account) specifically for feed import, following the convention `[F] Source name` for clear identification. Assign the Service account to the "Connectors" group to streamline user management and permission related to data creation. Please [see here](../../deployment/connectors.md#connector-token-section) for more information on this good practice.
 2. Establish a dedicated Organization for the source: Create an organization named after the data source for clear identification. Assign the newly created organization to the "Default author" field in feed import configuration if available.
 
-By adhering to these best practices, you ensure independence in managing rights for each import source through dedicated user and organization structures. In addition, you enable clear traceability to the entity's creator, facilitating source evaluation, dashboard creation, data filtering and other administrative tasks.
+By adhering to these best practices, you ensure independence in managing rights for each import source through dedicated service account and organization structures. In addition, you enable clear traceability to the entity's creator, facilitating source evaluation, dashboard creation, data filtering and other administrative tasks.
 
 ## Configuration
 
@@ -23,11 +23,22 @@ So we will show by example of its different and how to configure it in the two c
 
 Here's a step-by-step guide to configure JSON ingesters:
 
-1. Schedule period: As the API is not paginated, its recommended to configure a longer polling period
+1. Schedule period: As the API is not paginated, its recommended to configure a longer polling period. By default, the schedule period is **Platform default**: the feed runs at every check of the ingestion manager, every 30 seconds by default, once the data from its previous run has been processed (see [Feeds advanced configuration](advanced-feed-configuration.md#ingestion-manager-interval)).
 2. HTTP JSON URL: Provide the URL of the JSON API from which items will be imported.
 3. HTTP Verb: Provide the type of verb that will be GET by default.
-4. JSON Mappers: Choose the JSON mapper to be used to import the data.
-5. Authentication type (if necessary): Enter the authentication type.
+4. JSON Mappers: Choose the JSON mapper to be used to import the data. See the page dedicated to the [JSON mapper](../../administration/json-mappers.md).
+5. Authentication type (if necessary): Enter the authentication type. See [Authentication types](#authentication-types).
+
+### Authentication types
+
+The **Authentication type** field offers the following options:
+
+| Authentication type   | Fields to fill in                                            | Behavior                                                                                                    |
+|-----------------------|--------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| None                  | None                                                         | OpenCTI sends no credentials. Use it for public sources.                                                    |
+| Basic user / password | Username, Password                                           | OpenCTI sends an `Authorization: Basic` header. The username and the password cannot contain the `:` character. |
+| Bearer token          | Token                                                        | OpenCTI sends an `Authorization: Bearer <token>` header.                                                    |
+| Client certificate    | Certificate (base64), Key (base64), CA certificate (base64) | OpenCTI authenticates with a TLS client certificate. Enter each PEM file encoded in base64.                 |
 
 ### Paginated API
 
@@ -40,14 +51,14 @@ You need to start to configure the verb to use and the variables.
 **GET**
 
 When you use a GET API, a majority of cases will use query parameters to be able to setup variables for the pagination.
-For example lets take an api where the get command need to specify the page number to consume.
+For example lets take an api where the get command need to specify the index of the first result to consume.
 There is a part of the URI that need to be dynamic.
 
 ```https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=20&startIndex=$offset```
 
-You can see in this example that the page query parameter need to be associated with the pagination.
+You can see in this example that the `startIndex` query parameter need to be associated with the pagination.
 
-So to be able to do this, you have to configure this parameter as a variable, here **${offset}**
+So to be able to do this, you have to configure the value of this parameter as a variable, here **$offset**. A variable is written as `$` followed by its name, in the URL as in the body. The `${offset}` syntax isn't supported.
 
 **POST**
 

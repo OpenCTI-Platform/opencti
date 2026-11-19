@@ -11,6 +11,7 @@ import useGranted, { EXPLORE, KNOWLEDGE } from '../../utils/hooks/useGranted';
 import Security from '../../utils/Security';
 import ItemIcon from '../../components/ItemIcon';
 import useApiMutation from '../../utils/hooks/useApiMutation';
+import DashboardPresetField from './common/form/DashboardPresetField';
 
 export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
@@ -53,6 +54,7 @@ const HomeDashboardSettings = () => {
     me: {
       default_time_field: timeField,
       default_dashboard: dashboard,
+      default_dashboard_preset: dashboardPreset,
       default_dashboards: dashboards,
     },
   } = useAuth();
@@ -62,7 +64,12 @@ const HomeDashboardSettings = () => {
     if (value === 'automatic') {
       value = '';
     }
-    updateDashboard({ variables: { input: [{ key: name, value }] } });
+    const input = [{ key: name, value }];
+    // Another dashboard: its presets are other ones.
+    if (name === 'default_dashboard' && dashboardPreset) {
+      input.push({ key: 'default_dashboard_preset', value: '' });
+    }
+    updateDashboard({ variables: { input } });
   };
 
   if (!hasKnowledgeAccess) {
@@ -174,6 +181,14 @@ const HomeDashboardSettings = () => {
                     </SelectContent>
                   </Select>
                 </FormControl>
+                {dashboard?.id && dashboard.id !== PLATFORM_DASHBOARD && (
+                  <DashboardPresetField
+                    dashboardId={dashboard.id}
+                    value={dashboardPreset}
+                    style={{ width: '100%', marginTop: 20 }}
+                    onChange={(value) => handleUpdate('default_dashboard_preset', value ?? '')}
+                  />
+                )}
               </>
             );
           }
