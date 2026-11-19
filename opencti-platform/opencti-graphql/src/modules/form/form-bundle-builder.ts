@@ -32,6 +32,9 @@ interface MainEntitySourceContext {
 interface MainEntitySourceResult {
   mainStixEntities: any[];
   mainEntityStixId: string | undefined;
+  // Parallel to mainStixEntities: true for an entity picked in the lookup, it already exists and is only referenced.
+  // Decided by origin, not by id: an entity created in the form can have the id of a picked one, its attributes must still be sent
+  isExistingMain?: boolean[];
 }
 
 type EntitySourceAdapter = (ctx: MainEntitySourceContext) => Promise<MainEntitySourceResult>;
@@ -39,6 +42,7 @@ type EntitySourceAdapter = (ctx: MainEntitySourceContext) => Promise<MainEntityS
 const entitySourceAdapters: Record<MainEntitySourceMode, EntitySourceAdapter> = {
   lookup: async ({ context, user, values, mainEntityType, uploads }) => {
     const mainStixEntities: any[] = [];
+    const isExistingMain: boolean[] = [];
     let mainEntityStixId: string | undefined;
 
     // Existing entities selected through the lookup (skipped when the user only created
@@ -50,6 +54,7 @@ const entitySourceAdapters: Record<MainEntitySourceMode, EntitySourceAdapter> = 
       }));
       for (let index = 0; index < mainEntities.length; index += 1) {
         mainStixEntities.push(toStix(mainEntities[index]));
+        isExistingMain.push(true);
         mainEntityStixId = mainEntities[index].standard_id;
       }
     }
@@ -61,11 +66,12 @@ const entitySourceAdapters: Record<MainEntitySourceMode, EntitySourceAdapter> = 
         const pendingEntity = completeEntity(pendingEntities[index].entity_type, pendingEntities[index]);
         const stixPending = toStix(pendingEntity);
         mainStixEntities.push(stixPending);
+        isExistingMain.push(false);
         mainEntityStixId = pendingEntity.standard_id;
       }
     }
 
-    return { mainStixEntities, mainEntityStixId };
+    return { mainStixEntities, mainEntityStixId, isExistingMain };
   },
   multiple: async ({ context, user, schema, values, mainEntityType, isBypass }) => {
     const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
@@ -183,13 +189,13 @@ export const buildAdditionalEntities = async (
         const additionalEntities = await Promise.all(vals.map((id: string) => {
           return loadFormEntity(context, user, id, additionalEntityType);
         }));
+        // Existing entities are not added to the bundle: their id is enough for the relationships and the container
         for (let index2 = 0; index2 < additionalEntities.length; index2 += 1) {
-          const stixAdditionalEntity = toStix(additionalEntities[index2]);
-          bundle.objects.push(stixAdditionalEntity);
+          const existingStixId = additionalEntities[index2].standard_id;
           if (additionalEntitiesMap[additionalEntity.id]) {
-            additionalEntitiesMap[additionalEntity.id].push(stixAdditionalEntity.id);
+            additionalEntitiesMap[additionalEntity.id].push(existingStixId);
           } else {
-            additionalEntitiesMap[additionalEntity.id] = [stixAdditionalEntity.id];
+            additionalEntitiesMap[additionalEntity.id] = [existingStixId];
           }
         }
       }
@@ -388,15 +394,21 @@ export const wrapInContainerOrPush = (
   mainStixEntities: any[],
   bundle: any,
   includeInContainer: boolean | undefined,
+  additionalEntitiesMap: Record<string, string[]> = {},
+  isExistingMain: boolean[] = [],
 ): void => {
-  if (includeInContainer && isStixDomainObjectContainer(mainEntityType)) {
-    for (let i = 0; i < mainStixEntities.length; i += 1) {
+  const isContainer = includeInContainer && isStixDomainObjectContainer(mainEntityType);
+  for (let i = 0; i < mainStixEntities.length; i += 1) {
+    const isExisting = isExistingMain[i] ?? false;
+    if (isContainer) {
       const stixContainer = mainStixEntities[i] as StixContainer;
-      stixContainer.object_refs = bundle.objects.map((n: BasicStoreEntity) => n.id);
-      bundle.objects.push(stixContainer);
-    }
-  } else {
-    for (let i = 0; i < mainStixEntities.length; i += 1) {
+      // Existing additional entities are not in the bundle, the container still references them
+      stixContainer.object_refs = [...new Set([...bundle.objects.map((n: BasicStoreEntity) => n.id), ...Object.values(additionalEntitiesMap).flat()])];
+      // An existing container is only sent to add the submitted objects into it
+      if (!isExisting || stixContainer.object_refs.length > 0) {
+        bundle.objects.push(stixContainer);
+      }
+    } else if (!isExisting) {
       bundle.objects.push(mainStixEntities[i]);
     }
   }
