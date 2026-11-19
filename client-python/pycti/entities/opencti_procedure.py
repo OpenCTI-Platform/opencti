@@ -13,6 +13,7 @@ from pycti.utils.opencti_stix2_utils import build_custom_field_values_input
 _RELATIONSHIP_EXPORT_PROPERTIES = (
     ("implements-technique", "x_technique_refs"),
     ("exploits", "x_vulnerability_refs"),
+    ("has-observable", "x_observable_refs"),
 )
 
 _RELATIONSHIP_TARGET_PROPERTIES = """
@@ -616,12 +617,13 @@ class Procedure:
     def to_stix_export(self, entity_id, access_filter=None):
         """Export a procedure with the links the platform stores once.
 
-        The platform ``toStix`` output has no technique, vulnerability, tactic
-        or report property: they are ``implements-technique`` and ``exploits``
+        The platform ``toStix`` output has no technique, vulnerability,
+        observable, tactic or report property: they are
+        ``implements-technique``, ``exploits`` and ``has-observable``
         relationships, ``mitre-attack`` kill chain phases and report
         containment. They are expanded here into ``x_technique_refs``,
-        ``x_vulnerability_refs``, ``tactics`` and report entries of
-        ``x_source_refs``. Kill chain phases of other chains stay in
+        ``x_vulnerability_refs``, ``x_observable_refs``, ``tactics`` and report
+        entries of ``x_source_refs``. Kill chain phases of other chains stay in
         ``kill_chain_phases`` only. An empty expansion is not exported.
 
         :param entity_id: the internal id of the Procedure
