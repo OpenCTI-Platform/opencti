@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { logApp } from '../../../src/config/conf';
+import { LocalAuthLockoutFinalAction } from '../../../src/generated/graphql';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../../src/database/cache';
 import { LOCKED_USER_EMAIL_TEMPLATE_INPUT } from '../../../src/database/locked-user-email-template-input';
 import {
   buildLocalAuthLockEmailData,
+  buildSampleLocalAuthLockEmailData,
   loadLocalAuthLockEmailTemplate,
   loadLocalAuthLockRecipients,
   selectLocalAuthLockRecipients,
@@ -255,5 +257,28 @@ describe('Local authentication lockout - sending the lock email', () => {
     await sendLocalAuthLockEmails(context, LOCKED, temporaryLock);
     expect(sendMail).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledOnce();
+  });
+});
+
+describe('Local authentication lockout - sample lock of a test email', () => {
+  const NOW = new Date('2026-11-19T10:00:00.000Z');
+  const SAMPLE_LOCKED_USER = { name: 'jdoe', firstname: 'John', lastname: 'Doe', user_email: 'john.doe@example.com' };
+
+  it('should follow the default lockout policy when the settings hold none', () => {
+    expect(buildSampleLocalAuthLockEmailData({}, NOW)).toEqual({
+      lockedUser: SAMPLE_LOCKED_USER,
+      lock: { date: NOW, attempts: 10, type: 'temporary', endDate: new Date('2026-11-19T10:15:00.000Z') },
+    });
+  });
+
+  it('should follow the lockout policy of the platform', () => {
+    const settings = { local_auth_lockout_final_action: LocalAuthLockoutFinalAction.Temporary, local_auth_lockout_max_attempts: 5, local_auth_lockout_duration: 30 };
+    expect(buildSampleLocalAuthLockEmailData(settings, NOW).lock)
+      .toEqual({ date: NOW, attempts: 5, type: 'temporary', endDate: new Date('2026-11-19T10:30:00.000Z') });
+  });
+
+  it('should show a permanent lock without any end', () => {
+    const settings = { local_auth_lockout_final_action: LocalAuthLockoutFinalAction.Permanent, local_auth_lockout_max_attempts: 3 };
+    expect(buildSampleLocalAuthLockEmailData(settings, NOW).lock).toEqual({ date: NOW, attempts: 3, type: 'permanent' });
   });
 });
