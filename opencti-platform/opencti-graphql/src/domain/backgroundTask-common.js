@@ -35,7 +35,6 @@ import { createWork } from './work';
 import { validateEnrichmentInvestigation } from '../modules/workspace/investigation-enrichment';
 import { getBestBackgroundConnectorId } from '../database/rabbitmq';
 import { addUserBackgroundTaskCount } from '../manager/telemetryManager';
-import { ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../config/conf';
 import { COMMENT_MAX_LENGTH } from '../modules/workflow/types/workflow-types';
 
 export const TASK_TYPE_QUERY = 'QUERY';
@@ -97,16 +96,13 @@ const checkWorkflowActionsValidity = (context, user, actions) => {
   }
   // With the workflow, a status only changes through a transition, unless the user can bypass it (drafts have no workflow)
   const hasDirectStatusAction = actions.some((a) => a.context?.field === 'x_opencti_workflow_id' && !isWorkflowTransitionAction(a));
-  if (hasDirectStatusAction && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) && !getDraftContext(context, user) && !isBypassUser(user)) {
+  if (hasDirectStatusAction && !getDraftContext(context, user) && !isBypassUser(user)) {
     throw ForbiddenAccess();
   }
   const hasBypassAction = actions.some((a) => isWorkflowBypassAction(a));
   const hasTransitionAction = actions.some((a) => isWorkflowTransitionAction(a));
   if (!hasBypassAction && !hasTransitionAction) {
     return;
-  }
-  if (!isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
-    throw FunctionalError('ENTITIES_WORKFLOW is disabled');
   }
   if (getDraftContext(context, user)) {
     throw FunctionalError('Cannot change workflow status in draft');

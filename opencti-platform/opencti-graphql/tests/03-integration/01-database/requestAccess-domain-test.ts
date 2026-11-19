@@ -43,7 +43,6 @@ import { deleteElementById, loadEntity, storeLoadByIdWithRefs } from '../../../s
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
 import { deleteWorkflowDefinition, publishWorkflowDefinition, setWorkflowDefinition } from '../../../src/modules/workflow/domain/workflow-domain';
 import { findOutcomeState, getRequestAccessWorkflow } from '../../../src/modules/workflow/domain/workflow-request-access';
-import { ENABLED_FEATURE_FLAGS } from '../../../src/config/conf';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import {
   addRequestAccess,
@@ -517,14 +516,6 @@ describe('Request access domain  - workflow-driven creation', async () => {
   const findInstance = (rfiId: string) => loadEntity<BasicStoreEntity & { scope?: string; currentState?: string }>(testContext, ADMIN_USER, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
     filters: { mode: FilterMode.And, filters: [{ key: ['entity_id'], values: [rfiId] }], filterGroups: [] },
   });
-  const withoutFeatureFlags = async <T>(run: () => Promise<T>): Promise<T> => {
-    const enabledFlags = ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
-    try {
-      return await run();
-    } finally {
-      ENABLED_FEATURE_FLAGS.push(...enabledFlags);
-    }
-  };
   const definition = () => JSON.stringify({
     initialState: templateIds.pending,
     states: [
@@ -619,10 +610,6 @@ describe('Request access domain  - workflow-driven creation', async () => {
       expect(findOutcomeState(requestAccessWorkflow!.definitionData, 'DECLINED')).toBe(templateIds.declined);
     });
 
-    it('is not used while ENTITIES_WORKFLOW is off', async () => {
-      expect(await withoutFeatureFlags(() => getRequestAccessWorkflow(testContext, ADMIN_USER))).toBeNull();
-    });
-
     it('workflow-driven request starts at the request-access initial state', async () => {
       const rfiId = await requestAccess();
 
@@ -655,17 +642,6 @@ describe('Request access domain  - workflow-driven creation', async () => {
       expect(rfi.x_opencti_workflow_id).toBe(initialStatus.id);
       expect(rfi[INPUT_CREATED_BY]?.internal_id).toBe(testOrganizationId);
       expect((await findInstance(rfiId))?.scope).toBe(StatusScope.RequestAccess);
-    });
-
-    it('runs the legacy flow while ENTITIES_WORKFLOW is off', async () => {
-      const rfiId = await withoutFeatureFlags(requestAccess);
-
-      const lowestOrderStatus = await findFirstWorkflowStatus(testContext, ADMIN_USER);
-      const rfi = await loadRfi(rfiId);
-      expect(lowestOrderStatus.template_id).toBe(templateIds.lowestOrder);
-      expect(rfi.x_opencti_workflow_id).toBe(lowestOrderStatus.id);
-      expect(rfi[INPUT_CREATED_BY]?.internal_id).not.toBe(testOrganizationId);
-      expect(await findInstance(rfiId)).toBeFalsy();
     });
   });
 });

@@ -206,8 +206,8 @@ extend type DraftWorkspace {
 extend type Query {
     workflowDefinition(entityType: String!, allowDraft: Boolean, scope: StatusScope): WorkflowSchema @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionPublished(entityType: String!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE])
-    workflowStatuses(entityType: String!): [Status!]! @auth(for: [KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE]) @ff(flags: ["ENTITIES_WORKFLOW"], softFail: true, defaultValue: "[]")
-    workflowMassTransitions(entityType: String!, entityIds: [String!], filters: String, search: String, excludedIds: [String!]): [WorkflowTransition!]! @auth(for: [KNOWLEDGE_KNUPDATE]) @ff(flags: ["ENTITIES_WORKFLOW"], softFail: true, defaultValue: "[]")
+    workflowStatuses(entityType: String!): [Status!]! @auth(for: [KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE])
+    workflowMassTransitions(entityType: String!, entityIds: [String!], filters: String, search: String, excludedIds: [String!]): [WorkflowTransition!]! @auth(for: [KNOWLEDGE_KNUPDATE])
     workflowMigrationPreview(entityType: String!): WorkflowMigrationPreview @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowInstance(entityId: String!): WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE], forDraft: [KNOWLEDGE_KNUPDATE])
     allowedTransitions(entityId: String!): [WorkflowTransition!]! @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -219,7 +219,6 @@ extend type Mutation {
     workflowDefinitionPublish(entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     # One-shot migration of the legacy Status set of a scope (GLOBAL by default; REQUEST_ACCESS for Case-Rfi only) into a workflow.
     # Fails if a workflow already exists for that scope, unless overwrite is true and that workflow was never published.
-    # publish: true also requires the ENTITIES_WORKFLOW feature flag.
     workflowMigrate(entityType: String!, publish: Boolean = false, overwrite: Boolean = false, scope: StatusScope): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionRestorePublished(entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionDelete(entityType: String!, scope: StatusScope): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])

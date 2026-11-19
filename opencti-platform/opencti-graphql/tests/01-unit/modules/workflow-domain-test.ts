@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { booleanConf, isFeatureEnabled, logApp } from '../../../src/config/conf';
+import { booleanConf, logApp } from '../../../src/config/conf';
 import { extractEntityRepresentativeName } from '../../../src/database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../src/database/members';
 import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../src/database/middleware';
@@ -231,7 +231,6 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
       warn: vi.fn(),
     },
     booleanConf: vi.fn(actual.booleanConf),
-    isFeatureEnabled: vi.fn().mockReturnValue(true),
   };
 });
 
@@ -266,7 +265,6 @@ describe('Workflow bypass', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(isFeatureEnabled).mockReturnValue(true);
     vi.mocked(lockResources).mockResolvedValue({ unlock: vi.fn() });
     entity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident', x_opencti_workflow_id: 'status-open' };
     instance = { id: 'instance-id', internal_id: 'instance-id', entity_id: entity.id, currentState: 'open', scope: 'standard', history: '[]' };
@@ -495,15 +493,7 @@ describe('Workflow bypass', () => {
     expect(createEntity).not.toHaveBeenCalled();
   });
 
-  it('gates non-draft mutation and picker with ENTITIES_WORKFLOW', async () => {
-    vi.mocked(isFeatureEnabled).mockReturnValue(false);
-    await expect(setWorkflowStatus(context, user, entity.id, target.id, false)).rejects.toThrow('ENTITIES_WORKFLOW');
-    await expect(getWorkflowBypassStatuses(context, user, entity.id)).rejects.toThrow('ENTITIES_WORKFLOW');
-    expect(createEntity).not.toHaveBeenCalled();
-  });
-
-  it('keeps DraftWorkspace bypass and picker available with flag off', async () => {
-    vi.mocked(isFeatureEnabled).mockReturnValue(false);
+  it('keeps DraftWorkspace bypass and picker available', async () => {
     entity.entity_type = 'DraftWorkspace';
     target.type = 'DraftWorkspace';
     legacy.type = 'DraftWorkspace';
@@ -4581,14 +4571,6 @@ describe('getMassWorkflowTransitions', () => {
     expect(result).toEqual([]);
   });
 
-  it('should offer nothing when ENTITIES_WORKFLOW is disabled', async () => {
-    vi.mocked(isFeatureEnabled).mockReturnValueOnce(false);
-
-    const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { entityIds: ['report-a', 'report-b'] });
-
-    expect(result).toEqual([]);
-  });
-
   it('should offer nothing when the entity type has no published workflow', async () => {
     (findByType as any).mockResolvedValue(undefined);
 
@@ -5124,22 +5106,6 @@ describe('getWorkflowInstance — read-repair', () => {
     await getWorkflowInstance(mockContext, mockUser, 'entity-id');
 
     expect(resolveMappedStatusId).toHaveBeenCalledTimes(1);
-  });
-
-  it('returns null without backfill nor repair for a non-DraftWorkspace entity when ENTITIES_WORKFLOW is disabled', async () => {
-    setup();
-    (isFeatureEnabled as any).mockReturnValue(false);
-    (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');
-
-    try {
-      const result = await getWorkflowInstance(mockContext, mockUser, 'entity-id');
-
-      expect(result).toBeNull();
-      expect(createEntity).not.toHaveBeenCalled();
-      expect(projectWorkflowState).not.toHaveBeenCalled();
-    } finally {
-      (isFeatureEnabled as any).mockReturnValue(true);
-    }
   });
 
   it('keeps a Status recorded as a kept external write', async () => {
@@ -5895,7 +5861,6 @@ describe('getWorkflowStatuses', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(isFeatureEnabled).mockReturnValue(true);
     (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
     (storeLoadById as any).mockResolvedValue({ id: 'workflow-def-id', published_version: { id: 'v1', content: JSON.stringify(definition) } });
   });
@@ -5931,12 +5896,6 @@ describe('getWorkflowStatuses', () => {
 
   it('should list nothing when the entity type has no published workflow', async () => {
     (findByType as any).mockResolvedValue(undefined);
-
-    expect(await getWorkflowStatuses(mockContext, mockUser, 'Report')).toEqual([]);
-  });
-
-  it('should list nothing while ENTITIES_WORKFLOW is disabled', async () => {
-    vi.mocked(isFeatureEnabled).mockReturnValue(false);
 
     expect(await getWorkflowStatuses(mockContext, mockUser, 'Report')).toEqual([]);
   });
@@ -6373,7 +6332,6 @@ describe('migrateWorkflowFromStatuses', () => {
     const createdVersion = { id: 'v1', timestamp: '2024-01-01T00:00:00Z', createdBy: 'user-1', content: '{}', validation_errors: [] };
     (createEntity as any).mockResolvedValue({ id: 'workflow-id', draft_version: createdVersion, all_versions: [createdVersion] });
     (updateAttribute as any).mockResolvedValue({ element: { id: 'entity-setting-id', workflow_id: 'workflow-id' } });
-    vi.mocked(isFeatureEnabled).mockReturnValue(true);
     vi.mocked(lockResources).mockResolvedValue({ unlock: vi.fn() } as any);
   });
 
@@ -6411,15 +6369,6 @@ describe('migrateWorkflowFromStatuses', () => {
     await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', false, true)).rejects.toThrow('already has a published workflow');
     expect(createEntity).not.toHaveBeenCalled();
     expect(updateAttribute).not.toHaveBeenCalled();
-  });
-
-  it('refuses to publish while the ENTITIES_WORKFLOW feature is disabled, before taking any lock', async () => {
-    (findByType as any).mockResolvedValue({ id: 'entity-setting-id' });
-    vi.mocked(isFeatureEnabled).mockReturnValueOnce(false);
-
-    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', true)).rejects.toThrow('ENTITIES_WORKFLOW feature is disabled');
-    expect(lockResources).not.toHaveBeenCalled();
-    expect(createEntity).not.toHaveBeenCalled();
   });
 
   it('rejects DraftWorkspace before reading any data', async () => {
@@ -6875,28 +6824,6 @@ describe('scope-aware workflow definitions', () => {
     it('accepts Global on any type', () => {
       expect(() => assertScopeAllowed('Report', StatusScope.Global)).not.toThrow();
       expect(() => assertScopeAllowed('Case-Rfi', StatusScope.Global)).not.toThrow();
-    });
-
-    it('rejects a non-Global scope while ENTITIES_WORKFLOW is disabled, so the legacy request flow keeps its statuses', () => {
-      vi.mocked(isFeatureEnabled).mockReturnValue(false);
-      try {
-        expect(() => assertScopeAllowed('Case-Rfi', StatusScope.RequestAccess)).toThrow('Workflow scope is not available while the ENTITIES_WORKFLOW feature is disabled');
-        expect(() => assertScopeAllowed('Case-Rfi', StatusScope.Global)).not.toThrow();
-        expect(() => assertScopeAllowed('DraftWorkspace', StatusScope.Global)).not.toThrow();
-      } finally {
-        vi.mocked(isFeatureEnabled).mockReturnValue(true);
-      }
-    });
-
-    it('refuses to save or publish a request access workflow while ENTITIES_WORKFLOW is disabled', async () => {
-      vi.mocked(isFeatureEnabled).mockReturnValue(false);
-      try {
-        const refusal = 'Workflow scope is not available while the ENTITIES_WORKFLOW feature is disabled';
-        await expect(setWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', '{}', StatusScope.RequestAccess)).rejects.toThrow(refusal);
-        await expect(publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess)).rejects.toThrow(refusal);
-      } finally {
-        vi.mocked(isFeatureEnabled).mockReturnValue(true);
-      }
     });
   });
 
@@ -8270,13 +8197,11 @@ describe('assertExternalStatusWriteAllowed', () => {
       await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', forged)).rejects.toThrow(refusal);
     });
 
-    it('lets the request access form, a plain RFI, another type, the legacy flow or a disabled feature create', async () => {
+    it('lets the request access form, a plain RFI, another type or the legacy flow create', async () => {
       const record = JSON.stringify({ entities: ['malware-1'], members: ['org-1'], status: 'NEW' });
       await expect(assertExternalRequestAccessCreateAllowed(mockContext, SYSTEM_USER, 'Case-Rfi', record)).resolves.toBeUndefined();
       await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', undefined)).resolves.toBeUndefined();
       await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Report', record)).resolves.toBeUndefined();
-      vi.mocked(isFeatureEnabled).mockReturnValueOnce(false);
-      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', record)).resolves.toBeUndefined();
       (findByType as any).mockResolvedValue({ id: 'setting-id' });
       await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', record)).resolves.toBeUndefined();
     });
@@ -8374,7 +8299,6 @@ describe('Workflow mutations inside a draft', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(isFeatureEnabled).mockReturnValue(true);
     vi.mocked(lockResources).mockResolvedValue({ unlock: vi.fn() });
     vi.mocked(getDraftContext).mockReturnValue('draft-id');
   });
