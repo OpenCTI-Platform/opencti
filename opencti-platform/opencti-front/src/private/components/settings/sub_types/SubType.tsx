@@ -33,12 +33,9 @@ export const subTypeQuery = graphql`
         ...EntitySettingAttributes_entitySetting
         ...FintelTemplatesManager_templates
         requestAccessConfiguration{
-            ...RequestAccessStatusFragment_requestAccess
             ...RequestAccessConfigurationEdition_requestAccess
         }
       }
-      ...GlobalWorkflowSettings_global
-      ...RequestAccessSettings_requestAccess
     }
     ...CustomViewsSettingsContext_data @arguments(entityType: $id)
   }
