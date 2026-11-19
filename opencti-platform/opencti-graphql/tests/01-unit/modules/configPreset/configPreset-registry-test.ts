@@ -67,6 +67,7 @@ import { customStatusTemplate, defaultStatusTemplate } from './configPreset-stat
 import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemplates-fixtures';
 import { mitreConnector } from './configPreset-connectors-fixtures';
 import { exportConnector } from '../../../../src/modules/connector/connector-export';
+import { computeConnectorTargetContract } from '../../../../src/modules/catalog/catalog-domain';
 import { customEmailTemplate, otherEmailTemplate } from './configPreset-emailTemplates-fixtures';
 import { defaultFintelDesign, nightFintelDesign, PNG_LOGO } from './configPreset-fintelDesigns-fixtures';
 import { FINTEL_DESIGN_LOGO_MAX_SIZE } from '../../../../src/modules/fintelDesign/fintelDesign-logo';
@@ -411,6 +412,59 @@ describe('Config preset registry', () => {
       expect(configuration.manager_contract_configuration).toEqual([{ key: 'MITRE_INTERVAL', value: '7' }]);
       expect(configuration.required_at_import).toEqual(['MITRE_API_KEY', 'MITRE_PROXY_TOKEN']);
       expect(JSON.stringify(configuration)).not.toMatch(/plain-proxy-token|removed-value/);
+    });
+
+    describe('cleared parameters', () => {
+      const withDefaults = {
+        ...mitreConnector.manager_contract,
+        config_schema: {
+          ...mitreConnector.manager_contract.config_schema,
+          properties: {
+            ...mitreConnector.manager_contract.config_schema.properties,
+            MITRE_FILTER: { type: 'string', default: 'all', description: 'Optional, with a default' },
+            MITRE_TYPES: { type: 'array', items: { type: 'string' }, default: ['a', 'b'], description: 'Optional list, with a default' },
+            MITRE_LIMIT: { type: 'integer', default: 500, description: 'Required, with a default' },
+            MITRE_LABEL: { type: 'string', description: 'Optional, without default' },
+          },
+          required: ['MITRE_API_KEY', 'MITRE_LIMIT'],
+        },
+      };
+      const withConfiguration = (manager_contract_configuration: { key: string; value: string; encrypted?: boolean }[]) => ({
+        ...mitreConnector,
+        manager_contract: withDefaults,
+        manager_contract_configuration,
+      });
+
+      it('exports empty an optional parameter with a default that is not stored, never a list, a required parameter, a parameter without default nor a secret', async () => {
+        const configuration = await exportConnector(context, withConfiguration([
+          { key: 'MITRE_API_KEY', value: 'encrypted-secret', encrypted: true },
+          { key: 'MITRE_INTERVAL', value: '7' },
+          { key: 'MITRE_LIMIT', value: '500' },
+        ]) as never);
+        expect(configuration.manager_contract_configuration).toEqual([
+          { key: 'MITRE_INTERVAL', value: '7' },
+          { key: 'MITRE_LIMIT', value: '500' },
+          { key: 'MITRE_FILTER', value: '' },
+        ]);
+      });
+
+      it('exports a stored optional parameter with its value', async () => {
+        const configuration = await exportConnector(context, withConfiguration([{ key: 'MITRE_FILTER', value: 'custom' }]) as never);
+        expect(configuration.manager_contract_configuration).toEqual([{ key: 'MITRE_FILTER', value: 'custom' }]);
+      });
+
+      it('keeps a cleared parameter cleared from the edit to a copy imported from the export', async () => {
+        const stored = [{ key: 'MITRE_INTERVAL', value: '7' }, { key: 'MITRE_FILTER', value: 'custom' }, { key: 'MITRE_LIMIT', value: '500' }];
+        const contract = { ...withDefaults, config_schema: { ...withDefaults.config_schema, required: ['MITRE_LIMIT'] }, slug: 'mitre', title: 'MITRE' };
+        const afterClear = computeConnectorTargetContract([{ key: 'MITRE_FILTER', value: '' }], contract as never, 'public-key', stored);
+        expect(afterClear.find(({ key }) => key === 'MITRE_FILTER')).toBeUndefined();
+
+        const bundle = await exportConnector(context, withConfiguration(afterClear as never) as never);
+        const copy = computeConnectorTargetContract(bundle.manager_contract_configuration, contract as never, 'public-key');
+
+        expect(copy.find(({ key }) => key === 'MITRE_FILTER')).toBeUndefined();
+        expect(copy.find(({ key }) => key === 'MITRE_INTERVAL')?.value).toBe('7');
+      });
     });
 
     it('lists the managed connectors only, by name', async () => {
