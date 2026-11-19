@@ -36,7 +36,7 @@ import {
 import { buildConnectorUpdateStatus, compareContractVersions, groupContractVersionsBySlug } from '../catalog/catalog-version-utils';
 import { findManagedConnectorsByCatalogId } from './connector-repository';
 import { publishUserAction } from '../../listener/UserActionListener';
-import type { AuthContext, AuthUser } from '../../types/user';
+import type { AuthContext, AuthUser, UserApiToken } from '../../types/user';
 import type { BasicStoreEntityUser } from '../user/user-types';
 import type {
   BasicStoreEntityConnector,
@@ -457,7 +457,9 @@ export const computeManagerConnectorExcerpt = async (_context: AuthContext, _use
 
 const COMPOSER_TOKEN_REDIS_EXPIRATION = conf.get('app:composer_token_expiration') ?? 604800;
 // One token per connector: managed connectors running as the same user must not revoke each other's token
-const composerTokenName = (connectorId: string) => `Composer managed token ${connectorId}`;
+// The name is for display only: the token is identified by its managed_by fields, which no user can set
+const composerTokenName = (connectorId: string) => `Composer managed token (connector: ${connectorId})`;
+const isComposerToken = (connectorId: string) => (token: UserApiToken) => token.managed_by_type === ENTITY_TYPE_CONNECTOR && token.managed_by_id === connectorId;
 const composerTokenKey = (connectorId: string, userId: string) => `composer:connector:${connectorId}:token:${userId}`;
 // Held to issue a connector's token and to revoke it on deletion
 const composerTokenLockId = (connectorId: string) => `manager-configuration-${connectorId}`;
@@ -494,8 +496,7 @@ const computeConnectorTokenConfiguration = async (context: AuthContext, connecto
     if (!manager) {
       throw FunctionalError('No connector manager registered', { connectorId: connectorEntity.internal_id });
     }
-    const tokenName = composerTokenName(connectorEntity.internal_id);
-    const existingToken = (targetUser.api_tokens ?? []).find((token) => token.name === tokenName);
+    const existingToken = (targetUser.api_tokens ?? []).find(isComposerToken(connectorEntity.internal_id));
     const redisClient = getClientBase();
     const key = composerTokenKey(connectorEntity.internal_id, targetUser.internal_id);
     const keyFingerprint = shortHash(manager.public_key);
@@ -514,7 +515,13 @@ const computeConnectorTokenConfiguration = async (context: AuthContext, connecto
     if (existingToken) {
       await revokeUserTokenByAdmin(context, SYSTEM_USER, targetUser.internal_id, existingToken.id);
     }
-    const { plaintext_token } = await addUserTokenByAdmin(context, SYSTEM_USER, targetUser.internal_id, { name: tokenName } as any);
+    const { plaintext_token } = await addUserTokenByAdmin(
+      context,
+      SYSTEM_USER,
+      targetUser.internal_id,
+      { name: composerTokenName(connectorEntity.internal_id) },
+      { type: ENTITY_TYPE_CONNECTOR, id: connectorEntity.internal_id },
+    );
     const encryptedToken = encryptValue(manager.public_key, plaintext_token);
     const record: CachedComposerToken = { key_fingerprint: keyFingerprint, encrypted_token: encryptedToken };
     await redisClient.setex(key, COMPOSER_TOKEN_REDIS_EXPIRATION, JSON.stringify(record));
@@ -543,9 +550,8 @@ const revokeConnectorToken = async (context: AuthContext, connectorEntity: Basic
     if (!targetUser) {
       return;
     }
-    const tokenName = composerTokenName(connectorEntity.internal_id);
     // Every token of this connector: a stale users cache can have let configuration reads issue several
-    const connectorTokens = (targetUser.api_tokens ?? []).filter((token) => token.name === tokenName);
+    const connectorTokens = (targetUser.api_tokens ?? []).filter(isComposerToken(connectorEntity.internal_id));
     for (const token of connectorTokens) {
       await revokeUserTokenByAdmin(context, SYSTEM_USER, targetUser.internal_id, token.id);
     }

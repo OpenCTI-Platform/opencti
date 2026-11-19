@@ -74,7 +74,7 @@ const connector = {
 } as unknown as BasicStoreEntityConnector;
 
 // Tokens of the user, kept in sync by the add and revoke mocks
-let userTokens: { id: string; name: string }[];
+let userTokens: { id: string; name: string; managed_by_type?: string; managed_by_id?: string }[];
 
 const readToken = async () => {
   const configuration = await computeManagedConnectorContractConfiguration(context, user, connector);
@@ -91,9 +91,9 @@ describe('managed connector token encryption', () => {
       ['user-1', { id: 'user-1', internal_id: 'user-1', api_tokens: userTokens }],
     ]));
     mockFindConnectorManagers.mockResolvedValue([{ public_key: 'public-key-1' }]);
-    mockAddUserTokenByAdmin.mockImplementation(async (_context, _user, _userId, { name }) => {
+    mockAddUserTokenByAdmin.mockImplementation(async (_context, _user, _userId, { name }, managedBy) => {
       tokenCount += 1;
-      userTokens.push({ id: `token-${tokenCount}`, name });
+      userTokens.push({ id: `token-${tokenCount}`, name, managed_by_type: managedBy?.type, managed_by_id: managedBy?.id });
       return { token_id: `token-${tokenCount}`, plaintext_token: `plaintext-${tokenCount}` };
     });
     mockRevokeUserTokenByAdmin.mockImplementation(async (_context, _user, _userId, tokenId) => {
@@ -138,7 +138,7 @@ describe('managed connector token encryption', () => {
   it('should keep serving the cached token when the user holds several Composer tokens', async () => {
     expect(await readToken()).toBe('public-key-1|plaintext-1');
     // A stale user cache can leave several tokens with this connector's token name: the first one found is not the cached one
-    userTokens.unshift({ id: 'token-other', name: 'Composer managed token connector-a' });
+    userTokens.unshift({ id: 'token-other', name: 'Composer managed token (connector: connector-a)', managed_by_type: 'Connector', managed_by_id: 'connector-a' });
 
     expect(await readToken()).toBe('public-key-1|plaintext-1');
     expect(await readToken()).toBe('public-key-1|plaintext-1');
