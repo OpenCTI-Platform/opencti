@@ -2110,6 +2110,8 @@ class StixCoreObject:
 
         :param element_id: the Stix-Core-Object id
         :type element_id: str
+        :param execution_id: the execution (bundle) asking for the rescan
+        :type execution_id: str
         """
         element_id = kwargs.get("element_id", None)
         execution_id = kwargs.get("execution_id", None)
@@ -2117,23 +2119,24 @@ class StixCoreObject:
         if element_id is not None and execution_id is not None:
             while not rule_rescan_complete:
                 self.opencti.app_logger.info(
-                    "Apply rules rescan stix_core_object", {"id": element_id}
+                    "Apply rules rescan async stix_core_object",
+                    {"id": element_id, "execution_id": execution_id},
                 )
                 query = """
-                    mutation StixCoreRescanRules($elementId: ID!) {
-                        rulesRescanAsync(elementId: $elementId, $executionId: ID!)
+                    mutation StixCoreRescanRulesAsync($elementId: ID!, $executionId: ID!) {
+                        rulesRescanAsync(elementId: $elementId, executionId: $executionId)
                     }
                 """
                 result = self.opencti.query(
                     query, {"elementId": element_id, "executionId": execution_id}
                 )
                 rule_rescan_complete = result["data"]["rulesRescanAsync"]
-                self.opencti.app_logger.info(
-                    "Rescan rule async stix_core_object complete", {"id": element_id}
-                )
+            self.opencti.app_logger.info(
+                "Rescan rules async stix_core_object complete", {"id": element_id}
+            )
         else:
             self.opencti.app_logger.error(
-                "[stix_core_object] Cannot rescan rule, missing parameters: id"
+                "[stix_core_object] Cannot rescan rules, missing parameters: element_id or execution_id"
             )
             return None
 
