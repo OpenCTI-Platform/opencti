@@ -195,6 +195,7 @@ describe('Local authentication lockout', () => {
   let mfaSecret: string;
   let apiUserId: string;
   let apiUserToken: string;
+  let sendEmails: MockInstance<typeof lockNotification.sendLocalAuthLockEmails>;
 
   beforeAll(async () => {
     for (const { email, password } of [LOCKOUT_USER, INACTIVE_USER, EXPIRED_USER, MFA_USER]) {
@@ -229,9 +230,13 @@ describe('Local authentication lockout', () => {
     await setLockoutPolicy(LOCKOUT_POLICY);
     // Each lock of an existing account emails the administrators: recorded instead of being sent
     vi.spyOn(smtp, 'sendMail').mockResolvedValue(undefined);
+    sendEmails = vi.spyOn(lockNotification, 'sendLocalAuthLockEmails');
   });
 
   afterEach(async () => {
+    // The emails of a lock are sent in the background: waits for them before restoring the mocks,
+    // so that none reaches the real SMTP sender nor the SMTP spy of the next test
+    await Promise.allSettled(sendEmails.mock.results.map(({ value }) => value));
     vi.restoreAllMocks();
     await Promise.all(ALL_EMAILS.map(resetLockout));
   });
@@ -567,7 +572,7 @@ describe('Local authentication lockout', () => {
       const isFeatureEnabled = conf.isFeatureEnabled;
       vi.spyOn(conf, 'isFeatureEnabled').mockImplementation((flag: string) => (flag === conf.LOCAL_AUTH_LOCKOUT_FEATURE_FLAG ? false : isFeatureEnabled(flag)));
       await sessionLoginAs(LOCKOUT_USER.email, LOCKOUT_USER.password);
-      vi.restoreAllMocks();
+      vi.mocked(conf.isFeatureEnabled).mockRestore();
       // Enabling the flag again does not bring back the previous failures
       expect(await failuresOf(LOCKOUT_USER.email)).toEqual(0);
     });
@@ -1077,24 +1082,25 @@ describe('Local authentication lockout', () => {
     });
   });
   describe('Email to the administrators', () => {
-    let sendEmails: MockInstance<typeof lockNotification.sendLocalAuthLockEmails>;
     // The emails are sent in the background: waits for the sends started by the locks, then returns the sent emails
     const sentEmails = async () => {
       await Promise.all(sendEmails.mock.results.map(({ value }) => value));
       return vi.mocked(smtp.sendMail).mock.calls.map(([args]) => args as { to: string; subject: string; html: string });
     };
 
-    beforeEach(() => {
-      sendEmails = vi.spyOn(lockNotification, 'sendLocalAuthLockEmails');
-    });
-
     it('should email the administrators when the max attempts lock an account', async () => {
       await failLogin(LOCKOUT_USER.email, 2);
       expect(sendEmails).not.toHaveBeenCalled();
+      const beforeLock = new Date();
       await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD));
+      const afterLock = new Date();
       expect(sendEmails).toHaveBeenCalledOnce();
       expect(sendEmails.mock.calls[0][1].id).toEqual(lockoutUserId);
-      expect(sendEmails.mock.calls[0][2]).toEqual({ lockType: 'temporary', maxAttempts: 3, remainingMs: LOCK_SECONDS * 1000 });
+      const lock = sendEmails.mock.calls[0][2];
+      expect(lock).toEqual({ lockType: 'temporary', maxAttempts: 3, date: expect.any(Date), remainingMs: LOCK_SECONDS * 1000 });
+      // The date of the lock, not of the email: the end of the lock in the email is the one of Redis
+      expect(lock.date.getTime()).toBeGreaterThanOrEqual(beforeLock.getTime());
+      expect(lock.date.getTime()).toBeLessThanOrEqual(afterLock.getTime());
       const emails = await sentEmails();
       const recipients = emails.map(({ to }) => to);
       expect(recipients).toEqual(expect.arrayContaining([ADMIN_USER.user_email, ADMIN_ACCOUNT.email]));
@@ -1127,7 +1133,7 @@ describe('Local authentication lockout', () => {
       try {
         await failLogin(LOCKOUT_USER.email, 2);
         await expectPermanentlyLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD));
-        expect(sendEmails.mock.calls[0][2]).toEqual({ lockType: 'permanent', maxAttempts: 3, remainingMs: 0 });
+        expect(sendEmails.mock.calls[0][2]).toEqual({ lockType: 'permanent', maxAttempts: 3, date: expect.any(Date), remainingMs: 0 });
         const email = (await sentEmails()).find(({ to }) => to === ADMIN_ACCOUNT.email);
         expect(email?.html).toContain('The account is locked until an administrator unlocks it.');
       } finally {
@@ -1150,19 +1156,30 @@ describe('Local authentication lockout', () => {
     });
 
     it('should return the lock error without waiting for the emails', async () => {
-      sendEmails.mockReturnValue(new Promise(() => {}));
+      // Sends that end only once the lock error is returned
+      let endSends = () => {};
+      sendEmails.mockReturnValue(new Promise((resolve) => {
+        endSends = resolve;
+      }));
       await failLogin(LOCKOUT_USER.email, 2);
       await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD));
       expect(sendEmails).toHaveBeenCalledOnce();
+      endSends();
     });
 
-    it('should still return the lock error, and log it, when an email cannot be sent', async () => {
+    it('should still return the lock error, and log a warning, when the emails cannot be sent', async () => {
+      const logWarn = vi.spyOn(conf.logApp, 'warn');
       const logError = vi.spyOn(conf.logApp, 'error');
       vi.mocked(smtp.sendMail).mockRejectedValue(new Error('SMTP unavailable'));
       await failLogin(LOCKOUT_USER.email, 2);
       await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD));
-      await sentEmails();
-      expect(logError).toHaveBeenCalledWith('Local authentication lockout: the email of a lock cannot be sent to an administrator', expect.anything());
+      const emails = await sentEmails();
+      expect(logWarn).toHaveBeenCalledWith('Local authentication lockout: the email of a lock cannot be sent to some administrators', expect.objectContaining({
+        locked_user_id: lockoutUserId,
+        errors_count: emails.length,
+        total_count: emails.length,
+      }));
+      expect(logError).not.toHaveBeenCalledWith(expect.stringContaining('Local authentication lockout: the email'), expect.anything());
     });
 
     it('should still return the lock error, and log it, when the emails cannot be prepared', async () => {

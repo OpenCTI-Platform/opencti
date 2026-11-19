@@ -174,7 +174,7 @@ describe('Local authentication lockout - data of the lock email', () => {
   const lockedAccount = { name: 'jdoe', firstname: 'John', lastname: 'Doe', user_email: 'jdoe@opencti.io' };
 
   it('should end a temporary lock after the lockout duration', () => {
-    const data = buildLocalAuthLockEmailData(lockedAccount, { lockType: 'temporary', maxAttempts: 10, remainingMs: FIFTEEN_MINUTES_MS }, LOCK_DATE);
+    const data = buildLocalAuthLockEmailData(lockedAccount, { lockType: 'temporary', maxAttempts: 10, date: LOCK_DATE, remainingMs: FIFTEEN_MINUTES_MS });
     expect(data).toEqual({
       lockedUser: lockedAccount,
       lock: { date: LOCK_DATE, attempts: 10, type: 'temporary', endDate: new Date('2026-11-18T10:15:00.000Z') },
@@ -182,21 +182,21 @@ describe('Local authentication lockout - data of the lock email', () => {
   });
 
   it('should give no end to a permanent lock', () => {
-    const data = buildLocalAuthLockEmailData(lockedAccount, { lockType: 'permanent', maxAttempts: 3, remainingMs: 0 }, LOCK_DATE);
+    const data = buildLocalAuthLockEmailData(lockedAccount, { lockType: 'permanent', maxAttempts: 3, date: LOCK_DATE, remainingMs: 0 });
     expect(data.lock).toEqual({ date: LOCK_DATE, attempts: 3, type: 'permanent' });
   });
 
   it('should keep only the name and the email of the locked user', () => {
     const lockedUser = { ...buildUser('jdoe', { capabilities: capabilities(BYPASS) }), firstname: 'John', lastname: 'Doe' };
-    const data = buildLocalAuthLockEmailData(lockedUser, { lockType: 'permanent', maxAttempts: 3, remainingMs: 0 }, LOCK_DATE);
+    const data = buildLocalAuthLockEmailData(lockedUser, { lockType: 'permanent', maxAttempts: 3, date: LOCK_DATE, remainingMs: 0 });
     expect(data.lockedUser).toEqual({ name: 'jdoe', firstname: 'John', lastname: 'Doe', user_email: 'jdoe@opencti.io' });
   });
 
-  it('should date the lock now by default', () => {
-    vi.useFakeTimers({ now: LOCK_DATE });
+  it('should end a temporary lock from the date of the lock, not from the date of the email', () => {
+    vi.useFakeTimers({ now: new Date('2026-11-18T10:01:00.000Z') });
     try {
-      const data = buildLocalAuthLockEmailData(lockedAccount, { lockType: 'permanent', maxAttempts: 3, remainingMs: 0 });
-      expect(data.lock.date).toEqual(LOCK_DATE);
+      const data = buildLocalAuthLockEmailData(lockedAccount, { lockType: 'temporary', maxAttempts: 10, date: LOCK_DATE, remainingMs: FIFTEEN_MINUTES_MS });
+      expect(data.lock).toMatchObject({ date: LOCK_DATE, endDate: new Date('2026-11-18T10:15:00.000Z') });
     } finally {
       vi.useRealTimers();
     }
@@ -208,7 +208,7 @@ describe('Local authentication lockout - sending the lock email', () => {
   const ADA = buildUser('ada', { capabilities: capabilities(SETTINGS_SETACCESSES), firstname: 'Ada', lastname: 'Admin' } as Partial<AuthUser>);
   const GRACE = buildUser('grace', { capabilities: capabilities(BYPASS), firstname: 'Grace', lastname: 'Hopper' } as Partial<AuthUser>);
   const LOCKED = { ...LOCKED_USER, firstname: 'John', lastname: 'Doe' };
-  const temporaryLock = { lockType: 'temporary' as const, maxAttempts: 10, remainingMs: 15 * 60 * 1000 };
+  const temporaryLock = { lockType: 'temporary' as const, maxAttempts: 10, date: new Date(), remainingMs: 15 * 60 * 1000 };
 
   const mockPlatform = (platformUsers: AuthUser[], template?: Partial<BasicStoreEntityEmailTemplate>) => {
     vi.mocked(getEntityFromCache).mockResolvedValue({ platform_url: 'https://opencti.example.com' } as BasicStoreSettings);
@@ -242,13 +242,27 @@ describe('Local authentication lockout - sending the lock email', () => {
   });
 
   it('should keep sending to the other administrators when an email fails', async () => {
+    const warn = vi.spyOn(logApp, 'warn').mockImplementation(() => undefined);
     const error = vi.spyOn(logApp, 'error').mockImplementation(() => undefined);
     mockPlatform([ADA, GRACE]);
     vi.mocked(sendMail).mockRejectedValueOnce(new Error('SMTP down'));
     await sendLocalAuthLockEmails(context, LOCKED, temporaryLock);
     expect(sentEmails().map(({ to }) => to)).toEqual(['ada@opencti.io', 'grace@opencti.io']);
-    expect(error).toHaveBeenCalledOnce();
-    expect(error.mock.calls[0][1]).toMatchObject({ recipient_id: 'ada', locked_user_id: 'locked' });
+    expect(warn).toHaveBeenCalledOnce();
+    expect(warn.mock.calls[0][1]).toMatchObject({ locked_user_id: 'locked', errors_count: 1, total_count: 2 });
+    expect(error).not.toHaveBeenCalled();
+  });
+
+  it('should log the failures once, as a warning, when no email can be sent', async () => {
+    const warn = vi.spyOn(logApp, 'warn').mockImplementation(() => undefined);
+    const error = vi.spyOn(logApp, 'error').mockImplementation(() => undefined);
+    mockPlatform([ADA, GRACE]);
+    const smtpDown = new Error('SMTP down');
+    vi.mocked(sendMail).mockRejectedValue(smtpDown);
+    await sendLocalAuthLockEmails(context, LOCKED, temporaryLock);
+    expect(warn).toHaveBeenCalledOnce();
+    expect(warn.mock.calls[0][1]).toEqual({ cause: smtpDown, locked_user_id: 'locked', errors_count: 2, total_count: 2 });
+    expect(error).not.toHaveBeenCalled();
   });
 
   it('should send nothing, and log it, when no administrator can get the email', async () => {
