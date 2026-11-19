@@ -12,7 +12,6 @@
   <a href="https://hub.docker.com/r/opencti/platform"><img src="https://img.shields.io/docker/pulls/opencti/platform" alt="Docker pulls"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0%20%2B%20EE-blue" alt="License: Apache 2.0 (Community Edition) and Enterprise Edition"></a>
   <a href="https://github.com/OpenCTI-Platform/opencti/actions/workflows/ci-main.yml"><img src="https://github.com/OpenCTI-Platform/opencti/actions/workflows/ci-main.yml/badge.svg?branch=master" alt="OpenCTI CI"></a>
-  <a href="https://codecov.io/gh/OpenCTI-Platform/opencti"><img src="https://codecov.io/gh/OpenCTI-Platform/opencti/graph/badge.svg" alt="Code coverage"></a>
   <a href="https://docs.opencti.io"><img src="https://img.shields.io/badge/docs-docs.opencti.io-orange" alt="Documentation"></a>
   <a href="https://community.filigran.io"><img src="https://img.shields.io/badge/community-Slack-4A154B?logo=slack" alt="Community Slack"></a>
 </p>
@@ -94,7 +93,7 @@ OpenCTI ships in two editions, both in this repository:
 - **Community Edition (CE)**, licensed under the [Apache License, Version 2.0](LICENSE).
 - **Enterprise Edition (EE)**, licensed under the [OpenCTI Enterprise Edition License](LICENSE). Files under this license carry a header that says so.
 
-The Enterprise Edition adds the features marked above (AI, playbooks, priority intelligence requirements and more). See [the Enterprise Edition page](https://filigran.io/offering/subscribe) for the full list. You can try it from the platform settings.
+The Enterprise Edition adds the features marked above (AI, playbooks, priority intelligence requirements and more). The [documentation](https://docs.opencti.io) marks every Enterprise Edition feature; to get a license, [contact Filigran](https://filigran.io/contact).
 
 ## Quick start
 
