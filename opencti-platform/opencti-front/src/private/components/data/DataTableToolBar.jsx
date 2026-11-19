@@ -81,7 +81,6 @@ import Security from '../../../utils/Security';
 import { EMPTY_VALUE, truncate } from '../../../utils/String';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { getEntityTypeThreeFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
-import { isFeatureEnable } from '../../../utils/platformModulesHelper';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import {
   AUTOMATION,
@@ -105,7 +104,6 @@ import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMar
 import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
 import { vocabularyQuery } from '../common/form/OpenVocabField';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
-import { ENTITIES_WORKFLOW_FEATURE_FLAG } from '../common/workflow/workflowFeatureFlag';
 import { ItemStatusWorkflow } from '../common/workflow/WorkflowBypassStatus';
 import {
   buildTransitionOptions,
@@ -2301,9 +2299,9 @@ class DataTableToolBar extends Component {
           const typesAreDifferent = elementsTypes.filter((type) => !['Stix-Core-Object', 'Stix-Domain-Object', 'stix-core-relationship', 'Stix-Cyber-Observable'].includes(type)).length > 1;
           const preventMerge = selectedTypes.at(0) === 'Vocabulary'
             && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
-          // Mass workflow operations are refused by the backend in drafts and without the feature flag
+          // Mass workflow operations are refused by the backend in drafts
           const workflowEntityType = selectedTypes.length === 1 && !typesWithoutStatus.includes(selectedTypes[0])
-            && !me.draftContext && isFeatureEnable(settings, ENTITIES_WORKFLOW_FEATURE_FLAG) ? selectedTypes[0] : null;
+            && !me.draftContext ? selectedTypes[0] : null;
           // region update
           const typesAreNotUpdatable = notUpdatableTypes.includes(selectedTypes[0])
             || (entityTypeFilterValues.length === 1

@@ -6,7 +6,6 @@ import WorkflowTransitions, { WorkflowTransitionsForEntity } from './WorkflowTra
 import testRender from '../../../../utils/tests/test-render';
 import type { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
-import useHelper from '../../../../utils/hooks/useHelper';
 import type { WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
 
 // ---------------------------------------------------------------------------
@@ -42,10 +41,6 @@ vi.mock('../form/OpenVocabField', () => ({
   default: ({ name, label, onChange }: { name: string; label: string; onChange: (name: string, value: string) => void }) => (
     <button type="button" onClick={() => onChange(name, 'false-positive')}>{label}</button>
   ),
-}));
-
-vi.mock('../../../../utils/hooks/useHelper', () => ({
-  default: vi.fn(),
 }));
 
 vi.mock('react-relay', async (importOriginal) => {
@@ -128,7 +123,6 @@ beforeEach(() => {
   permissions.mandatoryFields = false;
   mockExitDraft.mockClear();
   mockNavigate.mockClear();
-  vi.mocked(useHelper).mockReturnValue({ isFeatureEnable: () => false } as unknown as ReturnType<typeof useHelper>);
 });
 
 // ---------------------------------------------------------------------------
@@ -200,20 +194,6 @@ describe('WorkflowStatus', () => {
     await user.keyboard('{Escape}');
     await waitFor(() => expect(screen.queryByText('Looks good')).toBeNull());
   });
-
-  it('renders null for a non-DraftWorkspace entityType when the ENTITIES_WORKFLOW flag is off', () => {
-    vi.mocked(useHelper).mockReturnValue({ isFeatureEnable: () => false } as unknown as ReturnType<typeof useHelper>);
-    const { container } = testRender(
-      <WorkflowStatus data={makeDraft()} entityType="Incident" />,
-    );
-    expect(container.firstChild).toBeNull();
-  });
-
-  it('renders for a non-DraftWorkspace entityType when the ENTITIES_WORKFLOW flag is on', () => {
-    vi.mocked(useHelper).mockReturnValue({ isFeatureEnable: () => true } as unknown as ReturnType<typeof useHelper>);
-    testRender(<WorkflowStatus data={makeDraft()} entityType="Incident" />);
-    expect(screen.getByText('In review')).not.toBeNull();
-  });
 });
 
 // ---------------------------------------------------------------------------
@@ -224,15 +204,8 @@ describe('WorkflowStatusForEntity', () => {
     currentStatus: makeStatus(), lastHistoryEntry: { comment: 'Entity comment' },
   }) => ({ id: 'incident-1', entity_type: 'Incident', workflowInstance }) as unknown as WorkflowStatusStixDomainObject_data$key;
 
-  it('retains the legacy status while the flag is off', () => {
-    testRender(<WorkflowStatusForEntity data={entity()} entityType="Incident" fallback={<span>Legacy status</span>} />);
-    expect(screen.getByText('Legacy status')).toBeVisible();
-    expect(screen.queryByText('In review')).toBeNull();
-  });
-
   it('renders the generic status and comment when enabled', async () => {
-    vi.mocked(useHelper).mockReturnValue({ isFeatureEnable: () => true } as unknown as ReturnType<typeof useHelper>);
-    const { user } = testRender(<WorkflowStatusForEntity data={entity()} entityType="Incident" fallback={<span>Legacy status</span>} />);
+    const { user } = testRender(<WorkflowStatusForEntity data={entity()} fallback={<span>Legacy status</span>} />);
     expect(screen.getByText('In review')).toBeVisible();
     expect(screen.queryByText('Legacy status')).toBeNull();
     await user.click(screen.getByRole('button', { name: 'View last comment' }));
@@ -240,8 +213,7 @@ describe('WorkflowStatusForEntity', () => {
   });
 
   it.each([null, { currentStatus: null, lastHistoryEntry: null }])('retains the legacy status when workflow status is missing', (workflowInstance) => {
-    vi.mocked(useHelper).mockReturnValue({ isFeatureEnable: () => true } as unknown as ReturnType<typeof useHelper>);
-    testRender(<WorkflowStatusForEntity data={entity(workflowInstance)} entityType="Incident" fallback={<span>Legacy status</span>} />);
+    testRender(<WorkflowStatusForEntity data={entity(workflowInstance)} fallback={<span>Legacy status</span>} />);
     expect(screen.getByText('Legacy status')).toBeVisible();
   });
 });
@@ -327,12 +299,9 @@ describe('WorkflowTransitions', () => {
     expect(mockExitDraft).toHaveBeenCalledOnce();
   });
 
-  it('gates the generic wrapper and never runs draft navigation', async () => {
+  it('never runs draft navigation from the generic wrapper', async () => {
     const entity = { ...transitionDraft(makeTransition({ actions: ['validateDraft'] })), currentUserAccessRight: 'edit' } as unknown as WorkflowStatusStixDomainObject_data$key;
-    const { rerender, user, container } = testRender(<WorkflowTransitionsForEntity data={entity} entityType="Incident" />);
-    expect(container.firstChild).toBeNull();
-    vi.mocked(useHelper).mockReturnValue({ isFeatureEnable: () => true } as unknown as ReturnType<typeof useHelper>);
-    rerender(<WorkflowTransitionsForEntity data={entity} entityType="Incident" />);
+    const { user } = testRender(<WorkflowTransitionsForEntity data={entity} />);
     await user.click(screen.getByRole('button', { name: 'approve' }));
     expect(screen.queryByRole('dialog')).toBeNull();
     act(() => mockCommit.mock.calls[0][0].onCompleted({ triggerWorkflowEvent: { success: true, executionStatus: 'completed' } }));
@@ -563,36 +532,6 @@ describe('WorkflowTransitions', () => {
     await waitFor(() => expect(screen.queryByText('Confirm')).toBeNull());
     expect(mockCommit).not.toHaveBeenCalled();
   });
-
-  it('renders null for a non-DraftWorkspace entityType when the ENTITIES_WORKFLOW flag is off', () => {
-    vi.mocked(useHelper).mockReturnValue({ isFeatureEnable: () => false } as unknown as ReturnType<typeof useHelper>);
-    const draft = makeDraft({
-      workflowInstance: {
-        id: 'instance-1',
-        currentState: 'in_review',
-        currentStatus: makeStatus(),
-        lastHistoryEntry: null,
-        allowedTransitions: [makeTransition({ event: 'approve' })],
-      },
-    });
-    const { container } = testRender(<WorkflowTransitions data={draft} entityType="Incident" />);
-    expect(container.firstChild).toBeNull();
-  });
-
-  it('renders for a non-DraftWorkspace entityType when the ENTITIES_WORKFLOW flag is on', () => {
-    vi.mocked(useHelper).mockReturnValue({ isFeatureEnable: () => true } as unknown as ReturnType<typeof useHelper>);
-    const draft = makeDraft({
-      workflowInstance: {
-        id: 'instance-1',
-        currentState: 'in_review',
-        currentStatus: makeStatus(),
-        lastHistoryEntry: null,
-        allowedTransitions: [makeTransition({ event: 'approve' })],
-      },
-    });
-    testRender(<WorkflowTransitions data={draft} entityType="Incident" />);
-    expect(screen.getByText('approve')).not.toBeNull();
-  });
 });
 
 describe('Workflow closing reason', () => {
@@ -638,17 +577,10 @@ describe('Workflow closing reason', () => {
     expect(await screen.findByRole('dialog')).toHaveAccessibleDescription(/You can optionally select a closing reason before changing the status./);
   });
 
-  it('displays the closing reason of an entity when the workflow UI is enabled', () => {
-    vi.mocked(useHelper).mockReturnValue({ isFeatureEnable: () => true } as unknown as ReturnType<typeof useHelper>);
+  it('displays the closing reason of an entity', () => {
     const entity = { x_opencti_closing_reason: 'duplicate' } as unknown as WorkflowStatusStixDomainObject_data$key;
-    testRender(<WorkflowClosingReasonForEntity data={entity} entityType="Case-Incident" />);
+    testRender(<WorkflowClosingReasonForEntity data={entity} />);
     expect(screen.getByText('Closing reason')).toBeVisible();
     expect(screen.getByText('duplicate')).toBeVisible();
-  });
-
-  it('hides the closing reason when the workflow UI is disabled', () => {
-    const entity = { x_opencti_closing_reason: 'duplicate' } as unknown as WorkflowStatusStixDomainObject_data$key;
-    testRender(<WorkflowClosingReasonForEntity data={entity} entityType="Case-Incident" />);
-    expect(screen.queryByText('duplicate')).toBeNull();
   });
 });

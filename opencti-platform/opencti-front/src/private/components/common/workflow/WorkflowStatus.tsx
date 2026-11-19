@@ -7,8 +7,6 @@ import { workflowStatusFragment, workflowStatusStixDomainObjectFragment } from '
 import { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import IconButton from '../../../../components/common/button/IconButton';
 import { useFormatter } from '../../../../components/i18n';
-import useHelper from '../../../../utils/hooks/useHelper';
-import { isWorkflowUiEnabledForType } from './workflowFeatureFlag';
 import type { WorkflowStatusStixDomainObject_data$data, WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -20,7 +18,6 @@ export { WorkflowTransitions } from './WorkflowTransitions';
 
 interface WorkflowStatusProps {
   data: WorkflowStatus_data$key;
-  entityType?: string;
 }
 
 const WorkflowStatusView = ({ workflowInstance, fallback = null, hideStatus = false }: {
@@ -69,21 +66,16 @@ const WorkflowStatusView = ({ workflowInstance, fallback = null, hideStatus = fa
   );
 };
 
-const WorkflowStatus: FunctionComponent<WorkflowStatusProps> = ({ data, entityType = 'DraftWorkspace' }) => {
-  const { isFeatureEnable } = useHelper();
+const WorkflowStatus: FunctionComponent<WorkflowStatusProps> = ({ data }) => {
   const draft = useFragment(workflowStatusFragment, data);
-  return isWorkflowUiEnabledForType(entityType, isFeatureEnable)
-    ? <WorkflowStatusView workflowInstance={draft.workflowInstance} />
-    : null;
+  return <WorkflowStatusView workflowInstance={draft.workflowInstance} />;
 };
 
-export const WorkflowStatusForEntity = ({ data, entityType, fallback = null, children }: {
+export const WorkflowStatusForEntity = ({ data, fallback = null, children }: {
   data: WorkflowStatusStixDomainObject_data$key;
-  entityType: string;
   fallback?: ReactNode;
   children?: ReactNode;
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { me } = useAuth();
   const entity = useFragment(workflowStatusStixDomainObjectFragment, data);
   const { canEdit } = useGetCurrentUserAccessRight(entity.currentUserAccessRight);
@@ -91,24 +83,20 @@ export const WorkflowStatusForEntity = ({ data, entityType, fallback = null, chi
   // stays visible even for a bypass user, whose status selector is one of those controls.
   const draftContext = useDraftContext();
   const showControls = !!children && canEdit && !draftContext;
-  return isWorkflowUiEnabledForType(entityType, isFeatureEnable)
-    ? (
-        <>
-          {entity.workflowInstance && showControls && children}
-          <WorkflowStatusView workflowInstance={entity.workflowInstance} fallback={fallback} hideStatus={showControls && isBypassUser(me)} />
-        </>
-      )
-    : fallback;
+  return (
+    <>
+      {entity.workflowInstance && showControls && children}
+      <WorkflowStatusView workflowInstance={entity.workflowInstance} fallback={fallback} hideStatus={showControls && isBypassUser(me)} />
+    </>
+  );
 };
 
-export const WorkflowClosingReasonForEntity = ({ data, entityType }: {
+export const WorkflowClosingReasonForEntity = ({ data }: {
   data: WorkflowStatusStixDomainObject_data$key;
-  entityType: string;
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const entity = useFragment(workflowStatusStixDomainObjectFragment, data);
-  if (!isWorkflowUiEnabledForType(entityType, isFeatureEnable) || !entity.x_opencti_closing_reason) {
+  if (!entity.x_opencti_closing_reason) {
     return null;
   }
   return (
