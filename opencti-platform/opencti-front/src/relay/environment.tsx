@@ -271,7 +271,7 @@ export const handleErrorInForm = (
   if (formattedError?.data && formattedError.data.field) {
     setErrors({
       [formattedError.data.field]:
-      formattedError.data.message || formattedError.data.reason,
+        formattedError.data.message || formattedError.data.reason,
     });
   } else {
     const messages = (error.res.errors ?? []).map(
