@@ -8,7 +8,6 @@ import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT, type ManipulateConfiguration }
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
 import type { StixDomainObject } from '../../../../../src/types/stix-2-1-common';
 import * as workflowDomain from '../../../../../src/modules/workflow/domain/workflow-domain';
-import * as conf from '../../../../../src/config/conf';
 import { AUTOMATION_MANAGER_USER } from '../../../../../src/utils/access';
 
 describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
@@ -624,18 +623,6 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
 
       expect(result.output_port).toEqual('unmodified');
       expect(result.bundle.objects[0].extensions[STIX_EXT_OCTI].workflow_id).toBeUndefined();
-    });
-
-    it('should patch the status in the bundle when the workflow engine is off', async () => {
-      vi.spyOn(conf, 'isFeatureEnabled').mockReturnValue(false);
-      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
-        mainId: THREAT_ACTOR_ID,
-        bundleObjects: [testBundleObject<StixThreatActor>({ id: THREAT_ACTOR_ID, type: ENTITY_TYPE_THREAT_ACTOR })],
-        configuration: { applyToElements: 'only-main', actions: [statusAction(true)] },
-      }));
-
-      expect(workflowDomain.setWorkflowStatus).not.toHaveBeenCalled();
-      expect(result.bundle.objects[0].extensions[STIX_EXT_OCTI].opencti_upsert_operations?.[0]).toMatchObject({ key: 'x_opencti_workflow_id', value: [TARGET_STATUS_ID] });
     });
 
     it.each([undefined, false])('should patch the status in the bundle when transition actions are %s', async (applyTransitionActions) => {

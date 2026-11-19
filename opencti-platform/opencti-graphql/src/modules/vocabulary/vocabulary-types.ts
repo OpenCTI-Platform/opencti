@@ -30,7 +30,7 @@ import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/secu
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
 import { RELATION_HAS_COVERED } from '../../schema/stixCoreRelationship';
 import { schemaTypesDefinition } from '../../schema/schema-types';
-import { ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../../config/conf';
+import { isFeatureEnabled } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
@@ -192,11 +192,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
   },
   closing_reason_ov: {
     description: 'Reasons given when a workflow transition closes an entity',
-    // Both resolved lazily: config/conf is still loading when this file is evaluated,
-    // and modules register their domain object types after it
-    get featureFlag() {
-      return ENTITIES_WORKFLOW_FEATURE_FLAG;
-    },
+    // Resolved lazily: modules register their domain object types after this file is evaluated
     get entity_types() {
       return schemaTypesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT);
     },

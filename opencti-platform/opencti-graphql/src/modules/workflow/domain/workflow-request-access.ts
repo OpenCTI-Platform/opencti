@@ -1,4 +1,4 @@
-import { ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled, logApp } from '../../../config/conf';
+import { logApp } from '../../../config/conf';
 import { FunctionalError, UnsupportedError } from '../../../config/errors';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { updateAttribute } from '../../../database/middleware';
@@ -27,17 +27,14 @@ export type RequestAccessOutcome = 'APPROVED' | 'DECLINED';
 const DECISION_WRITE_ATTEMPTS = 3;
 
 /**
- * The request-access workflow of Case-Rfi, or null when requests run on the legacy flow: it takes
- * ENTITIES_WORKFLOW on and a request-access definition published. Read as the system: requesters
- * are ordinary users, and one who cannot read the definition must not be silently moved to the legacy flow.
+ * The request-access workflow of Case-Rfi, or null when requests run on the legacy flow: it takes a
+ * request-access definition published. Read as the system: requesters are ordinary users, and one who
+ * cannot read the definition must not be silently moved to the legacy flow.
  */
 export const getRequestAccessWorkflow = async (
   context: AuthContext,
   _user: AuthUser,
 ): Promise<{ entitySetting: BasicStoreEntityEntitySetting; definitionData: WorkflowDefinitionResponse } | null> => {
-  if (!isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
-    return null;
-  }
   const entitySetting = await getWorkflowConfig(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE_RFI);
   if (!entitySetting) {
     return null;

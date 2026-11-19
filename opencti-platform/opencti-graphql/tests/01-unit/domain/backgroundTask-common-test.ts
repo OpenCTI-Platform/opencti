@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
   ACTION_TYPE_ADD,
   ACTION_TYPE_REMOVE,
@@ -9,7 +9,6 @@ import {
   ACTION_TYPE_MERGE,
 } from '../../../src/domain/backgroundTask-common';
 import { ADMIN_USER, buildStandardUser, testContext } from '../../utils/testQuery';
-import { isFeatureEnabled } from '../../../src/config/conf';
 import { ENTITY_TYPE_VOCABULARY } from '../../../src/modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_WORKSPACE } from '../../../src/modules/workspace/workspace-types';
 import { ENTITY_TYPE_NOTIFICATION } from '../../../src/modules/notification/notification-types';
@@ -17,14 +16,6 @@ import { TYPE_FILTER, USER_ID_FILTER } from '../../../src/utils/filtering/filter
 import { BackgroundTaskScope } from '../../../src/generated/graphql';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
-
-vi.mock('../../../src/config/conf', async (importOriginal) => {
-  const actual: object = await importOriginal();
-  return {
-    ...actual,
-    isFeatureEnabled: vi.fn(() => true),
-  };
-});
 
 const filterEntityType = (entityType: string) => {
   return JSON.stringify({
@@ -131,18 +122,8 @@ describe('Background task validity check (checkActionValidity)', () => {
     };
     const buildInput = (actions: object[]) => ({ actions, filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT) });
 
-    afterEach(() => {
-      vi.mocked(isFeatureEnabled).mockReturnValue(true);
-    });
-
     it('should accept a workflow bypass action for a bypass user', async () => {
       await expect(checkActionValidity(testContext, ADMIN_USER, buildInput([bypassAction]), scope, type)).resolves.toEqual(undefined);
-    });
-
-    it('should throw an error if the ENTITIES_WORKFLOW feature flag is disabled', async () => {
-      vi.mocked(isFeatureEnabled).mockReturnValue(false);
-      await expect(checkActionValidity(testContext, ADMIN_USER, buildInput([bypassAction]), scope, type))
-        .rejects.toThrowError('ENTITIES_WORKFLOW is disabled');
     });
 
     it('should throw an error if the task is created in a draft', async () => {
@@ -196,19 +177,6 @@ describe('Background task validity check (checkActionValidity)', () => {
     it('should accept a workflow transition action for a user without BYPASS capability', async () => {
       const transitionAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: [], options: { eventName: 'approve' } } };
       await expect(checkActionValidity(testContext, userUpdate, buildInput([transitionAction]), scope, type)).resolves.toEqual(undefined);
-    });
-
-    it('should throw an error for a workflow transition action if the ENTITIES_WORKFLOW feature flag is disabled', async () => {
-      vi.mocked(isFeatureEnabled).mockReturnValue(false);
-      const transitionAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: [], options: { eventName: 'approve' } } };
-      await expect(checkActionValidity(testContext, userUpdate, buildInput([transitionAction]), scope, type))
-        .rejects.toThrowError('ENTITIES_WORKFLOW is disabled');
-    });
-
-    it('should not check workflow rules for a plain status replace when the ENTITIES_WORKFLOW feature flag is disabled', async () => {
-      vi.mocked(isFeatureEnabled).mockReturnValue(false);
-      const statusAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: ['status-id'] } };
-      await expect(checkActionValidity(testContext, userUpdate, buildInput([statusAction]), scope, type)).resolves.toEqual(undefined);
     });
 
     it.each([ACTION_TYPE_REPLACE, ACTION_TYPE_ADD, ACTION_TYPE_REMOVE])('should refuse a direct status %s to a user without BYPASS capability', async (actionType) => {

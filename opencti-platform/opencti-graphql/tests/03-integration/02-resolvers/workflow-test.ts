@@ -1,5 +1,4 @@
 import gql from 'graphql-tag';
-import { ENABLED_FEATURE_FLAGS } from '../../../src/config/conf';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { createEntity, loadEntity, updateAttribute } from '../../../src/database/middleware';
@@ -1093,7 +1092,6 @@ describe('Workflow projection onto legacy Status field (Report)', () => {
 
 describe('Workflow instance sync from external status writes (Report)', () => {
   let reportInternalId: string;
-  let openStatusId: string;
   let validatedStatusId: string;
   let archivedStatusId: string;
   const reportName = `Workflow External Write Test Report ${Date.now()}`;
@@ -1167,7 +1165,6 @@ describe('Workflow instance sync from external status writes (Report)', () => {
     });
     reportInternalId = reportResult.data.reportAdd.id;
     const statuses = await findByType(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT);
-    openStatusId = statuses.find((status) => status.template_id === 'open')!.id;
     validatedStatusId = statuses.find((status) => status.template_id === 'validated')!.id;
     archivedStatusId = statuses.find((status) => status.template_id === 'archived')!.id;
   });
@@ -1309,21 +1306,6 @@ describe('Workflow instance sync from external status writes (Report)', () => {
     const instance = await findWorkflowInstance(reportInternalId) as any;
     expect(instance.pendingError).toContain(unmappedStatus.id);
   });
-
-  it('should not sync the WorkflowInstance when ENTITIES_WORKFLOW is disabled', async () => {
-    const before = await readInstance();
-    const enabledFlags = ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
-    try {
-      await patchStatus(openStatusId);
-    } finally {
-      ENABLED_FEATURE_FLAGS.push(...enabledFlags);
-    }
-
-    const after = await readInstance();
-    expect((await loadReport()).x_opencti_workflow_id).toBe(openStatusId);
-    expect(after.currentState).toBe(before.currentState);
-    expect(after.history).toHaveLength(before.history.length);
-  });
 });
 
 // Migrates the legacy GLOBAL statuses of Case-Rft, which no other workflow test uses, into a
@@ -1438,18 +1420,6 @@ describe('Workflow migration from legacy statuses (Case-Rft)', () => {
     expect(global.states.slice(0, 3).map((s: any) => s.statusId)).toEqual([templateIds.open, templateIds.review, templateIds.done]);
     expect(results.find((r: any) => r.scope === StatusScope.RequestAccess)).toBeUndefined();
     expect(global.states.map((s: any) => s.statusId)).not.toContain(templateIds.pending);
-  });
-
-  it('refuses to publish while ENTITIES_WORKFLOW is disabled', async () => {
-    const enabledFlags = ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
-    let result;
-    try {
-      result = await queryAsAdmin({ query: WORKFLOW_MIGRATE_MUTATION, variables: { entityType, publish: true } });
-    } finally {
-      ENABLED_FEATURE_FLAGS.push(...enabledFlags);
-    }
-
-    expect(result.errors?.[0].message).toContain('ENTITIES_WORKFLOW feature is disabled');
   });
 
   it('migrates and publishes, reusing the existing Status ids and leaving REQUEST_ACCESS untouched', async () => {
