@@ -12479,6 +12479,8 @@ type Query {
   works(after: ID, filters: FilterGroup, first: Int, orderBy: WorksOrdering, orderMode: OrderingMode, search: String): WorkConnection
   workspace(id: String!): Workspace
   workspaces(after: ID, filters: FilterGroup, first: Int, includeAuthorities: Boolean, orderBy: WorkspacesOrdering, orderMode: OrderingMode, search: String): WorkspaceConnection
+  xtmConnections: [XtmConnection!]!
+  xtmCounterparts(keys: [String!]!, kind: XtmCounterpartKind!): [XtmCounterpart!]!
 }
 
 input QueryAttribute {
@@ -18535,4 +18537,33 @@ enum XTMHubRegistrationStatus {
   lost_connectivity
   registered
   unregistered
+}
+
+type XtmConnection {
+  connected: Boolean!
+  product: String!
+  url: String
+}
+
+type XtmCounterpart {
+  facts: [XtmCounterpartFact!]!
+  key: String!
+  object_id: String!
+  object_name: String
+  object_type: String!
+  object_url: String!
+  product: String!
+}
+
+type XtmCounterpartFact {
+  key: String!
+  value: String!
+}
+
+enum XtmCounterpartKind {
+  ALERT
+  ASSET
+  ATTACK_PATTERN
+  THREAT
+  VULNERABILITY
 }
