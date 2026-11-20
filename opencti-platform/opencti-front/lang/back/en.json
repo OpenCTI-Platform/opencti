@@ -1105,6 +1105,8 @@
   "Service name": "Service name",
   "Service status": "Service status",
   "Service type": "Service type",
+  "Session presence manager": "Session presence manager",
+  "SESSION_PRESENCE_MANAGER": "Session presence manager",
   "Setting": "Setting",
   "Severity": "Severity",
   "SHA-1": "SHA-1",

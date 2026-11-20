@@ -1105,6 +1105,8 @@
   "Service name": "服务名称",
   "Service status": "服务状态",
   "Service type": "服务类型",
+  "Session presence manager": "会话在线状态管理器",
+  "SESSION_PRESENCE_MANAGER": "会话在线状态管理器",
   "Setting": "设置",
   "Severity": "严重性",
   "SHA-1": "SHA-1",

@@ -1105,6 +1105,8 @@
   "Service name": "Название услуги",
   "Service status": "Статус обслуживания",
   "Service type": "Тип услуги",
+  "Session presence manager": "Менеджер присутствия сеансов",
+  "SESSION_PRESENCE_MANAGER": "Менеджер присутствия сеансов",
   "Setting": "Настройка",
   "Severity": "Критичность",
   "SHA-1": "SHA-1",
