@@ -63,16 +63,16 @@ def _sent_errors(fake_api: MagicMock):
 
 def test_returned_errors_accumulate_across_events():
     helper = _build_helper()
-    helper._report_stream_errors([API_ERROR], "Stream callback")
-    helper._report_stream_errors(None, "Stream callback")
-    helper._report_stream_errors([RATE_ERROR], "Stream callback")
+    helper._report_callback_errors([API_ERROR], "Stream callback")
+    helper._report_callback_errors(None, "Stream callback")
+    helper._report_callback_errors([RATE_ERROR], "Stream callback")
     assert helper.connector_info.all_details["errors"] == [API_ERROR, RATE_ERROR]
 
 
 def test_repeated_code_keeps_its_last_report_and_a_single_slot():
     helper = _build_helper()
     for index in range(1000):
-        helper._report_stream_errors(
+        helper._report_callback_errors(
             [{**API_ERROR, "message": f"event {index}"}], "Stream callback"
         )
     assert helper.connector_info.errors == [{**API_ERROR, "message": "event 999"}]
@@ -82,13 +82,13 @@ def test_repeated_code_keeps_its_last_report_and_a_single_slot():
 def test_no_error_returned_reports_an_empty_list(error_list):
     helper = _build_helper()
     assert "errors" not in helper.connector_info.all_details
-    helper._report_stream_errors(error_list, "Stream callback")
+    helper._report_callback_errors(error_list, "Stream callback")
     assert helper.connector_info.all_details["errors"] == []
 
 
 def test_malformed_returned_error_is_dropped_with_a_warning():
     helper = _build_helper()
-    helper._report_stream_errors(
+    helper._report_callback_errors(
         [API_ERROR, {"code": "BAD", "criticity": "high"}], "Stream callback"
     )
     assert helper.connector_info.errors == [API_ERROR]
@@ -98,7 +98,7 @@ def test_malformed_returned_error_is_dropped_with_a_warning():
 
 def test_single_error_dict_is_ignored_with_a_warning():
     helper = _build_helper()
-    helper._report_stream_errors(API_ERROR, "Stream callback")
+    helper._report_callback_errors(API_ERROR, "Stream callback")
     assert helper.connector_info.errors == []
     message, _ = helper.connector_logger.warning.call_args.args
     assert (
@@ -113,7 +113,7 @@ def test_failing_error_list_never_raises():
         yield API_ERROR
         raise RuntimeError("broken generator")
 
-    helper._report_stream_errors(failing_errors(), "Stream callback")
+    helper._report_callback_errors(failing_errors(), "Stream callback")
     message, _ = helper.connector_logger.warning.call_args.args
     assert message == "Unable to report the errors returned by the stream callback"
 
@@ -125,7 +125,7 @@ def test_failing_error_list_never_raises():
 
 def test_ping_clears_the_errors_it_sent():
     helper = _build_helper()
-    helper._report_stream_errors([API_ERROR], "Stream callback")
+    helper._report_callback_errors([API_ERROR], "Stream callback")
 
     first_ping = _ping_once(helper.connector_info)
     assert _sent_errors(first_ping) == [API_ERROR]
@@ -136,11 +136,11 @@ def test_ping_clears_the_errors_it_sent():
 
 def test_error_reported_during_the_ping_is_sent_by_the_next_one():
     helper = _build_helper()
-    helper._report_stream_errors([API_ERROR], "Stream callback")
+    helper._report_callback_errors([API_ERROR], "Stream callback")
 
     first_ping = _ping_once(
         helper.connector_info,
-        lambda: helper._report_stream_errors([RATE_ERROR], "Stream callback"),
+        lambda: helper._report_callback_errors([RATE_ERROR], "Stream callback"),
     )
     assert _sent_errors(first_ping) == [API_ERROR]
 
@@ -150,12 +150,12 @@ def test_error_reported_during_the_ping_is_sent_by_the_next_one():
 
 def test_code_reported_again_during_the_ping_is_sent_by_the_next_one():
     helper = _build_helper()
-    helper._report_stream_errors([API_ERROR], "Stream callback")
+    helper._report_callback_errors([API_ERROR], "Stream callback")
     reported_again = {**API_ERROR, "message": "still down"}
 
     _ping_once(
         helper.connector_info,
-        lambda: helper._report_stream_errors([reported_again], "Stream callback"),
+        lambda: helper._report_callback_errors([reported_again], "Stream callback"),
     )
 
     second_ping = _ping_once(helper.connector_info)
@@ -164,7 +164,7 @@ def test_code_reported_again_during_the_ping_is_sent_by_the_next_one():
 
 def test_errors_are_kept_when_the_ping_fails():
     helper = _build_helper()
-    helper._report_stream_errors([API_ERROR], "Stream callback")
+    helper._report_callback_errors([API_ERROR], "Stream callback")
 
     def platform_down():
         raise ConnectionError("platform down")

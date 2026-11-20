@@ -38,7 +38,7 @@ from collections import deque
 from collections.abc import Iterable, Mapping
 from enum import Enum
 from queue import Queue
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import boto3
 import jwt
@@ -514,6 +514,19 @@ def create_mq_ssl_context(config: Dict) -> ssl.SSLContext:
     return ssl_context
 
 
+def _split_listen_callback_result(result) -> Tuple[Any, Any]:
+    """Split what a listen callback returned into the work message and the errors.
+
+    :param result: A status message, or a ``(message, errors)`` tuple
+    :return: The work message, and the errors (None when none were returned)
+    :rtype: tuple
+    """
+    # Anything but a pair is the work message, as before errors reporting
+    if isinstance(result, tuple) and len(result) == 2:
+        return result[0], result[1]
+    return result, None
+
+
 class ListenQueue(threading.Thread):
     """Thread class for consuming messages from RabbitMQ or HTTP API.
 
@@ -815,9 +828,17 @@ class ListenQueue(threading.Thread):
             if "configuration" in json_data:
                 event_data["configuration"] = json_data["configuration"]
             # Send the enriched to the callback
-            message = self.callback(event_data)
+            message, error_list = _split_listen_callback_result(
+                self.callback(event_data)
+            )
+            # Reported before closing the work: a failing to_processed must not lose them
+            reported_errors = self.helper._report_callback_errors(
+                error_list, "Listen callback"
+            )
             if work_id:
-                self.helper.api.work.to_processed(work_id, message)
+                self.helper.api.work.to_processed(
+                    work_id, message, in_error=bool(reported_errors)
+                )
             self._set_draft_id("")
 
         except Exception as e:  # pylint: disable=broad-except
@@ -1611,7 +1632,7 @@ class BatchCallbackWrapper:
             # Don't update state on failure - messages can be reprocessed on restart
             raise
 
-        self.helper._report_stream_errors(error_list, "Batch callback")
+        self.helper._report_callback_errors(error_list, "Batch callback")
 
         # Update state with last message ID from the batch
         if batch_data["events"]:
@@ -1856,7 +1877,9 @@ class ListenStream(threading.Thread):
                             self.helper.set_state(state)
                     else:
                         error_list = self.callback(msg)
-                        self.helper._report_stream_errors(error_list, "Stream callback")
+                        self.helper._report_callback_errors(
+                            error_list, "Stream callback"
+                        )
                         # Skip state update if callback manages its own state
                         if not getattr(self.callback, "manages_state", False):
                             state = self.helper.get_state()
@@ -3449,29 +3472,34 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 )
         return returned_errors
 
-    def _report_stream_errors(self, error_list, returned_by: str) -> None:
-        """Add the errors returned by a stream callback, kept until a ping sends them.
+    def _report_callback_errors(self, error_list, returned_by: str) -> List[Dict]:
+        """Add the errors returned by a stream or listen callback, kept until a ping sends them.
 
         Any return, None or an empty list included, reports that the event
-        raised no new error. Never raises: reporting errors must not stop the stream.
+        raised no new error. Never raises: reporting errors must not stop the
+        processing of the next events.
 
         :param error_list: What the callback returned
         :param returned_by: Who returned it, for the warnings
         :type returned_by: str
+        :return: The valid errors that were stored
+        :rtype: list
         """
         try:
             returned_errors = self._parse_returned_errors(error_list, returned_by)
             self.connector_info._store_errors(returned_errors)
             if returned_errors:
                 self.connector_logger.debug(
-                    "Errors reported by the stream callback",
+                    f"Errors reported by the {returned_by.lower()}",
                     {"errors": returned_errors},
                 )
+            return returned_errors
         except Exception as err:  # pylint: disable=broad-except
             self.connector_logger.warning(
-                "Unable to report the errors returned by the stream callback",
+                f"Unable to report the errors returned by the {returned_by.lower()}",
                 {"reason": str(err)},
             )
+            return []
 
     def _run_and_collect_errors(
         self, message_callback: Callable[[], Optional[List[Dict]]]
@@ -3606,7 +3634,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
     def listen(
         self,
-        message_callback: Callable[[Dict], str],
+        message_callback: Callable[[Dict], Union[str, Tuple[str, List[Dict]], None]],
     ) -> None:
         """Listen for messages from the queue and process them via callback.
 
@@ -3615,10 +3643,22 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         through the provided callback function. This method blocks until the
         listener is stopped.
 
+        The callback returns the status message of the work, or a
+        ``(message, errors)`` tuple to also report errors, each a dict with
+        ``code`` (str), ``message`` (str) and ``criticity`` (int). Reported
+        errors close the work in error, and build up across messages, a
+        repeated code keeping its last report, until the next successful ping
+        reports them to the platform and clears them. Any other return reports
+        no new error. The errors added with connector_info.add_error are
+        cleared once sent in the same way.
+
         :param message_callback: Function to process incoming messages. Receives
-            event data dict and should return a status message string.
-        :type message_callback: Callable[[Dict], str]
+            event data dict and should return a status message string, or a
+            ``(message, errors)`` tuple.
+        :type message_callback: Callable[[Dict], Union[str, Tuple[str, List[Dict]], None]]
         """
+        # Each message can report errors: keep them only until a ping has sent them
+        self.connector_info._clear_errors_once_sent = True
         self.listen_queue = ListenQueue(
             self,
             self.opencti_token,

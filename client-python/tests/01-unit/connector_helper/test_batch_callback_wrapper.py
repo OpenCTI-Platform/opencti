@@ -30,7 +30,7 @@ class DummyHelper:
         self.set_state_calls = []
         self.reported_errors = []
 
-    def _report_stream_errors(self, error_list, returned_by):
+    def _report_callback_errors(self, error_list, returned_by):
         self.reported_errors.append((error_list, returned_by))
 
     def get_state(self):

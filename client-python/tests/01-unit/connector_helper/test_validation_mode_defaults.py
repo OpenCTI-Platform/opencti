@@ -39,6 +39,9 @@ class DummyHelper:
         self.api = MagicMock()
         self.api_impersonate = MagicMock()
 
+    def _report_callback_errors(self, error_list, returned_by):
+        return []
+
 
 class TestValidationModeDefaults(TestCase):
     """Test that validation_mode defaults to 'draft' in all scenarios."""
