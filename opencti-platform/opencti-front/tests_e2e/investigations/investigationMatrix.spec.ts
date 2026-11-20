@@ -7,9 +7,10 @@ import { getMatrixConfig } from '../../src/private/components/techniques/attack_
 
 /*
  * End-to-end coverage of the investigation tactics matrix, kept to what only a real browser and a real platform prove:
- * the data the matrix queries, the design-system colour tokens resolving, the backend filters of the security posture,
- * and the layout of the exported image. The rendering rules (decorations, tooltips, accessible names, toggles, empty
- * and unplaced states) are covered by the unit tests next to the components.
+ * the data the matrix queries (including the `object` relationship of a report), the colour tokens resolving against the
+ * real design-system stylesheet, the graph staying mounted behind the matrix, the backend filters of the security
+ * posture, and the layout of the exported image. The rendering rules (decorations, tooltips, accessible names, toggles,
+ * empty and unplaced states) are covered by the unit tests next to the components.
  */
 
 const INVESTIGATION_URL = '/dashboard/workspaces/investigations';
@@ -19,7 +20,7 @@ const BETA = 'T9002 - E2E Beta';
 const GAMMA = 'T9003 - E2E Gamma';
 const UNRELATED = 'T9004 - E2E Unrelated';
 
-// The seed scores T9001 = 2 (A and B) and T9002 = 1 (A): the scale is 1 to 2, T9001 on the last stop, T9002 on the first.
+// The seed scores T9001 = 3 (A, B and the report) and T9002 = 1 (A): the scale is 1 to 3, T9001 on the last stop, T9002 on the first.
 const LAST_STOP = 4;
 const FIRST_STOP = 0;
 // What an undefined CSS variable resolves to in a background. A token missing from the design-system
@@ -50,7 +51,7 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     return seeded;
   };
 
-  test('Switch to the matrix view and turn the heatmap on', async ({ page, request }) => {
+  test('Switch to the matrix view, turn the heatmap on and go back to the graph', async ({ page, request }) => {
     const { investigationId } = await seed(request);
     const investigationPage = new InvestigationDetailsPage(page);
 
@@ -66,15 +67,17 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     await expect(investigationPage.getMatrixCell(UNRELATED)).toBeVisible();
     await expect(investigationPage.getMatrixCell(UNRELATED)).not.toHaveCSS('border-top-color', MATRIX_HIGHLIGHT_BORDER_COLOR);
     await expect(investigationPage.getLegend()).toBeHidden();
+    // The report counts: the `object` relationship comes back from the real investigation query.
+    await expect(page.getByRole('button', { name: `${ALPHA}, linked to 3 entities`, exact: true })).toBeVisible();
 
     await investigationPage.toggleHeatmap();
 
-    // T9001 is used by A and B: the last stop. T9002 is used by A only: the first.
+    // T9001 is used by A, B and the report: the last stop. T9002 is used by A only: the first.
     const lastStopFill = await investigationPage.resolveColor(heatFill(LAST_STOP), 'backgroundColor');
     const firstStopFill = await investigationPage.resolveColor(heatFill(FIRST_STOP), 'backgroundColor');
     await expect(investigationPage.getMatrixCell(ALPHA)).toHaveCSS('background-color', lastStopFill);
     await expect(investigationPage.getMatrixCell(BETA)).toHaveCSS('background-color', firstStopFill);
-    await expect(investigationPage.getLegend()).toHaveAttribute('aria-label', 'Technique usage scale, 1 to 2');
+    await expect(investigationPage.getLegend()).toHaveAttribute('aria-label', 'Technique usage scale, 1 to 3');
 
     // Every colour token resolves: none of the fills, the legend stops, the label or the badge is left transparent.
     expect(firstStopFill).not.toBe(TRANSPARENT);
@@ -86,6 +89,16 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     const badgeBackground = await investigationPage.resolveColor(getMatrixConfig('investigation', false).badgeColors?.color ?? '', 'backgroundColor');
     expect(badgeBackground).not.toBe(TRANSPARENT);
     await expect(investigationPage.getBadgeOfCell(GAMMA)).toHaveCSS('background-color', badgeBackground);
+
+    // The graph stays mounted behind the matrix: switching back must not fetch the objects again.
+    const objectsRequest = page.waitForRequest(
+      (req) => req.url().includes('/graphql') && (req.postData() ?? '').includes('InvestigationGraphObjectsQuery'),
+      { timeout: 2000 },
+    );
+    const noRequest = expect(objectsRequest).rejects.toThrow(/Timeout/);
+    await investigationPage.goToGraph();
+    await expect(page).toHaveURL(new RegExp(`${investigationId}$`));
+    await noRequest;
   });
 
   test('The security posture marks the techniques it should cover', async ({ page, request }) => {
@@ -112,6 +125,8 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     await expect(investigationPage.getMatrixCell(ALPHA)).toBeVisible();
     await investigationPage.getKillChainSelect().click();
     await investigationPage.getKillChainOption(E2E_WIDE_KILL_CHAIN).click();
+    // T9004 also sits in the default kill chain: wait for T9001, which the wide one does not hold, to leave first.
+    await expect(investigationPage.getMatrixCell(ALPHA)).toBeHidden();
     await expect(investigationPage.getMatrixCell(UNRELATED).first()).toBeVisible();
     const matrixWidth = await investigationPage.getMatrixScrollWidth();
     // The wide kill chain really overflows the viewport.

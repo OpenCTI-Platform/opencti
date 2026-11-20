@@ -3,7 +3,7 @@ import { graphqlRequest } from './graphql.data';
 
 /** Kill chain of the seeded techniques. Its phase holds every seeded attack pattern. */
 export const E2E_KILL_CHAIN = 'mitre-attack';
-/** A third kill chain with many phases, hence a matrix much wider than a small viewport. Only the unrelated technique sits in it. */
+/** A second kill chain with many phases, hence a matrix much wider than a small viewport. Only the unrelated technique sits in it. */
 export const E2E_WIDE_KILL_CHAIN = 'e2e-wide-chain';
 const WIDE_KILL_CHAIN_PHASE_COUNT = 8;
 
@@ -80,6 +80,34 @@ const addRelation = async (request: APIRequestContext, type: string, fromId: str
     }
   `, `Create ${type} relationship`);
   return data.stixCoreRelationshipAdd.id;
+};
+
+/** A report that contains the given objects. Its `object` relationships are what the container scoring rule reads. */
+const addReport = async (request: APIRequestContext, name: string, objectIds: string[]): Promise<string> => {
+  const data = await graphqlRequest<{ reportAdd: { id: string } }>(request, `
+    mutation {
+      reportAdd(input: {
+        name: ${quote(name)},
+        published: "2026-01-01T00:00:00.000Z",
+        objects: [${objectIds.map(quote).join(', ')}]
+      }) { id }
+    }
+  `, `Create report ${name}`);
+  return data.reportAdd.id;
+};
+
+/** The id of the `object` relationship from a container to one of its objects. */
+const getContainsRelationId = async (request: APIRequestContext, containerId: string, objectId: string): Promise<string> => {
+  const data = await graphqlRequest<{ stixRefRelationships: { edges: { node: { id: string } }[] } }>(request, `
+    query {
+      stixRefRelationships(fromId: ${quote(containerId)}, toId: ${quote(objectId)}, relationship_type: ["object"], first: 1) {
+        edges { node { id } }
+      }
+    }
+  `, `Read the object relationship of report ${containerId}`);
+  const relation = data.stixRefRelationships.edges[0];
+  if (!relation) throw new Error(`Report ${containerId} does not contain ${objectId}`);
+  return relation.node.id;
 };
 
 const addInvestigation = async (request: APIRequestContext, name: string, entityIds: string[]): Promise<string> => {
@@ -159,12 +187,16 @@ const seedKnowledge = async (request: APIRequestContext): Promise<SeededKnowledg
 
 /**
  * Seeds the knowledge of the matrix scenarios and an investigation holding it.
- * Scores: T9001 = 2 (A and B), T9002 = 1 (A), T9003 unscored. T9003.001 is in the investigation too, unscored.
+ * The investigation also holds report "E2E Matrix report", which contains T9001, and that `object` relationship:
+ * the container scoring rule reads it from the real query.
+ * Scores: T9001 = 3 (A, B and the report), T9002 = 1 (A), T9003 unscored. T9003.001 is in the investigation too, unscored.
  * Each call creates a new investigation.
  */
 export const seedInvestigationMatrix = async (request: APIRequestContext): Promise<InvestigationMatrixSeed> => {
   const knowledge = await seedKnowledge(request);
   const { attackPatterns, intrusionSets } = knowledge;
+  const reportId = await addReport(request, 'E2E Matrix report', [attackPatterns.T9001]);
+  const reportContainsRelationId = await getContainsRelationId(request, reportId, attackPatterns.T9001);
 
   const investigationName = `E2E matrix ${Date.now()}`;
   const investigationId = await addInvestigation(request, investigationName, [
@@ -176,6 +208,8 @@ export const seedInvestigationMatrix = async (request: APIRequestContext): Promi
     intrusionSets.B,
     knowledge.subtechniqueRelationId,
     ...knowledge.usesRelationIds,
+    reportId,
+    reportContainsRelationId,
   ]);
 
   return {
