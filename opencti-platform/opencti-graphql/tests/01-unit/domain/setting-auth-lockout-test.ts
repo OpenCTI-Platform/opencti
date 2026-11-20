@@ -5,7 +5,8 @@ import { Kind, parse, type ObjectTypeDefinitionNode, type StringValueNode } from
 import { isFeatureEnabled } from '../../../src/config/conf';
 import { loadEntity, patchAttribute } from '../../../src/database/middleware';
 import { getEntityFromCache } from '../../../src/database/cache';
-import { isAdministrativeAccount, LOCAL_AUTH_LOCKOUT_DEFAULTS } from '../../../src/domain/local-auth-lockout';
+import { isAdministrativeAccount } from '../../../src/domain/local-auth-lockout';
+import { LOCAL_AUTH_LOCKOUT_DEFAULTS } from '../../../src/domain/local-auth-lockout-defaults';
 import { LOCAL_AUTH_LOCKOUT_DURATION_LIMIT, LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT, LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT, updateLocalAuth } from '../../../src/domain/setting-auth';
 import { LocalAuthLockoutFinalAction } from '../../../src/generated/graphql';
 import type { AuthContext, AuthUser } from '../../../src/types/user';

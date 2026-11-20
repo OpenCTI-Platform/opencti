@@ -37,7 +37,7 @@ import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
 import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
 import { findById as findThemeById } from '../modules/theme/theme-domain';
 import { buildAvailableProviders } from './setting-auth';
-import { LOCAL_AUTH_LOCKOUT_KEYS } from './local-auth-lockout';
+import { LOCAL_AUTH_LOCKOUT_KEYS } from './local-auth-lockout-defaults';
 import { CguStatus, PlatformEeSource } from '../generated/graphql';
 import { checkDateDisplayInput } from '../utils/dateDisplay';
 import { getXtmOneRegistrationVersion, refreshXtmLicenseProof } from '../modules/xtm/one/xtm-one';

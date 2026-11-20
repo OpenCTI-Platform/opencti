@@ -27,7 +27,7 @@ import { getEntityFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
 import { propagatePasswordValidityChange } from '../modules/user/user-domain';
 import { isValidPasswordHistoryCount, PASSWORD_HISTORY_MAX_COUNT, readPasswordHistoryCount, trimAllUsersPasswordHistory } from '../modules/user/user-password-history';
-import { LOCAL_AUTH_LOCKOUT_DEFAULTS, LOCAL_AUTH_LOCKOUT_KEYS, type LocalAuthLockoutKey } from './local-auth-lockout';
+import { LOCAL_AUTH_LOCKOUT_DEFAULTS, LOCAL_AUTH_LOCKOUT_KEYS, type LocalAuthLockoutKey } from './local-auth-lockout-defaults';
 
 // The password history count sent with the local settings, once validated; undefined when it is not sent.
 export const resolvePasswordHistoryCount = (input: Pick<LocalAuthConfigInput, 'password_policy_history_count'>): number | undefined => {
