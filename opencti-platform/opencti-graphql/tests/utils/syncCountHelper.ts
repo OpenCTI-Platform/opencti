@@ -15,8 +15,8 @@ export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
 // 2 created by ingestionDeduplication-test (an import, then the same import after the deletion), +1 sub-technique created and deleted by attackPattern-test (x_mitre_id)
 // 2 created and deleted by killChainPhase-merge-test
-// +1 created and deleted by middleware-test (rename keeping the previous name as alias)
-testCreatedCounter['attack-pattern'] = 31;
+// +2 created and deleted by middleware-test (renames keeping aliases)
+testCreatedCounter['attack-pattern'] = 32;
 testCreatedCounter.campaign = 6;
 // 3 created by workflow-closing-reason-test merge and external status write cases
 testCreatedCounter['case-incident'] = 23;
@@ -115,7 +115,7 @@ testUpdatedCounter['intrusion-set'] = 18;
 testUpdatedCounter['data-component'] = 7;
 testUpdatedCounter.location = 14;
 // 3 by ingestionDeduplication-test (a change at the source, an edit in the platform, the source content applied again)
-// +4 by middleware-test (renames keeping the previous name as alias)
+// +4 by middleware-test (renames keeping aliases)
 testUpdatedCounter['attack-pattern'] = 10;
 // 5 by workflow-closing-reason-test merge (1) and external status write (4) cases
 testUpdatedCounter['case-incident'] = 28;
@@ -178,8 +178,8 @@ testMergedCounter['kill-chain-phase'] = 1; // killChainPhase-merge-test
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
 // 2 by ingestionDeduplication-test, +1 sub-technique deleted by attackPattern-test (x_mitre_id), +2 by killChainPhase-merge-test
-// +1 by middleware-test (rename keeping the previous name as alias)
-testDeletedCounter['attack-pattern'] = 26;
+// +2 by middleware-test (renames keeping aliases)
+testDeletedCounter['attack-pattern'] = 27;
 testDeletedCounter.campaign = 2;
 // 2 by workflow-closing-reason-test merge and external status write cases, the merged source has no delete event
 testDeletedCounter['case-incident'] = 20;

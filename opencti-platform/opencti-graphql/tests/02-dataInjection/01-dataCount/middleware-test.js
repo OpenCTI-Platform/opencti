@@ -871,33 +871,35 @@ describe('Create entities', () => {
     const previousName = 'Ingress Tool Transfer TEST';
     const createdAttackPattern = await createEntity(testContext, ADMIN_USER, { name: previousName }, ENTITY_TYPE_ATTACK_PATTERN);
     const loadAttackPattern = () => storeLoadById(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
-    const update = (inputs) => updateAttribute(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN, inputs);
-    const [previousNameAliasId, extraAliasId] = generateAliasesId([previousName, 'Extra Alias'], createdAttackPattern);
-    await update([{ key: 'name', value: ['T99105'] }, { key: 'aliases', value: [previousName] }]);
-    let readAttackPattern = await loadAttackPattern();
+    await updateAttribute(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN, [
+      { key: 'name', value: ['T99105'] },
+      { key: 'aliases', value: [previousName] },
+    ]);
+    const readAttackPattern = await loadAttackPattern();
+    const [previousNameAliasId] = generateAliasesId([previousName], createdAttackPattern);
     expect(readAttackPattern.name).toEqual('T99105');
     expect(readAttackPattern.aliases).toEqual([previousName]);
     expect(readAttackPattern.i_aliases_ids).toEqual([previousNameAliasId]);
     const loadedByPreviousName = await internalLoadById(testContext, ADMIN_USER, previousNameAliasId);
     expect(loadedByPreviousName.internal_id).toEqual(createdAttackPattern.internal_id);
-    await update([
-      { key: 'name', value: ['T99105 Renamed'] },
-      { key: 'aliases', value: ['Extra Alias'], operation: UPDATE_OPERATION_ADD },
-      { key: 'x_opencti_stix_ids', value: [extraAliasId], operation: UPDATE_OPERATION_ADD },
-    ]);
+    await deleteElementById(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
+  });
+
+  it('should merge added and removed aliases with existing ones when renaming', async () => {
+    const input = { name: 'Alias Operations TEST', x_mitre_id: 'T99106', aliases: ['Base Alias'] };
+    const createdAttackPattern = await createEntity(testContext, ADMIN_USER, input, ENTITY_TYPE_ATTACK_PATTERN);
+    const loadAttackPattern = () => storeLoadById(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
+    const update = (inputs) => updateAttribute(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN, inputs);
+    await update([{ key: 'name', value: ['T99106'] }, { key: 'aliases', value: ['Extra Alias'], operation: UPDATE_OPERATION_ADD }]);
+    let readAttackPattern = await loadAttackPattern();
+    expect(readAttackPattern.aliases.sort()).toEqual(['Base Alias', 'Extra Alias'].sort());
+    await update([{ key: 'name', value: ['T99106 Final'] }, { key: 'aliases', value: ['Extra Alias'], operation: UPDATE_OPERATION_REMOVE }]);
     readAttackPattern = await loadAttackPattern();
-    expect(readAttackPattern.aliases.sort()).toEqual(['Extra Alias', previousName].sort());
-    expect(readAttackPattern.i_aliases_ids.sort()).toEqual([previousNameAliasId, extraAliasId].sort());
-    expect(readAttackPattern.x_opencti_stix_ids).toContain(extraAliasId);
-    await update([{ key: 'name', value: ['T99105 Final'] }, { key: 'aliases', value: ['Extra Alias'], operation: UPDATE_OPERATION_REMOVE }]);
+    expect(readAttackPattern.aliases).toEqual(['Base Alias']);
+    await update([{ key: 'name', value: ['t99106 final'] }, { key: 'aliases', value: ['T99106 Final', 'Base Alias'] }]);
     readAttackPattern = await loadAttackPattern();
-    expect(readAttackPattern.aliases).toEqual([previousName]);
-    expect(readAttackPattern.i_aliases_ids).toEqual([previousNameAliasId]);
-    expect(readAttackPattern.x_opencti_stix_ids).not.toContain(extraAliasId);
-    await update([{ key: 'name', value: ['t99105 final'] }, { key: 'aliases', value: ['T99105 Final', previousName] }]);
-    readAttackPattern = await loadAttackPattern();
-    expect(readAttackPattern.name).toEqual('t99105 final');
-    expect(readAttackPattern.aliases).toEqual([previousName]);
+    expect(readAttackPattern.name).toEqual('t99106 final');
+    expect(readAttackPattern.aliases).toEqual(['Base Alias']);
     await deleteElementById(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
   });
 
