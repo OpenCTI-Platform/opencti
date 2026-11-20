@@ -14,12 +14,12 @@ import NewsFeedToastManager from './components/nav/NewsFeedToastManager';
 import SystemBanners from '../public/components/SystemBanners';
 import TimeoutLock from './components/TimeoutLock';
 import useAuth from '../utils/hooks/useAuth';
-import useHelper from '../utils/hooks/useHelper';
 import SettingsMessagesBanner, { useSettingsMessagesBannerHeight } from './components/settings/settings_messages/SettingsMessagesBanner';
 import type { Theme } from '../components/Theme';
 import { RootSettings$data } from './__generated__/RootSettings.graphql';
 import Loader from '../components/Loader';
 import useDraftContext from '../utils/hooks/useDraftContext';
+import EntryGuard from './components/nav/EntryGuard';
 import { Stack, SxProps } from '@mui/material';
 import DraftToolbar from './components/drafts/DraftToolbar';
 import { TooltipProvider } from '@filigran/design-system';
@@ -47,7 +47,6 @@ const RootTrash = lazy(() => import('./components/trash/Root'));
 const RootDrafts = lazy(() => import('./components/drafts/Root'));
 const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
 const RootSettings = lazy(() => import('./components/settings/Root'));
-const RootAudit = lazy(() => import('./components/settings/activity/audit/Root'));
 const RootPir = lazy(() => import('./components/pir/Root'));
 const RootXTMHub = lazy(() => import('@components/xtm_hub/Root'));
 const ForcePasswordChange = lazy(() => import('./components/profile/ForcePasswordChange'));
@@ -61,7 +60,6 @@ const Index = ({ settings }: IndexProps) => {
   const location = useLocation();
   const isForcePasswordChangeRoute = location.pathname.startsWith('/dashboard/change-password');
   const theme = useTheme<Theme>();
-  const { isTrashEnable } = useHelper();
   const {
     bannerSettings: { bannerHeight },
   } = useAuth();
@@ -135,11 +133,16 @@ const Index = ({ settings }: IndexProps) => {
                 <Routes>
                   <Route
                     path="/"
-                    element={draftContext?.id
-                      ? (
-                          <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true} />
-                        )
-                      : boundaryWrapper(HomeDashboard)}
+                    element={(
+                      // Home is closed in a draft (its entry): a draft user lands on the draft overview instead.
+                      <EntryGuard
+                        path="/dashboard"
+                        exact
+                        placeholder={<Navigate to={`/dashboard/data/import/draft/${draftContext?.id}/`} replace={true} />}
+                      >
+                        {boundaryWrapper(HomeDashboard)}
+                      </EntryGuard>
+                    )}
                   />
                   <Route path="/search/*" element={boundaryWrapper(RootSearch)} />
                   <Route path="/id/:id" element={boundaryWrapper(StixObjectOrStixRelationship)} />
@@ -155,12 +158,20 @@ const Index = ({ settings }: IndexProps) => {
                   <Route path="/data/import/draft/*" element={boundaryWrapper(RootDrafts)} />
                   <Route path="/data/*" element={boundaryWrapper(RootData)} />
                   <Route path="/integrations/*" element={boundaryWrapper(RootIntegrations)} />
-                  {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)} />)}
+                  <Route path="/trash/*" element={boundaryWrapper(RootTrash)} />
                   <Route path="/pirs/*" element={boundaryWrapper(RootPir)} />
-                  <Route path="/news-feed" element={boundaryWrapper(RootNewsFeed)} />
+                  <Route
+                    path="/news-feed"
+                    element={(
+                      <EntryGuard path="/dashboard/news-feed">
+                        {boundaryWrapper(RootNewsFeed)}
+                      </EntryGuard>
+                    )}
+                  />
                   <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)} />
                   <Route path="/settings/*" element={boundaryWrapper(RootSettings)} />
-                  <Route path="/audits/*" element={boundaryWrapper(RootAudit)} />
+                  {/* Legacy URL of the audit page: keeps bookmarks working, through the guarded Settings route. */}
+                  <Route path="/audits/*" element={<Navigate to="/dashboard/settings/activity/audit" replace={true} />} />
                   <Route path="/profile/*" element={boundaryWrapper(RootProfile)} />
                   <Route path="/change-password" element={boundaryWrapper(ForcePasswordChange)} />
                   <Route path="/observations/*" element={boundaryWrapper(RootObservations)} />

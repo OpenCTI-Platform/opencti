@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router';
 import { boundaryWrapper } from '../Error';
 import Notifications from './Notifications';
 import Profile from './Profile';
+import EntryGuard from '../nav/EntryGuard';
 
 const Root = () => {
   const location = useLocation();
@@ -19,7 +20,11 @@ const Root = () => {
       />
       <Route
         path="/notifications/*"
-        element={boundaryWrapper(Notifications)}
+        element={(
+          <EntryGuard path="/dashboard/profile/notifications">
+            {boundaryWrapper(Notifications)}
+          </EntryGuard>
+        )}
       />
       {/* Legacy nested paths from before the news feed page extraction: keep bookmarks working. */}
       <Route
