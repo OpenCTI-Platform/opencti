@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import bcrypt from 'bcryptjs';
 import conf, { logApp } from '../../../../src/config/conf';
-import { createEntity, patchAttribute } from '../../../../src/database/middleware';
-import { storeLoadById } from '../../../../src/database/middleware-loader';
+import { createEntity, patchAttribute, updateAttribute } from '../../../../src/database/middleware';
+import { fullEntitiesList, fullRelationsList, storeLoadById } from '../../../../src/database/middleware-loader';
 import { elLoadBy } from '../../../../src/database/engine';
 import { getEntityFromCache } from '../../../../src/database/cache';
 import {
@@ -11,6 +12,7 @@ import {
   checkPolicyAcceptsAdminPassword,
   initializeAdminUser,
 } from '../../../../src/modules/user/user-domain';
+import { OPENCTI_ADMIN_UUID } from '../../../../src/schema/general';
 import { testContext } from '../../../utils/testQuery';
 
 // Distinctive, so that the tests can check it never leaks into the logs or the error
@@ -27,6 +29,8 @@ vi.mock('../../../../src/database/middleware', () => ({
 
 vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
   ...await importOriginal<object>(),
+  fullEntitiesList: vi.fn(),
+  fullRelationsList: vi.fn(),
   storeLoadById: vi.fn(),
 }));
 
@@ -169,6 +173,29 @@ describe('initializeAdminUser', () => {
     expect(createEntity).toHaveBeenCalledTimes(1);
     // The check and the password validity of the created account
     expect(getEntityFromCache).toHaveBeenCalledTimes(2);
+  });
+
+  it('should warn and still update the admin of an existing platform when its password does not match the policy, switch off', async () => {
+    // Given
+    setSwitch(false);
+    vi.mocked(storeLoadById).mockResolvedValue({ id: OPENCTI_ADMIN_UUID, internal_id: OPENCTI_ADMIN_UUID, entity_type: 'User', api_tokens: [] } as never);
+    vi.mocked(fullEntitiesList).mockResolvedValue([] as never);
+    vi.mocked(fullRelationsList).mockResolvedValue([] as never);
+
+    // When
+    await initializeAdminUser(testContext);
+
+    // Then: the configured password and the base token are applied, as before the check existed
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('app:admin:secure_by_default=false'), expect.anything());
+    expect(createEntity).not.toHaveBeenCalled();
+    expect(patchAttribute).toHaveBeenCalledTimes(1);
+    const [, , patchedId, , patch] = vi.mocked(patchAttribute).mock.calls[0] as unknown as [unknown, unknown, string, string, { password: string; account_status: string }];
+    expect(patchedId).toBe(OPENCTI_ADMIN_UUID);
+    expect(patch.account_status).toBe('Active');
+    expect(bcrypt.compareSync(String(conf.get('app:admin:password')), patch.password)).toBe(true);
+    expect(updateAttribute).toHaveBeenCalledWith(expect.anything(), expect.anything(), OPENCTI_ADMIN_UUID, 'User', [
+      expect.objectContaining({ key: 'api_tokens', value: [expect.objectContaining({ id: `base_token_${OPENCTI_ADMIN_UUID}` })] }),
+    ]);
   });
 
   it('should skip the check when the admin is externally managed, switch on', async () => {
