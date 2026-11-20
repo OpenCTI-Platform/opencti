@@ -14291,12 +14291,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-subscriptions@npm:3.0.0":
-  version: 3.0.0
-  resolution: "graphql-subscriptions@npm:3.0.0"
+"graphql-subscriptions@npm:3.1.0":
+  version: 3.1.0
+  resolution: "graphql-subscriptions@npm:3.1.0"
   peerDependencies:
-    graphql: ^15.7.2 || ^16.0.0
-  checksum: 10c0/10445c0d376773d15c887237ac460226b03e0b9c76789846f9133e3cfba6275b529f946634cd5a4e1f1f6c728b960714c8efc6c504af20ab05a3a1219ac9cc09
+    graphql: ^15.7.2 || ^16.0.0 || ^17.0.0
+  checksum: 10c0/ec91f102d1e6bd8f89dbbf7cdbe83c87848b50d02a080ff88ca7159b7f945a0e6d611c4ee6c2453c614ef2f4d5ef7613b86726e217396fa0e7fa25597bf1b93b
   languageName: node
   linkType: hard
 
@@ -18814,7 +18814,7 @@ __metadata:
     graphql-rate-limit-directive: "npm:2.0.6"
     graphql-redis-subscriptions: "npm:2.7.0"
     graphql-scalars: "npm:2.0.1"
-    graphql-subscriptions: "npm:3.0.0"
+    graphql-subscriptions: "npm:3.1.0"
     graphql-tag: "npm:2.12.7"
     graphql-upload: "npm:18.0.1"
     graphql-ws: "npm:6.4.2"
