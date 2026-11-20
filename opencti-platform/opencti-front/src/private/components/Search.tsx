@@ -98,6 +98,27 @@ const searchLineFragment = graphql`
       }
     }
     ... on StixCoreRelationship {
+      relationship_type
+      from {
+        ... on BasicObject {
+          id
+          entity_type
+        }
+        ... on BasicRelationship {
+          id
+          entity_type
+        }
+      }
+      to {
+        ... on BasicObject {
+          id
+          entity_type
+        }
+        ... on BasicRelationship {
+          id
+          entity_type
+        }
+      }
       objectLabel {
         id
         value
