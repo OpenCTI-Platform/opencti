@@ -64,12 +64,12 @@ const StixCoreObjectsMultiHeatMapComponent = ({
     return {
       name: selection.label ?? 'Number of entities',
       data:
-          s?.data
-            ?.filter((entry): entry is { date: string; value: number } => Boolean(entry))
-            .map((entry) => ({
-              x: new Date(entry.date),
-              y: entry.value,
-            })) ?? [],
+        s?.data
+          ?.filter((entry): entry is { date: string; value: number } => Boolean(entry))
+          .map((entry) => ({
+            x: new Date(entry.date),
+            y: entry.value,
+          })) ?? [],
     };
   });
 

@@ -3,6 +3,7 @@ import * as Cache from '../../../../src/database/cache';
 import * as Middleware from '../../../../src/database/middleware';
 import {
   getSmtpConfiguration,
+  getSmtpConfigurationDefaults,
   smtpConfigurationDelete,
   smtpConfigurationEdit,
   smtpConfigurationRefreshTokenUpdate,
@@ -40,6 +41,7 @@ vi.mock('../../../../src/config/conf', async () => {
   const actual = await vi.importActual('../../../../src/config/conf');
   return {
     ...actual,
+    TLS_REJECT_UNAUTHORIZED: false,
     BUS_TOPICS: {
       Settings: {
         EDIT_TOPIC: 'SETTINGS_EDIT_TOPIC',
@@ -57,6 +59,7 @@ const MOCK_SMTP_CONFIG = {
   forced_sender_email: false,
   hostname: 'smtp.example.com',
   port: 587,
+  require_tls: false,
 };
 
 const MOCK_SMTP_CONFIG_STORED = {
@@ -86,10 +89,29 @@ describe('getSmtpConfiguration', () => {
     expect(Cache.getEntityFromCache).toHaveBeenCalledOnce();
   });
 
+  it('should expose the stored require_tls', async () => {
+    vi.mocked(Cache.getEntityFromCache).mockResolvedValue({ ...MOCK_SETTINGS, smtp_configuration: { ...MOCK_SMTP_CONFIG_STORED, require_tls: true } });
+    const result = await getSmtpConfiguration(mockContext, mockUser);
+    expect(result?.require_tls).toBe(true);
+  });
+
+  it('should expose require_tls following tls:reject_unauthorized when it is not stored', async () => {
+    const result = await getSmtpConfiguration(mockContext, mockUser);
+    expect(result?.require_tls).toBe(false);
+  });
+
   it('should return null when settings has no smtp_configuration', async () => {
     vi.mocked(Cache.getEntityFromCache).mockResolvedValue({ ...MOCK_SETTINGS, smtp_configuration: undefined });
     const result = await getSmtpConfiguration(mockContext, mockUser);
     expect(result).toBeNull();
+  });
+});
+
+// ---------- getSmtpConfigurationDefaults ----------
+
+describe('getSmtpConfigurationDefaults', () => {
+  it('should follow tls:reject_unauthorized for require_tls', () => {
+    expect(getSmtpConfigurationDefaults()).toEqual({ require_tls: false });
   });
 });
 
@@ -98,7 +120,7 @@ describe('getSmtpConfiguration', () => {
 describe('smtpConfigurationEdit', () => {
   const updatedSettings = {
     ...MOCK_SETTINGS,
-    smtp_configuration: { ...MOCK_SMTP_CONFIG, hostname: 'updated.example.com', smtp_enabled: true },
+    smtp_configuration: { ...MOCK_SMTP_CONFIG_STORED, hostname: 'updated.example.com', smtp_enabled: true },
   };
 
   beforeEach(() => {
@@ -112,7 +134,7 @@ describe('smtpConfigurationEdit', () => {
       hostname: 'updated.example.com',
       port: 587,
     });
-    expect(result).toEqual(updatedSettings.smtp_configuration);
+    expect(result).toEqual({ ...updatedSettings.smtp_configuration, forced_sender_email: false, require_tls: false });
     expect(Middleware.patchAttribute).toHaveBeenCalledWith(
       mockContext,
       mockUser,
@@ -120,6 +142,21 @@ describe('smtpConfigurationEdit', () => {
       'Settings',
       expect.objectContaining({ smtp_configuration: expect.any(Object) }),
     );
+  });
+
+  it('should return require_tls following tls:reject_unauthorized when it is not stored', async () => {
+    const result = await smtpConfigurationEdit(mockContext, mockUser, { smtp_enabled: true });
+    expect(result.require_tls).toBe(false);
+  });
+
+  it('should store require_tls only when it is in the input', async () => {
+    await smtpConfigurationEdit(mockContext, mockUser, { smtp_enabled: true });
+    const [,,,, patch] = vi.mocked(Middleware.patchAttribute).mock.calls[0];
+    expect((patch as any).smtp_configuration).not.toHaveProperty('require_tls');
+    vi.mocked(Middleware.patchAttribute).mockClear();
+    await smtpConfigurationEdit(mockContext, mockUser, { smtp_enabled: true, require_tls: true });
+    const [,,,, patchWithRequireTls] = vi.mocked(Middleware.patchAttribute).mock.calls[0];
+    expect((patchWithRequireTls as any).smtp_configuration).toHaveProperty('require_tls', true);
   });
 
   it('should wrap input in smtp_configuration key when calling patchAttribute', async () => {

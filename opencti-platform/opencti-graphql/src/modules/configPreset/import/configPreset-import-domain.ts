@@ -218,6 +218,7 @@ export const buildConfigPresetImportTypes = (
         fields: computed.fields ?? [],
         isEnabled: computed.isEnabled ?? null,
         credentials: computed.credentials ?? [],
+        serviceAccountRequired: computed.serviceAccountRequired ?? false,
         dependsOn: bundle.items
           .filter((dependency) => dependencyPaths.includes(dependency.path))
           .map((dependency) => ({ type: dependency.type, key: dependency.id })),

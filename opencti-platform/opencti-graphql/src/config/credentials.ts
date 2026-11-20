@@ -36,7 +36,7 @@ export const enrichWithRemoteCredentials = async (prefix: string, baseConfigurat
           ca: (conf.get(`${prefix}:credentials_provider:https_cert:ca`) ?? []).map((path: string) => loadCert(path)),
         };
       }
-      const httpClientOptions: GetHttpClient = { rejectUnauthorized, responseType: 'json', certificates: certs };
+      const httpClientOptions: GetHttpClient = { rejectUnauthorized, responseType: 'json', certificates: certs, trusted: true };
       const httpClient = getHttpClient(httpClientOptions);
       const params = { AppID: appId, Safe: safe, Object: object };
       try {

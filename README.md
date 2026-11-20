@@ -1,15 +1,13 @@
-<h1 align="center">
-  <a href="https://opencti.io"><img src="./.github/img/logo_opencti.png" alt="OpenCTI"></a>
-</h1>
+<a href="https://filigran.io/products/opencti"><img src="./.github/img/readme/banner.svg" width="100%" alt="OpenCTI by Filigran"></a>
+
 <p align="center">
-  <a href="https://opencti.io" alt="Website"><img src="https://img.shields.io/badge/website-opencti.io-blue.svg" /></a>
-  <a href="https://docs.opencti.io" alt="Documentation"><img src="https://img.shields.io/badge/documentation-latest-orange.svg" /></a>
-  <a href="https://community.filigran.io" alt="Slack"><img src="https://img.shields.io/badge/slack-6K%2B%20members-4A154B" /></a>
-  <a href="https://drone.filigran.io/OpenCTI-Platform/opencti"><img src="https://drone.filigran.io/api/badges/OpenCTI-Platform/opencti/status.svg" /></a>
-  <a href="https://codecov.io/gh/OpenCTI-Platform/opencti"><img src="https://codecov.io/gh/OpenCTI-Platform/opencti/graph/badge.svg" /></a>
-  <a href="https://deepscan.io/dashboard#view=project&tid=4926&pid=6716&bid=57311"><img src="https://deepscan.io/api/teams/4926/projects/6716/branches/57311/badge/grade.svg" alt="DeepScan grade"></a>
-  <a href="https://renovatebot.com"><img src="https://img.shields.io/badge/renovate-enabled-brightgreen.svg" alt="DeepScan grade"></a>
-  <a href="https://hub.docker.com/u/opencti" alt="Docker pulls"><img src="https://img.shields.io/docker/pulls/opencti/platform" /></a>
+  <a href="https://github.com/OpenCTI-Platform/opencti/stargazers"><img src="https://img.shields.io/github/stars/OpenCTI-Platform/opencti?style=flat-square&labelColor=0A0C1C&logo=github&logoColor=white&color=001BDA" alt="stars"></a>
+  <a href="https://github.com/OpenCTI-Platform/opencti/releases/latest"><img src="https://img.shields.io/github/v/release/OpenCTI-Platform/opencti?style=flat-square&labelColor=0A0C1C&color=001BDA" alt="release"></a>
+  <a href="https://hub.docker.com/r/opencti/platform"><img src="https://img.shields.io/docker/pulls/opencti/platform?style=flat-square&labelColor=0A0C1C&logo=docker&logoColor=white&color=001BDA" alt="docker pulls"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0%20%2B%20EE-001BDA?style=flat-square&labelColor=0A0C1C" alt="license"></a>
+  <a href="https://github.com/OpenCTI-Platform/opencti/actions/workflows/ci-main.yml"><img src="https://img.shields.io/github/actions/workflow/status/OpenCTI-Platform/opencti/ci-main.yml?branch=master&label=CI&style=flat-square&labelColor=0A0C1C&logo=githubactions&logoColor=white&color=001BDA" alt="CI"></a>
+  <a href="https://docs.opencti.io"><img src="https://img.shields.io/badge/docs-read-001BDA?style=flat-square&labelColor=0A0C1C" alt="docs"></a>
+  <a href="https://community.filigran.io"><img src="https://img.shields.io/badge/community-slack-001BDA?style=flat-square&labelColor=0A0C1C&logo=slack&logoColor=white" alt="community"></a>
 </p>
 
 > **Community workshop:** Join us as Taylor Walton (of SOCFortress) walks through his working SOC stack: OpenCTI → OpenAEV → Wazuh → Velociraptor. Taylor will be joined by OpenCTI's product owner to cover what's coming next for OpenCTI and OpenAEV.
@@ -81,26 +79,36 @@ If you want to actively help OpenCTI, we created a [dedicated documentation](htt
 
 ## Community
 
-### Status & bugs
+Star OpenCTI to follow it and to help other security teams find it.
 
-Currently OpenCTI is under heavy development, if you wish to report bugs or ask for new features, you can directly use the [Github issues module](https://github.com/OpenCTI-Platform/opencti/issues).
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./.github/img/readme/stars-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="./.github/img/readme/stars-light.svg">
+  <img alt="GitHub stars of OpenCTI over time" src="./.github/img/readme/stars-light.svg" width="100%">
+</picture>
 
-### Discussion
+- **Questions and discussion**: the Filigran [community Slack](https://community.filigran.io).
+- **Bugs and feature requests**: [GitHub issues](https://github.com/OpenCTI-Platform/opencti/issues).
+- **Learn**: free courses on [Filigran Academy](https://academy.filigran.io).
 
-If you need support or you wish to engage a discussion about the OpenCTI platform, feel free to join us on our [Slack channel](https://community.filigran.io). You can also send us an email to contact@filigran.io.
+## Contributing
 
-## About
+Read the [contributing guide](CONTRIBUTING.md) to set up a development environment and propose a change. OpenCTI has adopted a [Code of Conduct](CODE_OF_CONDUCT.md). First contribution: the [good first issues](https://github.com/OpenCTI-Platform/opencti/labels/good%20first%20issue).
 
-### Authors
+## Security
 
-OpenCTI is a product designed and developed by the company [Filigran](https://filigran.io).
+Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md), never in a public issue.
 
-<a href="https://filigran.io" alt="Filigran"><img src="./.github/img/logo_filigran.png" width="300" /></a>
+## License
 
-### Data Collection
+OpenCTI is open source under the [Apache 2.0 license](LICENSE); the Enterprise Edition features are under the OpenCTI Enterprise Edition License, as stated in [LICENSE](LICENSE) and in each source file header.
 
-#### Usage telemetry
+## About Filigran
 
-To improve the features and the performances of OpenCTI, the platform collects anonymous statistical data related to its usage and health.
+OpenCTI is designed and developed by [Filigran](https://filigran.io), the company behind the [XTM Platform](https://filigran.io) for Agentic CTEM.
 
-You can find all the details on collected data and associated usage in the [usage telemetry documentation](https://docs.opencti.io/latest/reference/usage-telemetry/).
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./.github/img/readme/filigran-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="./.github/img/readme/filigran-light.svg">
+  <img alt="Filigran" src="./.github/img/readme/filigran-light.svg" width="240">
+</picture>

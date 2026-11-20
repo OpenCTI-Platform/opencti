@@ -340,6 +340,7 @@ export const rabbitmqManagementClient = async () => {
     baseURL,
     responseType: 'json',
     rejectUnauthorized: RABBITMQ_MGMT_REJECT_UNAUTHORIZED,
+    trusted: true,
     auth: {
       username: USERNAME,
       password: PASSWORD,

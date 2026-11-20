@@ -7,6 +7,7 @@ type SmtpConfiguration {
   port: Int
   use_ssl: Boolean
   reject_unauthorized: Boolean
+  require_tls: Boolean
   auth_type: SmtpAuthType
   # Basic Auth
   username: String
@@ -15,6 +16,11 @@ type SmtpConfiguration {
   oauth_client_id: String
   oauth_issuer: String
   oauth_refresh_token_expires_at: DateTime
+}
+
+# Values a configuration follows while it does not store its own
+type SmtpConfigurationDefaults {
+  require_tls: Boolean!
 }
 
 enum SmtpAuthType {
@@ -30,6 +36,7 @@ input SmtpConfigurationAddInput {
   port: Int
   use_ssl: Boolean
   reject_unauthorized: Boolean
+  require_tls: Boolean
   auth_type: SmtpAuthType
   username: String
   password: String
@@ -44,6 +51,7 @@ input SmtpConfigurationAddInput {
 
 extend type Query {
   smtpConfiguration: SmtpConfiguration @auth(for: [SETTINGS_SETACCESSES])
+  smtpConfigurationDefaults: SmtpConfigurationDefaults! @auth(for: [SETTINGS_SETACCESSES])
 }
 
 extend type Mutation {

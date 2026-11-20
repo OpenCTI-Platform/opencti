@@ -434,11 +434,11 @@ const StixCoreObjectsMultiHorizontalBarsComponent = ({
 
       return {
         x:
-        selection.attribute?.endsWith('_id')
-          ? getMainRepresentative(n.entity, t_i18n('Restricted'))
-          : selection.attribute === 'entity_type'
-            ? t_i18n(`entity_${n.label}`)
-            : n.label,
+          selection.attribute?.endsWith('_id')
+            ? getMainRepresentative(n.entity, t_i18n('Restricted'))
+            : selection.attribute === 'entity_type'
+              ? t_i18n(`entity_${n.label}`)
+              : n.label,
         y: n.value,
         fillColor: color,
       };

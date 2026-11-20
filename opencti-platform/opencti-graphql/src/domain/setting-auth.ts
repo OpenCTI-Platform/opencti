@@ -25,7 +25,7 @@ import { FunctionalError } from '../config/errors';
 import type { CertAuthConfigInput, HeadersAuthConfigInput, LocalAuthConfigInput } from '../generated/graphql';
 import { getEntityFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
-import { propagatePasswordValidityChange } from '../modules/user/user-domain';
+import { checkPolicyAcceptsAdminPassword, propagatePasswordValidityChange } from '../modules/user/user-domain';
 import { isValidPasswordHistoryCount, PASSWORD_HISTORY_MAX_COUNT, readPasswordHistoryCount, trimAllUsersPasswordHistory } from '../modules/user/user-password-history';
 import { LOCAL_AUTH_LOCKOUT_DEFAULTS, LOCAL_AUTH_LOCKOUT_KEYS, type LocalAuthLockoutKey } from './local-auth-lockout';
 
@@ -148,6 +148,8 @@ export const updateLocalAuth = async (context: AuthContext, user: AuthUser, sett
     ...(newHistoryCount !== undefined && { password_policy_history_count: newHistoryCount }),
     ...(await buildLocalAuthLockoutPatch(context, input)),
   };
+  // With app:admin:secure_by_default, a password policy that the configured admin password does not match would make the platform refuse to start
+  checkPolicyAcceptsAdminPassword(context, { ...storedSettings, ...patch } as BasicStoreSettings);
   const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
 
   // A lower count drops the hashes no longer needed at once; 0 deletes every password history

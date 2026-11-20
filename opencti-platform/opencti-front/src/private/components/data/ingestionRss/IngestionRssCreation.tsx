@@ -136,9 +136,9 @@ const IngestionRssCreation: FunctionComponent<IngestionRssCreationProps> = ({ pa
       : [],
     user_id: '',
     automatic_user: true,
-    ssl_verify: true,
+    ssl_verify: ingestionRssData?.ssl_verify ?? true,
     current_state_date: ingestionRssData?.current_state_date ? new Date(ingestionRssData.current_state_date) : undefined,
-    created_by_ref: undefined,
+    created_by_ref: ingestionRssData?.created_by_ref ? { ...ingestionRssData.created_by_ref } : undefined,
     object_marking_refs: ingestionRssData?.object_marking_refs
       ? ingestionRssData.object_marking_refs
           .filter((v): v is { label: string; value: string } => Boolean(v))
