@@ -63,6 +63,15 @@ describe('SessionStoreMemory', () => {
     expect(remainingTTL).toBeLessThanOrEqual(ONE_DAY);
   });
 
+  it.each([0, -1000])('should not keep a session whose cookie max age is %i', async (maxAge) => {
+    const { get, set, touch } = createStore();
+    await set('sid-1', buildSession('user-1', maxAge));
+    expect(await get('sid-1')).toBeUndefined();
+    await set('sid-2', buildSession('user-2'));
+    await touch('sid-2', buildSession('user-2', maxAge));
+    expect(await get('sid-2')).toBeUndefined();
+  });
+
   it('should not return an expired session', async () => {
     const { get, set } = createStore({ ttl: 20 });
     await set('sid-1', buildSession('user-1'));

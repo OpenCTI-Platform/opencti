@@ -5,7 +5,8 @@ import { UnsupportedError } from '../config/errors';
 const ONE_DAY = 86400000;
 
 // Time to live of a session, in milliseconds as expected by lru-cache.
-// Without an explicit ttl option, the session cookie max age is used, then one day for session cookies.
+// Without an explicit ttl option, the session cookie max age is used, then one day for session cookies (no max age).
+// A ttl of zero or less means the session cookie already expired.
 const getTTL = (options, sess, sid) => {
   if (typeof options.ttl === 'number') return options.ttl;
   if (typeof options.ttl === 'function') return options.ttl(options, sess, sid);
@@ -13,7 +14,7 @@ const getTTL = (options, sess, sid) => {
     throw UnsupportedError('`options.ttl` must be a number or function.');
   }
   const maxAge = sess && sess.cookie ? sess.cookie.maxAge : null;
-  return typeof maxAge === 'number' && maxAge > 0 ? Math.floor(maxAge) : ONE_DAY;
+  return typeof maxAge === 'number' ? Math.floor(maxAge) : ONE_DAY;
 };
 
 const { Store } = session;
@@ -47,10 +48,19 @@ class SessionStoreMemory extends Store {
     return fn && fn(err, result);
   }
 
+  // An expired session is removed rather than stored: a zero ttl would disable its expiration in lru-cache
+  save(sid, sess) {
+    const ttl = getTTL(this.options, sess, sid);
+    if (!(ttl > 0)) {
+      this.store.delete(sid);
+      return;
+    }
+    this.store.set(sid, this.serializer.stringify(sess), { ttl });
+  }
+
   set(sid, sess, fn) {
     try {
-      const ttl = getTTL(this.options, sess, sid);
-      this.store.set(sid, this.serializer.stringify(sess), { ttl });
+      this.save(sid, sess);
     } catch (err) {
       return fn && fn(err);
     }
@@ -64,7 +74,7 @@ class SessionStoreMemory extends Store {
       try {
         const s = this.serializer.parse(data);
         s.cookie = sess.cookie;
-        this.store.set(sid, this.serializer.stringify(s), { ttl: getTTL(this.options, sess, sid) });
+        this.save(sid, s);
       } catch (e) {
         err = e;
       }
