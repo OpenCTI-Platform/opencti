@@ -550,6 +550,7 @@ const useSearchEntities = ({
         types: searchScope?.[key]?.filter((type) => type !== 'External-Reference') || entityTypes,
         search: event.target.value !== 0 ? event.target.value : '',
         count: 100,
+        filters: searchContext.searchFilters?.[key],
       })
         .toPromise()
         .then((data) => {
