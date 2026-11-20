@@ -6920,5 +6920,14 @@
   "zero": "ноль",
   "Zoom": "Zoom",
   "Zoom in": "Увеличить",
-  "Zoom out": "Уменьшить масштаб"
+  "Zoom out": "Уменьшить масштаб",
+  "A custom view exported as a JSON file": "Пользовательское представление, экспортированное в файл JSON",
+  "Another custom view of the import has this name": "Другое пользовательское представление этого импорта имеет это имя",
+  "Custom view already exists": "Пользовательское представление уже существует",
+  "Custom view name already exists": "Название пользовательского представления уже существует",
+  "custom views": "пользовательские представления",
+  "Custom views cannot be created for this entity type": "Для этого типа сущности нельзя создавать пользовательские представления",
+  "Import a custom view file": "Импорт файла пользовательского представления",
+  "Select the custom views to import from a full configuration bundle (zip)": "Выберите пользовательские представления для импорта из полного пакета конфигурации (zip)",
+  "Several custom views have this name": "Несколько пользовательских представлений имеют это имя"
 }

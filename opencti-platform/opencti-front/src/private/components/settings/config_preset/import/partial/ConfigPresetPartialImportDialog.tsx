@@ -17,6 +17,8 @@ interface ConfigPresetPartialImportDialogProps {
   title: string;
   // The configuration preset type of the screen, and what the dialog calls its items (already translated)
   type: string;
+  // Only the items of the type that have this value for this key are offered and imported (the custom views of an entity type)
+  scope?: { key: string; value: string };
   itemsLabel: string;
   // The cards of the first step, already translated
   fileLabel: string;
@@ -37,6 +39,7 @@ const ConfigPresetPartialImportDialog: FunctionComponent<ConfigPresetPartialImpo
   onClose,
   title,
   type,
+  scope,
   itemsLabel,
   fileLabel,
   fileDescription,
@@ -84,6 +87,7 @@ const ConfigPresetPartialImportDialog: FunctionComponent<ConfigPresetPartialImpo
           // The bundle import shows its own result: it stays mounted for the last step
           <ConfigPresetPartialImport
             type={type}
+            scope={scope}
             itemsLabel={itemsLabel}
             onImported={() => {
               onBundleImported();
