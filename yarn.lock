@@ -14598,9 +14598,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-react-parser@npm:6.1.9":
-  version: 6.1.9
-  resolution: "html-react-parser@npm:6.1.9"
+"html-react-parser@npm:6.1.10":
+  version: 6.1.10
+  resolution: "html-react-parser@npm:6.1.10"
   dependencies:
     domhandler: "npm:6.0.1"
     html-dom-parser: "npm:8.0.2"
@@ -14612,7 +14612,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10c0/9cc13b894a72b38a7685a925b90b964e934f22e5d61acbf4bff0716e5a5412b206a39dd2f0e9a275a3229834dcf937cd065763ecaa2fd843a2f0b12723761ebd
+  checksum: 10c0/79a6051c15519f391f7cf85100f1e8d4fc620261b011c0fb50041e350b03b1349067f7a8e3caacbea6193d0465ba801649fa0a47a4876017152987be0ac6af63
   languageName: node
   linkType: hard
 
@@ -18623,7 +18623,7 @@ __metadata:
     globals: "npm:17.14.0"
     graphiql: "npm:6.0.1"
     graphql-ws: "npm:6.4.2"
-    html-react-parser: "npm:6.1.9"
+    html-react-parser: "npm:6.1.10"
     html-to-image: "npm:1.11.13"
     html-to-pdfmake: "npm:2.6.0"
     i18n-auto-translation: "npm:2.2.3"
