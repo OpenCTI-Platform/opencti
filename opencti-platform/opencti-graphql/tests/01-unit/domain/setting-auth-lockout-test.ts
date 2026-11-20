@@ -10,6 +10,7 @@ import { LOCAL_AUTH_LOCKOUT_DURATION_LIMIT, LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMI
 import { LocalAuthLockoutFinalAction } from '../../../src/generated/graphql';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 import type { BasicStoreSettings } from '../../../src/types/settings';
+import { checkPolicyAcceptsAdminPassword } from '../../../src/modules/user/user-domain';
 
 vi.mock('../../../src/config/conf', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/config/conf')>();
@@ -37,6 +38,7 @@ vi.mock('../../../src/listener/UserActionListener', () => ({
 }));
 
 vi.mock('../../../src/modules/user/user-domain', () => ({
+  checkPolicyAcceptsAdminPassword: vi.fn(),
   adjustAllUsersPasswordValidUntil: vi.fn(),
   clearAllUsersPasswordValidUntil: vi.fn(),
 }));
@@ -208,5 +210,26 @@ describe('isAdministrativeAccount - lockout threshold', () => {
     ]],
   ])('should be false with %s', (_, names) => {
     expect(isAdministrativeAccount(accountWith(...names))).toBe(false);
+  });
+});
+
+describe('updateLocalAuth - admin password policy', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockStoredSettings({ password_policy_min_length: 8, password_policy_min_numbers: 1 });
+    mockCachedSettings({});
+  });
+
+  it('should check the policy once updated against the configured admin password', async () => {
+    await updateLocalAuth(context, user, 'settings-id', { enabled: true, password_policy_min_length: 15 });
+    expect(checkPolicyAcceptsAdminPassword).toHaveBeenCalledWith(context, expect.objectContaining({ password_policy_min_length: 15, password_policy_min_numbers: 1 }));
+  });
+
+  it('should not write a policy the configured admin password does not match', async () => {
+    vi.mocked(checkPolicyAcceptsAdminPassword).mockImplementation(() => {
+      throw new Error('admin password mismatch');
+    });
+    await expect(updateLocalAuth(context, user, 'settings-id', { enabled: true, password_policy_min_length: 15 })).rejects.toThrow('admin password mismatch');
+    expect(patchAttribute).not.toHaveBeenCalled();
   });
 });
