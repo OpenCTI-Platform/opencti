@@ -136,6 +136,7 @@ const InvestigationEnrichmentWorkList = ({
                 onReview={worksType === 'toreview' ? review : undefined}
                 onReviewAddAll={worksType === 'toreview' ? addAll : undefined}
                 canEditInvestigation={canEdit}
+                canDelete={canEdit}
               />
             </AccordionDetails>
           </Accordion>

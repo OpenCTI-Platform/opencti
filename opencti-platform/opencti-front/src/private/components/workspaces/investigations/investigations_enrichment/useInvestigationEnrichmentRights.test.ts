@@ -28,8 +28,12 @@ describe('Hook: useInvestigationEnrichmentRights', () => {
     expect(renderRights(ENRICHER, 'edit')).toEqual({ canEdit: true, canLaunch: false, canRefresh: true });
   });
 
-  it('refuses both actions without the enrichment capability', () => {
-    expect(renderRights(['INVESTIGATION_INUPDATE', 'KNOWLEDGE_KNUPDATE'], 'edit')).toEqual({ canEdit: true, canLaunch: false, canRefresh: false });
+  it('refuses every action to an editor without the enrichment capability', () => {
+    expect(renderRights(['INVESTIGATION_INUPDATE', 'KNOWLEDGE_KNUPDATE'], 'edit')).toEqual({ canEdit: false, canLaunch: false, canRefresh: false });
+  });
+
+  it('refuses every action to an editor without the investigation update capability', () => {
+    expect(renderRights(['KNOWLEDGE_KNENRICHMENT', 'KNOWLEDGE_KNUPDATE'], 'edit')).toEqual({ canEdit: false, canLaunch: false, canRefresh: false });
   });
 
   it('refuses both actions to a view only member', () => {

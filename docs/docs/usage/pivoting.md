@@ -10,6 +10,14 @@ To access investigations, navigate to the top right corner of the toolbar:
 
     When an investigation is created, it is initially visible only to the creator, allowing them to work on the investigation before deciding to share it. The sharing mechanism is akin to that of dashboards. For further details, refer to the [Access control section](dashboards.md#access-control-section) in the dashboard documentation page.
 
+!!! note "Who can change an investigation"
+
+    With view access to an investigation, you can explore its graph (select, search, hide, lay out and export it) but not change it: the actions adding entities, expanding them, rolling back an expansion, removing elements and creating relationships, sightings or nested relationships are hidden. A double click on an entity selects it without opening the expansion, and the entities you move keep their place in your view only.
+
+    The same applies with edit access but without the `Create / Update investigations` capability.
+
+    Editing the selected entity or relationship changes the knowledge itself, not the investigation: it follows the `Update knowledge` capability, as on the entity's page, whatever your access to the investigation.
+
 
 ## Perform investigation
 
@@ -158,10 +166,14 @@ Each enrichment of the **To review** tab offers:
 | See the **Enrichment** panel and the enrichments of the investigation | The `Access knowledge` capability. |
 | Launch an enrichment, from the panel or the context menu | Edit or manage access to the investigation, and the `Create / Update investigations`, `Ask for knowledge enrichment` and `Create / Update knowledge` capabilities. |
 | Run a connector again on an entity | Edit or manage access to the investigation, and the `Create / Update investigations` and `Ask for knowledge enrichment` capabilities. |
-| Open the results of an enrichment, or delete it | The `Manage connector state` or `Connectors API usage` capability. |
-| Add results to the graph or mark them as reviewed | What opening the results needs, plus edit or manage access to the investigation and the `Create / Update investigations` and `Ask for knowledge enrichment` capabilities. |
+| Open the results of an enrichment | The `Manage connector state` or `Connectors API usage` capability. |
+| Add results to the graph, mark them as reviewed, or delete an enrichment | What opening the results needs, plus edit or manage access to the investigation and the `Create / Update investigations` and `Ask for knowledge enrichment` capabilities. Deleting an enrichment of the investigation from the connector's page needs the same rights. |
 
-With view access to the investigation and the capability to open results, you can open the results of an enrichment but not add them or mark them as reviewed; the dialog says so. See [Access control](dashboards.md#access-control) for the levels of access and [Users and roles](../administration/users.md) for the capabilities.
+With view access to the investigation and the capability to open results, you can open the results of an enrichment but not add them or mark them as reviewed; the dialog says so. **Add all to graph**, **Mark as reviewed** and **Delete** are hidden.
+
+The same applies with edit access but without the `Ask for knowledge enrichment` or the `Create / Update investigations` capability.
+
+See [Access control](dashboards.md#access-control) for the levels of access and [Users and roles](../administration/users.md) for the capabilities.
 
 
 ## Capitalize on an investigation

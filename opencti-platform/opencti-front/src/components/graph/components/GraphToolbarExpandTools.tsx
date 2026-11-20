@@ -253,6 +253,7 @@ const GraphToolbarExpandTools = ({
   const {
     graphData,
     rawObjects,
+    readOnly,
     graphState: {
       selectedNodes,
       selectedLinks,
@@ -316,6 +317,8 @@ const GraphToolbarExpandTools = ({
     setRollBackOpen(false);
     setLinearProgress(false);
   };
+
+  if (readOnly) return null;
 
   return (
     <>

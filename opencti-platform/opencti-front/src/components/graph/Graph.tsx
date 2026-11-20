@@ -132,6 +132,7 @@ const Graph = ({
     graphData,
     context,
     title,
+    readOnly,
     rawPositions,
     isFullscreen,
     setIsFullscreen,
@@ -464,7 +465,8 @@ const Graph = ({
       }
       nodeClicked.current = isDoubleClick ? {} : { node, time: now };
       if (isDoubleClick && context === 'investigation') {
-        setIsExpandOpen(true);
+        // Read only, the double click keeps the selection of its first click.
+        if (!readOnly) setIsExpandOpen(true);
         return;
       }
     }
@@ -769,7 +771,7 @@ const Graph = ({
     return link && linkShown(link) ? { kind: 'link', link } : null;
   }, [card, displayData, shownNodeIds]);
 
-  const canRelate = context !== 'analyses' && context !== 'correlation';
+  const canRelate = context !== 'analyses' && context !== 'correlation' && !readOnly;
 
   // --- Context menu: what applies to the entity, group or relationship under the pointer, or to the
   // graph itself on the empty canvas, and to the selection while there is one. The hover card only previews.
@@ -816,7 +818,7 @@ const Graph = ({
     const other = otherSelected(node);
     return present([
       { id: 'open', label: t_i18n('Open in a new tab'), icon: <OpenInNewOutlined {...MENU_ICON} />, onSelect: () => openInNewTab(node.id) },
-      context === 'investigation' && {
+      context === 'investigation' && !readOnly && {
         id: 'expand',
         label: t_i18n('Expand this entity'),
         icon: <AccountTreeOutlined {...MENU_ICON} />,
@@ -1007,7 +1009,8 @@ const Graph = ({
             <RelationSelection
               width={width}
               height={height}
-              activated={!selectFree && !selectFreeRectangle}
+              // Drawing a relationship between two entities creates it.
+              activated={!selectFree && !selectFreeRectangle && !readOnly}
               graphDataNodes={(graphData?.nodes ?? []).filter(isNodeShown)}
               graph={graphRef2D}
               setSelectedNodes={(nodes) => {
@@ -1065,7 +1068,7 @@ const Graph = ({
             context={context}
             onClearFilters={resetFilters}
             onShowHidden={showHiddenNodes}
-            onAddEntities={context === 'investigation' ? () => setIsAddEntitiesOpen(true) : undefined}
+            onAddEntities={context === 'investigation' && !readOnly ? () => setIsAddEntitiesOpen(true) : undefined}
           />
         )}
         {!mode3D && shownNodes.length > 0 && (showLegend ? (

@@ -4,7 +4,7 @@ import { logApp } from '../config/conf';
 import { AlreadyDeletedError, DatabaseError } from '../config/errors';
 import { IMPORT_CSV_CONNECTOR, IMPORT_CSV_CONNECTOR_ID } from '../connector/importCsv/importCsv';
 import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
-import { internalFindByIds, internalLoadById } from '../database/middleware-loader';
+import { internalFindByIds, internalLoadById, storeLoadById } from '../database/middleware-loader';
 import {
   redisAcquireWorkCompletionFlag,
   redisDeleteWorks,
@@ -18,12 +18,15 @@ import {
 import { INDEX_HISTORY, isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { publishUserAction } from '../listener/UserActionListener';
 import { DRAFT_VALIDATION_CONNECTOR, DRAFT_VALIDATION_CONNECTOR_ID } from '../modules/draftWorkspace/draftWorkspace-connector';
+import { validateEnrichmentInvestigation } from '../modules/workspace/investigation-enrichment';
+import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { reportWorkflowAsyncActionResult } from '../modules/workflow/domain/workflow-async-completion';
 import { buildRefRelationKey, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 import { generateWorkId } from '../schema/identifier';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { addFilter } from '../utils/filtering/filtering-utils';
+import { SYSTEM_USER } from '../utils/access';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { addIngestionObjectsProcessedCount } from '../manager/telemetryManager';
 import { buildEnrichmentCompletion } from '../database/work-touched-elements';
@@ -163,6 +166,10 @@ export const deleteWorksRaw = async (context, works) => {
 export const deleteWork = async (context, user, workId) => {
   const work = await loadWorkById(context, user, workId);
   if (work) {
+    // Only members who can review an investigation's results may delete them; loaded as system so a hidden investigation is still checked.
+    if (work.investigation_id && await storeLoadById(context, SYSTEM_USER, work.investigation_id, ENTITY_TYPE_WORKSPACE)) {
+      await validateEnrichmentInvestigation(context, user, work.investigation_id);
+    }
     await deleteWorksRaw(context, [work]);
     await publishUserAction({
       user,
