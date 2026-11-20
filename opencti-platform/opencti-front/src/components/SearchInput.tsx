@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { ComponentProps, CSSProperties, KeyboardEvent, MouseEvent, useEffect, useRef, useState, useCallback } from 'react';
 import { SearchField, Spinner } from '@filigran/design-system';
 import { ManageSearchOutlined, TuneOutlined, KeyboardArrowDownOutlined } from '@mui/icons-material';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import { useLocation, useNavigate } from 'react-router';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/material/styles';
+import type { SxProps } from '@mui/material/styles';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Menu from '@mui/material/Menu';
@@ -20,34 +21,53 @@ import FiligranIcon from '../private/components/common/FiligranIcon';
 import EnterpriseEditionAgreement from '../private/components/common/entreprise_edition/EnterpriseEditionAgreement';
 import ValidateTermsOfUseDialog from '../private/components/settings/ValidateTermsOfUseDialog';
 import FeedbackCreation from '../private/components/cases/feedbacks/FeedbackCreation';
-import Loader from './Loader';
+import Loader, { LoaderVariant } from './Loader';
 import useAI from '../utils/hooks/useAI';
-import { fetchAgentsForIntent } from '../utils/ai/agentApi';
+import { AgentOption, fetchAgentsForIntent } from '../utils/ai/agentApi';
 import { NLQ_INTENT } from '../private/components/common/ai/AINLQ';
 import { useChatbot } from '../private/components/chatbox/ChatbotContext';
 import { hexToRGB } from '../utils/Colors';
 import { isImeComposing } from '../utils/domEvent';
 import NavSearchSuggestions, { NAV_SEARCH_LISTBOX_ID, navSearchOptionId } from '../private/components/search/NavSearchSuggestions';
+import type { NavSearchResult } from '../private/components/nav/useNavSearch';
+import type { Theme } from './Theme';
 
 const MODE_SEARCH = 'search';
 const MODE_BULK = 'bulk';
 const BULK_SEARCH_PATH = '/dashboard/search_bulk';
 // NLQ modes are dynamic: `nlq:<agentSlug>`
-const isNlqMode = (mode) => typeof mode === 'string' && mode.startsWith('nlq:');
-const nlqSlugFromMode = (mode) => (isNlqMode(mode) ? mode.slice(4) : null);
+type NlqMode = `nlq:${string}`;
+type SearchMode = typeof MODE_SEARCH | typeof MODE_BULK | NlqMode;
 
-const SIZE_BY_VARIANT = {
+const isNlqMode = (mode: SearchMode) => mode.startsWith('nlq:');
+
+const nlqSlugFromMode = (mode: SearchMode) => (isNlqMode(mode) ? mode.slice(4) : null);
+
+type SearchFieldProps = ComponentProps<typeof SearchField>;
+
+const SIZE_BY_VARIANT: Record<string, SearchFieldProps['size']> = {
   thin: 'sm',
 };
 
-const SearchInput = (props) => {
+export interface SearchInputProps extends Omit<SearchFieldProps, 'onSubmit'> {
+  /** `askAI` and `agentSlug` are only sent by the top bar, for the AI (NLQ) search. */
+  onSubmit?: (value: string, askAI?: boolean, agentSlug?: string) => void;
+  /** 'topBar' renders the platform search with its modes; any other value renders the plain field. */
+  variant?: string;
+  keyword?: string;
+  isNLQLoading?: boolean;
+  // Top bar of a user who cannot search the knowledge: the field only finds pages (no classic, bulk nor AI search).
+  pagesOnly?: boolean;
+}
+
+const SearchInput = (props: SearchInputProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured, fullyActive } = useAI();
   const { xtmOneConfigured } = useChatbot();
   const useXtmOne = xtmOneConfigured === true;
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const {
     onSubmit,
@@ -55,7 +75,6 @@ const SearchInput = (props) => {
     keyword,
     placeholder = `${t_i18n('Search these results')}...`,
     isNLQLoading,
-    // Top bar of a user who cannot search the knowledge: the field only finds pages (no classic, bulk nor AI search).
     pagesOnly = false,
     ...otherProps
   } = props;
@@ -68,19 +87,19 @@ const SearchInput = (props) => {
   // Pages dropdown of the top bar: opened by typing, row -1 = nothing highlighted (Enter runs the classic search).
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
-  const fieldContainerRef = useRef(null);
-  const suggestionsRef = useRef([]);
+  const fieldContainerRef = useRef<HTMLDivElement>(null);
+  const suggestionsRef = useRef<NavSearchResult[]>([]);
 
   // Current mode: 'search', 'bulk', or 'nlq:<slug>'
-  const [mode, setMode] = useState(MODE_SEARCH);
+  const [mode, setMode] = useState<SearchMode>(MODE_SEARCH);
 
   // NLQ agent menu state (for the dropdown arrow on the NLQ toggle)
-  const [nlqMenuAnchor, setNlqMenuAnchor] = useState(null);
-  const [nlqAgents, setNlqAgents] = useState([]);
+  const [nlqMenuAnchor, setNlqMenuAnchor] = useState<HTMLElement | null>(null);
+  const [nlqAgents, setNlqAgents] = useState<AgentOption[]>([]);
   const [nlqAgentsLoading, setNlqAgentsLoading] = useState(false);
   const [nlqAgentsFetched, setNlqAgentsFetched] = useState(false);
   // Track the default agent slug so clicking NLQ toggle auto-selects it
-  const [defaultNlqSlug, setDefaultNlqSlug] = useState(null);
+  const [defaultNlqSlug, setDefaultNlqSlug] = useState<string | null>(null);
   // Shared hover state for the whole split-button: hovering EITHER the
   // icon-toggle zone or the caret zone must tint the entire wrapper as one
   // continuous button (matching the original single-<ToggleButton> look),
@@ -127,7 +146,7 @@ const SearchInput = (props) => {
     }
   }, [isAIEnabled, fullyActive, useXtmOne]);
 
-  const handleOpenNlqMenu = useCallback((event) => {
+  const handleOpenNlqMenu = useCallback((event: MouseEvent<HTMLElement>) => {
     setNlqMenuAnchor(event.currentTarget);
     fetchNlqAgentsIfNeeded();
   }, [fetchNlqAgentsIfNeeded]);
@@ -136,7 +155,7 @@ const SearchInput = (props) => {
     setNlqMenuAnchor(null);
   };
 
-  const handleSelectAgent = (agent) => {
+  const handleSelectAgent = (agent: AgentOption) => {
     setMode(`nlq:${agent.slug}`);
     handleCloseNlqMenu();
     // Execute NLQ search immediately with the selected agent
@@ -146,7 +165,7 @@ const SearchInput = (props) => {
   };
 
   // Click on the NLQ toggle: activate NLQ and execute search if there's a value
-  const handleNlqToggleClick = useCallback((event) => {
+  const handleNlqToggleClick = useCallback((event: MouseEvent<HTMLElement>) => {
     if (!isAIEnabled) return;
     const isCGUStatusPending = useXtmOne && !fullyActive;
     if (isCGUStatusPending) {
@@ -157,7 +176,7 @@ const SearchInput = (props) => {
       // Already in NLQ mode — do nothing (user switches away via Search/Bulk toggles)
       return;
     }
-    let agentSlug;
+    let agentSlug: string | undefined;
     if (useXtmOne && defaultNlqSlug) {
       // XTM One mode — activate with the default agent
       setMode(`nlq:${defaultNlqSlug}`);
@@ -182,7 +201,7 @@ const SearchInput = (props) => {
     navigate(`${BULK_SEARCH_PATH}${searchValue ? `?q=${encoded}` : ''}`);
   };
 
-  const handleModeChange = (_event, newMode) => {
+  const handleModeChange = (_event: MouseEvent<HTMLElement>, newMode: SearchMode | null) => {
     // MUI sends null when clicking the already-selected button. The top bar outlives the page,
     // so Bulk stays selected after the user has left the bulk search page: clicking it again
     // must lead back there. On the page itself, it does nothing.
@@ -228,7 +247,7 @@ const SearchInput = (props) => {
   const canSuggest = mode === MODE_SEARCH && (searchValue?.trim().length ?? 0) >= 2;
   const showSuggestions = suggestionsOpen && canSuggest;
   // Bulk and NLQ modes have no popup: the field must not announce itself as a (collapsed) combobox there.
-  const comboboxProps = mode === MODE_SEARCH
+  const comboboxProps: Partial<SearchFieldProps> = mode === MODE_SEARCH
     ? {
         role: 'combobox',
         'aria-autocomplete': 'list',
@@ -240,17 +259,17 @@ const SearchInput = (props) => {
 
   const handleSearchRow = () => {
     closeSuggestions();
-    if (typeof onSubmit === 'function') onSubmit(searchValue, false, undefined);
+    if (typeof onSubmit === 'function') onSubmit(searchValue ?? '', false, undefined);
   };
   // A page was picked: the field did its job, so it is emptied (a classic search keeps its keyword visible instead).
   // Not through handleValueChange: it would re-submit an empty search and fight with the navigation.
-  const handleSelectPage = (path) => {
+  const handleSelectPage = (path: string) => {
     closeSuggestions();
     setSearchValue('');
     navigate(path);
     focusMainContent();
   };
-  const handlePageClick = (event) => {
+  const handlePageClick = (event: MouseEvent) => {
     // A click with a modifier opens the page in a new tab: this one keeps its field and its list.
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     closeSuggestions();
@@ -258,13 +277,13 @@ const SearchInput = (props) => {
     focusMainContent(event);
   };
 
-  const handleKeyDown = (event) => {
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (isImeComposing(event)) {
       // The library field empties itself on Escape unless the event was answered: here Escape only cancels the composition.
       if (event.key === 'Escape') event.preventDefault();
       return;
     }
-    const { value } = event.target;
+    const { value } = event.target as HTMLInputElement;
     // preventDefault also tells the library field to skip its own Enter / Escape handling
     if (showSuggestions) {
       const rows = suggestionsRef.current.length + firstPageRow; // the "Search" row (0, unless pages only) + pages
@@ -309,7 +328,7 @@ const SearchInput = (props) => {
 
   // Emptying the field, by typing or clearing, must drop the keyword still active in the URL:
   // otherwise it keeps filtering the results unseen, and adding filters afterwards finds nothing.
-  const handleValueChange = (value) => {
+  const handleValueChange = (value: string) => {
     setSearchValue(value);
     setSuggestionsOpen(value.trim() !== '');
     setActiveIndex(-1);
@@ -325,7 +344,7 @@ const SearchInput = (props) => {
         name="keyword"
         // WCAG 2.5.3: the announced name must contain the visible text, which here is the placeholder.
         aria-label={placeholder}
-        size={SIZE_BY_VARIANT[variant] ?? 'md'}
+        size={(variant && SIZE_BY_VARIANT[variant]) || 'md'}
         value={searchValue}
         placeholder={placeholder}
         onChange={(event) => {
@@ -356,7 +375,7 @@ const SearchInput = (props) => {
   // ── TopBar variant: segmented control + search input ───────────────────
 
   // Styles for toggle buttons — matching the standard IconButton (size="default": 36×36)
-  const toggleButtonSx = {
+  const toggleButtonSx: SxProps<Theme> = {
     height: 36,
     minWidth: 36,
     width: 36,
@@ -369,11 +388,11 @@ const SearchInput = (props) => {
     borderRadius: 1,
     border: `1px solid ${theme.palette.divider}`,
     '&.Mui-selected': {
-      backgroundColor: theme.palette.action.selected,
+      backgroundColor: theme.palette.action?.selected,
       color: theme.palette.text.primary,
       borderColor: theme.palette.divider,
       '&:hover': {
-        backgroundColor: theme.palette.action.selected,
+        backgroundColor: theme.palette.action?.selected,
       },
     },
   };
@@ -433,11 +452,10 @@ const SearchInput = (props) => {
             {...comboboxProps}
             {...otherProps}
             autoComplete="off"
-            label={t_i18n('Search')}
           />
           {showSuggestions && (
             <NavSearchSuggestions
-              keyword={searchValue.trim()}
+              keyword={(searchValue ?? '').trim()}
               anchorEl={fieldContainerRef.current}
               activeIndex={activeIndex}
               showSearchRow={!pagesOnly}
@@ -448,7 +466,7 @@ const SearchInput = (props) => {
           )}
         </div>
         {/* FDS-WORKAROUND #20: NLQ loading indicator beside the field, SearchField exposes no busy slot — see fds-migration/LIBRARY-FEEDBACK.md #20 */}
-        {isNLQActivated && isNLQLoading && <Loader variant="inline" />}
+        {isNLQActivated && isNLQLoading && <Loader variant={LoaderVariant.inline} />}
 
         {/* ── Mode Toggles (right): all of them need the knowledge search ── */}
         {!pagesOnly && (
@@ -471,14 +489,14 @@ const SearchInput = (props) => {
           >
             {/* Search mode */}
             <Tooltip title={t_i18n('Advanced search')}>
-              <ToggleButton value={MODE_SEARCH} sx={{ ...toggleButtonSx, mr: 0.75 }}>
+              <ToggleButton value={MODE_SEARCH} sx={[toggleButtonSx, { mr: 0.75 }]}>
                 <TuneOutlined sx={{ fontSize: 18 }} />
               </ToggleButton>
             </Tooltip>
 
             {/* Bulk mode */}
             <Tooltip title={t_i18n('Bulk search')}>
-              <ToggleButton value={MODE_BULK} sx={{ ...toggleButtonSx, mr: 0.75 }}>
+              <ToggleButton value={MODE_BULK} sx={[toggleButtonSx, { mr: 0.75 }]}>
                 <ManageSearchOutlined sx={{ fontSize: 18 }} />
               </ToggleButton>
             </Tooltip>
@@ -548,7 +566,6 @@ const SearchInput = (props) => {
                       <FiligranIcon
                         icon={LogoXtmOneIcon}
                         size="small"
-                        color="ai"
                       />
                     </ToggleButton>
                   </span>
@@ -575,7 +592,7 @@ const SearchInput = (props) => {
                         cursor: nlqSplitDisabled ? 'default' : 'pointer',
                         '--nlq-caret-focus-color': nlqCaretFocusRingColor,
                         '--nlq-caret-focus-radius': `${theme.shape.borderRadius}px`,
-                      }}
+                      } as CSSProperties}
                     >
                       <KeyboardArrowDownOutlined sx={{ fontSize: 18, color: 'inherit' }} />
                     </button>
@@ -626,7 +643,6 @@ const SearchInput = (props) => {
                 <FiligranIcon
                   icon={LogoXtmOneIcon}
                   size="small"
-                  color="ai"
                 />
               </ListItemIcon>
               <ListItemText
