@@ -1974,8 +1974,8 @@ const getMissingOrganizationInput = (requirements: TransitionInputRequirements, 
 
 // Inputs the transition rejects or needs: a comment on a disabled transition, the organizations, and a required comment unless the user can bypass mandatory fields
 const getMissingTransitionInput = (user: AuthUser, transition: TransitionInputRequirements, comment?: string, runtimeParams: Record<string, unknown> = {}) => {
-  // A transition without comment mode is a disabled one: a comment must not be stored on it
-  if (comment?.trim() && (transition.comment ?? 'disabled') === 'disabled') {
+  // A comment is only stored when the transition allows or requires one: a disabled, missing or unknown mode rejects it
+  if (comment?.trim() && transition.comment !== 'allowed' && transition.comment !== 'required') {
     return 'A comment is not allowed for this transition';
   }
   if (transition.comment === 'required' && !comment?.trim() && !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS)) {

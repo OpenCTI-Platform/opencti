@@ -3363,8 +3363,8 @@ describe('Transition comments – Domain', () => {
       (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-id' } });
     };
 
-    const mockCommentMode = (comment?: string) => {
-      (WorkflowFactory.createDefinition as any).mockImplementation(() => ({ ...defaultCreateDefinition(), getTransitions: () => [{ event: 'review', to: 'reviewed', ...(comment ? { comment } : {}) }] }));
+    const mockTransition = (transition: Record<string, unknown>) => {
+      (WorkflowFactory.createDefinition as any).mockImplementation(() => ({ ...defaultCreateDefinition(), getTransitions: () => [{ event: 'review', to: 'reviewed', ...transition }] }));
     };
     afterEach(() => {
       (WorkflowFactory.createDefinition as any).mockImplementation(defaultCreateDefinition);
@@ -3379,7 +3379,7 @@ describe('Transition comments – Domain', () => {
 
     it('should include the user-provided comment in the history entry', async () => {
       setupMocks();
-      mockCommentMode('allowed');
+      mockTransition({ comment: 'allowed' });
 
       await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', 'Reviewed and approved');
 
@@ -3402,9 +3402,9 @@ describe('Transition comments – Domain', () => {
       expect(getLastHistoryEntry()).not.toHaveProperty('comment');
     });
 
-    it.each([undefined, 'disabled'])('should reject a comment on a transition whose comment mode is %s, before any action runs', async (mode) => {
+    it.each([undefined, 'disabled', '', 'unexpected'])('should reject a comment on a transition whose comment mode is %j, before any action runs', async (mode) => {
       setupMocks();
-      mockCommentMode(mode);
+      mockTransition({ comment: mode });
 
       const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', 'Sneaky comment');
 
@@ -3415,20 +3415,13 @@ describe('Transition comments – Domain', () => {
 
     it('should accept a blank comment on a transition whose comment mode is disabled', async () => {
       setupMocks();
-      mockCommentMode('disabled');
+      mockTransition({ comment: 'disabled' });
 
       expect(await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', '   ')).toMatchObject({ success: true });
       expect(getLastHistoryEntry()).not.toHaveProperty('comment');
     });
 
     describe('required inputs', () => {
-      const mockTransition = (transition: Record<string, unknown>) => {
-        (WorkflowFactory.createDefinition as any).mockImplementation(() => ({ ...defaultCreateDefinition(), getTransitions: () => [{ event: 'review', to: 'reviewed', ...transition }] }));
-      };
-      afterEach(() => {
-        (WorkflowFactory.createDefinition as any).mockImplementation(defaultCreateDefinition);
-      });
-
       it('should reject a transition that requires a comment when none is given, before any action runs', async () => {
         setupMocks();
         mockTransition({ comment: 'required' });
