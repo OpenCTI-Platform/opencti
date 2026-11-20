@@ -171,7 +171,11 @@ const Index = ({ settings }: IndexProps) => {
                   <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)} />
                   <Route path="/settings/*" element={boundaryWrapper(RootSettings)} />
                   {/* Legacy URL of the audit page: keeps bookmarks working, through the guarded Settings route. */}
-                  <Route path="/audits/*" element={<Navigate to="/dashboard/settings/activity/audit" replace={true} />} />
+                  <Route
+                    path="/audits/*"
+                    // Keeps the query string: the audit page reads its filters, search and sorting from it.
+                    element={<Navigate to={{ pathname: '/dashboard/settings/activity/audit', search: location.search }} replace={true} />}
+                  />
                   <Route path="/profile/*" element={boundaryWrapper(RootProfile)} />
                   <Route path="/change-password" element={boundaryWrapper(ForcePasswordChange)} />
                   <Route path="/observations/*" element={boundaryWrapper(RootObservations)} />
