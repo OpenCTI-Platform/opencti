@@ -2,14 +2,14 @@ import { Theme } from '../components/Theme';
 import { THEME_DARK_DEFAULT_BACKGROUND, THEME_DARK_DEFAULT_PAPER, THEME_DARK_DEFAULT_PRIMARY } from '../components/ThemeDark';
 import { THEME_LIGHT_DEFAULT_BACKGROUND, THEME_LIGHT_DEFAULT_PAPER, THEME_LIGHT_DEFAULT_PRIMARY } from '../components/ThemeLight';
 
-type CustomThemeKey
-  = | 'theme_background'
-    | 'theme_paper'
-    | 'theme_nav'
-    | 'theme_primary'
-    | 'theme_secondary'
-    | 'theme_accent'
-    | 'theme_text_color';
+type CustomThemeKey =
+  | 'theme_background'
+  | 'theme_paper'
+  | 'theme_nav'
+  | 'theme_primary'
+  | 'theme_secondary'
+  | 'theme_accent'
+  | 'theme_text_color';
 
 /**
  * Checks if saved theme has overriden the default theme.

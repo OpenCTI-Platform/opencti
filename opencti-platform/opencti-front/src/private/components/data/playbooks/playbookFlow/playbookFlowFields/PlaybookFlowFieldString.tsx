@@ -22,6 +22,7 @@ interface PlaybookFlowFieldStringProps {
   label: string;
   multiline?: boolean;
   rows?: number;
+  required?: boolean;
 }
 
 const PlaybookFlowFieldString = ({
@@ -29,6 +30,7 @@ const PlaybookFlowFieldString = ({
   label,
   multiline,
   rows,
+  required = false,
 }: PlaybookFlowFieldStringProps) => {
   return (
     <Field
@@ -40,6 +42,7 @@ const PlaybookFlowFieldString = ({
       style={fieldSpacingContainerStyle}
       multiline={multiline}
       rows={rows}
+      required={required}
     />
   );
 };

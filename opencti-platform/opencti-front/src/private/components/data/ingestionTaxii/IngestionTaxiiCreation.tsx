@@ -164,8 +164,8 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
     authentication_type: ingestionTaxiiData?.authentication_type || 'none',
     user_id: '',
     automatic_user: true,
-    confidence_to_score: false,
-    ssl_verify: true,
+    confidence_to_score: ingestionTaxiiData?.confidence_to_score ?? false,
+    ssl_verify: ingestionTaxiiData?.ssl_verify ?? true,
   };
 
   return (

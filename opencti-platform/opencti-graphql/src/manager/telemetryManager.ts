@@ -417,7 +417,7 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   // endregion
   // region OTLP Exporter
   try {
-    const connectivityQuery = await getHttpClient({ responseType: 'json' }).post(FILIGRAN_OTLP_TELEMETRY, {});
+    const connectivityQuery = await getHttpClient({ responseType: 'json', trusted: true }).post(FILIGRAN_OTLP_TELEMETRY, {});
     if (connectivityQuery.status === 200) {
       // OtlpExporterReader can be deactivated if connectivity fail at manager start.
       const OtlpExporterReader = new BatchExportingMetricReader({

@@ -7,7 +7,21 @@ const jsxTsxFileExtensions = ['.jsx', '.tsx'];
 const t_i18nPatternSource = String.raw`t_i18n\((['"])((?:\\.|(?!\1).)*)\1\s*[,)]`;
 const searchPattern = new RegExp(t_i18nPatternSource, 'g');
 const labelSearchPattern = /label:\s'(\w+)',/g;
+// Menu data (`*.entries.ts(x)` pages, navSections.tsx) declares its labels and search keywords as plain strings,
+// translated at runtime with t_i18n(label) / t_i18n(keyword): there is no t_i18n('...') call to find in those files.
+const menuDataFilePattern = /(\.entries\.tsx?|navSections\.tsx)$/;
+const menuLabelPattern = /\blabel:\s*(['"])((?:\\.|(?!\1).)*)\1/g;
+const menuKeywordsPattern = /\bkeywords:\s*\[([^\]]*)\]/g;
+const stringLiteralPattern = /(['"])((?:\\.|(?!\1).)*)\1/g;
 const extractedValues: Record<string, string> = {};
+
+const addExtractedValue = (quote: string, captured: string) => {
+  // unescape the quote char that was escaped for JS syntax reasons only
+  const value = captured.replace(new RegExp(`\\\\${quote}`, 'g'), quote);
+  if (value) {
+    extractedValues[value] = value;
+  }
+};
 
 // extract all translation in the t_i18n() formatter from frontend
 // and add them in opencti-front/lang/en.json
@@ -21,19 +35,25 @@ const extractI18nValues = async (directory: string) => {
 
       if (stats.isDirectory()) {
         await extractI18nValues(filePath); // Recursively call the function for directories
-      } else if (stats.isFile() && jsxTsxFileExtensions.includes(path.extname(filePath))) {
+      } else if (stats.isFile() && (jsxTsxFileExtensions.includes(path.extname(filePath)) || menuDataFilePattern.test(filePath))) {
         const data = await readFile(filePath, 'utf8');
+        if (menuDataFilePattern.test(filePath)) {
+          for (const [, quote, captured] of data.matchAll(menuLabelPattern)) {
+            addExtractedValue(quote, captured);
+          }
+          for (const [, keywords] of data.matchAll(menuKeywordsPattern)) {
+            for (const [, quote, captured] of keywords.matchAll(stringLiteralPattern)) {
+              addExtractedValue(quote, captured);
+            }
+          }
+        }
         if (filePath === 'src\\components\\dataGrid\\dataTableUtils.tsx') {
           for (const [, value] of data.matchAll(labelSearchPattern)) {
             extractedValues[value] = value;
           }
         }
         for (const [, quote, captured] of data.matchAll(searchPattern)) {
-          // unescape the quote char that was escaped for JS syntax reasons only
-          const value = captured.replace(new RegExp(`\\\\${quote}`, 'g'), quote);
-          if (value) {
-            extractedValues[value] = value;
-          }
+          addExtractedValue(quote, captured);
         }
       }
     }

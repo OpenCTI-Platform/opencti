@@ -67,6 +67,7 @@ export const buildTaxiiHttpClientOptions = async (ingestion: BasicStoreEntityIng
     timeout: FEED_REQUEST_TIMEOUT,
     responseType: 'json',
     certificates,
+    feature: 'TAXII feed',
   };
   return httpClientOptions;
 };

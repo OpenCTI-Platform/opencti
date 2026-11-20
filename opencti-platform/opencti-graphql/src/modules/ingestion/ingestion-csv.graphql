@@ -66,6 +66,7 @@ type CSVFeedAddInputFromImport {
     csvMapper: CsvMapperAddInputFromImport!
     csv_mapper_type : IngestionCsvMapperType
     scheduling_period: String
+    ssl_verify: Boolean
 }
 
 

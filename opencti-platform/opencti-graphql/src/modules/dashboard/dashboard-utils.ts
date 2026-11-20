@@ -48,6 +48,7 @@ export const checkDashboardConfigurationImport = (type: string, parsedData: Conf
 /**
  * Resolves a single saved filter reference within a data selection:
  * Replaces the saved filter id with the actual inline filters and removes the saved filter reference.
+ * A saved filter that does not exist is an error, or with keepMissing the reference stays (the widget shows it as missing, as on the platform it comes from).
  */
 const resolveSavedFilterReference = async (
   context: AuthContext,
@@ -56,11 +57,15 @@ const resolveSavedFilterReference = async (
   selection: WidgetDataSelection,
   savedFiltersIdKey: 'filters_id' | 'dynamicFrom_id' | 'dynamicTo_id',
   filtersKey: 'filters' | 'dynamicFrom' | 'dynamicTo',
+  keepMissing: boolean,
 ) => {
   const savedFiltersId = selection[savedFiltersIdKey];
   if (savedFiltersId && isNotEmptyField(savedFiltersId)) {
     const savedFilter = await findSavedFilter(context, user, savedFiltersId);
     if (!savedFilter) {
+      if (keepMissing) {
+        return;
+      }
       throw FunctionalError('Saved filter not found', { widget: widgetDefinitionId, savedFiltersId });
     }
     try {
@@ -80,14 +85,15 @@ export const resolveSavedFiltersInDataSelection = async (
   context: AuthContext,
   user: AuthUser,
   widgetDefinition: Widget,
+  keepMissing = false,
 ) => {
   const dataSelection = widgetDefinition.dataSelection;
   if (dataSelection) {
     await Promise.all(dataSelection.map(async (selection: any) => {
       await Promise.all([
-        resolveSavedFilterReference(context, user, widgetDefinition.id, selection, 'filters_id', 'filters'),
-        resolveSavedFilterReference(context, user, widgetDefinition.id, selection, 'dynamicFrom_id', 'dynamicFrom'),
-        resolveSavedFilterReference(context, user, widgetDefinition.id, selection, 'dynamicTo_id', 'dynamicTo'),
+        resolveSavedFilterReference(context, user, widgetDefinition.id, selection, 'filters_id', 'filters', keepMissing),
+        resolveSavedFilterReference(context, user, widgetDefinition.id, selection, 'dynamicFrom_id', 'dynamicFrom', keepMissing),
+        resolveSavedFilterReference(context, user, widgetDefinition.id, selection, 'dynamicTo_id', 'dynamicTo', keepMissing),
       ]);
     }));
   }
@@ -169,6 +175,7 @@ export const importDashboardWidgetConfiguration = async (
  * - Export (`from = 'internal'`): filter ids are converted to STIX ids and
  *   saved filter references are resolved to inline filter content.
  * - Import (`from = 'stix'`): filter ids are converted back to internal ids.
+ * keepMissingSavedFilters: on export, a saved filter that does not exist keeps its reference instead of failing the export.
  *
  * The variables are converted even without widget. A manifest with neither is returned untouched.
  */
@@ -177,6 +184,7 @@ export const convertDashboardManifestIds = async <M extends string | null | unde
   user: AuthUser,
   manifest: M,
   from: 'internal' | 'stix',
+  { keepMissingSavedFilters = false }: { keepMissingSavedFilters?: boolean } = {},
 ): Promise<M | string> => {
   const parsedManifest = fromB64(manifest ?? '{}');
   const hasWidgets = parsedManifest && isNotEmptyField(parsedManifest.widgets);
@@ -188,7 +196,7 @@ export const convertDashboardManifestIds = async <M extends string | null | unde
   // Regeneration for dashboards
   const widgetDefinitions: Widget[] = hasWidgets ? Object.values(parsedManifest.widgets) : [];
   if (from === 'internal') { // for exports: replace saved filters ids with the associated filters content
-    await Promise.all(widgetDefinitions.map((widgetDefinition) => resolveSavedFiltersInDataSelection(context, user, widgetDefinition)));
+    await Promise.all(widgetDefinitions.map((widgetDefinition) => resolveSavedFiltersInDataSelection(context, user, widgetDefinition, keepMissingSavedFilters)));
   }
   // Widgets and variables share one lookup
   await convertDashboardIds(context, user, widgetDefinitions, hasVariables ? parsedManifest.variables : [], from, presets);

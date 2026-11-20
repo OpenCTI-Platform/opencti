@@ -43,6 +43,9 @@ export interface VocabularyDefinition {
   closed?: boolean;
   // A category behind a feature flag is left out of the category list while the flag is off
   featureFlag?: string;
+  // The category whose entries this category's entries belong to: each entry names its parent entry in parent_name,
+  // and a rename of the parent entry is carried to its children
+  parent?: VocabularyCategory;
   entity_types: string[];
   fields: {
     key: string;
@@ -117,7 +120,8 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     }],
   },
   system_subcategory_ov: {
-    description: 'The subcategory of an asset (level 2 of the OpenAEV asset taxonomy); the description of each value names its category.',
+    description: 'The subcategory of an asset (level 2 of the OpenAEV asset taxonomy); each value names its category in parent_name.',
+    parent: 'system_category_ov' as VocabularyCategory,
     entity_types: [ENTITY_TYPE_IDENTITY_SYSTEM],
     fields: [{
       key: 'x_opencti_system_subcategory',
@@ -585,6 +589,8 @@ export interface BasicStoreEntityVocabulary extends BasicStoreEntity {
   order?: number;
   is_hidden?: boolean;
   builtIn?: boolean;
+  // The name of the parent entry, in the parent category of this entry's category
+  parent_name?: string;
 }
 
 export interface StoreEntityVocabulary extends StoreEntity {
@@ -592,6 +598,7 @@ export interface StoreEntityVocabulary extends StoreEntity {
   description: string;
   category: VocabularyCategory;
   builtIn?: boolean;
+  parent_name?: string;
 }
 
 // region Stix type

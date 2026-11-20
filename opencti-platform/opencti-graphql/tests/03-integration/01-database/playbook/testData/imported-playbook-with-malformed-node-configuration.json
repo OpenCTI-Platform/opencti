@@ -1,0 +1,10 @@
+{
+  "openCTI_version": "7.261101.0",
+  "type": "playbook",
+  "configuration": {
+    "name": "malformed node configuration",
+    "description": "",
+    "playbook_start": "5f0c2a4e-8a3b-4c51-9d2e-1b7f6a3c9e10",
+    "playbook_definition": "{\"nodes\":[{\"id\":\"5f0c2a4e-8a3b-4c51-9d2e-1b7f6a3c9e10\",\"name\":\"Listen knowledge events\",\"position\":{\"x\":0,\"y\":0},\"component_id\":\"PLAYBOOK_INTERNAL_DATA_STREAM\",\"configuration\":\"{\\\"create\\\":true,\"}],\"links\":[]}"
+  }
+}

@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { BASE_TYPE_ENTITY, BASE_TYPE_RELATION, ID_INTERNAL, ID_STANDARD, IDS_STIX, INPUT_GRANTED_REFS, INTERNAL_IDS_ALIASES } from '../schema/general';
 import { getParentTypes } from '../schema/schemaUtils';
-import { generateAliasesIdsForInstance, generateInternalId, generateStandardId, normalizeName, X_WORKFLOW_ID } from '../schema/identifier';
+import { generateAliasesIdsForInstance, generateInternalId, generateStandardId, getStaticMarkingAliasStixIds, normalizeName, X_WORKFLOW_ID } from '../schema/identifier';
 import { FROM_START, now, UNTIL_END } from '../utils/format';
 import { inferIndexFromConceptType, isEmptyField, isNotEmptyField } from './utils';
 import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
@@ -72,8 +72,10 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
     if (haveStixId && input.stix_id !== standardId) {
       stixIds.push(input.stix_id.toLowerCase());
     }
+    // Static markings (TLP) also answer to the ids other standards give them
+    const staticAliasStixIds = getStaticMarkingAliasStixIds(standardId);
     data = R.pipe(
-      R.assoc(IDS_STIX, stixIds),
+      R.assoc(IDS_STIX, R.uniq([...stixIds, ...staticAliasStixIds])),
       R.dissoc('stix_id'),
       R.assoc('created_at', today),
       R.assoc('updated_at', today),
