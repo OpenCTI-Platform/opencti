@@ -1,5 +1,5 @@
 import { Icon } from '@filigran/design-system';
-import type { NavSection } from '../common/menus/menuEntry';
+import type { MenuEntry, NavSection, NavSectionItem } from '../common/menus/menuEntry';
 import { home } from './Home.entries';
 import { customDashboards, investigations, publicDashboards } from '../workspaces/Workspaces.entries';
 import { pir } from '../pir/Pir.entries';
@@ -85,3 +85,11 @@ export const navSections: NavSection[] = [
     ],
   },
 ];
+
+// A section item is a page, or a group of pages (a sub-menu).
+const itemEntries = (item: NavSectionItem): MenuEntry[] => ('path' in item ? [item] : item.entries);
+
+/** Every page of a section, in left bar order. */
+export const sectionEntries = (id: string): MenuEntry[] => navSections
+  .filter((section) => section.id === id)
+  .flatMap((section) => ('items' in section ? section.items.flatMap(itemEntries) : [section.page]));
