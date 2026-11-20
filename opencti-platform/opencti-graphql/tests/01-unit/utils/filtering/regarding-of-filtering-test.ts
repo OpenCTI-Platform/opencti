@@ -8,6 +8,9 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../../../src/schema/stixMetaO
 import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF } from '../../../../src/utils/filtering/filtering-constants';
 import { RELATION_IN_PIR } from '../../../../src/schema/internalRelationship';
 import { ENTITY_TYPE_PIR } from '../../../../src/modules/pir/pir-types';
+import { RELATION_PUBLISHES } from '../../../../src/schema/stixCoreRelationship';
+import { READ_INDEX_INFERRED_RELATIONSHIPS, READ_RELATIONSHIPS_INDICES } from '../../../../src/database/utils';
+import { SYSTEM_USER } from '../../../../src/utils/access';
 
 const CONTEXT = {} as any;
 const USER = { id: 'user-1', capabilities: [] } as any;
@@ -167,5 +170,84 @@ describe('adaptFilterToRegardingOfFilterKey — filter building', () => {
     const filter = makeRegardingOfFilter([{ key: 'id', values: ['pir-1'] }]);
     await expect(adaptFilterToRegardingOfFilterKey(CONTEXT, USER, filter))
       .rejects.toThrow('You are not allowed to use PIR filtering');
+  });
+});
+
+describe('adaptFilterToRegardingOfFilterKey — relationship sides without denormalization', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('resolves the channels publishing the dynamically resolved media contents', async () => {
+    vi.spyOn(engineModule, 'elPaginate').mockResolvedValue([{ id: 'media-1' }, { id: 'media-2' }] as any);
+    const elListSpy = vi.spyOn(engineModule, 'elList').mockResolvedValue([
+      { fromId: 'channel-1', toId: 'media-1' },
+      { fromId: 'channel-1', toId: 'media-2' },
+      { fromId: 'channel-2', toId: 'media-2' },
+    ] as any);
+    const { newFilterGroup } = await adaptFilterToRegardingOfFilterKey(CONTEXT, USER, makeDynamicRegardingOfFilter([RELATION_PUBLISHES]));
+
+    expect(elListSpy).toHaveBeenCalledTimes(1);
+    const [, listingUser, indices, opts] = elListSpy.mock.calls[0] as any[];
+    expect(listingUser).toBe(USER);
+    expect(indices).toEqual(READ_RELATIONSHIPS_INDICES);
+    expect(opts.types).toEqual([RELATION_PUBLISHES]);
+    expect(opts.filters.filters).toEqual([{ key: ['toId'], values: ['media-1', 'media-2'] }]);
+    expect(newFilterGroup.mode).toEqual(FilterMode.Or);
+    expect(newFilterGroup.filters).toEqual([
+      expect.objectContaining({
+        key: [buildRefRelationKey(RELATION_PUBLISHES, ID_INTERNAL), buildRefRelationKey(RELATION_PUBLISHES, ID_INFERRED)],
+        values: ['media-1', 'media-2'],
+      }),
+      expect.objectContaining({ key: ['internal_id'], values: ['channel-1', 'channel-2'], operator: FilterOperator.Eq }),
+    ]);
+  });
+
+  it('resolves the unimpacted side with the system user and the inferred indices when requested', async () => {
+    vi.spyOn(engineModule, 'elFindByIds').mockResolvedValue([{ id: 'media-1', entity_type: 'Media-Content' }] as any);
+    const elListSpy = vi.spyOn(engineModule, 'elList').mockResolvedValue([{ fromId: 'channel-1', toId: 'media-1' }] as any);
+    const filter = makeRegardingOfFilter([
+      { key: 'id', values: ['media-1'] },
+      { key: 'relationship_type', values: [RELATION_PUBLISHES] },
+      { key: 'is_inferred', values: ['true'] },
+    ]);
+    const { newFilterGroup } = await adaptFilterToRegardingOfFilterKey(CONTEXT, USER, filter, true);
+
+    const [, listingUser, indices] = elListSpy.mock.calls[0] as any[];
+    expect(listingUser).toBe(SYSTEM_USER);
+    expect(indices).toEqual([READ_INDEX_INFERRED_RELATIONSHIPS]);
+    expect(newFilterGroup.filters).toEqual([
+      expect.anything(),
+      expect.objectContaining({ key: ['internal_id'], values: ['channel-1'] }),
+    ]);
+  });
+
+  it('excludes the resolved entities with and mode for not_eq', async () => {
+    vi.spyOn(engineModule, 'elFindByIds').mockResolvedValue([{ id: 'media-1', entity_type: 'Media-Content' }] as any);
+    vi.spyOn(engineModule, 'elList').mockResolvedValue([{ fromId: 'channel-1', toId: 'media-1' }] as any);
+    const filter = makeRegardingOfFilter([
+      { key: 'id', values: ['media-1'] },
+      { key: 'relationship_type', values: [RELATION_PUBLISHES] },
+    ], FilterOperator.NotEq);
+    const { newFilterGroup } = await adaptFilterToRegardingOfFilterKey(CONTEXT, USER, filter);
+
+    expect(newFilterGroup.mode).toEqual(FilterMode.And);
+    expect(newFilterGroup.filters).toEqual([
+      expect.objectContaining({ values: ['media-1'], operator: FilterOperator.NotEq, mode: FilterMode.And }),
+      expect.objectContaining({ key: ['internal_id'], values: ['channel-1'], operator: FilterOperator.NotEq, mode: FilterMode.And }),
+    ]);
+  });
+
+  it('does not list relationships when both sides are denormalized', async () => {
+    vi.spyOn(engineModule, 'elFindByIds').mockResolvedValue([{ id: 'id-1', entity_type: 'Malware' }] as any);
+    const elListSpy = vi.spyOn(engineModule, 'elList');
+    const filter = makeRegardingOfFilter([
+      { key: 'id', values: ['id-1'] },
+      { key: 'relationship_type', values: ['targets'] },
+    ]);
+    const { newFilterGroup } = await adaptFilterToRegardingOfFilterKey(CONTEXT, USER, filter);
+
+    expect(elListSpy).not.toHaveBeenCalled();
+    expect(newFilterGroup.filters).toHaveLength(1);
   });
 });
