@@ -55,7 +55,10 @@ const decodePrimitiveLiteral = (ctx) => {
   if (literal?.HexLiteral() || literal?.BinaryLiteral() || literal?.TimestampLiteral()) {
     return literal.getText().slice(2, -1); // h'..', b'..' and t'..': drop the prefix and the quotes
   }
-  return ctx.getText(); // Numbers and booleans are kept as written
+  const isNumber = Boolean(literal?.IntPosLiteral() || literal?.IntNegLiteral() || literal?.FloatPosLiteral() || literal?.FloatNegLiteral());
+  // Numbers and booleans are kept as written. Anything else is a literal the parser could not read
+  // (e.g. 'C:\x' with an invalid escape in an unvalidated pattern): return undefined so it is skipped.
+  return isNumber || ctx.BoolLiteral() ? ctx.getText() : undefined;
 };
 
 export const extractObservablesFromIndicatorPattern = (pattern) => {
@@ -115,8 +118,8 @@ export const extractObservablesFromIndicatorPattern = (pattern) => {
     }
 
     enterPrimitiveLiteral(ctx) {
-      if (this.element) {
-        const val = decodePrimitiveLiteral(ctx);
+      const val = this.element ? decodePrimitiveLiteral(ctx) : undefined;
+      if (val !== undefined) {
         const data = { type: this.element.type, [this.element.component]: val };
         const unflat = unflatten(data);
         observables.push(unflat);

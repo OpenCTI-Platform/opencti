@@ -242,6 +242,10 @@ describe('extractObservablesFromIndicatorPattern - string literal escapes', () =
     expect(extractObservablesFromIndicatorPattern("[file:'name' = 'x.exe']")).toEqual([{ type: 'StixFile', name: 'x.exe' }]);
     expect(extractObservablesFromIndicatorPattern("[file:hashes.'SHA-256' = 'abc123']")).toEqual([{ type: 'StixFile', hashes: { 'SHA-256': 'abc123' } }]);
   });
+
+  it('should skip a value the parser could not read (unescaped backslashes in an unvalidated pattern)', () => {
+    expect(extractObservablesFromIndicatorPattern("[file:name = 'C:\\Windows\\x.exe']")).toEqual([]);
+  });
 });
 
 describe('extractObservablesFromIndicatorPattern - prefixed literals', () => {
@@ -255,7 +259,12 @@ describe('extractObservablesFromIndicatorPattern - prefixed literals', () => {
     expect(observables).toEqual([{ type: 'StixFile', hashes: { MD5: 'd41d8cd98f00b204e9800998ecf8427e' } }]);
   });
 
-  it('should drop the prefix and quotes of a binary literal', () => {
+  it('should not create an artifact from payload_bin, which is not part of its standard id', () => {
+    expect(extractObservablesFromIndicatorPattern("[artifact:payload_bin = b'aGVsbG8=']")).toEqual([]);
+  });
+
+  it('should drop the prefix and quotes of a binary literal, keeping the base64', () => {
+    // Not a realistic field for a binary value: it only pins the decoding, as no standard id field holds binary
     const observables = extractObservablesFromIndicatorPattern("[file:name = b'aGVsbG8=']");
     expect(observables).toEqual([{ type: 'StixFile', name: 'aGVsbG8=' }]);
   });
@@ -269,14 +278,20 @@ describe('extractObservablesFromIndicatorPattern - prefixed literals', () => {
 describe('extractObservablesFromIndicatorPattern - comparison operators', () => {
   it.each([
     "[domain-name:value != 'google.com']",
+    "[domain-name:value <> 'google.com']",
     "[domain-name:value NOT = 'google.com']",
+    "[domain-name:value NOT == 'google.com']",
   ])('should not create an observable from a negated comparison %s', (pattern) => {
     expect(extractObservablesFromIndicatorPattern(pattern)).toEqual([]);
   });
 
-  it('should treat NOT != as an equality', () => {
-    const observables = extractObservablesFromIndicatorPattern("[domain-name:value NOT != 'example.com']");
-    expect(observables).toEqual([{ type: 'Domain-Name', value: 'example.com' }]);
+  it.each([
+    "[domain-name:value = 'example.com']",
+    "[domain-name:value == 'example.com']",
+    "[domain-name:value NOT != 'example.com']",
+    "[domain-name:value NOT <> 'example.com']",
+  ])('should create an observable from the equality %s', (pattern) => {
+    expect(extractObservablesFromIndicatorPattern(pattern)).toEqual([{ type: 'Domain-Name', value: 'example.com' }]);
   });
 
   it('should not take the literals of an IN set after an equality as observables', () => {
