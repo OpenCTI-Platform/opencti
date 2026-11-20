@@ -30,12 +30,7 @@ vi.mock('../../../../src/modules/connector/connector-domain', () => ({
 import { getCachedRabbitmqMetrics } from '../../../../src/database/rabbitmq';
 import { getEngineHealth } from '../../../../src/database/engine';
 import { connectors, findRegularlyPingingConnectors } from '../../../../src/modules/connector/connector-domain';
-import {
-  buildConnectorsHealth,
-  buildRabbitmqHealth,
-  buildSearchEngineHealth,
-  buildXtmOneHealthSnapshot,
-} from '../../../../src/modules/xtm/one/xtm-one-health';
+import { buildConnectorsHealth, buildRabbitmqHealth, buildSearchEngineHealth, buildXtmOneHealthSnapshot } from '../../../../src/modules/xtm/one/xtm-one-health';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
 const context = {} as AuthContext;
