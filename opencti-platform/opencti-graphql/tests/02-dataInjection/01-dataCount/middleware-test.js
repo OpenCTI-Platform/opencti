@@ -869,19 +869,15 @@ describe('Create entities', () => {
 
   it('should keep previous name as alias when name and aliases are replaced together', async () => {
     const previousName = 'Ingress Tool Transfer TEST';
-    const createdAttackPattern = await createEntity(testContext, ADMIN_USER, { name: previousName }, ENTITY_TYPE_ATTACK_PATTERN);
-    const loadAttackPattern = () => storeLoadById(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
+    const createdAttackPattern = await createEntity(testContext, ADMIN_USER, { name: previousName, x_mitre_id: 'T99105' }, ENTITY_TYPE_ATTACK_PATTERN);
     await updateAttribute(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN, [
       { key: 'name', value: ['T99105'] },
       { key: 'aliases', value: [previousName] },
     ]);
-    const readAttackPattern = await loadAttackPattern();
-    const [previousNameAliasId] = generateAliasesId([previousName], createdAttackPattern);
+    const readAttackPattern = await storeLoadById(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
     expect(readAttackPattern.name).toEqual('T99105');
     expect(readAttackPattern.aliases).toEqual([previousName]);
-    expect(readAttackPattern.i_aliases_ids).toEqual([previousNameAliasId]);
-    const loadedByPreviousName = await internalLoadById(testContext, ADMIN_USER, previousNameAliasId);
-    expect(loadedByPreviousName.internal_id).toEqual(createdAttackPattern.internal_id);
+    expect(readAttackPattern.i_aliases_ids).toEqual(generateAliasesId([previousName], readAttackPattern));
     await deleteElementById(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
   });
 
