@@ -532,6 +532,8 @@ Environment variables:
 | garbage_collection_manager:deleted_retention_days    | GARBAGE_COLLECTION_MANAGER__DELETED_RETENTION_DAYS    | 7                                | Days after which elements in trash are deleted                                                                                                 |
 | -                                                    | -                                                     | -                                | -                                                                                                                                              |
 | telemetry_manager:lock_key                           | TELEMETRY_MANAGER__LOCK_KEY                           | telemetry_manager_lock           | Lock key for the manager in Redis                                                                                                              |
+| telemetry_manager:exporter_prometheus                | TELEMETRY_MANAGER__EXPORTER_PROMETHEUS                |                                  | Port exposing the Filigran telemetry metrics to Prometheus (for example `14271`); unset keeps the endpoint off                                 |
+| telemetry_manager:exporter_prometheus_host           | TELEMETRY_MANAGER__EXPORTER_PROMETHEUS_HOST           | `0.0.0.0`                        | IPv4 address the Filigran telemetry Prometheus endpoint listens on                                                                             |
 
 
 !!! note "Manager's duties"

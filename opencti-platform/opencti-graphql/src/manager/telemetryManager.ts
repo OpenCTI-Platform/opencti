@@ -30,6 +30,7 @@ import {
   ENTITY_TYPE_USER,
 } from '../schema/internalObject';
 import { BatchExportingMetricReader } from '../telemetry/BatchExportingMetricReader';
+import { buildFiligranPrometheusExporter } from '../telemetry/filigranPrometheusExporter';
 import type { BasicStoreSettings } from '../types/settings';
 import { getHttpClient } from '../utils/http-client';
 import type { BasicStoreEntityConnector, CachedConnector } from '../modules/connector/connector-types';
@@ -108,6 +109,9 @@ type DataShareLike = BasicStoreEntity & { stream_public?: boolean; enabled?: boo
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
 const SCHEDULE_TIME = conf.get('telemetry_manager:interval') || 60000; // 1 minute default
 const TELEMETRY_MANAGER_ENABLED = booleanConf('telemetry_manager:enabled', true);
+// Unset by default: the Filigran metrics are only exposed to Prometheus when a port is configured.
+const TELEMETRY_PROMETHEUS_PORT = conf.get('telemetry_manager:exporter_prometheus');
+const TELEMETRY_PROMETHEUS_HOST = conf.get('telemetry_manager:exporter_prometheus_host') || '0.0.0.0';
 const FILIGRAN_OTLP_TELEMETRY = DEV_MODE
   ? 'https://telemetry.staging.filigran.io/v1/metrics'
   : 'https://telemetry.filigran.io/v1/metrics';
@@ -414,6 +418,12 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   });
   filigranMetricReaders.push(fileExporterReader);
   logApp.info('[TELEMETRY] File exporter activated');
+  // endregion
+  // region Prometheus exporter, to read the Filigran metrics locally
+  const prometheusExporter = buildFiligranPrometheusExporter(TELEMETRY_PROMETHEUS_PORT, TELEMETRY_PROMETHEUS_HOST);
+  if (prometheusExporter) {
+    filigranMetricReaders.push(prometheusExporter);
+  }
   // endregion
   // region OTLP Exporter
   try {
