@@ -37,7 +37,7 @@ import { isEmailRewriteAllowed, smtpConfiguredEmail } from '../database/smtp';
 import { isAuthenticationForcedFromEnv } from '../modules/authenticationProvider/providers-configuration';
 import { updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../domain/setting-auth';
 import { readPasswordHistoryCount } from '../modules/user/user-password-history';
-import { LOCAL_AUTH_LOCKOUT_DEFAULTS } from '../domain/local-auth-lockout';
+import { LOCAL_AUTH_LOCKOUT_DEFAULTS } from '../domain/local-auth-lockout-defaults';
 import { isSessionPresenceSupported } from '../modules/session/session-presence-domain';
 
 const settingsResolvers = {

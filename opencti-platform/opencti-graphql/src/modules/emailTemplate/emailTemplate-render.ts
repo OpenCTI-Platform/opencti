@@ -46,6 +46,20 @@ const LOCK_VARIABLES: [string, string][] = [
   ['$lock.unlock', '<%= lock.unlock %>'],
 ];
 
+type TemplateRecipient = { account_lock_after_date?: string | Date | null };
+
+// The recipient for the $user variables: only the fields a template can show, its expiration date as a day,
+// and no API token: only a send that asks for one generates it
+export const buildTemplateRecipient = (recipient: TemplateRecipient) => {
+  const lockAfterDate = recipient.account_lock_after_date;
+  const expiration = lockAfterDate instanceof Date ? DateTime.fromJSDate(lockAfterDate) : DateTime.fromISO(lockAfterDate ?? '');
+  return {
+    ...sanitizeUser(recipient),
+    api_token: '',
+    account_lock_after_date: lockAfterDate ? expiration.toFormat('yyyy-MM-dd') : '',
+  };
+};
+
 export const preprocessEmailTemplate = (templateBody: string) => {
   const variables = isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG) ? [...RECIPIENT_VARIABLES, ...LOCK_VARIABLES] : RECIPIENT_VARIABLES;
   return variables.reduce((body, [variable, value]) => body.split(variable).join(value), templateBody);
