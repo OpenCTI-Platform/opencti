@@ -380,15 +380,6 @@ const useSearchEntities = ({
       return;
     }
     const isSubKey = !!parentFilterKey;
-    // An answer to a search for an older term of this key would put its results first, in its own relevance order: it is
-    // ignored. Only the queries sending the term go through this guard: the others (creators, schema types...) do not
-    // depend on the term, are not ranked, and may not be queried again (cached), so their answers are always kept.
-    // All the queries of a search share its id, as a key can query several sources (e.g. entities and members).
-    const searchId = (latestSearchIds.current[filterKey] ?? 0) + 1;
-    latestSearchIds.current[filterKey] = searchId;
-    const unionSetLatestEntities = (key: string, newEntities: EntityValue[]) => {
-      if (latestSearchIds.current[filterKey] === searchId) unionSetEntities(key, newEntities);
-    };
 
     const newInputValue = {
       key: filterKey,
@@ -398,6 +389,17 @@ const useSearchEntities = ({
     setInputValues([newInputValue]);
     // the options of a search for this term are ranked by relevance (rankOptions), the others stay alphabetical
     const searchTerm = typeof event.target.value === 'string' ? event.target.value : '';
+    // An answer to a search for an older term of this key would put its results first, in its own relevance order: it is
+    // ignored. An answer to an empty search is always kept: it is not ranked, so it cannot reorder anything, and it
+    // may not be queried again (selecting a value clears the input without searching). Only the queries sending the
+    // term go through this guard: the others (creators, schema types...) do not depend on the term, are not ranked,
+    // and may not be queried again (cached), so their answers are always kept.
+    // All the queries of a search share its id, as a key can query several sources (e.g. entities and members).
+    const searchId = (latestSearchIds.current[filterKey] ?? 0) + 1;
+    latestSearchIds.current[filterKey] = searchId;
+    const unionSetLatestEntities = (key: string, newEntities: EntityValue[]) => {
+      if (!searchTerm.trim() || latestSearchIds.current[filterKey] === searchId) unionSetEntities(key, newEntities);
+    };
 
     // fetches vocabularies by categories and add them to the set
     const buildOptionsFromVocabularySearchQuery = (key: string, filterCategories: string[]) => {

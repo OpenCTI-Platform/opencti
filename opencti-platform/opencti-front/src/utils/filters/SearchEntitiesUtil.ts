@@ -26,7 +26,7 @@ const memberOption = ({ id, entity_type, name }: MemberNode): FilterOptionValue 
  * getOptionsFromEntities keeps. The options of a search without a term, or of a list nobody searches (markings, enums,
  * cached creators...), are not tagged and stay alphabetical.
  */
-export const rankOptions = <T extends { ranked?: boolean }>(options: T[], searchTerm: string): T[] => (
+export const rankOptions = (options: FilterOptionValue[], searchTerm: string): FilterOptionValue[] => (
   searchTerm.trim() ? options.map((option) => ({ ...option, ranked: true })) : options
 );
 
