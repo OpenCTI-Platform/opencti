@@ -5,7 +5,9 @@ import { useFormatter } from '../../../../../../components/i18n';
 import { OaevLogo } from '../../../../../../static/images/logo_oaev';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../../../utils/hooks/useGranted';
 import useXtmCounterpart, { XtmCounterpartKind } from '../core/useXtmCounterparts';
-import { useCompactPivot, withTooltip, XTM_CONNECT_DOC_URL } from '../core/xtmPivot';
+import { useCompactPivot } from '../core/useCompactPivot';
+import { XTM_CONNECT_DOC_URL } from '../core/xtmConnect';
+import { withTooltip } from '../core/XtmTooltip';
 
 interface OpenAevPivotProps {
   kind: XtmCounterpartKind;

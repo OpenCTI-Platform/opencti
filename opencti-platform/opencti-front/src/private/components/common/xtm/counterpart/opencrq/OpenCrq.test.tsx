@@ -3,7 +3,7 @@ import { screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../../../utils/tests/test-render';
 import { formatOpenCrqFacts, isOpenCrqKind, OpenCrqCard, OpenCrqPivot, OpenCrqRowMark } from './OpenCrq';
-import { XTM_CONNECT_DOC_URL } from '../core/xtmPivot';
+import { XTM_CONNECT_DOC_URL } from '../core/xtmConnect';
 import { resetXtmCounterpartCache } from '../core/useXtmCounterparts';
 
 const mocks = vi.hoisted(() => ({

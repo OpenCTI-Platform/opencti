@@ -9,7 +9,9 @@ import Card from '@common/card/Card';
 import { useFormatter } from '../../../../../../components/i18n';
 import { OcrqLogo } from '../../../../../../static/images/logo_ocrq';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../../../utils/hooks/useGranted';
-import { useCompactPivot, withTooltip, XTM_CONNECT_DOC_URL } from '../core/xtmPivot';
+import { useCompactPivot } from '../core/useCompactPivot';
+import { XTM_CONNECT_DOC_URL } from '../core/xtmConnect';
+import { withTooltip } from '../core/XtmTooltip';
 import useXtmCounterpart, { normaliseXtmKey, XtmCounterpartKind } from '../core/useXtmCounterparts';
 
 // The OpenCRQ side of the cross-platform pivots: same controls, states and wording as the OpenAEV

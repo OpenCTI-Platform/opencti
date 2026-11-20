@@ -3,7 +3,8 @@ import { screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../../../utils/tests/test-render';
 import OpenAevPivot from './OpenAevPivot';
-import { XTM_CONNECT_DOC_URL, XTM_PIVOT_COMPACT_QUERY } from '../core/xtmPivot';
+import { XTM_CONNECT_DOC_URL } from '../core/xtmConnect';
+import { XTM_PIVOT_COMPACT_QUERY } from '../core/useCompactPivot';
 import { normaliseXtmKey, resetXtmCounterpartCache } from '../core/useXtmCounterparts';
 
 const mocks = vi.hoisted(() => ({
