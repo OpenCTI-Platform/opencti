@@ -33,7 +33,7 @@ import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/sch
 import { addLabel } from '../../../src/domain/label';
 import { ENTITY_TYPE_LABEL } from '../../../src/schema/stixMetaObject';
 import { dayFormat, escape, monthFormat, now, prepareDate, sinceNowInMinutes, utcDate, yearFormat } from '../../../src/utils/format';
-import { READ_DATA_INDICES } from '../../../src/database/utils';
+import { READ_DATA_INDICES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../../../src/database/utils';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
 import { checkObservableSyntax } from '../../../src/utils/syntax';
 import { FunctionalError } from '../../../src/config/errors';
@@ -48,7 +48,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organiza
 import { addReport } from '../../../src/domain/report';
 import { addIndividual } from '../../../src/domain/individual';
 import { addOrganization } from '../../../src/modules/organization/organization-domain';
-import { generateInternalId } from '../../../src/schema/identifier';
+import { generateAliasesId, generateInternalId } from '../../../src/schema/identifier';
 import { mapEdgesCountPerEntityType } from '../../utils/domainQueryHelper';
 import { entitiesCounter, relationsCounter } from './entityCountHelper';
 
@@ -868,17 +868,36 @@ describe('Create entities', () => {
   });
 
   it('should keep previous name as alias when name and aliases are replaced together', async () => {
-    const input = { name: 'Ingress Tool Transfer TEST', x_mitre_id: 'T99105' };
-    const createdAttackPattern = await createEntity(testContext, ADMIN_USER, input, ENTITY_TYPE_ATTACK_PATTERN);
-    const inputs = [
-      { key: 'name', value: ['T99105'] },
-      { key: 'aliases', value: ['Ingress Tool Transfer TEST'] },
-    ];
-    await updateAttribute(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN, inputs);
-    const readAttackPattern = await storeLoadById(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
+    const previousName = 'Ingress Tool Transfer TEST';
+    const createdAttackPattern = await createEntity(testContext, ADMIN_USER, { name: previousName }, ENTITY_TYPE_ATTACK_PATTERN);
+    const loadAttackPattern = () => storeLoadById(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
+    const update = (inputs) => updateAttribute(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN, inputs);
+    const [previousNameAliasId, extraAliasId] = generateAliasesId([previousName, 'Extra Alias'], createdAttackPattern);
+    await update([{ key: 'name', value: ['T99105'] }, { key: 'aliases', value: [previousName] }]);
+    let readAttackPattern = await loadAttackPattern();
     expect(readAttackPattern.name).toEqual('T99105');
-    expect(readAttackPattern.aliases).toEqual(['Ingress Tool Transfer TEST']);
-    expect(readAttackPattern.i_aliases_ids.length).toEqual(1);
+    expect(readAttackPattern.aliases).toEqual([previousName]);
+    expect(readAttackPattern.i_aliases_ids).toEqual([previousNameAliasId]);
+    const loadedByPreviousName = await internalLoadById(testContext, ADMIN_USER, previousNameAliasId);
+    expect(loadedByPreviousName.internal_id).toEqual(createdAttackPattern.internal_id);
+    await update([
+      { key: 'name', value: ['T99105 Renamed'] },
+      { key: 'aliases', value: ['Extra Alias'], operation: UPDATE_OPERATION_ADD },
+      { key: 'x_opencti_stix_ids', value: [extraAliasId], operation: UPDATE_OPERATION_ADD },
+    ]);
+    readAttackPattern = await loadAttackPattern();
+    expect(readAttackPattern.aliases.sort()).toEqual(['Extra Alias', previousName].sort());
+    expect(readAttackPattern.i_aliases_ids.sort()).toEqual([previousNameAliasId, extraAliasId].sort());
+    expect(readAttackPattern.x_opencti_stix_ids).toContain(extraAliasId);
+    await update([{ key: 'name', value: ['T99105 Final'] }, { key: 'aliases', value: ['Extra Alias'], operation: UPDATE_OPERATION_REMOVE }]);
+    readAttackPattern = await loadAttackPattern();
+    expect(readAttackPattern.aliases).toEqual([previousName]);
+    expect(readAttackPattern.i_aliases_ids).toEqual([previousNameAliasId]);
+    expect(readAttackPattern.x_opencti_stix_ids).not.toContain(extraAliasId);
+    await update([{ key: 'name', value: ['t99105 final'] }, { key: 'aliases', value: ['T99105 Final', previousName] }]);
+    readAttackPattern = await loadAttackPattern();
+    expect(readAttackPattern.name).toEqual('t99105 final');
+    expect(readAttackPattern.aliases).toEqual([previousName]);
     await deleteElementById(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
   });
 

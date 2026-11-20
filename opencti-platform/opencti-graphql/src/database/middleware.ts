@@ -2692,7 +2692,7 @@ const prepareAttributesForUpdate = async (
     if (input.key === ATTRIBUTE_ALIASES || input.key === ATTRIBUTE_ALIASES_OPENCTI) {
       const filteredValues = input.value.filter((e) => normalizeName(e) !== normalizeName(targetName));
       const uniqAliases = R.uniqBy((e) => normalizeName(e), filteredValues);
-      return { key: input.key, value: uniqAliases };
+      return { ...input, value: uniqAliases };
     }
     // For upsert or update, workflow cant be reset or setup on un-existing workflow
     if (input.key === X_WORKFLOW_ID) {
@@ -2772,6 +2772,23 @@ type UpdateAttribueRawOpts = {
   impactStandardId?: boolean;
   upsert?: boolean;
 };
+// Purge removed alias IDs from other stix IDS
+const purgeRemovedAliasesIdsFromStixIds = (instance: BasicStoreEntity, aliasesIds: string[], preparedElements: EditInput[]) => {
+  const removedAliasesIds = (instance[INTERNAL_IDS_ALIASES] ?? []).filter((aid) => !aliasesIds.includes(aid));
+  if (removedAliasesIds.length === 0) {
+    return;
+  }
+  const stixIdsInput = R.find((e) => e.key === IDS_STIX, preparedElements);
+  if (stixIdsInput) {
+    stixIdsInput.value = stixIdsInput.value.filter((sid) => !removedAliasesIds.includes(sid));
+  } else {
+    const currentStixIds = instance[IDS_STIX] ?? [];
+    const newStixIds = currentStixIds.filter((sid) => !removedAliasesIds.includes(sid));
+    if (newStixIds.length < currentStixIds.length) {
+      preparedElements.push({ key: IDS_STIX, value: newStixIds });
+    }
+  }
+};
 const updateAttributeRaw = async (
   context: AuthContext,
   user: AuthUser,
@@ -2812,12 +2829,18 @@ const updateAttributeRaw = async (
     const aliasField = resolveAliasesField(instanceType).name;
     const nameInput = R.find((e) => e.key === NAME_FIELD, preparedElements);
     const aliasesInput = R.find((e) => e.key === aliasField, preparedElements);
+    const currentAliases: string[] = (aliasedInstance as unknown as Record<string, string[] | undefined>)[aliasField] ?? [];
     if (nameInput || aliasesInput) {
       const askedModificationName = nameInput ? R.head(nameInput.value) : undefined;
       const targetName = askedModificationName ?? aliasedInstance.name;
       // Cleanup the alias input.
       if (aliasesInput) {
-        const preparedAliases = (aliasesInput.value ?? [])
+        const isDeltaOperation = aliasesInput.operation === UPDATE_OPERATION_ADD || aliasesInput.operation === UPDATE_OPERATION_REMOVE;
+        const mergedAliases = isDeltaOperation
+          ? (rebuildAndMergeInputFromExistingData(aliasesInput, aliasedInstance) as Partial<EditInput>).value ?? currentAliases
+          : aliasesInput.value ?? [];
+        aliasesInput.operation = EditOperation.Replace;
+        const preparedAliases = mergedAliases
           .filter((a) => isNotEmptyField(a))
           .filter((a) => normalizeName(a) !== normalizeName(targetName))
           .map((a) => a.trim());
@@ -2862,6 +2885,7 @@ const updateAttributeRaw = async (
         const aliasesId = generateAliasesId(aliases, aliasedInstance);
         const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
         preparedElements.push(aliasInput);
+        purgeRemovedAliasesIdsFromStixIds(aliasedInstance, aliasesId, preparedElements);
       } else if (aliasesInput) {
         // No name change asked but aliases addition
         if (upsert) {
@@ -2874,19 +2898,7 @@ const updateAttributeRaw = async (
         const aliasesId = generateAliasesId(aliasesInput.value, aliasedInstance);
         const aliasIdsInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
         preparedElements.push(aliasIdsInput);
-        // Purge removed alias IDs from other stix IDS
-        const currentStixIds = aliasedInstance[IDS_STIX] ?? [];
-        const removedAliasesIds = aliasedInstance[INTERNAL_IDS_ALIASES]?.filter((aid) => !aliasesId.includes(aid));
-        const stixIdsInput = R.find((e) => e.key === IDS_STIX, preparedElements);
-        if (stixIdsInput) {
-          stixIdsInput.value = stixIdsInput.value.filter((sid) => !removedAliasesIds?.includes(sid));
-        } else {
-          const newStixIds = currentStixIds.filter((sid) => !removedAliasesIds?.includes(sid));
-          if (newStixIds.length < currentStixIds.length) {
-            const newStixIdsInput = { key: IDS_STIX, value: newStixIds };
-            preparedElements.push(newStixIdsInput);
-          }
-        }
+        purgeRemovedAliasesIdsFromStixIds(aliasedInstance, aliasesId, preparedElements);
       }
     }
   }

@@ -115,8 +115,8 @@ testUpdatedCounter['intrusion-set'] = 18;
 testUpdatedCounter['data-component'] = 7;
 testUpdatedCounter.location = 14;
 // 3 by ingestionDeduplication-test (a change at the source, an edit in the platform, the source content applied again)
-// +1 by middleware-test (rename keeping the previous name as alias)
-testUpdatedCounter['attack-pattern'] = 7;
+// +4 by middleware-test (renames keeping the previous name as alias)
+testUpdatedCounter['attack-pattern'] = 10;
 // 5 by workflow-closing-reason-test merge (1) and external status write (4) cases
 testUpdatedCounter['case-incident'] = 28;
 testUpdatedCounter.feedback = 1;
