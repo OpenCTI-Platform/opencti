@@ -328,7 +328,7 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 
 !!! warning "STARTTLS and credentials"
 
-    Without `smtp:use_ssl`, the connection starts unencrypted and is upgraded with STARTTLS only if the server offers it. An attacker on the network can remove this offer and read the password or OAuth2 token. With `smtp:require_tls`, the platform does not send the email when the connection is not upgraded, and the SMTP check at startup reports the server as down.
+    Without `smtp:use_ssl`, the connection starts unencrypted and is upgraded with STARTTLS only if the server offers it. An attacker on the network can remove this offer and read the password or OAuth2 token. With `smtp:require_tls`, the platform does not send the email when the connection is not upgraded, and the SMTP check at startup reports the server as down. This check runs before the settings are loaded, so it only covers the configuration file: with the interface-based configuration, the failure shows when an email is sent, or when the publisher manager starts.
 
     Against such an attacker, `smtp:require_tls` only protects the credentials when the server certificate is verified (`smtp:reject_unauthorized`, or `tls:reject_unauthorized` when it is not set): otherwise the attacker can complete STARTTLS with their own certificate.
 
