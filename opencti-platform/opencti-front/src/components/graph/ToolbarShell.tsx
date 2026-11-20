@@ -24,6 +24,8 @@ export interface ToolbarAction<G extends string = string> extends ToolbarOverflo
   label: string;
   icon: ReactNode;
   shortcut?: string;
+  /** What the action does, shown under its name in the tooltip while it is available. */
+  description?: string;
   /** Set for a toggle: whether it is on. */
   pressed?: boolean;
   /** Set when the action is not available now, saying why. */
@@ -218,6 +220,7 @@ const ToolbarShell = <G extends string>({
         shortcut={action.shortcut}
         pressed={action.pressed}
         disabledReason={action.disabledReason}
+        description={action.description}
         badge={action.badge}
         menu={action.options ? <GraphToolbarOptionsList options={action.options} /> : undefined}
         onClick={action.options ? undefined : () => action.onSelect?.()}

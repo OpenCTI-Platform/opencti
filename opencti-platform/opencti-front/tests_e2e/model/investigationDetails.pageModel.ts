@@ -1,4 +1,5 @@
 import { expect, Locator, Page } from '@playwright/test';
+import type { InvestigationMatrixFilters } from '../../src/private/components/workspaces/investigations/matrix/matrixFilters';
 
 /** Border colour of a technique used in the investigation (`#b71c1c`, the matrix's highlight). */
 export const MATRIX_HIGHLIGHT_BORDER_COLOR = 'rgb(183, 28, 28)';
@@ -206,6 +207,49 @@ export default class InvestigationDetailsPage {
       wrapper.scrollWidth,
       ...Array.from(wrapper.querySelectorAll('*')).map((element) => element.scrollWidth),
     ));
+  }
+
+  // -- Matrix filters
+
+  /** A technique that counts `count` linked entities: its accessible name says so, as `T9001 - E2E Alpha, linked to 3 entities`. */
+  getMatrixCellLinkedTo(label: string, count: number): Locator {
+    return this.page.getByRole('button', { name: `${label}, linked to ${count} ${count === 1 ? 'entity' : 'entities'}`, exact: true });
+  }
+
+  /** The badge of a filter button, which tells the number of filters in use: `1 in use`. */
+  getMatrixFilterBadge(label: string): Locator {
+    return this.getToolbarButton(label).locator('xpath=..');
+  }
+
+  /** Opens the list of a filter (`Filter by type`, `Filter by marking`, `Filter by author`). The filters stay in the row in a wide window. */
+  async openMatrixFilter(label: string): Promise<Locator> {
+    await this.getToolbarButton(label).click();
+    const menu = this.page.getByRole('menu', { name: label, exact: true });
+    await expect(menu).toBeVisible();
+    return menu;
+  }
+
+  /** A choice of the filter list that is open. */
+  getMatrixFilterOption(label: string): Locator {
+    return this.page.getByRole('menuitemcheckbox', { name: label });
+  }
+
+  /** Checks or unchecks a choice of the filter list that is open. The list stays open for the next choice. */
+  async toggleMatrixFilterOption(label: string) {
+    await this.getMatrixFilterOption(label).click();
+  }
+
+  async closeMatrixFilter() {
+    await this.page.keyboard.press('Escape');
+    await expect(this.page.getByRole('menu')).toHaveCount(0);
+  }
+
+  /** Writes the filters the matrix keeps for an investigation, as it does itself. Call on a page of the platform; reload for the matrix to read it. */
+  async setStoredMatrixFilters(investigationId: string, filters: Partial<InvestigationMatrixFilters>) {
+    await this.page.evaluate(
+      ({ key, value }) => window.localStorage.setItem(key, value),
+      { key: `investigation-matrix-filters-${investigationId}`, value: JSON.stringify(filters) },
+    );
   }
 
   // -- Export: the image from the matrix toolbar, the PDF and STIX from the header

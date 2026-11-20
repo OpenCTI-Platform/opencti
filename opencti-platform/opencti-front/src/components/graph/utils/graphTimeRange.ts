@@ -11,6 +11,36 @@ export interface GraphTimeRange {
   }[];
 }
 
+/** What the time range reads of a link, so that other views can feed it their own relationships. */
+type TimeRangeLink = Pick<GraphLink, 'parent_types' | 'defaultDate'>;
+
+/**
+ * Whether a dated element falls outside the selected range; an undated one never does.
+ * An invalid date compares false on both sides, so it stays inside.
+ */
+export const isOutsideTimeRange = (
+  defaultDate: Date | null | undefined,
+  interval: GraphTimeRange['interval'],
+): boolean => {
+  if (!defaultDate) return false;
+  return defaultDate < interval[0] || defaultDate > interval[1];
+};
+
+/**
+ * One filter per end moved more than 20 minutes away from the full range; the margin absorbs
+ * the rounding of the range scale.
+ */
+export const countTimeRangeFilters = (
+  full: GraphTimeRange['interval'],
+  selected: GraphTimeRange['interval'] | undefined,
+): number => {
+  if (!selected) return 0;
+  let count = 0;
+  if (minutesBetweenDates(full[0], selected[0]) > 20) count += 1;
+  if (minutesBetweenDates(selected[1], full[1]) > 20) count += 1;
+  return count;
+};
+
 /**
  * Determines start (min) and end (max) date in array of data.
  * By default start = now - 1 day, end = now.
@@ -19,7 +49,7 @@ export interface GraphTimeRange {
  * @returns [start, end] both date objects.
  */
 export const computeTimeRangeInterval = (
-  objects: GraphLink[],
+  objects: TimeRangeLink[],
 ): GraphTimeRange['interval'] => {
   let startDate = jsDate(daysAgo(1));
   let endDate = jsDate(dayEndDate());
@@ -50,7 +80,7 @@ export const computeTimeRangeInterval = (
  */
 export const computeTimeRangeValues = (
   interval: GraphTimeRange['interval'],
-  objects: GraphLink[],
+  objects: TimeRangeLink[],
 ): GraphTimeRange['values'] => {
   const minutes = minutesBetweenDates(interval[0], interval[1]);
   const intervalInMinutes = Math.ceil(minutes / 100);

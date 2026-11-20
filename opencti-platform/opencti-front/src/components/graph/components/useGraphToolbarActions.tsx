@@ -33,7 +33,7 @@ import { useGraphView } from '../GraphViewContext';
 import useGraphInteractions from '../utils/useGraphInteractions';
 import type { ToolbarAction } from '../ToolbarShell';
 import { selectableTypes } from '../utils/graphCollapse';
-import { minutesBetweenDates } from '../../../utils/Time';
+import { countTimeRangeFilters } from '../utils/graphTimeRange';
 import { MESSAGING$ } from '../../../relay/environment';
 
 /** Groups of the graph toolbar, in their order from left to right. */
@@ -141,15 +141,7 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
   const hasSelection = selectedNodes.length > 0;
   const needsSelection = hasSelection ? undefined : t_i18n('Select entities first');
 
-  // The time range counts as one filter per end moved away from the full range; a small margin
-  // absorbs the rounding of the range scale.
-  const [start, end] = timeRange.interval;
-  const [selectedStart, selectedEnd] = selectedTimeRangeInterval ?? [];
-  let timeRangeFilters = 0;
-  if (selectedTimeRangeInterval) {
-    if (minutesBetweenDates(start, selectedStart ?? new Date()) > 20) timeRangeFilters += 1;
-    if (minutesBetweenDates(selectedEnd ?? new Date(), end) > 20) timeRangeFilters += 1;
-  }
+  const timeRangeFilters = countTimeRangeFilters(timeRange.interval, selectedTimeRangeInterval);
   const typeFilterCount = view?.typeFilterCount ?? disabledEntityTypes.length + disabledRelationshipTypes.length;
   // Clearing follows the stored filters, not the counts shown: a type filtered out that is not drawn any
   // more, or a time range moved by less than the counted margin, still filters the graph.

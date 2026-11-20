@@ -1,10 +1,12 @@
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import testRender from '../../../../../utils/tests/test-render';
 import InvestigationMatrixToolbar, { type InvestigationMatrixToolbarProps } from './InvestigationMatrixToolbar';
 import { DEFAULT_INVESTIGATION_MATRIX_SETTINGS } from './investigationMatrixSettings';
 import type { InvestigationAttackPattern } from './investigationMatrixUtils';
+import { DEFAULT_MATRIX_FILTERS, type InvestigationMatrixFilters, type MatrixFilterOptions } from './matrixFilters';
+import { useInvestigationMatrixFilterActions } from './useInvestigationMatrixFilterActions';
 
 // The row is as wide as each test sets it.
 const row = vi.hoisted(() => ({ width: 2000 }));
@@ -58,6 +60,44 @@ const renderToolbar = (props: Partial<InvestigationMatrixToolbarProps> = {}) => 
 };
 
 const toolbar = () => screen.getByRole('toolbar', { name: 'Matrix toolbar' });
+
+const WHOLE_YEAR = { interval: [new Date('2026-01-01T00:00:00.000Z'), new Date('2027-01-01T00:00:00.000Z')] as [Date, Date], values: [] };
+const NO_FILTER_OPTIONS: MatrixFilterOptions = { entityTypes: [], relationshipTypes: [], markings: [], authors: [], datedLinks: [] };
+
+// The filter buttons as the matrix builds them, drawn by the real toolbar.
+const FilteredToolbar = ({ options, filters = DEFAULT_MATRIX_FILTERS }: { options: MatrixFilterOptions; filters?: InvestigationMatrixFilters }) => {
+  const filterActions = useInvestigationMatrixFilterActions({
+    options,
+    timeRange: WHOLE_YEAR,
+    filters,
+    onChange: vi.fn(),
+    onClear: vi.fn(),
+    timeRangeOpen: false,
+    onToggleTimeRange: vi.fn(),
+  });
+  return (
+    <InvestigationMatrixToolbar
+      outsideKillChain={[]}
+      killChains={['mitre-attack']}
+      killChain="mitre-attack"
+      settings={DEFAULT_INVESTIGATION_MATRIX_SETTINGS}
+      onSettingsChange={vi.fn()}
+      onSecurityPlatformsChange={vi.fn()}
+      isEmpty={false}
+      hasScores
+      heatmapOn={false}
+      heatMax={4}
+      exportName="Investigation - Matrix view"
+      filterActions={filterActions}
+    />
+  );
+};
+
+const TYPE_DESCRIPTION = 'Choose which linked entity types and relationship types (uses, indicates, contains) count towards the heatmap.';
+const TIME_RANGE_DESCRIPTION = 'Count only the relationships dated within the range you set.';
+const MARKING_DESCRIPTION = 'Count only the data with the markings you keep.';
+const AUTHOR_DESCRIPTION = 'Count only the data from the authors you keep.';
+const CLEAR_DESCRIPTION = 'Remove every filter set on the Matrix view and show the whole matrix again.';
 
 describe('InvestigationMatrixToolbar', () => {
   beforeEach(() => {
@@ -164,6 +204,57 @@ describe('InvestigationMatrixToolbar', () => {
     await user.click(within(toolbar()).getByRole('button', { name: 'Export to image' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Dark (with background)' }));
     expect(imageExport.exportImage).toHaveBeenCalledWith('dark:bg');
+  });
+
+  it('lists the filters with what each does, disabled ones saying why', async () => {
+    const { user, rerender } = testRender(
+      <FilteredToolbar
+        options={{
+          ...NO_FILTER_OPTIONS,
+          entityTypes: ['Intrusion-Set'],
+          relationshipTypes: ['uses'],
+          authors: [{ id: 'identity--acme', name: 'ACME' }],
+        }}
+      />,
+    );
+    const filters = within(toolbar()).getByRole('group', { name: 'Filters' });
+    const tooltipOf = async (name: string) => {
+      const button = within(filters).getByRole('button', { name });
+      await user.hover(button);
+      const text = (await screen.findByRole('tooltip')).textContent;
+      await user.unhover(button);
+      // Closed before the next one opens.
+      await user.keyboard('{Escape}');
+      await waitFor(() => expect(screen.queryByRole('tooltip')).toBeNull());
+      return text;
+    };
+
+    expect(within(filters).getAllByRole('button').map((button) => button.getAttribute('aria-label'))).toEqual([
+      'Filter by type', 'Time range', 'Filter by marking', 'Filter by author', 'Clear all filters',
+    ]);
+    // Enabled: the name, then what the filter does.
+    expect(await tooltipOf('Filter by type')).toBe(`Filter by type${TYPE_DESCRIPTION}`);
+    expect(await tooltipOf('Time range')).toBe(`Time range${TIME_RANGE_DESCRIPTION}`);
+    expect(await tooltipOf('Filter by author')).toBe(`Filter by author${AUTHOR_DESCRIPTION}`);
+    // Disabled: the name, then why, instead of what it does.
+    expect(within(filters).getByRole('button', { name: 'Filter by marking' })).toHaveAttribute('aria-disabled', 'true');
+    expect(await tooltipOf('Filter by marking')).toBe('Filter by markingNo marking in this graph');
+    expect(await tooltipOf('Clear all filters')).toBe('Clear all filtersNo filter is active');
+
+    rerender(<FilteredToolbar options={{ ...NO_FILTER_OPTIONS, markings: [{ id: 'marking--tlp', definition: 'TLP:GREEN' }] }} />);
+    expect(await tooltipOf('Filter by type')).toBe('Filter by typeNo attack pattern is linked to an entity in this investigation');
+    expect(await tooltipOf('Filter by author')).toBe('Filter by authorNo author in this graph');
+    expect(await tooltipOf('Filter by marking')).toBe(`Filter by marking${MARKING_DESCRIPTION}`);
+
+    rerender(
+      <FilteredToolbar
+        options={{ ...NO_FILTER_OPTIONS, entityTypes: ['Intrusion-Set'] }}
+        filters={{ ...DEFAULT_MATRIX_FILTERS, disabledEntityTypes: ['Intrusion-Set'], timeRange: ['2026-03-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'] }}
+      />,
+    );
+    expect(await tooltipOf('Clear all filters')).toBe(`Clear all filters${CLEAR_DESCRIPTION}`);
+    // Both ends moved inside the full range the matrix gives.
+    expect(within(filters).getAllByText('2 in use')).toHaveLength(1);
   });
 
   it('disables the image export while one runs', () => {

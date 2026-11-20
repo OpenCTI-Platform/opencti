@@ -29,7 +29,7 @@ import { ObjectToParse } from '../../../../components/graph/utils/useGraphParser
 import { useFormatter } from '../../../../components/i18n';
 import InvestigationViewSwitcher, { INVESTIGATION_MATRIX_EXPORT_ID, useInvestigationView } from './InvestigationViewSwitcher';
 import InvestigationMatrix from './matrix/InvestigationMatrix';
-import { useInvestigationMatrixSettings } from './matrix/investigationMatrixSettings';
+import { useInvestigationMatrixFilters, useInvestigationMatrixSettings } from './matrix/investigationMatrixSettings';
 import prepareMatrixCapture from './matrix/prepareMatrixCapture';
 
 const investigationGraphDataFragment = graphql`
@@ -468,6 +468,7 @@ const InvestigationGraphComponent = ({
 
   // Held here, not in the matrix, which unmounts on the graph view: the toolbar settings survive a view switch.
   const [matrixSettings, changeMatrixSettings] = useInvestigationMatrixSettings(investigation.id);
+  const [matrixFilters, changeMatrixFilters, clearMatrixFilters] = useInvestigationMatrixFilters(investigation.id);
 
   const {
     addInvestigationOpInStack,
@@ -624,7 +625,14 @@ const InvestigationGraphComponent = ({
         </div>
         {view === 'matrix' && (
           <div style={{ position: 'absolute', inset: 0, overflow: 'auto' }}>
-            <InvestigationMatrix settings={matrixSettings} onSettingsChange={changeMatrixSettings} exportName={matrixExportName} />
+            <InvestigationMatrix
+              settings={matrixSettings}
+              onSettingsChange={changeMatrixSettings}
+              filters={matrixFilters}
+              onFiltersChange={changeMatrixFilters}
+              onFiltersClear={clearMatrixFilters}
+              exportName={matrixExportName}
+            />
           </div>
         )}
       </div>

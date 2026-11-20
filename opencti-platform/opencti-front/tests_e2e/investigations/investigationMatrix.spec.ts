@@ -1,5 +1,7 @@
 import fs from 'node:fs';
+import type { APIRequestContext, Page } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
+import GraphPage from '../model/graph.pageModel';
 import InvestigationDetailsPage, { MATRIX_HIGHLIGHT_BORDER_COLOR } from '../model/investigationDetails.pageModel';
 import { addReport, deleteReport } from '../dataForTesting/report.data';
 import {
@@ -41,8 +43,9 @@ const PNG_HEIGHT_OFFSET = 20;
 
 // A window the toolbar has room in: the export and the security posture stay in the row instead of "More actions".
 const WIDE_VIEWPORT = { width: 1920, height: 1080 };
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 // The tools of the graph toolbar: the matrix has nothing for them to act on.
-const GRAPH_ONLY_TOOLS = /Zoom|layout|selection|Select |3D mode|Fit the|Locate the|Full screen|shortest path|Unfix|Add an entity|Remove selected|Keyboard shortcuts|Export the whole graph/;
+const GRAPH_ONLY_TOOLS = /Zoom|layout|selection|Select |3D mode|Fit the|Locate the|Full screen|shortest path|Unfix|Add an entity|Add entities|Create a relationship|Remove selected|Keyboard shortcuts|Export the whole graph/i;
 const GRAPH_SEARCH_PLACEHOLDER = 'Search these results...';
 
 test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
@@ -399,6 +402,121 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     });
   });
 
+  test.describe('Filters', () => {
+    // The filters stay in the toolbar row when the window is wide: a submenu of "More actions" is not worth driving here.
+    // The seed holds T9001 used by A, B, C and D (4), and T9002 used by A and contained in a report (2).
+    const openFilteredMatrix = async (page: Page, request: APIRequestContext) => {
+      const { investigationId } = await seed(request, { withFilterData: true });
+      const investigationPage = new InvestigationDetailsPage(page);
+      await page.setViewportSize(WIDE_VIEWPORT);
+      await page.goto(`${INVESTIGATION_URL}/${investigationId}/matrix`);
+      await expect(investigationPage.getMatrixCellLinkedTo(ALPHA, 4)).toBeVisible();
+      await expect(investigationPage.getMatrixCellLinkedTo(BETA, 2)).toBeVisible();
+      return { investigationId, investigationPage };
+    };
+
+    test('Filter by type: unchecking contains stops the report counting', async ({ page, request }) => {
+      const { investigationPage } = await openFilteredMatrix(page, request);
+
+      const menu = await investigationPage.openMatrixFilter('Filter by type');
+      // The list has a part for the linked entities and one for the relationships.
+      await expect(menu.getByText('Entities', { exact: true })).toBeVisible();
+      await expect(menu.getByText('Relationships', { exact: true })).toBeVisible();
+      await investigationPage.toggleMatrixFilterOption('contains');
+      await expect(investigationPage.getMatrixFilterOption('contains')).toHaveAttribute('aria-checked', 'false');
+      await investigationPage.closeMatrixFilter();
+
+      // T9002 is still used by A, and no longer contained in the report.
+      await expect(investigationPage.getMatrixCellLinkedTo(BETA, 1)).toBeVisible();
+      // The other relationships are untouched.
+      await expect(investigationPage.getMatrixCellLinkedTo(ALPHA, 4)).toBeVisible();
+      await expect(investigationPage.getMatrixFilterBadge('Filter by type')).toContainText('1 in use');
+    });
+
+    test('Time range: only relationships dated in the last 6 months count', async ({ page, request }) => {
+      const { investigationId, investigationPage } = await openFilteredMatrix(page, request);
+      await expect(investigationPage.getMatrixFilterBadge('Time range')).not.toContainText('in use');
+
+      await investigationPage.setStoredMatrixFilters(investigationId, {
+        timeRange: [new Date(Date.now() - 182 * MS_PER_DAY).toISOString(), new Date(Date.now() + MS_PER_DAY).toISOString()],
+      });
+      await page.reload();
+
+      // IS D uses T9001 since 400 days: it falls out of the range. A, B and C stay.
+      await expect(investigationPage.getMatrixCellLinkedTo(ALPHA, 3)).toBeVisible();
+      await expect(investigationPage.getMatrixFilterBadge('Time range')).toContainText('1 in use');
+    });
+
+    test('Filter by marking: unchecking TLP:AMBER drops IS D', async ({ page, request }) => {
+      const { investigationPage } = await openFilteredMatrix(page, request);
+
+      await investigationPage.openMatrixFilter('Filter by marking');
+      await investigationPage.toggleMatrixFilterOption('TLP:AMBER');
+      await expect(investigationPage.getMatrixFilterOption('TLP:AMBER')).toHaveAttribute('aria-checked', 'false');
+      await investigationPage.closeMatrixFilter();
+
+      await expect(investigationPage.getMatrixCellLinkedTo(ALPHA, 3)).toBeVisible();
+      await expect(investigationPage.getMatrixFilterBadge('Filter by marking')).toContainText('1 in use');
+    });
+
+    test('Filter by author: unchecking E2E Matrix author one drops IS C', async ({ page, request }) => {
+      const { investigationPage } = await openFilteredMatrix(page, request);
+
+      await investigationPage.openMatrixFilter('Filter by author');
+      await investigationPage.toggleMatrixFilterOption('E2E Matrix author one');
+      await expect(investigationPage.getMatrixFilterOption('E2E Matrix author one')).toHaveAttribute('aria-checked', 'false');
+      await investigationPage.closeMatrixFilter();
+
+      await expect(investigationPage.getMatrixCellLinkedTo(ALPHA, 3)).toBeVisible();
+      await expect(investigationPage.getMatrixFilterBadge('Filter by author')).toContainText('1 in use');
+    });
+
+    test('Matrix filters do not filter the graph, and survive a switch and a reload', async ({ page, request }) => {
+      const { investigationPage } = await openFilteredMatrix(page, request);
+      const graph = new GraphPage(page);
+
+      await investigationPage.openMatrixFilter('Filter by type');
+      await investigationPage.toggleMatrixFilterOption('contains');
+      await investigationPage.closeMatrixFilter();
+      await expect(investigationPage.getMatrixCellLinkedTo(BETA, 1)).toBeVisible();
+
+      // The graph has its own filters: the matrix ones leave it as it was.
+      await investigationPage.goToGraph();
+      await graph.expectToolbarActionEnabled('Clear all filters', false);
+
+      await investigationPage.goToMatrix();
+      await expect(investigationPage.getMatrixFilterBadge('Filter by type')).toContainText('1 in use');
+      await expect(investigationPage.getMatrixCellLinkedTo(BETA, 1)).toBeVisible();
+
+      await page.reload();
+      await expect(investigationPage.getMatrixFilterBadge('Filter by type')).toContainText('1 in use');
+      await expect(investigationPage.getMatrixCellLinkedTo(BETA, 1)).toBeVisible();
+    });
+
+    test('Clear all filters shows the whole matrix again', async ({ page, request }) => {
+      const { investigationPage } = await openFilteredMatrix(page, request);
+      await expect(investigationPage.getToolbarButton('Clear all filters')).toBeDisabled();
+
+      await investigationPage.openMatrixFilter('Filter by type');
+      await investigationPage.toggleMatrixFilterOption('contains');
+      await investigationPage.closeMatrixFilter();
+      await investigationPage.openMatrixFilter('Filter by marking');
+      await investigationPage.toggleMatrixFilterOption('TLP:AMBER');
+      await investigationPage.closeMatrixFilter();
+      await expect(investigationPage.getMatrixCellLinkedTo(ALPHA, 3)).toBeVisible();
+      await expect(investigationPage.getMatrixCellLinkedTo(BETA, 1)).toBeVisible();
+
+      await expect(investigationPage.getToolbarButton('Clear all filters')).toBeEnabled();
+      await investigationPage.getToolbarButton('Clear all filters').click();
+
+      await expect(investigationPage.getMatrixCellLinkedTo(ALPHA, 4)).toBeVisible();
+      await expect(investigationPage.getMatrixCellLinkedTo(BETA, 2)).toBeVisible();
+      await expect(investigationPage.getMatrixFilterBadge('Filter by type')).not.toContainText('in use');
+      await expect(investigationPage.getMatrixFilterBadge('Filter by marking')).not.toContainText('in use');
+      await expect(investigationPage.getToolbarButton('Clear all filters')).toBeDisabled();
+    });
+  });
+
   test.describe('Export', () => {
     // A viewport narrower than the matrix: a capture of the visible box would crop the columns that do not fit.
     const NARROW_VIEWPORT = { width: 800, height: 900 };
@@ -458,7 +576,7 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
       const heatDownload = await heatPromise;
       const heatHeight = fs.readFileSync(await heatDownload.path()).readUInt32BE(PNG_HEIGHT_OFFSET);
 
-      // The legend adds a row under the matrix.
+      // The legend adds a row above the matrix.
       expect(heatHeight).toBeGreaterThan(plainHeight);
       // And it is hidden again once the capture is done.
       await expect(investigationPage.getExportOnlyLegend()).toBeHidden();
