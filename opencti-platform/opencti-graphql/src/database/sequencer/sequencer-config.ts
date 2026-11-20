@@ -45,7 +45,8 @@ export interface SequencerConfig {
   noopMemo: boolean;
   noopMemoSize: number;
   // task 0040 no-op tag (with noop_memo): an intent whose memo entry exists when it is queued takes no slot in the
-  // release set point nor in the cycle drain; a cycle holds at most noop_tag_ceiling_ratio x max_batch_size intents
+  // cycle drain and counts 1 / noop_tag_ceiling_ratio in the release set point; a cycle holds at most
+  // noop_tag_ceiling_ratio x max_batch_size intents (default 5: ratio sweep 5 / 10 / 20, same tail gain, cost up with it)
   noopTagCaps: boolean;
   noopTagCeilingRatio: number;
   pendingRefExpiryS: number;
@@ -141,7 +142,7 @@ const readConfig = (): SequencerConfig => {
     // Off until measured (task 0040): a misp object carries ~195 external references ending as memo hits, so a
     // 600-intent cap held ~3 objects and each batch rewrote the same ~90 big reference documents
     noopTagCaps: booleanConf('app:ingestion_sequencer:noop_tag_caps', false),
-    noopTagCeilingRatio: Math.max(1, Number(conf.get('app:ingestion_sequencer:noop_tag_ceiling_ratio') ?? 20)),
+    noopTagCeilingRatio: Math.max(1, Number(conf.get('app:ingestion_sequencer:noop_tag_ceiling_ratio') ?? 5)),
     pendingRefExpiryS: Number(conf.get('app:ingestion_sequencer:pending_ref_expiry_s') ?? 604800),
     memberWaitLimit: Number(conf.get('app:ingestion_sequencer:member_wait_limit') ?? 2),
     // B10 (2026-09-16): a deferral waiting on a queued producer is re-admitted when the
