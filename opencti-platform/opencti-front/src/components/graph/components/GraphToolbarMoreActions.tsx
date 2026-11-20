@@ -20,7 +20,8 @@ import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../i18n';
 import type { Theme } from '../../Theme';
-import { GRAPH_TOOLBAR_GROUPS, type GraphToolbarAction, useGraphToolbarGroupLabels } from './useGraphToolbarActions';
+import type { GraphToolbarAction } from './useGraphToolbarActions';
+import type { ToolbarAction } from '../ToolbarShell';
 import GraphToolbarOptionsList, { checkable } from './GraphToolbarOptionsList';
 
 /** The toolbar glyphs, brought down to the size of a menu item. */
@@ -29,7 +30,7 @@ const MenuGlyph = ({ children }: { children: React.ReactNode }) => (
 );
 
 /** What a menu of the graph lists: a toolbar action, or an action of the context menu. */
-export type GraphMenuAction = Pick<GraphToolbarAction, 'id' | 'label' | 'icon' | 'shortcut' | 'pressed' | 'disabledReason' | 'badge' | 'onSelect' | 'options'>;
+export type GraphMenuAction = Pick<GraphToolbarAction, 'id' | 'label' | 'icon' | 'shortcut' | 'pressed' | 'disabledReason' | 'badge' | 'onSelect' | 'options' | 'submenu'>;
 
 const ActionLabel = ({ action }: { action: GraphMenuAction }) => {
   const theme = useTheme<Theme>();
@@ -44,7 +45,19 @@ const ActionLabel = ({ action }: { action: GraphMenuAction }) => {
 };
 
 export const GraphMenuActionItem = ({ action }: { action: GraphMenuAction }) => {
-  const { options } = action;
+  const { options, submenu } = action;
+  if (submenu && !action.disabledReason) {
+    return (
+      <MenuSub>
+        <MenuSubTrigger startIcon={<MenuGlyph>{action.icon}</MenuGlyph>}>
+          <ActionLabel action={action} />
+        </MenuSubTrigger>
+        <MenuSubContent>
+          {submenu()}
+        </MenuSubContent>
+      </MenuSub>
+    );
+  }
   if (options && !action.disabledReason) {
     return (
       <MenuSub>
@@ -73,15 +86,21 @@ export const GraphMenuActionItem = ({ action }: { action: GraphMenuAction }) => 
   );
 };
 
+interface GraphToolbarMoreActionsProps<G extends string> {
+  actions: readonly ToolbarAction<G>[];
+  /** Order of the groups, as in the toolbar. */
+  groups: readonly G[];
+  groupLabels: Record<G, string>;
+}
+
 /**
- * The "More actions" menu closing the graph toolbar: the rare actions, and those the toolbar has
+ * The "More actions" menu closing a docked toolbar: the rare actions, and those the toolbar has
  * no room for, by group in the order of the toolbar.
  */
-const GraphToolbarMoreActions = ({ actions }: { actions: readonly GraphToolbarAction[] }) => {
+const GraphToolbarMoreActions = <G extends string>({ actions, groups: groupOrder, groupLabels }: GraphToolbarMoreActionsProps<G>) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
-  const groupLabels = useGraphToolbarGroupLabels();
-  const groups = GRAPH_TOOLBAR_GROUPS
+  const groups = groupOrder
     .map((group) => ({ group, items: actions.filter((action) => action.group === group) }))
     .filter(({ items }) => items.length > 0);
   if (groups.length === 0) return null;
