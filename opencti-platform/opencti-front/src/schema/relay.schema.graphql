@@ -5074,6 +5074,7 @@ type ExternalReferenceEditMutations {
   delete: ID
   fieldPatch(input: [EditInput]!): ExternalReference
   importPush(embedded: Boolean, file: Upload!, fileMarkings: [String], noTriggerImport: Boolean, version: DateTime): File
+  importPushRef(fileRef: FileRefInput!): File
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference
 }
@@ -5376,6 +5377,17 @@ enum FileOrdering {
   lastModified
   name
   objectMarking
+}
+
+input FileRefInput {
+  embedded: Boolean
+  file_markings: [String]
+  mime_type: String
+  name: String!
+  no_trigger_import: Boolean
+  storage_key: String!
+  sync_id: ID!
+  version: DateTime
 }
 
 type FilesMetrics {
@@ -14635,6 +14647,7 @@ type StixCyberObservableEditMutations {
   exportPush(file: Upload!): Boolean
   fieldPatch(commitMessage: String, input: [EditInput]!, references: [String]): StixCyberObservable
   importPush(embedded: Boolean, file: Upload!, fileMarkings: [String], noTriggerImport: Boolean, version: DateTime): File
+  importPushRef(fileRef: FileRefInput!): File
   promote: StixCyberObservable @deprecated(reason: "[>=6.2 & <6.8]. Use `promoteToIndicator`.")
   promoteToIndicator: Indicator
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
@@ -14775,6 +14788,7 @@ type StixDomainObjectEditMutations {
   exportPush(file: Upload!, file_markings: [String]!): Boolean
   fieldPatch(commitMessage: String, input: [EditInput]!, references: [String]): StixDomainObject
   importPush(embedded: Boolean, file: Upload!, fileMarkings: [String], fintelTemplateId: String, fromTemplate: Boolean, noTriggerImport: Boolean, version: DateTime): File
+  importPushRef(fileRef: FileRefInput!): File
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(relationship_type: String, toId: StixRef!): StixDomainObject
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject
