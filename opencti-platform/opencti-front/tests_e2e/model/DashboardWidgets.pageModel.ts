@@ -177,8 +177,8 @@ export default class DashboardWidgetsPageModel {
     return this.page.getByRole('button', { name: 'Confirm' });
   }
 
-  getIconFromWidgetTimeline() {
-    return this.page.getByTestId('BiohazardIcon').first();
+  getIconFromWidgetTimeline(name: string) {
+    return this.page.getByRole('link', { name, exact: true });
   }
 
   getWidgetNumberValue(name: string, value: string) {

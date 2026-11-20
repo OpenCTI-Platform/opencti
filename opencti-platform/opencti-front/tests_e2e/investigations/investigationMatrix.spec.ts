@@ -24,6 +24,9 @@ const UNRELATED = 'T9004 - E2E Unrelated';
 
 const HEATMAP_TOGGLE_TOOLTIP = 'Displays heat map of attack pattern use';
 const HEATMAP_DISABLED_TOOLTIP = 'No attack pattern is linked to an entity in this investigation';
+// Tooltip titles of the security posture marks, which MUI also sets as the icons' aria-label.
+const SHOULD_COVER = 'Security posture should cover the threat';
+const DOES_NOT_COVER = 'Security posture does not cover the threat';
 // The seed scores T9001 = 2 (A and B) and T9002 = 1 (A): the scale is 1 to 2, T9001 on the last stop, T9002 on the first.
 const LAST_STOP = 4;
 const FIRST_STOP = 0;
@@ -138,12 +141,12 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     await page.goto(`${INVESTIGATION_URL}/${investigationId}/matrix`);
     await expect(investigationPage.getMatrixCell(ALPHA)).toBeVisible();
     // No platform selected: no mark at all.
-    await expect(investigationPage.getMatrix().getByTestId('CheckOutlinedIcon')).toHaveCount(0);
+    await expect(investigationPage.getMatrix().getByLabel(SHOULD_COVER, { exact: true })).toHaveCount(0);
 
     await investigationPage.selectSecurityPlatform('E2E Matrix platform');
     // The platform should cover T9001 only: a tick on T9001, a cross on T9002.
-    await expect(investigationPage.getMatrixCell(ALPHA).getByTestId('CheckOutlinedIcon')).toBeVisible();
-    await expect(investigationPage.getMatrixCell(BETA).getByTestId('CloseOutlinedIcon')).toBeVisible();
+    await expect(investigationPage.getMatrixCell(ALPHA).getByLabel(SHOULD_COVER, { exact: true })).toBeVisible();
+    await expect(investigationPage.getMatrixCell(BETA).getByLabel(DOES_NOT_COVER, { exact: true })).toBeVisible();
   });
 
   test('Switching the kill chain lists the attack patterns that cannot be placed', async ({ page, request }) => {
