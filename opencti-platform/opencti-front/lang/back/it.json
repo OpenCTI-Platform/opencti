@@ -705,6 +705,8 @@
   "Malware types": "Tipi di malware",
   "Manage access restrictions": "Gestire le restrizioni di accesso",
   "Manage advanced access restrictions on entities": "Gestire le restrizioni di accesso avanzate sulle entità",
+  "Managed by id": "Gestito da (ID)",
+  "Managed by type": "Gestito da (tipo)",
   "Managed connectors and their parameters, without their secrets": "Connettori gestiti e relativi parametri, senza i loro segreti",
   "Manager contracts": "Contratti del gestore",
   "Manager ID": "ID manager",

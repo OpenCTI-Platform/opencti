@@ -35,6 +35,12 @@ vi.mock('../../../../src/database/redis', async (importOriginal) => ({
   }),
 }));
 
+// The connector is still in the database: a token can be issued for it
+vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
+  storeLoadById: async (_context: unknown, _user: unknown, id: string) => ({ id, internal_id: id }),
+}));
+
 vi.mock('../../../../src/modules/connector/connector-repository', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/connector/connector-repository')>()),
   findConnectorManagers: mockFindConnectorManagers,
@@ -68,7 +74,7 @@ const connector = {
 } as unknown as BasicStoreEntityConnector;
 
 // Tokens of the user, kept in sync by the add and revoke mocks
-let userTokens: { id: string; name: string }[];
+let userTokens: { id: string; name: string; managed_by_type?: string; managed_by_id?: string }[];
 
 const readToken = async () => {
   const configuration = await computeManagedConnectorContractConfiguration(context, user, connector);
@@ -85,9 +91,9 @@ describe('managed connector token encryption', () => {
       ['user-1', { id: 'user-1', internal_id: 'user-1', api_tokens: userTokens }],
     ]));
     mockFindConnectorManagers.mockResolvedValue([{ public_key: 'public-key-1' }]);
-    mockAddUserTokenByAdmin.mockImplementation(async (_context, _user, _userId, { name }) => {
+    mockAddUserTokenByAdmin.mockImplementation(async (_context, _user, _userId, { name }, managedBy) => {
       tokenCount += 1;
-      userTokens.push({ id: `token-${tokenCount}`, name });
+      userTokens.push({ id: `token-${tokenCount}`, name, managed_by_type: managedBy?.type, managed_by_id: managedBy?.id });
       return { token_id: `token-${tokenCount}`, plaintext_token: `plaintext-${tokenCount}` };
     });
     mockRevokeUserTokenByAdmin.mockImplementation(async (_context, _user, _userId, tokenId) => {
@@ -131,8 +137,8 @@ describe('managed connector token encryption', () => {
 
   it('should keep serving the cached token when the user holds several Composer tokens', async () => {
     expect(await readToken()).toBe('public-key-1|plaintext-1');
-    // Connectors sharing a user can each create a token with the same name: the first one found is not the cached one
-    userTokens.unshift({ id: 'token-other', name: 'Composer managed token' });
+    // A stale user cache can leave several tokens with this connector's token name: the first one found is not the cached one
+    userTokens.unshift({ id: 'token-other', name: 'Composer managed token (connector: connector-a)', managed_by_type: 'Connector', managed_by_id: 'connector-a' });
 
     expect(await readToken()).toBe('public-key-1|plaintext-1');
     expect(await readToken()).toBe('public-key-1|plaintext-1');
@@ -143,7 +149,7 @@ describe('managed connector token encryption', () => {
   it('should regenerate the token when the cache holds a value written before the record format', async () => {
     expect(await readToken()).toBe('public-key-1|plaintext-1');
     // Before the fix, the bare encrypted token was cached, whatever the key it was encrypted with
-    redisStore.set('composer:catalog-x:token:user-1', 'previous-public-key|plaintext-1');
+    redisStore.set('composer:connector:connector-a:token:user-1', 'previous-public-key|plaintext-1');
 
     expect(await readToken()).toBe('public-key-1|plaintext-2');
     expect(mockRevokeUserTokenByAdmin).toHaveBeenCalledWith(context, expect.anything(), 'user-1', 'token-1');
