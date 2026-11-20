@@ -108,6 +108,8 @@ describe('ConfigPresetResultLine', () => {
     ['Running: the new definition applies at once', 'Running: the new definition applies at once'],
     ['Users not found: Jane', 'Users not found: Jane'],
     ['References not found: TLP:RED, ACME', 'References not found: TLP:RED, ACME'],
+    ['Access restrictions left empty: Restrict to analysts', 'Access restrictions left empty: Restrict to analysts'],
+    ['Run as reset to admin', 'Run as reset to admin'],
   ])('translates the reason %s', (reason, text) => {
     testRender(<ConfigPresetResultLine label="Theme" status="SKIPPED" reason={reason} />);
     expect(screen.getByText(text)).toBeInTheDocument();

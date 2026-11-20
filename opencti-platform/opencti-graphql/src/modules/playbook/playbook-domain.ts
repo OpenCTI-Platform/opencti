@@ -259,7 +259,7 @@ export const assertPlaybookDefinitionIsValid = (definition: ComponentDefinition)
 
 const PLAYBOOK_NODE_FILTER_FIELDS = ['filters', 'applyWithFilters'];
 
-const assertPlaybookDefinitionStringIsValid = (rawDefinition: string | null | undefined) => {
+export const assertPlaybookDefinitionStringIsValid = (rawDefinition: string | null | undefined) => {
   if (!rawDefinition) {
     return;
   }

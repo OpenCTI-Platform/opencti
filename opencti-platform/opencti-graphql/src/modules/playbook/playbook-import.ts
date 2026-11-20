@@ -11,7 +11,7 @@ import {
   joinConfigImportReasons,
 } from '../configImport/configImport-utils';
 import { sanitizeDefinitionRunAs } from './components/ai-agent-shared';
-import { playbookAddFromImport, playbookEdit } from './playbook-domain';
+import { assertPlaybookDefinitionStringIsValid, playbookAddFromImport, playbookEdit } from './playbook-domain';
 import { type PlaybookImportConfiguration, playbookImportSchema } from './playbook-import-schema';
 import { importPlaybookUserReferences, missingPlaybookReferences, parsePlaybookDefinition } from './playbook-references';
 import { type BasicStoreEntityPlaybook, type ComponentDefinition, ENTITY_TYPE_PLAYBOOK } from './playbook-types';
@@ -95,14 +95,29 @@ export const importConfigPresetPlaybook = async (
   if (!name) {
     return refused('name_conflict', 'Playbook name already exists', exists, bundlePlaybook);
   }
-  const { definition, missing: missingUsers } = await importPlaybookUserReferences(context, parsePlaybookDefinition(bundlePlaybook.playbook_definition));
-  const playbookDefinition = (await sanitizeDefinitionRunAs(context, user, JSON.stringify(definition))) as string;
+  const { definition, missing: missingUsers, emptiedAccessRestrictions } = await importPlaybookUserReferences(
+    context,
+    parsePlaybookDefinition(bundlePlaybook.playbook_definition),
+  );
+  const missingUsersReason = missingUsers.length > 0 ? `Users not found: ${configImportReasonValue(missingUsers.join(', '))}` : undefined;
+  if (emptiedAccessRestrictions.length > 0) {
+    const emptiedReason = `Access restrictions left empty: ${configImportReasonValue(emptiedAccessRestrictions.join(', '))}`;
+    return refused('invalid', joinConfigImportReasons([emptiedReason, missingUsersReason]) as string, exists, bundlePlaybook);
+  }
+  const resolvedDefinition = JSON.stringify(definition);
+  const playbookDefinition = (await sanitizeDefinitionRunAs(context, user, resolvedDefinition)) as string;
+  try {
+    assertPlaybookDefinitionStringIsValid(playbookDefinition);
+  } catch (error) {
+    return refused('invalid', (error as Error).message, exists, bundlePlaybook);
+  }
   const missingReferences = await missingPlaybookReferences(context, parsePlaybookDefinition(playbookDefinition));
   const fields = fieldsOf(bundlePlaybook, playbookDefinition);
   const reason = joinConfigImportReasons([
     name !== bundlePlaybook.name ? `Added as "${name}"` : undefined,
-    missingUsers.length > 0 ? `Users not found: ${configImportReasonValue(missingUsers.join(', '))}` : undefined,
+    missingUsersReason,
     missingReferences.length > 0 ? `References not found: ${configImportReasonValue(missingReferences.join(', '))}` : undefined,
+    playbookDefinition !== resolvedDefinition ? `Run as reset to ${configImportReasonValue(user.name)}` : undefined,
   ]);
   if (target) {
     const input = changedFields(target, fields);

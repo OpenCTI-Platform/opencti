@@ -118,6 +118,14 @@ const translateKnownReason = (t_i18n: Translate, reason: string): string | undef
   if (missingReferences) {
     return t_i18n('References not found: {references}', { values: { references: missingReferences } });
   }
+  const emptiedAccessRestrictions = reason.match(/^Access restrictions left empty: (.+)$/)?.[1];
+  if (emptiedAccessRestrictions) {
+    return t_i18n('Access restrictions left empty: {nodes}', { values: { nodes: emptiedAccessRestrictions } });
+  }
+  const runAsReset = reason.match(/^Run as reset to (.+)$/)?.[1];
+  if (runAsReset) {
+    return t_i18n('Run as reset to {name}', { values: { name: runAsReset } });
+  }
   const mainOrganization = reason.match(/^Sets the main organization: (.+)$/)?.[1];
   if (mainOrganization) {
     return t_i18n('Sets the main organization: {name}', { values: { name: mainOrganization } });
