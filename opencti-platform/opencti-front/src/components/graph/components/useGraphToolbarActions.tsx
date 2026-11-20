@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { AutoFix, FamilyTree, SelectAll, SelectGroup, SelectionDrag, Video3d } from 'mdi-material-ui';
 import {
   AccountBalanceOutlined,
@@ -31,7 +31,7 @@ import { useFormatter } from '../../i18n';
 import { useGraphContext } from '../GraphContext';
 import { useGraphView } from '../GraphViewContext';
 import useGraphInteractions from '../utils/useGraphInteractions';
-import type { ToolbarOverflowCandidate } from '../utils/graphToolbarOverflow';
+import type { ToolbarAction } from '../ToolbarShell';
 import { selectableTypes } from '../utils/graphCollapse';
 import { minutesBetweenDates } from '../../../utils/Time';
 import { MESSAGING$ } from '../../../relay/environment';
@@ -61,26 +61,8 @@ export interface GraphToolbarOption {
   selected?: boolean;
 }
 
-export interface GraphToolbarAction extends ToolbarOverflowCandidate {
-  group: GraphToolbarGroup;
-  /** Translated, sentence case; the same whatever the state of a toggle. */
-  label: string;
-  icon: ReactNode;
-  shortcut?: string;
-  /** Set for a toggle: whether it is on. */
-  pressed?: boolean;
-  /** Set when the action is not available now, saying why. */
-  disabledReason?: string;
-  /** Number of filters or choices in use. */
-  badge?: number;
-  onSelect?: () => void;
-  /** A list to choose from: a menu from the toolbar, a submenu from "More actions". */
-  options?: {
-    items: GraphToolbarOption[];
-    multiple?: boolean;
-    onSelect: (key: string) => void;
-  };
-}
+/** An action of the graph toolbar, or of its context menu and "More actions". */
+export type GraphToolbarAction = ToolbarAction<GraphToolbarGroup>;
 
 const ICON = { fontSize: 'medium' } as const;
 
