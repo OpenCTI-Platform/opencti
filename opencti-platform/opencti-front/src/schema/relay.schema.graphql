@@ -12481,6 +12481,7 @@ type Query {
   workspaces(after: ID, filters: FilterGroup, first: Int, includeAuthorities: Boolean, orderBy: WorkspacesOrdering, orderMode: OrderingMode, search: String): WorkspaceConnection
   xtmConnections: [XtmConnection!]!
   xtmCounterparts(keys: [String!]!, kind: XtmCounterpartKind!): [XtmCounterpart!]!
+  xtmCounterpartsOf(ids: [String!]!): [XtmCounterpartResult!]!
 }
 
 input QueryAttribute {
@@ -18542,7 +18543,6 @@ enum XTMHubRegistrationStatus {
 type XtmConnection {
   connected: Boolean!
   product: String!
-  url: String
 }
 
 type XtmCounterpart {
@@ -18566,4 +18566,18 @@ enum XtmCounterpartKind {
   ATTACK_PATTERN
   THREAT
   VULNERABILITY
+}
+
+type XtmCounterpartResult {
+  counterpart: XtmCounterpart
+  id: String!
+  product: String!
+  status: XtmCounterpartStatus!
+}
+
+enum XtmCounterpartStatus {
+  found
+  not_found
+  not_supported
+  unavailable
 }

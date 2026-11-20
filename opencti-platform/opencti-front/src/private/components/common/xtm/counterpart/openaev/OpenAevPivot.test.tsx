@@ -23,7 +23,7 @@ vi.mock('../../../../../../relay/environment', async (importOriginal) => ({
       const isLookup = 'keys' in variables;
       mocks.calls.push({ isLookup, variables });
       if (!isLookup) {
-        return Promise.resolve({ xtmConnections: [{ product: 'openaev', connected: mocks.connected, url: null }] });
+        return Promise.resolve({ xtmConnections: [{ product: 'openaev', connected: mocks.connected }] });
       }
       if (mocks.fail) return Promise.reject(new Error('unreachable'));
       return Promise.resolve({ xtmCounterparts: mocks.counterparts });

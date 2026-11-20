@@ -18,7 +18,7 @@ vi.mock('../../../../../../relay/environment', async (importOriginal) => ({
       const isLookup = 'keys' in variables;
       mocks.calls.push({ isLookup, variables });
       if (!isLookup) {
-        return Promise.resolve({ xtmConnections: [{ product: 'openaev', connected: mocks.connected, url: null }] });
+        return Promise.resolve({ xtmConnections: [{ product: 'openaev', connected: mocks.connected }] });
       }
       return Promise.resolve({ xtmCounterparts: mocks.counterparts });
     },

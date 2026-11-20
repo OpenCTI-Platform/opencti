@@ -21,7 +21,7 @@ vi.mock('../../../../../../relay/environment', async (importOriginal) => ({
     toPromise: () => {
       if (!('keys' in variables)) {
         return Promise.resolve({
-          xtmConnections: Object.entries(mocks.connected).map(([product, connected]) => ({ product, connected, url: null })),
+          xtmConnections: Object.entries(mocks.connected).map(([product, connected]) => ({ product, connected })),
         });
       }
       mocks.lookups += 1;

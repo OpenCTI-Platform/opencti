@@ -16,7 +16,6 @@ export const xtmCounterpartsConnectionsQuery = graphql`
     xtmConnections {
       product
       connected
-      url
     }
   }
 `;

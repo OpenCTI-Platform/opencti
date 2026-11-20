@@ -1,28 +1,42 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+const mocks = vi.hoisted(() => ({ warn: vi.fn() }));
+
 vi.mock('../../../../../../src/config/conf', () => ({
   default: { get: () => undefined },
-  logApp: { info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
+  logApp: { info: vi.fn(), error: vi.fn(), warn: mocks.warn, debug: vi.fn() },
 }));
+
+// The keys are read from the database; the domain is tested on given sources.
+vi.mock('../../../../../../src/modules/xtm/counterpart/core/counterpart-keys', () => ({ counterpartKeysOf: vi.fn(async () => []) }));
 
 vi.mock('../../../../../../src/utils/http-client', () => ({
   getHttpClient: () => ({ post: () => Promise.reject(new Error('no network in unit tests')) }),
 }));
 
+vi.mock('../../../../../../src/domain/xtm-auth', () => ({
+  issueXtmJwt: async (user: { id: string }, target: string) => `jwt-${user.id}-${target}`,
+}));
+
 import {
   type CounterpartProvider,
   COUNTERPART_CACHE_TTL_MS,
+  CounterpartLookupError,
   normaliseCounterpartKey,
   normaliseCounterpartKeys,
   resetCounterpartCache,
   resolveCounterparts,
+  resolveCounterpartsOfSources,
   xtmConnections,
   type XtmCounterpart,
 } from '../../../../../../src/modules/xtm/counterpart/core/counterpart-domain';
 
-const counterpart = (key: string): XtmCounterpart => ({
+const ALICE = { id: 'alice', user_email: 'alice@example.com' };
+const BOB = { id: 'bob', user_email: 'bob@example.com' };
+
+const counterpart = (key: string, product = 'test'): XtmCounterpart => ({
   key,
-  product: 'test',
+  product,
   object_id: `id-${key}`,
   object_type: 'asset',
   object_name: key,
@@ -30,12 +44,12 @@ const counterpart = (key: string): XtmCounterpart => ({
   facts: [],
 });
 
-const provider = (connected: boolean, found: string[]): CounterpartProvider & { resolve: ReturnType<typeof vi.fn> } => ({
-  product: 'test',
+const provider = (connected: boolean, found: string[], product = 'test'): CounterpartProvider & { resolve: ReturnType<typeof vi.fn> } => ({
+  product,
   url: () => 'https://aev.example.com',
   isConnected: () => connected,
   supports: () => true,
-  resolve: vi.fn(async (_kind, keys: string[]) => keys.filter((k) => found.includes(k)).map(counterpart)),
+  resolve: vi.fn(async (_kind, keys: string[]) => keys.filter((k) => found.includes(k)).map((k) => counterpart(k, product))),
 });
 
 describe('XTM counterparts: key normalisation', () => {
@@ -71,43 +85,123 @@ describe('XTM counterparts: key normalisation', () => {
   });
 });
 
-describe('XTM counterparts: resolution', () => {
+describe('XTM counterparts: key-based resolution', () => {
   beforeEach(() => resetCounterpartCache());
 
-  it('connected with a match answers the counterpart only for the matched key', async () => {
+  it('connected with a match answers the counterpart only for the matched key, as the caller', async () => {
     const p = provider(true, ['web-01']);
-    const result = await resolveCounterparts('ASSET', ['WEB-01', 'db-02'], [p]);
+    const result = await resolveCounterparts('ASSET', ['WEB-01', 'db-02'], ALICE, [p]);
     expect(result.map((c) => c.key)).toEqual(['web-01']);
-    expect(p.resolve).toHaveBeenCalledWith('ASSET', ['web-01', 'db-02']);
-  });
-
-  it('connected without a match answers nothing', async () => {
-    expect(await resolveCounterparts('ASSET', ['db-02'], [provider(true, [])])).toEqual([]);
+    expect(p.resolve).toHaveBeenCalledWith('ASSET', ['web-01', 'db-02'], ALICE);
   });
 
   it('not connected never calls the provider', async () => {
     const p = provider(false, ['web-01']);
-    expect(await resolveCounterparts('ASSET', ['web-01'], [p])).toEqual([]);
+    expect(await resolveCounterparts('ASSET', ['web-01'], ALICE, [p])).toEqual([]);
     expect(p.resolve).not.toHaveBeenCalled();
   });
 
-  it('caches hits and misses for the TTL, then asks again', async () => {
+  it('caches hits and misses per user for the TTL, then asks again', async () => {
     const p = provider(true, ['web-01']);
     let clock = 1_000;
     const now = () => clock;
-    await resolveCounterparts('ASSET', ['web-01', 'db-02'], [p], now);
-    const cached = await resolveCounterparts('ASSET', ['web-01', 'db-02'], [p], now);
+    await resolveCounterparts('ASSET', ['web-01', 'db-02'], ALICE, [p], now);
+    const cached = await resolveCounterparts('ASSET', ['web-01', 'db-02'], ALICE, [p], now);
     expect(cached.map((c) => c.key)).toEqual(['web-01']);
     expect(p.resolve).toHaveBeenCalledTimes(1);
-    clock += COUNTERPART_CACHE_TTL_MS + 1;
-    await resolveCounterparts('ASSET', ['web-01'], [p], now);
+    // Another user is never served Alice's answer: the product applies each user's own rights.
+    await resolveCounterparts('ASSET', ['web-01'], BOB, [p], now);
     expect(p.resolve).toHaveBeenCalledTimes(2);
+    clock += COUNTERPART_CACHE_TTL_MS + 1;
+    await resolveCounterparts('ASSET', ['web-01'], ALICE, [p], now);
+    expect(p.resolve).toHaveBeenCalledTimes(3);
   });
 
-  it('reports the connection without any credential', () => {
+  it('reports the connection without any credential or address', () => {
     expect(xtmConnections([provider(true, []), { ...provider(false, []), product: 'other' }])).toEqual([
-      { product: 'test', connected: true, url: 'https://aev.example.com' },
-      { product: 'other', connected: false, url: null },
+      { product: 'test', connected: true },
+      { product: 'other', connected: false },
     ]);
+  });
+});
+
+describe('XTM counterparts: id-based resolution', () => {
+  beforeEach(() => {
+    resetCounterpartCache();
+    mocks.warn.mockReset();
+  });
+
+  const SYSTEM = { id: 'sys-1', kind: 'ASSET' as const, keys: ['web-01'] };
+  const OTHER_SYSTEM = { id: 'sys-2', kind: 'ASSET' as const, keys: ['db-02'] };
+  const CVE = { id: 'vuln-1', kind: 'VULNERABILITY' as const, keys: ['CVE-2024-3400'] };
+
+  it('answers one status per (id, product) with the counterpart when found', async () => {
+    const aev = provider(true, ['web-01'], 'openaev');
+    const crq = provider(true, ['CVE-2024-3400'], 'opencrq');
+    const results = await resolveCounterpartsOfSources([SYSTEM, OTHER_SYSTEM, CVE], ALICE, [aev, crq]);
+    expect(results.map(({ id, product, status }) => ({ id, product, status }))).toEqual([
+      { id: 'sys-1', product: 'openaev', status: 'found' },
+      { id: 'sys-2', product: 'openaev', status: 'not_found' },
+      { id: 'vuln-1', product: 'openaev', status: 'not_found' },
+      { id: 'sys-1', product: 'opencrq', status: 'not_found' },
+      { id: 'sys-2', product: 'opencrq', status: 'not_found' },
+      { id: 'vuln-1', product: 'opencrq', status: 'found' },
+    ]);
+    expect(results[0].counterpart?.object_id).toBe('id-web-01');
+    expect(results[1].counterpart).toBeNull();
+    // One call per kind and product, whatever the number of objects.
+    expect(aev.resolve).toHaveBeenCalledTimes(2);
+  });
+
+  it('a product that is not connected gets no entry', async () => {
+    const results = await resolveCounterpartsOfSources([SYSTEM], ALICE, [provider(false, ['web-01'], 'openaev')]);
+    expect(results).toEqual([]);
+  });
+
+  it('a mixed-kind request with one failing call keeps the answers of the other kinds', async () => {
+    const aev = provider(true, ['web-01', 'CVE-2024-3400'], 'openaev');
+    aev.resolve.mockImplementation(async (kind: string, keys: string[]) => {
+      if (kind === 'VULNERABILITY') {
+        throw new CounterpartLookupError('unavailable', 'down');
+      }
+      return keys.filter((k) => k === 'web-01').map((k) => counterpart(k, 'openaev'));
+    });
+    const results = await resolveCounterpartsOfSources([SYSTEM, CVE], ALICE, [aev]);
+    expect(results.map((r) => r.status)).toEqual(['found', 'unavailable']);
+  });
+
+  it('never caches an unavailable answer', async () => {
+    const aev = provider(true, ['web-01'], 'openaev');
+    aev.resolve.mockRejectedValueOnce(new CounterpartLookupError('unavailable', 'timeout'));
+    expect((await resolveCounterpartsOfSources([SYSTEM], ALICE, [aev]))[0].status).toBe('unavailable');
+    expect((await resolveCounterpartsOfSources([SYSTEM], ALICE, [aev]))[0].status).toBe('found');
+    expect(aev.resolve).toHaveBeenCalledTimes(2);
+  });
+
+  it('remembers a 404 route as not supported per product and kind, with one warning', async () => {
+    const aev = provider(true, [], 'openaev');
+    aev.resolve.mockRejectedValue(new CounterpartLookupError('not_supported', 'no route'));
+    expect((await resolveCounterpartsOfSources([SYSTEM], ALICE, [aev]))[0].status).toBe('not_supported');
+    expect((await resolveCounterpartsOfSources([OTHER_SYSTEM], BOB, [aev]))[0].status).toBe('not_supported');
+    expect(aev.resolve).toHaveBeenCalledTimes(1);
+    expect(mocks.warn).toHaveBeenCalledTimes(1);
+    // Another kind of the same product is still asked.
+    aev.resolve.mockResolvedValueOnce([]);
+    expect((await resolveCounterpartsOfSources([CVE], ALICE, [aev]))[0].status).toBe('not_found');
+  });
+
+  it('a kind the product does not support is not_supported without a call', async () => {
+    const crq = { ...provider(true, []), product: 'opencrq', supports: (kind: string) => kind !== 'ALERT' };
+    const results = await resolveCounterpartsOfSources([{ id: 'inc-1', kind: 'ALERT', keys: ['https://edr.example.com/a/1'] }], ALICE, [crq]);
+    expect(results).toEqual([{ id: 'inc-1', product: 'opencrq', status: 'not_supported', counterpart: null }]);
+    expect(crq.resolve).not.toHaveBeenCalled();
+  });
+
+  it('an alert with several links is found when one of them matches', async () => {
+    const aev = provider(true, ['https://edr.example.com/a/2'], 'openaev');
+    const alert = { id: 'inc-1', kind: 'ALERT' as const, keys: ['https://edr.example.com/a/1', 'https://edr.example.com/a/2'] };
+    const [result] = await resolveCounterpartsOfSources([alert], ALICE, [aev]);
+    expect(result.status).toBe('found');
+    expect(result.counterpart?.key).toBe('https://edr.example.com/a/2');
   });
 });

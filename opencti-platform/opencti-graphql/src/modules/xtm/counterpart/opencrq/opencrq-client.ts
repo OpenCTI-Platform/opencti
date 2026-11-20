@@ -1,5 +1,7 @@
 import conf, { logApp } from '../../../../config/conf';
 import { getHttpClient } from '../../../../utils/http-client';
+import { counterpartAuthorization } from '../core/counterpart-auth';
+import { type CounterpartCaller, lookupErrorOf } from '../core/counterpart-errors';
 
 const OPENCRQ_TIMEOUT_MS = 5000;
 const OPENCRQ_LOOKUP_PROCEDURE = 'xtm.lookup';
@@ -14,7 +16,7 @@ export interface OpenCrqLocalObject {
   object_type: string;
   object_name: string | null;
   object_url: string;
-  // The risk OpenCRQ quantifies for the object: risk_scenarios, annual_loss, fix_value.
+  // The risk OpenCRQ quantifies for the object (risk_scenarios, annual_loss, fix_value); absent when the caller has no rights there.
   object_facts?: { key: string; value: string }[] | null;
 }
 
@@ -35,23 +37,19 @@ export const getOpenCrqApiUrl = (): string | null => {
   return url ? `${url}/trpc` : null;
 };
 
-const getOpenCrqToken = (): string | null => {
-  const token = conf.get('xtm:opencrq_token');
-  return token ? String(token) : null;
-};
-
-// Lookups need the service-account token (ogrc_...): the URL alone only feeds the product switcher.
-export const isOpenCrqConnected = (): boolean => !!(getOpenCrqUrl() && getOpenCrqToken());
+// The lookups run as the calling user (a JWT this platform signs): the URL is the connection.
+export const isOpenCrqConnected = (): boolean => !!getOpenCrqUrl();
 
 /**
- * Asks OpenCRQ which of the given keys it holds (tRPC query GET {api}/xtm.lookup?input=...).
- * The token is an OpenCRQ service-account token, its tenant bound on the OpenCRQ side. Any failure
- * answers an empty list: a pivot is never worth a page error.
+ * Asks OpenCRQ which of the given keys it holds (tRPC query GET {api}/xtm.lookup?input=...), as the
+ * calling user: OpenCRQ applies that user's rights, the financial facts only for a user with them.
+ * Throws CounterpartLookupError: not_supported on a 404 (an OpenCRQ without the procedure),
+ * unavailable on anything else.
  */
-export const fetchOpenCrqObjects = async (kind: OpenCrqLookupKind, keys: string[]): Promise<OpenCrqLocalObject[]> => {
+export const fetchOpenCrqObjects = async (kind: OpenCrqLookupKind, keys: string[], caller: CounterpartCaller): Promise<OpenCrqLocalObject[]> => {
   const apiUrl = getOpenCrqApiUrl();
-  const token = getOpenCrqToken();
-  if (!apiUrl || !token || keys.length === 0) {
+  const url = getOpenCrqUrl();
+  if (!apiUrl || !url || keys.length === 0) {
     return [];
   }
   try {
@@ -60,17 +58,20 @@ export const fetchOpenCrqObjects = async (kind: OpenCrqLookupKind, keys: string[
       responseType: 'json',
       timeout: OPENCRQ_TIMEOUT_MS,
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: await counterpartAuthorization(caller, url),
         Accept: 'application/json',
       },
     });
     const input = encodeURIComponent(JSON.stringify({ kind, keys }));
     const response = await httpClient.get(`/${OPENCRQ_LOOKUP_PROCEDURE}?input=${input}`);
     const data = response.data?.result?.data;
-    return Array.isArray(data) ? data as OpenCrqLocalObject[] : [];
+    if (!Array.isArray(data)) {
+      throw Object.assign(new Error('unreadable body'), { status: 'unreadable' });
+    }
+    return data as OpenCrqLocalObject[];
   } catch (error: any) {
-    // Never log the request: its headers carry the token.
+    // Never log the request: its headers carry the user's token.
     logApp.warn('[OPENCRQ] Counterpart lookup failed', { kind, status: error?.status, code: error?.code });
-    return [];
+    throw lookupErrorOf(error, 'OpenCRQ');
   }
 };

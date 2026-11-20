@@ -18,7 +18,7 @@ vi.mock('../../../../../../relay/environment', async (importOriginal) => ({
   fetchQuery: (_query: unknown, variables: Record<string, unknown> = {}) => ({
     toPromise: () => {
       if (!('keys' in variables)) {
-        return Promise.resolve({ xtmConnections: [{ product: 'openaev', connected: mocks.connected, url: null }] });
+        return Promise.resolve({ xtmConnections: [{ product: 'openaev', connected: mocks.connected }] });
       }
       mocks.lookups += 1;
       if (mocks.fail) return Promise.reject(new Error('unreachable'));
