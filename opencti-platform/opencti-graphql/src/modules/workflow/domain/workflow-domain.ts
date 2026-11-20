@@ -290,6 +290,14 @@ export const getWorkflowConfig = async (
   return findEntitySettingByType(executionContext, bypassDraftUser(user), targetType);
 };
 
+// Writes the entity setting and refreshes the cache of every node: the engine reads the definition link from the cache
+// (see getCachedEntitySettingOfType), so a write without the notification would leave it stale.
+const updateEntitySetting = async (context: AuthContext, user: AuthUser, entitySettingId: string, input: EditInput[]) => {
+  const { element } = await updateAttribute(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING, input);
+  await notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].EDIT_TOPIC, element, user);
+  return element as unknown as BasicStoreEntityEntitySetting;
+};
+
 /**
  * Entity setting of the exact type, read from the cache: no search. The engine resolves a definition from the setting
  * of the concrete type (see getWorkflowConfig), so unlike getEntitySettingFromCache this does not inherit the abstract
@@ -1121,12 +1129,11 @@ const saveWorkflowDraftUnderLock = async (
   const linkInput: EditInput = scope === StatusScope.RequestAccess
     ? { key: 'request_access_workflow', value: [{ approval_admin: [], ...currentRequestAccess, workflow_definition_id: workflowDefinition.id }] }
     : { key: 'workflow_id', value: [workflowDefinition.id] };
-  const { element } = await updateAttribute(executionContext, executionUser, entitySetting.id, 'EntitySetting', [linkInput]);
+  const elementWithSetting = await updateEntitySetting(executionContext, executionUser, entitySetting.id, [linkInput]);
 
   // New workflows have no published version yet
   const published = false;
 
-  const elementWithSetting = element as unknown as BasicStoreEntityEntitySetting;
   const result = {
     id: elementWithSetting.id,
     workflow_id: workflowDefinition.id,
@@ -1167,8 +1174,7 @@ const unlinkWorkflowDefinitionUnderLock = async (
       const { workflow_definition_id: _unlinked, ...requestAccessConfiguration } = entitySetting.request_access_workflow!;
       unlinkInput = { key: 'request_access_workflow', value: [requestAccessConfiguration] };
     }
-    const { element } = await updateAttribute(executionContext, bypassDraftUser(user), entitySetting.id, 'EntitySetting', [unlinkInput]);
-    return element as unknown as BasicStoreEntityEntitySetting;
+    return updateEntitySetting(executionContext, bypassDraftUser(user), entitySetting.id, [unlinkInput]);
   }
   return entitySetting;
 };
@@ -1493,7 +1499,7 @@ const syncRequestAccessLegacyStatusIds = async (
   const approved = approvedId ?? current?.approved_workflow_id;
   const declined = declinedId ?? current?.declined_workflow_id;
   if (approved === current?.approved_workflow_id && declined === current?.declined_workflow_id) return;
-  await updateAttribute(context, user, entitySetting.id, ENTITY_TYPE_ENTITY_SETTING, [
+  await updateEntitySetting(context, user, entitySetting.id, [
     { key: 'request_access_workflow', value: [{ approval_admin: [], ...current, approved_workflow_id: approved, declined_workflow_id: declined }] },
   ]);
 };
