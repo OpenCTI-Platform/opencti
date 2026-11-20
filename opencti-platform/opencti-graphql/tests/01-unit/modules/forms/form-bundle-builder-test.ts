@@ -13,6 +13,7 @@ import { buildAdditionalEntities, buildMainStixEntities, buildRelationships, wra
 import { SYSTEM_USER } from '../../../../src/utils/access';
 import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../../src/schema/schema-relationsRef';
+import { Stix2Splitter } from '../../../../src/utils/stix2-splitter';
 
 vi.mock('../../../../src/modules/form/form-utils', () => ({
   loadFormEntity: vi.fn(),
@@ -1454,6 +1455,33 @@ describe('wrapInContainerOrPush', () => {
       const containers = bundle.objects.slice(2);
       expect(containers.map((o) => o.id)).toEqual(['case-incident--1', 'case-incident--2']);
       containers.forEach((container) => expect(container.object_refs).not.toContain('task--1'));
+    });
+
+    // The worker's splitter drops a ref that closes a cycle: the relationship lost an endpoint and was not imported
+    describe('relationships to the container, through the worker splitter', () => {
+      const split = (relationship: Record<string, string>) => {
+        vi.mocked(isStixDomainObjectContainer).mockReturnValue(true);
+        const bundle = { id: 'bundle--1', objects: [{ id: 'task--1', type: 'task' }, { id: 'malware--1', type: 'malware' }, { type: 'relationship', ...relationship }] as unknown as StixObject[] };
+        wrapInContainerOrPush('Case-Incident', [{ id: 'case-incident--1', type: 'case-incident' }], bundle, true, { t: ['task--1'], m: ['malware--1'] });
+        const { incompatibleItems, bundles } = new Stix2Splitter().splitBundleWithExpectations(structuredClone(bundle), false);
+        return { incompatibleItems, imported: (bundles as any[]).flatMap((b) => b.objects) };
+      };
+
+      it('should import a relationship from the container while a task is attached to it', () => {
+        const { incompatibleItems, imported } = split({ id: 'relationship--1', relationship_type: 'related-to', source_ref: 'case-incident--1', target_ref: 'malware--1' });
+
+        expect(incompatibleItems).toEqual([]);
+        expect(imported.find((o) => o.id === 'relationship--1')).toMatchObject({ source_ref: 'case-incident--1', target_ref: 'malware--1' });
+        expect(imported.find((o) => o.id === 'task--1').object_refs).toEqual(['case-incident--1']);
+      });
+
+      it('should import a relationship from an attached task to the container', () => {
+        const { incompatibleItems, imported } = split({ id: 'relationship--1', relationship_type: 'related-to', source_ref: 'task--1', target_ref: 'case-incident--1' });
+
+        expect(incompatibleItems).toEqual([]);
+        expect(imported.find((o) => o.id === 'relationship--1')).toMatchObject({ source_ref: 'task--1', target_ref: 'case-incident--1' });
+        expect(imported.find((o) => o.id === 'task--1').object_refs).toEqual(['case-incident--1']);
+      });
     });
 
     it('should keep the object_refs an attached entity already has', () => {

@@ -422,15 +422,15 @@ export const buildRelationships = async (
   }
 };
 
-// The tasks, notes and opinions of the submission are attached to the main entities. Returns their ids.
-export const attachToMainEntities = (
+// The tasks, notes and opinions of the submission are attached to the main entities
+const attachToMainEntities = (
   mainStixEntities: any[],
   bundle: any,
   additionalEntitiesMap: Record<string, string[]>,
   existingToAttach: any[] = [],
-): Set<string> => {
+): void => {
   const mainIds = mainStixEntities.map((entity) => entity.id);
-  if (mainIds.length === 0) return new Set();
+  if (mainIds.length === 0) return;
   const additionalIds = new Set(Object.values(additionalEntitiesMap).flat());
   const created = bundle.objects.filter((object: StixContainer) => additionalIds.has(object.id) && SELF_ATTACHED_STIX_TYPES.includes(object.type));
   // An existing one is only sent to add the main entities to its refs, the upsert merges them with the ones it has
@@ -439,7 +439,27 @@ export const attachToMainEntities = (
   attached.forEach((object) => {
     object.object_refs = [...new Set([...(object.object_refs ?? []), ...mainIds])];
   });
-  return new Set(attached.map((object) => object.id));
+};
+
+const stixRefsOf = (object: Record<string, any>): string[] => Object.entries(object).flatMap(([key, value]) => {
+  if (key.endsWith('_refs')) return value ?? [];
+  return key.endsWith('_ref') && value ? [value] : [];
+});
+
+// The bundle objects that reference this id, directly or through other objects of the bundle
+const referencingIds = (id: string, objects: Record<string, any>[]): Set<string> => {
+  const referencing = new Set<string>();
+  let found = true;
+  while (found) {
+    found = false;
+    objects.forEach((object) => {
+      if (!referencing.has(object.id) && stixRefsOf(object).some((ref) => ref === id || referencing.has(ref))) {
+        referencing.add(object.id);
+        found = true;
+      }
+    });
+  }
+  return referencing;
 };
 
 export const wrapInContainerOrPush = (
@@ -451,16 +471,18 @@ export const wrapInContainerOrPush = (
   isExistingMain: boolean[] = [],
   existingToAttach: any[] = [],
 ): void => {
-  const attachedIds = attachToMainEntities(mainStixEntities, bundle, additionalEntitiesMap, existingToAttach);
+  attachToMainEntities(mainStixEntities, bundle, additionalEntitiesMap, existingToAttach);
   const isContainer = includeInContainer && isStixDomainObjectContainer(mainEntityType);
   for (let i = 0; i < mainStixEntities.length; i += 1) {
     const isExisting = isExistingMain[i] ?? false;
     if (isContainer) {
       const stixContainer = mainStixEntities[i] as StixContainer;
       // Existing additional entities are not in the bundle, the container still references them.
-      // Attached entities already reference the container: a ref back would be a cycle, and a case does not hold its tasks
+      // An object that references the container is left out (its attached tasks, its relationships): a ref back would be a
+      // cycle, which the worker's splitter breaks by dropping a ref, and with it a relationship
+      const referencing = referencingIds(stixContainer.id, bundle.objects);
       const containedIds = [...bundle.objects.map((n: BasicStoreEntity) => n.id), ...Object.values(additionalEntitiesMap).flat()];
-      stixContainer.object_refs = [...new Set(containedIds.filter((id) => !attachedIds.has(id)))];
+      stixContainer.object_refs = [...new Set(containedIds.filter((id) => !referencing.has(id)))];
       // An existing container is only sent to add the submitted objects into it
       if (!isExisting || stixContainer.object_refs.length > 0) {
         bundle.objects.push(stixContainer);
