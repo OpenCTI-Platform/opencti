@@ -4,6 +4,8 @@ import { UnsupportedError } from '../config/errors';
 
 const ONE_DAY = 86400000;
 
+// Time to live of a session, in milliseconds as expected by lru-cache.
+// Without an explicit ttl option, the session cookie max age is used, then one day for session cookies.
 const getTTL = (options, sess, sid) => {
   if (typeof options.ttl === 'number') return options.ttl;
   if (typeof options.ttl === 'function') return options.ttl(options, sess, sid);
@@ -11,13 +13,7 @@ const getTTL = (options, sess, sid) => {
     throw UnsupportedError('`options.ttl` must be a number or function.');
   }
   const maxAge = sess && sess.cookie ? sess.cookie.maxAge : null;
-  return typeof maxAge === 'number' ? Math.floor(maxAge) : ONE_DAY;
-};
-
-const prune = (store) => {
-  store.forEach((value, key) => {
-    store.get(key);
-  });
+  return typeof maxAge === 'number' && maxAge > 0 ? Math.floor(maxAge) : ONE_DAY;
 };
 
 const { Store } = session;
@@ -25,26 +21,22 @@ const { Store } = session;
 class SessionStoreMemory extends Store {
   constructor(options = {}) {
     super(options);
-
-    this.options = {};
-    this.options.checkPeriod = options.checkPeriod;
-    this.options.max = options.max || 1000;
-    this.options.ttl = options.ttl || 86400;
-    this.options.dispose = options.dispose;
-    this.options.stale = options.stale;
-    this.options.noDisposeOnSet = options.noDisposeOnSet;
-
+    this.options = {
+      checkPeriod: options.checkPeriod,
+      max: options.max || 1000,
+      ttl: options.ttl,
+    };
+    // Same prefix and session decoration as the Redis store, as expected by the sessions management
+    this.prefix = options.prefix == null ? 'sess:' : options.prefix;
     this.serializer = options.serializer || JSON;
-    this.store = new LRUCache(this.options);
+    this.store = new LRUCache({ max: this.options.max });
     this.startInterval();
   }
 
   // region base commands
   get(sid, fn) {
-    const { store } = this;
-    const data = store.get(sid);
-    if (!data) return fn();
-
+    const data = this.store.get(sid);
+    if (!data) return fn && fn();
     let err = null;
     let result;
     try {
@@ -56,12 +48,9 @@ class SessionStoreMemory extends Store {
   }
 
   set(sid, sess, fn) {
-    const { store } = this;
-
-    const ttl = getTTL(this.options, sess, sid);
     try {
-      const jsess = this.serializer.stringify(sess);
-      store.set(sid, jsess, ttl);
+      const ttl = getTTL(this.options, sess, sid);
+      this.store.set(sid, this.serializer.stringify(sess), { ttl });
     } catch (err) {
       return fn && fn(err);
     }
@@ -69,14 +58,13 @@ class SessionStoreMemory extends Store {
   }
 
   touch(sid, sess, fn) {
-    const { store } = this;
-    const ttl = getTTL(this.options, sess, sid);
     let err = null;
-    if (store.get(sid) !== undefined) {
+    const data = this.store.get(sid);
+    if (data !== undefined) {
       try {
-        const s = this.serializer.parse(store.get(sid));
+        const s = this.serializer.parse(data);
         s.cookie = sess.cookie;
-        store.set(sid, this.serializer.stringify(s), ttl);
+        this.store.set(sid, this.serializer.stringify(s), { ttl: getTTL(this.options, sess, sid) });
       } catch (e) {
         err = e;
       }
@@ -84,36 +72,33 @@ class SessionStoreMemory extends Store {
     return fn && fn(err);
   }
 
-  // Gives the same result as the Redis store: `deleted` is true only for the call that removed the session
   destroy(sid, fn) {
-    const { store } = this;
-    const data = store.get(sid);
-    const deleted = store.delete(sid);
+    const data = this.store.get(sid);
+    this.store.delete(sid);
     let err = null;
-    let session;
+    let result;
     try {
-      session = data ? this.serializer.parse(data) : undefined;
-    } catch (er) {
-      err = er;
+      result = data === undefined ? undefined : this.serializer.parse(data);
+    } catch (e) {
+      err = e;
     }
-    return fn && fn(err, { sessionId: sid, session, deleted });
+    return fn && fn(err, result);
   }
 
   ids(fn) {
-    const { store } = this;
-    const Ids = store.keys();
-    return fn && fn(null, Ids);
+    return fn && fn(null, [...this.store.keys()]);
   }
 
   all(fn) {
-    const { store } = this;
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this;
     let err = null;
-    const result = {};
+    const result = [];
     try {
-      store.forEach((val, key) => {
-        result[key] = self.serializer.parse(val);
+      this.store.forEach((val, key) => {
+        result.push({
+          ...this.serializer.parse(val),
+          redis_key_id: this.prefix + key,
+          redis_key_ttl: Math.round(this.store.getRemainingTTL(key) / 1000),
+        });
       });
     } catch (e) {
       err = e;
@@ -122,26 +107,22 @@ class SessionStoreMemory extends Store {
   }
 
   clear(fn) {
-    const { store } = this;
-    store.reset();
+    this.store.clear();
     return fn && fn(null);
   }
 
   length(fn) {
-    const { store } = this;
-    return fn && fn(null, store.itemCount);
+    return fn && fn(null, this.store.size);
   }
   // endregion
 
   startInterval() {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this;
     const ms = this.options.checkPeriod;
     if (ms && typeof ms === 'number') {
       clearInterval(this._checkInterval);
-      this._checkInterval = setInterval(() => {
-        prune(self.store); // iterates over the entire cache proactively pruning old entries
-      }, Math.floor(ms));
+      // proactively removes the expired sessions, lru-cache only drops them when they are read
+      this._checkInterval = setInterval(() => this.prune(), Math.floor(ms));
+      this._checkInterval.unref?.();
     }
   }
 
@@ -150,7 +131,7 @@ class SessionStoreMemory extends Store {
   }
 
   prune() {
-    prune(this.store);
+    this.store.purgeStale();
   }
 }
 
