@@ -21,7 +21,7 @@ testCreatedCounter.campaign = 6;
 testCreatedCounter['case-incident'] = 23;
 // 38 case-rfi and 1 case-rft created by the request access workflow tests (requestAccess-test, requestAccess-domain-test, workflow-test)
 testCreatedCounter['case-rfi'] = 47;
-testCreatedCounter['case-rft'] = 2;
+testCreatedCounter['case-rft'] = 3; // includes 1 by workflow-migration-test (case on a legacy status)
 testCreatedCounter.channel = 1;
 testCreatedCounter['course-of-action'] = 4;
 testCreatedCounter.credential = 1;
@@ -143,7 +143,7 @@ testUpdatedCounter.persona = 1;
 testUpdatedCounter['ssh-key'] = 1;
 // 43 case-rfi and 2 case-rft updated by the request access workflow tests (status transitions, decisions)
 testUpdatedCounter['case-rfi'] = 48;
-testUpdatedCounter['case-rft'] = 2;
+testUpdatedCounter['case-rft'] = 3; // includes 1 by workflow-migration-test (legacy status write)
 // 1 updated by stixCyberObservable-test (network traffic deduplication)
 testUpdatedCounter['ipv4-addr'] = 5;
 // 3 updated by stixCyberObservable-test (2 upserts and 1 contributing field update in network traffic deduplication)
@@ -182,7 +182,7 @@ testDeletedCounter.campaign = 2;
 testDeletedCounter['case-incident'] = 20;
 // 37 case-rfi and 1 case-rft deleted by the request access workflow tests (1 more case-rfi is merged)
 testDeletedCounter['case-rfi'] = 46;
-testDeletedCounter['case-rft'] = 2;
+testDeletedCounter['case-rft'] = 3; // includes 1 by workflow-migration-test
 testDeletedCounter.channel = 1;
 testDeletedCounter['course-of-action'] = 2;
 testDeletedCounter['data-component'] = 2;
