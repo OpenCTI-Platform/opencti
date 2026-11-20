@@ -1719,7 +1719,7 @@ class OpenCTIStix2:
                 "Cannot attach staged sync files without a sync id",
                 {
                     "id": entity_id,
-                    "files": [file["name"] for file in staged_sync_files],
+                    "files_count": len(staged_sync_files),
                 },
             )
             return

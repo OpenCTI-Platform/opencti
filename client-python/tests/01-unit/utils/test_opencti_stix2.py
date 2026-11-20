@@ -1151,4 +1151,9 @@ def test_import_object_skips_staged_sync_file_without_sync_id(
 
     assert queries == []
     assert "sync/inflight" not in caplog.text
-    assert any(record.levelname == "ERROR" for record in caplog.records)
+    error_records = [r for r in caplog.records if r.levelname == "ERROR"]
+    assert len(error_records) == 1
+    assert error_records[0].attributes == {
+        "id": "report-internal-id",
+        "files_count": 1,
+    }
