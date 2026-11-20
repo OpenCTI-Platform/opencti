@@ -1,5 +1,6 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
+// fds:keep-mui the library Tooltip is a compound API; this call site converts with the wider Tooltip wave
 import { Tooltip, TooltipProps } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
