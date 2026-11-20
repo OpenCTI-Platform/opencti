@@ -22,6 +22,7 @@ import { createInternalObject, editInternalObject } from '../../../../src/domain
 import { addCustomViewCreatedCount } from '../../../../src/manager/telemetryManager';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import { importCustomView } from '../../../../src/modules/customView/customView-import';
+import { convertDashboardManifestIds } from '../../../../src/modules/dashboard/dashboard-utils';
 import { customViewImportKey } from '../../../../src/modules/customView/customView-import';
 import { ENTITY_TYPE_CUSTOM_VIEW } from '../../../../src/modules/customView/customView-types';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
@@ -77,6 +78,13 @@ describe('Custom view import from a bundle', () => {
       expect(result.reason).toContain('dashboard variables');
       expect(createInternalObject).not.toHaveBeenCalled();
     });
+
+    it('refuses a view whose filters the conversion of the ids cannot walk, instead of failing the whole import', async () => {
+      vi.mocked(convertDashboardManifestIds).mockRejectedValueOnce(new TypeError("Cannot read properties of null (reading 'filters')"));
+      const result = await importCustomView(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true });
+      expect(result).toMatchObject({ status: 'failed', code: 'invalid', exists: false, reason: 'The filters of the manifest are malformed' });
+      expect(createInternalObject).not.toHaveBeenCalled();
+    });
   });
 
   describe('overwrite', () => {
@@ -111,6 +119,14 @@ describe('Custom view import from a bundle', () => {
       expect(patched()).toEqual([{ id: 'stored-id', patch: [{ key: 'description', value: ['The executives'] }, { key: 'manifest', value: [manifest] }] }]);
       expect(patched()[0].patch.map(({ key }) => key)).not.toEqual(expect.arrayContaining(['enabled', 'default', 'name', 'slug', 'target_entity_type']));
       expect(createInternalObject).not.toHaveBeenCalled();
+    });
+
+    it('replaces a stored manifest the platform cannot read, instead of failing the import', async () => {
+      platformHas(stored({ manifest: 'not base64 json' }));
+      const result = await importCustomView(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true });
+      expect(result).toMatchObject({ status: 'overwritten', exists: true });
+      await importCustomView(context, user, configuration, { mode: ConfigImportMode.Overwrite });
+      expect(patched()).toEqual([{ id: 'stored-id', patch: [{ key: 'manifest', value: [manifest] }] }]);
     });
 
     it('overwrites a view that uses a saved filter with the inline filters the export writes, as an overwritten dashboard is', async () => {

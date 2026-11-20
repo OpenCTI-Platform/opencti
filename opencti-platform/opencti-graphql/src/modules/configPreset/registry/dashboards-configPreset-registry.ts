@@ -29,7 +29,7 @@ const dashboardsImporter: ConfigPresetImporter = {
   compute: async (context, user, item, plan, mode) => {
     const { name } = item.configuration;
     const label = { label: typeof name === 'string' && name.trim() ? name.trim() : item.id, translatable: false };
-    const result = await importDashboard(context, user, item.configuration, { mode, dryRun: true, reservedNames: plannedNamesOf(plan) });
+    const result = await importDashboard(context, user, item.configuration, { mode, dryRun: true, reservedNames: plannedNamesOf(plan, DASHBOARDS_FAMILY_ID) });
     return toComputedItem(label, result);
   },
   apply: async (context, user, item, computed, mode) => toAppliedItem(await importDashboard(context, user, item.configuration, { mode }), computed),

@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import slugify from 'slug';
 import { GraphQLError } from 'graphql';
-import { FUNCTIONAL_ERROR } from '../../config/errors';
+import { FUNCTIONAL_ERROR, FunctionalError } from '../../config/errors';
 import { FilterMode, type EditInput } from '../../generated/graphql';
 import { fullEntitiesList } from '../../database/middleware-loader';
 import { addCustomViewCreatedCount } from '../../manager/telemetryManager';
@@ -55,7 +55,15 @@ const prepareManifest = async (context: AuthContext, user: AuthUser, manifest: s
   if (!manifest) {
     return undefined;
   }
-  return convertDashboardManifestIds(context, user, sanitizeCustomViewManifest(manifest), 'stix') as Promise<string>;
+  try {
+    return await (convertDashboardManifestIds(context, user, sanitizeCustomViewManifest(manifest), 'stix') as Promise<string>);
+  } catch (error) {
+    // Filters the conversion cannot walk (a null group) are the manifest's fault, not the platform's
+    if (error instanceof TypeError) {
+      throw FunctionalError('The filters of the manifest are malformed');
+    }
+    throw error;
+  }
 };
 
 const auditLogContextSanitizer = <T extends Record<string, unknown>>(element: T) => ({ ...element, manifest: '[sanitized]' });
@@ -81,12 +89,21 @@ const createCustomView = async (context: AuthContext, user: AuthUser, data: Cust
   return created;
 };
 
+// A stored manifest the platform cannot read (the file import stores it as it comes) differs from any manifest: the overwrite replaces it
+const readStoredManifest = (encoded: string | undefined) => {
+  try {
+    return fromB64(encoded);
+  } catch {
+    return undefined;
+  }
+};
+
 // The fields an import writes on an existing custom view: what the bundle sets and the view does not have. A value that is null or absent leaves
 // the one of the view untouched. Its name and entity type are its identity, and whether it is enabled or the default is never touched
 const buildPatch = (existing: BasicStoreEntityCustomView, data: CustomViewImportConfiguration, manifest: string | undefined) => {
   const patch: EditInput[] = [];
   if (data.description != null && data.description !== (existing.description ?? '')) patch.push({ key: 'description', value: [data.description] });
-  if (manifest && !R.equals(fromB64(existing.manifest), fromB64(manifest))) patch.push({ key: 'manifest', value: [manifest] });
+  if (manifest && !R.equals(readStoredManifest(existing.manifest), fromB64(manifest))) patch.push({ key: 'manifest', value: [manifest] });
   return patch;
 };
 // endregion

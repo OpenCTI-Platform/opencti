@@ -10,6 +10,7 @@ import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/
 import type { ConfigPresetBundleItem, ConfigPresetComputedItem, ConfigPresetImportPlan } from '../../../../../src/modules/configPreset/import/configPreset-import-types';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
 import { ConfigImportMode } from '../../../../../src/modules/configImport/configImport-types';
+import { plannedNamesOf } from '../../../../../src/modules/configPreset/registry/common-configPreset-registry';
 import { importConfigPresetItem } from '../../../../../src/modules/configPreset/import/configPreset-import-engine';
 
 const context = { source: 'test' } as AuthContext;
@@ -125,6 +126,14 @@ describe('Custom views import (real import through the engine)', () => {
     // A new import has its own plan: the names of the previous one are free
     expect((await importConfigPresetItem(context, user, item(view('Overview'), 'customview--c'), newPlan(), ConfigImportMode.Overwrite)).status).toBe('CREATED');
     expect(written).toEqual(['Report/Overview', 'Malware/Overview', 'Report/Overview']);
+  });
+
+  it('keeps its names apart from the ones another family reserves in the same plan', async () => {
+    vi.mocked(importCustomView).mockResolvedValue({ status: 'created', exists: false });
+    const plan = newPlan();
+    await family.importer!.compute(context, user, item(view('Overview')), plan, ConfigImportMode.Overwrite);
+    expect(reservedNamesOf(0)).not.toBe(plannedNamesOf(plan, 'dashboards'));
+    expect(plannedNamesOf(plan, 'dashboards')).toBe(plannedNamesOf(plan, 'dashboards'));
   });
 
   it('computes each item with the names of the plan, and writes it with none: the platform decides from what it holds', async () => {

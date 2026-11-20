@@ -36,7 +36,7 @@ const customViewsImporter: ConfigPresetImporter = {
   compute: async (context, user, item, plan, mode) => {
     const { name, target_entity_type: targetEntityType } = item.configuration;
     const label = { label: customViewLabel(name, targetEntityType, item.id), translatable: false };
-    const result = await importCustomView(context, user, item.configuration, { mode, dryRun: true, reservedNames: plannedNamesOf(plan) });
+    const result = await importCustomView(context, user, item.configuration, { mode, dryRun: true, reservedNames: plannedNamesOf(plan, CUSTOM_VIEWS_FAMILY_ID) });
     return toComputedItem(label, result);
   },
   apply: async (context, user, item, computed, mode) => toAppliedItem(await importCustomView(context, user, item.configuration, { mode }), computed),

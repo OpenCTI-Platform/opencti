@@ -28,12 +28,14 @@ export const ROLES_FAMILY_ID = 'roles';
 export const MARKINGS_FAMILY_ID = 'markings';
 export const BRANDING_FAMILY_ID = 'branding';
 
-// The names the earlier items of a dry run would take, by plan: an importer that matches its items by name reserves them here, so that the plan of
-// the engine does not have to know about the families that need it
-const plannedNames = new WeakMap<ConfigPresetImportPlan, Set<string>>();
-export const plannedNamesOf = (plan: ConfigPresetImportPlan) => {
-  const names = plannedNames.get(plan) ?? new Set<string>();
-  plannedNames.set(plan, names);
+// The names the earlier items of a dry run would take, by plan and by family (two families do not write their names the same way): an importer
+// that matches its items by name reserves them here, so that the plan of the engine does not have to know about the families that need it
+const plannedNames = new WeakMap<ConfigPresetImportPlan, Map<string, Set<string>>>();
+export const plannedNamesOf = (plan: ConfigPresetImportPlan, familyId: string) => {
+  const byFamily = plannedNames.get(plan) ?? new Map<string, Set<string>>();
+  plannedNames.set(plan, byFamily);
+  const names = byFamily.get(familyId) ?? new Set<string>();
+  byFamily.set(familyId, names);
   return names;
 };
 
