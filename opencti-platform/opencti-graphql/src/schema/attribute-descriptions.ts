@@ -534,6 +534,7 @@ export const ATTRIBUTE_DESCRIPTIONS_BY_TYPE: Record<string, Record<string, strin
     description: 'Meaning of the entry.',
     category: 'Vocabulary the entry belongs to (e.g. malware_type_ov, report_types_ov).',
     order: 'Position of the entry in its vocabulary, to sort the entries. Defaults to 0.',
+    parent_name: 'Name of the parent entry in the same vocabulary (e.g. the system category of a system subcategory). Kept when the parent entry is renamed.',
     is_hidden: 'Whether the entry is hidden from the choices offered when filling a field.',
     builtIn: 'Whether the entry is provided by the platform: a built-in entry cannot be deleted. Set by the platform.',
   },
