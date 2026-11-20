@@ -38,6 +38,7 @@ import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useS
 import type { Theme } from '../../components/Theme';
 import useAttributes, { containerTypes } from '../hooks/useAttributes';
 import { contextFilters, entityTypesFilters, FilterSearchContext, getFilterDefinitionFromFilterKeysMap, ME_FILTER_VALUE } from './filtersUtils';
+import { buildMembersOptions } from './SearchEntitiesUtil';
 import { useSearchEntitiesDashboardsQuery$data } from './__generated__/useSearchEntitiesDashboardsQuery.graphql';
 import { convertMarking } from '../edition';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../hooks/useGranted';
@@ -580,33 +581,10 @@ const useSearchEntities = ({
       })
         .toPromise()
         .then((data) => {
-          const membersEntities = (
-            (data as ObjectAssigneeFieldMembersSearchQuery$data)?.members
-              ?.edges ?? []
-          ).map((n) => ({
-            label: n?.node.name,
-            value: n?.node.id,
-            type: n?.node.entity_type,
-            group: n?.node.entity_type,
-          }));
-          unionSetEntities(key, membersEntities);
           // add @me value for filters with user id as values, except in stix playbook components
-          if (entityTypes.includes('User') && searchContext.elementType !== 'Playbook-Stix-Component') {
-            unionSetEntities(key, [meEntity]);
-          }
-          // system members are always users; only add them when the filter targets users
-          if (entityTypes.includes('User')) {
-            const membersSystems = (
-              (data as ObjectAssigneeFieldMembersSearchQuery$data)?.systemMembers
-                ?.edges ?? []
-            ).map((n) => ({
-              label: n?.node.name,
-              value: n?.node.id,
-              type: n?.node.entity_type,
-              group: n?.node.entity_type,
-            }));
-            unionSetEntities(key, membersSystems);
-          }
+          const meOption = searchContext.elementType !== 'Playbook-Stix-Component' ? meEntity : undefined;
+          // a single union keeps the searched members ahead of the unsearched system members
+          unionSetEntities(key, buildMembersOptions(data as ObjectAssigneeFieldMembersSearchQuery$data, entityTypes, meOption));
         });
     };
 

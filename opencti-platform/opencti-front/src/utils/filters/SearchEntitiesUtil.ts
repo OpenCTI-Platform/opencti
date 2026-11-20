@@ -2,6 +2,37 @@ import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import { isStixObjectTypes, ME_FILTER_VALUE } from './filtersUtils';
 import { removeAccentsAndLowerCase } from '../String';
 
+type MemberNode = { id: string; entity_type: string; name: string };
+type MemberEdges = { edges?: ReadonlyArray<{ node: MemberNode } | null | undefined> | null } | null | undefined;
+
+const memberOption = ({ id, entity_type, name }: MemberNode): FilterOptionValue => ({
+  label: name,
+  value: id,
+  type: entity_type,
+  group: entity_type,
+});
+
+/**
+ * Options of a members search, in the order getOptionsFromEntities keeps when a term is typed: the @me user (if
+ * given), then the members found by the search, most relevant first, then the built-in accounts. The built-in
+ * accounts (SYSTEM, RULE MANAGER...) are not searched, so they come after the ranked members. They and @me are only
+ * added when the filter targets users.
+ */
+export const buildMembersOptions = (
+  data: { members?: MemberEdges; systemMembers?: MemberEdges } | null | undefined,
+  entityTypes: string[],
+  meOption?: FilterOptionValue,
+): FilterOptionValue[] => {
+  const toOptions = (connection: MemberEdges) => (connection?.edges ?? [])
+    .flatMap((edge) => (edge?.node ? [memberOption(edge.node)] : []));
+  const targetsUsers = entityTypes.includes('User');
+  return [
+    ...(targetsUsers && meOption ? [meOption] : []),
+    ...toOptions(data?.members),
+    ...(targetsUsers ? toOptions(data?.systemMembers) : []),
+  ];
+};
+
 // "No label" and the dynamic @me user stay at the top of the list
 const pinnedRank = (option: FilterOptionValue) => {
   if (!option.value) return 0;

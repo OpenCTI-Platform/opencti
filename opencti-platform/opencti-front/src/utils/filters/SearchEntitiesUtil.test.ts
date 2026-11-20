@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
-import { getOptionsFromEntities } from './SearchEntitiesUtil';
+import { buildMembersOptions, getOptionsFromEntities } from './SearchEntitiesUtil';
 import { ME_FILTER_VALUE } from './filtersUtils';
 
 const entity = (label: string, type: string, value = `${type}--${label}`): FilterOptionValue => ({
@@ -114,6 +114,32 @@ describe('getOptionsFromEntities', () => {
         ] as FilterOptionValue[],
       };
       expect(labels(getOptionsFromEntities(userEntities, {}, 'creator_id', 'admin'))).toEqual(['me', 'Admin']);
+    });
+  });
+
+  it('ranks a searched user ahead of a built-in account matching the same term', () => {
+    const data = {
+      members: { edges: [{ node: { id: 'u1', entity_type: 'User', name: 'Rule' } }] },
+      systemMembers: { edges: [{ node: { id: 's1', entity_type: 'User', name: 'RULE MANAGER' } }] },
+    };
+    const entities = { members_user: buildMembersOptions(data, ['User']) };
+    expect(labels(getOptionsFromEntities(entities, {}, 'members_user', 'rule'))).toEqual(['Rule', 'RULE MANAGER']);
+  });
+
+  describe('buildMembersOptions', () => {
+    const data = {
+      members: { edges: [{ node: { id: 'g1', entity_type: 'Group', name: 'Analysts' } }] },
+      systemMembers: { edges: [{ node: { id: 's1', entity_type: 'User', name: 'SYSTEM' } }] },
+    };
+
+    it('only adds the built-in accounts and @me when the filter targets users', () => {
+      expect(labels(buildMembersOptions(data, ['Group'], { label: 'me', value: ME_FILTER_VALUE, type: 'User' }))).toEqual(['Analysts']);
+    });
+
+    it('puts @me first, then the searched members, then the built-in accounts', () => {
+      const me = { label: 'me', value: ME_FILTER_VALUE, type: 'User' };
+      expect(labels(buildMembersOptions(data, ['User', 'Group'], me))).toEqual(['me', 'Analysts', 'SYSTEM']);
+      expect(labels(buildMembersOptions(data, ['User', 'Group']))).toEqual(['Analysts', 'SYSTEM']);
     });
   });
 
