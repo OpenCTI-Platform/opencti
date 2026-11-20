@@ -21,7 +21,7 @@ import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import ItemBoolean from '../../../components/ItemBoolean';
 import { IngestionRssLinesDataTableQuery, IngestionRssLinesDataTableQuery$variables } from '@components/data/ingestionRss/__generated__/IngestionRssLinesDataTableQuery.graphql';
 import { IngestionRssLinesDataTable_data$data } from '@components/data/ingestionRss/__generated__/IngestionRssLinesDataTable_data.graphql';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { useQueryLoadingWithLoadQuery } from '../../../utils/hooks/useQueryLoading';
 import { useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
@@ -58,7 +58,7 @@ const IngestionRss = () => {
     ...paginationOptions,
     filters: contextFilters,
   } as unknown as IngestionRssLinesDataTableQuery$variables;
-  const queryRef = useQueryLoading<IngestionRssLinesDataTableQuery>(
+  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<IngestionRssLinesDataTableQuery>(
     ingestionRssLinesQuery,
     queryPaginationOptions,
   );
@@ -143,7 +143,10 @@ const IngestionRss = () => {
           createButton={(
             <Security needs={[INGESTION_SETINGESTIONS]}>
               <>
-                <IngestionRssImport paginationOptions={queryPaginationOptions} />
+                <IngestionRssImport
+                  paginationOptions={queryPaginationOptions}
+                  onBundleImported={() => loadQuery(queryPaginationOptions, { fetchPolicy: 'store-and-network' })}
+                />
                 { isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
                   <Button
                     gradient

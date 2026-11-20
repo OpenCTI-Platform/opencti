@@ -212,3 +212,58 @@ describe('Ingestion domain timeout options', () => {
     expect(getHttpClientMock).toHaveBeenNthCalledWith(2, expect.objectContaining({ rejectUnauthorized: false }));
   });
 });
+
+describe('Ingestion JSON feed destination', () => {
+  const jsonIngestion = (overrides: Record<string, unknown> = {}) => ({
+    headers: [{ name: 'X-Api-Key', value: 'header-secret' }, { name: 'X-Client', value: 'opencti' }],
+    ingestion_json_state: null,
+    query_attributes: [],
+    authentication_type: 'bearer',
+    authentication_value: 'encrypted',
+    uri: 'https://api.example.com/feed',
+    body: '',
+    verb: 'GET',
+    json_mapper_id: 'json-mapper--1',
+    user_id: null,
+    pagination_with_sub_page: false,
+    pagination_with_sub_page_attribute_path: null,
+    ...overrides,
+  } as any);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    decryptIngestionCredentialMock.mockResolvedValue('bearer-secret');
+    getHttpClientMock.mockReturnValue({ get: httpGetMock, request: httpRequestMock });
+    findJsonMapperByIdMock.mockResolvedValue({ representations: '[]', variables: '[]' });
+    getEntitiesMapFromCacheMock.mockResolvedValue(new Map());
+    jsonMappingExecutionMock.mockResolvedValue([]);
+  });
+
+  it('refuses to send the credentials of the feed to another server than the one of its URI', async () => {
+    const ingestion = jsonIngestion({
+      uri: 'https://$h:x@api.example.com/feed',
+      query_attributes: [{ type: 'data', from: 'h', to: 'h', default: 'evil.example.org/?', exposed: 'query_param' }],
+    });
+    await expect(executeJsonQuery({} as any, ingestion)).rejects.toThrow('The URI of the feed points to another server once its variables are replaced');
+    expect(httpRequestMock).not.toHaveBeenCalled();
+  });
+
+  it('fetches a next page of another server without the credentials nor the sensitive headers of the feed', async () => {
+    httpRequestMock
+      .mockResolvedValueOnce({ data: { next: 'https://cdn.example.org/page-2' }, headers: {} })
+      .mockResolvedValueOnce({ data: {}, headers: {} });
+    const publicRequest = vi.fn().mockResolvedValue({ data: { next: 'https://api.example.com/page-3' }, headers: {} });
+    getHttpClientMock
+      .mockReturnValueOnce({ get: httpGetMock, request: httpRequestMock })
+      .mockReturnValueOnce({ get: httpGetMock, request: publicRequest });
+    const ingestion = jsonIngestion({ pagination_with_sub_page: true, pagination_with_sub_page_attribute_path: '$.next' });
+    await executeJsonQuery({} as any, ingestion);
+    const [[feedClient], [publicClient]] = getHttpClientMock.mock.calls;
+    expect(feedClient.headers).toMatchObject({ Authorization: 'Bearer bearer-secret', 'X-Api-Key': 'header-secret' });
+    expect(publicClient.headers).toEqual({ Accept: 'application/json', 'X-Client': 'opencti' });
+    expect(publicClient.certificates).toBeUndefined();
+    expect(publicRequest).toHaveBeenCalledWith(expect.objectContaining({ url: 'https://cdn.example.org/page-2' }));
+    expect(httpRequestMock).toHaveBeenNthCalledWith(2, expect.objectContaining({ url: 'https://api.example.com/page-3' }));
+    expect(httpRequestMock).toHaveBeenCalledTimes(2);
+  });
+});

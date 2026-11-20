@@ -310,6 +310,41 @@ describe('Config preset exportable types query', () => {
         itemsPageInfo: onePage(1),
       },
       {
+        key: 'rssFeeds',
+        label: 'RSS feeds',
+        description: 'RSS feeds and their parameters, without their state',
+        group: { key: 'integrations', label: 'Integrations' },
+        items: [
+          { key: 'Security news', label: 'Security news', translatable: false, dependsOn: [{ type: 'markings', key: customMarking.standard_id }], isDefault: false },
+          { key: 'Security news (1)', label: 'Security news', translatable: false, dependsOn: [], isDefault: false },
+        ],
+        itemsPageInfo: onePage(2),
+      },
+      {
+        key: 'csvFeeds',
+        label: 'CSV feeds',
+        description: 'CSV feeds with their mapper, without their credentials',
+        group: { key: 'integrations', label: 'Integrations' },
+        items: [],
+        itemsPageInfo: onePage(0),
+      },
+      {
+        key: 'jsonFeeds',
+        label: 'JSON feeds',
+        description: 'JSON feeds with their mapper, without their credentials',
+        group: { key: 'integrations', label: 'Integrations' },
+        items: [],
+        itemsPageInfo: onePage(0),
+      },
+      {
+        key: 'taxiiFeeds',
+        label: 'TAXII feeds',
+        description: 'TAXII feeds and their parameters, without their credentials',
+        group: { key: 'integrations', label: 'Integrations' },
+        items: [{ key: 'Partner/TAXII', label: 'Partner/TAXII', translatable: false, dependsOn: [], isDefault: false }],
+        itemsPageInfo: onePage(1),
+      },
+      {
         key: 'playbooks',
         label: 'Playbooks',
         description: 'Playbook definitions, created stopped',
@@ -389,7 +424,8 @@ describe('Config preset exportable types query', () => {
     expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
       ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['emailTemplates', true], ['labels', false], ['exclusionLists', false], ['killChainPhases', false],
-      ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['dashboards', false], ['connectors', true], ['playbooks', true], ['ruleEngine', false], ['fintelDesigns', true],
+      ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['dashboards', false], ['connectors', true],
+      ['rssFeeds', false], ['csvFeeds', false], ['jsonFeeds', false], ['taxiiFeeds', false], ['playbooks', true], ['ruleEngine', false], ['fintelDesigns', true],
     ]);
     expect(types.find((type) => type.key === 'emailTemplates')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     expect(types.find((type) => type.key === 'fintelDesigns')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
@@ -442,6 +478,10 @@ describe('Config preset exportable types query', () => {
       ['caseTemplates', 'taxonomy'],
       ['dashboards', 'dashboards'],
       ['connectors', 'integrations'],
+      ['rssFeeds', 'integrations'],
+      ['csvFeeds', 'integrations'],
+      ['jsonFeeds', 'integrations'],
+      ['taxiiFeeds', 'integrations'],
       ['playbooks', 'automationRules'],
       ['ruleEngine', 'automationRules'],
       ['fintelDesigns', 'customization'],

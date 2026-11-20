@@ -17,27 +17,27 @@ describe('SecurityCoverageScores Utils', () => {
 
     const vocabularies = (edges: VocabularyEdge[] = []) => {
       return { edges:
-    [
-      {
-        node: {
-          order: 1,
-          name: 'prevention',
-        },
-      },
-      {
-        node: {
-          order: 2,
-          name: 'detection',
-        },
-      },
-      {
-        node: {
-          order: 3,
-          name: 'vulnerability',
-        },
-      },
-      ...edges,
-    ],
+        [
+          {
+            node: {
+              order: 1,
+              name: 'prevention',
+            },
+          },
+          {
+            node: {
+              order: 2,
+              name: 'detection',
+            },
+          },
+          {
+            node: {
+              order: 3,
+              name: 'vulnerability',
+            },
+          },
+          ...edges,
+        ],
       };
     };
 

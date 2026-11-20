@@ -7,18 +7,18 @@ import useCustomViewTabs from '@components/custom_views/useCustomViewTabs';
 import { OtherCustomViewsTab, DefaultCustomViewTab } from '@components/custom_views/CustomViewTab';
 import { CUSTOM_VIEW_TAB_VALUE, DEFAULT_CUSTOM_VIEW_TAB_VALUE } from '@components/custom_views/useCustomViews';
 
-export type StixDomainObjectTabsBoxTab
-  = | 'overview'
-    | 'result'
-    | 'knowledge'
-    | 'content'
-    | 'analyses'
-    | 'sightings'
-    | 'entities'
-    | 'observables'
-    | 'relationships'
-    | 'files'
-    | 'history';
+export type StixDomainObjectTabsBoxTab =
+  | 'overview'
+  | 'result'
+  | 'knowledge'
+  | 'content'
+  | 'analyses'
+  | 'sightings'
+  | 'entities'
+  | 'observables'
+  | 'relationships'
+  | 'files'
+  | 'history';
 
 interface StixDomainObjectTabsBoxProps {
   basePath: string;

@@ -68,7 +68,7 @@ interface ObservedDataProps {
 }
 
 const ObservedData: React.FC<ObservedDataProps> = ({ observedDataData }) => {
-  const observedData = useFragment <ObservedData_observedData$key>(observedDataFragment, observedDataData);
+  const observedData = useFragment<ObservedData_observedData$key>(observedDataFragment, observedDataData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(observedData.entity_type);
 
   return (

@@ -19,6 +19,7 @@ const BASELINE_SENSITIVE_KEYS = [
   'new_value_cleartext',
   'platform_token',
   'xtm_hub_token',
+  'storage_key',
 ];
 const CONFIGURED_SENSITIVE_KEYS: string[] = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
 export const SENSITIVE_KEYS: ReadonlySet<string> = new Set([...BASELINE_SENSITIVE_KEYS, ...CONFIGURED_SENSITIVE_KEYS]);

@@ -88,12 +88,13 @@ export interface AvailableIntegrationLineProps {
   isEnterpriseEdition: boolean;
   onClickDeploy: () => void;
   onClickCreate: () => void;
+  onImported?: () => void;
 }
 
 // Compact row variant of the available tab cards (marketplace connectors and
 // built-in ingestion methods). Cells share their geometry with
 // AvailableIntegrationLinesHeader so rows align like a table.
-const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, onClickCreate }: AvailableIntegrationLineProps) => {
+const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, onClickCreate, onImported }: AvailableIntegrationLineProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const canCreate = useGranted([INGESTION_SETINGESTIONS]);
@@ -276,7 +277,7 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
             >
               {isImportableBuiltInKind(item.builtIn.kind) && (
                 <>
-                  <BuiltInIntegrationImport kind={item.builtIn.kind} />
+                  <BuiltInIntegrationImport kind={item.builtIn.kind} onBundleImported={onImported} />
                   <BuiltInIntegrationHubButton kind={item.builtIn.kind} />
                 </>
               )}

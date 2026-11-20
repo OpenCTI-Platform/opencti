@@ -28,8 +28,8 @@ export const partialImportItemModes = (
   return items.filter(({ conflict }) => conflict).map(({ key }) => ({ key, mode: modes[key] ?? defaultMode }));
 };
 
-// The selected items in conflict: the ones a mode is chosen for. The choice for all of them is offered from two, as in the wizard:
-// with one, its own choice is enough
+// The selected items in conflict: the ones a mode is chosen for. The choice for all of them is offered from two: the dialog lists
+// every item, so with one its own choice is enough
 export const partialImportConflictKeys = (items: ReadonlyArray<PartialImportItem>, selected: ReadonlySet<string>): string[] => {
   return items.filter(({ key, conflict }) => conflict && selected.has(key)).map(({ key }) => key);
 };

@@ -9,6 +9,10 @@ vi.mock('../../../../src/modules/xtm/one/xtm-one-client', () => ({
   },
 }));
 
+vi.mock('../../../../src/modules/xtm/one/xtm-one-health', () => ({
+  buildXtmOneHealthSnapshot: vi.fn(async () => ({ schema_version: 1, rabbitmq: { queue_messages: 3, consumers: 2 } })),
+}));
+
 vi.mock('../../../../src/database/cache', () => ({
   getEntityFromCache: vi.fn(),
 }));
@@ -154,6 +158,8 @@ describe('registerWithXtmOne', () => {
     // The Ask AI container report generation routes through this intent when
     // XTM One is configured; without the declaration it would find no agent.
     expect(callArgs.intents.map((i: { name: string }) => i.name)).toContain('cti.container_report');
+    // The Platform Health snapshot rides on the heartbeat.
+    expect(callArgs.health).toEqual({ schema_version: 1, rabbitmq: { queue_messages: 3, consumers: 2 } });
   });
 
   it('should not advertise approval prompts when the chatbot is not usable', async () => {

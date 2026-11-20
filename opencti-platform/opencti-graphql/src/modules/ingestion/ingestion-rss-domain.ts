@@ -1,6 +1,6 @@
 import { type BasicStoreEntityIngestionRss, ENTITY_TYPE_INGESTION_RSS, type StoreEntityIngestionRss } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
-import { fullEntitiesList, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
+import { fullEntitiesList, internalLoadById, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
 import { BUS_TOPICS, PLATFORM_VERSION } from '../../config/conf';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify, redisDeleteIngestionLogHistory } from '../../database/redis';
@@ -18,9 +18,10 @@ import type { FileHandle } from 'fs/promises';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { FunctionalError } from '../../config/errors';
-import type { BasicStoreEntityMarkingDefinition } from '../../types/store';
+import type { BasicStoreEntity, BasicStoreEntityMarkingDefinition } from '../../types/store';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { verifyIngestionUri } from './ingestion-common';
+import { isConfigPresetFeedFile, resolveFeedFileMarkings } from './ingestion-file-import';
 
 const MINIMAL_RSS_FEED_COMPATIBLE_VERSION = '7.260309.0';
 
@@ -150,7 +151,7 @@ export const ingestionDelete = async (context: AuthContext, user: AuthUser, inge
   return ingestionId;
 };
 
-export const rssFeedAddInputFromImport = async (file: Promise<FileHandle>) => {
+export const rssFeedAddInputFromImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
   const parsedData = await extractContentFrom(file);
 
   // check platform version compatibility
@@ -161,6 +162,13 @@ export const rssFeedAddInputFromImport = async (file: Promise<FileHandle>) => {
     );
   }
 
+  if (isConfigPresetFeedFile(parsedData, 'rssFeeds')) {
+    const { markings, author, ...configuration } = parsedData.configuration;
+    const objectMarkingRefs = (await resolveFeedFileMarkings(context, markings)).map(({ definition, internal_id }) => ({ label: definition, value: internal_id }));
+    const authorEntity = author?.standard_id ? await internalLoadById<BasicStoreEntity>(context, user, author.standard_id) : undefined;
+    const createdByRef = authorEntity ? { label: authorEntity.name, value: authorEntity.internal_id } : null;
+    return { ...configuration, object_marking_refs: objectMarkingRefs, created_by_ref: createdByRef };
+  }
   return parsedData.configuration;
 };
 
