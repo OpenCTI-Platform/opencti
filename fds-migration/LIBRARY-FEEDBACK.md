@@ -3177,3 +3177,65 @@ the pages, ArrowDown must highlight the first row (the screen reader announces
 it), Enter on a page opens it, Enter with no highlight starts the classic
 search, Escape closes the list without clearing the field, and a click on a
 row must not blur the input first.
+
+---
+
+## 85. `RichTextField`'s Ask AI cannot carry the product's gating, so OpenCTI lays its own button over the field
+
+**Needed.** The Ask AI button of an HTML field (report, grouping and case
+content, mappable content, the HTML file editor) is OpenCTI's `TextFieldAskAI`.
+It renders in three states the library button does not have: without Enterprise
+Edition it stays visible and its tooltip offers the upgrade (`EETooltip forAi`);
+while the XTM One terms are pending it is disabled for non-administrators, with
+"Ask Ariane isn't activated yet…" as its tooltip; and for an administrator a
+click opens the terms dialog instead of the menu.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.5.1,
+`components/rich-text-field/RichTextField.mjs`): the button renders only with
+`aiActions` and `onAiAction`, is inert below `aiMinLength` with the
+`askAiTooShort` label, and otherwise opens the action menu. There is no slot for
+a product tooltip on the button, no disabled-with-reason state, and no way to
+intercept the click before the menu opens.
+
+**What the product did.** `FDS-WORKAROUND #85`. The field gets no `aiActions`;
+`TextFieldAskAI` is positioned over the right end of the label row
+(`components/fields/RichTextField.tsx`) or of the toolbar (no label:
+`StixCoreObjectContent.tsx`), and `[role="status"]` / `[role="toolbar"]` get a
+32px right padding so the unsaved-changes text and the toolbar tools stay clear
+of it.
+
+**Ask.** Either a slot for the button's tooltip content plus a
+disabled-with-reason state, or an `onAiOpen` callback that can cancel the menu,
+so the product can gate the library button instead of drawing its own.
+
+**Removal test.** On a report creation form without Enterprise Edition, the
+library Ask AI button shows the upgrade tooltip; with XTM One terms pending, it
+is disabled for a non-administrator with the explanation as its tooltip; and no
+`TextFieldAskAI` is rendered by the two files above.
+
+---
+
+## 86. `RichTextField` does not expose its fullscreen state, so the mapping cannot tell where a selection was made
+
+**Needed.** On a container's mapping view, selecting text in the read-only
+content field (`readOnly` + `onTextSelection`) opens the drawer that maps the
+selection to an entity. In fullscreen, that drawer opens underneath the
+fullscreen dialog, out of sight. The product ignored selections made in
+fullscreen before the migration.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.5.2,
+`components/rich-text-field/RichTextField.mjs`): fullscreen is internal state
+(`isFullscreen`) with no callback and no controlled prop, and `onTextSelection`
+fires in fullscreen as well (the button is only off while `disabled`).
+
+**What the product did.** `FDS-WORKAROUND #86`
+(`components/fields/RichTextField.tsx`). The product forwards a selection only
+when its anchor node lies inside the product's own container. In fullscreen
+the library renders the editing area in its dialog, outside that container.
+
+**Ask.** An `onFullscreenChange(open)` callback, or a controlled `fullscreen`
+open state, so the host knows when the field is in fullscreen.
+
+**Removal test.** On a report's mapping view, a selection made in fullscreen
+does not open the mapping drawer, and the product no longer checks where the
+selection's anchor lies.
