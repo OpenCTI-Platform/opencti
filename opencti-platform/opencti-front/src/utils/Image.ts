@@ -118,14 +118,14 @@ export const exportImage = async (
   currentWidth: number,
   currentHeight: number,
   name: string,
-  backgroundColor: string | undefined,
+  backgroundColor: string | null | undefined,
   pixelRatio = 1,
   adjust: ((value: boolean) => void) | null = null,
 ): Promise<void> => {
   const container = document.getElementById(domElementId);
   if (!container) throw new Error(`Element #${domElementId} not found`);
 
-  const options = buildExportOptions(backgroundColor, pixelRatio);
+  const options = buildExportOptions(backgroundColor ?? undefined, pixelRatio);
   const blob = await runExport(htmlToImage.toBlob, container, options);
 
   if (blob) {

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import prepareMatrixCapture from './prepareMatrixCapture';
+import prepareMatrixCapture, { EXPORT_ONLY_ATTRIBUTE } from './prepareMatrixCapture';
 
 // jsdom does no layout: the scroll metrics are set by hand.
 const setScrollMetrics = (
@@ -117,5 +117,19 @@ describe('prepareMatrixCapture', () => {
     restore();
 
     expect(wrapper.hasAttribute('style')).toBe(false);
+  });
+
+  it('shows the export-only nodes during the capture and hides them again', () => {
+    const legend = document.createElement('div');
+    legend.setAttribute(EXPORT_ONLY_ATTRIBUTE, '');
+    legend.setAttribute('hidden', '');
+    legend.textContent = 'legend';
+    wrapper.appendChild(legend);
+
+    const restore = prepareMatrixCapture(wrapper);
+    expect(legend.hasAttribute('hidden')).toBe(false);
+    restore();
+
+    expect(legend.hasAttribute('hidden')).toBe(true);
   });
 });
