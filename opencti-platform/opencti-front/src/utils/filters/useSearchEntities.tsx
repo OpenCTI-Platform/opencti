@@ -38,7 +38,7 @@ import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useS
 import type { Theme } from '../../components/Theme';
 import useAttributes, { containerTypes } from '../hooks/useAttributes';
 import { contextFilters, entityTypesFilters, FilterSearchContext, getFilterDefinitionFromFilterKeysMap, ME_FILTER_VALUE } from './filtersUtils';
-import { buildMembersOptions } from './SearchEntitiesUtil';
+import { buildMembersOptions, rankOptions } from './SearchEntitiesUtil';
 import { useSearchEntitiesDashboardsQuery$data } from './__generated__/useSearchEntitiesDashboardsQuery.graphql';
 import { convertMarking } from '../edition';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../hooks/useGranted';
@@ -383,6 +383,8 @@ const useSearchEntities = ({
       operator: 'eq',
     };
     setInputValues([newInputValue]);
+    // the options of a search for this term are ranked by relevance (rankOptions), the others stay alphabetical
+    const searchTerm = typeof event.target.value === 'string' ? event.target.value : '';
 
     // fetches vocabularies by categories and add them to the set
     const buildOptionsFromVocabularySearchQuery = (key: string, filterCategories: string[]) => {
@@ -393,14 +395,13 @@ const useSearchEntities = ({
         ],
         filterGroups: [],
       };
-      const search = event.target.value !== 0 ? event.target.value : '';
       fetchQuery(vocabularySearchQuery, {
         filters,
-        search,
+        search: searchTerm,
         first: 10,
         // the vocabularies are ordered by their configured order by default, even when searched: when a term is typed,
         // order them by relevance, as getOptionsFromEntities keeps the order of the search
-        ...(search ? { orderBy: '_score', orderMode: 'desc' } : {}),
+        ...(searchTerm.trim() ? { orderBy: '_score', orderMode: 'desc' } : {}),
       })
         .toPromise()
         .then((data) => {
@@ -410,7 +411,7 @@ const useSearchEntities = ({
               value: n?.node.name,
               type: 'Vocabulary',
             })));
-          unionSetEntities(key, entityValues);
+          unionSetEntities(key, rankOptions(entityValues, searchTerm));
         });
     };
 
@@ -437,7 +438,7 @@ const useSearchEntities = ({
               type: 'Label',
               color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
             },
-            ...objectLabelEntities,
+            ...rankOptions(objectLabelEntities, searchTerm),
           ]);
         });
     };
@@ -471,7 +472,7 @@ const useSearchEntities = ({
             value: n?.node.id,
             type: 'Kill-Chain-Phase',
           }));
-          unionSetEntities(key, killChainPhaseEntities);
+          unionSetEntities(key, rankOptions(killChainPhaseEntities, searchTerm));
         });
     };
 
@@ -493,7 +494,7 @@ const useSearchEntities = ({
             type: 'External-Reference',
             ...(group && { group }),
           }));
-          unionSetEntities(key, externalRefByEntities);
+          unionSetEntities(key, rankOptions(externalRefByEntities, searchTerm));
         });
     };
 
@@ -531,7 +532,7 @@ const useSearchEntities = ({
             type: node.entity_type,
             parentTypes: node.parent_types.flatMap((t) => (t || [])),
           }));
-          unionSetEntities(key, elementIdEntities);
+          unionSetEntities(key, rankOptions(elementIdEntities, searchTerm));
         });
     };
 
@@ -551,7 +552,7 @@ const useSearchEntities = ({
             value: n.node.id,
             type: n.node.entity_type,
           }));
-          unionSetEntities(key, groups);
+          unionSetEntities(key, rankOptions(groups, searchTerm));
         });
     };
 
@@ -572,7 +573,7 @@ const useSearchEntities = ({
             value: n.node.id,
             type: n.node.entity_type,
           }));
-          unionSetEntities(key, createdByEntities);
+          unionSetEntities(key, rankOptions(createdByEntities, searchTerm));
         });
     };
 
@@ -588,7 +589,7 @@ const useSearchEntities = ({
           // add @me value for filters with user id as values, except in stix playbook components
           const meOption = searchContext.elementType !== 'Playbook-Stix-Component' ? meEntity : undefined;
           // a single union keeps the searched members ahead of the unsearched system members
-          unionSetEntities(key, buildMembersOptions(data as ObjectAssigneeFieldMembersSearchQuery$data, entityTypes, meOption));
+          unionSetEntities(key, buildMembersOptions(data as ObjectAssigneeFieldMembersSearchQuery$data, entityTypes, { meOption, searchTerm }));
         });
     };
 
@@ -605,9 +606,8 @@ const useSearchEntities = ({
         type,
       }));
       // always add myself to the possible creators (to be able to add a trigger even if I have not yet created any objects)
-      // the added options come first: the options keep their order when a term is typed (getOptionsFromEntities)
       if (!newOptions.find((usr) => usr.value === me.id)) {
-        newOptions.unshift({
+        newOptions.push({
           label: me.name,
           value: me.id,
           type,
@@ -615,7 +615,7 @@ const useSearchEntities = ({
       }
       // add @me value for filters with user id as values, except in stix playbook components
       if (type === 'User' && searchContext.elementType !== 'Playbook-Stix-Component') {
-        newOptions.unshift(meEntity);
+        newOptions.push(meEntity);
       }
 
       setCacheEntities({ ...cacheEntities, [key]: newOptions });
@@ -778,7 +778,7 @@ const useSearchEntities = ({
                 value: n.node.id,
                 type: n.node.entity_type,
               }));
-              unionSetEntities('sightedBy', sightedByEntities);
+              unionSetEntities('sightedBy', rankOptions(sightedByEntities, searchTerm));
             });
           break;
         case 'computed_reliability':
@@ -1094,10 +1094,7 @@ const useSearchEntities = ({
                     value: n.node.id,
                     type: 'Trigger',
                   }));
-                  unionSetEntities(
-                    filterKey,
-                    triggers,
-                  );
+                  unionSetEntities(filterKey, rankOptions(triggers, searchTerm));
                 });
             } else if (idEntityTypes.includes('StatusTemplate')) {
               fetchQuery(StatusTemplateFieldQuery, {

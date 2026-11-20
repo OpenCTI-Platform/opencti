@@ -258,6 +258,37 @@ describe('useSearchEntities', () => {
     expect(labelOptions.some((e) => e.value === null)).toBe(true);
     expect(labelOptions.some((e) => e.value === 'label-1')).toBe(true);
     expect(labelOptions.some((e) => e.value === 'label-2')).toBe(true);
+    // the searched labels are ranked by relevance, "No label" is not searched
+    expect(labelOptions.filter((e) => e.ranked).map((e) => e.value)).toEqual(['label-1', 'label-2']);
+  });
+
+  it('should not rank the labels of a search without a term', async () => {
+    const mockLabelsData = { labels: { edges: [{ node: { id: 'label-1', value: 'phishing', color: '#ff0000' } }] } };
+    mockFetchQuery.mockReturnValue({ toPromise: () => Promise.resolve(mockLabelsData) });
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('objectLabel', {}, vi.fn(), createEvent(''));
+    });
+
+    await waitFor(() => {
+      expect(result.current[0].objectLabel?.some((e) => e.value === 'label-1')).toBe(true);
+    });
+    expect(result.current[0].objectLabel?.some((e) => e.ranked)).toBe(false);
+  });
+
+  it('should not rank the markings, which are not searched', () => {
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('objectMarking', {}, vi.fn(), createEvent('tlp'));
+    });
+
+    const markingOptions = result.current[0].objectMarking ?? [];
+    expect(markingOptions).toHaveLength(2);
+    expect(markingOptions.some((e) => e.ranked)).toBe(false);
   });
 
   it('should order the searched vocabularies by relevance, not by their configured order', () => {
