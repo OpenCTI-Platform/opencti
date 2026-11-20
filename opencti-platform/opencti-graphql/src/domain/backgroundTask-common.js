@@ -89,21 +89,34 @@ const isDeleteRestrictedAction = ({ type }) => {
 };
 const areParentTypesKnowledge = (parentTypes) => parentTypes && parentTypes.flat().every((type) => isKnowledge(type));
 
-// A direct status change is only refused on types that have a published workflow. Fails closed when the
-// targets cannot be resolved to concrete types (no type filter, abstract type): any of them may have one.
+// A direct status change is only refused on types that have a published workflow. A target type covers such a
+// type when it is that type or one of its parent (abstract) types. Fails closed when no target type is known.
 const allTargetsWithoutWorkflow = async (context, user, targetTypes) => {
   if (targetTypes.length === 0) {
     return false;
   }
   // Dynamic import: workflow-domain imports this module
-  const { getWorkflowConfig, hasPublishedWorkflowDefinition } = await import('../modules/workflow/domain/workflow-domain');
-  for (let index = 0; index < targetTypes.length; index += 1) {
-    const entitySetting = await getWorkflowConfig(context, user, targetTypes[index]);
-    if (!entitySetting || await hasPublishedWorkflowDefinition(context, user, targetTypes[index])) {
-      return false;
-    }
+  const { listTypesWithPublishedWorkflow } = await import('../modules/workflow/domain/workflow-domain');
+  const workflowTypes = await listTypesWithPublishedWorkflow(context, user);
+  const coversWorkflowType = (targetType) => workflowTypes.some((workflowType) => workflowType === targetType || getParentTypes(workflowType).includes(targetType));
+  return !targetTypes.some(coversWorkflowType);
+};
+
+// Entity types a query task can reach, read from its top-level `entity_type eq` filters. They only bound the
+// targets when every other filter can only narrow them: `and` mode, or a type filter alone in its group.
+// Any other shape (no type filter, `not_eq`, `or` with other filters) returns no type, so the caller fails closed.
+const resolveQueryTargetTypes = (filterGroup) => {
+  if (!filterGroup) {
+    return [];
   }
-  return true;
+  const typeFilters = findFiltersFromKey(filterGroup.filters ?? [], TYPE_FILTER)
+    .filter((filter) => (filter.operator ?? 'eq') === 'eq');
+  const onlyNarrowing = filterGroup.mode === FilterMode.And
+    || ((filterGroup.filters ?? []).length === 1 && (filterGroup.filterGroups ?? []).length === 0);
+  if (typeFilters.length === 0 || !onlyNarrowing) {
+    return [];
+  }
+  return typeFilters.map((filter) => filter.values).flat();
 };
 
 const checkWorkflowActionsValidity = async (context, user, actions, resolveTargetTypes) => {
@@ -162,8 +175,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       const objects = await internalFindByIds(context, user, ids, { includeDeletedInDraft: true });
       return objects.map((o) => o?.entity_type).filter(Boolean);
     }
-    const filterGroup = isFilterGroupNotEmpty(baseFilterObject) ? baseFilterObject : undefined;
-    return findFiltersFromKey(filterGroup?.filters ?? [], TYPE_FILTER).map((f) => f.values).flat();
+    return resolveQueryTargetTypes(isFilterGroupNotEmpty(baseFilterObject) ? baseFilterObject : undefined);
   };
   await checkWorkflowActionsValidity(context, user, actions, resolveTargetTypes);
   // check rights

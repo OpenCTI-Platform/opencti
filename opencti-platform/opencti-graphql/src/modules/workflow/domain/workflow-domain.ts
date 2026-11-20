@@ -680,6 +680,25 @@ export const hasPublishedWorkflowDefinition = async (
 };
 
 /**
+ * Entity types whose own entity setting holds a published workflow definition. Read from the database, not the
+ * cache: it guards the mass status changes, so a workflow published a moment ago must already count.
+ */
+export const listTypesWithPublishedWorkflow = async (
+  context: AuthContext,
+  user: AuthUser,
+): Promise<string[]> => {
+  const executionContext = bypassDraftContext(context);
+  const entitySettings = await fullEntitiesList<BasicStoreEntityEntitySetting>(executionContext, SYSTEM_USER, [ENTITY_TYPE_ENTITY_SETTING]);
+  const publishedTypes: string[] = [];
+  for (const entitySetting of entitySettings) {
+    if (hasWorkflowDefinition(entitySetting) && await hasPublishedWorkflowDefinition(executionContext, user, entitySetting.target_type)) {
+      publishedTypes.push(entitySetting.target_type);
+    }
+  }
+  return publishedTypes;
+};
+
+/**
  * Returns the ID of the published version for the given entity setting's workflow, or null if not published.
  */
 export const getWorkflowPublishedVersionId = async (
