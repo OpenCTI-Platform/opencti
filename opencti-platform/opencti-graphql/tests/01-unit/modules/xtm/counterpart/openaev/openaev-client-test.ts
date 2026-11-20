@@ -20,7 +20,13 @@ vi.mock('../../../../../../src/utils/http-client', () => ({
 }));
 
 import { fetchOpenAevObjects, getOpenAevUrl, isOpenAevConnected, OPENAEV_DEFAULT_TENANT_ID } from '../../../../../../src/modules/xtm/counterpart/openaev/openaev-client';
-import { findXtmConnections, findXtmCounterparts, openAevProvider, resetCounterpartCache, sanitiseFacts } from '../../../../../../src/modules/xtm/counterpart/core/counterpart-domain';
+import {
+  findXtmConnections,
+  findXtmCounterparts,
+  openAevProvider,
+  resetCounterpartCache,
+  sanitiseFacts,
+} from '../../../../../../src/modules/xtm/counterpart/core/counterpart-domain';
 
 const remote = (key: string, extra: Record<string, unknown> = {}) => ({
   object_key: key,
