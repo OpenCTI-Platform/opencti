@@ -788,10 +788,12 @@ export const normalizeFilterGroupForFrontend = (
     id: (filterGroup as unknown as FilterGroup)?.id ?? uuid(),
     filters: filterGroup?.filters?.map((f) => {
       const key = Array.isArray(f.key) ? f.key[0] : f.key;
+      // A stored filter can miss its values (older or imported widgets): it holds none
+      const storedValues = f.values ?? [];
       // build values
       let values: FilterValue[];
       if (key === 'dynamicRegardingOf') { // add id in dynamic regarding of subfilter for React rendering purposes
-        values = f.values.map((dynamicRegardingOfValue) => {
+        values = storedValues.map((dynamicRegardingOfValue) => {
           if (dynamicRegardingOfValue.key === 'dynamic') { // values with 'dynamic' key contains filters
             return {
               ...dynamicRegardingOfValue,
@@ -802,9 +804,9 @@ export const normalizeFilterGroupForFrontend = (
           }
         });
       } else if (isStandaloneDynamicKey(key)) { // the value IS the nested filter group
-        values = f.values.map((nestedGroup: GqlFilterGroup) => normalizeFilterGroupForFrontend(nestedGroup));
+        values = storedValues.map((nestedGroup: GqlFilterGroup) => normalizeFilterGroupForFrontend(nestedGroup));
       } else {
-        values = f.values.map((v) => v || 'todo: delete this');
+        values = storedValues.map((v) => v || 'todo: delete this');
       }
       // return the filter with normalized key and values, and add an id
       return {
