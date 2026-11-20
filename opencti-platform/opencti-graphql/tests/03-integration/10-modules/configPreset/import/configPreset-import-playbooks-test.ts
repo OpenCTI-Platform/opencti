@@ -9,8 +9,8 @@ import { internalLoadById } from '../../../../../src/database/middleware-loader'
 import type { BasicStoreObject } from '../../../../../src/types/store';
 import { CONFIG_PRESET_FAMILIES, exportConfigPresetItem } from '../../../../../src/modules/configPreset/configPreset-registry';
 import { playbookAddFromImport, playbookDelete } from '../../../../../src/modules/playbook/playbook-domain';
-import { findPlaybooks } from '../../../../../src/modules/playbook/playbook-import';
-import { MARKING_TLP_GREEN } from '../../../../../src/schema/identifier';
+import { findPlaybooks, RUNNING_PLAYBOOK_REASON } from '../../../../../src/modules/playbook/playbook-import';
+import { MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../../../../src/schema/identifier';
 
 const PREVIEW_MUTATION = gql`
   mutation ConfigPresetPlaybooksPreview($file: Upload!, $type: ID!) {
@@ -108,6 +108,19 @@ describe('Config preset import: playbooks', () => {
     expect(copy.playbook_running).toBe(false);
     expect(copy.playbook_definition).toContain(editorId);
     expect(copy.playbook_definition).toContain(greenId);
+  });
+
+  it('overwrites a running playbook whose definition differs, which keeps running with the new definition', async () => {
+    await playbookAddFromImport(testContext, ADMIN_USER, { name: NAME, description: null, playbook_start: 'start', playbook_definition: definitionOf(editorId, greenId), playbook_running: true });
+    const amberId = (await internalLoadById<BasicStoreObject>(testContext, ADMIN_USER, MARKING_TLP_AMBER)).internal_id;
+    const bundle = playbookBundle({ [NAME]: { name: NAME, description: null, playbook_start: 'start', playbook_definition: definitionOf(USER_EDITOR.id, amberId) } });
+    expect(await partialImport(bundle, [NAME], [{ key: NAME, mode: 'OVERWRITE' }])).toEqual([{ key: NAME, status: 'OVERWRITTEN', reason: RUNNING_PLAYBOOK_REASON, label: NAME }]);
+    const playbooks = await playbooksNamed(NAME);
+    expect(playbooks).toHaveLength(1);
+    expect(playbooks[0].playbook_running).toBe(true);
+    expect(playbooks[0].playbook_definition).toContain(amberId);
+    expect(playbooks[0].playbook_definition).not.toContain(greenId);
+    expect(playbooks[0].playbook_definition).toContain(editorId);
   });
 
   it('imports a playbook whose references the platform does not have, stopped, and reports them', async () => {

@@ -109,16 +109,27 @@ export const exportPlaybookUserReferences = async (context: AuthContext, definit
   return replacePlaybookUserReferences(definition, replacements);
 };
 
+const accessRestrictionsOf = (node: NodeDefinition) => {
+  const restrictions = parseConfiguration(node)?.access_restrictions;
+  return Array.isArray(restrictions) ? restrictions : [];
+};
+
+// Without its members, an access restriction node would let the data through unrestricted
+const emptiedAccessRestrictions = (before: ComponentDefinition, after: ComponentDefinition) => before.nodes
+  .filter((node, index) => accessRestrictionsOf(node).length > 0 && accessRestrictionsOf(after.nodes[index]).length === 0)
+  .map((node) => node.name || node.id);
+
 export const importPlaybookUserReferences = async (context: AuthContext, definition: ComponentDefinition) => {
   const references = playbookUserReferences(definition).filter(({ id }) => id.startsWith(USER_STANDARD_ID_PREFIX));
   const ids = [...new Set(references.map(({ id }) => id))];
   if (ids.length === 0) {
-    return { definition, missing: [] };
+    return { definition, missing: [], emptiedAccessRestrictions: [] };
   }
   const users = await internalFindByIdsMapped<BasicStoreObject>(context, SYSTEM_USER, ids, { type: ENTITY_TYPE_USER, baseData: true, mapWithAllIds: true });
   const replacements = new Map(ids.map((id) => [id, users[id]?.internal_id ?? null]));
   const missing = [...new Set(references.filter(({ id }) => !users[id]).map(({ label }) => label))];
-  return { definition: replacePlaybookUserReferences(definition, replacements), missing };
+  const imported = replacePlaybookUserReferences(definition, replacements);
+  return { definition: imported, missing, emptiedAccessRestrictions: emptiedAccessRestrictions(definition, imported) };
 };
 
 const parseJsonObject = (value: string): unknown => {

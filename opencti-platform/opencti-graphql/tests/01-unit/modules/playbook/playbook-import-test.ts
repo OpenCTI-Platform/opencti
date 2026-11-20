@@ -10,9 +10,21 @@ vi.mock('../../../../src/modules/playbook/playbook-domain', async (importOrigina
   playbookEdit: vi.fn(),
   playbookAddFromImport: vi.fn(),
 }));
+// The rule of the platform: a run_as that is neither the importer nor a service account (here Jane) is reset to the importer
 vi.mock('../../../../src/modules/playbook/components/ai-agent-shared', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/playbook/components/ai-agent-shared')>()),
-  sanitizeDefinitionRunAs: vi.fn(async (_context: unknown, _user: unknown, definition: string) => definition),
+  sanitizeDefinitionRunAs: vi.fn(async (_context: unknown, importer: { id: string; name: string }, definition: string) => {
+    const parsed = JSON.parse(definition);
+    let reset = false;
+    parsed.nodes.forEach((n: { configuration: string }) => {
+      const configuration = n.configuration ? JSON.parse(n.configuration) : {};
+      if (configuration.run_as && ![importer.id, '0f6d5b0a-4f4d-4a8b-9c1e-2f6a8d1c3b01'].includes(configuration.run_as.value)) {
+        n.configuration = JSON.stringify({ ...configuration, run_as: { label: importer.name, value: importer.id } });
+        reset = true;
+      }
+    });
+    return reset ? JSON.stringify(parsed) : definition;
+  }),
 }));
 
 import { fullEntitiesList, internalFindByIdsMapped } from '../../../../src/database/middleware-loader';
@@ -38,13 +50,21 @@ const node = (id: string, componentId: string, configuration: object) => ({
   configuration: JSON.stringify(configuration),
 });
 
+const link = (from: string, to: string) => ({ id: `${from}-${to}`, from: { id: from, port: 'out' }, to: { id: to } });
+const START = node('start', 'PLAYBOOK_INTERNAL_DATA_STREAM', { filters: JSON.stringify({ mode: 'and', filters: [{ key: ['objectMarking'], values: [MARKING_ID] }], filterGroups: [] }) });
+
 const definitionOf = (runAs: string, members: { label: string; value: string }[] = [], runAsLabel = 'Jane') => JSON.stringify({
   nodes: [
-    node('start', 'PLAYBOOK_INTERNAL_DATA_STREAM', { filters: JSON.stringify({ mode: 'and', filters: [{ key: ['objectMarking'], values: [MARKING_ID] }], filterGroups: [] }) }),
+    START,
     node('agent', 'PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT', { run_as: { label: runAsLabel, value: runAs }, prompt: 'Summarize' }),
     node('notify', 'PLAYBOOK_NOTIFIER_COMPONENT', { notifiers: [], authorized_members: members }),
   ],
-  links: [],
+  links: [link('start', 'agent'), link('agent', 'notify')],
+});
+
+const restrictionsDefinitionOf = (members: { label: string; value: string }[]) => JSON.stringify({
+  nodes: [START, node('restrict', 'PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', { access_restrictions: members, applyToElements: 'all' })],
+  links: [link('start', 'restrict')],
 });
 
 const bundlePlaybook = (overrides: Record<string, unknown> = {}) => ({
@@ -108,7 +128,7 @@ describe('Playbook import of a configuration preset', () => {
 
   it('accepts a node without configuration', async () => {
     withPlatform([]);
-    const definition = { nodes: [{ ...node('start', 'PLAYBOOK_LOGGER_COMPONENT', {}), configuration: '' }], links: [] };
+    const definition = { nodes: [{ ...START, configuration: '' }], links: [] };
     const configuration = bundlePlaybook({ playbook_definition: JSON.stringify(definition) });
     const result = await importConfigPresetPlaybook(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true });
     expect(result.status).toBe('created');
@@ -136,10 +156,48 @@ describe('Playbook import of a configuration preset', () => {
     withPlatform([]);
     const configuration = bundlePlaybook({ playbook_definition: definitionOf(JOHN_STANDARD_ID, [{ label: 'John', value: JOHN_STANDARD_ID }, { label: 'Analysts', value: GROUP_ID }], 'John') });
     const result = await importConfigPresetPlaybook(context, user, configuration, { mode: ConfigImportMode.Overwrite });
-    expect(result).toMatchObject({ status: 'created', reason: 'Users not found: John' });
+    expect(result).toMatchObject({ status: 'created', reason: 'Users not found: John\nRun as reset to admin' });
     const definition = writtenDefinition();
     expect(nodeConfiguration(definition, 'notify').authorized_members).toEqual([{ label: 'Analysts', value: GROUP_ID }]);
-    expect(nodeConfiguration(definition, 'agent').run_as).toEqual({ label: 'John', value: JOHN_STANDARD_ID });
+    expect(nodeConfiguration(definition, 'agent').run_as).toEqual({ label: 'admin', value: 'admin-id' });
+  });
+
+  it('says the run_as is reset to the importer, so that a round trip is not up to date without telling why', async () => {
+    const OTHER = { internal_id: '1a7e6c1b-5a5e-4b9c-8d2f-3a7b9e2d4c02', standard_id: JOHN_STANDARD_ID };
+    withPlatform([storedPlaybook({ playbook_definition: definitionOf(OTHER.internal_id, [{ label: 'Analysts', value: GROUP_ID }], 'John') })], {
+      [OTHER.standard_id]: OTHER, [OTHER.internal_id]: OTHER, [MARKING_ID]: {}, [GROUP_ID]: {},
+    });
+    const configuration = bundlePlaybook({ playbook_definition: definitionOf(JOHN_STANDARD_ID, [{ label: 'Analysts', value: GROUP_ID }], 'John') });
+    const result = await importConfigPresetPlaybook(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true });
+    expect(result).toMatchObject({ status: 'overwritten', reason: `${RUNNING_PLAYBOOK_REASON}\nRun as reset to admin` });
+  });
+
+  it('refuses an access restriction whose members are all users the platform does not have, in the preview as in the import', async () => {
+    withPlatform([storedPlaybook({ description: 'Old' })]);
+    const configuration = bundlePlaybook({ playbook_definition: restrictionsDefinitionOf([{ label: 'John', value: JOHN_STANDARD_ID }]) });
+    const expected = { status: 'failed', code: 'invalid', exists: true, reason: 'Access restrictions left empty: restrict\nUsers not found: John' };
+    expect(await importConfigPresetPlaybook(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true })).toMatchObject(expected);
+    expect(await importConfigPresetPlaybook(context, user, configuration, { mode: ConfigImportMode.Overwrite })).toMatchObject(expected);
+    expect(playbookEdit).not.toHaveBeenCalled();
+  });
+
+  it('imports an access restriction that keeps a member, or that has none in the bundle', async () => {
+    withPlatform([]);
+    const keepsJane = bundlePlaybook({ playbook_definition: restrictionsDefinitionOf([{ label: 'John', value: JOHN_STANDARD_ID }, { label: 'Jane', value: JANE.standard_id }]) });
+    expect(await importConfigPresetPlaybook(context, user, keepsJane, { mode: ConfigImportMode.Overwrite, dryRun: true })).toMatchObject({ status: 'created' });
+    const empty = bundlePlaybook({ playbook_definition: restrictionsDefinitionOf([]) });
+    expect(await importConfigPresetPlaybook(context, user, empty, { mode: ConfigImportMode.Overwrite, dryRun: true })).toMatchObject({ status: 'created' });
+  });
+
+  it('refuses a definition the platform cannot run, in the preview as in the import, and writes nothing', async () => {
+    withPlatform([storedPlaybook({ description: 'Old' })]);
+    const severalEntryPoints = JSON.stringify({ nodes: [START, { ...START, id: 'other' }], links: [] });
+    const configuration = bundlePlaybook({ playbook_definition: severalEntryPoints });
+    const expected = { status: 'failed', code: 'invalid', exists: true, reason: expect.stringContaining('single entry point') };
+    expect(await importConfigPresetPlaybook(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true })).toMatchObject(expected);
+    expect(await importConfigPresetPlaybook(context, user, configuration, { mode: ConfigImportMode.Copy })).toMatchObject(expected);
+    expect(playbookEdit).not.toHaveBeenCalled();
+    expect(playbookAddFromImport).not.toHaveBeenCalled();
   });
 
   it('imports the definition as it is and reports the ids the platform does not have, by label when the configuration has one', async () => {
@@ -153,8 +211,11 @@ describe('Playbook import of a configuration preset', () => {
     withPlatform([]);
     const configuration = bundlePlaybook({
       playbook_definition: JSON.stringify({
-        nodes: [node('notify', 'PLAYBOOK_NOTIFIER_COMPONENT', { notifiers: ['f4ee7b33-006a-4b0d-b57d-411ad288653d'], authorized_members: [{ value: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' }] })],
-        links: [],
+        nodes: [
+          { ...START, configuration: '{}' },
+          node('notify', 'PLAYBOOK_NOTIFIER_COMPONENT', { notifiers: ['f4ee7b33-006a-4b0d-b57d-411ad288653d'], authorized_members: [{ value: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' }] }),
+        ],
+        links: [link('start', 'notify')],
       }),
     });
     const result = await importConfigPresetPlaybook(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true });

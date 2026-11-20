@@ -331,7 +331,7 @@ export const assertPlaybookDefinitionIsValid = (definition: ComponentDefinition)
  * @param rawDefinition Stringified playbook definition. An empty one is skipped.
  * @throws FunctionalError if the definition is invalid.
  */
-const assertPlaybookDefinitionStringIsValid = (rawDefinition: string | null | undefined) => {
+export const assertPlaybookDefinitionStringIsValid = (rawDefinition: string | null | undefined) => {
   if (!rawDefinition) {
     return;
   }
