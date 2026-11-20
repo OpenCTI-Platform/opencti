@@ -10,7 +10,6 @@ import xtmOneClient from './xtm-one-client';
 import type { XtmOneRegistrationResponse } from './xtm-one-client';
 import { buildXtmLicenseContext, getCurrentXtmLicenseProof, setCurrentXtmLicenseProof, verifyXtmLicenseProof } from './xtm-one-license';
 import type { XtmLicenseVerification } from './xtm-one-license';
-import { buildXtmOneHealthSnapshot } from './xtm-one-health';
 
 export const XTM_ONE_SCHEDULE_TIME = 5 * 60 * 1000; // 5 minutes
 const XTM_REGISTRATION_RESULT_TTL = Math.ceil((XTM_ONE_SCHEDULE_TIME * 2) / 1000); // 2× schedule, in seconds
@@ -124,6 +123,9 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
   const isChatbotUsable = settings.filigran_chatbot_ai_cgu_status === CguStatus.Enabled
     && (isOwnLicenseValidated || previousVerification.granted);
   // Each part of the snapshot is collected on its own: a part that fails is left out, the registration still goes.
+  // Imported lazily: this module is imported by settings.js, and a static import of the connector, engine and
+  // broker modules here closes an import cycle (settings -> xtm-one -> connector-domain -> ... -> settings).
+  const { buildXtmOneHealthSnapshot } = await import('./xtm-one-health');
   const health = await buildXtmOneHealthSnapshot(context, user);
 
   const result = await xtmOneClient.register({
