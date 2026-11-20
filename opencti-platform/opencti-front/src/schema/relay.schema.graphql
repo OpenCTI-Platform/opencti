@@ -17530,6 +17530,7 @@ type Vocabulary implements BasicObject & StixMetaObject & StixObject {
   modified: DateTime
   name: String!
   order: Int
+  parent_name: String
   parent_types: [String!]!
   refreshed_at: DateTime
   representative: Representative!
@@ -17553,6 +17554,7 @@ input VocabularyAddInput {
   "*Constraints:*\n* Minimal length: `1`\n* Must match format: `not-blank`\n"
   name: String!
   order: Int
+  parent_name: String
   stix_id: StixId
   update: Boolean
   x_opencti_stix_ids: [StixId]

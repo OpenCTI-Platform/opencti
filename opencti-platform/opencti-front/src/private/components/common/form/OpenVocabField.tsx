@@ -30,6 +30,7 @@ export const vocabularyQuery = graphql`
           is_hidden
           color
           order
+          parent_name
           category {
             key
           }
@@ -44,6 +45,8 @@ export interface VocabFieldOption extends FieldOption {
   category: string;
   color?: string;
   order?: number | null;
+  // The name of the parent entry (the category of a System subcategory)
+  parentName?: string;
 }
 
 type VocabFieldValue = VocabFieldOption | VocabFieldOption[];
@@ -105,14 +108,15 @@ const OpenVocabFieldComponent = ({
   const { vocabularies } = usePreloadedQuery(vocabularyQuery, queryRef);
   const openVocabList = (vocabularies?.edges ?? [])
     .filter(({ node }) => node.is_hidden !== true)
-    .map(({ node: { name: value, description, category, color, order } }): VocabFieldOption => ({
+    .map(({ node: { name: value, description, category, color, order, parent_name } }): VocabFieldOption => ({
       value,
       label: humanLabels ? vocabularyValueLabel(value, t_i18n) : value,
-      // Raw: optionFilter and optionGroupBy read the machine suffix; the tooltip drops it
+      // Raw: a description written before parent_name may still carry a machine suffix; the tooltip drops it
       description: description ?? undefined,
       category: category.key,
       color: vocabularyColor(color),
       order,
+      parentName: parent_name ?? undefined,
     }))
     .filter((option) => !optionFilter || optionFilter(option))
     // Sort is  needed to make AutocompleteField.groupBy working correctly.

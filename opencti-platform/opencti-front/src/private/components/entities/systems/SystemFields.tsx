@@ -17,20 +17,13 @@ export const SYSTEM_VOCABULARY_FIELDS = [
   { name: 'x_opencti_platform', type: 'system_platform_ov', label: 'Platform' },
 ] as const;
 
-// Each system_subcategory_ov description ends with "(category: <system_category_ov key>)"
-// Open vocabulary: a custom category key may hold any character (CUSTOM-HOST)
-const SUBCATEGORY_CATEGORY_PATTERN = /\(category: (.+)\)\s*$/;
-
-export const systemSubcategoryCategory = (description?: string | null): string | undefined => {
-  return description?.match(SUBCATEGORY_CATEGORY_PATTERN)?.[1];
-};
-
+// Each system_subcategory_ov entry names its system_category_ov entry in parent_name; the platform carries a rename of the
+// category to it, and an edit of the description leaves it alone
 // With a category chosen, keep its subcategories (and the custom ones that name no category);
 // without one, keep them all, grouped by category
-export const fitsSystemCategory = (category: string | null | undefined, description?: string | null): boolean => {
+export const fitsSystemCategory = (category: string | null | undefined, parentName?: string | null): boolean => {
   if (!category) return true;
-  const subcategoryCategory = systemSubcategoryCategory(description);
-  return subcategoryCategory === undefined || subcategoryCategory === category;
+  return !parentName || parentName === category;
 };
 
 export const SYSTEM_FIELD_NAMES = [
@@ -57,15 +50,14 @@ const SystemFields: FunctionComponent<SystemFieldsProps> = ({
   const { t_i18n } = useFormatter();
   // The group header is the human category label (AI target), never the key (AI_TARGET)
   const groupByHumanCategory = (option: VocabFieldOption) => {
-    const subcategoryCategory = systemSubcategoryCategory(option.description);
-    return subcategoryCategory ? vocabularyValueLabel(subcategoryCategory, t_i18n) : t_i18n('Other');
+    return option.parentName ? vocabularyValueLabel(option.parentName, t_i18n) : t_i18n('Other');
   };
   const isEdition = onSubmit !== undefined;
   const [{ value: category }] = useField<string | null | undefined>('x_opencti_system_category');
   const subcategoryProps = (name: string) => {
     if (name !== 'x_opencti_system_subcategory') return {};
     return {
-      optionFilter: (option: VocabFieldOption) => fitsSystemCategory(category, option.description),
+      optionFilter: (option: VocabFieldOption) => fitsSystemCategory(category, option.parentName),
       optionGroupBy: category ? undefined : groupByHumanCategory,
       optionFilterKey: category ?? '',
     };

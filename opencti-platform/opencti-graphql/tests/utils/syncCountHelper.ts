@@ -153,7 +153,9 @@ testUpdatedCounter.sighting = 7; // 2 upserts in relations-deduplication-test
 testUpdatedCounter['threat-actor'] = 18;
 // Counts for:
 // - 2 updated by vocabulary-import-test (the description of an entry of the platform, edited then restored)
-testUpdatedCounter.vocabulary = 3 + 2;
+// - 32 updated by vocabulary-test parent entry behavior: HOST renamed and restored (2 + 2 x 7 subcategories parent_name),
+//   SERVER description edited and restored (2), CONTAINER_WORKLOAD renamed and restored (2 + 2 x 6 subcategories parent_name)
+testUpdatedCounter.vocabulary = 3 + 2 + 32;
 testUpdatedCounter.vulnerability = 5;
 testUpdatedCounter.iccid = 1;
 testUpdatedCounter.imei = 1;
