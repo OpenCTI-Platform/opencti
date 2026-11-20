@@ -15,7 +15,7 @@ It only applies to the local authentication (email and password). Accounts that 
 
 ## Configure the policy
 
-Go to **Settings > Security > Authentications**, open the **Local** strategy, and find **Account lockout policy**. You need the **Manage credentials** capability.
+Go to **Settings > Security > Authentications**, open the **Local** strategy, and find **Account lockout policy**. You need two capabilities: **Manage authentication** to open this page, and **Manage credentials** to save the policy.
 
 | Setting | Default | Allowed values |
 |---|---|---|
@@ -146,8 +146,10 @@ Do not use the built-in admin token for connectors and workers: give each of the
 
 1. Set `APP__ADMIN__EXTERNALLY_MANAGED=false` in the configuration, with the admin email and password.
 2. Restart the platform.
-3. Log in with the built-in admin, and set the needed administrators back to **Active**.
-4. Set `APP__ADMIN__EXTERNALLY_MANAGED=true` again, and restart the platform.
+3. Log in with the built-in admin, and unlock the needed administrators:
+    - a permanently locked administrator (status **Locked**): set it back to **Active** in its user form, see [Permanent lock](#permanent-lock);
+    - a temporarily locked administrator (status still **Active**): the form cannot unlock it. Wait for the end of the lock, or end it with the API, see [Temporary lock](#temporary-lock).
+4. Check that the unlocked administrators can log in, then set `APP__ADMIN__EXTERNALLY_MANAGED=true` again, and restart the platform.
 
 ## Recommendations
 
