@@ -27,32 +27,40 @@ const getScoringEnds = (relationship: ObjectToParse, from: ObjectToParse, to: Ob
   return scored;
 };
 
-export const analyseTechniqueUsage = (rawObjects: ObjectToParse[]): Map<string, TechniqueUsage> => {
+export interface ScoringLink { relationship: ObjectToParse; attackPattern: ObjectToParse; entity: ObjectToParse }
+
+/** Every relationship that scores an attack pattern, with its two ends; restricted ends left out. */
+export const getScoringLinks = (rawObjects: ObjectToParse[]): ScoringLink[] => {
   const index = new Map<string, ObjectToParse>();
   rawObjects.forEach((object) => index.set(object.id, object));
 
-  const entitiesByTechnique = new Map<string, Map<string, LinkedEntity>>();
-  rawObjects.forEach((relationship) => {
-    if (!isRelationship(relationship)) return;
+  return rawObjects.flatMap((relationship) => {
+    if (!isRelationship(relationship)) return [];
     const fromId = relationship.from?.id;
     const toId = relationship.to?.id;
-    if (!fromId || !toId) return;
+    if (!fromId || !toId) return [];
     const from = index.get(fromId);
     const to = index.get(toId);
     // Both ends must be in the investigation, and neither may be a relationship.
-    if (!from || !to || isRelationship(from) || isRelationship(to)) return;
-    getScoringEnds(relationship, from, to).forEach(({ attackPattern, entity }) => {
+    if (!from || !to || isRelationship(from) || isRelationship(to)) return [];
+    return getScoringEnds(relationship, from, to)
       // An entity the user cannot read neither scores nor appears in a hover list: its link to a technique stays hidden.
-      if (isRestrictedObject(attackPattern) || isRestrictedObject(entity)) return;
-      let entities = entitiesByTechnique.get(attackPattern.id);
-      if (!entities) {
-        entities = new Map();
-        entitiesByTechnique.set(attackPattern.id, entities);
-      }
-      if (!entities.has(entity.id)) {
-        entities.set(entity.id, { id: entity.id, name: getMainRepresentative(entity), entity_type: entity.entity_type });
-      }
-    });
+      .filter(({ attackPattern, entity }) => !isRestrictedObject(attackPattern) && !isRestrictedObject(entity))
+      .map(({ attackPattern, entity }) => ({ relationship, attackPattern, entity }));
+  });
+};
+
+export const analyseTechniqueUsage = (rawObjects: ObjectToParse[]): Map<string, TechniqueUsage> => {
+  const entitiesByTechnique = new Map<string, Map<string, LinkedEntity>>();
+  getScoringLinks(rawObjects).forEach(({ attackPattern, entity }) => {
+    let entities = entitiesByTechnique.get(attackPattern.id);
+    if (!entities) {
+      entities = new Map();
+      entitiesByTechnique.set(attackPattern.id, entities);
+    }
+    if (!entities.has(entity.id)) {
+      entities.set(entity.id, { id: entity.id, name: getMainRepresentative(entity), entity_type: entity.entity_type });
+    }
   });
 
   const usage = new Map<string, TechniqueUsage>();

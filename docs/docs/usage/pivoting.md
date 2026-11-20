@@ -74,19 +74,51 @@ The matrix view displays only what is on the investigation graph and can be swit
 
 ### Read the matrix
 
-The matrix shows the techniques of one kill chain (e.g. MITRE ATT&CK 20), grouped in columns by tactic. The attack patterns of the investigation are highlighted, active Graph filters are ignored by the matrix view.
+The matrix shows the techniques of one kill chain (e.g. MITRE ATT&CK 20), grouped in columns by tactic. The attack patterns of the investigation are highlighted. Active graph filters are ignored by the matrix view, which has its own [filters](#filter-the-matrix).
 
 Hover a technique, or focus it with the keyboard, to see the entities of the investigation linked to it, under **Linked entities**. The list shows the first 10 names.
 
 ### Use the toolbar
 
+The matrix view has its own toolbar, docked under the matrix. It holds everything the matrix view does. The tools of the graph, such as zoom or layout, are not in it.
+
+The toolbar moved these tools from the page header and from the top of the matrix: the kill chain, the display of used techniques, the heatmap, the security posture and the image export. Filters are new.
+
+Hover a tool to see what it does. In a narrow window, some tools move to the **More actions** menu at the end of the toolbar. The export goes first, then the security posture, then the filters.
+
 | Control | What it does |
 |:---|:---|
 | **Kill chain** | Selects the kill chain to show. The matrix opens on `mitre-attack` when it exists, otherwise on the first kill chain in alphabetical order. |
-| **N attack patterns in this investigation aren't shown in this kill chain** (note) | These attack patterns are on the graph but not in the selected kill chain: they belong to another kill chain, have no kill chain phase, or are revoked. Hover the note to see their names. |
+| **N attack patterns not shown** (note) | These attack patterns are on the graph but not in the selected kill chain: they belong to another kill chain, have no kill chain phase, or are revoked. Hover or focus the note to see them under **Outside the selected kill chain (N)**, each as its ID and name, such as `T1059 - Command and Scripting Interpreter`. |
 | **Display only used techniques** (eye icon) | Hides the techniques that are not in the investigation. Click it again to display the whole matrix. |
-| **Displays heat map of attack pattern use** (flame icon) | Turns the heatmap on or off. See [Read the heatmap](#read-the-heatmap). |
+| **Displays heat map of attack pattern use** (flame icon) | Turns the heatmap on or off. The legend of the heatmap sits next to it. See [Read the heatmap](#read-the-heatmap). |
+| **Filters** | Five tools that change what the heatmap counts. See [Filter the matrix](#filter-the-matrix). |
 | **Compare with my security posture** | Select one or more security platforms. The techniques of the investigation then show whether these security platforms cover them (`should-cover` relationships). |
+| **Export to image** | Saves the whole matrix as an image, in a light or a dark theme, with or without background. The image includes the legend when the heatmap is on. |
+
+### Filter the matrix
+
+Filters drop relationships before the matrix scores the techniques. A technique then counts fewer entities, or none. Use them to answer questions such as "what did this actor do in the last six months?".
+
+Each filter shows a number on its button when it is in use. Hover a filter to read what it does.
+
+| Filter | What it says | What it does |
+|:---|:---|:---|
+| **Filter by type** | Choose which linked entity types and relationship types (uses, indicates, contains) count towards the heatmap. | Lists the linked entity types under **Entities**, and the relationship types under **Relationships**. Uncheck a type to stop counting it. |
+| **Time range** | Count only the relationships dated within the range you set. | Opens a slider. A relationship counts when its start date is in the range. Without a start date, the first seen date, then the creation date, are used. A relationship with no date at all always counts. |
+| **Filter by marking** | Count only the data with the markings you keep. | Lists the markings in the investigation. Uncheck a marking to stop counting the data that carries it. Data without marking is listed as **None**. The button is disabled only when no attack pattern is linked to an entity: otherwise it lists at least **None**. |
+| **Filter by author** | Count only the data from the authors you keep. | Lists the authors in the investigation. Uncheck an author to stop counting the data they created. Data without author is listed as **None**. The button is disabled only when no attack pattern is linked to an entity: otherwise it lists at least **None**. |
+| **Clear all filters** | Remove every filter set on the Matrix view and show the whole matrix again. | Resets the five filters. Unlike the other filters, it shows no number. The button is disabled when no filter is active. |
+
+The marking and author filters read the relationship and the linked entity. They do not read the attack pattern. A report, a grouping or a case that contains an attack pattern counts with its own marking and author.
+
+!!! note "Filters apply to the matrix only"
+
+    The filters of the matrix view do not change the graph, and the filters of the graph do not change the matrix.
+
+The platform keeps the filters of each investigation in your browser. They stay when you switch between the graph and the matrix, and when you reload the page. They are not shared with other users or other browsers.
+
+If no attack pattern is left linked to an entity with your filters, the heatmap button is disabled and its legend is hidden. Your heatmap choice comes back when you clear a filter.
 
 ### Read the heatmap
 
@@ -172,7 +204,7 @@ With view access to the investigation and the capability to open results, you ca
 Users have the capability to export investigations, providing a way to share, document, or archive their findings.
 
 - PDF and image formats: the header of the investigation exports it as a PDF, and the toolbar of its graph as a high-resolution image (see [Work with graphs](graphs.md#export)).
-- Matrix view: exports the whole matrix as a PDF or an image, with the heatmap when it is on, not only the visible area.
+- Matrix view: the header exports the whole matrix as a PDF, and the matrix toolbar exports it as an image. Both show the heatmap and its legend when the heatmap is on, and the filtered matrix when filters are set, not only the visible area.
 - STIX bundle: The platform allows the export of the entire content of an investigation graph as a STIX bundle. In the STIX format, all objects within the investigation graph are automatically aggregated into a Report object.
 
 ![Investigation export](assets/investigation-export.png)

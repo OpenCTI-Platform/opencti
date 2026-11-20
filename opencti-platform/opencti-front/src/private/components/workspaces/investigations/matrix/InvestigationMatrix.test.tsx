@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, screen, within } from '@testing-library/react';
+import type { UserEvent } from '@testing-library/user-event';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import { OperationDescriptor } from 'relay-runtime';
 import useShouldCoverOverlap from '@components/common/stix_domain_objects/useShouldCoverOverlap';
@@ -10,11 +11,37 @@ import { GraphState } from '../../../../../components/graph/graph.types';
 import { MESSAGING$ } from '../../../../../relay/environment';
 import { INVESTIGATION_MATRIX_EXPORT_ID } from '../InvestigationViewSwitcher';
 import InvestigationMatrix from './InvestigationMatrix';
-import { DEFAULT_INVESTIGATION_MATRIX_SETTINGS, InvestigationMatrixSettings } from './investigationMatrixSettings';
+import { DEFAULT_INVESTIGATION_MATRIX_SETTINGS, InvestigationMatrixSettings, matrixFiltersStorageKey, useInvestigationMatrixFilters } from './investigationMatrixSettings';
+import type { GraphToolbarTimeRangeProps } from '../../../../../components/graph/components/GraphToolbarTimeRange';
+import { GRAPH_TOOLBAR_HEIGHT, GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE } from '../../../../../components/graph/utils/graphFraming';
 
 vi.mock('../../../../../utils/hooks/useTopBanner', () => ({ default: () => ({ height: 0 }) }));
 vi.mock('../../../../../components/graph/GraphContext', () => ({ useGraphContext: vi.fn() }));
 vi.mock('@components/common/stix_domain_objects/useShouldCoverOverlap', () => ({ default: vi.fn() }));
+
+// jsdom cannot drag the range slider: a stand-in moves the range as a drag would, and shows what the panel is given.
+// The real panel is drawn where what it does on its own matters (the slider snaps its values when it mounts).
+const JANUARY: [Date, Date] = [new Date('2026-01-01T00:00:00.000Z'), new Date('2026-02-01T00:00:00.000Z')];
+const timeRangePanel = vi.hoisted(() => ({ real: false }));
+vi.mock('../../../../../components/graph/components/GraphToolbarTimeRange', async (importOriginal) => {
+  const { default: RealTimeRange } = await importOriginal<typeof import('../../../../../components/graph/components/GraphToolbarTimeRange')>();
+  return {
+    default: (props: GraphToolbarTimeRangeProps) => (timeRangePanel.real ? <RealTimeRange {...props} /> : <TimeRangeStandIn {...props} />),
+  };
+});
+// jsdom gives the responsive chart no size: a plain box stands for it.
+vi.mock('recharts', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('recharts')>()),
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
+const TimeRangeStandIn = ({ timeRange, selectedInterval, onChange }: GraphToolbarTimeRangeProps) => (
+  <div role="region" aria-label="Time range panel (test)">
+    <span>{`Dated links: ${timeRange.values.reduce((sum, { value }) => sum + value, 0)}`}</span>
+    <span>{`Selected: ${selectedInterval ? selectedInterval.map((date) => date.toISOString()).join(' to ') : 'whole range'}`}</span>
+    <button type="button" onClick={() => onChange(JANUARY)}>Keep January (test)</button>
+    <button type="button" onClick={() => onChange(timeRange.interval)}>Keep the whole range (test)</button>
+  </div>
+);
 
 const PLACED_ID = 'attack-pattern--placed';
 const REVOKED_ID = 'attack-pattern--revoked';
@@ -75,7 +102,25 @@ const SCORED_OBJECTS = [
   uses('rel-2', 'is-b', PLACED_ID),
   uses('rel-3', 'is-a', SUB_ID),
 ];
+const MALWARE_ID = 'malware--emotet';
+const GREEN = { id: 'marking--green', definition: 'TLP:GREEN' };
+const ACME = { id: 'identity--acme', name: 'ACME' };
+const malware = (id: string, name: string) => ({ id, entity_type: 'Malware', name, parent_types: ['Stix-Domain-Object'] });
+const dated = <T extends object>(relationship: T, start_time: string, extra: object = {}) => ({ ...relationship, start_time, ...extra });
+// T1001 is used by two intrusion sets (score 2): one by ACME, through a link marked TLP:GREEN. The sub-technique by a malware (score 1).
+const FILTER_OBJECTS = [
+  attackPattern(PLACED_ID, 'Placed'),
+  attackPattern(SUB_ID, 'Sub'),
+  { ...intrusionSet('is-a', 'APT A'), createdBy: ACME },
+  intrusionSet('is-b', 'APT B'),
+  malware(MALWARE_ID, 'Emotet'),
+  dated(uses('rel-1', 'is-a', PLACED_ID), '2026-01-10T00:00:00.000Z', { objectMarking: [GREEN] }),
+  dated(uses('rel-2', 'is-b', PLACED_ID), '2026-03-10T00:00:00.000Z'),
+  dated(uses('rel-3', MALWARE_ID, SUB_ID), '2026-01-20T00:00:00.000Z'),
+];
 const HEATMAP_LABEL = 'Displays heat map of attack pattern use';
+const NO_FILTERED_SCORE_LABEL = 'No attack pattern is left linked to an entity with these filters';
+const INVESTIGATION_ID = 'investigation--test';
 const NO_SCORE_LABEL = 'No attack pattern is linked to an entity in this investigation';
 const matrixToolbar = () => screen.getByRole('toolbar', { name: 'Matrix toolbar' });
 const heatmapToggle = () => within(matrixToolbar()).getByRole('button', { name: HEATMAP_LABEL });
@@ -94,6 +139,8 @@ interface RenderOptions {
   postureError?: Error | null;
 }
 
+const setGraphState = vi.fn();
+
 const renderMatrix = async ({
   rawObjects = [attackPattern(PLACED_ID, 'Placed')],
   graphState = {},
@@ -103,6 +150,7 @@ const renderMatrix = async ({
   vi.mocked(useGraphContext).mockReturnValue({
     rawObjects,
     graphState: { ...DEFAULT_GRAPH_STATE, ...graphState },
+    setGraphState,
   } as unknown as ReturnType<typeof useGraphContext>);
   vi.mocked(useShouldCoverOverlap).mockReturnValue({
     attackPatternIdsToOverlap: undefined,
@@ -122,9 +170,10 @@ const renderMatrix = async ({
   return { ...rendered, ui };
 };
 
-// Stands in for the investigation graph: it holds the matrix settings and unmounts the matrix on a view switch.
+// Stands in for the investigation graph: it holds the matrix settings and filters, and unmounts the matrix on a view switch.
 const MatrixWithSettings = () => {
   const [settings, setSettings] = useState<InvestigationMatrixSettings>(DEFAULT_INVESTIGATION_MATRIX_SETTINGS);
+  const [filters, changeFilters, clearFilters] = useInvestigationMatrixFilters(INVESTIGATION_ID);
   const [isMatrixShown, setIsMatrixShown] = useState(true);
   return (
     <>
@@ -133,6 +182,9 @@ const MatrixWithSettings = () => {
         <InvestigationMatrix
           settings={settings}
           onSettingsChange={(change) => setSettings((current) => ({ ...current, ...change }))}
+          filters={filters}
+          onFiltersChange={changeFilters}
+          onFiltersClear={clearFilters}
           exportName="Investigation - Matrix view"
         />
       )}
@@ -149,6 +201,11 @@ describe('InvestigationMatrix', () => {
 
   afterEach(() => {
     notifyError.mockRestore();
+    setGraphState.mockClear();
+    localStorage.clear();
+    timeRangePanel.real = false;
+    // The console spy of a test.
+    vi.restoreAllMocks();
   });
 
   it('shows the graph progress and no matrix while the investigation is loading', async () => {
@@ -210,6 +267,19 @@ describe('InvestigationMatrix', () => {
     expect(exportLegend.closest('[data-matrix-export-only]')).toHaveAttribute('hidden');
     // The legend seen on screen is the toolbar's.
     expect(screen.getByRole('img', { name: 'Technique usage scale, 1 to 2' })).not.toBe(exportLegend);
+  });
+
+  it('leaves no legend room in the export while the heatmap is off', async () => {
+    const { user } = await renderMatrix({ rawObjects: SCORED_OBJECTS, phases: HEAT_PHASES });
+    await screen.findByText('T1001 - Placed');
+    const wrapper = document.getElementById(INVESTIGATION_MATRIX_EXPORT_ID) as HTMLElement;
+    // The capture shows every export-only node: an empty one would still draw its margin in the image and the PDF.
+    expect(wrapper.querySelector('[data-matrix-export-only]')).toBeNull();
+
+    await user.click(heatmapToggle());
+    expect(wrapper.querySelector('[data-matrix-export-only]')).not.toBeNull();
+    await user.click(heatmapToggle());
+    expect(wrapper.querySelector('[data-matrix-export-only]')).toBeNull();
   });
 
   describe('heatmap', () => {
@@ -280,6 +350,149 @@ describe('InvestigationMatrix', () => {
       const parent = screen.getByRole('button', { name: 'T1002 - Parent, linked to 1 entity' });
       expect(within(parent).getByRole('button', { name: 'Expand' })).toHaveAttribute('aria-expanded', 'false');
       expect(screen.queryByText('T1002.001 - Sub')).toBeNull();
+    });
+  });
+
+  describe('filters', () => {
+    const filterButton = (name: string) => within(within(matrixToolbar()).getByRole('group', { name: 'Filters' })).getByRole('button', { name });
+    const toggleOption = async (user: UserEvent, filter: string, option: string) => {
+      await user.click(filterButton(filter));
+      await user.click(await screen.findByRole('menuitemcheckbox', { name: option }));
+      await user.keyboard('{Escape}');
+    };
+    const renderFiltered = async () => {
+      const rendered = await renderMatrix({ rawObjects: FILTER_OBJECTS, phases: HEAT_PHASES });
+      await screen.findByText('T1001 - Placed');
+      return rendered;
+    };
+
+    it('counts only the links left by the filters in scores, hover names and legend', async () => {
+      const { user } = await renderFiltered();
+      await user.click(heatmapToggle());
+      expect(screen.getByRole('button', { name: 'T1001 - Placed, linked to 2 entities' })).toBeInTheDocument();
+      expect(within(matrixToolbar()).getByRole('img', { name: 'Technique usage scale, 1 to 2' })).toBeInTheDocument();
+
+      await toggleOption(user, 'Filter by type', 'Intrusion Set');
+      expect(await screen.findByRole('button', { name: 'T1001 - Placed, linked to 0 entities' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'T1002 - Parent, linked to 1 entity' })).toBeInTheDocument();
+      expect(within(matrixToolbar()).getByRole('img', { name: 'Technique usage scale, 1 to 1' })).toBeInTheDocument();
+      expect(filterButton('Filter by type')).toHaveAccessibleName('Filter by type');
+      expect(within(matrixToolbar()).getByText('1 in use')).toBeInTheDocument();
+
+      await toggleOption(user, 'Filter by type', 'Intrusion Set');
+      expect(await screen.findByRole('button', { name: 'T1001 - Placed, linked to 2 entities' })).toBeInTheDocument();
+
+      await toggleOption(user, 'Filter by marking', 'TLP:GREEN');
+      expect(await screen.findByRole('button', { name: 'T1001 - Placed, linked to 1 entity' })).toBeInTheDocument();
+      expect(within(matrixToolbar()).getByRole('img', { name: 'Technique usage scale, 1 to 1' })).toBeInTheDocument();
+      // The attack patterns stay those of the whole investigation.
+      expect(screen.getByText('T1001 - Placed')).toBeInTheDocument();
+    });
+
+    it('turns the heatmap off when the filters leave no score, and back once cleared', async () => {
+      const { user } = await renderFiltered();
+      await user.click(heatmapToggle());
+      expect(heatmapToggle()).toHaveAttribute('aria-pressed', 'true');
+
+      await toggleOption(user, 'Filter by type', 'uses');
+      expect(heatmapToggle()).toHaveAttribute('aria-disabled', 'true');
+      expect(screen.queryByRole('img', { name: /Technique usage scale/ })).toBeNull();
+      await user.hover(heatmapToggle());
+      expect(await screen.findByRole('tooltip')).toHaveTextContent(NO_FILTERED_SCORE_LABEL);
+      await user.unhover(heatmapToggle());
+
+      await user.click(filterButton('Clear all filters'));
+      expect(heatmapToggle()).toHaveAttribute('aria-pressed', 'true');
+      expect(within(matrixToolbar()).getByRole('img', { name: 'Technique usage scale, 1 to 2' })).toBeInTheDocument();
+      expect(filterButton('Clear all filters')).toHaveAttribute('aria-disabled', 'true');
+    });
+
+    it('blames the filters for no score only when clearing them would bring scores back', async () => {
+      // Only a marking no longer in the investigation is stored: the investigation has no score with or without it.
+      localStorage.setItem(matrixFiltersStorageKey(INVESTIGATION_ID), JSON.stringify({ disabledMarkings: ['marking--gone'] }));
+      const { user } = await renderMatrix();
+      await screen.findByText('T1001 - Placed');
+      expect(filterButton('Clear all filters')).not.toHaveAttribute('aria-disabled');
+      expect(heatmapToggle()).toHaveAttribute('aria-disabled', 'true');
+      await user.hover(heatmapToggle());
+      const tooltip = await screen.findByRole('tooltip');
+      expect(tooltip).toHaveTextContent(NO_SCORE_LABEL);
+      expect(tooltip).not.toHaveTextContent(NO_FILTERED_SCORE_LABEL);
+    });
+
+    it('keeps the filters, stored, after a switch to the graph view and back', async () => {
+      const { user } = await renderFiltered();
+      await toggleOption(user, 'Filter by author', 'ACME');
+      expect(await screen.findByRole('button', { name: 'T1001 - Placed, linked to 1 entity' })).toBeInTheDocument();
+      expect(JSON.parse(localStorage.getItem(matrixFiltersStorageKey(INVESTIGATION_ID)) ?? '{}').disabledCreators).toEqual([ACME.id]);
+
+      await user.click(screen.getByRole('button', { name: 'Switch view (test)' }));
+      await user.click(screen.getByRole('button', { name: 'Switch view (test)' }));
+      expect(await screen.findByRole('button', { name: 'T1001 - Placed, linked to 1 entity' })).toBeInTheDocument();
+    });
+
+    it('never changes the graph state', async () => {
+      const { user } = await renderFiltered();
+      await toggleOption(user, 'Filter by type', 'Intrusion Set');
+      await toggleOption(user, 'Filter by marking', 'TLP:GREEN');
+      await toggleOption(user, 'Filter by author', 'None');
+      await user.click(filterButton('Time range'));
+      await user.click(screen.getByRole('button', { name: 'Keep January (test)' }));
+      await user.click(filterButton('Clear all filters'));
+      expect(setGraphState).not.toHaveBeenCalled();
+    });
+
+    it('opens the time range under the toolbar and counts only the links in the range', async () => {
+      const { user } = await renderFiltered();
+      const exportElement = () => document.getElementById(INVESTIGATION_MATRIX_EXPORT_ID) as HTMLElement;
+      // Bottom paddings of the captured box and of everything in it.
+      const capturedPaddings = () => [exportElement(), ...Array.from(exportElement().querySelectorAll<HTMLElement>('*'))]
+        .map((element) => window.getComputedStyle(element).paddingBottom);
+      const closedPaddings = capturedPaddings();
+      expect(screen.queryByRole('region', { name: 'Time range panel (test)' })).toBeNull();
+      expect(exportElement().parentElement?.style.paddingBottom).toBe('');
+
+      await user.click(filterButton('Time range'));
+      const panel = screen.getByRole('region', { name: 'Time range panel (test)' });
+      expect(filterButton('Time range')).toHaveAttribute('aria-pressed', 'true');
+      // The panel reads every scoring relationship, one dot per date.
+      expect(within(panel).getByText('Dated links: 3')).toBeInTheDocument();
+      expect(within(panel).getByText('Selected: whole range')).toBeInTheDocument();
+      // The matrix keeps its bottom rows above the grown toolbar, through a padding kept out of the image and the PDF.
+      expect(exportElement().parentElement?.style.paddingBottom).toBe(`${GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE - GRAPH_TOOLBAR_HEIGHT}px`);
+      expect(capturedPaddings()).toEqual(closedPaddings);
+
+      await user.click(within(panel).getByRole('button', { name: 'Keep January (test)' }));
+      expect(await screen.findByRole('button', { name: 'T1001 - Placed, linked to 1 entity' })).toBeInTheDocument();
+      expect(within(panel).getByText(`Selected: ${JANUARY.map((date) => date.toISOString()).join(' to ')}`)).toBeInTheDocument();
+      expect(JSON.parse(localStorage.getItem(matrixFiltersStorageKey(INVESTIGATION_ID)) ?? '{}').timeRange)
+        .toEqual(JANUARY.map((date) => date.toISOString()));
+
+      // Back to the whole range: nothing is stored, so no filter is left to clear.
+      await user.click(within(panel).getByRole('button', { name: 'Keep the whole range (test)' }));
+      expect(await screen.findByRole('button', { name: 'T1001 - Placed, linked to 2 entities' })).toBeInTheDocument();
+      expect(JSON.parse(localStorage.getItem(matrixFiltersStorageKey(INVESTIGATION_ID)) ?? '{}').timeRange).toBeUndefined();
+      expect(filterButton('Clear all filters')).toHaveAttribute('aria-disabled', 'true');
+
+      await user.click(filterButton('Time range'));
+      expect(screen.queryByRole('region', { name: 'Time range panel (test)' })).toBeNull();
+      expect(exportElement().parentElement?.style.paddingBottom).toBe('');
+    });
+
+    it('stores no range when the real slider opens on the whole range', async () => {
+      timeRangePanel.real = true;
+      const consoleError = vi.spyOn(console, 'error');
+      // The last link is not a whole number of slider steps (30 minutes) after the first: the slider snaps the end on mount.
+      const offGrid = FILTER_OBJECTS.map((object) => (object.id === 'rel-2' ? { ...object, start_time: '2026-03-10T00:07:00.000Z' } : object));
+      const { user } = await renderMatrix({ rawObjects: offGrid, phases: HEAT_PHASES });
+      await screen.findByText('T1001 - Placed');
+
+      await user.click(filterButton('Time range'));
+      expect(filterButton('Time range')).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getAllByRole('slider').length).toBeGreaterThan(0);
+      expect(localStorage.getItem(matrixFiltersStorageKey(INVESTIGATION_ID))).toBeNull();
+      expect(filterButton('Clear all filters')).toHaveAttribute('aria-disabled', 'true');
+      expect(consoleError).not.toHaveBeenCalled();
     });
   });
 

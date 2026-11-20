@@ -19,6 +19,8 @@ export interface ToolbarAction<G extends string = string> extends ToolbarOverflo
   label: string;
   icon: ReactNode;
   shortcut?: string;
+  /** What the action does, shown under its name in the tooltip while it is available. */
+  description?: string;
   /** For a toggle: whether it is on. */
   pressed?: boolean;
   /** Set when the action is not available now. Says why. */

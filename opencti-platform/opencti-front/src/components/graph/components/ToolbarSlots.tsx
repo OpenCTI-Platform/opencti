@@ -40,6 +40,7 @@ const ToolbarSlots = <G extends string>({ layout, actions, shownIds, groupLabels
         shortcut={action.shortcut}
         pressed={action.pressed}
         disabledReason={action.disabledReason}
+        description={action.description}
         badge={action.badge}
         menu={action.options ? <GraphToolbarOptionsList options={action.options} /> : undefined}
         onClick={action.options ? undefined : () => action.onSelect?.()}

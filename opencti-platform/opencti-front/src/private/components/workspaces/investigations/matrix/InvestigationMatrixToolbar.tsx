@@ -29,11 +29,12 @@ export interface InvestigationMatrixToolbarProps {
   hasScores: boolean;
   heatmapOn: boolean;
   heatMax: number;
-  /** Why the heatmap cannot turn on; Task 9 adds the filter reason. */
+  /** Why the heatmap cannot turn on when there is a more precise reason than no score at all (the filters). */
   heatmapDisabledReason?: string;
   exportName: string;
-  /** Commit 2. */
+  /** The filter buttons, in the filters group. */
   filterActions?: ToolbarAction<MatrixToolbarGroup>[];
+  /** The time range panel, under the row while it is open. */
   timeRangePanel?: ReactNode;
 }
 
