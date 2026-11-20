@@ -90,7 +90,7 @@ export const getSchemaAttributes = async (context: AuthContext, user: AuthUser, 
       .filter((attr) => !INTERNAL_ATTRIBUTES.includes(attr.name))
       .map((attr) => {
         const effective = effectiveByName.get(attr.name);
-        return ({
+        return {
           name: attr.name,
           type: attr.type,
           label: attr.label || attr.name,
@@ -103,7 +103,7 @@ export const getSchemaAttributes = async (context: AuthContext, user: AuthUser, 
           // For numeric attributes with scalable property
           scale: attr.type === 'numeric' && (attr as any).scalable ? 'default' : undefined,
           defaultValues: effective?.defaultValues ?? undefined,
-        } as TypeAttribute);
+        } as TypeAttribute;
       });
 
     // Add the refs (createdBy, objectMarking, objectLabel…): a type with no ref registered
