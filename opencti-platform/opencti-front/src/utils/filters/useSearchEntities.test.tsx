@@ -385,6 +385,56 @@ describe('useSearchEntities', () => {
     expect(idOptions.some((e) => e.value === 'obj-1')).toBe(true);
   });
 
+  it('should ignore the answer to an older search of the same key, which would replace the latest relevance order', async () => {
+    // each query answers when the test resolves it, in the order the test chooses
+    const answers: Array<(data: unknown) => void> = [];
+    mockFetchQuery.mockImplementation(() => ({
+      toPromise: () => new Promise((resolve) => {
+        answers.push(resolve);
+      }),
+    }));
+    const labelsAnswer = (...names: string[]) => ({
+      labels: { edges: names.map((name) => ({ node: { id: name, value: name, color: '#000000' } })) },
+    });
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+
+    act(() => {
+      result.current[1]('objectLabel', {}, vi.fn(), createEvent('sc'));
+    });
+    act(() => {
+      result.current[1]('objectLabel', {}, vi.fn(), createEvent('scr'));
+    });
+    // the answer to "scr" comes back first, then the one to "sc"
+    await act(async () => answers[1](labelsAnswer('SCR test')));
+    await act(async () => answers[0](labelsAnswer('scan', 'SCR test')));
+
+    expect(result.current[0].objectLabel?.map((e) => e.value)).toEqual([null, 'SCR test']);
+  });
+
+  it('should keep the answers of all the sources queried by the latest search of a key', async () => {
+    mockFetchQuery.mockImplementation((query: string) => ({
+      toPromise: () => Promise.resolve(query === 'objectAssigneeFieldMembersSearchQuery'
+        ? { members: { edges: [{ node: { id: 'user-2', entity_type: 'User', name: 'Scr user' } }] }, systemMembers: { edges: [] } }
+        : { stixCoreObjects: { edges: [{ node: {
+            id: 'obj-1',
+            entity_type: 'Malware',
+            parent_types: ['Stix-Domain-Object', 'Stix-Core-Object'],
+            name: 'Scr malware',
+            representative: { main: 'Scr malware' },
+          } }] } }),
+    }));
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+
+    act(() => {
+      result.current[1]('contextEntityId', {}, vi.fn(), createEvent('scr'));
+    });
+
+    await waitFor(() => {
+      const values = (result.current[0].contextEntityId ?? []).map((e) => e.value);
+      expect(values).toEqual(expect.arrayContaining(['obj-1', 'user-2']));
+    });
+  });
+
   it('should build relationship_type options from available types', () => {
     const options = {
       ...defaultOptions,

@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { BaseSyntheticEvent, Dispatch, useState } from 'react';
+import { BaseSyntheticEvent, Dispatch, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import { identitySearchCreatorsSearchQuery, identitySearchIdentitiesSearchQuery } from '@components/common/identities/IdentitySearch';
 import { stixDomainObjectsLinesSearchQuery } from '@components/common/stix_domain_objects/StixDomainObjectsLines';
@@ -365,6 +365,10 @@ const useSearchEntities = ({
     ),
   }));
 
+  // Id of the latest search of each filter key: a search runs on each typed character, and the answers can come back
+  // out of order
+  const latestSearchIds = useRef<Record<string, number>>({});
+
   const searchEntities = (
     filterKey: string,
     cacheEntities: Record<string, { label: string; value: string | null; type: string }[]>,
@@ -376,6 +380,14 @@ const useSearchEntities = ({
       return;
     }
     const isSubKey = !!parentFilterKey;
+    // An answer to an older search of this key would put its results first, in its own relevance order: it is ignored.
+    // All the queries of a search share its id, as a key can query several sources (e.g. entities and members).
+    const searchId = (latestSearchIds.current[filterKey] ?? 0) + 1;
+    latestSearchIds.current[filterKey] = searchId;
+    const isLatestSearch = () => latestSearchIds.current[filterKey] === searchId;
+    const unionSetLatestEntities = (key: string, newEntities: EntityValue[]) => {
+      if (isLatestSearch()) unionSetEntities(key, newEntities);
+    };
 
     const newInputValue = {
       key: filterKey,
@@ -411,7 +423,7 @@ const useSearchEntities = ({
               value: n?.node.name,
               type: 'Vocabulary',
             })));
-          unionSetEntities(key, rankOptions(entityValues, searchTerm));
+          unionSetLatestEntities(key, rankOptions(entityValues, searchTerm));
         });
     };
 
@@ -431,7 +443,7 @@ const useSearchEntities = ({
             type: 'Label',
             color: node.color ?? undefined,
           }));
-          unionSetEntities(key, [
+          unionSetLatestEntities(key, [
             {
               label: t_i18n('No label'),
               value: null,
@@ -452,7 +464,7 @@ const useSearchEntities = ({
         color: m.color,
         type: 'Marking-Definition',
       }));
-      unionSetEntities(key, markedByEntities);
+      unionSetLatestEntities(key, markedByEntities);
     };
 
     // fetches kill chain phases and add them to the set
@@ -472,7 +484,7 @@ const useSearchEntities = ({
             value: n?.node.id,
             type: 'Kill-Chain-Phase',
           }));
-          unionSetEntities(key, rankOptions(killChainPhaseEntities, searchTerm));
+          unionSetLatestEntities(key, rankOptions(killChainPhaseEntities, searchTerm));
         });
     };
 
@@ -494,7 +506,7 @@ const useSearchEntities = ({
             type: 'External-Reference',
             ...(group && { group }),
           }));
-          unionSetEntities(key, rankOptions(externalRefByEntities, searchTerm));
+          unionSetLatestEntities(key, rankOptions(externalRefByEntities, searchTerm));
         });
     };
 
@@ -532,7 +544,7 @@ const useSearchEntities = ({
             type: node.entity_type,
             parentTypes: node.parent_types.flatMap((t) => (t || [])),
           }));
-          unionSetEntities(key, rankOptions(elementIdEntities, searchTerm));
+          unionSetLatestEntities(key, rankOptions(elementIdEntities, searchTerm));
         });
     };
 
@@ -552,7 +564,7 @@ const useSearchEntities = ({
             value: n.node.id,
             type: n.node.entity_type,
           }));
-          unionSetEntities(key, rankOptions(groups, searchTerm));
+          unionSetLatestEntities(key, rankOptions(groups, searchTerm));
         });
     };
 
@@ -573,7 +585,7 @@ const useSearchEntities = ({
             value: n.node.id,
             type: n.node.entity_type,
           }));
-          unionSetEntities(key, rankOptions(createdByEntities, searchTerm));
+          unionSetLatestEntities(key, rankOptions(createdByEntities, searchTerm));
         });
     };
 
@@ -589,7 +601,7 @@ const useSearchEntities = ({
           // add @me value for filters with user id as values, except in stix playbook components
           const meOption = searchContext.elementType !== 'Playbook-Stix-Component' ? meEntity : undefined;
           // a single union keeps the searched members ahead of the unsearched system members
-          unionSetEntities(key, buildMembersOptions(data as ObjectAssigneeFieldMembersSearchQuery$data, entityTypes, { meOption, searchTerm }));
+          unionSetLatestEntities(key, buildMembersOptions(data as ObjectAssigneeFieldMembersSearchQuery$data, entityTypes, { meOption, searchTerm }));
         });
     };
 
@@ -600,6 +612,7 @@ const useSearchEntities = ({
       type: string,
       data: IdentitySearchCreatorsSearchQuery$data['creators'], // this type is actually the same for the different queries we use, not only creators
     ) => {
+      if (!isLatestSearch()) return;
       const newOptions: EntityValue[] = (data?.edges ?? []).map((n) => ({
         label: n?.node.name ?? '',
         value: n?.node.id ?? '',
@@ -619,7 +632,7 @@ const useSearchEntities = ({
       }
 
       setCacheEntities({ ...cacheEntities, [key]: newOptions });
-      unionSetEntities(filterKey, newOptions);
+      unionSetLatestEntities(filterKey, newOptions);
     };
 
     // static list building, no query to run
@@ -643,7 +656,7 @@ const useSearchEntities = ({
         entitiesToAdd = groupedBy
           .flatMap((group) => ungroupedEntities.map((item) => ({ ...item, group })));
       }
-      unionSetEntities(key, entitiesToAdd);
+      unionSetLatestEntities(key, entitiesToAdd);
     };
 
     const keysWithSpecificSearch = [
@@ -778,7 +791,7 @@ const useSearchEntities = ({
                 value: n.node.id,
                 type: n.node.entity_type,
               }));
-              unionSetEntities('sightedBy', rankOptions(sightedByEntities, searchTerm));
+              unionSetLatestEntities('sightedBy', rankOptions(sightedByEntities, searchTerm));
             });
           break;
         case 'computed_reliability':
@@ -812,7 +825,7 @@ const useSearchEntities = ({
             })));
           }
           const elementTypeTypes = elementTypeResult.sort((a, b) => a.label.localeCompare(b.label));
-          unionSetEntities(filterKey, elementTypeTypes);
+          unionSetLatestEntities(filterKey, elementTypeTypes);
           break;
         }
         case 'elementWithTargetTypes':
@@ -845,7 +858,7 @@ const useSearchEntities = ({
                 type: n,
               }))
               .sort((a, b) => a.label.localeCompare(b.label));
-            unionSetEntities(filterKey, entitiesTypes);
+            unionSetLatestEntities(filterKey, entitiesTypes);
           } else { // case abstract types
             let result: EntityValue[] = [];
             // push the observables
@@ -940,7 +953,7 @@ const useSearchEntities = ({
               }
             }
             const entitiesTypes = result.sort((a, b) => a.label.localeCompare(b.label));
-            unionSetEntities(filterKey, entitiesTypes);
+            unionSetLatestEntities(filterKey, entitiesTypes);
           }
           break;
         case 'fromTypes':
@@ -949,7 +962,7 @@ const useSearchEntities = ({
           // the observables
           // the stix domain objects
           // the stix core relationships
-          unionSetEntities(
+          unionSetLatestEntities(
             filterKey,
             [
               ...scoTypes,
@@ -1002,7 +1015,7 @@ const useSearchEntities = ({
               ];
             }
           }
-          unionSetEntities(filterKey, relationshipsTypes.sort((a, b) => a.label.localeCompare(b.label)));
+          unionSetLatestEntities(filterKey, relationshipsTypes.sort((a, b) => a.label.localeCompare(b.label)));
           break;
         }
         case 'x_opencti_main_observable_type':
@@ -1025,7 +1038,7 @@ const useSearchEntities = ({
                   type: 'Unknown',
                 });
               }
-              unionSetEntities(
+              unionSetLatestEntities(
                 filterKey,
                 mainObservableTypeEntities,
               );
@@ -1076,7 +1089,7 @@ const useSearchEntities = ({
                     value: n.id,
                     type: 'Notifier',
                   }));
-                  unionSetEntities(
+                  unionSetLatestEntities(
                     filterKey,
                     notifiers,
                   );
@@ -1094,7 +1107,7 @@ const useSearchEntities = ({
                     value: n.node.id,
                     type: 'Trigger',
                   }));
-                  unionSetEntities(filterKey, rankOptions(triggers, searchTerm));
+                  unionSetLatestEntities(filterKey, rankOptions(triggers, searchTerm));
                 });
             } else if (idEntityTypes.includes('StatusTemplate')) {
               fetchQuery(StatusTemplateFieldQuery, {
@@ -1113,7 +1126,7 @@ const useSearchEntities = ({
                       type: 'Vocabulary',
                     }))
                     .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''));
-                  unionSetEntities(filterKey, statusTemplateEntities);
+                  unionSetLatestEntities(filterKey, statusTemplateEntities);
                 });
             } else if (idEntityTypes.includes('PublicDashboard')) {
               fetchQuery(workspacesQuery, {
@@ -1136,7 +1149,7 @@ const useSearchEntities = ({
                       type: 'Dashboard',
                     }))
                     .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''));
-                  unionSetEntities(filterKey, dashboards);
+                  unionSetLatestEntities(filterKey, dashboards);
                 });
             }
           }
