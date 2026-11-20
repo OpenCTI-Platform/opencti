@@ -31,11 +31,13 @@ describe('resolveAttributeDescription', () => {
   it('should use the override of the type before the dictionary', () => {
     expect(resolveAttributeDescription(ENTITY_TYPE_CONTAINER_NOTE, { name: 'content' })).toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_TYPE_CONTAINER_NOTE].content);
     expect(resolveAttributeDescription(ENTITY_TYPE_CONTAINER_REPORT, { name: 'content' })).toEqual(ATTRIBUTE_DESCRIPTIONS.content);
+    // content is plain text in a Media-Content
+    expect(resolveAttributeDescription(ENTITY_MEDIA_CONTENT, { name: 'content' })).toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_MEDIA_CONTENT].content);
     // start_time is the validity of a relationship, but the start of an event
     expect(resolveAttributeDescription(RELATION_TARGETS, { name: 'start_time' })).toEqual(ATTRIBUTE_DESCRIPTIONS.start_time);
     expect(resolveAttributeDescription(ENTITY_TYPE_EVENT, { name: 'start_time' })).toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_TYPE_EVENT].start_time);
     // resultOf lists the results of a coverage, but points a result to its parent coverage
-    expect(resolveAttributeDescription(ENTITY_TYPE_SECURITY_COVERAGE, { name: 'resultOf' })).toEqual(ATTRIBUTE_DESCRIPTIONS.resultOf);
+    expect(resolveAttributeDescription(ENTITY_TYPE_SECURITY_COVERAGE, { name: 'resultOf' })).toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_TYPE_SECURITY_COVERAGE].resultOf);
     expect(resolveAttributeDescription(ENTITY_TYPE_SECURITY_COVERAGE_RESULT, { name: 'resultOf' }))
       .toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_TYPE_SECURITY_COVERAGE_RESULT].resultOf);
     // version is only described for a malware analysis, not shared with the other types
@@ -63,8 +65,7 @@ describe('resolveAttributeDescription', () => {
   });
 
   it('should not describe from the dictionary the types it was not written for', () => {
-    // content is the HTML of a container, plain text in a Media-Content (own override), but JSON in a workflow definition
-    expect(resolveAttributeDescription(ENTITY_MEDIA_CONTENT, { name: 'content' })).toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_MEDIA_CONTENT].content);
+    // content is the HTML of a container, but JSON in a workflow definition
     expect(resolveAttributeDescription(ENTITY_TYPE_WORKFLOW_DEFINITION, { name: 'content' })).toBeNull();
     // the author of a workflow definition is a user, not an identity
     expect(resolveAttributeDescription(ENTITY_TYPE_WORKFLOW_DEFINITION, { name: 'createdBy' })).toBeNull();
@@ -98,5 +99,16 @@ describe('resolveAttributeDescription', () => {
       .filter((name) => !fields.some((used) => used.type === type && used.field.name === name))
       .map((name) => `${type}.${name}`));
     expect(unknownOverrides).toEqual([]);
+  });
+
+  it('should only share the descriptions of names used by several types', () => {
+    // A name described for a single type belongs to its override: in the shared dictionary, a new
+    // attribute reusing the name on another type would silently inherit a text written for the first one
+    const fields = describedFields();
+    const singleUse = Object.keys(ATTRIBUTE_DESCRIPTIONS).filter((name) => {
+      const types = new Set(fields.filter(({ type, field }) => field.name === name && !ATTRIBUTE_DESCRIPTIONS_BY_TYPE[type]?.[name]).map(({ type }) => type));
+      return types.size < 2;
+    });
+    expect(singleUse).toEqual([]);
   });
 });

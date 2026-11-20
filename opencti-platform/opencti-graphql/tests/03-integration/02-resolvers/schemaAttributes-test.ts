@@ -175,7 +175,7 @@ describe('schemaAttributes', () => {
     expect(version?.description).toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_SOFTWARE].version);
     const [sighting] = await querySchemaAttributes(STIX_SIGHTING_RELATIONSHIP);
     const count = sighting.attributes.find((attribute) => attribute.name === 'attribute_count');
-    expect(count?.description).toEqual(ATTRIBUTE_DESCRIPTIONS.attribute_count);
+    expect(count?.description).toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[STIX_SIGHTING_RELATIONSHIP].attribute_count);
   });
 
   it('should describe the meta objects', async () => {
