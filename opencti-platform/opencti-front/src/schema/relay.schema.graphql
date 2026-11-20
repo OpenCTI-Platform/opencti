@@ -1084,6 +1084,7 @@ type CSVFeedAddInputFromImport {
   markings: [String!]!
   name: String!
   scheduling_period: String
+  ssl_verify: Boolean
   uri: String!
 }
 
@@ -2311,6 +2312,7 @@ type ConfigPresetImportItem {
   isEnabled: Boolean
   key: String!
   label: String!
+  serviceAccountRequired: Boolean!
   translatable: Boolean!
 }
 
@@ -5074,6 +5076,7 @@ type ExternalReferenceEditMutations {
   delete: ID
   fieldPatch(input: [EditInput]!): ExternalReference
   importPush(embedded: Boolean, file: Upload!, fileMarkings: [String], noTriggerImport: Boolean, version: DateTime): File
+  importPushRef(fileRef: FileRefInput!): File
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference
 }
@@ -5376,6 +5379,17 @@ enum FileOrdering {
   lastModified
   name
   objectMarking
+}
+
+input FileRefInput {
+  embedded: Boolean
+  file_markings: [String]
+  mime_type: String
+  name: String!
+  no_trigger_import: Boolean
+  storage_key: String!
+  sync_id: ID!
+  version: DateTime
 }
 
 type FilesMetrics {
@@ -7396,6 +7410,7 @@ type IngestionJsonAddInputFromImport {
   description: String
   headers: [IngestionHeader!]
   jsonMapper: IngestionJsonMapperFromImport!
+  markings: [String!]
   name: String!
   pagination_with_sub_page: Boolean
   pagination_with_sub_page_attribute_path: String
@@ -7502,12 +7517,14 @@ input IngestionRssAddInput {
 }
 
 type IngestionRssAddInputFromImport {
+  created_by_ref: DefaultMarkingDefinition
   current_state_date: DateTime
   description: String
   name: String!
   object_marking_refs: [DefaultMarkingDefinition]
   report_types: [String!]
   scheduling_period: String
+  ssl_verify: Boolean
   uri: String
 }
 
@@ -9366,7 +9383,7 @@ type Mutation {
   configPresetImportSessionClear(delete_file: Boolean): Boolean!
   configPresetImportSessionSave(file_id: ID!, revision: Int!, selections: [ConfigPresetSelectionInput!]!): ConfigPresetImportSession!
   configPresetImportUpload(file: Upload!): File!
-  configPresetPartialImport(file: Upload!, item_modes: [ConfigPresetItemModeInput!], items: [ID!]!, type: ID!): ConfigPresetPartialImportOutput!
+  configPresetPartialImport(credentials: [ConfigPresetItemCredentialsInput!], file: Upload!, item_modes: [ConfigPresetItemModeInput!], items: [ID!]!, service_accounts: [ConfigPresetItemServiceAccountInput!], type: ID!): ConfigPresetPartialImportOutput!
   configPresetPartialImportPreview(file: Upload!, type: ID!): ConfigPresetPartialImportPreview!
   connectorJWT: String!
   connectorMigrateToManaged(input: MigrateConnectorToManagedInput!): ManagedConnector!
@@ -12462,8 +12479,6 @@ type Query {
   works(after: ID, filters: FilterGroup, first: Int, orderBy: WorksOrdering, orderMode: OrderingMode, search: String): WorkConnection
   workspace(id: String!): Workspace
   workspaces(after: ID, filters: FilterGroup, first: Int, includeAuthorities: Boolean, orderBy: WorkspacesOrdering, orderMode: OrderingMode, search: String): WorkspaceConnection
-  xtmConnections: [XtmConnection!]!
-  xtmCounterparts(keys: [String!]!, kind: XtmCounterpartKind!): [XtmCounterpart!]!
 }
 
 input QueryAttribute {
@@ -14637,6 +14652,7 @@ type StixCyberObservableEditMutations {
   exportPush(file: Upload!): Boolean
   fieldPatch(commitMessage: String, input: [EditInput]!, references: [String]): StixCyberObservable
   importPush(embedded: Boolean, file: Upload!, fileMarkings: [String], noTriggerImport: Boolean, version: DateTime): File
+  importPushRef(fileRef: FileRefInput!): File
   promote: StixCyberObservable @deprecated(reason: "[>=6.2 & <6.8]. Use `promoteToIndicator`.")
   promoteToIndicator: Indicator
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
@@ -14777,6 +14793,7 @@ type StixDomainObjectEditMutations {
   exportPush(file: Upload!, file_markings: [String]!): Boolean
   fieldPatch(commitMessage: String, input: [EditInput]!, references: [String]): StixDomainObject
   importPush(embedded: Boolean, file: Upload!, fileMarkings: [String], fintelTemplateId: String, fromTemplate: Boolean, noTriggerImport: Boolean, version: DateTime): File
+  importPushRef(fileRef: FileRefInput!): File
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(relationship_type: String, toId: StixRef!): StixDomainObject
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject
@@ -16014,9 +16031,11 @@ type TaxiiFeedAddInputFromImport {
   authentication_type: String!
   authentication_value: String!
   collection: String!
+  confidence_to_score: Boolean
   description: String!
   name: String!
   scheduling_period: String
+  ssl_verify: Boolean
   uri: String!
   version: String!
 }
@@ -18516,33 +18535,4 @@ enum XTMHubRegistrationStatus {
   lost_connectivity
   registered
   unregistered
-}
-
-type XtmConnection {
-  connected: Boolean!
-  product: String!
-  url: String
-}
-
-type XtmCounterpart {
-  facts: [XtmCounterpartFact!]!
-  key: String!
-  object_id: String!
-  object_name: String
-  object_type: String!
-  object_url: String!
-  product: String!
-}
-
-type XtmCounterpartFact {
-  key: String!
-  value: String!
-}
-
-enum XtmCounterpartKind {
-  ALERT
-  ASSET
-  ATTACK_PATTERN
-  THREAT
-  VULNERABILITY
 }
