@@ -35,6 +35,23 @@ const toMeta = (args: unknown[]): Record<string, unknown> => {
 // The SDK readers and span processors report export failures through globalErrorHandler, which calls
 // diag.error(JSON.stringify(exception)): one JSON string holding the whole serialized exception.
 // Keep its message as the log message (stable, so it can be grouped and alerted on) and its stack as metadata.
+const messageToString = (message: unknown): string => {
+  if (typeof message === 'string') {
+    return message;
+  }
+  if (message instanceof Error) {
+    return message.message || message.name || 'Error';
+  }
+  if (message === null || message === undefined) {
+    return String(message);
+  }
+  try {
+    return typeof message === 'object' ? JSON.stringify(message) : String(message);
+  } catch {
+    return String(message);
+  }
+};
+
 const parseSerializedException = (message: string): { message: string; name?: string; stack?: string } | null => {
   const trimmed = message.trim();
   if (!trimmed.startsWith('{')) {
@@ -58,8 +75,9 @@ const parseSerializedException = (message: string): { message: string; name?: st
   }
 };
 
-const normalize = (message: string, args: unknown[]): NormalizedRecord => {
-  const meta = toMeta(args);
+const normalize = (rawMessage: unknown, args: unknown[]): NormalizedRecord => {
+  const meta = toMeta(rawMessage instanceof Error ? [rawMessage, ...args] : args);
+  const message = messageToString(rawMessage);
   const exception = parseSerializedException(message);
   const text = exception ? exception.message : message;
   if (exception) {
@@ -79,7 +97,7 @@ export const createOtelDiagLogger = (target: OtelDiagTarget, options: OtelDiagLo
   const throttleMs = options.throttleMs ?? DEFAULT_THROTTLE_MS;
   const now = options.now ?? Date.now;
   const seen = new Map<string, { at: number; suppressed: number }>();
-  const throttledWarn = (rawMessage: string, args: unknown[]) => {
+  const throttledWarn = (rawMessage: unknown, args: unknown[]) => {
     const { message, meta } = normalize(rawMessage, args);
     const time = now();
     const entry = seen.get(message);
@@ -97,21 +115,29 @@ export const createOtelDiagLogger = (target: OtelDiagTarget, options: OtelDiagLo
     }
     seen.set(message, { at: time, suppressed: 0 });
   };
+  // A diagnostics logger must never break the process it observes: any failure here is swallowed.
+  const safe = (fn: () => void) => {
+    try {
+      fn();
+    } catch {
+      // ignore
+    }
+  };
   return {
-    error: (message: string, ...args: unknown[]) => throttledWarn(message, args),
-    warn: (message: string, ...args: unknown[]) => throttledWarn(message, args),
-    info: (message: string, ...args: unknown[]) => {
+    error: (message: unknown, ...args: unknown[]) => safe(() => throttledWarn(message, args)),
+    warn: (message: unknown, ...args: unknown[]) => safe(() => throttledWarn(message, args)),
+    info: (message: unknown, ...args: unknown[]) => safe(() => {
       const record = normalize(message, args);
       target.info(record.message, record.meta);
-    },
-    debug: (message: string, ...args: unknown[]) => {
+    }),
+    debug: (message: unknown, ...args: unknown[]) => safe(() => {
       const record = normalize(message, args);
       target.debug(record.message, record.meta);
-    },
-    verbose: (message: string, ...args: unknown[]) => {
+    }),
+    verbose: (message: unknown, ...args: unknown[]) => safe(() => {
       const record = normalize(message, args);
       target.debug(record.message, record.meta);
-    },
+    }),
   };
 };
 
