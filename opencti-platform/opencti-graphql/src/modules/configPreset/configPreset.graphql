@@ -241,6 +241,12 @@ type ConfigPresetPartialImportPreview {
     default_mode: ConfigImportMode!
 }
 
+# Keeps only the items of the type whose configuration has this value for this key: the screen of an entity type imports only the custom views of that type.
+input ConfigPresetPartialImportScopeInput {
+    key: String!
+    value: String!
+}
+
 type ConfigPresetPartialImportOutput {
     results: [ConfigPresetImportResult!]!
     counts: ConfigPresetImportCounts!
@@ -316,9 +322,11 @@ extend type Mutation {
     # Partial import, from the screen of one type (the themes...): the full bundle is sent with each call, read in memory and never stored,
     # so the wizard session is never touched. Any type with an importer can be imported this way.
     # The preview reads only: the items of the type in the bundle.
-    configPresetPartialImportPreview(file: Upload!, type: ID!): ConfigPresetPartialImportPreview! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # With a scope, the items of the type that are not in it are neither shown nor imported.
+    configPresetPartialImportPreview(file: Upload!, type: ID!, scope: ConfigPresetPartialImportScopeInput): ConfigPresetPartialImportPreview! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # Imports the given items of the type, and the items of the same type they depend on; an item without mode takes the default_mode of the preview.
     # The credentials and the service accounts are the ones of the wizard import: never stored, only given to the items they name.
+    # With a scope, the items of the type that are not in it are neither shown nor imported.
     configPresetPartialImport(
         file: Upload!
         type: ID!
@@ -326,5 +334,6 @@ extend type Mutation {
         item_modes: [ConfigPresetItemModeInput!]
         credentials: [ConfigPresetItemCredentialsInput!]
         service_accounts: [ConfigPresetItemServiceAccountInput!]
+        scope: ConfigPresetPartialImportScopeInput
     ): ConfigPresetPartialImportOutput! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
 }

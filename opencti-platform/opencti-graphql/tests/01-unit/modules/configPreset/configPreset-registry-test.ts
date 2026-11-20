@@ -71,6 +71,7 @@ import { exportConnector } from '../../../../src/modules/connector/connector-exp
 import { customEmailTemplate, otherEmailTemplate } from './configPreset-emailTemplates-fixtures';
 import { defaultFintelDesign, nightFintelDesign, PNG_LOGO } from './configPreset-fintelDesigns-fixtures';
 import { FINTEL_DESIGN_LOGO_MAX_SIZE } from '../../../../src/modules/fintelDesign/fintelDesign-logo';
+import { executiveCustomView, malwareCustomView } from './configPreset-customViews-fixtures';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'admin-id', capabilities: [{ name: 'BYPASS' }] } as AuthUser;
@@ -224,6 +225,14 @@ describe('Config preset registry', () => {
       },
       // The dashboards by name, never an investigation
       { id: 'dashboards', label: 'Custom dashboards', description: '', group: 'dashboards', itemIds: [executiveDashboard.standard_id, socDashboard.standard_id] },
+      // The custom views of every entity type, by name
+      {
+        id: 'customViews',
+        label: 'Custom views',
+        description: 'Custom views of the entity types and their widgets',
+        group: 'customization',
+        itemIds: [executiveCustomView.standard_id, malwareCustomView.standard_id],
+      },
       { id: 'connectors', label: 'Connectors', description: 'Managed connectors and their parameters, without their secrets', group: 'integrations', itemIds: ['mitre'] },
       // The feeds by name; the next feeds of the same name by creation date
       { id: 'rssFeeds', label: 'RSS feeds', description: 'RSS feeds and their parameters, without their state', group: 'integrations', itemIds: ['Security news', 'Security news (1)'] },
@@ -292,6 +301,8 @@ describe('Config preset registry', () => {
       ['Phishing triage', false],
       ['Executive summary', false],
       ['SOC overview', false],
+      ['Executive overview (Report)', false],
+      ['Malware triage (Malware)', false],
       ['MITRE', false],
       ['Security news', false],
       ['Security news', false],
@@ -344,6 +355,8 @@ describe('Config preset registry', () => {
       `taxonomy/case_templates/${phishingCaseTemplate.standard_id}.json`,
       `dashboards/${executiveDashboard.standard_id}.json`,
       `dashboards/${socDashboard.standard_id}.json`,
+      `customization/custom_views/${executiveCustomView.standard_id}.json`,
+      `customization/custom_views/${malwareCustomView.standard_id}.json`,
       'integrations/connectors/mitre.json',
       'integrations/rss_feeds/Security news.json',
       'integrations/rss_feeds/Security news (1).json',
@@ -1061,6 +1074,51 @@ describe('Config preset registry', () => {
       vi.mocked(fullEntitiesList).mockClear();
       expect(await ids([], [])).toEqual([]);
       expect(fullEntitiesList).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('custom views', () => {
+    const views = findFamily('customViews');
+
+    it('exports a view in the import format only, without whether it is enabled or the default of its entity type', async () => {
+      const item = await findItem('customViews', executiveCustomView.standard_id);
+      const file = await exportConfigPresetItem(context, user, views, item);
+      expect(file).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'customization.customViews',
+        id: executiveCustomView.standard_id,
+        configuration: {
+          name: 'Executive overview',
+          target_entity_type: 'Report',
+          description: 'The view of the executives',
+          manifest: executiveCustomView.manifest,
+        },
+      });
+      expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|executive-custom-view-id|"enabled"|"default"|"slug"/);
+    });
+
+    it('exports a view without description nor manifest with an empty description, so that an overwrite clears it, and no manifest', async () => {
+      const item = await findItem('customViews', malwareCustomView.standard_id);
+      const file = await exportConfigPresetItem(context, user, views, item);
+      expect(file.configuration).toEqual({ name: 'Malware triage', target_entity_type: 'Malware', description: '' });
+    });
+
+    it('lists the views by name, with their entity type in the label, and finds them by standard id', async () => {
+      const page = await views.listItems(context, user, { first: 10 });
+      expect(page.edges.map(({ node }) => [node.id, node.label, node.translatable])).toEqual([
+        [executiveCustomView.standard_id, 'Executive overview (Report)', false],
+        [malwareCustomView.standard_id, 'Malware triage (Malware)', false],
+      ]);
+      const ids = async (selected: string[] | null, excluded: string[]) => (await views.resolveItems(context, user, selected, excluded)).map((item) => item.id);
+      expect(await ids(null, [])).toEqual([executiveCustomView.standard_id, malwareCustomView.standard_id]);
+      expect(await ids(null, [executiveCustomView.standard_id])).toEqual([malwareCustomView.standard_id]);
+      vi.mocked(fullEntitiesList).mockClear();
+      vi.mocked(pageEntitiesConnection).mockClear();
+      // No ids: no query, whose empty filter would match every view
+      expect(await ids([], [])).toEqual([]);
+      expect((await views.listItems(context, user, { first: 10, ids: [] })).edges).toEqual([]);
+      expect(fullEntitiesList).not.toHaveBeenCalled();
+      expect(pageEntitiesConnection).not.toHaveBeenCalled();
     });
   });
 

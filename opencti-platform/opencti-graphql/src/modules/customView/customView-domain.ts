@@ -71,7 +71,7 @@ const getEntityTypesCandidateToCustomViews = () => {
   return entityTypesCandidateToCustomViews;
 };
 
-const isCustomViewsAvailableForEntityType = (entityType: string) => {
+export const isCustomViewsAvailableForEntityType = (entityType: string) => {
   return getEntityTypesCandidateToCustomViews().includes(entityType);
 };
 

@@ -4854,6 +4854,11 @@ export type ConfigPresetPartialImportPreview = {
   type?: Maybe<ConfigPresetImportType>;
 };
 
+export type ConfigPresetPartialImportScopeInput = {
+  key: Scalars['String']['input'];
+  value: Scalars['String']['input'];
+};
+
 export type ConfigPresetSelectionInput = {
   excluded_items?: InputMaybe<Array<Scalars['ID']['input']>>;
   item_modes?: InputMaybe<Array<ConfigPresetItemModeInput>>;
@@ -18195,7 +18200,9 @@ export type Mutation = {
   playbookFieldPatch?: Maybe<Playbook>;
   playbookImport: Scalars['String']['output'];
   playbookInsertNode: PlaybookInsertResult;
+  /** Move a node and its branch under another out port in a single write: every link reaching the node is replaced by one link from parentNodeId / parentPortId. */
   playbookMoveNode: Scalars['String']['output'];
+  /** Re-point one link in a single write: a new target node, and optionally a new source node and out port. Refuses a cycle and a node left without a parent. */
   playbookRelink: Scalars['String']['output'];
   playbookReplaceNode: Scalars['String']['output'];
   playbookStepExecution?: Maybe<Scalars['Boolean']['output']>;
@@ -18787,6 +18794,7 @@ export type MutationConfigPresetPartialImportArgs = {
   file: Scalars['Upload']['input'];
   item_modes?: InputMaybe<Array<ConfigPresetItemModeInput>>;
   items: Array<Scalars['ID']['input']>;
+  scope?: InputMaybe<ConfigPresetPartialImportScopeInput>;
   service_accounts?: InputMaybe<Array<ConfigPresetItemServiceAccountInput>>;
   type: Scalars['ID']['input'];
 };
@@ -18794,6 +18802,7 @@ export type MutationConfigPresetPartialImportArgs = {
 
 export type MutationConfigPresetPartialImportPreviewArgs = {
   file: Scalars['Upload']['input'];
+  scope?: InputMaybe<ConfigPresetPartialImportScopeInput>;
   type: Scalars['ID']['input'];
 };
 
@@ -24818,7 +24827,9 @@ export type PlaybookAddNodeInput = {
   configuration?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
+  /** Node this node is linked from: required for every node but the entry point, given with parentPortId. */
   parentNodeId?: InputMaybe<Scalars['ID']['input']>;
+  /** Out port of parentNodeId the link leaves from. */
   parentPortId?: InputMaybe<Scalars['ID']['input']>;
   position: PositionInput;
 };
@@ -42032,6 +42043,7 @@ export type ResolversTypes = ResolversObject<{
   ConfigPresetItemServiceAccountInput: ConfigPresetItemServiceAccountInput;
   ConfigPresetPartialImportOutput: ResolverTypeWrapper<Omit<ConfigPresetPartialImportOutput, 'results'> & { results: Array<ResolversTypes['ConfigPresetImportResult']> }>;
   ConfigPresetPartialImportPreview: ResolverTypeWrapper<ConfigPresetPartialImportPreview>;
+  ConfigPresetPartialImportScopeInput: ConfigPresetPartialImportScopeInput;
   ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: ResolverTypeWrapper<BasicStoreEntityConnector>;
   ConnectorConfig: ResolverTypeWrapper<ConnectorConfig>;
@@ -43279,6 +43291,7 @@ export type ResolversParentTypes = ResolversObject<{
   ConfigPresetItemServiceAccountInput: ConfigPresetItemServiceAccountInput;
   ConfigPresetPartialImportOutput: Omit<ConfigPresetPartialImportOutput, 'results'> & { results: Array<ResolversParentTypes['ConfigPresetImportResult']> };
   ConfigPresetPartialImportPreview: ConfigPresetPartialImportPreview;
+  ConfigPresetPartialImportScopeInput: ConfigPresetPartialImportScopeInput;
   ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: BasicStoreEntityConnector;
   ConnectorConfig: ConnectorConfig;
