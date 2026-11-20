@@ -25,8 +25,8 @@ testCreatedCounter['attack-pattern'] = 61;
 testCreatedCounter.campaign = 9;
 // 3 created by workflow-closing-reason-test merge and external status write cases
 testCreatedCounter['case-incident'] = 23;
-// 40 case-rfi and 1 case-rft created by the request access workflow tests (requestAccess-test, requestAccess-domain-test, workflow-test)
-testCreatedCounter['case-rfi'] = 49;
+// 38 case-rfi and 1 case-rft created by the request access workflow tests (requestAccess-test, requestAccess-domain-test, workflow-test)
+testCreatedCounter['case-rfi'] = 47;
 testCreatedCounter['case-rft'] = 2;
 // 2 created and deleted by stixCoreObject-test (regardingOf on publishes)
 testCreatedCounter.channel = 3;
@@ -147,7 +147,7 @@ testUpdatedCounter['attack-pattern'] = 11;
 testUpdatedCounter['case-incident'] = 28;
 testUpdatedCounter.feedback = 1;
 // Includes 3 by the has-covered cleanup tests of securityCoverage-utils-test (objects removed)
-testUpdatedCounter.report = 36; // includes 2 by audit-test (audits breakdown), and 1 status written by a transition in workflow-entity-write-test
+testUpdatedCounter.report = 35; // includes 2 by audit-test (audits breakdown), and 1 status written by a transition in workflow-entity-write-test
 testUpdatedCounter['course-of-action'] = 3;
 testUpdatedCounter['data-source'] = 1;
 testUpdatedCounter['external-reference'] = 1;
@@ -219,8 +219,8 @@ testDeletedCounter['attack-pattern'] = 56;
 testDeletedCounter.campaign = 5; // 2 by upsert-limit-dates-test
 // 2 by workflow-closing-reason-test merge and external status write cases, the merged source has no delete event
 testDeletedCounter['case-incident'] = 20;
-// 39 case-rfi and 1 case-rft deleted by the request access workflow tests (1 more case-rfi is merged)
-testDeletedCounter['case-rfi'] = 48;
+// 37 case-rfi and 1 case-rft deleted by the request access workflow tests (1 more case-rfi is merged)
+testDeletedCounter['case-rfi'] = 46;
 testDeletedCounter['case-rft'] = 2;
 testDeletedCounter.channel = 3; // 2 created and deleted by stixCoreObject-test (regardingOf on publishes)
 testDeletedCounter['course-of-action'] = 2;
