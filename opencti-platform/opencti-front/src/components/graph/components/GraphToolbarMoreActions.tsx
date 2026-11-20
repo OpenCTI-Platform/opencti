@@ -21,7 +21,7 @@ import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../i18n';
 import type { Theme } from '../../Theme';
 import type { GraphToolbarAction } from './useGraphToolbarActions';
-import type { ToolbarAction } from '../ToolbarShell';
+import { RenderFunction, type ToolbarAction } from '../ToolbarShell';
 import GraphToolbarOptionsList, { checkable } from './GraphToolbarOptionsList';
 
 /** The toolbar glyphs, brought down to the size of a menu item. */
@@ -53,14 +53,15 @@ export const GraphMenuActionItem = ({ action }: { action: GraphMenuAction }) => 
           <ActionLabel action={action} />
         </MenuSubTrigger>
         <MenuSubContent>
-          {/* FDS-WORKAROUND #85: a submenu takes the arrow, Tab and letter keys of a field inside it — see fds-migration/LIBRARY-FEEDBACK.md #85 */}
+          {/* FDS-WORKAROUND #86: a submenu takes the arrow and letter keys of a field inside it — see fds-migration/LIBRARY-FEEDBACK.md #86 */}
           {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
           <div
             onKeyDown={(event) => {
-              if (event.key !== 'Escape') event.stopPropagation();
+              // Escape closes the menu; Tab stays in it, as in any menu.
+              if (event.key !== 'Escape' && event.key !== 'Tab') event.stopPropagation();
             }}
           >
-            {submenu()}
+            <RenderFunction render={submenu} />
           </div>
         </MenuSubContent>
       </MenuSub>
