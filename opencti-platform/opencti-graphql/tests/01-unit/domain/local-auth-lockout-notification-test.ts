@@ -8,8 +8,10 @@ import {
   loadLocalAuthLockEmailTemplate,
   loadLocalAuthLockRecipients,
   selectLocalAuthLockRecipients,
+  LOCK_EMAIL_COOLDOWN_MS,
   sendLocalAuthLockEmails,
 } from '../../../src/domain/local-auth-lockout-notification';
+import { redisClaimLocalAuthLockEmail } from '../../../src/database/redis';
 import { sendMail } from '../../../src/database/smtp';
 import { findLockedUserEmailTemplate } from '../../../src/modules/emailTemplate/emailTemplate-locked-user';
 import type { BasicStoreEntityEmailTemplate } from '../../../src/modules/emailTemplate/emailTemplate-types';
@@ -25,6 +27,11 @@ vi.mock('../../../src/config/conf', async (importOriginal) => ({
 vi.mock('../../../src/database/smtp', () => ({
   sendMail: vi.fn(),
   smtpComputeFrom: vi.fn(async (from?: string) => `${from} <no-reply@opencti.io>`),
+}));
+
+vi.mock('../../../src/database/redis', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/database/redis')>()),
+  redisClaimLocalAuthLockEmail: vi.fn(),
 }));
 
 vi.mock('../../../src/database/cache', () => ({
@@ -218,6 +225,7 @@ describe('Local authentication lockout - sending the lock email', () => {
   const GRACE = buildUser('grace', { capabilities: capabilities(BYPASS), firstname: 'Grace', lastname: 'Hopper' } as Partial<AuthUser>);
   const LOCKED = { ...LOCKED_USER, firstname: 'John', lastname: 'Doe' };
   const temporaryLock = { lockType: 'temporary' as const, maxAttempts: 10, date: new Date(), remainingMs: 15 * 60 * 1000 };
+  const LOCKED_EMAIL_HASH = 'locked-email-hash';
 
   const mockPlatform = (platformUsers: AuthUser[], template?: Partial<BasicStoreEntityEmailTemplate>) => {
     vi.mocked(getEntityFromCache).mockResolvedValue({ platform_url: 'https://opencti.example.com', valid_enterprise_edition: true } as BasicStoreSettings);
@@ -229,11 +237,12 @@ describe('Local authentication lockout - sending the lock email', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.mocked(sendMail).mockReset();
+    vi.mocked(redisClaimLocalAuthLockEmail).mockReset().mockResolvedValue(true);
   });
 
   it('should send one email per administrator, rendered for its recipient', async () => {
     mockPlatform([ADA, GRACE, LOCKED]);
-    await sendLocalAuthLockEmails(context, LOCKED, temporaryLock);
+    await sendLocalAuthLockEmails(context, LOCKED, temporaryLock, LOCKED_EMAIL_HASH);
     const emails = sentEmails();
     expect(emails.map(({ to }) => to)).toEqual(['ada@opencti.io', 'grace@opencti.io']);
     expect(emails[0]).toMatchObject({ from: 'OpenCTI Administrator <no-reply@opencti.io>', subject: LOCKED_USER_EMAIL_TEMPLATE_INPUT.email_object });
@@ -246,7 +255,7 @@ describe('Local authentication lockout - sending the lock email', () => {
 
   it('should never give an API token of the recipient', async () => {
     mockPlatform([ADA], { template_body: '[$user.api_token]' });
-    await sendLocalAuthLockEmails(context, LOCKED, temporaryLock);
+    await sendLocalAuthLockEmails(context, LOCKED, temporaryLock, LOCKED_EMAIL_HASH);
     expect(sentEmails()[0].html).toEqual('[]');
   });
 
@@ -255,7 +264,7 @@ describe('Local authentication lockout - sending the lock email', () => {
     const error = vi.spyOn(logApp, 'error').mockImplementation(() => undefined);
     mockPlatform([ADA, GRACE]);
     vi.mocked(sendMail).mockRejectedValueOnce(new Error('SMTP down'));
-    await sendLocalAuthLockEmails(context, LOCKED, temporaryLock);
+    await sendLocalAuthLockEmails(context, LOCKED, temporaryLock, LOCKED_EMAIL_HASH);
     expect(sentEmails().map(({ to }) => to)).toEqual(['ada@opencti.io', 'grace@opencti.io']);
     expect(warn).toHaveBeenCalledOnce();
     expect(warn.mock.calls[0][1]).toMatchObject({ locked_user_id: 'locked', failed_recipient_ids: ['ada'], errors_count: 1, total_count: 2 });
@@ -268,7 +277,7 @@ describe('Local authentication lockout - sending the lock email', () => {
     mockPlatform([ADA, GRACE]);
     const smtpDown = new Error('SMTP down');
     vi.mocked(sendMail).mockRejectedValue(smtpDown);
-    await sendLocalAuthLockEmails(context, LOCKED, temporaryLock);
+    await sendLocalAuthLockEmails(context, LOCKED, temporaryLock, LOCKED_EMAIL_HASH);
     expect(warn).toHaveBeenCalledOnce();
     expect(warn.mock.calls[0][1]).toEqual({ cause: smtpDown, locked_user_id: 'locked', failed_recipient_ids: ['ada', 'grace'], errors_count: 2, total_count: 2 });
     expect(error).not.toHaveBeenCalled();
@@ -277,9 +286,48 @@ describe('Local authentication lockout - sending the lock email', () => {
   it('should send nothing, and log it, when no administrator can get the email', async () => {
     const warn = vi.spyOn(logApp, 'warn').mockImplementation(() => undefined);
     mockPlatform([LOCKED, LABELS_MANAGER]);
-    await sendLocalAuthLockEmails(context, LOCKED, temporaryLock);
+    await sendLocalAuthLockEmails(context, LOCKED, temporaryLock, LOCKED_EMAIL_HASH);
     expect(sendMail).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledOnce();
+  });
+
+  it('should send nothing while the administrators already got an email for this account within the hour', async () => {
+    mockPlatform([ADA, GRACE]);
+    vi.mocked(redisClaimLocalAuthLockEmail).mockResolvedValue(false);
+    await sendLocalAuthLockEmails(context, LOCKED, temporaryLock, LOCKED_EMAIL_HASH);
+    expect(redisClaimLocalAuthLockEmail).toHaveBeenCalledWith(LOCKED_EMAIL_HASH, LOCK_EMAIL_COOLDOWN_MS);
+    expect(LOCK_EMAIL_COOLDOWN_MS).toEqual(60 * 60 * 1000);
+    expect(getEntitiesListFromCache).not.toHaveBeenCalled();
+    expect(sendMail).not.toHaveBeenCalled();
+  });
+
+  it('should email the locks one after the other', async () => {
+    mockPlatform([ADA]);
+    let endFirstSend = () => {};
+    vi.mocked(sendMail).mockReturnValueOnce(new Promise((resolve) => {
+      endFirstSend = () => resolve(undefined);
+    }));
+    const firstLock = sendLocalAuthLockEmails(context, LOCKED, temporaryLock, LOCKED_EMAIL_HASH);
+    const secondLock = sendLocalAuthLockEmails(context, LABELS_MANAGER, temporaryLock, 'other-email-hash');
+    await vi.waitFor(() => expect(sendMail).toHaveBeenCalledOnce());
+    // The second lock waits for the end of the first one
+    await new Promise((resolve) => {
+      setTimeout(resolve, 20);
+    });
+    expect(sendMail).toHaveBeenCalledOnce();
+    endFirstSend();
+    await Promise.all([firstLock, secondLock]);
+    expect(sendMail).toHaveBeenCalledTimes(2);
+  });
+
+  it('should still email the next locks when a lock cannot be emailed', async () => {
+    mockPlatform([ADA]);
+    vi.mocked(getEntitiesListFromCache).mockRejectedValueOnce(new Error('Cache unavailable'));
+    const failedLock = sendLocalAuthLockEmails(context, LOCKED, temporaryLock, LOCKED_EMAIL_HASH);
+    const nextLock = sendLocalAuthLockEmails(context, LABELS_MANAGER, temporaryLock, 'other-email-hash');
+    await expect(failedLock).rejects.toThrow('Cache unavailable');
+    await nextLock;
+    expect(sendMail).toHaveBeenCalledOnce();
   });
 });
 

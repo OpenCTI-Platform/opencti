@@ -5,6 +5,7 @@
 import conf, { logApp } from '../config/conf';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { LOCKED_USER_EMAIL_TEMPLATE_INPUT } from '../database/locked-user-email-template-input';
+import { redisClaimLocalAuthLockEmail } from '../database/redis';
 import { isNotEmptyField } from '../database/utils';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -19,6 +20,9 @@ import { isServiceAccountUser, isUserAccountActive, isUserHasCapability, SETTING
 
 // Same limit as the other emails sent to every administrator
 const MAX_RECIPIENTS: number = conf.get('smtp:email_max_cc_size') || 500;
+// An attacker can lock an account again as soon as its temporary lock ends: the administrators get at most one email
+// per account and per hour. Every lock is still published in the activity
+export const LOCK_EMAIL_COOLDOWN_MS = 60 * 60 * 1000;
 
 type LockRecipientsOptions = { withOrganizationAdmins: boolean; maxRecipients: number };
 
@@ -84,7 +88,7 @@ export const loadLocalAuthLockEmailTemplate = async (context: AuthContext, setti
 // as each send opens its own SMTP connection.
 // A recipient whose email fails never stops the others. The failures are logged once, after the last send, as a warning:
 // the SMTP server is an external dependency, and a down server must not log one error per administrator
-export const sendLocalAuthLockEmails = async (context: AuthContext, lockedUser: AuthUser, lock: LocalAuthLock) => {
+const sendLockEmailsToAdministrators = async (context: AuthContext, lockedUser: AuthUser, lock: LocalAuthLock) => {
   const recipients = await loadLocalAuthLockRecipients(context, lockedUser);
   if (recipients.length === 0) {
     logApp.warn('Local authentication lockout: no administrator can get the email of a lock', { locked_user_id: lockedUser.id });
@@ -114,4 +118,22 @@ export const sendLocalAuthLockEmails = async (context: AuthContext, lockedUser: 
       total_count: recipients.length,
     });
   }
+};
+
+// The locks of this node are emailed one after the other: many locks at once never open many SMTP connections at once
+let lockEmailsQueue: Promise<void> = Promise.resolve();
+
+// Emails the administrators about a lock, after the locks queued before it, unless they got an email for this account
+// (emailHash, the key of its lockout) within the cooldown. Ends once the emails of this lock are sent or skipped
+export const sendLocalAuthLockEmails = (context: AuthContext, lockedUser: AuthUser, lock: LocalAuthLock, emailHash: string): Promise<void> => {
+  const sends = lockEmailsQueue.then(async () => {
+    if (!(await redisClaimLocalAuthLockEmail(emailHash, LOCK_EMAIL_COOLDOWN_MS))) {
+      logApp.debug('Local authentication lockout: the administrators already got an email for this account within the cooldown', { locked_user_id: lockedUser.id });
+      return;
+    }
+    await sendLockEmailsToAdministrators(context, lockedUser, lock);
+  });
+  // A failed lock never stops the next ones: its caller logs it
+  lockEmailsQueue = sends.catch(() => undefined);
+  return sends;
 };

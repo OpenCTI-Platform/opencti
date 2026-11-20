@@ -135,11 +135,11 @@ const publishLocalAuthLock = async (email: string, user: AuthUser | undefined, t
   }
 };
 
-// The administrators get an email for each lock of an existing account. Sent in the background: the lock error never waits
-// for the emails, and an email that cannot be sent is only logged
-const notifyLocalAuthLock = (user: AuthUser, lock: LocalAuthLock) => {
+// The administrators get an email for a lock of an existing account, at most once per hour for the same account.
+// Sent in the background: the lock error never waits for the emails, and an email that cannot be sent is only logged
+const notifyLocalAuthLock = (user: AuthUser, lock: LocalAuthLock, emailHash: string) => {
   const context = executionContext('local_auth_lockout');
-  sendLocalAuthLockEmails(context, user, lock).catch((error) => {
+  sendLocalAuthLockEmails(context, user, lock, emailHash).catch((error) => {
     logApp.error('Local authentication lockout: the emails of a lock cannot be sent', { cause: error, locked_user_id: user.id });
   });
 };
@@ -184,7 +184,7 @@ export const loadLocalAuthLockout = async (email: string, userId?: string) => {
           await publishLocalAuthLock(email, user, timings, origin);
           // An unknown email has no account to unlock: no email, so that it reveals nothing either
           if (user) {
-            notifyLocalAuthLock(user, { lockType, maxAttempts: timings.maxAttempts, date: lockDate, remainingMs });
+            notifyLocalAuthLock(user, { lockType, maxAttempts: timings.maxAttempts, date: lockDate, remainingMs }, emailHash);
           }
           return LocalAuthLocked(lockType, remainingMs);
         },

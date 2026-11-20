@@ -99,11 +99,15 @@ const ALL_EMAILS = [
 const keysOf = (email: string) => localAuthLockoutKeys(hashSHA256(normalizeEmail(email)));
 const resetLockout = (email: string) => {
   const keys = keysOf(email);
-  return getClientBase().del(keys.failures, keys.lock);
+  return getClientBase().del(keys.failures, keys.lock, keys.emailed);
 };
 // Redis TTLs cannot be faked, so expirations are simulated by deleting the keys.
-// The failures expire with the temporary lock, with or without a window, so that the count starts over once the lock is lifted
-const expireLock = resetLockout;
+// The failures expire with the temporary lock, with or without a window, so that the count starts over once the lock is lifted.
+// The cooldown of the lock email outlives the lock
+const expireLock = (email: string) => {
+  const keys = keysOf(email);
+  return getClientBase().del(keys.failures, keys.lock);
+};
 const expireWindow = (email: string) => getClientBase().del(keysOf(email).failures);
 const lockRemainingMs = (email: string) => getClientBase().pttl(keysOf(email).lock);
 const failuresOf = async (email: string) => Number(await getClientBase().hget(keysOf(email).failures, 'count') ?? 0);
@@ -1126,6 +1130,29 @@ describe('Local authentication lockout', () => {
       await reachMaxAttempts(UNKNOWN_EMAIL);
       expect(sendEmails).not.toHaveBeenCalled();
       expect(smtp.sendMail).not.toHaveBeenCalled();
+    });
+
+    it('should not email again for a new lock of the same account within the hour', async () => {
+      await reachMaxAttempts(LOCKOUT_USER.email);
+      const firstLockEmails = (await sentEmails()).length;
+      expect(firstLockEmails).toBeGreaterThan(0);
+      const cooldownMs = await getClientBase().pttl(keysOf(LOCKOUT_USER.email).emailed);
+      expect(cooldownMs).toBeGreaterThan(59 * 60 * 1000);
+      expect(cooldownMs).toBeLessThanOrEqual(60 * 60 * 1000);
+      await expireLock(LOCKOUT_USER.email);
+      await reachMaxAttempts(LOCKOUT_USER.email);
+      expect(sendEmails).toHaveBeenCalledTimes(2);
+      expect(await sentEmails()).toHaveLength(firstLockEmails);
+    });
+
+    it('should email again for a new lock once the account logged in', async () => {
+      await reachMaxAttempts(LOCKOUT_USER.email);
+      const firstLockEmails = (await sentEmails()).length;
+      await expireLock(LOCKOUT_USER.email);
+      await sessionLoginAs(LOCKOUT_USER.email, LOCKOUT_USER.password);
+      expect(await getClientBase().exists(keysOf(LOCKOUT_USER.email).emailed)).toEqual(0);
+      await reachMaxAttempts(LOCKOUT_USER.email);
+      expect(await sentEmails()).toHaveLength(2 * firstLockEmails);
     });
 
     it('should tell the administrators that they must unlock a permanent lock', async () => {
