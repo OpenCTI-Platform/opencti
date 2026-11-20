@@ -114,7 +114,14 @@ const RemoteStreamField: FunctionComponent<RemoteStreamFieldProps> = ({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
           {selected.description && <span style={secondaryText}>{selected.description}</span>}
           {selectedFilters && isFilterGroupNotEmptyShallow(selectedFilters)
-            ? <FilterIconButton filters={selectedFilters} variant="small" />
+            ? (
+                // Read-only on purpose: the filters belong to the remote stream. The default variant keeps
+                // the nested group buttons and the mode badge at the filter line height (the small one crops them).
+                <>
+                  <span style={secondaryText}>{t_i18n('Filters applied by the remote stream')}</span>
+                  <FilterIconButton filters={selectedFilters} />
+                </>
+              )
             : <span style={secondaryText}>{t_i18n('No filter')}</span>}
         </div>
       )}

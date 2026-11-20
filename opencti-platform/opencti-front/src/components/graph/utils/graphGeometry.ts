@@ -8,10 +8,10 @@ export interface Point {
  * a loop on one node: the same shapes the rendering library hit-tests on its pointer canvas, so a
  * click on the drawn line always lands on the link.
  */
-export type LinkPath
-  = | { kind: 'line'; start: Point; end: Point }
-    | { kind: 'quadratic'; start: Point; control: Point; end: Point }
-    | { kind: 'cubic'; start: Point; c1: Point; c2: Point; end: Point };
+export type LinkPath =
+  | { kind: 'line'; start: Point; end: Point }
+  | { kind: 'quadratic'; start: Point; control: Point; end: Point }
+  | { kind: 'cubic'; start: Point; c1: Point; c2: Point; end: Point };
 
 /**
  * A box centred on a point, in the units of the context it is measured in. A rotated box (a label

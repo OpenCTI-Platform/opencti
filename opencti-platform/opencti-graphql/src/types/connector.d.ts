@@ -14,4 +14,5 @@ export interface BasicStoreEntitySynchronizer extends BasicStoreEntity, Ingestio
   no_dependencies: boolean;
   ssl_verify: boolean;
   synchronized: boolean;
+  user_id?: string;
 }

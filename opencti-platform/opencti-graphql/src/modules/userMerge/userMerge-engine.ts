@@ -25,6 +25,7 @@ import { ENTITY_TYPE_DECAY_RULE } from '../decayRule/decayRule-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../decayRule/exclusions/decayExclusionRule-types';
 import { ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE } from '../ingestionDeduplication/ingestionDeduplicationRule-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../entitySetting/entitySetting-types';
 import { ENTITY_TYPE_TRIGGER } from '../notification/notification-types';
 import { ENTITY_TYPE_NOTIFIER } from '../notifier/notifier-types';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
@@ -33,7 +34,7 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../publicDashboard/publicDashboard
 
 /**
  * Entity types the platform serves from its in-memory cache and whose user references a handler
- * rewrites — filters, authorized members, owners, playbook definitions, platform settings.
+ * rewrites — filters, authorized members, owners, playbook definitions, platform and entity settings.
  *
  * Most handlers write straight to Elasticsearch, which notifies no cache: a live stream, a trigger
  * or a PIR would keep evaluating the source id until a restart, and on every node of a cluster.
@@ -44,6 +45,7 @@ export const USER_MERGE_CACHED_ENTITY_TYPES = [
   ENTITY_TYPE_DECAY_EXCLUSION_RULE,
   ENTITY_TYPE_DECAY_RULE,
   ENTITY_TYPE_DRAFT_WORKSPACE,
+  ENTITY_TYPE_ENTITY_SETTING,
   ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE,
   ENTITY_TYPE_NOTIFIER,
   ENTITY_TYPE_PIR,

@@ -19,11 +19,13 @@ import TextField from '../../../../../../components/TextField';
 interface PlaybookFlowFieldNumberProps {
   name: string;
   label: string;
+  required?: boolean;
 }
 
 const PlaybookFlowFieldNumber = ({
   name,
   label,
+  required = false,
 }: PlaybookFlowFieldNumberProps) => {
   return (
     <Field
@@ -32,6 +34,7 @@ const PlaybookFlowFieldNumber = ({
       type="number"
       name={name}
       label={label}
+      required={required}
       component={TextField}
       className="mt-5"
     />

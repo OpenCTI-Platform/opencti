@@ -1662,6 +1662,7 @@ type Group implements InternalObject & BasicObject {
   auto_new_marking: Boolean
   description: String
   default_dashboard: Workspace
+  default_dashboard_preset: String
   members(
     first: Int
     after: ID
@@ -2948,6 +2949,7 @@ type SubAttackPatternForMatrix {
   attack_pattern_id: String!
   name: String!
   description: String
+  x_mitre_id: String
 }
 type AttackPatternsByKillChain {
   kill_chain_id: String!
@@ -9250,6 +9252,16 @@ input StixFileAddInput {
   embedded: [Boolean]
   upsertOperations: [EditInput!]
 }
+input FileRefInput {
+  sync_id: ID!
+  storage_key: String!
+  name: String!
+  mime_type: String
+  version: DateTime
+  file_markings: [String]
+  no_trigger_import: Boolean
+  embedded: Boolean
+}
 type X509Certificate implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
   id: ID! # internal_id
   standard_id: String!
@@ -14345,7 +14357,7 @@ type Query {
     attributeName: String!
   ): AttributeConnection @auth(for: [KNOWLEDGE])
   schemaAttributeNames(elementType: [String]!) : AttributeConnection @auth(for: [KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS])
-  schemaAttributes: [AttributesMap] @auth(for: [KNOWLEDGE])
+  schemaAttributes(entityType: String): [AttributesMap] @auth(for: [KNOWLEDGE])
   statusTemplate(id: String!): StatusTemplate @auth
   statusTemplates(
     first: Int
@@ -15559,6 +15571,7 @@ type ExternalReferenceEditMutations {
   askEnrichment(connectorId: ID!, investigationId: ID): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
   askEnrichments(connectorIds: [ID!]!, investigationId: ID): [Work!] @auth(for: [KNOWLEDGE_KNENRICHMENT])
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, embedded: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  importPushRef(fileRef: FileRefInput!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
 }
 type KillChainPhaseEditMutations {
   delete: ID
@@ -15645,6 +15658,7 @@ type StixDomainObjectEditMutations {
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean, fintelTemplateId: String): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  importPushRef(fileRef: FileRefInput!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(input: ExportAskInput!): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!, file_markings: [String]!): Boolean @auth(for: [CONNECTORAPI])
   stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -15855,6 +15869,7 @@ type StixCyberObservableEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   promoteToIndicator: Indicator  @auth(for: [KNOWLEDGE_KNUPDATE])
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, embedded: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  importPushRef(fileRef: FileRefInput!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
 }

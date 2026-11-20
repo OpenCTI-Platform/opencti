@@ -70,6 +70,7 @@ const getXtmClient = (responseType: 'json' | 'stream', headers?: Record<string, 
   return getHttpClient({
     baseURL: XTM_ONE_URL,
     responseType,
+    trusted: true,
     headers,
   });
 };

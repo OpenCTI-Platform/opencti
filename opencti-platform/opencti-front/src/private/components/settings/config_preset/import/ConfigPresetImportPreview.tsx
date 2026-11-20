@@ -172,6 +172,12 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   onFileMissing,
 }) => {
   const { t_i18n } = useFormatter();
+  // The types whose default item stays the default of the platform when it is added as a copy, and what the row says then.
+  // Literals in the calls, so that the extraction of the translation keys finds them
+  const keptDefaultNotes: Record<string, string> = {
+    branding: t_i18n('The platform keeps its current default theme.'),
+    fintelDesigns: t_i18n('The platform keeps its current default fintel design.'),
+  };
   const theme = useTheme<Theme>();
   const environment = useRelayEnvironment();
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -464,9 +470,9 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         lockedTitle="Activate the Enterprise Edition to import this item"
         onSelectionChange={handleSelectionChange}
         renderTypeActions={(type) => {
-          // From two items in conflict that are imported: with one, its own choice is enough, and an item that is not imported has none
+          // As soon as an imported item conflicts, whatever their number, so that every type reads the same; an item that is not imported has none
           const conflictKeys = type.items.filter((item) => item.conflict && isImportedItem(type.key, item.key)).map((item) => item.key);
-          if (type.modes.length < 2 || conflictKeys.length < 2) {
+          if (type.modes.length < 2 || conflictKeys.length === 0) {
             return null;
           }
           return (
@@ -485,8 +491,9 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           const hasChoice = item.conflict && isImportedItem(type.key, item.key) && type.modes.length > 1;
           const result = results?.[`${type.key}/${item.key}`];
           // The types the import hides: the row alone only says that the item is there
-          // The platform points to a theme by its standard id: a copy of the default theme is another theme, the default stays the one it is
-          const keepsDefaultTheme = hasChoice && item.isDefault && importModes[configImportModeKey(type.key, item.key)] === 'COPY';
+          // A copy of the default theme or of the default fintel design is another item: the platform keeps its current default
+          const keptDefaultNote = keptDefaultNotes[type.key];
+          const keepsDefault = !!keptDefaultNote && hasChoice && item.isDefault && importModes[configImportModeKey(type.key, item.key)] === 'COPY';
           const shownResult = result && isResultShown(result, hasChoice) ? result : null;
           // An item that is created has nothing to flag, and its reason says how (the copy of an item that exists): the tag is for what is not a plain creation
           const hasStatus = !!shownResult && shownResult.code !== CODE_UNCHANGED && !(shownResult.status === 'CREATED' && shownResult.reason);
@@ -562,9 +569,9 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
                   </div>
                 ) : undefined}
               />
-              {keepsDefaultTheme && (
+              {keepsDefault && (
                 <Text variant="content-compact" style={{ color: theme.palette.text.secondary, marginLeft: theme.spacing(3.5) }}>
-                  {t_i18n('The platform keeps its current default theme.')}
+                  {keptDefaultNote}
                 </Text>
               )}
               {hiddenTypes && (

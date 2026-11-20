@@ -16,9 +16,10 @@ export interface BuiltInIntegrationCardProps {
   definition: BuiltInIntegrationDefinition;
   deploymentCount: number;
   onClickCreate: () => void;
+  onImported?: () => void;
 }
 
-const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: BuiltInIntegrationCardProps) => {
+const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate, onImported }: BuiltInIntegrationCardProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const Icon = definition.icon;
@@ -140,10 +141,14 @@ const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: 
           />
           <Security needs={[INGESTION_SETINGESTIONS]}>
             {/* The whole card triggers the creation: the secondary actions
-                (configuration import) must not bubble up to it. */}
+                (configuration import) must not bubble up to it, nor the events
+                of their dialogs, or the card shows as focused behind them. */}
             <Stack
               direction="row"
               onClick={(event) => event.stopPropagation()}
+              onFocus={(event) => event.stopPropagation()}
+              onMouseDown={(event) => event.stopPropagation()}
+              onTouchStart={(event) => event.stopPropagation()}
               sx={{
                 alignItems: 'center',
                 marginLeft: 'auto',
@@ -152,7 +157,7 @@ const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: 
             >
               {isImportableBuiltInKind(definition.kind) && (
                 <>
-                  <BuiltInIntegrationImport kind={definition.kind} />
+                  <BuiltInIntegrationImport kind={definition.kind} onBundleImported={onImported} />
                   <BuiltInIntegrationHubButton kind={definition.kind} />
                 </>
               )}

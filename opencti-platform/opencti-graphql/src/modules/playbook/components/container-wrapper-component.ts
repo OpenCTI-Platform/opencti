@@ -227,7 +227,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         container.extensions[STIX_EXT_OCTI].files = copiedFiles;
       }
       if (STIX_DOMAIN_OBJECT_CONTAINER_CASES.includes(container_type) && caseTemplates.length > 0) {
-        const tasks = await createTaskFromCaseTemplates(caseTemplates, (container as StixContainer));
+        const tasks = await createTaskFromCaseTemplates(caseTemplates, container as StixContainer);
         pushAll(bundle.objects, tasks);
       }
       bundle.objects.push(container);

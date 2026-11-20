@@ -215,16 +215,18 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
           <ComboboxContent listAriaLabel={t_i18n('Representation entity')} />
         </Combobox>
       </div>
-      {schemaAttribute.editDefault ? (
-        <JsonMapperRepresentationDialogOption configuration={value}>
-          <JsonMapperRepresentationAttributeOptions
-            schemaAttribute={schemaAttribute}
-            baseAttributeName={name}
-            configurationAttributeName={name}
-            form={form}
-          />
-        </JsonMapperRepresentationDialogOption>
-      ) : <div />}
+      <div style={{ alignSelf: 'end' }}>
+        {schemaAttribute.editDefault && (
+          <JsonMapperRepresentationDialogOption configuration={value}>
+            <JsonMapperRepresentationAttributeOptions
+              schemaAttribute={schemaAttribute}
+              baseAttributeName={name}
+              configurationAttributeName={name}
+              form={form}
+            />
+          </JsonMapperRepresentationDialogOption>
+        )}
+      </div>
       <>
         {(() => {
           const selectedRepresentations = getBasedOnRepresentations(field.value, options);

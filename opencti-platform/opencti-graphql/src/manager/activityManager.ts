@@ -57,7 +57,7 @@ export const getLiveActivityNotifications = async (context: AuthContext): Promis
  * @param platformUsers the users cache, by id
  * @returns SYSTEM_USER when there is no user id, undefined when the user is unknown
  */
-export const resolveActivitySourceUser = (userId: string | undefined, platformUsers: Map<string, AuthUser>): AuthUser | undefined => {
+export const resolveActivitySourceUser = (userId: string | undefined, platformUsers: ReadonlyMap<string, AuthUser>): AuthUser | undefined => {
   if (!userId) {
     return SYSTEM_USER;
   }

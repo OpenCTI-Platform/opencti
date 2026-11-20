@@ -1,0 +1,1768 @@
+import * as R from 'ramda';
+import { cursorToOffset, getIndicesToQuery, isEmptyField, isNotEmptyField, READ_DATA_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from './utils';
+import { FunctionalError, UnsupportedError } from '../config/errors';
+import {
+  RELATION_BORN_IN,
+  RELATION_CREATED_BY,
+  RELATION_ETHNICITY,
+  RELATION_GRANTED_TO,
+  RELATION_KILL_CHAIN_PHASE,
+  RELATION_OBJECT_ASSIGNEE,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING,
+  RELATION_OBJECT_PARTICIPANT,
+} from '../schema/stixRefRelationship';
+import { buildRefRelationKey, buildRefRelationSearchKey, ENTITY_TYPE_IDENTITY, ID_INFERRED, ID_INTERNAL, ID_STANDARD, IDS_STIX, REF_RELATION_ID_FIELDS } from '../schema/general';
+import {
+  ATTRIBUTE_ABSTRACT,
+  ATTRIBUTE_DESCRIPTION,
+  ATTRIBUTE_DESCRIPTION_OPENCTI,
+  ATTRIBUTE_EXPLANATION,
+  ATTRIBUTE_NAME,
+  ENTITY_TYPE_LOCATION_COUNTRY,
+  STIX_ORGANIZATIONS_RESTRICTED,
+  STIX_ORGANIZATIONS_UNRESTRICTED,
+} from '../schema/stixDomainObject';
+import { isBasicObject } from '../schema/stixCoreObject';
+import { BYPASS, computeUserMemberAccessIds, INTERNAL_USERS, isBypassUser, isServiceAccountUser, isUserHasCapabilities, MEMBER_ACCESS_ALL, SYSTEM_USER } from '../utils/access';
+import { runtimeFieldObservableValueScript } from '../utils/format';
+import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { getEntitiesListFromCache, getEntityFromCache } from './cache';
+import { refang } from '../utils/refang';
+import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { isDateNumericOrBooleanAttribute, isObjectFlatAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
+import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { IDS_FILTER, TYPE_FILTER } from '../utils/filtering/filtering-constants';
+import { type FilterGroup, FilterMode, FilterOperator } from '../generated/graphql';
+import {
+  type AttributeDefinition,
+  authorizedMembers,
+  baseType,
+  entityType as entityTypeAttribute,
+  id as idAttribute,
+  internalId,
+  standardId,
+} from '../schema/attribute-definition';
+import { connections as connectionsAttribute } from '../modules/attributes/basicRelationship-registrationAttributes';
+import { RELATION_IN_PIR, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
+import { buildDraftFilter, type BuildDraftFilterOpts } from './draft-utils';
+import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
+import { RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
+import type { AuthContext, AuthUser } from '../types/user';
+import type { BasicStoreBase, BasicStoreEntity, BasicStoreEntityMarkingDefinition, BasicStoreObject, StoreMarkingDefinition } from '../types/store';
+import type { BasicStoreSettings } from '../types/settings';
+import type { completeSpecialFilterKeys } from '../utils/filtering/filtering-completeSpecialFilterKeys';
+import { IDS_ATTRIBUTES, KEYWORD_TERMS_ATTRIBUTES } from '../domain/attribute-utils';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import type { FiltersWithNested } from './middleware-loader';
+import { pushAll } from '../utils/arrayUtil';
+import { INNER_HITS_WINDOWS_SIZE } from './engine-data-converter';
+import { ES_DEFAULT_PAGINATION, ES_MAX_PAGINATION, isEsScriptFilterEnabled, MAX_RUNTIME_RESOLUTION_SIZE } from './engine-config';
+import { RELATION_RESULT_OF } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import type { elFindByIds, elPaginate, elRawSearch, isRuntimeSortEnable } from './engine';
+
+const buildUserMemberAccessFilter = (user: AuthUser, opts: { includeAuthorities?: boolean | null; excludeEmptyAuthorizedMembers?: boolean }) => {
+  const { includeAuthorities = false, excludeEmptyAuthorizedMembers = false } = opts;
+  const capabilities = user.capabilities.map((c) => c.name);
+  if (includeAuthorities && capabilities.includes(BYPASS)) {
+    return [];
+  }
+  // Service accounts bypass authorized members restrictions: when documents without authorized members
+  // are accepted too, the filter below would match every document, so it is not sent at all.
+  if (isServiceAccountUser(user) && !excludeEmptyAuthorizedMembers) {
+    return [];
+  }
+  const userAccessIds = computeUserMemberAccessIds(user);
+  // if access_users exists, it should have the user access ids
+  const emptyAuthorizedMembers = { bool: { must_not: { nested: { path: authorizedMembers.name, query: { match_all: {} } } } } };
+  // condition on authorizedMembers id
+  const authorizedMembersIdsTerms = { terms: { [`${authorizedMembers.name}.id.keyword`]: [MEMBER_ACCESS_ALL, ...userAccessIds] } };
+  // condition on group restriction ids
+  const userGroupsIds = user.groups.map((group) => group.internal_id);
+  const groupRestrictionCondition = {
+    bool: {
+      should: [
+        { bool: { must_not: [{ exists: { field: `${authorizedMembers.name}.groups_restriction_ids` } }] } },
+        {
+          terms_set: {
+            [`${authorizedMembers.name}.groups_restriction_ids.keyword`]: {
+              terms: userGroupsIds,
+              minimum_should_match_script: {
+                source: `doc['${authorizedMembers.name}.groups_restriction_ids.keyword'].length`,
+              },
+            },
+          },
+        },
+      ],
+    },
+  };
+  const authorizedFilters = [
+    { bool: { must: [authorizedMembersIdsTerms, groupRestrictionCondition] } },
+  ];
+  const shouldConditions = [];
+  if (includeAuthorities) {
+    const roleIds = user.roles.map((r) => r.id);
+    const owners = [...userAccessIds, ...capabilities, ...roleIds];
+    shouldConditions.push({ terms: { 'authorized_authorities.keyword': owners } });
+  }
+  if (!excludeEmptyAuthorizedMembers) {
+    shouldConditions.push(emptyAuthorizedMembers);
+  }
+
+  const bypassAuthorizedMembers = isServiceAccountUser(user);
+  const nestedQuery = {
+    nested: {
+      path: authorizedMembers.name,
+      query: {
+        // For service accounts, bypass authorized members restrictions
+        bool: { should: bypassAuthorizedMembers ? [] : authorizedFilters },
+      },
+    },
+  };
+  shouldConditions.push(nestedQuery);
+  return [{ bool: { should: shouldConditions } }];
+};
+
+const buildHistoryRestrictions = (user: AuthUser, historyFiltering?: boolean) => {
+  const restrictions = [];
+  if (historyFiltering) {
+    // Compute forbidden fields for the user
+    const forbiddenAttributes: string[] = [];
+    const registeredTypes = schemaAttributesDefinition.getRegisteredTypes();
+    const refTypes = schemaRelationsRefDefinition.getRegisteredTypes();
+    for (let i = 0; i < registeredTypes.length; i += 1) {
+      const registeredType = registeredTypes[i];
+      const attrs = schemaAttributesDefinition.getAttributes(registeredType);
+      const refs = refTypes.includes(registeredType) ? schemaRelationsRefDefinition.getRelationsRef(registeredType) : [];
+      const attributes = Array.from(attrs.values());
+      pushAll(attributes, refs);
+      const invalidAttrs = attributes.filter((a: AttributeDefinition) =>
+        !isUserHasCapabilities(user, a.requiredCapabilities));
+      pushAll(forbiddenAttributes, invalidAttrs.map((a) => registeredType + '--' + a.name));
+    }
+    restrictions.push({
+      bool: {
+        should: [
+          {
+            bool: {
+              must_not: [
+                {
+                  nested: {
+                    path: 'context_data.history_changes',
+                    query: {
+                      match_all: {},
+                    },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            nested: {
+              path: 'context_data.history_changes',
+              inner_hits: {
+                size: INNER_HITS_WINDOWS_SIZE, // Mandatory
+              },
+              query: {
+                bool: {
+                  must_not: [
+                    {
+                      terms: {
+                        'context_data.history_changes.field.keyword': forbiddenAttributes,
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        ],
+        minimum_should_match: 1,
+      },
+    });
+  }
+  return restrictions;
+};
+
+export const buildDataRestrictions = async (
+  context: AuthContext,
+  user: AuthUser,
+  opts: { includeAuthorities?: boolean | null; historyFiltering?: boolean } | null | undefined = {},
+): Promise<{ must: any[]; must_not: any[] }> => {
+  const must: any[] = [];
+  const must_not: any[] = [];
+  // If internal users of the system, we cancel rights checking
+  if (INTERNAL_USERS[user.id]) {
+    return { must, must_not };
+  }
+  // check user access
+  pushAll(must, buildUserMemberAccessFilter(user, { includeAuthorities: opts?.includeAuthorities }));
+  // If user have bypass, no need to check restrictions
+  if (!isBypassUser(user)) {
+    // region handle history protection
+    pushAll(must, buildHistoryRestrictions(user, opts?.historyFiltering));
+    // endregion
+    // region Handle marking restrictions
+    if (user.allowed_marking.length === 0) {
+      // If user have no marking, he can only access to data with no markings.
+      must_not.push({ exists: { field: buildRefRelationKey(RELATION_OBJECT_MARKING) } });
+    } else {
+      // Compute all markings that the user doesnt have access to
+      const allMarkings = await getEntitiesListFromCache<StoreMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+      const mustNotHaveOneOf = [];
+      const userMarkingsIds = new Set(user.allowed_marking.map((m) => m.internal_id));
+      for (let index = 0; index < allMarkings.length; index += 1) {
+        const marking = allMarkings[index];
+        const markingId = marking.internal_id;
+        if (!userMarkingsIds.has(markingId)) {
+          mustNotHaveOneOf.push(markingId);
+        }
+      }
+      // If the user has markings, they can access data with no marking and data with the markings they have.
+      // Data with no marking never matches the terms below, so excluding the forbidden markings is enough,
+      // and nothing is excluded when the user can access every marking.
+      if (mustNotHaveOneOf.length > 0) {
+        must_not.push({ terms: { [buildRefRelationSearchKey(RELATION_OBJECT_MARKING)]: mustNotHaveOneOf } });
+      }
+    }
+    // endregion
+    // region Handle organization restrictions
+    // If user have organization management role, he can bypass this restriction.
+    // If platform is for specific organization, only user from this organization can access empty defined
+    const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+    // We want to exclude a set of entities from organization restrictions while forcing restrictions for another set of entities
+    const excludedEntityMatches = {
+      bool: {
+        must: [
+          {
+            bool: { must_not: [{ terms: { 'entity_type.keyword': STIX_ORGANIZATIONS_RESTRICTED } }] },
+          },
+          {
+            bool: {
+              should: [
+                { terms: { 'parent_types.keyword': STIX_ORGANIZATIONS_UNRESTRICTED } },
+                { terms: { 'entity_type.keyword': STIX_ORGANIZATIONS_UNRESTRICTED } },
+              ],
+              minimum_should_match: 1,
+            },
+          },
+        ],
+      },
+    };
+    if (settings.platform_organization) {
+      if (context.user_inside_platform_organization) {
+        // Data are visible independently of the organizations
+        // Nothing to restrict.
+      } else {
+        // Data with Empty granted_refs are not visible
+        // Data with granted_refs users that participate to at least one
+        const should: any[] = [excludedEntityMatches];
+        const shouldOrgs = user.organizations
+          .map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_GRANTED_TO)]: m.internal_id } }));
+        pushAll(should, shouldOrgs);
+        // User individual or data created by this individual must be accessible
+        if (user.individual_id) {
+          should.push({ match: { 'internal_id.keyword': user.individual_id } });
+          should.push({ match: { [buildRefRelationSearchKey(RELATION_CREATED_BY)]: user.individual_id } });
+        }
+        // For tasks
+        should.push({ match: { 'initiator_id.keyword': user.internal_id } });
+        // Access to authorized members
+        pushAll(should, buildUserMemberAccessFilter(user, { includeAuthorities: opts?.includeAuthorities, excludeEmptyAuthorizedMembers: true }));
+        // Finally build the bool should search
+        must.push({ bool: { should, minimum_should_match: 1 } });
+      }
+    }
+    // endregion
+  }
+  return { must, must_not };
+};
+
+const getRuntimeUsers = async (context: AuthContext, user: AuthUser) => {
+  const users = await getEntitiesListFromCache<AuthUser>(context, user, ENTITY_TYPE_USER);
+  return R.mergeAll(users.map((i) => ({ [i.internal_id]: i.name.replace(/[&/\\#,+[\]()$~%.'":*?<>{}]/g, '') })));
+};
+const getRuntimeMarkings = async (context: AuthContext, user: AuthUser) => {
+  const identities = await getEntitiesListFromCache<BasicStoreEntityMarkingDefinition>(context, user, ENTITY_TYPE_MARKING_DEFINITION);
+  return R.mergeAll(identities.map((i) => ({ [i.internal_id]: i.definition })));
+};
+// Default fetch used by loadThroughDenormalized
+// This rel_ must be low volume
+// DO NOT ADD Anything here if you are not sure about that you doing
+// Exact field names, never wildcard patterns: every shard of every search resolves
+// each docvalue_fields pattern against its whole mapping when it parses the request.
+export const REL_DEFAULT_FETCH = [
+  // SECURITY
+  RELATION_OBJECT_MARKING,
+  RELATION_GRANTED_TO,
+  // DEFAULT (LOW VOLUME)
+  RELATION_COVERED,
+  RELATION_RESULT_OF,
+  RELATION_CREATED_BY,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_PARTICIPANT,
+  RELATION_OBJECT_ASSIGNEE,
+  RELATION_KILL_CHAIN_PHASE,
+  RELATION_BORN_IN,
+  RELATION_ETHNICITY,
+  RELATION_SAMPLE,
+  RELATION_PARTICIPATE_TO,
+  RELATION_IN_PIR,
+].flatMap((relationType) => REF_RELATION_ID_FIELDS.map((field) => buildRefRelationSearchKey(relationType, field)));
+export const REL_COUNT_SCRIPT_FIELD = {
+  script: {
+    lang: 'painless',
+    source: `
+          int totalElements = 0;
+          for (String fieldName : params['_source'].keySet()) {
+            if (fieldName.startsWith('rel_')) {
+              def fieldValue = params['_source'].get(fieldName);
+              if (fieldValue != null) {
+                if (fieldValue instanceof List) {
+                  totalElements += ((List) fieldValue).size();
+                } else {
+                  totalElements++;
+                }
+              }
+            }
+          }
+          return totalElements;
+        `,
+  },
+};
+export const BASE_FIELDS = [
+  '_index',
+  idAttribute.name,
+  internalId.name,
+  standardId.name,
+  'sort',
+  baseType.name,
+  entityTypeAttribute.name,
+  connectionsAttribute.name,
+  'first_seen',
+  'last_seen',
+  'start_time',
+  'stop_time',
+  authorizedMembers.name,
+];
+const RANGE_OPERATORS = ['gt', 'gte', 'lt', 'lte'];
+
+export const findElementsDuplicateIds = (elements: BasicStoreBase[]): string[] => {
+  const duplicatedIds = new Set<string>();
+  const elementIds = new Set<string>();
+  const checkCurrentIds = (id: string | undefined | null) => {
+    if (!id) return;
+    if (elementIds.has(id) && !duplicatedIds.has(id)) {
+      duplicatedIds.add(id);
+    } else {
+      elementIds.add(id);
+    }
+  };
+  for (let i = 0; i < elements.length; i += 1) {
+    const element = elements[i];
+    const { internal_id, standard_id, x_opencti_stix_ids, i_aliases_ids } = element;
+    checkCurrentIds(internal_id);
+    checkCurrentIds(standard_id);
+    x_opencti_stix_ids?.map((id) => checkCurrentIds(id));
+    i_aliases_ids?.map((id) => checkCurrentIds(id));
+  }
+  return Array.from(duplicatedIds);
+};
+
+export const specialElasticCharsEscape = (query: string) => {
+  return query.replace(/([/+|\-*()^~={}[\]:?!"\\])/g, '\\$1');
+};
+// Keep * as wildcard, fuzzy ~ is handled separately as it is only valid at the end of a term
+const specialElasticCharsEscapeWithLuceneSyntax = (query: string) => {
+  return query.replace(/([/+|\-()^~={}[\]:?!"\\])/g, '\\$1');
+};
+// Keep * and ? as wildcards and whitespace as terms separator (each term is matched against the analyzed tokens),
+// but escape everything else, including AND / OR / NOT keywords
+const specialElasticCharsEscapeKeepWildcards = (query: string) => {
+  return query.trim().split(/\s+/)
+    .map((term) => term.replace(/([/+|\-()^~={}[\]:!"\\&])/g, '\\$1').replace(/^(AND|OR|NOT)$/, '\\$1'))
+    .join(' ');
+};
+// Lucene fuzzy operator: a term ending with ~ and an optional edit distance of 0, 1 or 2 (lazarous~, lazarous~1)
+const LUCENE_FUZZY_TERM_REGEX = /^(.+?)(~[0-2]?)$/;
+
+// Global search attributes are limited
+// Its due to opensearch / elastic limitations
+const BASE_SEARCH_CONNECTIONS = [
+  // Pounds for connections search
+  `connections.${ATTRIBUTE_NAME}^4`,
+  // Add all other attributes
+  'connections.*',
+];
+const BASE_SEARCH_HISTORY = [
+  // Pounds for history search
+  'context_data.history_changes.field^4',
+  // Add all other attributes
+  'context_data.history_changes.changes_added.raw',
+  'context_data.history_changes.changes_removed.raw',
+];
+// Text and select values of the custom fields, nested in custom_field_values
+const BASE_SEARCH_CUSTOM_FIELDS = [
+  'custom_field_values.string_value',
+  'custom_field_values.select_value',
+  'custom_field_values.select_values',
+];
+// Custom field values are nested: their queries are grouped in a single nested query, as the connections.
+// They get the same exact, word and phrase queries as the attributes.
+const buildCustomFieldValuesSearchShould = (cleanExactSearch: string[], searchPhrase: string) => {
+  const queries: unknown[] = cleanExactSearch.map((ex) => ({
+    multi_match: { type: 'phrase', query: ex, lenient: true, fields: BASE_SEARCH_CUSTOM_FIELDS },
+  }));
+  if (searchPhrase) {
+    queries.push(
+      { query_string: { query: searchPhrase, analyze_wildcard: true, fields: BASE_SEARCH_CUSTOM_FIELDS } },
+      { multi_match: { type: 'phrase', query: searchPhrase, lenient: true, fields: BASE_SEARCH_CUSTOM_FIELDS } },
+    );
+  }
+  if (queries.length === 0) {
+    return [];
+  }
+  return [{ nested: { path: 'custom_field_values', query: { bool: { should: queries, minimum_should_match: 1 } } } }];
+};
+const BASE_SEARCH_ATTRIBUTES = [
+  // Pounds for attributes search
+  `${ATTRIBUTE_NAME}^5`,
+  `${ATTRIBUTE_ABSTRACT}^5`,
+  `${ATTRIBUTE_EXPLANATION}^5`,
+  `${ID_INTERNAL}^5`,
+  `${ID_STANDARD}^5`,
+  `${IDS_STIX}^5`,
+  `${ATTRIBUTE_DESCRIPTION}^2`,
+  `${ATTRIBUTE_DESCRIPTION_OPENCTI}^2`,
+  // For activities
+  'event_type',
+  'event_scope',
+  'context_data.message',
+  'context_data.search',
+  // Add all other attributes
+  'aliases',
+  'x_opencti_aliases',
+  'persona_name',
+  'source_name',
+  'roles',
+  'objective',
+  'content',
+  'content_mapping',
+  'explanation',
+  'opinion',
+  'x_mitre_id',
+  'x_opencti_threat_hunting',
+  'x_opencti_log_sources',
+  'postal_code',
+  'street_address',
+  'source',
+  'context',
+  'pattern',
+  'path',
+  'value',
+  'display_name',
+  'account_login',
+  'user_id',
+  'body',
+  'hashes.MD5',
+  'hashes.SHA-1',
+  'hashes.SHA-256',
+  'hashes.SHA-512',
+  'hashes.SHA3-256',
+  'hashes.SHA3-512',
+  'hashes.SSDEEP',
+  'hashes.SDHASH',
+  'hashes.TLSH',
+  'hashes.LZJD',
+  'url',
+  'subject',
+  'payload_bin',
+  'x_opencti_additional_names',
+  'serial_number',
+  'issuer',
+  'cwd',
+  'command_line',
+  'cpe',
+  'swid',
+  'iban',
+  'bic',
+  'account_number',
+  'card_number',
+  'holder_name',
+  'title',
+  'result_name',
+  'phase_name',
+  'kill_chain_name',
+  'definition',
+  'definition_type',
+  'user_email',
+  'main_entity_name', // deletedOperation
+];
+
+type ProcessSearchArgs = {
+  useWildcardPrefix?: boolean;
+  historyFiltering?: boolean;
+};
+type SearchConnectionsRestrictions = {
+  // When defined, the search can only match on these connected elements, verified as accessible to the user
+  allowedConnectionIds?: string[];
+};
+
+// Hard cap user-provided search input to limit normalization + query parsing cost
+const MAX_SEARCH_LENGTH = 512;
+
+function processSearch(
+  search: string,
+  args: ProcessSearchArgs,
+): { exactSearch: string[]; querySearch: string[] } {
+  const { useWildcardPrefix } = args;
+  const boundedSearch = search.length > MAX_SEARCH_LENGTH ? search.slice(0, MAX_SEARCH_LENGTH) : search;
+
+  let decodedSearch;
+  try {
+    decodedSearch = decodeURIComponent(refang(boundedSearch))
+      .trim();
+  } catch (_e) {
+    decodedSearch = refang(boundedSearch).trim();
+  }
+  let remainingSearch = decodedSearch;
+  const exactSearch = (decodedSearch.match(/"[^"]+"/g) || []) //
+    .filter((e) => isNotEmptyField(e.replace(/"/g, '')
+      .trim()));
+  for (let index = 0; index < exactSearch.length; index += 1) {
+    remainingSearch = remainingSearch.replace(exactSearch[index], '');
+  }
+  const querySearch = [];
+
+  const partialSearch = remainingSearch.replace(/"/g, '')
+    .trim()
+    .split(/\s+/);
+
+  for (let searchIndex = 0; searchIndex < partialSearch.length; searchIndex += 1) {
+    const partialElement = partialSearch[searchIndex];
+    // Any other ~ (inside an url, invalid edit distance, ...) is escaped, as query_string would fail parsing it as fuzziness
+    // Fuzzy terms are not analyzed: a term with special chars (apt-28, url) would never match the tokenized text, so it is searched as a regular term
+    const luceneFuzzyMatch = partialElement.match(LUCENE_FUZZY_TERM_REGEX);
+    const isSingleWordFuzzy = luceneFuzzyMatch && specialElasticCharsEscapeWithLuceneSyntax(luceneFuzzyMatch[1]) === luceneFuzzyMatch[1];
+    const fuzzyMatch = isSingleWordFuzzy ? luceneFuzzyMatch : null;
+    const term = fuzzyMatch ? fuzzyMatch[1] : partialElement;
+    const cleanElement = specialElasticCharsEscapeWithLuceneSyntax(term);
+    if (isNotEmptyField(cleanElement)) {
+      if (fuzzyMatch) {
+        // No implicit wildcard for fuzzy terms: a trailing * would be parsed as a standalone match all term
+        querySearch.push(`${cleanElement}${fuzzyMatch[2]}`);
+      } else {
+        querySearch.push(`${useWildcardPrefix ? '*' : ''}${cleanElement}*`);
+      }
+    }
+  }
+  return {
+    exactSearch,
+    querySearch,
+  };
+}
+// Relationships denormalize the name and id of their connected elements, without their access rights.
+// The connected elements the user cannot access must be excluded, or searching their name would reveal them.
+const buildConnectionsSearchShould = (connectionsQueries: unknown[], args: SearchConnectionsRestrictions) => {
+  const { allowedConnectionIds } = args;
+  if (connectionsQueries.length === 0 || (allowedConnectionIds && allowedConnectionIds.length === 0)) {
+    return [];
+  }
+  const bool: { should: unknown[]; minimum_should_match: number; filter?: unknown[] } = { should: connectionsQueries, minimum_should_match: 1 };
+  if (allowedConnectionIds) {
+    bool.filter = [{ terms: { 'connections.internal_id.keyword': allowedConnectionIds } }];
+  }
+  return [{ nested: { path: 'connections', query: { bool } } }];
+};
+const processFullTextSearch = (search: string, args: ProcessSearchArgs) => {
+  const { exactSearch, querySearch } = processSearch(search, args);
+  const searchPhrase = R.uniq(querySearch).join(' ');
+  const cleanExactSearch = R.uniq(exactSearch.map((e) => e.replace(/"|https?:/g, '')));
+  return { searchPhrase, cleanExactSearch };
+};
+const buildConnectionsExactQuery = (exact: string) => ({
+  multi_match: {
+    type: 'phrase',
+    query: exact,
+    lenient: true,
+    fields: BASE_SEARCH_CONNECTIONS,
+  },
+});
+const buildConnectionsPhraseQuery = (searchPhrase: string) => ({
+  query_string: {
+    query: searchPhrase,
+    analyze_wildcard: true,
+    fields: BASE_SEARCH_CONNECTIONS,
+  },
+});
+// Queries matching a single connection, the same way the full text search does
+const elGenerateConnectionsSearchQueries = (search: string, args: ProcessSearchArgs) => {
+  const { searchPhrase, cleanExactSearch } = processFullTextSearch(search, args);
+  const queries: unknown[] = cleanExactSearch.map((ex) => buildConnectionsExactQuery(ex));
+  if (searchPhrase) {
+    queries.push(buildConnectionsPhraseQuery(searchPhrase));
+  }
+  return queries;
+};
+export const elGenerateFullTextSearchShould = (search: string, args: ProcessSearchArgs & SearchConnectionsRestrictions = {}) => {
+  // Return the elastic search engine expected bool should terms
+  // Build the search for all exact match (between double quotes)
+  const shouldSearch: unknown[] = [];
+  const { searchPhrase, cleanExactSearch } = processFullTextSearch(search, args);
+  if (args.historyFiltering) {
+    pushAll(shouldSearch, cleanExactSearch.map((ex) => [
+      {
+        bool: {
+          must: [
+            { terms: { 'entity_type.keyword': [ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY] } },
+            {
+              multi_match: {
+                type: 'phrase',
+                query: ex,
+                lenient: true,
+                fields: BASE_SEARCH_ATTRIBUTES,
+              },
+            },
+          ],
+        },
+      },
+      {
+        nested: {
+          path: 'context_data.history_changes',
+          query: {
+            bool: {
+              must: [
+                {
+                  multi_match: {
+                    type: 'phrase',
+                    query: ex,
+                    lenient: true,
+                    fields: BASE_SEARCH_HISTORY,
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    ]).flat());
+    if (searchPhrase) {
+      shouldSearch.push({
+        bool: {
+          must: [
+            { terms: { 'entity_type.keyword': [ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY] } },
+            {
+              query_string: {
+                query: searchPhrase,
+                analyze_wildcard: true,
+                fields: BASE_SEARCH_ATTRIBUTES,
+              },
+            },
+          ],
+        },
+      });
+      shouldSearch.push({
+        nested: {
+          path: 'context_data.history_changes',
+          query: {
+            bool: {
+              must: [
+                {
+                  query_string: {
+                    query: searchPhrase,
+                    analyze_wildcard: true,
+                    fields: BASE_SEARCH_HISTORY,
+                  },
+                },
+              ],
+            },
+          },
+        },
+      });
+    }
+  } else {
+    pushAll(shouldSearch, cleanExactSearch.map((ex) => [
+      {
+        multi_match: {
+          type: 'phrase',
+          query: ex,
+          lenient: true,
+          fields: BASE_SEARCH_ATTRIBUTES,
+        },
+      },
+    ]).flat());
+    if (searchPhrase) {
+      pushAll(shouldSearch, [
+        {
+          query_string: {
+            query: searchPhrase,
+            analyze_wildcard: true,
+            fields: BASE_SEARCH_ATTRIBUTES,
+          },
+        },
+        {
+          multi_match: {
+            type: 'phrase',
+            query: searchPhrase,
+            lenient: true,
+            fields: BASE_SEARCH_ATTRIBUTES,
+          },
+        },
+      ]);
+    }
+    pushAll(shouldSearch, buildCustomFieldValuesSearchShould(cleanExactSearch, searchPhrase));
+    pushAll(shouldSearch, buildConnectionsSearchShould(elGenerateConnectionsSearchQueries(search, args), args));
+  }
+  return shouldSearch;
+};
+
+export const elGenerateFieldTextSearchShould = (
+  search: string,
+  arrayKeys: string[],
+  args: ProcessSearchArgs = {},
+) => {
+  const { exactSearch, querySearch } = processSearch(search, args);
+  const cleanExactSearch = R.uniq(exactSearch.map((e) => e.replace(/"|http?:/g, '')));
+  const shouldSearch: unknown[] = [];
+  pushAll(shouldSearch, cleanExactSearch.map((ex) => [
+    {
+      multi_match: {
+        type: 'phrase',
+        query: ex,
+        lenient: true,
+        fields: arrayKeys,
+      },
+    },
+  ]).flat());
+  // Build the search for all other fields
+  const searchPhrase = R.uniq(querySearch).join(' ');
+  if (searchPhrase) {
+    pushAll(shouldSearch, [
+      {
+        query_string: {
+          query: searchPhrase,
+          analyze_wildcard: true,
+          fields: arrayKeys,
+        },
+      },
+      {
+        multi_match: {
+          type: 'phrase',
+          query: searchPhrase,
+          lenient: true,
+          fields: arrayKeys,
+        },
+      },
+    ]);
+  }
+
+  return shouldSearch;
+};
+export const buildFieldForQuery = (field: string) => {
+  return isDateNumericOrBooleanAttribute(field) || field === '_id' || isObjectFlatAttribute(field)
+    ? field
+    : `${field}.keyword`;
+};
+const buildFieldForScriptQuery = (field: string) => {
+  return buildFieldForQuery(field).replaceAll('*', 'internal_id');
+};
+export const buildLocalMustFilter = (validFilter: any) => {
+  const valuesFiltering = [];
+  const noValuesFiltering = [];
+  const { key, values, nested, negateNested, operator = 'eq', mode: localFilterMode = 'or' } = validFilter;
+  if (isEmptyField(key)) {
+    throw FunctionalError('A filter key must be defined', { key });
+  }
+  const arrayKeys = Array.isArray(key) ? key : [key];
+  const headKey = R.head(arrayKeys);
+  const dontHandleMultipleKeys = nested || operator === 'nil' || operator === 'not_nil' || operator === 'only_eq_to' || operator === 'not_only_eq_to';
+  if (dontHandleMultipleKeys && arrayKeys.length > 1) {
+    throw UnsupportedError('Filter must have only one field', { keys: arrayKeys, operator });
+  }
+  // 01. Handle nested filters
+  // TODO IF KEY is PART OF Rule we need to add extra fields search
+  // TODO Add connections like filters to have native fromId, toId filters handling.
+  // See opencti-front\src\private\components\events\StixSightingRelationships.tsx
+  if (nested) {
+    const nestedMust = [];
+    const nestedMustNot = [];
+    for (let nestIndex = 0; nestIndex < nested.length; nestIndex += 1) {
+      const nestedElement = nested[nestIndex];
+      const parentKey = arrayKeys.at(0);
+      const { key: nestedKey, values: nestedValues, operator: nestedOperator = 'eq' } = nestedElement;
+      const nestedShould = [];
+      const nestedFieldKey = `${parentKey}.${nestedKey}`;
+      // nil and not_nil operators
+      if (nestedOperator === 'nil') {
+        nestedMustNot.push({
+          exists: {
+            field: nestedFieldKey,
+          },
+        });
+      } else if (nestedOperator === 'not_nil') {
+        nestedShould.push({
+          exists: {
+            field: nestedFieldKey,
+          },
+        });
+      }
+      // other operators
+      if (nestedKey === ID_INTERNAL) {
+        if (nestedOperator === 'not_eq') {
+          nestedMustNot.push({ terms: { [`${nestedFieldKey}.keyword`]: nestedValues } });
+        } else { // nestedOperator = 'eq'
+          nestedShould.push({ terms: { [`${nestedFieldKey}.keyword`]: nestedValues } });
+        }
+      } else { // nested key !== internal_id
+        if (nestedOperator === FilterOperator.Within) {
+          nestedShould.push({
+            range: {
+              [nestedFieldKey]: { gte: nestedValues[0], lte: nestedValues[1] },
+            },
+          });
+        } else if (isNotEmptyField(nestedValues)) {
+          for (let i = 0; i < nestedValues.length; i += 1) {
+            const nestedSearchValue = nestedValues[i].toString();
+            if (nestedOperator === 'wildcard') {
+              nestedShould.push({ query_string: { query: specialElasticCharsEscapeKeepWildcards(nestedSearchValue), fields: [nestedFieldKey] } });
+            } else if (nestedOperator === 'not_eq') {
+              nestedMustNot.push({
+                multi_match: {
+                  fields: buildFieldForQuery(nestedFieldKey),
+                  query: nestedSearchValue.toString(),
+                },
+              });
+            } else if (['contains', 'not_contains', 'starts_with', 'not_starts_with', 'ends_with', 'not_ends_with'].includes(nestedOperator)) {
+              // Substring/prefix/suffix match on a nested string field, mirroring the non-nested handling:
+              // wildcarded query_string on the .keyword sub-field, routed to must (positive) or must_not (negated).
+              const target = nestedOperator.startsWith('not_') ? nestedMustNot : nestedShould;
+              const val = specialElasticCharsEscape(nestedSearchValue).replace(/\s/g, '\\ ');
+              let query;
+              if (nestedOperator === 'contains' || nestedOperator === 'not_contains') {
+                query = `*${val}*`;
+              } else if (nestedOperator === 'starts_with' || nestedOperator === 'not_starts_with') {
+                query = `${val}*`;
+              } else {
+                query = `*${val}`;
+              }
+              target.push({ query_string: { query, analyze_wildcard: true, fields: [`${nestedFieldKey}.keyword`] } } as any);
+            } else if (RANGE_OPERATORS.includes(nestedOperator)) {
+              nestedShould.push({
+                range: {
+                  [nestedFieldKey]: { [nestedOperator]: nestedSearchValue },
+                },
+              });
+            } else { // nestedOperator = 'eq'
+              nestedShould.push({
+                multi_match: {
+                  fields: buildFieldForQuery(nestedFieldKey),
+                  query: nestedSearchValue.toString(),
+                },
+              });
+            }
+          }
+        }
+      }
+      // Only add a should clause when there is at least one positive condition; a negated-only
+      // operator (not_eq / not_contains / nil ...) puts its clause in nestedMustNot and must not
+      // be paired with an empty should (minimum_should_match would otherwise match nothing).
+      if (nestedShould.length > 0) {
+        const should = {
+          bool: {
+            should: nestedShould,
+            minimum_should_match: localFilterMode === 'or' ? 1 : nestedValues.length,
+          },
+        };
+        nestedMust.push(should);
+      }
+    }
+    const nestedQuery = {
+      path: headKey,
+      query: {
+        bool: {
+          must: nestedMust,
+          must_not: nestedMustNot,
+        },
+      },
+    };
+    // A document without any nested element must also match a negated filter
+    if (negateNested) {
+      return { bool: { must_not: [{ nested: nestedQuery }] } };
+    }
+    return { nested: nestedQuery };
+  }
+  // 02. Handle nil and not_nil operators
+  if (operator === 'nil') {
+    const filterDefinition = schemaAttributesDefinition.getAttributeByName(headKey);
+    let valueFiltering: any = { // classic filters: field doesn't exist
+      bool: {
+        must_not: {
+          exists: {
+            field: headKey,
+          },
+        },
+      },
+    };
+    if (filterDefinition?.type === 'string') {
+      if (filterDefinition?.format === 'text') { // text filters: use wildcard
+        valueFiltering = {
+          bool: {
+            must_not: {
+              wildcard: {
+                [headKey]: '*',
+              },
+            },
+          },
+        };
+      } else { // string filters: nil <-> (field doesn't exist) OR (field = empty string)
+        valueFiltering = {
+          bool: {
+            should: [
+              {
+                bool: {
+                  must_not: {
+                    exists: {
+                      field: headKey,
+                    },
+                  },
+                },
+              },
+              {
+                term: {
+                  [headKey === '_id' ? headKey : `${headKey}.keyword`]: { value: '' },
+                },
+              },
+            ],
+            minimum_should_match: 1,
+          },
+        };
+      }
+    } else if (filterDefinition?.type === 'date') { // date filters: nil <-> (field doesn't exist) OR (date <= epoch) OR (date >= 5138)
+      valueFiltering = {
+        bool: {
+          should: [
+            {
+              bool: {
+                must_not: {
+                  exists: {
+                    field: headKey,
+                  },
+                },
+              },
+            },
+            { range: { [headKey]: { lte: '1970-01-01T01:00:00.000Z' } } },
+            { range: { [headKey]: { gte: '5138-11-16T09:46:40.000Z' } } },
+          ],
+          minimum_should_match: 1,
+        },
+      };
+    }
+    valuesFiltering.push(valueFiltering);
+  } else if (operator === 'not_nil') {
+    const filterDefinition = schemaAttributesDefinition.getAttributeByName(headKey);
+    let valueFiltering: any = { // classic filters: field exists
+      exists: {
+        field: headKey,
+      },
+    };
+    if (filterDefinition?.type === 'string') {
+      if (filterDefinition?.format === 'text') { // text filters: use wildcard
+        valueFiltering = {
+          bool: {
+            must: {
+              wildcard: {
+                [headKey]: '*',
+              },
+            },
+          },
+        };
+      } else { // other filters: not_nil <-> (field exists) AND (field != empty string)
+        valueFiltering = {
+          bool: {
+            must: [
+              {
+                exists: {
+                  field: headKey,
+                },
+              },
+              {
+                bool: {
+                  must_not: {
+                    term: {
+                      [headKey === '_id' ? headKey : `${headKey}.keyword`]: { value: '' },
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        };
+      }
+    } else if (filterDefinition?.type === 'date') { // date filters: not_nil <-> (field exists) AND (date > epoch) AND (date < 5138)
+      valueFiltering = {
+        bool: {
+          must: [
+            {
+              exists: {
+                field: headKey,
+              },
+            },
+            { range: { [headKey]: { gt: '1970-01-01T01:00:00.000Z' } } },
+            { range: { [headKey]: { lt: '5138-11-16T09:46:40.000Z' } } },
+          ],
+        },
+      };
+    }
+    valuesFiltering.push(valueFiltering);
+  }
+  // 03. Handle values according to the operator
+  if (operator !== 'nil' && operator !== 'not_nil') {
+    if (operator === 'within') {
+      if (arrayKeys.length > 1) {
+        throw UnsupportedError('Within filter must have only one field', { keys: arrayKeys });
+      }
+      if (values.length !== 2) {
+        throw UnsupportedError('Within filter must have two values', { values });
+      }
+      valuesFiltering.push({ range: { [headKey]: { gte: values[0], lte: values[1] } } });
+    } else {
+      // case where we would like to build a terms query
+      const isTermsQuery = (operator === 'eq' || operator === 'not_eq') && values.length > 0 && !values.includes('EXISTS')
+        && arrayKeys.every((k) => (!k.includes('*') && (k.endsWith(ID_INTERNAL) || k.endsWith(ID_INFERRED))) || IDS_ATTRIBUTES.includes(k) || KEYWORD_TERMS_ATTRIBUTES.includes(k));
+      if (isTermsQuery) {
+        if (operator === 'eq') {
+          for (let i = 0; i < arrayKeys.length; i += 1) {
+            valuesFiltering.push({
+              terms: { [`${arrayKeys[i]}.keyword`]: values },
+            });
+          }
+        } else {
+          valuesFiltering.push({
+            bool: {
+              must_not: arrayKeys.map((k) => ({
+                terms: { [`${k}.keyword`]: values },
+              })),
+            },
+          });
+        }
+      } else {
+        for (let i = 0; i < values.length; i += 1) {
+          if (values[i] === 'EXISTS') {
+            if (arrayKeys.length > 1) {
+              throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
+            }
+            if (operator === 'eq') {
+              valuesFiltering.push({ exists: { field: headKey } });
+            } else {
+              noValuesFiltering.push({ exists: { field: headKey } });
+            }
+          } else if (operator === 'eq' || operator === 'not_eq') {
+            const targets = operator === 'eq' ? valuesFiltering : noValuesFiltering;
+            targets.push({
+              multi_match: {
+                fields: arrayKeys.map((k) => buildFieldForQuery(k)),
+                query: values[i].toString(),
+              },
+            });
+          } else if (operator === 'only_eq_to' || operator === 'not_only_eq_to') {
+            const targets = operator === 'only_eq_to' ? valuesFiltering : noValuesFiltering;
+            targets.push({
+              script: {
+                script: {
+                  source: `
+                    def fieldValues = doc[params.field];
+                    if (fieldValues == null || fieldValues.length == 0) return false;
+                    def filterValues = params.values;
+                    if (params.mode == 'and') {
+                      return fieldValues.length == filterValues.length && fieldValues.every(v -> filterValues.contains(v));
+                    } else if (params.mode == 'or') {
+                      return fieldValues.length == 1 && filterValues.contains(fieldValues[0]);
+                    }
+                    return false;
+                  `,
+                  params: {
+                    field: buildFieldForScriptQuery(headKey),
+                    values,
+                    mode: localFilterMode,
+                  },
+                },
+              },
+            });
+          } else if (operator === 'match') {
+            valuesFiltering.push({
+              multi_match: {
+                fields: arrayKeys,
+                query: values[i].toString(),
+              },
+            });
+          } else if (operator === 'wildcard' || operator === 'not_wildcard') {
+            const targets = operator === 'wildcard' ? valuesFiltering : noValuesFiltering;
+            const val = specialElasticCharsEscape(values[i].toString());
+            targets.push({
+              query_string: {
+                query: values[i] === '*' ? values[i] : `"${val}"`,
+                fields: arrayKeys,
+              },
+            });
+          } else if (operator === 'contains' || operator === 'not_contains') {
+            const targets = operator === 'contains' ? valuesFiltering : noValuesFiltering;
+            const val = specialElasticCharsEscape(values[i].toString());
+            targets.push({
+              query_string: {
+                query: `*${val.replace(/\s/g, '\\ ')}*`,
+                analyze_wildcard: true,
+                fields: arrayKeys.map((k) => `${k}.keyword`),
+              },
+            });
+          } else if (operator === 'starts_with' || operator === 'not_starts_with') {
+            const targets = operator === 'starts_with' ? valuesFiltering : noValuesFiltering;
+            const val = specialElasticCharsEscape(values[i].toString());
+            targets.push({
+              query_string: {
+                query: `${val.replace(/\s/g, '\\ ')}*`,
+                analyze_wildcard: true,
+                fields: arrayKeys.map((k) => `${k}.keyword`),
+              },
+            });
+          } else if (operator === 'ends_with' || operator === 'not_ends_with') {
+            const targets = operator === 'ends_with' ? valuesFiltering : noValuesFiltering;
+            const val = specialElasticCharsEscape(values[i].toString());
+            targets.push({
+              query_string: {
+                query: `*${val.replace(/\s/g, '\\ ')}`,
+                analyze_wildcard: true,
+                fields: arrayKeys.map((k) => `${k}.keyword`),
+              },
+            });
+          } else if (operator === 'script') {
+            if (!isEsScriptFilterEnabled()) {
+              throw UnsupportedError('Filter script is not allowed', { filter: validFilter });
+            }
+            valuesFiltering.push({
+              script: {
+                script: values[i].toString(),
+              },
+            });
+          } else if (operator === 'search') {
+            const shouldSearch = elGenerateFieldTextSearchShould(values[i].toString(), arrayKeys);
+            const bool = {
+              bool: {
+                should: shouldSearch,
+                minimum_should_match: 1,
+              },
+            };
+            valuesFiltering.push(bool);
+          } else if (RANGE_OPERATORS.includes(operator)) { // range operators
+            if (arrayKeys.length > 1) {
+              throw UnsupportedError('Range filter must have only one field', { keys: arrayKeys });
+            }
+            valuesFiltering.push({
+              range: {
+                [headKey]: { [operator]: values[i] },
+              },
+            });
+          } else {
+            throw UnsupportedError('Not supported filter operator', { filter: validFilter, filterOperator: operator });
+          }
+        }
+      }
+    }
+  }
+  // 04. Push the values
+  if (valuesFiltering.length > 0) {
+    return {
+      bool: {
+        should: valuesFiltering,
+        minimum_should_match: localFilterMode === 'or' ? 1 : valuesFiltering.length,
+      },
+    };
+  }
+  if (noValuesFiltering.length > 0) {
+    return {
+      bool: {
+        should: noValuesFiltering.map((o) => ({
+          bool: {
+            must_not: [o],
+          },
+        })),
+        minimum_should_match: localFilterMode === 'or' ? 1 : noValuesFiltering.length,
+      },
+    };
+  }
+  throw UnsupportedError('Invalid filter configuration', validFilter);
+};
+
+export const POST_FILTER_TAG_SEPARATOR = ';';
+export const NAMED_QUERIES_UNIQUENESS_SEPARATOR = ':';
+const buildSubQueryForFilterGroup = (
+  context: AuthContext,
+  user: AuthUser,
+  inputFilters: FilterGroup,
+  currentSaltCount = 0,
+): { subQuery: any; postFiltersTags: Set<string>; resultSaltCount: number } => {
+  const { mode = 'and', filters = [], filterGroups = [] } = inputFilters;
+  const localSubQueries: { subQuery: any; associatedTags: Set<string> }[] = [];
+  const localPostFilterTags = new Set<string>();
+  let localSaltCount = currentSaltCount;
+  // Handle filterGroups
+  for (let index = 0; index < filterGroups.length; index += 1) {
+    const group = filterGroups[index];
+    if (isFilterGroupNotEmpty(group)) {
+      const { subQuery, postFiltersTags, resultSaltCount } = buildSubQueryForFilterGroup(context, user, group, localSaltCount);
+      localSaltCount = resultSaltCount;
+      if (subQuery) { // can be null
+        localSubQueries.push({ subQuery, associatedTags: postFiltersTags });
+      }
+      postFiltersTags.forEach((t: string) => localPostFilterTags.add(t));
+    }
+  }
+  // Handle filters
+  for (let index = 0; index < filters.length; index += 1) {
+    const filter = filters[index] as FiltersWithNested & { postFilteringTag?: string };
+    const isValidFilter = filter.values || (filter.nested && filter.nested?.length > 0);
+    if (isValidFilter) {
+      const localMustFilter = buildLocalMustFilter(filter);
+      if (filter.postFilteringTag) {
+        const associatedTag = filter.postFilteringTag;
+        localPostFilterTags.add(associatedTag);
+        const associatedTags = new Set<string>([associatedTag]);
+        localSubQueries.push({ subQuery: localMustFilter, associatedTags });
+      } else {
+        localSubQueries.push({ subQuery: localMustFilter, associatedTags: new Set<string>() });
+      }
+    }
+  }
+
+  // Wrap every tagged subquery in a bool must with _name tag
+  const localMustFilters = localSubQueries.map(({ subQuery, associatedTags }) => {
+    const tagsToApply = mode === 'or' ? [...localPostFilterTags].filter((t: string) => !associatedTags.has(t)) : [];
+    if (tagsToApply.length > 0) {
+      const nameToApply = tagsToApply.join(POST_FILTER_TAG_SEPARATOR) + NAMED_QUERIES_UNIQUENESS_SEPARATOR + localSaltCount;
+      localSaltCount += 1;
+      return {
+        bool: {
+          must: [subQuery],
+          ['_name']: nameToApply,
+        },
+      };
+    }
+    return subQuery;
+  });
+
+  const currentSubQuery = localMustFilters.length > 0
+    ? {
+        bool: {
+          should: localMustFilters,
+          minimum_should_match: mode === 'or' ? 1 : localMustFilters.length,
+        },
+      }
+    : null;
+  return { subQuery: currentSubQuery, postFiltersTags: localPostFilterTags, resultSaltCount: localSaltCount };
+};
+
+/**
+ * Engine read functions the query builder needs.
+ * They are injected by engine.ts (instead of imported) so that this module never imports engine.ts at runtime,
+ * which would create an engine.ts <-> engine-query-builder.ts import cycle.
+ */
+export type EngineQueryDeps = {
+  elFindByIds: typeof elFindByIds;
+  elPaginate: typeof elPaginate;
+  elRawSearch: typeof elRawSearch;
+  isRuntimeSortEnable: typeof isRuntimeSortEnable;
+  completeSpecialFilterKeys: typeof completeSpecialFilterKeys;
+};
+
+const getRuntimeEntities = async (context: AuthContext, user: AuthUser, entityType: string, deps: EngineQueryDeps) => {
+  const elements = await deps.elPaginate<BasicStoreEntity>(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+    types: [entityType],
+    first: MAX_RUNTIME_RESOLUTION_SIZE,
+    bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
+    connectionFormat: false,
+  }) as BasicStoreEntity[];
+  return R.mergeAll(elements.map((i) => ({ [i.internal_id]: i.name })));
+};
+/**
+ * ⚠️ MAINTENANCE: When adding a new runtime attribute here AND exposing it as a sortable column
+ * in the front-end (isSortable: true in dataTableUtils.tsx), you MUST also add it to
+ * `RUNTIME_ONLY_SORT_FIELDS` in the front-end:
+ * opencti-platform/opencti-front/src/utils/hooks/useRuntimeSortGuard.ts
+ *
+ * Failing to do so will cause an UnsupportedError on OpenSearch instances.
+ */
+export const RUNTIME_ATTRIBUTES: Record<string, any> = {
+  observable_value: {
+    field: 'observable_value.keyword',
+    type: 'keyword',
+    getSource: async () => runtimeFieldObservableValueScript(),
+    getParams: async () => { },
+  },
+  createdBy: {
+    field: 'createdBy.keyword',
+    type: 'keyword',
+    getSource: async () => `
+        if (doc.containsKey('rel_created-by.internal_id')) {
+          def creatorId = doc['rel_created-by.internal_id.keyword'];
+          if (creatorId.size() == 1) {
+            def creatorName = params[creatorId[0]];
+            emit(creatorName != null ? creatorName : 'Unknown')
+          } else {
+            emit('Unknown')
+          }
+        } else {
+          emit('Unknown')
+        }
+    `,
+    getParams: async (context: AuthContext, user: AuthUser, deps: EngineQueryDeps) => getRuntimeEntities(context, user, ENTITY_TYPE_IDENTITY, deps),
+  },
+  deletedBy: {
+    field: 'deletedBy.keyword',
+    type: 'keyword',
+    getSource: async () => `
+        if (doc.containsKey('creator_id')) {
+          def creatorId = doc['creator_id.keyword'];
+          if (creatorId.size() == 1) {
+            def creatorName = params[creatorId[0]];
+            emit(creatorName != null ? creatorName : 'Unknown')
+          } else {
+            emit('Unknown')
+          }
+        } else {
+          emit('Unknown')
+        }
+    `,
+    getParams: async (context: AuthContext, user: AuthUser) => getRuntimeUsers(context, user),
+  },
+  bornIn: {
+    field: 'bornIn.keyword',
+    type: 'keyword',
+    getSource: async () => `
+      if (doc.containsKey('rel_born-in.internal_id)) {
+        def countryId = doc['rel_born-in.internal_id.keyword'];
+        if (countryId.size() == 1) {
+          def countryName = params[countryId[0]];
+          emit(countryName != null ? creatorName : 'Unknown')
+        } else {
+          emit('Unknown')
+        }
+      } else {
+        emit('Unknown')
+      }
+    `,
+    getParams: async (context: AuthContext, user: AuthUser, deps: EngineQueryDeps) => getRuntimeEntities(context, user, ENTITY_TYPE_LOCATION_COUNTRY, deps),
+  },
+  ethnicity: {
+    field: 'ethnicity.keyword',
+    type: 'keyword',
+    getSource: async () => `
+      if (doc.containsKey('rel_of-ethnicity.internal_id)) {
+        def countryId = doc['rel_of-ethnicity.internal_id.keyword'];
+        if (countryId.size() == 1) {
+          def countryName = params[countryId[0]];
+          emit(countryName != null ? creatorName : 'Unknown')
+        } else {
+          emit('Unknown')
+        }
+      } else {
+        emit('Unknown')
+      }
+    `,
+    getParams: async (context: AuthContext, user: AuthUser, deps: EngineQueryDeps) => getRuntimeEntities(context, user, ENTITY_TYPE_LOCATION_COUNTRY, deps),
+  },
+  creator: {
+    field: 'creator.keyword',
+    type: 'keyword',
+    getSource: async () => `
+        if (doc.containsKey('creator_id')) {
+          def creatorId = doc['creator_id.keyword'];
+          if (creatorId.size() == 1) {
+            def creatorName = params[creatorId[0]];
+            emit(creatorName != null ? creatorName : 'Unknown')
+          } else {
+            emit('Unknown')
+          }
+        } else {
+          emit('Unknown')
+        }
+    `,
+    getParams: async (context: AuthContext, user: AuthUser) => getRuntimeUsers(context, user),
+  },
+  objectMarking: {
+    field: 'objectMarking.keyword',
+    type: 'keyword',
+    getSource: async () => `
+        if (doc.containsKey('rel_object-marking.internal_id')) {
+          def markingId = doc['rel_object-marking.internal_id.keyword'];
+          if (markingId.size() >= 1) {
+            def markingName = params[markingId[0]];
+            emit(markingName != null ? markingName : 'Unknown')
+          } else {
+            emit('Unknown')
+          }
+        } else {
+          emit('Unknown')
+        }
+    `,
+    getParams: async (context: AuthContext, user: AuthUser) => getRuntimeMarkings(context, user),
+  },
+  killChainPhases: {
+    field: 'killChainPhases.keyword',
+    type: 'keyword',
+    getSource: async () => `
+        if (doc.containsKey('rel_kill-chain-phase.internal_id')) {
+          def killChainPhaseId = doc['rel_kill-chain-phase.internal_id.keyword'];
+          if (killChainPhaseId.size() >= 1) {
+            def killChainPhaseName = params[killChainPhaseId[0]];
+            emit(killChainPhaseName != null ? killChainPhaseName : 'Unknown')
+          } else {
+            emit('Unknown')
+          }
+        } else {
+          emit('Unknown')
+        }
+    `,
+    getParams: async (context: AuthContext, user: AuthUser, deps: EngineQueryDeps) => getRuntimeEntities(context, user, ENTITY_TYPE_KILL_CHAIN_PHASE, deps),
+  },
+  objectAssignee: {
+    field: 'objectAssignee.keyword',
+    type: 'keyword',
+    getSource: async () => `
+        if (doc.containsKey('rel_object-assignee.internal_id')) {
+          def assigneeId = doc['rel_object-assignee.internal_id.keyword'];
+          if (assigneeId.size() >= 1) {
+            def assigneeName = params[assigneeId[0]].toLowerCase();
+            emit(assigneeName != null ? assigneeName : 'unknown')
+          } else {
+              emit('unknown')
+            }
+        } else {
+          emit('unknown')
+        }
+    `,
+    getParams: async (context: AuthContext, user: AuthUser) => getRuntimeUsers(context, user),
+  },
+  objectParticipant: {
+    field: 'objectParticipant.keyword',
+    type: 'keyword',
+    getSource: async () => `
+        if (doc.containsKey('rel_object-participant.internal_id')) {
+          def participantId = doc['rel_object-participant.internal_id.keyword'];
+          if (participantId.size() >= 1) {
+            def participantName = params[participantId[0]].toLowerCase();
+            emit(participantName != null ? participantName : 'unknown')
+          } else {
+              emit('unknown')
+            }
+        } else {
+          emit('unknown')
+        }
+    `,
+    getParams: async (context: AuthContext, user: AuthUser) => getRuntimeUsers(context, user),
+  },
+};
+// Connections matching the search are checked by batches.
+// Above this number of connections to check, connections are not searched at all.
+const SEARCH_CONNECTIONS_BATCH_SIZE = ES_MAX_PAGINATION;
+const MAX_SEARCH_CONNECTIONS = SEARCH_CONNECTIONS_BATCH_SIZE * 4;
+export const isSearchingRelationships = (types: string[] | null | undefined) => {
+  // Only a search restricted to objects is sure to never return relationships
+  return isEmptyField(types) || !R.flatten(types as string[]).every((type) => isBasicObject(type));
+};
+export type SearchRestrictions = { must: any[]; must_not: any[] };
+export type SearchConnectionsOpts = ProcessSearchArgs & BuildDraftFilterOpts & { withDraft?: boolean };
+// Resolve the connected elements matching the search that the user can access.
+// Relationships must not be found by searching the name or id of any other connected element.
+export const elResolveSearchConnectionsRestrictions = async (
+  context: AuthContext,
+  user: AuthUser,
+  search: string,
+  restrictions: SearchRestrictions,
+  relationshipsFilters: any[],
+  opts: SearchConnectionsOpts,
+  deps: Pick<EngineQueryDeps, 'elRawSearch'>,
+): Promise<SearchConnectionsRestrictions> => {
+  if (restrictions.must.length === 0 && restrictions.must_not.length === 0) {
+    return {};
+  }
+  const connectionsQueries = elGenerateConnectionsSearchQueries(search, opts);
+  if (connectionsQueries.length === 0) {
+    return {};
+  }
+  // Same live / draft scope as the search to secure
+  const { withDraft = true } = opts;
+  const draftMust = withDraft ? buildDraftFilter(context, user, opts) : [];
+  const relationshipsIndices = withDraft ? getIndicesToQuery(context, user, READ_RELATIONSHIPS_INDICES) : READ_RELATIONSHIPS_INDICES;
+  const dataIndices = withDraft ? getIndicesToQuery(context, user, READ_DATA_INDICES) : READ_DATA_INDICES;
+  const connectionsMatch = { bool: { should: connectionsQueries, minimum_should_match: 1 } };
+  // Only consider the relationships the search could return
+  const relationshipsQuery = {
+    bool: {
+      must: [...restrictions.must, ...relationshipsFilters, ...draftMust, { nested: { path: 'connections', query: connectionsMatch } }],
+      must_not: restrictions.must_not,
+    },
+  };
+  // A partial result could miss connections, nothing can be allowed from it
+  const rawSearchComplete = async (query: any) => {
+    const data = await deps.elRawSearch(context, user, 'Search connections', query);
+    return data.timed_out ? null : data;
+  };
+  const aggregateMatchingConnections = async (aggs: any) => {
+    const data = await rawSearchComplete({
+      index: relationshipsIndices,
+      size: 0,
+      track_total_hits: false,
+      body: {
+        query: relationshipsQuery,
+        aggs: { connections: { nested: { path: 'connections' }, aggs: { matching: { filter: connectionsMatch, aggs } } } },
+      },
+    });
+    return data?.aggregations.connections.matching;
+  };
+  const field = 'connections.internal_id.keyword';
+  const counting = await aggregateMatchingConnections({ count: { cardinality: { field, precision_threshold: 40000 } } });
+  if (!counting || counting.count.value === 0 || counting.count.value > MAX_SEARCH_CONNECTIONS) {
+    return { allowedConnectionIds: [] };
+  }
+  // Cardinality is approximate, keep room in each partition
+  const numPartitions = Math.ceil((counting.count.value * 2) / SEARCH_CONNECTIONS_BATCH_SIZE);
+  const allowedConnectionIds: string[] = [];
+  for (let partition = 0; partition < numPartitions; partition += 1) {
+    const partitioning = await aggregateMatchingConnections({
+      ids: { terms: { field, size: SEARCH_CONNECTIONS_BATCH_SIZE, include: { partition, num_partitions: numPartitions } } },
+    });
+    if (!partitioning || partitioning.ids.sum_other_doc_count > 0) {
+      return { allowedConnectionIds: [] };
+    }
+    const connectionIds: string[] = partitioning.ids.buckets.map((bucket: { key: string }) => bucket.key);
+    if (connectionIds.length > 0) {
+      // Keep the ones inside the access restrictions of the user
+      const accessibleData = await rawSearchComplete({
+        index: dataIndices,
+        size: 0,
+        track_total_hits: false,
+        body: {
+          query: {
+            bool: {
+              must: [{ terms: { 'internal_id.keyword': connectionIds } }, ...restrictions.must, ...draftMust],
+              must_not: restrictions.must_not,
+            },
+          },
+          aggs: { ids: { terms: { field: 'internal_id.keyword', size: connectionIds.length } } },
+        },
+      });
+      if (!accessibleData) {
+        return { allowedConnectionIds: [] };
+      }
+      pushAll(allowedConnectionIds, accessibleData.aggregations.ids.buckets.map((bucket: { key: string }) => bucket.key));
+    }
+  }
+  return { allowedConnectionIds };
+};
+export type QueryBodyBuilderOpts = ProcessSearchArgs & BuildDraftFilterOpts & {
+  ids?: string[];
+  after?: string | null;
+  orderBy?: any;
+  orderMode?: 'asc' | 'desc' | null;
+  pirId?: string | null;
+  noSize?: boolean | null;
+  noSort?: boolean | null;
+  intervalInclude?: boolean | null;
+  relCount?: boolean | null;
+  first?: number | null;
+  types?: string[] | null;
+  search?: string | null;
+  filters?: FilterGroup | null;
+  noFiltersChecking?: boolean;
+  noRegardingOfFilterIdsCheck?: boolean;
+  // `filters` were checked, converted and completed by elCompleteFilters: used as they are, nothing resolved again
+  filtersCompleted?: boolean;
+  historyFiltering?: boolean;
+  startDate?: any;
+  endDate?: any;
+  dateAttribute?: string | null;
+  includeAuthorities?: boolean | null;
+  /**
+   * Trusted, internal-only raw Painless script clauses (ANDed with the rest of the query).
+   * MUST NEVER be populated from user/GraphQL/JSON input.
+   */
+  internalScriptFilters?: string[];
+};
+export type CompleteFiltersOpts = Pick<QueryBodyBuilderOpts, 'filters' | 'noFiltersChecking' | 'noRegardingOfFilterIdsCheck'>;
+// The filters of a query checked, converted and completed, as elQueryBodyBuilder reads them: their special keys are
+// resolved with the access of the user, which takes requests for some of them (up to ES_MAX_PAGINATION entities for
+// each of dynamicFrom and dynamicTo). Queries on the same filters resolve them once: each one gets the result with
+// `filtersCompleted`. Completing them again is not possible, a completed entity type filter being refused.
+// Undefined without any filter.
+export const elCompleteFilters = async (
+  context: AuthContext,
+  user: AuthUser,
+  options: CompleteFiltersOpts,
+  deps: EngineQueryDeps,
+): Promise<FilterGroup | undefined> => {
+  const { filters, noFiltersChecking, noRegardingOfFilterIdsCheck = false } = options;
+  const elFindByIdsToMap = async (c: AuthContext, u: AuthUser, i: string[], o: any) => {
+    return deps.elFindByIds<BasicStoreObject>(c, u, i, { ...o, toMap: true }) as Promise<Record<string, BasicStoreObject>>;
+  };
+  const convertedFilters = await checkAndConvertFilters(context, user, filters, user.id, elFindByIdsToMap, { noFiltersChecking });
+  if (!convertedFilters || !isFilterGroupNotEmpty(convertedFilters)) {
+    return undefined;
+  }
+  return deps.completeSpecialFilterKeys(context, user, convertedFilters, { noRegardingOfFilterIdsCheck });
+};
+export const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options: QueryBodyBuilderOpts, deps: EngineQueryDeps) => {
+  const {
+    ids = [],
+    after,
+    orderBy = null,
+    pirId = null,
+    orderMode = 'asc',
+    noSize = false,
+    noSort = false,
+    intervalInclude = false,
+    relCount = false,
+    first = ES_DEFAULT_PAGINATION,
+    types = null,
+    search = null,
+    filters,
+    noFiltersChecking,
+    startDate = null,
+    historyFiltering = false,
+    endDate = null,
+    dateAttribute = null,
+    includeAuthorities = false,
+    noRegardingOfFilterIdsCheck = false,
+    filtersCompleted = false,
+    internalScriptFilters = [],
+  } = options;
+  const completedFilters = filtersCompleted
+    ? filters ?? undefined
+    : await elCompleteFilters(context, user, { filters, noFiltersChecking, noRegardingOfFilterIdsCheck }, deps);
+  const searchAfter = after ? cursorToOffset(after) : undefined;
+  let ordering: any[] = [];
+  // Handle marking restrictions
+  const markingRestrictions = await buildDataRestrictions(context, user, { historyFiltering, includeAuthorities });
+  const accessMust = markingRestrictions.must;
+  const accessMustNot = markingRestrictions.must_not;
+  const mustFilters = [];
+  // Trusted, internal-only raw Painless script clauses. These never go through the filter
+  // grammar (buildLocalMustFilter / checkAndConvertFilters): they can only be populated by
+  // hardcoded backend TS code, never by user/GraphQL/JSON input.
+  internalScriptFilters.forEach((source) => {
+    mustFilters.push({ script: { script: { source } } });
+  });
+  // Add special keys to filters
+  const specialFiltersContent: any = [];
+  if (ids.length > 0 || startDate || endDate || (types !== null && types.length > 0)) {
+    if (ids.length > 0) {
+      specialFiltersContent.push({ key: IDS_FILTER, values: ids });
+    }
+    if (startDate) {
+      specialFiltersContent.push({ key: dateAttribute || 'created_at', values: [startDate], operator: intervalInclude ? 'gte' : 'gt' });
+    }
+    if (endDate) {
+      specialFiltersContent.push({ key: dateAttribute || 'created_at', values: [endDate], operator: intervalInclude ? 'lte' : 'lt' });
+    }
+    if (types !== null && types.length > 0) {
+      specialFiltersContent.push({ key: TYPE_FILTER, values: R.flatten(types) });
+    }
+  }
+  // Handle filters: the special keys and the filters together, the filters first
+  let finalFilters = completedFilters;
+  if (specialFiltersContent.length > 0) {
+    const specialFiltersGroup = { mode: FilterMode.And, filters: specialFiltersContent, filterGroups: [] };
+    const specialFilters = await deps.completeSpecialFilterKeys(context, user, specialFiltersGroup, { noRegardingOfFilterIdsCheck });
+    finalFilters = { ...specialFilters, filterGroups: [...(completedFilters ? [completedFilters] : []), ...specialFilters.filterGroups] };
+  }
+  if (finalFilters) {
+    const { subQuery: filtersSubQuery } = buildSubQueryForFilterGroup(context, user, finalFilters);
+    if (filtersSubQuery) {
+      mustFilters.push(filtersSubQuery);
+    }
+  }
+  // Handle search
+  const orderConfiguration = isEmptyField(orderBy) ? [] : orderBy;
+  const orderCriterion = Array.isArray(orderConfiguration) ? orderConfiguration : [orderConfiguration];
+  let scoreSearchOrder = orderMode;
+  if (search !== null && search.length > 0) {
+    const connectionsRestrictions = !historyFiltering && isSearchingRelationships(types)
+      ? await elResolveSearchConnectionsRestrictions(context, user, search, markingRestrictions, mustFilters, options, deps)
+      : {};
+    const shouldSearch = elGenerateFullTextSearchShould(search, { ...options, ...connectionsRestrictions });
+    const bool = {
+      bool: {
+        should: shouldSearch,
+        minimum_should_match: 1,
+      },
+    };
+    mustFilters.push(bool);
+    // When using a search, force a score ordering if nothing specified
+    if (orderCriterion.length === 0) {
+      orderCriterion.unshift('_score');
+      scoreSearchOrder = 'desc';
+    }
+  }
+  // Handle orders
+  const runtimeMappings: any = {};
+  if (isNotEmptyField(orderCriterion)) {
+    for (let index = 0; index < orderCriterion.length; index += 1) {
+      const orderCriteria = orderCriterion[index];
+      if (orderCriteria === '_score') {
+        ordering = R.append({ [orderCriteria]: scoreSearchOrder }, ordering);
+      } else {
+        const sortingForCriteria = await buildElasticSortingForAttributeCriteria(context, user, orderCriteria, orderMode, pirId);
+        ordering = R.append(sortingForCriteria, ordering);
+      }
+    }
+    // Add standard_id if not specify to ensure ordering uniqueness
+    if (!orderCriterion.includes('standard_id')) {
+      ordering.push({ 'standard_id.keyword': 'asc' });
+    }
+    // Build runtime mappings
+    const runtime = RUNTIME_ATTRIBUTES[orderBy as string];
+    if (isNotEmptyField(runtime)) {
+      const source = await runtime.getSource();
+      const params = await runtime.getParams(context, user, deps);
+      runtimeMappings[runtime.field] = {
+        type: runtime.type,
+        script: { source, params },
+      };
+    }
+  } else { // If not ordering criteria, order by standard_id
+    ordering.push({ 'standard_id.keyword': 'asc' });
+  }
+  // Handle draft
+  const draftMust = buildDraftFilter(context, user, options);
+  // Build query
+  const body: any = {
+    query: {
+      bool: {
+        must: [...accessMust, ...mustFilters, ...draftMust],
+        must_not: accessMustNot,
+      },
+    },
+  };
+  if (relCount) {
+    body.script_fields = {
+      script_field_denormalization_count: REL_COUNT_SCRIPT_FIELD,
+    };
+  }
+  if (!noSize) {
+    body.size = first;
+  }
+  if (!noSort) {
+    body.sort = ordering;
+  }
+  // Add extra configuration
+  if (isNotEmptyField(runtimeMappings)) {
+    const isRuntimeSortFeatureEnable = deps.isRuntimeSortEnable();
+    if (!isRuntimeSortFeatureEnable) {
+      throw UnsupportedError('Runtime mapping is only possible with elastic >=7.12', { order: orderBy });
+    }
+    body.runtime_mappings = runtimeMappings;
+  }
+  if (searchAfter) {
+    body.search_after = searchAfter;
+  }
+  return body;
+};

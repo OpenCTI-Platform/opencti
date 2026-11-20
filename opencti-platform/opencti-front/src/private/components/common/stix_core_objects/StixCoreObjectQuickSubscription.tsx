@@ -249,9 +249,9 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
       : {
           mode: filterGroup?.mode ?? 'and',
           filters:
-              filterGroup?.filters.filter(
-                (f) => f.key !== 'connectedToId' || f.operator !== 'eq',
-              ) ?? [],
+            filterGroup?.filters.filter(
+              (f) => f.key !== 'connectedToId' || f.operator !== 'eq',
+            ) ?? [],
           filterGroups: filterGroup?.filterGroups ?? [],
         };
     commitFieldPatch({

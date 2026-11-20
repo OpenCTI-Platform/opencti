@@ -194,7 +194,8 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
         closeOnSelect={closeOnSelect ?? !!multiple}
         keepInputOnBlur={keepInputOnBlur}
       >
-        {label ? <ComboboxLabel>{label}</ComboboxLabel> : null}
+        {/* The label carries the same "*" as the other required form fields (aria-hidden by the library). */}
+        {label ? <ComboboxLabel required={required}>{label}</ComboboxLabel> : null}
         <FdsComboboxField
           adornment={(openCreate || adornment) ? (
             <>
@@ -224,6 +225,8 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
             placeholder={placeholder}
             onFocus={onFocusInput}
             onBlur={() => setFieldTouched(name, true)}
+            aria-required={required || undefined}
+            aria-invalid={showError || undefined}
           />
           <ComboboxControls>
             <ComboboxClear />

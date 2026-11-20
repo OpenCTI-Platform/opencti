@@ -24,6 +24,7 @@ import {
 } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import pjson from '../../package.json';
+import { stringListConf } from './conf-utils';
 import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
 import { ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE } from '../modules/ingestionDeduplication/ingestionDeduplicationRule-types';
@@ -125,6 +126,13 @@ nconf.file('default', resolveEnvFile('default'));
 // that does not define its own reject_unauthorized option.
 // Disabled by default for now, it will be enabled by default in an upcoming version.
 export const TLS_REJECT_UNAUTHORIZED = booleanConf('tls:reject_unauthorized', false);
+
+// Outbound requests to internal networks (loopback, private, link-local...) for the destinations configured by users:
+// ingestion feeds, webhooks and synchronizers. Allowed and logged by default for now,
+// they will be blocked by default in an upcoming version.
+export const OUTBOUND_BLOCK_INTERNAL_DESTINATIONS = booleanConf('outbound_requests:block_internal_destinations', false);
+// Internal destinations still allowed when they are blocked: CIDR ranges, IP addresses and host names.
+export const OUTBOUND_ALLOW_LIST = stringListConf('outbound_requests:allow_list');
 
 // Setup SSO/SAML auth_payload_body_size
 // Default limit is '100kb' based on https://expressjs.com/en/resources/middleware/body-parser.html

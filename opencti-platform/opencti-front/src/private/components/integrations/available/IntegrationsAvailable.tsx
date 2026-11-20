@@ -192,6 +192,7 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
           definition={item.builtIn}
           deploymentCount={item.deploymentCount}
           onClickCreate={() => setBuiltInCreationKind(item.builtIn ? item.builtIn.kind : null)}
+          onImported={refetchFeeds}
         />
       );
     }
@@ -312,6 +313,7 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
                               }
                             }}
                             onClickCreate={() => setBuiltInCreationKind(item.builtIn ? item.builtIn.kind : null)}
+                            onImported={refetchFeeds}
                           />
                         ))}
                       </Box>

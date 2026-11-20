@@ -77,7 +77,7 @@ const WidgetMultiHeatMap = ({
       from: 0,
       to: 0,
       color:
-      theme.palette.mode === 'dark' ? darkColors[0] : lightColors[0],
+        theme.palette.mode === 'dark' ? darkColors[0] : lightColors[0],
     });
 
     const chartOptions = heatMapOptions(

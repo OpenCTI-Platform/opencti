@@ -227,6 +227,7 @@ const meUserFragment = graphql`
     default_dashboard {
       id
     }
+    default_dashboard_preset
     default_time_field
     default_hidden_types
     effective_confidence_level {

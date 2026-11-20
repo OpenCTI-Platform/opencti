@@ -1,0 +1,389 @@
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import gql from 'graphql-tag';
+import { buildZip, itemFile, metadataFile } from '../../../../utils/configPresetBundle';
+import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess } from '../../../../utils/testQueryHelper';
+import { ADMIN_USER, TEST_ORGANIZATION, testContext } from '../../../../utils/testQuery';
+import { getClientBase } from '../../../../../src/database/redis';
+import { setPlatformBootstrapStatus } from '../../../../../src/domain/settings';
+import { allFilesForPaths } from '../../../../../src/modules/internal/document/document-domain';
+import { deleteFile } from '../../../../../src/database/file-storage';
+import { downloadFile } from '../../../../../src/database/raw-file-storage';
+import { addIngestion, findAllRssIngestion, ingestionDelete } from '../../../../../src/modules/ingestion/ingestion-rss-domain';
+import { findAllTaxiiIngestion, ingestionTaxiiAdd, ingestionTaxiiDelete } from '../../../../../src/modules/ingestion/ingestion-taxii-domain';
+import { decryptIngestionCredential } from '../../../../../src/modules/ingestion/ingestion-common';
+import { CONFIG_PRESET_FAMILIES, exportConfigPresetItem } from '../../../../../src/modules/configPreset/configPreset-registry';
+import { IngestionAuthType, TaxiiVersion } from '../../../../../src/generated/graphql';
+import { isIngestionGroupMissing } from '../../../../../src/modules/ingestion/ingestion-import';
+import { MARKING_TLP_GREEN } from '../../../../../src/schema/identifier';
+import { deleteJsonMapper } from '../../../../../src/modules/internal/jsonMapper/jsonMapper-domain';
+
+const UPLOAD_MUTATION = gql`mutation ConfigPresetFeedsUpload($file: Upload!) { configPresetImportUpload(file: $file) { id } }`;
+const IMPORT_MUTATION = gql`
+  mutation ConfigPresetFeedsImport(
+    $file_id: ID!, $selections: [ConfigPresetSelectionInput!]!, $dry_run: Boolean,
+    $credentials: [ConfigPresetItemCredentialsInput!], $service_accounts: [ConfigPresetItemServiceAccountInput!]
+  ) {
+    configPresetImport(file_id: $file_id, selections: $selections, dry_run: $dry_run, credentials: $credentials, service_accounts: $service_accounts) {
+      results { type key status reason }
+      report_id
+    }
+  }
+`;
+const PREVIEW_QUERY = gql`
+  query ConfigPresetFeedsPreview($file_id: ID!) {
+    configPresetImportPreview(file_id: $file_id) { types { key group { key } items { key credentials { key required stored secret } } } }
+  }
+`;
+
+const CONFLICT_PREVIEW_QUERY = gql`
+  query ConfigPresetFeedsConflictPreview($file_id: ID!) {
+    configPresetImportPreview(file_id: $file_id) { types { key items { key exists conflict } } }
+  }
+`;
+
+const PARTIAL_PREVIEW_MUTATION = gql`
+  mutation ConfigPresetFeedsPartialPreview($file: Upload!, $type: ID!) {
+    configPresetPartialImportPreview(file: $file, type: $type) {
+      default_mode
+      type { key items { key exists conflict serviceAccountRequired credentials { key required stored secret } } }
+    }
+  }
+`;
+const PARTIAL_IMPORT_MUTATION = gql`
+  mutation ConfigPresetFeedsPartialImport(
+    $file: Upload!, $type: ID!, $items: [ID!]!, $item_modes: [ConfigPresetItemModeInput!],
+    $credentials: [ConfigPresetItemCredentialsInput!], $service_accounts: [ConfigPresetItemServiceAccountInput!]
+  ) {
+    configPresetPartialImport(file: $file, type: $type, items: $items, item_modes: $item_modes, credentials: $credentials, service_accounts: $service_accounts) {
+      results { type key status reason }
+      counts { created overwritten skipped failed }
+    }
+  }
+`;
+
+const SECRET = 'feed-secret-value';
+const RSS_NAME = 'Config preset RSS feed';
+const TAXII_NAME = 'Config preset TAXII feed';
+const COPY_NAME = `${TAXII_NAME} (1)`;
+const family = (id: string) => CONFIG_PRESET_FAMILIES.find((candidate) => candidate.id === id)!;
+const exportItem = async (familyId: string, id: string) => {
+  const [item] = await family(familyId).resolveItems(testContext, ADMIN_USER, [id], []);
+  return exportConfigPresetItem(testContext, ADMIN_USER, family(familyId), item);
+};
+const readStream = async (stream: unknown) => {
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream as AsyncIterable<Buffer>) {
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks).toString('utf8');
+};
+const sessionContent = async () => (await getClientBase().get(`config_preset_import_session_${ADMIN_USER.id}`)) ?? '';
+
+describe('Config preset: feeds', () => {
+  let rssFeedId: string;
+  let taxiiFeedId: string;
+  let bundle: Record<string, string>;
+
+  beforeAll(async () => {
+    rssFeedId = (await addIngestion(testContext, ADMIN_USER, {
+      name: RSS_NAME,
+      uri: 'https://news.example.com/rss',
+      user_id: ADMIN_USER.id,
+      report_types: ['threat-report'],
+      ingestion_running: true,
+    })).id;
+    taxiiFeedId = (await ingestionTaxiiAdd(testContext, ADMIN_USER, {
+      name: TAXII_NAME,
+      uri: 'https://taxii.example.com',
+      collection: 'collection-id',
+      version: TaxiiVersion.V21,
+      authentication_type: IngestionAuthType.Basic,
+      authentication_value: `analyst:${SECRET}`,
+      user_id: ADMIN_USER.id,
+    })).id;
+    const rssFile = await exportItem('rssFeeds', RSS_NAME);
+    const taxiiFile = await exportItem('taxiiFeeds', TAXII_NAME);
+    bundle = {
+      'metadata.json': metadataFile(),
+      [`integrations/rss_feeds/${RSS_NAME}.json`]: itemFile(rssFile.type, rssFile.id, rssFile.configuration),
+      [`integrations/taxii_feeds/${TAXII_NAME}.json`]: itemFile(taxiiFile.type, taxiiFile.id, taxiiFile.configuration),
+    };
+  });
+
+  afterEach(async () => {
+    await setPlatformBootstrapStatus(testContext, ADMIN_USER, 'pending');
+    await queryAsAdmin({ query: gql`mutation ConfigPresetFeedsClear { configPresetImportSessionClear(delete_file: true) }` });
+    await getClientBase().del(`config_preset_import_session_${ADMIN_USER.id}`);
+    const history = await allFilesForPaths(testContext, ADMIN_USER, ['config_preset/history']);
+    for (let i = 0; i < history.length; i += 1) {
+      await deleteFile(testContext, ADMIN_USER, history[i].id, { forceDelete: true });
+    }
+  });
+
+  afterAll(async () => {
+    const rssFeeds = (await findAllRssIngestion(testContext, ADMIN_USER)).filter(({ name }) => name.startsWith(RSS_NAME));
+    for (let i = 0; i < rssFeeds.length; i += 1) {
+      await ingestionDelete(testContext, ADMIN_USER, rssFeeds[i].id);
+    }
+    const taxiiFeeds = (await findAllTaxiiIngestion(testContext, ADMIN_USER)).filter(({ name }) => name.startsWith(TAXII_NAME));
+    for (let i = 0; i < taxiiFeeds.length; i += 1) {
+      await ingestionTaxiiDelete(testContext, ADMIN_USER, taxiiFeeds[i].id);
+    }
+  });
+
+  const upload = async () => {
+    const result = await queryAsAdminWithSuccess({ query: UPLOAD_MUTATION, variables: { file: createUploadFromBuffer(await buildZip(bundle), 'bundle.zip') } });
+    return result.data?.configPresetImportUpload.id as string;
+  };
+  const runImport = async (fileId: string, dryRun: boolean, variables: Record<string, unknown> = {}) => {
+    const { data, errors } = await queryAsAdmin({
+      query: IMPORT_MUTATION,
+      variables: { file_id: fileId, selections: [{ type: 'rssFeeds' }, { type: 'taxiiFeeds' }], dry_run: dryRun, ...variables },
+    });
+    expect(errors).toBeUndefined();
+    return data?.configPresetImport as { results: { type: string; key: string; status: string; reason: string | null }[]; report_id: string | null };
+  };
+
+  it('exports the feeds by name, without their credentials, user nor running state', async () => {
+    const taxiiFile = await exportItem('taxiiFeeds', TAXII_NAME);
+    expect(taxiiFile).toMatchObject({ type: 'integrations.taxiiFeeds', id: TAXII_NAME, configuration: { name: TAXII_NAME, authentication_type: 'basic' } });
+    const serialized = JSON.stringify([taxiiFile, await exportItem('rssFeeds', RSS_NAME)]);
+    expect(serialized).not.toContain(SECRET);
+    expect(serialized).not.toMatch(/authentication_value|user_id|ingestion_running|analyst/);
+  });
+
+  it('lists the feeds under Integrations, the stored credentials of the feed it overwrites included', async () => {
+    const fileId = await upload();
+    const preview = (await queryAsAdminWithSuccess({ query: PREVIEW_QUERY, variables: { file_id: fileId } })).data?.configPresetImportPreview;
+    const taxii = preview.types.find((type: { key: string }) => type.key === 'taxiiFeeds');
+    expect(taxii.group.key).toEqual('integrations');
+    expect(taxii.items).toEqual([{
+      key: TAXII_NAME,
+      credentials: [
+        { key: 'username', required: true, stored: true, secret: false },
+        { key: 'password', required: true, stored: true, secret: true },
+      ],
+    }]);
+  });
+
+  it('skips the feeds already up to date', async () => {
+    const { results } = await runImport(await upload(), true);
+    expect(results.map(({ key, status }) => [key, status])).toEqual([[RSS_NAME, 'SKIPPED'], [TAXII_NAME, 'SKIPPED']]);
+  });
+
+  it('offers a choice for a feed of the bundle whose name an earlier one takes, so that it can be imported as a copy', async () => {
+    const rssFile = await exportItem('rssFeeds', RSS_NAME);
+    const name = `${RSS_NAME} duplicated in the bundle`;
+    const configuration = { ...rssFile.configuration, name };
+    const duplicates = {
+      'metadata.json': metadataFile(),
+      [`integrations/rss_feeds/${name}.json`]: itemFile(rssFile.type, name, configuration),
+      [`integrations/rss_feeds/${name} (other).json`]: itemFile(rssFile.type, `${name} (other)`, configuration),
+    };
+    const uploaded = await queryAsAdminWithSuccess({ query: UPLOAD_MUTATION, variables: { file: createUploadFromBuffer(await buildZip(duplicates), 'bundle.zip') } });
+    const preview = await queryAsAdminWithSuccess({ query: CONFLICT_PREVIEW_QUERY, variables: { file_id: uploaded.data?.configPresetImportUpload.id } });
+    const rss = preview.data?.configPresetImportPreview.types.find(({ key }: { key: string }) => key === 'rssFeeds');
+    expect(rss.items).toEqual([
+      { key: name, exists: false, conflict: false },
+      { key: `${name} (other)`, exists: false, conflict: true },
+    ]);
+  });
+
+  it('adds a stopped copy with the credentials given at import, never written in the session nor in the report', async () => {
+    const fileId = await upload();
+    const variables = {
+      selections: [{ type: 'taxiiFeeds', item_modes: [{ key: TAXII_NAME, mode: 'COPY' }] }],
+      credentials: [{ type: 'taxiiFeeds', key: TAXII_NAME, values: [{ key: 'username', secret: 'partner' }, { key: 'password', secret: SECRET }] }],
+      service_accounts: [{ type: 'taxiiFeeds', key: TAXII_NAME, user_id: ADMIN_USER.id }],
+    };
+    const dry = await runImport(fileId, true, variables);
+    expect(dry.results).toEqual([{ type: 'taxiiFeeds', key: TAXII_NAME, status: 'CREATED', reason: `Added as "${COPY_NAME}"` }]);
+    const real = await runImport(fileId, false, variables);
+    expect(real.results.map(({ status }) => status)).toEqual(['CREATED']);
+    const copy = (await findAllTaxiiIngestion(testContext, ADMIN_USER)).find(({ name }) => name === COPY_NAME)!;
+    expect(copy).toMatchObject({ ingestion_running: false, user_id: ADMIN_USER.id, collection: 'collection-id' });
+    expect(copy.authentication_value).not.toContain(SECRET);
+    expect(await decryptIngestionCredential(copy.authentication_value)).toEqual(`partner:${SECRET}`);
+    expect(await sessionContent()).not.toContain(SECRET);
+    expect(await readStream(await downloadFile(real.report_id!))).not.toContain(SECRET);
+    const original = (await findAllTaxiiIngestion(testContext, ADMIN_USER)).find(({ id }) => id === taxiiFeedId)!;
+    expect(await decryptIngestionCredential(original.authentication_value)).toEqual(`analyst:${SECRET}`);
+    expect(rssFeedId).toBeDefined();
+  });
+
+  describe('partial import, from the screen of the feeds', () => {
+    const zipUpload = async () => createUploadFromBuffer(await buildZip(bundle), 'bundle.zip');
+
+    it('previews the feeds of the type only, as copies, with the credentials and whether a service account is to choose', async () => {
+      const { data } = await queryAsAdminWithSuccess({ query: PARTIAL_PREVIEW_MUTATION, variables: { file: await zipUpload(), type: 'taxiiFeeds' } });
+      const preview = data?.configPresetPartialImportPreview;
+      expect(preview.default_mode).toEqual('COPY');
+      expect(preview.type.items).toEqual([{
+        key: TAXII_NAME,
+        exists: true,
+        conflict: true,
+        serviceAccountRequired: await isIngestionGroupMissing(testContext, ADMIN_USER),
+        credentials: [
+          { key: 'username', required: true, stored: true, secret: false },
+          { key: 'password', required: true, stored: true, secret: true },
+        ],
+      }]);
+    });
+
+    it('refuses a copy without its credentials: the stored ones are never copied', async () => {
+      const { data } = await queryAsAdminWithSuccess({ query: PARTIAL_IMPORT_MUTATION, variables: { file: await zipUpload(), type: 'taxiiFeeds', items: [TAXII_NAME] } });
+      expect(data?.configPresetPartialImport.results).toEqual([
+        { type: 'taxiiFeeds', key: TAXII_NAME, status: 'FAILED', reason: 'Configuration to provide: username, password' },
+      ]);
+    });
+
+    it('adds a stopped copy with the credentials and the service account given, never answered back', async () => {
+      const before = new Set((await findAllTaxiiIngestion(testContext, ADMIN_USER)).map(({ id }) => id));
+      const { data } = await queryAsAdminWithSuccess({
+        query: PARTIAL_IMPORT_MUTATION,
+        variables: {
+          file: await zipUpload(),
+          type: 'taxiiFeeds',
+          items: [TAXII_NAME],
+          credentials: [{ type: 'taxiiFeeds', key: TAXII_NAME, values: [{ key: 'username', secret: 'partner' }, { key: 'password', secret: SECRET }] }],
+          service_accounts: [{ type: 'taxiiFeeds', key: TAXII_NAME, user_id: ADMIN_USER.id }],
+        },
+      });
+      const output = data?.configPresetPartialImport;
+      expect(output.counts).toEqual({ created: 1, overwritten: 0, skipped: 0, failed: 0 });
+      expect(JSON.stringify(output)).not.toContain(SECRET);
+      const copy = (await findAllTaxiiIngestion(testContext, ADMIN_USER)).find(({ id }) => !before.has(id))!;
+      expect(output.results).toEqual([{ type: 'taxiiFeeds', key: TAXII_NAME, status: 'CREATED', reason: `Added as "${copy.name}"` }]);
+      expect(copy).toMatchObject({ ingestion_running: false, user_id: ADMIN_USER.id, collection: 'collection-id' });
+      expect(await decryptIngestionCredential(copy.authentication_value)).toEqual(`partner:${SECRET}`);
+      const original = (await findAllTaxiiIngestion(testContext, ADMIN_USER)).find(({ id }) => id === taxiiFeedId)!;
+      expect(await decryptIngestionCredential(original.authentication_value)).toEqual(`analyst:${SECRET}`);
+    });
+  });
+
+  describe('feed file import of one feed, with a feed taken from a bundle', () => {
+    const bundleFeedFile = (content: unknown) => createUploadFromBuffer(Buffer.from(JSON.stringify(content)), 'feed.json', 'application/json');
+
+    it('fills the TAXII creation form, the description of the bundle being null', async () => {
+      const taxiiFile = await exportItem('taxiiFeeds', TAXII_NAME);
+      const { data } = await queryAsAdminWithSuccess({
+        query: gql`query ConfigPresetTaxiiFileImport($file: Upload!) {
+          taxiiFeedAddInputFromImport(file: $file) { name description uri version collection authentication_type ssl_verify confidence_to_score }
+        }`,
+        variables: { file: bundleFeedFile({ ...taxiiFile, configuration: { ...taxiiFile.configuration, ssl_verify: false, confidence_to_score: true } }) },
+      });
+      expect(data?.taxiiFeedAddInputFromImport).toEqual({
+        name: TAXII_NAME,
+        description: '',
+        uri: 'https://taxii.example.com',
+        version: 'v21',
+        collection: 'collection-id',
+        authentication_type: 'basic',
+        ssl_verify: false,
+        confidence_to_score: true,
+      });
+    });
+
+    it('fills the RSS creation form with the markings of the platform among the ones of the bundle', async () => {
+      const rssFile = await exportItem('rssFeeds', RSS_NAME);
+      const markings = [
+        { standard_id: MARKING_TLP_GREEN, definition_type: 'TLP', definition: 'TLP:GREEN' },
+        { standard_id: 'marking-definition--00000000-0000-4000-8000-000000000000', definition_type: 'PAP', definition: 'PAP:UNKNOWN' },
+      ];
+      const { data } = await queryAsAdminWithSuccess({
+        query: gql`query ConfigPresetRssFileImport($file: Upload!) {
+          ingestionRssAddInputFromImport(file: $file) { name uri report_types ssl_verify object_marking_refs { label value } created_by_ref { label value } }
+        }`,
+        variables: {
+          file: bundleFeedFile({
+            ...rssFile,
+            configuration: { ...rssFile.configuration, markings, ssl_verify: false, author: { standard_id: TEST_ORGANIZATION.id, name: TEST_ORGANIZATION.name } },
+          }),
+        },
+      });
+      const imported = data?.ingestionRssAddInputFromImport;
+      expect(imported).toMatchObject({ name: RSS_NAME, uri: 'https://news.example.com/rss', report_types: ['threat-report'], ssl_verify: false });
+      expect(imported.created_by_ref).toEqual({ label: TEST_ORGANIZATION.name, value: expect.any(String) });
+      expect(imported.object_marking_refs).toEqual([{ label: 'TLP:GREEN', value: expect.any(String) }]);
+    });
+
+    it('fills the CSV creation form with the inline mapper of the bundle', async () => {
+      const csvFile = {
+        openCTI_version: '7.261109.0',
+        type: 'integrations.csvFeeds',
+        id: 'Bundle CSV feed',
+        configuration: {
+          name: 'Bundle CSV feed',
+          description: null,
+          scheduling_period: 'PT1H',
+          uri: 'https://csv.example.com/feed.csv',
+          ssl_verify: null,
+          confidence_level: null,
+          authentication_type: 'none',
+          markings: [{ standard_id: MARKING_TLP_GREEN, definition_type: 'TLP', definition: 'TLP:GREEN' }],
+          csv_mapper: { name: 'Bundle CSV mapper', has_header: true, separator: ',', skipLineChar: null, representations: [] },
+        },
+      };
+      const { data } = await queryAsAdminWithSuccess({
+        query: gql`
+          query ConfigPresetCsvFileImport($file: Upload!) {
+            csvFeedAddInputFromImport(file: $file) { name description uri authentication_type authentication_value markings csv_mapper_type csvMapper { name has_header separator } }
+          }
+        `,
+        variables: { file: bundleFeedFile(csvFile) },
+      });
+      const imported = data?.csvFeedAddInputFromImport;
+      expect(imported).toMatchObject({
+        name: 'Bundle CSV feed',
+        description: '',
+        uri: 'https://csv.example.com/feed.csv',
+        authentication_type: 'none',
+        authentication_value: '',
+        csv_mapper_type: 'inline',
+        csvMapper: { name: 'Bundle CSV mapper', has_header: true, separator: ',' },
+      });
+      expect(imported.markings).toHaveLength(1);
+    });
+
+    it('fills the JSON creation form with the markings of the platform among the ones of the bundle', async () => {
+      const jsonFile = {
+        openCTI_version: '7.261109.0',
+        type: 'integrations.jsonFeeds',
+        id: 'Bundle JSON feed',
+        configuration: {
+          name: 'Bundle JSON feed',
+          description: null,
+          scheduling_period: 'PT1H',
+          uri: 'https://api.example.com/indicators',
+          ssl_verify: null,
+          confidence_level: null,
+          authentication_type: 'none',
+          markings: [
+            { standard_id: MARKING_TLP_GREEN, definition_type: 'TLP', definition: 'TLP:GREEN' },
+            { standard_id: 'marking-definition--00000000-0000-4000-8000-000000000000', definition_type: 'PAP', definition: 'PAP:UNKNOWN' },
+          ],
+          verb: 'get',
+          body: null,
+          headers: [],
+          query_attributes: [],
+          json_mapper: { name: 'Bundle JSON mapper', variables: [], representations: [] },
+        },
+      };
+      const { data } = await queryAsAdminWithSuccess({
+        query: gql`
+          mutation ConfigPresetJsonFileImport($file: Upload!) {
+            ingestionJsonAddInputFromImport(file: $file) { name uri markings jsonMapper { id name } }
+          }
+        `,
+        variables: { file: bundleFeedFile(jsonFile) },
+      });
+      const imported = data?.ingestionJsonAddInputFromImport;
+      try {
+        expect(imported).toMatchObject({ name: 'Bundle JSON feed', uri: 'https://api.example.com/indicators', jsonMapper: { name: 'Bundle JSON mapper' } });
+        expect(imported.markings).toHaveLength(1);
+      } finally {
+        await deleteJsonMapper(testContext, ADMIN_USER, imported.jsonMapper.id);
+      }
+    });
+  });
+});

@@ -1,11 +1,33 @@
-import { Dispatch, SetStateAction } from 'react';
-import { PlaybookComponents, PlaybookDefinitionEdge, PlaybookDefinitionNode, PlaybookEdge, PlaybookNode } from '../types/playbook-types';
+import type {
+  PlaybookComponents,
+  PlaybookDefinitionEdge,
+  PlaybookDefinitionNode,
+  PlaybookEdge,
+  PlaybookNode,
+  SetPlaybookAction,
+  SetSelectedPlaybookEdge,
+  SetSelectedPlaybookNode,
+} from '../types/playbook-types';
+
+// The "+" add button on a free out port of a step, and the dashed link leading to it: one per port,
+// so its id is derived from the step and the port, whether the canvas drew it on load or after an edit.
+export const placeholderIdOf = (nodeId: string, portId: string) => `${nodeId}-${portId}-PLACEHOLDER`;
+export const placeholderEdgeIdOf = (nodeId: string, portId: string) => `${nodeId}-${portId}-${placeholderIdOf(nodeId, portId)}`;
+
+// The out ports a step's stored links leave from, 'out' first then by name. A step whose component
+// is not in the catalog (an AI agent component without XTM One, a removed connector) has no port
+// list: its card draws these instead, so its links stay attached to it.
+export const linkedOutPorts = (nodeId: string, links: PlaybookDefinitionEdge[]): string[] => {
+  const ports = new Set(links.filter((link) => link.from?.id === nodeId && link.from.port).map((link) => link.from.port));
+  return [...ports].sort((a, b) => (a === 'out' ? -1 : b === 'out' ? 1 : a < b ? -1 : a > b ? 1 : 0));
+};
 
 export const computeNodes = (
   playbookNodes: PlaybookDefinitionNode[],
   playbookComponents: PlaybookComponents,
-  setAction: Dispatch<SetStateAction<string | null>>,
-  setSelectedNode: Dispatch<SetStateAction<string | null>>,
+  setAction: SetPlaybookAction,
+  setSelectedNode: SetSelectedPlaybookNode,
+  playbookLinks: PlaybookDefinitionEdge[] = [],
 ): PlaybookNode[] => {
   return playbookNodes.map((node) => {
     const component = playbookComponents.find((playbookComponent) => {
@@ -21,20 +43,21 @@ export const computeNodes = (
         description: node.description,
         configuration: node.configuration ? JSON.parse(node.configuration) : undefined,
         component,
-        openConfig: (nodeId: string) => {
-          setSelectedNode(nodeId);
+        linkedPorts: component ? undefined : linkedOutPorts(node.id, playbookLinks),
+        openConfig: (node: PlaybookNode) => {
+          setSelectedNode(node);
           setAction('config');
         },
-        openReplace: (nodeId: string) => {
-          setSelectedNode(nodeId);
+        openReplace: (node: PlaybookNode) => {
+          setSelectedNode(node);
           setAction('replace');
         },
-        openAddSibling: (nodeId: string) => {
-          setSelectedNode(nodeId);
+        openAddSibling: (node: PlaybookNode) => {
+          setSelectedNode(node);
           setAction('add');
         },
-        openDelete: (nodeId: string) => {
-          setSelectedNode(nodeId);
+        openDelete: (node: PlaybookNode) => {
+          setSelectedNode(node);
           setAction('delete');
         },
       },
@@ -44,8 +67,8 @@ export const computeNodes = (
 
 export const computeEdges = (
   playbookEdges: PlaybookDefinitionEdge[],
-  setAction: Dispatch<SetStateAction<string | null>>,
-  setSelectedEdge: Dispatch<SetStateAction<string | null>>,
+  setAction: SetPlaybookAction,
+  setSelectedEdge: SetSelectedPlaybookEdge,
 ): PlaybookEdge[] => {
   return playbookEdges.map((edge) => {
     return {
@@ -55,8 +78,8 @@ export const computeEdges = (
       sourceHandle: edge.from.port,
       target: edge.to.id,
       data: {
-        openConfig: (edgeId: string) => {
-          setSelectedEdge(edgeId);
+        openConfig: (edge: PlaybookEdge) => {
+          setSelectedEdge(edge);
           setAction('config');
         },
       },
@@ -67,8 +90,8 @@ export const computeEdges = (
 export const addPlaceholders = (
   nodes: PlaybookNode[],
   edges: PlaybookEdge[],
-  setAction: Dispatch<SetStateAction<string | null>>,
-  setSelectedNode: Dispatch<SetStateAction<string | null>>,
+  setAction: SetPlaybookAction,
+  setSelectedNode: SetSelectedPlaybookNode,
 ) => {
   if (nodes.length === 0) {
     return {
@@ -81,8 +104,8 @@ export const addPlaceholders = (
             name: '+',
             configuration: null,
             component: { is_entry_point: true },
-            openConfig: (nodeId: string) => {
-              setSelectedNode(nodeId);
+            openConfig: (node: PlaybookNode) => {
+              setSelectedNode(node);
               setAction('config');
             },
           },
@@ -103,7 +126,7 @@ export const addPlaceholders = (
       .length === 0,
   );
   const placeholders = notConnectedNodesOutputs.map((notConnectedNodeOutput) => {
-    const childPlaceholderId = `${notConnectedNodeOutput?.id}-${notConnectedNodeOutput?.port_id}-PLACEHOLDER`;
+    const childPlaceholderId = placeholderIdOf(notConnectedNodeOutput.id, notConnectedNodeOutput.port_id);
     const childPlaceholderNode = {
       id: childPlaceholderId,
       position: { x: notConnectedNodeOutput?.position.x, y: notConnectedNodeOutput?.position.y },
@@ -112,14 +135,14 @@ export const addPlaceholders = (
         name: '+',
         configuration: null,
         component: { is_entry_point: false },
-        openConfig: (nodeId: string) => {
-          setSelectedNode(nodeId);
+        openConfig: (node: PlaybookNode) => {
+          setSelectedNode(node);
           setAction('config');
         },
       },
     };
     const childPlaceholderEdge = {
-      id: `${notConnectedNodeOutput?.id}-${notConnectedNodeOutput?.port_id}-${childPlaceholderId}`,
+      id: placeholderEdgeIdOf(notConnectedNodeOutput.id, notConnectedNodeOutput.port_id),
       type: 'placeholder',
       source: notConnectedNodeOutput?.id,
       sourceHandle: notConnectedNodeOutput?.port_id,

@@ -117,9 +117,12 @@ const store = new Store(new RecordSource());
 // Connector: a sync's built-in twin connector shares the sync id (queue key), so
 // it must not collide with the Synchronizer record in the store.
 const namespacedTypenames = new Set(['MeUser', 'PublicSettings', 'Connector']);
+// Dashboard variables and presets keep their ids through duplication and import: two dashboards share them, so they
+// are never normalized by id (Relay then keys them under their dashboard).
+const unkeyedTypenames = new Set(['DashboardVariable', 'DashboardPreset']);
 export const getDataID = (fieldValue: { id?: string } | null | undefined, typeName: string) => {
   const id = fieldValue?.id;
-  if (!id) return null;
+  if (!id || unkeyedTypenames.has(typeName)) return null;
   if (namespacedTypenames.has(typeName)) {
     return `${typeName}:${id}`;
   }
@@ -268,7 +271,7 @@ export const handleErrorInForm = (
   if (formattedError?.data && formattedError.data.field) {
     setErrors({
       [formattedError.data.field]:
-      formattedError.data.message || formattedError.data.reason,
+        formattedError.data.message || formattedError.data.reason,
     });
   } else {
     const messages = (error.res.errors ?? []).map(

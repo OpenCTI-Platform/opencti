@@ -1,7 +1,7 @@
 import { getBaseUrl, getPlatformHttpProxyAgent } from '../../config/conf';
 import type { Request } from 'express';
-import { allowInsecureRequests, buildEndSessionUrl, customFetch, discovery as oidcDiscovery, fetchUserInfo, skipSubjectCheck } from 'openid-client';
-import type { CustomFetch } from 'openid-client';
+import { allowInsecureRequests, buildEndSessionUrl, ClientSecretBasic, customFetch, discovery as oidcDiscovery, fetchUserInfo, skipSubjectCheck } from 'openid-client';
+import type { ClientAuth, CustomFetch } from 'openid-client';
 import { fetch } from 'undici';
 import type { AuthenticateOptions, StrategyOptionsWithRequest, VerifyFunctionWithRequest } from 'openid-client/passport';
 import { Strategy as OpenIDStrategy } from 'openid-client/passport';
@@ -22,6 +22,22 @@ const buildProxiedFetch = (issuerUrl: URL): CustomFetch => {
   return (url, options) => fetch(url, { ...options, dispatcher }) as Promise<Response>;
 };
 
+// openid-client v6 ignores token_endpoint_auth_method in metadata and defaults to client_secret_post
+export const buildClientAuthentication = (
+  logger: AuthenticationProviderLogger,
+  extraConf: Record<string, unknown>,
+  clientSecret: string,
+): ClientAuth | undefined => {
+  const method = extraConf.token_endpoint_auth_method;
+  if (method === 'client_secret_basic') {
+    return ClientSecretBasic(clientSecret);
+  }
+  if (method !== undefined && method !== 'client_secret_post') {
+    logger.warn('Unsupported token_endpoint_auth_method, falling back to client_secret_post', { token_endpoint_auth_method: method });
+  }
+  return undefined;
+};
+
 export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger, meta: ProviderMeta, conf: OidcStoreConfiguration) => {
   const secretsProvider = await retrieveSecrets(conf);
   const client_secret = await secretsProvider.mandatory('client_secret');
@@ -31,6 +47,7 @@ export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger,
 
   const issuer = new URL(conf.issuer);
   const customFetchImpl = conf.use_proxy ? buildProxiedFetch(issuer) : undefined;
+  const clientAuthentication = buildClientAuthentication(logger, extraConf, client_secret);
 
   const config = await oidcDiscovery(
     issuer,
@@ -39,7 +56,7 @@ export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger,
       ...extraConf,
       client_secret,
     },
-    undefined,
+    clientAuthentication,
     {
       [customFetch]: customFetchImpl,
       execute: [allowInsecureRequests],

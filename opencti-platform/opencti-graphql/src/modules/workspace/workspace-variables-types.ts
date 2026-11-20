@@ -3,10 +3,10 @@ import type { FilterGroup } from '../../generated/graphql';
 export type DashboardVariableTypeName = 'vocabulary' | 'killChainPhase' | 'entity' | 'entityType' | 'label' | 'user'
   | 'marking' | 'status' | 'group' | 'boolean' | 'numeric' | 'text' | 'date';
 
-export type StoreDashboardVariableRestriction
-  = | { mode: 'none' }
-    | { mode: 'selection'; values: string[] }
-    | { mode: 'filters'; filters: FilterGroup };
+export type StoreDashboardVariableRestriction =
+  | { mode: 'none' }
+  | { mode: 'selection'; values: string[] }
+  | { mode: 'filters'; filters: FilterGroup };
 
 interface StoreDashboardVariableBase {
   id: string;
@@ -28,11 +28,26 @@ interface StoreDashboardManifestSelection {
   dynamicTo?: FilterGroup | null;
 }
 
+// The time range a preset restores: a relative date always comes alone (picking one clears the absolute dates).
+export interface StoreDashboardTimeRange {
+  startDate: string | null;
+  endDate: string | null;
+  relativeDate: string | null;
+}
+
+// A named set of variable values and a time range, saved on the dashboard and restored in one click.
+export interface StoreDashboardPreset {
+  id: string;
+  name: string;
+  values: Record<string, string>; // variable id -> value
+  config: StoreDashboardTimeRange;
+}
+
 export interface StoreDashboardManifest {
   config?: Record<string, unknown>;
   widgets?: Record<string, { dataSelection?: StoreDashboardManifestSelection[] }>;
   variables?: StoreDashboardVariable[];
-  presets?: unknown[];
+  presets?: StoreDashboardPreset[];
 }
 
 // Keys only the typed GraphQL API may write: a full manifest sent by a client never overrides them.
@@ -46,3 +61,5 @@ export const DASHBOARD_VARIABLE_ID_TYPES: ReadonlySet<DashboardVariableTypeName>
 export const DASHBOARD_VARIABLES_MAX_COUNT = 50;
 export const DASHBOARD_VARIABLE_NAME_MAX_LENGTH = 200;
 export const DASHBOARD_VARIABLE_SELECTION_MAX_VALUES = 200;
+export const DASHBOARD_PRESETS_MAX_COUNT = 50;
+export const DASHBOARD_PRESET_NAME_MAX_LENGTH = 200;

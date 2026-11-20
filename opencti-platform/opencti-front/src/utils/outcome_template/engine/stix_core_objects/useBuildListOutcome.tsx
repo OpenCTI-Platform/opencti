@@ -21,12 +21,12 @@ export type ListOutcome = {
 
 type ListItem = object & { id: string };
 type DisplayScalar = string | number | boolean;
-type DisplayInputValue
-  = | DisplayScalar
-    | null
-    | undefined
-    | DisplayInputValue[]
-    | { [key: string]: DisplayInputValue };
+type DisplayInputValue =
+  | DisplayScalar
+  | null
+  | undefined
+  | DisplayInputValue[]
+  | { [key: string]: DisplayInputValue };
 type NormalizedDisplayValue = DisplayScalar | DisplayScalar[];
 
 const resolveWorkflowPath = (attribute?: string | null) => {
