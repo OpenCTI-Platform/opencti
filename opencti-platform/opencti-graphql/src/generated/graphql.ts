@@ -26069,7 +26069,6 @@ export type Query = {
   workspace?: Maybe<Workspace>;
   workspaces?: Maybe<WorkspaceConnection>;
   xtmConnections: Array<XtmConnection>;
-  xtmCounterparts: Array<XtmCounterpart>;
   xtmCounterpartsOf: Array<XtmCounterpartResult>;
 };
 
@@ -29468,12 +29467,6 @@ export type QueryWorkspacesArgs = {
   orderBy?: InputMaybe<WorkspacesOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type QueryXtmCounterpartsArgs = {
-  keys: Array<Scalars['String']['input']>;
-  kind: XtmCounterpartKind;
 };
 
 
@@ -41010,14 +41003,6 @@ export type XtmCounterpartFact = {
   value: Scalars['String']['output'];
 };
 
-export enum XtmCounterpartKind {
-  Alert = 'ALERT',
-  Asset = 'ASSET',
-  AttackPattern = 'ATTACK_PATTERN',
-  Threat = 'THREAT',
-  Vulnerability = 'VULNERABILITY'
-}
-
 export type XtmCounterpartResult = {
   __typename?: 'XtmCounterpartResult';
   counterpart?: Maybe<XtmCounterpart>;
@@ -43186,7 +43171,6 @@ export type ResolversTypes = ResolversObject<{
   XtmConnection: ResolverTypeWrapper<XtmConnection>;
   XtmCounterpart: ResolverTypeWrapper<XtmCounterpart>;
   XtmCounterpartFact: ResolverTypeWrapper<XtmCounterpartFact>;
-  XtmCounterpartKind: XtmCounterpartKind;
   XtmCounterpartResult: ResolverTypeWrapper<XtmCounterpartResult>;
   XtmCounterpartStatus: XtmCounterpartStatus;
 }>;
@@ -52982,7 +52966,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   workspace?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<QueryWorkspaceArgs, 'id'>>;
   workspaces?: Resolver<Maybe<ResolversTypes['WorkspaceConnection']>, ParentType, ContextType, Partial<QueryWorkspacesArgs>>;
   xtmConnections?: Resolver<Array<ResolversTypes['XtmConnection']>, ParentType, ContextType>;
-  xtmCounterparts?: Resolver<Array<ResolversTypes['XtmCounterpart']>, ParentType, ContextType, RequireFields<QueryXtmCounterpartsArgs, 'keys' | 'kind'>>;
   xtmCounterpartsOf?: Resolver<Array<ResolversTypes['XtmCounterpartResult']>, ParentType, ContextType, RequireFields<QueryXtmCounterpartsOfArgs, 'ids'>>;
 }>;
 
