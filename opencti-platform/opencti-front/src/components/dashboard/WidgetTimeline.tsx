@@ -52,7 +52,7 @@ const WidgetTimeline = ({ data, dateAttribute = 'created_at' }: WidgetTimelinePr
               </TimelineOppositeContent>
               <TimelineSeparator>
                 {link ? (
-                  <Link to={link}>
+                  <Link to={link} aria-label={getMainRepresentative(value)}>
                     <TimelineDot
                       sx={{ borderColor: itemColor(value.entity_type) }}
                       variant="outlined"
