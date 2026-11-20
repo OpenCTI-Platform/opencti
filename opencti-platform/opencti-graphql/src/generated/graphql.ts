@@ -25927,6 +25927,7 @@ export type Query = {
   sessions?: Maybe<Array<Maybe<UserSession>>>;
   settings: Settings;
   smtpConfiguration?: Maybe<SmtpConfiguration>;
+  smtpConfigurationDefaults: SmtpConfigurationDefaults;
   status?: Maybe<Status>;
   statusTemplate?: Maybe<StatusTemplate>;
   statusTemplates?: Maybe<StatusTemplateConnection>;
@@ -32424,6 +32425,7 @@ export type SmtpConfiguration = {
   oauth_user?: Maybe<Scalars['String']['output']>;
   port?: Maybe<Scalars['Int']['output']>;
   reject_unauthorized?: Maybe<Scalars['Boolean']['output']>;
+  require_tls?: Maybe<Scalars['Boolean']['output']>;
   sender_email_address?: Maybe<Scalars['String']['output']>;
   smtp_enabled: Scalars['Boolean']['output'];
   use_db_config: Scalars['Boolean']['output'];
@@ -32444,11 +32446,17 @@ export type SmtpConfigurationAddInput = {
   password?: InputMaybe<Scalars['String']['input']>;
   port?: InputMaybe<Scalars['Int']['input']>;
   reject_unauthorized?: InputMaybe<Scalars['Boolean']['input']>;
+  require_tls?: InputMaybe<Scalars['Boolean']['input']>;
   sender_email_address?: InputMaybe<Scalars['String']['input']>;
   smtp_enabled?: InputMaybe<Scalars['Boolean']['input']>;
   use_db_config?: InputMaybe<Scalars['Boolean']['input']>;
   use_ssl?: InputMaybe<Scalars['Boolean']['input']>;
   username?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type SmtpConfigurationDefaults = {
+  __typename?: 'SmtpConfigurationDefaults';
+  require_tls: Scalars['Boolean']['output'];
 };
 
 export type Software = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -42813,6 +42821,7 @@ export type ResolversTypes = ResolversObject<{
   SmtpAuthType: SmtpAuthType;
   SmtpConfiguration: ResolverTypeWrapper<SmtpConfiguration>;
   SmtpConfigurationAddInput: SmtpConfigurationAddInput;
+  SmtpConfigurationDefaults: ResolverTypeWrapper<SmtpConfigurationDefaults>;
   Software: ResolverTypeWrapper<Omit<Software, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'vulnerabilities' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, creators?: Maybe<Array<ResolversTypes['Creator']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, vulnerabilities?: Maybe<ResolversTypes['VulnerabilityConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   SoftwareAddInput: SoftwareAddInput;
   SoftwareConnection: ResolverTypeWrapper<Omit<SoftwareConnection, 'edges'> & { edges: Array<ResolversTypes['SoftwareEdge']> }>;
@@ -43946,6 +43955,7 @@ export type ResolversParentTypes = ResolversObject<{
   SettingsMessageInput: SettingsMessageInput;
   SmtpConfiguration: SmtpConfiguration;
   SmtpConfigurationAddInput: SmtpConfigurationAddInput;
+  SmtpConfigurationDefaults: SmtpConfigurationDefaults;
   Software: Omit<Software, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'vulnerabilities' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, vulnerabilities?: Maybe<ResolversParentTypes['VulnerabilityConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   SoftwareAddInput: SoftwareAddInput;
   SoftwareConnection: Omit<SoftwareConnection, 'edges'> & { edges: Array<ResolversParentTypes['SoftwareEdge']> };
@@ -52779,6 +52789,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserSession']>>>, ParentType, ContextType>;
   settings?: Resolver<ResolversTypes['Settings'], ParentType, ContextType>;
   smtpConfiguration?: Resolver<Maybe<ResolversTypes['SmtpConfiguration']>, ParentType, ContextType>;
+  smtpConfigurationDefaults?: Resolver<ResolversTypes['SmtpConfigurationDefaults'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType, RequireFields<QueryStatusArgs, 'id'>>;
   statusTemplate?: Resolver<Maybe<ResolversTypes['StatusTemplate']>, ParentType, ContextType, RequireFields<QueryStatusTemplateArgs, 'id'>>;
   statusTemplates?: Resolver<Maybe<ResolversTypes['StatusTemplateConnection']>, ParentType, ContextType, Partial<QueryStatusTemplatesArgs>>;
@@ -53970,11 +53981,16 @@ export type SmtpConfigurationResolvers<ContextType = any, ParentType extends Res
   oauth_user?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   port?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   reject_unauthorized?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  require_tls?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   sender_email_address?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   smtp_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   use_db_config?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   use_ssl?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   username?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type SmtpConfigurationDefaultsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SmtpConfigurationDefaults'] = ResolversParentTypes['SmtpConfigurationDefaults']> = ResolversObject<{
+  require_tls?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
 export type SoftwareResolvers<ContextType = any, ParentType extends ResolversParentTypes['Software'] = ResolversParentTypes['Software']> = ResolversObject<{
@@ -57458,6 +57474,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   SettingsEditMutations?: SettingsEditMutationsResolvers<ContextType>;
   SettingsMessage?: SettingsMessageResolvers<ContextType>;
   SmtpConfiguration?: SmtpConfigurationResolvers<ContextType>;
+  SmtpConfigurationDefaults?: SmtpConfigurationDefaultsResolvers<ContextType>;
   Software?: SoftwareResolvers<ContextType>;
   SoftwareConnection?: SoftwareConnectionResolvers<ContextType>;
   SoftwareEdge?: SoftwareEdgeResolvers<ContextType>;

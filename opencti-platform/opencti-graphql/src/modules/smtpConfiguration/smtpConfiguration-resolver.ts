@@ -1,9 +1,10 @@
 import type { Resolvers } from '../../generated/graphql';
-import { getSmtpConfiguration, smtpConfigurationDelete, smtpConfigurationEdit, smtpConfigurationTest } from './smtpConfiguration-domain';
+import { getSmtpConfiguration, getSmtpConfigurationDefaults, smtpConfigurationDelete, smtpConfigurationEdit, smtpConfigurationTest } from './smtpConfiguration-domain';
 
 const smtpConfigurationResolvers: Resolvers = {
   Query: {
     smtpConfiguration: (_, __, context) => getSmtpConfiguration(context, context.user!),
+    smtpConfigurationDefaults: () => getSmtpConfigurationDefaults(),
   },
   Mutation: {
     smtpConfigurationEdit: (_, { input }, context) => smtpConfigurationEdit(context, context.user!, input),
