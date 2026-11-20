@@ -235,7 +235,7 @@ test('Dashboard CRUD', { tag: ['@ce'] }, async ({ page }) => {
   await widgetsPage.getItemFromWidgetTimeline(malwareName).click();
   await expect(malwareDetailsPage.getTitle(malwareName)).toBeVisible();
 
-  await widgetsPage.getIconFromWidgetTimeline().click();
+  await widgetsPage.getIconFromWidgetTimeline(malwareName).click();
   await expect(malwareDetailsPage.getTitle(malwareName)).toBeVisible();
 
   // ---------

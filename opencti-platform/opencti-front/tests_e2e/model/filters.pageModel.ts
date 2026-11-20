@@ -179,7 +179,8 @@ export default class FiltersPageModel {
   // endregion
 
   async removeLastFilter() {
-    await expect(this.root.getByTestId('CancelIcon').last()).toBeVisible();
-    await this.root.getByTestId('CancelIcon').last().click({ force: true });
+    const removeButton = this.root.getByRole('button', { name: /^Remove/ }).last();
+    await expect(removeButton).toBeVisible();
+    await removeButton.click({ force: true });
   }
 }
