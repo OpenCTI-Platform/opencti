@@ -36,6 +36,7 @@ describe('Dashboard configuration of a bundle (schema)', () => {
     ['a manifest that is not an object', { name: 'SOC overview', manifest: toB64([1]) }],
     ['a widget that is not an object', { name: 'SOC overview', manifest: toB64({ widgets: { widget1: 'text' } }) }],
     ['a widget without data selection', { name: 'SOC overview', manifest: toB64({ widgets: { widget1: { id: 'widget1', type: 'number' } } }) }],
+    ['a data selection that holds a null', { name: 'SOC overview', manifest: toB64({ widgets: { widget1: { id: 'widget1', dataSelection: [null] } } }) }],
     ['widgets that are a list', { name: 'SOC overview', manifest: toB64({ widgets: [widget] }) }],
     ['variables that are not a list', { name: 'SOC overview', manifest: toB64({ widgets: {}, variables: {} }) }],
   ])('refuses %s', (_label, configuration) => {
