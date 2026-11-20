@@ -15,7 +15,6 @@ const item: DeployedIntegrationItem = {
   sectionKey: 'csv',
   name: 'Abuse CSV feed',
   status: 'active',
-  statusLabel: 'Active',
   messagesCount: null,
   throughputRate: null,
   lastRunDate: null,
@@ -41,13 +40,13 @@ describe('DeployedIntegrationLine', () => {
 
   it('keeps the status cell from following the line link', async () => {
     const { user } = testRender(<DeployedIntegrationLine item={item} onChange={vi.fn()} />, { route: '/dashboard/integrations/deployed' });
-    await user.click(screen.getByText('Active'));
+    await user.click(screen.getByText('Started'));
     expect(window.location.pathname).toBe('/dashboard/integrations/deployed');
   });
 
   it('keeps a middle click on the status cell from opening the line link in a new tab', () => {
     testRender(<DeployedIntegrationLine item={item} onChange={vi.fn()} />, { route: '/dashboard/integrations/deployed' });
     const middleClick = new MouseEvent('auxclick', { bubbles: true, cancelable: true, button: 1 });
-    expect(fireEvent(screen.getByText('Active'), middleClick)).toBe(false);
+    expect(fireEvent(screen.getByText('Started'), middleClick)).toBe(false);
   });
 });

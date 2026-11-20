@@ -141,11 +141,11 @@ const inject18n = (WrappedComponent) => {
         }
         return this.props.intl.formatDate(date, { year: 'numeric' });
       };
-      const tableDate = (date) => {
+      const tableDate = (date, month) => {
         if (isNone(date)) {
           return EMPTY_VALUE;
         }
-        return formatTableDate(this.props.intl, date, this.props.dateDisplay, 'none');
+        return formatTableDate(this.props.intl, date, this.props.dateDisplay, 'none', month);
       };
       const tableDateTime = (date, month) => {
         if (isNone(date)) {
@@ -394,13 +394,14 @@ export const useFormatter = () => {
   /**
    * Date of a table cell, displayed as the user set it. Date only by default, like fd.
    * @param date
+   * @param {'short' | 'long' | 'numeric'} [month] how the month is written by default: 'short' like fd, 'long' like fld, 'numeric' like nsd
    * @returns {string}
    */
-  const tableDate = (date) => {
+  const tableDate = (date, month) => {
     if (isNone(date)) {
       return EMPTY_VALUE;
     }
-    return formatTableDate(intl, date, dateDisplay, 'none');
+    return formatTableDate(intl, date, dateDisplay, 'none', month);
   };
   /**
    * Date of a table cell, displayed as the user set it. With seconds by default, like nsdt.

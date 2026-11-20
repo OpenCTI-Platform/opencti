@@ -1,10 +1,10 @@
 import * as R from 'ramda';
 import { elCount, elPaginate, type PaginateOpts, elCardinalityCount } from '../database/engine';
-import { distributionHistory, timeSeriesHistory } from '../database/middleware';
+import { distributionHistory, timeSeriesBreakdownHistory, timeSeriesHistory } from '../database/middleware';
 import { READ_INDEX_HISTORY } from '../database/utils';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
-import { OrderingMode, type QueryAuditsArgs, type QueryLogsArgs } from '../generated/graphql';
+import { OrderingMode, type QueryAuditsArgs, type QueryAuditsTimeSeriesBreakdownArgs, type QueryLogsArgs } from '../generated/graphql';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { isUserHasCapability, KNOWLEDGE, SETTINGS_SECURITYACTIVITY } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';
@@ -88,6 +88,12 @@ export const auditsMultiTimeSeries = (context: AuthContext, user: AuthUser, args
     const types = computeAuditTypes(user, timeSeriesParameter.types);
     return { data: timeSeriesHistory(context, user, { ...args, historyFiltering: true, ...timeSeriesParameter, types }) };
   }));
+};
+
+// Same capabilities and restrictions as auditsMultiTimeSeries: the types the user can see, with the history filtering
+export const auditsTimeSeriesBreakdown = (context: AuthContext, user: AuthUser, args: QueryAuditsTimeSeriesBreakdownArgs) => {
+  const types = computeAuditTypes(user, args.types?.filter((type): type is string => !!type));
+  return timeSeriesBreakdownHistory(context, user, { ...args, types, historyFiltering: true });
 };
 
 export const auditsDistribution = async (context: AuthContext, user: AuthUser, args: any) => {

@@ -1,14 +1,17 @@
 import { environment, getStoppingState, logApp, setStoppingState } from './config/conf';
-import platformInit, { checkFeatureFlags } from './initialization';
+import platformInit, { checkFeatureFlags, checkGraphqlSecurity, checkHttpSecurity, checkTlsVerification } from './initialization';
+import { checkOutboundRequests } from './utils/internal-destination';
 import cacheManager from './manager/cacheManager';
 import { shutdownRedisClients } from './database/redis';
 import { shutdownModules, startModules } from './managers';
 import { initLockFork } from './lock/master-lock';
 import { checkSystemDependencies } from './boot-utils';
+import { checkDefaultCredentials } from './config/default-credentials';
 import { startLivenessServer, stopLivenessServer } from './http/httpLiveness';
 import { startEngineHealthMonitor, stopEngineHealthMonitor } from './database/engine-monitoring';
 import { startPlatformHealthMonitor, stopPlatformHealthMonitor } from './telemetry/platformHealthMetrics';
 import { shutdownSafeEjsPool } from './utils/safeEjs.pool';
+import { shutdownJsonPathPool } from './utils/jsonPath.client';
 
 // region platform start and stop
 // Track the in-flight startup so a shutdown signal received while the platform is still
@@ -35,6 +38,21 @@ const doPlatformStart = async () => {
       throw livenessError;
     }
     checkFeatureFlags();
+    checkTlsVerification();
+    checkGraphqlSecurity();
+    checkHttpSecurity();
+    try {
+      checkDefaultCredentials();
+    } catch (credentialsError) {
+      logApp.error('[OPENCTI] Default credentials check failed', { cause: credentialsError });
+      throw credentialsError;
+    }
+    try {
+      checkOutboundRequests();
+    } catch (outboundRequestsError) {
+      logApp.error('[OPENCTI] Outbound requests configuration is invalid', { cause: outboundRequestsError });
+      throw outboundRequestsError;
+    }
     // Check all dependencies access
     try {
       await checkSystemDependencies();
@@ -98,6 +116,8 @@ export const platformStop = async () => {
   await shutdownModules();
   // Shutdown the safe-ejs worker pool
   await shutdownSafeEjsPool();
+  // Shutdown the JSONPath worker pool
+  await shutdownJsonPathPool();
   // Shutdown the redis clients
   shutdownRedisClients();
   logApp.info(`[OPENCTI] Platform stopped ${new Date().getTime() - stopTime} ms`);

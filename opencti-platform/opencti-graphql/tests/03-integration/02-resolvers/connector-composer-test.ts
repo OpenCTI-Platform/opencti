@@ -13,6 +13,7 @@ import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 import { synchronizeCatalogs } from '../../../src/modules/catalog/sync/catalog-sync-domain';
 import conf from '../../../src/config/conf';
 import { connector } from '../../../src/modules/connector/connector-domain';
+import { EXCLUDED_CONFIG_VARS } from '../../../src/modules/catalog/catalog-domain';
 
 const TEST_COMPOSER_ID = uuidv4();
 const TEST_USER_CONNECTOR_ID: string = USER_CONNECTOR.id; // Initialize with default value
@@ -488,6 +489,19 @@ describe('Connector Composer and Managed Connectors', () => {
       });
 
       expect(connectorResult.data?.connector.manager_current_status).toEqual('started');
+    });
+
+    it('should keep the order of the contract options once the connector is updated', async () => {
+      // The deployment updated the connector, which rewrites its contract snapshot in Elasticsearch
+      const expectedOrder = Object.keys(catalogHelper.getTestSafeConnector().config_schema.properties)
+        .filter((key) => !EXCLUDED_CONFIG_VARS.includes(key));
+      const connectorResult = await queryAsAdminWithSuccess({
+        query: GET_CONNECTOR_MANAGER_CONTRACT_ENDPOINTS_QUERY,
+        variables: { id: deploymentConnectorId },
+      });
+      const contract = JSON.parse(connectorResult.data?.connector.manager_contract_definition);
+      expect(Object.keys(contract.config_schema.properties)).toEqual(expectedOrder);
+      expect(contract.config_schema.properties_order).toBeUndefined();
     });
 
     it('should start a deployed connector', async () => {

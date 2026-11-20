@@ -4,9 +4,13 @@ OpenCTI includes a built-in HTTP rate limiter that protects the platform against
 
 ## How it works
 
-The rate limiter uses a sliding time window to track the number of requests per unique client. Each client is identified by a combination of its **IP address** and **User-Agent** header, meaning two different user agents behind the same IP are tracked independently.
+The rate limiter uses a fixed time window to track the number of requests per unique client. Each client is identified by a combination of its **IP address** and **User-Agent** header, meaning two different user agents behind the same IP are tracked independently.
 
 When a client exceeds the configured maximum number of requests within the time window, subsequent requests receive a `429 Too Many Requests` response until the window resets.
+
+!!! warning "Workers and connectors behind a shared IP address"
+
+    Workers send the same User-Agent (`pycti/<version>`), and so do connectors. When they reach the platform through one IP address (NAT, or a reverse proxy that is not trusted, see `trust_proxy_addresses` in the [configuration](../configuration.md)), they share one rate limit budget. Heavy ingestion can then receive `429` responses until the window resets. Trust the reverse proxy so each client keeps its own IP address, or exempt the worker and connector network with `ip_skip_ranges` or `ip_skip_list`.
 
 ## Configuration parameters
 
@@ -14,8 +18,8 @@ All rate limiting parameters are configured under `app:rate_protection` in the p
 
 | Parameter                                      | Environment variable                             | Default | Description                                                                                                                                                   |
 |:-----------------------------------------------|:-------------------------------------------------|:--------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `app:rate_protection:max_requests`             | `APP__RATE_PROTECTION__MAX_REQUESTS`             | `10000` | Maximum number of requests allowed per client (IP + User-Agent) within the time window. Set to `0` to deny all requests.                                      |
-| `app:rate_protection:time_window`              | `APP__RATE_PROTECTION__TIME_WINDOW`              | `1`     | Duration of the sliding time window in **seconds**. Values below 1 are treated as 1 second.                                                                   |
+| `app:rate_protection:max_requests`             | `APP__RATE_PROTECTION__MAX_REQUESTS`             | `10000` (`30000` if `app:http:secure_by_default`) | Maximum number of requests allowed per client (IP + User-Agent) within the time window. Set to `0` to deny all requests.                                      |
+| `app:rate_protection:time_window`              | `APP__RATE_PROTECTION__TIME_WINDOW`              | `1` (`60` if `app:http:secure_by_default`) | Duration of the time window in **seconds**. Values below 1 are treated as 1 second.                                                                   |
 | `app:rate_protection:ip_skip_list`             | `APP__RATE_PROTECTION__IP_SKIP_LIST`             | `[]`    | JSON array of exact IP addresses that bypass rate limiting entirely.                                                                                          |
 | `app:rate_protection:ip_skip_ranges`           | `APP__RATE_PROTECTION__IP_SKIP_RANGES`           | `[]`    | JSON array of CIDR ranges whose matching IPs bypass rate limiting. Supports both IPv4 and IPv6.                                                               |
 | `app:rate_protection:user_agent_skip_prefixes` | `APP__RATE_PROTECTION__USER_AGENT_SKIP_PREFIXES` | `[]`    | JSON array of User-Agent prefixes. Requests whose `User-Agent` header starts with any of these values are not rate limited. Matching is **case-insensitive**. |

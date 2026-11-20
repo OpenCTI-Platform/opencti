@@ -15,6 +15,7 @@ import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSo
 import { RelayError } from '../../../../relay/relayTypes';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import SwitchField from '../../../../components/fields/SwitchField';
+import ColorPickerField from '../../../../components/ColorPickerField';
 
 const Buttons = styled('div')({
   marginTop: 20,
@@ -34,6 +35,7 @@ const attributeValidation = (t: (s: string) => string) => Yup.object().shape({
   description: Yup.string().nullable(),
   order: Yup.number().nullable().integer(t('The value must be a number')),
   is_hidden: Yup.boolean().nullable(),
+  color: Yup.string().nullable().matches(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, { excludeEmptyString: true, message: t('The value must be a hex color, for example #e53935') }),
 });
 
 interface VocabularyEditionFormikValues {
@@ -42,6 +44,7 @@ interface VocabularyEditionFormikValues {
   aliases: { id: string; label: string; value: string }[];
   order: number | null | undefined;
   is_hidden: boolean | null | undefined;
+  color: string;
 }
 
 const VocabularyEdition = ({
@@ -68,6 +71,7 @@ const VocabularyEdition = ({
         name: vocab.name,
         aliases: vocab.aliases ?? [],
         description: vocab.description ?? '',
+        color: vocab.color ?? '',
       },
     );
     if (input.length > 0) {
@@ -101,6 +105,7 @@ const VocabularyEdition = ({
         description: vocab.description ?? '',
         order: vocab.order,
         is_hidden: vocab.is_hidden,
+        color: vocab.color ?? '',
       }}
       validationSchema={attributeValidation(t_i18n)}
       onSubmit={onSubmit}
@@ -146,6 +151,15 @@ const VocabularyEdition = ({
             label={t_i18n('Order')}
             fullWidth={true}
             type="number"
+            className="mt-5"
+          />
+          <Field
+            component={ColorPickerField}
+            variant="outlined"
+            name="color"
+            label={t_i18n('Color')}
+            helperText={t_i18n('Color of the value wherever it is shown as a tag. Empty: the neutral tag.')}
+            fullWidth={true}
             className="mt-5"
           />
           <Field

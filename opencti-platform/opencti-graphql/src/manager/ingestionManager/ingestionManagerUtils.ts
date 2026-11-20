@@ -1,6 +1,7 @@
 import { HttpClientError } from '../../utils/http-client';
 import { redisPushIngestionLog } from '../../database/redis';
 import { logApp } from '../../config/conf';
+import { INTERNAL_DESTINATION_ERROR_CODE } from '../../utils/internal-destination';
 
 export interface IngestionLogger {
   info: (message: string, meta?: Record<string, unknown>) => void;
@@ -39,6 +40,8 @@ export const buildIngestionErrorMeta = (e: Error): Record<string, unknown> => {
   if (e instanceof HttpClientError) {
     return {
       error_code: e.code,
+      // The blocked host and the setting allowing it: the user needs them to fix the feed
+      ...(e.code === INTERNAL_DESTINATION_ERROR_CODE ? { error: e.message } : {}),
       ...(e.response ? {
         http_status: e.response.status,
         http_status_text: e.response.statusText,

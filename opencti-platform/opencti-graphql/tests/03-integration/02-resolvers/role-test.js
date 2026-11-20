@@ -70,7 +70,7 @@ describe('Role resolver standard behavior', () => {
     expect(queryResult.data.role.id).toEqual(roleInternalId);
   });
   it('should list roles', async () => {
-    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 100 } });
     expect(queryResult.data.roles.edges.length).toEqual(TESTING_ROLES.length + 4);
   });
   it('should list capabilities', async () => {

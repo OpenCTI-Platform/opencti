@@ -1,5 +1,3 @@
-import type { FileHandle } from 'fs/promises';
-import { z } from 'zod';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { updateAttribute } from '../../database/middleware';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
@@ -11,7 +9,6 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityTheme, type StoreEntityTheme } from './theme-types';
 import { FunctionalError } from '../../config/errors';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
-import { extractContentFrom } from '../../utils/fileToContent';
 import { SYSTEM_USER } from '../../utils/access';
 import { BUILT_IN_THEME_STANDARD_IDS, DARK_DEFAULTS, FILIGRAN_DARK_THEME_NAME, FILIGRAN_LIGHT_THEME_NAME, LIGHT_DEFAULTS } from './theme-constants';
 
@@ -36,7 +33,7 @@ export const findAllThemes = async (context: AuthContext, user: AuthUser, args: 
  * @param excludeThemeId Optional theme id to exclude from the match (e.g. the theme being renamed).
  * @returns True when another theme already uses the given name.
  */
-const checkExistingTheme = async (context: AuthContext, user: AuthUser, themeName: string, excludeThemeId?: string) => {
+export const checkExistingTheme = async (context: AuthContext, user: AuthUser, themeName: string, excludeThemeId?: string) => {
   const filters = {
     mode: FilterMode.And,
     filters: [{ key: ['name'], values: [themeName], operator: FilterOperator.Eq }],
@@ -170,49 +167,4 @@ export const fieldPatchTheme = async (context: AuthContext, user: AuthUser, them
   });
 
   return notify(BUS_TOPICS[ENTITY_TYPE_THEME].EDIT_TOPIC, element, user);
-};
-
-const themeImportSchema = z.object({
-  name: z.string().min(1, 'Theme name is required'),
-  theme_background: z.string().min(1, 'Background color is required'),
-  theme_paper: z.string().min(1, 'Paper color is required'),
-  theme_nav: z.string().min(1, 'Nav color is required'),
-  theme_primary: z.string().min(1, 'Primary color is required'),
-  theme_secondary: z.string().min(1, 'Secondary color is required'),
-  theme_accent: z.string().min(1, 'Accent color is required'),
-  theme_text_color: z.string().min(1, 'Text color is required'),
-  theme_logo: z.string().optional().default(''),
-  theme_logo_collapsed: z.string().optional().default(''),
-  theme_logo_login: z.string().optional().default(''),
-  theme_login_aside_color: z.string().nullable().optional().default(null),
-  theme_login_aside_gradient_start: z.string().nullable().optional().default(null),
-  theme_login_aside_gradient_end: z.string().nullable().optional().default(null),
-  theme_login_aside_image: z.string().nullable().optional().default(null),
-});
-
-// A theme in the import format, so a configuration preset theme can be imported back, and its standard id to match it
-export const getThemeConfigPresetConfiguration = (theme: BasicStoreEntityTheme) => {
-  const fields = Object.keys(themeImportSchema.shape) as (keyof BasicStoreEntityTheme)[];
-  // A missing value is left out: the import format gives it its default
-  const presentFields = fields.filter((field) => (theme[field] ?? null) !== null);
-  return { standard_id: theme.standard_id, ...Object.fromEntries(presentFields.map((field) => [field, theme[field]])) };
-};
-
-export const themeImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
-  const parsedData = await extractContentFrom(file);
-
-  const validationResult = themeImportSchema.safeParse(parsedData);
-
-  if (!validationResult.success) {
-    const errors = validationResult.error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
-    throw FunctionalError('Invalid theme file', errors);
-  }
-
-  const themeFound = await checkExistingTheme(context, user, validationResult.data.name);
-
-  if (themeFound) {
-    throw FunctionalError('Theme name already exists', { name: validationResult.data.name });
-  }
-
-  return addTheme(context, user, validationResult.data);
 };

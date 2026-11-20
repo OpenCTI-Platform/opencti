@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { transformToWorkflowDefinition, isElementStatus, isNewElementStatus, WorkflowNodeType, WorkflowActionType } from './utils';
+import {
+  transformToWorkflowDefinition,
+  isElementStatus,
+  isNewElementStatus,
+  WorkflowNodeType,
+  WorkflowActionType,
+  findTargetStatusExits,
+  withShareRequestedEntitiesLast,
+} from './utils';
 import type { Node, Edge } from 'reactflow';
 import { SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
 
@@ -128,7 +136,7 @@ describe('Workflow utils', () => {
               params: { authorized_members: [{ value: 'user-1', accessRight: 'edit', groupsRestriction: [{ value: 'group-1' }] }] },
             },
           ],
-          onExit: [{ type: WorkflowActionType.validateDraft }],
+          onExit: [{ type: WorkflowActionType.validateDraft }, { type: WorkflowActionType.resetAuthorizedMembers, params: { ignored: true } }],
         },
         position: { x: 0, y: 0 },
       },
@@ -140,7 +148,7 @@ describe('Workflow utils', () => {
         params: { authorized_members: [{ id: 'user-1', access_right: 'edit', groups_restriction_ids: ['group-1'] }] },
       },
     ]);
-    expect(result.states[0].onExit).toEqual([{ type: 'validateDraft' }]);
+    expect(result.states[0].onExit).toEqual([{ type: 'validateDraft' }, { type: 'resetAuthorizedMembers' }]);
   });
 
   it('should fan out multiple-source transitions into one entry per source state', () => {
@@ -177,5 +185,68 @@ describe('Workflow utils', () => {
     expect(isNewElementStatus(statusNode)).toBe(false);
     expect(isNewElementStatus(placeholderNode)).toBe(true);
     expect(isNewElementStatus(transitionNode)).toBe(false);
+  });
+
+  describe('request access', () => {
+    const status = (id: string, data: Record<string, unknown> = {}): Node => ({ id, type: WorkflowNodeType.status, data: { statusTemplate: { id, name: id, color: '#ffffff' }, ...data }, position: { x: 0, y: 0 } });
+
+    it('serializes requestAccessOutcome only on marked states', () => {
+      const nodes = [status('NEW'), status('APPROVED_ID', { requestAccessOutcome: 'APPROVED' }), status('DECLINED_ID', { requestAccessOutcome: 'DECLINED' })];
+      const { states } = transformToWorkflowDefinition(nodes, [], mockWorkflowDefinition);
+      expect(states.find((s) => s.statusId === 'NEW')).not.toHaveProperty('requestAccessOutcome');
+      expect(states.find((s) => s.statusId === 'APPROVED_ID')?.requestAccessOutcome).toBe('APPROVED');
+      expect(states.find((s) => s.statusId === 'DECLINED_ID')?.requestAccessOutcome).toBe('DECLINED');
+    });
+
+    it('serializes a shareRequestedEntities action to organization ids', () => {
+      const nodes = [status('APPROVED_ID', {
+        requestAccessOutcome: 'APPROVED',
+        onEnter: [{ type: WorkflowActionType.shareRequestedEntities, params: { organizations: [{ value: 'AUTHOR', label: 'Author' }, 'org-2'] } }],
+      })];
+      const { states } = transformToWorkflowDefinition(nodes, [], mockWorkflowDefinition);
+      expect(states[0].onEnter).toEqual([{ type: 'shareRequestedEntities', params: { organizations: ['AUTHOR', 'org-2'] } }]);
+    });
+  });
+});
+
+describe('findTargetStatusExits', () => {
+  const status = (id: string, name: string) => ({ id, type: WorkflowNodeType.status, data: { statusTemplate: { id, name, color: '' } }, position: { x: 0, y: 0 } }) as Node;
+  const transition = (id: string, event: string) => ({ id, type: WorkflowNodeType.transition, data: { event }, position: { x: 0, y: 0 } }) as Node;
+  const edge = (source: string, target: string) => ({ id: `${source}->${target}`, source, target }) as Edge;
+  const nodes = [status('open', 'Open'), status('closed', 'Closed'), transition('t-close', 'close'), transition('t-reopen', 'reopen'),
+    { id: 'placeholder-open', type: WorkflowNodeType.placeholder, data: {}, position: { x: 0, y: 0 } } as Node];
+
+  it('returns nothing for a transition into a final status', () => {
+    const edges = [edge('open', 't-close'), edge('t-close', 'closed'), edge('closed', 'placeholder-closed')];
+    expect(findTargetStatusExits('t-close', nodes, edges)).toBeUndefined();
+  });
+
+  it('names the target status and the transitions that leave it', () => {
+    const edges = [edge('open', 't-close'), edge('t-close', 'closed'), edge('closed', 't-reopen'), edge('t-reopen', 'open')];
+    expect(findTargetStatusExits('t-close', nodes, edges)).toEqual({ status: 'Closed', events: ['reopen'] });
+  });
+
+  it('checks every status a transition leads to', () => {
+    const fanOut = [...nodes, status('review', 'Review')];
+    const edges = [edge('open', 't-close'), edge('t-close', 'closed'), edge('t-close', 'review'), edge('review', 't-reopen'), edge('t-reopen', 'open')];
+    expect(findTargetStatusExits('t-close', fanOut, edges)).toEqual({ status: 'Review', events: ['reopen'] });
+  });
+
+  it('returns nothing for a transition without a target status', () => {
+    expect(findTargetStatusExits('t-close', nodes, [edge('open', 't-close')])).toBeUndefined();
+  });
+});
+
+describe('withShareRequestedEntitiesLast', () => {
+  const share = { type: WorkflowActionType.shareRequestedEntities, params: {} } as never;
+  const members = { type: WorkflowActionType.updateAuthorizedMembers, params: {} } as never;
+
+  it('moves the share action after the other actions', () => {
+    expect(withShareRequestedEntitiesLast([share, members])).toEqual([members, share]);
+  });
+
+  it('keeps a list without share unchanged', () => {
+    expect(withShareRequestedEntitiesLast([members])).toEqual([members]);
+    expect(withShareRequestedEntitiesLast(undefined)).toEqual([]);
   });
 });

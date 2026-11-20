@@ -9,7 +9,7 @@ import LeftBarPage from '../menu/leftBar.pageModel';
  * Wraps the Automation (playbook) admin UI: `Playbooks.tsx` list page, `PlaybookCreation.tsx`
  * name/description drawer, and the `PlaybookFlow.tsx` react-flow graph editor. Unlike the
  * Workflow graph, playbook nodes/edges are not draggable/connectable - the graph is built purely
- * by clicking the "+" placeholder, picking a component, configuring it, and submitting.
+ * by clicking the add button of a free port, picking a component, configuring it, and submitting.
  */
 export default class PlaybookBuilderPageModel {
   constructor(private readonly page: Page) {
@@ -35,13 +35,14 @@ export default class PlaybookBuilderPageModel {
     return this.page.getByRole('button', { name: 'Create' }).click();
   }
 
-  /** The single "+" placeholder node always present in the graph (`NodePlaceholder.tsx`, `data.name = '+'`). */
+  /** The add button of the single free port in the graph (`NodePlaceholder.tsx`): "Add an entry point"
+   * on an empty playbook, "Add component" beside a step's free out port. */
   getPlaceholderNode() {
-    return this.page.locator('.react-flow__node').filter({ hasText: '+' });
+    return this.page.locator('.react-flow__node').getByRole('button', { name: /^(Add an entry point|Add component)$/ });
   }
 
   /** Picks a component from the "Add component" list (`PlaybookFlowSelectComponent.tsx`), by its exact visible name.
-   * The click on "+" is retried until the list shows: the placeholder moves while the graph re-lays out
+   * The click on the add button is retried until the list shows: it moves while the graph re-lays out
    * after a node is added, and under load a click on its old position is swallowed. */
   async addComponent(componentName: string) {
     const component = this.page.getByText(componentName, { exact: true });

@@ -90,6 +90,7 @@ export interface IngestionJsonImportedInput {
   }> | null;
   authentication_type?: string | null;
   ssl_verify?: boolean | null;
+  markings?: ReadonlyArray<string> | null;
   jsonMapper: { readonly id: string; readonly name: string };
 }
 
@@ -263,8 +264,8 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
     });
   };
   const queryRef = useQueryLoading<JsonMapperFieldSearchQuery>(jsonMapperQuery);
-  // Prefill from an imported configuration: credentials, user and markings are
-  // platform-specific and are chosen by the user before creation.
+  // Prefill from an imported configuration: credentials and user are platform-specific and are chosen by the user before creation;
+  // the markings of a feed taken from a bundle are the ones the platform has
   const importedInitialValues: IngestionJsonAddInput | null = importedInput ? {
     name: importedInput.name ?? '',
     description: importedInput.description ?? '',
@@ -294,7 +295,8 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
     cert: '',
     key: '',
     ca: '',
-    markings: [],
+    markings: me.allowed_marking?.filter((marking) => importedInput.markings?.includes(marking.id))
+      .map((marking) => ({ label: marking.definition ?? '', value: marking.id })) ?? [],
     ssl_verify: importedInput.ssl_verify ?? true,
   } : null;
   const duplicatedOrDefaultValues: IngestionJsonAddInput = isDuplicated && ingestionJsonData ? {

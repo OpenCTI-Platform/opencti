@@ -52,6 +52,7 @@ export interface BasicStoreEntityConnector extends BasicStoreEntity, IngestionHe
   version: string | null;
   slug: string | null;
   // region composer (set only on composer-managed connectors)
+  title?: string;
   catalog_id?: string;
   manager_contract_image?: string;
   manager_contract_configuration?: ConnectorContractConfiguration[];
@@ -98,5 +99,5 @@ export interface InternalConnector {
   connector_priority_group?: ConnectorPriorityGroup;
   name: string;
   built_in: boolean;
-  connector_schema_runtime_fn?: <T extends BasicStoreEntityCsvMapper> (context: AuthContext, user: AuthUser) => Promise<T[]>;
+  connector_schema_runtime_fn?: <T extends BasicStoreEntityCsvMapper>(context: AuthContext, user: AuthUser) => Promise<T[]>;
 }

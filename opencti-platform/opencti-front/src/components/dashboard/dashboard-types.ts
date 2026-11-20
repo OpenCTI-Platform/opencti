@@ -17,10 +17,10 @@ export type DashboardWidget = Widget & { layout: NonNullable<Widget['layout']> }
 export type DashboardVariableType = 'vocabulary' | 'killChainPhase' | 'entity' | 'entityType' | 'label' | 'user'
   | 'marking' | 'status' | 'group' | 'boolean' | 'numeric' | 'text' | 'date';
 
-export type DashboardVariableRestriction
-  = | { mode: 'none' }
-    | { mode: 'selection'; values: string[] }
-    | { mode: 'filters'; filters: FilterGroup };
+export type DashboardVariableRestriction =
+  | { mode: 'none' }
+  | { mode: 'selection'; values: string[] }
+  | { mode: 'filters'; filters: FilterGroup };
 
 // Display order of the variable type select.
 export const DASHBOARD_VARIABLE_TYPES: readonly DashboardVariableType[] = [
@@ -46,7 +46,8 @@ export interface DashboardPreset {
   id: string;
   name: string;
   values: Record<string, string>;
-  config: Pick<DashboardConfig, 'startDate' | 'endDate' | 'relativeDate'>;
+  // The time range the preset restores, every field present (null: not set).
+  config: { startDate: string | null; endDate: string | null; relativeDate: string | null };
 }
 
 export interface DashboardManifest {

@@ -10,6 +10,7 @@ export const NARRATIVE_INSTANCE = {
   revoked: false,
   name: 'Narrative STIX 2.0',
   description: 'description',
+  aliases: ['narrative-alias'],
   createdBy: { standard_id: 'identity--c801c762-92e8-58b6-9bcb-6fa805f902cb' },
   objectLabel: [{ value: 'stix 2.0' }],
   objectMarking: [{ standard_id: 'marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1' }],
@@ -34,5 +35,5 @@ export const EXPECTED_NARRATIVE = {
   name: 'Narrative STIX 2.0',
   description: 'description',
   narrative_types: [],
-  aliases: [],
+  aliases: ['narrative-alias'],
 };

@@ -1,4 +1,5 @@
 import type { ConditionValidator, Context, Event, SideEffect, State, StateDefinition, Transition } from '../types/workflow-types';
+import type { FilterGroup } from '../../../generated/graphql';
 
 /**
  * Represents a stateless definition of a workflow graph.
@@ -41,7 +42,9 @@ export class WorkflowDefinition<TContext extends Context = Context> {
     event: Event,
     options?: {
       comment?: string;
+      closingReason?: string;
       conditions?: ConditionValidator<TContext>[];
+      conditionFilters?: FilterGroup | null;
       asyncSideEffects?: SideEffect<TContext>[];
       onTransition?: SideEffect<TContext>[];
       actionTypes?: string[];
@@ -58,7 +61,9 @@ export class WorkflowDefinition<TContext extends Context = Context> {
       to,
       event,
       comment: options?.comment,
+      closingReason: options?.closingReason,
       conditions: options?.conditions || [],
+      conditionFilters: options?.conditionFilters ?? null,
       asyncSideEffects: options?.asyncSideEffects || [],
       onTransition: options?.onTransition || [],
       actionTypes: options?.actionTypes || [],

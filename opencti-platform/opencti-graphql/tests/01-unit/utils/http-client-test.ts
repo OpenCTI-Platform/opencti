@@ -1,4 +1,3 @@
-import { generateKeyPairSync } from 'node:crypto';
 import { once } from 'node:events';
 import http from 'node:http';
 import https from 'node:https';
@@ -6,15 +5,33 @@ import net, { type AddressInfo } from 'node:net';
 import type { TLSSocket } from 'node:tls';
 import { Readable } from 'node:stream';
 import { gzipSync } from 'node:zlib';
-import forge from 'node-forge';
 import { ProxyAgent } from 'undici';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { getPlatformHttpProxyAgent } from '../../../src/config/conf';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { getPlatformHttpProxyAgent, logApp } from '../../../src/config/conf';
+import * as httpConfig from '../../../src/http/httpConfig';
 import { getHttpClient, getResponseError, HttpClientError } from '../../../src/utils/http-client';
+import { INTERNAL_DESTINATION_ERROR_CODE } from '../../../src/utils/internal-destination';
+import { buildSelfSignedCertificate } from '../../utils/selfSignedCertificate';
 
+// Global tls:reject_unauthorized switch, the real configuration value is used when not overridden
+const tlsConfig = vi.hoisted(() => ({ rejectUnauthorized: undefined as boolean | undefined }));
+// outbound_requests configuration, the real configuration values are used when not overridden
+const outboundConfig = vi.hoisted(() => ({ blocked: undefined as boolean | undefined, allowList: undefined as string[] | undefined }));
 vi.mock('../../../src/config/conf', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/config/conf')>();
-  return { ...actual, getPlatformHttpProxyAgent: vi.fn(() => undefined) };
+  return {
+    ...actual,
+    getPlatformHttpProxyAgent: vi.fn(() => undefined),
+    get TLS_REJECT_UNAUTHORIZED() {
+      return tlsConfig.rejectUnauthorized ?? actual.TLS_REJECT_UNAUTHORIZED;
+    },
+    get OUTBOUND_BLOCK_INTERNAL_DESTINATIONS() {
+      return outboundConfig.blocked ?? actual.OUTBOUND_BLOCK_INTERNAL_DESTINATIONS;
+    },
+    get OUTBOUND_ALLOW_LIST() {
+      return outboundConfig.allowList ?? actual.OUTBOUND_ALLOW_LIST;
+    },
+  };
 });
 
 interface ReceivedRequest {
@@ -47,6 +64,7 @@ const routes: Record<string, (req: http.IncomingMessage, res: http.ServerRespons
   '/redirect-loop': (_req, res) => res.writeHead(302, { Location: '/redirect-loop' }).end(),
   '/redirect-other-host': (_req, res) => res.writeHead(307, { Location: `${otherHostBaseURL}/echo` }).end(),
   '/redirect-echo': (_req, res) => res.writeHead(302, { Location: '/echo' }).end(),
+  '/redirect-to-ip-address': (_req, res) => res.writeHead(302, { Location: `${baseURL}/json` }).end(),
   '/redirect-with-credentials': (_req, res) => res.writeHead(302, { Location: `${baseURL.replace('://', '://intruder:secret@')}/echo` }).end(),
   '/trickle': (_req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -110,25 +128,6 @@ const handleRequest = (req: http.IncomingMessage, res: http.ServerResponse) => {
   });
 };
 
-const buildSelfSignedCertificate = () => {
-  const { publicKey, privateKey } = generateKeyPairSync('rsa', {
-    modulusLength: 2048,
-    publicKeyEncoding: { type: 'spki', format: 'pem' },
-    privateKeyEncoding: { type: 'pkcs1', format: 'pem' },
-  });
-  const certificate = forge.pki.createCertificate();
-  certificate.publicKey = forge.pki.publicKeyFromPem(publicKey);
-  certificate.serialNumber = '01';
-  certificate.validity.notBefore = new Date(Date.now() - 60_000);
-  certificate.validity.notAfter = new Date(Date.now() + 3_600_000);
-  const attributes = [{ name: 'commonName', value: '127.0.0.1' }];
-  certificate.setSubject(attributes);
-  certificate.setIssuer(attributes);
-  certificate.setExtensions([{ name: 'subjectAltName', altNames: [{ type: 7, ip: '127.0.0.1' }] }]);
-  certificate.sign(forge.pki.privateKeyFromPem(privateKey), forge.md.sha256.create());
-  return { key: privateKey, cert: forge.pki.certificateToPem(certificate) };
-};
-
 const startServer = async (tls?: https.ServerOptions) => {
   const server = tls ? https.createServer(tls, handleRequest) : http.createServer(handleRequest);
   await new Promise<void>((resolve) => {
@@ -146,8 +145,10 @@ const closeServer = (server: http.Server) => new Promise((resolve) => {
 beforeAll(async () => {
   baseURL = await startServer();
   otherHostBaseURL = await startServer();
-  closedPortURL = await startServer();
-  await closeServer(servers.pop() as http.Server);
+  // Port 2 is privileged and below the ephemeral range: listen(0) never assigns it, so no test server
+  // (in this file or a parallel worker) can take it over, unlike a freed ephemeral port (#19719).
+  // Port 1 is not usable: it is on the Fetch standard's bad-ports list, which undici refuses before connecting.
+  closedPortURL = 'http://127.0.0.1:2';
   selfSignedCertificate = buildSelfSignedCertificate();
   selfSignedBaseURL = await startServer(selfSignedCertificate);
   mutualTlsBaseURL = await startServer({ ...selfSignedCertificate, requestCert: true, rejectUnauthorized: false });
@@ -178,6 +179,10 @@ afterAll(async () => {
 const lastRequest = () => received[received.length - 1];
 
 describe('getHttpClient', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('should parse json responses and expose lower-cased headers', async () => {
     const response = await getHttpClient({ baseURL, responseType: 'json' }).get('/json');
 
@@ -335,6 +340,17 @@ describe('getHttpClient', () => {
     expect(error.code).toBe('ERR_FR_TOO_MANY_REDIRECTS');
   });
 
+  it('should follow the configured number of redirects by default', async () => {
+    vi.spyOn(httpConfig, 'getHttpMaxRedirects').mockReturnValue(2);
+    const redirects: string[] = [];
+    const client = getHttpClient({ baseURL, responseType: 'json', beforeRedirect: (url) => redirects.push(url) });
+
+    const error = await client.get('/redirect-loop').catch((e) => e);
+
+    expect(error.code).toBe('ERR_FR_TOO_MANY_REDIRECTS');
+    expect(redirects).toHaveLength(2);
+  });
+
   it('should drop credentials when redirected to another host', async () => {
     const client = getHttpClient({ baseURL, responseType: 'json', headers: { Authorization: 'Bearer token', Cookie: 'session=1' } });
 
@@ -413,11 +429,38 @@ describe('getHttpClient', () => {
 
   it('should reject an untrusted certificate unless certificate verification is disabled', async () => {
     const verified = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized: true }).get('/not-json').catch((e) => e);
-    const unverified = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text' }).get('/not-json');
+    const unverified = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized: false }).get('/not-json');
 
     expect(verified).toBeInstanceOf(HttpClientError);
     expect(verified.code).toBe('DEPTH_ZERO_SELF_SIGNED_CERT');
     expect(unverified.data).toBe('plain text');
+  });
+
+  describe('global tls:reject_unauthorized switch', () => {
+    afterEach(() => {
+      tlsConfig.rejectUnauthorized = undefined;
+    });
+
+    it.each([undefined, null])('should not verify the certificate by default when rejectUnauthorized is %s', async (rejectUnauthorized) => {
+      const response = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized }).get('/not-json');
+
+      expect(response.data).toBe('plain text');
+    });
+
+    it.each([undefined, null])('should verify the certificate when enabled globally and rejectUnauthorized is %s', async (rejectUnauthorized) => {
+      tlsConfig.rejectUnauthorized = true;
+      const error = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized }).get('/not-json').catch((e) => e);
+
+      expect(error).toBeInstanceOf(HttpClientError);
+      expect(error.code).toBe('DEPTH_ZERO_SELF_SIGNED_CERT');
+    });
+
+    it('should let rejectUnauthorized override the global switch', async () => {
+      tlsConfig.rejectUnauthorized = true;
+      const response = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized: false }).get('/not-json');
+
+      expect(response.data).toBe('plain text');
+    });
   });
 
   it('should always verify the certificate on call', async () => {
@@ -553,5 +596,125 @@ describe('getHttpClient', () => {
     expect(textError.response.data).toBe('{"detail":"invalid input"}');
     expect(Buffer.isBuffer(bufferError.response.data)).toBe(true);
     expect(bufferError.response.data.toString()).toBe('down');
+  });
+
+  describe('internal destinations', () => {
+    // Each test uses its own feature, so that no pooled connection from a previous test skips the connection lookup
+    const localhostURL = () => baseURL.replace('127.0.0.1', 'localhost');
+    const expectBlocked = (error: unknown, destination: string) => {
+      expect(error).toBeInstanceOf(HttpClientError);
+      expect((error as HttpClientError).code).toBe(INTERNAL_DESTINATION_ERROR_CODE);
+      expect((error as HttpClientError).message).toContain(destination);
+      expect((error as HttpClientError).message).toContain('outbound_requests:allow_list');
+    };
+
+    afterEach(() => {
+      outboundConfig.blocked = undefined;
+      outboundConfig.allowList = undefined;
+      vi.mocked(getPlatformHttpProxyAgent).mockReturnValue(undefined);
+      vi.restoreAllMocks();
+    });
+
+    it('should allow and log an internal destination when internal destinations are not blocked', async () => {
+      outboundConfig.blocked = false;
+      const warn = vi.spyOn(logApp, 'warn');
+      const response = await getHttpClient({ baseURL, responseType: 'json', feature: 'Not blocked feed' }).get('/json');
+      expect(response.data).toEqual({ hello: 'world' });
+      expect(warn).toHaveBeenCalledWith(expect.any(String), { feature: 'Not blocked feed', hostname: '127.0.0.1', address: '127.0.0.1' });
+    });
+
+    it('should reject an internal IP address before sending the request', async () => {
+      outboundConfig.blocked = true;
+      const receivedBefore = received.length;
+      const error = await getHttpClient({ baseURL, responseType: 'json', feature: 'IP address feed' }).get('/json').catch((e) => e);
+      expectBlocked(error, 'IP address feed: the destination 127.0.0.1 is an internal network address');
+      expect(received.length).toBe(receivedBefore);
+    });
+
+    it('should reject a host name that resolves to an internal address', async () => {
+      outboundConfig.blocked = true;
+      const receivedBefore = received.length;
+      const error = await getHttpClient({ responseType: 'json', feature: 'Host name feed' }).get(`${localhostURL()}/json`).catch((e) => e);
+      expectBlocked(error, 'Host name feed: the destination localhost is');
+      expect(received.length).toBe(receivedBefore);
+    });
+
+    it('should reject a redirect to an internal destination', async () => {
+      outboundConfig.blocked = true;
+      outboundConfig.allowList = ['localhost'];
+      const redirects: string[] = [];
+      const client = getHttpClient({ responseType: 'json', feature: 'Redirected feed', beforeRedirect: (url) => redirects.push(url) });
+      const error = await client.get(`${localhostURL()}/redirect-to-ip-address`).catch((e) => e);
+      expectBlocked(error, 'Redirected feed: the destination 127.0.0.1');
+      expect(redirects).toEqual([`${baseURL}/json`]);
+      expect(lastRequest().url).toBe('/redirect-to-ip-address');
+    });
+
+    it.each([
+      ['a CIDR range', ['127.0.0.0/8']],
+      ['an IP address', ['127.0.0.1']],
+    ])('should allow an internal IP address allow-listed by %s', async (_, allowList) => {
+      outboundConfig.blocked = true;
+      outboundConfig.allowList = allowList;
+      const response = await getHttpClient({ baseURL, responseType: 'json', feature: `Allow-listed feed ${allowList}` }).get('/json');
+      expect(response.data).toEqual({ hello: 'world' });
+    });
+
+    it('should allow an internal host name allow-listed by name', async () => {
+      outboundConfig.blocked = true;
+      outboundConfig.allowList = ['localhost'];
+      const response = await getHttpClient({ responseType: 'json', feature: 'Allow-listed host name feed' }).get(`${localhostURL()}/json`);
+      expect(response.data).toEqual({ hello: 'world' });
+    });
+
+    it('should not check the destination of a trusted client', async () => {
+      outboundConfig.blocked = true;
+      const client = getHttpClient({ baseURL, responseType: 'json', trusted: true });
+      expect((await client.get('/json')).data).toEqual({ hello: 'world' });
+      expect((await client.get(`${localhostURL()}/json`)).data).toEqual({ hello: 'world' });
+      expect((await client.call({ url: '/json', method: 'GET' })).data).toEqual({ hello: 'world' });
+    });
+
+    it('should reject an internal destination on call', async () => {
+      outboundConfig.blocked = true;
+      const client = getHttpClient({ responseType: 'json', feature: 'Webhook' });
+      expectBlocked(await client.call({ url: `${baseURL}/json`, method: 'POST', data: {} }).catch((e) => e), 'Webhook: the destination 127.0.0.1');
+      expectBlocked(await client.call({ url: `${localhostURL()}/json`, method: 'POST', data: {} }).catch((e) => e), 'Webhook: the destination localhost is');
+    });
+
+    it('should reject an internal destination before sending the request to the proxy', async () => {
+      outboundConfig.blocked = true;
+      const proxyAgentMock = vi.mocked(getPlatformHttpProxyAgent);
+      proxyAgentMock.mockReturnValue(new ProxyAgent({ uri: proxyURL, proxyTunnel: true }));
+      const proxiedBefore = proxiedTargets.length;
+      const client = getHttpClient({ responseType: 'json', feature: 'Proxied feed' });
+      expectBlocked(await client.get(`${baseURL}/json`).catch((e) => e), 'Proxied feed: the destination 127.0.0.1');
+      expectBlocked(await client.get(`${localhostURL()}/json`).catch((e) => e), 'Proxied feed: the destination localhost is');
+      expect(proxiedTargets.length).toBe(proxiedBefore);
+      outboundConfig.allowList = ['localhost'];
+      expect((await client.get(`${localhostURL()}/json`)).data).toEqual({ hello: 'world' });
+      expect(proxiedTargets.length).toBe(proxiedBefore + 1);
+    });
+
+    it('should reject a redirect to an internal destination behind a proxy', async () => {
+      outboundConfig.blocked = true;
+      outboundConfig.allowList = ['localhost'];
+      vi.mocked(getPlatformHttpProxyAgent).mockReturnValue(new ProxyAgent({ uri: proxyURL, proxyTunnel: true }));
+      const proxiedBefore = proxiedTargets.length;
+      const client = getHttpClient({ responseType: 'json', feature: 'Proxied redirected feed' });
+      const error = await client.get(`${localhostURL()}/redirect-to-ip-address`).catch((e) => e);
+      expectBlocked(error, 'Proxied redirected feed: the destination 127.0.0.1');
+      expect(proxiedTargets.slice(proxiedBefore)).toEqual([new URL(localhostURL()).host]);
+    });
+
+    it('should time out a destination check that never resolves behind a proxy', async () => {
+      outboundConfig.blocked = true;
+      vi.mocked(getPlatformHttpProxyAgent).mockReturnValue(new ProxyAgent({ uri: proxyURL, proxyTunnel: true }));
+      const dns = await import('node:dns');
+      vi.spyOn(dns.promises, 'lookup').mockImplementation(() => new Promise(() => undefined));
+      const error = await getHttpClient({ responseType: 'json', timeout: 50, feature: 'Slow DNS feed' }).get('http://slow-dns.example.com/json').catch((e) => e);
+      expect(error).toBeInstanceOf(HttpClientError);
+      expect(error.code).toBe('ECONNABORTED');
+    });
   });
 });

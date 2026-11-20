@@ -14,7 +14,7 @@ Click on the button __+__ in the bottom-right corner to add a new Mapper.
 
 Enter a name for your mapper and some basic information about your CSV files: 
 
-- The line separator used (defaults to the standard comma character)
+- The `CSV separator` used between columns: `Comma` (default), `Semicolon` or `Pipe`
 - The presence of a header on the first line
 - The char to escape the lines
 
@@ -29,6 +29,7 @@ Click on the __+__ button to add an empty representation in the list, and click 
 
 Depending on the entity type, the form contains the fields that are either required (input outlined in red) or optional.
 For each field, set the corresponding columns mapping (the letter-based index of the column in the CSV table, as presented in common spreadsheet tools). 
+The [custom fields](custom-fields.md) attached to the entity type are listed with the other fields and can be mapped the same way.
 
 References to other entities should be picked from the list of all the other representations already defined earlier in the mapper.
 
@@ -218,4 +219,4 @@ You can always verify your configuration before validating the form (with a file
 
 ## Additional resources
 
-- **Usefulness:** To additional content on entity customization, refers to the [Customize entities](./entities.md) page in the Administration section of the documentation.
+- **Usefulness:** For more on entity customization, see the [Customize entities](./entities.md) page.

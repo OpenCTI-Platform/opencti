@@ -1,5 +1,4 @@
 import React from 'react';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { TextFieldProps } from '@mui/material/TextField';
 import { fieldToDateTimePicker } from 'formik-mui-lab';
 import { FieldProps, useField } from 'formik';
@@ -7,6 +6,7 @@ import { useIntl } from 'react-intl';
 import { isNil } from 'ramda';
 import { PickerChangeHandlerContext } from '@mui/x-date-pickers/models';
 import { isAcceptedFromView, parse } from '../utils/Time';
+import DateTimePicker from './common/input/picker/BaseDateTimePicker';
 
 const dateTimeFormatsMap: Record<string, string> = {
   'de-de': 'dd.MM.yyyy HH:mm',

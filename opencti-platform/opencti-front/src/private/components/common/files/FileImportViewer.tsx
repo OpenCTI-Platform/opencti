@@ -1,6 +1,8 @@
 import React, { FunctionComponent, useEffect } from 'react';
 import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import { interval } from 'rxjs';
+import { useLocation } from 'react-router';
+import { getContentTabFilePath } from '../stix_core_objects/StixCoreObjectContentFileUtils';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import FileLine from './FileLine';
@@ -40,6 +42,7 @@ const FileImportViewerComponent: FunctionComponent<
 }) => {
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
+  const { pathname } = useLocation();
 
   const { id, importFiles } = entity;
   useEffect(() => {
@@ -88,6 +91,8 @@ const FileImportViewerComponent: FunctionComponent<
                     handleOpenImport={handleOpenImport}
                     isArtifact={isArtifact}
                     directDownload={directDownload}
+                    openInNewTabAction
+                    contentTabLink={getContentTabFilePath(pathname, entity.entity_type, file.node.id, file.node.metaData?.mimetype)}
                   />
                 )
               );

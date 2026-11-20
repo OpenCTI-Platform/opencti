@@ -512,8 +512,8 @@ describe('TAXII ingestion resolver — ingestion logs', () => {
     }
   });
 
-  it('should delete the TAXII ingestion used for logs tests', async () => {
-    await redisDeleteIngestionLogHistory(taxiiLogsIngestionId);
+  it('should delete the TAXII ingestion used for logs tests and its log history', async () => {
+    await redisPushIngestionLog(taxiiLogsIngestionId, { level: 'info', type: 'taxii', identifier: taxiiLogsIngestionName, message: 'before-delete' });
     const result = await queryAsAdminWithSuccess({
       query: gql`
         mutation deleteTaxiiIngesterForLogs($id: ID!) {
@@ -523,5 +523,6 @@ describe('TAXII ingestion resolver — ingestion logs', () => {
       variables: { id: taxiiLogsIngestionId },
     });
     expect(result.data?.ingestionTaxiiDelete).toEqual(taxiiLogsIngestionId);
+    expect(await getClientBase().exists(`ingestion-log-${taxiiLogsIngestionId}-history`)).toBe(0);
   });
 });

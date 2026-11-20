@@ -49,7 +49,6 @@ const RootSubType = () => {
   if (!subTypeId) return <ErrorNotFound />;
 
   const { isFeatureEnable } = useHelper();
-  const isCustomFieldsFeatureEnabled = isFeatureEnable('CUSTOM_FIELDS');
 
   return (
     <Suspense fallback={<Loader />}>
@@ -59,7 +58,9 @@ const RootSubType = () => {
           <Route
             path={SUBTYPE_TAB_WORKFLOW}
             element={isWorkflowUiEnabledForType(subTypeId, isFeatureEnable)
-              ? <SubTypeWorkflow entityType={subTypeId} />
+              ? (
+                  <SubTypeWorkflow entityType={subTypeId} heightOffset={290} />
+                )
               : <GlobalWorkflowSettingsCard />}
           />
           <Route path={SUBTYPE_TAB_TEMPLATES} element={<FintelTemplatesManager />} />
@@ -68,7 +69,7 @@ const RootSubType = () => {
             element={(
               <>
                 <EntitySettingAttributesCard />
-                {isCustomFieldsFeatureEnabled && <EntitySettingCustomFields />}
+                <EntitySettingCustomFields />
               </>
             )}
           />

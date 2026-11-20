@@ -1,7 +1,8 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
-import { createUploadFromTestDataFile, queryAsAdminWithSuccess, queryUnauthenticatedIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAnonymous } from '../../utils/testQueryHelper';
+import { createUploadFromBuffer, createUploadFromTestDataFile, queryAsAdminWithSuccess, queryUnauthenticatedIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { BUILT_IN_THEME_STANDARD_IDS } from '../../../src/modules/theme/theme-constants';
 
 const CREATE_THEME_MUTATION = gql`
   mutation ThemeAdd($input: ThemeAddInput!) {
@@ -141,6 +142,31 @@ const IMPORT_THEME_MUTATION = gql`
   }
 `;
 
+const EXPORT_THEME_QUERY = gql`
+  query ThemeExport($id: ID!) {
+    theme(id: $id) {
+      name
+      toConfigurationExport
+    }
+  }
+`;
+
+const THEME_STANDARD_ID_QUERY = gql`
+  query ThemeStandardId($id: ID!) {
+    theme(id: $id) {
+      standard_id
+      built_in
+    }
+  }
+`;
+
+// The exported file of a theme, renamed, as an upload of the theme file import
+const renamedExportUpload = async (themeId: string, name: string) => {
+  const exported = await queryAsAdminWithSuccess({ query: EXPORT_THEME_QUERY, variables: { id: themeId } });
+  const file = { ...JSON.parse(exported.data?.theme.toConfigurationExport), name };
+  return { file, upload: createUploadFromBuffer(Buffer.from(JSON.stringify(file)), 'theme.json', 'application/json') };
+};
+
 describe('Themes resolver testing', () => {
   let customThemeId = '';
   let darkThemeId = '';
@@ -185,6 +211,22 @@ describe('Themes resolver testing', () => {
       query: LIST_THEMES_QUERY,
       variables: { first: 10 },
     });
+  });
+
+  // The theme is reachable without being logged in through the public settings (the login page): its export is not, the file holds its
+  // standard id. theme(id:) is not that path: it loads the theme with the user of the request.
+  it('should not export the platform theme when not authenticated: the file holds its standard id', async () => {
+    await queryUnauthenticatedIsExpectedForbidden({
+      query: gql`query ThemePublicExport { publicSettings { platform_theme { name toConfigurationExport } } }`,
+    });
+  });
+
+  it('should still read the platform theme when not authenticated, without its export (login page)', async () => {
+    const { data, errors } = await queryAsAnonymous({
+      query: gql`query ThemePublicRead { publicSettings { platform_theme { name } } }`,
+    });
+    expect(errors).toBeUndefined();
+    expect(data?.publicSettings.platform_theme.name).toEqual(expect.any(String));
   });
 
   it('should read a specific theme', async () => {
@@ -480,5 +522,110 @@ describe('Themes resolver testing', () => {
     });
 
     expect(queryResult.data?.theme).toBeNull();
+  });
+
+  it('should import a theme file exported from the UI, with http(s) URLs and null login background fields', async () => {
+    const FILE_NAME = 'test-theme-export.json';
+    const upload = await createUploadFromTestDataFile(`theme/${FILE_NAME}`, FILE_NAME, 'application/json');
+    const theme = await queryAsAdmin({ query: IMPORT_THEME_MUTATION, variables: { file: upload } });
+    expect(theme.errors).toBeUndefined();
+    const importedThemeId = theme.data?.themeImport.id;
+    expect(theme.data?.themeImport.theme_logo).toBe('https://www.test.com/image.svg');
+    expect(theme.data?.themeImport.theme_login_aside_image).toBe('http://www.test.com/aside.png');
+    expect(theme.data?.themeImport.built_in).toBe(false);
+    await queryAsAdmin({ query: DELETE_THEME_MUTATION, variables: { id: importedThemeId } });
+  });
+
+  it('should import a theme file with a logo that is a path of the platform, as the theme form accepts and exports it', async () => {
+    const FILE_NAME = 'test-theme-relative-logo.json';
+    const upload = await createUploadFromTestDataFile(`theme/${FILE_NAME}`, FILE_NAME, 'application/json');
+    const theme = await queryAsAdmin({ query: IMPORT_THEME_MUTATION, variables: { file: upload } });
+    expect(theme.errors).toBeUndefined();
+    expect(theme.data?.themeImport.theme_logo).toBe('/static/image.svg');
+    await queryAsAdmin({ query: DELETE_THEME_MUTATION, variables: { id: theme.data?.themeImport.id } });
+  });
+
+  it.each([
+    ['a colour that is not hex', 'test-theme-rgb-color.json', 'theme_background'],
+    ['an unknown key', 'test-theme-unknown-key.json', 'built_in'],
+  ])('should refuse to import a theme file with %s', async (_, fileName, invalidKey) => {
+    const upload = await createUploadFromTestDataFile(`theme/${fileName}`, fileName, 'application/json');
+    const theme = await queryAsAdmin({ query: IMPORT_THEME_MUTATION, variables: { file: upload } });
+    expect(theme.errors).toBeDefined();
+    expect(theme.errors?.[0].message).toContain('Invalid theme file');
+    expect(JSON.stringify(theme.errors)).toContain(invalidKey);
+  });
+
+  it('should export a theme as a file the import accepts, with its standard id', async () => {
+    const input = {
+      name: 'Theme to export',
+      theme_background: '#1a1a1a',
+      theme_paper: '#2a2a2a',
+      theme_nav: '#1a1a1a',
+      theme_primary: '#ff6b6b',
+      theme_secondary: '#4ecdc4',
+      theme_accent: '#45b7d1',
+      theme_text_color: '#ffffff',
+      theme_logo: 'https://example.com/logo.png',
+    };
+    const created = await queryAsAdminWithSuccess({ query: CREATE_THEME_MUTATION, variables: { input } });
+    const themeId = created.data?.themeAdd.id;
+    const exported = await queryAsAdminWithSuccess({ query: EXPORT_THEME_QUERY, variables: { id: themeId } });
+    // The fields that are not set are left out, the standard id comes first
+    const file = JSON.parse(exported.data?.theme.toConfigurationExport);
+    expect(file).toEqual({ standard_id: expect.stringMatching(/^theme--/), ...input });
+    expect(Object.keys(file)[0]).toBe('standard_id');
+    await queryAsAdminWithSuccess({ query: DELETE_THEME_MUTATION, variables: { id: themeId } });
+  });
+
+  it('should export a built-in theme with its standard id, the same on every platform', async () => {
+    const exported = await queryAsAdminWithSuccess({ query: EXPORT_THEME_QUERY, variables: { id: darkThemeId } });
+    const file = JSON.parse(exported.data?.theme.toConfigurationExport);
+    expect(file.name).toBe('Filigran Dark');
+    expect(file.standard_id).toBe(BUILT_IN_THEME_STANDARD_IDS['Filigran Dark']);
+    expect(file).not.toHaveProperty('built_in');
+  });
+
+  it('should import a renamed export of a custom theme as a new theme, with its own standard id', async () => {
+    const input = {
+      name: 'Theme exported then renamed',
+      theme_background: '#1a1a1a',
+      theme_paper: '#2a2a2a',
+      theme_nav: '#1a1a1a',
+      theme_primary: '#ff6b6b',
+      theme_secondary: '#4ecdc4',
+      theme_accent: '#45b7d1',
+      theme_text_color: '#ffffff',
+    };
+    const created = await queryAsAdminWithSuccess({ query: CREATE_THEME_MUTATION, variables: { input } });
+    const originalId = created.data?.themeAdd.id;
+    const { file, upload } = await renamedExportUpload(originalId, 'Theme exported then renamed (variant)');
+    const imported = await queryAsAdminWithSuccess({ query: IMPORT_THEME_MUTATION, variables: { file: upload } });
+    const importedId = imported.data?.themeImport.id;
+    expect(importedId).not.toEqual(originalId);
+    expect(imported.data?.themeImport.name).toBe('Theme exported then renamed (variant)');
+    const importedTheme = await queryAsAdminWithSuccess({ query: THEME_STANDARD_ID_QUERY, variables: { id: importedId } });
+    expect(importedTheme.data?.theme.standard_id).toMatch(/^theme--/);
+    expect(importedTheme.data?.theme.standard_id).not.toEqual(file.standard_id);
+    await queryAsAdminWithSuccess({ query: DELETE_THEME_MUTATION, variables: { id: importedId } });
+    await queryAsAdminWithSuccess({ query: DELETE_THEME_MUTATION, variables: { id: originalId } });
+  });
+
+  it('should import a renamed export of a built-in theme as a custom theme', async () => {
+    const { file, upload } = await renamedExportUpload(darkThemeId, 'Started from Filigran Dark');
+    const imported = await queryAsAdminWithSuccess({ query: IMPORT_THEME_MUTATION, variables: { file: upload } });
+    const importedId = imported.data?.themeImport.id;
+    expect(imported.data?.themeImport.name).toBe('Started from Filigran Dark');
+    expect(imported.data?.themeImport.built_in).toBe(false);
+    const importedTheme = await queryAsAdminWithSuccess({ query: THEME_STANDARD_ID_QUERY, variables: { id: importedId } });
+    expect(importedTheme.data?.theme.standard_id).not.toEqual(file.standard_id);
+    expect(importedTheme.data?.theme.built_in).toBe(false);
+    await queryAsAdminWithSuccess({ query: DELETE_THEME_MUTATION, variables: { id: importedId } });
+  });
+
+  it('should still refuse the import of an exported theme file under the name of an existing theme', async () => {
+    const { upload } = await renamedExportUpload(darkThemeId, 'Filigran Light');
+    const imported = await queryAsAdmin({ query: IMPORT_THEME_MUTATION, variables: { file: upload } });
+    expect(imported.errors?.[0].message).toEqual('Theme name already exists');
   });
 });

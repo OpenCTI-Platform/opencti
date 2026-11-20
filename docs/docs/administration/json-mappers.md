@@ -17,6 +17,7 @@ Click on the __+__ button to add an empty representation in the list, and click 
 
 Depending on the entity type, the form contains the fields that are either required (input outlined in red) or optional.
 For each field, set the corresponding path mapping that will be used to capture the data and the one to capture how to uniquely identify the information.
+The [custom fields](custom-fields.md) attached to the entity type are listed with the other fields and can be mapped the same way.
 
 !!! info "JSON path"
 
@@ -96,13 +97,13 @@ The mapping is done in multiple phases for each representation.
 2. Bind the identifier and all attributes defined in the mapping.
 3. Bind the related elements based on their data resolved identifiers
 
-In some simple configuration it since a bit too much complex to associate the identifiers as it will be represented by the inner values.
+In simple configurations, this identifier association can look more complex than needed, because the identifiers are represented by the inner values themselves.
 
-To have a deeper understanding of how it works and how its need to be configured, please consult this figma diagram that document the step in a real case mapping. 
+To understand how it works and how to configure it, see this Figma diagram, which documents each step of a real mapping case.
 
 <iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="800" height="450" src="https://embed.figma.com/board/HJZTHA0uFiFUC76W2dv7vn/JSON-mapper?node-id=0-1&embed-host=share" allowfullscreen></iframe>
 
 
 ## Additional resources
 
-- **Usefulness:** To additional content on entity customization, refers to the [Customize entities](./entities.md) page in the Administration section of the documentation.
+- **Usefulness:** For more on entity customization, see the [Customize entities](./entities.md) page.

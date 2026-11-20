@@ -24,6 +24,8 @@ export const normalizeCustomFieldDate = (value: unknown): string | undefined => 
 // int_value is a GraphQL Int (and an Elasticsearch integer): a 32-bit signed integer
 const isCustomFieldInteger = (value: unknown): value is number => Number.isInteger(value)
   && (value as number) >= GRAPHQL_MIN_INT && (value as number) <= GRAPHQL_MAX_INT;
+// float_value is an Elasticsearch double, the JavaScript number: any finite number is stored as is
+const isCustomFieldDecimal = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 
 // Normalize stored-format entries (edit path). Clients may send every value key with the unset ones as null
 // (e.g. entries read back from the API): they are dropped, so that the stored entries and the history
@@ -137,6 +139,12 @@ const verifyAddInputValueType = (
         return false;
       }
       break;
+    case 'decimal':
+      if (customFieldValueAddInputValue.length != 1 || !isCustomFieldDecimal(customFieldValueAddInputValue[0])) {
+        logApp.warn('Invalid value type for decimal custom field', { field_name: customFieldDefinition.label });
+        return false;
+      }
+      break;
     case 'string':
     case 'markdown':
       if (customFieldValueAddInputValue.length != 1 || typeof customFieldValueAddInputValue[0] !== 'string') {
@@ -192,6 +200,9 @@ export const extractCustomFieldValueFromAddInputValue = (
     case 'integer':
       customFieldValue.int_value = customFieldValueAddInputValue[0] as number;
       break;
+    case 'decimal':
+      customFieldValue.float_value = customFieldValueAddInputValue[0] as number;
+      break;
     case 'string':
     case 'markdown':
       customFieldValue.string_value = customFieldValueAddInputValue[0] as string;
@@ -243,43 +254,69 @@ export const transformCustomFieldValueAddInput = async (
   return resultCustomFieldValues;
 };
 
+// Parse a default value of the entity type settings into a custom field value, undefined when it is invalid
+const parseCustomFieldDefaultValue = (
+  customFieldDefinition: BasicStoreEntityCustomFieldDefinition,
+  defaultValue: string,
+): CustomFieldValue | undefined => {
+  const customFieldDefaultValue = { field_id: customFieldDefinition.id, field_name: customFieldDefinition.name };
+  switch (customFieldDefinition.field_type) {
+    case 'integer': {
+      // Number() never truncates (unlike parseInt): an invalid integer default is ignored rather than stored
+      const trimmedDefault = defaultValue.trim();
+      const intValue = trimmedDefault === '' ? Number.NaN : Number(trimmedDefault);
+      return isCustomFieldInteger(intValue) ? { ...customFieldDefaultValue, int_value: intValue } : undefined;
+    }
+    case 'decimal': {
+      const trimmedDefault = defaultValue.trim();
+      const floatValue = trimmedDefault === '' ? Number.NaN : Number(trimmedDefault);
+      return isCustomFieldDecimal(floatValue) ? { ...customFieldDefaultValue, float_value: floatValue } : undefined;
+    }
+    case 'markdown':
+    case 'string':
+      return { ...customFieldDefaultValue, string_value: defaultValue };
+    case 'select':
+      return { ...customFieldDefaultValue, select_value: defaultValue };
+    case 'date': {
+      // @now is resolved when the value is filled; an invalid default is ignored rather than failing indexing
+      const dateValue = defaultValue === CUSTOM_FIELD_NOW_TOKEN ? now() : normalizeCustomFieldDate(defaultValue);
+      return dateValue ? { ...customFieldDefaultValue, date_value: dateValue } : undefined;
+    }
+    case 'multi_select':
+      return { ...customFieldDefaultValue, select_values: [defaultValue] };
+    case 'boolean':
+      return { ...customFieldDefaultValue, boolean_value: defaultValue.toLowerCase() === 'true' };
+    default:
+      throw FunctionalError('Unknown custom field type', { field_type: customFieldDefinition.field_type });
+  }
+};
+
 export const getCustomFieldDefaultValueFromEntitySettings = (
   customFieldDefinition: BasicStoreEntityCustomFieldDefinition,
   entityType: string,
 ) => {
-  const customFieldEntitySettings = getCustomFieldSettingForEntityType(customFieldDefinition, entityType);
-  if (customFieldEntitySettings
-    && customFieldEntitySettings?.default_value
-  ) {
-    const defaultValue = customFieldEntitySettings?.default_value;
-    const customFieldDefaultValue = { field_id: customFieldDefinition.id, field_name: customFieldDefinition.name };
-    switch (customFieldDefinition.field_type) {
-      case 'integer': {
-        // Number() never truncates (unlike parseInt): an invalid integer default is ignored rather than stored
-        const trimmedDefault = defaultValue.trim();
-        const intValue = trimmedDefault === '' ? Number.NaN : Number(trimmedDefault);
-        return isCustomFieldInteger(intValue) ? { ...customFieldDefaultValue, int_value: intValue } : undefined;
-      }
-      case 'markdown':
-      case 'string':
-        return { ...customFieldDefaultValue, string_value: defaultValue };
-      case 'select':
-        return { ...customFieldDefaultValue, select_value: defaultValue };
-      case 'date': {
-        // @now is resolved when the value is filled; an invalid default is ignored rather than failing indexing
-        const dateValue = defaultValue === CUSTOM_FIELD_NOW_TOKEN ? now() : normalizeCustomFieldDate(defaultValue);
-        return dateValue ? { ...customFieldDefaultValue, date_value: dateValue } : undefined;
-      }
-      case 'multi_select':
-        return { ...customFieldDefaultValue, select_values: [defaultValue] };
-      case 'boolean':
-        return { ...customFieldDefaultValue, boolean_value: defaultValue.toLowerCase() === 'true' };
-      default:
-        throw FunctionalError('Unknown custom field type', { field_type: customFieldDefinition.field_type });
-    }
-  }
+  const defaultValue = getCustomFieldSettingForEntityType(customFieldDefinition, entityType)?.default_value;
+  return defaultValue ? parseCustomFieldDefaultValue(customFieldDefinition, defaultValue) : undefined;
+};
 
-  return undefined;
+// A default value is checked when it is set, as the default values of the standard attributes: an invalid one
+// would be ignored, or fail the creation, of every new entity of the type without the admin knowing.
+export const validateCustomFieldDefaultValue = (
+  customFieldDefinition: BasicStoreEntityCustomFieldDefinition,
+  defaultValue: string | null | undefined,
+) => {
+  if (!defaultValue) {
+    return;
+  }
+  const value = parseCustomFieldDefaultValue(customFieldDefinition, defaultValue);
+  if (!value) {
+    throw FunctionalError('Invalid default value for the custom field', {
+      field_name: customFieldDefinition.name,
+      field_type: customFieldDefinition.field_type,
+      default_value: defaultValue,
+    });
+  }
+  validateSingleCustomFieldValue(value, customFieldDefinition);
 };
 
 export const fillCustomFieldsDefaultValues = async (
@@ -432,6 +469,9 @@ const validateSingleCustomFieldValue = (
     case 'integer':
       validateIntegerField(value, definition);
       break;
+    case 'decimal':
+      validateDecimalField(value);
+      break;
     case 'string':
     case 'markdown':
       validateStringField(value, definition);
@@ -468,6 +508,16 @@ const validateIntegerField = (value: CustomFieldValue, definition: BasicStoreEnt
   }
   if (definition.max_value != null && value.int_value > definition.max_value) {
     throw FunctionalError('int_value is above maximum', { field_name: value.field_name, value: value.int_value, max: definition.max_value });
+  }
+};
+
+// No min / max bounds for a decimal, as for the EPSS score of the vulnerabilities
+const validateDecimalField = (value: CustomFieldValue): void => {
+  if (value.float_value === undefined || value.float_value === null) {
+    throw FunctionalError('float_value is required for decimal type custom field', { field_name: value.field_name });
+  }
+  if (!isCustomFieldDecimal(value.float_value)) {
+    throw FunctionalError('float_value must be a finite number', { field_name: value.field_name, value: value.float_value });
   }
 };
 

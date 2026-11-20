@@ -3,6 +3,8 @@ import type { Widget, WidgetHost, WidgetDataSelection, WidgetParameters, WidgetP
 import { emptyFilterGroup, SELF_ID } from '../../../utils/filters/filtersUtils';
 import { getCurrentDataSelectionLimit } from '../../../utils/widget/widgetUtils';
 import type { WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
+import { applyBreakdownCompatibility, type WidgetBreakdownState } from '../../../utils/widget/widgetBreakdown';
+import useResolvedWidgetBreakdown from './useResolvedWidgetBreakdown';
 
 export interface WidgetConfigType {
   fintelVariableName: string | null;
@@ -29,6 +31,10 @@ interface WidgetConfigContextProps {
     selection: WidgetDataSelection,
     index: number,
   ) => void;
+  // Breakdown of the edited widget, derived once for every step
+  breakdown: WidgetBreakdownState;
+  // The config to submit, its breakdown dropped if the widget can no longer be broken down by it
+  getSubmittedConfig: () => WidgetConfigType;
 }
 
 const WidgetConfigContext = createContext<WidgetConfigContextProps | undefined>(undefined);
@@ -152,6 +158,10 @@ export const WidgetConfigProvider = ({
     }));
   };
 
+  const breakdown = useResolvedWidgetBreakdown(conf.widget, host, open);
+  // The breakdown is kept while the widget is edited, and only dropped on submit
+  const getSubmittedConfig = () => ({ ...conf, widget: applyBreakdownCompatibility(conf.widget, breakdown) });
+
   return (
     <WidgetConfigContext.Provider value={{
       host,
@@ -163,6 +173,8 @@ export const WidgetConfigProvider = ({
       setDataSelectionWithIndex,
       step,
       setStep,
+      breakdown,
+      getSubmittedConfig,
     }}
     >
       {children}
@@ -175,3 +187,9 @@ export const useWidgetConfigContext = () => {
   if (!context) throw Error('Hook used outside of WidgetConfigProvider');
   return context;
 };
+
+/**
+ * Breakdown of the edited widget: whether its controls show, the fields offered, whether the saved filter
+ * of its dataset and its fields are read, and the field the widget keeps on submit.
+ */
+export const useWidgetBreakdownState = () => useWidgetConfigContext().breakdown;

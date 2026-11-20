@@ -9,7 +9,9 @@ Priority Intelligence Requirements (PIRs) refer to the most critical information
 
 PIRs prioritize the most relevant information based on the user's focus, enabling them to gather and analyze key insights necessary for effective decision-making and risk assessment.
 
-Note that this feature is under Enterprise Edition and requires capabilities (a capability to access and view PIRs, another to create/update/delete PIRs).
+Note that this feature is under Enterprise Edition and requires capabilities: `Access PIR` to view PIRs, and `Create / Update / Delete PIR` to manage them. See the [list of capabilities](../administration/users.md#list-of-capabilities).
+
+To automate actions when an entity enters, leaves or changes within a PIR, use the [Listen PIR events](playbook-components.md#listen-pir-events) event source in a playbook.
 
 ![PIRs](assets/pirs.png)
 

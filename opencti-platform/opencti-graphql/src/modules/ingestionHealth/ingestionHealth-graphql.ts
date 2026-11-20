@@ -1,8 +1,9 @@
 import { registerGraphqlSchema } from '../../graphql/schema';
 import ingestionHealthTypeDefs from './ingestionHealth.graphql';
+import ingestionHealthResolvers from './ingestionHealth-resolvers';
 
-// Types only: the health fields are resolved on the entities that carry them (connectors)
+// The health fields are resolved on the entities that carry them (connectors, feeds and syncs), see ingestionHealthFieldResolvers
 registerGraphqlSchema({
   schema: ingestionHealthTypeDefs,
-  resolver: {},
+  resolver: ingestionHealthResolvers,
 });

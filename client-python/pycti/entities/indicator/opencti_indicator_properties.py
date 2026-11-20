@@ -3,6 +3,7 @@ INDICATOR_PROPERTIES = """
         field_id
         field_name
         int_value
+        float_value
         string_value
         boolean_value
         date_value
@@ -136,6 +137,7 @@ INDICATOR_PROPERTIES_WITH_FILES = """
         field_id
         field_name
         int_value
+        float_value
         string_value
         boolean_value
         date_value
@@ -226,6 +228,17 @@ INDICATOR_PROPERTIES_WITH_FILES = """
                             metaData {
                                 mimetype
                                 version
+                            }
+                            objectMarking {
+                                id
+                                standard_id
+                                entity_type
+                                definition_type
+                                definition
+                                created
+                                modified
+                                x_opencti_order
+                                x_opencti_color
                             }
                         }
                     }

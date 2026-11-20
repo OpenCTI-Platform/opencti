@@ -60,10 +60,23 @@ export interface UserImportActionContextData extends ElementContextData {
   file_name: string;
   connectors: string[];
 }
+// The import of a configuration preset: the report of the import is the file, linked to no entity
+export interface ConfigPresetImportSummary {
+  counts: Record<'created' | 'overwritten' | 'skipped' | 'failed', number>;
+  // The type of a partial import (the items of one type taken from the bundle), absent for the import of the wizard
+  type?: string;
+}
+export interface UserConfigPresetImportActionContextData {
+  // The report of the import, null when it could not be written
+  file_id: string | null;
+  path: string;
+  file_name: string;
+  input: ConfigPresetImportSummary;
+}
 export interface UserImportAction extends BasicUserAction {
   event_type: 'command';
   event_scope: 'import';
-  context_data: UserImportActionContextData;
+  context_data: UserImportActionContextData | UserConfigPresetImportActionContextData;
 }
 export interface UserExportActionContextData extends ElementContextData {
   format: string;
@@ -172,6 +185,17 @@ export interface IngestionHealthAction extends BasicUserAction {
     id: string;
     entity_type: string;
     entity_name: string;
+    ingestion_health_changes: {
+      // The messages of the failing checks, absent when none fails
+      message?: string;
+      // The same messages, one by check: the critical ones apart from the others
+      critical_messages?: string[];
+      advisory_messages?: string[];
+      // Status reported by the previous health event, absent for the first one
+      previous_status?: string;
+      // Date the current status started
+      status_since: string;
+    };
   };
 }
 // endregion
@@ -189,7 +213,8 @@ export interface UserLoginAction extends BasicUserAction {
 export interface UserLogoutAction extends BasicUserAction {
   event_type: 'authentication';
   event_scope: 'logout';
-  context_data: undefined;
+  // Only set for automatic logouts, an explicit logout carries no context
+  context_data: { reason: 'last_tab_closed' } | undefined;
 }
 
 export interface UserForgotPasswordAction extends BasicUserAction {
@@ -198,11 +223,28 @@ export interface UserForgotPasswordAction extends BasicUserAction {
   context_data: undefined;
   message: string;
 }
+
+// Where the failed attempt that locked the account came from
+export type UserLockSource = 'form' | 'basic_auth' | 'mfa' | 'forgot_password';
+// Automatic lock of an account by the local authentication lockout, once the max failed attempts are reached
+export interface UserLockAction extends BasicUserAction {
+  event_type: 'authentication';
+  event_scope: 'lock';
+  context_data: {
+    username: string;
+    lock_type: 'temporary' | 'permanent';
+    // In minutes, only for a temporary lock: a permanent lock lasts until an administrator unlocks the account.
+    // The lock of an unknown email is always temporary: there is no account to unlock
+    lock_duration?: number;
+    max_attempts: number;
+    lock_source: UserLockSource;
+  };
+}
 // endregion
 
 export type UserAction = UserReadAction | UserFileAction | UserLoginAction | UserEnrichAction | UserAnalyzeAction | UserImportAction
   | UserLogoutAction | UserExportAction | UserConfigPresetExportAction | UserSendAction | UserModificationAction | UserForbiddenAction | UserSearchAction
-  | DisseminateAction | UserForgotPasswordAction
+  | DisseminateAction | UserForgotPasswordAction | UserLockAction
   | IngestionHealthAction;
 
 export interface ActionListener {

@@ -8,7 +8,11 @@ interface LoginContextData {
   resendCodeDisabled?: boolean;
   validateOtpInError?: boolean;
   changePasswordInError?: boolean;
+  // Set when the refusal has its own message, such as a recently used password
+  changePasswordErrorCode?: string;
   mfaInError?: boolean;
+  // Set when the MFA code is refused because the local authentication lockout has locked the account
+  mfaLockMessage?: string;
   pwdChanged?: boolean;
 };
 

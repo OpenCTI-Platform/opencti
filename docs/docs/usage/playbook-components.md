@@ -124,7 +124,7 @@ When the primary entity is an incident and you use the Container wrapper step to
 - Participant
 - Title
 - Marking
-- Severity (only if the severity value of the incident exists as a severity value for the case type — verify this in the [Taxonomy](https://docs.opencti.io/6.7.X/reference/taxonomy/) settings)
+- Severity (only if the severity value of the incident exists as a severity value for the case type — verify this in the [Taxonomy](../reference/taxonomy.md) settings)
 
 ### Create security coverage
 
@@ -200,6 +200,8 @@ Add filters to control which elements in your bundle the action defined in the c
 - An ***add*** operation appends the specified values to the existing set in the platform. 
 - A ***replace*** operation overwrites the existing set with the specified values
 - A ***remove*** operation deletes the specified values from the existing set.
+
+The [custom fields](../administration/custom-fields.md) attached to the entity types are available as attributes of this component.
 
 When a Manipulate Knowledge step is followed by an enrichment connector in the same playbook, explicit operations from the enrichment connector are automatically preserved and carried through into the enrichment step's output. This means that when the final result is written to the platform, both the enrichment data and the manipulation operations are reconciled correctly — for example, a label added by an enrichment connector and a label removed by Manipulate Knowledge will both take effect as expected in the final write to knowledge.
 
@@ -336,7 +338,7 @@ Add filters to control which elements in your bundle the action defined in the c
 
 This component makes a direct query to the database before the Send for ingestion step. If you create a new entity (for example, with the Container wrapper step) and share it in the same playbook, the playbook fails because the entity does not yet exist. To avoid this, run share the entity in a separate playbook.
 
-For more details, see [Organization segregation](https://docs.opencti.io/latest/administration/organization-segregation/).
+For more details, see [Organization segregation](../administration/organization-segregation.md).
 
 ### Transform with AI
 
@@ -371,7 +373,7 @@ These components end the playbook or branch.
 
 ### Send email from template
 
-This component sends an email using a template configured in ****Settings > Security**** (used for user notifications). You can select the template to use and choose to set the email targets either dynamically, based on the data processed or set to a static user, group or organization, see below for more details.
+This component sends an email using a template configured in ****Settings > Security > Email templates**** (used for user notifications, see [Email templates](../administration/email-templates.md)). You can select the template to use and choose to set the email targets either dynamically, based on the data processed or set to a static user, group or organization, see below for more details.
 
 ***Component details***
 

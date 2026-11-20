@@ -179,6 +179,68 @@ export const advanceDraftViaApi = async (playwright: Playwright, baseURL: string
   }
 };
 
+/** A Redis stream id (`<ms>-<seq>`) as a comparable pair; a missing id sorts first. */
+const parseStreamId = (id: string | null): [number, number] => {
+  if (!id) return [0, 0];
+  const [ms, seq] = id.split('-');
+  return [Number(ms), Number(seq ?? 0)];
+};
+
+const isStreamIdAtOrAfter = (id: string | null, target: string) => {
+  const [ms, seq] = parseStreamId(id);
+  const [targetMs, targetSeq] = parseStreamId(target);
+  return ms > targetMs || (ms === targetMs && seq >= targetSeq);
+};
+
+/**
+ * Makes sure the "Report created" playbook can react to the Report the next step creates, before that
+ * step runs: the playbook is running, and the playbook manager has consumed the live stream up to its
+ * current last event (so the activation and every event before it are behind the manager, and the
+ * Report creation event is among the next events it reads). Fails with the manager's position when it does
+ * not catch up, instead of a silent 120 s wait on the Report access afterwards.
+ */
+export const waitForPlaybookManagerReady = async (playwright: Playwright, baseURL: string, playbookName: string) => {
+  const admin = await playwright.request.newContext({ baseURL, ignoreHTTPSErrors: true });
+  try {
+    await withLoginRateLimit(() => authenticateAdminApi(admin));
+    const { playbooks, playbookManagerInfo } = await executeGraphql<{
+      playbooks: { edges: { node: { id: string; name: string; playbook_running: boolean | null } }[] };
+      playbookManagerInfo: { activated: boolean; lastStreamEventId: string | null } | null;
+    }>(
+      admin,
+      'Read the playbook and the playbook manager position',
+      `query PersonaPlaybookManager($search: String) {
+        playbooks(search: $search) { edges { node { id name playbook_running } } }
+        playbookManagerInfo { activated lastStreamEventId }
+      }`,
+      { search: playbookName },
+    );
+    const playbook = playbooks.edges.map(({ node }) => node).find(({ name }) => name === playbookName);
+    if (!playbook?.playbook_running) {
+      throw new Error(`The "${playbookName}" playbook is not running (${playbook ? 'stopped' : 'missing'}): run the form intake setup first`);
+    }
+    if (!playbookManagerInfo?.activated) {
+      throw new Error('The playbook manager is not activated on this platform');
+    }
+    const target = playbookManagerInfo.lastStreamEventId;
+    if (!target) return;
+    await expect.poll(async () => {
+      const { playbookManagerInfo: info } = await executeGraphql<{ playbookManagerInfo: { lastProcessedEventId: string | null } | null }>(
+        admin,
+        'Read the playbook manager position',
+        'query PersonaPlaybookManagerPosition { playbookManagerInfo { lastProcessedEventId } }',
+      );
+      const processed = info?.lastProcessedEventId ?? null;
+      return isStreamIdAtOrAfter(processed, target) ? 'caught up' : `at ${processed ?? 'nothing'}, stream at ${target}`;
+    }, {
+      message: `Expected the playbook manager to consume the live stream up to ${target} (playbook ${playbook.id})`,
+      timeout: 60000,
+    }).toBe('caught up');
+  } finally {
+    await admin.dispose();
+  }
+};
+
 /**
  * Waits for the "Report created" playbook to have applied the final authorized members (OrgC
  * manages) on the validated Report, so the per-persona access checks never race it. Returns nothing.

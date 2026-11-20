@@ -13,7 +13,7 @@ When a indicator is created on the platform, the decay engine search for the rul
 
 ### Data source provided the dates
 
-If a data source provides `valid_from` and `valid_until` dates and he indicator is elligible to be managed by a decay rule, the platform will change this valid_until with the one calculated by the Decay rule.
+If a data source provides `valid_from` and `valid_until` dates and the indicator is eligible to be managed by a decay rule, the platform will change this valid_until with the one calculated by the Decay rule.
 
 When an indicator is created as already revoked, the decay rule is not computed.
 
@@ -49,7 +49,9 @@ The decay rule is a mathematical computation based on:
 
 There is two ways to update an indicator: either through an update, or ingesting an indicator that already exists in the platform upsert, [more information on deduplication page](deduplication.md).
 
-### Upating score
+<a id="upating-score"></a>
+
+### Updating score
 
 Updating score restarts a decay lifecycle computation with the decay rule that is already stored in the indicator. It means that the valid until date is updated along with a score update.
 
@@ -69,7 +71,9 @@ Updating score restarts a decay lifecycle computation with the decay rule that i
 >
 > Update an IOC without decay rule: My indicator is currently revoked, with a score of 20. My IOC is not under a decay rule. It has been created with a score of 90. When switching revoked to FALSE, the new IOC score is 50.
 
-### Managing concurency updates from distinct sources
+<a id="managing-concurency-updates-from-distinct-sources"></a>
+
+### Managing concurrency updates from distinct sources
 
 In some case, several sources have different values for one given indicator and keep erasing each other score. As all decay data is computed everytime a score is change, there is a circuit breaker:
 

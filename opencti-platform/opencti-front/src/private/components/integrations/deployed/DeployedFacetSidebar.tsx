@@ -4,10 +4,12 @@ import { Box, Stack } from '@mui/material';
 import { AutorenewOutlined, ExtensionOutlined, PauseCircleOutlined, PlayCircleOutlined, WidgetsOutlined } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import Button from '@common/button/Button';
+import { useIngestionHealthColor } from '@components/data/connectors/ingestionHealthDisplay';
 import { FacetCheckbox, FacetGroupLabel, toggleValue } from '@components/integrations/catalog/IngestionCatalogFacetSidebar';
 import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
 import { getBuiltInIntegration, isBuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import {
+  DEPLOYED_HEALTH_FACETS,
   DEPLOYED_KIND_FACETS,
   DEPLOYED_STATUS_FACETS,
   DeployedFilterState,
@@ -15,6 +17,7 @@ import {
   DeployedStatusFacet,
 } from '@components/integrations/deployed/useDeployedIntegrationsFilters';
 import { useFormatter } from '../../../../components/i18n';
+import { capitalizeFirstLetter } from '../../../../utils/String';
 import { paperBg, paperBorder } from '../paperSurface';
 
 const STATUS_FACET_ICONS: Record<DeployedStatusFacet, SvgIconComponent> = {
@@ -57,6 +60,7 @@ interface DeployedFacetSidebarProps {
     statusCounts: Record<string, number>;
     kindCounts: Record<string, number>;
     updateAvailableCount: number;
+    healthCounts: Record<string, number>;
   };
 }
 
@@ -70,12 +74,13 @@ const DeployedFacetSidebar = ({
 }: DeployedFacetSidebarProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const healthColor = useIngestionHealthColor();
   const typeMetadata = useDeployedTypeMetadata();
 
   const statusLabel = (status: DeployedStatusFacet): string => {
-    if (status === 'active') return t_i18n('Active');
+    if (status === 'active') return t_i18n('Started');
     if (status === 'processing') return t_i18n('Processing');
-    return t_i18n('Inactive');
+    return t_i18n('Stopped');
   };
 
   const kindLabel = (kind: DeployedKindFacet): string => {
@@ -182,6 +187,26 @@ const DeployedFacetSidebar = ({
               icon={STATUS_FACET_ICONS[status]}
               label={statusLabel(status)}
               onToggle={() => onFiltersChange((prev) => ({ ...prev, statuses: toggleValue(prev.statuses, status) }))}
+            />
+          ))}
+        </Box>
+
+        <Box sx={dividedGroupSx}>
+          <FacetGroupLabel>{t_i18n('Health status')}</FacetGroupLabel>
+          {DEPLOYED_HEALTH_FACETS.map((health) => (
+            <FacetCheckbox
+              key={health}
+              checked={filters.healthStatuses.includes(health)}
+              count={facets.healthCounts[health] ?? 0}
+              adornment={(
+                <Box
+                  component="span"
+                  aria-hidden
+                  sx={{ width: 10, height: 10, flexShrink: 0, borderRadius: '50%', backgroundColor: healthColor(health) }}
+                />
+              )}
+              label={t_i18n(capitalizeFirstLetter(health))}
+              onToggle={() => onFiltersChange((prev) => ({ ...prev, healthStatuses: toggleValue(prev.healthStatuses, health) }))}
             />
           ))}
         </Box>

@@ -2,7 +2,7 @@ import amqp from 'amqplib/callback_api';
 import util from 'util';
 import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import { LRUCache } from 'lru-cache';
-import conf, { booleanConf, configureCA, loadCert, logApp } from '../config/conf';
+import conf, { booleanConf, configureCA, loadCert, logApp, TLS_REJECT_UNAUTHORIZED } from '../config/conf';
 import { DatabaseError } from '../config/errors';
 import { SYSTEM_USER } from '../utils/access';
 import { telemetry } from '../config/tracing';
@@ -21,8 +21,8 @@ const RABBITMQ_CA_CERT = readFileFromConfig('rabbitmq:use_ssl_cert');
 const RABBITMQ_CA_KEY = readFileFromConfig('rabbitmq:use_ssl_key');
 const RABBITMQ_CA_PFX = readFileFromConfig('rabbitmq:use_ssl_pfx');
 const RABBITMQ_CA_PASSPHRASE = conf.get('rabbitmq:use_ssl_passphrase');
-const RABBITMQ_REJECT_UNAUTHORIZED = booleanConf('rabbitmq:use_ssl_reject_unauthorized', false);
-const RABBITMQ_MGMT_REJECT_UNAUTHORIZED = booleanConf('rabbitmq:management_ssl_reject_unauthorized', false);
+const RABBITMQ_REJECT_UNAUTHORIZED = booleanConf('rabbitmq:use_ssl_reject_unauthorized', TLS_REJECT_UNAUTHORIZED);
+const RABBITMQ_MGMT_REJECT_UNAUTHORIZED = booleanConf('rabbitmq:management_ssl_reject_unauthorized', TLS_REJECT_UNAUTHORIZED);
 const HOSTNAME = conf.get('rabbitmq:hostname');
 const PORT = conf.get('rabbitmq:port');
 const USERNAME = conf.get('rabbitmq:username');
@@ -340,6 +340,7 @@ export const rabbitmqManagementClient = async () => {
     baseURL,
     responseType: 'json',
     rejectUnauthorized: RABBITMQ_MGMT_REJECT_UNAUTHORIZED,
+    trusted: true,
     auth: {
       username: USERNAME,
       password: PASSWORD,
@@ -495,9 +496,10 @@ export const getQueueConsumersByType = async (context, user) => {
 };
 export const getBestBackgroundConnectorId = async (context, user) => {
   const stats = await getCachedRabbitmqMetrics(context, user);
-  // Find the least used push queue
   const targetQueues = stats.queues.filter((queue) => queue.name.startsWith(`${RABBIT_QUEUE_PREFIX}push_background-task`));
-  const bestQueue = targetQueues.sort((a, b) => (a.messages ?? 0) - (b.messages ?? 0))[0];
+  const fewestMessages = Math.min(...targetQueues.map((queue) => queue.messages ?? 0));
+  const leastUsedQueues = targetQueues.filter((queue) => (queue.messages ?? 0) === fewestMessages);
+  const bestQueue = leastUsedQueues[Math.floor(Math.random() * leastUsedQueues.length)];
   return bestQueue.name.substring(`${RABBIT_QUEUE_PREFIX}push_`.length);
 };
 

@@ -6,7 +6,7 @@ Administrators can request to create and download a support package that contain
 !!! warning "Support package content"
 
 	Even if we do our best to prevent logging any data, the support package may contains some sensitive information that you may not want to share with everyone.
-    Before creating a ticket with your support package takes some time to check if you can safely share the content depending of your security policy.
+    Before attaching the support package to a ticket, take time to check that its content can be shared under your security policy.
 
 
 Support Package can be requested from "Settings > Support" menu.

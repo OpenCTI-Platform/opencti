@@ -51,7 +51,7 @@ Given a live stream with filters *Entity type: Indicator* `AND` *Label: detectio
 | 4. Add the label `detection`    | Create the indicator                                           | Create the indicator, create the relationship `indicates`                                                                        |
 | 5. Delete the indicator         | Delete the indicator                                           | Delete the indicator  and the relationship                                                                                       |
 
-Details on how to consume these Live streams can be found on [the dedicated page](getting-started.md).
+Details on how to consume these Live streams can be found on [the dedicated page](../reference/streaming.md).
 
 
 ## TAXII Collections
@@ -187,4 +187,4 @@ It may happen that some platform have "system" as a user used for impersonation:
 
 If a user that was used for the access right impersonation is deleted from the platform, any public feed using this user **will be stopped.**
 
-Additionnally, these feeds **will be made private.**
+Additionally, these feeds **will be made private.**

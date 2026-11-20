@@ -16,7 +16,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE } from '../../../utils/hooks/useGranted';
 
 export const LOCAL_STORAGE_KEY = 'incidents';
 
@@ -55,13 +55,13 @@ const Incidents: FunctionComponent = () => {
 
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns: DataTableProps['dataColumns'] = {
-    name: { percentWidth: 20 },
-    x_opencti_score: { percentWidth: 7 },
+    name: { percentWidth: 19 },
+    x_opencti_score: { percentWidth: 8 },
     incident_type: { percentWidth: 8 },
     severity: { percentWidth: 8 },
-    objectAssignee: { percentWidth: 12, isSortable: isRuntimeSort },
-    creator: { percentWidth: 11, isSortable: isRuntimeSort },
-    objectLabel: { percentWidth: 15 },
+    objectAssignee: { percentWidth: 10, isSortable: isRuntimeSort },
+    creator: { percentWidth: 10, isSortable: isRuntimeSort },
+    objectLabel: { percentWidth: 11 },
     created: { percentWidth: 10 },
     x_opencti_workflow_id: { percentWidth: 8 },
     objectMarking: { percentWidth: 8, isSortable: isRuntimeSort },
@@ -90,7 +90,7 @@ const Incidents: FunctionComponent = () => {
           exportContext={{ entity_type: 'Incident' }}
           availableEntityTypes={['Incident']}
           additionalHeaderButtons={[
-            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
+            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE]}>
               <StixCoreObjectForms entityType="Incident" />
             </Security>,
           ]}

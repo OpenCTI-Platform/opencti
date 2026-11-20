@@ -52,6 +52,7 @@ import {
   X_OPENCTI_WORKFLOW_ID,
   SSVC_EXPLOITATION_FILTER,
   SSVC_AUTOMATABLE_FILTER,
+  CLOSING_REASON_FILTER,
   SSVC_TECHNICAL_IMPACT_FILTER,
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
@@ -175,6 +176,15 @@ export const testWorkflow = (stix: ReadonlyStix, filter: Filter, changeContext?:
   // Rewrite filterKey to match the internal attribute name used in event changes
   const adjustedContext = changeContext ? { ...changeContext, filterKey: X_OPENCTI_WORKFLOW_ID } : undefined;
   return testStringFilter(filter, toValidArray(stixValue), adjustedContext);
+};
+
+/**
+ * CLOSING REASON
+ * - x_opencti_closing_reason is closing_reason in stix (in extension)
+ */
+export const testClosingReason = (stix: ReadonlyStix, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+  const stixValue: string | undefined = stix.extensions?.[STIX_EXT_OCTI]?.closing_reason;
+  return testStringFilter(filter, toValidArray(stixValue), changeContext);
 };
 
 /**
@@ -543,6 +553,7 @@ const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [SCORE_FILTER]: testScore,
   [TYPE_FILTER]: testEntityType,
   [WORKFLOW_FILTER]: testWorkflow,
+  [CLOSING_REASON_FILTER]: testClosingReason,
   [CISA_KEV_FILTER]: testCisaKev,
   [EPSS_PERCENTILE_FILTER]: testEpssPercentile,
   [EPSS_SCORE_FILTER]: testEpssScore,

@@ -30,6 +30,10 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
 
   const { t_i18n } = useFormatter();
 
+  // Items restricted to an enum are picked from it, other items are typed freely
+  const items = Array.isArray(schema.items) ? undefined : schema.items;
+  const enumValues = Array.isArray(items?.enum) ? items.enum.map(String) : undefined;
+
   // Convert null to empty array for component state
   const currentValues = Array.isArray(data) ? data : [];
   const [inputValue, setInputValue] = useState('');
@@ -48,14 +52,20 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
     handleChange(path, finalValue);
   }, [handleChange, normalizeValues, path, schema.default]);
 
+  const getPlaceholder = () => {
+    if (enumValues) return t_i18n('Select options');
+    if (currentValues.length === 0) return t_i18n('Type and press Enter to add items');
+    return t_i18n('Add more items...');
+  };
+
   return (
     <Box sx={{ mb: 2 }}>
       <Combobox<string>
         multiple
         closeOnSelect
-        allowCustomValue
-        createValueFromInput={(input) => input}
-        options={[]}
+        allowCustomValue={!enumValues}
+        createValueFromInput={enumValues ? undefined : (input) => input}
+        options={enumValues ?? []}
         value={currentValues}
         onValueChange={(next) => handleValuesChange((next ?? []) as string[])}
         inputValue={inputValue}
@@ -67,12 +77,7 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
         <ComboboxLabel>{label}</ComboboxLabel>
         <ComboboxField>
           <ComboboxChips aria-label={String(label)} />
-          <ComboboxInput
-            placeholder={currentValues.length === 0
-              ? t_i18n('Type and press Enter to add items')
-              : t_i18n('Add more items...')
-            }
-          />
+          <ComboboxInput placeholder={getPlaceholder()} />
           <ComboboxControls>
             <ComboboxTrigger />
           </ComboboxControls>

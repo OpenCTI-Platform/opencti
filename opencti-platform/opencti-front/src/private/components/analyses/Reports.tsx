@@ -5,7 +5,7 @@ import { ReportsLines_data$data } from '@components/analyses/__generated__/Repor
 import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import ReportCreation from './reports/ReportCreation';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -218,7 +218,7 @@ const Reports: FunctionComponent = () => {
           exportContext={{ entity_type: 'Report' }}
           redirectionModeEnabled
           additionalHeaderButtons={[
-            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
+            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE]}>
               <StixCoreObjectForms entityType="Report" />
             </Security>,
           ]}

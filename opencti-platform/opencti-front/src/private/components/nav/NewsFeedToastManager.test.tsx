@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, screen } from '@testing-library/react';
 import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
+import { UserContext } from '../../../utils/hooks/useAuth';
 import NewsFeedToastManager from './NewsFeedToastManager';
 import { NewsFeedToastData } from './NewsFeedToastItem';
 
@@ -162,6 +163,47 @@ describe('NewsFeedToastManager', () => {
     expect(screen.getByRole('link', { name: 'View all on XTM Hub' })).toHaveAttribute('href', `${HUB_URL}/app`);
   });
 
+  describe('overflow banner of the blogposts', () => {
+    const emitMany = (types: string[]) => types.forEach((type, i) => emitAdded({ id: `item-${i}`, news_feed_type: type }));
+
+    it('does not talk about the resources of the hub when only blogposts are hidden', () => {
+      renderManager();
+      emitMany(Array(7).fill('BLOG_POST'));
+      expect(screen.getByText('(+2) Click to view all the new blogposts')).toBeInTheDocument();
+      expect(screen.queryByText(/new resources on the Hub/)).not.toBeInTheDocument();
+    });
+
+    it('links the banner to the Filigran blog when only blogposts are hidden', () => {
+      renderManager();
+      emitMany(Array(7).fill('BLOG_POST'));
+      const url = new URL(screen.getByRole('link', { name: 'See all' }).getAttribute('href') as string);
+      expect(url.origin).toBe('https://filigran.io');
+      expect(url.pathname).toBe('/blog');
+      expect(url.searchParams.get('utm_source')).toBe('settings-id-1');
+      expect(url.searchParams.get('utm_content')).toBe('see_all');
+      expect(url.searchParams.has('platform_id')).toBe(false);
+    });
+
+    it('displays the blog banner even when the hub url is not configured', () => {
+      renderManager({ settings: { id: 'settings-id-1', xtm_hub_registration_status: 'registered' } });
+      emitMany(Array(7).fill('BLOG_POST'));
+      expect(screen.getByText('(+2) Click to view all the new blogposts')).toBeInTheDocument();
+    });
+
+    it('uses a neutral message when blogposts and resources are hidden together', () => {
+      renderManager();
+      emitMany([...Array(5).fill('RESOURCE_PLAYBOOK'), 'BLOG_POST', 'RESOURCE_PLAYBOOK']);
+      expect(screen.getByText('(+2) Click to view all the new items')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'View all' })).toHaveAttribute('href', `${HUB_URL}/app`);
+    });
+
+    it('keeps the hub message when only resources are hidden', () => {
+      renderManager();
+      emitMany([...Array(5).fill('BLOG_POST'), 'RESOURCE_PLAYBOOK', 'RESOURCE_PLAYBOOK']);
+      expect(screen.getByText('(+2) Click to view all the new resources on the Hub')).toBeInTheDocument();
+    });
+  });
+
   it('does not display the overflow banner when the hub url is not configured', () => {
     renderManager({ settings: { id: 'settings-id-1', xtm_hub_registration_status: 'registered' } });
     for (let i = 0; i < 7; i += 1) {
@@ -181,6 +223,34 @@ describe('NewsFeedToastManager', () => {
     emitAdded({ id: 'item-1' });
     emitAdded({ id: 'item-2' });
     await user.click(screen.getByRole('button', { name: 'Dismiss all' }));
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('does not bring back the queued toasts when the notifications are enabled again', () => {
+    let setUnsubscribed: (value: boolean) => void = () => {};
+    const Harness = () => {
+      const [unsubscribed, setValue] = useState(false);
+      setUnsubscribed = setValue;
+      return (
+        <UserContext.Provider
+          value={createMockUserContext({
+            settings: ENABLED_SETTINGS,
+            me: { id: 'user-1', unsubscribed_news_feed_types: unsubscribed ? ['*'] : [] },
+          })}
+        >
+          <NewsFeedToastManager />
+        </UserContext.Provider>
+      );
+    };
+    const { container } = testRender(<Harness />);
+    emitAdded({ id: 'item-1', title: 'Stale blogpost', news_feed_type: 'BLOG_POST' });
+    expect(screen.getByText('Stale blogpost')).toBeInTheDocument();
+
+    act(() => setUnsubscribed(true));
+    expect(container).toBeEmptyDOMElement();
+
+    act(() => setUnsubscribed(false));
+    expect(screen.queryByText('Stale blogpost')).not.toBeInTheDocument();
     expect(container).toBeEmptyDOMElement();
   });
 

@@ -2,7 +2,7 @@
 
 !!! tip "Enterprise edition"
 
-     Please read the information below. The ability to log in via SSO is covered by the [OpenCTI Enterprise Edition license](https://docs.opencti.io/latest/administration/enterprise/?h=ente).
+     Please read the information below. The ability to log in via SSO is covered by the [OpenCTI Enterprise Edition license](enterprise.md).
  
 All the configurations listed below require an Enterprise Edition to work, except the Local strategy.
 
@@ -85,6 +85,88 @@ By clicking on the local authentication you can manage your local password polic
 | `Number of lowercase chars must be greater or equals to`                | Specify the minimum number of lowercase characters.           |
 | `Number of uppercase chars must be greater or equals to`                | Specify the minimum number of uppercase characters.           |
 | `Password validity duration in days (0 equals unlimited)`              | Define how long a password remains valid before the user is forced to change it. A value of `0` means passwords never expire. |
+| `Number of recent passwords that cannot be reused (0 equals disabled)` | Refuse a new password equal to the current one or to one of the previous ones, from `0` to `24`. See [Password rotation](#password-rotation). |
+
+#### Password rotation
+
+Password rotation, also called password history, prevents users from going back to a password they used recently, so that a password change always brings a new password. It applies to local accounts only: accounts that sign in through an external provider (SSO, LDAP, etc.) and service accounts are not concerned.
+
+##### Configure the rule
+
+In the local authentication drawer, set "Number of recent passwords that cannot be reused" to a value between `1` and `24`. `0`, the default, disables the rule.
+
+The value includes the current password:
+
+| Value | A new password must differ from                         |
+|:------|:--------------------------------------------------------|
+| `0`   | Nothing: the rule is disabled.                          |
+| `1`   | The current password.                                   |
+| `5`   | The current password and the 4 passwords set before it. |
+
+Pairing this rule with a [password validity duration](policies.md#password-validity-and-forced-password-change) makes users rotate their password regularly without cycling back to an old one.
+
+##### Which password changes are checked
+
+Every way of setting the password of a local account is checked:
+
+| Channel              | Who submits the password                                                                 |
+|:---------------------|:-----------------------------------------------------------------------------------------|
+| Profile              | The user, from their profile, after confirming their current password.                   |
+| Forced change        | The user, when their password has expired or an administrator forced a change.           |
+| Forgot password      | The requester, after validating the emailed code and completing MFA if enabled, on the new password step of the login page. |
+| Administration       | An administrator, when setting a user's password in the user edition (Password tab).     |
+
+A new password goes through these checks, in this order:
+
+1. **Current password** (profile only): a wrong current password is refused first.
+2. **Password policy**: the length and character rules of the table above. A password that breaks them is refused with the usual message.
+3. **Attempt limit**: the change is counted, see [Limit on attempts](#limit-on-attempts).
+4. **Recent passwords**: the new password is compared with the current one and the previous ones the rule keeps.
+
+The comparison is an exact match: a slightly different password (`Summer2025!` instead of `Summer2024!`) is accepted. Only the password hashes are kept, never the passwords themselves.
+
+!!! warning "Long passwords"
+
+    Passwords are compared on their first 72 bytes, a limit of the bcrypt hashing algorithm. Two passwords that share their first 72 bytes are considered identical.
+
+##### What users see
+
+- The password rules shown next to the password fields include "Must be different from your last N passwords", or "Must be different from your current password" when the value is `1`. Administrators setting another user's password see "Must be different from the last N passwords". This rule cannot be checked while typing, since only the platform knows the previous passwords.
+- In the profile, forced-change and forgot-password forms, a reused password shows "This password has already been used recently. Please choose a different one." under the new password field, and the new-password fields are cleared. In administration, the refusal appears as an error notification and the fields are not cleared. In the forgot password flow, the user stays on the new password step and can try again with the same code, as long as it has not expired.
+
+##### Limit on attempts
+
+Since each refusal tells whether a password was used recently, the number of password changes is limited to slow down guessing. By default, each submitter can make at most **5 password changes on an account every 15 minutes**.
+
+- **One counter per account and per submitter**, so nobody can block the others:
+    - the user has one counter, shared by the profile and the forced change;
+    - each administrator has their own counter on each account: an administrator can always reset the password of a compromised account, even after someone used up the attempts of the user;
+    - the forgot password flow has one counter per account, shared by every reset request on that account.
+- **What counts**: every password change that passes the current password and password policy checks, whether it is then accepted or refused. A password refused by the policy, or a wrong current password, does not count.
+- **The window**: it starts with the first counted change and lasts 15 minutes. It is not reset by a successful change, and does not slide: once it ends, the counter starts again from zero.
+- **Beyond the limit**: the change is refused with "Too many password change attempts. Please try again in a few minutes.", without comparing the password.
+- **Only while the rule is enabled**: with a value of `0`, password changes are not limited.
+
+Both values can be changed with `app:password_change:max_attempts` and `app:password_change:window_seconds` (see [Configuration](../deployment/configuration.md#network-and-security)). Each must be a positive integer: any other value, `0` included, is ignored and the default applies, with a warning in the application log. The counters live in Redis.
+
+##### Changing the value
+
+- **Enabling the rule**: the history starts from that moment. Passwords set before are not known to the platform, so the first change of each user is only compared with their current password.
+- **Raising the value**: users keep what they already have, and their history grows with each new change up to the new value.
+- **Lowering the value**: the oldest passwords beyond the new value are deleted for every user, right away.
+- **Setting it back to `0`**: the rule is disabled and every user's password history is deleted, so enabling it again starts from scratch.
+
+A user's history is also deleted when the account stops being a local account: when it is turned into a service account, when it starts signing in through an external provider, or when it is merged into another user (the history of the merged account is deleted).
+
+##### Audit and alerting
+
+With an Enterprise Edition license, each refused reuse is recorded in the audit log as an unauthorized action (`password_reuse`), with the target user and the channel (`self` for the profile and forced change, `admin`, or `reset` for forgot password), and never with the password itself. You can build alerts on these activity events. On every platform, a warning line is also written in the application log.
+
+##### Backups and API
+
+Password hashes, current and previous, are stored in the user documents of Elasticsearch / OpenSearch: protect backups of the database accordingly. The history cannot be read or written through the API.
+
+While the rule is enabled (a value of `1` or more), a local account's password change must be sent on its own: combining it with other fields is refused with "The password must be changed on its own". The exception is `user_service_account`, which may accompany the password; when switching account type, the supplied password is ignored. With the rule disabled, existing API calls are unchanged.
 
 ### HTTP headers
 Unless this authentication strategy was defined before migrating, it should be disabled by default.
@@ -103,6 +185,12 @@ For OpenID, the following fields are mandatory (indicated with a "*" in the form
 - Issuer: the issuer of the OpenID response, generally the URI of your Identity Provider
 - Client ID: The ID of your client access on the Identity Provider
 - Client secret: The secret of your client access on the Identity Provider
+
+##### Token endpoint authentication method
+
+By default, OpenCTI sends the client secret in the body of the token request (`client_secret_post`). Some Identity Providers (e.g. Okta, Authelia) only accept it in the `Authorization` header and reject the request with `invalid_client`. In that case, add an **Extra Configuration** field (see "Add a custom field not present in SAML, LDAP, OpenID" below) with key `token_endpoint_auth_method` and value `client_secret_basic`.
+
+Supported values: `client_secret_basic`, `client_secret_post`. Any other value is ignored and a warning is written to the authentication logs.
 
 #### SAML
 
@@ -228,6 +316,7 @@ The UI covers the most commonly used configuration. However, for specific use ca
 Custom fields are directly bound to the underlying authentication library we use (passport). This means that any field supported by the passport library can be added as a custom field in the UI.
 
 In each form, you can use the **Extra Configuration** section to add a new custom field:
+
 - Click on the "+" to add a new field
 - Specify a field type
 - Add a key (the name of the field in the passport library to map to)
@@ -279,11 +368,13 @@ The secret name (`oidc_client_secret` in this example) will appear in the **Use 
 Now that a configuration is defined, you can define the group mapping for all authentications (except Local).
 
 All authentications have these options: 
+
 - **Prevent platform default group association:** in OpenCTI you can allow some groups to be granted by default at user creation. This option allows you to define whether you want any new user created through the defined authentication to get these default groups granted by default. **By default, users will be granted platform default group**.
 - **Auto create groups:** you can decide to automatically create the groups that you have mapped. Please be aware that a group requires a role for a user to have rights [(more information)](../administration/users.md). When performing group mapping, you can enable an option to automatically create specific groups within OpenCTI.
 - **Extend platform groups:** you can decide to have the system retain groups set within OpenCTI that aren't managed by the authentication provider. This option allows you to manage assigning users to groups that are specific to OpenCTI and not have the groups overwritten when the user logs in.
 
 Then for each authentication, you need to provide: 
+
 - the group expression: identification of where to find the group information 
 - the group splitter: if the group information contains multiple groups, this splitter character will be used to extract the individual group names 
 - the group mapping: the mapping between the value of the group in your provider and the groups that exist in the platform. Be sure to type the exact same group name as it exists in the platform to avoid group duplication. 
@@ -422,6 +513,7 @@ Enabling the **app:authentication:force_env** variable will remove any stored au
 In case you have locked yourself out of the application, by disabling local authentication without verifying that you have another working strategy, there is a solution.
 
 This solution however relies on one of the following pre-requisites: 
+
 - a local account with the capability to [Manage Authentication](users.md) exists, and you know its credentials.
 - you have access to the administrator credentials defined in your configuration file.
 

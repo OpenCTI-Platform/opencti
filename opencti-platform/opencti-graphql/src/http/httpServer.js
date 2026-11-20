@@ -15,16 +15,15 @@ import passport from 'passport';
 import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/conf';
 import rateLimit from 'express-rate-limit';
 import createApp from './httpPlatform';
-import createApolloServer from '../graphql/graphql';
+import createApolloServer, { createSubscriptionServerOptions } from '../graphql/graphql';
 import { getSessionMiddleware } from '../database/session';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { ForbiddenAccess, WorkNotALiveError } from '../config/errors';
+import { ForbiddenAccess } from '../config/errors';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getSettings } from '../domain/settings';
-import { isWorkAlive } from '../domain/work';
 import { computeLoaders } from './httpAuthenticatedContext';
+import { createGraphqlContext } from './httpGraphqlContext';
 import {
   applyKeepAliveTimeout,
   buildGraphqlUploadOptions,
@@ -36,8 +35,9 @@ import {
   logMalformedRequest,
   normalizeUploadError,
 } from './httpUtils';
-import { checkDraftInContext } from './httpServer-draft';
+import { getMaxPayloadBodySize } from './httpConfig';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
+import { onSessionPresenceClose, onSessionPresenceConnect } from '../modules/session/session-presence-ws';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -95,7 +95,7 @@ const createHttpServer = async () => {
   app.use(rateLimit(buildRateLimiterOptions()));
   app.use(await getSessionMiddleware());
   app.use(passport.initialize({}));
-  const { schema, apolloServer } = createApolloServer();
+  const { schema, apolloServer, protection } = createApolloServer();
   let httpServer;
   if (CERT_KEY_PATH && CERT_KEY_CERT) {
     try {
@@ -128,9 +128,15 @@ const createHttpServer = async () => {
   wsServer.on('error', (e) => {
     throw e;
   });
+  // Like express does for every http request, give the upgrade request the express request API
+  // (ip resolved behind the trusted proxies, header()...). Registered before the graphql-ws listener.
+  wsServer.on('connection', (_socket, request) => {
+    Object.setPrototypeOf(request, app.request);
+  });
   const serverCleanup = useServer({
-    schema,
-    context: extractWsSessionContext,
+    ...createSubscriptionServerOptions({ schema, protection, context: extractWsSessionContext }),
+    onConnect: onSessionPresenceConnect,
+    onClose: onSessionPresenceClose,
   }, wsServer);
 
   apolloServer.addPlugin(ApolloServerPluginDrainHttpServer({ httpServer }));
@@ -157,7 +163,7 @@ const createHttpServer = async () => {
   });
   await apolloServer.start();
 
-  const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
+  const requestSizeLimit = getMaxPayloadBodySize();
   app.use(express.json({ limit: requestSizeLimit }));
   const uploadFileSizeLimit = nconf.get('app:max_upload_file_size') || DEFAULT_MAX_UPLOAD_FILE_SIZE;
   const uploadMaxFiles = nconf.get('app:max_upload_files') || DEFAULT_MAX_UPLOAD_FILES;
@@ -192,18 +198,7 @@ const createHttpServer = async () => {
     expressMiddleware(apolloServer, {
       app,
       path: `${basePath}/graphql`,
-      context: async ({ req, res }) => {
-        const executeContext = await createAuthenticatedContext(req, res, 'api');
-        // When context is related to a work, we need to check work status
-        if (executeContext.workId) {
-          const workStillAlive = await isWorkAlive(executeContext, executeContext.user, executeContext.workId);
-          if (!workStillAlive) {
-            throw WorkNotALiveError();
-          }
-        }
-        await checkDraftInContext(executeContext);
-        return executeContext;
-      },
+      context: ({ req, res }) => createGraphqlContext(req, res),
     }),
   );
   const { sseMiddleware } = await createApp(app, schema);

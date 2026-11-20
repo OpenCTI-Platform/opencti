@@ -13,7 +13,7 @@ import {
   type IngestionCsvAddInput,
   IngestionCsvMapperType,
 } from '../../generated/graphql';
-import { notify } from '../../database/redis';
+import { notify, redisDeleteIngestionLogHistory } from '../../database/redis';
 import { BUS_TOPICS, PLATFORM_VERSION } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import {
@@ -35,6 +35,7 @@ import {
   verifyIngestionUri,
   FEED_REQUEST_TIMEOUT,
 } from './ingestion-common';
+import { isConfigPresetFeedFile, resolveFeedFileMarkings } from './ingestion-file-import';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { StixObject } from '../../types/stix-2-1-common';
 import { extractContentFrom } from '../../utils/fileToContent';
@@ -245,6 +246,7 @@ export const ingestionCsvResetState = async (context: AuthContext, user: AuthUse
 export const deleteIngestionCsv = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
   const deleted = await deleteElementById<StoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
   await unregisterConnectorForIngestion(context, deleted.id);
+  await redisDeleteIngestionLogHistory(deleted.internal_id);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -285,10 +287,11 @@ export const fetchCsvFromUrl = async (
   }
   const httpClientOptions: GetHttpClient = {
     headers,
-    rejectUnauthorized: ingestion.ssl_verify ?? false,
+    rejectUnauthorized: ingestion.ssl_verify,
     timeout,
     responseType: 'arraybuffer',
     certificates,
+    feature: 'CSV feed',
   };
   const httpClient = getHttpClient(httpClientOptions);
   const { data, headers: resultHeaders } = await httpClient.get(ingestion.uri);
@@ -356,10 +359,18 @@ export const csvFeedAddInputFromImport = async (context: AuthContext, user: Auth
     );
   }
 
-  const csvMapperResolved: CsvMapperResolved = await transformCsvMapperConfig(parsedData.configuration.csv_mapper.configuration, context, user);
+  const configuration = isConfigPresetFeedFile(parsedData, 'csvFeeds') ? {
+    ...parsedData.configuration,
+    description: parsedData.configuration.description ?? '',
+    authentication_value: '',
+    markings: (await resolveFeedFileMarkings(context, parsedData.configuration.markings)).map(({ internal_id }) => internal_id),
+    csv_mapper_type: 'inline',
+    csv_mapper: { configuration: parsedData.configuration.csv_mapper },
+  } : parsedData.configuration;
+  const csvMapperResolved: CsvMapperResolved = await transformCsvMapperConfig(configuration.csv_mapper.configuration, context, user);
   return {
     markings: [], // On some config, marking is missing
-    ...parsedData.configuration,
+    ...configuration,
     csvMapper: regenerateCsvMapperUUID(csvMapperResolved),
   };
 };

@@ -63,10 +63,11 @@ export const buildTaxiiHttpClientOptions = async (ingestion: BasicStoreEntityIng
 
   const httpClientOptions: GetHttpClient = {
     headers: octiHeaders,
-    rejectUnauthorized: ingestion.ssl_verify ?? false,
+    rejectUnauthorized: ingestion.ssl_verify,
     timeout: FEED_REQUEST_TIMEOUT,
     responseType: 'json',
     certificates,
+    feature: 'TAXII feed',
   };
   return httpClientOptions;
 };

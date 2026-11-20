@@ -26,6 +26,10 @@ on:
         description: "Existing release tag to build (e.g. 7.261002.0 or 7.260309.0-lts.7)"
         type: string
         required: true
+      check_credentials:
+        description: "Also check the PyPI trusted publisher in the pypi environment (nothing is published)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -125,6 +129,39 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   # -----------------------
+  # Credentials check (opt-in)
+  # -----------------------
+  # Enters the pypi environment on purpose, unlike every other dry-run job: it proves that the trusted publisher,
+  # the environment rules and the OIDC permission match, by minting an upload token that is discarded unused.
+  check-credentials:
+    name: Check PyPI credentials
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    if: github.event_name == 'workflow_dispatch' && inputs.check_credentials
+    environment: pypi
+    permissions:
+      id-token: write # PyPI trusted publishing (OIDC)
+    steps:
+      - name: Exchange the OIDC token with PyPI (nothing is uploaded)
+        run: |
+          set -euo pipefail
+          AUDIENCE="$(curl -fsS --max-time 30 https://pypi.org/_/oidc/audience | jq -r '.audience')"
+          OIDC_TOKEN="$(curl -fsS --max-time 30 -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${AUDIENCE}" | jq -r '.value')"
+          echo "::add-mask::${OIDC_TOKEN}"
+          RESPONSE="$(jq -n --arg token "${OIDC_TOKEN}" '{token: $token}' \
+            | curl -sS --max-time 30 -X POST --data @- https://pypi.org/_/oidc/mint-token)"
+          if jq -e '.success == true and (.token | type == "string")' <<< "${RESPONSE}" > /dev/null; then
+            echo "::add-mask::$(jq -r '.token' <<< "${RESPONSE}")"
+            echo "✅ PyPI accepts this repository, workflow and environment as trusted publisher of pycti" | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          # Failure responses carry no token, only the reason (e.g. no matching trusted publisher)
+          jq -r '"::error::PyPI refused the trusted publishing exchange: \(.message // "unknown error")",
+            (.errors[]? | "::error::\(.code): \(.description)")' <<< "${RESPONSE}"
+          exit 1
+
+  # -----------------------
   # Client python (pycti)
   # -----------------------
   build-pycti:
@@ -139,7 +176,7 @@ jobs:
           ref: ${{ needs.validate.outputs.commit_sha }}
 
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 #v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.13"
 
@@ -170,7 +207,7 @@ jobs:
           twine check --strict dist/*
 
       - name: Upload pycti distribution
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: pycti-dist
           path: client-python/dist/
@@ -185,7 +222,7 @@ jobs:
     needs: [validate, build-pycti, wait-connectors]
     steps:
       - name: Download pycti distribution
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: pycti-dist
           path: dist/
@@ -470,7 +507,7 @@ jobs:
           ref: ${{ needs.validate.outputs.commit_sha }}
 
       - name: Download builder image
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: docker-image-opencti-builder
           path: /tmp/
@@ -479,7 +516,7 @@ jobs:
         run: docker load --input /tmp/opencti-builder.tar
 
       - name: Install Syft
-        uses: anchore/sbom-action/download-syft@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
+        uses: ./.github/actions/install-syft
 
       # Both builds share the single Yarn installation of the repository root, and each production
       # focus prunes the other workspace: every SBOM is generated right after the build of its workspace.
@@ -574,7 +611,7 @@ jobs:
           cp opencti-platform/sbom-parent.cdx.json sbom-staging/
 
       - name: Upload app SBOMs
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: opencti-app-sbom
           path: sbom-staging/
@@ -640,19 +677,19 @@ jobs:
           - { variant: fips, suffix: "_fips" }
     steps:
       - name: Download app SBOMs
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: opencti-app-sbom
           path: sbom-work/
 
       - name: Download platform docker SBOM
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: sbom-opencti-platform${{ matrix.suffix }}
           path: sbom-work/
 
       - name: Download worker docker SBOM
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: sbom-opencti-worker${{ matrix.suffix }}
           path: sbom-work/
@@ -685,7 +722,7 @@ jobs:
           cyclonedx-cli validate --input-file "sbom-opencti-platform-${APP_VERSION}.cdx.json" --fail-on-errors
 
       - name: Upload merged SBOM
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: sbom-opencti-platform-${{ needs.validate.outputs.tag }}${{ matrix.suffix }}
           path: sbom-work/sbom-opencti-platform-*.cdx.json
@@ -703,25 +740,25 @@ jobs:
     needs: [validate, build-platform, build-worker, build-tar, merge-sbom]
     steps:
       - name: Download platform images
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: docker-image-opencti-platform*
           path: artifacts/
 
       - name: Download worker images
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: docker-image-opencti-worker*
           path: artifacts/
 
       - name: Download merged SBOMs
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: sbom-opencti-platform-${{ needs.validate.outputs.tag }}*
           path: artifacts/
 
       - name: Download tarballs
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: tar-opencti-platform*
           path: tar-artifacts/
@@ -821,7 +858,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload consolidated artifacts except tarballs
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: opencti-release
           path: artifacts/
@@ -829,7 +866,7 @@ jobs:
           retention-days: 30
 
       - name: Upload consolidated tarballs
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: tarball-opencti-release
           path: tar-artifacts/

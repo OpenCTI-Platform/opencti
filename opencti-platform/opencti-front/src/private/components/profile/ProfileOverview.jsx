@@ -26,6 +26,7 @@ import { fieldSpacingContainerStyle } from '../../../utils/field';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useGranted, { APIACCESS_USETOKEN, KNOWLEDGE } from '../../../utils/hooks/useGranted';
 import useHelper from '../../../utils/hooks/useHelper';
+import { PASSWORD_REUSED, passwordChangeErrorCode, passwordChangeErrorMessages, showPasswordFieldError } from '../../../utils/passwordChangeErrors';
 import NotifierField from '../common/form/NotifierField';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import PasswordPolicies from '../common/form/PasswordPolicies';
@@ -33,6 +34,7 @@ import HomeDashboardSettings from '../HomeDashboardSettings';
 import TokenCreationDrawer from './api_tokens/TokenCreationDrawer';
 import TokenList from './api_tokens/TokenList';
 import ProfileLocalStorage from './ProfileLocalStorage';
+import ProfileSearchShortcut from './ProfileSearchShortcut';
 import ProfileOverviewXtmOneMcp from './ProfileOverviewXtmOneMcp';
 import TextareaField from '../../../components/TextareaField';
 import { dateFormatOptions, timeFormatOptions } from '../../../utils/dateDisplay';
@@ -239,7 +241,7 @@ const ProfileOverviewComponent = (props) => {
       .catch(() => false);
   };
 
-  const handleSubmitPasswords = (values, { setSubmitting, resetForm }) => {
+  const handleSubmitPasswords = (values, { setSubmitting, resetForm, setFieldValue, setFieldTouched, setFieldError }) => {
     const field = { key: 'password', value: values.password };
     commitMutation({
       mutation: profileOverviewFieldPatch,
@@ -252,6 +254,17 @@ const ProfileOverviewComponent = (props) => {
         setSubmitting(false);
         MESSAGING$.notifySuccess('The password has been updated');
         resetForm();
+      },
+      onError: (error) => {
+        if (passwordChangeErrorCode(error) === PASSWORD_REUSED) {
+          // The current password stays filled: only the new one has to change
+          showPasswordFieldError(
+            { setFieldValue, setFieldTouched, setFieldError },
+            passwordChangeErrorMessages(t_i18n)[PASSWORD_REUSED],
+            'password',
+            ['password', 'confirmation'],
+          );
+        }
       },
     });
   };
@@ -488,6 +501,7 @@ const ProfileOverviewComponent = (props) => {
             </Form>
           )}
         </Formik>
+        <ProfileSearchShortcut />
       </Card>
       {hasKnowledgeAccess ? (
         <Card title={t('Dashboard settings')}>

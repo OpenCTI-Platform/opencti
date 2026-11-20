@@ -9,7 +9,7 @@ import { ThemeManager_lines_data$data } from '@components/settings/themes/__gene
 import { useFormatter } from '../../../../components/i18n';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import ThemePopover from './ThemePopover';
 import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
@@ -144,10 +144,17 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
     ...paginationOptions,
   } as unknown as ThemeManagerQuery$variables;
 
-  const queryRef = useQueryLoading<ThemeManagerQuery>(
+  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<ThemeManagerQuery>(
     themeManagerQuery,
     queryPaginationOptions,
   );
+
+  // After an import that adds several themes at once (from a configuration bundle): the list is read again, as no mutation
+  // returns the new themes to insert in it, and the settings too (the theme choices of the platform)
+  const handleThemesImported = () => {
+    loadQuery(queryPaginationOptions, { fetchPolicy: 'store-and-network' });
+    handleRefetch();
+  };
 
   const dataColumns = {
     name: {
@@ -190,6 +197,7 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
 
             <ThemeImporter
               handleRefetch={handleRefetch}
+              onThemesImported={handleThemesImported}
               paginationOptions={queryPaginationOptions}
             />
           </Box>

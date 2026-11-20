@@ -36,10 +36,11 @@ export const LICENSE_TYPES = [
 export const LICENSE_OID_TYPE = '1.3.6.1.4.1.62944.10';
 export const LICENSE_OID_PRODUCT = '1.3.6.1.4.1.62944.20';
 export const LICENSE_OID_CREATOR = '1.3.6.1.4.1.62944.30';
-// Legacy OIDs
-export const LICENSE_LEGACY_TYPE = '6.2.9.4.4.10';
-export const LICENSE_LEGACY_PRODUCT = '6.2.9.4.4.20';
-export const LICENSE_LEGACY_CREATOR = '6.2.9.4.4.30';
+// Legacy OIDs, first issued as `6.2.9.4.4.*`: node-forge 1.4.0 and earlier wrote that as the bytes
+// F2 09 04 04 <n>, which conforming decoders, and node-forge from 1.4.1, read as `2.14521.4.4.*`.
+export const LICENSE_LEGACY_TYPE = '2.14521.4.4.10';
+export const LICENSE_LEGACY_PRODUCT = '2.14521.4.4.20';
+export const LICENSE_LEGACY_CREATOR = '2.14521.4.4.30';
 
 export const getExtensionValue = (clientCrt: pki.Certificate, standardOid: string, legacyOid?: string) => {
   const extStandard = clientCrt.extensions.find((ext) => ext.id === standardOid);

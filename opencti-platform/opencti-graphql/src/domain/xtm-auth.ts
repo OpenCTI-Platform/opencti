@@ -61,7 +61,7 @@ let xtmOneIdentityFetch: Promise<string | undefined> | undefined;
 const fetchXtmOneIssuer = async (): Promise<string | undefined> => {
   const previous = xtmOneIdentity?.issuer;
   try {
-    const httpClient = getHttpClient({ baseURL: xtmOneUrl, responseType: 'json' });
+    const httpClient = getHttpClient({ baseURL: xtmOneUrl, responseType: 'json', trusted: true });
     // Only the configured URL may answer: a redirect is a failed read, never
     // another origin supplying XTM One's identity.
     const response = await httpClient.get('/xtm/auth/metadata', { timeout: 10000, maxRedirects: 0 });
@@ -166,7 +166,8 @@ const resolveKey = async (header: JWTHeaderParameters, token: FlattenedJWSInput)
   if (isOwnIssuer(iss)) {
     const keyPair = await getJWTKeyPair();
     const { kid } = header;
-    const publicKey = kid && keyPair.publicKeys[kid];
+    // kid comes from the token header: only own keys are platform keys
+    const publicKey = kid && Object.hasOwn(keyPair.publicKeys, kid) ? keyPair.publicKeys[kid] : undefined;
     if (!publicKey) {
       throw AuthenticationFailure('JWT kid does not match any platform key', { kid });
     }
