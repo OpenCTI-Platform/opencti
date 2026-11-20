@@ -41,6 +41,12 @@ class MeterManager {
 
   private sideBulkGauge: Gauge | null = null;
 
+  private sessionPresenceConnectionsGauge: Gauge | null = null;
+
+  private sessionPresenceLastDisconnections: Counter | null = null;
+
+  private sessionPresenceChecks: Counter | null = null;
+
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
   }
@@ -95,6 +101,18 @@ class MeterManager {
     this.sideBulkGauge?.record(val, attributes);
   }
 
+  sessionPresenceConnections(val: number) {
+    this.sessionPresenceConnectionsGauge?.record(val);
+  }
+
+  sessionPresenceLastDisconnection() {
+    this.sessionPresenceLastDisconnections?.add(1);
+  }
+
+  sessionPresenceCheck(result: 'alive' | 'logout' | 'released') {
+    this.sessionPresenceChecks?.add(1, { 'opencti.session_presence.result': result });
+  }
+
   registerMetrics() {
     const meter = this.meterProvider.getMeter('opencti-api');
     // - Basic counters
@@ -117,6 +135,14 @@ class MeterManager {
     this.ingestionDeduplications = meter.createCounter('opencti_ingestion_deduplication', {
       valueType: ValueType.INT,
       description: 'Counts imports checked against a deduplication rule, skipped or imported',
+    });
+    this.sessionPresenceLastDisconnections = meter.createCounter('opencti_session_presence_last_disconnections', {
+      valueType: ValueType.INT,
+      description: 'Counts the sessions left without any tab connection, starting their grace period',
+    });
+    this.sessionPresenceChecks = meter.createCounter('opencti_session_presence_checks', {
+      valueType: ValueType.INT,
+      description: 'Counts the checks of the abandoned sessions, by result: alive (a tab came back), logout, released (already expired, or logout off)',
     });
     // - Histograms
     this.latencyHistogram = meter.createHistogram('opencti_api_latency', {
@@ -143,6 +169,10 @@ class MeterManager {
     this.sideBulkGauge = meter.createGauge('opencti_api_side_bulk', {
       valueType: ValueType.INT,
       description: 'Size of bulk for absorption impacts',
+    });
+    this.sessionPresenceConnectionsGauge = meter.createGauge('opencti_session_presence_connections', {
+      valueType: ValueType.INT,
+      description: 'Number of tab connections tracked by this node for the logout when the last tab is closed',
     });
     // - Library metrics
     nodeMetrics(this.meterProvider, { prefix: '' });

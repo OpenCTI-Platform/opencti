@@ -7,6 +7,7 @@ import { isModuleActivated } from '../../database/cluster-module';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
+import { meterManager } from '../../config/tracing';
 import type { BasicStoreSettings } from '../../types/settings';
 import type { PresenceOrigin } from './session-presence-types';
 import {
@@ -98,6 +99,7 @@ const renewNodeLeases = async () => {
       if (expiry === undefined) {
         // The session has been logged out: its sockets are no longer tracked
         connectionIds.forEach((connectionId) => nodeConnections.delete(connectionId));
+        meterManager.sessionPresenceConnections(nodeConnections.size);
         return;
       }
       await scheduleSessionCheck(sessionId, expiry + SESSION_PRESENCE_GRACE_PERIOD, 'GT');
@@ -130,6 +132,7 @@ export const registerSessionPresence = async (sessionId: string, origin: Presenc
     await scheduleSessionCheck(sessionId, expiry + SESSION_PRESENCE_GRACE_PERIOD, 'GT');
   }
   nodeConnections.set(connectionId, { sessionId, origin });
+  meterManager.sessionPresenceConnections(nodeConnections.size);
   startLeasesRenewal();
   return connectionId;
 };
@@ -138,6 +141,7 @@ export const unregisterSessionPresence = async (sessionId: string, connectionId:
   if (!nodeConnections.delete(connectionId)) {
     return;
   }
+  meterManager.sessionPresenceConnections(nodeConnections.size);
   // Sockets closed by the platform shutdown are not tabs closed by the user: their leases expire,
   // which leaves the time for the tabs to reconnect to another node
   if (getStoppingState() || !(await isSessionPresenceEnabled())) {
@@ -145,6 +149,7 @@ export const unregisterSessionPresence = async (sessionId: string, connectionId:
   }
   const { liveLeases, now } = await removeSessionLease(sessionId, connectionId);
   if (liveLeases === 0) {
+    meterManager.sessionPresenceLastDisconnection();
     await scheduleSessionCheck(sessionId, now + SESSION_PRESENCE_GRACE_PERIOD, 'LT');
   }
 };
@@ -155,9 +160,11 @@ const checkDueSession = async (sessionId: string, canLogout: boolean) => {
   // Without logout, the session is not marked as closing: its tabs can register again right away
   const { isAlive, time } = await checkSessionLeases(sessionId, canLogout ? CLOSING_TTL : 0);
   if (isAlive) {
+    meterManager.sessionPresenceCheck('alive');
     await scheduleSessionCheck(sessionId, time + SESSION_PRESENCE_GRACE_PERIOD, 'GT');
     return;
   }
+  let isLoggedOut = false;
   if (canLogout) {
     const session = await findSessionByRawId(sessionId);
     // A session already logged out or expired is only released
@@ -171,10 +178,12 @@ const checkDueSession = async (sessionId: string, canLogout: boolean) => {
         event_scope: 'logout',
         context_data: { reason: 'last_tab_closed' },
       });
+      isLoggedOut = true;
     }
   }
   // Released only once logged out: if this node stops before, another one checks the session again
   await releaseSessionPresence(sessionId);
+  meterManager.sessionPresenceCheck(isLoggedOut ? 'logout' : 'released');
 };
 
 export const logoutAbandonedSessions = async () => {
