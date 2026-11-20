@@ -1,43 +1,50 @@
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router';
-import Drafts from '../../drafts/Drafts';
 import WorkbenchFile from '../../common/files/workbench/WorkbenchFile';
 import ImportFilesContent from './ImportFilesContent';
 import ImportWorkbenchesContent from './ImportWorkbenchesContent';
-import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
-import useImportAccess from '../../../../utils/hooks/useImportAccess';
+import EntryGuard from '../../nav/EntryGuard';
+import useFirstVisiblePath from '../../common/menus/useFirstVisiblePath';
+import { entriesUnder } from '../../nav/menuEntries';
+
+const importEntries = entriesUnder('/dashboard/data/import');
+
+// A draft-only user (KNUPDATE without KNASKIMPORT) only gets the Drafts tab: back to the first tab they can open.
+const toFirstTab = <Navigate to="/dashboard/data/import" replace={true} />;
 
 const Root = () => {
-  const canAskImportKnowledge = useGranted([KNOWLEDGE_KNASKIMPORT]);
-  const { hasOnlyAccessToImportDraftTab } = useImportAccess();
-
-  const restrictAccessToDraftOnly = canAskImportKnowledge || !hasOnlyAccessToImportDraftTab;
+  const redirect = useFirstVisiblePath(importEntries);
   return (
     <Routes>
       <Route
         path="/"
-        element={<Navigate to={hasOnlyAccessToImportDraftTab ? '/dashboard/data/import/draft' : '/dashboard/data/import/file'} replace />}
+        element={<Navigate to={redirect} replace={true} />}
       />
-      {restrictAccessToDraftOnly && (
-        <>
-          <Route
-            path="/workbench/:fileId"
-            element={<WorkbenchFile />}
-          />
-          <Route
-            path="/file"
-            element={<ImportFilesContent />}
-          />
-          <Route
-            path="/workbench"
-            element={<ImportWorkbenchesContent />}
-          />
-        </>
-      )}
       <Route
-        path="/draft"
-        element={<Drafts />}
+        path="/workbench/:fileId"
+        element={(
+          <EntryGuard path="/dashboard/data/import/workbench" placeholder={toFirstTab}>
+            <WorkbenchFile />
+          </EntryGuard>
+        )}
       />
+      <Route
+        path="/file"
+        element={(
+          <EntryGuard path="/dashboard/data/import/file" placeholder={toFirstTab}>
+            <ImportFilesContent />
+          </EntryGuard>
+        )}
+      />
+      <Route
+        path="/workbench"
+        element={(
+          <EntryGuard path="/dashboard/data/import/workbench" placeholder={toFirstTab}>
+            <ImportWorkbenchesContent />
+          </EntryGuard>
+        )}
+      />
+      {/* `/draft` is routed from Index.tsx to drafts/Root.tsx, with its own guard. */}
     </Routes>
   );
 };

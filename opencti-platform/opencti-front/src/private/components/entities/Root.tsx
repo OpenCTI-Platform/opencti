@@ -1,7 +1,9 @@
 import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
+import EntryGuard from '../nav/EntryGuard';
 import { boundaryWrapper } from '../Error';
-import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
+import useFirstVisiblePath from '../common/menus/useFirstVisiblePath';
+import { sectionEntries } from '../nav/navSections';
 import Loader from '../../../components/Loader';
 
 const Sectors = lazy(() => import('./Sectors'));
@@ -18,74 +20,109 @@ const Individuals = lazy(() => import('./Individuals'));
 const RootIndividual = lazy(() => import('./individuals/Root'));
 
 const Root = () => {
-  let redirect: string | null = null;
-  if (!useIsHiddenEntity('Sector')) {
-    redirect = 'sectors';
-  } else if (!useIsHiddenEntity('Event')) {
-    redirect = 'events';
-  } else if (!useIsHiddenEntity('Organization')) {
-    redirect = 'organizations';
-  } else if (!useIsHiddenEntity('Security-Platform')) {
-    redirect = 'security_platforms';
-  } else if (!useIsHiddenEntity('System')) {
-    redirect = 'systems';
-  } else if (!useIsHiddenEntity('Individual')) {
-    redirect = 'individuals';
-  }
+  const redirect = useFirstVisiblePath(sectionEntries('entities'));
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
         <Route
           path="/"
-          element={<Navigate to={`/dashboard/entities/${redirect}`} replace={true} />}
+          element={<Navigate to={redirect} replace={true} />}
         />
         <Route
           path="/sectors"
-          element={boundaryWrapper(Sectors)}
+          element={(
+            <EntryGuard path="/dashboard/entities/sectors">
+              {boundaryWrapper(Sectors)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/sectors/:sectorId/*"
-          element={boundaryWrapper(RootSector)}
+          element={(
+            <EntryGuard path="/dashboard/entities/sectors">
+              {boundaryWrapper(RootSector)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/events"
-          element={boundaryWrapper(Events)}
+          element={(
+            <EntryGuard path="/dashboard/entities/events">
+              {boundaryWrapper(Events)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/events/:eventId/*"
-          element={boundaryWrapper(RootEvent)}
+          element={(
+            <EntryGuard path="/dashboard/entities/events">
+              {boundaryWrapper(RootEvent)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/organizations"
-          element={boundaryWrapper(Organizations)}
+          element={(
+            <EntryGuard path="/dashboard/entities/organizations">
+              {boundaryWrapper(Organizations)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/organizations/:organizationId/*"
-          element={boundaryWrapper(RootOrganization)}
+          element={(
+            <EntryGuard path="/dashboard/entities/organizations">
+              {boundaryWrapper(RootOrganization)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/security_platforms"
-          element={boundaryWrapper(Security)}
+          element={(
+            <EntryGuard path="/dashboard/entities/security_platforms">
+              {boundaryWrapper(Security)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/security_platforms/:securityPlatformId/*"
-          element={boundaryWrapper(RootSecurity)}
+          element={(
+            <EntryGuard path="/dashboard/entities/security_platforms">
+              {boundaryWrapper(RootSecurity)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/systems"
-          element={boundaryWrapper(Systems)}
+          element={(
+            <EntryGuard path="/dashboard/entities/systems">
+              {boundaryWrapper(Systems)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/systems/:systemId/*"
-          element={boundaryWrapper(RootSystem)}
+          element={(
+            <EntryGuard path="/dashboard/entities/systems">
+              {boundaryWrapper(RootSystem)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/individuals"
-          element={boundaryWrapper(Individuals)}
+          element={(
+            <EntryGuard path="/dashboard/entities/individuals">
+              {boundaryWrapper(Individuals)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/individuals/:individualId/*"
-          element={boundaryWrapper(RootIndividual)}
+          element={(
+            <EntryGuard path="/dashboard/entities/individuals">
+              {boundaryWrapper(RootIndividual)}
+            </EntryGuard>
+          )}
         />
       </Routes>
     </Suspense>

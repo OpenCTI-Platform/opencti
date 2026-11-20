@@ -1,8 +1,10 @@
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router';
+import EntryGuard from '../nav/EntryGuard';
 
 import { boundaryWrapper } from '../Error';
-import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
+import useFirstVisiblePath from '../common/menus/useFirstVisiblePath';
+import { sectionEntries } from '../nav/navSections';
 import Loader from '../../../components/Loader';
 
 const Reports = lazy(() => import('./Reports'));
@@ -20,64 +22,93 @@ const ExternalReferences = lazy(() => import('./ExternalReferences'));
 const RootExternalReference = lazy(() => import('./external_references/Root'));
 
 const Root = () => {
-  let redirect;
-  if (!useIsHiddenEntity('Report')) {
-    redirect = 'reports';
-  } else if (!useIsHiddenEntity('Grouping')) {
-    redirect = 'groupings';
-  } else if (!useIsHiddenEntity('Malware-Analysis')) {
-    redirect = 'malware_analyses';
-  } else if (!useIsHiddenEntity('Note')) {
-    redirect = 'notes';
-  } else {
-    redirect = 'external_references';
-  }
+  const redirect = useFirstVisiblePath(sectionEntries('analyses'));
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
         <Route
           path="/"
-          element={<Navigate to={`/dashboard/analyses/${redirect}`} replace={true} />}
+          element={<Navigate to={redirect} replace={true} />}
         />
         <Route
           path="/reports"
-          element={boundaryWrapper(Reports)}
+          element={(
+            <EntryGuard path="/dashboard/analyses/reports">
+              {boundaryWrapper(Reports)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/reports/:reportId/*"
-          element={boundaryWrapper(RootReport)}
+          element={(
+            <EntryGuard path="/dashboard/analyses/reports">
+              {boundaryWrapper(RootReport)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/groupings"
-          element={boundaryWrapper(Groupings)}
+          element={(
+            <EntryGuard path="/dashboard/analyses/groupings">
+              {boundaryWrapper(Groupings)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/groupings/:groupingId/*"
-          element={boundaryWrapper(RootGrouping)}
+          element={(
+            <EntryGuard path="/dashboard/analyses/groupings">
+              {boundaryWrapper(RootGrouping)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/malware_analyses"
-          element={boundaryWrapper(MalwareAnalyses)}
+          element={(
+            <EntryGuard path="/dashboard/analyses/malware_analyses">
+              {boundaryWrapper(MalwareAnalyses)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/malware_analyses/:malwareAnalysisId/*"
-          element={boundaryWrapper(RootMalwareAnalysis)}
+          element={(
+            <EntryGuard path="/dashboard/analyses/malware_analyses">
+              {boundaryWrapper(RootMalwareAnalysis)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/security_coverages"
-          element={boundaryWrapper(SecurityCoverages)}
+          element={(
+            <EntryGuard path="/dashboard/analyses/security_coverages">
+              {boundaryWrapper(SecurityCoverages)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/security_coverages/:securityCoverageId/*"
-          element={boundaryWrapper(RootSecurityCoverages)}
+          element={(
+            <EntryGuard path="/dashboard/analyses/security_coverages">
+              {boundaryWrapper(RootSecurityCoverages)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/notes"
-          element={boundaryWrapper(Notes)}
+          element={(
+            <EntryGuard path="/dashboard/analyses/notes">
+              {boundaryWrapper(Notes)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/notes/:noteId/*"
-          element={boundaryWrapper(RootNote)}
+          element={(
+            <EntryGuard path="/dashboard/analyses/notes">
+              {boundaryWrapper(RootNote)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/opinions/:opinionId/*"
@@ -85,11 +116,19 @@ const Root = () => {
         />
         <Route
           path="/external_references"
-          element={boundaryWrapper(ExternalReferences)}
+          element={(
+            <EntryGuard path="/dashboard/analyses/external_references">
+              {boundaryWrapper(ExternalReferences)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/external_references/:externalReferenceId/*"
-          element={boundaryWrapper(RootExternalReference)}
+          element={(
+            <EntryGuard path="/dashboard/analyses/external_references">
+              {boundaryWrapper(RootExternalReference)}
+            </EntryGuard>
+          )}
         />
       </Routes>
     </Suspense>
