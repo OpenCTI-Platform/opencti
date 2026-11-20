@@ -11,7 +11,6 @@ import SecurityCoverageAttackPatterns from './SecurityCoverageAttackPatterns';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { SecurityCoverage_securityCoverage$data, SecurityCoverage_securityCoverage$key } from './__generated__/SecurityCoverage_securityCoverage.graphql';
 import { SecurityCoverageKillChainsQuery } from './__generated__/SecurityCoverageKillChainsQuery.graphql';
-import { SecurityCoverageAttackPatternsKillChainPhasesFragment$key } from './__generated__/SecurityCoverageAttackPatternsKillChainPhasesFragment.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import SecurityCoverageTestedEntitiesChart from './SecurityCoverageTestedEntitiesChart';
 import SecurityCoverageMainInfo from './SecurityCoverageMainInfo';
@@ -116,80 +115,42 @@ const securityCoverageFragment = graphql`
   }
 `;
 
-interface SecurityCoverageOverviewGridProps {
-  // root data: main info, overview, external references, history and notes
+type ScopedWidgetsData = SecurityCoverage_securityCoverage$data | NonNullable<SecurityCoverageScopedQuery['response']['securityCoverage']>;
+
+interface SecurityCoverageScopedWidgetProps {
   securityCoverage: SecurityCoverage_securityCoverage$data;
-  // fragment references of the three list widgets: the coverage itself (all results) or the scoped query
-  widgets: SecurityCoverage_securityCoverage$data | NonNullable<SecurityCoverageScopedQuery['response']['securityCoverage']>;
-  selectedResultId: string | null;
-  dataKillChains: SecurityCoverageAttackPatternsKillChainPhasesFragment$key;
-  isPending: boolean;
+  scopedQueryRef?: PreloadedQuery<SecurityCoverageScopedQuery> | null;
+  children: (widgets: ScopedWidgetsData) => React.ReactNode;
 }
 
-const SecurityCoverageOverviewGrid = ({
-  securityCoverage,
-  widgets,
-  selectedResultId,
-  dataKillChains,
-  isPending,
-}: SecurityCoverageOverviewGridProps) => {
-  const widgetSx = { opacity: isPending ? 0.6 : 1 };
-  return (
-    <Grid container={true} spacing={3}>
-      <Grid size={6}>
-        <SecurityCoverageMainInfo securityCoverage={securityCoverage} selectedResultId={selectedResultId} />
-      </Grid>
-      <Grid size={6} sx={widgetSx}>
-        <SecurityCoverageTestedEntitiesChart securityCoverage={widgets} />
-      </Grid>
-
-      <Grid size={6} sx={widgetSx}>
-        <SecurityCoverageDetails securityCoverage={widgets} />
-      </Grid>
-
-      <Grid size={6}>
-        <StixDomainObjectOverview stixDomainObject={securityCoverage} />
-      </Grid>
-
-      <Grid size={12} sx={widgetSx}>
-        <SecurityCoverageAttackPatterns
-          securityCoverage={widgets}
-          dataKillChains={dataKillChains}
-        />
-      </Grid>
-
-      <Grid size={6}>
-        <StixCoreObjectExternalReferences stixCoreObjectId={securityCoverage.id} />
-      </Grid>
-
-      <Grid size={6}>
-        <StixCoreObjectLatestHistory stixCoreObjectId={securityCoverage.id} />
-      </Grid>
-
-      <Grid size={12}>
-        <StixCoreObjectOrStixCoreRelationshipNotes stixCoreObjectOrStixCoreRelationshipId={securityCoverage.id} />
-      </Grid>
-    </Grid>
-  );
-};
-
-interface SecurityCoverageScopedGridProps extends Omit<SecurityCoverageOverviewGridProps, 'widgets'> {
+interface SecurityCoverageScopedReaderProps {
+  securityCoverage: SecurityCoverage_securityCoverage$data;
   scopedQueryRef: PreloadedQuery<SecurityCoverageScopedQuery>;
+  children: (widgets: ScopedWidgetsData) => React.ReactNode;
 }
 
 // Separate component: usePreloadedQuery cannot be called conditionally and suspends while the query loads.
-const SecurityCoverageScopedGrid = ({
-  scopedQueryRef,
+const SecurityCoverageScopedReader = ({
   securityCoverage,
-  ...gridProps
-}: SecurityCoverageScopedGridProps) => {
+  scopedQueryRef,
+  children,
+}: SecurityCoverageScopedReaderProps) => {
   const data = usePreloadedQuery(securityCoverageScopedQuery, scopedQueryRef);
+  return <>{children(data.securityCoverage ?? securityCoverage)}</>;
+};
+
+// Gives a list widget the data of the selected result (scoped query), or the coverage data when there is no query ref.
+// Only the widgets inside change source: the panels around never move in the React tree.
+const SecurityCoverageScopedWidget = ({
+  securityCoverage,
+  scopedQueryRef,
+  children,
+}: SecurityCoverageScopedWidgetProps) => {
+  if (!scopedQueryRef) return <>{children(securityCoverage)}</>;
   return (
-    <SecurityCoverageOverviewGrid
-      securityCoverage={securityCoverage}
-      widgets={data.securityCoverage ?? securityCoverage}
-      {...gridProps}
-    />
+    <SecurityCoverageScopedReader securityCoverage={securityCoverage} scopedQueryRef={scopedQueryRef}>
+      {children}
+    </SecurityCoverageScopedReader>
   );
 };
 
@@ -214,19 +175,24 @@ const SecurityCoverageComponent = ({
   const refreshKey = buildScopeRefreshKey(securityCoverage.updated_at, securityCoverageResults);
   const lastRefreshKey = useRef(refreshKey);
 
+  // What the content shows follows the query that is committed, not the menu: the menu answers at once,
+  // the main info and the widgets switch together when the data of the new selection has arrived.
+  const displayedResultId = selectedResultId && !isSelectedResultGone && scopedQueryRef
+    ? scopedQueryRef.variables.fromId?.[0] ?? null
+    : null;
+  const displayedQueryRef = displayedResultId ? scopedQueryRef : null;
+
   const handleSelectionChange = (securityCoverageResultId: string | null) => {
+    setSelectedResultId(securityCoverageResultId);
     // "All results" is no filter: the scoped query is never loaded without an id.
     if (securityCoverageResultId) {
-      // The selection moves with the query so that the menu, the main info and the widgets always agree.
       startTransition(() => {
-        setSelectedResultId(securityCoverageResultId);
         loadScopedQuery(
           buildResultScopeVariables(securityCoverage.id, securityCoverageResultId),
           { fetchPolicy: 'store-and-network' },
         );
       });
     } else {
-      setSelectedResultId(null);
       disposeScopedQuery();
     }
   };
@@ -253,7 +219,7 @@ const SecurityCoverageComponent = ({
     }
   }, [refreshKey, selectedResultId, isSelectedResultGone, securityCoverage.id, loadScopedQuery]);
 
-  const gridProps = { securityCoverage, selectedResultId, dataKillChains, isPending };
+  const widgetSx = { opacity: isPending ? 0.6 : 1, pointerEvents: isPending ? 'none' : 'auto' };
   return (
     <>
       <Stack direction="row" sx={{ justifyContent: 'flex-end', marginBottom: 2 }}>
@@ -263,9 +229,49 @@ const SecurityCoverageComponent = ({
           onChange={handleSelectionChange}
         />
       </Stack>
-      {selectedResultId && scopedQueryRef
-        ? <SecurityCoverageScopedGrid scopedQueryRef={scopedQueryRef} {...gridProps} />
-        : <SecurityCoverageOverviewGrid widgets={securityCoverage} {...gridProps} />}
+      <Grid container={true} spacing={3}>
+        <Grid size={6} sx={widgetSx}>
+          <SecurityCoverageMainInfo securityCoverage={securityCoverage} selectedResultId={displayedResultId} />
+        </Grid>
+        <Grid size={6} sx={widgetSx}>
+          <SecurityCoverageScopedWidget securityCoverage={securityCoverage} scopedQueryRef={displayedQueryRef}>
+            {(widgets) => <SecurityCoverageTestedEntitiesChart securityCoverage={widgets} />}
+          </SecurityCoverageScopedWidget>
+        </Grid>
+
+        <Grid size={6} sx={widgetSx}>
+          <SecurityCoverageScopedWidget securityCoverage={securityCoverage} scopedQueryRef={displayedQueryRef}>
+            {(widgets) => <SecurityCoverageDetails securityCoverage={widgets} />}
+          </SecurityCoverageScopedWidget>
+        </Grid>
+
+        <Grid size={6}>
+          <StixDomainObjectOverview stixDomainObject={securityCoverage} />
+        </Grid>
+
+        <Grid size={12} sx={widgetSx}>
+          <SecurityCoverageScopedWidget securityCoverage={securityCoverage} scopedQueryRef={displayedQueryRef}>
+            {(widgets) => (
+              <SecurityCoverageAttackPatterns
+                securityCoverage={widgets}
+                dataKillChains={dataKillChains}
+              />
+            )}
+          </SecurityCoverageScopedWidget>
+        </Grid>
+
+        <Grid size={6}>
+          <StixCoreObjectExternalReferences stixCoreObjectId={securityCoverage.id} />
+        </Grid>
+
+        <Grid size={6}>
+          <StixCoreObjectLatestHistory stixCoreObjectId={securityCoverage.id} />
+        </Grid>
+
+        <Grid size={12}>
+          <StixCoreObjectOrStixCoreRelationshipNotes stixCoreObjectOrStixCoreRelationshipId={securityCoverage.id} />
+        </Grid>
+      </Grid>
     </>
   );
 };
