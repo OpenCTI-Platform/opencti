@@ -115,6 +115,20 @@ export const createOtelDiagLogger = (target: OtelDiagTarget, options: OtelDiagLo
   };
 };
 
+// Exporter URLs may carry credentials (user:password@) or tokens in the query string or fragment:
+// keep only the scheme, host, port and path before writing one to the logs.
+export const sanitizeExporterUrl = (url: unknown): string => {
+  if (typeof url !== 'string' || url.trim().length === 0) {
+    return '';
+  }
+  try {
+    const parsed = new URL(url.trim());
+    return `${parsed.protocol}//${parsed.host}${parsed.pathname}`;
+  } catch {
+    return '[unparseable URL]';
+  }
+};
+
 // Registers the adapter as the global OpenTelemetry diag logger. WARN keeps export failures
 // (reported at error level by the SDK) and drops the SDK's chatty info and debug lines.
 export const registerOtelDiagLogger = (

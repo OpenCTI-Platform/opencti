@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { diag, DiagLogLevel } from '@opentelemetry/api';
-import { createOtelDiagLogger, registerOtelDiagLogger } from '../../../src/telemetry/otel-diag-logger';
+import { createOtelDiagLogger, registerOtelDiagLogger, sanitizeExporterUrl } from '../../../src/telemetry/otel-diag-logger';
 
 const buildTarget = () => ({
   error: vi.fn(),
@@ -114,5 +114,26 @@ describe('OpenTelemetry diag logger', () => {
     diag.error('kept');
     expect(target.warn).toHaveBeenCalledTimes(1);
     expect(target.warn).toHaveBeenCalledWith('[OPENCTI] [TELEMETRY] kept', {});
+  });
+});
+
+describe('OpenTelemetry exporter URL sanitizer', () => {
+  it('keeps scheme, host, port and path', () => {
+    expect(sanitizeExporterUrl('http://collector:4318/v1/metrics')).toBe('http://collector:4318/v1/metrics');
+    expect(sanitizeExporterUrl('https://otel.example.com/v1/traces')).toBe('https://otel.example.com/v1/traces');
+  });
+
+  it('drops credentials, query string and fragment', () => {
+    const sanitized = sanitizeExporterUrl('https://user:s3cret@otel.example.com:4318/v1/traces?api_key=t0ken#frag');
+    expect(sanitized).toBe('https://otel.example.com:4318/v1/traces');
+    expect(sanitized).not.toContain('s3cret');
+    expect(sanitized).not.toContain('t0ken');
+    expect(sanitized).not.toContain('user');
+  });
+
+  it('never echoes an unparseable or empty value', () => {
+    expect(sanitizeExporterUrl('not a url with secret')).toBe('[unparseable URL]');
+    expect(sanitizeExporterUrl('')).toBe('');
+    expect(sanitizeExporterUrl(undefined)).toBe('');
   });
 });

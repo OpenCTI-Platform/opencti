@@ -8,7 +8,7 @@ import nconf from 'nconf';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import type { Gauge } from '@opentelemetry/api';
 import { ATTR_ENDUSER_ID } from '../telemetry/semantic-conventions';
-import { registerOtelDiagLogger } from '../telemetry/otel-diag-logger';
+import { registerOtelDiagLogger, sanitizeExporterUrl } from '../telemetry/otel-diag-logger';
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENABLED_METRICS, ENABLED_TRACING, logApp } from './conf';
 
@@ -144,7 +144,7 @@ if (ENABLED_METRICS) {
     const metricExporter = new OTLPMetricExporter({ url: exporterOtlp, headers: {}, concurrencyLimit: 1 });
     const metricReader = new PeriodicExportingMetricReader({ exporter: metricExporter, exportIntervalMillis: 1000 });
     metricReaders.push(metricReader);
-    logApp.info('[OPENCTI] [TELEMETRY] OTLP metrics exporter initialized', { url: exporterOtlp });
+    logApp.info('[OPENCTI] [TELEMETRY] OTLP metrics exporter initialized', { url: sanitizeExporterUrl(exporterOtlp) });
   }
   // PROMETHEUS
   const exporterPrometheus = nconf.get('app:telemetry:metrics:exporter_prometheus');
