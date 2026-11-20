@@ -28,6 +28,8 @@ export interface FilterSearchContext {
   elementId?: string[];
   connectorsScope?: boolean;
   elementType?: string;
+  // per filter key, the filters restricting the entities offered as its values (e.g. the entities of the current page)
+  searchFilters?: Record<string, GqlFilterGroup>;
 }
 
 export type FiltersRestrictions = {

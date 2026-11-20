@@ -237,6 +237,26 @@ describe('useSearchEntities', () => {
     expect((result.current[0].toTypes ?? []).map((e) => e.value)).toEqual(['Attack-Pattern', 'Vulnerability']);
   });
 
+  it('should search the entities of a key with the search filters of this key only', () => {
+    mockFetchQuery.mockReturnValue({ toPromise: () => Promise.resolve({ stixCoreObjects: { edges: [] } }) });
+    const connectedFilters = { mode: 'and', filterGroups: [], filters: [{ key: ['id'], values: ['result-1'] }] };
+    const options = { ...defaultOptions, searchContext: { entityTypes: ['Stix-Core-Object'], searchFilters: { connectedToId: connectedFilters } } };
+    const { result } = renderHook(() => useSearchEntities(options as typeof defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('connectedToId', {}, vi.fn(), createEvent('alpha'));
+    });
+    expect(mockFetchQuery).toHaveBeenLastCalledWith(expect.anything(), expect.objectContaining({ search: 'alpha', filters: connectedFilters }));
+
+    // another key has no search filters: its search is not restricted
+    mockFetchQuery.mockClear();
+    act(() => {
+      searchEntities('id', {}, vi.fn(), createEvent('alpha'));
+    });
+    expect(mockFetchQuery).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ search: 'alpha', filters: undefined }));
+  });
+
   it('should populate markings from user allowed_marking', () => {
     const { result } = renderHook(() => useSearchEntities(defaultOptions));
     const [, searchEntities] = result.current;

@@ -6,6 +6,7 @@ import { addStixCoreRelationship, findStixCoreRelationshipsPaginated } from '../
 import { addAttackPattern } from '../../../../src/domain/attackPattern';
 import { addReport, reportDeleteWithElements } from '../../../../src/domain/report';
 import { stixDomainObjectDelete } from '../../../../src/domain/stixDomainObject';
+import { findStixCoreObjectPaginated } from '../../../../src/domain/stixCoreObject';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../../../../src/schema/stixDomainObject';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import type { StoreEntityReport } from '../../../../src/types/store';
@@ -111,6 +112,16 @@ describe('Security coverage results: filters on coverage_information', () => {
     const noFilters = { mode: 'and', filterGroups: [], filters: [] };
     expect(await rels(noFilters, { search: 'charlie' })).toEqual(['r3']);
     expect(await rels(noFilters, { search: 'kilo' })).toEqual(['r1', 'r2']);
+  });
+  it('searches only the entities covered by the given results, as the Target entity filter of the result tab does', async () => {
+    const coveredBy = async (resultIds: string[]) => {
+      const filters = { mode: 'and', filterGroups: [], filters: [{ key: ['regardingOf'], values: [{ key: 'id', values: resultIds }, { key: 'relationship_type', values: ['has-covered'] }] }] };
+      const result = await findStixCoreObjectPaginated(testContext, ADMIN_USER, { types: [ENTITY_TYPE_ATTACK_PATTERN], filters, first: 100 } as any);
+      const names = new Map(Object.entries(targetIds).map(([toName, targetId]) => [targetId, toName]));
+      return result.edges.map((edge: { node: { id: string } }) => names.get(edge.node.id) ?? edge.node.id).sort();
+    };
+    expect(await coveredBy([resultA.id])).toEqual(['alpha', 'bravo']);
+    expect(await coveredBy([resultA.id, resultB.id])).toEqual(['alpha', 'bravo', 'charlie', 'delta', 'echo']);
   });
   it('returns no row and no error when the relationship type cannot carry the key', async () => {
     const result = await findStixCoreRelationshipsPaginated(testContext, ADMIN_USER, { relationship_type: ['uses'], filters: coverage([score('lt', '20')]) });
