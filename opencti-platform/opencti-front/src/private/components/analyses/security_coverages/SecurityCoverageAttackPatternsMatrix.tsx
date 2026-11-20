@@ -96,11 +96,13 @@ const SecurityCoverageAttackPatternsMatrix = createRefetchContainer(
       @argumentDefinitions(
         search: { type: "String" }
         count: { type: "Int", defaultValue: 5000 }
+        filters: { type: "FilterGroup" }
       ) {
         id
         attackPatterns: coveredAttackPatterns(
           search: $search
           first: $count
+          filters: $filters
         ) {
           entities {
             coverage_information {
@@ -134,10 +136,11 @@ const SecurityCoverageAttackPatternsMatrix = createRefetchContainer(
       $id: String!
       $search: String
       $count: Int
+      $filters: FilterGroup
     ) {
       securityCoverage(id: $id) {
         ...SecurityCoverageAttackPatternsMatrix_securityCoverage
-          @arguments(search: $search, count: $count)
+          @arguments(search: $search, count: $count, filters: $filters)
       }
     }
   `,

@@ -257,12 +257,14 @@ const SecurityCoverageAttackPatterns = createFragmentContainer(
   SecurityCoverageAttackPatternsComponent,
   {
     securityCoverage: graphql`
-      fragment SecurityCoverageAttackPatternsFragment on SecurityCoverage {
+      fragment SecurityCoverageAttackPatternsFragment on SecurityCoverage
+      @argumentDefinitions(filters: { type: "FilterGroup" }) {
         id
         attPatterns: coveredAttackPatterns(
           orderBy: created_at
           orderMode: asc
           first: 5000
+          filters: $filters
         ) {
           count
           entities {
@@ -279,7 +281,7 @@ const SecurityCoverageAttackPatterns = createFragmentContainer(
             }
           }
         }
-        ...SecurityCoverageAttackPatternsMatrix_securityCoverage
+        ...SecurityCoverageAttackPatternsMatrix_securityCoverage @arguments(filters: $filters)
       }
     `,
   },
