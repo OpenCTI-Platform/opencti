@@ -262,7 +262,7 @@ export default defineConfig([
       'import/parsers': { '@typescript-eslint/parser': ['.ts', '.tsx', '.js', '.jsx'] },
     },
     rules: {
-      'import/no-cycle': ['error', { ignoreExternal: true, allowUnsafeDynamicCyclicDependency: true }],
+      'import/no-cycle': ['error', { ignoreExternal: true }],
     },
   },
 
