@@ -41,7 +41,8 @@ testCreatedCounter.identity = 63;
 testCreatedCounter.imei = 3;
 testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 7;
-testCreatedCounter.indicator = 64;
+// Includes 1 created and deleted by markingDefinition-test (OASIS TLP 2.0 RED id)
+testCreatedCounter.indicator = 65;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
@@ -200,7 +201,8 @@ testDeletedCounter.grouping = 2;
 // and 2 by ingestionDeduplication-domain-test
 testDeletedCounter.identity = 46;
 testDeletedCounter.incident = 6;
-testDeletedCounter.indicator = 36;
+// Includes 1 created and deleted by markingDefinition-test (OASIS TLP 2.0 RED id)
+testDeletedCounter.indicator = 37;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
