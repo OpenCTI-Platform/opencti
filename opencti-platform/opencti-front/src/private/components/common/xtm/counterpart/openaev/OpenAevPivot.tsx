@@ -1,14 +1,11 @@
-import React, { useSyncExternalStore } from 'react';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import React from 'react';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import { useFormatter } from '../../../../components/i18n';
-import { OaevLogo } from '../../../../static/images/logo_oaev';
-import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
-import useXtmCounterpart, { XtmCounterpartKind } from './useXtmCounterparts';
-
-// The OpenAEV connection of OpenCTI lives in its configuration (xtm:openaev_url, xtm:openaev_token).
-export const OPENAEV_CONNECT_DOC_URL = 'https://docs.opencti.io/latest/deployment/configuration/#xtm-suite';
+import { useFormatter } from '../../../../../../components/i18n';
+import { OaevLogo } from '../../../../../../static/images/logo_oaev';
+import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../../../utils/hooks/useGranted';
+import useXtmCounterpart, { XtmCounterpartKind } from '../core/useXtmCounterparts';
+import { useCompactPivot, withTooltip, XTM_CONNECT_DOC_URL } from '../core/xtmPivot';
 
 interface OpenAevPivotProps {
   kind: XtmCounterpartKind;
@@ -16,40 +13,13 @@ interface OpenAevPivotProps {
   counterpartKey: string | null | undefined;
 }
 
-// Below this viewport width the header has no room for a text button beside a long title and the
-// "Display as" selector (the title was clipped to its first letter at 1080 px): the pivot becomes
-// the framed icon button of its toolbar siblings, named by its aria-label and its tooltip.
-export const OPENAEV_PIVOT_COMPACT_QUERY = '(max-width: 1279.98px)';
-
-const subscribeCompact = (onChange: () => void) => {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return () => {};
-  const query = window.matchMedia(OPENAEV_PIVOT_COMPACT_QUERY);
-  query.addEventListener('change', onChange);
-  return () => query.removeEventListener('change', onChange);
-};
-const readCompact = () => typeof window !== 'undefined'
-  && typeof window.matchMedia === 'function'
-  && window.matchMedia(OPENAEV_PIVOT_COMPACT_QUERY).matches;
-export const useCompactPivot = () => useSyncExternalStore(subscribeCompact, readCompact, () => false);
-
-// A tooltip on a wrapping span: a disabled button receives no pointer events, so a tooltip anchored
-// on the control itself would never show.
-export const withTooltip = (title: string, control: React.ReactElement) => (
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <span style={{ display: 'inline-flex' }}>{control}</span>
-    </TooltipTrigger>
-    <TooltipContent>{title}</TooltipContent>
-  </Tooltip>
-);
-
 /**
  * Hero action of an object OpenAEV can also hold, rendered as the framed outlined text button of
  * the header toolbar (the same control as "Create Relationship", and the same language as OpenAEV's
  * "Open in OpenCTI"): "Open in OpenAEV" on a match, a disabled "Not in OpenAEV" without one, and
  * "Connect OpenAEV" when OpenAEV is not connected (disabled, with a read-only hint, for a user who
  * cannot configure the platform). Never an unframed icon. Silent while loading. Below 1280 px the
- * same states render as the framed icon button of the toolbar (OPENAEV_PIVOT_COMPACT_QUERY).
+ * same states render as the framed icon button of the toolbar (XTM_PIVOT_COMPACT_QUERY).
  */
 const OpenAevPivot: React.FC<OpenAevPivotProps> = ({ kind, counterpartKey }) => {
   const { t_i18n } = useFormatter();
@@ -88,7 +58,7 @@ const OpenAevPivot: React.FC<OpenAevPivotProps> = ({ kind, counterpartKey }) => 
               <IconButton
                 variant="secondary"
                 size="default"
-                href={OPENAEV_CONNECT_DOC_URL}
+                href={XTM_CONNECT_DOC_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={t_i18n('Connect OpenAEV')}
@@ -146,7 +116,7 @@ const OpenAevPivot: React.FC<OpenAevPivotProps> = ({ kind, counterpartKey }) => 
             <Button
               variant="secondary"
               startIcon={<OaevLogo />}
-              href={OPENAEV_CONNECT_DOC_URL}
+              href={XTM_CONNECT_DOC_URL}
               target="_blank"
               rel="noopener noreferrer"
               data-testid="openaev-pivot"

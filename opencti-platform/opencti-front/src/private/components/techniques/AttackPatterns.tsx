@@ -16,7 +16,7 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { Box, Stack } from '@mui/material';
-import OpenAevRowMark from '../common/xtm/OpenAevRowMark';
+import OpenAevRowMark from '../common/xtm/counterpart/openaev/OpenAevRowMark';
 
 const LOCAL_STORAGE_KEY = 'attackPattern';
 

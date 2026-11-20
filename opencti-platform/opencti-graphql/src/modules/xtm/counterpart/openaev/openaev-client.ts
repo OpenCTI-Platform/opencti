@@ -1,5 +1,5 @@
-import conf, { logApp } from '../../../config/conf';
-import { getHttpClient } from '../../../utils/http-client';
+import conf, { logApp } from '../../../../config/conf';
+import { getHttpClient } from '../../../../utils/http-client';
 
 // OpenAEV's default tenant (io.openaev.database.model.Tenant.DEFAULT_TENANT_UUID): the tenant a
 // single-tenant OpenAEV serves. A multi-tenant OpenAEV is reached with xtm:openaev_tenant_id.

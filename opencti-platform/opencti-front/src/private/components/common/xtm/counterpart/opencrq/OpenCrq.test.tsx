@@ -1,9 +1,10 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import testRender from '../../../../utils/tests/test-render';
-import { formatOpenCrqFacts, isOpenCrqKind, OPENCRQ_CONNECT_DOC_URL, OpenCrqCard, OpenCrqPivot, OpenCrqRowMark } from './OpenCrq';
-import { resetXtmCounterpartCache } from './useXtmCounterparts';
+import testRender from '../../../../../../utils/tests/test-render';
+import { formatOpenCrqFacts, isOpenCrqKind, OpenCrqCard, OpenCrqPivot, OpenCrqRowMark } from './OpenCrq';
+import { XTM_CONNECT_DOC_URL } from '../core/xtmPivot';
+import { resetXtmCounterpartCache } from '../core/useXtmCounterparts';
 
 const mocks = vi.hoisted(() => ({
   connected: { openaev: true, opencrq: true } as Record<string, boolean>,
@@ -13,8 +14,8 @@ const mocks = vi.hoisted(() => ({
   granted: true,
 }));
 
-vi.mock('../../../../relay/environment', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../relay/environment')>()),
+vi.mock('../../../../../../relay/environment', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../../relay/environment')>()),
   // The connections query has no variables; the counterparts query has a kind and keys.
   fetchQuery: (_query: unknown, variables: Record<string, unknown> = {}) => ({
     toPromise: () => {
@@ -30,8 +31,8 @@ vi.mock('../../../../relay/environment', async (importOriginal) => ({
   }),
 }));
 
-vi.mock('../../../../utils/hooks/useGranted', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../utils/hooks/useGranted')>()),
+vi.mock('../../../../../../utils/hooks/useGranted', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../../utils/hooks/useGranted')>()),
   default: () => mocks.granted,
 }));
 
@@ -77,7 +78,7 @@ describe('OpenCRQ pivots', () => {
     testRender(<OpenCrqPivot kind="ASSET" counterpartKey="srv-01" />);
     const pivot = await screen.findByTestId('opencrq-pivot');
     expect(pivot).toHaveTextContent('Connect OpenCRQ');
-    expect(pivot.closest('a') ?? pivot).toHaveAttribute('href', OPENCRQ_CONNECT_DOC_URL);
+    expect(pivot.closest('a') ?? pivot).toHaveAttribute('href', XTM_CONNECT_DOC_URL);
     expect(mocks.lookups).toBe(0);
   });
 

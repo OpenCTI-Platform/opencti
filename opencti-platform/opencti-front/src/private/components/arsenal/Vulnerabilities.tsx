@@ -16,8 +16,8 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { Box, Stack } from '@mui/material';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
-import OpenAevRowMark from '../common/xtm/OpenAevRowMark';
-import { OpenCrqRowMark } from '../common/xtm/OpenCrq';
+import OpenAevRowMark from '../common/xtm/counterpart/openaev/OpenAevRowMark';
+import { OpenCrqRowMark } from '../common/xtm/counterpart/opencrq/OpenCrq';
 
 const LOCAL_STORAGE_KEY = 'vulnerabilities';
 

@@ -7,20 +7,20 @@ const mocks = vi.hoisted(() => ({
   warn: vi.fn(),
 }));
 
-vi.mock('../../../../src/config/conf', () => ({
+vi.mock('../../../../../../src/config/conf', () => ({
   default: { get: (key: string) => mocks.settings[key] },
   logApp: { info: vi.fn(), error: vi.fn(), warn: mocks.warn, debug: vi.fn() },
 }));
 
-vi.mock('../../../../src/utils/http-client', () => ({
+vi.mock('../../../../../../src/utils/http-client', () => ({
   getHttpClient: (options: any) => {
     mocks.clientOptions.push(options);
     return { get: mocks.get };
   },
 }));
 
-import { fetchOpenCrqObjects, getOpenCrqApiUrl, getOpenCrqUrl, isOpenCrqConnected } from '../../../../src/modules/xtm/openaev/opencrq-client';
-import { openCrqProvider, resetCounterpartCache, resolveCounterparts } from '../../../../src/modules/xtm/openaev/openaev-counterpart-domain';
+import { fetchOpenCrqObjects, getOpenCrqApiUrl, getOpenCrqUrl, isOpenCrqConnected } from '../../../../../../src/modules/xtm/counterpart/opencrq/opencrq-client';
+import { openCrqProvider, resetCounterpartCache, resolveCounterparts } from '../../../../../../src/modules/xtm/counterpart/core/counterpart-domain';
 
 const STIX = 'intrusion-set--3b0a1c2d-0000-4000-8000-000000000001';
 

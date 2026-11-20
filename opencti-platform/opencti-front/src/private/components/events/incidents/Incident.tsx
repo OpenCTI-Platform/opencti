@@ -11,8 +11,8 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { Incident_incident$key } from './__generated__/Incident_incident.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import OpenAevAlertCard from '../../common/xtm/OpenAevAlertCard';
-import { openAevCardAnchorKey } from '../../common/xtm/OpenAevCard';
+import OpenAevAlertCard from '../../common/xtm/counterpart/openaev/OpenAevAlertCard';
+import { xtmCardAnchorKey } from '../../common/xtm/counterpart/core/xtmCardAnchorKey';
 
 const incidentFragment = graphql`
   fragment Incident_incident on Incident {
@@ -98,7 +98,7 @@ const Incident: React.FC<IncidentProps> = ({
     incidentData,
   );
   const overviewLayoutCustomization = useOverviewLayoutCustomization(incident.entity_type);
-  const openAevAnchor = openAevCardAnchorKey(overviewLayoutCustomization);
+  const openAevAnchor = xtmCardAnchorKey(overviewLayoutCustomization);
   const openAevCard = (
     <OpenAevAlertCard
       gridRow

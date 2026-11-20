@@ -1,6 +1,6 @@
-import type { AuthContext, AuthUser } from '../../../types/user';
-import { fetchOpenAevObjects, getOpenAevUrl, isOpenAevConnected, type OpenAevObjectPath } from './openaev-client';
-import { fetchOpenCrqObjects, getOpenCrqUrl, isOpenCrqConnected, type OpenCrqLookupKind } from './opencrq-client';
+import type { AuthContext, AuthUser } from '../../../../types/user';
+import { fetchOpenAevObjects, getOpenAevUrl, isOpenAevConnected, type OpenAevObjectPath } from '../openaev/openaev-client';
+import { fetchOpenCrqObjects, getOpenCrqUrl, isOpenCrqConnected, type OpenCrqLookupKind } from '../opencrq/opencrq-client';
 
 // Same keys and normalisation as OpenAEV's CounterpartKind, so both sides cache the same entry.
 export type CounterpartKind = 'ASSET' | 'ATTACK_PATTERN' | 'VULNERABILITY' | 'THREAT' | 'ALERT';

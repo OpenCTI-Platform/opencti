@@ -10,8 +10,8 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import OpenAevCard from '../../common/xtm/OpenAevCard';
-import { OpenCrqCard } from '../../common/xtm/OpenCrq';
+import OpenAevCard from '../../common/xtm/counterpart/openaev/OpenAevCard';
+import { OpenCrqCard } from '../../common/xtm/counterpart/opencrq/OpenCrq';
 
 const systemFragment = graphql`
   fragment System_system on System {

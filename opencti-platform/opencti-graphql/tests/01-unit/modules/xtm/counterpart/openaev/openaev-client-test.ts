@@ -7,20 +7,20 @@ const mocks = vi.hoisted(() => ({
   warn: vi.fn(),
 }));
 
-vi.mock('../../../../src/config/conf', () => ({
+vi.mock('../../../../../../src/config/conf', () => ({
   default: { get: (key: string) => mocks.settings[key] },
   logApp: { info: vi.fn(), error: vi.fn(), warn: mocks.warn, debug: vi.fn() },
 }));
 
-vi.mock('../../../../src/utils/http-client', () => ({
+vi.mock('../../../../../../src/utils/http-client', () => ({
   getHttpClient: (options: any) => {
     mocks.clientOptions.push(options);
     return { post: mocks.post };
   },
 }));
 
-import { fetchOpenAevObjects, getOpenAevUrl, isOpenAevConnected, OPENAEV_DEFAULT_TENANT_ID } from '../../../../src/modules/xtm/openaev/openaev-client';
-import { findXtmConnections, findXtmCounterparts, openAevProvider, resetCounterpartCache, sanitiseFacts } from '../../../../src/modules/xtm/openaev/openaev-counterpart-domain';
+import { fetchOpenAevObjects, getOpenAevUrl, isOpenAevConnected, OPENAEV_DEFAULT_TENANT_ID } from '../../../../../../src/modules/xtm/counterpart/openaev/openaev-client';
+import { findXtmConnections, findXtmCounterparts, openAevProvider, resetCounterpartCache, sanitiseFacts } from '../../../../../../src/modules/xtm/counterpart/core/counterpart-domain';
 
 const remote = (key: string, extra: Record<string, unknown> = {}) => ({
   object_key: key,

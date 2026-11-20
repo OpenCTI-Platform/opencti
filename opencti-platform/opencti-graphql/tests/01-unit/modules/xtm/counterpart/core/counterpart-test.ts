@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../../../src/config/conf', () => ({
+vi.mock('../../../../../../src/config/conf', () => ({
   default: { get: () => undefined },
   logApp: { info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
 }));
 
-vi.mock('../../../../src/utils/http-client', () => ({
+vi.mock('../../../../../../src/utils/http-client', () => ({
   getHttpClient: () => ({ post: () => Promise.reject(new Error('no network in unit tests')) }),
 }));
 
@@ -18,7 +18,7 @@ import {
   resolveCounterparts,
   xtmConnections,
   type XtmCounterpart,
-} from '../../../../src/modules/xtm/openaev/openaev-counterpart-domain';
+} from '../../../../../../src/modules/xtm/counterpart/core/counterpart-domain';
 
 const counterpart = (key: string): XtmCounterpart => ({
   key,

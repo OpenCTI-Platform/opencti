@@ -142,7 +142,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
             <StixDomainObjectHeader
               entityType="Vulnerability"
               stixDomainObject={vulnerability}
-              openAevCounterpart={{ kind: 'VULNERABILITY', key: vulnerability.name }}
+              xtmCounterpart={{ kind: 'VULNERABILITY', key: vulnerability.name }}
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <VulnerabilityEdition vulnerabilityId={vulnerabilityId} />

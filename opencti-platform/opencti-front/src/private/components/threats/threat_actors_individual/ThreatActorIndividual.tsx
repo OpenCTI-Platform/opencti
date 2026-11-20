@@ -1,6 +1,7 @@
 import React from 'react';
-import OpenAevCard, { openAevCardAnchorKey } from '../../common/xtm/OpenAevCard';
-import { OpenCrqCard } from '../../common/xtm/OpenCrq';
+import OpenAevCard from '../../common/xtm/counterpart/openaev/OpenAevCard';
+import { xtmCardAnchorKey } from '../../common/xtm/counterpart/core/xtmCardAnchorKey';
+import { OpenCrqCard } from '../../common/xtm/counterpart/opencrq/OpenCrq';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
@@ -150,7 +151,7 @@ const ThreatActorIndividual: React.FC<ThreatActorIndividualProps> = ({ threatAct
     threatActorIndividualData,
   );
   const overviewLayoutCustomization = useOverviewLayoutCustomization(threatActorIndividual.entity_type);
-  const openAevAnchor = openAevCardAnchorKey(overviewLayoutCustomization);
+  const openAevAnchor = xtmCardAnchorKey(overviewLayoutCustomization);
   const openAevCard = (
     <>
       <OpenAevCard gridRow kind="THREAT" counterpartKey={threatActorIndividual.standard_id} />

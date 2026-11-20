@@ -1,9 +1,10 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import testRender from '../../../../utils/tests/test-render';
-import OpenAevPivot, { OPENAEV_CONNECT_DOC_URL, OPENAEV_PIVOT_COMPACT_QUERY } from './OpenAevPivot';
-import { normaliseXtmKey, resetXtmCounterpartCache } from './useXtmCounterparts';
+import testRender from '../../../../../../utils/tests/test-render';
+import OpenAevPivot from './OpenAevPivot';
+import { XTM_CONNECT_DOC_URL, XTM_PIVOT_COMPACT_QUERY } from '../core/xtmPivot';
+import { normaliseXtmKey, resetXtmCounterpartCache } from '../core/useXtmCounterparts';
 
 const mocks = vi.hoisted(() => ({
   connected: true,
@@ -13,8 +14,8 @@ const mocks = vi.hoisted(() => ({
   calls: [] as Array<Record<string, unknown>>,
 }));
 
-vi.mock('../../../../relay/environment', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../relay/environment')>()),
+vi.mock('../../../../../../relay/environment', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../../relay/environment')>()),
   // The connections query has no variables; the counterparts query has a kind and keys.
   fetchQuery: (_query: unknown, variables: Record<string, unknown> = {}) => ({
     toPromise: () => {
@@ -29,8 +30,8 @@ vi.mock('../../../../relay/environment', async (importOriginal) => ({
   }),
 }));
 
-vi.mock('../../../../utils/hooks/useGranted', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../utils/hooks/useGranted')>()),
+vi.mock('../../../../../../utils/hooks/useGranted', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../../utils/hooks/useGranted')>()),
   default: () => mocks.granted,
 }));
 
@@ -72,7 +73,7 @@ describe('OpenAevPivot', () => {
     mocks.connected = false;
     testRender(<OpenAevPivot kind="ASSET" counterpartKey="srv-01" />);
     const link = await screen.findByRole('link', { name: 'Connect OpenAEV' });
-    expect(link).toHaveAttribute('href', OPENAEV_CONNECT_DOC_URL);
+    expect(link).toHaveAttribute('href', XTM_CONNECT_DOC_URL);
     expect(link).toHaveTextContent('Connect OpenAEV');
     // Not connected: no counterpart lookup is sent.
     expect(mocks.calls.filter((c) => c.isLookup)).toHaveLength(0);
@@ -110,7 +111,7 @@ describe('OpenAevPivot', () => {
     const originalMatchMedia = window.matchMedia;
     beforeEach(() => {
       window.matchMedia = ((query: string) => ({
-        matches: query === OPENAEV_PIVOT_COMPACT_QUERY,
+        matches: query === XTM_PIVOT_COMPACT_QUERY,
         media: query,
         onchange: null,
         addEventListener: () => {},
@@ -136,7 +137,7 @@ describe('OpenAevPivot', () => {
       mocks.connected = false;
       testRender(<OpenAevPivot kind="ASSET" counterpartKey="srv-01" />);
       const link = await screen.findByRole('link', { name: 'Connect OpenAEV' });
-      expect(link).toHaveAttribute('href', OPENAEV_CONNECT_DOC_URL);
+      expect(link).toHaveAttribute('href', XTM_CONNECT_DOC_URL);
       expect(link).not.toHaveTextContent('Connect OpenAEV');
     });
   });

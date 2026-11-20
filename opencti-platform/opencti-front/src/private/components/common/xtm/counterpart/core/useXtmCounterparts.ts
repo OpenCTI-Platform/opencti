@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
-import { fetchQuery } from '../../../../relay/environment';
+import { fetchQuery } from '../../../../../../relay/environment';
 import type {
   useXtmCounterpartsCounterpartsQuery,
   useXtmCounterpartsCounterpartsQuery$data,

@@ -171,7 +171,7 @@ import './emailTemplate/emailTemplate-graphql';
 import './form/form-graphql';
 import './xtm/hub/xtm-hub-graphql';
 import './xtm/hub/news-feed/news-feed-graphql';
-import './xtm/openaev/openaev-counterpart-graphql';
+import './xtm/counterpart/core/counterpart-graphql';
 import './metrics/metrics-graphql';
 import './authenticationProvider/authenticationProvider-graphql';
 import './customView/customView-graphql';

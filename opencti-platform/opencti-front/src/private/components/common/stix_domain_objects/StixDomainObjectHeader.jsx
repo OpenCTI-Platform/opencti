@@ -53,8 +53,8 @@ import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMe
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
-import OpenAevPivot from '../xtm/OpenAevPivot';
-import { isOpenCrqKind, OpenCrqPivot } from '../xtm/OpenCrq';
+import OpenAevPivot from '../xtm/counterpart/openaev/OpenAevPivot';
+import { isOpenCrqKind, OpenCrqPivot } from '../xtm/counterpart/opencrq/OpenCrq';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 
 export const stixDomainObjectMutation = graphql`
@@ -295,8 +295,8 @@ const StixDomainObjectHeader = (props) => {
     enableEnrollPlaybook,
     enableAuthorizedMembers,
     redirectToContent,
-    // { kind, key } of the object's OpenAEV counterpart (hostname, MITRE id, CVE id or STIX id)
-    openAevCounterpart,
+    // { kind, key } of the object's counterpart in the other XTM products (hostname, MITRE id, CVE id or STIX id)
+    xtmCounterpart,
   } = props;
   const currentAccessRight = useGetCurrentUserAccessRight(stixDomainObject.currentUserAccessRight);
   const enableManageAuthorizedMembers = currentAccessRight.canManage && enableAuthorizedMembers;
@@ -524,11 +524,11 @@ const StixDomainObjectHeader = (props) => {
         }
         rightActions={(
           <>
-            {openAevCounterpart && (
-              <OpenAevPivot kind={openAevCounterpart.kind} counterpartKey={openAevCounterpart.key} />
+            {xtmCounterpart && (
+              <OpenAevPivot kind={xtmCounterpart.kind} counterpartKey={xtmCounterpart.key} />
             )}
-            {openAevCounterpart && isOpenCrqKind(openAevCounterpart.kind) && (
-              <OpenCrqPivot kind={openAevCounterpart.kind} counterpartKey={openAevCounterpart.key} />
+            {xtmCounterpart && isOpenCrqKind(xtmCounterpart.kind) && (
+              <OpenCrqPivot kind={xtmCounterpart.kind} counterpartKey={xtmCounterpart.key} />
             )}
             {disableSharing !== true && (
               <StixCoreObjectSharing

@@ -1,9 +1,9 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import testRender from '../../../../utils/tests/test-render';
+import testRender from '../../../../../../utils/tests/test-render';
 import OpenAevAlertCard from './OpenAevAlertCard';
-import { resetXtmCounterpartCache } from './useXtmCounterparts';
+import { resetXtmCounterpartCache } from '../core/useXtmCounterparts';
 
 const mocks = vi.hoisted(() => ({
   connected: true,
@@ -12,8 +12,8 @@ const mocks = vi.hoisted(() => ({
   lookups: [] as Array<Record<string, unknown>>,
 }));
 
-vi.mock('../../../../relay/environment', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../relay/environment')>()),
+vi.mock('../../../../../../relay/environment', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../../relay/environment')>()),
   // The connections query has no variables; the counterparts query has a kind and keys.
   fetchQuery: (_query: unknown, variables: Record<string, unknown> = {}) => ({
     toPromise: () => {

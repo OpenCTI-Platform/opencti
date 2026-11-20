@@ -151,7 +151,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
             <StixDomainObjectHeader
               entityType="Campaign"
               stixDomainObject={campaign}
-              openAevCounterpart={{ kind: 'THREAT', key: campaign.standard_id }}
+              xtmCounterpart={{ kind: 'THREAT', key: campaign.standard_id }}
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <CampaignEdition campaignId={campaign.id} />

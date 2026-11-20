@@ -1,9 +1,9 @@
 import React from 'react';
 import Box from '@mui/material/Box';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
-import { useFormatter } from '../../../../components/i18n';
-import { OaevLogo } from '../../../../static/images/logo_oaev';
-import useXtmCounterpart, { XtmCounterpartKind } from './useXtmCounterparts';
+import { useFormatter } from '../../../../../../components/i18n';
+import { OaevLogo } from '../../../../../../static/images/logo_oaev';
+import useXtmCounterpart, { XtmCounterpartKind } from '../core/useXtmCounterparts';
 
 interface OpenAevRowMarkProps {
   kind: XtmCounterpartKind;

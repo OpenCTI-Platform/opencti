@@ -6,11 +6,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Card from '@common/card/Card';
-import { useFormatter } from '../../../../components/i18n';
-import { OcrqLogo } from '../../../../static/images/logo_ocrq';
-import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
-import { OPENAEV_CONNECT_DOC_URL, useCompactPivot, withTooltip } from './OpenAevPivot';
-import useXtmCounterpart, { normaliseXtmKey, XtmCounterpartKind } from './useXtmCounterparts';
+import { useFormatter } from '../../../../../../components/i18n';
+import { OcrqLogo } from '../../../../../../static/images/logo_ocrq';
+import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../../../utils/hooks/useGranted';
+import { useCompactPivot, withTooltip, XTM_CONNECT_DOC_URL } from '../core/xtmPivot';
+import useXtmCounterpart, { normaliseXtmKey, XtmCounterpartKind } from '../core/useXtmCounterparts';
 
 // The OpenCRQ side of the cross-platform pivots: same controls, states and wording as the OpenAEV
 // ones (OpenAevPivot, OpenAevCard, OpenAevRowMark), the OpenCRQ mark, and the risk OpenCRQ
@@ -19,9 +19,6 @@ import useXtmCounterpart, { normaliseXtmKey, XtmCounterpartKind } from './useXtm
 // assets (hostname); attack patterns and alerts have no OpenCRQ counterpart.
 
 export const OPENCRQ_PRODUCT = 'opencrq';
-// The OpenCRQ connection of OpenCTI lives in its configuration (xtm:opencrq_url, xtm:opencrq_token),
-// documented on the same XTM page as the OpenAEV one.
-export const OPENCRQ_CONNECT_DOC_URL = OPENAEV_CONNECT_DOC_URL;
 export const OPENCRQ_KINDS: ReadonlyArray<XtmCounterpartKind> = ['THREAT', 'VULNERABILITY', 'ASSET'];
 export const isOpenCrqKind = (kind: XtmCounterpartKind | null | undefined) => !!kind && OPENCRQ_KINDS.includes(kind);
 
@@ -90,7 +87,7 @@ export const OpenCrqPivot: React.FC<OpenCrqProps> = ({ kind, counterpartKey }) =
       label = t_i18n('Connect OpenCRQ');
       if (canConfigure) {
         tooltip = t_i18n('Connect OpenCRQ to pivot to this object and see the risk it drives');
-        href = OPENCRQ_CONNECT_DOC_URL;
+        href = XTM_CONNECT_DOC_URL;
       } else {
         tooltip = t_i18n('OpenCRQ is not connected: ask an administrator to connect it');
         disabled = true;

@@ -1,5 +1,5 @@
-import conf, { logApp } from '../../../config/conf';
-import { getHttpClient } from '../../../utils/http-client';
+import conf, { logApp } from '../../../../config/conf';
+import { getHttpClient } from '../../../../utils/http-client';
 
 const OPENCRQ_TIMEOUT_MS = 5000;
 const OPENCRQ_LOOKUP_PROCEDURE = 'xtm.lookup';

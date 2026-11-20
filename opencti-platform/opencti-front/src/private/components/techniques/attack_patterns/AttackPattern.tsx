@@ -11,7 +11,8 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import OpenAevCard, { openAevCardAnchorKey } from '../../common/xtm/OpenAevCard';
+import OpenAevCard from '../../common/xtm/counterpart/openaev/OpenAevCard';
+import { xtmCardAnchorKey } from '../../common/xtm/counterpart/core/xtmCardAnchorKey';
 
 export const attackPatternFragment = graphql`
   fragment AttackPattern_attackPattern on AttackPattern {
@@ -78,7 +79,7 @@ const AttackPattern: React.FC<AttackPatternProps> = ({
 
   const attackPattern = useFragment<AttackPattern_attackPattern$key>(attackPatternFragment, attackPatternData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(attackPattern.entity_type);
-  const openAevAnchor = openAevCardAnchorKey(overviewLayoutCustomization);
+  const openAevAnchor = xtmCardAnchorKey(overviewLayoutCustomization);
   const openAevCard = <OpenAevCard gridRow kind="ATTACK_PATTERN" counterpartKey={attackPattern.x_mitre_id} />;
 
   return (

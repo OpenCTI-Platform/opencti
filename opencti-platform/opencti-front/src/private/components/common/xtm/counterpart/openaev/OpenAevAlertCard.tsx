@@ -4,9 +4,9 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Card from '@common/card/Card';
 import Button from '@common/button/Button';
-import { useFormatter } from '../../../../components/i18n';
-import { OaevLogo } from '../../../../static/images/logo_oaev';
-import { lookupXtmConnections, lookupXtmCounterpart, normaliseXtmKey, XtmCounterpart } from './useXtmCounterparts';
+import { useFormatter } from '../../../../../../components/i18n';
+import { OaevLogo } from '../../../../../../static/images/logo_oaev';
+import { lookupXtmConnections, lookupXtmCounterpart, normaliseXtmKey, XtmCounterpart } from '../core/useXtmCounterparts';
 
 // An incident or a sighting rarely carries more than a few links; the lookup is batched anyway.
 export const OPENAEV_ALERT_MAX_LINKS = 50;

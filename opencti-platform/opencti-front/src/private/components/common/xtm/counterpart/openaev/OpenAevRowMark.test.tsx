@@ -1,9 +1,9 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import testRender from '../../../../utils/tests/test-render';
+import testRender from '../../../../../../utils/tests/test-render';
 import OpenAevRowMark from './OpenAevRowMark';
-import { resetXtmCounterpartCache, XTM_COUNTERPART_MAX_KEYS, lookupXtmCounterpart } from './useXtmCounterparts';
+import { resetXtmCounterpartCache, XTM_COUNTERPART_MAX_KEYS, lookupXtmCounterpart } from '../core/useXtmCounterparts';
 
 const mocks = vi.hoisted(() => ({
   connected: true,
@@ -11,8 +11,8 @@ const mocks = vi.hoisted(() => ({
   calls: [] as Array<Record<string, unknown>>,
 }));
 
-vi.mock('../../../../relay/environment', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../relay/environment')>()),
+vi.mock('../../../../../../relay/environment', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../../relay/environment')>()),
   fetchQuery: (_query: unknown, variables: Record<string, unknown> = {}) => ({
     toPromise: () => {
       const isLookup = 'keys' in variables;

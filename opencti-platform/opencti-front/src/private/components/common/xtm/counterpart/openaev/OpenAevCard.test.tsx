@@ -1,9 +1,9 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import testRender from '../../../../utils/tests/test-render';
-import OpenAevCard, { openAevCardAnchorKey } from './OpenAevCard';
-import { resetXtmCounterpartCache } from './useXtmCounterparts';
+import testRender from '../../../../../../utils/tests/test-render';
+import OpenAevCard from './OpenAevCard';
+import { resetXtmCounterpartCache } from '../core/useXtmCounterparts';
 
 const mocks = vi.hoisted(() => ({
   connected: true,
@@ -12,8 +12,8 @@ const mocks = vi.hoisted(() => ({
   lookups: 0,
 }));
 
-vi.mock('../../../../relay/environment', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../relay/environment')>()),
+vi.mock('../../../../../../relay/environment', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../../relay/environment')>()),
   // The connections query has no variables; the counterparts query has a kind and keys.
   fetchQuery: (_query: unknown, variables: Record<string, unknown> = {}) => ({
     toPromise: () => {
@@ -114,21 +114,5 @@ describe('OpenAevCard', () => {
     mocks.fail = true;
     testRender(<OpenAevCard kind="ASSET" counterpartKey="srv-01" />);
     expect(await screen.findByText('Not in OpenAEV')).toBeInTheDocument();
-  });
-});
-
-describe('openAevCardAnchorKey', () => {
-  it('places the card after the later of Details and Basic information, above Notes', () => {
-    expect(openAevCardAnchorKey([
-      { key: 'details' },
-      { key: 'basicInformation' },
-      { key: 'latestCreatedRelationships' },
-      { key: 'notes' },
-    ])).toBe('basicInformation');
-    expect(openAevCardAnchorKey([{ key: 'basicInformation' }, { key: 'details' }, { key: 'notes' }])).toBe('details');
-  });
-
-  it('has no anchor when the layout shows neither, so the card closes the grid', () => {
-    expect(openAevCardAnchorKey([{ key: 'notes' }])).toBeNull();
   });
 });
