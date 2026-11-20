@@ -507,7 +507,7 @@ export const ATTRIBUTE_DESCRIPTIONS_BY_TYPE: Record<string, Record<string, strin
   // -- Meta objects --
   [ENTITY_TYPE_MARKING_DEFINITION]: {
     definition_type: 'Type of the marking, grouping the markings compared by their order (e.g. TLP, PAP).',
-    definition: 'Name of the marking, prefixed by its type (e.g. TLP:GREEN, PAP:AMBER).',
+    definition: 'Name of the marking: the built-in TLP and PAP markings use the TYPE:LEVEL form (e.g. TLP:GREEN, PAP:AMBER), a custom marking any text (e.g. a statement or a copyright notice).',
     x_opencti_order: 'Level of the marking within its type: the higher, the more restrictive (e.g. 1 for TLP:CLEAR, 5 for TLP:RED).',
     x_opencti_color: 'Display color of the marking, as a hexadecimal code (e.g. #2e7d32).',
   },
@@ -539,9 +539,11 @@ export const ATTRIBUTE_DESCRIPTIONS_BY_TYPE: Record<string, Record<string, strin
   },
 };
 
-// The types whose attributes and refs the dictionary was written for: the STIX types. Elsewhere a
-// same name can mean something else (the content of a workflow definition is JSON, its author is a
-// user…): a wrong description being worse than none, the internal types get no description.
+// The types whose attributes and refs the dictionary was written for: the STIX domain objects,
+// observables, relationships and sightings, and the meta objects (markings, labels, external
+// references, kill chain phases and the OpenCTI vocabulary entries). Elsewhere a same name can mean
+// something else (the content of a workflow definition is JSON, its author is a user…): a wrong
+// description being worse than none, the internal types get no description.
 export const isDescribedType = (entityType: string): boolean => isStixDomainObject(entityType) || isStixCyberObservable(entityType)
   || isStixCoreRelationship(entityType) || isStixSightingRelationship(entityType) || isStixMetaObject(entityType);
 
