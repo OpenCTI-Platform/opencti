@@ -1,5 +1,6 @@
 import { environment, getStoppingState, logApp, setStoppingState } from './config/conf';
 import platformInit, { checkFeatureFlags, checkGraphqlSecurity, checkHttpSecurity, checkTlsVerification } from './initialization';
+import { checkOutboundRequests } from './utils/internal-destination';
 import cacheManager from './manager/cacheManager';
 import { shutdownRedisClients } from './database/redis';
 import { shutdownModules, startModules } from './managers';
@@ -45,6 +46,12 @@ const doPlatformStart = async () => {
     } catch (credentialsError) {
       logApp.error('[OPENCTI] Default credentials check failed', { cause: credentialsError });
       throw credentialsError;
+    }
+    try {
+      checkOutboundRequests();
+    } catch (outboundRequestsError) {
+      logApp.error('[OPENCTI] Outbound requests configuration is invalid', { cause: outboundRequestsError });
+      throw outboundRequestsError;
     }
     // Check all dependencies access
     try {

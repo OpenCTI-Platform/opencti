@@ -178,6 +178,7 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
     responseType: 'json',
     certificates,
     beforeRedirect: (redirectUrl) => verifyIngestionUri(redirectUrl),
+    feature: 'JSON feed',
   };
   const httpClient = getHttpClient(httpClientOptions);
   // Prepare query params
