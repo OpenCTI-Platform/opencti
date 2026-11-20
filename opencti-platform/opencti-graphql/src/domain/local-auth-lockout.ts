@@ -11,7 +11,9 @@ import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { type LocalAuthLockoutTimings, type LocalAuthLockType, redisClearLocalAuthLockout, redisRecordLocalAuthAttempt, redisReleaseLocalAuthAttempt } from '../database/redis';
 import { LocalAuthLockoutFinalAction } from '../generated/graphql';
 import { publishUserAction, type UserLockSource } from '../listener/UserActionListener';
-import { type LocalAuthLock, sendLocalAuthLockEmails } from './local-auth-lockout-notification';
+import { LOCAL_AUTH_LOCKOUT_DEFAULTS } from './local-auth-lockout-defaults';
+import type { LocalAuthLock } from './local-auth-lockout-email-data';
+import { sendLocalAuthLockEmails } from './local-auth-lockout-notification';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { ENTITY_TYPE_USER } from '../modules/user/user-types';
@@ -20,24 +22,6 @@ import type { AuthContext, AuthUser } from '../types/user';
 import { BYPASS, executionContext, REDACTED_USER, SETTINGS_SETACCESSES, SETTINGS_SETAUTH, SETTINGS_SETPARAMETERS, SYSTEM_USER } from '../utils/access';
 import { normalizeEmail } from '../utils/email';
 import { hashSHA256 } from '../utils/hash';
-
-// Values returned for the local authentication lockout policy when the settings hold none.
-// Thresholds and window follow NIST SP 800-53 AC-7: 3 attempts for administrative accounts, 10 for the other users, within 15 minutes
-export const LOCAL_AUTH_LOCKOUT_DEFAULTS = {
-  // Existing platforms keep the lockout disabled, new platforms start with it enabled (data initialization)
-  local_auth_lockout_enabled: false,
-  local_auth_lockout_max_attempts: 10,
-  local_auth_lockout_admin_max_attempts: 3,
-  // Applied once max attempts are reached: a lock for the lockout duration, or the account set to Locked until an admin unlocks it
-  local_auth_lockout_final_action: LocalAuthLockoutFinalAction.Temporary,
-  // Failed attempts older than the window are forgotten. 0 removes the time limit: failed attempts are kept until
-  // a successful login or the end of a temporary lock
-  local_auth_lockout_window: 15, // minutes
-  // Duration of the lock applied by the temporary final action
-  local_auth_lockout_duration: 15, // minutes
-};
-export type LocalAuthLockoutKey = keyof typeof LOCAL_AUTH_LOCKOUT_DEFAULTS;
-export const LOCAL_AUTH_LOCKOUT_KEYS = Object.keys(LOCAL_AUTH_LOCKOUT_DEFAULTS) as LocalAuthLockoutKey[];
 
 const SECOND_MS = 1000;
 const MINUTE_MS = 60 * SECOND_MS;

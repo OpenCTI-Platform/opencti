@@ -3,16 +3,15 @@ import { logApp } from '../../../src/config/conf';
 import { LocalAuthLockoutFinalAction } from '../../../src/generated/graphql';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../../src/database/cache';
 import { LOCKED_USER_EMAIL_TEMPLATE_INPUT } from '../../../src/database/locked-user-email-template-input';
+import { buildLocalAuthLockEmailData, buildSampleLocalAuthLockEmailData } from '../../../src/domain/local-auth-lockout-email-data';
 import {
-  buildLocalAuthLockEmailData,
-  buildSampleLocalAuthLockEmailData,
   loadLocalAuthLockEmailTemplate,
   loadLocalAuthLockRecipients,
   selectLocalAuthLockRecipients,
   sendLocalAuthLockEmails,
 } from '../../../src/domain/local-auth-lockout-notification';
 import { sendMail } from '../../../src/database/smtp';
-import { findLockedUserEmailTemplate } from '../../../src/modules/emailTemplate/emailTemplate-domain';
+import { findLockedUserEmailTemplate } from '../../../src/modules/emailTemplate/emailTemplate-locked-user';
 import type { BasicStoreEntityEmailTemplate } from '../../../src/modules/emailTemplate/emailTemplate-types';
 import type { BasicStoreSettings } from '../../../src/types/settings';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
@@ -33,7 +32,7 @@ vi.mock('../../../src/database/cache', () => ({
   getEntitiesListFromCache: vi.fn(),
 }));
 
-vi.mock('../../../src/modules/emailTemplate/emailTemplate-domain', () => ({
+vi.mock('../../../src/modules/emailTemplate/emailTemplate-locked-user', () => ({
   findLockedUserEmailTemplate: vi.fn(),
 }));
 

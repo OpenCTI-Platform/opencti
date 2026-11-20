@@ -27,12 +27,12 @@ import { notify } from '../../database/redis';
 import { BUS_TOPICS, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG } from '../../config/conf';
 import { addEmailTemplateCreatedCount } from '../../manager/telemetryManager';
 import { SYSTEM_USER } from '../../utils/access';
-import { addFilter } from '../../utils/filtering/filtering-utils';
 import { LOCKED_USER_EMAIL_TEMPLATE_INPUT } from '../../database/locked-user-email-template-input';
 import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
-import { buildSampleLocalAuthLockEmailData } from '../../domain/local-auth-lockout-notification';
+import { buildSampleLocalAuthLockEmailData } from '../../domain/local-auth-lockout-email-data';
+import { findLockedUserEmailTemplate } from './emailTemplate-locked-user';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
@@ -79,15 +79,6 @@ export const addEmailTemplate = async (context: AuthContext, user: AuthUser, inp
     await addEmailTemplateCreatedCount();
   }
   return createInternalObject<StoreEntityEmailTemplate>(context, user, emailTemplateToCreate, ENTITY_TYPE_EMAIL_TEMPLATE);
-};
-
-// The built-in template for the locked users, as the administrators edited it. As findEmailTemplatesByName, without its
-// Enterprise Edition check, which would stop the startup: the engine matches a name without its case,
-// but a template whose name differs by its case is another template
-export const findLockedUserEmailTemplate = async (context: AuthContext) => {
-  const filters = addFilter(undefined, 'name', LOCKED_USER_EMAIL_TEMPLATE_INPUT.name);
-  const templates = await fullEntitiesList<BasicStoreEntityEmailTemplate>(context, SYSTEM_USER, [ENTITY_TYPE_EMAIL_TEMPLATE], { filters });
-  return templates.find((template) => template.name === LOCKED_USER_EMAIL_TEMPLATE_INPUT.name);
 };
 
 // Creates the built-in template of the email sent to the administrators when the local authentication lockout locks an account,
