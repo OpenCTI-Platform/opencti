@@ -39,10 +39,11 @@ const graphql = async <T>(request: APIRequestContext, query: string, variables: 
 };
 
 const readLockoutPolicy = async (request: APIRequestContext) => {
-  const { settings } = await graphql<{ settings: LockoutPolicy & { id: string } }>(request, `
+  const { settings } = await graphql<{ settings: LockoutPolicy & { id: string; local_auth: { enabled: boolean } } }>(request, `
     query {
       settings {
         id
+        local_auth { enabled }
         local_auth_lockout_enabled
         local_auth_lockout_max_attempts
         local_auth_lockout_admin_max_attempts
@@ -52,18 +53,19 @@ const readLockoutPolicy = async (request: APIRequestContext) => {
       }
     }
   `);
-  const { id, ...policy } = settings;
-  return { id, policy };
+  const { id, local_auth, ...policy } = settings;
+  return { id, localAuthEnabled: local_auth.enabled, policy };
 };
 
-const updateLockoutPolicy = async (request: APIRequestContext, settingsId: string, policy: LockoutPolicy) => {
+// The local authentication is enabled while the tests log in with a password, and set back to its previous value at the end
+const updateLockoutPolicy = async (request: APIRequestContext, settingsId: string, policy: LockoutPolicy, localAuthEnabled = true) => {
   await graphql(request, `
     mutation ($id: ID!, $input: LocalAuthConfigInput!) {
       settingsEdit(id: $id) {
         updateLocalAuth(input: $input) { id }
       }
     }
-  `, { id: settingsId, input: { enabled: true, ...policy } });
+  `, { id: settingsId, input: { enabled: localAuthEnabled, ...policy } });
 };
 
 const ensureLockedUser = async (request: APIRequestContext) => {
@@ -138,10 +140,11 @@ test.describe('Local authentication lockout', { tag: ['@ce', '@groupff'] }, () =
 
   let settingsId: string;
   let previousPolicy: LockoutPolicy;
+  let previousLocalAuthEnabled: boolean;
   let userId: string;
 
   test.beforeAll(async ({ request }) => {
-    ({ id: settingsId, policy: previousPolicy } = await readLockoutPolicy(request));
+    ({ id: settingsId, policy: previousPolicy, localAuthEnabled: previousLocalAuthEnabled } = await readLockoutPolicy(request));
     userId = await ensureLockedUser(request);
   });
 
@@ -152,7 +155,7 @@ test.describe('Local authentication lockout', { tag: ['@ce', '@groupff'] }, () =
 
   test.afterAll(async ({ request }) => {
     await setAccountActive(request, userId);
-    await updateLockoutPolicy(request, settingsId, previousPolicy);
+    await updateLockoutPolicy(request, settingsId, previousPolicy, previousLocalAuthEnabled);
   });
 
   test('should lock the account for the lock duration, until an administrator unlocks it', async ({ browser, request }, testInfo) => {
