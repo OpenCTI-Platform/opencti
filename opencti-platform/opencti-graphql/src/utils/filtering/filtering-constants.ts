@@ -135,7 +135,7 @@ export const isCustomFieldFilterKey = (key: string): boolean => {
 // ---- generic nested filter keys (filterable nested attributes, ex: coverage_information)
 // type of their filter definition ('nested' is the type of regardingOf and dynamicRegardingOf)
 export const GENERIC_NESTED_FILTER_TYPE = 'nested_attribute';
-// operators the nested query implements for a sub-filter (buildLocalMustFilter in engine.ts): any other one would run as an equality
+// operators the nested query implements for a sub-filter (buildLocalMustFilter in engine-query-builder.ts): any other one would run as an equality
 export const NESTED_SUB_FILTER_OPERATORS: string[] = [
   FilterOperator.Eq,
   FilterOperator.NotEq,
