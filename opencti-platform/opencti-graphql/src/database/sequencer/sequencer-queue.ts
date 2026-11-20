@@ -7,8 +7,59 @@ import { sequencerMetrics } from './sequencer-metrics';
 import { intentOwnIds } from './sequencer-intent';
 import type { SequencerIntent } from './sequencer-intent';
 
+// task 0040: FIFO lane of one source. Pops move a head index instead of Array.shift: one source held ~40k
+// intents and shift moved the whole array on each pop (20% of the busy CPU). A popped slot is cleared at once
+// (the intent is collectable), and the storage is rebuilt at its live size once the dead head is at least half of
+// it, so it follows the lane down instead of staying on the peak array (amortized O(1) per pop).
+export class SourceLane<T> {
+  static readonly COMPACT_MIN = 1024;
+
+  private items: Array<T | undefined> = [];
+
+  private head = 0;
+
+  get length() {
+    return this.items.length - this.head;
+  }
+
+  // storage slots held, dead head included
+  capacity() {
+    return this.items.length;
+  }
+
+  push(item: T) {
+    this.items.push(item);
+  }
+
+  shift(): T | undefined {
+    if (this.head >= this.items.length) return undefined;
+    // compact before taking, so a put-back right after a shift always finds a free slot before the head
+    if (this.head >= SourceLane.COMPACT_MIN && this.head * 2 >= this.items.length) {
+      this.items = this.items.slice(this.head);
+      this.head = 0;
+    }
+    const item = this.items[this.head] as T;
+    this.items[this.head] = undefined;
+    this.head += 1;
+    if (this.head === this.items.length) {
+      this.items = [];
+      this.head = 0;
+    }
+    return item;
+  }
+
+  unshift(item: T) {
+    if (this.head > 0) {
+      this.head -= 1;
+      this.items[this.head] = item;
+    } else {
+      this.items.unshift(item);
+    }
+  }
+}
+
 export class SequencerQueue {
-  private bySource = new Map<string, SequencerIntent[]>();
+  private bySource = new Map<string, SourceLane<SequencerIntent>>();
 
   private ring: string[] = [];
 
@@ -54,6 +105,11 @@ export class SequencerQueue {
     return this.untagged;
   }
 
+  // task 0040 no-op tag: the release set point counts a tagged intent at taggedWeight, an untagged one at 1
+  weightedSize(taggedWeight: number) {
+    return this.untagged + (this.count - this.untagged) * taggedWeight;
+  }
+
   hasCandidate(id: string): boolean {
     return this.candidateIndex.has(id);
   }
@@ -87,7 +143,9 @@ export class SequencerQueue {
     if (queue) {
       queue.push(intent);
     } else {
-      this.bySource.set(intent.source, [intent]);
+      const lane = new SourceLane<SequencerIntent>();
+      lane.push(intent);
+      this.bySource.set(intent.source, lane);
       this.ring.push(intent.source);
     }
     this.count += 1;
@@ -203,7 +261,9 @@ export class SequencerQueue {
         if (lane) {
           lane.unshift(next);
         } else {
-          this.bySource.set(next.source, [next]);
+          const fresh = new SourceLane<SequencerIntent>();
+          fresh.push(next);
+          this.bySource.set(next.source, fresh);
           this.ring.push(next.source);
         }
         this.count += 1;

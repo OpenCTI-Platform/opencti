@@ -137,3 +137,24 @@ describe('sequencer queue untagged size: the release set point counts the writes
     expect(queue.untaggedSize()).toBe(2);
   });
 });
+
+describe('sequencer queue weighted size: tagged intents weigh in the release set point', () => {
+  const savedIntents = SEQUENCER_CONFIG.queueMaxIntents;
+  beforeAll(() => {
+    SEQUENCER_CONFIG.queueMaxIntents = 100;
+  });
+  afterAll(() => {
+    SEQUENCER_CONFIG.queueMaxIntents = savedIntents;
+  });
+
+  // with tagged intents at weight 0 the release never saw them and the queue sat at queue_max_intents (40,000)
+  it('should count each tagged intent at the given weight and each untagged one at 1', async () => {
+    const queue = new SequencerQueue();
+    for (let n = 0; n < 40; n += 1) await queue.put(tagged(intentOf(`t${n}`)));
+    await queue.put(intentOf('w1'));
+    expect(queue.weightedSize(1 / 20)).toBeCloseTo(3);
+    expect(queue.weightedSize(1)).toBe(41);
+    queue.tryPop();
+    expect(queue.weightedSize(1 / 20)).toBeCloseTo(2.95);
+  });
+});

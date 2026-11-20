@@ -253,11 +253,13 @@ export const describeIntentLocation = (ids: string[]): IntentLocation => {
 };
 // Intents waiting in the queue, and the listeners told when the loop took a batch from it (the
 // worker-less intake releases operations against the queue depth, intake/workerless)
-// task 0040 no-op tag: under noop_tag_caps the release set point counts the untagged intents only
+// task 0040 no-op tag: under noop_tag_caps the release set point counts a tagged intent at 1 / noop_tag_ceiling_ratio
+// (at weight 0 the queue filled to queue_max_intents); a full set point of tagged intents is then ratio x what it
+// is untagged, the same ratio as the cycle ceiling
 const noopTagCapsOn = () => SEQUENCER_CONFIG.noopMemo && SEQUENCER_CONFIG.noopTagCaps;
 const noopTagWeight = (intent: SequencerIntent) => capWeight(intent, noopTagCapsOn());
 const noopTagCeiling = () => (noopTagCapsOn() ? SEQUENCER_CONFIG.noopTagCeilingRatio * SEQUENCER_CONFIG.maxBatchSize : Infinity);
-export const sequencerQueueDepth = () => (noopTagCapsOn() ? queue.untaggedSize() : queue.size());
+export const sequencerQueueDepth = () => (noopTagCapsOn() ? queue.weightedSize(1 / SEQUENCER_CONFIG.noopTagCeilingRatio) : queue.size());
 const queueTakenListeners = new Set<() => void>();
 export const onSequencerQueueTaken = (listener: () => void) => {
   queueTakenListeners.add(listener);
