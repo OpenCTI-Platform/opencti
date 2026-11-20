@@ -13,6 +13,7 @@ import { getEntitySettingSchemaAttributes } from '../modules/entitySetting/entit
 import { FunctionalError, UNSUPPORTED_ERROR } from '../config/errors';
 import type { RefAttribute } from '../schema/attribute-definition';
 import { INPUT_EXTERNAL_REFS, INPUT_MARKINGS } from '../schema/general';
+import { resolveAttributeDescription } from '../schema/attribute-descriptions';
 
 export interface DefaultValue {
   id: string;
@@ -94,7 +95,7 @@ export const getSchemaAttributes = async (context: AuthContext, user: AuthUser, 
           name: attr.name,
           type: attr.type,
           label: attr.label || attr.name,
-          description: attr.description ?? null,
+          description: resolveAttributeDescription(type, attr),
           mandatory: effective ? effective.mandatory : attr.mandatoryType === 'external',
           mandatoryType: attr.mandatoryType,
           editDefault: attr.editDefault,
@@ -125,7 +126,7 @@ export const getSchemaAttributes = async (context: AuthContext, user: AuthUser, 
         name: ref.name,
         type: 'ref',
         label: ref.label || ref.name,
-        description: ref.description ?? null,
+        description: resolveAttributeDescription(type, ref),
         mandatory: isEnforcedReference || (effective ? effective.mandatory : ref.mandatoryType === 'external'),
         mandatoryType: ref.mandatoryType,
         editDefault: ref.editDefault,
