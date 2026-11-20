@@ -24,7 +24,8 @@ import Security from '../../../utils/Security';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import AskArianeButton from '../chatbox/AskArianeButton';
 import CtemCommandCenterButton from '../chatbox/CtemCommandCenterButton';
-import { notificationCenterEntry, profileEntry } from '../profile/ProfileMenu.entries';
+import { newsFeedEntry, notificationCenterEntry, profileEntry } from '../profile/ProfileMenu.entries';
+import useVisibleEntries from '../common/menus/useVisibleEntries';
 import { ariaKeyShortcuts, formatSearchShortcut, TOP_BAR_SEARCH_ID } from '../../../utils/searchShortcut';
 import useFocusSearchShortcut from './useFocusSearchShortcut';
 import { CGUStatus } from '../settings/Experience';
@@ -84,6 +85,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   } = useAuth();
   const isAllNewsFeedUnsubscribed = me.unsubscribed_news_feed_types?.includes('*') ?? false;
   const draftContext = useDraftContext();
+  const visibleIcons = useVisibleEntries([notificationCenterEntry, newsFeedEntry]);
   const searchShortcut = useFocusSearchShortcut();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
   const showAiCluster = hasKnowledgeAccess
@@ -279,8 +281,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       size="default"
                     />
                   </Security>
-                  {/* Same path and capability as the pages search entry. */}
-                  <Security needs={notificationCenterEntry.requiredCapabilities ?? []}>
+                  {/* Same entries, so same rules, as the pages, the left bar and the pages search. */}
+                  {visibleIcons.includes(notificationCenterEntry) && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <TopBarIconLink
@@ -300,26 +302,28 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       </TooltipTrigger>
                       <TooltipContent>{t_i18n('Notification Center')}</TooltipContent>
                     </Tooltip>
-                  </Security>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <TopBarIconLink
-                        aria-label={t_i18n('News Feed')}
-                        to="/dashboard/news-feed"
-                        active={location.pathname.startsWith('/dashboard/news-feed')}
-                        icon={<CampaignOutlined fontSize="medium" />}
-                        // Marks the control, never the glyph: the glyph sits in an aria-hidden
-                        // span, where the badge's description reaches nobody.
-                        badge={{
-                          content: newsFeedCount ?? 0,
-                          dot: true,
-                          invisible: !isNewNewsFeed,
-                          accessibleText: `${newsFeedCount} ${t_i18n('unread')}`,
-                        }}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>{t_i18n('News Feed')}</TooltipContent>
-                  </Tooltip>
+                  )}
+                  {visibleIcons.includes(newsFeedEntry) && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <TopBarIconLink
+                          aria-label={t_i18n('News Feed')}
+                          to={newsFeedEntry.path}
+                          active={location.pathname.startsWith(newsFeedEntry.path)}
+                          icon={<CampaignOutlined fontSize="medium" />}
+                          // Marks the control, never the glyph: the glyph sits in an aria-hidden
+                          // span, where the badge's description reaches nobody.
+                          badge={{
+                            content: newsFeedCount ?? 0,
+                            dot: true,
+                            invisible: !isNewNewsFeed,
+                            accessibleText: `${newsFeedCount} ${t_i18n('unread')}`,
+                          }}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>{t_i18n('News Feed')}</TooltipContent>
+                    </Tooltip>
+                  )}
                 </>
               </Security>
             )}
