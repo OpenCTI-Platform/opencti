@@ -2459,6 +2459,11 @@ type ConfigPresetPartialImportPreview {
   type: ConfigPresetImportType
 }
 
+input ConfigPresetPartialImportScopeInput {
+  key: String!
+  value: String!
+}
+
 input ConfigPresetSelectionInput {
   excluded_items: [ID!]
   item_modes: [ConfigPresetItemModeInput!]
@@ -9384,8 +9389,8 @@ type Mutation {
   configPresetImportSessionClear(delete_file: Boolean): Boolean!
   configPresetImportSessionSave(file_id: ID!, revision: Int!, selections: [ConfigPresetSelectionInput!]!): ConfigPresetImportSession!
   configPresetImportUpload(file: Upload!): File!
-  configPresetPartialImport(credentials: [ConfigPresetItemCredentialsInput!], file: Upload!, item_modes: [ConfigPresetItemModeInput!], items: [ID!]!, service_accounts: [ConfigPresetItemServiceAccountInput!], type: ID!): ConfigPresetPartialImportOutput!
-  configPresetPartialImportPreview(file: Upload!, type: ID!): ConfigPresetPartialImportPreview!
+  configPresetPartialImport(credentials: [ConfigPresetItemCredentialsInput!], file: Upload!, item_modes: [ConfigPresetItemModeInput!], items: [ID!]!, scope: ConfigPresetPartialImportScopeInput, service_accounts: [ConfigPresetItemServiceAccountInput!], type: ID!): ConfigPresetPartialImportOutput!
+  configPresetPartialImportPreview(file: Upload!, scope: ConfigPresetPartialImportScopeInput, type: ID!): ConfigPresetPartialImportPreview!
   connectorJWT: String!
   connectorMigrateToManaged(input: MigrateConnectorToManagedInput!): ManagedConnector!
   contactUsXtmHub(message: String!): Success!

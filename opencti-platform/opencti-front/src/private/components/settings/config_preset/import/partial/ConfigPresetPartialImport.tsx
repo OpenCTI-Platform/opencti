@@ -30,8 +30,8 @@ import { ConfigPresetPartialImportPreviewMutation, ConfigPresetPartialImportPrev
 import { ConfigPresetPartialImportMutation, ConfigPresetPartialImportMutation$data } from './__generated__/ConfigPresetPartialImportMutation.graphql';
 
 const configPresetPartialImportPreviewMutation = graphql`
-  mutation ConfigPresetPartialImportPreviewMutation($file: Upload!, $type: ID!) {
-    configPresetPartialImportPreview(file: $file, type: $type) {
+  mutation ConfigPresetPartialImportPreviewMutation($file: Upload!, $type: ID!, $scope: ConfigPresetPartialImportScopeInput) {
+    configPresetPartialImportPreview(file: $file, type: $type, scope: $scope) {
       bundle_name
       default_mode
       type {
@@ -69,8 +69,9 @@ const configPresetPartialImportMutation = graphql`
     $item_modes: [ConfigPresetItemModeInput!]
     $credentials: [ConfigPresetItemCredentialsInput!]
     $service_accounts: [ConfigPresetItemServiceAccountInput!]
+    $scope: ConfigPresetPartialImportScopeInput
   ) {
-    configPresetPartialImport(file: $file, type: $type, items: $items, item_modes: $item_modes, credentials: $credentials, service_accounts: $service_accounts) {
+    configPresetPartialImport(file: $file, type: $type, items: $items, item_modes: $item_modes, credentials: $credentials, service_accounts: $service_accounts, scope: $scope) {
       results {
         type
         key
@@ -97,6 +98,9 @@ type Output = ConfigPresetPartialImportMutation$data['configPresetPartialImport'
 interface ConfigPresetPartialImportProps {
   // The key of the configuration preset type to take from the bundle (branding for the themes...)
   type: string;
+  // Only the items of the type whose configuration has this value for this key are offered and imported (the custom views of an entity type):
+  // the other ones of the bundle are neither shown nor imported
+  scope?: { key: string; value: string };
   // What the dialog calls the items of the type, already translated (the themes...)
   itemsLabel: string;
   // After a real import, so that the screen reads its items again
@@ -113,7 +117,7 @@ interface ConfigPresetPartialImportProps {
 // The partial import of one type from a full configuration bundle, to put in a dialog: the bundle is picked, the items of the type
 // are listed (every one selected), then the selected ones are imported. An item that already exists is added as a copy by default.
 // Generic: any screen can offer it for its own type, the backend imports any type that has an importer.
-const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProps> = ({ type, itemsLabel, onImported, onBusyChange, onBack, onClose }) => {
+const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProps> = ({ type, scope, itemsLabel, onImported, onBusyChange, onBack, onClose }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [file, setFile] = useState<File | null>(null);
@@ -158,7 +162,7 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
   // The preview of the file, every item selected
   const loadPreview = (value: File) => {
     commitPreview({
-      variables: { file: value, type },
+      variables: { file: value, type, scope },
       onCompleted: (data) => {
         const result = data.configPresetPartialImportPreview;
         setPreview(result);
@@ -191,6 +195,7 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
       variables: {
         file,
         type,
+        scope,
         items: importedItems.map(({ key }) => key),
         item_modes: defaultMode ? partialImportItemModes(importedItems, modes, defaultMode) : [],
         credentials: importedItems
