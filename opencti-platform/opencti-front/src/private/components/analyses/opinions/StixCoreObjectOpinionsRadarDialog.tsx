@@ -207,19 +207,19 @@ const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
                           overflow: 'hidden',
                         },
                         '& .MuiSlider-thumb[style*="left: 0%"] .MuiSlider-valueLabelOpen':
-                            {
-                              left: -5,
-                              '&:before': {
-                                left: '22%',
-                              },
+                          {
+                            left: -5,
+                            '&:before': {
+                              left: '22%',
                             },
+                          },
                         '& .MuiSlider-thumb[style*="left: 100%"] .MuiSlider-valueLabelOpen':
-                            {
-                              right: -5,
-                              '&:before': {
-                                left: '88%',
-                              },
+                          {
+                            right: -5,
+                            '&:before': {
+                              left: '88%',
                             },
+                          },
                       }}
                       style={{ marginTop: 30 }}
                       value={opinionOptions.find((o) => o.label === values.opinion)?.value}

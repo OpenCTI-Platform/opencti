@@ -80,7 +80,7 @@ const EventsLines: FunctionComponent<EventsLinesProps> = ({
   dataColumns,
   paginationOptions,
 }) => {
-  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment <
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
     EventsLinesPaginationQuery,
     EventsLines_data$key
   >({

@@ -1,10 +1,11 @@
 import { environment, getStoppingState, logApp, setStoppingState } from './config/conf';
-import platformInit, { checkFeatureFlags, checkGraphqlSecurity, checkTlsVerification } from './initialization';
+import platformInit, { checkFeatureFlags, checkGraphqlSecurity, checkHttpSecurity, checkTlsVerification } from './initialization';
 import cacheManager from './manager/cacheManager';
 import { shutdownRedisClients } from './database/redis';
 import { shutdownModules, startModules } from './managers';
 import { initLockFork } from './lock/master-lock';
 import { checkSystemDependencies } from './boot-utils';
+import { checkDefaultCredentials } from './config/default-credentials';
 import { startLivenessServer, stopLivenessServer } from './http/httpLiveness';
 import { startEngineHealthMonitor, stopEngineHealthMonitor } from './database/engine-monitoring';
 import { startPlatformHealthMonitor, stopPlatformHealthMonitor } from './telemetry/platformHealthMetrics';
@@ -38,6 +39,13 @@ const doPlatformStart = async () => {
     checkFeatureFlags();
     checkTlsVerification();
     checkGraphqlSecurity();
+    checkHttpSecurity();
+    try {
+      checkDefaultCredentials();
+    } catch (credentialsError) {
+      logApp.error('[OPENCTI] Default credentials check failed', { cause: credentialsError });
+      throw credentialsError;
+    }
     // Check all dependencies access
     try {
       await checkSystemDependencies();

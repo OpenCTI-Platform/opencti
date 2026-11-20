@@ -12,13 +12,13 @@ OpenCTI is currently using [REDIS Stream](https://redis.io/topics/streams-intro)
 
 ### SSE protocol
 
-In order to provide a really easy consuming protocol we decide to provide a SSE ([https://fr.wikipedia.org/wiki/Server-sent_events](https://fr.wikipedia.org/wiki/Server-sent_events)) HTTP URL linked to the standard login system of OpenCTI. Any user with the correct access rights can open and access http://opencti_instance/stream, and open an SSE connection to start receiving live events. You can of course consume directly the stream in Redis, but you will have to manage access and rights directly.
+In order to provide a really easy consuming protocol we decide to provide an [SSE (Server-Sent Events)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) HTTP URL linked to the standard login system of OpenCTI. Only users with the **Bypass all capabilities** capability can open http://opencti_instance/stream, the raw stream of the platform, and start receiving live events over an SSE connection. Other users consume [live streams](#live-stream) at `http://opencti_instance/stream/{STREAM_ID}`, according to their access rights. You can of course consume directly the stream in Redis, but you will have to manage access and rights directly.
 
 ## Events format
 
 ```
 id: {Event stream id} -> Like 1620249512318-0
-event: {Event type} -> create / update / delete
+event: {Event type} -> create / update / merge / delete
 data: { -> The complete event data
     version -> The version number of the event
     type -> The inner type of the event
@@ -30,7 +30,24 @@ data: { -> The complete event data
 }
 ```
 
-It can be used to consume the stream from this specific point.
+Data events use one of 4 event types: `create`, `update`, `merge` and `delete` (see [STIX data](#stix-data)). The stream also sends technical events, which carry no STIX data:
+
+| Event type | When |
+|------------|------|
+| `connected` | Once, when the connection opens. The data holds information about the stream and the `connectionId` of the connection. |
+| `heartbeat` | Every 5 seconds by default, while nothing is waiting to be sent, to keep the connection open. The data is the date of the last event id. |
+| `consumer_metrics` | Right after each `heartbeat`. The data holds delivery and lag statistics for the connection. |
+| `no-recover` | Live streams only, when you use `recover` on a stream configured with origin filters: the platform skips the recovery from the database and sends only the events that come after the `recover` date (see [From and Recover](#from-and-recover)). |
+| `error` | Live streams only, when the stream cannot be started, for example an invalid `recover` request or a failure during the recovery. The data holds the stream id and the error message. |
+
+The event id is the position of the event in the stream. To resume a stream after the last event you received, pass its id in the `from` query parameter, e.g. `http://opencti_instance/stream?from=1620249512318-0`. You can also pass it in the `from` or `Last-Event-ID` request header: SSE clients send `Last-Event-ID` automatically when they reconnect. The `from` query parameter takes precedence over the `from` header, which takes precedence over `Last-Event-ID`. The stream then sends the events that come after this id.
+
+The `from` value also accepts:
+
+- `0`, to start from the oldest event still in the stream,
+- an ISO 8601 date, e.g. `2021-05-05T21:18:32.318Z`, to start from this date.
+
+Without a value, or with a value that is neither an event id nor a date (a bare millisecond timestamp such as `1620249512599`, for instance), the stream sends only the new events.
 
 ## STIX data
 
@@ -89,7 +106,7 @@ In OpenCTI we propose 2 types of streams.
 
 The stream hosted in /stream url contains all the raw events of the platform, **always** filtered by the user rights (marking based). It's a technical stream a bit complex to used but very useful for internal processing or some specific connectors like backup/restore.
 
-This stream is live by default but if, you want to catchup, you can simply add the `from` parameter to your query. This parameter accept a timestamp in millisecond and also an event id, e.g. `http://localhost/stream?from=1620249512599`
+This stream is live by default but if, you want to catchup, you can simply add the `from` parameter to your query. This parameter accepts an event id or an ISO 8601 date (see [Events format](#events-format)), e.g. `http://localhost/stream?from=1620249512599-0`
 
 !!! tip "Stream size?"
 

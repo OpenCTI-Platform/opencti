@@ -4,7 +4,8 @@ import gql from 'graphql-tag';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import type { PlaybookAddLinkInput, PlaybookAddNodeInput } from '../../../src/generated/graphql';
 import { PLAYBOOK_INTERNAL_DATA_CRON, PLAYBOOK_MATCHING_COMPONENT } from '../../../src/modules/playbook/playbook-components';
-import { BAD_USER_INPUT_ERROR, UNSUPPORTED_ERROR } from '../../../src/config/errors';
+import { PLAYBOOK_SHARING_COMPONENT } from '../../../src/modules/playbook/components/sharing-component';
+import { BAD_USER_INPUT_ERROR, FUNCTIONAL_ERROR, UNSUPPORTED_ERROR } from '../../../src/config/errors';
 import { getUserIdByEmail, USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
 
 const LIST_PLAYBOOKS = gql`
@@ -100,10 +101,23 @@ const ADD_LINK_PLAYBOOK = gql`
     }
 `;
 
+const RELINK_PLAYBOOK = gql`
+    mutation playbookRelink($id: ID!, $linkId: ID!, $toNodeId: ID!, $fromNodeId: ID, $fromPortId: ID) {
+        playbookRelink(id: $id, linkId: $linkId, toNodeId: $toNodeId, fromNodeId: $fromNodeId, fromPortId: $fromPortId)
+    }
+`;
+
+const MOVE_NODE_PLAYBOOK = gql`
+    mutation playbookMoveNode($id: ID!, $nodeId: ID!, $parentNodeId: ID!, $parentPortId: ID!) {
+        playbookMoveNode(id: $id, nodeId: $nodeId, parentNodeId: $parentNodeId, parentPortId: $parentPortId)
+    }
+`;
+
 const DELETE_NODE_PLAYBOOK = gql`
-    mutation playbookDeleteNode($id: ID!, $nodeId: ID!) {
-        playbookDeleteNode(id: $id, nodeId: $nodeId) {
+    mutation playbookDeleteNode($id: ID!, $nodeId: ID!, $keepChildren: Boolean) {
+        playbookDeleteNode(id: $id, nodeId: $nodeId, keepChildren: $keepChildren) {
             id
+            playbook_definition
         }
     }
 `;
@@ -169,12 +183,15 @@ const addEntryNode = async (playbookId: string, name = 'entry-node'): Promise<st
   return result.data?.playbookAddNode;
 };
 
-const addMatchingNode = async (playbookId: string, name = 'matching-node'): Promise<string> => {
+// Every node but the entry point needs a parent: the node and its link are created together.
+const addMatchingNode = async (playbookId: string, parentNodeId: string, name = 'matching-node', parentPortId = 'out'): Promise<string> => {
   const addNodeInput: PlaybookAddNodeInput = {
     component_id: PLAYBOOK_MATCHING_COMPONENT.id,
     configuration: JSON.stringify({ filters: EMPTY_STRING_FILTERS }),
     name,
     position: { x: 5, y: 5 },
+    parentNodeId,
+    parentPortId,
   };
   const result = await queryAsAdminWithSuccess({
     query: ADD_NODE_PLAYBOOK,
@@ -201,17 +218,19 @@ const readPlaybookDefinition = async (playbookId: string) => {
   return JSON.parse(result.data?.playbook.playbook_definition);
 };
 
-const clearPlaybook = async (playbookId: string) => {
+const findLinkId = async (playbookId: string, fromNode: string, toNode: string, fromPort = 'out'): Promise<string> => {
   const playbookDef = await readPlaybookDefinition(playbookId);
-  // Delete all links first
-  for (const link of playbookDef.links) {
-    await queryAsAdminWithSuccess({
-      query: DELETE_LINK_PLAYBOOK,
-      variables: { id: playbookId, linkId: link.id },
-    });
-  }
-  // Then delete all nodes
-  for (const node of playbookDef.nodes) {
+  return playbookDef.links.find((l: { from: { id: string; port: string }; to: { id: string } }) => {
+    return l.from.id === fromNode && l.from.port === fromPort && l.to.id === toNode;
+  })?.id;
+};
+
+const clearPlaybook = async (playbookId: string) => {
+  // A link cannot be deleted when it would orphan its target: deleting the
+  // root node removes its whole subtree with its links.
+  const playbookDef = await readPlaybookDefinition(playbookId);
+  const targets = new Set(playbookDef.links.map((l: { to: { id: string } }) => l.to.id));
+  for (const node of playbookDef.nodes.filter((n: { id: string }) => !targets.has(n.id))) {
     await queryAsAdminWithSuccess({
       query: DELETE_NODE_PLAYBOOK,
       variables: { id: playbookId, nodeId: node.id },
@@ -449,6 +468,144 @@ describe('Playbook resolver standard behavior', () => {
       const node = playbookDef.nodes[0];
       expect(node.description).toBeUndefined();
     });
+
+    it('should refuse a non-entry node without a parent on an empty playbook', async () => {
+      await clearPlaybook(playbookId);
+      const addNodeInput: PlaybookAddNodeInput = {
+        component_id: PLAYBOOK_MATCHING_COMPONENT.id,
+        configuration: JSON.stringify({ filters: EMPTY_STRING_FILTERS }),
+        name: 'orphan-first-node',
+        position: { x: 5, y: 5 },
+      };
+      await queryAsAdminWithError(
+        {
+          query: ADD_NODE_PLAYBOOK,
+          variables: { id: playbookId, input: addNodeInput },
+        },
+        'Playbook node needs a parent: only the entry point has none, give parentNodeId and parentPortId',
+        FUNCTIONAL_ERROR,
+      );
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      expect(playbookDef.nodes.length).toEqual(0);
+    });
+
+    it('should refuse a non-entry node without a parent', async () => {
+      await clearPlaybook(playbookId);
+      entryNodeId = await addEntryNode(playbookId);
+      const addNodeInput: PlaybookAddNodeInput = {
+        component_id: PLAYBOOK_MATCHING_COMPONENT.id,
+        configuration: JSON.stringify({ filters: EMPTY_STRING_FILTERS }),
+        name: 'orphan-node',
+        position: { x: 5, y: 5 },
+      };
+      await queryAsAdminWithError(
+        {
+          query: ADD_NODE_PLAYBOOK,
+          variables: { id: playbookId, input: addNodeInput },
+        },
+        'Playbook node needs a parent: only the entry point has none, give parentNodeId and parentPortId',
+        FUNCTIONAL_ERROR,
+      );
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      expect(playbookDef.nodes.length).toEqual(1);
+    });
+
+    it('should add a node with its parent link in one write', async () => {
+      matchingNodeId = await addMatchingNode(playbookId, entryNodeId);
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      expect(playbookDef.nodes.length).toEqual(2);
+      expect(playbookDef.links.length).toEqual(1);
+      expect(playbookDef.links[0].from).toEqual({ id: entryNodeId, port: 'out' });
+      expect(playbookDef.links[0].to.id).toEqual(matchingNodeId);
+    });
+
+    it('should refuse a parent port that is not an out port of the parent', async () => {
+      const addNodeInput: PlaybookAddNodeInput = {
+        component_id: PLAYBOOK_MATCHING_COMPONENT.id,
+        configuration: JSON.stringify({ filters: EMPTY_STRING_FILTERS }),
+        name: 'bad-port-node',
+        position: { x: 5, y: 5 },
+        parentNodeId: entryNodeId,
+        parentPortId: 'fake-port',
+      };
+      await queryAsAdminWithError(
+        {
+          query: ADD_NODE_PLAYBOOK,
+          variables: { id: playbookId, input: addNodeInput },
+        },
+        'Playbook link must leave an out port of its source node',
+        FUNCTIONAL_ERROR,
+      );
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      expect(playbookDef.nodes.length).toEqual(2);
+    });
+
+    it('should refuse a crafted definition with two roots through the field patch', async () => {
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      const twoRoots = { nodes: playbookDef.nodes, links: [] };
+      await queryAsAdminWithError(
+        {
+          query: UPDATE_PLAYBOOK,
+          variables: { id: playbookId, input: [{ key: 'playbook_definition', value: [JSON.stringify(twoRoots)] }] },
+        },
+        'Playbook must have a single entry point: every other node needs a parent',
+        FUNCTIONAL_ERROR,
+      );
+      const storedDef = await readPlaybookDefinition(playbookId);
+      expect(storedDef.links.length).toEqual(1);
+    });
+
+    it('should refuse a node configuration that is not valid JSON through the field patch', async () => {
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      const malformed = {
+        ...playbookDef,
+        nodes: playbookDef.nodes.map((n: { id: string }) => (n.id === matchingNodeId ? { ...n, configuration: '{"filters":' } : n)),
+      };
+      await queryAsAdminWithError(
+        {
+          query: UPDATE_PLAYBOOK,
+          variables: { id: playbookId, input: [{ key: 'playbook_definition', value: [JSON.stringify(malformed)] }] },
+        },
+        'Playbook node configuration is not valid JSON',
+        FUNCTIONAL_ERROR,
+      );
+      const storedDef = await readPlaybookDefinition(playbookId);
+      const storedNode = storedDef.nodes.find((n: { id: string }) => n.id === matchingNodeId);
+      expect(() => JSON.parse(storedNode.configuration)).not.toThrow();
+    });
+
+    it('should refuse node filters that are not valid JSON through the field patch', async () => {
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      const malformed = {
+        ...playbookDef,
+        nodes: playbookDef.nodes.map((n: { id: string; configuration: string }) => (n.id === matchingNodeId
+          ? { ...n, configuration: JSON.stringify({ ...JSON.parse(n.configuration), filters: '{"mode":"and","filters":[]' }) }
+          : n)),
+      };
+      await queryAsAdminWithError(
+        {
+          query: UPDATE_PLAYBOOK,
+          variables: { id: playbookId, input: [{ key: 'playbook_definition', value: [JSON.stringify(malformed)] }] },
+        },
+        'Playbook node filters are not valid JSON',
+        FUNCTIONAL_ERROR,
+      );
+      const storedDef = await readPlaybookDefinition(playbookId);
+      const storedNode = storedDef.nodes.find((n: { id: string }) => n.id === matchingNodeId);
+      const originalNode = playbookDef.nodes.find((n: { id: string }) => n.id === matchingNodeId);
+      expect(storedNode.configuration).toEqual(originalNode.configuration);
+    });
+
+    it('should accept a valid definition through the field patch', async () => {
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      await queryAsAdminWithSuccess({
+        query: UPDATE_PLAYBOOK,
+        variables: { id: playbookId, input: [{ key: 'playbook_definition', value: [JSON.stringify(playbookDef)] }] },
+      });
+      const storedDef = await readPlaybookDefinition(playbookId);
+      expect(storedDef.nodes.length).toEqual(2);
+      expect(storedDef.links.length).toEqual(1);
+    });
   });
 
   describe('playbookReplaceNode', () => {
@@ -495,6 +652,25 @@ describe('Playbook resolver standard behavior', () => {
         'Playbook related component not found',
         UNSUPPORTED_ERROR,
       );
+    });
+
+    it('should not replace the entry point with a non-entry component', async () => {
+      const replaceNodeInput: PlaybookAddNodeInput = {
+        component_id: PLAYBOOK_MATCHING_COMPONENT.id,
+        configuration: JSON.stringify({ filters: EMPTY_STRING_FILTERS }),
+        name: 'non-entry-root',
+        position: { x: 1, y: 1 },
+      };
+      await queryAsAdminWithError(
+        {
+          query: REPLACE_NODE_PLAYBOOK,
+          variables: { id: playbookId, nodeId: entryNodeId, input: replaceNodeInput },
+        },
+        'Playbook root must be an entry point component',
+        FUNCTIONAL_ERROR,
+      );
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      expect(playbookDef.nodes[0].component_id).toEqual(PLAYBOOK_INTERNAL_DATA_CRON.id);
     });
 
     it('should not replace a node with incorrect filters', async () => {
@@ -554,8 +730,8 @@ describe('Playbook resolver standard behavior', () => {
     beforeAll(async () => {
       await clearPlaybook(playbookId);
       entryNodeId = await addEntryNode(playbookId);
-      matchingNodeId = await addMatchingNode(playbookId);
-      linkId = await addLink(playbookId, entryNodeId, matchingNodeId);
+      matchingNodeId = await addMatchingNode(playbookId, entryNodeId);
+      linkId = await findLinkId(playbookId, entryNodeId, matchingNodeId);
     });
 
     it('should persist description when inserting a node', async () => {
@@ -587,8 +763,8 @@ describe('Playbook resolver standard behavior', () => {
     it('should not set description on inserted node when omitted', async () => {
       await clearPlaybook(playbookId);
       entryNodeId = await addEntryNode(playbookId);
-      matchingNodeId = await addMatchingNode(playbookId);
-      linkId = await addLink(playbookId, entryNodeId, matchingNodeId);
+      matchingNodeId = await addMatchingNode(playbookId, entryNodeId);
+      linkId = await findLinkId(playbookId, entryNodeId, matchingNodeId);
 
       const insertNodeInput: PlaybookAddNodeInput = {
         component_id: PLAYBOOK_MATCHING_COMPONENT.id,
@@ -613,34 +789,64 @@ describe('Playbook resolver standard behavior', () => {
       const insertedNode = playbookDef.nodes.find((n: { id: string }) => n.id === insertedNodeId);
       expect(insertedNode?.description).toBeUndefined();
     });
+
+    it('should add an end-of-playbook step as a new branch and keep the steps below the link', async () => {
+      await clearPlaybook(playbookId);
+      entryNodeId = await addEntryNode(playbookId);
+      matchingNodeId = await addMatchingNode(playbookId, entryNodeId);
+      const secondMatchingNodeId = await addMatchingNode(playbookId, matchingNodeId, 'below-the-link');
+      linkId = await findLinkId(playbookId, entryNodeId, matchingNodeId);
+
+      const insertResult = await queryAsAdminWithSuccess({
+        query: INSERT_NODE_PLAYBOOK,
+        variables: {
+          id: playbookId,
+          parentNodeId: entryNodeId,
+          parentPortId: 'out',
+          childNodeId: matchingNodeId,
+          input: { component_id: 'PLAYBOOK_INGESTION_COMPONENT', configuration: '{}', name: 'end-step', position: { x: 4, y: 4 } },
+        },
+      });
+      const endNodeId = insertResult.data?.playbookInsertNode.nodeId;
+      expect(endNodeId).toBeDefined();
+
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      const nodeIds = playbookDef.nodes.map((n: { id: string }) => n.id);
+      expect(nodeIds).toEqual(expect.arrayContaining([entryNodeId, matchingNodeId, secondMatchingNodeId, endNodeId]));
+      const links = playbookDef.links as { id: string; from: { id: string; port: string }; to: { id: string } }[];
+      // The former link and the step after it are kept
+      expect(links.find((l) => l.id === linkId)).toMatchObject({ from: { id: entryNodeId, port: 'out' }, to: { id: matchingNodeId } });
+      expect(links.some((l) => l.from.id === matchingNodeId && l.to.id === secondMatchingNodeId)).toBe(true);
+      // The end step hangs on the same output as a new branch
+      const endLink = links.find((l) => l.to.id === endNodeId);
+      expect(endLink).toMatchObject({ id: insertResult.data?.playbookInsertNode.linkId, from: { id: entryNodeId, port: 'out' } });
+      expect(links.some((l) => l.from.id === endNodeId)).toBe(false);
+    });
   });
 
   describe('playbookAddLink', () => {
+    let secondMatchingNodeId = '';
+
     beforeAll(async () => {
       await clearPlaybook(playbookId);
       entryNodeId = await addEntryNode(playbookId);
-      matchingNodeId = await addMatchingNode(playbookId);
+      matchingNodeId = await addMatchingNode(playbookId, entryNodeId);
+      secondMatchingNodeId = await addMatchingNode(playbookId, matchingNodeId, 'second-matching-node');
     });
 
     it('should add a link between two nodes', async () => {
-      linkId = await addLink(playbookId, entryNodeId, matchingNodeId);
+      linkId = await addLink(playbookId, matchingNodeId, secondMatchingNodeId, 'no-match');
       expect(linkId).toBeDefined();
 
       const playbookDef = await readPlaybookDefinition(playbookId);
-      expect(playbookDef.links.length).toEqual(1);
-      const link = playbookDef.links[0];
-      expect(link.id).toEqual(linkId);
-      expect(link.from.id).toEqual(entryNodeId);
-      expect(link.from.port).toEqual('out');
-      expect(link.to.id).toEqual(matchingNodeId);
+      expect(playbookDef.links.length).toEqual(3);
+      const link = playbookDef.links.find((l: { id: string }) => l.id === linkId);
+      expect(link.from.id).toEqual(matchingNodeId);
+      expect(link.from.port).toEqual('no-match');
+      expect(link.to.id).toEqual(secondMatchingNodeId);
     });
 
     it('should not add a duplicate link', async () => {
-      // Ensure a link exists first
-      const playbookDef = await readPlaybookDefinition(playbookId);
-      if (playbookDef.links.length === 0) {
-        await addLink(playbookId, entryNodeId, matchingNodeId);
-      }
       const addLinkInput: PlaybookAddLinkInput = {
         from_node: entryNodeId,
         from_port: 'out',
@@ -717,12 +923,116 @@ describe('Playbook resolver standard behavior', () => {
     });
   });
 
+  describe('playbookRelink and playbookMoveNode (rewiring without deleting a branch)', () => {
+    // entry -> a (matching: out, no-match) ; a.out -> b ; b.out -> c
+    let rewireId = '';
+    let entry = '';
+    let a = '';
+    let b = '';
+    let c = '';
+
+    beforeAll(async () => {
+      const playbook = await createPlaybook('Playbook rewiring');
+      rewireId = playbook.id;
+      entry = await addEntryNode(rewireId);
+      a = await addMatchingNode(rewireId, entry, 'a');
+      b = await addMatchingNode(rewireId, a, 'b');
+      c = await addMatchingNode(rewireId, b, 'c');
+    });
+
+    afterAll(async () => {
+      await deletePlaybook(rewireId).catch(() => {});
+    });
+
+    it('should move a node and its branch under another out port in one write', async () => {
+      const result = await queryAsAdminWithSuccess({
+        query: MOVE_NODE_PLAYBOOK,
+        variables: { id: rewireId, nodeId: b, parentNodeId: a, parentPortId: 'no-match' },
+      });
+      const newLinkId = result.data?.playbookMoveNode;
+      const def = await readPlaybookDefinition(rewireId);
+      const into = def.links.filter((l: { to: { id: string } }) => l.to.id === b);
+      expect(into).toHaveLength(1);
+      expect(into[0]).toEqual({ id: newLinkId, from: { id: a, port: 'no-match' }, to: { id: b } });
+      // The branch below b moved with it.
+      expect(await findLinkId(rewireId, b, c)).toBeDefined();
+      expect(def.nodes).toHaveLength(4);
+    });
+
+    it('should re-point a link to another target and port in one write', async () => {
+      const linkId = await findLinkId(rewireId, b, c);
+      await queryAsAdminWithSuccess({
+        query: RELINK_PLAYBOOK,
+        variables: { id: rewireId, linkId, toNodeId: c, fromNodeId: a, fromPortId: 'out' },
+      });
+      const def = await readPlaybookDefinition(rewireId);
+      expect(def.links.find((l: { id: string }) => l.id === linkId)).toEqual({ id: linkId, from: { id: a, port: 'out' }, to: { id: c } });
+    });
+
+    it('should refuse a move that creates a cycle', async () => {
+      // c is now a child of a; moving a under c would loop.
+      await queryAsAdminWithError(
+        { query: MOVE_NODE_PLAYBOOK, variables: { id: rewireId, nodeId: a, parentNodeId: c, parentPortId: 'out' } },
+        'Playbook links cannot form a cycle',
+        FUNCTIONAL_ERROR,
+      );
+    });
+
+    it('should refuse a relink onto the source itself', async () => {
+      const linkId = await findLinkId(rewireId, a, c);
+      await queryAsAdminWithError(
+        { query: RELINK_PLAYBOOK, variables: { id: rewireId, linkId, toNodeId: a } },
+        'Playbook links cannot form a cycle',
+        FUNCTIONAL_ERROR,
+      );
+    });
+
+    it('should refuse a relink that leaves its old target without a parent', async () => {
+      // b has a single parent link (a.no-match): sending it to c orphans b.
+      const linkId = await findLinkId(rewireId, a, b, 'no-match');
+      await queryAsAdminWithError(
+        { query: RELINK_PLAYBOOK, variables: { id: rewireId, linkId, toNodeId: c } },
+        'Playbook must have a single entry point: every other node needs a parent',
+        FUNCTIONAL_ERROR,
+      );
+    });
+
+    it('should refuse an in port or an unknown port as the new source', async () => {
+      const linkId = await findLinkId(rewireId, a, c);
+      await queryAsAdminWithError(
+        { query: RELINK_PLAYBOOK, variables: { id: rewireId, linkId, toNodeId: c, fromNodeId: b, fromPortId: 'unknown' } },
+        'Playbook link must leave an out port of its source node',
+        FUNCTIONAL_ERROR,
+      );
+    });
+
+    it('should refuse to give the entry point a parent', async () => {
+      await queryAsAdminWithError(
+        { query: MOVE_NODE_PLAYBOOK, variables: { id: rewireId, nodeId: entry, parentNodeId: a, parentPortId: 'out' } },
+        'Playbook entry point cannot have a parent',
+        FUNCTIONAL_ERROR,
+      );
+    });
+
+    it('should refuse rewiring without Manage Playbooks capability', async () => {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+        query: MOVE_NODE_PLAYBOOK,
+        variables: { id: rewireId, nodeId: b, parentNodeId: a, parentPortId: 'out' },
+      });
+    });
+  });
+
   describe('playbookDeleteLink', () => {
+    let secondMatchingNodeId = '';
+    let extraLinkId = '';
+
     beforeAll(async () => {
       await clearPlaybook(playbookId);
       entryNodeId = await addEntryNode(playbookId);
-      matchingNodeId = await addMatchingNode(playbookId);
-      linkId = await addLink(playbookId, entryNodeId, matchingNodeId);
+      matchingNodeId = await addMatchingNode(playbookId, entryNodeId);
+      linkId = await findLinkId(playbookId, entryNodeId, matchingNodeId);
+      secondMatchingNodeId = await addMatchingNode(playbookId, matchingNodeId, 'second-matching-node');
+      extraLinkId = await addLink(playbookId, matchingNodeId, secondMatchingNodeId, 'no-match');
     });
 
     it('should not delete a link if no Manage Playbooks capability', async () => {
@@ -732,16 +1042,29 @@ describe('Playbook resolver standard behavior', () => {
       });
     });
 
-    it('should delete an existing link and keep nodes', async () => {
+    it('should delete a link whose target keeps another parent and keep nodes', async () => {
       const deleteResult = await queryAsAdminWithSuccess({
         query: DELETE_LINK_PLAYBOOK,
-        variables: { id: playbookId, linkId },
+        variables: { id: playbookId, linkId: extraLinkId },
       });
       expect(deleteResult.data?.playbookDeleteLink.id).toBeDefined();
 
       const playbookDef = await readPlaybookDefinition(playbookId);
-      expect(playbookDef.links.length).toEqual(0);
-      expect(playbookDef.nodes.length).toEqual(2);
+      expect(playbookDef.links.length).toEqual(2);
+      expect(playbookDef.nodes.length).toEqual(3);
+    });
+
+    it('should refuse to delete the last link reaching a node', async () => {
+      await queryAsAdminWithError(
+        {
+          query: DELETE_LINK_PLAYBOOK,
+          variables: { id: playbookId, linkId },
+        },
+        'Playbook link cannot be deleted: its target node would be left without a parent, delete the node instead',
+        FUNCTIONAL_ERROR,
+      );
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      expect(playbookDef.links.length).toEqual(2);
     });
 
     it('should handle deleting a non-existent link gracefully', async () => {
@@ -757,8 +1080,7 @@ describe('Playbook resolver standard behavior', () => {
     beforeAll(async () => {
       await clearPlaybook(playbookId);
       entryNodeId = await addEntryNode(playbookId);
-      matchingNodeId = await addMatchingNode(playbookId);
-      await addLink(playbookId, entryNodeId, matchingNodeId);
+      matchingNodeId = await addMatchingNode(playbookId, entryNodeId);
     });
 
     it('should not delete a node if no Manage Playbooks capability', async () => {
@@ -791,6 +1113,165 @@ describe('Playbook resolver standard behavior', () => {
       const playbookDef = await readPlaybookDefinition(playbookId);
       expect(playbookDef.nodes.length).toEqual(0);
       expect(playbookDef.links.length).toEqual(0);
+    });
+  });
+
+  describe('required configuration fields (#8353)', () => {
+    const created: string[] = [];
+    afterAll(async () => {
+      for (const id of created) {
+        await deletePlaybook(id).catch(() => {});
+      }
+    });
+    const sharingInput = (parentNodeId: string, organizations: string[]): PlaybookAddNodeInput => ({
+      component_id: PLAYBOOK_SHARING_COMPONENT.id,
+      configuration: JSON.stringify({ organizations, applyToElements: 'only-main' }),
+      name: 'share',
+      position: { x: 5, y: 5 },
+      parentNodeId,
+      parentPortId: 'out',
+    });
+
+    it('should refuse to add a step whose required choice is empty', async () => {
+      const playbook = await createPlaybook('Required fields: add');
+      created.push(playbook.id);
+      const entry = await addEntryNode(playbook.id);
+      await queryAsAdminWithError(
+        { query: ADD_NODE_PLAYBOOK, variables: { id: playbook.id, input: sharingInput(entry, []) } },
+        'Playbook node configuration misses required fields',
+        FUNCTIONAL_ERROR,
+      );
+      const def = await readPlaybookDefinition(playbook.id);
+      expect(def.nodes.length).toEqual(1);
+    });
+
+    it('should add the step once the required choice is set, and refuse to update it back to empty', async () => {
+      const playbook = await createPlaybook('Required fields: replace');
+      created.push(playbook.id);
+      const entry = await addEntryNode(playbook.id);
+      const result = await queryAsAdminWithSuccess({
+        query: ADD_NODE_PLAYBOOK,
+        variables: { id: playbook.id, input: sharingInput(entry, ['organization-id']) },
+      });
+      const nodeId = result.data?.playbookAddNode;
+      expect(nodeId).toBeDefined();
+      const replaceInput: PlaybookAddNodeInput = {
+        component_id: PLAYBOOK_SHARING_COMPONENT.id,
+        configuration: JSON.stringify({ organizations: [], applyToElements: 'only-main' }),
+        name: 'share',
+        position: { x: 5, y: 5 },
+      };
+      await queryAsAdminWithError(
+        { query: REPLACE_NODE_PLAYBOOK, variables: { id: playbook.id, nodeId, input: replaceInput } },
+        'Playbook node configuration misses required fields',
+        FUNCTIONAL_ERROR,
+      );
+    });
+
+    it('should name an organization that no longer exists as deleted when the playbook is read (#15762)', async () => {
+      const playbook = await createPlaybook('Deleted organization on read');
+      created.push(playbook.id);
+      const entry = await addEntryNode(playbook.id);
+      await queryAsAdminWithSuccess({
+        query: ADD_NODE_PLAYBOOK,
+        variables: { id: playbook.id, input: { ...sharingInput(entry, []), configuration: JSON.stringify({ organizations: [{ label: 'Imported org', value: 'organization-missing' }], applyToElements: 'only-main' }) } },
+      });
+      const def = await readPlaybookDefinition(playbook.id);
+      const share = def.nodes.find((n: { component_id: string }) => n.component_id === PLAYBOOK_SHARING_COMPONENT.id);
+      expect(JSON.parse(share.configuration).organizations).toEqual([{ label: 'Imported org', value: 'organization-missing', deleted: true }]);
+    });
+  });
+
+  describe('playbookDeleteNode with keepChildren (single-step delete)', () => {
+    type TestLink = { from: { id: string; port: string }; to: { id: string } };
+    const created: string[] = [];
+    const newPlaybook = async (name: string) => {
+      const playbook = await createPlaybook(name);
+      created.push(playbook.id);
+      return playbook.id as string;
+    };
+    const deleteKeepingChildren = (id: string, nodeId: string) => queryAsAdminWithSuccess({
+      query: DELETE_NODE_PLAYBOOK,
+      variables: { id, nodeId, keepChildren: true },
+    });
+    const edges = (links: TestLink[]) => links.map((l) => `${l.from.id}:${l.from.port}->${l.to.id}`).sort();
+
+    afterAll(async () => {
+      for (const id of created) {
+        await deletePlaybook(id).catch(() => {});
+      }
+    });
+
+    it('should remove a middle step and link its child to its parent', async () => {
+      const id = await newPlaybook('Single-step delete: middle');
+      const entry = await addEntryNode(id);
+      const a = await addMatchingNode(id, entry, 'a');
+      const b = await addMatchingNode(id, a, 'b');
+      const result = await deleteKeepingChildren(id, a);
+      expect(result.data?.playbookDeleteNode.id).toEqual(id);
+      const def = await readPlaybookDefinition(id);
+      expect(def.nodes.map((n: { id: string }) => n.id).sort()).toEqual([entry, b].sort());
+      expect(edges(def.links)).toEqual([`${entry}:out->${b}`]);
+    });
+
+    it('should link the children to the same output of the parent (no-match branch)', async () => {
+      const id = await newPlaybook('Single-step delete: branch output');
+      const entry = await addEntryNode(id);
+      const a = await addMatchingNode(id, entry, 'a');
+      const b = await addMatchingNode(id, a, 'b', 'no-match');
+      const c = await addMatchingNode(id, b, 'c');
+      const d = await addMatchingNode(id, b, 'd', 'no-match');
+      await deleteKeepingChildren(id, b);
+      const def = await readPlaybookDefinition(id);
+      expect(def.nodes.length).toEqual(4);
+      expect(edges(def.links)).toEqual([`${entry}:out->${a}`, `${a}:no-match->${c}`, `${a}:no-match->${d}`].sort());
+    });
+
+    it('should link the children to every parent of a step with two parents', async () => {
+      const id = await newPlaybook('Single-step delete: two parents');
+      const entry = await addEntryNode(id);
+      const a = await addMatchingNode(id, entry, 'a');
+      const b = await addMatchingNode(id, a, 'b');
+      await addLink(id, a, b, 'no-match');
+      const c = await addMatchingNode(id, b, 'c');
+      await deleteKeepingChildren(id, b);
+      const def = await readPlaybookDefinition(id);
+      expect(edges(def.links)).toEqual([`${entry}:out->${a}`, `${a}:out->${c}`, `${a}:no-match->${c}`].sort());
+    });
+
+    it('should remove a leaf step and its incoming link only', async () => {
+      const id = await newPlaybook('Single-step delete: leaf');
+      const entry = await addEntryNode(id);
+      const a = await addMatchingNode(id, entry, 'a');
+      await deleteKeepingChildren(id, a);
+      const def = await readPlaybookDefinition(id);
+      expect(def.nodes.map((n: { id: string }) => n.id)).toEqual([entry]);
+      expect(def.links.length).toEqual(0);
+    });
+
+    it('should refuse the entry point when it has children', async () => {
+      const id = await newPlaybook('Single-step delete: entry point');
+      const entry = await addEntryNode(id);
+      await addMatchingNode(id, entry, 'a');
+      await queryAsAdminWithError(
+        { query: DELETE_NODE_PLAYBOOK, variables: { id, nodeId: entry, keepChildren: true } },
+        'Playbook entry point cannot be deleted alone: its steps would have no parent',
+        FUNCTIONAL_ERROR,
+      );
+      const def = await readPlaybookDefinition(id);
+      expect(def.nodes.length).toEqual(2);
+      expect(def.links.length).toEqual(1);
+    });
+
+    it('should keep the branch delete unchanged without the argument', async () => {
+      const id = await newPlaybook('Single-step delete: default');
+      const entry = await addEntryNode(id);
+      const a = await addMatchingNode(id, entry, 'a');
+      await addMatchingNode(id, a, 'b');
+      await queryAsAdminWithSuccess({ query: DELETE_NODE_PLAYBOOK, variables: { id, nodeId: a } });
+      const def = await readPlaybookDefinition(id);
+      expect(def.nodes.map((n: { id: string }) => n.id)).toEqual([entry]);
+      expect(def.links.length).toEqual(0);
     });
   });
 

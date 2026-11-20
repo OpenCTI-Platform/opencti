@@ -1,6 +1,8 @@
 import React, { FunctionComponent, useEffect } from 'react';
 import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import { interval } from 'rxjs';
+import { useLocation } from 'react-router';
+import { getContentTabFilePath } from '../stix_core_objects/StixCoreObjectContentFileUtils';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import Tooltip from '@mui/material/Tooltip';
@@ -25,6 +27,7 @@ interface FileExportViewerComponentProps {
 const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProps> = ({ entity, relay, handleOpenExport, isExportPossible }) => {
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
+  const { pathname } = useLocation();
   let titleToUse = t_i18n('Generate an export');
   if (draftContext) {
     titleToUse = t_i18n('Not available in draft');
@@ -74,6 +77,8 @@ const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProp
                   file={file?.node}
                   dense={true}
                   disableImport={true}
+                  openInNewTabAction
+                  contentTabLink={getContentTabFilePath(pathname, entity.entity_type, file.node.id, file.node.metaData?.mimetype, 'export')}
                 />
               )
             ))}
@@ -110,11 +115,15 @@ const FileExportViewer = createRefetchContainer(
     entity: graphql`
       fragment FileExportViewer_entity on StixCoreObject {
         id
+        entity_type
         exportFiles(first: 500) @connection(key: "Pagination_exportFiles") {
           edges {
             node {
               id
               ...FileLine_file
+              metaData {
+                mimetype
+              }
             }
           }
         }

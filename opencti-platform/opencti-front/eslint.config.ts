@@ -136,6 +136,8 @@ export default defineConfig([
       '@stylistic/jsx-curly-newline': 'off',
       '@stylistic/jsx-one-expression-per-line': 'off',
       '@stylistic/multiline-ternary': 'off',
+      // Added to the recommended config in @stylistic v6; it reports about 900 errors in this workspace.
+      '@stylistic/list-style': 'off',
       '@stylistic/brace-style': ['error', '1tbs'],
       '@stylistic/arrow-parens': ['error', 'always'],
       '@stylistic/space-before-blocks': 'error',
@@ -225,6 +227,27 @@ export default defineConfig([
           message: 'Use the wrappers of components/common/input/picker, which own the section selection (#19228).',
         }],
       }],
+    },
+  },
+
+  // `*.entries.ts(x)` files are imported eagerly by the pages search (import.meta.glob), so any
+  // component or module-heavy import in them drags that code into the main bundle. Whitelist only.
+  {
+    files: ['**/*.entries.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              // Regex, not gitignore globs: a glob cannot re-include a path whose parent dir is matched.
+              regex: '^(?!(react|mdi-material-ui|@mui/icons-material|(\\.{1,2}/)+utils/hooks/capabilities)$)',
+              allowTypeImports: true,
+              message: '*.entries.ts(x) are eagerly loaded by the pages search: only type imports, capability constants (utils/hooks/capabilities) and icons are allowed.',
+            },
+          ],
+        },
+      ],
     },
   },
 

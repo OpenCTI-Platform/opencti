@@ -133,7 +133,7 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
         id: securityPlatform.id,
         input: inputValues,
         commitMessage:
-         commitMessage && commitMessage.length > 0 ? commitMessage : null,
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {

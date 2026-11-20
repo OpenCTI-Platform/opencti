@@ -106,3 +106,53 @@ export const userMergeRestrictedMembersScript = (sourceId: string, targetId: str
   lang: 'painless',
   params: { source: sourceId, target: targetId, order: ACCESS_RIGHT_ORDER },
 });
+
+const isMember = (value: unknown): value is UserMergeRestrictedMember => {
+  return typeof value === 'object' && value !== null && !Array.isArray(value) && typeof (value as { id?: unknown }).id === 'string';
+};
+
+/**
+ * The authorized members an entity setting applies by default, settled the way the live
+ * `restricted_members` are.
+ *
+ * `attributes_configuration` holds them as serialized `{ id, access_right }` entries inside the
+ * `default_values` of the `restricted_members` attribute. Rewriting the id alone would leave the
+ * target listed twice when the default named both accounts, and `sanitizeAuthorizedMembers` keeps
+ * whichever entry comes first rather than the strongest — so the entries are collapsed here, before
+ * the generic rewrite, with the rule the live field follows.
+ *
+ * Anything this does not recognise is returned as it came, for the generic rewrite to handle.
+ */
+export const userMergeSettleRestrictedMembersDefaults = (raw: unknown, sourceId: string, targetId: string): unknown => {
+  if (typeof raw !== 'string' || !raw.includes(sourceId)) {
+    return raw;
+  }
+  let configuration: unknown;
+  try {
+    configuration = JSON.parse(raw);
+  } catch {
+    return raw;
+  }
+  if (!Array.isArray(configuration)) {
+    return raw;
+  }
+  let changed = false;
+  const settled = configuration.map((attribute) => {
+    if (attribute?.name !== FIELD || !Array.isArray(attribute.default_values)) {
+      return attribute;
+    }
+    let members: unknown[];
+    try {
+      members = attribute.default_values.map((value: unknown) => (typeof value === 'string' ? JSON.parse(value) : value));
+    } catch {
+      return attribute;
+    }
+    if (!members.every(isMember) || !members.some((member) => member.id === sourceId)) {
+      return attribute;
+    }
+    changed = true;
+    const outcome = userMergeRestrictedMembersOutcome(members, sourceId, targetId);
+    return { ...attribute, default_values: outcome.map((member) => JSON.stringify(member)) };
+  });
+  return changed ? JSON.stringify(settled) : raw;
+};

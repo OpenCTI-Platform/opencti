@@ -51,6 +51,7 @@ const ObjectOrganizationField = (props) => {
     filters = null,
     extraOptions = NO_EXTRA_OPTIONS,
     getOptionLabel,
+    required = false,
   } = props;
 
   const defaultStateOrganizations = (defaultOrganizations ?? []).map((n) => ({
@@ -85,6 +86,7 @@ const ObjectOrganizationField = (props) => {
         disabled={disabled}
         style={style}
         label={label ? t_i18n(label) : ''}
+        required={required}
         helperText={helpertext}
         noOptionsText={t_i18n('No available options')}
         options={options}
@@ -115,6 +117,7 @@ const ObjectOrganizationField = (props) => {
       style={style}
       disabled={disabled}
       label={t_i18n(label) ?? ''}
+      required={required}
       helperText={helpertext}
       noOptionsText={t_i18n('No available options')}
       options={options}

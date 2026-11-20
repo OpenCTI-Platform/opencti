@@ -3,10 +3,10 @@ import type { FilterGroup } from '../../generated/graphql';
 export type DashboardVariableTypeName = 'vocabulary' | 'killChainPhase' | 'entity' | 'entityType' | 'label' | 'user'
   | 'marking' | 'status' | 'group' | 'boolean' | 'numeric' | 'text' | 'date';
 
-export type StoreDashboardVariableRestriction
-  = | { mode: 'none' }
-    | { mode: 'selection'; values: string[] }
-    | { mode: 'filters'; filters: FilterGroup };
+export type StoreDashboardVariableRestriction =
+  | { mode: 'none' }
+  | { mode: 'selection'; values: string[] }
+  | { mode: 'filters'; filters: FilterGroup };
 
 interface StoreDashboardVariableBase {
   id: string;
