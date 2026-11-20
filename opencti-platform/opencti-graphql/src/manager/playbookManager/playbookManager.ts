@@ -21,12 +21,12 @@ import { type StreamProcessor } from '../../database/stream/stream-utils';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
 import { lockResources } from '../../lock/master-lock';
 import conf, { booleanConf, logApp } from '../../config/conf';
-import { FunctionalError, TYPE_LOCK_ERROR } from '../../config/errors';
+import { TYPE_LOCK_ERROR } from '../../config/errors';
 import { AUTOMATION_MANAGER_USER, executionContext, RETENTION_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import type { SseEvent, StreamDataEvent } from '../../types/event';
 import type { StixBundle, StixObject } from '../../types/stix-2-1-common';
 import { streamEventId, utcDate } from '../../utils/format';
-import { findById, findPlaybooksForEntity } from '../../modules/playbook/playbook-domain';
+import { buildPlaybookNotRunnableError, findById, findPlaybooksForEntity } from '../../modules/playbook/playbook-domain';
 import { type CronConfiguration, PLAYBOOK_INTERNAL_DATA_CRON, type StreamConfiguration } from '../../modules/playbook/playbook-components';
 import { PLAYBOOK_COMPONENTS } from '../../modules/playbook/playbook-components';
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../../modules/playbook/playbook-types';
@@ -176,7 +176,8 @@ export const executePlaybookOnEntity = async (context: AuthContext, id: string, 
   if (filteredPlaybooks.length > 0) {
     playbook = filteredPlaybooks.at(0);
   } else {
-    throw FunctionalError('Playbook does not exist for this entity', { id });
+    // Name the actual reason (unknown playbook, entry component, manual enrollment disabled, entry filter mismatch)
+    throw await buildPlaybookNotRunnableError(context, RETENTION_MANAGER_USER, id, entityId);
   }
   // Execute only if definition is available
   if (playbook && playbook.playbook_definition) {
