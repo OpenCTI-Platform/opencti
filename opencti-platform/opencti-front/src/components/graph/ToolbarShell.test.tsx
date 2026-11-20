@@ -50,17 +50,15 @@ const renderShell = (actions: ToolbarAction<Group>[], layout: ToolbarSlot<Group>
 
 describe('ToolbarShell', () => {
   beforeEach(() => {
-    Object.defineProperty(HTMLElement.prototype, 'offsetWidth', {
-      configurable: true,
-      get() {
-        const id = (this as HTMLElement).getAttribute('data-toolbar-action');
-        return id ? (widths[id] ?? 0) : 0;
-      },
+    // A spy, restored after each test: deleting the getter would leave the next test files of the worker without it.
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function offsetWidth(this: HTMLElement) {
+      const id = this.getAttribute('data-toolbar-action');
+      return id ? (widths[id] ?? 0) : 0;
     });
   });
 
   afterEach(() => {
-    delete (HTMLElement.prototype as { offsetWidth?: number }).offsetWidth;
+    vi.restoreAllMocks();
     row.width = 2000;
     widths.posture = 300;
   });
