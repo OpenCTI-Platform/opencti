@@ -9,7 +9,7 @@ const { commit, fetchStatuses, notifications, permissions } = vi.hoisted(() => (
   commit: vi.fn(),
   fetchStatuses: vi.fn(),
   notifications: { notifySuccess: vi.fn(), notifyError: vi.fn(), notifyRelayError: vi.fn() },
-  permissions: { bypass: true, enabled: true },
+  permissions: { bypass: true },
 }));
 
 vi.mock('./WorkflowStatus.graphql', () => ({
@@ -20,7 +20,6 @@ vi.mock('react-relay', async (importOriginal) => ({
   useFragment: (_fragment: unknown, data: unknown) => data,
   useMutation: () => [commit, false],
 }));
-vi.mock('../../../../utils/hooks/useHelper', () => ({ default: () => ({ isFeatureEnable: () => permissions.enabled }) }));
 vi.mock('../../../../utils/hooks/useGranted', () => ({ isBypassUser: () => permissions.bypass }));
 vi.mock('../../../../relay/environment', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../relay/environment')>(),
@@ -40,7 +39,7 @@ const entity = (pendingStatus: string | null = null, source = 0) => ({
 }) as unknown as WorkflowStatusStixDomainObject_data$key;
 
 const openDialog = async (onCompleted?: () => void) => {
-  const rendered = testRender(<WorkflowBypassStatus data={entity()} entityType="Incident" onCompleted={onCompleted} />);
+  const rendered = testRender(<WorkflowBypassStatus data={entity()} onCompleted={onCompleted} />);
   return rendered;
 };
 
@@ -52,7 +51,6 @@ const selectStatus = async (user: ReturnType<typeof testRender>['user'], name = 
 beforeEach(() => {
   vi.clearAllMocks();
   permissions.bypass = true;
-  permissions.enabled = true;
   fetchStatuses.mockResolvedValue({ workflowBypassStatuses: statuses });
 });
 
@@ -95,7 +93,7 @@ describe('WorkflowBypassStatus', () => {
   it('dismisses stale confirmation when the source status changes', async () => {
     const { user, rerender } = await openDialog();
     await selectStatus(user);
-    rerender(<WorkflowBypassStatus data={entity(null, 1)} entityType="Incident" />);
+    rerender(<WorkflowBypassStatus data={entity(null, 1)} />);
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(screen.getByRole('combobox')).toHaveTextContent('Status 1');
     expect(commit).not.toHaveBeenCalled();
@@ -131,9 +129,9 @@ describe('WorkflowBypassStatus', () => {
     await user.click(screen.getByRole('button', { name: 'Apply actions' }));
     act(() => commit.mock.calls[0][0].onCompleted({ setWorkflowStatus: { success: true, executionStatus } }, null));
     expect(onCompleted).toHaveBeenCalledOnce();
-    rerender(<WorkflowBypassStatus data={entity()} entityType="Incident" onCompleted={onCompleted} refreshing />);
+    rerender(<WorkflowBypassStatus data={entity()} onCompleted={onCompleted} refreshing />);
     expect(screen.getByRole('combobox')).toBeDisabled();
-    rerender(<WorkflowBypassStatus data={entity()} entityType="Incident" onCompleted={onCompleted} refreshing={false} />);
+    rerender(<WorkflowBypassStatus data={entity()} onCompleted={onCompleted} refreshing={false} />);
     expect(screen.getByRole('combobox')).toBeEnabled();
   });
 
@@ -146,15 +144,15 @@ describe('WorkflowBypassStatus', () => {
     expect(onCompleted).not.toHaveBeenCalled();
   });
 
-  it.each(['bypass', 'enabled'] as const)('hides the control and never queries when %s is false', (permission) => {
-    permissions[permission] = false;
-    testRender(<WorkflowBypassStatus data={entity()} entityType="Incident" />);
+  it('hides the control and never queries when the user cannot bypass', () => {
+    permissions.bypass = false;
+    testRender(<WorkflowBypassStatus data={entity()} />);
     expect(screen.queryByRole('combobox')).toBeNull();
     expect(fetchStatuses).not.toHaveBeenCalled();
   });
 
   it.each(['pending', 'error'])('disables bypass while the instance is %s', (pendingStatus) => {
-    testRender(<WorkflowBypassStatus data={entity(pendingStatus)} entityType="Incident" />);
+    testRender(<WorkflowBypassStatus data={entity(pendingStatus)} />);
     expect(screen.getByRole('combobox')).toBeDisabled();
     expect(fetchStatuses).not.toHaveBeenCalled();
   });
@@ -164,7 +162,7 @@ describe('WorkflowBypassStatus', () => {
     fetchStatuses.mockReturnValue(new Promise((done) => {
       resolve = done;
     }));
-    const { user } = testRender(<WorkflowBypassStatus data={entity()} entityType="Incident" />);
+    const { user } = testRender(<WorkflowBypassStatus data={entity()} />);
     await user.click(screen.getByRole('combobox'));
     expect(screen.getByRole('status')).toHaveTextContent('Loading');
     expect(screen.queryByRole('dialog')).toBeNull();
@@ -175,7 +173,7 @@ describe('WorkflowBypassStatus', () => {
 
   it('notifies query failures and supports retry', async () => {
     fetchStatuses.mockRejectedValueOnce(new Error('Unavailable'));
-    const { user } = testRender(<WorkflowBypassStatus data={entity()} entityType="Incident" />);
+    const { user } = testRender(<WorkflowBypassStatus data={entity()} />);
     await user.click(screen.getByRole('combobox'));
     await user.click(await screen.findByRole('button', { name: 'Retry' }));
     expect(await screen.findByRole('option', { name: /Status 104$/ })).toBeVisible();
@@ -185,7 +183,7 @@ describe('WorkflowBypassStatus', () => {
 
   it('does not allow submission with no mapped target', async () => {
     fetchStatuses.mockResolvedValue({ workflowBypassStatuses: [] });
-    const { user } = testRender(<WorkflowBypassStatus data={entity()} entityType="Incident" />);
+    const { user } = testRender(<WorkflowBypassStatus data={entity()} />);
     await user.click(screen.getByRole('combobox'));
     expect(await screen.findByText('No available status')).toBeVisible();
     expect(screen.queryByRole('option')).toBeNull();
@@ -235,8 +233,8 @@ describe('WorkflowBypassStatus', () => {
     expect(notifications.notifySuccess).toHaveBeenCalledWith('Transition started in background');
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(screen.getByRole('combobox')).toBeDisabled();
-    rerender(<WorkflowBypassStatus data={entity('pending')} entityType="Incident" />);
-    rerender(<WorkflowBypassStatus data={entity()} entityType="Incident" />);
+    rerender(<WorkflowBypassStatus data={entity('pending')} />);
+    rerender(<WorkflowBypassStatus data={entity()} />);
     expect(screen.getByRole('combobox')).toBeEnabled();
   });
 });

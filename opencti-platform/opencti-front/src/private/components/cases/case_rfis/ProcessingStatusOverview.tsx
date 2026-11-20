@@ -12,8 +12,6 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { WorkflowAllowedTransition, WorkflowTransitionsForEntity } from '../../common/workflow/WorkflowTransitions';
 import { WorkflowStatusForEntity } from '../../common/workflow/WorkflowStatus';
-import { isWorkflowUiEnabledForType } from '../../common/workflow/workflowFeatureFlag';
-import useHelper from '../../../../utils/hooks/useHelper';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
@@ -57,7 +55,6 @@ const RequestAccessTransitions = ({ data }: CaseRfiRequestAccessOverviewProps) =
   return (
     <WorkflowTransitionsForEntity
       data={data}
-      entityType={data.entity_type}
       refreshOnFailure
       transitionButtons={{
         disabledReason: (transition) => (transition.requestAccessOutcome && !userCanAction ? cannotActTooltip(t_i18n, !!draftContext) : undefined),
@@ -81,7 +78,6 @@ const WorkflowProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverview
       <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
         <WorkflowStatusForEntity
           data={data}
-          entityType={data.entity_type}
           fallback={<ItemStatus status={data.status} />}
         >
           {/* Rendered after the status chip, on the right of the banner */}
@@ -204,8 +200,7 @@ const LegacyProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewPr
 };
 
 const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) => {
-  const { isFeatureEnable } = useHelper();
-  const isWorkflowDriven = isWorkflowUiEnabledForType(data.entity_type, isFeatureEnable) && !!data.requestAccessConfiguration?.isWorkflowDriven;
+  const isWorkflowDriven = !!data.requestAccessConfiguration?.isWorkflowDriven;
   return isWorkflowDriven ? <WorkflowProcessingStatusOverview data={data} /> : <LegacyProcessingStatusOverview data={data} />;
 };
 

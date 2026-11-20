@@ -1,4 +1,4 @@
-import conf, { BUS_TOPICS, ENTITIES_WORKFLOW_FEATURE_FLAG, booleanConf, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, booleanConf, logApp } from '../config/conf';
 import { internalDeleteElementById } from '../database/middleware';
 import { fullEntitiesList, internalLoadById } from '../database/middleware-loader';
 import { notify } from '../database/redis';
@@ -85,6 +85,4 @@ const WORKFLOW_STATUS_CLEANUP_MANAGER_DEFINITION: ManagerDefinition = {
   },
 };
 
-if (isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
-  registerManager(WORKFLOW_STATUS_CLEANUP_MANAGER_DEFINITION);
-}
+registerManager(WORKFLOW_STATUS_CLEANUP_MANAGER_DEFINITION);

@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { LRUCache } from 'lru-cache';
 import { Promise as BluePromise } from 'bluebird';
-import conf, { booleanConf, BUS_TOPICS, logApp, ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../../../config/conf';
+import conf, { booleanConf, BUS_TOPICS, logApp } from '../../../config/conf';
 import { ForbiddenAccess, FunctionalError } from '../../../config/errors';
 import { getEntitiesListFromCache } from '../../../database/cache';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
@@ -290,6 +290,27 @@ export const getWorkflowConfig = async (
   return findEntitySettingByType(executionContext, bypassDraftUser(user), targetType);
 };
 
+// Writes the entity setting and refreshes the cache of every node: the engine reads the definition link from the cache
+// (see getCachedEntitySettingOfType), so a write without the notification would leave it stale.
+const updateEntitySetting = async (context: AuthContext, user: AuthUser, entitySettingId: string, input: EditInput[]) => {
+  const { element } = await updateAttribute(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING, input);
+  await notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].EDIT_TOPIC, element, user);
+  return element as unknown as BasicStoreEntityEntitySetting;
+};
+
+/**
+ * Entity setting of the exact type, read from the cache: no search. The engine resolves a definition from the setting
+ * of the concrete type (see getWorkflowConfig), so unlike getEntitySettingFromCache this does not inherit the abstract
+ * relationship or observable setting. The cache refreshes on bus events: a setting changed a moment ago may be stale.
+ */
+const getCachedEntitySettingOfType = async (
+  context: AuthContext,
+  targetType: string,
+): Promise<BasicStoreEntityEntitySetting | undefined> => {
+  const entitySettings = await getEntitiesListFromCache<BasicStoreEntityEntitySetting>(context, SYSTEM_USER, ENTITY_TYPE_ENTITY_SETTING);
+  return entitySettings.find((entitySetting) => entitySetting.target_type === targetType);
+};
+
 /**
  * Id of the workflow definition an entity setting holds for a scope. There is no fallback between
  * scopes: a request-access lookup never resolves to the Global definition, nor the reverse.
@@ -324,10 +345,6 @@ export const resolveDefinitionEntityName = (entityType: string, scope: StatusSco
 export const assertScopeAllowed = (entityType: string, scope: StatusScope): void => {
   if (scope !== StatusScope.Global && entityType !== ENTITY_TYPE_CONTAINER_CASE_RFI) {
     throw FunctionalError('Workflow scope is not available for this entity type', { entityType, scope });
-  }
-  // Without the feature the legacy flow decides requests: a scoped workflow must not rewrite its statuses
-  if (scope !== StatusScope.Global && !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
-    throw FunctionalError('Workflow scope is not available while the ENTITIES_WORKFLOW feature is disabled', { entityType, scope });
   }
 };
 
@@ -515,7 +532,7 @@ export const resolveRequestAccessWorkflowState = async (
   context: AuthContext,
   rfi: BasicStoreEntity,
 ): Promise<{ definitionData: WorkflowDefinitionResponse; instanceEntity: WorkflowInstanceStoreEntity | null; currentState: string } | null> => {
-  if (!isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) || rfi.entity_type !== ENTITY_TYPE_CONTAINER_CASE_RFI || !hasRequestAccess(rfi)) {
+  if (rfi.entity_type !== ENTITY_TYPE_CONTAINER_CASE_RFI || !hasRequestAccess(rfi)) {
     return null;
   }
   const entitySetting = await getWorkflowConfig(context, SYSTEM_USER, rfi.entity_type);
@@ -668,6 +685,25 @@ export const hasPublishedWorkflowDefinition = async (
 ): Promise<boolean> => {
   const definitionData = await getWorkflowDefinition(context, user, entityType, false);
   return !!definitionData;
+};
+
+/**
+ * Entity types whose own entity setting holds a published workflow definition. Read from the database, not the
+ * cache: it guards the mass status changes, so a workflow published a moment ago must already count.
+ */
+export const listTypesWithPublishedWorkflow = async (
+  context: AuthContext,
+  user: AuthUser,
+): Promise<string[]> => {
+  const executionContext = bypassDraftContext(context);
+  const entitySettings = await fullEntitiesList<BasicStoreEntityEntitySetting>(executionContext, SYSTEM_USER, [ENTITY_TYPE_ENTITY_SETTING]);
+  const publishedTypes: string[] = [];
+  for (const entitySetting of entitySettings) {
+    if (hasWorkflowDefinition(entitySetting) && await hasPublishedWorkflowDefinition(executionContext, user, entitySetting.target_type)) {
+      publishedTypes.push(entitySetting.target_type);
+    }
+  }
+  return publishedTypes;
 };
 
 /**
@@ -849,8 +885,7 @@ const rollbackFailedMigration = async (
  *   has a published version: its conditions, actions and hooks would be lost in a migrated mesh.
  * - Never saves a state whose template no longer exists (MISSING_TEMPLATE), and never publishes a
  *   definition the preview flagged with another blocking diagnostic, nor one that fails validation:
- *   all are checked before anything is saved. Publishing also needs the
- *   ENTITIES_WORKFLOW feature, without which the workflow is not applied to entity writes.
+ *   all are checked before anything is saved.
  * - Holds the entity type's workflow status lock from the existence check to the end of the publish
  *   and its rollback, so no save, restore, publish or delete runs in between. When the publish fails before
  *   writing, it removes the workflow it created, or restores the draft and history of the one it
@@ -865,9 +900,6 @@ export const migrateWorkflowFromStatuses = async (
   scope: StatusScope = StatusScope.Global,
 ): Promise<EntitySettingWithWorkflowResponse> => {
   assertMigratableEntityType(entityType, scope);
-  if (publish && !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
-    throw FunctionalError('Cannot publish a migrated workflow while the ENTITIES_WORKFLOW feature is disabled; migrate without publishing', { entityType });
-  }
   return withWorkflowStatusLock(entityType, async () => {
     const entitySetting = await getWorkflowConfig(context, user, entityType);
     if (!entitySetting) {
@@ -1097,12 +1129,11 @@ const saveWorkflowDraftUnderLock = async (
   const linkInput: EditInput = scope === StatusScope.RequestAccess
     ? { key: 'request_access_workflow', value: [{ approval_admin: [], ...currentRequestAccess, workflow_definition_id: workflowDefinition.id }] }
     : { key: 'workflow_id', value: [workflowDefinition.id] };
-  const { element } = await updateAttribute(executionContext, executionUser, entitySetting.id, 'EntitySetting', [linkInput]);
+  const elementWithSetting = await updateEntitySetting(executionContext, executionUser, entitySetting.id, [linkInput]);
 
   // New workflows have no published version yet
   const published = false;
 
-  const elementWithSetting = element as unknown as BasicStoreEntityEntitySetting;
   const result = {
     id: elementWithSetting.id,
     workflow_id: workflowDefinition.id,
@@ -1143,8 +1174,7 @@ const unlinkWorkflowDefinitionUnderLock = async (
       const { workflow_definition_id: _unlinked, ...requestAccessConfiguration } = entitySetting.request_access_workflow!;
       unlinkInput = { key: 'request_access_workflow', value: [requestAccessConfiguration] };
     }
-    const { element } = await updateAttribute(executionContext, bypassDraftUser(user), entitySetting.id, 'EntitySetting', [unlinkInput]);
-    return element as unknown as BasicStoreEntityEntitySetting;
+    return updateEntitySetting(executionContext, bypassDraftUser(user), entitySetting.id, [unlinkInput]);
   }
   return entitySetting;
 };
@@ -1469,7 +1499,7 @@ const syncRequestAccessLegacyStatusIds = async (
   const approved = approvedId ?? current?.approved_workflow_id;
   const declined = declinedId ?? current?.declined_workflow_id;
   if (approved === current?.approved_workflow_id && declined === current?.declined_workflow_id) return;
-  await updateAttribute(context, user, entitySetting.id, ENTITY_TYPE_ENTITY_SETTING, [
+  await updateEntitySetting(context, user, entitySetting.id, [
     { key: 'request_access_workflow', value: [{ approval_admin: [], ...current, approved_workflow_id: approved, declined_workflow_id: declined }] },
   ]);
 };
@@ -1804,11 +1834,6 @@ export const getWorkflowInstance = async (
 ): Promise<any> => {
   const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) {
-    return null;
-  }
-  // With ENTITIES_WORKFLOW disabled, the legacy x_opencti_workflow_id is the source of truth:
-  // no instance must be exposed, backfilled, or used to read-repair (it would revert edits).
-  if (entity.entity_type !== 'DraftWorkspace' && !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
     return null;
   }
 
@@ -2179,7 +2204,6 @@ export const getWorkflowDefaultState = async (
   user: AuthUser,
   entityType: string,
 ): Promise<{ initialState: string | null } | null> => {
-  if (entityType !== 'DraftWorkspace' && !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) return null;
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   const definitionData = await getDefinitionData(context, user, entitySetting);
   if (!definitionData) return null;
@@ -2202,7 +2226,6 @@ export const getMassWorkflowTransitions = async (
   target: { entityIds?: string[] | null; filters?: string | null; search?: string | null; excludedIds?: string[] | null },
   scope: StatusScope = StatusScope.Global,
 ): Promise<AllowedTransition[]> => {
-  if (entityType !== 'DraftWorkspace' && !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) return [];
   assertScopeAllowed(entityType, scope);
   if (isEntityWorkflowLockedByDraft(context, user, entityType)) return [];
   const entitySetting = await getWorkflowConfig(context, user, entityType);
@@ -2693,9 +2716,6 @@ const loadWorkflowBypass = async (context: AuthContext, user: AuthUser, entityId
   if (!isBypassUser(user)) throw FunctionalError('BYPASS permission is required');
   const entity = await storeLoadById<BasicStoreEntity>(context, user, entityId, 'Basic-Object');
   if (!entity) throw FunctionalError('Entity not found', { entityId });
-  if (entity.entity_type !== 'DraftWorkspace' && !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
-    throw FunctionalError('ENTITIES_WORKFLOW is disabled');
-  }
   const executionContext = bypassDraftContext(context);
   const executionUser = bypassDraftUser(user);
   const entitySetting = await getWorkflowConfig(executionContext, executionUser, entity.entity_type);
@@ -2797,7 +2817,6 @@ export const getWorkflowStatuses = async (
   entityType: string,
   scope: StatusScope = StatusScope.Global,
 ): Promise<BasicWorkflowStatus[]> => {
-  if (entityType !== 'DraftWorkspace' && !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) return [];
   const definitionData = await getWorkflowDefinition(context, user, entityType, false, scope);
   if (!definitionData) return [];
   return findWorkflowMappedStatuses(bypassDraftContext(context), bypassDraftUser(user), entityType, scope, definitionData);
@@ -2976,6 +2995,9 @@ export const initializeEntityWorkflow = async (
   if (getDraftContext(context, user)) return;
   const executionContext = bypassDraftContext(context);
   const executionUser = bypassDraftUser(user);
+  // Hot path of every entity creation: an instance can only be created while a definition exists, so a type without
+  // one returns here, before any search
+  if (!hasWorkflowDefinition(await getCachedEntitySettingOfType(executionContext, entity.entity_type))) return;
   const entitySetting = await getWorkflowConfig(executionContext, executionUser, entity.entity_type);
   const resolved = await resolveEntityDefinition(executionContext, executionUser, entity, entitySetting);
   if (!resolved.definitionData) return;
@@ -3294,7 +3316,7 @@ export const assertExternalRequestAccessCreateAllowed = async (
   if (!isRequestAccessRecord(requestAccess)) {
     throw FunctionalError(`Request access must be a JSON object of at most ${REQUEST_ACCESS_MAX_LENGTH} characters`);
   }
-  if (isInternalUser(user) || !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) return;
+  if (isInternalUser(user)) return;
   const entitySetting = await getWorkflowConfig(context, SYSTEM_USER, entityType);
   const definitionData = await getDefinitionData(context, SYSTEM_USER, entitySetting, false, StatusScope.RequestAccess);
   if (definitionData) {
@@ -3316,6 +3338,10 @@ export const cleanupEntityWorkflow = async (
   if (entity.entity_type === ENTITY_TYPE_WORKFLOW_INSTANCE) return;
   const executionContext = bypassDraftContext(context);
   const executionUser = bypassDraftUser(user);
+  // A type with no entity setting of its own (relationships such as `uses`, `related-to`) never held a workflow
+  // instance. A type whose definition was unlinked can still have instances left behind, so a type that has a
+  // setting keeps the search.
+  if (!await getCachedEntitySettingOfType(executionContext, entity.entity_type)) return;
   const effectiveEntityId = entity.internal_id || entity.id;
   const instanceEntity = await findWorkflowInstanceEntity(executionContext, executionUser, effectiveEntityId);
   if (!instanceEntity) return;

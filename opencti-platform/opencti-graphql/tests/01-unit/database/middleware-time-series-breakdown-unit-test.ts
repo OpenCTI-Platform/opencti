@@ -1591,7 +1591,6 @@ describe('timeSeriesBreakdownFields', () => {
 
   it('should list the fields of a single entity type, without the type itself', () => {
     // Compared sorted: their order follows the order the attributes are registered in, and the editor sorts them.
-    // The closing reason is behind the ENTITIES_WORKFLOW feature flag, which config/test.json enables with every dev feature.
     expect([...timeSeriesBreakdownFields(WidgetPerspective.Entities, ['Report'])].sort()).toEqual([
       'createdBy', 'creator_id', 'objectAssignee', 'objectLabel', 'objectMarking', 'objectParticipant', 'report_types', 'x_opencti_closing_reason',
     ]);

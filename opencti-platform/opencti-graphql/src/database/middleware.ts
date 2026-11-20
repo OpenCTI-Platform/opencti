@@ -190,7 +190,7 @@ import {
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, extendedErrors, logApp } from '../config/conf';
 import { computeDateFromEventId, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
@@ -2459,7 +2459,7 @@ const mergeEntitiesRaw = async (
       // A merge never decides a request: an Approved / Declined status of a source is not copied, only a transition or a bypass reaches it.
       // Its decided request record stays behind with it, so the target never looks decided without its outcome transition.
       const isOutcomeField = targetFieldKey === X_WORKFLOW_ID || targetFieldKey === 'x_opencti_request_access';
-      const isCopiedOutcome = isOutcomeField && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)
+      const isCopiedOutcome = isOutcomeField
         && await isRequestAccessOutcomeStatus(context, targetType, (takenFrom as Record<string, any>)[X_WORKFLOW_ID]);
       if (!isCopiedOutcome) {
         // Single value. Put the data in the merged field only if empty.
@@ -3139,7 +3139,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   if (!opts.workflowInternalWrite && !isBypassUser(user) && updates.some((e) => e.key === X_CLOSING_REASON)) {
     throw FunctionalError('Closing reason can only be changed through a workflow transition', { id: initial.internal_id });
   }
-  if (!opts.workflowInternalWrite && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+  if (!opts.workflowInternalWrite) {
     // A patch can carry several inputs for one key and the last one wins: every status input is checked
     const statusIdOfInput = (input: EditInput) => (input.operation === EditOperation.Remove ? null : (input.value?.[0] ?? null));
     const workflowStatusInputs = updates.filter((input) => input.key === X_WORKFLOW_ID);
@@ -3638,7 +3638,7 @@ export const updateAttribute = async <T extends StoreObject>(
     // If element really updated, try to enrich if needed
     await triggerEntityUpdateAutoEnrichment(context, user, data.element as BasicStoreBase);
   }
-  if (data.workflowStatusChanged && !opts.workflowInternalWrite && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+  if (data.workflowStatusChanged && !opts.workflowInternalWrite) {
     await syncWorkflowInstanceFromExternalWrite(context, user, data.element, (data.element as BasicStoreBase).x_opencti_workflow_id);
   }
   return data;
@@ -4338,7 +4338,7 @@ export const createRelation = async (
   opts: CreateRelationRawOpts = {},
 ) => {
   const data = await createRelationRaw(context, user, input, opts);
-  if (data.isCreation && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+  if (data.isCreation) {
     await initializeEntityWorkflow(context, user, data.element as BasicStoreBase);
   }
   return data.element;
@@ -4674,7 +4674,7 @@ const internalCreateEntityRaw = async (
     // A creation must not supply an outcome status of the request access workflow. Checked here, past every
     // upsert branch, so that restoring or re-importing an existing decided request is not refused.
     // A request record is refused whatever the supplied status: only the request access form creates one.
-    if (!opts.workflowInternalWrite && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    if (!opts.workflowInternalWrite) {
       if (resolvedInput[X_WORKFLOW_ID]) {
         await assertExternalStatusCreateAllowed(context, type, resolvedInput[X_WORKFLOW_ID]);
       }
@@ -4854,14 +4854,12 @@ export const createEntity = async (
   // In case of creation, start an enrichment
   if (data.isCreation) {
     await triggerCreateEntityAutoEnrichment(context, user, data.element);
-    if (isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
-      await initializeEntityWorkflow(context, user, data.element as BasicStoreBase);
-    }
+    await initializeEntityWorkflow(context, user, data.element as BasicStoreBase);
   } else { // upsert
     if (data.event !== null && !opts.noEnrichOnUpdate) {
       await triggerEntityUpdateAutoEnrichment(context, user, data.element);
     }
-    if (data.workflowStatusChanged && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    if (data.workflowStatusChanged) {
       await syncWorkflowInstanceFromExternalWrite(context, user, data.element, data.element.x_opencti_workflow_id);
     }
   }
@@ -5051,7 +5049,7 @@ export const internalDeleteElementById = async <T extends StoreObject>(
   const isTrashableElement = !isInferredIndex(element._index)
     && (isStixCoreObject(element.entity_type) || isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type));
   const isPermanentDelete = !!opts.forceDelete || !conf.get('app:trash:enabled') || !isTrashableElement;
-  if (isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) && isPermanentDelete) {
+  if (isPermanentDelete) {
     // Clean up the WorkflowInstance (if any) so it doesn't stay orphaned after its entity is permanently deleted.
     // Skipped for trash (soft) deletions: the `has-workflow` relation is kept for restoration and must still
     // point to a live WorkflowInstance, otherwise restoring the entity from trash would fail.

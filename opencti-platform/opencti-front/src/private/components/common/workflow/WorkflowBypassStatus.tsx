@@ -24,9 +24,7 @@ import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { isBypassUser } from '../../../../utils/hooks/useGranted';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { workflowBypassStatusesQuery, workflowSetStatusMutation, workflowStatusStixDomainObjectFragment } from './WorkflowStatus.graphql';
-import { isWorkflowUiEnabledForType } from './workflowFeatureFlag';
 import type { WorkflowStatusStixDomainObject_data$data, WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
 import type { WorkflowStatusBypassStatusesQuery } from './__generated__/WorkflowStatusBypassStatusesQuery.graphql';
 import type { WorkflowStatusSetStatusMutation } from './__generated__/WorkflowStatusSetStatusMutation.graphql';
@@ -56,15 +54,13 @@ export const ItemStatusWorkflow = ({ status }: { status: WorkflowStatus }) => (
   </div>
 );
 
-export const WorkflowBypassStatus = ({ data, entityType, refreshing = false, onCompleted }: {
+export const WorkflowBypassStatus = ({ data, refreshing = false, onCompleted }: {
   data: WorkflowStatusStixDomainObject_data$key;
-  entityType: string;
   refreshing?: boolean;
   onCompleted?: () => void;
 }) => {
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
-  const { isFeatureEnable } = useHelper();
   const entity = useFragment(workflowStatusStixDomainObjectFragment, data);
   const [open, setOpen] = useState(false);
   const [targetStatusId, setTargetStatusId] = useState<string | null>(null);
@@ -76,7 +72,7 @@ export const WorkflowBypassStatus = ({ data, entityType, refreshing = false, onC
   const submitting = useRef(false);
   const [commit, committing] = useApiMutation<WorkflowStatusSetStatusMutation>(workflowSetStatusMutation);
   const pendingStatus = entity.workflowInstance?.pendingStatus;
-  const enabled = isBypassUser(me) && isWorkflowUiEnabledForType(entityType, isFeatureEnable) && !!entity.workflowInstance;
+  const enabled = isBypassUser(me) && !!entity.workflowInstance;
   const blocked = committing || saving || refreshing || awaitingCompletion || pendingStatus === 'pending' || pendingStatus === 'error';
   const currentStatus = entity.workflowInstance?.currentStatus;
 

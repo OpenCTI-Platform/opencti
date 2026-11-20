@@ -3,6 +3,11 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { ADMIN_USER, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { findByType } from '../../../src/domain/status';
+import { deleteElementById } from '../../../src/database/middleware';
+import { resetCacheForEntity } from '../../../src/database/cache';
+import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
+import { getWorkflowConfig } from '../../../src/modules/workflow/domain/workflow-domain';
+import { ENTITY_TYPE_WORKFLOW_DEFINITION } from '../../../src/modules/workflow/types/workflow-types';
 
 const ENTITY_TYPE = 'Case-Incident';
 
@@ -164,7 +169,19 @@ describe('Workflow closing reason (Case-Incident)', () => {
 
   afterAll(async () => {
     await queryAsAdmin({ query: CASE_INCIDENT_DELETE_MUTATION, variables: { id: caseId } });
+    // Unlinking leaves the definition entity and the statuses it created, whose literal template ids
+    // would block the status migration tests that run later on the same entity type.
+    const definitionId = (await getWorkflowConfig(testContext, ADMIN_USER, ENTITY_TYPE))?.workflow_id;
     await queryAsAdmin({ query: WORKFLOW_DEFINITION_DELETE_MUTATION, variables: { entityType: ENTITY_TYPE } });
+    if (definitionId) {
+      await deleteElementById(testContext, ADMIN_USER, definitionId, ENTITY_TYPE_WORKFLOW_DEFINITION);
+    }
+    const stateIds = ['open', 'triaged', 'closed', 'archived'];
+    const statuses = await findByType(testContext, ADMIN_USER, ENTITY_TYPE);
+    for (const status of statuses.filter((s) => stateIds.includes(s.template_id))) {
+      await deleteElementById(testContext, ADMIN_USER, status.id, ENTITY_TYPE_STATUS);
+    }
+    resetCacheForEntity(ENTITY_TYPE_STATUS);
   });
 
   it('should expose the closing reason mode on allowed transitions', async () => {

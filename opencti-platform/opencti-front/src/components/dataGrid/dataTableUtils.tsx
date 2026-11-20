@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext } from 'react';
+import React, { ReactNode } from 'react';
 import { Chip } from '@filigran/design-system';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import Tooltip from '@mui/material/Tooltip';
@@ -37,9 +37,6 @@ import TagsOverflow from '../common/tag/TagsOverflow';
 import { VocabularyDefinition } from '../../utils/hooks/useVocabularyCategory';
 import { EMPTY_VALUE } from '../../utils/String';
 import { Box, Stack } from '@mui/material';
-import { isWorkflowUiEnabledForType } from '@components/common/workflow/workflowFeatureFlag';
-import { UserContext } from '../../utils/hooks/useAuth';
-import { isFeatureEnable } from '../../utils/platformModulesHelper';
 
 export const Truncate = ({ children }: { children: ReactNode }) => (
   <div
@@ -137,16 +134,12 @@ interface StatusCellProps {
 }
 
 // Shared by the workflowInstance and x_opencti_workflow_id columns: rows whose list selects
-// workflowInstance show its status when the workflow UI is enabled for their type, others keep
-// the legacy status.
+// workflowInstance show its status, others keep the legacy status.
 const StatusCell = ({ data, onStatusClick }: StatusCellProps) => {
-  // Read settings directly: public dashboards render without an authenticated user context.
-  const { settings } = useContext(UserContext);
-  const { workflowInstance, status, workflowEnabled, entity_type: entityType } = data;
+  const { workflowInstance, status, workflowEnabled } = data;
   // An 'initial-' id is a synthesized, not yet persisted instance: prefer the legacy status if any.
   const isNotPersisted = (workflowInstance?.id ?? '').startsWith('initial-');
-  const isWorkflowUiEnabled = isWorkflowUiEnabledForType(entityType ?? '', (id) => !!settings && isFeatureEnable(settings, id));
-  const isWorkflowStatus = !!workflowInstance && !(isNotPersisted && status) && isWorkflowUiEnabled;
+  const isWorkflowStatus = !!workflowInstance && !(isNotPersisted && status);
   // A workflow status is the Status that the backend projects onto x_opencti_workflow_id.
   const shownStatus = isWorkflowStatus ? workflowInstance?.currentStatus ?? null : status;
   const statusId = shownStatus?.id;
