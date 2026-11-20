@@ -1,0 +1,22 @@
+# The OpenCTI worker, as XTM Studio runs it: it takes what the connectors send from RabbitMQ and
+# imports it into the platform. It knows the platform alone: the platform gives it the connection
+# to RabbitMQ through its API. It signs in as a service account of its own, which its enrollment
+# in the platform makes.
+schema: 1
+name: opencti/worker
+group: opencti
+title: OpenCTI worker
+logo:
+  dark: ../../../../opencti-platform/opencti-front/src/static/images/logo_dark.svg
+  light: ../../../../opencti-platform/opencti-front/src/static/images/logo_light.svg
+image: { version: 7.261106.0 }
+environment:
+  OPENCTI_URL: "http://{{requires.opencti.contract.url.address}}"
+  OPENCTI_TOKEN: "{{requires.opencti.output.token}}"
+  OPENCTI_JSON_LOGGING: "true"
+  WORKER_LOG_LEVEL: info
+requires:
+  # Its platform, as a service account named after its dataset, which can import as a connector.
+  opencti:
+    count: "1"
+    enrollment: { service_account: { name: "{{dataset.name}}" } }

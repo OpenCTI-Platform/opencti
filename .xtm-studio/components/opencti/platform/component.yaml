@@ -1,0 +1,129 @@
+# The OpenCTI platform, as XTM Studio runs it (principles 1, 10, 15): its page and API, and what it
+# needs of the backing services, each through an enrollment with exactly the rights it uses. Every
+# name of its data derives from its dataset, <env>-<instance>.
+schema: 1
+name: opencti/platform
+group: opencti
+title: OpenCTI platform
+# The marks the platform shows in its own themes: the portal shows the one of its theme.
+logo:
+  dark: ../../../../opencti-platform/opencti-front/src/static/images/logo_dark.svg
+  light: ../../../../opencti-platform/opencti-front/src/static/images/logo_light.svg
+image: { version: 7.261106.0 }
+endpoints:
+  - port: 8080
+    contracts:
+      web: { url: { protocol: http, ui: true }, credential: { user: admin@filigran.io, basic_auth: true } }
+      # Its GraphQL API.
+      opencti: { url: { protocol: http, base: /graphql }, enrollment: { token: { secret: true, optional: true } } }
+secrets:
+  ADMIN_PASSWORD: { type: password, size: 28 }
+  ADMIN_TOKEN: { type: uuid }
+  HEALTH_KEY: { type: uuid }
+  ENCRYPTION_KEY: { type: base64, size: 32 }
+environment:
+  NODE_OPTIONS: --max-old-space-size=4096
+  APP__PORT: "8080"
+  APP__BASE_URL: "{{contracts.web.url.machine.value}}/"
+  APP__ADMIN__EMAIL: admin@filigran.io
+  APP__ADMIN__PASSWORD: "{{secrets.ADMIN_PASSWORD}}"
+  APP__ADMIN__TOKEN: "{{secrets.ADMIN_TOKEN}}"
+  APP__HEALTH_ACCESS_KEY: "{{secrets.HEALTH_KEY}}"
+  APP__ENCRYPTION_KEY: "{{secrets.ENCRYPTION_KEY}}"
+  REDIS__HOSTNAME: "{{requires.redis.contract.url.host}}"
+  REDIS__PORT: "{{requires.redis.contract.url.port}}"
+  REDIS__USERNAME: "{{requires.redis.enrollment.user_credential.user}}"
+  REDIS__PASSWORD: "{{requires.redis.enrollment.user_credential.password}}"
+  REDIS__NAMESPACE: "{{dataset.name}}"
+  ELASTICSEARCH__URL: "{{requires.search.contract.url.value}}"
+  ELASTICSEARCH__USERNAME: "{{requires.search.enrollment.user_credential.user}}"
+  ELASTICSEARCH__PASSWORD: "{{requires.search.enrollment.user_credential.password}}"
+  ELASTICSEARCH__INDEX_PREFIX: "{{dataset.name}}"
+  MINIO__ENDPOINT: "{{requires.s3.contract.url.host}}"
+  MINIO__PORT: "{{requires.s3.contract.url.port}}"
+  MINIO__USE_SSL: "false"
+  MINIO__ACCESS_KEY: "{{requires.s3.enrollment.user_credential.user}}"
+  MINIO__SECRET_KEY: "{{requires.s3.enrollment.user_credential.password}}"
+  MINIO__BUCKET_NAME: "{{requires.s3.enrollment.bucket}}"
+  RABBITMQ__HOSTNAME: "{{requires.rabbitmq.contracts.amqp.url.host}}"
+  RABBITMQ__PORT: "{{requires.rabbitmq.contracts.amqp.url.port}}"
+  RABBITMQ__PORT_MANAGEMENT: "{{requires.rabbitmq.contracts.rabbitmq-management.url.port}}"
+  RABBITMQ__MANAGEMENT_SSL: "false"
+  RABBITMQ__USERNAME: "{{requires.rabbitmq.enrollment.amqp.user_credential.user}}"
+  RABBITMQ__PASSWORD: "{{requires.rabbitmq.enrollment.amqp.user_credential.password}}"
+  RABBITMQ__VHOST: "{{requires.rabbitmq.enrollment.amqp.vhost}}"
+  SMTP__HOSTNAME: "{{#requires.smtp}}{{contract.url.host}}{{/requires.smtp}}"
+  SMTP__PORT: "{{#requires.smtp}}{{contract.url.port}}{{/requires.smtp}}"
+  # OpenAEV, when linked: its page, its API on the network of the containers, and its token.
+  XTM__OPENAEV_URL: "{{#requires.openaev}}{{contract.url.machine.value}}{{/requires.openaev}}"
+  XTM__OPENAEV_API_URL: "{{#requires.openaev}}{{contract.url.value}}{{/requires.openaev}}"
+  XTM__OPENAEV_TOKEN: "{{#requires.openaev}}{{output.token}}{{/requires.openaev}}"
+  XTM__XTM_ONE_URL: "{{#requires.xtm-one}}{{contract.url.value}}{{/requires.xtm-one}}"
+  XTM__XTM_ONE_TOKEN: "{{#requires.xtm-one}}{{output.token}}{{/requires.xtm-one}}"
+service:
+  healthcheck:
+    test: [CMD-SHELL, 'node -e "fetch(''http://localhost:8080/health?health_access_key=''+process.env.APP__HEALTH_ACCESS_KEY).then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"']
+    interval: 10s
+    timeout: 5s
+    retries: 90
+    start_period: 60s
+requires:
+  redis:
+    count: "1"
+    enrollment:
+      user_credential: { user: "{{dataset.name}}" }
+      # Its keys under its prefix. OpenCTI subscribes to each topic with PSUBSCRIBE, whose pattern
+      # Redis matches against the ACL literally: until it uses SUBSCRIBE, it gets every channel.
+      acl: "~{{dataset.name}}:* allchannels +@all"
+      prefix: "{{dataset.name}}:"
+  search:
+    accepts: [elasticsearch, opensearch]
+    count: "1"
+    enrollment:
+      elasticsearch:
+        user_credential: { user: "{{dataset.name}}" }
+        role:
+          cluster: [monitor, manage_index_templates, manage_ilm, manage_pipeline]
+          indices: [{ names: ["{{dataset.name}}_*"], privileges: [all] }]
+        prefix: "{{dataset.name}}_"
+      opensearch:
+        user_credential: { user: "{{dataset.name}}" }
+        role:
+          # Bulk writes, multi-gets and scrolls are cluster actions on OpenSearch (cluster_composite_ops);
+          # its policy of index state management rolls its indices over, as manage_ilm does on Elasticsearch.
+          cluster_permissions: [cluster_monitor, cluster_composite_ops, cluster_manage_index_templates, cluster_manage_pipelines, "cluster:admin/opendistro/ism/*"]
+          index_permissions: [{ index_patterns: ["{{dataset.name}}_*"], allowed_actions: [indices_all] }]
+        prefix: "{{dataset.name}}_"
+  s3:
+    count: "1"
+    enrollment: { user_credential: { user: "{{dataset.name}}" }, bucket: "{{dataset.name}}", policy: ["s3:*"] }
+  # Its queues through AMQP, and their state through the management API, as the same user.
+  rabbitmq:
+    all: [amqp, rabbitmq-management@4]
+    count: "1"
+    enrollment:
+      amqp:
+        user_credential: { user: "{{dataset.name}}" }
+        vhost: "{{dataset.name}}"
+        permissions: { configure: ".*", write: ".*", read: ".*" }
+      rabbitmq-management@4:
+        user_credential: { user: "{{dataset.name}}" }
+        tags: [management]
+  smtp: { count: "0..1" }
+  # OpenAEV, which it links its knowledge to; OpenAEV may require it in turn.
+  openaev: { count: "0..1" }
+  # Its registration with XTM One, which it sends 30 seconds after it starts, then every 5 minutes.
+  xtm-one:
+    count: "0..1"
+    enrollment: { platform: opencti }
+  # Sign-in through OpenID Connect providers, as many as linked, while the platform runs: each one a
+  # client of its own in the provider, which link.ts adds to the platform through its API and
+  # unlink.ts removes.
+  oidc:
+    count: "0..*"
+    hotlink: true
+    enrollment:
+      client:
+        id: "{{dataset.name}}"
+        name: "OpenCTI {{dataset.name}}"
+        redirect_uri: "{{consumer.contracts.web.url.machine.value}}/auth/oidc-{{contract.url.host}}/callback"
