@@ -2669,6 +2669,8 @@ const prepareAttributesForUpdate = async (
 ) => {
   const instanceType = instance.entity_type;
   const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
+  const nameInput = elements.find((e) => e.key === NAME_FIELD);
+  const targetName = nameInput ? R.head(nameInput.value) : (instance as BasicStoreEntity).name;
   return elements.map((input) => {
     // Dynamic cases, attributes not defined in the schema
     if (input.key.startsWith(RULE_PREFIX) || input.key.startsWith(REL_INDEX_PREFIX)) {
@@ -2688,7 +2690,7 @@ const prepareAttributesForUpdate = async (
     }
     // Aliases can't have the same name as entity name and an already existing normalized alias
     if (input.key === ATTRIBUTE_ALIASES || input.key === ATTRIBUTE_ALIASES_OPENCTI) {
-      const filteredValues = input.value.filter((e) => normalizeName(e) !== normalizeName((instance as BasicStoreEntity).name));
+      const filteredValues = input.value.filter((e) => normalizeName(e) !== normalizeName(targetName));
       const uniqAliases = R.uniqBy((e) => normalizeName(e), filteredValues);
       return { key: input.key, value: uniqAliases };
     }
