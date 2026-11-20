@@ -4,7 +4,13 @@ import { buildPaginationFromEdges } from '../../../database/utils';
 import { FunctionalError } from '../../../config/errors';
 import type { ConfigImportResult } from '../../configImport/configImport-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition, ConfigPresetListItemsArgs } from '../configPreset-types';
-import type { ConfigPresetAppliedItem, ConfigPresetBundleItem, ConfigPresetComputedItem, ConfigPresetImportField } from '../import/configPreset-import-types';
+import type {
+  ConfigPresetAppliedItem,
+  ConfigPresetBundleItem,
+  ConfigPresetComputedItem,
+  ConfigPresetImportField,
+  ConfigPresetImportPlan,
+} from '../import/configPreset-import-types';
 
 // Export groups of the spec table; a group is added with its first category
 export const platformSettingsGroup = { id: 'platformSettings', label: 'Platform settings' };
@@ -21,6 +27,15 @@ export const dashboardsGroup = { id: 'dashboards', label: 'Dashboards' };
 export const ROLES_FAMILY_ID = 'roles';
 export const MARKINGS_FAMILY_ID = 'markings';
 export const BRANDING_FAMILY_ID = 'branding';
+
+// The names the earlier items of a dry run would take, by plan: an importer that matches its items by name reserves them here, so that the plan of
+// the engine does not have to know about the families that need it
+const plannedNames = new WeakMap<ConfigPresetImportPlan, Set<string>>();
+export const plannedNamesOf = (plan: ConfigPresetImportPlan) => {
+  const names = plannedNames.get(plan) ?? new Set<string>();
+  plannedNames.set(plan, names);
+  return names;
+};
 
 // The search does not apply to static items: their label is a source string the UI translates,
 // so a match on it would not be the text the user sees. They are always listed.

@@ -1,12 +1,10 @@
 import { z } from 'zod';
-import { fromB64 } from '../../utils/base64';
+import { readManifestWithValidWidgets } from '../dashboard/dashboard-utils';
 
 // The rules of a dashboard to import from a configuration bundle: strict, unknown keys are rejected.
 // A dashboard is found by its name on the platform (its standard id is random).
 // A name is a keyword of the index: a longer one could never be found again
 export const DASHBOARD_NAME_MAX_LENGTH = 512;
-
-const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 
 // The manifest is the base64 JSON of the dashboard file. What the platform reads without checking is checked here, so that the item fails
 // with a reason instead of an error: the widgets and their data selection, the variables
@@ -14,17 +12,8 @@ const isValidManifest = (encoded: string | null | undefined) => {
   if (!encoded) {
     return true;
   }
-  try {
-    const manifest = fromB64(encoded);
-    if (!isRecord(manifest)) {
-      return false;
-    }
-    const { widgets, variables } = manifest;
-    const widgetsAreValid = widgets === undefined || (isRecord(widgets) && Object.values(widgets).every((widget) => isRecord(widget) && Array.isArray(widget.dataSelection)));
-    return widgetsAreValid && (variables === undefined || Array.isArray(variables));
-  } catch {
-    return false;
-  }
+  const manifest = readManifestWithValidWidgets(encoded);
+  return manifest !== undefined && (manifest.variables === undefined || Array.isArray(manifest.variables));
 };
 
 export const dashboardImportSchema = z.strictObject({
