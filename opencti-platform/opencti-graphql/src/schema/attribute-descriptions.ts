@@ -305,7 +305,7 @@ export const ATTRIBUTE_DESCRIPTIONS: Record<string, string> = {
   objectMarking: 'Marking definitions (e.g. TLP:AMBER) restricting who can see the entity.',
   objectLabel: 'Labels tagging the entity.',
   externalReferences: 'External references (source URL, report…) of the entity.',
-  objectOrganization: 'Organizations the entity is shared with. At creation, taken from this field only with the capability to restrict access to organizations; without it, the platform shares the entity with the organizations of the user when the user is outside the platform organization (or is a service account with organizations), and with none otherwise. An update of this field needs that capability and Enterprise Edition, and is rejected without them.',
+  objectOrganization: 'Organizations the entity is shared with. Depending on the rights of the user, the platform may ignore this field or set it itself.',
   objectAssignee: 'Users assigned to the entity.',
   objectParticipant: 'Users participating in the entity.',
   killChainPhases: 'Kill chain phases (e.g. MITRE ATT&CK tactics) the entity belongs to.',
