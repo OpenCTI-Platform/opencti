@@ -201,16 +201,18 @@ const SearchInput = (props: SearchInputProps) => {
     navigate(`${BULK_SEARCH_PATH}${searchValue ? `?q=${encoded}` : ''}`);
   };
 
-  const handleModeChange = (_event: MouseEvent<HTMLElement>, newMode: SearchMode | null) => {
-    // MUI sends null when clicking the already-selected button. The top bar outlives the page,
-    // so Bulk stays selected after the user has left the bulk search page: clicking it again
-    // must lead back there. On the page itself, it does nothing.
-    if (newMode === null) {
-      if (mode === MODE_BULK && !location.pathname.startsWith(BULK_SEARCH_PATH)) {
-        navigateToBulkSearch();
-      }
-      return;
+  // The top bar outlives the page, so Bulk stays selected after the user has left the bulk
+  // search page: clicking it again must lead back there. On the page itself, it does nothing.
+  // Handled on the Bulk button itself, not on the group's null change: the Ask AI toggle sits in
+  // the same group with the current mode as value, so its clicks reach the group as null too.
+  const handleBulkClick = () => {
+    if (mode === MODE_BULK && !location.pathname.startsWith(BULK_SEARCH_PATH)) {
+      navigateToBulkSearch();
     }
+  };
+
+  const handleModeChange = (_event: MouseEvent<HTMLElement>, newMode: SearchMode | null) => {
+    if (newMode === null) return; // MUI sends null when clicking the already-selected button
     if (newMode === MODE_SEARCH) {
       setMode(newMode);
       // Execute search immediately with current value
@@ -496,7 +498,7 @@ const SearchInput = (props: SearchInputProps) => {
 
             {/* Bulk mode */}
             <Tooltip title={t_i18n('Bulk search')}>
-              <ToggleButton value={MODE_BULK} sx={[toggleButtonSx, { mr: 0.75 }]}>
+              <ToggleButton value={MODE_BULK} sx={[toggleButtonSx, { mr: 0.75 }]} onClick={handleBulkClick}>
                 <ManageSearchOutlined sx={{ fontSize: 18 }} />
               </ToggleButton>
             </Tooltip>

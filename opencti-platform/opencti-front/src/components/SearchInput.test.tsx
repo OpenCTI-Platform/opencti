@@ -208,6 +208,19 @@ describe('SearchInput (top bar) in bulk mode', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/dashboard/search_bulk');
   });
 
+  it('does not go back to the bulk search page when Ask AI is clicked from another page', async () => {
+    const onSubmit = vi.fn();
+    const { user } = testRender(<SearchInput variant="topBar" onSubmit={onSubmit} keyword="" />, { route: '/dashboard' });
+    await user.type(document.querySelector('input[name="keyword"]') as HTMLInputElement, 'apt');
+    await user.click(screen.getByRole('button', { name: 'Bulk search' }));
+    mockNavigate.mockClear();
+
+    // The AI toggle shares the group with Bulk: MUI reports its click as a click on the selected value.
+    await user.click(screen.getByRole('button', { name: 'Ask AI' }));
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(onSubmit).toHaveBeenCalledWith('apt', true, undefined);
+  });
+
   it('does not reload the bulk search page when Bulk search is clicked on it', async () => {
     const { user } = testRender(<SearchInput variant="topBar" onSubmit={vi.fn()} keyword="" />, { route: '/dashboard/search_bulk' });
     await user.click(screen.getByRole('button', { name: 'Bulk search' }));
