@@ -52,7 +52,6 @@ export function groupAndSortPlaybookComponents(
 
 // Keyboard-first palette: keep the components whose translated name or description holds every word
 // of the search, case and accent insensitive. An empty search keeps every group as it is.
-
 export function filterPlaybookComponentGroups(
   groups: PlaybookComponentGroup[],
   search: string,
