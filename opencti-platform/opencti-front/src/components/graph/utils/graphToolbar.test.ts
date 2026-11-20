@@ -23,6 +23,18 @@ describe('planToolbarOverflow', () => {
     expect([...planToolbarOverflow(candidates, room(4, 3))].sort()).toEqual(['filter-types', 'fit', 'mode-3d', 'zoom-in']);
   });
 
+  it('counts a wide action at its own width, not at the width of an icon', () => {
+    const wide = [
+      { id: 'posture', group: 'posture', priority: 50, width: 300 },
+      { id: 'export', group: 'export', priority: 10 },
+    ];
+    // Room for a divider and 299 px: the 300 px control does not fit, the icon after it does.
+    expect(planToolbarOverflow(wide, TOOLBAR_DIVIDER_WIDTH + 299))
+      .toEqual(new Set(['export']));
+    expect(planToolbarOverflow(wide, TOOLBAR_DIVIDER_WIDTH + 300 + TOOLBAR_DIVIDER_WIDTH + TOOLBAR_ACTION_WIDTH))
+      .toEqual(new Set(['posture', 'export']));
+  });
+
   it('fills the room left with a cheaper action of a group already open', () => {
     const shown = planToolbarOverflow(
       [{ id: 'a', group: 'x', priority: 9 }, { id: 'b', group: 'y', priority: 8 }, { id: 'c', group: 'x', priority: 7 }],
