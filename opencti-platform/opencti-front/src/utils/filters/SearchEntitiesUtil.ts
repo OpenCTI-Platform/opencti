@@ -1,6 +1,15 @@
+import { createFilterOptions } from '@mui/material';
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import { isStixObjectTypes, ME_FILTER_VALUE } from './filtersUtils';
-import { removeAccentsAndLowerCase } from '../String';
+
+const optionLabel = (option: FilterOptionValue) => option.label ?? '';
+
+/**
+ * Filter of the entity filter autocomplete (FilterEntityAutocomplete): it only shows the options whose label contains
+ * the typed term, case and accent insensitive. getOptionsFromEntities uses the same filter to know which options are
+ * shown, so changing it here changes both.
+ */
+export const filterEntityOptions = createFilterOptions<FilterOptionValue>({ stringify: optionLabel });
 
 type MemberNode = { id: string; entity_type: string; name: string };
 type MemberEdges = { edges?: ReadonlyArray<{ node: MemberNode } | null | undefined> | null } | null | undefined;
@@ -78,12 +87,12 @@ export const getOptionsFromEntities = (
   // A ranked option only keeps its rank while a term is typed: without a term, there is no relevance to keep
   const hasTerm = !!searchTerm.trim();
   const isRanked = (option: FilterOptionValue) => hasTerm && !!option.ranked;
-  // The autocomplete then only shows the options whose label contains the typed term, case and accent insensitive
-  // (default filter of MUI Autocomplete). An entity the search found on another attribute (description, aliases)
-  // is hidden, so it must not move its group up: a group comes in the order of its first shown ranked option, then of
-  // its first ranked option if none is shown, then alphabetically if it has no ranked option.
-  const term = removeAccentsAndLowerCase(searchTerm);
-  const isShown = (option: FilterOptionValue) => removeAccentsAndLowerCase(option.label ?? '').includes(term);
+  // The autocomplete then only shows the options its filter keeps (filterEntityOptions). An entity the search found on
+  // another attribute (description, aliases) is hidden, so it must not move its group up: a group comes in the order of
+  // its first shown ranked option, then of its first ranked option if none is shown, then alphabetically if it has no
+  // ranked option.
+  const shownOptions = new Set(filterEntityOptions(options, { inputValue: searchTerm, getOptionLabel: optionLabel }));
+  const isShown = (option: FilterOptionValue) => shownOptions.has(option);
   const rankedOptions = options.filter(isRanked);
   const unrankedGroups = options.filter((o) => !isRanked(o)).map(({ group }) => group ?? '').sort((a, b) => a.localeCompare(b));
   const groupOrder = new Map<string, number>();
