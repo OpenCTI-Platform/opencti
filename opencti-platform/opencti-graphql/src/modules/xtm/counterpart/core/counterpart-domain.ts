@@ -138,20 +138,6 @@ export const normaliseCounterpartKey = (kind: CounterpartKind, key: string | nul
   }
 };
 
-export const normaliseCounterpartKeys = (kind: CounterpartKind, keys: string[]): string[] => {
-  const out = new Set<string>();
-  for (const key of keys) {
-    const normalised = normaliseCounterpartKey(kind, key);
-    if (normalised) {
-      out.add(normalised);
-    }
-    if (out.size >= MAX_COUNTERPART_KEYS) {
-      break;
-    }
-  }
-  return [...out];
-};
-
 const OPENAEV_PATHS: Record<CounterpartKind, OpenAevObjectPath> = {
   ASSET: 'assets',
   ATTACK_PATTERN: 'attack-patterns',
@@ -281,37 +267,6 @@ const resolveKeys = async (
 };
 
 /**
- * Former key-based lookup, kept until the front reads the id-based contract (step 2 of the
- * #20153 rework); answers the found counterparts only.
- */
-export const resolveCounterparts = async (
-  kind: CounterpartKind,
-  keys: string[],
-  caller: CounterpartCaller,
-  providers: CounterpartProvider[] = PROVIDERS,
-  now: () => number = Date.now,
-): Promise<XtmCounterpart[]> => {
-  const normalised = normaliseCounterpartKeys(kind, keys);
-  if (normalised.length === 0) {
-    return [];
-  }
-  const results: XtmCounterpart[] = [];
-  for (const provider of providers) {
-    if (!provider.isConnected()) {
-      continue;
-    }
-    const answers = await resolveKeys(provider, kind, normalised, caller, now);
-    for (const key of normalised) {
-      const answer = answers.get(key);
-      if (answer?.status === 'found') {
-        results.push(answer.counterpart);
-      }
-    }
-  }
-  return results;
-};
-
-/**
  * The counterparts of OpenCTI objects given by id, in every connected product (Q2.1, Q2.2):
  * the keys are read on the server from the objects the caller can read; an id the caller cannot
  * read, or whose object carries no valid key, gets no entry at all. One entry per (id, product)
@@ -371,10 +326,6 @@ export const xtmConnections = (providers: CounterpartProvider[] = PROVIDERS): Xt
 const callerOf = (user: AuthUser): CounterpartCaller => ({ id: user.id, user_email: user.user_email });
 
 export const findXtmConnections = async (_context: AuthContext, _user: AuthUser) => xtmConnections();
-
-export const findXtmCounterparts = async (_context: AuthContext, user: AuthUser, kind: CounterpartKind, keys: string[]) => {
-  return resolveCounterparts(kind, keys, callerOf(user));
-};
 
 export const findXtmCounterpartsByIds = async (context: AuthContext, user: AuthUser, ids: string[]) => {
   const connected = PROVIDERS.some((p) => p.isConnected());

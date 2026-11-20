@@ -72,13 +72,6 @@ const incidentFragment = graphql`
       }
     }
     workflowEnabled
-    openAevAlertLinks: externalReferences(first: 50) {
-      edges {
-        node {
-          url
-        }
-      }
-    }
     ...WorkflowStatusStixDomainObject_data
     ...IncidentDetails_incident
   }
@@ -100,10 +93,7 @@ const Incident: React.FC<IncidentProps> = ({
   const overviewLayoutCustomization = useOverviewLayoutCustomization(incident.entity_type);
   const openAevAnchor = xtmCardAnchorKey(overviewLayoutCustomization);
   const openAevCard = (
-    <OpenAevAlertCard
-      gridRow
-      alertLinks={(incident.openAevAlertLinks?.edges ?? []).map((edge) => edge?.node.url)}
-    />
+    <OpenAevAlertCard gridRow objectId={incident.id} />
   );
 
   return (

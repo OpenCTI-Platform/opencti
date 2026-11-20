@@ -149,11 +149,11 @@ const Vulnerabilities = () => {
   const dataColumns = {
     name: {
       percentWidth: 28,
-      render: (data: { name: string; draftVersion?: unknown }) => (
+      render: (data: { id: string; name: string; draftVersion?: unknown }) => (
         <Stack direction="row" sx={{ alignItems: 'center', minWidth: 0, maxWidth: '100%' }}>
           <Box sx={{ minWidth: 0 }}>{defaultRender(data.name, !!data.draftVersion)}</Box>
-          <OpenAevRowMark kind="VULNERABILITY" counterpartKey={data.name} />
-          <OpenCrqRowMark kind="VULNERABILITY" counterpartKey={data.name} />
+          <OpenAevRowMark objectId={data.id} />
+          <OpenCrqRowMark objectId={data.id} />
         </Stack>
       ),
     },

@@ -3,23 +3,22 @@ import Box from '@mui/material/Box';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../../../../components/i18n';
 import { OaevLogo } from '../../../../../../static/images/logo_oaev';
-import useXtmCounterpart, { XtmCounterpartKind } from '../core/useXtmCounterparts';
+import useXtmCounterpart from '../core/useXtmCounterparts';
 
 interface OpenAevRowMarkProps {
-  kind: XtmCounterpartKind;
-  // The natural key both platforms share: hostname, MITRE id, CVE id or STIX id.
-  counterpartKey: string | null | undefined;
+  // The OpenCTI object of the row: the server reads its key under the caller's rights.
+  objectId: string | null | undefined;
 }
 
 /**
  * List-row mark of an object OpenAEV also holds: a small OpenAEV logo linking to the counterpart.
- * Nothing is drawn while loading, without a match or when OpenAEV is not connected, so a list
- * never fills with muted marks or calls to action (the hero carries the CTA). The lookups of
- * every row of a page go out batched in one query per kind.
+ * Nothing is drawn while loading, without a match, when OpenAEV is unavailable or not connected,
+ * so a list never fills with muted marks or calls to action (the hero carries the CTA). The lookups
+ * of every row of a page go out batched in one query, whatever their type.
  */
-const OpenAevRowMark: React.FC<OpenAevRowMarkProps> = ({ kind, counterpartKey }) => {
+const OpenAevRowMark: React.FC<OpenAevRowMarkProps> = ({ objectId }) => {
   const { t_i18n } = useFormatter();
-  const state = useXtmCounterpart('openaev', kind, counterpartKey);
+  const state = useXtmCounterpart('openaev', objectId);
   if (state.status !== 'match') return null;
   const { object_name, object_url } = state.counterpart;
   const label = object_name ? `${t_i18n('Open in OpenAEV')}: ${object_name}` : t_i18n('Open in OpenAEV');
@@ -32,6 +31,7 @@ const OpenAevRowMark: React.FC<OpenAevRowMarkProps> = ({ kind, counterpartKey })
           target="_blank"
           rel="noopener noreferrer"
           aria-label={t_i18n('Open in OpenAEV')}
+          data-testid="openaev-row-mark"
           // The row is itself a link: the mark opens OpenAEV without opening the row.
           onClick={(event: React.MouseEvent) => event.stopPropagation()}
           sx={{

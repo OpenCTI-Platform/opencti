@@ -23,9 +23,7 @@ import {
   COUNTERPART_CACHE_TTL_MS,
   CounterpartLookupError,
   normaliseCounterpartKey,
-  normaliseCounterpartKeys,
   resetCounterpartCache,
-  resolveCounterparts,
   resolveCounterpartsOfSources,
   xtmConnections,
   type XtmCounterpart,
@@ -77,27 +75,22 @@ describe('XTM counterparts: key normalisation', () => {
     expect(normaliseCounterpartKey('ALERT', `https://edr.example.com/${'a'.repeat(2048)}`)).toBeNull();
     expect(normaliseCounterpartKey('ALERT', `https://edr.example.com/${'a'.repeat(600)}`)).not.toBeNull();
   });
-
-  it('dedupes and caps the batch', () => {
-    expect(normaliseCounterpartKeys('VULNERABILITY', ['CVE-2024-1111', 'cve-2024-1111', 'bad'])).toEqual(['CVE-2024-1111']);
-    const many = Array.from({ length: 300 }, (_, i) => `host-${i}`);
-    expect(normaliseCounterpartKeys('ASSET', many)).toHaveLength(200);
-  });
 });
 
-describe('XTM counterparts: key-based resolution', () => {
+describe('XTM counterparts: connections and cache', () => {
   beforeEach(() => resetCounterpartCache());
 
-  it('connected with a match answers the counterpart only for the matched key, as the caller', async () => {
+  const SOURCES = [{ id: 'sys-1', kind: 'ASSET' as const, keys: ['web-01'] }, { id: 'sys-2', kind: 'ASSET' as const, keys: ['db-02'] }];
+
+  it('asks the product as the caller with the keys read on the server', async () => {
     const p = provider(true, ['web-01']);
-    const result = await resolveCounterparts('ASSET', ['WEB-01', 'db-02'], ALICE, [p]);
-    expect(result.map((c) => c.key)).toEqual(['web-01']);
+    await resolveCounterpartsOfSources(SOURCES, ALICE, [p]);
     expect(p.resolve).toHaveBeenCalledWith('ASSET', ['web-01', 'db-02'], ALICE);
   });
 
   it('not connected never calls the provider', async () => {
     const p = provider(false, ['web-01']);
-    expect(await resolveCounterparts('ASSET', ['web-01'], ALICE, [p])).toEqual([]);
+    expect(await resolveCounterpartsOfSources(SOURCES, ALICE, [p])).toEqual([]);
     expect(p.resolve).not.toHaveBeenCalled();
   });
 
@@ -105,15 +98,15 @@ describe('XTM counterparts: key-based resolution', () => {
     const p = provider(true, ['web-01']);
     let clock = 1_000;
     const now = () => clock;
-    await resolveCounterparts('ASSET', ['web-01', 'db-02'], ALICE, [p], now);
-    const cached = await resolveCounterparts('ASSET', ['web-01', 'db-02'], ALICE, [p], now);
-    expect(cached.map((c) => c.key)).toEqual(['web-01']);
+    await resolveCounterpartsOfSources(SOURCES, ALICE, [p], now);
+    const cached = await resolveCounterpartsOfSources(SOURCES, ALICE, [p], now);
+    expect(cached.map((r) => r.status)).toEqual(['found', 'not_found']);
     expect(p.resolve).toHaveBeenCalledTimes(1);
     // Another user is never served Alice's answer: the product applies each user's own rights.
-    await resolveCounterparts('ASSET', ['web-01'], BOB, [p], now);
+    await resolveCounterpartsOfSources(SOURCES, BOB, [p], now);
     expect(p.resolve).toHaveBeenCalledTimes(2);
     clock += COUNTERPART_CACHE_TTL_MS + 1;
-    await resolveCounterparts('ASSET', ['web-01'], ALICE, [p], now);
+    await resolveCounterpartsOfSources(SOURCES, ALICE, [p], now);
     expect(p.resolve).toHaveBeenCalledTimes(3);
   });
 

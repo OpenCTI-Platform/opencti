@@ -80,8 +80,8 @@ const CampaignComponent = ({
   const openAevAnchor = xtmCardAnchorKey(overviewLayoutCustomization);
   const openAevCard = (
     <>
-      <OpenAevCard gridRow kind="THREAT" counterpartKey={campaign.standard_id} />
-      <OpenCrqCard gridRow kind="THREAT" counterpartKey={campaign.standard_id} />
+      <OpenAevCard gridRow objectId={campaign.id} />
+      <OpenCrqCard gridRow objectId={campaign.id} />
     </>
   );
 

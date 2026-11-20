@@ -5,12 +5,11 @@ import Stack from '@mui/material/Stack';
 import Card from '@common/card/Card';
 import { useFormatter } from '../../../../../../components/i18n';
 import { OaevLogo } from '../../../../../../static/images/logo_oaev';
-import useXtmCounterpart, { normaliseXtmKey, XtmCounterpartKind } from '../core/useXtmCounterparts';
+import useXtmCounterpart, { sharedIdentifierOf } from '../core/useXtmCounterparts';
 
 interface OpenAevCardProps {
-  kind: XtmCounterpartKind;
-  // The natural key both platforms share: hostname, MITRE id, CVE id or STIX id.
-  counterpartKey: string | null | undefined;
+  // The OpenCTI object: the server reads its key (hostname, MITRE id, CVE id or STIX id) under the caller's rights.
+  objectId: string | null | undefined;
   // In an overview grid: the card takes a full-width row of its own, and no empty cell is left
   // when it draws nothing.
   gridRow?: boolean;
@@ -50,16 +49,17 @@ export const formatCounterpartFacts = (
  * platforms share and its key facts (findings, affected assets, simulations and the latest one);
  * without a match, a muted "Not in OpenAEV" line. The card is informational: the hero pivot of the
  * same page is the single "Open in OpenAEV" action, so the card carries no link of its own. Nothing
- * is drawn while loading or when OpenAEV is not connected: the hero action carries the "Connect
- * OpenAEV" call to action, so the overview does not repeat it. A threat is matched on its STIX id,
- * which means nothing to an analyst: its name identifies it, so no shared identifier line is shown.
+ * is drawn while loading, when OpenAEV is not connected or unavailable (the hero action carries the
+ * call to action and the muted unavailable state, so the overview does not repeat them), or when
+ * there is nothing to match. The shared identifier is the key OpenAEV answered on; a threat is
+ * matched on its STIX id, which means nothing to an analyst, so no shared identifier line is shown.
  */
-const OpenAevCard: React.FC<OpenAevCardProps> = ({ kind, counterpartKey, gridRow = false }) => {
+const OpenAevCard: React.FC<OpenAevCardProps> = ({ objectId, gridRow = false }) => {
   const { t_i18n, fd } = useFormatter();
-  const state = useXtmCounterpart('openaev', kind, counterpartKey);
+  const state = useXtmCounterpart('openaev', objectId);
   if (state.status !== 'match' && state.status !== 'no_match') return null;
-  const sharedKey = kind === 'THREAT' ? null : normaliseXtmKey(kind, counterpartKey);
   const match = state.status === 'match' ? state.counterpart : null;
+  const sharedKey = sharedIdentifierOf(match);
   const facts = match ? formatCounterpartFacts(match.facts, t_i18n, fd) : [];
 
   const card = (

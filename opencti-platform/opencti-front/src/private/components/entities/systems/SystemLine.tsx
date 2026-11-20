@@ -80,8 +80,8 @@ export const SystemLine: FunctionComponent<SystemLineProps> = ({
             >
               {data.name}
               {data.draftVersion && (<DraftChip />)}
-              <OpenAevRowMark kind="ASSET" counterpartKey={data.name} />
-              <OpenCrqRowMark kind="ASSET" counterpartKey={data.name} />
+              <OpenAevRowMark objectId={data.id} />
+              <OpenCrqRowMark objectId={data.id} />
             </BodyItem>
             <BodyItem
               style={{ width: dataColumns.x_opencti_criticality.width }}

@@ -25,11 +25,12 @@ vi.mock('../../../../../../src/utils/http-client', () => ({
 
 vi.mock('../../../../../../src/domain/xtm-auth', () => ({ issueXtmJwt: mocks.jwt }));
 
+import { counterpartKeysOf } from '../../../../../../src/modules/xtm/counterpart/core/counterpart-keys';
 import { fetchOpenAevObjects, getOpenAevUrl, isOpenAevConnected, OPENAEV_DEFAULT_TENANT_ID } from '../../../../../../src/modules/xtm/counterpart/openaev/openaev-client';
 import {
   CounterpartLookupError,
   findXtmConnections,
-  findXtmCounterparts,
+  findXtmCounterpartsByIds,
   openAevProvider,
   resetCounterpartCache,
   sanitiseFacts,
@@ -196,9 +197,13 @@ describe('OpenAEV counterpart provider', () => {
       { product: 'openaev', connected: true },
       { product: 'opencrq', connected: false },
     ]);
+    vi.mocked(counterpartKeysOf).mockResolvedValueOnce([{ id: 'ap-1', kind: 'ATTACK_PATTERN', keys: ['T1059.001'] }]);
     mocks.post.mockResolvedValue({ data: [remote('T1059.001', { object_type: 'AttackPattern' })] });
-    const found = await findXtmCounterparts(context, user, 'ATTACK_PATTERN', ['t1059.001', 'Phishing']);
-    expect(found.map((c) => c.key)).toEqual(['T1059.001']);
+    const results = await findXtmCounterpartsByIds(context, user, ['ap-1', 'unreadable-1']);
+    expect(results.map(({ id, product, status }) => ({ id, product, status }))).toEqual([
+      { id: 'ap-1', product: 'openaev', status: 'found' },
+    ]);
+    expect(results[0].counterpart?.key).toBe('T1059.001');
     expect(mocks.post).toHaveBeenCalledWith(expect.stringContaining('/xtm/objects/attack-patterns'), { counterpart_keys: ['T1059.001'] });
   });
 });

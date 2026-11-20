@@ -135,7 +135,7 @@ const AttackPatterns = () => {
         return (
           <Stack direction="row" sx={{ alignItems: 'center', minWidth: 0, maxWidth: '100%' }}>
             <Box sx={{ minWidth: 0 }}>{defaultRender(data.name, displayDraftChip)}</Box>
-            <OpenAevRowMark kind="ATTACK_PATTERN" counterpartKey={data.x_mitre_id} />
+            <OpenAevRowMark objectId={data.id} />
           </Stack>
         );
       },

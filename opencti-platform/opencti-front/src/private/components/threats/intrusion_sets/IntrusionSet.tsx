@@ -79,8 +79,8 @@ const IntrusionSet: React.FC<IntrusionSetProps> = ({ intrusionSetData }) => {
   const openAevAnchor = xtmCardAnchorKey(overviewLayoutCustomization);
   const openAevCard = (
     <>
-      <OpenAevCard gridRow kind="THREAT" counterpartKey={intrusionSet.standard_id} />
-      <OpenCrqCard gridRow kind="THREAT" counterpartKey={intrusionSet.standard_id} />
+      <OpenAevCard gridRow objectId={intrusionSet.id} />
+      <OpenCrqCard gridRow objectId={intrusionSet.id} />
     </>
   );
   return (

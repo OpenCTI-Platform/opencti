@@ -80,7 +80,7 @@ const AttackPattern: React.FC<AttackPatternProps> = ({
   const attackPattern = useFragment<AttackPattern_attackPattern$key>(attackPatternFragment, attackPatternData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(attackPattern.entity_type);
   const openAevAnchor = xtmCardAnchorKey(overviewLayoutCustomization);
-  const openAevCard = <OpenAevCard gridRow kind="ATTACK_PATTERN" counterpartKey={attackPattern.x_mitre_id} />;
+  const openAevCard = <OpenAevCard gridRow objectId={attackPattern.id} />;
 
   return (
     <div data-testid="attack-pattern-details-page">

@@ -84,8 +84,8 @@ const ThreatActorGroup: React.FC<ThreatActorGroupProps> = ({ threatActorGroupDat
   const openAevAnchor = xtmCardAnchorKey(overviewLayoutCustomization);
   const openAevCard = (
     <>
-      <OpenAevCard gridRow kind="THREAT" counterpartKey={threatActorGroup.standard_id} />
-      <OpenCrqCard gridRow kind="THREAT" counterpartKey={threatActorGroup.standard_id} />
+      <OpenAevCard gridRow objectId={threatActorGroup.id} />
+      <OpenCrqCard gridRow objectId={threatActorGroup.id} />
     </>
   );
 

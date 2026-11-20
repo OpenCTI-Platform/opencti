@@ -464,10 +464,7 @@ class StixSightingRelationshipContainer extends Component {
                   }
                 />
               </Grid>
-              <OpenAevAlertCard
-                gridRow
-                alertLinks={(stixSightingRelationship.openAevAlertLinks?.edges ?? []).map((edge) => edge?.node?.url)}
-              />
+              <OpenAevAlertCard gridRow objectId={stixSightingRelationship.id} />
               <Grid size={6}>
                 <StixSightingRelationshipExternalReferences
                   stixSightingRelationshipId={stixSightingRelationship.id}
@@ -562,13 +559,6 @@ const StixSightingRelationshipOverview = createFragmentContainer(
           }
         }
         workflowEnabled
-        openAevAlertLinks: externalReferences(first: 50) {
-          edges {
-            node {
-              url
-            }
-          }
-        }
         x_opencti_inferences {
           rule {
             id

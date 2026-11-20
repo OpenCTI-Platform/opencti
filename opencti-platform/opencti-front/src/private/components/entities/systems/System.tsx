@@ -101,8 +101,8 @@ const System: React.FC<SystemProps> = ({
           />
         </Grid>
         {/* Right under Details and Basic information, above the lists; Notes stays last. */}
-        <OpenAevCard gridRow kind="ASSET" counterpartKey={system.name} />
-        <OpenCrqCard gridRow kind="ASSET" counterpartKey={system.name} />
+        <OpenAevCard gridRow objectId={system.id} />
+        <OpenCrqCard gridRow objectId={system.id} />
         {viewAs === 'knowledge' && (
           <Grid size={6}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships

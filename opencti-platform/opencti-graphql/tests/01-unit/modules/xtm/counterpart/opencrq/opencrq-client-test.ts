@@ -26,7 +26,7 @@ vi.mock('../../../../../../src/utils/http-client', () => ({
 vi.mock('../../../../../../src/domain/xtm-auth', () => ({ issueXtmJwt: mocks.jwt }));
 
 import { fetchOpenCrqObjects, getOpenCrqApiUrl, getOpenCrqUrl, isOpenCrqConnected } from '../../../../../../src/modules/xtm/counterpart/opencrq/opencrq-client';
-import { openCrqProvider, resetCounterpartCache, resolveCounterparts } from '../../../../../../src/modules/xtm/counterpart/core/counterpart-domain';
+import { openCrqProvider, resetCounterpartCache, resolveCounterpartsOfSources } from '../../../../../../src/modules/xtm/counterpart/core/counterpart-domain';
 
 const STIX = 'intrusion-set--3b0a1c2d-0000-4000-8000-000000000001';
 const ALICE = { id: 'alice', user_email: 'alice@example.com' };
@@ -137,13 +137,14 @@ describe('OpenCRQ client', () => {
   });
 
   it('is skipped by the resolver when not connected and cached per user and product when it is', async () => {
-    expect(await resolveCounterparts('ASSET', ['WEB-01'], ALICE, [openCrqProvider])).toEqual([]);
+    const sources = [{ id: 'sys-1', kind: 'ASSET' as const, keys: ['web-01'] }];
+    expect(await resolveCounterpartsOfSources(sources, ALICE, [openCrqProvider])).toEqual([]);
     expect(mocks.get).not.toHaveBeenCalled();
     connect();
     mocks.get.mockResolvedValue(tRpc([remote('web-01', { object_type: 'asset' })]));
-    const first = await resolveCounterparts('ASSET', ['WEB-01'], ALICE, [openCrqProvider]);
-    const second = await resolveCounterparts('ASSET', ['web-01'], ALICE, [openCrqProvider]);
-    expect(first.map((c) => c.key)).toEqual(['web-01']);
+    const first = await resolveCounterpartsOfSources(sources, ALICE, [openCrqProvider]);
+    const second = await resolveCounterpartsOfSources(sources, ALICE, [openCrqProvider]);
+    expect(first.map((r) => r.counterpart?.key)).toEqual(['web-01']);
     expect(second).toEqual(first);
     expect(mocks.get).toHaveBeenCalledTimes(1);
   });

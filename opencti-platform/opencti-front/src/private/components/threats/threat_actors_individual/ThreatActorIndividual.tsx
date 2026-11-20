@@ -154,8 +154,8 @@ const ThreatActorIndividual: React.FC<ThreatActorIndividualProps> = ({ threatAct
   const openAevAnchor = xtmCardAnchorKey(overviewLayoutCustomization);
   const openAevCard = (
     <>
-      <OpenAevCard gridRow kind="THREAT" counterpartKey={threatActorIndividual.standard_id} />
-      <OpenCrqCard gridRow kind="THREAT" counterpartKey={threatActorIndividual.standard_id} />
+      <OpenAevCard gridRow objectId={threatActorIndividual.id} />
+      <OpenCrqCard gridRow objectId={threatActorIndividual.id} />
     </>
   );
 

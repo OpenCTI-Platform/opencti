@@ -12480,7 +12480,6 @@ type Query {
   workspace(id: String!): Workspace
   workspaces(after: ID, filters: FilterGroup, first: Int, includeAuthorities: Boolean, orderBy: WorkspacesOrdering, orderMode: OrderingMode, search: String): WorkspaceConnection
   xtmConnections: [XtmConnection!]!
-  xtmCounterparts(keys: [String!]!, kind: XtmCounterpartKind!): [XtmCounterpart!]!
   xtmCounterpartsOf(ids: [String!]!): [XtmCounterpartResult!]!
 }
 
@@ -18558,14 +18557,6 @@ type XtmCounterpart {
 type XtmCounterpartFact {
   key: String!
   value: String!
-}
-
-enum XtmCounterpartKind {
-  ALERT
-  ASSET
-  ATTACK_PATTERN
-  THREAT
-  VULNERABILITY
 }
 
 type XtmCounterpartResult {

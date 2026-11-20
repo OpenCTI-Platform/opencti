@@ -150,7 +150,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
             <StixDomainObjectHeader
               entityType="Threat-Actor-Group"
               stixDomainObject={threatActorGroup}
-              xtmCounterpart={{ kind: 'THREAT', key: threatActorGroup.standard_id }}
+              xtmCounterpartId={threatActorGroup.id}
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <ThreatActorGroupEdition threatActorGroupId={threatActorGroup.id} />

@@ -141,7 +141,8 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
             <StixDomainObjectHeader
               entityType="Attack-Pattern"
               stixDomainObject={attackPattern}
-              xtmCounterpart={{ kind: 'ATTACK_PATTERN', key: attackPattern.x_mitre_id }}
+              xtmCounterpartId={attackPattern.id}
+              xtmCounterpartProducts={['openaev']}
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <AttackPatternEdition attackPatternId={attackPattern.id} />
