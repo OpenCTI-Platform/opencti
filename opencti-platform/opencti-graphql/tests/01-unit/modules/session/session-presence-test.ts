@@ -221,6 +221,48 @@ describe('session presence', () => {
     expect(store.checkTime(sessionId)).toEqual(Date.now() + GRACE_PERIOD);
   });
 
+  it('should not write anything to Redis while the setting is off', async () => {
+    enablePresence(false);
+    const sessionId = nextSessionId();
+    const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+    await vi.advanceTimersByTimeAsync(2 * RENEW_INTERVAL);
+    await unregisterSessionPresence(sessionId, connectionId);
+
+    expect(store.saveSessionLeases).not.toHaveBeenCalled();
+    expect(store.removeSessionLease).not.toHaveBeenCalled();
+    expect(store.scheduleSessionCheck).not.toHaveBeenCalled();
+  });
+
+  it('should cover the tabs already open at the next renewal once the setting is enabled', async () => {
+    enablePresence(false);
+    const sessionId = nextSessionId();
+    const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+    enablePresence(true);
+
+    await vi.advanceTimersByTimeAsync(RENEW_INTERVAL);
+    expect(store.hasLiveLease(sessionId, connectionId)).toBe(true);
+    await sweepAfter(3 * LEASE_TTL);
+    expect(session.killSessionByRawId).not.toHaveBeenCalled();
+
+    await unregisterSessionPresence(sessionId, connectionId);
+    await sweepAfter(GRACE_PERIOD);
+    expect(session.killSessionByRawId).toHaveBeenCalledExactlyOnceWith(sessionId);
+    expect(vi.mocked(listener.publishUserAction).mock.calls[0][0].user.origin).toEqual(ORIGIN);
+  });
+
+  it('should keep a session when one of its tabs closes before the others got their lease', async () => {
+    enablePresence(false);
+    const sessionId = nextSessionId();
+    const closedConnectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+    await registerSessionPresence(sessionId, ORIGIN);
+    enablePresence(true);
+    // Closed right after the activation: the other tab gets its lease at the next renewal, within the grace period
+    await unregisterSessionPresence(sessionId, closedConnectionId);
+
+    await sweepAfter(GRACE_PERIOD);
+    expect(session.killSessionByRawId).not.toHaveBeenCalled();
+  });
+
   it('should logout the session after the grace period once its last connection is closed', async () => {
     const sessionId = nextSessionId();
     const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
