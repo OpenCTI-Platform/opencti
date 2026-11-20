@@ -1622,9 +1622,16 @@ class OpenCTIStix2:
 
         stix_helper = self.get_stix_helper().get(stix_object["type"])
         if stix_helper:
-            stix_object_results = stix_helper.import_from_stix2(
-                stixObject=stix_object, extras=extras, update=update
+            # The platform does the work +1 with the create call
+            self.opencti.expectation_report_requested = (
+                self.opencti.bundle_send_to_queue
             )
+            try:
+                stix_object_results = stix_helper.import_from_stix2(
+                    stixObject=stix_object, extras=extras, update=update
+                )
+            finally:
+                self.opencti.expectation_report_requested = False
         else:
             stix_object_results = None
             self.opencti.app_logger.error(
@@ -4343,6 +4350,7 @@ class OpenCTIStix2:
         :return: True on success
         :rtype: bool
         """
+        self.opencti.expectation_reported = False
         is_inferred = self.opencti.get_attribute_in_extension("is_inferred", item)
         opencti_operation = self.opencti.get_attribute_in_extension(
             "opencti_operation", item
@@ -4465,7 +4473,7 @@ class OpenCTIStix2:
                             in types
                         ):
                             self.import_object(item, update, types)
-        if work_id is not None:
+        if work_id is not None and not self.opencti.expectation_reported:
             self.opencti.work.report_expectation(work_id, None)
         bundles_success_counter.add(1)
         return True

@@ -278,6 +278,8 @@ class OpenCTIApiClient:
         self.request_headers = build_request_headers(
             token, custom_headers, self.app_logger, provider
         )
+        self.expectation_report_requested = False
+        self.expectation_reported = False
         self.session = requests.session()
         self.session_requests_timeout = requests_timeout
         # Define the dependencies
@@ -667,6 +669,9 @@ class OpenCTIApiClient:
         query_headers = self.request_headers.copy()
         if disable_impersonate and "opencti-applicant-id" in query_headers:
             del query_headers["opencti-applicant-id"]
+        if self.expectation_report_requested:
+            query_headers["opencti-report-expectation"] = "true"
+            self.expectation_report_requested = False
         # If yes, transform variable (file to null) and create multipart query
         if len(files_vars) > 0:
             multipart_data = {
@@ -750,6 +755,8 @@ class OpenCTIApiClient:
                 proxies=self.proxies,
                 timeout=self.session_requests_timeout,
             )
+        if r.headers.get("opencti-expectation-reported") == "true":
+            self.expectation_reported = True
         # Build response
         if r.status_code == 200:
             result = r.json()
