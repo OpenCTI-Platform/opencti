@@ -1039,7 +1039,7 @@ def no_embedded_relationships(stix_object, types=None):
 def capture_queries(stix2: OpenCTIStix2, monkeypatch) -> list:
     queries = []
 
-    def fake_query(query, variables=None, disable_impersonate=False):
+    def fake_query(query, variables):
         queries.append({"query": query, "variables": variables})
         return {"data": {}}
 
@@ -1125,6 +1125,54 @@ def test_import_observable_pushes_staged_sync_file_by_reference(
         "id": "observable-internal-id",
         "fileRef": EXPECTED_STAGED_FILE_REF,
     }
+
+
+def test_import_observable_creates_refs_before_a_refused_staged_sync_file(
+    opencti_stix2_no_server: OpenCTIStix2, monkeypatch
+):
+    stix2 = opencti_stix2_no_server
+    stix2.opencti.sync_id = "sync-id"
+    monkeypatch.setattr(
+        stix2, "extract_embedded_relationships", no_embedded_relationships
+    )
+
+    def refuse_query(*args, **kwargs):
+        raise ValueError("Cannot copy referenced sync file")
+
+    monkeypatch.setattr(stix2.opencti, "query", refuse_query)
+    monkeypatch.setattr(
+        stix2.opencti.stix_cyber_observable,
+        "create",
+        lambda **kwargs: {"id": "observable-internal-id", "entity_type": "IPv4-Addr"},
+    )
+    created_refs = []
+    monkeypatch.setattr(
+        stix2.opencti.stix_nested_ref_relationship,
+        "create",
+        lambda **kwargs: created_refs.append(kwargs),
+    )
+    stix_object = {
+        "id": "ipv4-addr--11111111-1111-4111-8111-111111111111",
+        "type": "ipv4-addr",
+        "value": "1.2.3.4",
+        "resolves_to_refs": ["mac-addr--22222222-2222-4222-8222-222222222222"],
+        "extensions": {
+            "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+                "files": [STAGED_SYNC_FILE]
+            }
+        },
+    }
+
+    with pytest.raises(ValueError):
+        stix2.import_observable(stix_object)
+
+    assert created_refs == [
+        {
+            "fromId": "observable-internal-id",
+            "toId": "mac-addr--22222222-2222-4222-8222-222222222222",
+            "relationship_type": "resolves-to",
+        }
+    ]
 
 
 def test_import_object_skips_staged_sync_file_without_sync_id(

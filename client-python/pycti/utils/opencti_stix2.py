@@ -1910,11 +1910,6 @@ class OpenCTIStix2:
                     "type": stix_observable_result["entity_type"],
                 },
             )
-            self._import_staged_sync_files(
-                IMPORT_PUSH_REF_OBSERVABLE_MUTATION,
-                stix_observable_result["id"],
-                staged_sync_files,
-            )
             # Iterate over refs to create appropriate relationships
             for key in stix_object.keys():
                 if key not in [
@@ -1956,6 +1951,12 @@ class OpenCTIStix2:
                                 toId=value,
                                 relationship_type=relationship_type,
                             )
+            # A refused staged file must not prevent the nested refs above
+            self._import_staged_sync_files(
+                IMPORT_PUSH_REF_OBSERVABLE_MUTATION,
+                stix_observable_result["id"],
+                staged_sync_files,
+            )
         else:
             return None
 
