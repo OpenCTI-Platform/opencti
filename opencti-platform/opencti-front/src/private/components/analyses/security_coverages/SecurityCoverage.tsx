@@ -107,7 +107,7 @@ const SecurityCoverageComponent = ({
   return (
     <Grid container={true} spacing={3}>
       <Grid size={6}>
-        <SecurityCoverageMainInfo securityCoverage={securityCoverage} />
+        <SecurityCoverageMainInfo securityCoverage={securityCoverage} selectedResultId={null} />
       </Grid>
       <Grid size={6}>
         <SecurityCoverageTestedEntitiesChart securityCoverage={securityCoverage} />
