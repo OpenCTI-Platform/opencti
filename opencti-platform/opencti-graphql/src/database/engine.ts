@@ -1709,10 +1709,12 @@ export const elCount = async (
   context: AuthContext,
   user: AuthUser,
   indexName: string | string[] | undefined,
-  options = {},
+  options: { terminateAfter?: number; [key: string]: any } = {},
 ): Promise<number> => {
-  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
-  const query = { index: getIndicesToQuery(context, user, indexName), body };
+  // terminateAfter bounds the count: each shard stops counting after that many documents
+  const { terminateAfter, ...queryOptions } = options;
+  const body = await elQueryBodyBuilder(context, user, { ...queryOptions, noSize: true, noSort: true });
+  const query = { index: getIndicesToQuery(context, user, indexName), body, ...(terminateAfter ? { terminate_after: terminateAfter } : {}) };
   logApp.debug('[SEARCH] elCount', { query });
   return elRawCount(query);
 };
@@ -2916,7 +2918,7 @@ export const elRemoveRelationConnection = async (
 export const computeDeleteElementsImpacts = async (
   cleanupRelations: BasicStoreRelation[],
   toBeRemovedIds: string[],
-  relationsToRemoveMap: Map<string, string>,
+  relationsToRemoveMap: { has: (id: string) => boolean },
 ) => {
   // Update all rel connections that will remain
   const elementsImpact: Record<string, Record<string, string[]>> = {};
@@ -3152,8 +3154,10 @@ const elCopyRelationsTargetsToDraft = async (
   }
 };
 
-export const elMarkElementsAsDraftDelete = async (context: AuthContext, user: AuthUser, elements: BasicStoreBase[]) => {
+export const elMarkElementsAsDraftDelete = async (context: AuthContext, user: AuthUser, elements: BasicStoreBase[], opts: SnapshotDeleteOpts = {}) => {
   if (elements.some((e) => !isDraftSupportedEntity(e))) throw UnsupportedError('Cannot delete unsupported element in draft context', { elements });
+  // The whole cascade is copied into the draft: refuse above the cap, before anything is written
+  await elControlSnapshotDelete(context, user, elements, { ...opts, isDraftDelete: true });
 
   // 01. Remove all elements that are draft creations, mark as delete for others
   const liveElements = elements.filter((f) => !isDraftIndex(f._index));
@@ -3634,20 +3638,104 @@ const createDeleteOperationElement = async (
 type DeleteElementsOpts = {
   forceRefresh?: boolean;
   forceDelete?: boolean;
+  // Signal of the lock held by the caller: the batched delete stops between two pages if the lock is lost
+  signal?: AbortSignal;
+  // The caller already ran elControlSnapshotDelete
+  snapshotChecked?: boolean;
+} & SnapshotDeleteOpts;
+type SnapshotDeleteOpts = {
+  // Overrides of MAX_BULK_OPERATIONS and DELETE_MAX_SNAPSHOT_RELATIONS, for tests
+  batchSize?: number;
+  maxSnapshotRelations?: number;
 };
-export const elDeleteElements = async (
+
+// region batched delete
+// Trash and draft deletes need the whole cascade of relations in one place, they are capped instead of batched.
+// The same cap protects the load of the outgoing refs of the element to delete.
+export const DELETE_MAX_SNAPSHOT_RELATIONS: number = conf.get('app:delete:max_snapshot_relations') ?? 50000;
+const DELETE_PROGRESS_LOG_PAGES = 10;
+// A page larger than the search size limit would be read as the last page
+const cascadePageSize = (batchSize?: number) => Math.min(batchSize ?? MAX_BULK_OPERATIONS, ES_MAX_PAGINATION);
+
+type CascadePageHandler = (page: BasicStoreRelation[], removedIds: Set<string>) => Promise<boolean>;
+type CascadeOpts = {
+  batchSize?: number;
+  includeDeletedInDraft?: boolean;
+  // Called once with the first hits of the roots, before anything is processed
+  onFirstRootHits?: (hits: BasicStoreRelation[]) => Promise<void>;
+  // Called with each page before its children are read. Returns false to stop.
+  onEnterPage?: (page: BasicStoreRelation[]) => Promise<boolean>;
+};
+
+/**
+ * Depth-first traversal of the relations connected to parentIds, then of the relations connected to those, and so on.
+ * Pages of MAX_BULK_OPERATIONS relations are read with a search_after cursor that only moves forward, so a page
+ * deleted by onPage is never read again from the start.
+ * onEnterPage receives each page before its children are read, onPage once all of its children are handled.
+ * onPage also receives the ids of everything on the current path (roots, ancestor pages and this page): those are
+ * being removed and must not be cleaned up. This set is shared along the traversal, not copied per level.
+ * At any time only one page per level of the current path is kept in memory.
+ * Returns false if onEnterPage or onPage asked to stop.
+ */
+const traverseRelationsCascade = async (
   context: AuthContext,
-  user: AuthUser,
-  elements: BasicStoreBase[],
-  opts: DeleteElementsOpts = {},
-) => {
-  if (elements.length === 0) return;
-  if (getDraftContext(context, user)) {
-    await elMarkElementsAsDraftDelete(context, user, elements);
-    return;
-  }
-  const { forceDelete = true } = opts;
-  const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, SYSTEM_USER, elements);
+  parentIds: string[],
+  ancestors: Set<string>,
+  onPage: CascadePageHandler,
+  opts: CascadeOpts = {},
+): Promise<boolean> => {
+  let completed = true;
+  let isFirstPage = true;
+  const filters = {
+    mode: FilterMode.And,
+    filters: [{ key: ['connections'], nested: [{ key: 'internal_id', values: parentIds }], values: [] }],
+    filterGroups: [],
+  };
+  const callback = async (hits: BasicStoreRelation[]) => {
+    if (isFirstPage && opts.onFirstRootHits) {
+      await opts.onFirstRootHits(hits);
+    }
+    isFirstPage = false;
+    // A relation already on the current path is a cycle between relations, it is handled by its ancestor
+    const page = hits.filter((hit) => !ancestors.has(hit.internal_id));
+    if (page.length === 0) {
+      return true;
+    }
+    if (opts.onEnterPage && !(await opts.onEnterPage(page))) {
+      completed = false;
+      return false;
+    }
+    // The page joins the current path while its children are handled, and leaves it once it is processed
+    page.forEach((relation) => ancestors.add(relation.internal_id));
+    try {
+      const childrenOpts = { batchSize: opts.batchSize, includeDeletedInDraft: opts.includeDeletedInDraft, onEnterPage: opts.onEnterPage };
+      const childrenCompleted = await traverseRelationsCascade(context, page.map((r) => r.internal_id), ancestors, onPage, childrenOpts);
+      completed = childrenCompleted && await onPage(page, ancestors);
+    } finally {
+      page.forEach((relation) => ancestors.delete(relation.internal_id));
+    }
+    await doYield();
+    return completed;
+  };
+  const listOpts: RepaginateOpts<BasicStoreRelation> = {
+    filters,
+    callback,
+    types: [ABSTRACT_BASIC_RELATIONSHIP],
+    first: cascadePageSize(opts.batchSize),
+    includeDeletedInDraft: opts.includeDeletedInDraft,
+  };
+  await elList<BasicStoreRelation>(context, SYSTEM_USER, READ_RELATIONSHIPS_INDICES, listOpts);
+  return completed;
+};
+
+// Access, confidence and restrict-delete controls are no-ops for this user
+const isDeleteControlBypassed = (user: AuthUser) => {
+  const confidence = user.effective_confidence_level;
+  const hasFullConfidence = (confidence?.max_confidence ?? 0) >= 100 && (confidence?.overrides ?? []).every((o) => o.max_confidence >= 100);
+  return isBypassUser(user) && !user.restrict_delete && hasFullConfidence;
+};
+
+const controlRelationsToDelete = async (context: AuthContext, user: AuthUser, relations: BasicStoreRelation[]) => {
   // User must have access to all relations to remove to be able to delete
   const filteredRelations = await userFilterStoreElements(context, user, relations);
   if (relations.length !== filteredRelations.length) {
@@ -3655,6 +3743,160 @@ export const elDeleteElements = async (
   }
   relations.forEach((instance) => controlUserConfidenceAgainstElement(user, instance));
   relations.forEach((instance) => controlUserRestrictDeleteAgainstElement(user, instance));
+};
+
+/**
+ * Read-only pass over the whole cascade, before anything is mutated.
+ * - withControls: keeps the all-or-nothing guarantee of the access controls for a batched delete.
+ * - maxRelations: counts the distinct relations of the cascade and stops as soon as it is above the cap.
+ *   Returns false in that case. The counted ids are kept to count each relation once: at most the cap.
+ */
+const preflightRelationsCascade = async (
+  context: AuthContext,
+  user: AuthUser,
+  elements: BasicStoreBase[],
+  opts: { withControls: boolean; maxRelations?: number; batchSize?: number; includeDeletedInDraft?: boolean },
+) => {
+  const { withControls, maxRelations, batchSize, includeDeletedInDraft } = opts;
+  const counted = new Set<string>();
+  // Counted and controlled before going deeper, so that the cap stops a deep cascade as early as a wide one
+  const onEnterPage = async (page: BasicStoreRelation[]) => {
+    if (withControls) {
+      await controlRelationsToDelete(context, user, page);
+    }
+    if (maxRelations === undefined) {
+      return true;
+    }
+    page.forEach((relation) => counted.add(relation.internal_id));
+    return counted.size <= maxRelations;
+  };
+  const onPage = async () => true;
+  const rootIds = elements.map((e) => e.internal_id);
+  return traverseRelationsCascade(context, rootIds, new Set(rootIds), onPage, { batchSize, includeDeletedInDraft, onEnterPage });
+};
+
+const elDeleteElementsBatched = async (
+  context: AuthContext,
+  user: AuthUser,
+  elements: BasicStoreBase[],
+  opts: DeleteElementsOpts = {},
+) => {
+  const rootIds = elements.map((e) => e.internal_id);
+  const batchSize = cascadePageSize(opts.batchSize);
+  const withControls = !isDeleteControlBypassed(user);
+  if (withControls) {
+    // Refuse up front, before anything is deleted, if any relation of the cascade fails the controls
+    await preflightRelationsCascade(context, user, elements, { withControls: true, batchSize });
+  }
+  let isHeavy = false;
+  let pages = 0;
+  let deleted = 0;
+  const logMeta = () => ({ ids: rootIds, types: R.uniq(elements.map((e) => e.entity_type)) });
+  const onFirstRootHits = async (hits: BasicStoreRelation[]) => {
+    if (hits.length >= batchSize) {
+      isHeavy = true;
+      const filters = {
+        mode: FilterMode.And,
+        filters: [{ key: ['connections'], nested: [{ key: 'internal_id', values: rootIds }], values: [] }],
+        filterGroups: [],
+      };
+      const directCount = await elCount(context, SYSTEM_USER, READ_RELATIONSHIPS_INDICES, { filters, types: [ABSTRACT_BASIC_RELATIONSHIP] });
+      logApp.info('[SEARCH] Deleting heavily-referenced elements', { ...logMeta(), direct_relations: directCount });
+    }
+  };
+  const onPage = async (page: BasicStoreRelation[], removedIds: Set<string>) => {
+    // The lock can be lost during the pre-flight or while reading the page: never write without it
+    opts.signal?.throwIfAborted();
+    // A relation created after the pre-flight was never checked: never delete it without the controls.
+    // If one fails, the delete stops there, with the pages already deleted, as an interrupted delete does.
+    if (withControls) {
+      await controlRelationsToDelete(context, user, page);
+    }
+    // Clean up the denormalized rel_ of the elements that remain, then delete the page
+    const elementsImpact = await computeDeleteElementsImpacts(page, [], removedIds);
+    await elRemoveRelationConnection(context, user, elementsImpact, opts);
+    await elDeleteInstances(context, page, opts);
+    pages += 1;
+    deleted += page.length;
+    if (isHeavy && pages % DELETE_PROGRESS_LOG_PAGES === 0) {
+      logApp.info('[SEARCH] Deleting heavily-referenced elements, in progress', { ...logMeta(), deleted_relations: deleted });
+    }
+    return true;
+  };
+  await traverseRelationsCascade(context, rootIds, new Set(rootIds), onPage, { batchSize, onFirstRootHits });
+  opts.signal?.throwIfAborted();
+  // When the element is itself a relationship, its endpoints must be cleaned up too
+  const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type)) as BasicStoreRelation[];
+  if (basicCleanup.length > 0) {
+    const elementsImpact = await computeDeleteElementsImpacts(basicCleanup, rootIds, new Set());
+    await elRemoveRelationConnection(context, user, elementsImpact, opts);
+  }
+  logApp.debug('[SEARCH] Deleting elements', { size: elements.length });
+  await elDeleteInstances(context, elements, opts);
+  if (isHeavy) {
+    logApp.info('[SEARCH] Deleting heavily-referenced elements, done', { ...logMeta(), deleted_relations: deleted });
+  }
+};
+
+// Trash and draft deletes snapshot the whole cascade: refuse them above the cap, before anything is written
+export const elControlSnapshotDelete = async (
+  context: AuthContext,
+  user: AuthUser,
+  elements: BasicStoreBase[],
+  opts: SnapshotDeleteOpts & { isDraftDelete: boolean },
+) => {
+  const { isDraftDelete } = opts;
+  const maxRelations = opts.maxSnapshotRelations ?? DELETE_MAX_SNAPSHOT_RELATIONS;
+  // Draft deletes run no control on the related relations
+  const withControls = !isDraftDelete && !isDeleteControlBypassed(user);
+  const preflightOpts = { withControls, maxRelations, batchSize: opts.batchSize, includeDeletedInDraft: isDraftDelete };
+  const isBelowCap = await preflightRelationsCascade(context, user, elements, preflightOpts);
+  if (!isBelowCap) {
+    const message = isDraftDelete
+      ? 'Cannot delete element in draft: too many related relations, delete it outside the draft'
+      : 'Cannot move element to trash: too many related relations, delete it permanently';
+    throw FunctionalError(message, { ids: elements.map((e) => e.internal_id), max_relations: maxRelations });
+  }
+};
+// endregion
+
+export const elDeleteElements = async (
+  context: AuthContext,
+  user: AuthUser,
+  elements: BasicStoreBase[],
+  opts: DeleteElementsOpts = {},
+) => {
+  if (elements.length === 0) return;
+  const { forceDelete = true } = opts;
+  const isDraftDelete = !!getDraftContext(context, user);
+  // CURRENT LIMITATION: we only handle forceDelete when elDeleteElements is called with 1 element. This is because getRelationsToRemove returns all related relations without
+  // linking the relations to a specific element, which we would need for the deleted_elements of deleteOperations. The difficulty in changing getRelationsToRemove is handling the
+  // case where a relationship is linked to two elements given in elDeleteElements: how do we decide which element to link the relationship to?
+  const isTrashDelete = !isDraftDelete && conf.get('app:trash:enabled') && !forceDelete && elements.length === 1;
+  if (!isDraftDelete && !isTrashDelete) {
+    await elDeleteElementsBatched(context, user, elements, opts);
+    return;
+  }
+  if (isDraftDelete) {
+    await elMarkElementsAsDraftDelete(context, user, elements, opts);
+    return;
+  }
+  if (!opts.snapshotChecked) {
+    await elControlSnapshotDelete(context, user, elements, { ...opts, isDraftDelete: false });
+  }
+  // Trash: the cascade is below the cap and the controls passed, it can be loaded in one go.
+  // A relation reachable from two parents is listed twice: keep it once.
+  const snapshot = await getRelationsToRemove(context, SYSTEM_USER, elements);
+  const relations = R.uniqBy((r) => r.internal_id, snapshot.relations);
+  const { relationsToRemoveMap } = snapshot;
+  // Relations can be created after the pre-flight: check the snapshot itself before anything is written
+  const maxRelations = opts.maxSnapshotRelations ?? DELETE_MAX_SNAPSHOT_RELATIONS;
+  if (relations.length > maxRelations) {
+    throw FunctionalError('Cannot move element to trash: too many related relations, delete it permanently', { ids: elements.map((e) => e.internal_id), max_relations: maxRelations });
+  }
+  if (!isDeleteControlBypassed(user)) {
+    await controlRelationsToDelete(context, user, relations);
+  }
   // Compute the id that needs to be removed from rel
   const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type)) as BasicStoreRelation[];
   // Update all rel connections that will remain
@@ -3662,27 +3904,21 @@ export const elDeleteElements = async (
   const toBeRemovedIds = elements.map((e) => e.internal_id);
   const elementsImpact = await computeDeleteElementsImpacts(cleanupRelations, toBeRemovedIds, relationsToRemoveMap);
   const entitiesToDelete = [...elements, ...relations];
-  // Store deleted objects
-  // CURRENT LIMITATION: we only handle forceDelete when elDeleteElements is called with 1 element. This is because getRelationsToRemove returns all related relations without
-  // linking the relations to a specific element, which we would need for the deleted_elements of deleteOperations. The difficulty in changing getRelationsToRemove is handling the
-  // case where a relationship is linked to two elements given in elDeleteElements: how do we decide which element to link the relationship to?
-  if (conf.get('app:trash:enabled') && !forceDelete && elements.length === 1) {
-    // map of index => ids to save
-    const idsByIndex = new Map();
-    entitiesToDelete.forEach((element) => {
-      if (!idsByIndex.has(element._index)) {
-        idsByIndex.set(element._index, []);
-      }
-      idsByIndex.get(element._index).push(element.id);
-    });
-    const reindexPromises: Promise<any>[] = [];
-    [...idsByIndex.keys()].forEach((sourceIndex) => {
-      const ids = idsByIndex.get(sourceIndex);
-      reindexPromises.push(elReindexElements(context, user, ids, sourceIndex, INDEX_DELETED_OBJECTS));
-    });
-    await Promise.all(reindexPromises);
-    await createDeleteOperationElement(context, user, elements[0] as StoreObject, entitiesToDelete);
-  }
+  // Store deleted objects: map of index => ids to save
+  const idsByIndex = new Map();
+  entitiesToDelete.forEach((element) => {
+    if (!idsByIndex.has(element._index)) {
+      idsByIndex.set(element._index, []);
+    }
+    idsByIndex.get(element._index).push(element.id);
+  });
+  const reindexPromises: Promise<any>[] = [];
+  [...idsByIndex.keys()].forEach((sourceIndex) => {
+    const ids = idsByIndex.get(sourceIndex);
+    reindexPromises.push(elReindexElements(context, user, ids, sourceIndex, INDEX_DELETED_OBJECTS));
+  });
+  await Promise.all(reindexPromises);
+  await createDeleteOperationElement(context, user, elements[0] as StoreObject, entitiesToDelete);
   // 01. Start by clearing connections rel
   await elRemoveRelationConnection(context, user, elementsImpact, opts);
   // 02. Remove all related relations and elements
