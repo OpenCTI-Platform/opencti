@@ -41,7 +41,6 @@ repos:
         exclude: |
           (?x)^(
                 .circleci/(.*)|
-                .devcontainer/(.*)|
                 .github/(.*)|
                 yarn.lock|
                 LICENSE|
@@ -59,7 +58,6 @@ repos:
         exclude: |
           (?x)^(
                 .circleci/config.yml|
-                .devcontainer/(.*)|
                 .github/(.*)|
                 yarn.lock|
                 LICENSE|
