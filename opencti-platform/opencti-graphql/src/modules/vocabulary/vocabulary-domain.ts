@@ -40,8 +40,8 @@ export const findVocabularyPaginated = (context: AuthContext, user: AuthUser, op
     );
   }
   const args = {
-    orderBy: ['order', 'name'], // Default orderBy if none
     ...opts,
+    orderBy: opts.orderBy ?? ['order', 'name'], // Default orderBy if none or null
   };
   return pageEntitiesConnection<BasicStoreEntityVocabulary>(context, user, [ENTITY_TYPE_VOCABULARY], {
     ...args,
