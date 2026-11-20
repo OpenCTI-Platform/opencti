@@ -14,6 +14,7 @@ import * as listener from '../../../../src/listener/UserActionListener';
 import * as redis from '../../../../src/database/redis';
 import * as userDomain from '../../../../src/modules/user/user-domain';
 import { getStoppingState, isFeatureEnabled } from '../../../../src/config/conf';
+import { meterManager } from '../../../../src/config/tracing';
 import '../../../../src/modules/attributes/internalObject-registrationAttributes';
 import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_ACTIVITY } from '../../../../src/schema/internalObject';
@@ -84,6 +85,14 @@ const store = vi.hoisted(() => {
 });
 
 vi.mock('../../../../src/modules/session/session-presence-store', () => store);
+
+vi.mock('../../../../src/config/tracing', () => ({
+  meterManager: {
+    sessionPresenceConnections: vi.fn(),
+    sessionPresenceLastDisconnection: vi.fn(),
+    sessionPresenceCheck: vi.fn(),
+  },
+}));
 
 vi.mock('../../../../src/database/cache', () => ({
   getEntityFromCache: vi.fn(),
@@ -434,6 +443,48 @@ describe('session presence', () => {
     expect(session.killSessionByRawId).toHaveBeenCalledTimes(2);
     expect(listener.publishUserAction).toHaveBeenCalledOnce();
     expect(store.isDue(sessionId)).toBe(false);
+  });
+
+  describe('metrics', () => {
+    it('should count the connections of the node, the sessions left without tab and their logout', async () => {
+      const sessionId = nextSessionId();
+      const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+      const connectionsAfterRegister = vi.mocked(meterManager.sessionPresenceConnections).mock.lastCall?.[0] as number;
+      await unregisterSessionPresence(sessionId, connectionId);
+      expect(meterManager.sessionPresenceConnections).toHaveBeenLastCalledWith(connectionsAfterRegister - 1);
+      expect(meterManager.sessionPresenceLastDisconnection).toHaveBeenCalledOnce();
+
+      await sweepAfter(GRACE_PERIOD);
+      expect(meterManager.sessionPresenceCheck).toHaveBeenCalledExactlyOnceWith('logout');
+    });
+
+    it('should not count a session that keeps another tab as left without tab', async () => {
+      const sessionId = nextSessionId();
+      const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+      await registerSessionPresence(sessionId, ORIGIN);
+      await unregisterSessionPresence(sessionId, connectionId);
+
+      expect(meterManager.sessionPresenceLastDisconnection).not.toHaveBeenCalled();
+    });
+
+    it('should count a session found alive at its check', async () => {
+      const sessionId = nextSessionId();
+      await openTabOnAnotherNode(sessionId);
+      await store.scheduleSessionCheck(sessionId, Date.now(), 'LT');
+
+      await logoutAbandonedSessions();
+      expect(meterManager.sessionPresenceCheck).toHaveBeenCalledExactlyOnceWith('alive');
+    });
+
+    it('should count a session released without logout', async () => {
+      storeSession(null);
+      const sessionId = nextSessionId();
+      const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+      await unregisterSessionPresence(sessionId, connectionId);
+
+      await sweepAfter(GRACE_PERIOD);
+      expect(meterManager.sessionPresenceCheck).toHaveBeenCalledExactlyOnceWith('released');
+    });
   });
 
   it('should tell whether the session presence manager is enabled on at least one node', async () => {
