@@ -19,45 +19,114 @@ import NavigationSearchResults from './search/NavigationSearchResults';
 
 const LOCAL_STORAGE_KEY = 'search';
 
+const SEARCH_ENTITY_TYPES = ['Stix-Core-Object', 'Stix-Core-Relationship'];
+
 const searchLineFragment = graphql`
-  fragment SearchStixCoreObjectLine_node on StixCoreObject {
-    id
-    draftVersion {
-      draft_id
-      draft_operation
+  fragment SearchStixCoreObjectLine_node on StixObjectOrStixRelationship {
+    ... on BasicObject {
+      id
+      entity_type
+      parent_types
     }
-    parent_types
-    entity_type
-    created_at
+    ... on BasicRelationship {
+      id
+      entity_type
+      parent_types
+    }
     ... on StixObject {
       representative {
         main
         secondary
       }
+      created_at
     }
-    createdBy {
-      ... on Identity {
+    ... on StixRelationship {
+      representative {
+        main
+        secondary
+      }
+      created_at
+      createdBy {
+        ... on Identity {
+          name
+        }
+      }
+      objectMarking {
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+      }
+      creators {
+        id
         name
       }
+      draftVersion {
+        draft_id
+        draft_operation
+      }
     }
-    objectMarking {
-      id
-      definition_type
-      definition
-      x_opencti_order
-      x_opencti_color
+    ... on StixCoreObject {
+      draftVersion {
+        draft_id
+        draft_operation
+      }
+      createdBy {
+        ... on Identity {
+          name
+        }
+      }
+      objectMarking {
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+      }
+      objectLabel {
+        id
+        value
+        color
+      }
+      creators {
+        id
+        name
+      }
+      containersNumber {
+        total
+      }
     }
-    objectLabel {
-      id
-      value
-      color
-    }
-    creators {
-      id
-      name
-    }
-    containersNumber {
-      total
+    ... on StixCoreRelationship {
+      relationship_type
+      from {
+        ... on BasicObject {
+          id
+          entity_type
+        }
+        ... on BasicRelationship {
+          id
+          entity_type
+        }
+      }
+      to {
+        ... on BasicObject {
+          id
+          entity_type
+        }
+        ... on BasicRelationship {
+          id
+          entity_type
+        }
+      }
+      objectLabel {
+        id
+        value
+        color
+      }
+      containersNumber {
+        total
+      }
     }
   }
 `;
@@ -108,24 +177,54 @@ export const searchStixCoreObjectsLinesFragment = graphql`
     ) @connection(key: "Pagination_globalSearch") {
       edges {
         node {
-          id
-          entity_type
-          created_at
-          createdBy {
-            ... on Identity {
+          ... on BasicObject {
+            id
+            entity_type
+          }
+          ... on BasicRelationship {
+            id
+            entity_type
+          }
+          ... on StixObject {
+            created_at
+          }
+          ... on StixRelationship {
+            created_at
+            createdBy {
+              ... on Identity {
+                name
+              }
+            }
+            creators {
+              id
               name
             }
+            objectMarking {
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
+            }
           }
-          creators {
-            id
-            name
-          }
-          objectMarking {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
+          ... on StixCoreObject {
+            created_at
+            createdBy {
+              ... on Identity {
+                name
+              }
+            }
+            creators {
+              id
+              name
+            }
+            objectMarking {
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
+            }
           }
           ...SearchStixCoreObjectLine_node
         }
@@ -156,7 +255,7 @@ const Search = () => {
     openExports: false,
     filters: {
       ...emptyFilterGroup,
-      filters: useGetDefaultFilterObject(['entity_type'], ['Stix-Core-Object']),
+      filters: useGetDefaultFilterObject(['entity_type'], SEARCH_ENTITY_TYPES),
     },
   };
   const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<SearchStixCoreObjectsLinesPaginationQuery$variables>(
@@ -169,7 +268,7 @@ const Search = () => {
     }
   }, [paramsFilters]);
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', viewStorage.filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext(SEARCH_ENTITY_TYPES, viewStorage.filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -244,8 +343,8 @@ const Search = () => {
           lineFragment={searchLineFragment}
           preloadedPaginationProps={preloadedPaginationOptions}
           exportContext={{ entity_type: 'Stix-Core-Object' }}
-          availableEntityTypes={['Stix-Core-Object']}
-          entityTypes={['Stix-Core-Object']}
+          availableEntityTypes={SEARCH_ENTITY_TYPES}
+          entityTypes={SEARCH_ENTITY_TYPES}
           hideSearch={true}
         />
       )}
