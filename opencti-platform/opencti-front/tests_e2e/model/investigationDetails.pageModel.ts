@@ -1,4 +1,4 @@
-import { Locator, Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 
 /** Border colour of a technique used in the investigation (`#b71c1c`, the matrix's highlight). */
 export const MATRIX_HIGHLIGHT_BORDER_COLOR = 'rgb(183, 28, 28)';
@@ -72,8 +72,39 @@ export default class InvestigationDetailsPage {
     return this.getMatrix().getByRole('button', { name: label });
   }
 
+  // -- Matrix toolbar: docked under the matrix, it holds what the matrix view does (kill chain, display, heatmap, posture, export)
+
+  getMatrixToolbar(): Locator {
+    return this.page.getByRole('toolbar', { name: 'Matrix toolbar' });
+  }
+
+  /** A button of the matrix toolbar; other buttons of the page (the header's) may carry the same name. */
+  getToolbarButton(name: string | RegExp): Locator {
+    return this.getMatrixToolbar().getByRole('button', { name, exact: typeof name === 'string' });
+  }
+
+  /** A part of the toolbar named for assistive technologies: `Display`, `Heatmap`. */
+  getToolbarGroup(name: string): Locator {
+    return this.getMatrixToolbar().getByRole('group', { name, exact: true });
+  }
+
+  /** The "More actions" menu, opened. It lists what the toolbar has no room for. */
+  async openMoreActions(): Promise<Locator> {
+    const menu = this.page.getByRole('menu', { name: 'More actions' });
+    if (!(await menu.isVisible())) await this.getToolbarButton('More actions').click();
+    await expect(menu).toBeVisible();
+    return menu;
+  }
+
+  /** Whether the action sits in the toolbar row; otherwise "More actions" lists it (or the matrix does not offer it). */
+  async isInToolbar(name: string): Promise<boolean> {
+    // The toolbar renders its pinned parts first: wait for one so that the count below is not taken too early.
+    await expect(this.getToolbarGroup('Heatmap')).toBeVisible();
+    return (await this.getToolbarButton(name).count()) > 0;
+  }
+
   getKillChainSelect(): Locator {
-    return this.getMatrix().getByRole('combobox', { name: 'Kill chain' });
+    return this.getMatrixToolbar().getByRole('combobox', { name: 'Kill chain' });
   }
 
   getKillChainOption(name: string): Locator {
@@ -81,13 +112,17 @@ export default class InvestigationDetailsPage {
   }
 
   getOnlyUsedToggle(): Locator {
-    return this.getMatrix().getByRole('button', { name: /^Display (only used techniques|the whole matrix)$/ });
+    return this.getToolbarButton(/^Display (only used techniques|the whole matrix)$/);
   }
 
   getSecurityPostureSelect(): Locator {
-    return this.getMatrix().getByRole('combobox', { name: 'Compare with my security posture' });
+    return this.getMatrixToolbar().getByRole('combobox', { name: 'Compare with my security posture' });
   }
 
+  /**
+   * The field sits in the toolbar when the row has room for it (a wide window); the specs that pick a platform
+   * give the window that room, since a field in a submenu of "More actions" is not worth driving here.
+   */
   async selectSecurityPlatform(name: string) {
     await this.getSecurityPostureSelect().click();
     await this.getSecurityPostureSelect().fill(name);
@@ -97,24 +132,25 @@ export default class InvestigationDetailsPage {
   // -- Heatmap
 
   getHeatmapToggle(): Locator {
-    return this.getMatrix().getByRole('button', { name: 'Displays heat map of attack pattern use' });
-  }
-
-  /**
-   * The focusable wrapper of the heatmap toggle. When the toggle is disabled it takes no pointer event,
-   * so its tooltip is opened through this element.
-   */
-  getHeatmapToggleWrapper(): Locator {
-    return this.getHeatmapToggle().locator('xpath=..');
+    // Disabled, the toolbar draws a focusable wrapper named the same: hovering it opens the tooltip that says why.
+    return this.getToolbarButton('Displays heat map of attack pattern use');
   }
 
   async toggleHeatmap() {
     await this.getHeatmapToggle().click();
   }
 
-  /** The legend, one image for assistive technologies: its name is "Technique usage scale, 1 to N". */
+  /**
+   * The legend of the toolbar, one image for assistive technologies: its name is "Technique usage scale, 1 to N".
+   * The copy inside the matrix is hidden on screen and only drawn in the exported image and PDF.
+   */
   getLegend(): Locator {
-    return this.getMatrix().getByRole('img', { name: /^Technique usage scale, 1 to \d+$/ });
+    return this.getMatrixToolbar().getByRole('img', { name: /^Technique usage scale, 1 to \d+$/ });
+  }
+
+  /** The copy of the legend inside the matrix: `hidden` on screen, shown for the capture of the image and the PDF. */
+  getExportOnlyLegend(): Locator {
+    return this.getMatrix().locator('[data-matrix-export-only]');
   }
 
   /** One swatch of the legend, by its stop index (0 to 4). */
@@ -172,26 +208,53 @@ export default class InvestigationDetailsPage {
     ));
   }
 
-  // -- Header export (matrix view: it exports the matrix)
+  // -- Export: the image from the matrix toolbar, the PDF and STIX from the header
 
   getExportToImageButton(): Locator {
-    return this.page.getByRole('button', { name: 'Export to image' });
+    return this.getToolbarButton('Export to image');
+  }
+
+  /** The image export of the header, which an investigation no longer has: its export moved to the toolbars. */
+  getHeaderExportToImageButton(): Locator {
+    return this.page.locator('#export-buttons').getByRole('button', { name: 'Export to image' });
   }
 
   getExportToPdfButton(): Locator {
-    return this.page.getByRole('button', { name: 'Export to PDF' });
+    return this.page.locator('#export-buttons').getByRole('button', { name: 'Export to PDF' });
   }
 
-  getExportImageMenuItem(theme: 'Dark' | 'Light'): Locator {
-    return this.page.getByRole('menuitem', { name: `${theme} (with background)` });
+  getDownloadStixButton(): Locator {
+    return this.page.locator('#export-buttons').getByRole('button', { name: 'Download as STIX report' });
+  }
+
+  /**
+   * Picks one image of the export list, from the toolbar or, when the row has no room for it (a narrow window),
+   * from "More actions". The download starts once the item is picked: wait for it before calling.
+   */
+  async exportImage(theme: 'Dark' | 'Light', background: 'with' | 'without' = 'with') {
+    const name = `${theme} (${background} background)`;
+    if (await this.isInToolbar('Export to image')) {
+      await this.getExportToImageButton().click();
+      await this.page.getByRole('menu', { name: 'Export to image' }).getByRole('menuitem', { name, exact: true }).click();
+      return;
+    }
+    const moreActions = await this.openMoreActions();
+    await moreActions.getByRole('menuitem', { name: /^Export to image/ }).click();
+    await expect(this.page.getByRole('menu')).toHaveCount(2);
+    // The pointer would travel from the submenu trigger to the item across the parent menu, which closes the
+    // submenu on its way: the item is picked from the keyboard.
+    const item = this.page.getByRole('menu').last().getByRole('menuitem', { name, exact: true });
+    await item.focus();
+    await item.press('Enter');
   }
 
   getExportPdfMenuItem(theme: 'Dark' | 'Light'): Locator {
     return this.page.getByRole('menuitem', { name: theme });
   }
 
+  /** What the matrix leaves out of the selected kill chain: `N attack patterns not shown`. */
   getUnplacedNote() {
-    return this.getMatrix().getByText(/attack patterns? in this investigation (isn't|aren't) shown in this kill chain/);
+    return this.getMatrixToolbar().getByText(/^\d+ attack patterns? not shown$/);
   }
 
   getEmptyMatrixText() {

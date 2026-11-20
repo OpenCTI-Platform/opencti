@@ -1,13 +1,14 @@
 import type { AttackPatternsMatrixColumns_data$data } from '@components/techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixColumns_data.graphql';
 import type { ObjectToParse } from '../../../../../components/graph/utils/useGraphParser';
-import type { GraphState } from '../../../../../components/graph/graph.types';
 import { getMainRepresentative } from '../../../../../utils/defaultRepresentatives';
+import { getMatrixConfig } from '../../../techniques/attack_patterns/attack_patterns_matrix/attackPatternsMatrixConfig';
 
 export type MatrixPhase = NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number];
 
 export interface InvestigationAttackPattern {
   id: string;
   name: string;
+  x_mitre_id?: string | null;
 }
 
 const DEFAULT_KILL_CHAIN = 'mitre-attack';
@@ -15,7 +16,21 @@ const DEFAULT_KILL_CHAIN = 'mitre-attack';
 export const getInvestigationAttackPatterns = (rawObjects: ObjectToParse[]): InvestigationAttackPattern[] => {
   return rawObjects
     .filter((object) => object.entity_type === 'Attack-Pattern')
-    .map((object) => ({ id: object.id, name: getMainRepresentative(object) }));
+    .map((object) => {
+      const { x_mitre_id } = object as ObjectToParse & { x_mitre_id?: string | null };
+      return {
+        id: object.id,
+        // getMainRepresentative prefixes the T-code to the name; the label adds it once, so the name is read without it.
+        name: getMainRepresentative({ ...object, x_mitre_id: undefined }),
+        // The query fetches the T-code, but ObjectToParse does not declare it.
+        x_mitre_id,
+      };
+    });
+};
+
+// Same label as the matrix cells: the T-code before the name, the name alone without one.
+export const formatAttackPatternLabel = (ap: InvestigationAttackPattern): string => {
+  return getMatrixConfig('investigation', false).formatLabel(ap);
 };
 
 export const pickDefaultKillChain = (killChains: string[]): string | undefined => {
@@ -43,12 +58,4 @@ export const getUnplacedAttackPatterns = (
   placedIds: Set<string>,
 ): InvestigationAttackPattern[] => {
   return investigationAps.filter(({ id }) => !placedIds.has(id));
-};
-
-export const hasActiveGraphFilters = (graphState: GraphState): boolean => {
-  return graphState.disabledEntityTypes.length > 0
-    || graphState.disabledCreators.length > 0
-    || graphState.disabledMarkings.length > 0
-    || (graphState.disabledRelationshipTypes?.length ?? 0) > 0
-    || !!graphState.selectedTimeRangeInterval;
 };

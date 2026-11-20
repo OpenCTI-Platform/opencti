@@ -3039,7 +3039,7 @@ button.
 
 **Removal test.** At a pin where the icon exists: replace the
 `LocalFireDepartmentOutlined` import in
-`workspaces/investigations/matrix/InvestigationMatrix.tsx` by the library glyph
+`workspaces/investigations/matrix/InvestigationMatrixToolbar.tsx` by the library glyph
 and confirm that the heatmap toggle still shows it at the same size, in both
 themes, in the off, on and disabled states.
 

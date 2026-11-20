@@ -35,8 +35,15 @@ const TRANSPARENT = 'rgba(0, 0, 0, 0)';
 // The label of a filled cell: --black-1000.
 const HEAT_LABEL_COLOR = 'rgb(0, 0, 0)';
 
-// A PNG starts with an 8-byte signature, then the IHDR chunk: 4 bytes of length, 4 of type, then the width as a 32-bit big-endian integer.
+// A PNG starts with an 8-byte signature, then the IHDR chunk: 4 bytes of length, 4 of type, then the width, then the height, as 32-bit big-endian integers.
 const PNG_WIDTH_OFFSET = 16;
+const PNG_HEIGHT_OFFSET = 20;
+
+// A window the toolbar has room in: the export and the security posture stay in the row instead of "More actions".
+const WIDE_VIEWPORT = { width: 1920, height: 1080 };
+// The tools of the graph toolbar: the matrix has nothing for them to act on.
+const GRAPH_ONLY_TOOLS = /Zoom|layout|selection|Select |3D mode|Fit the|Locate the|Full screen|shortest path|Unfix|Add an entity|Remove selected|Keyboard shortcuts|Export the whole graph/;
+const GRAPH_SEARCH_PLACEHOLDER = 'Search these results...';
 
 test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
   const investigationIds: string[] = [];
@@ -115,6 +122,34 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     await expect(investigationPage.getEmptyMatrixText()).toBeVisible();
   });
 
+  test('The matrix view has its own toolbar, without the graph-only tools', async ({ page, request }) => {
+    const { investigationId } = await seed(request);
+    const investigationPage = new InvestigationDetailsPage(page);
+    await page.setViewportSize(WIDE_VIEWPORT);
+
+    await page.goto(`${INVESTIGATION_URL}/${investigationId}/matrix`);
+    await expect(investigationPage.getMatrixCell(ALPHA)).toBeVisible();
+
+    const toolbar = investigationPage.getMatrixToolbar();
+    await expect(toolbar).toBeVisible();
+    await expect(investigationPage.getToolbarGroup('Display')).toBeVisible();
+    await expect(investigationPage.getToolbarGroup('Heatmap')).toBeVisible();
+    await expect(investigationPage.getKillChainSelect()).toBeVisible();
+    await expect(investigationPage.getOnlyUsedToggle()).toBeVisible();
+    await expect(investigationPage.getHeatmapToggle()).toBeVisible();
+    await expect(investigationPage.getSecurityPostureSelect()).toBeVisible();
+    await expect(investigationPage.getExportToImageButton()).toBeVisible();
+
+    // No zoom, layout, selection, creation, search or shortcuts: not in the row...
+    await expect(toolbar.getByRole('button', { name: GRAPH_ONLY_TOOLS })).toHaveCount(0);
+    await expect(toolbar.getByPlaceholder(GRAPH_SEARCH_PLACEHOLDER)).toHaveCount(0);
+    // ...and not in "More actions" either, when the row has one.
+    if (await investigationPage.getToolbarButton('More actions').count() > 0) {
+      const moreActions = await investigationPage.openMoreActions();
+      await expect(moreActions.getByRole('menuitem', { name: GRAPH_ONLY_TOOLS })).toHaveCount(0);
+    }
+  });
+
   test('The "only used" toggle hides the techniques that are not in the investigation', async ({ page, request }) => {
     const { investigationId } = await seed(request);
     const investigationPage = new InvestigationDetailsPage(page);
@@ -134,6 +169,7 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
   test('The security posture marks the techniques it should cover', async ({ page, request }) => {
     const { investigationId } = await seed(request);
     const investigationPage = new InvestigationDetailsPage(page);
+    await page.setViewportSize(WIDE_VIEWPORT);
 
     await page.goto(`${INVESTIGATION_URL}/${investigationId}/matrix`);
     await expect(investigationPage.getMatrixCell(ALPHA)).toBeVisible();
@@ -157,8 +193,17 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
 
     await investigationPage.getKillChainSelect().click();
     await investigationPage.getKillChainOption(E2E_OTHER_KILL_CHAIN).click();
-    await expect(investigationPage.getUnplacedNote()).toBeVisible();
+    // The four attack patterns of the investigation are outside the other kill chain.
+    await expect(investigationPage.getUnplacedNote()).toHaveText('4 attack patterns not shown');
     await expect(investigationPage.getMatrixCell(ALPHA)).toBeHidden();
+
+    // Hovering the note lists them by T-code and name.
+    await investigationPage.getUnplacedNote().hover();
+    const tooltip = investigationPage.getTooltip().filter({ hasText: 'Outside the selected kill chain (4)' });
+    await expect(tooltip).toBeVisible();
+    for (const label of [ALPHA, BETA, GAMMA, GAMMA_SUB]) {
+      await expect(tooltip).toContainText(label);
+    }
   });
 
   test('The matrix of a report keeps its plain labels and its Add action', async ({ page, request }) => {
@@ -338,8 +383,8 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
       await expect(investigationPage.getHeatmapToggle()).toBeDisabled();
       await expect(investigationPage.getLegend()).toBeHidden();
 
-      // A disabled button takes no pointer event: the tooltip belongs to its focusable wrapper.
-      await investigationPage.getHeatmapToggleWrapper().hover();
+      // A disabled button takes no pointer event: the toolbar draws a focusable wrapper that opens the tooltip.
+      await investigationPage.getHeatmapToggle().hover();
       await expect(investigationPage.getTooltip().filter({ hasText: HEATMAP_DISABLED_TOOLTIP })).toBeVisible();
     });
 
@@ -359,7 +404,7 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     const NARROW_VIEWPORT = { width: 800, height: 900 };
 
     for (const theme of ['Light', 'Dark'] as const) {
-      test(`The header exports the whole matrix to an image, ${theme} theme`, async ({ page, request }) => {
+      test(`The matrix toolbar exports the whole matrix to an image, ${theme} theme`, async ({ page, request }) => {
         const { investigationId, investigationName } = await seed(request);
         const investigationPage = new InvestigationDetailsPage(page);
         await page.setViewportSize(NARROW_VIEWPORT);
@@ -374,12 +419,11 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
         expect(matrixWidth).toBeGreaterThan(NARROW_VIEWPORT.width);
         const styleBeforeExport = await investigationPage.getMatrix().getAttribute('style');
 
-        await investigationPage.getExportToImageButton().click();
         const downloadPromise = page.waitForEvent('download');
-        await investigationPage.getExportImageMenuItem(theme).click();
+        await investigationPage.exportImage(theme);
         const download = await downloadPromise;
 
-        expect(download.suggestedFilename()).toBe(`${investigationName} - Tactics matrix.png`);
+        expect(download.suggestedFilename()).toBe(`${investigationName} - Matrix view.png`);
         const imageWidth = fs.readFileSync(await download.path()).readUInt32BE(PNG_WIDTH_OFFSET);
         // No column is cropped: the image is at least as wide as the whole matrix.
         expect(imageWidth).toBeGreaterThanOrEqual(matrixWidth);
@@ -390,7 +434,37 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
       });
     }
 
-    test('The header exports the matrix to a PDF', async ({ page, request }) => {
+    test('The exported image holds the heatmap legend, which the matrix does not show on screen', async ({ page, request }) => {
+      const { investigationId, investigationName } = await seed(request);
+      const investigationPage = new InvestigationDetailsPage(page);
+      await page.setViewportSize(WIDE_VIEWPORT);
+
+      await page.goto(`${INVESTIGATION_URL}/${investigationId}/matrix`);
+      await expect(investigationPage.getMatrixCell(ALPHA)).toBeVisible();
+
+      const plainPromise = page.waitForEvent('download');
+      await investigationPage.exportImage('Light');
+      const plainDownload = await plainPromise;
+      expect(plainDownload.suggestedFilename()).toBe(`${investigationName} - Matrix view.png`);
+      const plainHeight = fs.readFileSync(await plainDownload.path()).readUInt32BE(PNG_HEIGHT_OFFSET);
+
+      await investigationPage.toggleHeatmap();
+      await expect(investigationPage.getLegend()).toBeVisible();
+      // The legend of the toolbar serves the screen: the one inside the matrix is only drawn in the capture.
+      await expect(investigationPage.getExportOnlyLegend()).toBeHidden();
+
+      const heatPromise = page.waitForEvent('download');
+      await investigationPage.exportImage('Light');
+      const heatDownload = await heatPromise;
+      const heatHeight = fs.readFileSync(await heatDownload.path()).readUInt32BE(PNG_HEIGHT_OFFSET);
+
+      // The legend adds a row under the matrix.
+      expect(heatHeight).toBeGreaterThan(plainHeight);
+      // And it is hidden again once the capture is done.
+      await expect(investigationPage.getExportOnlyLegend()).toBeHidden();
+    });
+
+    test('The header keeps the PDF and STIX exports, and no longer exports an image', async ({ page, request }) => {
       const { investigationId, investigationName } = await seed(request);
       const investigationPage = new InvestigationDetailsPage(page);
       await page.setViewportSize(NARROW_VIEWPORT);
@@ -398,12 +472,17 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
       await page.goto(`${INVESTIGATION_URL}/${investigationId}/matrix`);
       await expect(investigationPage.getMatrixCell(ALPHA)).toBeVisible();
 
+      await expect(investigationPage.getExportToPdfButton()).toBeVisible();
+      await expect(investigationPage.getDownloadStixButton()).toBeVisible();
+      // The image export is in the toolbar of the view.
+      await expect(investigationPage.getHeaderExportToImageButton()).toHaveCount(0);
+
       await investigationPage.getExportToPdfButton().click();
       const downloadPromise = page.waitForEvent('download');
       await investigationPage.getExportPdfMenuItem('Dark').click();
       const download = await downloadPromise;
 
-      expect(download.suggestedFilename()).toBe(`${investigationName} - Tactics matrix.pdf`);
+      expect(download.suggestedFilename()).toBe(`${investigationName} - Matrix view.pdf`);
     });
   });
 });

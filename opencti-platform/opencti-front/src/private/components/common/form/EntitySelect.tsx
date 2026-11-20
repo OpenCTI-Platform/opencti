@@ -50,6 +50,8 @@ interface EntitySelectBaseProps {
 interface EntitySelectComponentProps extends EntitySelectBaseProps {
   multiple: boolean;
   disabled?: boolean;
+  /** One line, the label as placeholder: for a toolbar row, which has no room for a label above the field. */
+  inline?: boolean;
   value: EntityOption | EntityOption[] | null;
   onChange?: (val: EntityOption | EntityOption[] | null) => void;
 }
@@ -60,6 +62,7 @@ const EntitySelectComponent = ({
 
   multiple = false,
   disabled = false,
+  inline = false,
   onChange,
   onInputChange,
   queryRef,
@@ -81,6 +84,8 @@ const EntitySelectComponent = ({
       options={options}
       multiple={multiple}
       disabled={disabled}
+      labelPosition={inline ? 'none' : undefined}
+      maxVisibleChips={inline && multiple ? 'fit' : undefined}
       // MUI's disableCloseOnSelect is the library's closeOnSelect inverted, and
       // the library already defaults it to false in multiple mode.
       closeOnSelect={!multiple}
@@ -116,7 +121,7 @@ const EntitySelectComponent = ({
             removal as the other chip fields, since one label function now serves the chip, the input and the
             filter. */}
         {multiple && <ComboboxChips aria-label={label} />}
-        <ComboboxInput />
+        <ComboboxInput aria-label={inline ? label : undefined} placeholder={inline ? label : undefined} />
         <ComboboxControls>
           <ComboboxTrigger />
         </ComboboxControls>

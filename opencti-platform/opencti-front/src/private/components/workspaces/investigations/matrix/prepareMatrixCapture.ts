@@ -1,3 +1,6 @@
+/** Marks a node drawn only in exports (the heatmap legend inside the export element). */
+export const EXPORT_ONLY_ATTRIBUTE = 'data-matrix-export-only';
+
 const scrolls = (overflow: string) => overflow === 'auto' || overflow === 'scroll';
 
 // A scroll container clips both axes, whichever one declared the overflow: the matrix columns box sets
@@ -11,10 +14,13 @@ const isScroller = (element: HTMLElement) => {
 // Lets the export wrapper grow to its whole content for the duration of a capture, so no column or row is
 // cropped. The wrapper becomes `width: max-content`. The matrix sits in a viewport-sized scroll box, which
 // would still clip it: every scroller inside the wrapper is opened on both axes too.
-// Returns the function that puts every touched element back to its previous inline style.
+// The nodes marked export-only are `hidden` on screen: they are shown for the capture, so the legend lands in
+// the image and the PDF.
+// Returns the function that puts every touched element back to its previous state.
 const prepareMatrixCapture = (wrapper: HTMLElement): (() => void) => {
   // Measure first: opening one scroller must not change what the next one reports.
   const scrollers = Array.from(wrapper.querySelectorAll<HTMLElement>('*')).filter(isScroller);
+  const exportOnly = Array.from(wrapper.querySelectorAll<HTMLElement>(`[${EXPORT_ONLY_ATTRIBUTE}]`));
   const touched = [wrapper, ...scrollers].map((element) => ({ element, style: element.getAttribute('style') }));
 
   const widths = scrollers.map((element) => Math.max(element.scrollWidth, element.clientWidth));
@@ -25,8 +31,10 @@ const prepareMatrixCapture = (wrapper: HTMLElement): (() => void) => {
   });
   wrapper.style.width = 'max-content';
   wrapper.style.height = 'auto';
+  exportOnly.forEach((element) => element.removeAttribute('hidden'));
 
   return () => {
+    exportOnly.forEach((element) => element.setAttribute('hidden', ''));
     touched.forEach(({ element, style }) => {
       if (style === null) element.removeAttribute('style');
       else element.setAttribute('style', style);
