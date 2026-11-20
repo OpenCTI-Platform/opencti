@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import '../../../src/modules/index';
+import { registerModules } from '../../../src/composition-root';
 import * as middlewareLoader from '../../../src/database/middleware-loader';
 import { buildChanges } from '../../../src/database/data-changes';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from '../../../src/modules/customField/custom-field-types';
+
+registerModules();
 
 const CONTEXT = {} as any;
 const USER = { id: 'user-1' } as any;

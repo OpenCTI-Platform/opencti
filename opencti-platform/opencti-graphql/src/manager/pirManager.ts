@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { Promise as BluePromise } from 'bluebird';
-import { type ManagerDefinition, registerManager } from './managerModule';
+import type { ManagerDefinition } from './managerModule';
 import { executionContext, PIR_MANAGER_USER } from '../utils/access';
 import type { DataEvent, SseEvent } from '../types/event';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
@@ -185,7 +185,7 @@ export const pirManagerHandler = async () => {
 };
 
 // Configuration of the manager.
-const PIR_MANAGER_DEFINITION: ManagerDefinition = {
+export const PIR_MANAGER_DEFINITION: ManagerDefinition = {
   id: PIR_MANAGER_ID,
   label: PIR_MANAGER_LABEL,
   executionContext: PIR_MANAGER_CONTEXT,
@@ -203,6 +203,3 @@ const PIR_MANAGER_DEFINITION: ManagerDefinition = {
     lockKey: PIR_MANAGER_LOCK_KEY,
   },
 };
-
-// Automatically register manager on start.
-registerManager(PIR_MANAGER_DEFINITION);

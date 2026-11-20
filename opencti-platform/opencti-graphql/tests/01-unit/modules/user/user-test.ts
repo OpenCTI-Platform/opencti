@@ -42,6 +42,8 @@ vi.mock('../../../../src/listener/UserActionListener', () => ({
 
 vi.mock('../../../../src/database/redis', () => ({
   notify: vi.fn(),
+  // Read on import by the platform usage metrics manager, which the composition root registers
+  redisIsAlive: vi.fn(),
 }));
 
 vi.mock('../../../../src/utils/access', async () => {
@@ -60,6 +62,8 @@ vi.mock('../../../../src/domain/xtm-auth', () => ({
 vi.mock('../../../../src/database/engine', () => ({
   elLoadBy: vi.fn(),
   elRawDeleteByQuery: vi.fn(),
+  // Read on import by the platform usage metrics manager, which the composition root registers
+  isEngineAlive: vi.fn(),
 }));
 
 vi.mock('../../../../src/database/redis/token_usage', () => ({

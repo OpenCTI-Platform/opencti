@@ -6,4 +6,7 @@ const stixObjectAttributes: Array<AttributeDefinition<any>> = [
   xOpenctiStixIds,
   files,
 ];
-schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_OBJECT, stixObjectAttributes);
+
+export const registerStixObjectAttributes = () => {
+  schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_OBJECT, stixObjectAttributes);
+};

@@ -13,7 +13,6 @@ import {
   TelemetryMeterManager,
 } from '../telemetry/TelemetryMeterManager';
 import type { HandlerInput, ManagerDefinition } from './managerModule';
-import { registerManager } from './managerModule';
 import { MetricFileExporter } from '../telemetry/MetricFileExporter';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { refreshConnectorsLiveness } from '../modules/connector/connector-domain';
@@ -895,7 +894,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
   }
 };
 
-const TELEMETRY_MANAGER_DEFINITION: ManagerDefinition = {
+export const TELEMETRY_MANAGER_DEFINITION: ManagerDefinition = {
   id: 'TELEMETRY_MANAGER',
   label: 'Telemetry manager',
   executionContext: 'telemetry_manager',
@@ -914,5 +913,3 @@ const TELEMETRY_MANAGER_DEFINITION: ManagerDefinition = {
     return this.enabledByConfig;
   },
 };
-
-registerManager(TELEMETRY_MANAGER_DEFINITION);

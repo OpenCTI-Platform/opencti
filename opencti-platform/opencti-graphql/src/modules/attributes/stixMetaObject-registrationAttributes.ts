@@ -5,8 +5,6 @@ import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { ABSTRACT_STIX_META_OBJECT } from '../../schema/general';
 
-schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_META_OBJECT, [created, modified]);
-
 const stixMetaObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_TYPE_MARKING_DEFINITION]: [
     { name: 'definition_type', label: 'Marking type', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
@@ -33,4 +31,8 @@ const stixMetaObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'x_opencti_order', label: 'Kill chain order', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
 };
-R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), stixMetaObjectsAttributes);
+
+export const registerStixMetaObjectAttributes = () => {
+  schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_META_OBJECT, [created, modified]);
+  R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), stixMetaObjectsAttributes);
+};

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import '../../../src/modules/index';
+import { registerModules } from '../../../src/composition-root';
 import { convertStoreToStix_2_1 } from '../../../src/database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import type { StixMalware, StixThreatActor, StixIntrusionSet, StixIncident, StixIdentity } from '../../../src/types/stix-2-1-sdo';
@@ -10,6 +10,8 @@ import { INTRUSION_SET_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/threa
 import { INCIDENT_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/threats/incident';
 import { ORGANIZATION_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/entities/organization';
 import { EVENT_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/entities/event';
+
+registerModules();
 
 // Regression test for #17752: Malware, Threat-Actor-Group and Intrusion-Set
 // used to omit x_opencti_score from their STIX 2.1 extensions, breaking the

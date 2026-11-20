@@ -9,7 +9,8 @@ vi.mock('../../../src/database/middleware-loader', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/database/middleware-loader')>();
   return { ...actual, fullRelationsList: vi.fn() };
 });
-vi.mock('../../../src/database/redis', () => ({ notify: vi.fn(), redisAddDeletions: vi.fn() }));
+// redisIsAlive: read on import by the platform usage metrics manager, which the composition root registers
+vi.mock('../../../src/database/redis', () => ({ notify: vi.fn(), redisAddDeletions: vi.fn(), redisIsAlive: vi.fn() }));
 vi.mock('../../../src/database/cache', () => ({
   getEntitiesMapFromCache: vi.fn(),
   getEntityFromCache: vi.fn(),
@@ -39,12 +40,14 @@ vi.mock('../../../src/config/conf', async () => {
 
 // ── Imports (after mocks) ────────────────────────────────────────────────────
 
-import '../../../src/modules/index';
+import { registerModules } from '../../../src/composition-root';
 import { elFindByIds } from '../../../src/database/engine';
 import { fullRelationsList } from '../../../src/database/middleware-loader';
 import { storeLoadByIdsWithRefs } from '../../../src/database/middleware';
 import { convertStoreToStix_2_1 } from '../../../src/database/stix-2-1-converter';
 import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
+
+registerModules();
 
 const context = {} as any;
 const user = { id: 'user-id' } as any;

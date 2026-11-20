@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import { generateStandardId } from '../../../../src/schema/identifier';
+import { registerModules } from '../../../../src/composition-root';
 
-import '../../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult';
+registerModules();
 
 describe('SecurityCoverageResult identifier', () => {
   const NAME_1 = 'Result #1';

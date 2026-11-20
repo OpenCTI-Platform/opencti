@@ -99,7 +99,7 @@ import {
   ENTITY_TYPE_IDENTITY,
 } from '../../../src/schema/general';
 
-import '../../../src/modules/index';
+import { registerModules } from '../../../src/composition-root';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { isDateNumericOrBooleanAttribute, isMultipleAttribute, isObjectAttribute, isObjectFlatAttribute, schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';
@@ -114,6 +114,8 @@ import { RELATION_MIGRATES } from '../../../src/schema/internalRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { schemaRelationsTypesMapping } from '../../../src/domain/stixRelationship';
+
+registerModules();
 
 describe('Testing relation consistency', () => {
   it.concurrent.each([

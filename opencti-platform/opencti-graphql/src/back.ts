@@ -8,10 +8,8 @@ import { defaultResource, resourceFromAttributes } from '@opentelemetry/resource
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import nconf from 'nconf';
 import { ZipkinExporter } from '@opentelemetry/exporter-zipkin';
-// region static graphql modules, need to be imported before everything
-import './modules/index';
-// import managers
-import './manager/index';
+// region imported before everything: the composition root loads the modules
+import { registerModules } from './composition-root';
 // import tracing
 import './config/tracing';
 // endregion
@@ -19,6 +17,11 @@ import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { platformStart } from './boot';
 import { ENABLED_TRACING, logApp } from './config/conf';
 import { isNotEmptyField } from './database/utils';
+import { scheduleXtmOneBootRegistration } from './manager/xtmOneRegistrationManager';
+
+// -- Register modules (definitions, graphql schemas, managers) before anything reads them
+registerModules();
+scheduleXtmOneBootRegistration();
 
 // -- Apply telemetry
 // ------- Tracing

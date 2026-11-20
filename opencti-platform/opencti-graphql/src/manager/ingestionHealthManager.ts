@@ -3,7 +3,7 @@ import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../database/c
 import { patchAttribute } from '../database/middleware';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { notify } from '../database/redis';
-import { type ManagerDefinition, registerManager } from './managerModule';
+import type { ManagerDefinition } from './managerModule';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { getResolvedIngestionHealthSettings } from '../modules/ingestionHealth/ingestionHealth-domain';
@@ -282,7 +282,7 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
   }
 };
 
-const INGESTION_HEALTH_MANAGER_DEFINITION: ManagerDefinition = {
+export const INGESTION_HEALTH_MANAGER_DEFINITION: ManagerDefinition = {
   id: 'INGESTION_HEALTH_MANAGER',
   label: 'Ingestion health manager',
   executionContext: 'ingestion_health_manager',
@@ -300,5 +300,3 @@ const INGESTION_HEALTH_MANAGER_DEFINITION: ManagerDefinition = {
     return this.enabledByConfig;
   },
 };
-
-registerManager(INGESTION_HEALTH_MANAGER_DEFINITION);

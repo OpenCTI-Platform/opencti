@@ -33,7 +33,8 @@ const BUILT_IN_MARKINGS = [
   ['PAP', 'PAP:AMBER'],
   ['PAP', 'PAP:RED'],
 ];
-export const BUILT_IN_MARKING_STANDARD_IDS = BUILT_IN_MARKINGS.map(([definitionType, definition]) => markingStandardId(definitionType, definition));
+// Computed on use, not at import: generating an id reads the types, complete only once the modules are registered
+export const getBuiltInMarkingStandardIds = () => BUILT_IN_MARKINGS.map(([definitionType, definition]) => markingStandardId(definitionType, definition));
 
 const ORDER_REASON = 'The order of the marking changes';
 const AUTO_NEW_MARKING_REASON = 'Groups that get new markings automatically get this one';

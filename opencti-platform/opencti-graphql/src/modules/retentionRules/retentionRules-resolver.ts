@@ -1,7 +1,7 @@
 import { checkRetentionRule, createRetentionRule, deleteRetentionRule, findRetentionRulePaginated, findById, retentionRuleEditField } from './retentionRules-domain';
-import type { EditInput } from '../../generated/graphql';
+import type { EditInput, Resolvers } from '../../generated/graphql';
 
-const retentionRulesResolver = {
+const retentionRulesResolver: Resolvers = {
   Query: {
     retentionRule: (_: any, { id }: any, context: any) => findById(context, context.user, id),
     retentionRules: (_: any, args: any, context: any) => findRetentionRulePaginated(context, context.user, args),
@@ -12,7 +12,7 @@ const retentionRulesResolver = {
     retentionRuleEdit: (_: any, { id }: any, context: any) => ({
       delete: () => deleteRetentionRule(context, context.user, id),
       fieldPatch: ({ input }: { input: EditInput[] }) => retentionRuleEditField(context, context.user, id, input),
-    }),
+    }) as any,
   },
 };
 

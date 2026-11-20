@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Registers all entity/relation modules so the filter keys of the schema are known
 // without requiring a live DB/ES stack.
-import '../../../src/modules/index';
+import { registerModules } from '../../../src/composition-root';
 
 // loggerPlugin.js decides the log severity of a GraphQL error from its extensions.code.
 // We mock its side-effecting dependencies only.
@@ -28,6 +28,8 @@ import { logApp } from '../../../src/config/conf';
 import { UnsupportedError } from '../../../src/config/errors';
 import { checkFiltersValidity } from '../../../src/utils/filtering/filtering-utils';
 import type { FilterGroup } from '../../../src/generated/graphql';
+
+registerModules();
 
 const buildRequestContext = (graphQLError: unknown) => ({
   request: { variables: {}, query: 'query {}' },

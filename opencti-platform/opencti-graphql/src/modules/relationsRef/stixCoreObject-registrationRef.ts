@@ -4,7 +4,9 @@ import { createdBy, externalReferences, objectLabel, objectMarking } from '../..
 
 const stixCoreObjectsMetaRel = [createdBy, objectMarking, objectLabel, externalReferences];
 
-schemaRelationsRefDefinition.registerRelationsRef(
-  ABSTRACT_STIX_CORE_OBJECT,
-  stixCoreObjectsMetaRel,
-);
+export const registerStixCoreObjectRelationsRefs = () => {
+  schemaRelationsRefDefinition.registerRelationsRef(
+    ABSTRACT_STIX_CORE_OBJECT,
+    stixCoreObjectsMetaRel,
+  );
+};

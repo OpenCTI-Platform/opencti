@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import '../../../../src/modules/index';
+import { registerModules } from '../../../../src/composition-root';
 import { getVocabulariesCategories, isEntityFieldAnOpenVocabulary, openVocabularies } from '../../../../src/modules/vocabulary/vocabulary-utils';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../../src/modules/case/case-incident/case-incident-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../../src/modules/draftWorkspace/draftWorkspace-types';
 import { depsKeysRegister, schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
+
+registerModules();
 
 describe('closing_reason_ov vocabulary', () => {
   it('should apply to every domain object type, including module ones', () => {

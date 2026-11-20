@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import '../../../../src/modules/index';
+import { registerModules } from '../../../../src/composition-root';
 import { buildUserMergeCoverage } from '../../../../src/modules/userMerge/userMerge-coverage';
 import { UserMergeDisposition } from '../../../../src/modules/userMerge/userMerge-register';
 import { userMergeHandlers } from '../../../../src/modules/userMerge/userMerge-registry';
+
+registerModules();
 
 const GATING = [UserMergeDisposition.Transfer, UserMergeDisposition.Conditional];
 

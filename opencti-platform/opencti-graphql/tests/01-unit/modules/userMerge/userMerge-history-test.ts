@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import '../../../../src/modules/index';
+import { registerModules } from '../../../../src/composition-root';
 import { findRegisterRow } from '../../../../src/modules/userMerge/userMerge-register';
 import { USER_MERGE_HISTORY_TARGETS, userMergeHistoryCoveredRows, userMergeHistoryFieldPaths } from '../../../../src/modules/userMerge/userMerge-historyTargets';
 import { userMergeScalarFieldPaths } from '../../../../src/modules/userMerge/userMerge-scalarTargets';
 import { userMergeScalarQuery, userMergeScalarScript } from '../../../../src/modules/userMerge/userMerge-scalarQueries';
 import { userMergeHistoryHandler } from '../../../../src/modules/userMerge/userMerge-historyHandler';
+
+registerModules();
 
 const targetById = (id: string) => {
   const target = USER_MERGE_HISTORY_TARGETS.find((candidate) => candidate.id === id);

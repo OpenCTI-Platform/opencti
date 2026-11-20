@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import '../../../src/modules/index';
+import { registerModules } from '../../../src/composition-root';
 import { validateAndFormatSchemaAttribute } from '../../../src/schema/schema-validator';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../../../src/schema/stixDomainObject';
 import { type EditInput, EditOperation } from '../../../src/generated/graphql';
+
+registerModules();
 
 describe('schema validator observed data counters', () => {
   const validate = (attributeName: string, value: unknown) => {

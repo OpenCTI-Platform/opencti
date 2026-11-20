@@ -44,7 +44,7 @@ import { downloadFile } from '../../../../../src/database/raw-file-storage';
 import { publishUserAction, type UserConfigPresetExportActionContextData } from '../../../../../src/listener/UserActionListener';
 import { addConfigPresetExportCount } from '../../../../../src/manager/telemetryManager';
 import { PLATFORM_VERSION } from '../../../../../src/config/conf';
-import '../../../../../src/modules/attributes/internalObject-registrationAttributes';
+import { registerModules } from '../../../../../src/composition-root';
 import { schemaAttributesDefinition } from '../../../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_ACTIVITY } from '../../../../../src/schema/internalObject';
 import type { ObjectAttribute } from '../../../../../src/schema/attribute-definition';
@@ -58,8 +58,12 @@ import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/
 import type { ConfigPresetItemDefinition } from '../../../../../src/modules/configPreset/configPreset-types';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
 import { builtInTheme, customTheme, otherCustomTheme } from '../configPreset-themes-fixtures';
-import { mockConfigPresetLoaders } from '../configPreset-loaders-fixtures';
-import { dnsExclusionList, retiredExclusionList } from '../configPreset-exclusionLists-fixtures';
+
+// Registers the abstract types too, among them the Activity attributes the export publishes
+registerModules();
+// Imported once the modules are registered: the fixtures generate standard ids, which reads the registered types
+const { mockConfigPresetLoaders } = await import('../configPreset-loaders-fixtures');
+const { dnsExclusionList, retiredExclusionList } = await import('../configPreset-exclusionLists-fixtures');
 
 const context = { source: 'test' } as AuthContext;
 const draftContext = { source: 'test', draft_context: 'draft-id' } as AuthContext;
