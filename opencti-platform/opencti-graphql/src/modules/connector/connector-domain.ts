@@ -456,6 +456,25 @@ export const computeManagerConnectorExcerpt = async (_context: AuthContext, _use
 };
 
 const COMPOSER_TOKEN_REDIS_EXPIRATION = conf.get('app:composer_token_expiration') ?? 604800;
+interface CachedComposerToken {
+  key_fingerprint: string;
+  encrypted_token: string;
+}
+// Values cached before the record format (a bare encrypted token) are not records: they read as a cache miss
+const parseCachedComposerToken = (value: string | null): CachedComposerToken | null => {
+  if (!value) {
+    return null;
+  }
+  try {
+    const record = JSON.parse(value);
+    if (typeof record?.key_fingerprint === 'string' && typeof record?.encrypted_token === 'string') {
+      return record;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
 const computeConnectorTokenConfiguration = async (context: AuthContext, connectorEntity: BasicStoreEntityConnector) => {
   const resourceId = `manager-configuration-${connectorEntity.internal_id}`;
   let lock;
@@ -465,20 +484,27 @@ const computeConnectorTokenConfiguration = async (context: AuthContext, connecto
     const targetUser: any = users.get(connectorEntity.connector_user_id);
     const tokenName = 'Composer managed token';
     const existingToken = (targetUser.api_tokens ?? []).find((token: any) => token.name === tokenName);
+    const [manager] = await findConnectorManagers(context, SYSTEM_USER);
+    if (!manager) {
+      throw FunctionalError('No connector manager registered', { connectorId: connectorEntity.internal_id });
+    }
     const redisClient = getClientBase();
     const key = `composer:${connectorEntity.catalog_id}:token:${connectorEntity.connector_user_id}`;
-    let encryptedToken = await redisClient.get(key);
-    if (isEmptyField(existingToken) || isEmptyField(encryptedToken)) {
-      if (existingToken) {
-        await revokeUserTokenByAdmin(context, SYSTEM_USER, connectorEntity.connector_user_id, existingToken.id);
-      }
-      const { plaintext_token } = await addUserTokenByAdmin(context, SYSTEM_USER, connectorEntity.connector_user_id, { name: tokenName } as any);
-      const [manager] = await findConnectorManagers(context, SYSTEM_USER);
-      encryptedToken = encryptValue(manager.public_key, plaintext_token);
-      await redisClient.setex(key, COMPOSER_TOKEN_REDIS_EXPIRATION, encryptedToken);
-    } else {
+    const keyFingerprint = shortHash(manager.public_key);
+    const cached = parseCachedComposerToken(await redisClient.get(key));
+    // Serve the cache only when encrypted with the current manager key. A single record, overwritten on every rotation:
+    // a key coming back (A -> B -> A) must not find the token the B rotation revoked
+    if (existingToken && cached && cached.key_fingerprint === keyFingerprint) {
       await redisClient.expire(key, COMPOSER_TOKEN_REDIS_EXPIRATION);
+      return cached.encrypted_token;
     }
+    if (existingToken) {
+      await revokeUserTokenByAdmin(context, SYSTEM_USER, connectorEntity.connector_user_id, existingToken.id);
+    }
+    const { plaintext_token } = await addUserTokenByAdmin(context, SYSTEM_USER, connectorEntity.connector_user_id, { name: tokenName } as any);
+    const encryptedToken = encryptValue(manager.public_key, plaintext_token);
+    const record: CachedComposerToken = { key_fingerprint: keyFingerprint, encrypted_token: encryptedToken };
+    await redisClient.setex(key, COMPOSER_TOKEN_REDIS_EXPIRATION, JSON.stringify(record));
     return encryptedToken;
   } catch (error) {
     if ((error as { name?: string }).name === TYPE_LOCK_ERROR) {
