@@ -10,8 +10,8 @@ import type { PresenceConnection, SessionRequest } from './session-presence-type
 const socketConnections = new WeakMap<object, PresenceConnection>();
 
 // graphql-ws hooks, the presence must never prevent the socket from being used.
-// Nothing is tracked without the SESSION_PRESENCE feature flag. With it, connections are tracked even when
-// the platform setting is off: the setting is only read before a logout, so enabling it also covers the tabs already open.
+// Nothing is tracked without the SESSION_PRESENCE feature flag. With it, every node tracks its sockets in memory,
+// and writes their leases to Redis only while the platform setting is on (see session-presence-domain).
 export const onSessionPresenceConnect = async (ctx: Context<Record<string, unknown> | undefined, Extra>) => {
   if (!isFeatureEnabled(SESSION_PRESENCE_FEATURE_FLAG)) {
     return;

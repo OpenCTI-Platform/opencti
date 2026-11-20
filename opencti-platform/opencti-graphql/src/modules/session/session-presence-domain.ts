@@ -23,6 +23,9 @@ import {
 // so the session is considered abandoned when none of its sockets is alive for the grace period.
 // Each socket holds a lease in Redis, renewed by its node: the presence is shared by all the nodes,
 // and the leases of a crashed node expire. The session presence manager then logs out the abandoned sessions.
+// Every node tracks its sockets in memory, but only writes their leases to Redis while the setting is on:
+// the renewal following its activation covers the tabs already open. It runs well within the grace period,
+// so a tab closed meanwhile cannot logout a session whose other tabs have no lease yet.
 
 const SESSION_PRESENCE_GRACE_PERIOD: number = conf.get('app:session_presence:grace_period') ?? 30000;
 const SESSION_PRESENCE_LEASE_TTL: number = conf.get('app:session_presence:lease_ttl') ?? 30000;
@@ -36,8 +39,8 @@ const SWEEP_BATCH_SIZE = 100;
 // Sessions held in the memory of each node can only be logged out by that node
 const IS_SHARED_SESSION_STORE = conf.get('app:session_manager') === 'shared';
 
-// connection id -> session id, for the sockets of this node
-const nodeConnections = new Map<string, string>();
+// The sockets of this node, by connection id
+const nodeConnections = new Map<string, { sessionId: string; origin: PresenceOrigin }>();
 let renewTimer: NodeJS.Timeout | undefined;
 let isMultiNodeWarned = false;
 
@@ -73,13 +76,19 @@ const isLogoutSupported = async () => {
 
 // region leases of the sockets of this node
 const renewNodeLeases = async () => {
-  const sessionConnections = new Map<string, string[]>();
-  nodeConnections.forEach((sessionId, connectionId) => {
-    sessionConnections.set(sessionId, [...(sessionConnections.get(sessionId) ?? []), connectionId]);
+  if (!(await isSessionPresenceEnabled())) {
+    return;
+  }
+  const sessionConnections = new Map<string, { connectionIds: string[]; origin: PresenceOrigin }>();
+  nodeConnections.forEach(({ sessionId, origin }, connectionId) => {
+    const connections = sessionConnections.get(sessionId) ?? { connectionIds: [], origin };
+    connections.connectionIds.push(connectionId);
+    sessionConnections.set(sessionId, connections);
   });
-  await Promise.all([...sessionConnections.entries()].map(async ([sessionId, connectionIds]) => {
+  await Promise.all([...sessionConnections.entries()].map(async ([sessionId, { connectionIds, origin }]) => {
     try {
-      const expiry = await saveSessionLeases(sessionId, connectionIds, SESSION_PRESENCE_LEASE_TTL, PRESENCE_KEYS_TTL);
+      // The origin is written again, for the tabs opened while the setting was off
+      const expiry = await saveSessionLeases(sessionId, connectionIds, SESSION_PRESENCE_LEASE_TTL, PRESENCE_KEYS_TTL, origin);
       if (expiry === undefined) {
         // The session has been logged out: its sockets are no longer tracked
         connectionIds.forEach((connectionId) => nodeConnections.delete(connectionId));
@@ -106,14 +115,16 @@ const startLeasesRenewal = () => {
 // Returns the id of the registered connection, or undefined when the session is being logged out
 export const registerSessionPresence = async (sessionId: string, origin: PresenceOrigin) => {
   const connectionId = uuidv4();
-  const expiry = await saveSessionLeases(sessionId, [connectionId], SESSION_PRESENCE_LEASE_TTL, PRESENCE_KEYS_TTL, origin);
-  if (expiry === undefined) {
-    return undefined;
+  if (await isSessionPresenceEnabled()) {
+    const expiry = await saveSessionLeases(sessionId, [connectionId], SESSION_PRESENCE_LEASE_TTL, PRESENCE_KEYS_TTL, origin);
+    if (expiry === undefined) {
+      return undefined;
+    }
+    // A session is always scheduled while it has leases: if this node crashes, the check still happens
+    await scheduleSessionCheck(sessionId, expiry + SESSION_PRESENCE_GRACE_PERIOD, 'GT');
   }
-  nodeConnections.set(connectionId, sessionId);
+  nodeConnections.set(connectionId, { sessionId, origin });
   startLeasesRenewal();
-  // A session is always scheduled while it has leases: if this node crashes, the check still happens
-  await scheduleSessionCheck(sessionId, expiry + SESSION_PRESENCE_GRACE_PERIOD, 'GT');
   return connectionId;
 };
 
@@ -123,7 +134,7 @@ export const unregisterSessionPresence = async (sessionId: string, connectionId:
   }
   // Sockets closed by the platform shutdown are not tabs closed by the user: their leases expire,
   // which leaves the time for the tabs to reconnect to another node
-  if (getStoppingState()) {
+  if (getStoppingState() || !(await isSessionPresenceEnabled())) {
     return;
   }
   const { liveLeases, now } = await removeSessionLease(sessionId, connectionId);
