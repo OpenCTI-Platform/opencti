@@ -53,7 +53,15 @@ export const GraphMenuActionItem = ({ action }: { action: GraphMenuAction }) => 
           <ActionLabel action={action} />
         </MenuSubTrigger>
         <MenuSubContent>
-          {submenu()}
+          {/* FDS-WORKAROUND #85: a submenu takes the arrow, Tab and letter keys of a field inside it — see fds-migration/LIBRARY-FEEDBACK.md #85 */}
+          {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
+          <div
+            onKeyDown={(event) => {
+              if (event.key !== 'Escape') event.stopPropagation();
+            }}
+          >
+            {submenu()}
+          </div>
         </MenuSubContent>
       </MenuSub>
     );
