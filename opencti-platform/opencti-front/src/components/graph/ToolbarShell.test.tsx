@@ -140,6 +140,41 @@ describe('ToolbarShell', () => {
     expect(input).toHaveFocus();
   });
 
+  it('keeps the focus in a submenu field on Tab, as in any menu', async () => {
+    row.width = 200;
+    const { user } = renderShell([posture()]);
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    const trigger = await screen.findByRole('menuitem', { name: 'Compare with my security posture' });
+    act(() => trigger.focus());
+    await user.keyboard('{ArrowRight}');
+    const input = await screen.findByRole('textbox', { name: 'Platform' });
+    act(() => input.focus());
+    await user.keyboard('{Tab}');
+    expect(input).toHaveFocus();
+  });
+
+  it('lets a wide control keep its own state and hooks when it moves to "More actions" and back', async () => {
+    const Counter = () => {
+      const [count, setCount] = React.useState(0);
+      return <button type="button" onClick={() => setCount(count + 1)}>{`Clicked ${count}`}</button>;
+    };
+    const action: ToolbarAction<Group> = {
+      ...posture(),
+      // A hook written in the render function itself, as a caller may do.
+      render: () => {
+        const [label] = React.useState('Kill chain');
+        return <><span>{label}</span><Counter /></>;
+      },
+    };
+    const { rerender, element } = renderShell([icon('one', 'a'), action]);
+    expect(screen.getByText('Kill chain')).toBeInTheDocument();
+    row.width = 200;
+    rerender(element);
+    row.width = 2000;
+    rerender(element);
+    expect(screen.getByText('Kill chain')).toBeInTheDocument();
+  });
+
   it('reaches a wide control with the arrow keys', async () => {
     const { user } = renderShell([icon('one', 'a'), posture()]);
     screen.getByRole('button', { name: 'one' }).focus();

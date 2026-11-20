@@ -106,6 +106,14 @@ export const Pinned = ({ children, style, label, creation }: { children: ReactNo
   </div>
 );
 
+/**
+ * Calls a render function as a component of its own: the hooks it calls belong to it, so the
+ * control can move between the row and "More actions" without changing the hooks of its host.
+ */
+export const RenderFunction = ({ render }: { render: () => ReactNode }) => <>{render()}</>;
+
+const RenderSlot = ({ render, folded }: { render: (state: { folded: boolean }) => ReactNode; folded: boolean }) => <>{render({ folded })}</>;
+
 export const GroupDivider = () => <Divider orientation="vertical" aria-hidden sx={{ height: 24, marginX: 1, flexShrink: 0 }} />;
 
 /**
@@ -198,7 +206,7 @@ const ToolbarShell = <G extends string>({
     if (action.render) {
       return (
         <div key={action.id} data-toolbar-action={action.id} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-          {action.render()}
+          <RenderFunction render={action.render} />
         </div>
       );
     }
@@ -237,7 +245,7 @@ const ToolbarShell = <G extends string>({
     const slotLabel = typeof slot.label === 'function' ? slot.label({ folded }) : slot.label;
     return (
       <Pinned key={`pinned-${slot.key}`} creation={slot.foldable} label={slotLabel} style={slot.style}>
-        {slot.render({ folded })}
+        <RenderSlot render={slot.render} folded={folded} />
       </Pinned>
     );
   });
