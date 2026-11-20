@@ -1,30 +1,16 @@
 import React, { Suspense, useEffect, useMemo } from 'react';
 import { PreloadedQuery } from 'react-relay';
 import * as R from 'ramda';
-import { LocalFireDepartmentOutlined } from '@mui/icons-material';
-import {
-  Icon,
-  IconButton,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-  Text,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@filigran/design-system';
+import { Text } from '@filigran/design-system';
 import AttackPatternsMatrix, { attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 import { attackPatternsMatrixColumnsFragment } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
 import { AttackPatternsMatrixQuery } from '@components/techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixQuery.graphql';
 import { AttackPatternsMatrixColumns_data$key } from '@components/techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixColumns_data.graphql';
-import EntitySelect, { EntityOption } from '@components/common/form/EntitySelect';
+import type { EntityOption } from '@components/common/form/EntitySelect';
 import useShouldCoverOverlap from '@components/common/stix_domain_objects/useShouldCoverOverlap';
 import { ErrorBoundary } from '@components/Error';
 import { useGraphContext } from '../../../../../components/graph/GraphContext';
-import { GraphState } from '../../../../../components/graph/graph.types';
+import type { GraphState } from '../../../../../components/graph/graph.types';
 import { ObjectToParse } from '../../../../../components/graph/utils/useGraphParser';
 import Loader from '../../../../../components/Loader';
 import { useFormatter } from '../../../../../components/i18n';
@@ -36,18 +22,11 @@ import { analyseTechniqueUsage } from './ttpAnalyser';
 import { computeHeatScale } from './heatScale';
 import { buildCellDecorations, MatrixTechniqueNode } from './buildCellDecorations';
 import HeatmapLegend from './HeatmapLegend';
-import { formatNameList } from '@components/techniques/attack_patterns/attack_patterns_matrix/attackPatternsMatrixCellDecoration';
-import {
-  getInvestigationAttackPatterns,
-  getKillChainTechniqueIds,
-  getUnplacedAttackPatterns,
-  hasActiveGraphFilters,
-  MatrixPhase,
-  pickDefaultKillChain,
-} from './investigationMatrixUtils';
+import InvestigationMatrixToolbar from './InvestigationMatrixToolbar';
+import { EXPORT_ONLY_ATTRIBUTE } from './prepareMatrixCapture';
+import { getInvestigationAttackPatterns, getKillChainTechniqueIds, getUnplacedAttackPatterns, MatrixPhase, pickDefaultKillChain } from './investigationMatrixUtils';
 import type { InvestigationMatrixSettings, InvestigationMatrixSettingsChange } from './investigationMatrixSettings';
 
-const MAX_LISTED_NAMES = 10;
 const NO_PHASES: ReadonlyArray<MatrixPhase> = [];
 
 // Until the loader has reported its total, the objects are partial too.
@@ -58,15 +37,16 @@ const isInvestigationLoading = ({ loadingCurrent, loadingTotal }: GraphState) =>
 interface InvestigationMatrixProps {
   settings: InvestigationMatrixSettings;
   onSettingsChange: InvestigationMatrixSettingsChange;
+  /** Name of the image exported from the toolbar. */
+  exportName: string;
 }
 
 interface InvestigationMatrixContentProps extends InvestigationMatrixProps {
   queryRef: PreloadedQuery<AttackPatternsMatrixQuery>;
   rawObjects: ObjectToParse[];
-  graphState: GraphState;
 }
 
-const InvestigationMatrixContent = ({ queryRef, rawObjects, graphState, settings, onSettingsChange }: InvestigationMatrixContentProps) => {
+const InvestigationMatrixContent = ({ queryRef, rawObjects, settings, onSettingsChange, exportName }: InvestigationMatrixContentProps) => {
   const { t_i18n } = useFormatter();
   const {
     killChain: selectedKillChain,
@@ -83,7 +63,7 @@ const InvestigationMatrixContent = ({ queryRef, rawObjects, graphState, settings
     }
   }, []);
 
-  // Kill chains, the "can't be placed" note and the matrix all read this single query result.
+  // Kill chains, the "not shown" note and the matrix all read this single query result.
   const { attackPatternsMatrix } = usePreloadedFragment<AttackPatternsMatrixQuery, AttackPatternsMatrixColumns_data$key>({
     queryDef: attackPatternsMatrixQuery,
     fragmentDef: attackPatternsMatrixColumnsFragment,
@@ -138,130 +118,51 @@ const InvestigationMatrixContent = ({ queryRef, rawObjects, graphState, settings
     await setSecurityPlatformIds(platforms.map(({ value }) => value));
   };
 
-  const onlyUsedLabel = isModeOnlyActive
-    ? t_i18n('Display the whole matrix')
-    : t_i18n('Display only used techniques');
-
-  const handleHeatmapToggle = () => {
-    onSettingsChange({ heatmap: !isHeatmapOn });
-  };
-
-  const heatmapLabel = t_i18n('Displays heat map of attack pattern use');
-  const heatmapToggle = (
-    <IconButton
-      variant="default"
-      priority="tertiary"
-      active={isHeatmapOn}
-      disabled={!hasScores}
-      aria-label={heatmapLabel}
-      onClick={handleHeatmapToggle}
-      icon={<LocalFireDepartmentOutlined fontSize="small" />}
-    />
-  );
-
   return (
-    // A column as high as the view: the toolbar and the notes take what they need, the matrix fills the rest.
-    <div
-      id={INVESTIGATION_MATRIX_EXPORT_ID}
-      style={{ padding: '16px 24px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}
-    >
-      <div style={{ display: 'flex', alignItems: 'end', gap: 8 }}>
-        <Select value={killChain ?? ''} onValueChange={(value) => onSettingsChange({ killChain: value })} disabled={isEmpty}>
-          <SelectLabel>{t_i18n('Kill chain :')}</SelectLabel>
-          <SelectTrigger aria-label={t_i18n('Kill chain')}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent aria-label={t_i18n('Kill chain')}>
-            {killChains.map((killChainName) => (
-              <SelectItem key={killChainName} value={killChainName}>
-                {killChainName}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <IconButton
-              variant="default"
-              priority="tertiary"
-              active={isModeOnlyActive}
-              disabled={isEmpty}
-              aria-label={onlyUsedLabel}
-              onClick={() => onSettingsChange({ onlyUsed: !isModeOnlyActive })}
-              icon={<Icon name="eye" />}
-            />
-          </TooltipTrigger>
-          <TooltipContent>{onlyUsedLabel}</TooltipContent>
-        </Tooltip>
-        {hasScores ? (
-          <Tooltip>
-            <TooltipTrigger asChild>{heatmapToggle}</TooltipTrigger>
-            <TooltipContent>{heatmapLabel}</TooltipContent>
-          </Tooltip>
+    <>
+      {/* A column as high as the view; the toolbar is docked under it, out of the image and the PDF. */}
+      <div
+        id={INVESTIGATION_MATRIX_EXPORT_ID}
+        style={{ padding: '16px 24px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}
+      >
+        {/* The toolbar shows the legend on screen; this copy is only drawn in the exported image and PDF. */}
+        <div {...{ [EXPORT_ONLY_ATTRIBUTE]: '' }} hidden style={{ marginBottom: 16 }}>
+          {isHeatmapOn && <HeatmapLegend max={heatScale.max} />}
+        </div>
+        {isEmpty ? (
+          <Text variant="content-compact" style={{ marginTop: 40, textAlign: 'center' }}>
+            {t_i18n('Add attack patterns to the graph view to visualise them here')}
+          </Text>
         ) : (
-          // A disabled button gets neither focus nor pointer events: this focusable wrapper triggers the tooltip instead.
-          <Tooltip>
-            <TooltipTrigger asChild>
-              {/* FDS-WORKAROUND #68: a disabled IconButton cannot trigger its own tooltip, so this span takes the hover and focus — see fds-migration/LIBRARY-FEEDBACK.md #68 */}
-              {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
-              <span tabIndex={0} style={{ display: 'inline-flex' }}>{heatmapToggle}</span>
-            </TooltipTrigger>
-            <TooltipContent>{t_i18n('No attack pattern is linked to an entity in this investigation')}</TooltipContent>
-          </Tooltip>
+          <div style={{ flex: 1, minHeight: 0 }}>
+            <AttackPatternsMatrix
+              variant="investigation"
+              queryRef={queryRef}
+              attackPatterns={attackPatterns}
+              selectedKillChain={killChain}
+              isModeOnlyActive={isModeOnlyActive}
+              // The hook gives [] for an empty selection, which would mark every cell: pass ids only once platforms are chosen.
+              attackPatternIdsToOverlap={selectedSecurityPlatforms.length > 0 ? attackPatternIdsToOverlap : undefined}
+              entityType="Investigation"
+              cellDecorations={cellDecorations}
+            />
+          </div>
         )}
-        <div style={{ display: 'flex', minWidth: 300, maxWidth: 500, marginLeft: 'auto' }}>
-          <EntitySelect
-            multiple
-            disabled={isEmpty}
-            value={selectedSecurityPlatforms}
-            label={t_i18n('Compare with my security posture')}
-            types={['SecurityPlatform']}
-            onChange={(platforms) => handleSecurityPlatformsChange(platforms as EntityOption[])}
-          />
-        </div>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 }}>
-        {unplacedAttackPatterns.length > 0 && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              {/* Sized to its text, so the tooltip opens next to the text, not at the far end of the row. */}
-              <Text variant="content-caption" tabIndex={0} style={{ alignSelf: 'flex-start' }}>
-                {t_i18n(
-                  '{count, plural, one {# attack pattern in this investigation isn\'t shown in this kill chain} other {# attack patterns in this investigation aren\'t shown in this kill chain}}',
-                  { values: { count: unplacedAttackPatterns.length } },
-                )}
-              </Text>
-            </TooltipTrigger>
-            <TooltipContent>
-              {formatNameList(unplacedAttackPatterns.map(({ name }) => name), MAX_LISTED_NAMES, t_i18n)}
-            </TooltipContent>
-          </Tooltip>
-        )}
-        {hasActiveGraphFilters(graphState) && (
-          <Text variant="content-caption">{t_i18n('Graph filters don\'t apply to the matrix')}</Text>
-        )}
-        {isHeatmapOn && <HeatmapLegend max={heatScale.max} />}
-      </div>
-      {isEmpty ? (
-        <Text variant="content-compact" style={{ marginTop: 40, textAlign: 'center' }}>
-          {t_i18n('Add attack patterns to the graph view to visualise them here')}
-        </Text>
-      ) : (
-        <div style={{ flex: 1, minHeight: 0, marginTop: 24 }}>
-          <AttackPatternsMatrix
-            variant="investigation"
-            queryRef={queryRef}
-            attackPatterns={attackPatterns}
-            selectedKillChain={killChain}
-            isModeOnlyActive={isModeOnlyActive}
-            // The hook gives [] for an empty selection, which would mark every cell: pass ids only once platforms are chosen.
-            attackPatternIdsToOverlap={selectedSecurityPlatforms.length > 0 ? attackPatternIdsToOverlap : undefined}
-            entityType="Investigation"
-            cellDecorations={cellDecorations}
-          />
-        </div>
-      )}
-    </div>
+      <InvestigationMatrixToolbar
+        outsideKillChain={unplacedAttackPatterns}
+        killChains={killChains}
+        killChain={killChain}
+        settings={settings}
+        onSettingsChange={onSettingsChange}
+        onSecurityPlatformsChange={handleSecurityPlatformsChange}
+        isEmpty={isEmpty}
+        hasScores={hasScores}
+        heatmapOn={isHeatmapOn}
+        heatMax={heatScale.max}
+        exportName={exportName}
+      />
+    </>
   );
 };
 
@@ -277,7 +178,7 @@ const InvestigationMatrixProgress = ({ graphState: { loadingCurrent, loadingTota
   );
 };
 
-const InvestigationMatrix = ({ settings, onSettingsChange }: InvestigationMatrixProps) => {
+const InvestigationMatrix = ({ settings, onSettingsChange, exportName }: InvestigationMatrixProps) => {
   const { rawObjects, graphState } = useGraphContext();
   const queryRef = useQueryLoading<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery, {});
 
@@ -293,9 +194,9 @@ const InvestigationMatrix = ({ settings, onSettingsChange }: InvestigationMatrix
           <InvestigationMatrixContent
             queryRef={queryRef}
             rawObjects={rawObjects}
-            graphState={graphState}
             settings={settings}
             onSettingsChange={onSettingsChange}
+            exportName={exportName}
           />
         )}
       </Suspense>

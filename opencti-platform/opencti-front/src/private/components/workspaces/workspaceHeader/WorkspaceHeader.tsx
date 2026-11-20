@@ -128,9 +128,8 @@ const WorkspaceHeader = ({
             domElementId={exportElementId}
             name={exportName ?? workspace.name}
             type={workspace.type}
-            // The investigation graph exports its image from its own toolbar. The matrix view has no
-            // such toolbar (it sets prepareExportCapture), so the header keeps the image export there.
-            exportToImage={workspace.type !== 'investigation' || prepareExportCapture !== undefined}
+            // An investigation exports its image from the toolbar of the view shown, graph or matrix.
+            exportToImage={workspace.type !== 'investigation'}
             adjust={adjust}
             prepareCapture={prepareExportCapture}
             handleDownloadAsStixReport={handleDownloadAsStixReport}

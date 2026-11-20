@@ -77,15 +77,12 @@ const SCORED_OBJECTS = [
 ];
 const HEATMAP_LABEL = 'Displays heat map of attack pattern use';
 const NO_SCORE_LABEL = 'No attack pattern is linked to an entity in this investigation';
-const heatmapToggle = () => screen.getByRole('button', { name: HEATMAP_LABEL });
+const matrixToolbar = () => screen.getByRole('toolbar', { name: 'Matrix toolbar' });
+const heatmapToggle = () => within(matrixToolbar()).getByRole('button', { name: HEATMAP_LABEL });
 
 const DEFAULT_GRAPH_STATE: Partial<GraphState> = {
   loadingCurrent: 2,
   loadingTotal: 2,
-  disabledEntityTypes: [],
-  disabledCreators: [],
-  disabledMarkings: [],
-  selectedTimeRangeInterval: undefined,
 };
 
 const POSTURE_ERROR = new Error('posture lookup failed');
@@ -133,7 +130,11 @@ const MatrixWithSettings = () => {
     <>
       <button type="button" onClick={() => setIsMatrixShown((shown) => !shown)}>Switch view (test)</button>
       {isMatrixShown && (
-        <InvestigationMatrix settings={settings} onSettingsChange={(change) => setSettings((current) => ({ ...current, ...change }))} />
+        <InvestigationMatrix
+          settings={settings}
+          onSettingsChange={(change) => setSettings((current) => ({ ...current, ...change }))}
+          exportName="Investigation - Matrix view"
+        />
       )}
     </>
   );
@@ -167,14 +168,14 @@ describe('InvestigationMatrix', () => {
     await renderMatrix({ rawObjects: [{ id: 'is-1', entity_type: 'Intrusion-Set', name: 'APT', parent_types: [] }] });
     expect(await screen.findByText('Add attack patterns to the graph view to visualise them here')).toBeInTheDocument();
     expect(screen.queryByText('T1001 - Placed')).toBeNull();
-    expect(screen.getByRole('button', { name: 'Display only used techniques' })).toBeDisabled();
-    expect(screen.getByRole('combobox', { name: 'Kill chain :' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Display only used techniques' })).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('combobox', { name: 'Kill chain' })).toBeDisabled();
     expect(await screen.findByRole('combobox', { name: 'Compare with my security posture' })).toBeDisabled();
   });
 
-  it('notes the attack patterns that cannot be placed in the kill chain', async () => {
+  it('notes the attack patterns that cannot be placed in the kill chain, in the toolbar', async () => {
     await renderMatrix({ rawObjects: [attackPattern(PLACED_ID, 'Placed'), attackPattern(REVOKED_ID, 'Revoked')] });
-    expect(await screen.findByText('1 attack pattern in this investigation isn\'t shown in this kill chain')).toBeInTheDocument();
+    expect(await within(matrixToolbar()).findByText('1 attack pattern not shown')).toBeInTheDocument();
     expect(screen.getByText('T1001 - Placed')).toBeInTheDocument();
   });
 
@@ -186,30 +187,29 @@ describe('InvestigationMatrix', () => {
         attackPattern('attack-pattern--other', 'Other'),
       ],
     });
-    expect(await screen.findByText('2 attack patterns in this investigation aren\'t shown in this kill chain')).toBeInTheDocument();
-  });
-
-  it('notes that graph filters do not apply to the matrix', async () => {
-    await renderMatrix({ graphState: { disabledEntityTypes: ['Report'] } });
-    expect(await screen.findByText('Graph filters don\'t apply to the matrix')).toBeInTheDocument();
+    expect(await screen.findByText('2 attack patterns not shown')).toBeInTheDocument();
   });
 
   it('defaults to the first kill chain alphabetically without mitre-attack and renders its columns', async () => {
     await renderMatrix({ phases: OTHER_PHASES });
     expect(await screen.findByText('T1001 - Placed')).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: 'Kill chain :' })).toHaveTextContent('alpha-chain');
+    expect(screen.getByRole('combobox', { name: 'Kill chain' })).toHaveTextContent('alpha-chain');
     expect(screen.getByText('alpha-phase')).toBeInTheDocument();
     expect(screen.queryByText('zeta-phase')).toBeNull();
   });
 
-  it('wraps toolbar, notes and matrix in the export element, with no export button', async () => {
-    await renderMatrix();
+  it('keeps the toolbar out of the export element and puts the legend in it, hidden on screen', async () => {
+    const { user } = await renderMatrix({ rawObjects: SCORED_OBJECTS, phases: HEAT_PHASES });
     await screen.findByText('T1001 - Placed');
-    const wrapper = document.getElementById(INVESTIGATION_MATRIX_EXPORT_ID);
-    expect(wrapper).not.toBeNull();
-    expect(wrapper).toContainElement(screen.getByRole('combobox', { name: 'Kill chain :' }));
+    const wrapper = document.getElementById(INVESTIGATION_MATRIX_EXPORT_ID) as HTMLElement;
     expect(wrapper).toContainElement(screen.getByText('T1001 - Placed'));
-    expect(screen.queryByRole('button', { name: /export/i })).toBeNull();
+    expect(wrapper).not.toContainElement(matrixToolbar());
+
+    await user.click(heatmapToggle());
+    const exportLegend = within(wrapper).getByRole('img', { name: 'Technique usage scale, 1 to 2', hidden: true });
+    expect(exportLegend.closest('[data-matrix-export-only]')).toHaveAttribute('hidden');
+    // The legend seen on screen is the toolbar's.
+    expect(screen.getByRole('img', { name: 'Technique usage scale, 1 to 2' })).not.toBe(exportLegend);
   });
 
   describe('heatmap', () => {
@@ -217,7 +217,7 @@ describe('InvestigationMatrix', () => {
       const { user } = await renderMatrix({ rawObjects: SCORED_OBJECTS, phases: HEAT_PHASES });
       await screen.findByText('T1001 - Placed');
       const onlyUsed = screen.getByRole('button', { name: 'Display only used techniques' });
-      const posture = await screen.findByRole('combobox', { name: 'Compare with my security posture' });
+      const posture = await within(matrixToolbar()).findByRole('combobox', { name: 'Compare with my security posture' });
       expect(onlyUsed.compareDocumentPosition(heatmapToggle()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
       expect(heatmapToggle().compareDocumentPosition(posture) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
       expect(heatmapToggle()).toBeEnabled();
@@ -225,21 +225,18 @@ describe('InvestigationMatrix', () => {
       expect(await screen.findByRole('tooltip')).toHaveTextContent(HEATMAP_LABEL);
     });
 
-    it('disables the toggle without scores and explains why on focus of its wrapper', async () => {
+    it('disables the toggle without scores and explains why on hover', async () => {
       const { user } = await renderMatrix();
       await screen.findByText('T1001 - Placed');
-      expect(heatmapToggle()).toBeDisabled();
-      const wrapper = heatmapToggle().parentElement as HTMLElement;
-      expect(wrapper.tagName).toBe('SPAN');
-      expect(wrapper).toHaveAttribute('tabindex', '0');
-      while (document.activeElement !== wrapper) await user.tab();
+      expect(heatmapToggle()).toHaveAttribute('aria-disabled', 'true');
+      await user.hover(heatmapToggle());
       expect(await screen.findByRole('tooltip')).toHaveTextContent(NO_SCORE_LABEL);
     });
 
     it('disables the toggle in the empty state', async () => {
       await renderMatrix({ rawObjects: [intrusionSet('is-a', 'APT A')] });
       await screen.findByText('Add attack patterns to the graph view to visualise them here');
-      expect(heatmapToggle()).toBeDisabled();
+      expect(heatmapToggle()).toHaveAttribute('aria-disabled', 'true');
     });
 
     it('shows the legend only while the heatmap is on', async () => {
@@ -248,8 +245,7 @@ describe('InvestigationMatrix', () => {
       expect(screen.queryByRole('img', { name: /Technique usage scale/ })).toBeNull();
 
       await user.click(heatmapToggle());
-      const legend = screen.getByRole('img', { name: 'Technique usage scale, 1 to 2' });
-      expect(document.getElementById(INVESTIGATION_MATRIX_EXPORT_ID)).toContainElement(legend);
+      expect(within(matrixToolbar()).getByRole('img', { name: 'Technique usage scale, 1 to 2' })).toBeInTheDocument();
 
       await user.click(heatmapToggle());
       expect(screen.queryByRole('img', { name: /Technique usage scale/ })).toBeNull();
