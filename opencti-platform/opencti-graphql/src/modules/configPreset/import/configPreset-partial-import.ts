@@ -1,7 +1,7 @@
 import { logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
 import type { FileUploadData } from '../../../database/file-storage';
-import type { ConfigPresetImportType, ConfigPresetItemModeInput } from '../../../generated/graphql';
+import type { ConfigPresetImportType, ConfigPresetItemCredentialsInput, ConfigPresetItemModeInput, ConfigPresetItemServiceAccountInput } from '../../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ConfigImportMode } from '../../configImport/configImport-types';
 import type { ConfigPresetFamilyDefinition } from '../configPreset-types';
@@ -21,6 +21,7 @@ import {
   pickConfigPresetTypeItems,
   publishConfigPresetImportAction,
   reloadConfigPresetImportUser,
+  toConfigPresetItemOptions,
 } from './configPreset-import-utils';
 import { CONFIG_PRESET_DEFAULT_IMPORT_MODE, type ConfigPresetBundle, type ConfigPresetBundleItem, type ConfigPresetImportPlan } from './configPreset-import-types';
 
@@ -116,6 +117,8 @@ export const configPresetPartialImport = async (
   type: string,
   ids: string[],
   itemModes: ConfigPresetItemModeInput[],
+  itemCredentials: ConfigPresetItemCredentialsInput[] = [],
+  itemServiceAccounts: ConfigPresetItemServiceAccountInput[] = [],
 ): Promise<ConfigPresetPartialImportOutput> => {
   checkConfigPresetImportAccess(context, user);
   const family = findImportableFamily(type);
@@ -140,7 +143,7 @@ export const configPresetPartialImport = async (
     const startedAt = new Date().toISOString();
     await startConfigPresetImportRunning(importContext, user, startedAt, items.length);
     // The same plan as the real import of the wizard: the items that depend on another one of the type get the one written
-    const plan: ConfigPresetImportPlan = { created: new Set(), targets: new Map() };
+    const plan: ConfigPresetImportPlan = { created: new Set(), targets: new Map(), ...toConfigPresetItemOptions(itemCredentials, itemServiceAccounts) };
     const results: ConfigPresetImportItemResult[] = [];
     // Why the import stopped writing, when it did: the remaining items fail with it, the processed ones keep their result
     let stopReason: string | null = null;

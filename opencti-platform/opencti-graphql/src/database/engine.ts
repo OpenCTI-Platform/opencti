@@ -3743,6 +3743,17 @@ export const getEngineUsedSize = async (): Promise<number> => {
   return retryElOperations(fetchEngineUsedSize);
 };
 
+// The cluster health status and the disk allocation of every data node, read for the XTM One health snapshot.
+// Branches are kept separate for the same reason as fetchEngineUsedSize.
+export const getEngineHealth = async (): Promise<{ status?: string; allocation: Array<Record<string, unknown>> }> => {
+  if (isElkEngine(engine)) {
+    const [health, allocation] = await Promise.all([engine.cluster.health(), engine.cat.allocation({ format: 'json' })]);
+    return { status: oebp(health)?.status, allocation: oebp(allocation) ?? [] };
+  }
+  const [health, allocation] = await Promise.all([engine.cluster.health(), engine.cat.allocation({ format: 'json' })]);
+  return { status: oebp(health)?.status, allocation: oebp(allocation) ?? [] };
+};
+
 export const isEngineAlive = async () => {
   const context = executionContext('healthcheck');
   const options = { types: [ENTITY_TYPE_MIGRATION_STATUS], connectionFormat: false };

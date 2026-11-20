@@ -2,6 +2,7 @@ import conf, { logApp } from '../../../config/conf';
 import { issueXtmJwt } from '../../../domain/xtm-auth';
 import type { AuthContext } from '../../../types/user';
 import { getHttpClient } from '../../../utils/http-client';
+import type { XtmOneHealthSnapshot } from './xtm-one-health';
 
 const XTM_ONE_URL = conf.get('xtm:xtm_one_url');
 const XTM_ONE_TOKEN = conf.get('xtm:xtm_one_token');
@@ -46,6 +47,8 @@ export interface XtmOneRegistrationInput {
   // the per-message flag a single client sends to promise it will answer a
   // given prompt.
   supports_approval_prompts?: boolean;
+  // Optional health snapshot, read by XTM One for its Platform Health page and ignored by an XTM One that predates it.
+  health?: XtmOneHealthSnapshot;
   intents: IntentInput[];
 }
 

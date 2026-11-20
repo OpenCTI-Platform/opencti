@@ -11,7 +11,7 @@ import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { INGESTION_MANAGER } from '../../../utils/platformModulesHelper';
 import ListLines from '../../../components/list_lines/ListLines';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { useQueryLoadingWithLoadQuery } from '../../../utils/hooks/useQueryLoading';
 import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 import Breadcrumbs from '../../../components/Breadcrumbs';
@@ -79,7 +79,7 @@ const IngestionCsv = () => {
         width: '15%',
       },
     };
-    const queryRef = useQueryLoading<IngestionCsvLinesPaginationQuery>(
+    const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<IngestionCsvLinesPaginationQuery>(
       ingestionCsvLinesQuery,
       paginationOptions,
     );
@@ -102,6 +102,7 @@ const IngestionCsv = () => {
             <>
               <IngestionCsvImport
                 paginationOptions={paginationOptions}
+                onBundleImported={() => loadQuery(paginationOptions, { fetchPolicy: 'store-and-network' })}
               />
               {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
                 <Button

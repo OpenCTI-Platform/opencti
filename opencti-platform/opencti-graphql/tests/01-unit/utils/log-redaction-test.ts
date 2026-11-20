@@ -148,6 +148,14 @@ describe('log-redaction - analyzeRequestSensitivity', () => {
     expect(redactRequestVariables({ a: 'v', b: 'n' }, sensitivity)).toEqual({ a: R, b: 'n' });
   });
 
+  it('should redact the staged sync file key, given in a variable or written in the query', () => {
+    const byVariable = analyzeRequestSensitivity(parse('mutation M($ref: FileRefInput!) { stixDomainObjectEdit(id: "x") { importPushRef(fileRef: $ref) { id } } }'));
+    expect(byVariable.hideQuery).toBe(false);
+    expect(redactRequestVariables({ ref: { storage_key: 'v', sync_id: 's' } }, byVariable)).toEqual({ ref: { storage_key: R, sync_id: 's' } });
+    const byLiteral = analyzeRequestSensitivity(parse('mutation { stixDomainObjectEdit(id: "x") { importPushRef(fileRef: { storage_key: "v", sync_id: "s", name: "n" }) { id } } }'));
+    expect(byLiteral.hideQuery).toBe(true);
+  });
+
   it('should redact a variable feeding a sensitive input field or edit input value', () => {
     const query = 'mutation M($a: String, $b: [Any]) { m1(input: { secret: [$a] }) { id } m2(input: { key: "secret", value: $b }) { id } }';
     const sensitivity = analyzeRequestSensitivity(parse(query));

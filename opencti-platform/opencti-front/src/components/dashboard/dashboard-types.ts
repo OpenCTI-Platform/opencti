@@ -17,10 +17,10 @@ export type DashboardWidget = Widget & { layout: NonNullable<Widget['layout']> }
 export type DashboardVariableType = 'vocabulary' | 'killChainPhase' | 'entity' | 'entityType' | 'label' | 'user'
   | 'marking' | 'status' | 'group' | 'boolean' | 'numeric' | 'text' | 'date';
 
-export type DashboardVariableRestriction
-  = | { mode: 'none' }
-    | { mode: 'selection'; values: string[] }
-    | { mode: 'filters'; filters: FilterGroup };
+export type DashboardVariableRestriction =
+  | { mode: 'none' }
+  | { mode: 'selection'; values: string[] }
+  | { mode: 'filters'; filters: FilterGroup };
 
 // Display order of the variable type select.
 export const DASHBOARD_VARIABLE_TYPES: readonly DashboardVariableType[] = [

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import Alert from '@mui/material/Alert';
 import { styled } from '@mui/material/styles';
 import { QueryRenderer } from '../../../relay/environment';
@@ -48,6 +48,8 @@ const IngestionTaxii = () => {
     orderAsc: false,
     searchTerm: '',
   });
+  // After an import from a configuration bundle: no mutation returns the feeds, the list is read again
+  const [reloadKey, setReloadKey] = useState(0);
 
   const dataColumns = {
     name: {
@@ -116,7 +118,7 @@ const IngestionTaxii = () => {
         createButton={(
           <Security needs={[INGESTION_SETINGESTIONS]}>
             <>
-              <IngestionTaxiiImport paginationOptions={paginationOptions} />
+              <IngestionTaxiiImport paginationOptions={paginationOptions} onBundleImported={() => setReloadKey((key) => key + 1)} />
               {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
                 <Button
                   gradient
@@ -135,6 +137,8 @@ const IngestionTaxii = () => {
         iconExtension
       >
         <QueryRenderer
+          key={reloadKey}
+          fetchPolicy="store-and-network"
           query={IngestionTaxiiLinesQuery}
           variables={{ count: 200, ...paginationOptions }}
           render={({ props }: {
