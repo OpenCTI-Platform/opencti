@@ -1946,26 +1946,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/chatbot@npm:4.0.0":
-  version: 4.0.0
-  resolution: "@filigran/chatbot@npm:4.0.0"
+"@filigran/chatbot@npm:7.0.0":
+  version: 7.0.0
+  resolution: "@filigran/chatbot@npm:7.0.0"
   dependencies:
     remark-parse: "npm:^11.0.0"
     unified: "npm:^11.0.0"
   peerDependencies:
-    "@filigran/design-system": ^1.6.0
+    "@filigran/design-system": ^1.9.0
     react: ">=18"
     react-dom: ">=18"
     react-markdown: ">=10"
     remark-breaks: ">=4"
     remark-gfm: ">=4"
-  checksum: 10c0/5126e8339649fc47137b64c6a82684e7f708edd2991aab9e4a05c7e8370839c22d0c65b0e7810cfa526f79ee92184763fffaecf9cfb8ae074d2104e294a2a8dd
+  checksum: 10c0/6d7e6dd6e9db3fc096ecdca4140c13cc7fd6c4ec975155ab4cbd9d5c278b22cb4728a0762843b47772b3152935438af6539731729a97c3f49566cb38184961cc
   languageName: node
   linkType: hard
 
-"@filigran/design-system@npm:1.6.0":
-  version: 1.6.0
-  resolution: "@filigran/design-system@npm:1.6.0"
+"@filigran/design-system@npm:1.9.0":
+  version: 1.9.0
+  resolution: "@filigran/design-system@npm:1.9.0"
   dependencies:
     "@dnd-kit/core": "npm:^6.3.1"
     "@dnd-kit/sortable": "npm:^10.0.0"
@@ -2005,7 +2005,7 @@ __metadata:
     react-dom: ^19.0.0
   bin:
     filigran-design-system: bin/install-skills.mjs
-  checksum: 10c0/b46e09468063b233d67edc41a6934d949054aeb418907daa7111dfb593fb14bec9ac12a840669ac5474719a69b6c1dea4c7b63cbc3b966371c9eb4f6c91547db
+  checksum: 10c0/17d04623ec7c8e5af81324bb293af205d388ee884df6043853823521d7a6456be59be23a174085b766b1044b785b8f0ff18feb00e513e76851d2fc20ae1983ea
   languageName: node
   linkType: hard
 
@@ -18550,9 +18550,9 @@ __metadata:
     "@emotion/styled": "npm:11.14.1"
     "@eslint/js": "npm:10.0.1"
     "@faker-js/faker": "npm:10.6.0"
-    "@filigran/chatbot": "npm:4.0.0"
+    "@filigran/chatbot": "npm:7.0.0"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
-    "@filigran/design-system": "npm:1.6.0"
+    "@filigran/design-system": "npm:1.9.0"
     "@filigran/rich-text-editor": "npm:2.0.1"
     "@fontsource/geologica": "npm:5.3.0"
     "@fontsource/ibm-plex-sans": "npm:5.3.0"
