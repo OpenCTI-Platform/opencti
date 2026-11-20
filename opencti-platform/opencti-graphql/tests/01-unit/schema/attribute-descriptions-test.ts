@@ -12,7 +12,7 @@ import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../../../src/modules/malwareAnalys
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../../../src/modules/securityCoverage/securityCoverage-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION } from '../../../src/modules/workflow/types/workflow-types';
-import { ENTITY_DOMAIN_NAME, ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE, ENTITY_MEDIA_CONTENT, ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
+import { ENTITY_DOMAIN_NAME, ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE, ENTITY_MEDIA_CONTENT, ENTITY_SOFTWARE, ENTITY_SSH_KEY } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 
 // Every attribute and ref of the described types, with their type
@@ -48,6 +48,9 @@ describe('resolveAttributeDescription', () => {
     // value is the text of a label, but the value of an observable
     expect(resolveAttributeDescription(ENTITY_TYPE_LABEL, { name: 'value' })).toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_TYPE_LABEL].value);
     expect(resolveAttributeDescription(ENTITY_DOMAIN_NAME, { name: 'value' })).toEqual(ATTRIBUTE_DESCRIPTIONS.value);
+    // created is set by the author of an entity, but is the generation date of an SSH key, with no default
+    expect(resolveAttributeDescription(ENTITY_TYPE_MALWARE_ANALYSIS, { name: 'created' })).toEqual(ATTRIBUTE_DESCRIPTIONS.created);
+    expect(resolveAttributeDescription(ENTITY_SSH_KEY, { name: 'created' })).toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_SSH_KEY].created);
     // x_opencti_order is the restriction level of a marking, but the position of a kill chain phase
     expect(resolveAttributeDescription(ENTITY_TYPE_MARKING_DEFINITION, { name: 'x_opencti_order' }))
       .toEqual(ATTRIBUTE_DESCRIPTIONS_BY_TYPE[ENTITY_TYPE_MARKING_DEFINITION].x_opencti_order);

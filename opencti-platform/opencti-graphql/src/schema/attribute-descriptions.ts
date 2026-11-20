@@ -305,7 +305,7 @@ export const ATTRIBUTE_DESCRIPTIONS: Record<string, string> = {
   objectMarking: 'Marking definitions (e.g. TLP:AMBER) restricting who can see the entity.',
   objectLabel: 'Labels tagging the entity.',
   externalReferences: 'External references (source URL, report…) of the entity.',
-  objectOrganization: 'Organizations the entity is shared with. Only taken into account with the capability to restrict access to organizations; otherwise set by the platform from the organizations of the user.',
+  objectOrganization: 'Organizations the entity is shared with. At creation, taken from this field only with the capability to restrict access to organizations; without it, the platform shares the entity with the organizations of the user when the user is outside the platform organization (or is a service account with organizations), and with none otherwise. An update of this field needs that capability and Enterprise Edition, and is rejected without them.',
   objectAssignee: 'Users assigned to the entity.',
   objectParticipant: 'Users participating in the entity.',
   killChainPhases: 'Kill chain phases (e.g. MITRE ATT&CK tactics) the entity belongs to.',
@@ -414,6 +414,7 @@ export const ATTRIBUTE_DESCRIPTIONS_BY_TYPE: Record<string, Record<string, strin
     expiration_date: 'Expiration date of the payment card, in ISO 8601.',
   },
   [ENTITY_SSH_KEY]: {
+    created: 'Date when the SSH key was generated, in ISO 8601.',
     expiration_date: 'Date when the SSH key expires, in ISO 8601.',
   },
   // -- Meta objects --
