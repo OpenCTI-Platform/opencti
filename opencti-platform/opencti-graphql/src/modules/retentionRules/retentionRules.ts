@@ -108,6 +108,17 @@ const RETENTION_RULE_DEFINITION: ModuleDefinition<StoreEntityRetentionRule, Stix
       isFilterable: true,
     },
     {
+      name: 'last_error',
+      label: 'Last error',
+      type: 'string',
+      format: 'text',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: false,
+      upsert: false,
+      isFilterable: false,
+    },
+    {
       name: 'active',
       label: 'Active',
       type: 'boolean',

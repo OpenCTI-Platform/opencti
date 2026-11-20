@@ -30349,6 +30349,8 @@ export type RetentionRule = {
   filters: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   last_deleted_count?: Maybe<Scalars['Int']['output']>;
+  /** Message of the last delete that failed in the last execution, empty when the last execution had no error */
+  last_error?: Maybe<Scalars['String']['output']>;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
   max_retention: Scalars['Int']['output'];
   name: Scalars['String']['output'];
@@ -53215,6 +53217,7 @@ export type RetentionRuleResolvers<ContextType = any, ParentType extends Resolve
   filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   last_deleted_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  last_error?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   max_retention?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

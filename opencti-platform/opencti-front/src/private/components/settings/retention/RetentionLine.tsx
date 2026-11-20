@@ -3,14 +3,13 @@ import { graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { LayersClearOutlined, MoreVert } from '@mui/icons-material';
+import { ErrorOutlined, LayersClearOutlined, MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
-import { Chip } from '@filigran/design-system';
+import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { styled } from '@mui/material/styles';
 import { RetentionLinesPaginationQuery$variables } from '@components/settings/retention/__generated__/RetentionLinesPaginationQuery.graphql';
 import { RetentionLine_node$key } from '@components/settings/retention/__generated__/RetentionLine_node.graphql';
 import { InformationOutline } from 'mdi-material-ui';
-import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 import RetentionPopover from './RetentionPopover';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
@@ -29,6 +28,7 @@ const RetentionLineFragment = graphql`
         retention_unit
         last_execution_date
         remaining_count
+        last_error
         filters
         scope
         active
@@ -96,6 +96,24 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
               style={{ width: dataColumns.remaining_count.width }}
             >
               {n(data.remaining_count)}
+              {data.last_error && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    {/* A button, so that the last error can also be read from the keyboard. It does nothing on click. */}
+                    <button
+                      type="button"
+                      aria-label={`${t_i18n('Last error')}: ${data.last_error}`}
+                      style={{ display: 'inline-flex', verticalAlign: 'middle', marginLeft: 8, padding: 0, border: 0, background: 'none', cursor: 'default' }}
+                    >
+                      <ErrorOutlined fontSize="small" color="error" aria-hidden />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div>{t_i18n('Last error')}</div>
+                    <div>{data.last_error}</div>
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </BodyItem>
             <BodyItem
               style={{ width: dataColumns.scope.width }}
@@ -126,14 +144,17 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
                 <span>{appliedOnContent}</span>
                 {data.scope !== 'knowledge' && data.scope !== 'history' && data.scope !== 'activity'
                   && (
-                    <Tooltip
-                      title={`${t_i18n('Files contained in')} ${t_i18n('Data')}/${t_i18n('Import')}`}
-                    >
-                      <InformationOutline
-                        fontSize="small"
-                        color="primary"
-                        sx={{ ml: 1 }}
-                      />
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <InformationOutline
+                          fontSize="small"
+                          color="primary"
+                          sx={{ ml: 1 }}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {`${t_i18n('Files contained in')} ${t_i18n('Data')}/${t_i18n('Import')}`}
+                      </TooltipContent>
                     </Tooltip>
                   )
                 }
