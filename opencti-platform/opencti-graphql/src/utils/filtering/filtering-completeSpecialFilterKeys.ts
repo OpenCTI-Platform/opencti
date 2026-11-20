@@ -17,6 +17,8 @@ import {
   IDS_FILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
+  INSTANCE_REGARDING_OF_DIRECTION_FORCED,
+  INSTANCE_REGARDING_OF_DIRECTION_REVERSE,
   INSTANCE_RELATION_FILTER,
   INSTANCE_RELATION_TYPES_FILTER,
   IS_INFERRED_FILTER,
@@ -69,7 +71,7 @@ import { elFindByIds, elList, elPaginate, ES_MAX_PAGINATION, ROLE_FROM, ROLE_TO,
 import { computeQueryIndices } from '../../database/engine-indices';
 import { keepMostRestrictiveTypes } from '../../schema/schemaUtils';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
-import { isUserHasCapability, PIRAPI, SYSTEM_USER } from '../access';
+import { isUserHasCapability, PIRAPI } from '../access';
 import { uniqAsyncMap } from '../data-processing';
 import { ENTITY_TYPE_PIR } from '../../modules/pir/pir-types';
 import { getEntitiesListFromCache } from '../../database/cache';
@@ -87,6 +89,7 @@ const resolveUnimpactedSideIds = async (
   types: string[],
   ids: string[],
   inferredValues: string[],
+  allowedSides: string[],
 ) => {
   let relationshipIndices = READ_RELATIONSHIPS_INDICES;
   if (inferredValues.includes('true')) {
@@ -97,13 +100,12 @@ const resolveUnimpactedSideIds = async (
   const sideIds = new Set<string>();
   for (let index = 0; index < types.length; index += 1) {
     const type = types[index];
-    const sides = [ROLE_FROM, ROLE_TO].filter((side) => UNIMPACTED_ENTITIES_ROLE.includes(`${type}_${side}`));
+    const sides = allowedSides.filter((side) => UNIMPACTED_ENTITIES_ROLE.includes(`${type}_${side}`));
     for (let sideIndex = 0; sideIndex < sides.length; sideIndex += 1) {
       const side = sides[sideIndex];
       const relationships = await elList<BasicStoreRelation>(context, user, relationshipIndices, {
         types: [type],
         baseData: true,
-        maxSize: ES_MAX_PAGINATION,
         filters: {
           mode: FilterMode.And,
           filters: [{ key: [side === ROLE_FROM ? RELATION_TO_FILTER : RELATION_FROM_FILTER], values: ids }],
@@ -208,8 +210,13 @@ export const adaptFilterToRegardingOfFilterKey = async (
       : types.flatMap((t: string) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
     regardingFilters.push({ key: keys, operator: filter.operator, mode, values: ids, postFilteringTag });
     const inferredValues = inferredParameter?.values ?? [];
-    const listingUser = noRegardingOfFilterIdsCheck ? SYSTEM_USER : user;
-    const unimpactedSideIds = await resolveUnimpactedSideIds(context, listingUser, types ?? [], ids, inferredValues);
+    const directionForced = filter.values.find((i) => i.key === INSTANCE_REGARDING_OF_DIRECTION_FORCED)?.values?.[0] ?? false;
+    const directionReverse = filter.values.find((i) => i.key === INSTANCE_REGARDING_OF_DIRECTION_REVERSE)?.values?.[0] ?? false;
+    let allowedSides = [ROLE_FROM, ROLE_TO];
+    if (directionForced) {
+      allowedSides = directionReverse ? [ROLE_FROM] : [ROLE_TO];
+    }
+    const unimpactedSideIds = await resolveUnimpactedSideIds(context, user, types ?? [], ids, inferredValues, allowedSides);
     if (unimpactedSideIds.length > 0) {
       regardingFilters.push({ key: ['internal_id'], operator: filter.operator, mode, values: unimpactedSideIds, postFilteringTag });
     }

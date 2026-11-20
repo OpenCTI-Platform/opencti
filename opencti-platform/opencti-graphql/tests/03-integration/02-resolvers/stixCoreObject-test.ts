@@ -746,7 +746,7 @@ describe('regardingOf on the channel side of publishes', () => {
   const CHANNELS_QUERY = gql`
     query Channels($filters: FilterGroup) {
       stixCoreObjects(filters: $filters, first: 50) {
-        edges { node { id } }
+        edges { node { id ... on Channel { channel_types } } }
       }
     }
   `;
@@ -817,15 +817,21 @@ describe('regardingOf on the channel side of publishes', () => {
   it('should list only the channel publishing the media content', async () => {
     for (const filter of [regardingOf(), dynamicRegardingOf()]) {
       const result = await queryAsAdminWithSuccess({ query: CHANNELS_QUERY, variables: { filters: channelFilters(filter) } });
-      expect(result.data?.stixCoreObjects.edges.map((e: any) => e.node.id)).toEqual([publishingChannelId]);
+      expect(result.data?.stixCoreObjects.edges.map((e: any) => e.node)).toEqual([{ id: publishingChannelId, channel_types: [CHANNEL_TYPE] }]);
     }
   });
 
   it('should distribute the channel types of the channels publishing the media content', async () => {
-    const result = await queryAsAdminWithSuccess({ query: DISTRIBUTION_QUERY, variables: { filters: channelFilters(dynamicRegardingOf()) } });
-    const distribution = result.data?.stixCoreObjectsDistribution;
-    expect(distribution).toHaveLength(1);
-    expect(distribution[0].label.toLowerCase()).toEqual(CHANNEL_TYPE);
-    expect(distribution[0].value).toEqual(1);
+    const direct = await queryAsAdminWithSuccess({
+      query: DISTRIBUTION_QUERY,
+      variables: { filters: channelFilters({ key: ['ids'], values: [publishingChannelId] }) },
+    });
+    for (const filter of [regardingOf(), dynamicRegardingOf()]) {
+      const result = await queryAsAdminWithSuccess({ query: DISTRIBUTION_QUERY, variables: { filters: channelFilters(filter) } });
+      const distribution = result.data?.stixCoreObjectsDistribution;
+      expect(distribution).toHaveLength(1);
+      expect(distribution[0].value).toEqual(1);
+      expect(distribution).toEqual(direct.data?.stixCoreObjectsDistribution);
+    }
   });
 });
