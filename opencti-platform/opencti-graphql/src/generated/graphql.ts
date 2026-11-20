@@ -28188,6 +28188,11 @@ export type QuerySchemaAttributeNamesArgs = {
 };
 
 
+export type QuerySchemaAttributesArgs = {
+  entityType?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type QuerySectorArgs = {
   id?: InputMaybe<Scalars['String']['input']>;
 };
@@ -38162,6 +38167,7 @@ export enum TriggersOrdering {
 export type TypeAttribute = {
   __typename?: 'TypeAttribute';
   defaultValues?: Maybe<Array<DefaultValue>>;
+  description?: Maybe<Scalars['String']['output']>;
   editDefault: Scalars['Boolean']['output'];
   label?: Maybe<Scalars['String']['output']>;
   mandatory: Scalars['Boolean']['output'];
@@ -52774,7 +52780,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   savedFilter?: Resolver<Maybe<ResolversTypes['SavedFilter']>, ParentType, ContextType, RequireFields<QuerySavedFilterArgs, 'id'>>;
   savedFilters?: Resolver<Maybe<ResolversTypes['SavedFilterConnection']>, ParentType, ContextType, Partial<QuerySavedFiltersArgs>>;
   schemaAttributeNames?: Resolver<Maybe<ResolversTypes['AttributeConnection']>, ParentType, ContextType, RequireFields<QuerySchemaAttributeNamesArgs, 'elementType'>>;
-  schemaAttributes?: Resolver<Maybe<Array<Maybe<ResolversTypes['AttributesMap']>>>, ParentType, ContextType>;
+  schemaAttributes?: Resolver<Maybe<Array<Maybe<ResolversTypes['AttributesMap']>>>, ParentType, ContextType, Partial<QuerySchemaAttributesArgs>>;
   schemaRelationsRefTypesMapping?: Resolver<Array<ResolversTypes['StixRelationshipRefSchema']>, ParentType, ContextType>;
   schemaRelationsTypesMapping?: Resolver<Array<ResolversTypes['StixRelationshipSchema']>, ParentType, ContextType>;
   sector?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, Partial<QuerySectorArgs>>;
@@ -55805,6 +55811,7 @@ export type TriggerEdgeResolvers<ContextType = any, ParentType extends Resolvers
 
 export type TypeAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['TypeAttribute'] = ResolversParentTypes['TypeAttribute']> = ResolversObject<{
   defaultValues?: Resolver<Maybe<Array<ResolversTypes['DefaultValue']>>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   mandatory?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;

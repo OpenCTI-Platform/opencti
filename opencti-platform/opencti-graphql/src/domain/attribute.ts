@@ -1,11 +1,12 @@
 import * as R from 'ramda';
 import { elAttributeValues } from '../database/engine';
-import { schemaAttributesDefinition } from '../schema/schema-attributes';
+import { getRegisteredTypeFromIndexedName, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { buildPagination } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { Attribute, QueryRuntimeAttributesArgs, TypeAttribute } from '../generated/graphql';
 import { INTERNAL_ATTRIBUTES } from './attribute-utils';
 import { getCustomFieldDefinitionsForEntityType, getDynamicTypeAttributeForEntityType } from '../modules/customField/custom-field-cache';
+import { FunctionalError } from '../config/errors';
 
 export interface DefaultValue {
   id: string;
@@ -38,11 +39,23 @@ export const getSchemaAttributeNames = async (context: AuthContext, user: AuthUs
   return buildPagination<Attribute>(0, null, finalResult, finalResult.length);
 };
 
-export const getSchemaAttributes = async (context: AuthContext, user: AuthUser) => {
-  const allTypes = schemaAttributesDefinition.getRegisteredTypes();
+export const getSchemaAttributes = async (context: AuthContext, user: AuthUser, entityType?: string | null) => {
+  const registeredTypes = schemaAttributesDefinition.getRegisteredTypes();
+  // A single type can be asked, so an API client does not load the whole schema each time.
+  // Only an absent filter returns every type. A given type is matched whatever its letter case
+  // (malware is Malware); a name of no registered type, even empty, is an error rather than an
+  // empty list, so that a typo is not taken for a type without attributes.
+  let types = registeredTypes;
+  if (!R.isNil(entityType)) {
+    const registeredType = registeredTypes.includes(entityType) ? entityType : getRegisteredTypeFromIndexedName(entityType.toLowerCase());
+    if (!registeredType) {
+      throw FunctionalError('Unknown entity type', { entityType });
+    }
+    types = [registeredType];
+  }
 
-  return Promise.all(allTypes.map(async (entityType) => {
-    const attributes = schemaAttributesDefinition.getAttributes(entityType);
+  return Promise.all(types.map(async (type) => {
+    const attributes = schemaAttributesDefinition.getAttributes(type);
     const attributesArray = Array.from(attributes.values());
 
     // Map attributes to TypeAttribute format
@@ -52,6 +65,7 @@ export const getSchemaAttributes = async (context: AuthContext, user: AuthUser) 
         name: attr.name,
         type: attr.type,
         label: attr.label || attr.name,
+        description: attr.description ?? null,
         mandatory: attr.mandatoryType === 'external',
         mandatoryType: attr.mandatoryType,
         editDefault: attr.editDefault,
@@ -64,13 +78,13 @@ export const getSchemaAttributes = async (context: AuthContext, user: AuthUser) 
       } as TypeAttribute));
 
     // Inject custom field attributes dynamically
-    const customFieldAttributes = await getDynamicTypeAttributeForEntityType(context, user, entityType);
+    const customFieldAttributes = await getDynamicTypeAttributeForEntityType(context, user, type);
     for (const cfAttribute of customFieldAttributes) {
       typeAttributes.push(cfAttribute);
     }
 
     return {
-      type: entityType,
+      type,
       attributes: typeAttributes,
     };
   }));
