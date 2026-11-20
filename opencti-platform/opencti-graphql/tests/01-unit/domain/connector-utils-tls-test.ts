@@ -1,7 +1,8 @@
 import { once } from 'node:events';
+import type http from 'node:http';
 import https from 'node:https';
 import type { AddressInfo } from 'node:net';
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { testSync } from '../../../src/domain/connector-utils';
 import * as httpConfig from '../../../src/http/httpConfig';
 import { buildSelfSignedCertificate } from '../../utils/selfSignedCertificate';
@@ -32,24 +33,53 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
 // Remote OpenCTI stream served over https with a self-signed certificate
 let server: https.Server;
 let remoteUri: string;
+// Another server, on another origin (port), the remote OpenCTI can redirect to
+let otherServer: https.Server;
+let otherUri: string;
+// The authorization header received by each server, by path
+const receivedAuthorizations: { server: string; path: string | undefined; authorization: string | undefined }[] = [];
+
+const serveStream = (res: http.ServerResponse) => {
+  res.writeHead(200, { 'Content-Type': 'text/event-stream' });
+  res.write(`event: connected\ndata: ${JSON.stringify({ connectionId: 'connection-id' })}\n\n`);
+};
+
+const listen = async (target: https.Server) => {
+  target.listen(0, '127.0.0.1');
+  await once(target, 'listening');
+  return `https://127.0.0.1:${(target.address() as AddressInfo).port}`;
+};
 
 beforeAll(async () => {
   server = https.createServer(buildSelfSignedCertificate(), (req, res) => {
+    receivedAuthorizations.push({ server: 'remote', path: req.url, authorization: req.headers.authorization });
     if (req.url === '/stream/redirect-to-ip-address') {
       res.writeHead(302, { Location: `${remoteUri}/stream/live` }).end();
       return;
     }
-    res.writeHead(200, { 'Content-Type': 'text/event-stream' });
-    res.write(`event: connected\ndata: ${JSON.stringify({ connectionId: 'connection-id' })}\n\n`);
+    if (req.url === '/stream/redirect-to-same-origin') {
+      res.writeHead(302, { Location: '/stream/live' }).end();
+      return;
+    }
+    if (req.url === '/stream/redirect-to-other-origin') {
+      res.writeHead(302, { Location: `${otherUri}/stream/live` }).end();
+      return;
+    }
+    serveStream(res);
   });
-  server.listen(0, '127.0.0.1');
-  await once(server, 'listening');
-  remoteUri = `https://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  otherServer = https.createServer(buildSelfSignedCertificate(), (req, res) => {
+    receivedAuthorizations.push({ server: 'other', path: req.url, authorization: req.headers.authorization });
+    serveStream(res);
+  });
+  remoteUri = await listen(server);
+  otherUri = await listen(otherServer);
 });
 
 afterAll(async () => {
-  server.closeAllConnections();
-  server.close();
+  [server, otherServer].forEach((target) => {
+    target.closeAllConnections();
+    target.close();
+  });
 });
 
 describe('testSync TLS certificate verification', () => {
@@ -115,5 +145,36 @@ describe('testSync internal destinations', () => {
     outboundConfig.blocked = false;
     vi.spyOn(httpConfig, 'getHttpMaxRedirects').mockReturnValue(0);
     await expect(testSync(testContext, ADMIN_USER, { uri: remoteUri, stream_id: 'redirect-to-ip-address', token: '', ssl_verify: false })).rejects.toThrow();
+  });
+});
+
+describe('testSync token on redirects', () => {
+  const TOKEN = 'remote-opencti-token';
+  const buildSync = (streamId: string) => ({ uri: remoteUri, stream_id: streamId, token: TOKEN, ssl_verify: false });
+
+  beforeEach(() => {
+    receivedAuthorizations.length = 0;
+  });
+
+  afterEach(() => {
+    outboundConfig.blocked = undefined;
+  });
+
+  it('should send the token again after a redirect to the same origin', async () => {
+    outboundConfig.blocked = false;
+    await expect(testSync(testContext, ADMIN_USER, buildSync('redirect-to-same-origin'))).resolves.toBe('Connection success');
+    expect(receivedAuthorizations).toEqual([
+      { server: 'remote', path: '/stream/redirect-to-same-origin', authorization: `Bearer ${TOKEN}` },
+      { server: 'remote', path: '/stream/live', authorization: `Bearer ${TOKEN}` },
+    ]);
+  });
+
+  it('should not send the token after a redirect to another origin', async () => {
+    outboundConfig.blocked = false;
+    await expect(testSync(testContext, ADMIN_USER, buildSync('redirect-to-other-origin'))).resolves.toBe('Connection success');
+    expect(receivedAuthorizations).toEqual([
+      { server: 'remote', path: '/stream/redirect-to-other-origin', authorization: `Bearer ${TOKEN}` },
+      { server: 'other', path: '/stream/live', authorization: undefined },
+    ]);
   });
 });
