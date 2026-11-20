@@ -106,11 +106,13 @@ const SecurityCoverageVulnerabilities = createFragmentContainer(
   SecurityCoverageVulnerabilitiesComponent,
   {
     securityCoverage: graphql`
-      fragment SecurityCoverageVulnerabilities_securityCoverage on SecurityCoverage {
+      fragment SecurityCoverageVulnerabilities_securityCoverage on SecurityCoverage
+      @argumentDefinitions(filters: { type: "FilterGroup" }) {
         vulnerabilities: coveredVulnerabilities(
           orderBy: created_at
           orderMode: asc
           first: 5000
+          filters: $filters
         ) {
           count
           entities {

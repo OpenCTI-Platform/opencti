@@ -21,7 +21,8 @@ import Label from '../../../../components/common/label/Label';
 import { EMPTY_VALUE } from '../../../../utils/String';
 
 const securityCoverageDetailsFragment = graphql`
-  fragment SecurityCoverageDetails_securityCoverage on SecurityCoverage {
+  fragment SecurityCoverageDetails_securityCoverage on SecurityCoverage
+  @argumentDefinitions(vulnerabilityFilters: { type: "FilterGroup" }) {
     id
     entity_type
     customFieldValues {
@@ -37,7 +38,7 @@ const securityCoverageDetailsFragment = graphql`
           main
       }
     }
-    ...SecurityCoverageVulnerabilities_securityCoverage
+    ...SecurityCoverageVulnerabilities_securityCoverage @arguments(filters: $vulnerabilityFilters)
   }
 `;
 

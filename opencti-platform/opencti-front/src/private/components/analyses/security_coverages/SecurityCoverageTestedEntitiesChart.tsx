@@ -16,10 +16,12 @@ import { SecurityCoverageTestedEntitiesChart_securityCoverage$key } from './__ge
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 
 const securityCoverageRelationshipDistributionFragment = graphql`
-    fragment SecurityCoverageTestedEntitiesChart_securityCoverage on SecurityCoverage{
+    fragment SecurityCoverageTestedEntitiesChart_securityCoverage on SecurityCoverage
+    @argumentDefinitions(fromId: { type: "[String!]" }) {
         totalCountPerEntityType : coveredEntitiesDistribution(
             field:"entity_type", 
-            relationship_type: "has-covered", 
+            relationship_type: "has-covered",
+            fromId: $fromId,
             operation:count,
             filters: {
               mode: and
@@ -33,7 +35,8 @@ const securityCoverageRelationshipDistributionFragment = graphql`
         }
         testedCountPerEntityType: coveredEntitiesDistribution(
             field:"entity_type", 
-            relationship_type: "has-covered", 
+            relationship_type: "has-covered",
+            fromId: $fromId,
             operation:count, 
             filters: {
             mode: and
