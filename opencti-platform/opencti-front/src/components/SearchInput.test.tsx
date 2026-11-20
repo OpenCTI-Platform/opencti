@@ -197,6 +197,25 @@ describe('SearchInput (top bar) in bulk mode', () => {
     await user.type(document.querySelector('input[name="keyword"]') as HTMLInputElement, 'imp');
     expect(screen.queryAllByRole('option')).toHaveLength(0);
   });
+
+  it('goes back to the bulk search page when Bulk search is clicked again from another page', async () => {
+    const { user } = testRender(<SearchInput variant="topBar" onSubmit={vi.fn()} keyword="" />, { route: '/dashboard' });
+    await user.click(screen.getByRole('button', { name: 'Bulk search' }));
+    mockNavigate.mockClear();
+
+    // The top bar outlives the page: the toggle is still selected once the user has moved elsewhere.
+    await user.click(screen.getByRole('button', { name: 'Bulk search' }));
+    expect(mockNavigate).toHaveBeenCalledWith('/dashboard/search_bulk');
+  });
+
+  it('does not reload the bulk search page when Bulk search is clicked on it', async () => {
+    const { user } = testRender(<SearchInput variant="topBar" onSubmit={vi.fn()} keyword="" />, { route: '/dashboard/search_bulk' });
+    await user.click(screen.getByRole('button', { name: 'Bulk search' }));
+    mockNavigate.mockClear();
+
+    await user.click(screen.getByRole('button', { name: 'Bulk search' }));
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
 });
 
 describe('SearchInput (top bar)', () => {

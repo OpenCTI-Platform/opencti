@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { SearchField, Spinner } from '@filigran/design-system';
 import { ManageSearchOutlined, TuneOutlined, KeyboardArrowDownOutlined } from '@mui/icons-material';
 import { LogoXtmOneIcon } from 'filigran-icon';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/material/styles';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -31,6 +31,7 @@ import NavSearchSuggestions, { NAV_SEARCH_LISTBOX_ID, navSearchOptionId } from '
 
 const MODE_SEARCH = 'search';
 const MODE_BULK = 'bulk';
+const BULK_SEARCH_PATH = '/dashboard/search_bulk';
 // NLQ modes are dynamic: `nlq:<agentSlug>`
 const isNlqMode = (mode) => typeof mode === 'string' && mode.startsWith('nlq:');
 const nlqSlugFromMode = (mode) => (isNlqMode(mode) ? mode.slice(4) : null);
@@ -41,6 +42,7 @@ const SIZE_BY_VARIANT = {
 
 const SearchInput = (props) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured, fullyActive } = useAI();
   const { xtmOneConfigured } = useChatbot();
@@ -175,8 +177,21 @@ const SearchInput = (props) => {
   }, [isAIEnabled, mode, useXtmOne, defaultNlqSlug, handleOpenNlqMenu, searchValue, onSubmit]);
 
   // ── Mode change handler ────────────────────────────────────────────────
+  const navigateToBulkSearch = () => {
+    const encoded = encodeURIComponent(searchValue || '');
+    navigate(`${BULK_SEARCH_PATH}${searchValue ? `?q=${encoded}` : ''}`);
+  };
+
   const handleModeChange = (_event, newMode) => {
-    if (newMode === null) return; // MUI sends null when clicking the already-selected button
+    // MUI sends null when clicking the already-selected button. The top bar outlives the page,
+    // so Bulk stays selected after the user has left the bulk search page: clicking it again
+    // must lead back there. On the page itself, it does nothing.
+    if (newMode === null) {
+      if (mode === MODE_BULK && !location.pathname.startsWith(BULK_SEARCH_PATH)) {
+        navigateToBulkSearch();
+      }
+      return;
+    }
     if (newMode === MODE_SEARCH) {
       setMode(newMode);
       // Execute search immediately with current value
@@ -186,8 +201,7 @@ const SearchInput = (props) => {
     } else if (newMode === MODE_BULK) {
       setMode(newMode);
       // Navigate to bulk with current value
-      const encoded = encodeURIComponent(searchValue || '');
-      navigate(`/dashboard/search_bulk${searchValue ? `?q=${encoded}` : ''}`);
+      navigateToBulkSearch();
     }
     // NLQ is handled via handleNlqToggleClick, not the toggle group
   };
@@ -284,7 +298,7 @@ const SearchInput = (props) => {
       if (mode === MODE_BULK) {
         // Navigate to bulk search page with the keyword as a query param
         const encoded = encodeURIComponent(value);
-        navigate(`/dashboard/search_bulk${value ? `?q=${encoded}` : ''}`);
+        navigate(`${BULK_SEARCH_PATH}${value ? `?q=${encoded}` : ''}`);
       } else {
         // Pass agentSlug only if it's a non-empty string (XTM One mode),
         // otherwise pass undefined so AINLQ falls back to legacy
