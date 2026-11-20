@@ -8,12 +8,12 @@ import { computeDateFromEventId, truncate, utcDate } from './format';
 import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REPLACE } from '../database/utils';
 import { hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE } from '../modules/indicator/indicator-utils';
 import { creators as creatorsAttribute, customFieldValues, iAttributes, xOpenctiStixIds } from '../schema/attribute-definition';
-import { generateStandardId } from '../schema/identifier';
+import { generateStandardId, NAME_FIELD, normalizeName } from '../schema/identifier';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
-import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA, isStixObjectAliased, resolveAliasesField } from '../schema/stixDomainObject';
 import { externalReferences, objectLabel, RELATION_CREATED_BY, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
 import { INPUT_MARKINGS } from '../schema/general';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
@@ -562,8 +562,19 @@ export const mergeUpsertInputs = (resolvedElement, updatePatch, updatePatchInput
   return Array.from(updatePatchInputsMap.values());
 };
 
+// A name the aliased entity already carries, as its name (ignoring case) or as an alias, brings no new information.
+// Replacing it at equal confidence lets sources that disagree on the main name rename the entity back and forth,
+// and each rename rewrites every relationship that stores the names of its connections.
+const isKnownNameOfAliasedEntity = (resolvedElement, type, inputName) => {
+  if (!isStixObjectAliased(type) || typeof inputName !== 'string') {
+    return false;
+  }
+  const knownNames = [resolvedElement[NAME_FIELD], ...(resolvedElement[resolveAliasesField(type).name] ?? [])];
+  return knownNames.some((knownName) => normalizeName(knownName) === normalizeName(inputName));
+};
+
 export const generateAttributesInputsForUpsert = (context, _user, resolvedElement, type, updatePatch, confidenceForUpsert) => {
-  const { isConfidenceMatch } = confidenceForUpsert;
+  const { isConfidenceMatch, isConfidenceUpper } = confidenceForUpsert;
   // -- Upsert attributes
   const inputs = [];
   const attributes = Array.from(schemaAttributesDefinition.getAttributes(type).values());
@@ -578,11 +589,14 @@ export const generateAttributesInputsForUpsert = (context, _user, resolvedElemen
       const isFullSync = context.synchronizedUpsert || attribute.upsert_force_replace; // In case of full synchronization or force full upsert, just update the data
       const isInputWithData = typeof inputData === 'string' ? isNotEmptyField(inputData.trim()) : isNotEmptyField(inputData);
       const isCurrentlyEmpty = isEmptyField(resolvedElement[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
+      // Like the created-by, a name the entity already knows is replaced only for a strictly upper confidence
+      const isProtectedName = attributeKey === NAME_FIELD && !isConfidenceUpper && isKnownNameOfAliasedEntity(resolvedElement, type, inputData);
       // Field can be upsert if:
       // 1. Confidence is correct
       // 2. Attribute is declared upsert=true in the schema
       // 3. Data from the inputs is not empty to prevent any data cleaning
-      const canBeUpsert = isConfidenceMatch && attribute.upsert && isInputWithData;
+      // 4. It does not swap the name of an aliased entity for a name it already knows, see isKnownNameOfAliasedEntity
+      const canBeUpsert = isConfidenceMatch && attribute.upsert && isInputWithData && !isProtectedName;
       // Upsert will be done if upsert is well-defined but also in full synchro mode or if the current value is empty
       if (!isOutDatedModification) {
         if (isStructuralUpsert || canBeUpsert || isFullSync || isCurrentlyEmpty) {
