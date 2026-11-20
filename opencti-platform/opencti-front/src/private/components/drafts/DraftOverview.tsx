@@ -24,6 +24,7 @@ const DraftOverview: FunctionComponent<DraftOverviewProps> = ({ draft }) => {
           direction="row"
           sx={{
             justifyContent: 'flex-end',
+            mb: 3,
           }}
         >
           <DraftEdition draftId={draft.id} overviewData={draft} />
