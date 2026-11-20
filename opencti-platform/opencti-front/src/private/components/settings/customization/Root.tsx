@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router';
 import Loader from '../../../../components/Loader';
 import CustomizationMenu from '../CustomizationMenu';
 import useGranted, { SETTINGS_SETCUSTOMIZATION } from '../../../../utils/hooks/useGranted';
+import { capabilitiesOf } from '../../nav/menuEntries';
 import useSettingsFallbackUrl from '../../../../utils/hooks/useSettingsFallbackUrl';
 
 const Security = lazy(() => import('../../../../utils/Security'));
@@ -46,7 +47,7 @@ const RootCustomization = () => {
           <Route
             path="/entity_types"
             element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/customization/entity_types')} placeholder={<Navigate to={fallbackUrl} />}>
                 <SubTypes />
               </Security>
             )}
@@ -54,7 +55,7 @@ const RootCustomization = () => {
           <Route
             path="/entity_types/:subTypeId/*"
             element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/customization/entity_types')} placeholder={<Navigate to={fallbackUrl} />}>
                 <RootSubType />
               </Security>
             )}
@@ -62,7 +63,7 @@ const RootCustomization = () => {
           <Route
             path="/retention"
             element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/customization/retention')} placeholder={<Navigate to={fallbackUrl} />}>
                 <Retention />
               </Security>
             )}
@@ -70,7 +71,7 @@ const RootCustomization = () => {
           <Route
             path="/rules"
             element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/customization/rules')} placeholder={<Navigate to={fallbackUrl} />}>
                 <Rules />
               </Security>
             )}
@@ -78,7 +79,7 @@ const RootCustomization = () => {
           <Route
             path="/decay"
             element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/customization/decay')} placeholder={<Navigate to={fallbackUrl} />}>
                 <DecayRuleTabs />
               </Security>
             )}
@@ -86,7 +87,7 @@ const RootCustomization = () => {
           <Route
             path="/decay/:decayRuleId/*"
             element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/customization/decay')} placeholder={<Navigate to={fallbackUrl} />}>
                 <DecayRule />
               </Security>
             )}
@@ -94,7 +95,7 @@ const RootCustomization = () => {
           <Route
             path="/exclusion_lists"
             element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/customization/exclusion_lists')} placeholder={<Navigate to={fallbackUrl} />}>
                 <ExclusionLists />
               </Security>
             )}
@@ -102,7 +103,7 @@ const RootCustomization = () => {
           <Route
             path="/fintel_designs"
             element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/customization/fintel_designs')} placeholder={<Navigate to={fallbackUrl} />}>
                 <FintelDesigns />
               </Security>
             )}
@@ -110,7 +111,7 @@ const RootCustomization = () => {
           <Route
             path="/fintel_designs/:fintelDesignId/*"
             element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/customization/fintel_designs')} placeholder={<Navigate to={fallbackUrl} />}>
                 <FintelDesign />
               </Security>
             )}
@@ -118,7 +119,7 @@ const RootCustomization = () => {
           <Route
             path="/notifiers"
             element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/customization/notifiers')} placeholder={<Navigate to={fallbackUrl} />}>
                 <Notifiers />
               </Security>
             )}

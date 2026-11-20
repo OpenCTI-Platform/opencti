@@ -64,7 +64,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { styled, useTheme } from '@mui/material/styles';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import DateTimePicker from '../../../components/common/input/picker/BaseDateTimePicker';
 import { BankMinus, BankPlus, CloudRefreshOutline, LabelOutline } from 'mdi-material-ui';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -137,6 +137,7 @@ import {
 
 import EnrollPlaybookDrawer from '@components/data/drawers/EnrollPlaybookDrawer';
 import BackgroundTaskLaunch from '../common/background_task/BackgroundTaskLaunch';
+import { confirmsOnlyAboveLimit } from '../common/background_task/BackgroundTaskLaunch.utils';
 import toEnrichmentActionValues from './connectors/utils/toEnrichmentActionValues';
 
 const OptionIcon = styled('div')({
@@ -2788,6 +2789,7 @@ class DataTableToolBar extends Component {
                 description={this.state.description}
                 actions={actions}
                 customFieldDefinitions={this.props.customFieldDefinitions}
+                confirmOnlyAboveLimit={confirmsOnlyAboveLimit(actions)}
               />
               <Drawer
                 title={t('Update entities')}
@@ -2946,6 +2948,8 @@ class DataTableToolBar extends Component {
                           secondary={truncate(
                             element.description
                             || element.x_opencti_description
+                            // Kill chain phases sharing a phase name only differ by their kill chain
+                            || element.kill_chain_name
                             || '',
                             60,
                           )}

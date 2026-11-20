@@ -25,6 +25,7 @@ import PasswordTextField from '../../../../components/PasswordTextField';
 import { styled, useTheme } from '@mui/material/styles';
 import IngestionEditionUserHandling from '../../../../private/components/data/IngestionEditionUserHandling';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import RemoteStreamField from './RemoteStreamField';
 
 const Buttons = styled('div')({
   marginTop: 20,
@@ -222,18 +223,25 @@ const SyncEditionContainer = ({ synchronizer }) => {
               disabled={true}
               isSecret
             />
-            <Field
-              component={TextField}
-              variant="outlined"
-              name="dd"
-              label={t_i18n('Remote OpenCTI stream ID')}
-              fullWidth={true}
-              className="mt-5"
-              value={
-                streams.find((s) => s.id === initialValues.stream_id)?.label ?? EMPTY_VALUE
-              }
-              disabled={true}
-            />
+            {isStreamAccessible ? (
+              <RemoteStreamField
+                name="stream_id"
+                label={t_i18n('Remote OpenCTI stream ID')}
+                streams={streams}
+                disabled
+              />
+            ) : (
+              <Field
+                component={TextField}
+                variant="outlined"
+                name="dd"
+                label={t_i18n('Remote OpenCTI stream ID')}
+                fullWidth={true}
+                className="mt-5"
+                value={EMPTY_VALUE}
+                disabled={true}
+              />
+            )}
           </Alert>
           <CreatorField
             name="user_id"

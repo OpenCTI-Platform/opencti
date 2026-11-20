@@ -1,6 +1,8 @@
 # coding: utf-8
 import json
 
+from pycti.utils.opencti_stix2_utils import query_to_stix
+
 
 class StixCoreObject:
     """Main StixCoreObject class for OpenCTI
@@ -63,6 +65,15 @@ class StixCoreObject:
                 ... on Individual {
                     x_opencti_firstname
                     x_opencti_lastname
+                }
+                ... on System {
+                    x_opencti_system_category
+                    x_opencti_system_subcategory
+                    x_opencti_internet_facing
+                    x_opencti_criticality
+                    x_opencti_environment
+                    x_opencti_owner
+                    x_opencti_platform
                 }
             }
             objectMarking {
@@ -244,6 +255,13 @@ class StixCoreObject:
                 description
                 contact_information
                 x_opencti_aliases
+                x_opencti_system_category
+                x_opencti_system_subcategory
+                x_opencti_internet_facing
+                x_opencti_criticality
+                x_opencti_environment
+                x_opencti_owner
+                x_opencti_platform
             }
             ... on Indicator {
                 pattern_type
@@ -783,6 +801,15 @@ class StixCoreObject:
                     x_opencti_firstname
                     x_opencti_lastname
                 }
+                ... on System {
+                    x_opencti_system_category
+                    x_opencti_system_subcategory
+                    x_opencti_internet_facing
+                    x_opencti_criticality
+                    x_opencti_environment
+                    x_opencti_owner
+                    x_opencti_platform
+                }
             }
             objectMarking {
                 id
@@ -1011,6 +1038,13 @@ class StixCoreObject:
                 description
                 contact_information
                 x_opencti_aliases
+                x_opencti_system_category
+                x_opencti_system_subcategory
+                x_opencti_internet_facing
+                x_opencti_criticality
+                x_opencti_environment
+                x_opencti_owner
+                x_opencti_platform
             }
             ... on Indicator {
                 pattern_type
@@ -1683,28 +1717,9 @@ class StixCoreObject:
         :return: STIX object, or ``None`` if not found
         :rtype: dict or None
         """
-        id = kwargs.get("id", None)
-        version = kwargs.get("version", None)
-        if id is None:
-            self.opencti.app_logger.error(
-                "[opencti_stix_core_object] to_stix: missing parameter: id"
-            )
-            return None
-        self.opencti.app_logger.info(
-            "Fetching Stix-Core-Object STIX", {"id": id, "version": version}
+        return query_to_stix(
+            self.opencti, "stixCoreObject", kwargs.get("id"), kwargs.get("version")
         )
-        query = """
-            query StixCoreObjectToStix($id: String!, $version: Version) {
-                stixCoreObject(id: $id) {
-                    toStix(version: $version)
-                }
-            }
-        """
-        result = self.opencti.query(query, {"id": id, "version": version})
-        stix_core_object = (result.get("data") or {}).get("stixCoreObject")
-        if stix_core_object is None or stix_core_object.get("toStix") is None:
-            return None
-        return json.loads(stix_core_object["toStix"])
 
     def list_files(self, **kwargs):
         """List files of a Stix-Core-Object.
@@ -2095,6 +2110,8 @@ class StixCoreObject:
 
         :param element_id: the Stix-Core-Object id
         :type element_id: str
+        :param execution_id: the execution (bundle) asking for the rescan
+        :type execution_id: str
         """
         element_id = kwargs.get("element_id", None)
         execution_id = kwargs.get("execution_id", None)
@@ -2102,23 +2119,24 @@ class StixCoreObject:
         if element_id is not None and execution_id is not None:
             while not rule_rescan_complete:
                 self.opencti.app_logger.info(
-                    "Apply rules rescan stix_core_object", {"id": element_id}
+                    "Apply rules rescan async stix_core_object",
+                    {"id": element_id, "execution_id": execution_id},
                 )
                 query = """
-                    mutation StixCoreRescanRules($elementId: ID!) {
-                        rulesRescanAsync(elementId: $elementId, $executionId: ID!)
+                    mutation StixCoreRescanRulesAsync($elementId: ID!, $executionId: ID!) {
+                        rulesRescanAsync(elementId: $elementId, executionId: $executionId)
                     }
                 """
                 result = self.opencti.query(
                     query, {"elementId": element_id, "executionId": execution_id}
                 )
                 rule_rescan_complete = result["data"]["rulesRescanAsync"]
-                self.opencti.app_logger.info(
-                    "Rescan rule async stix_core_object complete", {"id": element_id}
-                )
+            self.opencti.app_logger.info(
+                "Rescan rules async stix_core_object complete", {"id": element_id}
+            )
         else:
             self.opencti.app_logger.error(
-                "[stix_core_object] Cannot rescan rule, missing parameters: id"
+                "[stix_core_object] Cannot rescan rules, missing parameters: element_id or execution_id"
             )
             return None
 

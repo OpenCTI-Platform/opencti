@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { findRegisterRow, registerRowsByDisposition, USER_MERGE_REGISTER, UserMergeDisposition } from '../../../../src/modules/userMerge/userMerge-register';
 
 /**
- * The v7 baseline, transcribed from the register page. It is asserted here rather than
+ * The v8 baseline, transcribed from the register page. It is asserted here rather than
  * derived from the constant: a test that recounts the array would agree with any
  * transcription mistake it is supposed to catch.
  *
@@ -11,9 +11,12 @@ import { findRegisterRow, registerRowsByDisposition, USER_MERGE_REGISTER, UserMe
  *
  * v7 splits the user of an ingestion deduplication rule out of `ingestion.user-id` into a
  * transfer row of its own, answered by the handler that keeps the target rule on a conflict.
+ *
+ * v8 adds the default values an entity setting or a mapper applies to every entity it creates
+ * afterwards, which name users and had no row.
  */
-const V7_DISTRIBUTION: Record<UserMergeDisposition, number> = {
-  [UserMergeDisposition.Transfer]: 42,
+const V8_DISTRIBUTION: Record<UserMergeDisposition, number> = {
+  [UserMergeDisposition.Transfer]: 44,
   [UserMergeDisposition.Invalidate]: 20,
   [UserMergeDisposition.Conditional]: 21,
   [UserMergeDisposition.Retain]: 12,
@@ -21,15 +24,15 @@ const V7_DISTRIBUTION: Record<UserMergeDisposition, number> = {
 };
 
 describe('User merge register', () => {
-  it('should match the v7 distribution, disposition by disposition', () => {
-    Object.entries(V7_DISTRIBUTION).forEach(([disposition, expectedCount]) => {
+  it('should match the v8 distribution, disposition by disposition', () => {
+    Object.entries(V8_DISTRIBUTION).forEach(([disposition, expectedCount]) => {
       const rows = registerRowsByDisposition(disposition as UserMergeDisposition);
       expect(rows.length, `disposition ${disposition}`).toBe(expectedCount);
     });
   });
 
-  it('should hold exactly 101 rows, and no row outside the known dispositions', () => {
-    const total = Object.values(V7_DISTRIBUTION).reduce((acc, count) => acc + count, 0);
+  it('should hold exactly 103 rows, and no row outside the known dispositions', () => {
+    const total = Object.values(V8_DISTRIBUTION).reduce((acc, count) => acc + count, 0);
     expect(USER_MERGE_REGISTER.length).toBe(total);
   });
 

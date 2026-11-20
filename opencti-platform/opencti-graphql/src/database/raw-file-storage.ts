@@ -17,6 +17,7 @@ import {
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { Upload } from '@aws-sdk/lib-storage';
 import { enrichWithRemoteCredentials } from '../config/credentials';
+import { checkResolvedMinioCredentials } from '../config/default-credentials';
 import conf, { booleanConf, logApp, logS3Debug } from '../config/conf';
 import { UnsupportedError } from '../config/errors';
 import type { AuthUser } from '../types/user';
@@ -67,6 +68,7 @@ const buildCredentialProvider = async () => {
   // If direct configuration
   const baseAuth = { accessKeyId: clientAccessKey, secretAccessKey: clientSecretKey };
   const userPasswordAuth = await enrichWithRemoteCredentials('minio', baseAuth);
+  checkResolvedMinioCredentials(userPasswordAuth);
   return () => {
     return {
       ...userPasswordAuth,
@@ -165,6 +167,22 @@ export const downloadFile = async (id: string): Promise<Readable | null> => {
     logApp.error('[FILE STORAGE] Cannot retrieve file from S3', { cause: err, fileId: id });
     throw err;
   }
+};
+
+export const downloadFileWithoutLogging = async (key: string): Promise<Readable | null> => {
+  let object: GetObjectCommandOutput;
+  try {
+    object = await s3Client.send(new s3.GetObjectCommand({ Bucket: bucketName, Key: key }));
+  } catch (err) {
+    if ((err as Error).name === 'NoSuchKey') {
+      return null;
+    }
+    throw err;
+  }
+  if (!object.Body) {
+    throw UnsupportedError('File body is null or undefined');
+  }
+  return object.Body as Readable;
 };
 
 export interface RangeDownloadResult {

@@ -22,6 +22,8 @@ In the MITRE STIX 2.1 documentation, an `Attack pattern` is defined as such :
 
 When clicking on the Attack pattern tab at the top left, you access the list of all the attack pattern you have access too, in respect with your [allowed marking definitions](../administration/users.md). You can then search and filter on some common and specific attributes of attack patterns.
 
+![Attack patterns list](assets/attack-patterns-list-view.png)
+
 ### Visualizing Knowledge associated with an Attack pattern
 
 When clicking on an Attack pattern, you land on its Overview tab. For an Attack pattern, the following tabs are accessible:
@@ -41,6 +43,8 @@ When clicking on an Attack pattern, you land on its Overview tab. For an Attack 
 - Data: as described [here](overview.md).
 - History: as described [here](overview.md).
 
+![Attack pattern overview](assets/attack-pattern-overview.png)
+
 ## Narratives
 
 ### General presentation
@@ -53,6 +57,8 @@ Narrative can be a mean in the context of a more broad attack or the goal of the
 
 When clicking on the Narrative tab at the top left, you access the list of all the Narratives you have access too, in respect with your [allowed marking definitions](../administration/users.md). You can then search and filter on some common and specific attributes of narratives.
 
+![Narratives list](assets/narratives-list-view.png)
+
 ### Visualizing Knowledge associated with a Narrative
 
 When clicking on a Narrative, you land on its Overview tab. For a Narrative, the following tabs are accessible:
@@ -64,6 +70,8 @@ When clicking on a Narrative, you land on its Overview tab. For a Narrative, the
 - Data: as described [here](overview.md).
 - History: as described [here](overview.md).
 
+![Narrative overview](assets/narrative-overview.png)
+
 ## Courses of action
 
 ### General presentation
@@ -74,16 +82,18 @@ In the MITRE STIX 2.1 documentation, an `Course of action` is defined as such :
 
 When clicking on the `Courses of action` tab at the top left, you access the list of all the Courses of action you have access too, in respect with your [allowed marking definitions](../administration/users.md). You can then search and filter on some common and specific attributes of course of action.
 
+![Courses of action list](assets/courses-of-action-list-view.png)
+
 ### Visualizing Knowledge associated with a Course of action
 
 When clicking on a `Course of Action`, you land on its Overview tab. For a Course of action, the following tabs are accessible:
 
-- Overview: Overview of Course of action is a bit different as the usual described [here](overview.md). In "Details" box, mitigated attack pattern are listed.
-- Knowledge: a complex tab that regroups all the structured Knowledge linked to the Narratives. Different thematic views are proposed to easily see the Threat actors and Intrusion Set using the Narrative, etc. 
+- Overview: Overview of Course of action is a bit different as the usual described [here](overview.md). The "Details" box contains the "Mitigated attack patterns" list: the Attack patterns that the Course of action mitigates, which you can add or remove from there.
 - Content: This specific tab allows to previzualize, manage and write deliverable associated with the Course of action. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
-- Analyses: as described [here](overview.md).
 - Data: as described [here](overview.md).
 - History: as described [here](overview.md).
+
+![Course of action overview](assets/course-of-action-overview.png)
 
 ## Data sources & Data components
 
@@ -93,10 +103,19 @@ In the MITRE ATT&CK documentation, `Data sources` are defined as such :
 
 > Data sources represent the various subjects/topics of information that can be collected by sensors/logs. Data sources also include data components, which identify specific properties/values of a data source relevant to detecting a given ATT&CK technique or sub-technique.
 
+When clicking on the `Data sources` or `Data components` tab at the top left, you access the list of all the Data sources or Data components you have access to, in respect with your [allowed marking definitions](../administration/users.md).
+
+![Data sources list](assets/data-sources-list-view.png)
+
+![Data components list](assets/data-components-list-view.png)
+
 ### Visualizing Knowledge associated with a Data source or a Data components
 
-When clicking on a `Data source` or a `Data component`, you land on its Overview tab. For a Course of action, the following tabs are accessible:
+When clicking on a `Data source` or a `Data component`, you land on its Overview tab. For a Data source or a Data component, the following tabs are accessible:
 
 - Overview: as described [here](overview.md).
+- Content: as described [here](overview.md#content-section).
 - Data: as described [here](overview.md).
 - History: as described [here](overview.md).
+
+![Data source overview](assets/data-source-overview.png)

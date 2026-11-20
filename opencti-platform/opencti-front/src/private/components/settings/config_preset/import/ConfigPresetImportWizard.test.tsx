@@ -1321,6 +1321,22 @@ describe('ConfigPresetImportWizard', () => {
       expect(screen.queryByText(hint)).not.toBeInTheDocument();
     });
 
+    it('says that the platform keeps its default fintel design when that design is added as a copy, with its own words', async () => {
+      const withFintelDesigns = {
+        ...preview,
+        types: [...preview.types, previewType('fintelDesigns', 'Fintel designs', [
+          previewItem('finteldesign--1', 'Filigran report', { translatable: false, exists: true, conflict: true, isDefault: true }),
+        ], ['OVERWRITE', 'COPY'])],
+      };
+      const rendered = await renderPreview(session(), [], withFintelDesigns);
+      const hint = 'The platform keeps its current default fintel design.';
+      expect(screen.queryByText(hint)).not.toBeInTheDocument();
+      await rendered.user.click(screen.getByRole('combobox', { name: 'Filigran report: When it already exists' }));
+      await rendered.user.click(await screen.findByRole('option', { name: 'Add as a copy' }));
+      expect(screen.getByText(hint)).toBeInTheDocument();
+      expect(screen.queryByText('The platform keeps its current default theme.')).not.toBeInTheDocument();
+    });
+
     it('is not offered on an item that is not imported', async () => {
       const { user } = await renderPreview();
       await user.click(within(screen.getByTestId('config-preset-import-item-branding-theme--2')).getByRole('checkbox'));

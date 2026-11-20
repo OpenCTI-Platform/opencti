@@ -1,7 +1,5 @@
 import * as R from 'ramda';
-import type { FileHandle } from 'fs/promises';
-import pjson from '../../../package.json';
-import { createEntity, deleteElementById, fullEntitiesOrRelationsConnection, pageEntitiesOrRelationsConnection, updateAttribute } from '../../database/middleware';
+import { createEntity, deleteElementById, fullEntitiesOrRelationsConnection, pageEntitiesOrRelationsConnection } from '../../database/middleware';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
@@ -11,7 +9,6 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type {
   EditContext,
   EditInput,
-  ImportWidgetInput,
   InputMaybe,
   MemberAccessInput,
   QueryWorkspacesArgs,
@@ -26,25 +23,25 @@ import { elFindByIds, elRawDeleteByQuery } from '../../database/engine';
 import type { BasicConnection, BasicStoreBase, BasicStoreEntity } from '../../types/store';
 import { buildPagination, isEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { extractContentFrom } from '../../utils/fileToContent';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { filterUnwantedEntitiesOut } from '../../domain/container';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../publicDashboard/publicDashboard-types';
 import { createInternalObject, editInternalObject } from '../../domain/internalObject';
-import { checkDashboardConfigurationImport, convertDashboardManifestIds, exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
 import { withWorkspaceManifestLock } from './workspace-variables-domain';
-import { preserveServerOwnedManifestKeys, validateManifestVariables } from './workspace-variables-utils';
+import { preserveServerOwnedManifestKeys, stripServerOwnedManifestKeys, validateManifestVariables } from './workspace-variables-utils';
 
 export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
+// The manifest and the graph layout of an investigation (base64) can be huge:
+// they are kept out of the activity logs, whose input is indexed as a flattened object with a size limit per value.
+const AUDIT_SANITIZED_KEYS = ['manifest', 'graph_data'];
+
 export const sanitizeElementForPublishAction = (element: BasicStoreEntityWorkspace) => {
-  // Because manifest can be huge we remove this data from activity logs.
-  return { ...element, manifest: undefined };
+  return { ...element, manifest: undefined, graph_data: undefined };
 };
 
-export const sanitizeManifestAuditInput = (inputs: EditInput[]) => {
-  // Because manifest can be huge we remove this data from activity logs.
-  return inputs.map((entry) => (entry.key === 'manifest' ? { ...entry, value: ['[sanitized]'] } : entry));
+export const sanitizeWorkspaceAuditInput = (inputs: EditInput[]) => {
+  return inputs.map((entry) => (AUDIT_SANITIZED_KEYS.includes(entry.key) ? { ...entry, value: ['[sanitized]'] } : entry));
 };
 
 export const findById = (
@@ -272,7 +269,7 @@ export const workspaceEditField = async (
   inputs: EditInput[],
 ) => {
   await checkInvestigatedEntitiesInputs(context, user, inputs);
-  const opts = { auditLogContextSanitizer: sanitizeManifestAuditInput };
+  const opts = { auditLogContextSanitizer: sanitizeWorkspaceAuditInput };
   if (!inputs.some((input) => input.key === 'manifest')) {
     return editInternalObject<StoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, inputs, opts);
   }
@@ -317,72 +314,14 @@ export const workspaceEditContext = async (
   );
 };
 
-export const generateWorkspaceExportConfiguration = async (context: AuthContext, user: AuthUser, workspace: BasicStoreEntityWorkspace) => {
-  if (workspace.type !== 'dashboard') {
-    throw FunctionalError('WORKSPACE_EXPORT_INCOMPATIBLE_TYPE', { type: workspace.type });
-  }
-  const generatedManifest = await convertDashboardManifestIds(context, user, workspace.manifest, 'internal');
-  const exportConfigration = {
-    openCTI_version: pjson.version,
-    type: 'dashboard',
-    configuration: {
-      name: workspace.name,
-      manifest: generatedManifest,
-    },
-  };
-  return JSON.stringify(exportConfigration);
-};
-
-export const generateWidgetExportConfiguration = async (context: AuthContext, user: AuthUser, workspace: BasicStoreEntityWorkspace, widgetId: string) => {
-  if (workspace.type !== 'dashboard') {
-    throw FunctionalError('WORKSPACE_EXPORT_INCOMPATIBLE_TYPE', { type: workspace.type });
-  }
-  const result = await exportDashboardWidget(context, user, workspace.manifest, widgetId);
-  if (!result.success) {
-    throw FunctionalError('WIDGET_EXPORT_NOT_FOUND', { workspace: workspace.id, widget: widgetId });
-  }
-  return result.data;
-};
-
-export const workspaceImportConfiguration = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
-  const parsedData = await extractContentFrom(file);
-  checkDashboardConfigurationImport('dashboard', parsedData);
-  const authorizedMembers = initializeAuthorizedMembers([], user);
-  const { manifest } = parsedData.configuration;
-  // Manifest ids must be rewritten for filters
-  const generatedManifest = await convertDashboardManifestIds(context, user, manifest, 'stix');
-  const mappedData = {
-    type: parsedData.type,
-    openCTI_version: parsedData.openCTI_version,
-    name: parsedData.configuration.name,
-    // Dashboard variables of an imported file go through the same validation as the typed API
-    manifest: validateManifestVariables(generatedManifest),
-    restricted_members: authorizedMembers,
-  };
-  const importWorkspaceCreation = await createEntity(context, user, mappedData, ENTITY_TYPE_WORKSPACE);
-  const workspaceId = importWorkspaceCreation.id;
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'create',
-    event_access: 'extended',
-    message: `import ${importWorkspaceCreation.name} workspace`,
-    context_data: {
-      id: workspaceId,
-      entity_type: ENTITY_TYPE_WORKSPACE,
-      input: sanitizeElementForPublishAction(importWorkspaceCreation),
-    },
-  });
-  await notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, importWorkspaceCreation, user);
-  return workspaceId;
-};
-
 // TODO: Refactor dashboard duplication to load and validate the source by ID, as investigationDuplicate does.
 // Preserve the legacy metadata input until a separate change addresses API compatibility.
 export const duplicateWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceDuplicateInput) => {
   const authorizedMembers = initializeAuthorizedMembers([], user);
-  // The manifest comes from the client: its dashboard variables go through the same validation as the typed API
-  const workspaceToCreate = { ...input, manifest: validateManifestVariables(input.manifest), restricted_members: authorizedMembers };
+  // The manifest comes from the client: its dashboard variables go through the same validation as the typed API.
+  // Only a dashboard holds variables: duplicated into another kind of workspace, they are dropped.
+  const manifest = input.type === 'dashboard' ? validateManifestVariables(input.manifest) : stripServerOwnedManifestKeys(input.manifest);
+  const workspaceToCreate = { ...input, manifest, restricted_members: authorizedMembers };
   const created = await createEntity(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
   const sanitizeElement = { ...input, manifest: undefined };
   await publishUserAction({
@@ -435,41 +374,6 @@ export const investigationDuplicate = async (
     context_data: { id: created.id, entity_type: ENTITY_TYPE_WORKSPACE, input: sanitizeElement },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, created, user);
-};
-
-export const workspaceImportWidgetConfiguration = async (
-  context: AuthContext,
-  user: AuthUser,
-  workspaceId: string,
-  input: ImportWidgetInput,
-) => {
-  const { updatedManifest, importedWidgetId } = await importDashboardWidgetConfiguration(
-    context,
-    user,
-    input.file,
-    input.dashboardManifest,
-  );
-  // The manifest comes from the client: same protection as workspaceFieldPatch.
-  const element = await withWorkspaceManifestLock(workspaceId, async () => {
-    const workspace = await findById(context, user, workspaceId);
-    const safeInputs = preserveServerOwnedManifestKeys([{ key: 'manifest', value: [updatedManifest] }], workspace?.manifest);
-    const { element: updated } = await updateAttribute<StoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, safeInputs);
-    return updated;
-  });
-
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'create',
-    event_access: 'extended',
-    message: `import widget (id : ${importedWidgetId}) in workspace (id : ${workspaceId})`,
-    context_data: {
-      id: workspaceId,
-      entity_type: ENTITY_TYPE_WORKSPACE,
-      input: sanitizeElementForPublishAction(element),
-    },
-  });
-  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, element, user);
 };
 
 export const isDashboardShared = async (context: AuthContext, workspace: BasicStoreEntityWorkspace) => {

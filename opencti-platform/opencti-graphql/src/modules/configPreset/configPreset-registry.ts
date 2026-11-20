@@ -10,6 +10,7 @@ import { markingsFamily } from './registry/markings-configPreset-registry';
 import { rolesFamily } from './registry/roles-configPreset-registry';
 import { groupsFamily } from './registry/groups-configPreset-registry';
 import { policiesFamily } from './registry/policies-configPreset-registry';
+import { emailTemplatesFamily } from './registry/emailTemplates-configPreset-registry';
 import { labelsFamily } from './registry/labels-configPreset-registry';
 import { connectorsFamily } from './registry/connectors-configPreset-registry';
 import { ruleEngineFamily } from './registry/ruleEngine-configPreset-registry';
@@ -19,11 +20,13 @@ import { killChainPhasesFamily } from './registry/killChainPhases-configPreset-r
 import { vocabulariesFamily } from './registry/vocabularies-configPreset-registry';
 import { statusTemplatesFamily } from './registry/statusTemplates-configPreset-registry';
 import { caseTemplatesFamily } from './registry/caseTemplates-configPreset-registry';
+import { fintelDesignsFamily } from './registry/fintelDesigns-configPreset-registry';
+import { dashboardsFamily } from './registry/dashboards-configPreset-registry';
 
 export { BRANDING_FAMILY_ID } from './registry/common-configPreset-registry';
 
 // In registry order, the categories of the spec table: Platform settings (platform, branding, messages, whitemark), then Data model, then Security & Access,
-// then Taxonomy, then Customization, then Integrations, then Automation & Rules.
+// then Taxonomy, then Customization, then Dashboards (after the labels and phases their filters point to), then Integrations, then Automation & Rules.
 // Each family is defined in its own file under registry/.
 export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   platformFamily,
@@ -35,14 +38,17 @@ export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   rolesFamily,
   groupsFamily,
   policiesFamily,
+  emailTemplatesFamily,
   labelsFamily,
   exclusionListsFamily,
   killChainPhasesFamily,
   vocabulariesFamily,
   statusTemplatesFamily,
   caseTemplatesFamily,
+  dashboardsFamily,
   connectorsFamily,
   ruleEngineFamily,
+  fintelDesignsFamily,
 ];
 
 // How the result of an item is shown next to its family: the name of its type, its place in the registry and its group.

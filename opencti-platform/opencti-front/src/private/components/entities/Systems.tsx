@@ -42,22 +42,33 @@ const Systems = () => {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '35%',
+        width: '18%',
         isSortable: true,
+      },
+      // Not sortable: the keys sort alphabetically (HIGH, LOW, MEDIUM), not on the scale
+      x_opencti_criticality: {
+        label: 'Criticality',
+        width: '12%',
+        isSortable: false,
+      },
+      x_opencti_environment: {
+        label: 'Environment',
+        width: '15%',
+        isSortable: false,
       },
       objectLabel: {
         label: 'Labels',
-        width: '25%',
+        width: '11%',
         isSortable: false,
       },
       created: {
         label: 'Original creation date',
-        width: '15%',
+        width: '18%',
         isSortable: true,
       },
       modified: {
         label: 'Modification date',
-        width: '15%',
+        width: '16%',
         isSortable: true,
       },
     };

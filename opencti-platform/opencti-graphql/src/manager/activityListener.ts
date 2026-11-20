@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { LRUCache } from 'lru-cache';
 import { type ActionHandler, type ActionListener, registerUserActionListener, type UserAction, type UserReadAction } from '../listener/UserActionListener';
-import { auditLogTypes, logAudit } from '../config/conf';
+import { auditLogTypes, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG, logAudit } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
 import { storeActivityEvent } from '../database/stream/stream-handler';
 import { getEntityFromCache } from '../database/cache';
@@ -32,36 +32,58 @@ import { buildConfigPresetExportMessage, buildConfigPresetImportMessage } from '
 
 const INTERNAL_READ_ENTITIES = [ENTITY_TYPE_WORKSPACE];
 const UNSUPPORTED_INTPUT_PROPS = ['_id', 'sort', 'i_attributes', 'i_relation']; // add 'objectOrganization' ?
+// The automatic locks of the local authentication lockout only exist behind its feature flag: their scope is not offered in the filters without it
+const isLocalAuthLockoutEnabled = isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG);
 export const EVENT_SCOPE_VALUES = [
   'create', 'update', 'delete', 'merge', 'read', 'search', 'enrich', 'download', 'import', 'export', 'send', 'login', 'logout', 'unauthorized', 'disseminate', 'forgot',
   'critical', 'degraded', 'recovered',
+  ...(isLocalAuthLockoutEnabled ? ['lock'] : []),
 ];
 export const EVENT_TYPE_VALUES = ['authentication', 'read', 'mutation', 'file', 'command', 'ingestion_health'];
 export const EVENT_ACCESS_VALUES = ['extended', 'administration'];
 export const EVENT_STATUS_VALUES = ['error', 'success'];
 
+// The activity context is indexed with flattened (or flat_object) fields, where one value of more than 32766 bytes
+// rejects the whole event. 8192 UTF-16 code units are at most 24576 bytes in UTF-8, which leaves room for the key.
+export const ACTIVITY_MAX_STRING_LENGTH = 8192;
+export const ACTIVITY_TRUNCATED_MARKER = '[truncated]';
+
+const truncateLongString = (value: string) => {
+  if (value.length <= ACTIVITY_MAX_STRING_LENGTH) {
+    return value;
+  }
+  // Never cut a surrogate pair in half
+  const lastCode = value.charCodeAt(ACTIVITY_MAX_STRING_LENGTH - 1);
+  const end = lastCode >= 0xD800 && lastCode <= 0xDBFF ? ACTIVITY_MAX_STRING_LENGTH - 1 : ACTIVITY_MAX_STRING_LENGTH;
+  return `${value.substring(0, end)}${ACTIVITY_TRUNCATED_MARKER}`;
+};
+
+export const cleanInputData = (data: any) => {
+  // Sensitive values are redacted at any depth, including the value of { key, value } edit inputs
+  const obj = redactSensitiveData(data);
+  const stack = [obj];
+  while (stack.length > 0) {
+    const currentObj = stack.pop() as any;
+    Object.keys(currentObj).forEach((key) => {
+      if (typeof currentObj[key] === 'string') {
+        // Any large value (graph data, description, content...) would make the event fail to index
+        currentObj[key] = truncateLongString(currentObj[key]);
+      } else if (typeof currentObj[key] === 'object' && currentObj[key] !== null) {
+        if (key === 'input') {
+          // remove unsupported props in input like sort, _id that cause errors for old databases.
+          UNSUPPORTED_INTPUT_PROPS.forEach((prop) => {
+            delete currentObj[key][prop];
+          });
+        }
+        stack.push(currentObj[key]);
+      }
+    });
+  }
+  return obj;
+};
+
 const initActivityManager = () => {
   const activityReadCache = new LRUCache({ ttl: 60 * 60 * 1000, max: 5000 }); // Read lifetime is 1 hour
-  const cleanInputData = (data: any) => {
-    // Sensitive values are redacted at any depth, including the value of { key, value } edit inputs
-    const obj = redactSensitiveData(data);
-    const stack = [obj];
-    while (stack.length > 0) {
-      const currentObj = stack.pop() as any;
-      Object.keys(currentObj).forEach((key) => {
-        if (typeof currentObj[key] === 'object' && currentObj[key] !== null) {
-          if (key === 'input') {
-            // remove unsupported props in input like sort, _id that cause errors for old databases.
-            UNSUPPORTED_INTPUT_PROPS.forEach((prop) => {
-              delete currentObj[key][prop];
-            });
-          }
-          stack.push(currentObj[key]);
-        }
-      });
-    }
-    return obj;
-  };
   const buildActivityStreamEvent = (action: UserAction, message: string): ActivityStreamEvent => {
     const data = cleanInputData(action.context_data ?? {});
     return {
@@ -135,10 +157,17 @@ const initActivityManager = () => {
           await activityLogger(action, message);
         }
         if (action.event_scope === 'logout') {
-          await activityLogger(action, 'logout');
+          const isLastTabClosed = action.context_data?.reason === 'last_tab_closed';
+          await activityLogger(action, isLastTabClosed ? 'logout (last tab closed)' : 'logout');
         }
         if (action.event_scope === 'forgot') {
           await activityLogger(action, action.message);
+        }
+        if (action.event_scope === 'lock') {
+          const { username, lock_type, lock_duration, max_attempts } = action.context_data;
+          const lock = lock_type === 'permanent' ? 'locked until an administrator unlocks it' : `locked for \`${lock_duration} minutes\``;
+          const message = `detects \`account lock\` for \`${username}\`: ${lock} after \`${max_attempts}\` failed authentication attempts`;
+          await activityLogger(action, message);
         }
       }
       if (action.event_type === 'read') {

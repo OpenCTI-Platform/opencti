@@ -32,6 +32,9 @@ import {
   isUserCanAccessStixElement,
   isUserCanAccessStreamUpdateEvent,
   isUserHasCapability,
+  INTERNAL_USERS,
+  isBypassUser,
+  isUserAccountActive,
   isUserInPlatformOrganization,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
   OTPValidationStatus,
@@ -41,7 +44,7 @@ import {
 import { FROM_START_STR, streamEventId, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, buildRefRelationKey, ENTITY_TYPE_CONTAINER, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
-import { UnsupportedError } from '../config/errors';
+import { isClientAbort, UnsupportedError } from '../config/errors';
 import { MARKING_FILTER } from '../utils/filtering/filtering-constants';
 import { findFiltersFromKey, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
@@ -62,6 +65,7 @@ import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
 import { checkDraftInContext } from '../http/httpServer-draft';
+import { resolveUserByIdFromCache } from '../modules/user/user-domain';
 import { EVENT_CURRENT_VERSION, sanitizeStreamEventOrigin } from '../database/stream/stream-utils';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { extractStixRepresentative } from '../database/stix-representative';
@@ -95,8 +99,9 @@ const sendErrorStatus = (_req, res, httpStatus) => {
  * Stream connections held for a user on this node.
  *
  * A connection authenticates once, when it opens, and then serves events for up to a day on that
- * decision — nothing re-reads the account status afterwards. Disabling or merging the user away
- * therefore does not interrupt an already open stream.
+ * decision. Its user is then resolved again by refreshStreamUser before each batch of events: a
+ * stream closes itself at its next batch once its user no longer exists (deleted or merged away)
+ * or its account is no longer active, but not before.
  *
  * `broadcastClients` is process memory, so this only ever sees the connections opened against the
  * node it runs on. Making it exhaustive across a cluster would need a pub/sub round trip; the
@@ -110,6 +115,78 @@ export const closeUserStreamConnections = (userId) => {
   const clients = userStreamConnections(userId);
   clients.forEach((client) => client.close());
   return clients.length;
+};
+
+// The origin computed at connection is kept, except what describes the current groups and organizations of the user
+const refreshStreamUserOrigin = (origin, user) => ({
+  ...origin,
+  group_ids: user.groups?.map((g) => g.internal_id) ?? [],
+  organization_ids: user.organizations?.map((o) => o.internal_id) ?? [],
+});
+
+/**
+ * Resolve again, from the platform users cache, the user a stream connection serves events for.
+ *
+ * A connection serves events for up to a day, but its user can change in the meantime (groups,
+ * organizations, markings, capabilities, service account status, account locked...). Without this,
+ * a stream would keep filtering events with the user as it was when the connection opened.
+ * The request and the context are updated in place.
+ * Internal users (SYSTEM_USER of legacy public streams) never change and are returned as is.
+ *
+ * isPublicUser: the stream is served for the user configured on a public stream, not for an authenticated
+ * requester. Its account status is then not checked, as it is not when the public stream is opened.
+ *
+ * Returns { user, isRightsChanged }, or { error } when the stream can no longer be served:
+ * the user no longer exists, its account is no longer active, or, for an applicant (opencti-applicant-id),
+ * the user who authenticated can no longer impersonate it.
+ * isRightsChanged tells whether the user changed since the previous resolution: what the connection already
+ * resolved with the previous user must then be checked again. The first resolution only takes the reference,
+ * as nothing was resolved for the connection before it.
+ */
+export const refreshStreamUser = async (req, { isPublicUser = false } = {}) => {
+  const { context, user } = req;
+  // The applicant is impersonated by the user who authenticated, which must still be allowed to do it
+  const realAuthenticationId = user.origin?.real_authentication_id;
+  if (realAuthenticationId && realAuthenticationId !== user.id) {
+    const realUser = await resolveUserByIdFromCache(context, realAuthenticationId);
+    const isRealUserActive = realUser && (INTERNAL_USERS[realUser.id] || isUserAccountActive(realUser));
+    if (!isRealUserActive || !isBypassUser(realUser)) {
+      return { error: 'the user impersonating the applicant no longer exists, is no longer active or lost the bypass capability' };
+    }
+  }
+  if (INTERNAL_USERS[user.id]) {
+    return { user, isRightsChanged: false };
+  }
+  const cachedUser = await resolveUserByIdFromCache(context, user.id);
+  if (!cachedUser) {
+    return { error: 'the user no longer exists' };
+  }
+  // Same check as on any other request (locked, disabled or expired account), which matters most for a leaked token
+  if (!isPublicUser && !isUserAccountActive(cachedUser)) {
+    return { error: 'the account of the user is no longer active' };
+  }
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const isInsidePlatformOrganization = isUserInPlatformOrganization(cachedUser, settings);
+  // The users cache gives a new object for a user whenever it changes: comparing them catches any change
+  // that can affect access, including through attributes added to the access checks later.
+  // The platform organization is a setting: changing it does not reload the users.
+  const previous = req.streamUserReference;
+  const isRightsChanged = previous !== undefined
+    && (previous.cachedUser !== cachedUser || previous.isInsidePlatformOrganization !== isInsidePlatformOrganization);
+  req.streamUserReference = { cachedUser, isInsidePlatformOrganization };
+  const refreshedUser = user.origin ? { ...cachedUser, origin: refreshStreamUserOrigin(user.origin, cachedUser) } : cachedUser;
+  // For a public stream, the context user is the requester (if any), not the user the stream is served for
+  if (context.user?.id === refreshedUser.id) {
+    context.user = refreshedUser;
+  }
+  context.user_inside_platform_organization = isInsidePlatformOrganization;
+  req.user = refreshedUser;
+  return { user: refreshedUser, isRightsChanged };
+};
+
+// Who a stream is served for: the public user configured on a public stream, else the requester
+const computeStreamServedUserKey = (collection) => {
+  return collection?.stream_public ? `public:${collection.stream_public_user_id ?? ''}` : 'requester';
 };
 
 const createBroadcastClient = (channel) => {
@@ -612,7 +689,8 @@ const createSseMiddleware = () => {
   };
   const genericStreamHandler = async (req, res) => {
     try {
-      const { user, context } = req;
+      const { context } = req;
+      let { user } = req;
       const paramStartFrom = extractQueryParameter(req, 'from') || req.headers.from || req.headers['last-event-id'];
       const startStreamId = convertParameterToStreamId(paramStartFrom);
       // Generic stream only available for bypass users
@@ -626,6 +704,14 @@ const createSseMiddleware = () => {
       await registerConsumer(client.id, DEFAULT_LIVE_STREAM, user.id, user.user_email);
       const opts = { autoReconnect: true, bufferTime: 0 };
       const processor = createStreamProcessor(user.user_email, async (elements, lastEventId) => {
+        // Rights of the user can change while the stream is open
+        const refreshed = await refreshStreamUser(req);
+        if (refreshed.error || !isUserHasCapability(refreshed.user, BYPASS)) {
+          logApp.info('[STREAM] Closing generic stream', { userId: req.userId, reason: refreshed.error ?? 'the user lost the bypass capability' });
+          client.close();
+          return;
+        }
+        user = refreshed.user;
         // Process the event messages
         for (let index = 0; index < elements.length; index += 1) {
           const { id: eventId, event, data } = elements[index];
@@ -837,7 +923,8 @@ const createSseMiddleware = () => {
     const { id } = req.params;
     try {
       const cache = new LRUCache({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
-      const { user, context } = req;
+      const { context } = req;
+      let { user } = req;
       // If stream is starting after, we need to use the main database to catchup
       const paramStartFrom = extractQueryParameter(req, 'from') || req.headers.from || req.headers['last-event-id'];
       const startIsoDate = convertParameterToDate(paramStartFrom);
@@ -870,11 +957,50 @@ const createSseMiddleware = () => {
         }
         // Init stream and broadcasting
         let error;
+        // Who the stream is served for is decided when it opens (see authenticateForPublic)
+        const isPublicUser = collection?.stream_public === true;
+        const openedServedUserKey = computeStreamServedUserKey(collection);
+        const closeStream = (reason) => {
+          error = reason;
+          logApp.info('[STREAM] Closing live stream', { streamCollectionId: id, userId: req.userId, reason });
+          channel.close();
+          return false;
+        };
+        // The user (groups, organizations, service account...) and the collection can change while the stream is open.
+        // Both are resolved again and the access to the stream checked again before each batch of events, live or recovered.
+        // Returns false, with the stream closed, if the stream cannot be served anymore.
+        const refreshStreamAccess = async () => {
+          if (error) {
+            return false;
+          }
+          const refreshed = await refreshStreamUser(req, { isPublicUser });
+          if (refreshed.error) {
+            return closeStream(refreshed.error);
+          }
+          user = refreshed.user;
+          if (refreshed.isRightsChanged) {
+            // Elements in cache are trusted as already published and accessible: they must be checked again with the new rights
+            cache.clear();
+          }
+          const newComputed = await computeUserAndCollection(req, res, { id, user, context });
+          if (newComputed.error) {
+            error = newComputed.error;
+            return false;
+          }
+          // Made public or private, or served for another public user: the stream would keep serving the user it opened with
+          if (computeStreamServedUserKey(newComputed.collection) !== openedServedUserKey) {
+            return closeStream('the public access of the stream changed');
+          }
+          streamFilters = newComputed.streamFilters;
+          originFilters = newComputed.originFilters;
+          collection = newComputed.collection;
+          return true;
+        };
         const userEmail = user.user_email;
         const opts = { autoReconnect: true, bufferTime: 0 };
         const processor = createStreamProcessor(userEmail, async (elements, lastEventId) => {
           // Default Live collection doesn't have a stored Object associated
-          if (!error && (!collection || collection.stream_live)) {
+          if (await refreshStreamAccess() && (!collection || collection.stream_live)) {
             // Process the stream elements
             for (let index = 0; index < elements.length; index += 1) {
               const element = elements[index];
@@ -987,11 +1113,6 @@ const createSseMiddleware = () => {
             }
           }
           channel.setLastEventId(lastEventId);
-          const newComputed = await computeUserAndCollection(req, res, { id, user, context });
-          streamFilters = newComputed.streamFilters;
-          originFilters = newComputed.originFilters;
-          collection = newComputed.collection;
-          error = newComputed.error;
         }, opts);
         await initBroadcasting(req, res, client, processor);
         // After recovery start the stream listening
@@ -1017,13 +1138,25 @@ const createSseMiddleware = () => {
           }
         }
         if (isRecoveryMode && !skipRecoveryForOriginFilters) {
+          // The recovery lists the elements matching the filters of the stream when it starts
+          const recoveryFiltersKey = JSON.stringify(streamFilters);
           // noinspection UnnecessaryLocalVariableJS
           const queryCallback = async (elements) => {
+            // Recovery can be long: stop it as soon as the stream cannot be served anymore
+            if (!(await refreshStreamAccess())) {
+              return false;
+            }
+            // Filters changed since the recovery started: what it lists must match the current ones to be published
+            const isFiltersChanged = JSON.stringify(streamFilters) !== recoveryFiltersKey;
+            // Elements are loaded with the refreshed user, so the ones no longer accessible are not published
             const workingElementsIds = elements.filter((e) => !cache.has(e.standard_id)).map((e) => e.internal_id);
             const instances = await storeLoadByIdsWithRefs(context, user, workingElementsIds, STREAM_LOAD_OPTS);
             for (let index = 0; index < instances.length; index += 1) {
               const instance = instances[index];
               const stixData = convertStoreToStix_2_1(instance);
+              if (isFiltersChanged && !(await isStixMatchFilterGroup(context, user, stixData, streamFilters))) {
+                continue;
+              }
               const stixUpdatedAt = stixData.extensions[STIX_EXT_OCTI].updated_at;
               const eventId = streamEventId(stixUpdatedAt);
               if (channel.connected()) {
@@ -1053,15 +1186,28 @@ const createSseMiddleware = () => {
         }
         // Start the live stream processor after successful recovery (or if no recovery was needed).
         const processorStartId = isRecoveryMode ? recoverStreamId : startStreamId;
+        // The recovery may have closed the stream, do not start listening for nothing
+        if (error) {
+          return;
+        }
         // noinspection ES6MissingAwait
         await processor.start(processorStartId);
       } catch (err) {
+        // The client went away while the stream was processing: nobody is left to send the error to
+        if (isClientAbort(err)) {
+          logApp.info('[STREAM] Client disconnected during processing', { cause: err, id, type: 'live' });
+          return;
+        }
         logApp.error('[STREAM] Processing error', { cause: err, id, type: 'live' });
         if (channel.connected()) {
           await channel.sendEvent(undefined, 'error', { stream: id, message: err.message });
         }
       }
     } catch (e) {
+      if (isClientAbort(e)) {
+        logApp.info('[STREAM] Client disconnected during initialization', { cause: e, id, type: 'live' });
+        return;
+      }
       logApp.error('[STREAM] Initialization error', { cause: e, id, type: 'live' });
       sendErrorStatus(req, res, 500);
     }

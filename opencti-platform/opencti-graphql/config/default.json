@@ -14,7 +14,6 @@
       "reject_unauthorized": true,
       "cookie_secure": false
     },
-    "allow_unsecure_http_resources": true,
     "uri_deny_list": [],
     "public_dashboard_authorized_domains": "",
     "app_logs": {
@@ -49,6 +48,9 @@
     "event_loop_logs": {
       "enabled": false,
       "max_time": 1000
+    },
+    "http": {
+      "secure_by_default": false
     },
     "graphql": {
       "secure_by_default": false,
@@ -86,6 +88,9 @@
         "exporter_prometheus_host": "0.0.0.0"
       }
     },
+    "credentials": {
+      "secure_by_default": false
+    },
     "health_access_key": "ChangeMe",
     "health_monitoring": {
       "dependency_check_interval": 30000,
@@ -105,9 +110,8 @@
     "account_statuses_default": "Active",
     "session_idle_timeout": 0,
     "session_manager": "shared",
-    "rate_protection": {
-      "time_window": 1,
-      "max_requests": 10000
+    "session_presence": {
+      "grace_period": 30000
     },
     "concurrency": {
       "retry_count": 100,

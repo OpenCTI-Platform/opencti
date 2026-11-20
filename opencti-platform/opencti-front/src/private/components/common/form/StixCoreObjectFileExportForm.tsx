@@ -238,7 +238,7 @@ const StixCoreObjectFileExportForm = ({
       setStepIndex(1);
     }
   };
-  const isContainer = ['Report', 'Case-Incident', 'Case-RFI'].includes(instanceType ?? 'Unknown');
+  const isContainer = ['Report', 'Case-Incident', 'Case-Rfi'].includes(instanceType ?? 'Unknown');
   return (
     <Formik<StixCoreObjectFileExportFormInputs>
       enableReinitialize={true}

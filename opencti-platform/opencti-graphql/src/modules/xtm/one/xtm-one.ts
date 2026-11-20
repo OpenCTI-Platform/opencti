@@ -122,6 +122,11 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
   const previousVerification = verifyXtmOneAnswer(previousAnswer, settings);
   const isChatbotUsable = settings.filigran_chatbot_ai_cgu_status === CguStatus.Enabled
     && (isOwnLicenseValidated || previousVerification.granted);
+  // Each part of the snapshot is collected on its own: a part that fails is left out, the registration still goes.
+  // Imported lazily: this module is imported by settings.js, and a static import of the connector, engine and
+  // broker modules here closes an import cycle (settings -> xtm-one -> connector-domain -> ... -> settings).
+  const { buildXtmOneHealthSnapshot } = await import('./xtm-one-health');
+  const health = await buildXtmOneHealthSnapshot(context, user);
 
   const result = await xtmOneClient.register({
     platform_identifier: 'opencti',
@@ -143,6 +148,8 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
     // that cannot prompt at all (AI Insights, NLQ search, playbook nodes), which
     // get the plain approval message in place of a result.
     supports_approval_prompts: isChatbotUsable,
+    // The Platform Health snapshot: XTM One turns it into the findings of its Platform Health page.
+    health,
     intents: [
       { name: 'global.assistant', description: 'General-purpose assistant' },
       { name: 'global.make_it_shorter', description: 'Shorten / summarize content' },

@@ -26,10 +26,10 @@ export interface UserMergeScalarSplit {
   unexpectedAtRest?: boolean;
 }
 
-export type UserMergeScalarDisposition
-  = | ({ kind: 'excluded' } & UserMergeScalarExclusion)
-    | { kind: 'covered'; registerRow: string; id?: string }
-    | { kind: 'split'; variants: UserMergeScalarSplit[] };
+export type UserMergeScalarDisposition =
+  | ({ kind: 'excluded' } & UserMergeScalarExclusion)
+  | { kind: 'covered'; registerRow: string; id?: string }
+  | { kind: 'split'; variants: UserMergeScalarSplit[] };
 
 /**
  * Disposition of every attribute the schema discovers, keyed by `<entity type>.<attribute>`.

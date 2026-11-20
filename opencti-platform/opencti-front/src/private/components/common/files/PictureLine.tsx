@@ -8,6 +8,7 @@ import { NorthEastOutlined } from '@mui/icons-material';
 import Drawer from '@components/common/drawer/Drawer';
 import { ListItemButton } from '@mui/material';
 import { getFileUri } from '../../../../utils/utils';
+import { emptyFilled } from '../../../../utils/String';
 import { DataColumns } from '../../../../components/list_lines';
 import PictureManagementEdition from './PictureManagementEdition';
 import { pictureManagementUtilsFragment } from './PictureManagementUtils';
@@ -63,7 +64,7 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
               <BodyItem
                 style={{ width: dataColumns.description.width }}
               >
-                {data.metaData?.description}
+                {emptyFilled(data.metaData?.description)}
               </BodyItem>
               <BodyItem
                 style={{ width: dataColumns.order.width }}

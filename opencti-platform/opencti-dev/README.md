@@ -19,6 +19,7 @@ Optionally additional services can be started:
 - [Opensearch instead of elasticsearch](#opensearch--opensearch-dashboard-instead-of-elasticsearch--kibana)
 - [A mock as LDAP provider](#ldap-mock)
 - [A mock as Cyber Ark provider](#cyberark-mock)
+- [A mock of XTM One for the playbook AI agent components](#xtm-one-mock)
 
 ### Fake SMTP server
 
@@ -240,3 +241,40 @@ podman compose --profile mokapi up -d
   }
 }
 ```
+
+### XTM One mock
+
+Stands in for XTM One so that the playbook components "Transform with AI agent" and "Send to AI agent", and the
+chatbot, can run locally. It accepts the platform registration without granting anything and answers the agent
+catalog with one agent, `slow-agent`.
+
+- Playbook agent calls (not streamed) get no content: the transform step then routes the bundle to `unmodified`.
+- Chatbot messages (streamed) get a fixed answer saying the mock is in use, at once on both prefixes.
+
+It is served under two prefixes:
+- `/fast`: agent calls are answered at once.
+- `/slow`: playbook agent calls are answered after `AGENT_CALL_DELAY_SECONDS`.
+
+Files: `mock-api/xtm-one.yaml` (endpoints and answers) and `mock-api/xtm-one.js` (delay of the playbook agent call, chatbot answer).
+
+In docker-compose file `opencti-mokapi`
+
+```
+docker compose --profile mokapi up -d
+podman compose --profile mokapi up -d
+```
+
+`development.json` configuration, any token value works. Use `/slow` instead of `/fast` for the slow version:
+```json
+{
+  "xtm": {
+    "xtm_one_url": "http://localhost:8090/fast",
+    "xtm_one_token": "dummy"
+  }
+}
+```
+
+- The platform reads `xtm_one_url` at start: restart the backend after switching between `/fast` and `/slow`.
+- The delay is `AGENT_CALL_DELAY_SECONDS` and the chatbot answer `CHATBOT_ANSWER`, both in `mock-api/xtm-one.js`. Mokapi reloads the file when it changes.
+- A waiting agent call delays only itself: the other requests, other agent calls included, are answered meanwhile.
+- The registration answer grants no Enterprise Edition: it still comes from the platform license only.

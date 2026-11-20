@@ -7,9 +7,9 @@ import nodeTypes from './NodeTypes';
 import edgeTypes from './EdgeTypes';
 import Button from '@common/button/Button';
 import { Box, Typography } from '@mui/material';
-import { getInitialState, NEW_STATUS_NAME, transformToWorkflowDefinition, WorkflowNodeType } from './utils';
+import { getInitialState, NEW_STATUS_NAME, REQUEST_ACCESS_ENTITY_TYPE, transformToWorkflowDefinition, WorkflowNodeType } from './utils';
 import { graphql, PreloadedQuery, usePreloadedQuery, useMutation } from 'react-relay';
-import { workflowDependenciesQuery, workflowQuery } from '../SubTypeWorkflow';
+import { workflowDependenciesQuery, workflowQuery, WorkflowScope } from '../SubTypeWorkflow';
 import { SubTypeWorkflowQuery, SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
 import { SubTypeWorkflowDependenciesQuery } from '../__generated__/SubTypeWorkflowDependenciesQuery.graphql';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
@@ -28,6 +28,12 @@ import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../components/Theme';
 import PublishButton from './PublishButton';
 import RestoreConfirmDialog from './RestoreConfirmDialog';
+import WorkflowScopeSwitch from './WorkflowScopeSwitch';
+import RequestAccessValidatorGroup from './RequestAccessValidatorGroup';
+import EntityStatusSyncSetting from '../global_workflow_request_access/EntityStatusSyncSetting';
+import RequestAccessMigrationDialog from './RequestAccessMigrationDialog';
+import { useSubTypeOutletContext } from '../SubTypeOutletContext';
+import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import { MESSAGING$ } from '../../../../../relay/environment';
 
 export interface WorkflowValidationError {
@@ -44,6 +50,11 @@ interface WorkflowValidationErrorsToastContentProps {
 
 const WorkflowValidationErrorsToastContent = ({ errors, t_i18n, statusTemplates }: WorkflowValidationErrorsToastContentProps) => {
   const statusTemplateMap = convertEdgesToObject(statusTemplates);
+  // The server names removed statuses by template id inside the message: show their names instead
+  const withStatusNames = (message: string) => Object.entries(statusTemplateMap).reduce(
+    (acc, [id, template]) => (template?.name ? acc.split(id).join(template.name) : acc),
+    message,
+  );
 
   const groupedErrors = errors.reduce((acc, error) => {
     if (!acc[error.type]) acc[error.type] = [];
@@ -63,7 +74,7 @@ const WorkflowValidationErrorsToastContent = ({ errors, t_i18n, statusTemplates 
           </Typography>
           {typeErrors.map((error, index) => (
             <Typography key={index} variant="caption" component="div" sx={{ ml: 1 }}>
-              • {error.message}
+              • {withStatusNames(error.message)}
               {error.path && error.path.length > 0 && (
                 <Typography variant="caption" component="span" sx={{ ml: 0.5, fontStyle: 'italic' }}>
                   ({error.path.map((ref) => {
@@ -83,8 +94,8 @@ const WorkflowValidationErrorsToastContent = ({ errors, t_i18n, statusTemplates 
 };
 
 const workflowDefinitionSetMutation = graphql`
-  mutation WorkflowDefinitionMutation($entityType: String!, $definition: String!) {
-    workflowDefinitionSet(entityType: $entityType, definition: $definition) {
+  mutation WorkflowDefinitionMutation($entityType: String!, $definition: String!, $scope: StatusScope) {
+    workflowDefinitionSet(entityType: $entityType, definition: $definition, scope: $scope) {
       id
       published
       errors {
@@ -100,8 +111,8 @@ const workflowDefinitionSetMutation = graphql`
 `;
 
 const workflowDefinitionPublishMutation = graphql`
-  mutation WorkflowPublishMutation($entityType: String!) {
-    workflowDefinitionPublish(entityType: $entityType) {
+  mutation WorkflowPublishMutation($entityType: String!, $scope: StatusScope) {
+    workflowDefinitionPublish(entityType: $entityType, scope: $scope) {
       id
       workflow_id
       published
@@ -110,8 +121,8 @@ const workflowDefinitionPublishMutation = graphql`
 `;
 
 const workflowDefinitionRestorePublishedMutation = graphql`
-  mutation WorkflowRestorePublishedMutation($entityType: String!) {
-    workflowDefinitionRestorePublished(entityType: $entityType) {
+  mutation WorkflowRestorePublishedMutation($entityType: String!, $scope: StatusScope) {
+    workflowDefinitionRestorePublished(entityType: $entityType, scope: $scope) {
       id
       published
       errors {
@@ -128,7 +139,8 @@ const workflowDefinitionRestorePublishedMutation = graphql`
 
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 const proOptions = { account: 'paid-pro', hideAttribution: true };
-const fitViewOptions = {};
+// fitView knows nothing of the top-left panel: room is left on every side so the initial node never ends up under it
+const fitViewOptions = { padding: 0.12 };
 
 const emptyElement = {
   id: NEW_STATUS_NAME,
@@ -142,13 +154,22 @@ const Workflow = ({
   depsQueryRef,
   onRefetch,
   entityType,
+  scope = 'GLOBAL',
+  onScopeChange,
 }: {
   queryRef: PreloadedQuery<SubTypeWorkflowQuery>;
   depsQueryRef: PreloadedQuery<SubTypeWorkflowDependenciesQuery>;
   onRefetch: () => void;
   entityType: string;
+  scope?: WorkflowScope;
+  onScopeChange?: (scope: WorkflowScope) => void;
 }) => {
   const { t_i18n } = useFormatter();
+  const isEnterpriseEdition = useEnterpriseEdition();
+  const { subType } = useSubTypeOutletContext();
+  const isRequestAccessScopeAvailable = entityType === REQUEST_ACCESS_ENTITY_TYPE
+    && isEnterpriseEdition
+    && subType.settings.availableSettings.includes('request_access_workflow');
   const theme = useTheme<Theme>();
   const { fitView, getNode } = useReactFlow();
 
@@ -161,6 +182,15 @@ const Workflow = ({
     depsQueryRef,
   );
 
+  // Status ids (value of x_opencti_workflow_id) keyed by status template id; only published states have one
+  const workflowStatusIds = useMemo(() => {
+    const ids: Record<string, string> = {};
+    (workflowDefinition?.states ?? []).forEach((state) => {
+      if (state.workflowStatusId) ids[state.statusId] = state.workflowStatusId;
+    });
+    return ids;
+  }, [workflowDefinition]);
+
   // 1. Get initial edges and nodes from workflow definition
   const { initialNodes, initialEdges } = useWorkflowInitialElements(workflowDefinition, statusTemplates, members);
 
@@ -169,11 +199,17 @@ const Workflow = ({
   // 2. Sync Placeholders (The effect is now tucked away)
   usePlaceholdersSync(nodes, edges);
 
-  // Store previous schema to avoid unnecessary mutations. It is the schema last sent, or loaded by
-  // a mount, refetch, reset or restore, and it holds the saved initial state: the autosave
-  // mutation does not return initialState, so workflowDefinition.initialState keeps the value
-  // fetched with the page.
+  // Store previous schema to avoid unnecessary mutations. It is the schema last queued for saving
+  // (a failed save puts back the saved one), or loaded by a mount, refetch or restore, and it holds
+  // the saved initial state: the autosave mutation does not return initialState, so
+  // workflowDefinition.initialState keeps the value fetched with the page.
   const previousSchemaRef = useRef<string | null>(null);
+  // The schema the server holds: confirmed by a save, or loaded by a mount, refetch or restore.
+  const savedSchemaRef = useRef<string | null>(null);
+  const loadSavedSchema = (schemaString: string) => {
+    previousSchemaRef.current = schemaString;
+    savedSchemaRef.current = schemaString;
+  };
   const savedInitialState = (): string | null | undefined => (previousSchemaRef.current
     ? JSON.parse(previousSchemaRef.current).initialState
     : workflowDefinition?.initialState);
@@ -184,7 +220,7 @@ const Workflow = ({
   useWorkflowLayout(layoutOptions);
 
   useEffect(() => {
-    fitView();
+    fitView(fitViewOptions);
   }, [nodes, edges, fitView]);
 
   // Update workflow definition
@@ -208,6 +244,63 @@ const Workflow = ({
     validationErrors: workflowDefinition?.errors ? [...workflowDefinition.errors as WorkflowValidationError[]] : [],
   });
 
+  // Saves go out one at a time: the server takes them under a lock that serves its waiters in no
+  // particular order, so two saves in flight could land in the wrong order. A change made while a
+  // save is in flight waits, and only the latest one waiting is sent once that save settles.
+  const saveInFlightRef = useRef(false);
+  const nextSaveRef = useRef<{ schema: string; onSaved?: () => void } | null>(null);
+  // A publish waits until every queued save is done, and is dropped if one fails.
+  const publishAfterSavesRef = useRef(false);
+  const sendSave = (schema: string, onSaved?: () => void) => {
+    saveInFlightRef.current = true;
+    const sendNext = () => {
+      const next = nextSaveRef.current;
+      nextSaveRef.current = null;
+      if (next) {
+        sendSave(next.schema, next.onSaved);
+        return true;
+      }
+      saveInFlightRef.current = false;
+      return false;
+    };
+    saveWorkflowDefinition({
+      variables: { entityType, definition: schema, scope },
+      onError: () => {
+        if (sendNext()) return;
+        // Nothing newer to send: the next editor update resends the change, and a publish waits for it.
+        previousSchemaRef.current = savedSchemaRef.current;
+        publishAfterSavesRef.current = false;
+      },
+      onCompleted: (response) => {
+        savedSchemaRef.current = schema;
+        if (response.workflowDefinitionSet) {
+          const { errors } = response.workflowDefinitionSet;
+          const validationErrors = (errors ?? [])
+            .filter((e) => e !== null && e !== undefined)
+            .map((e) => ({
+              type: e!.type,
+              message: e!.message,
+              path: e!.path?.map((p) => ({ id: p.id, entity_type: p.entity_type })),
+            }));
+          // Stay in draft mode until explicitly published
+          setWorkflowDefinitionStatus((prev) => ({ ...prev, hasUnpublishedChanges: true, validationErrors }));
+        }
+        onSaved?.();
+        if (sendNext() || !publishAfterSavesRef.current) return;
+        publishAfterSavesRef.current = false;
+        publish();
+      },
+    });
+  };
+  const queueSave = (schema: string, onSaved?: () => void) => {
+    previousSchemaRef.current = schema;
+    if (saveInFlightRef.current) {
+      nextSaveRef.current = { schema, onSaved };
+    } else {
+      sendSave(schema, onSaved);
+    }
+  };
+
   // 4. When Relay delivers fresh data after a parent refetch (e.g., after restore),
   //    reset the React Flow state to reflect the new workflow definition.
   const isInitialMountRef = useRef(true);
@@ -218,9 +311,10 @@ const Workflow = ({
     }
     setNodes(initialNodes);
     setEdges(initialEdges);
-    previousSchemaRef.current = JSON.stringify(
+    nextSaveRef.current = null;
+    loadSavedSchema(JSON.stringify(
       transformToWorkflowDefinition(initialNodes, initialEdges, workflowDefinition),
-    );
+    ));
     // Sync publish status with the freshly fetched definition (e.g. after restore)
     setWorkflowDefinitionStatus({
       hasUnpublishedChanges: !(workflowDefinition?.published ?? false),
@@ -235,42 +329,22 @@ const Workflow = ({
   useEffect(() => {
     if (previousSchemaRef.current === null) {
       const initialSchema = transformToWorkflowDefinition(initialNodes, initialEdges, workflowDefinition);
-      previousSchemaRef.current = JSON.stringify(initialSchema);
+      loadSavedSchema(JSON.stringify(initialSchema));
     }
   }, []);
 
-  useEffect(() => {
-    const finalSchema = transformToWorkflowDefinition(nodes, edges, { ...workflowDefinition, initialState: savedInitialState() });
-    const schemaString = JSON.stringify(finalSchema);
+  // The schema of the graph on screen
+  const editorSchema = () => JSON.stringify(
+    transformToWorkflowDefinition(nodes, edges, { ...workflowDefinition, initialState: savedInitialState() }),
+  );
 
+  useEffect(() => {
+    const schemaString = editorSchema();
     // Only save if schema has actually changed
     if (previousSchemaRef.current === schemaString) {
       return;
     }
-
-    previousSchemaRef.current = schemaString;
-
-    saveWorkflowDefinition({
-      variables: { entityType, definition: schemaString },
-      onCompleted: (response) => {
-        if (response.workflowDefinitionSet) {
-          const { errors } = response.workflowDefinitionSet;
-          if (errors && errors.length > 0) {
-            const validationErrors = errors
-              .filter((e) => e !== null && e !== undefined)
-              .map((e) => ({
-                type: e!.type,
-                message: e!.message,
-                path: e!.path?.map((p) => ({ id: p.id, entity_type: p.entity_type })),
-              }));
-            setWorkflowDefinitionStatus((prev) => ({ ...prev, hasUnpublishedChanges: true, validationErrors }));
-          } else {
-            // No errors, but stay in draft mode until explicitly published
-            setWorkflowDefinitionStatus((prev) => ({ ...prev, hasUnpublishedChanges: true, validationErrors: [] }));
-          }
-        }
-      },
-    });
+    queueSave(schemaString);
   }, [nodes, edges, entityType]);
 
   // Handle reset action — clears the draft to an empty schema without touching the published version
@@ -280,41 +354,34 @@ const Workflow = ({
     // after setNodes([]) / setEdges([]) and will see an identical string, preventing
     // a spurious follow-up mutation.
     const emptySchemaString = JSON.stringify(transformToWorkflowDefinition([], [], workflowDefinition));
-    previousSchemaRef.current = emptySchemaString;
-    saveWorkflowDefinition({
-      variables: { entityType, definition: emptySchemaString },
-      onCompleted: (response) => {
-        if (response.workflowDefinitionSet) {
-          const { errors } = response.workflowDefinitionSet;
-          if (errors && errors.length > 0) {
-            const validationErrors = errors
-              .filter((e) => e !== null && e !== undefined)
-              .map((e) => ({
-                type: e!.type,
-                message: e!.message,
-                path: e!.path?.map((p) => ({ id: p.id, entity_type: p.entity_type })),
-              }));
-            setWorkflowDefinitionStatus((prev) => ({ ...prev, hasUnpublishedChanges: true, validationErrors }));
-          } else {
-            setWorkflowDefinitionStatus((prev) => ({ ...prev, hasUnpublishedChanges: true, validationErrors: [] }));
-          }
-        }
-        setNodes([]);
-        setEdges([]);
-      },
+    // The graph stays on screen until the reset is saved: if it fails, the graph is still the saved draft.
+    queueSave(emptySchemaString, () => {
+      setNodes([]);
+      setEdges([]);
     });
   };
 
   // Handle publish action
+  // Always ask the server: the errors stored at save time may no longer hold (e.g. the entities
+  // left a removed status since), and publish re-validates the draft against the live data.
+  // The server publishes its draft: the graph on screen is saved first, and a failed save cancels the publish.
   const handlePublish = () => {
-    if (workflowDefinitionStatus.validationErrors.length > 0) {
-      MESSAGING$.notifyError(
-        <WorkflowValidationErrorsToastContent errors={workflowDefinitionStatus.validationErrors} t_i18n={t_i18n} />,
-      );
+    // A save in flight already carries the latest change (or a reset the graph has not caught up with yet).
+    if (!saveInFlightRef.current) {
+      const schemaString = editorSchema();
+      if (schemaString !== savedSchemaRef.current) {
+        queueSave(schemaString);
+      }
+    }
+    if (saveInFlightRef.current) {
+      publishAfterSavesRef.current = true;
       return;
     }
+    publish();
+  };
+  const publish = () => {
     commitPublish({
-      variables: { entityType },
+      variables: { entityType, scope },
       onCompleted: () => {
         MESSAGING$.notifySuccess(t_i18n('Workflow successfully published'));
         setWorkflowDefinitionStatus({
@@ -322,11 +389,23 @@ const Workflow = ({
           hasPublishedVersion: true,
           validationErrors: [],
         });
+        // The mutation returns no states: refetch to get the status ids the publish just created
+        onRefetch();
       },
       onError: (error) => {
-        const firstError = (error as { res?: { errors?: Array<{ message?: string; extensions?: { data?: { removedStates?: string[]; entityType?: string } } }> } })
+        type PublishErrorData = { removedStates?: string[]; entityType?: string; errors?: WorkflowValidationError[] };
+        const firstError = (error as { res?: { errors?: Array<{ message?: string; extensions?: { data?: PublishErrorData } }> } })
           ?.res?.errors?.[0];
         const data = firstError?.extensions?.data;
+        // A refusal on validation carries the fresh errors: they replace the ones stored at save time
+        if (data?.errors && data.errors.length > 0) {
+          const freshErrors = [...data.errors];
+          setWorkflowDefinitionStatus((prev) => ({ ...prev, validationErrors: freshErrors }));
+          MESSAGING$.notifyError(
+            <WorkflowValidationErrorsToastContent errors={freshErrors} t_i18n={t_i18n} statusTemplates={statusTemplates} />,
+          );
+          return;
+        }
         const publishErrors: WorkflowValidationError[] = [{
           type: 'PUBLISH_ERROR',
           message: firstError?.message ?? t_i18n('An error occurred while publishing the workflow'),
@@ -342,7 +421,7 @@ const Workflow = ({
   // Handle restore action — reloads the published version into the draft
   const handleRestore = () => {
     restoreWorkflowDefinition({
-      variables: { entityType },
+      variables: { entityType, scope },
       onCompleted: () => {
         // Directly reset local state to `initialNodes`/`initialEdges`.
         // The Relay store already holds the published states (only full queries update
@@ -351,9 +430,10 @@ const Workflow = ({
         // that returns identical data. Calling setNodes here is the reliable path.
         setNodes(initialNodes);
         setEdges(initialEdges);
-        previousSchemaRef.current = JSON.stringify(
+        nextSaveRef.current = null;
+        loadSavedSchema(JSON.stringify(
           transformToWorkflowDefinition(initialNodes, initialEdges, workflowDefinition),
-        );
+        ));
         setWorkflowDefinitionStatus({ hasUnpublishedChanges: false, hasPublishedVersion: true, validationErrors: [] });
         // Also refetch in case the store is stale (e.g. published version changed
         // after the initial page load). The sync useEffect handles that case.
@@ -365,6 +445,9 @@ const Workflow = ({
   // Edit status and transitions
   const [open, setOpen] = useState<boolean>(false);
   const [emptyStateRestoreConfirmOpen, setEmptyStateRestoreConfirmOpen] = useState(false);
+  const [migrationOpen, setMigrationOpen] = useState(false);
+  // The migration builds the request access workflow until one is published: it may replace a draft, never a published one.
+  const canMigrateRequestAccess = scope === 'REQUEST_ACCESS' && !workflowDefinitionStatus.hasPublishedVersion;
   const [selectedElement, setSelectedElement] = useState<Node | Edge>(emptyElement);
   const onNodeClick: NodeMouseHandler = useCallback(
     (_, node) => {
@@ -414,7 +497,7 @@ const Workflow = ({
   const onNodeMouseLeave: NodeMouseHandler = useCallback(() => setHoveredId(null), []);
   const highlight = useMemo(() => getHoverHighlight(hoveredId, nodes, edges), [hoveredId, nodes, edges]);
   return (
-    <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden' }}>
+    <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <WorkflowEdgeActionsContext.Provider value={edgeActions}>
         <HoverHighlightContext.Provider value={highlight}>
           <ReactFlow
@@ -439,7 +522,25 @@ const Workflow = ({
             deleteKeyCode={null}
             zoomOnDoubleClick={false}
             proOptions={proOptions}
+            style={{ flex: 1, minHeight: 0 }}
           >
+            <Panel
+              position="top-left"
+              style={{ display: 'grid', gridTemplateColumns: 'max-content max-content', alignItems: 'center', columnGap: 16, rowGap: 12 }}
+              data-testid="workflow-top-left-panel"
+            >
+              {isRequestAccessScopeAvailable && (
+                <WorkflowScopeSwitch scope={scope} onScopeChange={(nextScope) => onScopeChange?.(nextScope)} />
+              )}
+              {/* Opaque paper background so the graph edges passing behind never show through the label */}
+              <EntityStatusSyncSetting sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 1, px: 1.5, py: 0.5 }} />
+              {isRequestAccessScopeAvailable && scope === 'REQUEST_ACCESS' && (
+                // width 0 + min-width 100%: the select fills the first column, which the scope buttons size
+                <div style={{ gridColumn: 1, width: 0, minWidth: '100%' }}>
+                  <RequestAccessValidatorGroup />
+                </div>
+              )}
+            </Panel>
             {nodes.length ? (
               <Panel position="top-right" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <PublishButton
@@ -462,6 +563,11 @@ const Workflow = ({
                 >
                   {t_i18n('Add Status')}
                 </Button>
+                {canMigrateRequestAccess && (
+                  <Button variant="secondary" onClick={() => setMigrationOpen(true)}>
+                    {t_i18n('Migrate request access statuses')}
+                  </Button>
+                )}
               </Panel>
             ) : (
               <Panel
@@ -497,6 +603,11 @@ const Workflow = ({
                 >
                   {t_i18n('Restore published version')}
                 </Button>
+                {canMigrateRequestAccess && (
+                  <Button variant="secondary" onClick={() => setMigrationOpen(true)}>
+                    {t_i18n('Migrate request access statuses')}
+                  </Button>
+                )}
               </Panel>
             )}
           </ReactFlow>
@@ -506,6 +617,8 @@ const Workflow = ({
         open={open}
         selectedElement={selectedElement}
         entityType={entityType}
+        scope={scope}
+        workflowStatusIds={workflowStatusIds}
         onClose={() => {
           setSelectedElement(emptyElement);
           setOpen(false);
@@ -519,6 +632,13 @@ const Workflow = ({
           handleRestore();
         }}
       />
+      {canMigrateRequestAccess && (
+        <RequestAccessMigrationDialog
+          open={migrationOpen}
+          onClose={() => setMigrationOpen(false)}
+          onMigrated={onRefetch}
+        />
+      )}
     </div>
   );
 };
