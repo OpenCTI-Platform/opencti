@@ -107,6 +107,25 @@ describe('OpenTelemetry diag logger', () => {
     expect(target.debug).not.toHaveBeenCalled();
   });
 
+  it('never throws on a non-string message (Error, object, undefined)', () => {
+    const target = buildTarget();
+    const logger = createOtelDiagLogger(target);
+    const anyLogger = logger as unknown as Record<string, (...args: unknown[]) => void>;
+    expect(() => anyLogger.error(new Error('connect ECONNREFUSED 127.0.0.1:4318'))).not.toThrow();
+    expect(() => anyLogger.error({ code: 14, details: 'unavailable' })).not.toThrow();
+    expect(() => anyLogger.warn(undefined)).not.toThrow();
+    expect(() => anyLogger.info(42)).not.toThrow();
+    expect(target.warn).toHaveBeenCalledWith('[OPENCTI] [TELEMETRY] connect ECONNREFUSED 127.0.0.1:4318', expect.any(Object));
+    expect(target.error).not.toHaveBeenCalled();
+  });
+
+  it('never throws when the target logger throws', () => {
+    const target = buildTarget();
+    target.warn.mockImplementation(() => { throw new Error('logger down'); });
+    const logger = createOtelDiagLogger(target);
+    expect(() => logger.error('export failed')).not.toThrow();
+  });
+
   it('honours an explicit diag level', () => {
     const target = buildTarget();
     registerOtelDiagLogger(target, DiagLogLevel.ERROR);
