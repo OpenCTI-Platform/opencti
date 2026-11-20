@@ -393,10 +393,14 @@ const useSearchEntities = ({
         ],
         filterGroups: [],
       };
+      const search = event.target.value !== 0 ? event.target.value : '';
       fetchQuery(vocabularySearchQuery, {
         filters,
-        search: event.target.value !== 0 ? event.target.value : '',
+        search,
         first: 10,
+        // the vocabularies are ordered by their configured order by default, even when searched: when a term is typed,
+        // order them by relevance, as getOptionsFromEntities keeps the order of the search
+        ...(search ? { orderBy: '_score', orderMode: 'desc' } : {}),
       })
         .toPromise()
         .then((data) => {

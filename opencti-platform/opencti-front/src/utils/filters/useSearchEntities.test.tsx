@@ -260,6 +260,36 @@ describe('useSearchEntities', () => {
     expect(labelOptions.some((e) => e.value === 'label-2')).toBe(true);
   });
 
+  it('should order the searched vocabularies by relevance, not by their configured order', () => {
+    mockFetchQuery.mockReturnValue({ toPromise: () => Promise.resolve({ vocabularies: { edges: [] } }) });
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('computed_reliability', {}, vi.fn(), createEvent('reliable'));
+    });
+
+    expect(mockFetchQuery).toHaveBeenCalledWith(
+      'vocabularySearchQuery',
+      expect.objectContaining({ search: 'reliable', orderBy: '_score', orderMode: 'desc' }),
+    );
+  });
+
+  it('should keep the default vocabulary order when no term is typed', () => {
+    mockFetchQuery.mockReturnValue({ toPromise: () => Promise.resolve({ vocabularies: { edges: [] } }) });
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('computed_reliability', {}, vi.fn(), createEvent(''));
+    });
+
+    const variables = mockFetchQuery.mock.calls.find(([query]) => query === 'vocabularySearchQuery')?.[1];
+    expect(variables).toBeDefined();
+    expect(variables).not.toHaveProperty('orderBy');
+    expect(variables).not.toHaveProperty('orderMode');
+  });
+
   it('should fetch stix core objects for id filter', async () => {
     const mockData = {
       stixCoreObjects: {
