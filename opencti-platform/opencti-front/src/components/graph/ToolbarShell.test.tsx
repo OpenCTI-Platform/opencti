@@ -1,6 +1,6 @@
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import testRender from '../../utils/tests/test-render';
 import ToolbarShell, { type ToolbarAction, type ToolbarSlot } from './ToolbarShell';
 
@@ -120,6 +120,24 @@ describe('ToolbarShell', () => {
     rerender(element);
     expect(screen.getByRole('button', { name: 'Kill chain' })).toBeInTheDocument();
     expect(render.mock.calls.length).toBeLessThan(10);
+  });
+
+  it('lets a field inside a submenu take the keys typed in it', async () => {
+    row.width = 200;
+    const { user } = renderShell([posture()]);
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    // By keyboard: jsdom has no pointer grace area, so moving the pointer off the trigger closes the submenu.
+    const trigger = await screen.findByRole('menuitem', { name: 'Compare with my security posture' });
+    act(() => trigger.focus());
+    await user.keyboard('{ArrowRight}');
+    const input = await screen.findByRole('textbox', { name: 'Platform' });
+    act(() => input.focus());
+    await user.keyboard('ab');
+    expect(input).toHaveValue('ab');
+    // The arrow that closes a submenu moves the caret instead.
+    await user.keyboard('{ArrowLeft}c');
+    expect(input).toHaveValue('acb');
+    expect(input).toHaveFocus();
   });
 
   it('reaches a wide control with the arrow keys', async () => {
