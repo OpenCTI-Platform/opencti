@@ -4854,6 +4854,11 @@ export type ConfigPresetPartialImportPreview = {
   type?: Maybe<ConfigPresetImportType>;
 };
 
+export type ConfigPresetPartialImportScopeInput = {
+  key: Scalars['String']['input'];
+  value: Scalars['String']['input'];
+};
+
 export type ConfigPresetSelectionInput = {
   excluded_items?: InputMaybe<Array<Scalars['ID']['input']>>;
   item_modes?: InputMaybe<Array<ConfigPresetItemModeInput>>;
@@ -18791,6 +18796,7 @@ export type MutationConfigPresetPartialImportArgs = {
   file: Scalars['Upload']['input'];
   item_modes?: InputMaybe<Array<ConfigPresetItemModeInput>>;
   items: Array<Scalars['ID']['input']>;
+  scope?: InputMaybe<ConfigPresetPartialImportScopeInput>;
   service_accounts?: InputMaybe<Array<ConfigPresetItemServiceAccountInput>>;
   type: Scalars['ID']['input'];
 };
@@ -18798,6 +18804,7 @@ export type MutationConfigPresetPartialImportArgs = {
 
 export type MutationConfigPresetPartialImportPreviewArgs = {
   file: Scalars['Upload']['input'];
+  scope?: InputMaybe<ConfigPresetPartialImportScopeInput>;
   type: Scalars['ID']['input'];
 };
 
@@ -42061,6 +42068,7 @@ export type ResolversTypes = ResolversObject<{
   ConfigPresetItemServiceAccountInput: ConfigPresetItemServiceAccountInput;
   ConfigPresetPartialImportOutput: ResolverTypeWrapper<Omit<ConfigPresetPartialImportOutput, 'results'> & { results: Array<ResolversTypes['ConfigPresetImportResult']> }>;
   ConfigPresetPartialImportPreview: ResolverTypeWrapper<ConfigPresetPartialImportPreview>;
+  ConfigPresetPartialImportScopeInput: ConfigPresetPartialImportScopeInput;
   ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: ResolverTypeWrapper<BasicStoreEntityConnector>;
   ConnectorConfig: ResolverTypeWrapper<ConnectorConfig>;
@@ -43309,6 +43317,7 @@ export type ResolversParentTypes = ResolversObject<{
   ConfigPresetItemServiceAccountInput: ConfigPresetItemServiceAccountInput;
   ConfigPresetPartialImportOutput: Omit<ConfigPresetPartialImportOutput, 'results'> & { results: Array<ResolversParentTypes['ConfigPresetImportResult']> };
   ConfigPresetPartialImportPreview: ConfigPresetPartialImportPreview;
+  ConfigPresetPartialImportScopeInput: ConfigPresetPartialImportScopeInput;
   ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: BasicStoreEntityConnector;
   ConnectorConfig: ConnectorConfig;

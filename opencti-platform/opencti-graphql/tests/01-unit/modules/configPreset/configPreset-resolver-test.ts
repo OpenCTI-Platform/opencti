@@ -66,6 +66,7 @@ import { customEmailTemplate, otherEmailTemplate } from './configPreset-emailTem
 import { defaultFintelDesign, nightFintelDesign } from './configPreset-fintelDesigns-fixtures';
 import { executiveDashboard, socDashboard } from './configPreset-dashboards-fixtures';
 import { incidentForm, reportForm } from './configPreset-formIntakes-fixtures';
+import { executiveCustomView, malwareCustomView } from './configPreset-customViews-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -310,6 +311,18 @@ describe('Config preset exportable types query', () => {
         itemsPageInfo: onePage(2),
       },
       {
+        key: 'customViews',
+        label: 'Custom views',
+        description: 'Custom views of the entity types and their widgets',
+        group: { key: 'customization', label: 'Customization' },
+        // By name, with the entity type of the view in the label
+        items: [
+          { key: executiveCustomView.standard_id, label: 'Executive overview (Report)', translatable: false, dependsOn: [], isDefault: false },
+          { key: malwareCustomView.standard_id, label: 'Malware triage (Malware)', translatable: false, dependsOn: [], isDefault: false },
+        ],
+        itemsPageInfo: onePage(2),
+      },
+      {
         key: 'connectors',
         label: 'Connectors',
         description: 'Managed connectors and their parameters, without their secrets',
@@ -441,7 +454,7 @@ describe('Config preset exportable types query', () => {
     expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
       ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['emailTemplates', true], ['labels', false], ['exclusionLists', false], ['killChainPhases', false],
-      ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['dashboards', false], ['connectors', true],
+      ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['dashboards', false], ['customViews', false], ['connectors', true],
       ['rssFeeds', false], ['csvFeeds', false], ['jsonFeeds', false], ['taxiiFeeds', false], ['formIntakes', false], ['playbooks', true], ['ruleEngine', false], ['fintelDesigns', true],
     ]);
     expect(types.find((type) => type.key === 'emailTemplates')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
@@ -494,6 +507,7 @@ describe('Config preset exportable types query', () => {
       ['statusTemplates', 'taxonomy'],
       ['caseTemplates', 'taxonomy'],
       ['dashboards', 'dashboards'],
+      ['customViews', 'customization'],
       ['connectors', 'integrations'],
       ['rssFeeds', 'integrations'],
       ['csvFeeds', 'integrations'],

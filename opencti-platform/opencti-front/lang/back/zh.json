@@ -225,6 +225,8 @@
   "Current_state_hash": "当前状态哈希值",
   "Custom dashboards": "自定义仪表盘",
   "Custom field values": "自定义字段值",
+  "Custom views": "自定义视图",
+  "Custom views of the entity types and their widgets": "实体类型的自定义视图及其小组件",
   "Customization": "定制化",
   "CVSS2 Access Complexity (AC)": "CVSS2 访问复杂性 (AC)",
   "CVSS2 Access Vector (AV)": "CVSS2 访问向量 (AV)",
