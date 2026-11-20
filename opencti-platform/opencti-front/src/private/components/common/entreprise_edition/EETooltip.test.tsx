@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
 import EETooltip from './EETooltip';
+import EETooltipBase from './EETooltipBase';
 
 // Gated paths (no Enterprise Edition, or AI not configured): EETooltip wraps
 // `children` in a focusable `role="button"` span that opens the
 // feedback/agreement flow, or the "enable AI" dialog, instead of whatever the
 // child would normally do.
-const state = vi.hoisted(() => ({ isEnterpriseEdition: false, feedbackDrawerOpenings: [] as boolean[] }));
+const state = vi.hoisted(() => ({ isEnterpriseEdition: false }));
 vi.mock('../../../../utils/hooks/useEnterpriseEdition', () => ({ default: () => state.isEnterpriseEdition }));
 vi.mock('../../../../utils/hooks/useGranted', () => ({
   default: () => false,
@@ -19,12 +20,9 @@ vi.mock('../../../../utils/hooks/useAuth', async (importOriginal) => ({
   default: () => ({ settings: { id: 'settings-id' } }),
 }));
 vi.mock('../../../../utils/hooks/useAI', () => ({ default: () => ({ enabled: false, configured: false }) }));
-// Both dialogs are Relay-bound and irrelevant to what this asserts.
+// Both dialogs are Relay-bound: stand-ins that only show whether they are open
 vi.mock('../../cases/feedbacks/FeedbackCreation', () => ({
-  default: ({ openDrawer }: { openDrawer: boolean }) => {
-    state.feedbackDrawerOpenings.push(openDrawer);
-    return openDrawer ? <div>Feedback form</div> : null;
-  },
+  default: ({ openDrawer }: { openDrawer: boolean }) => (openDrawer ? <div>Feedback form</div> : null),
 }));
 vi.mock('./EnterpriseEditionAgreement', () => ({ default: () => null }));
 
@@ -44,7 +42,6 @@ const EnabledLater = () => {
 describe('EETooltip', () => {
   beforeEach(() => {
     state.isEnterpriseEdition = false;
-    state.feedbackDrawerOpenings = [];
   });
 
   it.each([
@@ -103,17 +100,16 @@ describe('EETooltip', () => {
     expect(await screen.findByText('Feedback form')).toBeInTheDocument();
   });
 
-  it('mounts the feedback drawer closed before its first open, so it slides in', async () => {
+  it('sends a non-admin to their administrator, without the feedback form, in its base form', async () => {
     const { user } = testRender(
-      <EETooltip title="Some EE feature">
-        <button type="button">Do something</button>
-      </EETooltip>,
+      <EETooltipBase title="Some AI feature" forAi>
+        <button type="button">Ask AI</button>
+      </EETooltipBase>,
     );
 
-    await user.click(screen.getByText('Do something'));
-    expect(await screen.findByText('Feedback form')).toBeInTheDocument();
-    // A drawer first mounted open skips its appear transition
-    expect(state.feedbackDrawerOpenings[0]).toBe(false);
+    await user.click(screen.getByText('Ask AI'));
+    expect(await screen.findByText('Please ask your administrator to enable the Enterprise Edition.')).toBeInTheDocument();
+    expect(screen.queryByText('Feedback form')).not.toBeInTheDocument();
   });
 
   it('opens the "enable AI" dialog instead of running the wrapped control\'s own action', async () => {

@@ -4493,6 +4493,7 @@
   "Playground": "プレイグラウンド",
   "PLC": "PLC",
   "Please add square bracket & each value between double quotes (even for unique value). For example: [\"value1\", \"value2\"]": "(一意な値であっても)ダブルクォーテーションの間に角括弧&を追加してください。例えば[\"値1\", \"値2\"]。",
+  "Please ask your administrator to enable the Enterprise Edition.": "管理者にエンタープライズ版を有効にするよう依頼してください。",
   "Please choose a user responsible for data creation": "データ作成担当ユーザーを選択してください。",
   "Please connect your product so you can deploy resources": "リソースを展開するには、製品を接続してください",
   "Please contact an administrator": "管理者に連絡してください",

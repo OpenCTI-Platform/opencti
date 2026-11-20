@@ -4493,6 +4493,7 @@
   "Playground": "Spielplatz",
   "PLC": "PLC",
   "Please add square bracket & each value between double quotes (even for unique value). For example: [\"value1\", \"value2\"]": "Bitte fügen Sie eckige Klammern & für jeden Wert zwischen Anführungszeichen ein (auch für eindeutige Werte). Zum Beispiel: [\"Wert1\", \"Wert2\"]",
+  "Please ask your administrator to enable the Enterprise Edition.": "Bitten Sie Ihren Administrator, die Enterprise Edition zu aktivieren.",
   "Please choose a user responsible for data creation": "Bitte wählen Sie einen für die Datenerstellung zuständigen Benutzer",
   "Please connect your product so you can deploy resources": "Bitte verbinden Sie Ihr Produkt, damit Sie Ressourcen bereitstellen können",
   "Please contact an administrator": "Bitte kontaktieren Sie einen Administrator",
