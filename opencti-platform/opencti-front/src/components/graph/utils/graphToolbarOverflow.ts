@@ -7,6 +7,8 @@ export interface ToolbarOverflowCandidate {
   priority: number;
   /** A toggle in effect keeps its place before the others: it is turned off where it was turned on. */
   pressed?: boolean;
+  /** Room the action takes in the row, its gap included: `TOOLBAR_ACTION_WIDTH` when unset (a wide control sets it). */
+  width?: number;
 }
 
 export interface ToolbarMetrics {
@@ -46,7 +48,7 @@ export const planToolbarOverflow = (
       || b.candidate.priority - a.candidate.priority
       || a.index - b.index)
     .forEach(({ candidate }) => {
-      const cost = metrics.action + (openGroups.has(candidate.group) ? 0 : metrics.divider);
+      const cost = (candidate.width ?? metrics.action) + (openGroups.has(candidate.group) ? 0 : metrics.divider);
       if (used + cost > room) return;
       used += cost;
       shown.add(candidate.id);
