@@ -137,6 +137,7 @@ vi.mock('@components/data/DataTableToolBar', () => ({
 }));
 
 import useSearchEntities from './useSearchEntities';
+import { ME_FILTER_VALUE } from './filtersUtils';
 
 const createEvent = (value: string) => ({
   target: { value },
@@ -289,6 +290,34 @@ describe('useSearchEntities', () => {
     const markingOptions = result.current[0].objectMarking ?? [];
     expect(markingOptions).toHaveLength(2);
     expect(markingOptions.some((e) => e.ranked)).toBe(false);
+  });
+
+  it('should rank the searched members, after @me and ahead of the unsearched built-in accounts', async () => {
+    mockFetchQuery.mockReturnValue({
+      toPromise: () => Promise.resolve({
+        members: { edges: [{ node: { id: 'user-2', entity_type: 'User', name: 'Rule' } }] },
+        systemMembers: { edges: [{ node: { id: 'system-1', entity_type: 'User', name: 'RULE MANAGER' } }] },
+      }),
+    });
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('members_user', {}, vi.fn(), createEvent('rule'));
+    });
+
+    await waitFor(() => {
+      expect(result.current[0].members_user).toBeDefined();
+    });
+    expect(mockFetchQuery).toHaveBeenCalledWith(
+      'objectAssigneeFieldMembersSearchQuery',
+      expect.objectContaining({ search: 'rule', entityTypes: ['User'] }),
+    );
+    expect(result.current[0].members_user?.map(({ value, ranked }) => ({ value, ranked: !!ranked }))).toEqual([
+      { value: ME_FILTER_VALUE, ranked: false },
+      { value: 'user-2', ranked: true },
+      { value: 'system-1', ranked: false },
+    ]);
   });
 
   it('should order the searched vocabularies by relevance, not by their configured order', () => {
