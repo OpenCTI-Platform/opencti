@@ -5869,6 +5869,7 @@
   "The saved filter used by this widget is not available.": "Le filtre enregistré utilisé par ce widget n'est pas disponible.",
   "The scenario has been correctly generated in your OpenBAS platform.": "Le scénario a été correctement généré dans votre plateforme OpenBAS.",
   "The security posture could not be loaded": "Impossible de charger la posture de sécurité",
+  "The session presence manager is disabled on every platform node: no session is logged out when its last tab is closed.": "Le manager de présence des sessions est désactivé sur tous les nœuds de la plateforme : aucune session n'est déconnectée à la fermeture de son dernier onglet.",
   "The SMTP OAuth2 refresh token has expired. Email sending is likely interrupted, renew it as soon as possible.": "Le jeton de rafraîchissement OAuth2 SMTP a expiré. L'envoi d'e-mails est probablement interrompu ; veuillez le renouveler dès que possible.",
   "The SMTP OAuth2 refresh token is about to expire. Renew it to avoid interrupting email sending.": "Le jeton de rafraîchissement OAuth2 SMTP est sur le point d'expirer. Veuillez le renouveler pour éviter toute interruption de l'envoi d'e-mails.",
   "The source filter and the target filter each search for matching entities. Each filter can return up to 5,000 entities.": "Le filtre source et le filtre cible recherchent chacun les entités correspondantes. Chaque filtre peut renvoyer jusqu’à 5 000 entités.",

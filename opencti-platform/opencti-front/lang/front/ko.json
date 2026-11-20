@@ -5869,6 +5869,7 @@
   "The saved filter used by this widget is not available.": "이 위젯에서 사용하는 저장된 필터를 사용할 수 없습니다.",
   "The scenario has been correctly generated in your OpenBAS platform.": "시나리오가 OpenBAS 플랫폼에서 올바르게 생성되었습니다.",
   "The security posture could not be loaded": "보안 태세를 불러올 수 없습니다",
+  "The session presence manager is disabled on every platform node: no session is logged out when its last tab is closed.": "세션 접속 상태 관리자가 모든 플랫폼 노드에서 비활성화되어 있습니다. 마지막 탭이 닫혀도 세션이 로그아웃되지 않습니다.",
   "The SMTP OAuth2 refresh token has expired. Email sending is likely interrupted, renew it as soon as possible.": "SMTP OAuth2 갱신 토큰의 유효 기간이 만료되었습니다. 이메일 발송이 중단되었을 가능성이 있으니, 가능한 한 빨리 갱신해 주십시오.",
   "The SMTP OAuth2 refresh token is about to expire. Renew it to avoid interrupting email sending.": "SMTP OAuth2 갱신 토큰의 유효 기간이 곧 만료됩니다. 이메일 발송이 중단되지 않도록 갱신해 주십시오.",
   "The source filter and the target filter each search for matching entities. Each filter can return up to 5,000 entities.": "소스 필터와 대상 필터는 각각 일치하는 엔티티를 검색합니다. 각 필터는 최대 5,000개의 엔티티를 반환할 수 있습니다.",

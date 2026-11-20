@@ -1,5 +1,12 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { isSessionPresenceSupported, logoutAbandonedSessions, registerSessionPresence, unregisterSessionPresence } from '../../../../src/modules/session/session-presence-domain';
+import {
+  isSessionPresenceManagerEnabled,
+  isSessionPresenceSupported,
+  logoutAbandonedSessions,
+  registerSessionPresence,
+  SESSION_PRESENCE_MANAGER_ID,
+  unregisterSessionPresence,
+} from '../../../../src/modules/session/session-presence-domain';
 import { onSessionPresenceClose, onSessionPresenceConnect } from '../../../../src/modules/session/session-presence-ws';
 import * as cache from '../../../../src/database/cache';
 import * as session from '../../../../src/database/session';
@@ -427,6 +434,17 @@ describe('session presence', () => {
     expect(session.killSessionByRawId).toHaveBeenCalledTimes(2);
     expect(listener.publishUserAction).toHaveBeenCalledOnce();
     expect(store.isDue(sessionId)).toBe(false);
+  });
+
+  it('should tell whether the session presence manager is enabled on at least one node', async () => {
+    const listManagers = (...enabled: boolean[]) => {
+      const nodes = enabled.map((enable, i) => ({ platform_id: `node-${i}`, managers: [{ id: SESSION_PRESENCE_MANAGER_ID, enable, running: enable }] }));
+      vi.mocked(redis.getClusterInstances).mockResolvedValue(nodes as any);
+    };
+    listManagers(false, true);
+    expect(await isSessionPresenceManagerEnabled()).toBe(true);
+    listManagers(false, false);
+    expect(await isSessionPresenceManagerEnabled()).toBe(false);
   });
 
   it('should logout on several nodes with the shared session store', async () => {

@@ -3,6 +3,7 @@ import conf, { getStoppingState, isFeatureEnabled, logApp, SESSION_PRESENCE_FEAT
 import { findSessionByRawId, killSessionByRawId } from '../../database/session';
 import { getEntityFromCache } from '../../database/cache';
 import { getClusterInstances } from '../../database/redis';
+import { isModuleActivated } from '../../database/cluster-module';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -64,6 +65,11 @@ export const isSessionPresenceSupported = async () => {
   const apiNodes = instances.filter((instance) => instance.api_enabled !== false);
   return apiNodes.length <= 1;
 };
+
+export const SESSION_PRESENCE_MANAGER_ID = 'SESSION_PRESENCE_MANAGER';
+
+// The abandoned sessions are only logged out by the session presence manager, which can be disabled on each node
+export const isSessionPresenceManagerEnabled = () => isModuleActivated(SESSION_PRESENCE_MANAGER_ID);
 
 const isLogoutSupported = async () => {
   const isSupported = await isSessionPresenceSupported();

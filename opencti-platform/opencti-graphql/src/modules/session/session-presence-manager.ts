@@ -1,6 +1,6 @@
 import conf, { booleanConf, isFeatureEnabled, SESSION_PRESENCE_FEATURE_FLAG } from '../../config/conf';
 import { type ManagerDefinition, registerManager } from '../../manager/managerModule';
-import { logoutAbandonedSessions } from './session-presence-domain';
+import { logoutAbandonedSessions, SESSION_PRESENCE_MANAGER_ID } from './session-presence-domain';
 
 // Logout the sessions whose last tab is gone, whichever node held their sockets
 const SESSION_PRESENCE_MANAGER_ENABLED = booleanConf('session_presence_manager:enabled', true);
@@ -8,7 +8,7 @@ const SESSION_PRESENCE_MANAGER_KEY = conf.get('session_presence_manager:lock_key
 const SCHEDULE_TIME = conf.get('session_presence_manager:interval') || 5000;
 
 const SESSION_PRESENCE_MANAGER_DEFINITION: ManagerDefinition = {
-  id: 'SESSION_PRESENCE_MANAGER',
+  id: SESSION_PRESENCE_MANAGER_ID,
   label: 'Session presence manager',
   executionContext: 'session_presence_manager',
   cronSchedulerHandler: {
