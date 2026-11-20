@@ -1,5 +1,4 @@
 import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
-import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import { ATTR_SERVICE_INSTANCE_ID, ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { AggregationTemporality, ConsoleMetricExporter, InstrumentType, MeterProvider, type IMetricReader } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
@@ -31,6 +30,7 @@ import {
   ENTITY_TYPE_USER,
 } from '../schema/internalObject';
 import { BatchExportingMetricReader } from '../telemetry/BatchExportingMetricReader';
+import { buildFiligranPrometheusExporter } from '../telemetry/filigranPrometheusExporter';
 import type { BasicStoreSettings } from '../types/settings';
 import { getHttpClient } from '../utils/http-client';
 import type { BasicStoreEntityConnector, CachedConnector } from '../modules/connector/connector-types';
@@ -420,14 +420,9 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   logApp.info('[TELEMETRY] File exporter activated');
   // endregion
   // region Prometheus exporter, to read the Filigran metrics locally
-  if (TELEMETRY_PROMETHEUS_PORT) {
-    // Always pass a host: since @opentelemetry/exporter-prometheus 0.300.0, an unset host listens on localhost only.
-    const prometheusExporter = new PrometheusExporter({
-      host: TELEMETRY_PROMETHEUS_HOST,
-      port: TELEMETRY_PROMETHEUS_PORT,
-    });
+  const prometheusExporter = buildFiligranPrometheusExporter(TELEMETRY_PROMETHEUS_PORT, TELEMETRY_PROMETHEUS_HOST);
+  if (prometheusExporter) {
     filigranMetricReaders.push(prometheusExporter);
-    logApp.info('[TELEMETRY] Prometheus exporter activated', { host: TELEMETRY_PROMETHEUS_HOST, port: TELEMETRY_PROMETHEUS_PORT });
   }
   // endregion
   // region OTLP Exporter
