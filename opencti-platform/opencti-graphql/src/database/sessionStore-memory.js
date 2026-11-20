@@ -72,17 +72,18 @@ class SessionStoreMemory extends Store {
     return fn && fn(err);
   }
 
+  // Calls back with the killed session in the same envelope as the Redis store, as expected by the sessions management
   destroy(sid, fn) {
     const data = this.store.get(sid);
     this.store.delete(sid);
     let err = null;
-    let result;
+    let session;
     try {
-      result = data === undefined ? undefined : this.serializer.parse(data);
+      session = data === undefined ? undefined : this.serializer.parse(data);
     } catch (e) {
       err = e;
     }
-    return fn && fn(err, result);
+    return fn && fn(err, { sessionId: this.prefix + sid, session });
   }
 
   ids(fn) {

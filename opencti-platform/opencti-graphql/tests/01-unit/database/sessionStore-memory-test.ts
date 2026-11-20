@@ -26,7 +26,7 @@ const createStore = (options: { ttl?: number } = {}) => {
     get: call<[string], StoreSession | undefined>(store.get),
     set: call<[string, StoreSession], void>(store.set),
     touch: call<[string, StoreSession], void>(store.touch),
-    destroy: call<[string], StoreSession | undefined>(store.destroy),
+    destroy: call<[string], { sessionId: string; session?: StoreSession }>(store.destroy),
     all: call<[], StoreSession[]>(store.all),
     ids: call<[], string[]>(store.ids),
     clear: call<[], void>(store.clear),
@@ -95,17 +95,17 @@ describe('SessionStoreMemory', () => {
     expect(await get('sid-1')).toBeUndefined();
   });
 
-  it('should destroy the session and call back with it', async () => {
+  it('should destroy the session and call back with it, like the redis store', async () => {
     const { get, set, destroy } = createStore();
     const session = buildSession('user-1');
     await set('sid-1', session);
-    expect(await destroy('sid-1')).toEqual(session);
+    expect(await destroy('sid-1')).toEqual({ sessionId: 'sess:sid-1', session });
     expect(await get('sid-1')).toBeUndefined();
   });
 
   it('should call back when destroying an unknown session', async () => {
     const { destroy } = createStore();
-    expect(await destroy('unknown-sid')).toBeUndefined();
+    expect(await destroy('unknown-sid')).toEqual({ sessionId: 'sess:unknown-sid', session: undefined });
   });
 
   it('should list the sessions decorated like the redis store', async () => {
