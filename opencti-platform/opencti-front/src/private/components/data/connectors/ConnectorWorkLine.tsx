@@ -28,6 +28,12 @@ import Label from '../../../../components/common/label/Label';
 import { EMPTY_VALUE } from '../../../../utils/String';
 
 type WorkMessages = NonNullable<NonNullable<NonNullable<ConnectorWorks_data$data['works']>['edges']>[0]>['node']['errors'];
+
+// The backend caps the number of errors stored per work at 100
+// (see opencti-platform/opencti-graphql/src/domain/work.js), so the UI never
+// receives more than 100. Display "100+" at the cap to signal there may be more.
+const MAX_WORK_ERRORS = 100;
+
 interface ConnectorWorkLineProps {
   workId: string;
   workName: string | null | undefined;
@@ -158,7 +164,7 @@ const ConnectorWorkLine: FunctionComponent<
           size="small"
           keepMui
         >
-          {workErrors?.length} {t_i18n('errors')}
+          {(workErrors?.length ?? 0) >= MAX_WORK_ERRORS ? `${MAX_WORK_ERRORS}+` : (workErrors?.length ?? 0)} {t_i18n('errors')}
         </Button>
         {!readOnly && (
           <Security needs={[MODULES_MODMANAGE]}>
