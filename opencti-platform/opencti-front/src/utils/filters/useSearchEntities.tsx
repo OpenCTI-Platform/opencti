@@ -357,12 +357,21 @@ const useSearchEntities = ({
     },
   ];
 
+  // keeps the first copy of each option (same value in the same group)
+  const withoutDuplicates = (options: EntityValue[]) => options.filter(
+    ({ value, group }, index, arr) => arr.findIndex((v) => v.value === value && v.group === group) === index,
+  );
+
+  // the new options replace their existing copies (e.g. to update their rank)
   const unionSetEntities = (key: string, newEntities: EntityValue[]) => setEntities((c) => ({
     ...c,
-    [key]: [...newEntities, ...(c[key] ?? [])].filter(
-      ({ value, group }, index, arr) => arr.findIndex((v) => v.value === value && v.group === group)
-        === index,
-    ),
+    [key]: withoutDuplicates([...newEntities, ...(c[key] ?? [])]),
+  }));
+
+  // only the new options not seen yet are added, the existing copies are kept
+  const addMissingEntities = (key: string, newEntities: EntityValue[]) => setEntities((c) => ({
+    ...c,
+    [key]: withoutDuplicates([...(c[key] ?? []), ...newEntities]),
   }));
 
   // Id of the latest search of each filter key: a search runs on each typed character, and the answers can come back
@@ -390,15 +399,20 @@ const useSearchEntities = ({
     // the options of a search for this term are ranked by relevance (rankOptions), the others stay alphabetical
     const searchTerm = typeof event.target.value === 'string' ? event.target.value : '';
     // An answer to a search for an older term of this key would put its results first, in its own relevance order: it is
-    // ignored. An answer to an empty search is always kept: it is not ranked, so it cannot reorder anything, and it
-    // may not be queried again (selecting a value clears the input without searching). Only the queries sending the
-    // term go through this guard: the others (creators, schema types...) do not depend on the term, are not ranked,
-    // and may not be queried again (cached), so their answers are always kept.
+    // ignored. A late answer to an empty search only adds the options not seen yet: it may not be queried again
+    // (selecting a value clears the input without searching), but its unranked copies must not replace the ranked ones
+    // of the latest search. Only the queries sending the term go through this guard: the others (creators, schema
+    // types...) do not depend on the term, are not ranked, and may not be queried again (cached), so their answers are
+    // always kept.
     // All the queries of a search share its id, as a key can query several sources (e.g. entities and members).
     const searchId = (latestSearchIds.current[filterKey] ?? 0) + 1;
     latestSearchIds.current[filterKey] = searchId;
     const unionSetLatestEntities = (key: string, newEntities: EntityValue[]) => {
-      if (!searchTerm.trim() || latestSearchIds.current[filterKey] === searchId) unionSetEntities(key, newEntities);
+      if (latestSearchIds.current[filterKey] === searchId) {
+        unionSetEntities(key, newEntities);
+      } else if (!searchTerm.trim()) {
+        addMissingEntities(key, newEntities);
+      }
     };
 
     // fetches vocabularies by categories and add them to the set
