@@ -1,9 +1,9 @@
 import React, { Suspense, lazy, useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
 import { SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB } from '../../../utils/hooks/useGranted';
-import { capabilitiesOf } from '../nav/menuEntries';
+import EntryGuard from '../nav/EntryGuard';
 import Loader from '../../../components/Loader';
-import useSettingsFallbackUrl from '../../../utils/hooks/useSettingsFallbackUrl';
+import useSettingsFallbackUrl from './useSettingsFallbackUrl';
 import { XTM_HUB_AUTO_REGISTER_QUERY_PARAM, XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY } from '../RedirectByPath';
 
 const Security = lazy(() => import('../../../utils/Security'));
@@ -42,69 +42,74 @@ const Root = () => {
           <Route
             path="/"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings', { exact: true })}
+              <EntryGuard
+                path="/dashboard/settings"
+                exact
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <Settings />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/accesses/*"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings/accesses')}
+              <EntryGuard
+                path="/dashboard/settings/accesses"
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <RootAccesses />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/activity/*"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/activity')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/activity" placeholder={<Navigate to={fallbackUrl} />}>
                 <RootActivity />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/file_indexing"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/file_indexing')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/file_indexing" placeholder={<Navigate to={fallbackUrl} />}>
                 <FileIndexing />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/experience"
             element={(
-              <Security
-                needs={[SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]}
-                placeholder={<ExperienceUnauthorizedRedirect fallbackUrl={fallbackUrl} />}
-              >
-                <Experience />
-              </Security>
+              // The entry's rules (draft...), then a narrower capability check than the entry: Parameters-only users
+              // see the page in the menu but are denied it, with the auto-registration handling.
+              <EntryGuard path="/dashboard/settings/experience" placeholder={<ExperienceUnauthorizedRedirect fallbackUrl={fallbackUrl} />}>
+                <Security
+                  needs={[SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]}
+                  placeholder={<ExperienceUnauthorizedRedirect fallbackUrl={fallbackUrl} />}
+                >
+                  <Experience />
+                </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/customization/*"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/customization')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/customization" placeholder={<Navigate to={fallbackUrl} />}>
                 <RootCustomization />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/vocabularies/*"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings/vocabularies')}
+              <EntryGuard
+                path="/dashboard/settings/vocabularies"
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <RootVocabularies />
-              </Security>
+              </EntryGuard>
             )}
           />
         </Routes>

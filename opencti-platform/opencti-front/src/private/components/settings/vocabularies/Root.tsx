@@ -2,18 +2,11 @@ import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import Loader from '../../../../components/Loader';
 import LabelsVocabulariesMenu from '../LabelsVocabulariesMenu';
-import useGranted, {
-  SETTINGS_SETCASETEMPLATES,
-  SETTINGS_SETCUSTOMFIELDS,
-  SETTINGS_SETKILLCHAINPHASES,
-  SETTINGS_SETLABELS,
-  SETTINGS_SETSTATUSTEMPLATES,
-  SETTINGS_SETVOCABULARIES,
-} from '../../../../utils/hooks/useGranted';
-import { capabilitiesOf } from '../../nav/menuEntries';
-import useSettingsFallbackUrl from '../../../../utils/hooks/useSettingsFallbackUrl';
+import EntryGuard from '../../nav/EntryGuard';
+import useFirstVisiblePath from '../../common/menus/useFirstVisiblePath';
+import { entriesUnder } from '../../nav/menuEntries';
+import useSettingsFallbackUrl from '../useSettingsFallbackUrl';
 
-const Security = lazy(() => import('../../../../utils/Security'));
 const CaseTemplates = lazy(() => import('../case_templates/CaseTemplates'));
 const CaseTemplateTasks = lazy(() => import('../case_templates/CaseTemplateTasks'));
 const CustomFields = lazy(() => import('../custom_fields/CustomFields'));
@@ -23,22 +16,12 @@ const StatusTemplates = lazy(() => import('../status_templates/StatusTemplates')
 const Vocabularies = lazy(() => import('../Vocabularies'));
 const VocabularyCategories = lazy(() => import('../VocabularyCategories'));
 
-const VocabulariesRedirect = () => {
-  const isGrantedToLabels = useGranted([SETTINGS_SETLABELS]);
-  const isGrantedToKillChainPhases = useGranted([SETTINGS_SETKILLCHAINPHASES]);
-  const isGrantedToCaseTemplates = useGranted([SETTINGS_SETCASETEMPLATES]);
-  const isGrantedToStatusTemplates = useGranted([SETTINGS_SETSTATUSTEMPLATES]);
-  const isGrantedToVocabularies = useGranted([SETTINGS_SETVOCABULARIES]);
-  const isGrantedToCustomFields = useGranted([SETTINGS_SETCUSTOMFIELDS]);
+const vocabulariesEntries = entriesUnder('/dashboard/settings/vocabularies');
 
-  if (isGrantedToLabels) return <Navigate to="/dashboard/settings/vocabularies/labels" />;
-  if (isGrantedToKillChainPhases) return <Navigate to="/dashboard/settings/vocabularies/kill_chain_phases" />;
-  if (isGrantedToCaseTemplates) return <Navigate to="/dashboard/settings/vocabularies/case_templates" />;
-  if (isGrantedToStatusTemplates) return <Navigate to="/dashboard/settings/vocabularies/status_templates" />;
-  if (isGrantedToVocabularies) return <Navigate to="/dashboard/settings/vocabularies/fields" />;
-  if (isGrantedToCustomFields) return <Navigate to="/dashboard/settings/vocabularies/custom_fields" />;
-  return <Navigate to="/dashboard/settings" />;
-};
+// First Taxonomies page the user can open, in left bar order.
+const VocabulariesRedirect = ({ fallbackUrl }: { fallbackUrl: string }) => (
+  <Navigate to={useFirstVisiblePath(vocabulariesEntries, fallbackUrl)} />
+);
 
 const RootVocabularies = () => {
   const fallbackUrl = useSettingsFallbackUrl();
@@ -50,76 +33,76 @@ const RootVocabularies = () => {
           <Route
             path="/"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings/vocabularies')}
+              <EntryGuard
+                path="/dashboard/settings/vocabularies"
                 placeholder={<Navigate to={fallbackUrl} />}
               >
-                <VocabulariesRedirect />
-              </Security>
+                <VocabulariesRedirect fallbackUrl={fallbackUrl} />
+              </EntryGuard>
             )}
           />
           <Route
             path="/labels"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/vocabularies/labels')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/vocabularies/labels" placeholder={<Navigate to={fallbackUrl} />}>
                 <Labels />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/kill_chain_phases"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/vocabularies/kill_chain_phases')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/vocabularies/kill_chain_phases" placeholder={<Navigate to={fallbackUrl} />}>
                 <KillChainPhases />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/status_templates"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/vocabularies/status_templates')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/vocabularies/status_templates" placeholder={<Navigate to={fallbackUrl} />}>
                 <StatusTemplates />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/case_templates"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/vocabularies/case_templates')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/vocabularies/case_templates" placeholder={<Navigate to={fallbackUrl} />}>
                 <CaseTemplates />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/case_templates/:caseTemplateId/*"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/vocabularies/case_templates')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/vocabularies/case_templates" placeholder={<Navigate to={fallbackUrl} />}>
                 <CaseTemplateTasks />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/custom_fields"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/vocabularies/custom_fields')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/vocabularies/custom_fields" placeholder={<Navigate to={fallbackUrl} />}>
                 <CustomFields />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/fields"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/vocabularies/fields')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/vocabularies/fields" placeholder={<Navigate to={fallbackUrl} />}>
                 <VocabularyCategories />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/fields/:category"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/vocabularies/fields')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/vocabularies/fields" placeholder={<Navigate to={fallbackUrl} />}>
                 <Vocabularies />
-              </Security>
+              </EntryGuard>
             )}
           />
         </Routes>
