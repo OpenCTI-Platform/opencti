@@ -1084,6 +1084,7 @@ type CSVFeedAddInputFromImport {
   markings: [String!]!
   name: String!
   scheduling_period: String
+  ssl_verify: Boolean
   uri: String!
 }
 
@@ -2311,6 +2312,7 @@ type ConfigPresetImportItem {
   isEnabled: Boolean
   key: String!
   label: String!
+  serviceAccountRequired: Boolean!
   translatable: Boolean!
 }
 
@@ -7408,6 +7410,7 @@ type IngestionJsonAddInputFromImport {
   description: String
   headers: [IngestionHeader!]
   jsonMapper: IngestionJsonMapperFromImport!
+  markings: [String!]
   name: String!
   pagination_with_sub_page: Boolean
   pagination_with_sub_page_attribute_path: String
@@ -7514,12 +7517,14 @@ input IngestionRssAddInput {
 }
 
 type IngestionRssAddInputFromImport {
+  created_by_ref: DefaultMarkingDefinition
   current_state_date: DateTime
   description: String
   name: String!
   object_marking_refs: [DefaultMarkingDefinition]
   report_types: [String!]
   scheduling_period: String
+  ssl_verify: Boolean
   uri: String
 }
 
@@ -9378,7 +9383,7 @@ type Mutation {
   configPresetImportSessionClear(delete_file: Boolean): Boolean!
   configPresetImportSessionSave(file_id: ID!, revision: Int!, selections: [ConfigPresetSelectionInput!]!): ConfigPresetImportSession!
   configPresetImportUpload(file: Upload!): File!
-  configPresetPartialImport(file: Upload!, item_modes: [ConfigPresetItemModeInput!], items: [ID!]!, type: ID!): ConfigPresetPartialImportOutput!
+  configPresetPartialImport(credentials: [ConfigPresetItemCredentialsInput!], file: Upload!, item_modes: [ConfigPresetItemModeInput!], items: [ID!]!, service_accounts: [ConfigPresetItemServiceAccountInput!], type: ID!): ConfigPresetPartialImportOutput!
   configPresetPartialImportPreview(file: Upload!, type: ID!): ConfigPresetPartialImportPreview!
   connectorJWT: String!
   connectorMigrateToManaged(input: MigrateConnectorToManagedInput!): ManagedConnector!
@@ -16026,9 +16031,11 @@ type TaxiiFeedAddInputFromImport {
   authentication_type: String!
   authentication_value: String!
   collection: String!
+  confidence_to_score: Boolean
   description: String!
   name: String!
   scheduling_period: String
+  ssl_verify: Boolean
   uri: String!
   version: String!
 }

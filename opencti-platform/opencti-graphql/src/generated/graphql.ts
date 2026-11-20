@@ -2164,6 +2164,7 @@ export type CsvFeedAddInputFromImport = {
   markings: Array<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   scheduling_period?: Maybe<Scalars['String']['output']>;
+  ssl_verify?: Maybe<Scalars['Boolean']['output']>;
   uri: Scalars['String']['output'];
 };
 
@@ -4694,6 +4695,7 @@ export type ConfigPresetImportItem = {
   isEnabled?: Maybe<Scalars['Boolean']['output']>;
   key: Scalars['String']['output'];
   label: Scalars['String']['output'];
+  serviceAccountRequired: Scalars['Boolean']['output'];
   translatable: Scalars['Boolean']['output'];
 };
 
@@ -14658,6 +14660,7 @@ export type IngestionJsonAddInputFromImport = {
   description?: Maybe<Scalars['String']['output']>;
   headers?: Maybe<Array<IngestionHeader>>;
   jsonMapper: IngestionJsonMapperFromImport;
+  markings?: Maybe<Array<Scalars['String']['output']>>;
   name: Scalars['String']['output'];
   pagination_with_sub_page?: Maybe<Scalars['Boolean']['output']>;
   pagination_with_sub_page_attribute_path?: Maybe<Scalars['String']['output']>;
@@ -14766,12 +14769,14 @@ export type IngestionRssAddInput = {
 
 export type IngestionRssAddInputFromImport = {
   __typename?: 'IngestionRssAddInputFromImport';
+  created_by_ref?: Maybe<DefaultMarkingDefinition>;
   current_state_date?: Maybe<Scalars['DateTime']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   object_marking_refs?: Maybe<Array<Maybe<DefaultMarkingDefinition>>>;
   report_types?: Maybe<Array<Scalars['String']['output']>>;
   scheduling_period?: Maybe<Scalars['String']['output']>;
+  ssl_verify?: Maybe<Scalars['Boolean']['output']>;
   uri?: Maybe<Scalars['String']['output']>;
 };
 
@@ -18778,9 +18783,11 @@ export type MutationConfigPresetImportUploadArgs = {
 
 
 export type MutationConfigPresetPartialImportArgs = {
+  credentials?: InputMaybe<Array<ConfigPresetItemCredentialsInput>>;
   file: Scalars['Upload']['input'];
   item_modes?: InputMaybe<Array<ConfigPresetItemModeInput>>;
   items: Array<Scalars['ID']['input']>;
+  service_accounts?: InputMaybe<Array<ConfigPresetItemServiceAccountInput>>;
   type: Scalars['ID']['input'];
 };
 
@@ -36207,9 +36214,11 @@ export type TaxiiFeedAddInputFromImport = {
   authentication_type: Scalars['String']['output'];
   authentication_value: Scalars['String']['output'];
   collection: Scalars['String']['output'];
+  confidence_to_score?: Maybe<Scalars['Boolean']['output']>;
   description: Scalars['String']['output'];
   name: Scalars['String']['output'];
   scheduling_period?: Maybe<Scalars['String']['output']>;
+  ssl_verify?: Maybe<Scalars['Boolean']['output']>;
   uri: Scalars['String']['output'];
   version: Scalars['String']['output'];
 };
@@ -44963,6 +44972,7 @@ export type CsvFeedAddInputFromImportResolvers<ContextType = any, ParentType ext
   markings?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  ssl_verify?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
@@ -45748,6 +45758,7 @@ export type ConfigPresetImportItemResolvers<ContextType = any, ParentType extend
   isEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  serviceAccountRequired?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   translatable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
@@ -49173,6 +49184,7 @@ export type IngestionJsonAddInputFromImportResolvers<ContextType = any, ParentTy
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   headers?: Resolver<Maybe<Array<ResolversTypes['IngestionHeader']>>, ParentType, ContextType>;
   jsonMapper?: Resolver<ResolversTypes['IngestionJsonMapperFromImport'], ParentType, ContextType>;
+  markings?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pagination_with_sub_page?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   pagination_with_sub_page_attribute_path?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -49239,12 +49251,14 @@ export type IngestionRssResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type IngestionRssAddInputFromImportResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionRssAddInputFromImport'] = ResolversParentTypes['IngestionRssAddInputFromImport']> = ResolversObject<{
+  created_by_ref?: Resolver<Maybe<ResolversTypes['DefaultMarkingDefinition']>, ParentType, ContextType>;
   current_state_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   object_marking_refs?: Resolver<Maybe<Array<Maybe<ResolversTypes['DefaultMarkingDefinition']>>>, ParentType, ContextType>;
   report_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  ssl_verify?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   uri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
@@ -55179,9 +55193,11 @@ export type TaxiiFeedAddInputFromImportResolvers<ContextType = any, ParentType e
   authentication_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   authentication_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   collection?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  confidence_to_score?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  ssl_verify?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
