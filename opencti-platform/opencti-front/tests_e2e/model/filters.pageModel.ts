@@ -20,8 +20,7 @@ export default class FiltersPageModel {
     // down to the option we want before selecting it.
     await valuesCombobox.fill(filterLabel);
 
-    await expect(this.page.getByLabel(filterLabel, { exact: true }).getByRole('checkbox')).toBeVisible();
-    await this.page.getByLabel(filterLabel, { exact: true }).getByRole('checkbox').check();
+    await this.selectFilterValue(filterKey, filterLabel);
 
     return this.page.mouse.click(10, 10);
   }
@@ -42,10 +41,24 @@ export default class FiltersPageModel {
     await expect(this.page.getByRole('combobox', { name: filterKey })).toBeVisible();
     await this.page.getByRole('combobox', { name: filterKey }).click();
 
-    await expect(this.page.getByLabel(filterLabel, { exact: true }).getByRole('checkbox')).toBeVisible();
-    await this.page.getByLabel(filterLabel, { exact: true }).getByRole('checkbox').check();
+    await this.selectFilterValue(filterKey, filterLabel);
 
     return this.page.mouse.click(10, 10);
+  }
+
+  /**
+   * Picks a value in the open values list of the `filterKey` filter. An added value leaves the
+   * list (it is shown once, as a removable chip of the field), so the option is clicked rather
+   * than `check()`ed: there is no checked state left to verify on it.
+   */
+  private async selectFilterValue(filterKey: string, filterLabel: string) {
+    const option = this.page.getByLabel(filterLabel, { exact: true }).getByRole('checkbox');
+    await expect(option).toBeVisible();
+    await option.click();
+
+    const valuesField = this.page.locator('.MuiAutocomplete-root', { has: this.page.getByRole('combobox', { name: filterKey, exact: true }) });
+    await expect(valuesField.getByRole('button', { name: `Remove ${filterLabel}`, exact: true })).toBeVisible();
+    await expect(option).toHaveCount(0);
   }
 
   async addLabelFilter(labelValue: string) {
