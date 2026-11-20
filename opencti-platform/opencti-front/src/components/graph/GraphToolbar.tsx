@@ -42,7 +42,7 @@ const GraphToolbar = ({
 }: GraphToolbarProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { selectBySearch } = useGraphInteractions();
+  const { selectBySearch, setSelectedTimeRange } = useGraphInteractions();
   const view = useGraphView();
   const actions = useGraphToolbarActions({ onUnfixNodes });
   const groupLabels = useGraphToolbarGroupLabels();
@@ -55,7 +55,9 @@ const GraphToolbar = ({
       loadingCurrent,
       loadingTotal,
       search,
+      selectedTimeRangeInterval,
     },
+    timeRange,
     context,
     isFullscreen,
     toolbarRef,
@@ -184,7 +186,13 @@ const GraphToolbar = ({
         </Popover>
       )}
       // Only mounted while shown: the closed toolbar clips it, and its handles would stay reachable from the keyboard.
-      below={showTimeRange && <GraphToolbarTimeRange />}
+      below={showTimeRange && (
+        <GraphToolbarTimeRange
+          timeRange={timeRange}
+          selectedInterval={selectedTimeRangeInterval}
+          onChange={setSelectedTimeRange}
+        />
+      )}
     />
   );
 };
