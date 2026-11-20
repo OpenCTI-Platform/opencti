@@ -1,6 +1,6 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { findCatalogByCatalogId, findLatestCompatibleCatalogContractByImageName } from '../catalog/catalog-repository';
-import { computeConnectorTargetContract, getContractConfigSchemaWithoutExcludedRuntimeVars } from '../catalog/catalog-domain';
+import { computeConnectorTargetContract, getContractConfigSchemaWithoutExcludedRuntimeVars, getDefaultValueAsString, isRemovedWhenEmptied } from '../catalog/catalog-domain';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
 import { CONFIG_IMPORT_UNCHANGED_REASON, configImportValidationReason, freeConfigImportName, joinConfigImportReasons } from '../configImport/configImport-utils';
 import { userAlreadyExists } from '../user/user-domain';
@@ -11,7 +11,7 @@ import type { BasicStoreEntityUser } from '../user/user-types';
 import { managedConnectorAdd, managedConnectorEdit, sanitizeContainerName } from './connector-domain';
 import { findConnectorManagers, findConnectors } from './connector-repository';
 import type { BasicStoreEntityConnector } from './connector-types';
-import { connectorSecretKeys } from './connector-export';
+import { connectorSecretKeys, isBundleParameter } from './connector-export';
 import { type ConnectorImportConfiguration, connectorImportSchema } from './connector-import-schema';
 
 export interface ConnectorImportLoaded {
@@ -66,11 +66,56 @@ const freeServiceAccountName = (context: AuthContext, title: string) => {
   return freeConfigImportName(`[C] ${title}`, (candidate) => userAlreadyExists(context, candidate));
 };
 
-const sameConfiguration = (current: { key: string; value?: string | null }[], input: { key: string; value: string }[]) => {
-  return current.length === input.length && input.every(({ key, value }) => current.some((configuration) => configuration.key === key && (configuration.value ?? '') === value));
-};
-
 type ConnectorConfigSchema = ReturnType<typeof getContractConfigSchemaWithoutExcludedRuntimeVars>;
+
+/**
+ * Tells whether overwriting a connector with a bundle would leave its parameters as they are,
+ * so that the import can skip it as unchanged.
+ *
+ * The comparison runs over the keys of both sides. Every one of them is sent by the overwrite: with its bundle value,
+ * with its current value for a parameter the import keeps, else empty, as the overwrite empties every stored parameter
+ * the bundle does not carry. An empty value is then resolved as resolveConfigurationValue does: removed for a parameter
+ * removed when emptied, stored empty for a list with a default, the default for a required parameter, else removed.
+ *
+ * A list missing and a list stored empty differ (the connector applies its default to a missing list), so lists are
+ * compared with their presence. Any other parameter missing counts as empty.
+ *
+ * @param current - The non-secret parameters stored on the connector to overwrite.
+ * @param bundle - The non-secret parameters carried by the bundle.
+ * @param configSchema - The configuration schema of the connector to overwrite, for the required parameters and their defaults.
+ * @param isKept - Tells whether the import keeps the stored value of a parameter the bundle leaves empty.
+ * @returns True when every stored value already equals the value the overwrite would store.
+ */
+const isSameConfiguration = (
+  current: { key: string; value?: string | null }[],
+  bundle: { key: string; value: string }[],
+  configSchema: ConnectorConfigSchema,
+  isKept: (key: string) => boolean,
+) => {
+  const currentValues = new Map(current.map(({ key, value }) => [key, value ?? '']));
+  const bundleValues = new Map(bundle.map(({ key, value }) => [key, value]));
+  const isList = (key: string) => configSchema.properties[key]?.type === 'array';
+  // What the overwrite stores for a key, undefined when it is removed
+  const expectedOf = (key: string, currentValue: string | undefined) => {
+    const bundleValue = bundleValues.get(key) ?? '';
+    if (bundleValue !== '') return bundleValue;
+    if (isKept(key)) return currentValue;
+    const property = configSchema.properties[key];
+    const isRequired = configSchema.required.includes(key);
+    if (isRemovedWhenEmptied(property, isRequired)) return undefined;
+    const defaultValue = getDefaultValueAsString(property);
+    if (defaultValue === null) return undefined;
+    return isList(key) ? '' : defaultValue;
+  };
+  const keys = new Set([...currentValues.keys(), ...bundleValues.keys()]);
+  return [...keys].every((key) => {
+    const currentValue = currentValues.get(key);
+    const expectedValue = expectedOf(key, currentValue);
+    return isList(key)
+      ? currentValue === expectedValue
+      : (currentValue ?? '') === (expectedValue ?? '');
+  });
+};
 
 // What the import asks for: the secrets, never exported, and the required parameters the bundle leaves empty.
 // A credential is stored when the overwritten connector already holds it
@@ -169,20 +214,30 @@ export const importConfigPresetConnector = async (
   if (!target && !serviceAccountId && !ingestionGroupPlanned && (await findDefaultIngestionGroups(context, user)).length === 0) {
     return refused('no_ingestion_group', NO_INGESTION_GROUP_REASON, !!existing, bundleConnector, connectorCredentials);
   }
-  const parameters = bundleConnector.manager_contract_configuration.filter(({ key }) => configSchema.properties[key] && !secretKeys.includes(key));
+  const isParameter = isBundleParameter(configSchema, secretKeys);
+  const parameters = bundleConnector.manager_contract_configuration.filter(isParameter);
   const isKept = (key: string) => (secretKeys.includes(key) || missingParameterKeys.includes(key)) && !given.some((credential) => credential.key === key);
   const keptValues = (target?.manager_contract_configuration ?? [])
     .filter(({ key, value, encrypted }) => !encrypted && value && isKept(key))
     .map(({ key, value }) => ({ key, value: value as string }));
-  const input = [...parameters, ...given.map(({ key }) => ({ key, value: credentials[key] })), ...keptValues];
+  const sentValues = [...parameters, ...given.map(({ key }) => ({ key, value: credentials[key] })), ...keptValues];
+  // The non-secret parameters stored on the target: the ones the overwrite empties, and the ones compared to the bundle
+  const currentParameters = (target?.manager_contract_configuration ?? []).filter(isParameter);
+  // The bundle replaces the parameters: a stored one it does not carry is sent empty, so that an optional parameter
+  // is emptied (an array is stored empty, never reset to its default) and a required one falls back to its default.
+  // The secrets and the values kept above are never emptied
+  const sentKeys = new Set(sentValues.map(({ key }) => key));
+  const emptiedParameters = currentParameters
+    .filter(({ key }) => !isKept(key) && !sentKeys.has(key))
+    .map(({ key }) => ({ key, value: '' }));
+  const input = [...sentValues, ...emptiedParameters];
   const { confidence_level: confidence } = bundleConnector;
   const connectorUser = target && confidence !== null && confidence !== undefined
     ? await storeLoadById<BasicStoreEntityUser>(context, user, target.connector_user_id, ENTITY_TYPE_USER)
     : undefined;
   const confidenceReason = connectorUser && connectorUser.user_confidence_level?.max_confidence !== confidence ? CONFIDENCE_NOT_CHANGED_REASON : undefined;
   if (target && given.length === 0 && (target.title ?? target.name) === title) {
-    const currentParameters = (target.manager_contract_configuration ?? []).filter(({ key, encrypted }) => !encrypted && configSchema.properties[key] && !secretKeys.includes(key));
-    if (sameConfiguration(currentParameters, parameters)) {
+    if (isSameConfiguration(currentParameters, parameters, configSchema, isKept)) {
       const reason = joinConfigImportReasons([CONFIG_IMPORT_UNCHANGED_REASON, confidenceReason]);
       return { status: 'skipped', code: 'unchanged', reason, exists: true, configuration: bundleConnector, credentials: connectorCredentials };
     }

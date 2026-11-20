@@ -818,7 +818,7 @@ export const managedConnectorEdit = async (
     input.manager_contract_configuration,
     targetContract,
     currentManager.public_key,
-    conn.manager_contract_configuration,
+    conn.manager_contract_configuration ?? [],
   );
   const patch: any = {
     name: input.name,

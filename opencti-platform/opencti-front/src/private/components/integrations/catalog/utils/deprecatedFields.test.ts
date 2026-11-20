@@ -67,13 +67,15 @@ describe('deprecatedFields utils', () => {
 
       const payload = filterValuesForEditionPayload(simulatedConnectorValues, connectorProperties);
 
-      expect(payload).toHaveProperty('ACTIVE_NAME', 'my-connector');
-      expect(payload).toHaveProperty('DEPRECATED_WITH_DEFAULT_STRING', 'custom-legacy');
-      expect(payload).not.toHaveProperty('DEPRECATED_WITH_DEFAULT_INTEGER');
-      expect(payload).not.toHaveProperty('DEPRECATED_NO_DEFAULT');
+      expect(payload).toEqual({
+        ACTIVE_NAME: 'my-connector',
+        DEPRECATED_WITH_DEFAULT_STRING: 'custom-legacy',
+        DEPRECATED_WITH_DEFAULT_INTEGER: '1800',
+        DEPRECATED_NO_DEFAULT: '',
+      });
     });
 
-    it('filters deprecated fields when values are empty or default-equivalent', () => {
+    it('sends deprecated fields with their value when empty or default-equivalent', () => {
       const simulatedConnectorValues = {
         ACTIVE_NAME: 'my-connector',
         DEPRECATED_WITH_DEFAULT_STRING: 'legacy-default',
@@ -90,10 +92,12 @@ describe('deprecatedFields utils', () => {
 
       const payload = filterValuesForEditionPayload(simulatedConnectorValues, connectorProperties);
 
-      expect(payload).toHaveProperty('ACTIVE_NAME', 'my-connector');
-      expect(payload).not.toHaveProperty('DEPRECATED_WITH_DEFAULT_STRING');
-      expect(payload).not.toHaveProperty('DEPRECATED_WITH_DEFAULT_INTEGER');
-      expect(payload).not.toHaveProperty('DEPRECATED_NO_DEFAULT');
+      expect(payload).toEqual({
+        ACTIVE_NAME: 'my-connector',
+        DEPRECATED_WITH_DEFAULT_STRING: 'legacy-default',
+        DEPRECATED_WITH_DEFAULT_INTEGER: '1800',
+        DEPRECATED_NO_DEFAULT: '',
+      });
     });
   });
 
@@ -292,7 +296,7 @@ describe('deprecatedFields utils', () => {
       NORMAL_FIELD: makeStringProp({ deprecated: false }),
     };
 
-    it('keeps visible deprecated fields and omits hidden deprecated fields', () => {
+    it('sends deprecated fields with their value and cleans a deprecated field without default', () => {
       const payload = filterValuesForEditionPayload(
         {
           name: 'connector',
@@ -303,10 +307,46 @@ describe('deprecatedFields utils', () => {
         properties,
       );
 
-      expect(payload).toHaveProperty('DEPRECATED_WITH_DEFAULT', 'custom');
-      expect(payload).not.toHaveProperty('DEPRECATED_NO_DEFAULT');
-      expect(payload).toHaveProperty('NORMAL_FIELD', 'ok');
-      expect(payload).toHaveProperty('name', 'connector');
+      expect(payload).toEqual({
+        name: 'connector',
+        DEPRECATED_WITH_DEFAULT: 'custom',
+        DEPRECATED_NO_DEFAULT: '',
+        NORMAL_FIELD: 'ok',
+      });
+    });
+
+    it('sends the default of a deprecated field reset from a custom value to its default', () => {
+      const payload = filterValuesForEditionPayload(
+        { NORMAL_FIELD: 'ok', DEPRECATED_WITH_DEFAULT: 'same' },
+        properties,
+        { NORMAL_FIELD: 'ok', DEPRECATED_WITH_DEFAULT: 'custom' },
+      );
+
+      expect(payload).toEqual({ NORMAL_FIELD: 'ok', DEPRECATED_WITH_DEFAULT: 'same' });
+    });
+
+    it('sends empty, never its default, a deprecated field cleared from a custom value', () => {
+      const payload = filterValuesForEditionPayload(
+        { DEPRECATED_WITH_DEFAULT: '', DEPRECATED_ARRAY: [] },
+        {
+          ...properties,
+          DEPRECATED_ARRAY: {
+            type: 'array',
+            deprecated: true,
+            default: ['a', 'b'],
+            description: 'deprecated array',
+          } as unknown as IngestionTypedProperty,
+        },
+        { DEPRECATED_WITH_DEFAULT: 'custom', DEPRECATED_ARRAY: 'c' },
+      );
+
+      expect(payload).toEqual({ DEPRECATED_WITH_DEFAULT: '', DEPRECATED_ARRAY: [] });
+    });
+
+    it('does not send a deprecated field that was never set', () => {
+      const payload = filterValuesForEditionPayload({ NORMAL_FIELD: 'ok' }, properties, { NORMAL_FIELD: 'ok' });
+
+      expect(payload).toEqual({ NORMAL_FIELD: 'ok' });
     });
 
     it('detects deprecated keys cleared for reset confirmation', () => {
@@ -425,6 +465,76 @@ describe('deprecatedFields utils', () => {
       expect(payload).toEqual({
         DEPRECATED_NULL_DEFAULT: 'legacy-value',
         NORMAL_FIELD: 'ok',
+      });
+    });
+
+    it('sends cleared fields as empty, a cleared deprecated field with default:null included', () => {
+      const payload = filterValuesForEditionPayload(
+        {
+          NORMAL_FIELD: undefined,
+          ARRAY_FIELD: [],
+          DEPRECATED_NULL_DEFAULT: '',
+        },
+        {
+          NORMAL_FIELD: makeStringProp({ deprecated: false }),
+          ARRAY_FIELD: { type: 'array', default: ['a'], description: 'array' } as unknown as IngestionTypedProperty,
+          DEPRECATED_NULL_DEFAULT: {
+            type: 'string',
+            deprecated: true,
+            default: null,
+            description: 'nullable',
+          } as unknown as IngestionTypedProperty,
+        },
+      );
+
+      expect(payload).toEqual({
+        NORMAL_FIELD: '',
+        ARRAY_FIELD: [],
+        DEPRECATED_NULL_DEFAULT: '',
+      });
+    });
+
+    describe('keys removed from the form data on clear', () => {
+      // JsonForms unsets a key cleared to undefined, so it is absent from the values, not undefined
+      const removalProperties: Record<string, IngestionTypedProperty> = {
+        NORMAL_FIELD: makeStringProp({ deprecated: false }),
+        NUMBER_FIELD: { type: 'integer', default: 60, description: 'number' } as unknown as IngestionTypedProperty,
+        NEVER_STORED_FIELD: makeStringProp({ deprecated: false }),
+        DEPRECATED_WITH_DEFAULT: makeStringProp({ deprecated: true, default: 'same' }),
+      };
+
+      it('sends a non-deprecated key loaded on open and now absent as empty', () => {
+        const payload = filterValuesForEditionPayload(
+          { name: 'connector' },
+          removalProperties,
+          { name: 'connector', NORMAL_FIELD: 'stored', NUMBER_FIELD: 120 },
+        );
+
+        expect(payload).toEqual({
+          name: 'connector',
+          NORMAL_FIELD: '',
+          NUMBER_FIELD: '',
+        });
+      });
+
+      it('does not send a key that was neither loaded on open nor set', () => {
+        const payload = filterValuesForEditionPayload(
+          { NORMAL_FIELD: 'ok' },
+          removalProperties,
+          { NORMAL_FIELD: 'ok' },
+        );
+
+        expect(payload).toEqual({ NORMAL_FIELD: 'ok' });
+      });
+
+      it('sends empty a deprecated key loaded on open and now absent', () => {
+        const payload = filterValuesForEditionPayload(
+          { NORMAL_FIELD: 'ok' },
+          removalProperties,
+          { NORMAL_FIELD: 'ok', DEPRECATED_WITH_DEFAULT: 'custom' },
+        );
+
+        expect(payload).toEqual({ NORMAL_FIELD: 'ok', DEPRECATED_WITH_DEFAULT: '' });
       });
     });
   });

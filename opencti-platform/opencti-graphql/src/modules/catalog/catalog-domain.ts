@@ -191,7 +191,21 @@ export const getDefaultValueAsString = (propSchema: any): string | null => {
 };
 
 /**
+ * Tells whether an emptied value of a property is removed from the configuration rather than stored:
+ * true for an optional property that is neither a list (stored empty, an empty list being a meaningful setting)
+ * nor a password (whose stored value is kept). A required property falls back to its default.
+ */
+export const isRemovedWhenEmptied = (propSchema: any, isRequired: boolean) => {
+  return propSchema.format !== 'password' && propSchema.type !== 'array' && !isRequired;
+};
+
+/**
  * Resolve the final configuration value for a property
+ * - key omitted from the input: keep the stored value, or fall back to the default when nothing is stored
+ * - key provided with an empty value: an array is stored as empty (an empty list is a meaningful setting
+ *   that must stay distinguishable from its default), a password keeps its stored value,
+ *   an optional field of any other type is removed, a required one falls back to its default
+ * - key provided with a value: the value is validated (and encrypted for passwords)
  */
 export const resolveConfigurationValue = (
   propKey: string,
@@ -199,18 +213,27 @@ export const resolveConfigurationValue = (
   inputConfig: ContractConfigInput | undefined,
   existingConfig: ConnectorContractConfiguration | undefined,
   publicKey: string,
+  isRequired = false,
 ): ConnectorContractConfiguration | null => {
   const isPassword = propSchema.format === 'password';
 
   // No new value provided
-  if (!inputConfig || !inputConfig.value || inputConfig.value === '') {
-    // Keep existing password if available
-    if (isPassword && existingConfig) {
+  if (!inputConfig || !inputConfig.value) {
+    // Omitted key (partial edit) or empty password: keep what is stored
+    if (existingConfig && (!inputConfig || isPassword)) {
       return existingConfig;
     }
-    // Use default value if available
+    // Explicitly emptied optional non-array field: clean it
+    if (inputConfig && isRemovedWhenEmptied(propSchema, isRequired)) {
+      return null;
+    }
     const defaultValue = getDefaultValueAsString(propSchema);
     if (defaultValue !== null) {
+      // Explicitly emptied array: store it empty rather than replacing it by its default
+      if (inputConfig && propSchema.type === 'array') {
+        return { key: propKey, value: '' };
+      }
+      // Use default value if available
       return { key: propKey, value: defaultValue };
     }
     return null;
@@ -373,6 +396,8 @@ export const computeConnectorTargetContract = (
   currentManagerContractConfiguration?: ConnectorContractConfiguration[],
 ): ConnectorContractConfiguration[] => {
   const targetConfig = getContractConfigSchemaWithoutExcludedRuntimeVars(targetContract.config_schema);
+  // A current configuration is given when an existing connector is edited, never at creation
+  const isEdition = currentManagerContractConfiguration !== undefined;
   let passwordCount = 0;
   let defaultedCount = 0;
   let reusedCount = 0;
@@ -409,11 +434,14 @@ export const computeConnectorTargetContract = (
       return; // Skip this field entirely
     }
 
+    // On edition, an optional field neither sent nor stored stays unset: its default is applied at creation only.
+    // A field explicitly emptied in a previous edition is not stored, and must not come back with its default
+    if (isEdition && !isRequired && !inputConfig && !hasExisting) {
+      return;
+    }
+
     if (!hasInput && !hasExisting && (propSchema.default !== undefined && propSchema.default !== null)) {
       defaultedCount += 1;
-    }
-    if (hasExisting && !hasInput) {
-      reusedCount += 1;
     }
     if (isPassword && hasInput && inputConfig?.value !== existingConfig?.value) {
       passwordCount += 1;
@@ -425,8 +453,12 @@ export const computeConnectorTargetContract = (
       inputConfig,
       existingConfig,
       publicKey,
+      isRequired,
     );
 
+    if (hasExisting && !hasInput && finalConfig === existingConfig) {
+      reusedCount += 1;
+    }
     if (finalConfig) {
       contractConfigurations.push(finalConfig);
     }

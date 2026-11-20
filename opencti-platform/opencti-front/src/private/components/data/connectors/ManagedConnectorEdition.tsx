@@ -88,7 +88,8 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
 
   Object.keys(contract.config_schema.properties).forEach((key) => {
     const { value } = connector.manager_contract_configuration?.find((a) => a.key === key) ?? {};
-    if (!value) {
+    // An empty stored value is meaningful (e.g. an emptied array): load it so it is kept on save
+    if (value === undefined || value === null) {
       return;
     }
 
@@ -101,13 +102,14 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
 
   const [commitUpdate] = useApiMutation(updateManagedConnector);
 
-  const submitConnectorManagementCreation = (values: ManagedConnectorValues, {
+  const submitConnectorManagementCreation = (values: ManagedConnectorValues, initialValues: ManagedConnectorValues, {
     setSubmitting,
     resetForm,
   }: Partial<FormikHelpers<ManagedConnectorValues>>) => {
     const filteredValues = filterValuesForEditionPayload(
       values as unknown as Record<string, unknown>,
       contract.config_schema.properties,
+      initialValues as unknown as Record<string, unknown>,
     ) as unknown as ManagedConnectorValues;
 
     const input = {
@@ -332,7 +334,7 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
                   </Button>
                   <Button
                     onClick={() => {
-                      submitConnectorManagementCreation(values, {
+                      submitConnectorManagementCreation(values, initialValues, {
                         setSubmitting,
                         resetForm,
                       });
