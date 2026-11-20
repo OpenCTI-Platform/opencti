@@ -173,10 +173,13 @@ jobs:
 
       - name: e2e tests
         run: |
-          docker run --network runner-docker-network \
+          # Test the built front the platform image serves itself, not a Vite dev server: closer to
+          # production, and no on-demand transforms competing with the backend for the runner's CPU/RAM.
+          # Host network so the app is on localhost, a secure context (clipboard, crypto.subtle...).
+          docker run --network host \
             --name frontend-e2e-tests \
             -v ${{ github.workspace }}/frontend-e2e-test:/home/workspace \
-            -e BACK_END_URL=http://opencti-e2e-start:4100 \
+            -e E2E_FRONT_URL=http://localhost:4500 \
             -e E2E_TEST=true \
             -e NODE_OPTIONS=--max_old_space_size=8192 \
             node:22 \
