@@ -1,5 +1,5 @@
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
-import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
+import { Dispatch, SetStateAction, SyntheticEvent, useMemo, useState } from 'react';
 import { Filter, FilterEditorInputValue } from '../../../utils/filters/filtersHelpers-types';
 import { getSelectedOptions, SELF_ID, SELF_ID_VALUE, useFilterDefinition } from '../../../utils/filters/filtersUtils';
 import { getOptionsFromEntities } from '../../../utils/filters/SearchEntitiesUtil';
@@ -104,7 +104,12 @@ const useFilterEntityOptions = ({
     : [];
 
   const inputValue = autocompleteInputValues[searchKey] || '';
-  const entitiesOptionsFromSearch = getOptionsFromEntities(entities, searchScope, searchKey, inputValue);
+  // The entities only grow over the session (each search adds its results): only sort them again when they, the scope
+  // or the typed term change, not on every render (selecting a value, focus changes...)
+  const entitiesOptionsFromSearch = useMemo(
+    () => getOptionsFromEntities(entities, searchScope, searchKey, inputValue),
+    [entities, searchScope, searchKey, inputValue],
+  );
   const allOptions: FilterOptionValue[] = [
     ...variableOptions,
     ...(shouldAddSelfId
