@@ -807,6 +807,12 @@ a MUI `Popover`. It needs `keepMounted`: the tools own their creation dialogs
 the popover is closed. A library popover will have to offer the same
 keep-mounted behaviour to replace it.
 
+**Third consumer, 2026-11-20:** the investigation matrix view (TTP analyzer 3)
+will open its linked-entity and frequency filters in a non-modal floating panel
+anchored to a toolbar button. Until the library has a popover, that panel is a
+MUI `Popover` too. It must not trap focus, and the keys typed in its fields must
+not reach the toolbar's roving focus.
+
 **Not exempted, and now closed:** `Stack` and `Box` were still inside the NLQ
 toggle — MUI layout, not the control. Replaced by plain elements at the same
 geometry (4px caret margin and padding, unchanged 1px divider). The guard reads
@@ -3177,3 +3183,30 @@ the pages, ArrowDown must highlight the first row (the screen reader announces
 it), Enter on a page opens it, Enter with no highlight starts the classic
 search, Escape closes the list without clearing the field, and a click on a
 row must not blur the input first.
+
+## 85. A field inside a `MenuSubContent` loses its arrow, Tab and letter keys to the menu
+
+**Where.** `components/graph/components/GraphToolbarMoreActions.tsx`. A docked
+toolbar sends the controls it has no room for to "More actions". A wide control
+(the "Compare with my security posture" selector of the investigation matrix, at
+laptop width) is listed there as an entry that opens a submenu holding the
+control itself, as in the product mockup.
+
+**Gap.** The submenu content handles every key pressed inside it: ArrowLeft
+closes the submenu, Tab is prevented, and a letter starts the typeahead search.
+A text field or a combobox inside it cannot move its caret with ArrowLeft, and
+the submenu closes under the user. The library documents no way to host a field
+in a menu.
+
+**Workaround.** The submenu content wraps the control in an element that stops
+the propagation of every key but Escape, so the field keeps its keys and Escape
+still closes the menu. Marked `FDS-WORKAROUND #85`. Pinned by
+`ToolbarShell.test.tsx` (`lets a field inside a submenu take the keys typed in it`).
+
+**Ask.** A supported way to put a form control in a `MenuSubContent` (or a
+`MenuItem` variant holding one): the menu leaves the keys of a focused field to
+it, and keeps Escape to close.
+
+**Removal test.** Remove the wrapper: in the "More actions" submenu of the
+matrix toolbar, typing a platform name, moving the caret with ArrowLeft and
+pressing Tab must work, and Escape must still close the menu.
