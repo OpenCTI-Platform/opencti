@@ -121,7 +121,9 @@ describe('OpenTelemetry diag logger', () => {
 
   it('never throws when the target logger throws', () => {
     const target = buildTarget();
-    target.warn.mockImplementation(() => { throw new Error('logger down'); });
+    target.warn.mockImplementation(() => {
+      throw new Error('logger down');
+    });
     const logger = createOtelDiagLogger(target);
     expect(() => logger.error('export failed')).not.toThrow();
   });
