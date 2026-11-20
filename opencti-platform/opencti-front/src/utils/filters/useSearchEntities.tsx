@@ -380,13 +380,14 @@ const useSearchEntities = ({
       return;
     }
     const isSubKey = !!parentFilterKey;
-    // An answer to an older search of this key would put its results first, in its own relevance order: it is ignored.
+    // An answer to a search for an older term of this key would put its results first, in its own relevance order: it is
+    // ignored. Only the queries sending the term go through this guard: the others (creators, schema types...) do not
+    // depend on the term, are not ranked, and may not be queried again (cached), so their answers are always kept.
     // All the queries of a search share its id, as a key can query several sources (e.g. entities and members).
     const searchId = (latestSearchIds.current[filterKey] ?? 0) + 1;
     latestSearchIds.current[filterKey] = searchId;
-    const isLatestSearch = () => latestSearchIds.current[filterKey] === searchId;
     const unionSetLatestEntities = (key: string, newEntities: EntityValue[]) => {
-      if (isLatestSearch()) unionSetEntities(key, newEntities);
+      if (latestSearchIds.current[filterKey] === searchId) unionSetEntities(key, newEntities);
     };
 
     const newInputValue = {
@@ -464,7 +465,7 @@ const useSearchEntities = ({
         color: m.color,
         type: 'Marking-Definition',
       }));
-      unionSetLatestEntities(key, markedByEntities);
+      unionSetEntities(key, markedByEntities);
     };
 
     // fetches kill chain phases and add them to the set
@@ -612,7 +613,6 @@ const useSearchEntities = ({
       type: string,
       data: IdentitySearchCreatorsSearchQuery$data['creators'], // this type is actually the same for the different queries we use, not only creators
     ) => {
-      if (!isLatestSearch()) return;
       const newOptions: EntityValue[] = (data?.edges ?? []).map((n) => ({
         label: n?.node.name ?? '',
         value: n?.node.id ?? '',
@@ -632,7 +632,7 @@ const useSearchEntities = ({
       }
 
       setCacheEntities({ ...cacheEntities, [key]: newOptions });
-      unionSetLatestEntities(filterKey, newOptions);
+      unionSetEntities(filterKey, newOptions);
     };
 
     // static list building, no query to run
@@ -656,7 +656,7 @@ const useSearchEntities = ({
         entitiesToAdd = groupedBy
           .flatMap((group) => ungroupedEntities.map((item) => ({ ...item, group })));
       }
-      unionSetLatestEntities(key, entitiesToAdd);
+      unionSetEntities(key, entitiesToAdd);
     };
 
     const keysWithSpecificSearch = [
@@ -825,7 +825,7 @@ const useSearchEntities = ({
             })));
           }
           const elementTypeTypes = elementTypeResult.sort((a, b) => a.label.localeCompare(b.label));
-          unionSetLatestEntities(filterKey, elementTypeTypes);
+          unionSetEntities(filterKey, elementTypeTypes);
           break;
         }
         case 'elementWithTargetTypes':
@@ -858,7 +858,7 @@ const useSearchEntities = ({
                 type: n,
               }))
               .sort((a, b) => a.label.localeCompare(b.label));
-            unionSetLatestEntities(filterKey, entitiesTypes);
+            unionSetEntities(filterKey, entitiesTypes);
           } else { // case abstract types
             let result: EntityValue[] = [];
             // push the observables
@@ -953,7 +953,7 @@ const useSearchEntities = ({
               }
             }
             const entitiesTypes = result.sort((a, b) => a.label.localeCompare(b.label));
-            unionSetLatestEntities(filterKey, entitiesTypes);
+            unionSetEntities(filterKey, entitiesTypes);
           }
           break;
         case 'fromTypes':
@@ -962,7 +962,7 @@ const useSearchEntities = ({
           // the observables
           // the stix domain objects
           // the stix core relationships
-          unionSetLatestEntities(
+          unionSetEntities(
             filterKey,
             [
               ...scoTypes,
@@ -1015,7 +1015,7 @@ const useSearchEntities = ({
               ];
             }
           }
-          unionSetLatestEntities(filterKey, relationshipsTypes.sort((a, b) => a.label.localeCompare(b.label)));
+          unionSetEntities(filterKey, relationshipsTypes.sort((a, b) => a.label.localeCompare(b.label)));
           break;
         }
         case 'x_opencti_main_observable_type':
@@ -1038,7 +1038,7 @@ const useSearchEntities = ({
                   type: 'Unknown',
                 });
               }
-              unionSetLatestEntities(
+              unionSetEntities(
                 filterKey,
                 mainObservableTypeEntities,
               );
@@ -1089,7 +1089,7 @@ const useSearchEntities = ({
                     value: n.id,
                     type: 'Notifier',
                   }));
-                  unionSetLatestEntities(
+                  unionSetEntities(
                     filterKey,
                     notifiers,
                   );
@@ -1126,7 +1126,7 @@ const useSearchEntities = ({
                       type: 'Vocabulary',
                     }))
                     .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''));
-                  unionSetLatestEntities(filterKey, statusTemplateEntities);
+                  unionSetEntities(filterKey, statusTemplateEntities);
                 });
             } else if (idEntityTypes.includes('PublicDashboard')) {
               fetchQuery(workspacesQuery, {
@@ -1149,7 +1149,7 @@ const useSearchEntities = ({
                       type: 'Dashboard',
                     }))
                     .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''));
-                  unionSetLatestEntities(filterKey, dashboards);
+                  unionSetEntities(filterKey, dashboards);
                 });
             }
           }
