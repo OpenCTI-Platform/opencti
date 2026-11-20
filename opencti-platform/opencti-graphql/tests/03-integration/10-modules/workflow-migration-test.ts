@@ -171,7 +171,12 @@ describe('Workflow definitions migration', () => {
     expect(resultOf(secondRun, DRAFT_ONLY_TYPE)?.outcome).toBe('has_workflow');
     // Case-Rfi REQUEST_ACCESS is left out of the failure check: it needs Enterprise Edition and fails on a Community Edition test platform
     expect(secondRun.filter(({ outcome }) => outcome === 'migrated')).toEqual([]);
-    expect(secondRun.filter(({ outcome, scope }) => outcome === 'failed' && scope === StatusScope.Global)).toEqual([]);
+    // Types other suites left with unmigratable statuses fail on both runs: a second run must add no failure of its own
+    const globalFailures = (results: WorkflowMigrationResult[]) => results
+      .filter(({ outcome, scope }) => outcome === 'failed' && scope === StatusScope.Global)
+      .map(({ entityType }) => entityType)
+      .sort();
+    expect(globalFailures(secondRun)).toEqual(globalFailures(firstRun));
     const after = await loadDefinition(MIGRATED_TYPE);
     expect(after.id).toBe(before.id);
     expect(after.published_version.id).toBe(before.published_version.id);
