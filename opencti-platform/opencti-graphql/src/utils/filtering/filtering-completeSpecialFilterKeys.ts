@@ -49,20 +49,27 @@ import {
 import { BadUserInputError, ForbiddenAccess, FunctionalError, ResourceNotFoundError, UnsupportedError } from '../../config/errors';
 import { ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI, ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../modules/organization/organization-types';
-import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
+import {
+  isEmptyField,
+  isNotEmptyField,
+  READ_INDEX_INFERRED_RELATIONSHIPS,
+  READ_INDEX_STIX_DOMAIN_OBJECTS,
+  READ_RELATIONSHIPS_INDICES,
+  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+} from '../../database/utils';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT, buildRefRelationKey, ID_INFERRED, ID_INTERNAL } from '../../schema/general';
 import { addFilter } from './filtering-utils';
-import type { BasicStoreBase, BasicWorkflowStatus } from '../../types/store';
+import type { BasicStoreBase, BasicStoreRelation, BasicWorkflowStatus } from '../../types/store';
 import { getPirWithAccessCheck } from '../../modules/pir/pir-checkPirAccess';
 import { authorizedMembers, type ComplexAttribute, type NestedObjectAttribute } from '../../schema/attribute-definition';
 import { isMetricsName } from '../../modules/metrics/metrics-utils';
 import { isGenericNestedFilterAttribute, isObjectAttribute, schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldValueField } from '../../modules/customField/custom-field-cache';
-import { elFindByIds, elList, elPaginate, ES_MAX_PAGINATION } from '../../database/engine';
+import { elFindByIds, elList, elPaginate, ES_MAX_PAGINATION, ROLE_FROM, ROLE_TO, UNIMPACTED_ENTITIES_ROLE } from '../../database/engine';
 import { computeQueryIndices } from '../../database/engine-indices';
 import { keepMostRestrictiveTypes } from '../../schema/schemaUtils';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
-import { isUserHasCapability, PIRAPI } from '../access';
+import { isUserHasCapability, PIRAPI, SYSTEM_USER } from '../access';
 import { uniqAsyncMap } from '../data-processing';
 import { ENTITY_TYPE_PIR } from '../../modules/pir/pir-types';
 import { getEntitiesListFromCache } from '../../database/cache';
@@ -71,6 +78,43 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../schema/stixMetaObject';
 import { IDS_ATTRIBUTES } from '../../domain/attribute-utils';
 import { pushAll } from '../arrayUtil';
 import type { FiltersWithNested } from '../../database/middleware-loader';
+
+// The entities on an unimpacted side of a relationship (e.g. the channel of a 'publishes') have no rel_ denormalization,
+// so they are resolved from the relationships targeting the given ids
+const resolveUnimpactedSideIds = async (
+  context: AuthContext,
+  user: AuthUser,
+  types: string[],
+  ids: string[],
+  inferredValues: string[],
+) => {
+  let relationshipIndices = READ_RELATIONSHIPS_INDICES;
+  if (inferredValues.includes('true')) {
+    relationshipIndices = [READ_INDEX_INFERRED_RELATIONSHIPS];
+  } else if (inferredValues.includes('false')) {
+    relationshipIndices = READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED;
+  }
+  const sideIds = new Set<string>();
+  for (let index = 0; index < types.length; index += 1) {
+    const type = types[index];
+    const sides = [ROLE_FROM, ROLE_TO].filter((side) => UNIMPACTED_ENTITIES_ROLE.includes(`${type}_${side}`));
+    for (let sideIndex = 0; sideIndex < sides.length; sideIndex += 1) {
+      const side = sides[sideIndex];
+      const relationships = await elList<BasicStoreRelation>(context, user, relationshipIndices, {
+        types: [type],
+        baseData: true,
+        maxSize: ES_MAX_PAGINATION,
+        filters: {
+          mode: FilterMode.And,
+          filters: [{ key: [side === ROLE_FROM ? RELATION_TO_FILTER : RELATION_FROM_FILTER], values: ids }],
+          filterGroups: [],
+        },
+      });
+      relationships.forEach((relationship) => sideIds.add(side === ROLE_FROM ? relationship.fromId : relationship.toId));
+    }
+  }
+  return Array.from(sideIds);
+};
 
 export const adaptFilterToRegardingOfFilterKey = async (
   context: AuthContext,
@@ -163,6 +207,12 @@ export const adaptFilterToRegardingOfFilterKey = async (
       ? buildRefRelationKey('*', '*')
       : types.flatMap((t: string) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
     regardingFilters.push({ key: keys, operator: filter.operator, mode, values: ids, postFilteringTag });
+    const inferredValues = inferredParameter?.values ?? [];
+    const listingUser = noRegardingOfFilterIdsCheck ? SYSTEM_USER : user;
+    const unimpactedSideIds = await resolveUnimpactedSideIds(context, listingUser, types ?? [], ids, inferredValues);
+    if (unimpactedSideIds.length > 0) {
+      regardingFilters.push({ key: ['internal_id'], operator: filter.operator, mode, values: unimpactedSideIds, postFilteringTag });
+    }
   }
   return { newFilterGroup: { mode, filters: regardingFilters, filterGroups: [] } };
 };
