@@ -1,7 +1,7 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput, VocabularyCategory } from '../../generated/graphql';
-import { FilterMode } from '../../generated/graphql';
+import { FilterMode, OrderingMode } from '../../generated/graphql';
 import { countAllThings, type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, isVocabularyCategoryEnabled, type StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
 import { notify } from '../../database/redis';
@@ -40,8 +40,9 @@ export const findVocabularyPaginated = (context: AuthContext, user: AuthUser, op
     );
   }
   const args = {
-    orderBy: ['order', 'name'], // Default orderBy if none
     ...opts,
+    orderBy: opts.orderBy ?? ['order', 'name'], // Default orderBy if none or null
+    orderMode: opts.orderMode ?? OrderingMode.Asc, // a null orderMode would reach the engine sort and fail
   };
   return pageEntitiesConnection<BasicStoreEntityVocabulary>(context, user, [ENTITY_TYPE_VOCABULARY], {
     ...args,
