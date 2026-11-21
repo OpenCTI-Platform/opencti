@@ -1524,7 +1524,8 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_map_tile_server_dark: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
   platform_map_tile_server_light: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
   platform_openaev_url: String
-  platform_opengrc_url: String
+  platform_opencrq_url: String
+  platform_opengrc_url: String @deprecated(reason: "OpenGRC was renamed OpenCRQ. Use platform_opencrq_url, which returns the same value.")
   platform_xtmhub_url: String
   platform_login_message: String
   platform_consent_message: String
@@ -14357,7 +14358,7 @@ type Query {
     attributeName: String!
   ): AttributeConnection @auth(for: [KNOWLEDGE])
   schemaAttributeNames(elementType: [String]!) : AttributeConnection @auth(for: [KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS])
-  schemaAttributes: [AttributesMap] @auth(for: [KNOWLEDGE])
+  schemaAttributes(entityType: String): [AttributesMap] @auth(for: [KNOWLEDGE])
   statusTemplate(id: String!): StatusTemplate @auth
   statusTemplates(
     first: Int

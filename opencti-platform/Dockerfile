@@ -102,6 +102,10 @@ ENV PYTHONUNBUFFERED="1"
 ENV NODE_OPTIONS="--max_old_space_size=12288"
 ENV NODE_ENV="production"
 
+# Commit of a rolling build, reported to XTM One as <version>-dev.<sha7>; empty for a release image
+ARG BUILD_COMMIT
+ENV OPENCTI_BUILD_COMMIT="${BUILD_COMMIT}"
+
 RUN <<EOT
   set -euxo pipefail
 

@@ -23,6 +23,10 @@ inputs:
     description: "Commit sha set as org.opencontainers.image.revision label. Empty to use the workflow commit."
     required: false
     default: ""
+  build_commit:
+    description: "Commit sha the platform reports as <version>-dev.<sha7> to XTM One (BUILD_COMMIT build-arg). Set by rolling builds only; empty for a release."
+    required: false
+    default: ""
   platform:
     description: "Single target platform such as linux/arm64. Empty to build for the runner platform."
     required: false
@@ -67,7 +71,9 @@ runs:
         file: opencti-platform/Dockerfile${{ inputs.docker_image_suffix }}
         push: 'false'
         platforms: ${{ inputs.platform }}
-        build-args: ${{ inputs.tag_version != '' && format('TAG_VERSION={0}', inputs.tag_version) || '' }}
+        build-args: |
+          ${{ inputs.tag_version != '' && format('TAG_VERSION={0}', inputs.tag_version) || '' }}
+          ${{ inputs.build_commit != '' && format('BUILD_COMMIT={0}', inputs.build_commit) || '' }}
         outputs: type=docker,dest=/tmp/opencti-platform${{ inputs.docker_image_suffix }}${{ inputs.artifact_suffix }}.tar
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}

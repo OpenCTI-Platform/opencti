@@ -154,6 +154,24 @@ export const simpleLabelTooltip = (theme) => ({ seriesIndex, w }) => {
 };
 
 /**
+ * Tooltip header formatter of a line or area chart.
+ *
+ * On a category x axis (month, quarter and year intervals) ApexCharts gives the tooltip
+ * the index of the hovered point, not its date: formatting that index as a date shows
+ * the epoch (December 1969 / January 1970) on every point. The header is built from the
+ * x value of the hovered point instead, the same value the axis labels are built from.
+ *
+ * @param {function | null} [xFormatter]
+ * @returns {(value: unknown, opts?: { seriesIndex?: number, dataPointIndex?: number, w?: any }) => unknown}
+ */
+export const pointXTooltipFormatter = (xFormatter = null) => (value, opts = {}) => {
+  const { seriesIndex, dataPointIndex, w } = opts;
+  const point = w?.config?.series?.[seriesIndex]?.data?.[dataPointIndex];
+  const x = point && typeof point === 'object' && 'x' in point ? point.x : value;
+  return xFormatter ? xFormatter(x) : x;
+};
+
+/**
  * @param {Theme} theme
  * @param {boolean} isTimeSeries
  * @param {function} xFormatter
@@ -217,6 +235,7 @@ export const lineChartOptions = (
   },
   tooltip: {
     theme: theme.palette.mode,
+    ...(xFormatter && { x: { formatter: pointXTooltipFormatter(xFormatter) } }),
   },
   xaxis: {
     type: isTimeSeries ? 'datetime' : 'category',
@@ -312,6 +331,7 @@ export const areaChartOptions = (
   },
   tooltip: {
     theme: theme.palette.mode,
+    ...(xFormatter && { x: { formatter: pointXTooltipFormatter(xFormatter) } }),
   },
   fill: {
     type: 'gradient',

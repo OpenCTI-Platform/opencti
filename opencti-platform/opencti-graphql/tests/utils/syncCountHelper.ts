@@ -41,7 +41,8 @@ testCreatedCounter.identity = 63;
 testCreatedCounter.imei = 3;
 testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 7;
-testCreatedCounter.indicator = 64;
+// Includes 1 created and deleted by markingDefinition-test (OASIS TLP 2.0 RED id)
+testCreatedCounter.indicator = 65;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
@@ -153,7 +154,9 @@ testUpdatedCounter.sighting = 7; // 2 upserts in relations-deduplication-test
 testUpdatedCounter['threat-actor'] = 18;
 // Counts for:
 // - 2 updated by vocabulary-import-test (the description of an entry of the platform, edited then restored)
-testUpdatedCounter.vocabulary = 3 + 2;
+// - 32 updated by vocabulary-test parent entry behavior: HOST renamed and restored (2 + 2 x 7 subcategories parent_name),
+//   SERVER description edited and restored (2), CONTAINER_WORKLOAD renamed and restored (2 + 2 x 6 subcategories parent_name)
+testUpdatedCounter.vocabulary = 3 + 2 + 32;
 testUpdatedCounter.vulnerability = 5;
 testUpdatedCounter.iccid = 1;
 testUpdatedCounter.imei = 1;
@@ -198,7 +201,8 @@ testDeletedCounter.grouping = 2;
 // and 2 by ingestionDeduplication-domain-test
 testDeletedCounter.identity = 46;
 testDeletedCounter.incident = 6;
-testDeletedCounter.indicator = 36;
+// Includes 1 created and deleted by markingDefinition-test (OASIS TLP 2.0 RED id)
+testDeletedCounter.indicator = 37;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test

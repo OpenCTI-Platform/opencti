@@ -381,6 +381,11 @@ describe('execution failed check', () => {
     ['a Cloudflare challenge', { http_status: 403, http_status_text: 'Forbidden', cloudflare: 'Cloudflare challenge fail' }, 'Feed execution failed: HTTP 403 Forbidden (Cloudflare challenge fail)'],
     ['a network error', { error_code: 'ECONNABORTED' }, 'Feed execution failed: ECONNABORTED'],
     ['another error', { error: 'Invalid JSON feed configuration' }, 'Feed execution failed: Invalid JSON feed configuration'],
+    [
+      'a blocked internal destination',
+      { error_code: 'ERR_INTERNAL_DESTINATION_BLOCKED', error: 'CSV feed: the destination 10.0.0.1 is an internal network address' },
+      'Feed execution failed: CSV feed: the destination 10.0.0.1 is an internal network address',
+    ],
     ['no details', undefined, 'Feed execution failed'],
   ])('should describe %s in the message', (_, meta, message) => {
     expect(messageOf(meta)).toBe(message);

@@ -82,6 +82,7 @@ const xtmOneClient = {
       const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
       const httpClient = getHttpClient({
         baseURL: XTM_ONE_URL,
+        trusted: true,
         responseType: 'json',
         headers: {
           Authorization: `Bearer ${jwt}`,
@@ -103,6 +104,7 @@ const xtmOneClient = {
     try {
       const httpClient = getHttpClient({
         baseURL: XTM_ONE_URL,
+        trusted: true,
         responseType: 'json',
         headers: {
           Authorization: `Bearer ${XTM_ONE_TOKEN}`,

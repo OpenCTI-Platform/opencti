@@ -92,6 +92,63 @@ export const findPlaybooksForEntity = async (context: AuthContext, user: AuthUse
   return filteredPlaybooks;
 };
 
+// Explain why a playbook is not in the list findPlaybooksForEntity returns for an entity.
+// The checks mirror findPlaybooksForEntity in the same order, so the eligibility itself never changes:
+// this only gives the caller the actual reason instead of a generic "does not exist".
+export const PLAYBOOK_NOT_RUNNABLE_REASONS = {
+  NOT_FOUND: 'NOT_FOUND',
+  ENTERPRISE_EDITION_REQUIRED: 'ENTERPRISE_EDITION_REQUIRED',
+  ENTRY_COMPONENT_NOT_MANUAL: 'ENTRY_COMPONENT_NOT_MANUAL',
+  MANUAL_ENROLLMENT_DISABLED: 'MANUAL_ENROLLMENT_DISABLED',
+  ENTITY_NOT_FOUND: 'ENTITY_NOT_FOUND',
+  FILTER_MISMATCH: 'FILTER_MISMATCH',
+} as const;
+
+export const buildPlaybookNotRunnableError = async (context: AuthContext, user: AuthUser, id: string, entityId: string) => {
+  const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
+  const playbook = playbooks.find((p) => p.id === id);
+  if (!playbook) {
+    return FunctionalError('Playbook does not exist', { id, entityId, reason: PLAYBOOK_NOT_RUNNABLE_REASONS.NOT_FOUND });
+  }
+  const isEE = await isEnterpriseEdition(context);
+  if (!isEE) {
+    return FunctionalError(`Playbook ${playbook.name} cannot be run manually: Enterprise Edition is not enabled`, {
+      id,
+      entityId,
+      reason: PLAYBOOK_NOT_RUNNABLE_REASONS.ENTERPRISE_EDITION_REQUIRED,
+    });
+  }
+  const def = playbook.playbook_definition ? JSON.parse(playbook.playbook_definition) as ComponentDefinition : null;
+  const instance = def?.nodes.find((n) => n.id === playbook.playbook_start);
+  const componentId = instance?.component_id;
+  if (!instance || (componentId !== 'PLAYBOOK_INTERNAL_DATA_STREAM' && componentId !== 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER')) {
+    return FunctionalError(`Playbook ${playbook.name} cannot be run manually (its entry component is ${componentId ?? 'not defined'})`, {
+      id,
+      entityId,
+      reason: PLAYBOOK_NOT_RUNNABLE_REASONS.ENTRY_COMPONENT_NOT_MANUAL,
+      component: componentId ?? null,
+    });
+  }
+  const { filters, canEnrollManually } = JSON.parse(instance.configuration ?? '{}') as StreamConfiguration;
+  if (!(canEnrollManually ?? true)) {
+    return FunctionalError(`Playbook ${playbook.name} does not allow manual enrollment`, {
+      id,
+      entityId,
+      reason: PLAYBOOK_NOT_RUNNABLE_REASONS.MANUAL_ENROLLMENT_DISABLED,
+    });
+  }
+  const stixEntity = await stixLoadById(context, user, entityId);
+  if (!stixEntity) {
+    return FunctionalError('Entity does not exist', { id, entityId, reason: PLAYBOOK_NOT_RUNNABLE_REASONS.ENTITY_NOT_FOUND });
+  }
+  return FunctionalError(`Entity does not match the entry filter of playbook ${playbook.name}`, {
+    id,
+    entityId,
+    reason: PLAYBOOK_NOT_RUNNABLE_REASONS.FILTER_MISMATCH,
+    filters: filters ? JSON.parse(filters) : null,
+  });
+};
+
 const getEligiblePlaybooksForEnrollment = async (context: AuthContext) => {
   const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
   return playbooks.map(getEnrollmentEligibility).filter((e): e is NonNullable<typeof e> => e !== null);

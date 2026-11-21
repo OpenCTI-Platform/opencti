@@ -2,7 +2,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
 import LocationMiniMapTargets from '@components/common/location/LocationMiniMapTargets';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import { computeLevel } from '../../../../utils/Number';
+import { computeLogLevel } from '../../../../utils/Number';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
 import usePublicDashboardViz from '../usePublicDashboardViz';
@@ -77,7 +77,7 @@ const PublicStixRelationshipsMapComponent = ({
       if (node?.entity?.entity_type !== 'Country') return [];
       return {
         ...node.entity,
-        level: computeLevel(node.value, values[values.length - 1], values[0] + 1),
+        level: computeLogLevel(node.value, values[values.length - 1], values[0] + 1),
       };
     });
 

@@ -19,6 +19,7 @@ import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { platformStart } from './boot';
 import { ENABLED_TRACING, logApp } from './config/conf';
 import { isNotEmptyField } from './database/utils';
+import { sanitizeExporterUrl } from './telemetry/otel-diag-logger';
 
 // -- Apply telemetry
 // ------- Tracing
@@ -44,6 +45,12 @@ if (ENABLED_TRACING) {
       ],
     });
     trace.setGlobalTracerProvider(provider);
+    if (isOtlpExporterSetUp) {
+      logApp.info('[OPENCTI] [TELEMETRY] OTLP tracing exporter initialized', { url: sanitizeExporterUrl(otlpUri) });
+    }
+    if (isZipKinExporterSetUp) {
+      logApp.info('[OPENCTI] [TELEMETRY] Zipkin tracing exporter initialized', { url: sanitizeExporterUrl(zipKinUri) });
+    }
     const contextManager = new AsyncLocalStorageContextManager();
     contextManager.enable();
     context.setGlobalContextManager(contextManager);
