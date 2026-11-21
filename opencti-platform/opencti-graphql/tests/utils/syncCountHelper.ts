@@ -109,7 +109,8 @@ testUpdatedCounter.relationship = 9;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
 // 1 by ingestionDeduplication-domain-test (an edit in the platform)
-testUpdatedCounter.malware = 24; // 1 org sharing by the request access workflow tests
+// 5 by pir-test (pir score change events: flags, rescores and unflag of one malware across two PIRs)
+testUpdatedCounter.malware = 29; // 1 org sharing by the request access workflow tests
 testUpdatedCounter.file = 27;
 testUpdatedCounter['intrusion-set'] = 18;
 testUpdatedCounter['data-component'] = 7;
