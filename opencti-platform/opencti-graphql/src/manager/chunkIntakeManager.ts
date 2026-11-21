@@ -66,7 +66,7 @@ import { rehydrateFiles, removeStagedFiles, stageFiles } from '../intake/intake-
 import { intakeEnvelopeOfMessage, type IntakeEnvelope } from '../intake/intake-envelope';
 import { reportWorkProgress } from '../domain/work';
 import { chunkWorkProgress, type ChunkWorkFields } from './chunkIntakeWork';
-import { isTransitoryError } from '../database/engine';
+import { getDenormBuffer, isTransitoryError } from '../database/engine';
 import { wait } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
 
@@ -1135,6 +1135,8 @@ const chunkIntakeInitializer = async () => {
   // (2026-09-24). Consume only once the loop is ready.
   if (isSequencerEnabled()) {
     await startSequencerLoop();
+    // task 0040 append buffer: flushes while this node holds its lease (null when the knob is off)
+    getDenormBuffer()?.start();
   }
   let consumer: ChunkConsumer;
   if (CHUNK_INTAKE_SOURCE === 'push_queues') {
@@ -1162,6 +1164,7 @@ const chunkIntakeInitializer = async () => {
       stopPreLoopTicker();
       stopStallWatchdog();
       await consumer.close();
+      await getDenormBuffer()?.stop();
       logApp.info('[OPENCTI-MODULE] Chunk intake consumer closed');
     },
   };

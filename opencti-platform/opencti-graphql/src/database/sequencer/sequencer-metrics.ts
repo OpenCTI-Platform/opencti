@@ -15,6 +15,9 @@ export type MapEvent = 'hit' | 'miss' | 'evict' | 'invalidate' | 'absent' | 'wri
   | 'noop_tagged' | 'noop_tag_miss'
   | 'dedup_before_lock' | 'dedup_stamp_changed' | 'dedup_stamps_outlived' | 'dedup_research' | 'partial_acquire' | 'partial_carried_groups';
 
+export type DenormBufferEvent = 'buffered_ids' | 'flushed_ids' | 'flushed_targets' | 'flushes' | 'replayed_targets' | 'fallback_ids'
+  | 'flush_first_targets' | 'flush_failed';
+
 class SequencerMetrics {
   // Hot-path counters (one add per intent, per identity map lookup): plain totals, exported at
   // collection time by observable counters under the former names, labels and descriptions
@@ -41,6 +44,10 @@ class SequencerMetrics {
   private queueWaitSeconds: Histogram | null = null;
 
   private esOps: Counter | null = null;
+
+  private denormBufferEvents: Counter | null = null;
+
+  private denormBufferLagGauge: Gauge | null = null;
 
   private sidewritesGrouped: Counter | null = null;
 
@@ -153,6 +160,14 @@ class SequencerMetrics {
     this.esOps = meter.createCounter('opencti_sequencer_es_ops_total', {
       valueType: ValueType.INT,
       description: 'ES operations issued by the sequencer, by op (search, bulk_docs, bulk_side, refresh)',
+    });
+    this.denormBufferEvents = meter.createCounter('opencti_sequencer_denorm_buffer_total', {
+      valueType: ValueType.INT,
+      description: 'Append buffer (task 0040): ids buffered, flushed, replayed, written directly over the cap, targets flushed before a removal',
+    });
+    this.denormBufferLagGauge = meter.createGauge('opencti_sequencer_denorm_buffer_lag_seconds', {
+      valueType: ValueType.DOUBLE,
+      description: 'Age of the oldest buffered append at the last flush tick (the references panel lag)',
     });
     this.sidewritesGrouped = meter.createCounter('opencti_sequencer_sidewrites_grouped_total', {
       valueType: ValueType.INT,
@@ -279,6 +294,14 @@ class SequencerMetrics {
 
   esOp(op: 'search' | 'bulk_docs' | 'bulk_side' | 'refresh' | 'mget', count = 1) {
     this.esOps?.add(count, { op });
+  }
+
+  denormBuffer(event: DenormBufferEvent, count = 1) {
+    this.denormBufferEvents?.add(count, { event });
+  }
+
+  denormBufferLag(seconds: number) {
+    this.denormBufferLagGauge?.record(seconds);
   }
 
   sidewriteGrouped(count = 1) {

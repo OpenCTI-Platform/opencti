@@ -49,6 +49,13 @@ export interface SequencerConfig {
   // noop_tag_ceiling_ratio x max_batch_size intents (default 5: ratio sweep 5 / 10 / 20, same tail gain, cost up with it)
   noopTagCaps: boolean;
   noopTagCeilingRatio: number;
+  // task 0040 append buffer (work-kb opencti-denormalization-append-buffer-design): the "to" side appends of these
+  // relationship types are kept in Redis at batch commit and written once per flush period per document
+  denormBuffer: boolean;
+  denormBufferRelations: string[];
+  denormFlushPeriodMs: number;
+  denormFlushTargetMaxIds: number;
+  denormBufferMaxIds: number;
   pendingRefExpiryS: number;
   // s9.8.2 bounded member wait: plan passes spent waiting for a declared in-bundle member
   // before the ref is declared dead. With strip_reconcile on, a dead strip is recorded and
@@ -143,6 +150,14 @@ const readConfig = (): SequencerConfig => {
     // 600-intent cap held ~3 objects and each batch rewrote the same ~90 big reference documents
     noopTagCaps: booleanConf('app:ingestion_sequencer:noop_tag_caps', false),
     noopTagCeilingRatio: Math.max(1, Number(conf.get('app:ingestion_sequencer:noop_tag_ceiling_ratio') ?? 5)),
+    // Off until measured (task 0040): a misp reference collects 26k citing ids, each append re-indexes its 1 MB
+    // document; the references panel of a new object lags by up to the flush period (user decision 2026-11-20)
+    denormBuffer: booleanConf('app:ingestion_sequencer:denorm_buffer', false),
+    denormBufferRelations: String(conf.get('app:ingestion_sequencer:denorm_buffer_relations') ?? 'external-reference')
+      .split(',').map((relation) => relation.trim()).filter((relation) => relation.length > 0),
+    denormFlushPeriodMs: Math.max(100, Number(conf.get('app:ingestion_sequencer:denorm_flush_period_ms') ?? 10000)),
+    denormFlushTargetMaxIds: Math.max(1, Number(conf.get('app:ingestion_sequencer:denorm_flush_target_max_ids') ?? 5000)),
+    denormBufferMaxIds: Math.max(1, Number(conf.get('app:ingestion_sequencer:denorm_buffer_max_ids') ?? 1000000)),
     pendingRefExpiryS: Number(conf.get('app:ingestion_sequencer:pending_ref_expiry_s') ?? 604800),
     memberWaitLimit: Number(conf.get('app:ingestion_sequencer:member_wait_limit') ?? 2),
     // B10 (2026-09-16): a deferral waiting on a queued producer is re-admitted when the

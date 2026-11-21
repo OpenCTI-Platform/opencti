@@ -19,6 +19,7 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import type { DenormBufferStore, DenormTarget } from './sequencer/denorm-buffer';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -665,6 +666,167 @@ export const redisQueueLeaseStore = {
   ordered: async (queues: string[]) => {
     const values = await getClientBase().mget(queues.map(buildOrderedQueueKey));
     return new Set(queues.filter((_, i) => values[i] !== null));
+  },
+};
+
+// task 0040 append buffer (sequencer/denorm-buffer.ts), in the {dn} slot. The scripts build their keys from the
+// namespace of KEYS[1] ('{dn}:total' once prefixed by ioredis), all in the same slot.
+const DN_TOTAL_KEY = '{dn}:total';
+const DN_PENDING_KEY = '{dn}:pending';
+const DN_INFLIGHT_KEY = '{dn}:inflight';
+const DN_LEASE_KEY = '{dn}:lease';
+const DN_PREFIX = `local P = string.sub(KEYS[1], 1, #KEYS[1] - ${DN_TOTAL_KEY.length})`;
+// a document over the per-document cap is due at once (score 1, below any real time)
+const DN_URGENT_SCORE = 1;
+// KEYS: total, pending; ARGV: max ids, per-document max ids, now ms, JSON targets. 0 = over the global cap, nothing added
+const DN_ADD_SCRIPT = `${DN_PREFIX}
+local total = tonumber(redis.call('get', KEYS[1]) or '0')
+if total >= tonumber(ARGV[1]) then return 0 end
+local added = 0
+for _, t in ipairs(cjson.decode(ARGV[4])) do
+  local meta = P .. '{dn}:meta:' .. t.id
+  redis.call('hset', meta, 'index', t.index, 'docId', t.docId, 'type', t.entityType)
+  local current = redis.call('hget', meta, 'updatedAt')
+  if (not current) or current < t.updatedAt then redis.call('hset', meta, 'updatedAt', t.updatedAt) end
+  local size = 0
+  for _, g in ipairs(t.groups) do
+    local name = g.relation .. '|' .. g.field
+    redis.call('sadd', P .. '{dn}:groups:' .. t.id, name)
+    local key = P .. '{dn}:add:' .. t.id .. ':' .. name
+    for i = 1, #g.ids, 1000 do
+      added = added + redis.call('sadd', key, unpack(g.ids, i, math.min(i + 999, #g.ids)))
+    end
+    size = size + redis.call('scard', key)
+  end
+  if size >= tonumber(ARGV[2]) then
+    redis.call('zadd', KEYS[2], ${DN_URGENT_SCORE}, t.id)
+  else
+    redis.call('zadd', KEYS[2], 'NX', ARGV[3], t.id)
+  end
+end
+redis.call('incrby', KEYS[1], added)
+return 1
+`;
+// KEYS: total, pending, inflight; ARGV: flush id, now ms, document ids. Moves their appends into the flush.
+const DN_TAKE_SCRIPT = `${DN_PREFIX}
+local f = ARGV[1]
+local out = {}
+local taken = 0
+for i = 3, #ARGV do
+  local t = ARGV[i]
+  redis.call('zrem', KEYS[2], t)
+  local groupsKey = P .. '{dn}:groups:' .. t
+  local metaKey = P .. '{dn}:meta:' .. t
+  if redis.call('exists', groupsKey) == 1 and redis.call('exists', metaKey) == 1 then
+    local meta = redis.call('hgetall', metaKey)
+    local groups = {}
+    for _, name in ipairs(redis.call('smembers', groupsKey)) do
+      local key = P .. '{dn}:add:' .. t .. ':' .. name
+      if redis.call('exists', key) == 1 then
+        local ids = redis.call('smembers', key)
+        taken = taken + #ids
+        redis.call('rename', key, P .. '{dn}:fladd:' .. f .. ':' .. t .. ':' .. name)
+        table.insert(groups, { name, ids })
+      end
+    end
+    redis.call('rename', groupsKey, P .. '{dn}:flgroups:' .. f .. ':' .. t)
+    redis.call('rename', metaKey, P .. '{dn}:flmeta:' .. f .. ':' .. t)
+    redis.call('sadd', P .. '{dn}:fl:' .. f, t)
+    table.insert(out, { t, meta, groups })
+  end
+end
+if #out > 0 then redis.call('zadd', KEYS[3], ARGV[2], f) end
+redis.call('decrby', KEYS[1], taken)
+return out
+`;
+// KEYS: total, inflight; ARGV: flush id
+const DN_DONE_SCRIPT = `${DN_PREFIX}
+local f = ARGV[1]
+local flushKey = P .. '{dn}:fl:' .. f
+for _, t in ipairs(redis.call('smembers', flushKey)) do
+  local groupsKey = P .. '{dn}:flgroups:' .. f .. ':' .. t
+  for _, name in ipairs(redis.call('smembers', groupsKey)) do
+    redis.call('del', P .. '{dn}:fladd:' .. f .. ':' .. t .. ':' .. name)
+  end
+  redis.call('del', groupsKey, P .. '{dn}:flmeta:' .. f .. ':' .. t)
+end
+redis.call('del', flushKey)
+redis.call('zrem', KEYS[2], f)
+return 1
+`;
+// KEYS: total, inflight; ARGV: taken before ms. The in-flight flushes with their appends.
+const DN_INFLIGHT_SCRIPT = `${DN_PREFIX}
+local out = {}
+for _, f in ipairs(redis.call('zrangebyscore', KEYS[2], '-inf', ARGV[1])) do
+  local targets = {}
+  for _, t in ipairs(redis.call('smembers', P .. '{dn}:fl:' .. f)) do
+    local groups = {}
+    for _, name in ipairs(redis.call('smembers', P .. '{dn}:flgroups:' .. f .. ':' .. t)) do
+      table.insert(groups, { name, redis.call('smembers', P .. '{dn}:fladd:' .. f .. ':' .. t .. ':' .. name) })
+    end
+    table.insert(targets, { t, redis.call('hgetall', P .. '{dn}:flmeta:' .. f .. ':' .. t), groups })
+  end
+  table.insert(out, { f, targets })
+end
+return out
+`;
+// KEYS: pending; ARGV: document ids. The ones with pending appends.
+const DN_PENDING_SCRIPT = `
+local out = {}
+for i = 1, #ARGV do
+  if redis.call('zscore', KEYS[1], ARGV[i]) then table.insert(out, ARGV[i]) end
+end
+return out
+`;
+type DnRawTarget = [string, string[], Array<[string, string[]]>];
+const parseDenormTarget = ([id, metaFlat, groups]: DnRawTarget): DenormTarget => {
+  const meta: Record<string, string> = {};
+  for (let i = 0; i < metaFlat.length; i += 2) meta[metaFlat[i]] = metaFlat[i + 1];
+  return {
+    id,
+    index: meta.index,
+    docId: meta.docId,
+    entityType: meta.type,
+    updatedAt: meta.updatedAt,
+    groups: groups.map(([name, ids]) => {
+      const [relation, field] = name.split('|');
+      return { relation, field, ids };
+    }),
+  };
+};
+export const redisDenormBufferStore: DenormBufferStore = {
+  add: async (targets, maxIds, targetMaxIds, nowMs) => {
+    const added = await getClientBase().eval(DN_ADD_SCRIPT, 2, DN_TOTAL_KEY, DN_PENDING_KEY, String(maxIds), String(targetMaxIds), String(nowMs), JSON.stringify(targets));
+    return added === 1;
+  },
+  due: async (beforeMs, limit) => {
+    return getClientBase().zrangebyscore(DN_PENDING_KEY, '-inf', beforeMs, 'LIMIT', 0, limit);
+  },
+  pending: async (ids) => {
+    if (ids.length === 0) return [];
+    return await getClientBase().eval(DN_PENDING_SCRIPT, 1, DN_PENDING_KEY, ...ids) as string[];
+  },
+  oldestPendingMs: async () => {
+    const oldest = await getClientBase().zrangebyscore(DN_PENDING_KEY, DN_URGENT_SCORE + 1, '+inf', 'WITHSCORES', 'LIMIT', 0, 1);
+    return oldest.length === 2 ? Number(oldest[1]) : null;
+  },
+  take: async (ids, flushId, nowMs) => {
+    if (ids.length === 0) return [];
+    const raw = await getClientBase().eval(DN_TAKE_SCRIPT, 3, DN_TOTAL_KEY, DN_PENDING_KEY, DN_INFLIGHT_KEY, flushId, String(nowMs), ...ids) as DnRawTarget[];
+    return raw.map(parseDenormTarget);
+  },
+  done: async (flushId) => {
+    await getClientBase().eval(DN_DONE_SCRIPT, 2, DN_TOTAL_KEY, DN_INFLIGHT_KEY, flushId);
+  },
+  inflight: async (beforeMs) => {
+    const raw = await getClientBase().eval(DN_INFLIGHT_SCRIPT, 2, DN_TOTAL_KEY, DN_INFLIGHT_KEY, String(beforeMs)) as Array<[string, DnRawTarget[]]>;
+    return raw.map(([flushId, targets]) => ({ flushId, targets: targets.map(parseDenormTarget) }));
+  },
+  acquireLease: async (token, ttlMs) => {
+    return (await getClientBase().eval(QUEUE_LEASE_RENEW_SCRIPT, 1, DN_LEASE_KEY, token, String(ttlMs))) === 1;
+  },
+  releaseLease: async (token) => {
+    await getClientBase().eval(QUEUE_LEASE_RELEASE_SCRIPT, 1, DN_LEASE_KEY, token);
   },
 };
 
