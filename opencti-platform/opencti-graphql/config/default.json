@@ -125,6 +125,13 @@
       "partial_acquire": false,
       "noop_memo": false,
       "noop_memo_size": 50000,
+      "noop_tag_caps": false,
+      "noop_tag_ceiling_ratio": 5,
+      "denorm_buffer": true,
+      "denorm_buffer_relations": "external-reference",
+      "denorm_flush_period_ms": 15000,
+      "denorm_flush_target_max_ids": 5000,
+      "denorm_buffer_max_ids": 1000000,
       "origin": "worker"
     },
     "locked_account_statuses": {

@@ -150,8 +150,9 @@ const readConfig = (): SequencerConfig => {
     // 600-intent cap held ~3 objects and each batch rewrote the same ~90 big reference documents
     noopTagCaps: booleanConf('app:ingestion_sequencer:noop_tag_caps', false),
     noopTagCeilingRatio: Math.max(1, Number(conf.get('app:ingestion_sequencer:noop_tag_ceiling_ratio') ?? 5)),
-    // Off until measured (task 0040): a misp reference collects 26k citing ids, each append re-indexes its 1 MB
-    // document; the references panel of a new object lags by up to the flush period (user decision 2026-11-20)
+    // On (task 0040 misp A/B 2026-11-21: drained at 1,167 s vs cut off at 1,800 s, meta index rewrites -90%): a misp
+    // reference collects 26k citing ids, each append re-indexed its 1 MB document; the references panel of a new
+    // object lags by up to 1.5 x the flush period (due at the period, checked every half period; user decision 2026-11-20)
     denormBuffer: booleanConf('app:ingestion_sequencer:denorm_buffer', true),
     denormBufferRelations: String(conf.get('app:ingestion_sequencer:denorm_buffer_relations') ?? 'external-reference')
       .split(',').map((relation) => relation.trim()).filter((relation) => relation.length > 0),
