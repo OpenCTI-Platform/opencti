@@ -446,7 +446,6 @@ export const ATTRIBUTE_DESCRIPTIONS_BY_TYPE: Record<string, Record<string, strin
     languages: 'Languages supported by the software, as ISO 639-2 codes (e.g. eng, fra).',
     vendor: 'Vendor of the software (e.g. Microsoft).',
     version: 'Version of the software (e.g. 2.4.58).',
-    x_opencti_purl: 'Package URL of the software (e.g. pkg:deb/debian/nginx@1.22.1-9 or pkg:docker/library/nginx@1.27.1).',
   },
   [ENTITY_USER_ACCOUNT]: {
     user_id: 'Identifier of the account in its system (e.g. a UID such as 1001, or a Windows SID).',
