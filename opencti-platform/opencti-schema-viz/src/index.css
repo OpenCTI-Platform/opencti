@@ -1,0 +1,34 @@
+@import './shared/theme/appTokens.css';
+@import './shared/ui/row.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  background: var(--sv-surface-canvas);
+  color: var(--sv-text);
+  font-family: var(--font-content-base);
+  font-size: var(--text-content-base);
+  line-height: var(--leading-content-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button { font-family: inherit; }
+
+/* Text renders the typography; these only carry the colour roles it leaves to the host. */
+.sv-muted { color: var(--sv-text-muted); }
+.sv-faint { color: var(--sv-text-faint); }
+.sv-mono { font-family: var(--font-content-code); }

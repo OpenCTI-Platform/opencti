@@ -1,0 +1,70 @@
+.sv-canvas {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--sv-surface-canvas);
+}
+
+/* Focusing an element inside the flow would otherwise scroll it, shifting panels and the viewport.
+   !important: React Flow sets overflow: hidden inline. */
+.sv-canvas .react-flow { overflow: clip !important; }
+.sv-canvas .react-flow__background-pattern.dots { fill: var(--sv-grid-dot); }
+
+.sv-canvas-toolbar,
+.sv-zoom-controls,
+.sv-status-bar {
+  display: flex;
+  align-items: center;
+  box-shadow: var(--sv-shadow);
+}
+
+.sv-canvas-toolbar { gap: calc(var(--spacing) * 4); padding-left: calc(var(--spacing) * 3); }
+
+.sv-canvas-toolbar__divider {
+  align-self: stretch;
+  width: 1px;
+  background: var(--sv-border);
+}
+
+.sv-zoom-controls { flex-direction: column; gap: calc(var(--spacing) * 1); }
+.sv-status-bar { gap: calc(var(--spacing) * 4); padding-inline: calc(var(--spacing) * 4); }
+
+.sv-minimap.react-flow__minimap {
+  border: 1px solid var(--sv-border);
+  border-radius: var(--radius-sm);
+  background: var(--sv-surface-panel);
+  overflow: hidden;
+}
+
+.sv-minimap .react-flow__minimap-mask { fill: var(--sv-overlay); }
+.sv-minimap .react-flow__minimap-node { stroke: none; fill: var(--sv-border-strong); }
+.sv-minimap .sv-tone-analyses { fill: var(--color-entities-analyses); }
+.sv-minimap .sv-tone-cases { fill: var(--color-entities-cases); }
+.sv-minimap .sv-tone-events { fill: var(--color-entities-events); }
+.sv-minimap .sv-tone-observations { fill: var(--color-entities-observations); }
+.sv-minimap .sv-tone-all-threats { fill: var(--color-entities-all-threats); }
+.sv-minimap .sv-tone-arsenal { fill: var(--color-entities-arsenal); }
+.sv-minimap .sv-tone-techniques { fill: var(--color-entities-techniques); }
+.sv-minimap .sv-tone-victimology { fill: var(--color-entities-victimology); }
+.sv-minimap .sv-tone-location { fill: var(--color-entities-location); }
+.sv-minimap .sv-tone-category-sdo { fill: var(--icon-default); }
+.sv-minimap .sv-tone-category-sro,
+.sv-minimap .sv-tone-category-meta { fill: var(--icon-subtle); }
+.sv-minimap .sv-tone-category-internal,
+.sv-minimap .sv-tone-category-abstract { fill: var(--icon-disabled); }
+
+.sv-canvas-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.sv-canvas-empty > * { pointer-events: all; }
+.sv-canvas-empty p { margin: 0; }
+
+.sv-path-banner { box-shadow: var(--sv-shadow); }
+
+.sv-path-banner__actions { display: flex; gap: calc(var(--spacing) * 2); }

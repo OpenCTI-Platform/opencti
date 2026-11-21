@@ -1,0 +1,51 @@
+.sv-edge-markers {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.react-flow__edge-path.sv-edge-inheritance {
+  stroke: var(--sv-edge-inheritance);
+  stroke-width: 1.4;
+  stroke-dasharray: 5 4;
+}
+
+.react-flow__edge-path.sv-edge-inheritance.is-indirect { stroke-dasharray: 2 4; }
+
+.react-flow__edge-path.sv-edge-relation {
+  stroke-width: 1.5;
+  transition: stroke 120ms, opacity 120ms;
+}
+
+.react-flow__edge-path.sv-edge-relation.is-relationship { stroke: var(--sv-edge-relationship); }
+.react-flow__edge-path.sv-edge-relation.is-ref { stroke: var(--sv-edge-ref); stroke-dasharray: 6 3; }
+.react-flow__edge-path.is-highlighted { stroke: var(--sv-edge-highlight) !important; stroke-width: 2.2; }
+.react-flow__edge-path.is-dimmed { opacity: 0.12; }
+
+/* Edge labels sit on the canvas itself; the design system has no graph label component. */
+.sv-edge-label {
+  position: absolute;
+  pointer-events: all;
+  max-width: calc(var(--spacing) * 45);
+  padding: 0 calc(var(--spacing) * 2);
+  border: 1px solid var(--sv-border);
+  border-radius: var(--radius-full);
+  background: var(--sv-surface-canvas);
+  color: var(--sv-text-muted);
+  font-family: var(--font-content-code);
+  font-size: var(--text-content-caption);
+  line-height: var(--leading-content-caption);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+}
+
+.sv-edge-label.is-ref { color: var(--sv-edge-ref); }
+
+.sv-edge-label.is-highlighted {
+  border-color: var(--sv-accent);
+  color: var(--sv-accent);
+  z-index: 1;
+}

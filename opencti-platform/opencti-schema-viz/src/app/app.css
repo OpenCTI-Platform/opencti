@@ -1,0 +1,36 @@
+.sv-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+}
+
+.sv-header__brand { color: var(--sv-text); }
+
+/* The content row: everything under the Header, whose height the Header publishes. */
+.sv-app {
+  position: fixed;
+  top: var(--fds-header-height, calc(var(--spacing) * 17));
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  min-width: 0;
+}
+
+.sv-app__canvas {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.sv-app__state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--spacing) * 3);
+  padding: calc(var(--spacing) * 6);
+}

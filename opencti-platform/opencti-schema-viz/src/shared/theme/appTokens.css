@@ -1,0 +1,28 @@
+/*
+ * Roles the schema viz needs, each pointing at a @filigran/design-system token.
+ * No value is defined here: light and dark come from the library's .light / .dark classes.
+ */
+:root {
+  --sv-surface-canvas: var(--bg-elevation-default-layer-0);
+  --sv-surface-panel: var(--bg-elevation-default-layer-1);
+  --sv-surface-raised: var(--bg-elevation-default-layer-2);
+  --sv-surface-hover: var(--bg-elevation-hover-layer-1);
+  --sv-surface-selected: var(--color-filigran-brand-primary-transparency-10);
+  --sv-border: var(--border-elevation-subtle-layer-1);
+  --sv-border-strong: var(--border-elevation-default-layer-1);
+  --sv-text: var(--text-default-primary);
+  --sv-text-muted: var(--text-default-secondary);
+  --sv-text-faint: var(--text-default-disabled);
+  --sv-accent: var(--color-filigran-brand-primary);
+  --sv-overlay: var(--bg-elevation-default-layer-0-transparency-70);
+  --sv-shadow: var(--shadow-global-shadow);
+
+  --sv-grid-dot: var(--border-elevation-subtle-layer-0);
+  --sv-edge-inheritance: var(--border-elevation-subtle-layer-0);
+  --sv-edge-relationship: var(--border-elevation-default-layer-0);
+  --sv-edge-ref: var(--color-feedback-warning-primary);
+  --sv-edge-highlight: var(--color-filigran-brand-primary);
+
+  --sv-sidebar-width: var(--container-xs);
+  --sv-inspector-width: var(--container-md);
+}

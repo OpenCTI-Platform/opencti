@@ -1,0 +1,18 @@
+.sv-option {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing) * 2);
+  min-width: 0;
+  width: 100%;
+}
+
+.sv-option__detail {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sv-search-trigger { justify-content: flex-start; }
+.sv-search-trigger > :last-child { margin-left: auto; }

@@ -1,0 +1,29 @@
+/* A selectable list row: the design system ships no list component yet (see README, design system gaps). */
+.sv-row {
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+}
+
+.sv-row:hover { background: var(--sv-surface-hover); }
+.sv-row.is-selected { background: var(--sv-surface-selected); }
+
+.sv-row__main {
+  flex: 1;
+  min-width: 0;
+  padding: calc(var(--spacing) * 1) calc(var(--spacing) * 2);
+  border: 0;
+  background: transparent;
+  color: var(--sv-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.sv-row__main:focus-visible { outline: 2px solid var(--sv-accent); outline-offset: -2px; border-radius: var(--radius-sm); }
+
+.sv-row__label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

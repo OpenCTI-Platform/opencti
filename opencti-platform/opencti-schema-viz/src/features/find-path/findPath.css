@@ -1,0 +1,67 @@
+.sv-find-path {
+  position: absolute;
+  top: calc(var(--spacing) * 2);
+  right: calc(var(--spacing) * 4);
+  z-index: 50;
+  width: var(--container-sm);
+  max-height: calc(100% - var(--spacing) * 4);
+  overflow-y: auto;
+  box-shadow: var(--sv-shadow);
+}
+
+.sv-find-path__body {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing) * 4);
+}
+
+.sv-find-path__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sv-find-path__header h2 { margin: 0; }
+
+.sv-find-path__endpoints {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--spacing) * 1);
+}
+
+.sv-find-path__endpoints > :not(button) { align-self: stretch; }
+
+.sv-find-path__options {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing) * 2);
+}
+
+.sv-find-path__result {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--spacing) * 3);
+}
+
+.sv-find-path__result p { margin: 0; }
+
+.sv-path-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sv-path-steps li { display: flex; flex-direction: column; align-items: flex-start; }
+
+.sv-path-steps__relation {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing) * 2);
+  margin: calc(var(--spacing) * 1) 0 calc(var(--spacing) * 1) calc(var(--spacing) * 3);
+  padding: calc(var(--spacing) * 1) 0 calc(var(--spacing) * 1) calc(var(--spacing) * 3);
+  border-left: 2px solid var(--sv-border-strong);
+}
