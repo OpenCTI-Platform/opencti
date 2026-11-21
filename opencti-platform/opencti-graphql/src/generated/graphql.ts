@@ -32520,6 +32520,7 @@ export type Software = BasicObject & StixCoreObject & StixCyberObservable & Stix
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_product?: Maybe<Scalars['String']['output']>;
+  x_opencti_purl?: Maybe<Scalars['String']['output']>;
   x_opencti_score?: Maybe<Scalars['Int']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
@@ -32689,6 +32690,7 @@ export type SoftwareAddInput = {
   vendor?: InputMaybe<Scalars['String']['input']>;
   version?: InputMaybe<Scalars['String']['input']>;
   x_opencti_product?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_purl?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SoftwareConnection = {
@@ -39478,6 +39480,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   x_opencti_cvss_vector_string?: Maybe<Scalars['String']['output']>;
   x_opencti_cwe?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   x_opencti_epss_percentile?: Maybe<Scalars['Float']['output']>;
+  x_opencti_affected_products?: Maybe<Array<VulnerabilityAffectedProduct>>;
   x_opencti_epss_score?: Maybe<Scalars['Float']['output']>;
   x_opencti_first_seen_active?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
@@ -39730,6 +39733,7 @@ export type VulnerabilityAddInput = {
   x_opencti_cvss_vector_string?: InputMaybe<Scalars['String']['input']>;
   x_opencti_cwe?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_epss_percentile?: InputMaybe<Scalars['Float']['input']>;
+  x_opencti_affected_products?: InputMaybe<Array<VulnerabilityAffectedProductInput>>;
   x_opencti_epss_score?: InputMaybe<Scalars['Float']['input']>;
   x_opencti_first_seen_active?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
@@ -39739,6 +39743,33 @@ export type VulnerabilityAddInput = {
   x_opencti_ssvc_technical_impact?: InputMaybe<SsvcTechnicalImpact>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type VulnerabilityAffectedProduct = {
+  __typename?: 'VulnerabilityAffectedProduct';
+  cpe?: Maybe<Scalars['String']['output']>;
+  fixed_version?: Maybe<Scalars['String']['output']>;
+  product?: Maybe<Scalars['String']['output']>;
+  purl?: Maybe<Scalars['String']['output']>;
+  vendor?: Maybe<Scalars['String']['output']>;
+  version_end?: Maybe<Scalars['String']['output']>;
+  version_end_inclusive?: Maybe<Scalars['Boolean']['output']>;
+  version_scheme?: Maybe<Scalars['String']['output']>;
+  version_start?: Maybe<Scalars['String']['output']>;
+  version_start_inclusive?: Maybe<Scalars['Boolean']['output']>;
+};
+
+export type VulnerabilityAffectedProductInput = {
+  cpe?: InputMaybe<Scalars['String']['input']>;
+  fixed_version?: InputMaybe<Scalars['String']['input']>;
+  product?: InputMaybe<Scalars['String']['input']>;
+  purl?: InputMaybe<Scalars['String']['input']>;
+  vendor?: InputMaybe<Scalars['String']['input']>;
+  version_end?: InputMaybe<Scalars['String']['input']>;
+  version_end_inclusive?: InputMaybe<Scalars['Boolean']['input']>;
+  version_scheme?: InputMaybe<Scalars['String']['input']>;
+  version_start?: InputMaybe<Scalars['String']['input']>;
+  version_start_inclusive?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type VulnerabilityConnection = {
@@ -43082,6 +43113,8 @@ export type ResolversTypes = ResolversObject<{
   VulnerabilitiesOrdering: VulnerabilitiesOrdering;
   Vulnerability: ResolverTypeWrapper<BasicStoreEntityVulnerability>;
   VulnerabilityAddInput: VulnerabilityAddInput;
+  VulnerabilityAffectedProduct: ResolverTypeWrapper<VulnerabilityAffectedProduct>;
+  VulnerabilityAffectedProductInput: VulnerabilityAffectedProductInput;
   VulnerabilityConnection: ResolverTypeWrapper<Omit<VulnerabilityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['VulnerabilityEdge']>>> }>;
   VulnerabilityCoverage: ResolverTypeWrapper<CoveredEntity>;
   VulnerabilityCoverages: ResolverTypeWrapper<Omit<VulnerabilityCoverages, 'entities'> & { entities: Array<ResolversTypes['VulnerabilityCoverage']> }>;
@@ -44168,6 +44201,8 @@ export type ResolversParentTypes = ResolversObject<{
   VocabularyFieldDefinition: VocabularyFieldDefinition;
   Vulnerability: BasicStoreEntityVulnerability;
   VulnerabilityAddInput: VulnerabilityAddInput;
+  VulnerabilityAffectedProduct: VulnerabilityAffectedProduct;
+  VulnerabilityAffectedProductInput: VulnerabilityAffectedProductInput;
   VulnerabilityConnection: Omit<VulnerabilityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['VulnerabilityEdge']>>> };
   VulnerabilityCoverage: CoveredEntity;
   VulnerabilityCoverages: Omit<VulnerabilityCoverages, 'entities'> & { entities: Array<ResolversParentTypes['VulnerabilityCoverage']> };
@@ -54057,6 +54092,7 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_product?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_purl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -56338,6 +56374,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   x_opencti_cvss_vector_string?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_cwe?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_opencti_epss_percentile?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  x_opencti_affected_products?: Resolver<Maybe<Array<ResolversTypes['VulnerabilityAffectedProduct']>>, ParentType, ContextType>;
   x_opencti_epss_score?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   x_opencti_first_seen_active?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -56348,6 +56385,20 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   x_opencti_ssvc_exploitation?: Resolver<Maybe<ResolversTypes['SsvcExploitation']>, ParentType, ContextType>;
   x_opencti_ssvc_technical_impact?: Resolver<Maybe<ResolversTypes['SsvcTechnicalImpact']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type VulnerabilityAffectedProductResolvers<ContextType = any, ParentType extends ResolversParentTypes['VulnerabilityAffectedProduct'] = ResolversParentTypes['VulnerabilityAffectedProduct']> = ResolversObject<{
+  cpe?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  fixed_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  product?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  purl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  vendor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  version_end?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  version_end_inclusive?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  version_scheme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  version_start?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  version_start_inclusive?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -57635,6 +57686,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   VocabularyEdge?: VocabularyEdgeResolvers<ContextType>;
   VocabularyFieldDefinition?: VocabularyFieldDefinitionResolvers<ContextType>;
   Vulnerability?: VulnerabilityResolvers<ContextType>;
+  VulnerabilityAffectedProduct?: VulnerabilityAffectedProductResolvers<ContextType>;
   VulnerabilityConnection?: VulnerabilityConnectionResolvers<ContextType>;
   VulnerabilityCoverage?: VulnerabilityCoverageResolvers<ContextType>;
   VulnerabilityCoverages?: VulnerabilityCoveragesResolvers<ContextType>;
