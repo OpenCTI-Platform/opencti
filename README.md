@@ -10,192 +10,72 @@
   <a href="https://community.filigran.io"><img src="https://img.shields.io/badge/community-slack-001BDA?style=flat-square&labelColor=0A0C1C&logo=slack&logoColor=white" alt="community"></a>
 </p>
 
-<p align="center"><b>The open source threat intelligence platform at the heart of Continuous Threat Exposure Management.</b></p>
+> **Community workshop:** Join us as Taylor Walton (of SOCFortress) walks through his working SOC stack: OpenCTI → OpenAEV → Wazuh → Velociraptor. Taylor will be joined by OpenCTI's product owner to cover what's coming next for OpenCTI and OpenAEV.
+>
+> [Register](https://events.filigran.io/register/e751635a-9aec-49f5-801c-40cfded49c87?utm_medium=community&utm_source=github) · Dec 10 at 10 AM New York City time
+>
+> Join us on the
+> [Filigran Community Slack](https://community.filigran.io/?utm_medium=community&utm_source=github).
 
-OpenCTI turns cyber threat intelligence into a living knowledge graph: who targets you, how they operate, which vulnerabilities and tools they rely on, and what your defenses already cover. It is the threat intelligence foundation of CTEM in the XTM Platform: know the adversary in OpenCTI, validate your exposure to it with [OpenAEV](https://github.com/OpenAEV-Platform/openaev), quantify the risk with [OpenCRQ](https://github.com/OpenCRQ-Platform/opencrq), and drive the whole loop with [XTM One](https://github.com/XTM-One-Platform/xtm-one).
+## Introduction
 
-<p align="center">If OpenCTI helps your security program, <a href="https://github.com/OpenCTI-Platform/opencti/stargazers">give it a star</a>: it is how the project grows.</p>
+OpenCTI is an open source platform allowing organizations to manage their cyber threat intelligence knowledge and observables. It has been created in order to structure, store, organize and visualize technical and non-technical information about cyber threats.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./.github/img/readme/hero-dark.webp">
-  <source media="(prefers-color-scheme: light)" srcset="./.github/img/readme/hero-light.webp">
-  <img alt="The OpenCTI home dashboard: the latest reports, the most active threats and the targeted sectors, the indicators ingested and the ATT&CK techniques observed (synthetic data)" src="./.github/img/readme/hero-light.webp" width="100%">
-</picture>
+The structuration of the data is performed using a knowledge schema based on the [STIX2 standards](https://oasis-open.github.io/cti-documentation/). It has been designed as a modern web application including a [GraphQL API](https://graphql.org) and a UX-oriented frontend. Also, OpenCTI can be integrated with other tools and applications such as [MISP](https://github.com/MISP/MISP), [TheHive](https://github.com/TheHive-Project/TheHive), [MITRE ATT&CK](https://github.com/mitre/cti), etc.
 
-## Table of contents
+![Screenshot](./.github/img/screenshot.png "Screenshot")
 
-- [Why OpenCTI](#why-opencti)
-- [Capabilities](#capabilities)
-- [Gallery](#gallery)
-- [How it works](#how-it-works)
-- [Part of the XTM Platform](#part-of-the-xtm-platform)
-- [Use cases by security role](#use-cases-by-security-role)
-- [Quick start](#quick-start)
-- [Editions](#editions)
-- [Integrations and ecosystem](#integrations-and-ecosystem)
-- [Community](#community)
-- [Contributing](#contributing)
-- [Security](#security)
-- [License](#license)
-- [About Filigran](#about-filigran)
+## Objective
 
-## Why OpenCTI
+The goal is to create a comprehensive tool allowing users to capitalize technical (such as TTPs and observables) and non-technical information (such as suggested attribution, victimology etc.) while linking each piece of information to its primary source (a report, a MISP event, etc.), with features such as links between each information, first and last seen dates, levels of confidence, etc. The tool is able to use the [MITRE ATT&CK framework](https://attack.mitre.org) (through a [dedicated connector](https://github.com/OpenCTI-Platform/connectors)) to help structure the data. The user can also choose to implement their own datasets.
 
-Exposure management starts with the threat. Before you can decide which exposure to fix first, you need to know which adversaries matter to your sector and region, which techniques they use and which vulnerabilities they exploit in the wild.
+Once data has been capitalized and processed by the analysts within OpenCTI, new relations may be inferred from existing ones to facilitate the understanding and the representation of this information. This allows the user to extract and leverage meaningful knowledge from the raw data.
 
-- **Structured, not scattered.** Every report, feed and analyst note lands in one STIX 2.1 knowledge graph, each fact linked to its source, its confidence and its first and last seen dates.
-- **Actionable for CTEM.** Attack patterns, vulnerabilities and indicators carry straight into validation (OpenAEV), risk quantification (OpenCRQ), detection and the agents of XTM One.
-- **Open by design.** An Apache 2.0 core, a GraphQL API, a Python client and a large catalog of connectors to the tools you already run.
+OpenCTI not only allows [imports](https://docs.opencti.io/latest/usage/import-automated/) but also [exports of data](https://docs.opencti.io/latest/usage/feeds/) under different formats (CSV, STIX2 bundles, etc.). [Connectors](https://hub.filigran.io/cybersecurity-solutions/open-cti-integrations) are currently developed to accelerate interactions between the tool and other platforms.
 
-## Capabilities
+## Editions of the platform
 
-| CTEM stage | What OpenCTI gives your team |
-|---|---|
-| **Scoping** | Priority intelligence requirements, sectors, regions and the threats that target them, scored and surfaced so the program starts from the adversaries that matter. |
-| **Discovery** | Threat actors, campaigns, malware, tools, techniques, vulnerabilities and indicators in one STIX 2.1 graph, fed by TAXII, RSS, CSV, JSON and hundreds of connectors. |
-| **Prioritization** | Vulnerabilities ranked by the adversaries that exploit them, inference rules that derive targeting and attribution, decay rules that age indicators out. |
-| **Validation** | The ATT&CK matrix of any threat and its security coverage, with the OpenAEV counterpart of every shared object and its simulation results written back. |
-| **Mobilization** | Cases, playbooks, dashboards, STIX, CSV and PDF exports, live streams and TAXII collections that put the knowledge into the hands of every team. |
+OpenCTI platform has 2 different editions: Community (CE) and Enterprise (EE). The purpose of the Enterprise Edition is to provide [additional and powerful features](https://filigran.io/offering/subscribe) which require specific investments in research and development. You can enable the Enterprise Edition directly in the settings of the platform.
 
-## Gallery
+* OpenCTI Community Edition, licensed under the [Apache 2, Version 2.0 license](LICENSE).
+* OpenCTI Enterprise Edition, licensed under the [Enterprise Edition license](LICENSE).
 
-<table>
-  <tr>
-    <td width="50%" valign="top">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="./.github/img/readme/g1-dark.webp">
-        <source media="(prefers-color-scheme: light)" srcset="./.github/img/readme/g1-light.webp">
-        <img alt="An OpenCTI investigation graph: four ransomware intrusion sets linked to the techniques, malware, vulnerabilities, sectors and countries they share" src="./.github/img/readme/g1-light.webp" width="100%">
-      </picture>
-      <p><b>Knowledge graph.</b> Threats, techniques, targets and vulnerabilities, explorable in one investigation.</p>
-    </td>
-    <td width="50%" valign="top">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="./.github/img/readme/g2-dark.webp">
-        <source media="(prefers-color-scheme: light)" srcset="./.github/img/readme/g2-light.webp">
-        <img alt="An OpenCTI intrusion set overview: aliases, targeted sectors and regions, latest reports and activity" src="./.github/img/readme/g2-light.webp" width="100%">
-      </picture>
-      <p><b>Threat actor.</b> Who the adversary is, what it targets and how it operates, on one page.</p>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="./.github/img/readme/g3-dark.webp">
-        <source media="(prefers-color-scheme: light)" srcset="./.github/img/readme/g3-light.webp">
-        <img alt="The MITRE ATT&CK matrix of an intrusion set in OpenCTI, the techniques it uses highlighted" src="./.github/img/readme/g3-light.webp" width="100%">
-      </picture>
-      <p><b>ATT&CK matrix.</b> The techniques of a threat on the MITRE ATT&CK matrix, with their coverage.</p>
-    </td>
-    <td width="50%" valign="top">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="./.github/img/readme/g4-dark.webp">
-        <source media="(prefers-color-scheme: light)" srcset="./.github/img/readme/g4-light.webp">
-        <img alt="An OpenCTI custom dashboard with time series, distribution and list widgets on threat activity" src="./.github/img/readme/g4-light.webp" width="100%">
-      </picture>
-      <p><b>Dashboards.</b> Widgets on any query, variables and presets, shared publicly when needed.</p>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="./.github/img/readme/g5-dark.webp">
-        <source media="(prefers-color-scheme: light)" srcset="./.github/img/readme/g5-light.webp">
-        <img alt="The OpenCTI playbook editor: a flow of steps that filters, enriches and routes incoming knowledge" src="./.github/img/readme/g5-light.webp" width="100%">
-      </picture>
-      <p><b>Playbooks.</b> Qualify, enrich and route what you ingest in a visual editor.</p>
-    </td>
-    <td width="50%" valign="top">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="./.github/img/readme/g6-dark.webp">
-        <source media="(prefers-color-scheme: light)" srcset="./.github/img/readme/g6-light.webp">
-        <img alt="An OpenCTI vulnerability with the intrusion sets and malware that exploit it, their authors, labels and markings" src="./.github/img/readme/g6-light.webp" width="100%">
-      </picture>
-      <p><b>Vulnerability context.</b> Which threats exploit a CVE and which malware carries it, before you patch.</p>
-    </td>
-  </tr>
-</table>
+To understand what OpenCTI Enterprise Edition brings in terms of features, just check the [Enterprise Editions page](https://filigran.io/offering/subscribe) on the Filigran website. You can also try this edition by enabling it in the settings of the platform.
 
-**Walkthrough.** From a report to its knowledge graph, the threat behind it and its ATT&CK coverage, in 15 seconds.
+## Documentation and demonstration
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./.github/img/readme/walkthrough-dark.webp">
-  <source media="(prefers-color-scheme: light)" srcset="./.github/img/readme/walkthrough-light.webp">
-  <img alt="Animated walkthrough: an OpenCTI report, its knowledge graph, the intrusion set behind it and its ATT&CK matrix" src="./.github/img/readme/walkthrough-light.webp" width="100%">
-</picture>
+If you want to know more on OpenCTI, you can read the [documentation on the tool](https://docs.opencti.io). If you wish to discover how the OpenCTI platform is working, a [demonstration instance](https://demo.opencti.io) is available and open to everyone. This instance is reset every night and is based on reference data maintained by the OpenCTI developers.
 
-## How it works
+## Releases download
 
-OpenCTI ingests feeds, reports and connector data into a STIX 2.1 knowledge graph stored in Elasticsearch or OpenSearch, with Redis, RabbitMQ and an S3-compatible store. Workers apply inference and decay rules, playbooks route the knowledge, and the GraphQL API, live streams and TAXII collections serve it to OpenAEV, OpenCRQ, XTM One and every integration.
+The releases are available on the [Github releases page](https://github.com/OpenCTI-Platform/opencti/releases). You can also access the [rolling release package](https://releases.opencti.io) generated from the master branch of the repository.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./.github/img/readme/flow-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="./.github/img/readme/flow-light.svg">
-  <img alt="How OpenCTI works: feeds, reports and connectors flow into the STIX 2.1 knowledge graph, which serves OpenAEV, OpenCRQ, XTM One, detection tools and exports" src="./.github/img/readme/flow-light.svg" width="100%">
-</picture>
+## Installation
 
-## Part of the XTM Platform
+All you need to install the OpenCTI platform can be found in the [official documentation](https://docs.opencti.io). For installation, you can:
 
-OpenCTI is one of the five products of the [XTM Platform](https://filigran.io), the open platform for Agentic CTEM. Each product owns stages of the CTEM loop; XTM One runs the loop across them.
+* [Use Docker](https://docs.opencti.io/latest/deployment/installation/#using-docker)
+* [Install manually](https://docs.opencti.io/latest/deployment/installation/#install-manually)
+* [Use Terraform (community)](https://docs.opencti.io/latest/deployment/installation/#terraform)
+* [Use Helm charts (community)](https://docs.opencti.io/latest/deployment/installation/#helm-charts)
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./.github/img/readme/xtm-platform-ctem-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="./.github/img/readme/xtm-platform-ctem-light.svg">
-  <img alt="The XTM Platform and the CTEM loop: XTM One at the core, OpenCTI, OpenCRQ and OpenAEV as modules, XTM Hub as the library, around the five stages scoping, discovery, prioritization, validation and mobilization" src="./.github/img/readme/xtm-platform-ctem-light.svg" width="100%">
-</picture>
+## Contributing
 
-| | Product | Role in CTEM | Repository | Product page |
-|---|---|---|---|---|
-| <picture><source media="(prefers-color-scheme: dark)" srcset="./.github/img/readme/mark-xtm-one-dark.svg"><img src="./.github/img/readme/mark-xtm-one-light.svg" width="24" alt=""></picture> | **XTM One** | Core and agentic layer: runs CTEM across the modules and gets the fix done | [XTM-One-Platform/xtm-one](https://github.com/XTM-One-Platform/xtm-one) | [filigran.io/products/xtm-one](https://filigran.io/products/xtm-one) |
-| <picture><source media="(prefers-color-scheme: dark)" srcset="./.github/img/readme/mark-opencti-dark.svg"><img src="./.github/img/readme/mark-opencti-light.svg" width="24" alt=""></picture> | **OpenCTI** | Scoping and Discovery: know the adversary and the threats that target you | [OpenCTI-Platform/opencti](https://github.com/OpenCTI-Platform/opencti) | [filigran.io/products/opencti](https://filigran.io/products/opencti) |
-| <picture><source media="(prefers-color-scheme: dark)" srcset="./.github/img/readme/mark-opencrq-dark.svg"><img src="./.github/img/readme/mark-opencrq-light.svg" width="24" alt=""></picture> | **OpenCRQ** | Prioritization: turn exposure into financial risk | [OpenCRQ-Platform/opencrq](https://github.com/OpenCRQ-Platform/opencrq) | [filigran.io/products/opencrq](https://filigran.io/products/opencrq) |
-| <picture><source media="(prefers-color-scheme: dark)" srcset="./.github/img/readme/mark-openaev-dark.svg"><img src="./.github/img/readme/mark-openaev-light.svg" width="24" alt=""></picture> | **OpenAEV** | Validation: prove your defenses against real attacker techniques | [OpenAEV-Platform/openaev](https://github.com/OpenAEV-Platform/openaev) | [filigran.io/products/openaev](https://filigran.io/products/openaev) |
-| <picture><source media="(prefers-color-scheme: dark)" srcset="./.github/img/readme/mark-xtm-hub-dark.svg"><img src="./.github/img/readme/mark-xtm-hub-light.svg" width="24" alt=""></picture> | **XTM Hub** | Tradecraft library and gateway: integrations, dashboards and scenarios for every product | [XTM-Hub/xtm-hub](https://github.com/XTM-Hub/xtm-hub) | [filigran.io/platforms/xtm-hub](https://filigran.io/platforms/xtm-hub/) |
+### Code of Conduct
 
-## Use cases by security role
+OpenCTI has adopted a [Code of Conduct](CODE_OF_CONDUCT.md) that we expect project participants to adhere to. Please read the [full text](CODE_OF_CONDUCT.md) so that you can understand what actions will and will not be tolerated.
 
-| Role | What OpenCTI does for it |
-|---|---|
-| **CTI** | One knowledge graph for every report, feed and note, with source, confidence and markings on every fact, and reports generated from a container, a threat or a victim. |
-| **SOC** | Indicators and observables with their context, sightings, and live streams and TAXII collections to the SIEM and the EDR. |
-| **Detection engineering** | Indicators translated between STIX, Sigma and YARA, and the ATT&CK coverage of every threat to decide what to detect next. |
-| **Red and purple team** | The techniques of the adversaries that target you, sent to OpenAEV as scenarios and read back as security coverage. |
-| **Vulnerability and exposure management** | Vulnerabilities linked to the threats and campaigns that exploit them, so the exploited ones come first. |
-| **Risk and CISO** | Priority intelligence requirements, dashboards on the threat landscape and the intelligence OpenCRQ prices into expected loss. |
+### Contributing Guide
 
-## Quick start
+Read our [contributing guide](CONTRIBUTING.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to OpenCTI.
 
-Requirements: Docker with Docker Compose.
+### Beginner friendly issues
 
-```bash
-git clone https://github.com/OpenCTI-Platform/docker.git opencti-docker && cd opencti-docker
-cp .env.sample .env      # replace every changeme and ChangeMe value before the first start
-docker compose up -d
-```
+To help you get familiar with our contribution process, we have a list of [beginner friendly issues](https://github.com/OpenCTI-Platform/opencti/labels/beginner%20friendly%20issue) which are fairly easy to implement. This is a great place to get started.
 
-Open http://localhost:8080 and sign in with the admin account of `.env`. The stack also starts XTM One next to OpenCTI.
+### Development
 
-- **Docker**: [`opencti/platform`](https://hub.docker.com/r/opencti/platform), one tag per [release](https://github.com/OpenCTI-Platform/opencti/releases).
-- **Helm and Terraform**: [installation guide](https://docs.opencti.io/latest/deployment/installation/).
-- **Demonstration**: [demo.opencti.io](https://demo.opencti.io), reset every night on reference data.
-
-## Editions
-
-| | Community Edition | Enterprise Edition |
-|---|---|---|
-| License | [Apache 2.0](LICENSE) | [OpenCTI Enterprise Edition License](LICENSE) |
-| Knowledge graph, investigations, dashboards, connectors | Yes | Yes |
-| Playbooks and priority intelligence requirements | | Yes |
-| AI: reports, file to STIX, natural language search, Ariane | | Yes |
-
-The [documentation](https://docs.opencti.io) marks every Enterprise Edition feature; to get a license, [contact Filigran](https://filigran.io/contact).
-
-## Integrations and ecosystem
-
-- **XTM Platform:** OpenAEV scenarios from OpenCTI threats and coverage written back, OpenCRQ reads the intelligence, XTM One powers Ariane and the agents.
-- **[XTM Hub](https://hub.filigran.io/cybersecurity-solutions/open-cti-integrations):** the connector catalog, dashboards and feeds for OpenCTI.
-- **Connectors:** import, enrichment and export connectors in [OpenCTI-Platform/connectors](https://github.com/OpenCTI-Platform/connectors).
-- **Standards and APIs:** STIX 2.1, TAXII 2.1, the GraphQL API and the [Python client](https://github.com/OpenCTI-Platform/client-python).
+If you want to actively help OpenCTI, we created a [dedicated documentation](https://docs.opencti.io/latest/development/environment_ubuntu/) about the deployment of a development environment and how to start the source code modification.
 
 ## Community
 
