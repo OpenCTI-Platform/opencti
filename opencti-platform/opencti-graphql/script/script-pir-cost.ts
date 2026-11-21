@@ -37,7 +37,7 @@ const user = SYSTEM_USER;
 const results: { step: string; label: string; n: number; median: number; p95: number; max: number; unit: string; note?: string }[] = [];
 
 // region helpers
-const es = async (index: string, body: unknown) => (await fetch(`${ES}/${index}/_search`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json();
+const es = async (index: string, body: unknown): Promise<any> => (await fetch(`${ES}/${index}/_search`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json();
 const stats = (ms: number[]) => {
   const s = [...ms].sort((a, b) => a - b);
   const at = (q: number) => s[Math.min(s.length - 1, Math.floor(q * s.length))] ?? 0;

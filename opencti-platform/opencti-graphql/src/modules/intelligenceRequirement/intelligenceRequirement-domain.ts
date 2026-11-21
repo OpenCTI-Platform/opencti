@@ -94,7 +94,7 @@ export const intelligenceRequirementStatusUpdate = async (context: AuthContext, 
 // Entities (whatever their status, eligible or not) and inbox items stored for a requirement
 export const countRequirementStoredContent = async (context: AuthContext, user: AuthUser, irId: string) => {
   const filters = addFilter(undefined, 'ir_id', irId);
-  const count = (type: string) => countAllThings(context, user, { types: [type], indices: [READ_INDEX_INTERNAL_OBJECTS], filters });
+  const count = (type: string) => countAllThings(context, user, { indices: [READ_INDEX_INTERNAL_OBJECTS], filters: addFilter(filters, 'entity_type', type) });
   return { entities: await count(ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH), items: await count(ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM) };
 };
 
@@ -166,9 +166,8 @@ export const requirementProcessingStatus = async (context: AuthContext, user: Au
   if (ir.ir_status !== 'active') state = 'paused';
   else if (lagSeconds <= LIVE_LAG_SECONDS) state = 'live';
   const activeRequirements = await countAllThings(context, user, {
-    types: [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT],
     indices: [READ_INDEX_INTERNAL_OBJECTS],
-    filters: addFilter(undefined, 'ir_status', 'active'),
+    filters: addFilter(addFilter(undefined, 'entity_type', ENTITY_TYPE_INTELLIGENCE_REQUIREMENT), 'ir_status', 'active'),
   });
   return {
     state,
@@ -197,12 +196,12 @@ export const parseRequirementProcessing = (ir: BasicStoreEntityIntelligenceRequi
 // region list indicators (entities in the requirement, open inbox items, activity)
 export const countRequirementEntities = async (context: AuthContext, user: AuthUser, irId: string) => {
   const filters = addFilter(addFilter(undefined, 'ir_id', irId), 'match_status', IR_MATCH_IN_STATUSES);
-  return countAllThings(context, user, { types: [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH], indices: [READ_INDEX_INTERNAL_OBJECTS], filters });
+  return countAllThings(context, user, { indices: [READ_INDEX_INTERNAL_OBJECTS], filters: addFilter(filters, 'entity_type', ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH) });
 };
 
 export const countRequirementOpenItems = async (context: AuthContext, user: AuthUser, irId: string) => {
   const filters = addFilter(addFilter(undefined, 'ir_id', irId), 'item_status', 'open');
-  return countAllThings(context, user, { types: [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM], indices: [READ_INDEX_INTERNAL_OBJECTS], filters });
+  return countAllThings(context, user, { indices: [READ_INDEX_INTERNAL_OBJECTS], filters: addFilter(filters, 'entity_type', ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM) });
 };
 
 // Inbox counters for the filter buttons (open items per kind, done items)
@@ -210,7 +209,7 @@ export const countRequirementInbox = async (context: AuthContext, user: AuthUser
   const count = (status: string, kind?: string) => {
     let filters = addFilter(addFilter(undefined, 'ir_id', irId), 'item_status', status);
     if (kind) filters = addFilter(filters, 'item_kind', kind);
-    return countAllThings(context, user, { types: [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM], indices: [READ_INDEX_INTERNAL_OBJECTS], filters });
+    return countAllThings(context, user, { indices: [READ_INDEX_INTERNAL_OBJECTS], filters: addFilter(filters, 'entity_type', ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM) });
   };
   const [open, proposed, entered, score, health, brief, done] = await Promise.all([
     count('open'), count('open', 'proposed'), count('open', 'entered'), count('open', 'score'), count('open', 'health'), count('open', 'brief'), count('done'),

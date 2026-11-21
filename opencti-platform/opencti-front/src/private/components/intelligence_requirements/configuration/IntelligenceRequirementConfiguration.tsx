@@ -8,7 +8,17 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import IntelligenceRequirementConfigurationForm from './IntelligenceRequirementConfigurationForm';
-import { emptyDraft, type IrDraft } from './irConfigTypes';
+import {
+  emptyDraft,
+  type IrCriterionKind,
+  type IrCriterionMode,
+  type IrDirection,
+  type IrDraft,
+  type IrGroupKind,
+  type IrGroupRole,
+  type IrPriority,
+  type IrStatus,
+} from './irConfigTypes';
 import { type IrConfigView, readConfigView, writeConfigView } from './irSentence';
 import type { IntelligenceRequirementConfigurationQuery, IntelligenceRequirementConfigurationQuery$data } from './__generated__/IntelligenceRequirementConfigurationQuery.graphql';
 
@@ -92,7 +102,7 @@ type IrPathCondition = NonNullable<Ir['ir_relevance_rules'][number]['path_condit
 
 const pathToDraft = (path: IrPathCondition | null | undefined) => (path ? {
   relationship_types: [...path.relationship_types],
-  direction: path.direction,
+  direction: path.direction as IrDirection,
   target_relationship_type: path.target_relationship_type,
   targets: path.targets.map(toOption),
   target_group_ids: [...path.target_group_ids],
@@ -106,17 +116,17 @@ const nodeToDraft = (ir: Ir): IrDraft => ({
   name: ir.name,
   description: ir.description ?? '',
   question: ir.ir_question,
-  priority: ir.ir_priority,
-  status: ir.ir_status,
+  priority: ir.ir_priority as IrPriority,
+  status: ir.ir_status as IrStatus,
   thresholds: ir.ir_thresholds.join(', '),
   rescan_days: ir.ir_rescan_days,
-  brief_frequency: ir.ir_brief_frequency,
+  brief_frequency: ir.ir_brief_frequency as IrDraft['brief_frequency'],
   kiqs: ir.ir_kiqs.map((k) => ({ id: k.id, text: k.text, criteria_ids: [...k.criteria_ids] })),
   groups: ir.ir_subject_groups.map((g) => ({
     id: g.id,
     name: g.name,
-    kind: g.kind,
-    role: g.role,
+    kind: g.kind as IrGroupKind,
+    role: g.role as IrGroupRole,
     entities: g.entities.map(toOption),
     filters: g.filters ?? null,
     keywords: [...g.keywords],
@@ -125,16 +135,16 @@ const nodeToDraft = (ir: Ir): IrDraft => ({
   criteria: ir.ir_scope_criteria.map((c) => ({
     id: c.id,
     name: c.name,
-    kind: c.kind,
+    kind: c.kind as IrCriterionKind,
     from_group_ids: [...c.from_group_ids],
     from_in_requirement: c.from_in_requirement,
     from_types: [...(c.from_types ?? [])],
     relationship_types: [...c.relationship_types],
-    direction: c.direction,
+    direction: c.direction as IrDirection,
     target_types: [...c.target_types],
     target_filters: c.target_filters ?? null,
     keyword_fields: [...c.keyword_fields],
-    mode: c.mode,
+    mode: c.mode as IrCriterionMode,
     conditions: c.conditions.map((k) => ({
       id: k.id,
       name: k.name,

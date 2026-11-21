@@ -217,8 +217,8 @@ const IrEntities = ({ irId }: { irId: string }) => {
   const presetDef = PRESETS.find((p) => p.value === preset) ?? PRESETS[0];
   // The status preset and the quick type filter are applied on top of the filters of the table
   const presetFilters = [
-    ...(presetDef.excluded === undefined ? [] : [{ key: ['match_excluded'], values: [String(presetDef.excluded)], operator: 'eq', mode: 'or' }]),
-    ...(entityType ? [{ key: ['match_entity_type'], values: [entityType], operator: 'eq', mode: 'or' }] : []),
+    ...(presetDef.excluded === undefined ? [] : [{ key: 'match_excluded', values: [String(presetDef.excluded)], operator: 'eq', mode: 'or' }]),
+    ...(entityType ? [{ key: 'match_entity_type', values: [entityType], operator: 'eq', mode: 'or' }] : []),
   ];
   const queryFilters: FilterGroup = presetFilters.length === 0 ? contextFilters as FilterGroup : {
     mode: 'and',

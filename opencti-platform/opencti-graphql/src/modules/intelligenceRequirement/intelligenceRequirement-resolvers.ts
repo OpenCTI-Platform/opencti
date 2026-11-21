@@ -1,4 +1,4 @@
-import type { Resolvers } from '../../generated/graphql';
+import type { IrBriefFrequency, Resolvers } from '../../generated/graphql';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 import { getUserAccessRight } from '../../utils/access';
 import { loadCreators } from '../../database/members';
@@ -52,7 +52,7 @@ const intelligenceRequirementResolvers: Resolvers = {
     intelligenceRequirementItems: (_, { id, ...args }, context) => findItemsPaginated(context, context.user, id, args),
   },
   IntelligenceRequirement: {
-    ir_brief_frequency: (ir) => ir.ir_brief_frequency ?? 'off',
+    ir_brief_frequency: (ir) => (ir.ir_brief_frequency ?? 'off') as IrBriefFrequency,
     created_at: (ir) => ir.created_at ?? ir.updated_at ?? new Date(0),
     updated_at: (ir) => ir.updated_at ?? ir.created_at ?? new Date(0),
     creators: (ir, _, context) => loadCreators(context, context.user, ir),

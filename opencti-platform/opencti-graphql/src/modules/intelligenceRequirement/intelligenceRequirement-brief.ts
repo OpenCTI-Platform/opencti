@@ -70,13 +70,13 @@ export const generateRequirementBrief = async (context: AuthContext, user: AuthU
   const jwtUser = await resolveAgentJwtUser(creatorId as string | undefined);
   if (!jwtUser) return null;
   const agents = await xtmOneClient.listAgentsForIntent({ ...context, user: jwtUser as unknown as AuthUser }, INTENT);
-  const agent = agents[0];
-  if (!agent) {
+  const agentSlug = agents[0]?.agent_slug;
+  if (!agentSlug) {
     logApp.warn('[OPENCTI-MODULE] No XTM One agent for the intelligence requirement brief', { intent: INTENT, requirement: ir.id });
     return null;
   }
   const label = trigger === 'scheduled' ? (ir.ir_brief_frequency ?? 'weekly') : 'on demand';
-  const content = await callXtmAgent(agent.agent_slug, briefPrompt(ir, label), jwtUser);
+  const content = await callXtmAgent(agentSlug, briefPrompt(ir, label), jwtUser);
   if (!content) return null;
   const date = new Date().toISOString().slice(0, 10);
   const title = `${trigger === 'scheduled' ? `${label.charAt(0).toUpperCase()}${label.slice(1)} brief` : 'Brief'} · ${date}`;

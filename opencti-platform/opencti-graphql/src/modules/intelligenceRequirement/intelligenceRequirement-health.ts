@@ -29,7 +29,7 @@ const since = (days: number) => new Date(Date.now() - days * DAY).toISOString();
 
 const countMatches = async (context: AuthContext, user: AuthUser, irId: string, extra: (filters: FilterGroup) => FilterGroup) => {
   const filters = extra(addFilter(undefined, 'ir_id', irId));
-  return countAllThings(context, user, { types: [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH], indices: [READ_INDEX_INTERNAL_OBJECTS], filters });
+  return countAllThings(context, user, { indices: [READ_INDEX_INTERNAL_OBJECTS], filters: addFilter(filters, 'entity_type', ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH) });
 };
 
 export const findRequirementHealthIssues = async (context: AuthContext, user: AuthUser, ir: ParsedIntelligenceRequirement): Promise<HealthFinding[]> => {

@@ -219,7 +219,7 @@ const IrAiInsight = ({ irId }: { irId: string }) => {
           </Combobox>
         ) : undefined}
       >
-        {open && (xtmOneConfigured ? <XtmOneInsight irId={irId} agent={agent} dedicated={agentIntent === INTENTS[0]} /> : <LegacyInsight irId={irId} />)}
+        {open ? (xtmOneConfigured ? <XtmOneInsight irId={irId} agent={agent} dedicated={agentIntent === INTENTS[0]} /> : <LegacyInsight irId={irId} />) : null}
       </Drawer>
     </>
   );
