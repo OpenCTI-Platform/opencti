@@ -1101,6 +1101,8 @@
   "Service name": "Dienstname",
   "Service status": "Dienststatus",
   "Service type": "Diensttyp",
+  "Session presence manager": "Sitzungspräsenz-Manager",
+  "SESSION_PRESENCE_MANAGER": "Sitzungspräsenz-Manager",
   "Setting": "Einstellung",
   "Severity": "Schweregrad",
   "SHA-1": "SHA-1",

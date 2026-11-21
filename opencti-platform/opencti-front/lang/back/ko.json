@@ -1101,6 +1101,8 @@
   "Service name": "서비스 이름",
   "Service status": "서비스 상태",
   "Service type": "서비스 유형",
+  "Session presence manager": "세션 접속 상태 관리자",
+  "SESSION_PRESENCE_MANAGER": "세션 접속 상태 관리자",
   "Setting": "설정",
   "Severity": "심각도",
   "SHA-1": "SHA-1",

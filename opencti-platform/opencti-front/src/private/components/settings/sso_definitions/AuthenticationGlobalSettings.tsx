@@ -20,6 +20,7 @@ const authenticationGlobalSettingsQuery = graphql`
       otp_mandatory
       platform_session_max_concurrent
       platform_session_presence_enabled
+      platform_session_presence_manager_enabled
       platform_session_presence_supported
     }
   }
@@ -44,19 +45,32 @@ const validationSchema = Yup.object().shape({
   platform_session_presence_enabled: Yup.boolean(),
 });
 
-// The logout when the last tab is closed can be enabled while several nodes serve the API, but then never applies
-const SessionPresenceUnsupportedAlert = ({ isSupported }: { isSupported: boolean }) => {
+// The logout when the last tab is closed can be enabled while it cannot apply:
+// - the session presence manager, which logs the sessions out, is disabled on every node
+// - with sessions held in the memory of each node, several nodes serve the API
+const SessionPresenceAlerts = ({ isManagerEnabled, isSupported }: { isManagerEnabled: boolean; isSupported: boolean }) => {
   const { t_i18n } = useFormatter();
   const { values } = useFormikContext<{ platform_session_presence_enabled: boolean }>();
-  if (isSupported || !values.platform_session_presence_enabled) {
+  if (!values.platform_session_presence_enabled) {
     return null;
   }
   return (
-    <Alert
-      severity="warning"
-      style={{ marginTop: 20 }}
-      title={t_i18n('Several platform nodes serve the API: no session is logged out when its last tab is closed.')}
-    />
+    <>
+      {!isManagerEnabled && (
+        <Alert
+          severity="warning"
+          style={{ marginTop: 20 }}
+          title={t_i18n('The session presence manager is disabled on every platform node: no session is logged out when its last tab is closed.')}
+        />
+      )}
+      {!isSupported && (
+        <Alert
+          severity="warning"
+          style={{ marginTop: 20 }}
+          title={t_i18n('Several platform nodes serve the API: no session is logged out when its last tab is closed.')}
+        />
+      )}
+    </>
   );
 };
 
@@ -137,10 +151,13 @@ const AuthenticationGlobalSettingsContent = () => {
                     containerstyle={{ marginTop: 20 }}
                     onChange={(name: string, value: string) => handleSubmitField(name, value)}
                     tooltip={t_i18n(
-                      'When enabled, a session is logged out shortly after its last browser tab has been closed. Not supported when several platform nodes serve the API.',
+                      'When enabled, a session is logged out shortly after its last browser tab has been closed.',
                     )}
                   />
-                  <SessionPresenceUnsupportedAlert isSupported={settings.platform_session_presence_supported} />
+                  <SessionPresenceAlerts
+                    isManagerEnabled={settings.platform_session_presence_manager_enabled}
+                    isSupported={settings.platform_session_presence_supported}
+                  />
                 </>
               )}
             </Card>
