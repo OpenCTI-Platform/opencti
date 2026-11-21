@@ -1,7 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import LocationDetails from '@components/locations/LocationDetails';
 import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -12,14 +11,6 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import LocationMiniMap from '../../common/location/LocationMiniMap';
 import { AdministrativeArea_administrativeArea$key } from './__generated__/AdministrativeArea_administrativeArea.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
 
 const administrativeAreaFragment = graphql`
   fragment AdministrativeArea_administrativeArea on AdministrativeArea {
@@ -83,7 +74,6 @@ const AdministrativeArea = ({
 }) => {
   useInitCreateRelationshipContext();
 
-  const classes = useStyles();
   const administrativeArea = useFragment<AdministrativeArea_administrativeArea$key>(
     administrativeAreaFragment,
     administrativeAreaData,
@@ -93,7 +83,7 @@ const AdministrativeArea = ({
       <Grid
         container={true}
         spacing={3}
-        className={classes.gridContainer}
+        sx={{ marginBottom: '20px' }}
       >
         <Grid size={4}>
           <LocationDetails locationData={administrativeArea} />

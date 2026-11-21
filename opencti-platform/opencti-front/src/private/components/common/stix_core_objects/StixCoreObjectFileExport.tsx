@@ -491,7 +491,7 @@ const StixCoreObjectFileExportComponent = ({
       await submitExportConnector(values, helpers);
     }
   };
-  const isContainer = ['Report', 'Case-Incident', 'Case-RFI'].includes(stixCoreObject?.entity_type ?? 'Unknown');
+  const isContainer = ['Report', 'Case-Incident', 'Case-Rfi'].includes(stixCoreObject?.entity_type ?? 'Unknown');
 
   return (
     <>

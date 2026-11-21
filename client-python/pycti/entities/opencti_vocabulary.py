@@ -246,13 +246,39 @@ class Vocabulary:
         :rtype: dict or None
         """
         value = kwargs.get("name", None)
-        vocab = self.read(
-            filters={
+        category = kwargs.get("category", None)
+        if category is None:
+            lookup = {
                 "mode": "and",
                 "filters": [{"key": "name", "values": [value]}],
                 "filterGroups": [],
             }
-        )
+        else:
+            # A name can exist in several categories (e.g. malware-analysis is a
+            # grouping context by default): look it up in the requested one only,
+            # as a name or as an alias of an entry (critical is an alias of
+            # integrity_level_ov/system), so an existing entry is never re-added.
+            lookup = {
+                "mode": "and",
+                "filters": [{"key": "category", "values": [category]}],
+                "filterGroups": [
+                    {
+                        "mode": "or",
+                        "filters": [
+                            {"key": "name", "values": [value]},
+                            {"key": "alias", "values": [value]},
+                        ],
+                        "filterGroups": [],
+                    }
+                ],
+            }
+        vocab = self.read(filters=lookup)
+        if (
+            vocab is not None
+            and category is not None
+            and (vocab.get("category") or {}).get("key") != category
+        ):
+            vocab = None
         if vocab is None:
             try:
                 return self.create(**kwargs)

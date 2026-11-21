@@ -1,5 +1,5 @@
 import React, { BaseSyntheticEvent, Suspense, useRef, useState } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import JsonMapperLines from '@components/data/jsonMapper/JsonMapperLines';
 import { CancelOutlined, CheckCircleOutlined, FileUploadOutlined } from '@mui/icons-material';
 import ProcessingMenu from '@components/data/ProcessingMenu';
@@ -19,20 +19,15 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import type { Theme } from '../../../components/Theme';
 import { jsonMappers_MappersQuery, jsonMappers_MappersQuery$variables } from './jsonMapper/__generated__/jsonMappers_MappersQuery.graphql';
 import { handleError } from '../../../relay/environment';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 
 const LOCAL_STORAGE_KEY_JSON_MAPPERS = 'jsonMappers';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  container: {
-    paddingRight: '200px',
-  },
-}));
+const Container = styled('div')({
+  paddingRight: '200px',
+});
 
 export const importMutation = graphql`
   mutation JsonMappersImportMutation($file: Upload!) {
@@ -41,7 +36,6 @@ export const importMutation = graphql`
 `;
 
 const JsonMappers = () => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('JSON Mappers | Processing | Data'));
@@ -115,7 +109,7 @@ const JsonMappers = () => {
     && (
       <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
         <JsonMappersProvider mappersQueryRef={queryRefMappers} schemaAttributesQueryRef={queryRefSchemaAttributes}>
-          <div className={classes.container} data-testid="json-mapper-page">
+          <Container data-testid="json-mapper-page">
             <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('JSON mappers'), current: true }]} />
             <ProcessingMenu />
             <ListLines
@@ -171,7 +165,7 @@ const JsonMappers = () => {
               open={open}
               onClose={handleClose}
             />
-          </div>
+          </Container>
         </JsonMappersProvider>
       </Suspense>
     );

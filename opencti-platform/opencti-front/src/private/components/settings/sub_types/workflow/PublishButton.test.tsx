@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { createTheme, ThemeOptions } from '@mui/material/styles';
-import MuiThemeProvider from '../../../../../components/MuiThemeProvider';
+import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
 import PublishButton from './PublishButton';
 import ThemeDark from '../../../../../components/ThemeDark';
 
@@ -20,9 +19,9 @@ const testTheme = createTheme(ThemeDark() as ThemeOptions);
 // Helper to render with theme
 const renderWithTheme = (component: React.ReactElement) => {
   return render(
-    <MuiThemeProvider theme={testTheme}>
+    <ThemeProvider theme={testTheme}>
       {component}
-    </MuiThemeProvider>,
+    </ThemeProvider>,
   );
 };
 
@@ -112,6 +111,49 @@ describe('PublishButton', () => {
 
       await user.click(screen.getByRole('button', { name: /Publish/i }));
       expect(mockOnPublish).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Request access errors', () => {
+    const requestAccessErrors = [
+      { type: 'REQUEST_ACCESS_OUTCOME_COUNT', message: 'Request access workflow must have exactly one Approved state, but found 0', path: null },
+      { type: 'MISSING_REQUEST_ACCESS_SHARE_ACTION', message: "Approved state 'approved' must have a shareRequestedEntities action on enter", path: null },
+    ];
+
+    it('PublishButton lists REQUEST_ACCESS_* errors with their messages', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(
+        <PublishButton
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors: requestAccessErrors }}
+          onPublish={mockOnPublish}
+          onReset={mockOnReset}
+          onRestore={mockOnRestore}
+          hasPublishedVersion={true}
+        />,
+      );
+
+      await user.hover(screen.getByRole('button', { name: /Publish/i }));
+
+      const list = await screen.findByTestId('workflow-publish-errors');
+      expect(list).toHaveTextContent('Request access workflow must have exactly one Approved state, but found 0');
+      expect(list).toHaveTextContent("Approved state 'approved' must have a shareRequestedEntities action on enter");
+    });
+
+    it('lists no errors when the workflow is valid', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(
+        <PublishButton
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors: [] }}
+          onPublish={mockOnPublish}
+          onReset={mockOnReset}
+          onRestore={mockOnRestore}
+          hasPublishedVersion={true}
+        />,
+      );
+
+      await user.hover(screen.getByRole('button', { name: /Publish/i }));
+      await screen.findByText('Click to publish this workflow version');
+      expect(screen.queryByTestId('workflow-publish-errors')).toBeNull();
     });
   });
 

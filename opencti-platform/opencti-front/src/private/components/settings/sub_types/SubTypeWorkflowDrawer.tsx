@@ -5,7 +5,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import Skeleton from '@mui/material/Skeleton';
 import Drawer from '@components/common/drawer/Drawer';
 import SubTypeWorkflowStatusAdd from './SubTypeWorkflowStatusAdd';
@@ -18,11 +18,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { StatusScopeEnum } from '../../../../utils/statusConstants';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  bodyItem: bodyItemStyle,
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 export const subTypeWorkflowDrawerEditionQuery = graphql`
   query SubTypeWorkflowDrawerEditionQuery($id: String!) {
@@ -71,7 +67,6 @@ const SubTypeWorkflowDrawer: FunctionComponent<SubTypeWorkflowDrawer> = ({
   open,
   scope,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const queryData = usePreloadedQuery(subTypeWorkflowDrawerEditionQuery, queryRef);
   if (queryData.subType) {
@@ -144,18 +139,16 @@ const SubTypeWorkflowDrawer: FunctionComponent<SubTypeWorkflowDrawer> = ({
                     <ListItemText
                       primary={(
                         <>
-                          <div
-                            className={classes.bodyItem}
+                          <BodyItem
                             style={{ width: '30%' }}
                           >
                             {status.template?.name ?? ''}
-                          </div>
-                          <div
-                            className={classes.bodyItem}
+                          </BodyItem>
+                          <BodyItem
                             style={{ width: '60%' }}
                           >
                             <ItemCopy content={status.id} variant="inLine" />
-                          </div>
+                          </BodyItem>
                         </>
                       )}
                     />

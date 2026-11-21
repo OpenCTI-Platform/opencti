@@ -3,7 +3,6 @@ import { Combobox, ComboboxChips, ComboboxContent, ComboboxControls, ComboboxFie
 import { representationLabel } from '@components/data/csvMapper/representations/RepresentationUtils';
 import * as R from 'ramda';
 import { getBasedOnRepresentations, getInfoForRef } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
-import makeStyles from '@mui/styles/makeStyles';
 import { FieldProps } from 'formik';
 import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
 import CsvMapperRepresentationDialogOption from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationDialogOption';
@@ -16,8 +15,18 @@ import useAuth from '../../../../../../utils/hooks/useAuth';
 import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';
 import { useFormatter } from '../../../../../../components/i18n';
 import { isStixCoreObjects, isStixCoreRelationships } from '../../../../../../utils/stixTypeUtils';
-import { useTheme } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
+import Box from '@mui/material/Box';
 import { Theme } from '../../../../../../components/Theme';
+
+const Container = styled('div')({
+  width: '100%',
+  display: 'inline-grid',
+  gridTemplateColumns: '2fr 3fr 50px',
+  alignItems: 'center',
+  marginTop: '10px',
+  gap: '10px',
+});
 
 export type RepresentationAttributeForm = CsvMapperRepresentationAttributeFormData | undefined;
 
@@ -33,23 +42,6 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
   CsvMapperRepresentationAttributeRefFormProps
 > = ({ form, field, representation, schemaAttribute, label, handleErrors }) => {
   const theme = useTheme<Theme>();
-  // Deprecated - https://mui.com/system/styles/basics/
-  // Do not use it for new code.
-  const useStyles = makeStyles(() => ({
-    container: {
-      width: '100%',
-      display: 'inline-grid',
-      gridTemplateColumns: '2fr 3fr 50px',
-      alignItems: 'center',
-      marginTop: '10px',
-      gap: '10px',
-    },
-    redStar: {
-      color: theme.palette.designSystem.tertiary.red[400],
-      marginLeft: '5px',
-    },
-  }));
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const { name, value } = field;
@@ -175,10 +167,10 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
   };
 
   return (
-    <div className={classes.container}>
+    <Container>
       <div>
         {label}
-        {schemaAttribute.mandatory && <span className={classes.redStar}>*</span>}
+        {schemaAttribute.mandatory && <Box component="span" sx={{ color: theme.palette.designSystem.tertiary.red[400], marginLeft: '5px' }}>*</Box>}
       </div>
       <div>
         {multiple && (
@@ -242,7 +234,7 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
           </CsvMapperRepresentationDialogOption>
         )}
       </div>
-    </div>
+    </Container>
   );
 };
 

@@ -155,6 +155,10 @@ export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
 export const TELEMETRY_GAUGE_CUSTOM_FIELD_CREATED = 'customFieldCreatedCount';
 export const TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES = 'sharedSavedFiltersPermissionChangesCount';
 export const TELEMETRY_GAUGE_WORKFLOW_PUBLISH = 'workflowPublishCount';
+export const TELEMETRY_GAUGE_WORKFLOW_REQUEST_ACCESS_PUBLISH = 'workflowRequestAccessPublishCount';
+export const TELEMETRY_GAUGE_WORKFLOW_REQUEST_ACCESS_MIGRATION = 'workflowRequestAccessMigrationCount';
+export const TELEMETRY_GAUGE_REQUEST_ACCESS_APPROVED = 'requestAccessApprovedCount';
+export const TELEMETRY_GAUGE_REQUEST_ACCESS_DECLINED = 'requestAccessDeclinedCount';
 export const TELEMETRY_GAUGE_CONFIG_PRESET_EXPORT = 'configPresetExportCount';
 // AI usage counters. Backend-agnostic by design: a chatbot message or an Ask AI
 // call is the SAME feature whether it is served by the legacy path or by
@@ -308,6 +312,26 @@ export const addWorkflowPublishCount = () => {
     .catch((reason) => logApp.warn('Error adding workflow publish count to telemetry', { reason }));
 };
 
+export const addWorkflowRequestAccessPublishCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_WORKFLOW_REQUEST_ACCESS_PUBLISH, 1)
+    .catch((reason) => logApp.warn('Error adding workflow request access publish count to telemetry', { reason }));
+};
+
+export const addWorkflowRequestAccessMigrationCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_WORKFLOW_REQUEST_ACCESS_MIGRATION, 1)
+    .catch((reason) => logApp.warn('Error adding workflow request access migration count to telemetry', { reason }));
+};
+
+export const addRequestAccessApprovedCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_REQUEST_ACCESS_APPROVED, 1)
+    .catch((reason) => logApp.warn('Error adding request access approved count to telemetry', { reason }));
+};
+
+export const addRequestAccessDeclinedCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_REQUEST_ACCESS_DECLINED, 1)
+    .catch((reason) => logApp.warn('Error adding request access declined count to telemetry', { reason }));
+};
+
 export const addConfigPresetExportCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_CONFIG_PRESET_EXPORT, 1)
     .catch((reason) => logApp.warn('Error adding config preset export count to telemetry', { reason }));
@@ -393,7 +417,7 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   // endregion
   // region OTLP Exporter
   try {
-    const connectivityQuery = await getHttpClient({ responseType: 'json' }).post(FILIGRAN_OTLP_TELEMETRY, {});
+    const connectivityQuery = await getHttpClient({ responseType: 'json', trusted: true }).post(FILIGRAN_OTLP_TELEMETRY, {});
     if (connectivityQuery.status === 200) {
       // OtlpExporterReader can be deactivated if connectivity fail at manager start.
       const OtlpExporterReader = new BatchExportingMetricReader({
@@ -518,6 +542,17 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // region Draft information
     const draftWorkspaces = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
     manager.setDraftCount(draftWorkspaces.length);
+    // endregion
+
+    // region Investigation information
+    // Investigations are restricted to their authorized members: includeAuthorities lets the
+    // bypass telemetry user count all of them.
+    const investigationCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, {
+      types: [ENTITY_TYPE_WORKSPACE],
+      includeAuthorities: true,
+      filters: { mode: FilterMode.And, filters: [{ key: ['type'], values: ['investigation'] }], filterGroups: [] },
+    });
+    manager.setInvestigationCount(investigationCount);
     // endregion
 
     // region Workbenches information
@@ -804,6 +839,14 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setSharedSavedFiltersPermissionChangesCount(sharedSavedFiltersPermissionChangesCountInRedis);
     const workflowPublishCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKFLOW_PUBLISH);
     manager.setWorkflowPublishCount(workflowPublishCountInRedis);
+    const workflowRequestAccessPublishCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKFLOW_REQUEST_ACCESS_PUBLISH);
+    manager.setWorkflowRequestAccessPublishCount(workflowRequestAccessPublishCountInRedis);
+    const workflowRequestAccessMigrationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKFLOW_REQUEST_ACCESS_MIGRATION);
+    manager.setWorkflowRequestAccessMigrationCount(workflowRequestAccessMigrationCountInRedis);
+    const requestAccessApprovedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_REQUEST_ACCESS_APPROVED);
+    manager.setRequestAccessApprovedCount(requestAccessApprovedCountInRedis);
+    const requestAccessDeclinedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_REQUEST_ACCESS_DECLINED);
+    manager.setRequestAccessDeclinedCount(requestAccessDeclinedCountInRedis);
     const configPresetExportCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CONFIG_PRESET_EXPORT);
     manager.setConfigPresetExportCount(configPresetExportCountInRedis);
     const chatbotMessageCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CHATBOT_MESSAGE);

@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
 import type { PreloadedQuery } from 'react-relay';
 import { ReactFlowProvider } from 'reactflow';
@@ -24,10 +24,13 @@ import { useFormatter } from '../../../../components/i18n';
 import PlaybookFlow from './playbookFlow/PlaybookFlow';
 import { Playbook_playbook$key } from './__generated__/Playbook_playbook.graphql';
 import { PlaybookComponentsQuery } from './__generated__/PlaybookComponentsQuery.graphql';
+import useGranted, { AUTOMATION_AUTMANAGE } from '../../../../utils/hooks/useGranted';
+import { initialPlaybookMode, type PlaybookEditorMode } from './hooks/usePlaybookEditMode';
 
 const playbookFragment = graphql`
   fragment Playbook_playbook on Playbook {
     name
+    playbook_running
     ...PlaybookHeader_playbook
     ...PlaybookFlow_playbook
   }
@@ -48,6 +51,10 @@ const Playbook = ({ dataPlaybook, playbookComponentsQueryRef }: PlaybookProps) =
   const { t_i18n } = useFormatter();
   const playbook = useFragment(playbookFragment, dataPlaybook);
   const dataPlaybookComponents = usePreloadedQuery(playbookComponentsQuery, playbookComponentsQueryRef);
+  const canManage = useGranted([AUTOMATION_AUTMANAGE]);
+  // Decided once on mount: starting or stopping the playbook afterwards never switches the mode.
+  const [mode, setMode] = useState<PlaybookEditorMode>(() => initialPlaybookMode(canManage, !!playbook.playbook_running));
+  const canEdit = canManage && mode === 'edit';
 
   return (
     <>
@@ -59,12 +66,14 @@ const Playbook = ({ dataPlaybook, playbookComponentsQueryRef }: PlaybookProps) =
           { label: playbook.name, current: true },
         ]}
       />
-      <PlaybookHeader playbook={playbook} />
+      <PlaybookHeader playbook={playbook} mode={mode} onModeChange={canManage ? setMode : undefined} />
       <ErrorBoundary>
         <ReactFlowProvider>
           <PlaybookFlow
             dataPlaybook={playbook}
             dataPlaybookComponents={dataPlaybookComponents}
+            canEdit={canEdit}
+            running={!!playbook.playbook_running}
           />
         </ReactFlowProvider>
       </ErrorBoundary>

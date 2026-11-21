@@ -1,5 +1,4 @@
 import React, { Suspense } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import Box from '@mui/material/Box';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -22,17 +21,6 @@ import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFro
 import { useFormatter } from '../../../../components/i18n';
 import { deserializeObjectB64 } from '../../../../utils/object';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    paddingBottom: 70,
-  },
-  containerGraph: {
-    paddingBottom: 0,
-  },
-}));
-
 /**
  * @param stixDomainObjectOrStixCoreRelationship {any}
  * @param authorId {string | undefined}
@@ -48,7 +36,6 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
 }) => {
   useInitCreateRelationshipContext();
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -331,12 +318,12 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
 
   return (
     <Suspense>
-      <div
-        className={view === 'lines' ? classes.container : classes.containerGraph}
+      <Box
+        sx={{ paddingBottom: view === 'lines' ? '70px' : 0 }}
       >
         {view === 'lines' ? renderLines() : ''}
         {view === 'graph' ? renderGraph() : ''}
-      </div>
+      </Box>
     </Suspense>
   );
 };

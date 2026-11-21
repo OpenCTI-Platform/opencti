@@ -3,7 +3,7 @@ import {
   EntityStixSightingRelationshipsLinesPaginationQuery,
   EntityStixSightingRelationshipsLinesPaginationQuery$variables,
 } from '@components/events/stix_sighting_relationships/__generated__/EntityStixSightingRelationshipsLinesPaginationQuery.graphql';
-import makeStyles from '@mui/styles/makeStyles';
+import Box from '@mui/material/Box';
 import { EntityStixSightingRelationshipLineDummy } from '@components/events/stix_sighting_relationships/EntityStixSightingRelationshipLine';
 import ListLines from '../../../../components/list_lines/ListLines';
 import EntityStixSightingRelationshipsLines, { entityStixSightingRelationshipsLinesQuery } from './EntityStixSightingRelationshipsLines';
@@ -17,15 +17,6 @@ import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { useInitCreateRelationshipContext } from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
 
 export const LOCAL_STORAGE_KEY = 'sightings';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    marginTop: 15,
-    paddingBottom: 70,
-  },
-}));
 
 interface SightingCreationComponentProps {
   isTo: boolean;
@@ -96,7 +87,6 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
   entityLink,
   disableExport,
 }) => {
-  const classes = useStyles();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<EntityStixSightingRelationshipsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -255,9 +245,9 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
   };
 
   return (
-    <div className={classes.container}>
+    <Box sx={{ marginTop: '15px', paddingBottom: '70px' }}>
       {renderLines()}
-    </div>
+    </Box>
   );
 };
 

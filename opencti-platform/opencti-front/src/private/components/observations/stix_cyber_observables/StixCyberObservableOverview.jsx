@@ -10,11 +10,10 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Slide from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
-import withStyles from '@mui/styles/withStyles';
+import { styled } from '@mui/material/styles';
 import { InformationOutline } from 'mdi-material-ui';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { compose } from 'ramda';
 import React, { Component } from 'react';
 import { graphql } from 'react-relay';
 import ItemAuthor from '../../../../components/ItemAuthor';
@@ -35,31 +34,16 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const styles = (theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
-    color: theme.palette.text.primary,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-  },
-  standard_id: {
-    padding: '5px 5px 5px 10px',
-    fontFamily: 'Consolas, monaco, monospace',
-    fontSize: 11,
-    backgroundColor:
-      theme.palette.mode === 'light'
-        ? 'rgba(0, 0, 0, 0.02)'
-        : 'rgba(255, 255, 255, 0.02)',
-    lineHeight: '18px',
-  },
-});
+const StandardId = styled('div')(({ theme }) => ({
+  padding: '5px 5px 5px 10px',
+  fontFamily: 'Consolas, monaco, monospace',
+  fontSize: 11,
+  backgroundColor:
+    theme.palette.mode === 'light'
+      ? 'rgba(0, 0, 0, 0.02)'
+      : 'rgba(255, 255, 255, 0.02)',
+  lineHeight: '18px',
+}));
 
 const stixCyberObservableMutation = graphql`
   mutation StixCyberObservableOverviewMutation(
@@ -113,7 +97,7 @@ class StixCyberObservableOverview extends Component {
   }
 
   render() {
-    const { t, fldt, classes, stixCyberObservable } = this.props;
+    const { t, fldt, stixCyberObservable } = this.props;
     const otherStixIds = stixCyberObservable.x_opencti_stix_ids || [];
     const stixIds = R.filter(
       (n) => n !== stixCyberObservable.standard_id,
@@ -206,9 +190,9 @@ class StixCyberObservableOverview extends Component {
                 >
                   {t('Standard STIX ID')}
                 </Label>
-                <div className={classes.standard_id}>
+                <StandardId>
                   <ItemCopy content={stixCyberObservable.standard_id} />
-                </div>
+                </StandardId>
               </div>
             </Grid>
           </Grid>
@@ -255,12 +239,8 @@ class StixCyberObservableOverview extends Component {
 
 StixCyberObservableOverview.propTypes = {
   stixCyberObservable: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fldt: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservableOverview);
+export default inject18n(StixCyberObservableOverview);

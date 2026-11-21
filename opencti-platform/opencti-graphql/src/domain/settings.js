@@ -31,16 +31,28 @@ import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/er
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { decodeLicensePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
+import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { getClusterInformation } from '../database/cluster-module';
 import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
 import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
 import { findById as findThemeById } from '../modules/theme/theme-domain';
 import { buildAvailableProviders } from './setting-auth';
-import { CguStatus } from '../generated/graphql';
+import { LOCAL_AUTH_LOCKOUT_KEYS } from './local-auth-lockout';
+import { CguStatus, PlatformEeSource } from '../generated/graphql';
+import { checkDateDisplayInput } from '../utils/dateDisplay';
+import { checkPolicyAcceptsAdminPassword } from '../modules/user/user-domain';
 import { getXtmOneRegistrationVersion, refreshXtmLicenseProof } from '../modules/xtm/one/xtm-one';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
+};
+
+// OpenCRQ instance URL (XTM__OPENCRQ_URL). XTM__OPENGRC_URL, the former product name, is read as a deprecated fallback.
+export const getOpenCrqUrl = () => {
+  const opencrqUrl = nconf.get('xtm:opencrq_url');
+  if (isNotEmptyField(opencrqUrl)) return opencrqUrl;
+  const deprecatedOpenGrcUrl = nconf.get('xtm:opengrc_url');
+  return isNotEmptyField(deprecatedOpenGrcUrl) ? deprecatedOpenGrcUrl : '';
 };
 
 export const getApplicationInfo = () => ({
@@ -147,13 +159,16 @@ export const getSettings = async (context) => {
     platform_map_tile_server_dark: null,
     platform_map_tile_server_light: null,
     platform_openaev_url: nconf.get('xtm:openaev_url'),
-    platform_opengrc_url: nconf.get('xtm:opengrc_url'),
+    platform_opencrq_url: getOpenCrqUrl(),
+    // Deprecated: OpenGRC is the former name of OpenCRQ, kept for API backward-compatibility.
+    platform_opengrc_url: getOpenCrqUrl(),
     platform_xtmhub_url: nconf.get('xtm:xtmhub_url'),
     platform_ai_type: `${getAIEndpointType()} ${nconf.get('ai:type')}`,
     platform_ai_model: nconf.get('ai:model'),
     platform_ai_has_token: !!isNotEmptyField(nconf.get('ai:token')),
     platform_theme: platformTheme,
     platform_trash_enabled: nconf.get('app:trash:enabled') ?? true,
+    platform_bootstrap_wizard_enabled: nconf.get('app:bootstrap_wizard:enabled') ?? true,
     platform_translations: nconf.get('app:translations') ?? '{}',
     filigran_chatbot_ai_url: XTM_ONE_CHATBOT_URL,
     platform_feature_flags: [
@@ -234,6 +249,8 @@ const SETTINGS_SET_PARAMETERS_KEYS = [
   'platform_favicon',
   'platform_email',
   'platform_language',
+  'platform_date_format',
+  'platform_time_format',
   'platform_whitemark',
   'platform_login_message',
   'platform_banner_text',
@@ -244,6 +261,7 @@ const SETTINGS_SET_PARAMETERS_KEYS = [
   'platform_session_idle_timeout',
   'platform_session_timeout',
   'platform_session_max_concurrent',
+  'platform_session_presence_enabled',
   'analytics_google_analytics_v4',
   'enterprise_license',
   'platform_trash_enabled',
@@ -298,7 +316,18 @@ const buildAuthorizedSettingsKeys = (user) => {
   return allowed;
 };
 
+// The bootstrap status is written by setPlatformBootstrapStatus only, whatever the capabilities of the caller
+const PLATFORM_BOOTSTRAP_STATUS_KEY = 'platform_bootstrap_status';
+const PLATFORM_BOOTSTRAP_STATUSES = ['pending', 'completed'];
+
 export const settingsEditField = async (context, user, settingsId, input) => {
+  if (input.some((i) => i.key === PLATFORM_BOOTSTRAP_STATUS_KEY)) {
+    throw ForbiddenAccess('The platform bootstrap status cannot be edited');
+  }
+  // Only updateLocalAuth writes it: it checks the bounds and removes the hashes no longer needed
+  if (input.some((i) => i.key === 'password_policy_history_count')) {
+    throw FunctionalError('The password history count can only be changed with the local authentication settings');
+  }
   const hasBypassCapability = isUserHasCapability(user, BYPASS);
   const hasSetXTMHubCapability = isUserHasCapability(user, SETTINGS_SETMANAGEXTMHUB) || hasBypassCapability;
   const allowedKeys = buildAuthorizedSettingsKeys(user);
@@ -308,11 +337,23 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   if (!hasBypassCapability && unauthorizedKeys.length > 0) {
     throw ForbiddenAccess('You are not allowed to edit some settings fields.', { unauthorizedKeys });
   }
+  // The lockout policy is only edited through updateLocalAuth, which validates it, so even BYPASS cannot patch it here
+  const lockoutKeys = input.map((i) => i.key).filter((key) => LOCAL_AUTH_LOCKOUT_KEYS.includes(key));
+  if (lockoutKeys.length > 0) {
+    throw FunctionalError('Local authentication lockout settings can only be edited through updateLocalAuth', { lockoutKeys });
+  }
 
   const data = hasSetXTMHubCapability ? completeXTMHubDataForRegistration(user, input) : input;
 
+  // The settings are read from the database: they know a license that the cache of this node does not yet
   const settings = await getSettings(context);
+  let isLicenseActivated = false;
   const enterpriseLicense = data.find((inputData) => inputData.key === 'enterprise_license');
+  // Enterprise Edition granted by the Filigran license of XTM One is not revocable here: XTM One owns it
+  if (enterpriseLicense && !enterpriseLicense.value?.some((value) => isNotEmptyField(value))
+    && getEnterpriseEditionInfo(settings).license_source === PlatformEeSource.XtmOneLicense) {
+    throw UnsupportedError('The Enterprise Edition is granted by the Filigran license of XTM One and cannot be disabled in this platform');
+  }
   if (enterpriseLicense && enterpriseLicense.value?.length > 0) {
     const license = enterpriseLicense.value[0];
     if (isNotEmptyField(license)) {
@@ -320,7 +361,16 @@ export const settingsEditField = async (context, user, settingsId, input) => {
       if (!info.license_validated) {
         throw UnsupportedError('Invalid license');
       }
+      isLicenseActivated = true;
     }
+  }
+  // Removing the Filigran logos is an Enterprise Edition feature: turning it on needs the license (or one given by the same edit),
+  // turning it off never does
+  // Every edit of the key counts: with a repeated key the last one is the one that is written
+  const whitemarks = data.filter((inputData) => inputData.key === 'platform_whitemark');
+  if (whitemarks.some((whitemark) => whitemark.value?.some((value) => value === true || value === 'true'))
+    && !isLicenseActivated && !isEnterpriseEditionFromSettings(settings)) {
+    throw UnsupportedError('Enterprise edition is not enabled');
   }
   const cguStatus = data.find((inputData) => inputData.key === 'filigran_chatbot_ai_cgu_status');
   if (cguStatus && cguStatus.value) {
@@ -329,6 +379,8 @@ export const settingsEditField = async (context, user, settingsId, input) => {
       throw UnsupportedError(`Invalid CGU status, expected one of ${validStatuses.join(', ')}`);
     }
   }
+
+  checkDateDisplayInput(data, 'platform_date_format', 'platform_time_format');
 
   const ipWhitelist = data.find((inputData) => inputData.key === 'platform_ip_whitelist');
   if (ipWhitelist && Array.isArray(ipWhitelist.value) && ipWhitelist.value.length > 0) {
@@ -348,6 +400,12 @@ export const settingsEditField = async (context, user, settingsId, input) => {
     if (invalidEntries.length > 0) {
       throw UnsupportedError(`Invalid IP address or CIDR entries in allow list: ${invalidEntries.join(', ')}`);
     }
+  }
+
+  // With app:admin:secure_by_default, a password policy that the configured admin password does not match would make the platform refuse to start
+  const passwordPolicyEdits = data.filter((inputData) => inputData.key.startsWith('password_policy_'));
+  if (passwordPolicyEdits.length > 0) {
+    checkPolicyAcceptsAdminPassword(context, { ...settings, ...Object.fromEntries(passwordPolicyEdits.map((inputData) => [inputData.key, inputData.value?.[0]])) });
   }
 
   await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, data);
@@ -533,28 +591,28 @@ export const getCriticalAlerts = async (context, user) => {
   return [];
 };
 
-// region config preset
-// Allowlists of the Settings fields a configuration preset carries. Anything not listed here
-// (credentials, license, providers, theme, branding) never leaves the platform through a preset.
-export const CONFIG_PRESET_PLATFORM_FIELDS = ['platform_title', 'platform_favicon', 'platform_language'];
-export const CONFIG_PRESET_MESSAGES_FIELDS = [
-  'platform_banner_text',
-  'platform_banner_level',
-  'platform_login_message',
-  'platform_consent_message',
-  'platform_consent_confirm_text',
-  'platform_no_access_message',
-];
-
-const pickConfigPresetFields = (settings, fields) => Object.fromEntries(fields.map((field) => [field, settings[field] ?? null]));
-
-export const getPlatformConfigPresetConfiguration = async (context) => {
+// The default theme of the platform, undefined when none is set or it no longer exists
+export const getPlatformDefaultTheme = async (context, user) => {
   const settings = await getSettingsFromDatabase(context);
-  return pickConfigPresetFields(settings, CONFIG_PRESET_PLATFORM_FIELDS);
+  return settings.platform_theme ? findThemeById(context, user, settings.platform_theme) : undefined;
 };
 
-export const getMessagesConfigPresetConfiguration = async (context) => {
-  const settings = await getSettingsFromDatabase(context);
-  return pickConfigPresetFields(settings, CONFIG_PRESET_MESSAGES_FIELDS);
+// The only writer of platform_bootstrap_status
+export const setPlatformBootstrapStatus = async (context, user, status) => {
+  if (!PLATFORM_BOOTSTRAP_STATUSES.includes(status)) {
+    throw UnsupportedError(`Invalid platform bootstrap status, expected one of ${PLATFORM_BOOTSTRAP_STATUSES.join(', ')}`);
+  }
+  const settings = await getSettings(context);
+  const data = [{ key: PLATFORM_BOOTSTRAP_STATUS_KEY, value: [status] }];
+  await updateAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, data);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `updates \`${PLATFORM_BOOTSTRAP_STATUS_KEY}\` for \`platform settings\``,
+    context_data: { id: settings.id, entity_type: ENTITY_TYPE_SETTINGS, input: data },
+  });
+  const updatedSettings = await getSettings(context);
+  return notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, user);
 };
-// endregion

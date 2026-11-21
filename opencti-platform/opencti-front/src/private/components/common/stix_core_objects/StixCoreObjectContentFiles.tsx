@@ -31,7 +31,8 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import { Stack, useTheme } from '@mui/material';
+import { Stack } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useTopBanner from '../../../../utils/hooks/useTopBanner';
@@ -246,6 +247,9 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={() => setAnchorEl(null)}
+            // The anchor lives in this fixed drawer, so page scroll cannot detach the menu. Locking
+            // scroll would hide the page scrollbar and slide the drawer into its gutter.
+            disableScrollLock
           >
             <StixCoreObjectFileExport
               onClose={() => setAnchorEl(null)}

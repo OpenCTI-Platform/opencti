@@ -70,6 +70,7 @@ const getXtmClient = (responseType: 'json' | 'stream', headers?: Record<string, 
   return getHttpClient({
     baseURL: XTM_ONE_URL,
     responseType,
+    trusted: true,
     headers,
   });
 };
@@ -683,6 +684,10 @@ export const postChatbotUpload = async (req: Express.Request, res: Express.Respo
     const conversationId = fields.conversation_id;
     if (!conversationId || files.length === 0) {
       res.status(400).json({ error: 'conversation_id field and at least one file are required' });
+      return;
+    }
+    if (!UUID_RE.test(conversationId)) {
+      res.status(400).json({ error: 'Invalid conversation id' });
       return;
     }
     const authHeaders = await generateBasicHeaders(req, context);

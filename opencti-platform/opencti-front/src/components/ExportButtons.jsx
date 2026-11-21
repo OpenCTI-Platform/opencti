@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import { CSVLink } from 'react-csv';
 import { ExploreOutlined, GetAppOutlined, ImageOutlined } from '@mui/icons-material';
 import { FileDelimitedOutline, FileExportOutline, FilePdfBox } from 'mdi-material-ui';
-import withTheme from '@mui/styles/withTheme';
-import withStyles from '@mui/styles/withStyles';
+import { styled } from '@mui/material/styles';
 import * as R from 'ramda';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -22,13 +21,8 @@ import { useExportTheme } from '../utils/ExportThemeContext';
 import { DASHBOARD_BUTTONS_STYLE } from '../private/components/workspaces/workspaceHeader/WorkspaceHeader';
 import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../utils/fdsLayer';
 
-const styles = () => ({
-  exportButtons: {
-    display: 'flex',
-  },
-  loader: {
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-  },
+const ExportButtonsContainer = styled('div')({
+  display: 'flex',
 });
 
 const DELAY = 1000;
@@ -39,6 +33,12 @@ export const EXPORT_BUTTONS_STYLE = { display: 'flex', gap: '8px' };
 const restoreStyle = (element, style) => {
   element.removeAttribute('style');
   Object.assign(element.style, style);
+};
+
+// Sets the style attribute back to what it was, or removes it if the element had none.
+const restoreStyleAttribute = (element, style) => {
+  if (style === null) element.removeAttribute('style');
+  else element.setAttribute('style', style);
 };
 
 const wait = async (delay = DELAY) => {
@@ -74,6 +74,10 @@ export class ExportButtons extends Component {
     const viewButtons = document.getElementById('container-view-buttons');
     const dashboardButtons = document.getElementById('dashboard-buttons');
     const dashboardRefreshControl = document.getElementById('dashboard-refresh-control');
+    const { prepareCapture } = this.props;
+    let capturedContainer = null;
+    let initialStyle = null;
+    let undoPrepareCapture = null;
 
     try {
       this.setState({ exporting: true });
@@ -85,6 +89,8 @@ export class ExportButtons extends Component {
       setExportTheme(themeNode);
 
       const container = document.getElementById(domElementId);
+      capturedContainer = container;
+      initialStyle = container.getAttribute('style');
 
       // Hide buttons: dashboard-buttons wraps everything (including export-buttons) on dashboards
       if (dashboardRefreshControl) {
@@ -102,6 +108,8 @@ export class ExportButtons extends Component {
         container.setAttribute('style', 'width:3840px; height:2160px');
         this.adjust(true);
       }
+      // After `adjust`, so a view that sizes its own capture wins over the fixed dashboard size.
+      undoPrepareCapture = prepareCapture?.(container) ?? null;
 
       // add some delay to permit the ui to re-render with the selected theme
       await wait();
@@ -118,6 +126,10 @@ export class ExportButtons extends Component {
     } catch {
       MESSAGING$.notifyError(t('Dashboard cannot be exported to image'));
     } finally {
+      if (prepareCapture && capturedContainer) {
+        undoPrepareCapture?.();
+        restoreStyleAttribute(capturedContainer, initialStyle);
+      }
       if (dashboardRefreshControl) {
         restoreStyle(dashboardRefreshControl, { display: 'flex' });
       }
@@ -146,6 +158,10 @@ export class ExportButtons extends Component {
     const exportButtons = document.getElementById('export-buttons');
     const dashboardButtons = document.getElementById('dashboard-buttons');
     const dashbaordRefreshControl = document.getElementById('dashboard-refresh-control');
+    const { prepareCapture } = this.props;
+    let capturedContainer = null;
+    let initialStyle = null;
+    let undoPrepareCapture = null;
 
     try {
       this.setState({ exporting: true });
@@ -167,6 +183,12 @@ export class ExportButtons extends Component {
         exportButtons?.setAttribute('style', 'display: none');
       }
 
+      if (prepareCapture) {
+        capturedContainer = document.getElementById(domElementId);
+        initialStyle = capturedContainer.getAttribute('style');
+        undoPrepareCapture = prepareCapture(capturedContainer) ?? null;
+      }
+
       // add some delay to permit the ui to re-render with the selected theme
       await wait();
 
@@ -180,6 +202,10 @@ export class ExportButtons extends Component {
     } catch (_e) {
       MESSAGING$.notifyError(t('Dashboard cannot be exported to pdf'));
     } finally {
+      if (prepareCapture && capturedContainer) {
+        undoPrepareCapture?.();
+        restoreStyleAttribute(capturedContainer, initialStyle);
+      }
       setExportTheme(null);
       this.setState({ exporting: false });
 
@@ -197,7 +223,6 @@ export class ExportButtons extends Component {
   render() {
     const { anchorElImage, anchorElPdf, exporting } = this.state;
     const {
-      classes,
       t,
       domElementId,
       name,
@@ -217,8 +242,7 @@ export class ExportButtons extends Component {
         {({ me, themes }) => {
           const isInDraft = me.draftContext;
           return (
-            <div
-              className={classes.exportButtons}
+            <ExportButtonsContainer
               id="export-buttons"
               style={EXPORT_BUTTONS_STYLE}
             >
@@ -335,11 +359,10 @@ export class ExportButtons extends Component {
               <Dialog
                 // Layer 2 like every other dialog paper, so the theme's
                 // `--bg-elevation-default` resolves to the same surface.
-                slotProps={{ paper: { elevation: 1, className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
+                slotProps={{ paper: { elevation: 1, className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars, backgroundColor: 'rgba(0, 0, 0, 0.8)' } } }}
                 open={exporting}
                 keepMounted={true}
                 fullScreen={true}
-                classes={{ paper: classes.loader }}
               >
                 <Loader />
               </Dialog>
@@ -350,7 +373,7 @@ export class ExportButtons extends Component {
                   data={csvData}
                 />
               )}
-            </div>
+            </ExportButtonsContainer>
           );
         }}
       </UserContext.Consumer>
@@ -371,7 +394,5 @@ const withExportTheme = (WrappedComponent) => {
 export default R.compose(
   withExportTheme,
   inject18n,
-  withTheme,
   withRouter,
-  withStyles(styles),
 )(ExportButtons);

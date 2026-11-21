@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, screen } from '@testing-library/react';
 import type { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
-import testRender from '../../../utils/tests/test-render';
+import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
 
 const mockSearchEntities = vi.fn();
 const mockUseSearchEntities = vi.fn();
@@ -236,6 +236,55 @@ describe('DashboardVariableValueInput', () => {
     });
   });
 
+  describe('entity restricted by filters', () => {
+    const rule = {
+      mode: 'and',
+      filters: [{ key: 'objectLabel', values: ['label-1'], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    };
+
+    it('searches within the rule, never through the free search of its type', async () => {
+      const variable: DashboardVariableShape = { type: 'entity', entityTypes: ['Organization'], restriction: { mode: 'filters', filters: rule } };
+      const { user, onChange, relayEnv } = renderInput(variable);
+      await user.click(screen.getByRole('combobox'));
+      expect(mockSearchEntities).not.toHaveBeenCalled();
+      const operation = relayEnv.mock.getMostRecentOperation();
+      expect(operation.request.variables).toEqual(expect.objectContaining({ search: '', types: ['Organization'] }));
+      expect(operation.request.variables.filters.filters[0]).toEqual(expect.objectContaining({ key: ['objectLabel'], values: ['label-1'] }));
+      act(() => {
+        relayEnv.mock.resolve(operation, {
+          data: { stixCoreObjects: { edges: [{ node: { __typename: 'Organization', id: 'org-1', entity_type: 'Organization', representative: { main: 'Acme Corp' } } }] } },
+        });
+      });
+      await user.click(await screen.findByRole('option', { name: 'Acme Corp' }));
+      expect(onChange).toHaveBeenCalledWith('org-1');
+    });
+
+    it('searches nothing for an entity variable of meta object types only', async () => {
+      const variable: DashboardVariableShape = { type: 'entity', entityTypes: ['Label'], restriction: { mode: 'filters', filters: rule } };
+      const userContext = createMockUserContext({ schema: { scrs: [], sdos: [], scos: [], smos: [{ id: 'Label', label: 'Label' }] } });
+      const { user, relayEnv } = testRender(<DashboardVariableValueInput variable={variable} value="" onChange={vi.fn()} />, { userContext });
+      await user.click(screen.getByRole('combobox'));
+      await user.type(screen.getByRole('combobox'), 'apt');
+      expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+      expect(screen.queryAllByRole('option')).toHaveLength(0);
+    });
+
+    it('goes back to every entity of the rule once a value is picked', async () => {
+      const variable: DashboardVariableShape = { type: 'entity', entityTypes: ['Organization'], restriction: { mode: 'filters', filters: rule } };
+      const { user, relayEnv } = renderInput(variable);
+      await user.click(screen.getByRole('combobox'));
+      await user.type(screen.getByRole('combobox'), 'ac');
+      act(() => {
+        relayEnv.mock.resolveMostRecentOperation({
+          data: { stixCoreObjects: { edges: [{ node: { __typename: 'Organization', id: 'org-1', entity_type: 'Organization', representative: { main: 'Acme Corp' } } }] } },
+        });
+      });
+      await user.click(await screen.findByRole('option', { name: 'Acme Corp' }));
+      expect(relayEnv.mock.getMostRecentOperation().request.variables.search).toBe('');
+    });
+  });
+
   describe('entity pool', () => {
     it('searches labels and emits the picked label id', async () => {
       mockEntities = {
@@ -298,12 +347,6 @@ describe('DashboardVariableValueInput', () => {
       expect(mockSearchEntities).not.toHaveBeenCalled();
       expect(screen.queryAllByRole('option')).toHaveLength(0);
       expect(screen.getByText('No available options')).toBeInTheDocument();
-    });
-
-    it('falls back to the free search of its type for a filters restriction', () => {
-      const filters = { mode: 'and' as const, filters: [], filterGroups: [] };
-      renderInput({ type: 'entity', entityTypes: ['Sector'], restriction: { mode: 'filters', filters } });
-      expect(mockUseSearchEntities).toHaveBeenCalledWith(expect.objectContaining({ searchScope: { id: ['Sector'] } }));
     });
 
     it('does not offer the dynamic @me user', async () => {

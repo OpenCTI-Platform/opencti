@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import { discovery as oidcDiscovery, refreshTokenGrant } from 'openid-client';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, logApp, TLS_REJECT_UNAUTHORIZED } from '../config/conf';
 import { meterManager } from '../config/tracing';
 import { getEntityFromCache } from './cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -12,7 +12,8 @@ import { decryptSmtpSecret } from '../modules/smtpConfiguration/smtpConfiguratio
 const SMTP_FORCED_EMAIL = conf.get('smtp:forced_sender_email');
 export const ALLOW_EMAIL_REWRITE = isEmptyField(SMTP_FORCED_EMAIL);
 const USE_SSL = booleanConf('smtp:use_ssl', false);
-const REJECT_UNAUTHORIZED = booleanConf('smtp:reject_unauthorized', false);
+const REJECT_UNAUTHORIZED = booleanConf('smtp:reject_unauthorized', TLS_REJECT_UNAUTHORIZED);
+const REQUIRE_TLS = booleanConf('smtp:require_tls', TLS_REJECT_UNAUTHORIZED);
 const SMTP_ENABLE = booleanConf('smtp:enabled', true);
 const SMTP_TIMEOUTS = {
   connectionTimeout: Number(conf.get('smtp:connection_timeout') ?? 10000),
@@ -28,6 +29,7 @@ export const SMTP_JSON_CONFIG = {
   port: conf.get('smtp:port') || null,
   use_ssl: USE_SSL,
   reject_unauthorized: REJECT_UNAUTHORIZED,
+  require_tls: REQUIRE_TLS,
   auth_type: conf.get('smtp:auth_type') || null,
   username: conf.get('smtp:username') || null,
   oauth_user: conf.get('smtp:oauth_user') || null,
@@ -47,6 +49,15 @@ const baseSmtpOptions = {
     minVersion: conf.get('smtp:tls_min_version'),
     ciphers: conf.get('smtp:tls_ciphers'),
   },
+};
+
+const SMTP_TRANSPORT_SELECTORS = {
+  url: undefined,
+  pool: false,
+  sendmail: false,
+  streamTransport: false,
+  jsonTransport: false,
+  SES: undefined,
 };
 
 // OAuth2 caches:
@@ -162,7 +173,7 @@ const buildSmtpOptionsFromDb = (dbConfig) => ({
   secure: dbConfig.use_ssl ?? false,
   ...SMTP_TIMEOUTS,
   tls: {
-    rejectUnauthorized: dbConfig.reject_unauthorized ?? false,
+    rejectUnauthorized: dbConfig.reject_unauthorized ?? TLS_REJECT_UNAUTHORIZED,
   },
 });
 
@@ -180,16 +191,35 @@ const getDbAuthParams = async (dbConfig) => ({
   },
 });
 
-// Build a nodemailer transporter from the effective SMTP configuration.
-// TODO: should we cache the transporter here? Without connection pooling
+// Connection security of the effective configuration, read without decrypting secrets or refreshing tokens.
+const getSmtpConnectionSecurity = (dbConfig) => {
+  if (dbConfig) {
+    return {
+      fromDatabase: true,
+      secure: dbConfig.use_ssl ?? false,
+      requireTls: dbConfig.require_tls ?? TLS_REJECT_UNAUTHORIZED,
+      rejectUnauthorized: dbConfig.reject_unauthorized ?? TLS_REJECT_UNAUTHORIZED,
+      hasCredentials: (dbConfig.auth_type ?? 'basic') === 'oauth2' || dbConfig.username?.length > 0,
+    };
+  }
+  return {
+    fromDatabase: false,
+    secure: USE_SSL,
+    requireTls: REQUIRE_TLS,
+    rejectUnauthorized: REJECT_UNAUTHORIZED,
+    hasCredentials: authType === 'oauth2' || conf.get('smtp:username')?.length > 0,
+  };
+};
 
-const createSmtpTransporter = async () => {
+// Build the nodemailer options from the effective SMTP configuration.
+const buildSmtpTransportOptions = async () => {
   const dbConfig = await getEffectiveDbConfig();
   const useDb = dbConfig !== null;
 
   const smtpOptions = useDb
     ? buildSmtpOptionsFromDb(dbConfig)
     : { ...baseSmtpOptions, tls: { ...baseSmtpOptions.tls } };
+  const { requireTls } = getSmtpConnectionSecurity(dbConfig);
 
   const effectiveAuthType = useDb ? (dbConfig.auth_type ?? 'basic') : authType;
   const authParams = useDb ? await getDbAuthParams(dbConfig) : getConfAuthParams();
@@ -197,8 +227,45 @@ const createSmtpTransporter = async () => {
   const smtpAuth = await buildSmtpAuth(effectiveAuthType, authParams);
   if (smtpAuth) {
     smtpOptions.auth = smtpAuth;
+    // Without implicit TLS, nodemailer only upgrades with STARTTLS when the server offers it,
+    // so a network attacker can strip it and read the credentials: requireTLS fails instead.
+    if (!smtpOptions.secure) {
+      smtpOptions.requireTLS = requireTls;
+    }
   }
-  return nodemailer.createTransport(smtpOptions);
+  return smtpOptions;
+};
+
+// Build a nodemailer transporter from the effective SMTP configuration.
+// TODO: should we cache the transporter here? Without connection pooling
+const createSmtpTransporter = async () => {
+  const smtpOptions = await buildSmtpTransportOptions();
+  return nodemailer.createTransport({ ...smtpOptions, ...SMTP_TRANSPORT_SELECTORS });
+};
+
+/**
+ * Warns at startup when the SMTP credentials can be read on the network.
+ * Must run once the cache is started, to read the configuration stored in the database.
+ */
+export const checkSmtpSecurity = async () => {
+  const dbConfig = await getEffectiveDbConfig();
+  const smtpEnabled = dbConfig ? (dbConfig.smtp_enabled ?? true) : SMTP_ENABLE;
+  const { fromDatabase, secure, requireTls, rejectUnauthorized, hasCredentials } = getSmtpConnectionSecurity(dbConfig);
+  if (!smtpEnabled || !hasCredentials) {
+    return;
+  }
+  if (!secure && !requireTls) {
+    const [setting, optIn] = fromDatabase
+      ? ['"Require STARTTLS" disabled in the SMTP configuration interface', 'enable "Require STARTTLS"']
+      : ['smtp:require_tls=false', 'set SMTP__REQUIRE_TLS=true'];
+    logApp.warn(`[OPENCTI] SMTP credentials may be sent over an unencrypted connection: STARTTLS is not required (${setting}). `
+      + `It will be required by default in an upcoming version: ${optIn} to opt in now.`);
+  } else if (!rejectUnauthorized) {
+    const setting = fromDatabase
+      ? '"Reject unauthorized certificates" disabled in the SMTP configuration interface'
+      : 'smtp:reject_unauthorized=false';
+    logApp.warn(`[OPENCTI] SMTP server certificate is not verified (${setting}): an attacker on the network can impersonate the server and read the credentials despite TLS.`);
+  }
 };
 
 /**
@@ -269,8 +336,9 @@ export const smtpIsAlive = async () => {
       const transporter = await createSmtpTransporter();
       await transporter.verify();
       logApp.info('[CHECK] SMTP is alive');
-    } catch {
-      logApp.warn('SMTP seems down, email notification may not work');
+    } catch (err) {
+      // With requireTLS, a server that does not upgrade the connection with STARTTLS fails here
+      logApp.warn('SMTP seems down, email notification may not work', { cause: err });
     }
   } else {
     logApp.info('[CHECK] SMTP disabled by configuration');

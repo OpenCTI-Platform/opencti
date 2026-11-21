@@ -24,6 +24,7 @@ import TextField from '../../../../components/TextField';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
@@ -39,6 +40,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { GroupingCreationMutation, GroupingCreationMutation$variables } from './__generated__/GroupingCreationMutation.graphql';
+import { authorizedMembersToInput } from '../../../../utils/authorizedMembers';
 
 const groupingMutation = graphql`
   mutation GroupingCreationMutation($input: GroupingAddInput!) {
@@ -102,6 +104,8 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
+  // Form Intake: nothing is created on the fly, there is no entity to map yet
+  const { isDeferredMode } = useDeferredCreation();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const { mandatoryAttributes } = useIsMandatoryAttribute(GROUPING_TYPE);
@@ -147,12 +151,8 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
-      ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
-        authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
-          id: value,
-          access_right: accessRight,
-          groups_restriction_ids: groupsRestriction ? groupsRestriction.map((g) => g.value) : [],
-        })),
+      ...(isEnterpriseEdition && canEditAuthorizedMembers && !isDeferredMode && values.authorized_members && {
+        authorized_members: authorizedMembersToInput(values.authorized_members),
       }),
     };
     commit({
@@ -288,7 +288,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
           <CustomFieldValuesCreation />
-          {isEnterpriseEdition && (
+          {isEnterpriseEdition && !isDeferredMode && (
             <Security
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
             >
@@ -326,7 +326,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             >
               {t_i18n('Create')}
             </Button>
-            {values.content.length > 0 && (
+            {!isDeferredMode && values.content.length > 0 && (
               <Button
                 onClick={() => {
                   setMapAfter(true);

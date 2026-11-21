@@ -1,7 +1,6 @@
 import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import GroupingDetails from './GroupingDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
@@ -9,17 +8,7 @@ import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOr
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
-
 const GroupingComponent = ({ grouping }) => {
-  const classes = useStyles();
-
   const overviewLayoutCustomization = useOverviewLayoutCustomization(grouping.entity_type);
 
   return (
@@ -27,7 +16,7 @@ const GroupingComponent = ({ grouping }) => {
       <Grid
         container={true}
         spacing={3}
-        className={classes.gridContainer}
+        sx={{ marginBottom: '20px' }}
       >
         {
           overviewLayoutCustomization.map(({ key, width }) => {

@@ -121,7 +121,7 @@ connector:
 
 !!! warning "STIX bundles size limit"
 
-    Currently the connector cannot send bundle larger the the configuration of the OpenCTI backend (default 50Mb). This configuration can be changed using the parameter `APP__MAX_PAYLOAD_BODY_SIZE=50mb` on the platform side.
+    Currently the connector cannot send bundle larger than the configuration of the OpenCTI backend (default 50mb, 10mb when `APP__HTTP__SECURE_BY_DEFAULT=true`). This configuration can be changed using the parameter `APP__MAX_PAYLOAD_BODY_SIZE=50mb` on the platform side.
 
 #### Listening data / jobs using HTTP instead of RabbitMQ
 
@@ -167,7 +167,7 @@ In this mode, the platform will use the workers to send the HTTP queries to the 
 
 | Parameter (yml)                           | Environment variable               | Default value | Description                                                      |
 |:------------------------------------------|:-----------------------------------|:--------------|:-----------------------------------------------------------------|
-| worker:listen_api_ssl_verify              | WORKER_LISTEN_API_SSL_VERIFY       |               | Verify SSL certificate when sending data to HTTP mode connectors |
+| worker:listen_api_ssl_verify              | WORKER_LISTEN_API_SSL_VERIFY       | Inherits `opencti:tls_reject_unauthorized` | Verify SSL certificate when sending data to HTTP mode connectors |
 | worker:listen_api_http_proxy              | WORKER_LISTEN_API_HTTP_PROXY       |               | Use a proxy to send the data to HTTP mode connectors             |
 | worker:listen_api_https_proxy             | WORKER_LISTEN_API_HTTPS_PROXY      |               | Use a proxy to send the data to HTTP mode connectors (SSL).      |
 

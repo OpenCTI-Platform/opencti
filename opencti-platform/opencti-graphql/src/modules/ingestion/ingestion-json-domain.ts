@@ -13,7 +13,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import * as JSONPath from 'jsonpath-plus';
 import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
@@ -24,7 +23,7 @@ import { connectorIdFromIngestId, registerConnectorForIngestion, unregisterConne
 import { publishUserAction } from '../../listener/UserActionListener';
 import { type BasicStoreEntityJsonMapper, ENTITY_TYPE_JSON_MAPPER, type JsonMapperParsed, type JsonMapperRepresentation } from '../internal/jsonMapper/jsonMapper-types';
 import { type EditInput, FilterMode, IngestionAuthType, type IngestionJsonAddInput, type JsonMapperTestResult } from '../../generated/graphql';
-import { notify } from '../../database/redis';
+import { notify, redisDeleteIngestionLogHistory } from '../../database/redis';
 import { BUS_TOPICS, logApp, PLATFORM_VERSION } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { getHttpClient, type GetHttpClient, OpenCTIHeaders } from '../../utils/http-client';
@@ -32,34 +31,39 @@ import { isEmptyField, isNotEmptyField, wait } from '../../database/utils';
 import { createJsonMapperFromConfiguration, findById as findJsonMapperById } from '../internal/jsonMapper/jsonMapper-domain';
 import { SYSTEM_USER } from '../../utils/access';
 import jsonMappingExecution from '../../parser/json-mapper';
+import { queryJsonPath } from '../../utils/jsonPath.client';
 import type { StixObject } from '../../types/stix-2-1-common';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { encryptIngestionCredential, decryptIngestionCredential, FEED_REQUEST_TIMEOUT } from './ingestion-common';
 import { extractContentFrom } from '../../utils/fileToContent';
+import { isSameUriDestination, isSensitiveParameterName, uriOrigin } from './ingestion-uri-credentials';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { FunctionalError } from '../../config/errors';
 import { convertRepresentationsIds } from '../internal/mapper-utils';
 import { validateIngestionExecutionIdentity, validateIngestionExecutionIdentityFromEditInputs, validateStoredIngestionExecutionIdentity } from './ingestion-execution-identity';
+import { isConfigPresetFeedFile, resolveFeedFileMarkings } from './ingestion-file-import';
 
 const MINIMAL_JSON_FEED_COMPATIBLE_VERSION = '7.260722.0';
 
 interface JsonQueryFetchOpts {
   maxResults?: number;
   timeout?: number;
+  // Checked before each sub page is fetched: when it answers true, the pagination stops and the result is marked aborted.
+  isStopped?: () => Promise<boolean>;
 }
 
 const getValueFromPath = (path: string, json: any) => {
-  return JSONPath.JSONPath({ path, json, wrap: false, flatten: true });
+  return queryJsonPath({ path, json, wrap: false, flatten: true });
 };
-const buildQueryObject = (queryParamsAttributes: Array<DataParam> | undefined, requestData: Record<string, any>, withDefault = true) => {
+const buildQueryObject = async (queryParamsAttributes: Array<DataParam> | undefined, requestData: Record<string, any>, withDefault = true) => {
   const params: Record<string, object | string> = {};
   if (queryParamsAttributes) {
     for (let attrIndex = 0; attrIndex < queryParamsAttributes.length; attrIndex += 1) {
       const queryParamsAttribute = queryParamsAttributes[attrIndex];
       let attrValue;
       if (queryParamsAttribute.type === 'data') {
-        let valueFromPath = getValueFromPath(queryParamsAttribute.from, requestData);
+        let valueFromPath = await getValueFromPath(queryParamsAttribute.from, requestData);
         if (queryParamsAttribute.data_operation === 'count' && valueFromPath) {
           valueFromPath = Array.isArray(valueFromPath) ? valueFromPath.length : 1;
         }
@@ -135,7 +139,8 @@ const filterVariablesForAttributes = (attributes: Array<DataParam>, variables: R
 };
 
 export const executeJsonQuery = async (context: AuthContext, ingestion: BasicStoreEntityIngestionJson, opts: JsonQueryFetchOpts = {}) => {
-  const { maxResults = 0, timeout = FEED_REQUEST_TIMEOUT } = opts;
+  const { maxResults = 0, timeout = FEED_REQUEST_TIMEOUT, isStopped } = opts;
+  let aborted = false;
   let certificates;
   const headers = new OpenCTIHeaders();
   headers.Accept = 'application/json';
@@ -145,7 +150,7 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
     headers[h.name] = h.value;
   }
   // Prepare headers
-  const variables = isEmptyField(ingestion.ingestion_json_state) ? buildQueryObject(ingestion.query_attributes, {}) : ingestion.ingestion_json_state;
+  const variables = isEmptyField(ingestion.ingestion_json_state) ? await buildQueryObject(ingestion.query_attributes, {}) : ingestion.ingestion_json_state;
   const headerVariables = filterVariablesForAttributes(ingestion.query_attributes ?? [], variables, 'header');
   Object.entries(headerVariables).forEach(([k, v]) => {
     headers[k] = String(v);
@@ -169,11 +174,14 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   }
   const httpClientOptions: GetHttpClient = {
     headers,
-    rejectUnauthorized: ingestion.ssl_verify ?? false,
+    // JSON feeds without ssl_verify have always been verified, unlike the other feed types.
+    // Keep it until tls:reject_unauthorized defaults to true, then follow it with ingestion.ssl_verify.
+    rejectUnauthorized: ingestion.ssl_verify ?? true,
     timeout,
     responseType: 'json',
     certificates,
     beforeRedirect: (redirectUrl) => verifyIngestionUri(redirectUrl),
+    feature: 'JSON feed',
   };
   const httpClient = getHttpClient(httpClientOptions);
   // Prepare query params
@@ -181,12 +189,33 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   const parsedUri = replaceVariables(ingestion.uri, queryVariables);
   // Re-validate after variable substitution to prevent placeholder bypass of deny list
   verifyIngestionUri(parsedUri);
+  // The credentials and headers of the feed go to its own server only: a variable must not change the server the URI points to
+  if (uriOrigin(parsedUri) !== uriOrigin(ingestion.uri)) {
+    throw FunctionalError('The URI of the feed points to another server once its variables are replaced', { uri: ingestion.uri });
+  }
+  // A next page on another server (a CDN) is fetched without the credentials nor the sensitive headers of the feed
+  let publicHttpClient: ReturnType<typeof getHttpClient> | undefined;
+  const subPageClient = (url: string) => {
+    if (isSameUriDestination(parsedUri, url)) {
+      return httpClient;
+    }
+    if (!publicHttpClient) {
+      const publicHeaders = new OpenCTIHeaders();
+      Object.entries(headers)
+        .filter(([name]) => name.toLowerCase() !== 'authorization' && !isSensitiveHeaderName(name))
+        .forEach(([name, value]) => {
+          publicHeaders[name] = value;
+        });
+      publicHttpClient = getHttpClient({ ...httpClientOptions, headers: publicHeaders, certificates: undefined });
+    }
+    return publicHttpClient;
+  };
   // Prepare body
   const bodyVariables = filterVariablesForAttributes(ingestion.query_attributes ?? [], variables, 'body');
   const parsedBody = replaceVariables(ingestion.body, bodyVariables);
   // Execute the http query
   logApp.info(`> Main query: ${parsedUri}`, { body: parsedBody });
-  const { data: requestData, headers: responseHeaders } = await httpClient.call({
+  const { data: requestData, headers: responseHeaders } = await httpClient.request({
     method: ingestion.verb,
     url: parsedUri,
     data: parsedBody,
@@ -200,27 +229,32 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const ingestionUser = ingestion.user_id ? platformUsers.get(ingestion.user_id) : null;
   let objects = await jsonMappingExecution(context, ingestionUser || SYSTEM_USER, requestData, jsonMapperParsed, maxResults);
-  let nextExecutionState = buildQueryObject(ingestion.query_attributes, { ...requestData, ...responseHeaders }, false);
+  let nextExecutionState = await buildQueryObject(ingestion.query_attributes, { ...requestData, ...responseHeaders }, false);
   // region Try to paginate with next page style
   if (ingestion.pagination_with_sub_page && isNotEmptyField(ingestion.pagination_with_sub_page_attribute_path)) {
-    let url = toUrlString(getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, requestData));
+    let url = toUrlString(await getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, requestData));
     while (isNotEmptyField(url) && (maxResults === 0 || objects.length < maxResults)) {
+      if (isStopped && await isStopped()) {
+        logApp.info('> Sub query stopped: the feed is no longer running');
+        aborted = true;
+        break;
+      }
       verifyIngestionUri(url);
       logApp.info(`> Sub query: ${url}`);
       await wait(100); // Wait 100 ms between 2 calls
-      const { data: paginationData } = await httpClient.call({
+      const { data: paginationData } = await subPageClient(url).request({
         method: ingestion.pagination_with_sub_page_query_verb ?? ingestion.verb,
         url,
         data: ingestion.body,
       });
-      const paginationVariables = buildQueryObject(ingestion.query_attributes, { ...paginationData, ...responseHeaders }, false);
+      const paginationVariables = await buildQueryObject(ingestion.query_attributes, { ...paginationData, ...responseHeaders }, false);
       nextExecutionState = { ...nextExecutionState, ...paginationVariables };
       const maxObjects = maxResults === 0 ? 0 : maxResults - objects.length;
       const paginationObjects = await jsonMappingExecution(context, ingestionUser || SYSTEM_USER, paginationData, jsonMapperParsed, maxObjects);
       if (paginationObjects.length > 0) {
         objects = objects.concat(paginationObjects);
       }
-      url = toUrlString(getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, paginationData));
+      url = toUrlString(await getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, paginationData));
     }
   }
   // endregion
@@ -228,7 +262,7 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   if (maxResults > 0) {
     objects = objects.slice(0, maxResults);
   }
-  return { objects, variables, nextExecutionState };
+  return { objects, variables, nextExecutionState, aborted };
 };
 
 export const findById = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
@@ -250,6 +284,7 @@ export const findJsonMapperForIngestionById = (context: AuthContext, user: AuthU
 export const deleteIngestionJson = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
   const deleted = await deleteElementById<StoreEntityIngestionJson>(context, user, ingestionId, ENTITY_TYPE_INGESTION_JSON);
   await unregisterConnectorForIngestion(context, deleted.id);
+  await redisDeleteIngestionLogHistory(deleted.internal_id);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -265,9 +300,36 @@ export const deleteIngestionJson = async (context: AuthContext, user: AuthUser, 
 // like authentication_value, sensitive ones are blanked in the export and must
 // be set again at import time.
 const SENSITIVE_HEADER_NAME = /authorization|token|key|secret|password|cookie|credential/i;
+export const isSensitiveHeaderName = (name: string) => SENSITIVE_HEADER_NAME.test(name);
 export const sanitizeExportedHeaders = (headers: { name: string; value: string }[] | undefined) => {
-  return headers?.map((header) => (SENSITIVE_HEADER_NAME.test(header.name) ? { ...header, value: '' } : header));
+  return headers?.map((header) => (isSensitiveHeaderName(header.name) ? { ...header, value: '' } : header));
 };
+
+// A query attribute sends its default value as a header, a query parameter or in the body: a sensitive one is a credential too.
+// A header name is matched like the headers, so that a missed secret never goes out in clear; a parameter or body name by its words
+export const isSensitiveQueryAttribute = (attribute: { exposed?: string | null; to?: string | null }) => {
+  if (!attribute.to) {
+    return false;
+  }
+  return attribute.exposed === 'header' ? isSensitiveHeaderName(attribute.to) : isSensitiveParameterName(attribute.to);
+};
+export const sanitizeExportedQueryAttributes = <T extends { exposed?: string | null; to?: string | null; default?: string | null }>(attributes: T[] | undefined) => {
+  return attributes?.map((attribute) => (isSensitiveQueryAttribute(attribute) ? { ...attribute, default: '' } : attribute));
+};
+
+const auditSafeJsonFeedValue = (key: string, value: unknown) => {
+  if (key === 'headers' && Array.isArray(value)) {
+    return sanitizeExportedHeaders(value);
+  }
+  if (key === 'query_attributes' && Array.isArray(value)) {
+    return sanitizeExportedQueryAttributes(value);
+  }
+  return value;
+};
+const auditSafeJsonFeedInput = <T extends object>(input: T) => {
+  return Object.fromEntries(Object.entries(input).map(([key, value]) => [key, auditSafeJsonFeedValue(key, value)])) as T;
+};
+const auditSafeJsonFeedEditInputs = (inputs: EditInput[]) => inputs.map((input) => ({ ...input, value: auditSafeJsonFeedValue(input.key, input.value) as EditInput['value'] }));
 
 // Exports the feed configuration with the JSON mapper embedded (a JSON feed
 // references its mapper, so the export must be self-contained). Credentials,
@@ -305,7 +367,7 @@ export const jsonFeedExport = async (context: AuthContext, user: AuthUser, inges
       pagination_with_sub_page_attribute_path,
       pagination_with_sub_page_query_verb,
       headers: sanitizeExportedHeaders(headers),
-      query_attributes,
+      query_attributes: sanitizeExportedQueryAttributes(query_attributes),
       authentication_type,
       authentication_value: '',
       ssl_verify,
@@ -348,8 +410,13 @@ export const jsonFeedAddInputFromImport = async (context: AuthContext, user: Aut
     ? existingMappers[0]
     : await createJsonMapperFromConfiguration(context, user, jsonMapperConfiguration);
 
+  // A feed taken from a configuration bundle references its markings by standard id
+  const markings = isConfigPresetFeedFile(parsedData, 'jsonFeeds')
+    ? (await resolveFeedFileMarkings(context, configuration.markings)).map(({ internal_id }) => internal_id)
+    : [];
   return {
     ...configuration,
+    markings,
     jsonMapper: { id: jsonMapper.id, name: jsonMapper.name },
   };
 };
@@ -379,7 +446,7 @@ export const addIngestionJson = async (context: AuthContext, user: AuthUser, inp
       event_scope: 'create',
       event_access: 'administration',
       message: `creates json ingestion \`${input.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_JSON, input },
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_JSON, input: auditSafeJsonFeedInput(input) },
     });
   }
   return element;
@@ -470,7 +537,7 @@ export const ingestionJsonEditField = async (context: AuthContext, user: AuthUse
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for json ingestion \`${element.name}\``,
-    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_JSON, input },
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_JSON, input: auditSafeJsonFeedEditInputs(input) },
   });
 
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);

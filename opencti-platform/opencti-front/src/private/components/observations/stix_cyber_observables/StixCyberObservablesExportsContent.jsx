@@ -1,8 +1,7 @@
 import List from '@mui/material/List';
 import Slide from '@mui/material/Slide';
-import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
+import { pathOr } from 'ramda';
 import React, { Component } from 'react';
 import { createRefetchContainer, graphql } from 'react-relay';
 import { interval } from 'rxjs';
@@ -19,29 +18,6 @@ const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
-
-const styles = (theme) => ({
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  listIcon: {
-    marginRight: 0,
-  },
-  item: {
-    padding: '0 0 0 10px',
-  },
-  itemField: {
-    padding: '0 15px 0 15px',
-  },
-  toolbar: theme.mixins.toolbar,
-});
 
 class StixCyberObservablesExportsContentComponent extends Component {
   componentDidMount() {
@@ -143,7 +119,4 @@ StixCyberObservablesExportsContent.propTypes = {
   exportContext: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservablesExportsContent);
+export default inject18n(StixCyberObservablesExportsContent);

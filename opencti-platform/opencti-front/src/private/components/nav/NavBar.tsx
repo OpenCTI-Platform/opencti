@@ -1,6 +1,6 @@
 import { Navbar, NavbarItem, NavbarSeparator, NavbarSubmenu, NavbarSubmenuItem, ProductSwitcher } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import { Link, useLocation } from 'react-router';
 import { useFormatter } from '../../../components/i18n';
@@ -8,11 +8,14 @@ import { Theme } from '../../../components/Theme';
 import { THEME_DARK_DEFAULT_BACKGROUND } from '../../../components/ThemeDark';
 import logoOpenAEVDark from '../../../static/images/logo_open_aev_dark.svg';
 import logoOpenAEVLight from '../../../static/images/logo_open_aev_light.svg';
+import logoOpenCRQDark from '../../../static/images/logo_open_crq_dark.svg';
+import logoOpenCRQLight from '../../../static/images/logo_open_crq_light.svg';
 import logoXTMHubDark from '../../../static/images/logo_xtm_hub_dark.svg';
 import logoXTMHubLight from '../../../static/images/logo_xtm_hub_light.svg';
 import LogoCollapsedOrange from '../../../static/images/logo_orange.svg';
 import LogoTextOrange from '../../../static/images/logo_text_orange.svg';
 import useAuth from '../../../utils/hooks/useAuth';
+import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useTopBanner from '../../../utils/hooks/useTopBanner';
 import useGranted, { SETTINGS_SETMANAGEXTMHUB } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -24,6 +27,7 @@ import { readNavOpen, readSelectedMenu, writeNavOpen, writeSelectedMenu } from '
 import useNavMenu, { NavGroup, NavItem, NavSubItem } from './useNavMenu';
 
 const OPENAEV_FALLBACK_URL = 'https://filigran.io/solutions/open-aev/';
+const OPENCRQ_FALLBACK_URL = 'https://filigran.io/products/opencrq';
 const XTMHUB_FALLBACK_URL = 'https://hub.filigran.io';
 
 export const navBarQuery = graphql`
@@ -39,6 +43,21 @@ export const isRouteSelected = (pathname: string, link: string, exact?: boolean)
   if (link === '/dashboard/data' && pathname.includes('/import/draft/')) return false;
   return pathname === link || pathname.startsWith(`${link}/`);
 };
+
+/** A row standing for several pages (a sub-section) is selected on any of them. */
+export const isSubItemSelected = (pathname: string, sub: NavSubItem): boolean => (
+  (sub.paths ?? [sub.link]).some((path) => isRouteSelected(pathname, path, sub.exact))
+);
+
+/** Id of the menu section holding the page being shown, if any. Same test as the selected row. */
+export const findSectionToOpen = (groups: NavGroup[], pathname: string): string | undefined => groups
+  .flatMap((group) => group.items)
+  .find((item) => item.subItems?.some((sub) => isSubItemSelected(pathname, sub)))?.id;
+
+/** `menus` with `id` open: alone when sections auto collapse, next to the others otherwise. */
+export const openSection = (menus: string[], id: string, autoCollapse: boolean): string[] => (
+  autoCollapse ? [id] : [...menus.filter((menu) => menu !== id), id]
+);
 
 export interface NavBarViewProps {
   groups: NavGroup[];
@@ -97,7 +116,7 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
       to={sub.link}
       linkComponent={Link}
       icon={sub.icon}
-      aria-current={isRouteSelected(pathname, sub.link, sub.exact) ? 'page' : undefined}
+      aria-current={isSubItemSelected(pathname, sub) ? 'page' : undefined}
     >
       {sub.label}
     </NavbarSubmenuItem>
@@ -176,6 +195,7 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
     me: { submenu_auto_collapse: submenuAutoCollapse, submenu_show_icons: submenuShowIcons, draftContext },
     settings: {
       platform_openaev_url: openAEVUrl,
+      platform_opencrq_url: openCRQUrl,
       platform_xtmhub_url: xtmhubUrl,
       xtm_hub_registration_status: xtmhubStatus,
     },
@@ -193,6 +213,7 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
   // own margins; only the platform message banner is left for the rail to reserve here.
   const flowOffset = `${settingsMessagesBannerHeight}px`;
   const hasXtmHubAccess = useGranted([SETTINGS_SETMANAGEXTMHUB]);
+  const isEnterpriseEdition = useEnterpriseEdition();
   const data = usePreloadedQuery<NavBarQuery>(navBarQuery, queryRef);
   const groups = useNavMenu();
 
@@ -207,17 +228,24 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
   };
 
   const handleSubmenuOpenChange = (id: string, open: boolean) => {
-    let updated: string[];
-    if (!open) {
-      updated = openSubmenus.filter((menu) => menu !== id);
-    } else if (submenuAutoCollapse) {
-      updated = [id];
-    } else {
-      updated = [...openSubmenus.filter((menu) => menu !== id), id];
-    }
+    const updated = open
+      ? openSection(openSubmenus, id, !!submenuAutoCollapse)
+      : openSubmenus.filter((menu) => menu !== id);
     setOpenSubmenus(updated);
     writeSelectedMenu(updated);
   };
+
+  // Reaching a page (search, link, URL) opens its section. Not tied to `openSubmenus`, so closing it by hand sticks.
+  const currentSection = findSectionToOpen(groups, location.pathname);
+  useEffect(() => {
+    if (!currentSection || !navOpen) return;
+    setOpenSubmenus((menus) => {
+      if (menus.includes(currentSection)) return menus;
+      const updated = openSection(menus, currentSection, !!submenuAutoCollapse);
+      writeSelectedMenu(updated); // idempotent, so safe if React runs the updater twice
+      return updated;
+    });
+  }, [location.pathname, currentSection, navOpen, submenuAutoCollapse]);
 
   const isLightTheme = theme.palette.mode === 'light';
 
@@ -275,6 +303,13 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
               href: isNotEmptyField(openAEVUrl) ? (openAEVUrl as string) : OPENAEV_FALLBACK_URL,
             },
             {
+              id: 'opencrq',
+              label: t_i18n('OpenCRQ'),
+              tooltip: isNotEmptyField(openCRQUrl) ? t_i18n('Platform connected') : t_i18n('Get OpenCRQ now'),
+              logo: <img src={isLightTheme ? logoOpenCRQLight : logoOpenCRQDark} alt="" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />,
+              href: isNotEmptyField(openCRQUrl) ? (openCRQUrl as string) : OPENCRQ_FALLBACK_URL,
+            },
+            {
               id: 'xtmhub',
               label: t_i18n('XTM Hub'),
               logo: <img src={isLightTheme ? logoXTMHubLight : logoXTMHubDark} alt="" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />,
@@ -285,7 +320,8 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
           ]}
         />
       )}
-      footer={!data?.settings?.platform_whitemark && (
+      // The whitemark only counts with the Enterprise Edition, as on the login page and the loader
+      footer={!(data?.settings?.platform_whitemark && isEnterpriseEdition) && (
         <MadeByFiligran collapsed={!navOpen} />
       )}
     />

@@ -4,7 +4,7 @@ import { Field, Form, Formik, FormikConfig, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { useTheme } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import Drawer, { DrawerControlledDialType } from '@components/common/drawer/Drawer';
 import { FintelDesignFormDrawerAddMutation } from '@components/settings/fintel_design/__generated__/FintelDesignFormDrawerAddMutation.graphql';
 import { FintelDesignFormDrawerFocusMutation } from '@components/settings/fintel_design/__generated__/FintelDesignFormDrawerFocusMutation.graphql';

@@ -59,7 +59,7 @@ const TransitionNode = ({ data, id }: NodeProps) => {
   const sourcePosition = isBackwardTransition ? Position.Top : Position.Bottom;
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', ...hoverFade(dimmed) }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', ...hoverFade(dimmed) }} data-testid={`workflow-transition-node-${id}`}>
       <Handle
         type="target"
         position={targetPosition}
@@ -106,6 +106,11 @@ const TransitionNode = ({ data, id }: NodeProps) => {
               {data.comment && data.comment !== CommentMode.disabled && (
                 <li>
                   {data.comment === CommentMode.required ? t_i18n('comment required') : t_i18n('comment allowed')}
+                </li>
+              )}
+              {data.closingReason && data.closingReason !== CommentMode.disabled && (
+                <li>
+                  {data.closingReason === CommentMode.required ? t_i18n('closing reason required') : t_i18n('closing reason allowed')}
                 </li>
               )}
             </ul>

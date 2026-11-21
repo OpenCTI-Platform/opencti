@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import Button from '@common/button/Button';
 import { graphql } from 'react-relay';
@@ -7,7 +7,6 @@ import * as Yup from 'yup';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { VocabulariesLinesPaginationQuery$variables } from '@components/settings/__generated__/VocabulariesLinesPaginationQuery.graphql';
 import TextField from '../../../../components/TextField';
-import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { VocabularyAddInput, VocabularyCategory, VocabularyCreationMutation } from './__generated__/VocabularyCreationMutation.graphql';
 import { insertNode } from '../../../../utils/store';
@@ -15,28 +14,23 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import ColorPickerField from '../../../../components/ColorPickerField';
 
 interface VocabularyCreationProps {
   paginationOptions: VocabulariesLinesPaginationQuery$variables;
   category: VocabularyCategory;
 }
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-}));
+const Buttons = styled('div')({
+  marginTop: 20,
+  textAlign: 'right',
+});
+
+const Text = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 const vocabularyAdd = graphql`
   mutation VocabularyCreationMutation($input: VocabularyAddInput!) {
@@ -49,13 +43,13 @@ const vocabularyAdd = graphql`
 const labelValidation = (t: (v: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   order: Yup.number().nullable(),
+  color: Yup.string().nullable().matches(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, { excludeEmptyString: true, message: t('The value must be a hex color, for example #e53935') }),
 });
 
 const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
   paginationOptions,
   category,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const [addVocab] = useApiMutation<VocabularyCreationMutation>(vocabularyAdd);
@@ -65,6 +59,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
     description: string;
     aliases: { value: string }[];
     order: number;
+    color: string;
   }
 
   const onSubmit: FormikConfig<FormInterface>['onSubmit'] = (
@@ -76,6 +71,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
       description: values.description,
       aliases: values.aliases.map((a) => a.value),
       order: parseInt(String(values.order), 10),
+      ...(values.color ? { color: values.color } : {}),
       category,
     };
     addVocab({
@@ -110,6 +106,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
             description: '',
             aliases: [] as { value: string }[],
             order: 0,
+            color: '',
           }}
           validationSchema={labelValidation(t_i18n)}
           onSubmit={(values, formikHelpers) => {
@@ -146,7 +143,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                 }}
                 options={[]}
                 renderOption={(option: FieldOption) => (
-                  <div className={classes.text}>{option.label}</div>
+                  <Text>{option.label}</Text>
                 )}
               />
               <Field
@@ -158,23 +155,32 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                 type="number"
                 className="mt-5"
               />
-              <div className={classes.buttons}>
+              <Field
+                component={ColorPickerField}
+                variant="outlined"
+                name="color"
+                label={t_i18n('Color')}
+                helperText={t_i18n('Color of the value wherever it is shown as a tag. Empty: the neutral tag.')}
+                fullWidth={true}
+                className="mt-5"
+              />
+              <Buttons>
                 <Button
                   variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
+                  sx={{ marginLeft: 2 }}
                 >
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
                   onClick={submitForm}
                   disabled={isSubmitting || !isValid || !dirty}
-                  classes={{ root: classes.button }}
+                  sx={{ marginLeft: 2 }}
                 >
                   {t_i18n('Create')}
                 </Button>
-              </div>
+              </Buttons>
             </Form>
           )}
         </Formik>

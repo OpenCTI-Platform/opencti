@@ -27,7 +27,7 @@ export const initialStaticPaginationForGroupUsers = {
 };
 
 const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
-  const { t_i18n, fd } = useFormatter();
+  const { t_i18n, ftd } = useFormatter();
   const LOCAL_STORAGE_KEY = `group-${groupId}-users`;
   const {
     viewStorage,
@@ -85,7 +85,7 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
       label: 'Password valid until',
       width: '10%',
       isSortable: true,
-      render: (v: string) => fd(v),
+      render: (v: string) => ftd(v),
     },
     created_at: {
       label: 'Platform creation date',

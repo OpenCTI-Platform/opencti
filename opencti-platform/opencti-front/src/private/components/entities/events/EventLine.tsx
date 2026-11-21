@@ -6,8 +6,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
-import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import { EventLine_node$key } from '@components/entities/events/__generated__/EventLine_node.graphql';
 import { DraftChip } from '@components/common/draft/DraftChip';
 import { ListItemButton } from '@mui/material';
@@ -17,22 +16,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: bodyItemStyle,
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 interface EventLineProps {
   node: EventLine_node$key;
@@ -66,57 +50,51 @@ export const EventLine: FunctionComponent<EventLineProps> = ({
   dataColumns,
   node,
 }) => {
-  const classes = useStyles();
-  const { fd } = useFormatter();
+  const { ftd } = useFormatter();
   const data = useFragment(eventLineFragment, node);
   return (
     <ListItemButton
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       component={Link}
       to={`/dashboard/entities/events/${data.id}`}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type="Event" />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.name.width }}
             >
               {data.name}
               {data.draftVersion && (<DraftChip />)}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.event_types.width }}
             >
               <FieldOrEmpty source={data.event_types}>{data.event_types?.join(', ')}</FieldOrEmpty>
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.start_time.width }}
             >
-              {fd(data.start_time)}
-            </div>
-            <div
-              className={classes.bodyItem}
+              {ftd(data.start_time)}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.stop_time.width }}
             >
-              {fd(data.stop_time)}
-            </div>
-            <div
-              className={classes.bodyItem}
+              {ftd(data.stop_time)}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.created.width }}
             >
-              {fd(data.created)}
-            </div>
+              {ftd(data.created)}
+            </BodyItem>
           </div>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
     </ListItemButton>
@@ -128,10 +106,9 @@ export const EventLineDummy = ({
 }: {
   dataColumns: DataColumns;
 }) => {
-  const classes = useStyles();
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+    <ListItem sx={{ paddingLeft: '10px', height: 50 }} divider={true}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton
           animation="wave"
           variant="circular"
@@ -142,8 +119,7 @@ export const EventLineDummy = ({
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.name.width }}
             >
               <Skeleton
@@ -152,9 +128,8 @@ export const EventLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.event_types.width }}
             >
               <Skeleton
@@ -163,9 +138,8 @@ export const EventLineDummy = ({
                 width={140}
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.start_time.width }}
             >
               <Skeleton
@@ -174,9 +148,8 @@ export const EventLineDummy = ({
                 width={140}
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.stop_time.width }}
             >
               <Skeleton
@@ -185,9 +158,8 @@ export const EventLineDummy = ({
                 width={140}
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.created.width }}
             >
               <Skeleton
@@ -196,11 +168,11 @@ export const EventLineDummy = ({
                 width={140}
                 height="100%"
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
     </ListItem>

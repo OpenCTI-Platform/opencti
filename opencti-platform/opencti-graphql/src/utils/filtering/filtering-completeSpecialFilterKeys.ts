@@ -7,6 +7,7 @@ import {
   COMPUTED_RELIABILITY_FILTER,
   CUSTOM_FIELD_BOOLEAN_VALUE_SUBFILTER,
   CUSTOM_FIELD_DATE_VALUE_SUBFILTER,
+  CUSTOM_FIELD_FLOAT_VALUE_SUBFILTER,
   CUSTOM_FIELD_INT_VALUE_SUBFILTER,
   CUSTOM_FIELD_SELECT_VALUE_SUBFILTER,
   CUSTOM_FIELD_SELECT_VALUES_SUBFILTER,
@@ -56,7 +57,8 @@ import { authorizedMembers, type ComplexAttribute } from '../../schema/attribute
 import { isMetricsName } from '../../modules/metrics/metrics-utils';
 import { isObjectAttribute, schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldValueField } from '../../modules/customField/custom-field-cache';
-import { computeQueryIndices, elFindByIds, elList, elPaginate, ES_MAX_PAGINATION } from '../../database/engine';
+import { elFindByIds, elList, elPaginate, ES_MAX_PAGINATION } from '../../database/engine';
+import { computeQueryIndices } from '../../database/engine-indices';
 import { keepMostRestrictiveTypes } from '../../schema/schemaUtils';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { isUserHasCapability, PIRAPI } from '../access';
@@ -666,6 +668,9 @@ export const adaptFilterToCustomFieldFilterKey = async (context: AuthContext, us
     case 'int_value':
       subfilterKey = CUSTOM_FIELD_INT_VALUE_SUBFILTER;
       break;
+    case 'float_value':
+      subfilterKey = CUSTOM_FIELD_FLOAT_VALUE_SUBFILTER;
+      break;
     case 'string_value':
       subfilterKey = CUSTOM_FIELD_STRING_VALUE_SUBFILTER;
       break;
@@ -685,8 +690,9 @@ export const adaptFilterToCustomFieldFilterKey = async (context: AuthContext, us
       subfilterKey = CUSTOM_FIELD_STRING_VALUE_SUBFILTER;
   }
 
-  // Parse numeric values for integer type
-  const parsedValues = definition.field_type === 'integer'
+  // Parse numeric values for the integer and decimal types
+  const isNumeric = definition.field_type === 'integer' || definition.field_type === 'decimal';
+  const parsedValues = isNumeric
     ? values.map((v: any) => {
         const num = Number(v);
         return Number.isFinite(num) ? num : v;
@@ -709,9 +715,9 @@ export const adaptFilterToCustomFieldFilterKey = async (context: AuthContext, us
     ...(positiveOperator ? { negateNested: true } : {}),
   });
 
-  // An integer is matched exactly with a range (gte + lte) on a single value: each value gets its own filter,
+  // A number is matched exactly with a range (gte + lte) on a single value: each value gets its own filter,
   // the operands of a range clause being alternatives (two values would match the whole interval between them).
-  if (definition.field_type === 'integer' && op === FilterOperator.Eq) {
+  if (isNumeric && op === FilterOperator.Eq) {
     const buildIntegerEqualityFilter = (integerValues: any[]) => buildNestedFilter([
       { key: subfilterKey, values: integerValues, operator: FilterOperator.Gte },
       { key: subfilterKey, values: integerValues, operator: FilterOperator.Lte },

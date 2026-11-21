@@ -57,10 +57,12 @@ interface FacetCheckboxProps {
   label: string;
   count: number;
   icon?: SvgIconComponent;
+  // Replaces the icon when the value carries its own colour, e.g. a health status dot
+  adornment?: React.ReactNode;
   onToggle: () => void;
 }
 
-export const FacetCheckbox = ({ checked, label, count, icon: Icon, onToggle }: FacetCheckboxProps) => {
+export const FacetCheckbox = ({ checked, label, count, icon: Icon, adornment, onToggle }: FacetCheckboxProps) => {
   const theme = useTheme();
   const isDisabled = count === 0 && !checked;
   return (
@@ -92,7 +94,8 @@ export const FacetCheckbox = ({ checked, label, count, icon: Icon, onToggle }: F
         aria-hidden
         style={{ pointerEvents: 'none', flexShrink: 0 }}
       />
-      {Icon && (
+      {adornment}
+      {!adornment && Icon && (
         <Icon
           sx={{
             fontSize: 15,

@@ -28,6 +28,7 @@ import {
   UnsupportedError,
   ValidationError,
 } from '../../config/errors';
+import { checkDateDisplayInput } from '../../utils/dateDisplay';
 import { ipMatchesWhitelist, isUserExcluded } from '../../http/ipWhitelistMiddleware';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { elLoadBy, elRawDeleteByQuery, elRawUpdateByQuery } from '../../database/engine';
@@ -60,10 +61,12 @@ import {
   UPDATE_OPERATION_REPLACE,
 } from '../../database/utils';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
-import { publishUserAction } from '../../listener/UserActionListener';
+import { publishUserAction, type UserLockSource } from '../../listener/UserActionListener';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../../schema/general';
-import { generateStandardId } from '../../schema/identifier';
+import { generateStandardId, getInstanceIds } from '../../schema/identifier';
+import { lockResources } from '../../lock/master-lock';
+import { getDraftContext } from '../../utils/draftContext';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { getTokensUsage, updateTokenUsage } from '../../database/redis/token_usage';
 import {
@@ -92,6 +95,8 @@ import {
   INTERNAL_USERS_WITHOUT_REDACTED,
   isBypassUser,
   isOnlyOrgaAdmin,
+  isUserAccountActive,
+  isUserAccountExpired,
   isUserHasCapability,
   type ParticipantWithOrgIds,
   REDACTED_USER,
@@ -148,7 +153,7 @@ import type {
   StoreEntity,
   StoreMarkingDefinition,
 } from '../../types/store';
-import { apiTokens, ENTITY_TYPE_USER, type BasicStoreEntityUser, type StoreEntityUser, type UserBookmark } from './user-types';
+import { apiTokens, AVAILABLE_LANGUAGES, ENTITY_TYPE_USER, type BasicStoreEntityUser, type StoreEntityUser, type UserBookmark } from './user-types';
 import type { BasicStoreEntityEmailTemplate } from '../emailTemplate/emailTemplate-types';
 import type { BasicStoreEntityDraftWorkspace } from '../draftWorkspace/draftWorkspace-types';
 import type { BasicStoreSettings } from '../../types/settings';
@@ -162,18 +167,22 @@ import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../emailTemplate/emailTemplate-types';
 import { doYield } from '../../utils/eventloop-utils';
 import { disablePublicSharingForDeletedUser } from '../dataSharing/dataSharing-utils';
+import { deleteAllIngestionDeduplicationRulesForUser } from '../ingestionDeduplication/ingestionDeduplicationRule-domain';
 import { sanitizeUser } from '../../utils/templateContextSanitizer';
-import { safeRender } from '../../utils/safeEjs.client';
+import { type LockedUserEmailData, renderEmailTemplate } from '../emailTemplate/emailTemplate-render';
 import { totp } from '../../utils/totp';
 import { pushAll } from '../../utils/arrayUtil';
 import { USER_MERGED_INTO_FIELD } from '../userMerge/userMerge-types';
 import { verifyXtmJwt, isOwnIssuer } from '../../domain/xtm-auth';
 import { getSettings } from '../../domain/settings';
+import { clearLocalAuthLockout, isLocalAuthLockedError, loadLocalAuthLockout } from '../../domain/local-auth-lockout';
 import {
   EnvStrategyType,
   getConfigurationAdminEmail,
   getConfigurationAdminPassword,
   getConfigurationAdminToken,
+  isAdminExternallyManaged,
+  isAdminSecureByDefault,
   isLocalAuthForcedEnabledFromEnv,
   LOCAL_STRATEGY_IDENTIFIER,
   PROVIDERS,
@@ -182,12 +191,13 @@ import { addOrganization } from '../organization/organization-domain';
 import { logAuthInfo } from '../authenticationProvider/providers-logger';
 import { hashSHA256 } from '../../utils/hash';
 import { normalizeEmail } from '../../utils/email';
+import { withoutUserSecrets } from './user-secrets';
+import { checkPasswordNotReused, computeNextPasswordHistory, consumePasswordChangeAttempt, isLocalUser, readPasswordHistoryCount } from './user-password-history';
 import { getPlatformCrypto } from '../../utils/platformCrypto';
 import { memoize } from '../../utils/memoize';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
-export const TAXIIAPI = 'TAXIIAPI';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
 const PROTECTED_USER_ATTRIBUTES = [apiTokens.name, 'external'];
 const PROTECTED_EXTERNAL_ATTRIBUTES = ['user_email', 'user_name'];
@@ -201,16 +211,19 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'language',
   'personal_notifiers',
   'default_dashboard',
+  'default_dashboard_preset',
   'default_time_field',
   'unit_system',
+  'date_format',
+  'time_format',
   'submenu_show_icons',
+  'bootstrap_wizard_skipped',
   'submenu_auto_collapse',
   'monochrome_labels',
   'unsubscribed_news_feed_types',
   'password',
   'draft_context',
 ];
-const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr', 'ru-ru', 'it-it'];
 
 const computeImpactedUsers = async (context: AuthContext, user: AuthUser, roleId: string) => {
   // Get all groups that have this role
@@ -263,6 +276,37 @@ const extractTokenFromBearer = (authorization: string | undefined) => {
   return isBearer ? authorization.substring(BEARER.length) : null;
 };
 
+export const TOKEN_MASK = '****';
+const TOKEN_MASK_VISIBLE_CHARS = 4;
+// Below this length, showing the last characters would reveal too much of the token
+const TOKEN_MASK_MIN_LENGTH = 12;
+
+/**
+ * The single mask of an API token, used everywhere a token is shown or written:
+ * the stored masked_token (GraphQL API and UI), the admin base token, the legacy
+ * token migration and the logs. Only the last 4 characters are kept, never a prefix.
+ */
+export const maskToken = (token: string | null | undefined): string => {
+  if (!token || token.length < TOKEN_MASK_MIN_LENGTH) {
+    return TOKEN_MASK;
+  }
+  return `${TOKEN_MASK}${token.slice(-TOKEN_MASK_VISIBLE_CHARS)}`;
+};
+
+/**
+ * Log metadata of a failed token authentication: the token is masked with maskToken.
+ */
+export const buildTokenAuthFailureLogMeta = (
+  cause: unknown,
+  bearerToken: string,
+  req: { headers: Record<string, string | string[] | undefined> },
+) => ({
+  cause,
+  masked_token: maskToken(bearerToken),
+  user_agent: req.headers['user-agent'] || 'unknown',
+  origin: req.headers.origin || req.headers.referer || 'unknown',
+});
+
 const extractInfoFromBasicAuth = (authorization: string | undefined) => {
   const isBasic = authorization && authorization.startsWith(BASIC);
   if (isBasic) {
@@ -294,8 +338,8 @@ export const findById = async (context: AuthContext, user: AuthUser, userId: str
     return INTERNAL_USERS[userId];
   }
   const data = await storeLoadById<BasicStoreEntityUser>(context, user, userId, ENTITY_TYPE_USER);
-  const withoutPassword = data ? R.dissoc('password', data) : data;
-  return buildCompleteUser(context, withoutPassword);
+  // buildCompleteUser strips them too: kept here as a second safeguard
+  return buildCompleteUser(context, data ? withoutUserSecrets(data) : data);
 };
 
 export const findAllUser = async (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntityUser>) => {
@@ -389,14 +433,23 @@ type RoleSortKey = (role: BasicStoreEntity) => R.Ord;
 export const userRoles = async (context: AuthContext, _user: AuthUser, userId: string, opts: UserRolesArgs) => {
   const { orderBy, orderMode } = opts;
   const platformUsers = await getEntitiesMapFromCache<UserWithStoreRoles>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const userLoaded = platformUsers.get(userId)!;
+  const userLoaded = platformUsers.get(userId);
+  let roles: BasicStoreEntity[];
+  if (userLoaded) {
+    roles = userLoaded.roles ?? [];
+  } else {
+    // The users cache can miss the user while it is rebuilt (after a group membership change):
+    // resolve the roles from the database instead of failing the whole query
+    const [userRolesFromDb] = await batchRolesForUsers(context, SYSTEM_USER, [userId]);
+    roles = userRolesFromDb ?? [];
+  }
   if (orderBy) {
     if (orderMode === 'desc') {
-      return R.sortWith<BasicStoreEntity>([R.descend(R.prop(orderBy) as RoleSortKey)])(userLoaded.roles);
+      return R.sortWith<BasicStoreEntity>([R.descend(R.prop(orderBy) as RoleSortKey)])(roles);
     }
-    return R.sortWith<BasicStoreEntity>([R.ascend(R.prop(orderBy) as RoleSortKey)])(userLoaded.roles);
+    return R.sortWith<BasicStoreEntity>([R.ascend(R.prop(orderBy) as RoleSortKey)])(roles);
   }
-  return userLoaded.roles;
+  return roles;
 };
 
 export const userGroupsPaginated = async (context: AuthContext, user: AuthUser, userId: string, opts: EntityOptions<BasicGroupEntity>) => {
@@ -447,6 +500,19 @@ export const batchRolesForUsers = async (context: AuthContext, user: AuthUser, u
     const groups = usersWithGroups[u] ?? [];
     const idRoles = uniq(groups.map((g) => groupWithRoles[g] ?? []).flat());
     return roles.filter((t) => idRoles.includes(t.internal_id));
+  });
+};
+
+export const batchRolesForGroups = async (context: AuthContext, user: AuthUser, groupIds: string[], opts: EntityOptions<BasicStoreEntity> = {}) => {
+  if (groupIds.length === 0) {
+    return [];
+  }
+  const groupsRoles = await fullRelationsList(context, user, RELATION_HAS_ROLE, { fromId: groupIds, toTypes: [ENTITY_TYPE_ROLE] });
+  const roleIds = uniq(groupsRoles.map(({ toId }) => toId));
+  const roles = roleIds.length > 0 ? await fullEntitiesList(context, user, [ENTITY_TYPE_ROLE], { ...opts, ids: roleIds }) : [];
+  return groupIds.map((groupId) => {
+    const idRoles = groupsRoles.filter(({ fromId }) => fromId === groupId).map(({ toId }) => toId);
+    return roles.filter((role) => idRoles.includes(role.internal_id));
   });
 };
 
@@ -535,8 +601,12 @@ export const findRoleById = (context: AuthContext, user: AuthUser, roleId: strin
   return storeLoadById<BasicStoreEntity>(context, user, roleId, ENTITY_TYPE_ROLE);
 };
 
-export const findRoles = (context: AuthContext, user: AuthUser, args: QueryRolesArgs) => {
+export const findRoles = (context: AuthContext, user: AuthUser, args: QueryRolesArgs | EntityOptions<BasicStoreEntity>) => {
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_ROLE], args);
+};
+
+export const findAllRoles = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntity> = {}) => {
+  return fullEntitiesList(context, user, [ENTITY_TYPE_ROLE], args);
 };
 
 export const findCapabilities = async (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntity>, relationship_type: string = RELATION_HAS_CAPABILITY) => {
@@ -735,9 +805,10 @@ const shuffleInPlace = <T>(elements: T[]) => {
   return elements;
 };
 
+const positive = (value: number | null | undefined) => Math.max(value ?? 0, 0);
+
 // Generate a random password that satisfies the given password policy
-export const generatePasswordFromPolicy = (policy: PasswordInlinePolicy) => {
-  const positive = (value: number | null | undefined) => Math.max(value ?? 0, 0);
+const passwordPolicyRequirements = (policy: PasswordInlinePolicy) => {
   const minUppercase = positive(policy.password_policy_min_uppercase);
   const minLowercase = positive(policy.password_policy_min_lowercase);
   const minNumbers = positive(policy.password_policy_min_numbers);
@@ -750,7 +821,22 @@ export const generatePasswordFromPolicy = (policy: PasswordInlinePolicy) => {
   const minBodyLength = Math.max(requiredCharsCount, wordsCount);
   const minLength = Math.max(positive(policy.password_policy_min_length), minBodyLength + separatorsCount);
   const maxLength = positive(policy.password_policy_max_length);
-  // Check policy feasibility before allocating anything
+  return { minUppercase, minLowercase, minNumbers, separatorsCount, extraSymbolsCount, requiredCharsCount, minLength, maxLength };
+};
+
+// Whether checkPasswordInlinePolicy accepts a password of at most the maximum length: a word separator is also a symbol,
+// and the words it splits may be empty
+export const isPasswordPolicySatisfiable = (policy: PasswordInlinePolicy) => {
+  const maxLength = positive(policy.password_policy_max_length);
+  const symbolsCount = Math.max(positive(policy.password_policy_min_symbols), positive(policy.password_policy_min_words) - 1);
+  const charsCount = positive(policy.password_policy_min_uppercase) + positive(policy.password_policy_min_lowercase)
+    + positive(policy.password_policy_min_numbers) + symbolsCount;
+  return maxLength === 0 || maxLength >= Math.max(positive(policy.password_policy_min_length), charsCount);
+};
+
+export const generatePasswordFromPolicy = (policy: PasswordInlinePolicy) => {
+  const { minUppercase, minLowercase, minNumbers, separatorsCount, extraSymbolsCount, requiredCharsCount, minLength, maxLength } = passwordPolicyRequirements(policy);
+  // Check policy feasibility before allocating anything: the generated words are never empty
   if (maxLength > 0 && maxLength < minLength) {
     throw FunctionalError('Unable to generate a password: password policy cannot be satisfied', { minLength, maxLength });
   }
@@ -782,6 +868,40 @@ export const generatePasswordMatchingPolicy = async (context: AuthContext) => {
   return password;
 };
 
+// Check the configured admin password against the local password policy, without ever logging the password:
+// a warning while app:admin:secure_by_default is false, a startup failure once it is true
+export const checkAdminPasswordPolicy = (context: AuthContext, policy: PasswordInlinePolicy, password: string) => {
+  const failedRules = checkPasswordInlinePolicy(context, policy, password);
+  if (failedRules.length === 0) {
+    return;
+  }
+  if (isAdminSecureByDefault()) {
+    throw ConfigurationError('The admin password (app:admin:password) does not match the local password policy', { failed_rules: failedRules });
+  }
+  logApp.warn('[OPENCTI] The admin password (app:admin:password) does not match the local password policy (app:admin:secure_by_default=false). '
+    + 'The platform will refuse to start in an upcoming version: change the admin password, then set APP__ADMIN__SECURE_BY_DEFAULT=true to opt in now.', { failed_rules: failedRules });
+};
+
+export const ADMIN_PASSWORD_POLICY_MISMATCH_REASON = 'The configured admin password (app:admin:password) does not match this password policy, '
+  + 'and app:admin:secure_by_default is enabled: the platform would refuse to start. Change the admin password first';
+
+// The rules of a new local password policy that the configured admin password fails, once app:admin:secure_by_default is enabled:
+// such a policy would make the platform refuse to start on the next restart. Empty when the switch is off or the admin is externally managed
+export const adminPasswordPolicyFailedRules = (context: AuthContext, policy: PasswordInlinePolicy) => {
+  if (!isAdminSecureByDefault() || isAdminExternallyManaged()) {
+    return [];
+  }
+  return checkPasswordInlinePolicy(context, policy, String(getConfigurationAdminPassword() ?? ''));
+};
+
+// Refuse a new local password policy that the configured admin password does not match, once app:admin:secure_by_default is enabled
+export const checkPolicyAcceptsAdminPassword = (context: AuthContext, policy: PasswordInlinePolicy) => {
+  const failedRules = adminPasswordPolicyFailedRules(context, policy);
+  if (failedRules.length > 0) {
+    throw FunctionalError(ADMIN_PASSWORD_POLICY_MISMATCH_REASON, { failed_rules: failedRules });
+  }
+};
+
 export const checkPasswordFromPolicy = async (context: AuthContext, password: string) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const errors = checkPasswordInlinePolicy(context, settings, password);
@@ -796,7 +916,7 @@ export const computePasswordValidUntilFromPolicy = async (context: AuthContext) 
   if (!Number.isFinite(validityDays) || validityDays <= 0) {
     return null;
   }
-  return DateTime.now().plus({ days: validityDays }).toUTC().toString();
+  return DateTime.utc().plus({ days: validityDays }).toString();
 };
 
 /**
@@ -843,7 +963,7 @@ export const adjustAllUsersPasswordValidUntil = async (_context: AuthContext, ol
 
   if (oldDays <= 0) {
     // Coming from disabled state: set fresh now + newDays for all internal users
-    const newExpiry = DateTime.now().plus({ days: newDays }).toUTC().toString();
+    const newExpiry = DateTime.utc().plus({ days: newDays }).toString();
     await elRawUpdateByQuery({
       index: [READ_INDEX_INTERNAL_OBJECTS],
       refresh: true,
@@ -868,7 +988,7 @@ export const adjustAllUsersPasswordValidUntil = async (_context: AuthContext, ol
   } else {
     // Active policy shift: move existing expiry by the diff (in milliseconds)
     const diffMs = diffDays * 24 * 60 * 60 * 1000;
-    const newExpiry = DateTime.now().plus({ days: newDays }).toUTC().toString();
+    const newExpiry = DateTime.utc().plus({ days: newDays }).toString();
     // Shift existing dates
     await elRawUpdateByQuery({
       index: [READ_INDEX_INTERNAL_OBJECTS],
@@ -931,12 +1051,22 @@ export const adjustAllUsersPasswordValidUntil = async (_context: AuthContext, ol
   await publishCacheResetEvent(ENTITY_TYPE_USER);
 };
 
+// A change of the password validity of the platform, for every local user: a disabled policy clears the expiration dates, another duration moves them
+export const propagatePasswordValidityChange = async (context: AuthContext, oldDays: number, newDays: number) => {
+  if (newDays <= 0) {
+    await clearAllUsersPasswordValidUntil(context);
+  } else if (newDays !== oldDays) {
+    await adjustAllUsersPasswordValidUntil(context, oldDays, newDays);
+  }
+};
+
 type MailTargetUser = Omit<AuthUser, 'organizations' | 'account_lock_after_date'> & {
   organizations: Array<Pick<BasicStoreEntityOrganization, 'name'>>;
   account_lock_after_date: string | undefined;
 };
 
-export const sendEmailToUser = async (context: AuthContext, user: AuthUser, input: SendUserMailInput) => {
+// lockedUserData: the account locked by the local authentication lockout, for its $locked_user and $lock variables
+export const sendEmailToUser = async (context: AuthContext, user: AuthUser, input: SendUserMailInput, lockedUserData?: LockedUserEmailData) => {
   await checkEnterpriseEdition(context);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
 
@@ -968,21 +1098,11 @@ export const sendEmailToUser = async (context: AuthContext, user: AuthUser, inpu
     templateUser.api_token = token.plaintext_token;
   }
 
-  const preprocessedTemplate = emailTemplate.template_body
-    .replace(/\$user\.firstname/g, '<%= user.firstname %>')
-    .replace(/\$user\.lastname/g, '<%= user.lastname %>')
-    .replace(/\$user\.name/g, '<%= user.name %>')
-    .replace(/\$user\.user_email/g, '<%= user.user_email %>')
-    .replace(/\$user\.api_token/g, '<%= user.api_token %>')
-    .replace(/\$user\.account_status/g, '<%= user.account_status %>')
-    .replace(/\$user\.objectOrganization/g, '<%= organizationNames.join(", ") %>')
-    .replace(/\$user\.account_lock_after_date/g, '<%= user.account_lock_after_date %>')
-    .replace(/\$settings\.platform_url/g, '<%= platformUrl %>');
-
-  const renderedHtml = await safeRender(preprocessedTemplate, {
+  const renderedHtml = await renderEmailTemplate(emailTemplate.template_body, {
     platformUrl: settings.platform_url,
     user: templateUser,
     organizationNames,
+    lockedUserData,
   });
 
   const sendMailArgs = {
@@ -1016,8 +1136,11 @@ export const sendEmailToUser = async (context: AuthContext, user: AuthUser, inpu
 };
 
 type AddUserInput = UserAddInput & { external?: boolean; internal_id?: string; api_token?: string };
+// skipPasswordPolicy: only for the admin initialization, which checks the password policy itself following app:admin:secure_by_default
+type CreateUserOptions = { skipPasswordPolicy?: boolean };
 
-export const addUser = async (context: AuthContext, user: AuthUser, newUser: AddUserInput) => {
+// Not exported: addUser is the entry point, without the options
+const createUser = async (context: AuthContext, user: AuthUser, newUser: AddUserInput, opts: CreateUserOptions = {}) => {
   const userServiceAccount = newUser.user_service_account;
   if (!newUser.user_email && !userServiceAccount) {
     throw FunctionalError('User cannot be created without email');
@@ -1054,7 +1177,7 @@ export const addUser = async (context: AuthContext, user: AuthUser, newUser: Add
   // If user is external and password is not specified, associate a random password
   if ((newUser.external === true && isEmptyField(userPassword)) || userServiceAccount) {
     userPassword = uuid();
-  } else { // If local user, check the password policy
+  } else if (!opts.skipPasswordPolicy) { // If local user, check the password policy
     await checkPasswordFromPolicy(context, userPassword!);
   }
   const passwordValidUntil = await computePasswordValidUntilFromPolicy(context);
@@ -1148,6 +1271,10 @@ export const addUser = async (context: AuthContext, user: AuthUser, newUser: Add
   return element;
 };
 
+export const addUser = async (context: AuthContext, user: AuthUser, newUser: AddUserInput) => {
+  return createUser(context, user, newUser);
+};
+
 export const roleEditField = async (context: AuthContext, user: AuthUser, roleId: string, input: EditInput[]) => {
   const { element } = await updateAttribute<StoreEntity>(context, user, roleId, ENTITY_TYPE_ROLE, input);
   await publishUserAction({
@@ -1234,11 +1361,31 @@ export const validateAndNormalizeEmailInput = async (context: AuthContext, userI
 export const userEditField = async (context: AuthContext, user: AuthUser, userId: string, rawInputs: any[], opts: Parameters<typeof updateAttribute>[5] = {}) => {
   let inputs = [];
   const userToUpdate = await loadUserToUpdateWithAccessCheck(context, user, userId);
-  let skipThisInput = false;
+  let clearPassword: string | undefined;
+  let passwordInput: { key: string; value: unknown[] } | undefined;
   let hasPasswordUpdate = rawInputs.some((input) => input.key === 'password');
+  // Switching between user and service account sets or removes the password itself, so a password sent
+  // alongside is dropped, whatever the order of the inputs. Same conditions as the two switch branches below
+  // (user_service_account is not set on users created before service accounts existed)
+  const requestedServiceAccount = rawInputs.find((x) => x.key === 'user_service_account')?.value[0];
+  const switchesAccountType = userToUpdate.user_service_account ? requestedServiceAccount === false : requestedServiceAccount === true;
+  // While the password history applies, a password change sent with other fields could be refused by one of them
+  // after the reuse check ran, which would tell the caller what the check decided without changing anything.
+  // Without a history there is nothing to learn, so existing API calls keep working. The one field allowed
+  // alongside is the account type switch, which drops the password before any check of its history.
+  if (hasPasswordUpdate && isLocalUser(userToUpdate)) {
+    const historySettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    const passwordInputsCount = rawInputs.filter((input) => input.key === 'password').length;
+    const otherInputsCount = rawInputs.filter((input) => input.key !== 'password' && input.key !== 'user_service_account').length;
+    if (readPasswordHistoryCount(historySettings) >= 1 && (passwordInputsCount > 1 || otherInputsCount > 0)) {
+      throw FunctionalError('The password must be changed on its own', { userId });
+    }
+  }
+  checkDateDisplayInput(rawInputs, 'date_format', 'time_format');
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
-    if (input.key === 'api_tokens') {
+    // The password history is only ever written by the password change below
+    if (input.key === 'api_tokens' || input.key === 'password_history') {
       throw ForbiddenAccess();
     }
     if (userToUpdate.external && input.key === 'name') {
@@ -1257,15 +1404,15 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
     // Check user email is valid and not already used in case of email change
     await validateAndNormalizeEmailInput(context, userId, input);
     if (input.key === 'password') {
-      const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');
-      if (userServiceAccountInput && userToUpdate.user_service_account !== userServiceAccountInput.value[0]) {
-        skipThisInput = true;
+      if (switchesAccountType) {
+        continue;
       }
-
       if (!userToUpdate.user_service_account) {
         const userPassword = R.head(input.value)!.toString();
         await checkPasswordFromPolicy(context, userPassword);
-        input.value = [bcrypt.hashSync(userPassword)];
+        clearPassword = userPassword;
+        // Hashed right before the save: a refused attempt costs no hash, and hashing blocks the event loop
+        passwordInput = input;
       } else {
         throw FunctionalError('Cannot update password for Service account', { userId });
       }
@@ -1316,6 +1463,7 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
     // Turn User into Service Account
     if (input.key === 'user_service_account' && !userToUpdate.user_service_account && input.value[0] === true) {
       inputs.push({ key: 'password', value: [null] });
+      inputs.push({ key: 'password_history', value: [] });
       await addUserIntoServiceAccountCount();
     }
     // Turn Service Account into User
@@ -1326,10 +1474,7 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
       hasPasswordUpdate = true;
       await addServiceAccountIntoUserCount();
     }
-
-    if (!skipThisInput) {
-      inputs.push(input);
-    }
+    inputs.push(input);
   }
   // Reset the password validity window whenever the password changes.
   if (hasPasswordUpdate) {
@@ -1344,8 +1489,51 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
   const isDraftContextEdit = inputs.some((i) => i.key === 'draft_context');
   const editContext = isDraftContextEdit ? { ...context, draft_context: undefined } : context;
   const editUser = isDraftContextEdit ? { ...user, draft_context: undefined } : user;
-  const { element } = await updateAttribute<StoreEntityUser>(editContext, editUser, userId, ENTITY_TYPE_USER, inputs, opts);
-  const input = updatedInputsToData(element, inputs);
+  // Password history, last before saving so that a refused password changes nothing
+  const tracksPasswordHistory = clearPassword !== undefined && isLocalUser(userToUpdate);
+  let lock;
+  let lockedIds: string[] = [];
+  let element: StoreEntityUser;
+  try {
+    if (tracksPasswordHistory) {
+      // Two changes at the same moment would both check and rebuild the same old history, and the second
+      // save would drop the first password from it. The user is locked from the check to the save, the same
+      // lock the update takes, which it skips through `locks` since this call already holds it.
+      lockedIds = getInstanceIds(userToUpdate);
+      lock = await lockResources(lockedIds, { draftId: getDraftContext(editContext, editUser) });
+      const lockedUser = await storeLoadById<BasicStoreEntityUser>(context, SYSTEM_USER, userId, ENTITY_TYPE_USER);
+      if (!lockedUser || !isLocalUser(lockedUser)) {
+        throw FunctionalError('Cannot update password for non-local user', { userId });
+      }
+      const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+      const passwordHistoryCount = readPasswordHistoryCount(settings);
+      if (passwordHistoryCount >= 1) {
+        await consumePasswordChangeAttempt(userId, user);
+        await checkPasswordNotReused(context, user, lockedUser, clearPassword!, passwordHistoryCount);
+      }
+      inputs.push({ key: 'password_history', value: computeNextPasswordHistory(lockedUser, passwordHistoryCount) });
+    }
+    // Every check passed: the clear text never goes further than this
+    if (passwordInput && clearPassword !== undefined) {
+      passwordInput.value = [bcrypt.hashSync(clearPassword)];
+    }
+    const updateOpts = lockedIds.length > 0 ? { ...opts, locks: [...(opts.locks ?? []), ...lockedIds] } : opts;
+    ({ element } = await updateAttribute<StoreEntityUser>(editContext, editUser, userId, ENTITY_TYPE_USER, inputs, updateOpts));
+  } finally {
+    if (lock) await lock.unlock();
+  }
+  // Setting an account back to Active also lifts its local authentication lockout
+  if (inputs.some((i) => i.key === 'account_status' && R.head(i.value) === ACCOUNT_STATUS_ACTIVE)) {
+    await clearLocalAuthLockout(element.user_email);
+  }
+  // The lockout is keyed on the email: the failures of a previous email must not be inherited by its next owner
+  const previousEmail = userToUpdate.user_email;
+  if (previousEmail && element.user_email && normalizeEmail(previousEmail) !== normalizeEmail(element.user_email)) {
+    await clearLocalAuthLockout(previousEmail);
+  }
+  // The password history is internal bookkeeping of a password change: it never reaches the audit log
+  const auditedInputs = inputs.filter((i) => i.key !== 'password_history');
+  const input = updatedInputsToData(element, auditedInputs);
   const personalUpdate = user.id === userId;
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : element.user_email;
   await publishUserAction({
@@ -1353,7 +1541,7 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `updates \`${inputs.map((i) => i.key).join(', ')}\` for ${personalUpdate ? '`themselves`' : `user \`${actionEmail}\``}`,
+    message: `updates \`${auditedInputs.map((i) => i.key).join(', ')}\` for ${personalUpdate ? '`themselves`' : `user \`${actionEmail}\``}`,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
@@ -1427,7 +1615,11 @@ export const addBookmark = async (context: AuthContext, user: AuthUser, id: stri
   return storeLoadById<BasicStoreEntity>(context, user, id, type);
 };
 
-export const meEditField = async (context: AuthContext, user: AuthUser & Partial<Pick<BasicStoreEntityUser, 'external' | 'password'>>, userId: string, inputs: any[], password: string | null = null) => {
+const getOwnPasswordHash = (user: Partial<Pick<BasicStoreEntityUser, 'password'>>) => {
+  return Object.hasOwn(user, 'password') && typeof user.password === 'string' && user.password.length > 0 ? user.password : undefined;
+};
+
+export const meEditField = async (context: AuthContext, user: AuthUser & Partial<Pick<BasicStoreEntityUser, 'external'>>, userId: string, inputs: any[], password: string | null = null) => {
   inputs.forEach((input) => {
     const { key } = input;
     // Check if field can be updated by the user
@@ -1442,28 +1634,34 @@ export const meEditField = async (context: AuthContext, user: AuthUser & Partial
     if (!ME_USER_MODIFIABLE_ATTRIBUTES.includes(key)) {
       throw ForbiddenAccess();
     }
-    // Check password confirmation in case of password change
-    if (key === 'password') {
-      // Skip current password check if the password is expired (force change scenario)
-      const passwordExpired = isPasswordExpired(user);
-      if (!passwordExpired) {
-        if (typeof password !== 'string' || password.length === 0) {
-          throw FunctionalError('The current password you have provided is not valid');
-        }
-        const dbPassword = user.password;
-        const match = bcrypt.compareSync(password, dbPassword!);
-        if (!match) {
-          throw FunctionalError('The current password you have provided is not valid');
-        }
-      }
+    // The bootstrap wizard is for administrators only
+    if (key === 'bootstrap_wizard_skipped' && !isUserHasCapability(user, BYPASS)) {
+      throw ForbiddenAccess();
     }
   });
-  // If password was expired, kill all other sessions of this user (force change scenario)
   const hasPasswordInput = inputs.some((i) => i.key === 'password');
-  if (hasPasswordInput && isPasswordExpired(user)) {
+  // Check password confirmation in case of password change
+  // Skip current password check if the password is expired (force change scenario)
+  const passwordExpired = isPasswordExpired(user);
+  if (hasPasswordInput && !passwordExpired) {
+    if (typeof password !== 'string' || password.length === 0) {
+      throw FunctionalError('The current password you have provided is not valid');
+    }
+    // The context user carries no password hash: read it from the database
+    const dbUser = await storeLoadById<BasicStoreEntityUser>(context, SYSTEM_USER, userId, ENTITY_TYPE_USER);
+    const dbPassword = dbUser ? getOwnPasswordHash(dbUser) : undefined;
+    const match = dbPassword !== undefined && bcrypt.compareSync(password, dbPassword);
+    if (!match) {
+      throw FunctionalError('The current password you have provided is not valid');
+    }
+  }
+  const updatedUser = await userEditField(context, user, userId, inputs);
+  // If password was expired, kill all other sessions of this user (force change scenario),
+  // only once the new password is saved: a refused change leaves everything as it was
+  if (hasPasswordInput && passwordExpired) {
     await killOtherUserSessions(userId, context.req?.session?.id);
   }
-  return userEditField(context, user, userId, inputs);
+  return updatedUser;
 };
 
 export const isUserTheLastAdmin = (userId: string, authorized_members: AuthorizedMember[] | null | undefined) => {
@@ -1586,6 +1784,7 @@ export const userDelete = async (context: AuthContext, user: AuthUser, userId: s
   await deleteAllNotificationByUser(userId);
   await deleteAllWorkspaceForUser(context, user, userId);
   await disablePublicSharingForDeletedUser(context, userId);
+  await deleteAllIngestionDeduplicationRulesForUser(context, user, userId);
 
   const deleted = await deleteElementById<StoreEntityUser>(context, user, userId, ENTITY_TYPE_USER);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : deleted.user_email;
@@ -1601,6 +1800,28 @@ export const userDelete = async (context: AuthContext, user: AuthUser, userId: s
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].DELETE_TOPIC, deleted, user).then(() => userId);
 };
 
+// Organization admins can only manage groups grantable by, and organizations of, their administrated organizations
+const checkOrgaAdminCanManageUserRelation = (user: AuthUser, relationshipType: string, toId: string | null | undefined) => {
+  if (!isOnlyOrgaAdmin(user)) {
+    return;
+  }
+  if (!toId) {
+    throw ForbiddenAccess();
+  }
+  if (relationshipType === RELATION_MEMBER_OF) {
+    const myGrantableGroups = user.administrated_organizations.flatMap((orga) => orga.grantable_groups ?? []);
+    if (!myGrantableGroups.includes(toId)) {
+      throw ForbiddenAccess();
+    }
+  } else if (relationshipType === RELATION_PARTICIPATE_TO) {
+    if (!isUserAdministratingOrga(user, toId)) {
+      throw ForbiddenAccess();
+    }
+  } else {
+    throw ForbiddenAccess();
+  }
+};
+
 export const userAddRelation = async (context: AuthContext, user: AuthUser, userId: string, input: InternalRelationshipAddInput) => {
   // check the user is accessible
   const userData = await loadUserToUpdateWithAccessCheck(context, user, userId);
@@ -1609,17 +1830,7 @@ export const userAddRelation = async (context: AuthContext, user: AuthUser, user
   if (!isInternalRelationship(input.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`);
   }
-  // Check in case organization admins adds non-grantable group a user
-  const myGrantableGroups: Array<InternalRelationshipAddInput['toId']> = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
-  const myAdministratedOrganizationsIds: Array<InternalRelationshipAddInput['toId']> = user.administrated_organizations.map((orga) => orga.id);
-  if (isOnlyOrgaAdmin(user)) {
-    if (input.relationship_type === RELATION_MEMBER_OF && !myGrantableGroups.includes(input.toId)) {
-      throw ForbiddenAccess();
-    }
-    if (input.relationship_type === RELATION_PARTICIPATE_TO && !myAdministratedOrganizationsIds.includes(input.toId)) {
-      throw ForbiddenAccess();
-    }
-  }
+  checkOrgaAdminCanManageUserRelation(user, input.relationship_type, input.toId);
   const finalInput = R.assoc('fromId', userId, input);
   const relationData = await createRelation(context, user, finalInput);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : userData.user_email;
@@ -1659,6 +1870,7 @@ export const userIdDeleteRelation = async (context: AuthContext, user: AuthUser,
   if (relationshipType === RELATION_PARTICIPATE_TO) {
     return userDeleteOrganizationRelation(context, user, userId, toId);
   }
+  checkOrgaAdminCanManageUserRelation(user, relationshipType, toId);
   // check the user is accessible
   const userData = await loadUserToUpdateWithAccessCheck(context, user, userId);
   return userDeleteRelation(context, user, userData, toId, relationshipType);
@@ -1772,7 +1984,9 @@ export const loginFromProvider = async (userInfo: ProviderUserInfo, opts: LoginF
     });
   }
   // Update the basic information
-  const patch = { name, firstname, lastname, external: true };
+  // A local user switching to SSO has no local password history to keep
+  const clearsPasswordHistory = isNotEmptyField(user.password_history);
+  const patch = { name, firstname, lastname, external: true, ...(clearsPasswordHistory ? { password_history: [] } : {}) };
   await patchAttribute(context, SYSTEM_USER, user.id, ENTITY_TYPE_USER, patch);
   // region Update the groups
   // If groups are specified here, that overwrite the default assignation
@@ -1834,12 +2048,96 @@ export const getUserByEmail = async (email: string) => {
   return await elLoadBy<BasicStoreEntityUser>(context, SYSTEM_USER, 'user_email', normalizeEmail(email), ENTITY_TYPE_USER);
 };
 
-export const login = async (email: string, password: string) => {
+const isAccountDisabled = (user: BasicStoreEntityUser) => {
+  if (user.account_status !== ACCOUNT_STATUS_ACTIVE) return true;
+  return !!user.account_lock_after_date && utcDate().isAfter(utcDate(user.account_lock_after_date));
+};
+
+/**
+ * Checks if the IP whitelist should block this user (undefined for an unknown email).
+ * If blocked, throws an AuthenticationFailure with the IP blocked message.
+ * The middleware will block any subsequent requests from this IP.
+ */
+const checkIpWhitelistOnLogin = async (sourceIp: string | undefined, userId: string | undefined) => {
+  // Global kill switch via configuration file (app:ip_whitelist_enabled)
+  const ipWhitelistConfEnabled = conf.get('app:ip_whitelist_enabled') ?? true;
+  if (!ipWhitelistConfEnabled) return;
+  const context = executionContext('ip-whitelist-login-check');
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  if (!settings?.platform_ip_whitelist_enabled) return;
+  const whitelist = settings.platform_ip_whitelist;
+  if (!whitelist || whitelist.length === 0) return;
+
+  if (!sourceIp) return;
+
+  // If IP matches whitelist, allow
+  if (ipMatchesWhitelist(sourceIp, whitelist)) return;
+
+  // Check exclusion list
+  const exclusionIds = settings.platform_ip_whitelist_exclusion_ids;
+  if (userId && isNotEmptyField(exclusionIds)) {
+    const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+    const fullUser = platformUsers.get(userId);
+    if (fullUser && isUserExcluded(fullUser, exclusionIds)) {
+      return;
+    }
+  }
+
+  logApp.warn('[IP_WHITELIST] Login rejected for IP', { ip: sourceIp, user_id: userId });
+  // Use AuthenticationFailure so the error is handled like a login failure
+  // and properly displayed in the login form
+  throw AuthenticationFailure('Your IP address is not allowed to access this platform', { ip_not_allowed: true });
+};
+
+const isIpNotAllowedError = (error: unknown) => {
+  return (error as { extensions?: { data?: { ip_not_allowed?: boolean } } } | undefined)?.extensions?.data?.ip_not_allowed === true;
+};
+
+// The permanent final action of the lockout sets the account to Locked, which kills its sessions and rejects its API tokens.
+// Service accounts are never locked, so that their connectors keep working, and external users neither,
+// as it would also block their real login.
+export const lockAccountAfterFailedAttempts = async (user: Pick<BasicStoreEntityUser, 'id' | 'account_status' | 'user_service_account' | 'external'>) => {
+  const isLockable = !user.user_service_account && !user.external;
+  if (!isLockable || user.account_status !== ACCOUNT_STATUS_ACTIVE) {
+    return;
+  }
+  const context = executionContext('local_auth_lockout');
+  await userEditField(context, SYSTEM_USER, user.id, [{ key: 'account_status', value: [ACCOUNT_STATUS_LOCKED] }]);
+};
+
+// countsAttempt is false for the login form when the local auth is disabled: the password cannot log in,
+// so its attempts must neither be counted nor lock an account that logs in with another provider
+// source tells where the attempt comes from (login form or Basic auth), for the activity event of a lock
+export const login = async (
+  email: string,
+  password: string,
+  sourceIp?: string,
+  { countsAttempt = true, source = 'form' }: { countsAttempt?: boolean; source?: UserLockSource } = {},
+) => {
   const user = await getUserByEmail(email);
-  if (!user) throw AuthenticationFailure();
-  const dbPassword = user.password;
-  const match = bcrypt.compareSync(password, dbPassword);
-  if (!match) throw AuthenticationFailure();
+  // Undefined when the local authentication lockout is disabled, and for the built-in admin
+  const lockout = countsAttempt ? await loadLocalAuthLockout(email, user?.id) : undefined;
+  // An IP that the whitelist blocks is rejected before the attempt is counted, so that it cannot lock any account.
+  // As the attempt is not counted, the password is not checked either.
+  if (lockout) {
+    await checkIpWhitelistOnLogin(sourceIp, user?.id);
+  }
+  // The attempt is counted before the password is checked, and during a lock the password is not even checked
+  const attempt = await lockout?.recordAttempt();
+  const dbPassword = user ? getOwnPasswordHash(user) : undefined;
+  // With the lockout, an inactive or expired account is rejected without checking its password.
+  // The failure is counted like a wrong password, so that the account cannot be told apart from an unknown email.
+  // A service account has no password to check.
+  const isPasswordChecked = !!user && !!dbPassword && !(lockout && isAccountDisabled(user));
+  if (!user || !dbPassword || !isPasswordChecked || !bcrypt.compareSync(password, dbPassword)) {
+    if (user && attempt?.locksAccount) {
+      await lockAccountAfterFailedAttempts(user);
+    }
+    throw attempt ? await attempt.reject({ source, ip: sourceIp }) : AuthenticationFailure();
+  }
+  // A right password is not a failure: its attempt is undone, the other failures are kept.
+  // The caller clears the lockout once the login is fully accepted (IP whitelist, local auth enabled, API access, MFA)
+  await attempt?.release();
   return user;
 };
 
@@ -1868,7 +2166,7 @@ export const resolveUserIndividual = async (context: AuthContext, user: AuthUser
   return user.individual_id;
 };
 
-type OtpSessionRequest = { session: { user: { otp_validated?: boolean }; save: () => void } };
+type OtpSessionRequest = { ip?: string; session: { user: { otp_validated?: boolean }; save: () => void; session_provider?: string } };
 export const otpUserActivation = async (context: AuthContext & { req: OtpSessionRequest }, user: AuthUser, { secret, code }: UserOtpActivationInput) => {
   // User activation can only be done if otp is not already activated
   if (user.otp_activated) {
@@ -1891,42 +2189,6 @@ export const otpUserDeactivation = async (context: AuthContext, user: AuthUser, 
   const patch = { otp_activated: false, otp_secret: '' };
   const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_USER, patch);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
-};
-
-/**
- * Checks if the IP whitelist should block this user after successful authentication.
- * If blocked, throws an AuthenticationFailure with the IP blocked message.
- * The middleware will block any subsequent requests from this IP.
- */
-const checkIpWhitelistOnLogin = async (context: AuthContext, loggedUser: Pick<AuthUser, 'id'>) => {
-  // Global kill switch via configuration file (app:ip_whitelist_enabled)
-  const ipWhitelistConfEnabled = conf.get('app:ip_whitelist_enabled') ?? true;
-  if (!ipWhitelistConfEnabled) return;
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  if (!settings?.platform_ip_whitelist_enabled) return;
-  const whitelist = settings.platform_ip_whitelist;
-  if (!whitelist || whitelist.length === 0) return;
-
-  const sourceIp = context.req?.ip;
-  if (!sourceIp) return;
-
-  // If IP matches whitelist, allow
-  if (ipMatchesWhitelist(sourceIp, whitelist)) return;
-
-  // Check exclusion list
-  const exclusionIds = settings.platform_ip_whitelist_exclusion_ids;
-  if (isNotEmptyField(exclusionIds)) {
-    const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-    const fullUser = platformUsers.get(loggedUser.id);
-    if (fullUser && isUserExcluded(fullUser, exclusionIds)) {
-      return;
-    }
-  }
-
-  logApp.warn('[IP_WHITELIST] Login rejected for IP', { ip: sourceIp, user_id: loggedUser.id });
-  // Use AuthenticationFailure so the error is handled like a login failure
-  // and properly displayed in the login form
-  throw AuthenticationFailure('Your IP address is not allowed to access this platform');
 };
 
 type PassportAuthenticationResult = { user: BasicStoreEntityUser | false | undefined; provider: string };
@@ -1956,25 +2218,38 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
     });
     // As soon as credential is validated, stop looking for another provider
     if (user) {
-      await checkIpWhitelistOnLogin(context, user);
+      await checkIpWhitelistOnLogin(context.req?.ip, user.id);
       loggedUser = await sessionAuthenticateUser(context, context.req!, user, provider);
+      // The local lockout never blocks other providers. The session clears the lockout of the user email,
+      // but the counter is keyed on what was typed, which can be another identifier (LDAP uid).
+      // With MFA, only a valid MFA code clears it.
+      if (!loggedUser.otp_activated) {
+        await clearLocalAuthLockout(input.email);
+      }
       break;
     }
   }
   // Try local is activated
+  const settings = await getSettings(context) as Pick<BasicStoreSettings, 'local_auth'>;
+  // Local auth can be force to be enabled in env with force_local, in which case any other configuration is bypass
+  const isLocalAuthEnabled = isLocalAuthForcedEnabledFromEnv() || !!settings.local_auth?.enabled;
+  let localError: unknown;
   if (!loggedUser) {
-    const settings = await getSettings(context) as Pick<BasicStoreSettings, 'local_auth'>;
+    // The source IP is checked against the IP whitelist before the lockout counts the attempt.
+    // With the local auth disabled, only the built-in admin can log in here: the attempts are not counted
     const { user, provider } = await new Promise<PassportAuthenticationResult>((resolve) => {
       passport.authenticate(LOCAL_STRATEGY_IDENTIFIER, {}, (err: unknown, authUser: BasicStoreEntityUser | false | undefined, info: unknown) => {
+        localError = err;
         if (err || info) {
           logApp.warn('Token authenticate error', { cause: err, info, provider: LOCAL_STRATEGY_IDENTIFIER });
         }
         resolve({ user: authUser, provider: LOCAL_STRATEGY_IDENTIFIER });
-      })({ body });
+      })({ body, ip: context.req?.ip, isLocalAuthEnabled });
     });
-    // Local auth can be force to be enabled in env with force_local, in which case any other configuration is bypass
-    if (user && (isLocalAuthForcedEnabledFromEnv() || settings.local_auth?.enabled || user.id === OPENCTI_ADMIN_UUID)) {
-      await checkIpWhitelistOnLogin(context, user);
+    if (user && (isLocalAuthEnabled || user.id === OPENCTI_ADMIN_UUID)) {
+      await checkIpWhitelistOnLogin(context.req?.ip, user.id);
+      // The right password already undid its own attempt in login(). With MFA, the other failures are kept
+      // until a valid MFA code, otherwise logging in again would reset them between MFA guesses
       loggedUser = await sessionAuthenticateUser(context, context.req!, user, provider);
     }
   }
@@ -2001,6 +2276,15 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
   });
   // User cannot be authenticated in any providers
   logAuthInfo('User cannot be authenticated in any providers', EnvStrategyType.STRATEGY_LOCAL, { username: input.email });
+  // With the lockout, a blocked IP is rejected before the password is checked, so that the user knows why
+  if (isIpNotAllowedError(localError)) {
+    throw localError;
+  }
+  // A local lock is returned as is, so that the login form can show it with the remaining time.
+  // Only when the local auth is the only form login: otherwise the email can belong to another provider, never blocked by the local lock
+  if (isLocalAuthEnabled && formProviders.length === 0 && isLocalAuthLockedError(localError)) {
+    throw localError;
+  }
   throw AuthenticationFailure();
 };
 
@@ -2008,10 +2292,25 @@ export const otpUserLogin = async (req: OtpSessionRequest, user: AuthUser, { cod
   if (!user.otp_activated) {
     throw AuthenticationFailure();
   }
+  // A failed MFA code counts like a failed password, so that the second factor cannot be brute-forced.
+  // After a local password, the code is counted before it is checked and rejected during a lock.
+  // After another provider (LDAP, SSO), the local lock never blocks the login: only a failed code is counted
+  const lockout = await loadLocalAuthLockout(user.user_email, user.id);
+  const isLocalSession = req.session.session_provider === LOCAL_STRATEGY_IDENTIFIER;
+  const localAttempt = isLocalSession ? await lockout?.recordAttempt() : undefined;
   const { valid } = await totp.verify({ secret: user.otp_secret!, token: code });
   if (!valid) {
-    throw AuthenticationFailure();
+    const attempt = localAttempt ?? await lockout?.recordAttempt();
+    if (attempt?.locksAccount) {
+      const lockedUser = await getUserByEmail(user.user_email);
+      if (lockedUser) {
+        await lockAccountAfterFailedAttempts(lockedUser);
+      }
+    }
+    throw attempt ? await attempt.reject({ source: 'mfa', ip: req.ip }) : AuthenticationFailure();
   }
+  // Also when the lockout is disabled, so that enabling it again never brings back an old lock
+  await clearLocalAuthLockout(user.user_email);
   req.session.user.otp_validated = valid;
   req.session.save();
   return valid;
@@ -2178,7 +2477,8 @@ export const buildCompleteUsers = async (context: AuthContext, clients: any) => 
       capabilities.push(virtualOrganizationAdminCapability);
     }
     resolvedUsers.push({
-      ...client,
+      // Password hashes stay in the database: a context user, the user cache and the session never carry them
+      ...withoutUserSecrets(client),
       ...canManageSensitiveConfig,
       roles,
       capabilities,
@@ -2222,12 +2522,14 @@ export const resolveUserById = async (context: AuthContext, id: string) => {
 
 export const authenticateUserByBasicAuth = async (context: AuthContext, req: OriginRequest, basicAuth: { username: string; password: string }) => {
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const loggedUser = await login(basicAuth.username, basicAuth.password);
+  const loggedUser = await login(basicAuth.username, basicAuth.password, req.ip, { source: 'basic_auth' });
   const user = platformUsers.get(loggedUser.id);
   if (user) {
     if (!isUserHasCapability(user, 'APIACCESS_USEBASICAUTH')) {
+      // The password was right, so login() already undid its attempt, but the login is not accepted: the other failures are kept
       throw ForbiddenAccess('You are not allowed to use API basic auth');
     }
+    await clearLocalAuthLockout(basicAuth.username);
     return internalAuthenticateUser(context, req, user);
   }
   throw FunctionalError('Cannot identify user with basic auth');
@@ -2363,13 +2665,9 @@ const validateUser = (user: AuthUser, settings: BasicStoreSettings, { skipForceP
   if (!isBypassUser(user) && settings.platform_organization && user.organizations.length === 0 && !user.user_service_account) {
     throw AuthenticationFailure('You can\'t login without an organization');
   }
-  // Check account expiration date
-  if (user.account_lock_after_date && utcDate().isAfter(utcDate(user.account_lock_after_date))) {
-    throw AuthenticationFailure(ACCOUNT_STATUSES.Expired);
-  }
-  // Validate user's account status
-  if (user.account_status !== ACCOUNT_STATUS_ACTIVE) {
-    throw AuthenticationFailure(ACCOUNT_STATUSES[user.account_status]);
+  // Validate user's account: an expiration date in the past is refused as expired, whatever its status
+  if (!isUserAccountActive(user)) {
+    throw AuthenticationFailure(isUserAccountExpired(user) ? ACCOUNT_STATUSES.Expired : ACCOUNT_STATUSES[user.account_status]);
   }
   // Require users with expired password validity to update their password before using the platform.
   // Skipped at session creation so the user can authenticate and be redirected to the change-password screen.
@@ -2392,6 +2690,11 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: Express
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   // Password expiration is enforced after login by the frontend guard on /change-password.
   validateUser(logged!, settings, { skipForcePasswordCheck: true });
+  // Any accepted session login (local, LDAP, SSO, certificate or headers) resets the local lockout.
+  // With MFA, only a valid MFA code resets it (otpUserLogin)
+  if (!logged!.otp_activated) {
+    await clearLocalAuthLockout(logged!.user_email);
+  }
   const numberOfKilledSessions = await killUserSessionsOverLimit(logged!.id, settings.platform_session_max_concurrent);
   // Regenerate the session id before binding the identity, preventing session fixation.
   // The referer is kept as the auth callback still reads it from the session as a redirect fallback
@@ -2441,15 +2744,7 @@ export const authenticateUserFromRequest = async (context: AuthContext, req: Ses
     try {
       return await authenticateUserByToken(context, req, bearerToken);
     } catch (err) {
-      const tokenPrefix = bearerToken.substring(0, 20);
-      const userAgent = req.headers['user-agent'] || 'unknown';
-      const origin = req.headers.origin || req.headers.referer || 'unknown';
-      logApp.warn('Error resolving user by token', {
-        cause: err,
-        token_prefix: `${tokenPrefix}...`,
-        user_agent: userAgent,
-        origin,
-      });
+      logApp.warn('Error resolving user by token', buildTokenAuthFailureLogMeta(err, bearerToken, req));
       return undefined;
     }
   }
@@ -2479,7 +2774,12 @@ export const authenticateUserFromRequest = async (context: AuthContext, req: Ses
 };
 
 const initAdmin = async (context: AuthContext, email: string, password: string, tokenValue: string) => {
-  const isExternallyManaged = conf.get('app:admin:externally_managed') === true;
+  const isExternallyManaged = isAdminExternallyManaged();
+  // An externally managed admin account is locked: its local password is never used, so it is not checked
+  if (!isExternallyManaged) {
+    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    checkAdminPasswordPolicy(context, settings, password.toString());
+  }
   let existingAdmin: Pick<BasicStoreEntityUser, 'id' | 'api_tokens'> | undefined = await findById(context, SYSTEM_USER, OPENCTI_ADMIN_UUID);
   if (existingAdmin) {
     // If admin user exists, just patch the fields
@@ -2507,7 +2807,8 @@ const initAdmin = async (context: AuthContext, email: string, password: string, 
         overrides: [],
       },
     };
-    existingAdmin = await addUser(context, SYSTEM_USER, userToCreate);
+    // The password policy is checked above, following app:admin:secure_by_default
+    existingAdmin = await createUser(context, SYSTEM_USER, userToCreate, { skipPasswordPolicy: true });
   }
   // Create base token if needed
   const tokenId = 'base_token_' + OPENCTI_ADMIN_UUID;
@@ -2518,7 +2819,7 @@ const initAdmin = async (context: AuthContext, email: string, password: string, 
     name: 'Base token',
     hash: await generateTokenHmac(tokenValue),
     created_at: now,
-    masked_token: `****${tokenValue.slice(-4)}`,
+    masked_token: maskToken(tokenValue),
   };
   tokensWithoutBaseOne.push(newToken);
   const updates = [{ key: apiTokens.name, value: tokensWithoutBaseOne, operation: UPDATE_OPERATION_REPLACE as EditOperation }];
@@ -2573,7 +2874,7 @@ export const userEditContext = async (context: AuthContext, user: AuthUser, user
 };
 // endregion
 
-const buildCompleteUserFromCacheOrDb = async (context: AuthContext, user: AuthUser, userToLoad: Pick<BasicStoreEntityUser, 'id'>, cachedUsers: Map<string, AuthUser>) => {
+const buildCompleteUserFromCacheOrDb = async (context: AuthContext, user: AuthUser, userToLoad: Pick<BasicStoreEntityUser, 'id'>, cachedUsers: ReadonlyMap<string, AuthUser>) => {
   const cachedUser = cachedUsers.get(userToLoad.id);
   let completeUser;
   if (cachedUser) {
@@ -2785,7 +3086,7 @@ export const generateSecureToken = async (): Promise<GeneratedToken> => {
   const random = crypto.randomBytes(48).toString('base64url');
   const token = `flgrn_octi_tkn_${random}`;
   const hash = await generateTokenHmac(token);
-  const masked_token = `****${token.slice(-4)}`;
+  const masked_token = maskToken(token);
   return { token, hash, masked_token };
 };
 

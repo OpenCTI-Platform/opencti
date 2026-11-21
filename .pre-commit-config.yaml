@@ -41,7 +41,6 @@ repos:
         exclude: |
           (?x)^(
                 .circleci/(.*)|
-                .devcontainer/(.*)|
                 .github/(.*)|
                 yarn.lock|
                 LICENSE|
@@ -49,7 +48,7 @@ repos:
                 opencti-platform/.dockerignore|
                 opencti-platform/opencti-graphql/static/(.*)|
                 opencti-platform/opencti-front/src/static/(.*)|
-                opencti-platform/opencti-front/packages/(.*)
+                opencti-platform/eslint-plugin-custom-rules/(.*)
           )$
       - id: requirements-txt-fixer
       # Excludes added so you can run against all files versus only changed files in your commit and not impact
@@ -59,7 +58,6 @@ repos:
         exclude: |
           (?x)^(
                 .circleci/config.yml|
-                .devcontainer/(.*)|
                 .github/(.*)|
                 yarn.lock|
                 LICENSE|
@@ -67,5 +65,5 @@ repos:
                 opencti-platform/.dockerignore|
                 opencti-platform/opencti-graphql/static/(.*)|
                 opencti-platform/opencti-front/src/static/(.*)|
-                opencti-platform/opencti-front/packages/(.*)
+                opencti-platform/eslint-plugin-custom-rules/(.*)
           )$

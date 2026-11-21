@@ -133,6 +133,7 @@ Example:
 - Source1 updates again the indicator to set the score to 90
 
 Result:
+
 - The last update from source1 is not applied.
 
 - [Indicators lifecycle](../usage/indicators-lifecycle.md)

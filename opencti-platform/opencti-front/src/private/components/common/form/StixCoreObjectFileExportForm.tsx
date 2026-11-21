@@ -222,7 +222,15 @@ const StixCoreObjectFileExportForm = ({
     const connector = connectors.find((c) => c.value === option.value);
     return !!connector?.connectorScope?.includes(selectedFormat);
   };
-  const selectFormat = (setFieldValue: (field: string, value: string) => void, scope: string) => {
+  const selectFormat = (
+    setFieldValue: (field: string, value: string | null) => void,
+    scope: string,
+    currentConnector: ConnectorOption | null,
+  ) => {
+    // Drop an incompatible connector in the same update, otherwise its format-forcing effect (e.g. HTML-to-PDF) reverts the chosen format.
+    if (currentConnector && !currentConnector.connectorScope?.includes(scope)) {
+      setFieldValue('connector', null);
+    }
     setFieldValue('format', scope);
     if (scope === 'ai') {
       handleOpenAskAi();
@@ -230,7 +238,7 @@ const StixCoreObjectFileExportForm = ({
       setStepIndex(1);
     }
   };
-  const isContainer = ['Report', 'Case-Incident', 'Case-RFI'].includes(instanceType ?? 'Unknown');
+  const isContainer = ['Report', 'Case-Incident', 'Case-Rfi'].includes(instanceType ?? 'Unknown');
   return (
     <Formik<StixCoreObjectFileExportFormInputs>
       enableReinitialize={true}
@@ -423,7 +431,7 @@ const StixCoreObjectFileExportForm = ({
                     <Grid key={scope} size={{ xs: 4 }}>
                       <Card
                         aria-label={t_i18n(scope)}
-                        onClick={() => selectFormat(setFieldValue, scope)}
+                        onClick={() => selectFormat(setFieldValue, scope, values.connector)}
                         variant="outlined"
                         sx={{
                           textAlign: 'center',
@@ -455,7 +463,7 @@ const StixCoreObjectFileExportForm = ({
                       <Card
                         aria-label={t_i18n('Ask AI')}
                         variant="outlined"
-                        onClick={() => (isEnterpriseEdition && (enabled && configured) ? selectFormat(setFieldValue, 'ai') : null)}
+                        onClick={() => (isEnterpriseEdition && (enabled && configured) ? selectFormat(setFieldValue, 'ai', values.connector) : null)}
                         sx={{
                           textAlign: 'center',
                           height: 150,

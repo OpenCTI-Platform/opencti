@@ -4,6 +4,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { useFormatter } from '../i18n';
+import { RELATIVE_DATE_OPTIONS } from './dashboardTimeRange';
 
 interface DashboardRelativeDateSelectProps {
   value: string;
@@ -55,12 +56,9 @@ const DashboardRelativeDateSelect = ({
         sx={selectSx}
       >
         <MenuItem value="none">{t_i18n('None')}</MenuItem>
-        <MenuItem value="days-1">{t_i18n('Last 24 hours')}</MenuItem>
-        <MenuItem value="days-7">{t_i18n('Last 7 days')}</MenuItem>
-        <MenuItem value="months-1">{t_i18n('Last month')}</MenuItem>
-        <MenuItem value="months-3">{t_i18n('Last 3 months')}</MenuItem>
-        <MenuItem value="months-6">{t_i18n('Last 6 months')}</MenuItem>
-        <MenuItem value="years-1">{t_i18n('Last year')}</MenuItem>
+        {RELATIVE_DATE_OPTIONS.map(({ value: optionValue, label }) => (
+          <MenuItem key={optionValue} value={optionValue}>{t_i18n(label)}</MenuItem>
+        ))}
       </Select>
     </FormControl>
   );

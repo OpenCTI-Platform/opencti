@@ -284,6 +284,9 @@ export default class GraphPage {
   /**
    * Places the given nodes side by side in the middle of the canvas, one drag each, so a click or
    * a drag between them never lands under the details panel that opens on the right.
+   *
+   * The row is the first one clear of every other node: a node an earlier step pinned where a target
+   * lies would be drawn over the arranged one, and a click on their shared edge picks neither.
    */
   async arrangeInMiddle(ids: string[]) {
     // Framed first: the forces may have moved a node under a panel since the graph was last fitted,
@@ -292,8 +295,13 @@ export default class GraphPage {
     await this.waitForGraph(ids.length);
     const box = await this.getCanvas().boundingBox();
     if (!box) throw new Error('Canvas has no bounding box');
+    const others = (await this.snapshot()).nodes.filter((n) => !ids.includes(n.id));
+    const xAt = (index: number) => box.width * (0.25 + (0.3 * index) / Math.max(1, ids.length - 1));
+    const isClear = (x: number, y: number) => others.every((n) => Math.hypot(n.x - x, n.y - y) > GraphPage.CLEARANCE);
+    const rowIsClear = (fy: number) => ids.every((_, index) => isClear(xAt(index), box.height * fy));
+    const row = [0.5, 0.4, 0.6, 0.3, 0.7].find(rowIsClear) ?? 0.5;
     for (let index = 0; index < ids.length; index += 1) {
-      const target = { x: box.width * (0.25 + (0.3 * index) / Math.max(1, ids.length - 1)), y: box.height * 0.5 };
+      const target = { x: xAt(index), y: box.height * row };
       const current = await this.node(ids[index]);
       await this.dragNode(ids[index], target.x - current.x, target.y - current.y);
     }
@@ -348,6 +356,9 @@ export default class GraphPage {
    */
   private static readonly GESTURE_LEFT = 70;
 
+  /** Canvas pixels between two node centres for a click on one never to touch the other. */
+  private static readonly CLEARANCE = 60;
+
   /** Drags a selection shape over the whole drawing, from one corner to the opposite one. */
   async dragAcrossCanvas() {
     const box = await this.getCanvas().boundingBox();
@@ -388,7 +399,7 @@ export default class GraphPage {
     for (let fy = 0.05; fy < 0.95; fy += 0.1) {
       for (let fx = 0.05; fx < 0.95; fx += 0.1) candidates.push([box.width * fx, box.height * fy]);
     }
-    const farFromNodes = candidates.filter(([cx, cy]) => state.nodes.every((n) => Math.hypot(n.x - cx, n.y - cy) > 60));
+    const farFromNodes = candidates.filter(([cx, cy]) => state.nodes.every((n) => Math.hypot(n.x - cx, n.y - cy) > GraphPage.CLEARANCE));
     const onPage = farFromNodes.map(([cx, cy]): [number, number] => [box.x + cx, box.y + cy]);
     return this.page.evaluate((points) => points.find(([x, y]) => {
       const element = document.elementFromPoint(x, y);

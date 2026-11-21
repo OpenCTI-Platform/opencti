@@ -1,4 +1,5 @@
 import { GraphQLError } from 'graphql';
+import { AbortError } from 'node-fetch';
 
 // region DOC CODE
 // Doc codes are a stable contract, they identify a precise error.
@@ -205,9 +206,12 @@ export const ResourceNotFoundError = (reason?: string, data?: any) => error(RESO
   ...data,
 });
 
-const TYPE_LOCK = 'LOCK_ERROR';
+// LOCK_ERROR is the code of the error returned to the client (and retried by the workers).
+// TYPE_LOCK_ERROR is the name of the internal abort error raised while waiting for the lock,
+// checked by the callers to convert it into a LockTimeoutError.
+export const LOCK_ERROR = 'LOCK_ERROR';
 export const TYPE_LOCK_ERROR = 'ExecutionError';
-export const LockTimeoutError = (data: any, reason?: string) => error(TYPE_LOCK, reason ?? 'Execution timeout, too many concurrent call on the same entities', {
+export const LockTimeoutError = (data: any, reason?: string) => error(LOCK_ERROR, reason ?? 'Execution timeout, too many concurrent call on the same entities', {
   http_status: 500,
   genre: CATEGORY_BUSINESS,
   ...data,
@@ -224,6 +228,18 @@ export const ClientAbortError = (reason?: string, data?: any) => error(CLIENT_AB
   ...data,
 });
 
+// Raw error of an engine call aborted because the caller disconnected. Covers both
+// engine clients: node-fetch's AbortError (ElkClient) and OpenSearch's RequestAbortedError.
+export const isClientAbortError = (err: any): boolean => {
+  return err instanceof AbortError || err?.name === 'AbortError' || err?.name === 'RequestAbortedError';
+};
+
+// Whether a failure only means that the caller went away: either the raw engine error
+// or the ClientAbortError it is wrapped into (see wrapEngineError in database/engine.ts).
+export const isClientAbort = (err: any): boolean => {
+  return err?.extensions?.code === CLIENT_ABORT_ERROR || isClientAbortError(err);
+};
+
 export const DRAFT_LOCKED_ERROR = 'DRAFT_LOCKED';
 export const DraftLockedError = (reason?: string, data?: any) => error(DRAFT_LOCKED_ERROR, reason ?? 'Draft is in a locked state, no request can be done within this draft', {
   http_status: 400,
@@ -237,14 +253,40 @@ export const WorkNotALiveError = () => error(WORK_NOT_ALIVE_ERROR, 'Work is no l
   genre: CATEGORY_BUSINESS,
 });
 
+// The frontend reads these codes to show its own translated message on the password screens
+export const PASSWORD_REUSED = 'PASSWORD_REUSED';
+export const PasswordReused = (data?: any) => error(PASSWORD_REUSED, 'This password has already been used recently. Please choose a different one.', {
+  http_status: 400,
+  genre: CATEGORY_BUSINESS,
+  ...data,
+});
+
+export const PASSWORD_CHANGE_THROTTLED = 'PASSWORD_CHANGE_THROTTLED';
+export const PasswordChangeThrottled = (data?: any) => error(PASSWORD_CHANGE_THROTTLED, 'Too many password change attempts. Please try again in a few minutes.', {
+  http_status: 429,
+  genre: CATEGORY_BUSINESS,
+  ...data,
+});
+
+// The reset code ran out while the user was on the new-password step
+export const PASSWORD_RESET_EXPIRED = 'PASSWORD_RESET_EXPIRED';
+export const PasswordResetExpired = (data?: any) => error(PASSWORD_RESET_EXPIRED, 'Password reset code expired or not found. Please request a new one.', {
+  http_status: 400,
+  genre: CATEGORY_BUSINESS,
+  ...data,
+});
+
 export const FUNCTIONAL_ERRORS = [
   FUNCTIONAL_ERROR,
   ALREADY_DELETED_ERROR,
   MISSING_REF_ERROR,
   VALIDATION_ERROR,
   RESOURCE_NOT_FOUND_ERROR,
-  TYPE_LOCK_ERROR,
+  LOCK_ERROR,
   CLIENT_ABORT_ERROR,
+  PASSWORD_REUSED,
+  PASSWORD_CHANGE_THROTTLED,
+  PASSWORD_RESET_EXPIRED,
 ];
 
 // Errors caused by the input of the client, already returned to it: logged at info level

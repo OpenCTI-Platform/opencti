@@ -2,9 +2,8 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
-import { DeleteOutlined, DocumentScannerOutlined, GetAppOutlined, WarningOutlined } from '@mui/icons-material';
+import { DeleteOutlined, DocumentScannerOutlined, GetAppOutlined, OpenInNewOutlined, WarningOutlined } from '@mui/icons-material';
 import { ListItem, ListItemButton, Stack } from '@mui/material';
-import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -16,12 +15,12 @@ import { PopoverProps } from '@mui/material/Popover';
 import Slide, { SlideProps } from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/material/styles';
-import makeStyles from '@mui/styles/makeStyles';
 import { FileOutline, ProgressUpload } from 'mdi-material-ui';
 import moment from 'moment';
 import { isEmpty } from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import { createFragmentContainer, graphql, GraphQLTaggedNode } from 'react-relay';
+import { useNavigate } from 'react-router';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -37,6 +36,7 @@ import Box from '@mui/material/Box';
 import { isBypassUser, KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
 import { isNotEmptyField } from '../../../../utils/utils';
 import FileWork from './FileWork';
+import FileDownloadWarningDialog, { isPotentiallyMaliciousFile } from './FileDownloadWarningDialog';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
 import ItemCreators from 'src/components/ItemCreators';
 
@@ -45,30 +45,29 @@ const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, re
 ));
 Transition.displayName = 'TransitionSlide';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    height: 50,
-  },
-  itemNested: {
-    // Same inset as the reference rows above it, not a further 16px.
-    paddingLeft: theme.spacing(2),
-    height: 50,
-  },
-  itemText: {
-    whiteSpace: 'nowrap',
-    marginRight: 10,
-  },
-  fileName: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  // `palette.text.secondary` is wired to the primary ink theme-wide, so MUI's own colour is the wrong one here.
-  fileMeta: {
-    color: 'var(--text-default-secondary)',
-  },
-}));
+const itemSx = {
+  height: 50,
+};
+
+const itemNestedSx = {
+  // Same inset as the reference rows above it, not a further 16px.
+  paddingLeft: 2,
+  height: 50,
+};
+
+const staticLineSx = {
+  display: 'flex',
+  flexGrow: 1,
+  alignItems: 'center',
+  minWidth: 0,
+  paddingX: 2,
+  paddingY: 1,
+};
+
+const fileNameSx = {
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+};
 
 export const FileLineDeleteMutation = graphql`
   mutation FileLineDeleteMutation($fileName: String) {
@@ -97,6 +96,11 @@ interface FileLineComponentProps {
   onDelete?: () => void;
   onClick?: () => void;
   isArtifact?: boolean;
+  // Entity Data tab: the file opens from an "Open in a new tab" action, and a click on the line only
+  // goes to `contentTabLink`. Without a link, the line does nothing.
+  openInNewTabAction?: boolean;
+  // The file in the Content tab of its entity, if listed there. Used with `openInNewTabAction` only.
+  contentTabLink?: string | null;
 }
 
 const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
@@ -112,8 +116,10 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   onDelete,
   onClick,
   isArtifact,
+  openInNewTabAction,
+  contentTabLink,
 }) => {
-  const classes = useStyles();
+  const navigate = useNavigate();
   const { me } = useAuth();
   const draftContext = useDraftContext();
   const { t_i18n, fld } = useFormatter();
@@ -136,6 +142,8 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const isFail = file?.metaData?.errors && file.metaData.errors.length > 0;
   const isProgress = file?.uploadStatus === 'progress' || file?.uploadStatus === 'wait';
   const isOutdated = file?.uploadStatus === 'timeout';
+  // A failed, timed-out or still-uploading file cannot be opened nor downloaded
+  const isUnavailable = !!isFail || isOutdated || isProgress;
   const file_markings = file?.metaData?.file_markings;
   const fileMarkings = me.allowed_marking?.filter(({ id }) => (file_markings ?? []).includes(id)) ?? [];
 
@@ -232,8 +240,13 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     }
   };
 
+  // The warning dialog downloads on its own: refuse to open it when `handleLink` would refuse the download
+  const openDownloadWarning = () => {
+    if (isUnavailable) return;
+    setDisplayDownload(true);
+  };
   const handleLink = (url: string, inNewWindow = false) => {
-    if (isFail || isOutdated || isProgress) return;
+    if (isUnavailable) return;
     handleCloseDownload();
     handleClose();
     if (inNewWindow) {
@@ -255,10 +268,31 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const listUri = `${APP_BASE_PATH}/storage/${
     directDownload ? 'get' : 'view'
   }/${encodedFilePath}`;
-  const isWarning = isArtifact
-    || encodedFilePath.endsWith('.exe')
-    || encodedFilePath.endsWith('.pif')
-    || encodedFilePath.endsWith('.dll');
+  const isWarning = isPotentiallyMaliciousFile(file?.id ?? '', isArtifact);
+  // A file flagged as potentially malicious is never opened in the browser: "Open in a new tab" shows the
+  // download warning instead, and the line never links to the Content tab
+  const canOpenInNewTab = !!openInNewTabAction && !isFail;
+  const linkToContentTab = openInNewTabAction && !isWarning && !isUnavailable
+    ? contentTabLink
+    : null;
+  const isLineClickable = !openInNewTabAction || !!linkToContentTab;
+  // The download action replaces the click on the line, which downloads in `directDownload` mode
+  const showDownloadAction = !isFail && (!directDownload || !!openInNewTabAction);
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+      return;
+    }
+    if (openInNewTabAction) {
+      if (linkToContentTab) navigate(linkToContentTab);
+      return;
+    }
+    if (isWarning) {
+      openDownloadWarning();
+    } else {
+      handleLink(listUri, true);
+    }
+  };
   const fileExtension = file?.name.substring(file?.name.lastIndexOf('.')) ?? '';
   const fileNameWithoutExtension = file?.name.substring(0, file?.name.lastIndexOf('.')) ?? '';
 
@@ -270,6 +304,43 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     status = t_i18n('Failed');
   }
   const lastModifiedDate = fld(file?.lastModified ?? moment());
+
+  const lineContent = (
+    <>
+      <ListItemIcon>
+        {isProgress && (
+          <CircularProgress
+            size={20}
+            color={nested ? 'primary' : 'inherit'}
+          />
+        )}
+        {!isProgress && (isFail || isOutdated) && (
+          <Tooltip title={toolTip !== 'null' ? toolTip : ''}>
+            <WarningOutlined
+              color={nested ? 'primary' : 'inherit'}
+              style={{ fontSize: 15, color: theme.palette.error.main, marginLeft: 4 }}
+            />
+          </Tooltip>
+        )}
+        {!isProgress && !isFail && !isOutdated && generateIcon()}
+      </ListItemIcon>
+      <Tooltip title={!isFail && !isOutdated ? file?.name : ''}>
+        <ListItemText
+          sx={{ maxWidth: '55%', whiteSpace: 'nowrap', marginRight: '10px' }}
+          slotProps={{
+            primary: { sx: fileNameSx },
+            secondary: { sx: { ...fileNameSx, color: 'var(--text-default-secondary)' } },
+          }}
+          primary={`${truncate(fileNameWithoutExtension, 80)}${fileExtension}`}
+          secondary={(
+            <>
+              {`${truncate(status, 80 - lastModifiedDate.length)} (${lastModifiedDate})`}
+            </>
+          )}
+        />
+      </Tooltip>
+    </>
+  );
 
   return (
     <>
@@ -320,7 +391,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                 </IconButton>
               </Tooltip>
             )}
-            {!directDownload && !isFail && (
+            {showDownloadAction && (
               <>
                 <Tooltip title={t_i18n('Download this file')}>
                   <IconButton
@@ -367,6 +438,27 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                   </MenuItem>
                 </Menu>
               </>
+            )}
+            {canOpenInNewTab && (
+              <Tooltip title={t_i18n('Open in a new tab')}>
+                <IconButton
+                  disabled={isProgress}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if (isWarning) {
+                      openDownloadWarning();
+                    } else {
+                      handleLink(`${APP_BASE_PATH}/storage/view/${encodedFilePath}`, true);
+                    }
+                  }}
+                  size="small"
+                  keepMui
+                  aria-label={t_i18n('Open in a new tab')}
+                >
+                  <OpenInNewOutlined fontSize="small" />
+                </IconButton>
+              </Tooltip>
             )}
             {!isExternalReferenceAttachment && (
               <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
@@ -416,48 +508,19 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
           </Stack>
         )}
       >
-        <ListItemButton
-          classes={{ root: nested ? classes.itemNested : classes.item }}
-          rel="noopener noreferrer"
-          onClick={
-            onClick
-            || (() => (isWarning ? setDisplayDownload(true) : handleLink(listUri, true)))
-          }
-        >
-          <ListItemIcon>
-            {isProgress && (
-              <CircularProgress
-                size={20}
-                color={nested ? 'primary' : 'inherit'}
-              />
-            )}
-            {!isProgress && (isFail || isOutdated) && (
-              <Tooltip title={toolTip !== 'null' ? toolTip : ''}>
-                <WarningOutlined
-                  color={nested ? 'primary' : 'inherit'}
-                  style={{ fontSize: 15, color: theme.palette.error.main, marginLeft: 4 }}
-                />
-              </Tooltip>
-            )}
-            {!isProgress && !isFail && !isOutdated && generateIcon()}
-          </ListItemIcon>
-          <Tooltip title={!isFail && !isOutdated ? file?.name : ''}>
-            <ListItemText
-              sx={{ maxWidth: '55%' }}
-              classes={{
-                root: classes.itemText,
-                primary: classes.fileName,
-                secondary: `${classes.fileName} ${classes.fileMeta}`,
-              }}
-              primary={`${truncate(fileNameWithoutExtension, 80)}${fileExtension}`}
-              secondary={(
-                <>
-                  {`${truncate(status, 80 - lastModifiedDate.length)} (${lastModifiedDate})`}
-                </>
-              )}
-            />
-          </Tooltip>
-        </ListItemButton>
+        {isLineClickable ? (
+          <ListItemButton
+            sx={nested ? itemNestedSx : itemSx}
+            onClick={handleClick}
+          >
+            {lineContent}
+          </ListItemButton>
+        ) : (
+          // Nothing to open: plain content, without hover, focus nor button role
+          <Box sx={{ ...staticLineSx, ...(nested ? itemNestedSx : itemSx) }}>
+            {lineContent}
+          </Box>
+        )}
       </ListItem>
       <FileWork file={file} nested={workNested} />
       <DeleteDialog
@@ -488,42 +551,11 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog
+      <FileDownloadWarningDialog
+        fileId={file?.id}
         open={displayDownload}
         onClose={handleCloseDownload}
-      >
-        <DialogContentText>
-          {t_i18n('How do you want to download this file?')}
-        </DialogContentText>
-        <Alert
-          severity="warning"
-          variant="outlined"
-          style={{ position: 'relative', marginTop: 20 }}
-        >
-          {t_i18n(
-            'You are about to download a file related to an Artifact (or a binary). It might be malicious. You can download it as an encrypted archive (password: "infected") in order to protect your workstation and share it safely.',
-          )}
-        </Alert>
-        <DialogActions>
-          <Button onClick={handleCloseDownload} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            onClick={() => handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`)
-            }
-          >
-            {t_i18n('Raw file')}
-          </Button>
-          <Button
-            onClick={() => handleLink(
-              `${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`,
-            )
-            }
-          >
-            {t_i18n('Encrypted archive')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      />
     </>
   );
 };

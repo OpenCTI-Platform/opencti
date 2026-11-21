@@ -1,0 +1,246 @@
+{
+  "description": [
+    "Cases of the breakdown eligibility of a stored widget, run through the two copies of the rule: the editor and the",
+    "dashboards (canWidgetBreakDown and getBreakdownEntityTypes in opencti-front/src/utils/widget/widgetBreakdown.ts) and",
+    "the public dashboards (the same functions in opencti-graphql/src/modules/publicDashboard/publicDashboard-breakdown.ts).",
+    "canBreakDown: whether the widget can be broken down. entityTypes: the types its first dataset is restricted to, read",
+    "on the type filter key of the perspective of the widget (entity_type, relationship_type); none for the audits, whose",
+    "logs have no public breakdown: the public dashboards do not read them."
+  ],
+  "cases": [
+    {
+      "name": "an entities vertical bar",
+      "canBreakDown": true,
+      "entityTypes": ["Report"],
+      "widget": {"type": "vertical-bar", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "an entities line",
+      "canBreakDown": true,
+      "entityTypes": ["Report"],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "an entities area",
+      "canBreakDown": true,
+      "entityTypes": ["Report"],
+      "widget": {"type": "area", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "an entities heatmap",
+      "canBreakDown": true,
+      "entityTypes": ["Report"],
+      "widget": {"type": "heatmap", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "an entities donut, not a time series",
+      "canBreakDown": false,
+      "entityTypes": ["Report"],
+      "widget": {"type": "donut", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "an entities horizontal bar, not a time series",
+      "canBreakDown": false,
+      "entityTypes": ["Report"],
+      "widget": {"type": "horizontal-bar", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "a relationships line of a relationship type",
+      "canBreakDown": true,
+      "entityTypes": ["targets"],
+      "widget": {"type": "line", "perspective": "relationships", "dataSelection": [{"perspective": "relationships", "filters": {"mode": "and", "filters": [{"key": "relationship_type", "values": ["targets"], "operator": "eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "a relationships line without relationship type filter",
+      "canBreakDown": true,
+      "entityTypes": [],
+      "widget": {"type": "line", "perspective": "relationships", "dataSelection": [{"perspective": "relationships", "filters": {"mode": "and", "filters": [], "filterGroups": []}}]}
+    },
+    {
+      "name": "a relationships line, its entity type filter read as no relationship type",
+      "canBreakDown": true,
+      "entityTypes": [],
+      "widget": {"type": "line", "perspective": "relationships", "dataSelection": [{"perspective": "relationships", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["stix-core-relationship"], "operator": "eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "an audits line, the logs having no type filter key",
+      "canBreakDown": true,
+      "entityTypes": [],
+      "widget": {"type": "line", "perspective": "audits", "dataSelection": [{"perspective": "audits", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["History"], "operator": "eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "an audits heatmap",
+      "canBreakDown": true,
+      "entityTypes": [],
+      "widget": {"type": "heatmap", "perspective": "audits", "dataSelection": [{"perspective": "audits", "filters": {"mode": "and", "filters": [], "filterGroups": []}}]}
+    },
+    {
+      "name": "a widget without perspective",
+      "canBreakDown": false,
+      "entityTypes": [],
+      "widget": {"type": "line", "perspective": null, "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "two entities datasets",
+      "canBreakDown": false,
+      "entityTypes": ["Report"],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "or"}], "filterGroups": []}}, {"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "no dataset",
+      "canBreakDown": false,
+      "entityTypes": [],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": []}
+    },
+    {
+      "name": "a relationships widget holding an entities dataset",
+      "canBreakDown": false,
+      "entityTypes": [],
+      "widget": {"type": "line", "perspective": "relationships", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "an entities widget whose dataset sets no perspective",
+      "canBreakDown": true,
+      "entityTypes": ["Report"],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "a dataset of draft workspaces",
+      "canBreakDown": false,
+      "entityTypes": ["DraftWorkspace"],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["DraftWorkspace"], "operator": "eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "a dataset of draft workspaces and reports",
+      "canBreakDown": true,
+      "entityTypes": ["DraftWorkspace", "Report"],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["DraftWorkspace", "Report"], "operator": "eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "a dataset excluding the draft workspaces, read as draft workspaces whatever the operator",
+      "canBreakDown": false,
+      "entityTypes": [],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["DraftWorkspace"], "operator": "not_eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "a dataset of draft workspaces in a nested group only",
+      "canBreakDown": true,
+      "entityTypes": [],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [], "filterGroups": [{"mode": "and", "filters": [{"key": "entity_type", "values": ["DraftWorkspace"], "operator": "eq", "mode": "or"}], "filterGroups": []}]}}]}
+    },
+    {
+      "name": "an audits line counting distinct values",
+      "canBreakDown": false,
+      "entityTypes": [],
+      "widget": {"type": "line", "perspective": "audits", "dataSelection": [{"perspective": "audits", "filters": {"mode": "and", "filters": [], "filterGroups": []}, "unique": true}]}
+    },
+    {
+      "name": "an audits area counting distinct values",
+      "canBreakDown": false,
+      "entityTypes": [],
+      "widget": {"type": "area", "perspective": "audits", "dataSelection": [{"perspective": "audits", "filters": {"mode": "and", "filters": [], "filterGroups": []}, "unique": true}]}
+    },
+    {
+      "name": "an audits vertical bar, which never counts distinct values",
+      "canBreakDown": true,
+      "entityTypes": [],
+      "widget": {"type": "vertical-bar", "perspective": "audits", "dataSelection": [{"perspective": "audits", "filters": {"mode": "and", "filters": [], "filterGroups": []}, "unique": true}]}
+    },
+    {
+      "name": "an entities line set to count distinct values, which only the logs do",
+      "canBreakDown": true,
+      "entityTypes": ["Report"],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "or"}], "filterGroups": []}, "unique": true}]}
+    },
+    {
+      "name": "a type filter in an \"or\" group with another filter",
+      "canBreakDown": true,
+      "entityTypes": [],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "or", "filters": [{"key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "or"}, {"key": "objectLabel", "values": ["label-id"], "operator": "eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "a single type filter in an \"or\" group",
+      "canBreakDown": true,
+      "entityTypes": ["Report"],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "or", "filters": [{"key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "a type filter in an \"or\" group with a nested group",
+      "canBreakDown": true,
+      "entityTypes": [],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "or", "filters": [{"key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "or"}], "filterGroups": [{"mode": "and", "filters": [{"key": "objectLabel", "values": ["label-id"], "operator": "eq", "mode": "or"}], "filterGroups": []}]}}]}
+    },
+    {
+      "name": "a type filter in an \"and\" group with another filter and a nested group",
+      "canBreakDown": true,
+      "entityTypes": ["Report"],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "or"}, {"key": "objectLabel", "values": ["label-id"], "operator": "eq", "mode": "or"}], "filterGroups": [{"mode": "or", "filters": [{"key": "objectLabel", "values": ["label-id"], "operator": "eq", "mode": "or"}], "filterGroups": []}]}}]}
+    },
+    {
+      "name": "a type filter in a nested group only",
+      "canBreakDown": true,
+      "entityTypes": [],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [], "filterGroups": [{"mode": "and", "filters": [{"key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "or"}], "filterGroups": []}]}}]}
+    },
+    {
+      "name": "a type filter excluding the types",
+      "canBreakDown": true,
+      "entityTypes": [],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["Report"], "operator": "not_eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "a type filter without operator, read as eq",
+      "canBreakDown": true,
+      "entityTypes": ["Report"],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["Report"], "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "a relationship type filter excluding the types",
+      "canBreakDown": true,
+      "entityTypes": [],
+      "widget": {"type": "line", "perspective": "relationships", "dataSelection": [{"perspective": "relationships", "filters": {"mode": "and", "filters": [{"key": "relationship_type", "values": ["targets"], "operator": "not_eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "several types in \"and\" mode, of no element",
+      "canBreakDown": true,
+      "entityTypes": [],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["Report", "Malware"], "operator": "eq", "mode": "and"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "a single type in \"and\" mode",
+      "canBreakDown": true,
+      "entityTypes": ["Report"],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "and"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "several types in \"or\" mode",
+      "canBreakDown": true,
+      "entityTypes": ["Report", "Malware"],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["Report", "Malware"], "operator": "eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "a type filter without values",
+      "canBreakDown": true,
+      "entityTypes": [],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": [], "operator": "eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "another filter whose key is a list, next to the type filter",
+      "canBreakDown": true,
+      "entityTypes": ["Report"],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": {"mode": "and", "filters": [{"key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "or"}, {"key": ["objectLabel"], "values": ["label-id"], "operator": "eq", "mode": "or"}], "filterGroups": []}}]}
+    },
+    {
+      "name": "a dataset without filters",
+      "canBreakDown": true,
+      "entityTypes": [],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities"}]}
+    },
+    {
+      "name": "a dataset with null filters",
+      "canBreakDown": true,
+      "entityTypes": [],
+      "widget": {"type": "line", "perspective": "entities", "dataSelection": [{"perspective": "entities", "filters": null}]}
+    }
+  ]
+}

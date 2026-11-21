@@ -1,4 +1,5 @@
 import type { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
+import { emptyFilterGroup, isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
 import type { DashboardVariable, DashboardVariableRestriction, DashboardVariableType } from '../dashboard-types';
 import { isStrictIsoDate } from '../dashboardVariablesResolution';
 
@@ -48,7 +49,8 @@ export const variableToDraft = (variable: DashboardVariable): DashboardVariableD
 
 const draftToRestriction = (draft: DashboardVariableDraft): DashboardVariableRestriction => {
   if (draft.restrictionMode === 'selection') return { mode: 'selection', values: draft.selectionValues };
-  if (draft.restrictionMode === 'filters' && draft.filters) return { mode: 'filters', filters: draft.filters };
+  // A rule not edited yet is empty: sent as is, the validation refuses it rather than dropping the mode.
+  if (draft.restrictionMode === 'filters') return { mode: 'filters', filters: draft.filters ?? emptyFilterGroup };
   return { mode: 'none' };
 };
 
@@ -90,7 +92,7 @@ export const draftToVariable = (draft: DashboardVariableDraft, id: string): Dash
 
 /**
  * Validate a draft against the dashboard variables. Returns a map field -> message
- * (empty when valid). Selection and filters restrictions are not validated here.
+ * (empty when valid). Only the restriction of the current mode is validated, as only it is sent.
  * Errors that belong to no field are returned under the `form` key.
  */
 export const validateDraft = (
@@ -136,6 +138,28 @@ export const validateDraft = (
     errors.defaultValue = t_i18n('Default value is not valid');
   } else if (draft.type === 'date' && (draft.restrictionMode === 'selection' ? !isStrictIsoDate(defaultValue) : normalizeIsoDate(defaultValue) === null)) {
     errors.defaultValue = t_i18n('Default value is not valid');
+  } else if (draft.restrictionMode === 'selection' && !draft.selectionValues.includes(draft.defaultValue)) {
+    errors.defaultValue = t_i18n('The default value must belong to the selection');
+  }
+
+  if (draft.restrictionMode === 'selection') {
+    if (draft.selectionValues.length === 0) {
+      errors.selectionValues = t_i18n('Select at least one value');
+    } else if (draft.selectionValues.length > DASHBOARD_VARIABLES_LIMITS.selectionValues) {
+      errors.selectionValues = t_i18n('A selection cannot hold more than 200 values');
+    } else if (draft.selectionValues.some((value) => value.includes(VARIABLE_TOKEN_PREFIX))) {
+      errors.selectionValues = t_i18n('A value cannot reference another variable');
+    }
+  }
+  if (draft.restrictionMode === 'filters') {
+    if (draft.type !== 'entity') {
+      errors.filters = t_i18n('Only an entity variable can be restricted by filter');
+    } else if (!isFilterGroupNotEmpty(draft.filters)) {
+      errors.filters = t_i18n('At least one filter is required');
+    } else if (JSON.stringify(draft.filters).includes(VARIABLE_TOKEN_PREFIX)) {
+      // Serialized: a token may hide at any depth, in a nested group or in the values of a combined filter.
+      errors.filters = t_i18n('A filter cannot reference another variable');
+    }
   }
   return errors;
 };

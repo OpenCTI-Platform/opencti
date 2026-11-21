@@ -5,13 +5,26 @@
   "targets": {
     "install": {
       "executor": "nx:run-commands",
-      "dependsOn": [{ "projects": ["client-python"], "target": "install" }],
+      "dependsOn": [
+        {
+          "projects": [
+            "client-python"
+          ],
+          "target": "install"
+        },
+        {
+          "projects": [
+            "opencti-platform"
+          ],
+          "target": "install"
+        }
+      ],
       "options": {
         "cwd": "opencti-platform/opencti-graphql",
-        "command": "yarn install && yarn install:python"
+        "command": "yarn install:python"
       },
       "metadata": {
-        "description": "Install the OpenCTI GraphQL server dependencies"
+        "description": "Install the Python dependencies of the OpenCTI platform"
       }
     },
     "build": {

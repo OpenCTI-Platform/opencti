@@ -1,15 +1,27 @@
 import type { VocabularyCategory, VocabularyDefinition } from '../../generated/graphql';
-import { vocabularyDefinitions } from './vocabulary-types';
+import { isVocabularyCategoryEnabled, vocabularyDefinitions } from './vocabulary-types';
 import { UnsupportedError } from '../../config/errors';
 import { elRawUpdateByQuery } from '../../database/engine';
 import { READ_ENTITIES_INDICES } from '../../database/utils';
 import { STIX_PATTERN_TYPE } from '../../utils/syntax';
+import { normalizeName } from '../../schema/identifier';
+
+// The aliases the platform keeps for an entry: it drops an alias that is the name of the entry (whatever its case), the empty ones and the
+// duplicates. An entry created with the alias 'low' under the name 'low' is stored without aliases.
+export const cleanVocabularyAliases = (name: string, aliases: string[] | null = []) => {
+  const kept = (aliases ?? []).map((alias) => alias.trim()).filter((alias) => alias !== '' && normalizeName(alias) !== normalizeName(name));
+  return kept.filter((alias, index) => kept.findIndex((other) => normalizeName(other) === normalizeName(alias)) === index);
+};
 
 export const builtInOv = [
   'pattern_type_ov',
 ];
 
-export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; description?: string; aliases?: string[]; order?: number }>> = {
+// color: optional display colour (hex) of the entry, seeded where the scale carries a meaning and editable in Settings > Taxonomies > Vocabularies.
+// The seeded colours are mid-tone so the tag (text in the colour on a tint of it) stays readable on the dark and the light theme.
+// parent_name: the name of the entry of the parent category this entry belongs to (see VocabularyDefinition.parent).
+interface OpenVocabularyEntry { key: string; description?: string; aliases?: string[]; order?: number; color?: string; parent_name?: string }
+export const openVocabularies: Record<VocabularyCategory, Array<OpenVocabularyEntry>> = {
   // A
   account_type_ov: [
     { key: 'facebook', description: 'Specifies a Facebook account' },
@@ -23,6 +35,137 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     { key: 'unix', description: 'Specifies a POSIX account' },
     { key: 'windows-local', description: 'Specifies a Windows local account' },
     { key: 'windows-domain', description: 'Specifies a Windows domain account' },
+  ],
+  // Asset vocabularies of System: the values are the OpenAEV asset enums (AssetCategory, AssetSubCategory, AssetCriticality, endpoint platforms)
+  system_category_ov: [
+    { key: 'HOST', description: 'Physical or virtual machine, server or workstation.', order: 1, color: '#1e88e5' },
+    { key: 'CONTAINER_WORKLOAD', description: 'Container, image, Kubernetes object or serverless function.', order: 2, color: '#00897b' },
+    { key: 'CLOUD_RESOURCE', description: 'Compute, storage, database, network or serverless cloud resource.', order: 3, color: '#039be5' },
+    { key: 'WEB_APPLICATION', description: 'Website, web API or web service reachable over HTTP(S).', order: 4, color: '#5e35b1' },
+    { key: 'NETWORK_DEVICE', description: 'Router, switch, firewall, load balancer or other network gear.', order: 5, color: '#f4511e' },
+    { key: 'MOBILE_DEVICE', description: 'Smartphone or tablet (iOS / Android).', order: 6, color: '#3949ab' },
+    { key: 'IOT_OT_DEVICE', description: 'IoT sensor, camera, PLC, SCADA or other operational technology.', order: 7, color: '#8d6e63' },
+    { key: 'IDENTITY', description: 'User, service account, group or role.', order: 8, color: '#d81b60' },
+    { key: 'SAAS_APPLICATION', description: 'Software-as-a-Service application or tenant.', order: 9, color: '#00acc1' },
+    { key: 'AI_TARGET', description: 'LLM endpoint, AI agent, MCP server or RAG pipeline.', order: 10, color: '#8e24aa' },
+    { key: 'SECURITY_PLATFORM', description: 'Defensive security platform: EDR, XDR, SIEM, SOAR, NDR or similar.', order: 11, color: '#43a047' },
+    { key: 'GENERIC_ASSET', description: 'Anything that does not fit another category yet.', order: 12, color: '#78909c' },
+  ],
+  // Criticality on the severity scale: very high critical, high, medium, low, unknown neutral
+  system_criticality_ov: [
+    { key: 'VERY_HIGH', description: 'Very high business criticality', order: 1, color: '#e53935' },
+    { key: 'HIGH', description: 'High business criticality', order: 2, color: '#fb8c00' },
+    { key: 'MEDIUM', description: 'Medium business criticality', order: 3, color: '#f9a825' },
+    { key: 'LOW', description: 'Low business criticality', order: 4, color: '#43a047' },
+    { key: 'UNKNOWN', description: 'Business criticality not assessed', order: 5, color: '#78909c' },
+  ],
+  system_environment_ov: [
+    { key: 'production', description: 'Live environment serving real users and data', order: 1, color: '#e53935' },
+    { key: 'staging', description: 'Pre-production copy of production, used to validate releases', order: 2, color: '#f9a825' },
+    { key: 'development', description: 'Environment where the system is built and changed', order: 3, color: '#1e88e5' },
+    { key: 'test', description: 'Environment dedicated to testing, with test data', order: 4, color: '#8e24aa' },
+    { key: 'other', description: 'Any other environment (lab, training, disaster recovery)', order: 5, color: '#78909c' },
+  ],
+  // Exposure: reachable from the internet is the warning, not reachable the safe state
+  system_internet_facing_ov: [
+    { key: 'yes', description: 'Reachable from the internet', order: 1, color: '#fb8c00' },
+    { key: 'no', description: 'Not reachable from the internet', order: 2, color: '#43a047' },
+    { key: 'unknown', description: 'Exposure not assessed', order: 3, color: '#78909c' },
+  ],
+  system_platform_ov: [
+    { key: 'Linux', description: 'Linux operating system' },
+    { key: 'Windows', description: 'Microsoft Windows operating system' },
+    { key: 'MacOS', description: 'Apple macOS operating system' },
+    { key: 'iOS', description: 'Apple iOS or iPadOS mobile operating system' },
+    { key: 'Android', description: 'Android mobile operating system' },
+    { key: 'Container', description: 'Container runtime, no host operating system of its own' },
+    { key: 'Service', description: 'Agentless service endpoint, reached over the network only' },
+    { key: 'Generic', description: 'Platform not tied to one operating system' },
+    { key: 'Internal', description: 'Internal platform of the security tooling itself' },
+    { key: 'Unknown', description: 'Platform not identified' },
+  ],
+  // Each subcategory names its system_category_ov entry in parent_name: the System form narrows the subcategories to the chosen category with it
+  system_subcategory_ov: [
+    { key: 'SERVER', description: 'Physical or virtual server running services', parent_name: 'HOST' },
+    { key: 'WORKSTATION', description: 'Desktop computer used by a person', parent_name: 'HOST' },
+    { key: 'LAPTOP', description: 'Portable computer used by a person', parent_name: 'HOST' },
+    { key: 'VIRTUAL_MACHINE', description: 'Guest machine running on a hypervisor', parent_name: 'HOST' },
+    { key: 'HYPERVISOR', description: 'Host that runs virtual machines', parent_name: 'HOST' },
+    { key: 'MAINFRAME', description: 'Large central computer for critical batch and transaction work', parent_name: 'HOST' },
+    { key: 'THIN_CLIENT', description: 'Light terminal that runs its sessions on a remote server', parent_name: 'HOST' },
+    { key: 'CONTAINER', description: 'Running container instance', parent_name: 'CONTAINER_WORKLOAD' },
+    { key: 'CONTAINER_IMAGE', description: 'Container image stored in a registry', parent_name: 'CONTAINER_WORKLOAD' },
+    { key: 'KUBERNETES_POD', description: 'Kubernetes pod, one or more containers scheduled together', parent_name: 'CONTAINER_WORKLOAD' },
+    { key: 'KUBERNETES_CLUSTER', description: 'Kubernetes cluster as a whole', parent_name: 'CONTAINER_WORKLOAD' },
+    { key: 'KUBERNETES_NODE', description: 'Machine that runs pods in a Kubernetes cluster', parent_name: 'CONTAINER_WORKLOAD' },
+    { key: 'SERVERLESS_FUNCTION', description: 'Function run on demand without a managed server', parent_name: 'CONTAINER_WORKLOAD' },
+    { key: 'COMPUTE', description: 'Cloud compute instance or scale set', parent_name: 'CLOUD_RESOURCE' },
+    { key: 'STORAGE', description: 'Cloud object, block or file storage', parent_name: 'CLOUD_RESOURCE' },
+    { key: 'DATABASE', description: 'Managed cloud database', parent_name: 'CLOUD_RESOURCE' },
+    { key: 'NETWORKING', description: 'Cloud network resource: VPC, subnet, gateway or security group', parent_name: 'CLOUD_RESOURCE' },
+    { key: 'SERVERLESS', description: 'Cloud serverless service or function app', parent_name: 'CLOUD_RESOURCE' },
+    { key: 'CONTAINER_REGISTRY', description: 'Cloud registry that stores container images', parent_name: 'CLOUD_RESOURCE' },
+    { key: 'KUBERNETES', description: 'Managed cloud Kubernetes service', parent_name: 'CLOUD_RESOURCE' },
+    { key: 'IAM_PRINCIPAL', description: 'Cloud identity: user, role or service principal', parent_name: 'CLOUD_RESOURCE' },
+    { key: 'SECRETS_KEY_MGMT', description: 'Cloud vault for secrets, keys or certificates', parent_name: 'CLOUD_RESOURCE' },
+    { key: 'MESSAGING_QUEUE', description: 'Cloud queue, topic or event bus', parent_name: 'CLOUD_RESOURCE' },
+    { key: 'ANALYTICS_DATA', description: 'Cloud data warehouse, data lake or analytics service', parent_name: 'CLOUD_RESOURCE' },
+    { key: 'AI_ML_SERVICE', description: 'Cloud AI or machine learning service', parent_name: 'CLOUD_RESOURCE' },
+    { key: 'IAC_TEMPLATE', description: 'Infrastructure as code template or stack', parent_name: 'CLOUD_RESOURCE' },
+    { key: 'CLOUD_OTHER', description: 'Any other cloud resource', parent_name: 'CLOUD_RESOURCE' },
+    { key: 'WEBSITE', description: 'Website served to browsers', parent_name: 'WEB_APPLICATION' },
+    { key: 'WEB_API', description: 'HTTP API, REST or similar', parent_name: 'WEB_APPLICATION' },
+    { key: 'SINGLE_PAGE_APP', description: 'Browser application rendered on the client side', parent_name: 'WEB_APPLICATION' },
+    { key: 'GRAPHQL_API', description: 'GraphQL API endpoint', parent_name: 'WEB_APPLICATION' },
+    { key: 'WEB_SERVICE', description: 'Web service, SOAP or similar', parent_name: 'WEB_APPLICATION' },
+    { key: 'MICROSERVICE', description: 'Small service that exposes one capability over HTTP', parent_name: 'WEB_APPLICATION' },
+    { key: 'ROUTER', description: 'Device that routes traffic between networks', parent_name: 'NETWORK_DEVICE' },
+    { key: 'SWITCH', description: 'Device that connects hosts on a local network', parent_name: 'NETWORK_DEVICE' },
+    { key: 'FIREWALL', description: 'Device that filters network traffic', parent_name: 'NETWORK_DEVICE' },
+    { key: 'LOAD_BALANCER', description: 'Device that spreads traffic across servers', parent_name: 'NETWORK_DEVICE' },
+    { key: 'VPN_GATEWAY', description: 'Gateway that terminates VPN connections', parent_name: 'NETWORK_DEVICE' },
+    { key: 'WIRELESS_AP', description: 'Wireless access point', parent_name: 'NETWORK_DEVICE' },
+    { key: 'PROXY', description: 'Forward or reverse proxy', parent_name: 'NETWORK_DEVICE' },
+    { key: 'DNS_SERVER', description: 'Server that resolves domain names', parent_name: 'NETWORK_DEVICE' },
+    { key: 'DHCP_SERVER', description: 'Server that hands out network addresses', parent_name: 'NETWORK_DEVICE' },
+    { key: 'SAN_NAS', description: 'Network storage array or NAS', parent_name: 'NETWORK_DEVICE' },
+    { key: 'NETWORK_OTHER', description: 'Any other network device', parent_name: 'NETWORK_DEVICE' },
+    { key: 'SMARTPHONE', description: 'Mobile phone', parent_name: 'MOBILE_DEVICE' },
+    { key: 'TABLET', description: 'Tablet computer', parent_name: 'MOBILE_DEVICE' },
+    { key: 'IOT_SENSOR', description: 'Connected sensor that reports measurements', parent_name: 'IOT_OT_DEVICE' },
+    { key: 'IP_CAMERA', description: 'Network-connected video camera', parent_name: 'IOT_OT_DEVICE' },
+    { key: 'GATEWAY', description: 'Gateway that links IoT or OT devices to the network', parent_name: 'IOT_OT_DEVICE' },
+    { key: 'POINT_OF_SALE', description: 'Payment terminal or cash register', parent_name: 'IOT_OT_DEVICE' },
+    { key: 'MEDIA_DEVICE', description: 'Connected TV, display or conference device', parent_name: 'IOT_OT_DEVICE' },
+    { key: 'PLC', description: 'Programmable logic controller driving an industrial process', parent_name: 'IOT_OT_DEVICE' },
+    { key: 'RTU', description: 'Remote terminal unit collecting field data', parent_name: 'IOT_OT_DEVICE' },
+    { key: 'HMI', description: 'Human machine interface of an industrial process', parent_name: 'IOT_OT_DEVICE' },
+    { key: 'SCADA_HISTORIAN', description: 'SCADA server or historian storing process data', parent_name: 'IOT_OT_DEVICE' },
+    { key: 'MEDICAL_DEVICE', description: 'Connected medical equipment', parent_name: 'IOT_OT_DEVICE' },
+    { key: 'PRINTER_PERIPHERAL', description: 'Printer, scanner or other network peripheral', parent_name: 'IOT_OT_DEVICE' },
+    { key: 'BUILDING_MGMT', description: 'Building management system: access control, HVAC or lighting', parent_name: 'IOT_OT_DEVICE' },
+    { key: 'USER_ACCOUNT', description: 'Account of a person', parent_name: 'IDENTITY' },
+    { key: 'SERVICE_ACCOUNT', description: 'Account used by an application or a script', parent_name: 'IDENTITY' },
+    { key: 'GROUP', description: 'Group of accounts sharing permissions', parent_name: 'IDENTITY' },
+    { key: 'ROLE', description: 'Set of permissions assigned to accounts', parent_name: 'IDENTITY' },
+    { key: 'SHARED_MAILBOX', description: 'Mailbox used by several people', parent_name: 'IDENTITY' },
+    { key: 'NON_HUMAN_IDENTITY', description: 'Machine identity: API key, token, certificate or workload identity', parent_name: 'IDENTITY' },
+    { key: 'SAAS_APP', description: 'Software-as-a-Service application', parent_name: 'SAAS_APPLICATION' },
+    { key: 'SAAS_TENANT', description: 'Tenant of a SaaS application owned by the organization', parent_name: 'SAAS_APPLICATION' },
+    { key: 'LLM_MODEL', description: 'Large language model endpoint', parent_name: 'AI_TARGET' },
+    { key: 'AI_AGENT', description: 'AI agent that acts with tools', parent_name: 'AI_TARGET' },
+    { key: 'MCP_SERVER', description: 'Model Context Protocol server exposing tools to AI agents', parent_name: 'AI_TARGET' },
+    { key: 'RAG_PIPELINE', description: 'Retrieval augmented generation pipeline', parent_name: 'AI_TARGET' },
+    { key: 'EDR', description: 'Endpoint detection and response', parent_name: 'SECURITY_PLATFORM' },
+    { key: 'XDR', description: 'Extended detection and response', parent_name: 'SECURITY_PLATFORM' },
+    { key: 'SIEM', description: 'Security information and event management', parent_name: 'SECURITY_PLATFORM' },
+    { key: 'SOAR', description: 'Security orchestration, automation and response', parent_name: 'SECURITY_PLATFORM' },
+    { key: 'NDR', description: 'Network detection and response', parent_name: 'SECURITY_PLATFORM' },
+    { key: 'ISPM', description: 'Identity security posture management', parent_name: 'SECURITY_PLATFORM' },
+    { key: 'EMAIL_SECURITY', description: 'Email security gateway or filter', parent_name: 'SECURITY_PLATFORM' },
+    { key: 'LLM_FIREWALL', description: 'Firewall that filters prompts and answers of language models', parent_name: 'SECURITY_PLATFORM' },
+    { key: 'AI_GATEWAY', description: 'Gateway that controls access to AI models', parent_name: 'SECURITY_PLATFORM' },
+    { key: 'VULNERABILITY_SCANNER', description: 'Scanner that finds vulnerabilities', parent_name: 'SECURITY_PLATFORM' },
   ],
   attack_resource_level_ov: [
     {
@@ -805,6 +948,13 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     { key: 'linux' },
     { key: 'windows' },
   ],
+  closing_reason_ov: [
+    { key: 'true-positive', description: 'Confirmed and handled', order: 1 },
+    { key: 'false-positive', description: 'Not a real threat', order: 2 },
+    { key: 'duplicate', description: 'Duplicate of another entity', order: 3 },
+    { key: 'indeterminate', description: 'Could not be confirmed or dismissed', order: 4 },
+    { key: 'other', description: 'Other reason', order: 5 },
+  ],
   collection_layers_ov: [
     { key: 'container' },
     { key: 'cloud-control-plane' },
@@ -1217,21 +1367,60 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
   ],
 };
 
+// The input the platform seeds for a built-in vocabulary entry; the colour is only set when the entry carries one.
+export const seedVocabularyInput = (category: VocabularyCategory, entry: typeof openVocabularies[VocabularyCategory][number]) => {
+  const { key, description, aliases, order, color, parent_name } = entry;
+  return {
+    name: key,
+    description: description ?? '',
+    aliases: aliases ?? [],
+    category,
+    order,
+    ...(color ? { color } : {}),
+    ...(parent_name ? { parent_name } : {}),
+    builtIn: builtInOv.includes(category),
+  };
+};
+
+// Before parent_name, a System subcategory named its category at the end of its description: "Server (category: HOST)".
+// Returns the category and the description without the suffix, or undefined when the description names no category.
+const LEGACY_PARENT_SUFFIX = /\s*\(category: ([^)]+)\)\s*$/;
+export const systemSubcategoryParentFromDescription = (description?: string | null) => {
+  const match = description?.match(LEGACY_PARENT_SUFFIX);
+  if (!description || !match) {
+    return undefined;
+  }
+  return { parentName: match[1].trim(), description: description.replace(LEGACY_PARENT_SUFFIX, '').trim() };
+};
+
+const toVocabularyDefinition = (key: string, value: typeof vocabularyDefinitions[VocabularyCategory]): VocabularyDefinition => {
+  return { key: key as VocabularyCategory, ...value, closed: value.closed ?? false };
+};
+
 export const getVocabulariesCategories = (): VocabularyDefinition[] => {
   return Object.entries(vocabularyDefinitions)
-    .filter(([_, value]) => value.entity_types?.length > 0)
-    .map(([key, value]) => ({ key: key as VocabularyCategory, ...value, closed: value.closed ?? false }))
+    .filter(([_, value]) => value.entity_types?.length > 0 && isVocabularyCategoryEnabled(value))
+    .map(([key, value]) => toVocabularyDefinition(key, value))
     .sort();
 };
 
+// Also returns a category hidden from the list by its feature flag: its values may still be stored on entities
+export const getVocabularyCategory = (key: string): VocabularyDefinition | undefined => {
+  const value = vocabularyDefinitions[key as VocabularyCategory];
+  return value ? toVocabularyDefinition(key, value) : undefined;
+};
+
+// Input resolution skips a disabled category: its field does not exist on the entity
+const getEnabledVocabularyDefinitions = () => Object.entries(vocabularyDefinitions).filter(([, definition]) => isVocabularyCategoryEnabled(definition));
+
 export const isEntityFieldAnOpenVocabulary = (fieldName: string, entityType: string) => {
-  return Object.entries(vocabularyDefinitions)
+  return getEnabledVocabularyDefinitions()
     .filter(([, { entity_types }]) => entity_types.includes(entityType))
     .filter(([, { fields }]) => fields.some(({ key }) => key === fieldName)).length > 0;
 };
 
 export const getVocabularyCategoryForField = (fieldName: string, entityType: string) => {
-  const definitions = Object.entries(vocabularyDefinitions)
+  const definitions = getEnabledVocabularyDefinitions()
     .filter(([, { entity_types }]) => entity_types.includes(entityType))
     .filter(([, { fields }]) => fields.some(({ key }) => key === fieldName))
     .map(([cat, def]) => ({ cat, def }));

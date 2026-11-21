@@ -51,4 +51,7 @@ Old news feed items are deleted after 6 months.
 
 ## Example
 
-When XTM Hub publishes a new custom dashboard, OpenCTI shows a toast notification and adds a new entry in your notifications list. You can open the notifications page, review the item, and decide if you want to import it.
+When XTM Hub publishes a new custom dashboard, OpenCTI shows a toast notification and adds a new entry in the **News feed** tab. Click the megaphone icon in the top-right corner to open the tab, review the item, and decide if you want to import it.
+
+!!! note "News Feed and Notification Center"
+    News Feed items do not appear in the [Notification Center](notifications.md#notification-center). The megaphone icon opens the News Feed and shows a badge when it has unread items. The bell icon opens the Notification Center, which lists the alerts raised by your triggers and has its own unread badge.

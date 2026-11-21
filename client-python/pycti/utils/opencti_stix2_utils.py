@@ -5,7 +5,8 @@ in OpenCTI, including type mappings, pattern generation, and object reference co
 """
 
 import datetime
-from typing import Any, Dict, Iterable, Optional
+import json
+from typing import Any, Dict, Iterable, List, Optional
 
 import datefinder
 from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpression
@@ -13,6 +14,121 @@ from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpressio
 # datefinder only catches ValueError while parsing candidates; an out-of-range date
 # raises OverflowError, which must be swallowed the same way.
 datefinder.ValueError = ValueError, OverflowError
+
+
+def query_to_stix(
+    opencti, root_field: str, entity_id: Optional[str], version: Optional[str]
+) -> Optional[Dict]:
+    """Get the STIX representation of one object from the backend ``toStix`` field.
+
+    :param opencti: OpenCTI API client
+    :type opencti: OpenCTIApiClient
+    :param root_field: GraphQL query returning the object by id, with a
+        ``toStix(version)`` field (e.g. ``stixCoreObject``)
+    :type root_field: str
+    :param entity_id: the id of the object
+    :type entity_id: str, optional
+    :param version: the STIX version (``stix_2_0`` or ``stix_2_1``), None for
+        the backend default (``stix_2_1``)
+    :type version: str, optional
+    :return: STIX object, or ``None`` if the id is missing, or the object is not
+        found or cannot be converted (the backend then returns an empty string)
+    :rtype: dict or None
+    :raises json.JSONDecodeError: if the backend payload is not valid JSON
+    """
+    if entity_id is None:
+        opencti.app_logger.error(f"[{root_field}] to_stix: missing parameter: id")
+        return None
+    opencti.app_logger.info(
+        f"Fetching {root_field} STIX", {"id": entity_id, "version": version}
+    )
+    operation_name = root_field[0].upper() + root_field[1:] + "ToStix"
+    query = f"""
+        query {operation_name}($id: String!, $version: Version) {{
+            {root_field}(id: $id) {{
+                toStix(version: $version)
+            }}
+        }}
+    """
+    result = opencti.query(query, {"id": entity_id, "version": version})
+    stix_object = (result.get("data") or {}).get(root_field)
+    # An empty string when the backend cannot load the object with its
+    # dependencies (e.g. a relationship whose endpoint the user cannot read).
+    if stix_object is None or not stix_object.get("toStix"):
+        return None
+    return json.loads(stix_object["toStix"])
+
+
+def is_custom_field_input_value(value: Any) -> bool:
+    """Tell whether the value of a STIX ``x_*`` property can fill a custom field.
+
+    A custom field holds a scalar (string, number, boolean or date), or a list of
+    strings for a multi select. An object, or a list holding one, never matches a
+    custom field (e.g. the files of ``x_opencti_files`` with their base64 content,
+    already sent as uploads) and is not sent as a custom field value.
+
+    :param value: value of a STIX custom property
+    :type value: Any
+    :return: True if the value can be sent as a custom field value
+    :rtype: bool
+    """
+    if value is None or isinstance(value, dict):
+        return False
+    if isinstance(value, (list, tuple)):
+        return all(not isinstance(item, (dict, list, tuple)) for item in value)
+    return True
+
+
+def build_custom_field_values_input(
+    custom_field_values: Optional[List[Dict]],
+    custom_properties: Any,
+    logger: Any = None,
+) -> Optional[List[Dict]]:
+    """Return the custom field value inputs of a create method.
+
+    ``custom_field_values`` is the explicit list of ``{"field_name", "value"}``
+    custom field inputs (e.g. extracted by the STIX import). ``custom_properties``
+    is the dict of the STIX ``x_*`` custom properties of the object (the stix2
+    convention used by the connectors): each of them is converted into a custom
+    field input, as for a STIX import, so that the platform maps it to a custom
+    field by name or alias, and ignores it if none matches. For a same name, the
+    explicit custom field input wins.
+
+    :param custom_field_values: explicit custom field inputs, defaults to None
+    :type custom_field_values: Optional[List[Dict]]
+    :param custom_properties: dict of STIX ``x_*`` custom properties, defaults to None
+    :type custom_properties: Any
+    :param logger: logger used to warn about ignored custom properties, defaults to None
+    :type logger: Any, optional
+    :return: the list of custom field inputs, or None if there is none
+    :rtype: Optional[List[Dict]]
+    """
+    if custom_properties is None:
+        return custom_field_values
+    if not isinstance(custom_properties, dict):
+        if logger is not None:
+            logger.warning(
+                "custom_properties ignored: a dict of STIX custom properties is expected",
+                {"type": type(custom_properties).__name__},
+            )
+        return custom_field_values
+    explicit_names = {
+        entry.get("field_name")
+        for entry in (custom_field_values or [])
+        if isinstance(entry, dict)
+    }
+    converted = [
+        {"field_name": key, "value": value}
+        for key, value in custom_properties.items()
+        if isinstance(key, str)
+        and key.startswith("x_")
+        and is_custom_field_input_value(value)
+        and key not in explicit_names
+    ]
+    if len(converted) == 0:
+        return custom_field_values
+    return list(custom_field_values or []) + converted
+
 
 # The Unix epoch as a naive datetime. datetime.fromtimestamp(0) depends on the local
 # time zone and raises OSError on Windows when the result is before 1970, which is the

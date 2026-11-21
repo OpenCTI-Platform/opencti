@@ -186,16 +186,28 @@ type ImportFilesContextProps = InitialValues & {
 
 const ImportFilesContext = createContext<ImportFilesContextProps | undefined>(undefined);
 
+// Without the right to import files there is no mode to choose: a form-only user fills forms, the others import automatically.
+// The form-only default is only for the plain global dialog (top bar): a dialog opened for an entity or for pre-filled
+// content (create unknown entities) is a file import and never lands on the forms.
+export const getInitialImportMode = (
+  canSelectImportMode: boolean,
+  hasOnlyAccessToFormImport: boolean,
+  initialValue: InitialValues,
+): ImportMode | undefined => {
+  if (canSelectImportMode) return initialValue.importMode;
+  return hasOnlyAccessToFormImport && !initialValue.entityId && !initialValue.initialFreeTextContent ? 'form' : 'auto';
+};
+
 export const ImportFilesProvider = ({ children, initialValue }: {
   children: ReactNode;
   initialValue: InitialValues;
 }) => {
   const canSelectImportMode = useGranted(['KNOWLEDGE_KNASKIMPORT'], false, { capabilitiesInDraft: ['KNOWLEDGE_KNASKIMPORT'] });
   const draftContext = useDraftContext();
-  const { isForcedImportToDraft } = useImportAccess();
+  const { isForcedImportToDraft, hasOnlyAccessToFormImport } = useImportAccess();
 
   const initalActiveStep = initialValue.activeStep ?? (canSelectImportMode ? 0 : 1);
-  const initialImportMode = canSelectImportMode ? initialValue.importMode : 'auto';
+  const initialImportMode = getInitialImportMode(canSelectImportMode, hasOnlyAccessToFormImport, initialValue);
 
   const [activeStep, setActiveStep] = useState(initalActiveStep);
   const [importMode, setImportMode] = useState<ImportMode | undefined>(initialImportMode);

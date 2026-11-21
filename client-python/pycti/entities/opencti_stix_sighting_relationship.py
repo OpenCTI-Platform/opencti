@@ -5,6 +5,11 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.utils.opencti_stix2_utils import (
+    build_custom_field_values_input,
+    query_to_stix,
+)
+
 
 class StixSightingRelationship:
     """Main StixSightingRelationship class for OpenCTI
@@ -42,6 +47,7 @@ class StixSightingRelationship:
                 field_id
                 field_name
                 int_value
+                float_value
                 string_value
                 boolean_value
                 date_value
@@ -591,6 +597,24 @@ class StixSightingRelationship:
             self.opencti.app_logger.error("Missing parameters: id or from_id and to_id")
             return None
 
+    def to_stix(self, **kwargs):
+        """Get the STIX representation of a stix_sighting_relationship from the backend.
+
+        :param id: the id of the stix_sighting_relationship
+        :type id: str
+        :param version: the STIX version (``stix_2_0`` or ``stix_2_1``),
+            defaults to the backend default (``stix_2_1``)
+        :type version: str
+        :return: STIX object, or ``None`` if not found
+        :rtype: dict or None
+        """
+        return query_to_stix(
+            self.opencti,
+            "stixSightingRelationship",
+            kwargs.get("id"),
+            kwargs.get("version"),
+        )
+
     def create(self, **kwargs):
         """Create a stix_sighting_relationship object.
 
@@ -658,7 +682,11 @@ class StixSightingRelationship:
         granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
         upsert_operations = kwargs.get("upsert_operations", None)
-        custom_properties = kwargs.get("custom_properties", None)
+        custom_field_values = build_custom_field_values_input(
+            kwargs.get("custom_field_values", None),
+            kwargs.get("custom_properties", None),
+            self.opencti.app_logger,
+        )
 
         self.opencti.app_logger.info(
             "Creating stix_sighting", {"from_id": from_id, "to_id": to_id}
@@ -698,7 +726,7 @@ class StixSightingRelationship:
                     "objectOrganization": granted_refs,
                     "update": update,
                     "upsertOperations": upsert_operations,
-                    "customFieldValues": custom_properties,
+                    "customFieldValues": custom_field_values,
                 }
             },
         )

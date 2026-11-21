@@ -10,14 +10,21 @@ import ObjectOrganizationField from '../../../common/form/ObjectOrganizationFiel
 import WorkflowConditionFilters from './WorkflowConditionFilters';
 import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import WorkflowFieldList from './WorkflowFieldList';
-import { CommentMode, CommentModeType, FEATURE_NAME, WorkflowActionType, WorkflowDataType } from './utils';
+import { AUTHORIZED_MEMBERS_EXCLUSIVE_ACTIONS, CommentMode, CommentModeType, FEATURE_NAME, type TargetStatusExits, WorkflowActionType, WorkflowDataType } from './utils';
 import { AUTHORIZED_MEMBERS_ENTITY_TYPES } from '../../../../../utils/authorizedMembers';
+import useAuth from '../../../../../utils/hooks/useAuth';
+import useHelper from '../../../../../utils/hooks/useHelper';
+import { isClosingReasonEnabledForType } from '../../../common/workflow/workflowFeatureFlag';
 
-const TransitionForm = ({ entityType }: { entityType: string }) => {
+const TransitionForm = ({ entityType, targetStatusExits }: { entityType: string; targetStatusExits?: TargetStatusExits }) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { values, setFieldValue } = useFormikContext<WorkflowEditionFormValues>();
+  const { schema } = useAuth();
+  const { isFeatureEnable } = useHelper();
+  const showClosingReason = isClosingReasonEnabledForType(entityType, isFeatureEnable, schema.sdos);
   const hasUpdateAuthorizedMembers = values.syncActions?.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
+  const hasResetAuthorizedMembers = values.syncActions?.some((a) => a.type === WorkflowActionType.resetAuthorizedMembers);
   const hasValidateDraft = values.syncActions?.some((a) => a.type === WorkflowActionType.validateDraft);
   const hasShare = values.asyncActions?.some((a) => a.type === WorkflowActionType.shareWithOrganizations);
   const hasUnshare = values.asyncActions?.some((a) => a.type === WorkflowActionType.unshareFromOrganizations);
@@ -40,13 +47,19 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
     setFieldValue('comment', checked ? CommentMode.required : CommentMode.allowed);
   };
 
+  const closingReasonMode: CommentModeType = values.closingReason ?? CommentMode.disabled;
+  const enableClosingReason = closingReasonMode !== CommentMode.disabled;
+
   const handleToggleAction = (actionType: WorkflowActionType, checked: boolean) => {
     const currentActions = values.syncActions ?? [];
     if (checked) {
       const newAction = actionType === WorkflowActionType.updateAuthorizedMembers
         ? { type: actionType, params: { authorized_members: [{ label: 'Creators', type: 'Dynamic options', value: 'CREATORS', accessRight: 'admin' as const, groupsRestriction: [] }] } }
         : { type: actionType };
-      setFieldValue('syncActions', [...currentActions, newAction]);
+      // Update and reset of authorized members contradict each other: turning one on turns the other off
+      const exclusiveType = AUTHORIZED_MEMBERS_EXCLUSIVE_ACTIONS[actionType];
+      const keptActions = exclusiveType ? currentActions.filter((a) => a.type !== exclusiveType) : currentActions;
+      setFieldValue('syncActions', [...keptActions, newAction]);
     } else {
       setFieldValue('syncActions', currentActions.filter((a) => a.type !== actionType));
     }
@@ -63,7 +76,7 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
 
   return (
     <>
-      <Field component={TextField} variant="outlined" name="event" label={t_i18n('Transition name')} fullWidth />
+      <Field component={TextField} variant="outlined" name="event" label={t_i18n('Transition name')} fullWidth data-testid="workflow-transition-name-field" />
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 }}>
         <Typography variant="h6">
@@ -87,6 +100,7 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
                 checked={hasShare}
                 disabled={!isEnterpriseEdition}
                 onChange={(e) => handleToggleAsyncAction(WorkflowActionType.shareWithOrganizations, e.target.checked)}
+                data-testid="workflow-transition-share-with-organizations-toggle"
               />
             )}
             label={t_i18n('Share with organizations')}
@@ -110,6 +124,7 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
                 checked={hasUnshare}
                 disabled={!isEnterpriseEdition}
                 onChange={(e) => handleToggleAsyncAction(WorkflowActionType.unshareFromOrganizations, e.target.checked)}
+                data-testid="workflow-transition-unshare-from-organizations-toggle"
               />
             )}
             label={t_i18n('Unshare from organizations')}
@@ -131,7 +146,7 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
       </Box>
 
       {AUTHORIZED_MEMBERS_ENTITY_TYPES.includes(entityType) && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
+        <Box data-testid="workflow-transition-authorized-members-container" sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
           <Typography variant="h6">
             {t_i18n('Authorized members')} <EEChip feature={t_i18n(FEATURE_NAME)} />
           </Typography>
@@ -142,9 +157,21 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
                   checked={hasUpdateAuthorizedMembers}
                   disabled={!isEnterpriseEdition}
                   onChange={(e) => handleToggleAction(WorkflowActionType.updateAuthorizedMembers, e.target.checked)}
+                  data-testid="workflow-transition-update-authorized-members-toggle"
                 />
               )}
               label={t_i18n('Update authorized members')}
+            />
+            <FormControlLabel
+              control={(
+                <Switch
+                  checked={hasResetAuthorizedMembers}
+                  disabled={!isEnterpriseEdition}
+                  onChange={(e) => handleToggleAction(WorkflowActionType.resetAuthorizedMembers, e.target.checked)}
+                  data-testid="workflow-transition-reset-authorized-members-toggle"
+                />
+              )}
+              label={t_i18n('Reset authorized members')}
             />
             {values.syncActions && (
               <Box style={disabledEEStyle}>
@@ -169,6 +196,7 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
                 checked={enableComments}
                 onChange={(e) => handleToggleEnableComments(e.target.checked)}
                 disabled={!isEnterpriseEdition}
+                data-testid="workflow-transition-enable-comment-toggle"
               />
             )}
             label={t_i18n('Enable comment')}
@@ -180,6 +208,7 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
                   checked={requireComments}
                   disabled={!enableComments}
                   onChange={(e) => handleToggleRequireComments(e.target.checked)}
+                  data-testid="workflow-transition-required-comment-toggle"
                 />
               )}
               label={t_i18n('Required')}
@@ -187,6 +216,52 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
           </Box>
         </Box>
       </Box>
+
+      {showClosingReason && (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
+          <Typography variant="h6">
+            {t_i18n('Closing reason')}
+          </Typography>
+          <Alert severity="info" variant="outlined">
+            {t_i18n('When enabled, users will be prompted to select a closing reason when changing the status.')}
+          </Alert>
+          {targetStatusExits && (
+            <Alert severity="warning" variant="outlined">
+              {t_i18n('Only on a transition into a final state: {status} is left by {transitions}.', {
+                // Quoted here: an apostrophe in the message itself is an ICU escape
+                values: { status: `'${targetStatusExits.status}'`, transitions: targetStatusExits.events.map((event) => `'${event}'`).join(', ') },
+              })}
+            </Alert>
+          )}
+          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            <FormControlLabel
+              control={(
+                <Switch
+                  checked={enableClosingReason}
+                  // Kept enabled when already on, so a closing reason the status no longer allows can be turned off
+                  disabled={!enableClosingReason && !!targetStatusExits}
+                  onChange={(e) => setFieldValue('closingReason', e.target.checked ? CommentMode.allowed : CommentMode.disabled)}
+                  data-testid="workflow-transition-enable-closing-reason-toggle"
+                />
+              )}
+              label={t_i18n('Enable closing reason')}
+            />
+            <Box sx={{ pl: 4 }}>
+              <FormControlLabel
+                control={(
+                  <Switch
+                    checked={closingReasonMode === CommentMode.required}
+                    disabled={!enableClosingReason}
+                    onChange={(e) => setFieldValue('closingReason', e.target.checked ? CommentMode.required : CommentMode.allowed)}
+                    data-testid="workflow-transition-required-closing-reason-toggle"
+                  />
+                )}
+                label={t_i18n('Required')}
+              />
+            </Box>
+          </Box>
+        </Box>
+      )}
 
       {entityType === 'DraftWorkspace' && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
@@ -199,6 +274,7 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
                 <Switch
                   checked={hasValidateDraft}
                   onChange={(e) => handleToggleAction(WorkflowActionType.validateDraft, e.target.checked)}
+                  data-testid="workflow-transition-validate-draft-toggle"
                 />
               )}
               label={(

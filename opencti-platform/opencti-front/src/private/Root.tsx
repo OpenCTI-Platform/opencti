@@ -24,6 +24,7 @@ import useActiveTheme from '../utils/hooks/useActiveTheme';
 import { AppDataProvider } from '../utils/hooks/useAppData';
 import { ExportThemeProvider } from '../utils/ExportThemeContext';
 import defaultBrowserLang, { LANGUAGES } from '../utils/BrowserLanguage';
+import { resolveDateDisplay } from '../utils/dateDisplay';
 import { CustomViewsPreloadedDataContextProvider } from './components/custom_views/CustomViewsPreloadedDataContext';
 
 const rootSettingsFragment = graphql`
@@ -51,8 +52,10 @@ const rootSettingsFragment = graphql`
       }
     }
     platform_language
+    platform_date_format
+    platform_time_format
     platform_openaev_url
-    platform_opengrc_url
+    platform_opencrq_url
     platform_xtmhub_url
     xtm_hub_registration_status
     xtm_hub_backend_is_reachable
@@ -116,6 +119,8 @@ const rootSettingsFragment = graphql`
     platform_ai_type
     platform_ai_has_token
     platform_trash_enabled
+    platform_bootstrap_status
+    platform_bootstrap_wizard_enabled
     filigran_chatbot_ai_cgu_status
     is_authentication_by_env
     platform_protected_sensitive_config {
@@ -209,6 +214,9 @@ const meUserFragment = graphql`
       name
     }
     unit_system
+    date_format
+    time_format
+    bootstrap_wizard_skipped
     submenu_show_icons
     submenu_auto_collapse
     monochrome_labels
@@ -219,6 +227,7 @@ const meUserFragment = graphql`
     default_dashboard {
       id
     }
+    default_dashboard_preset
     default_time_field
     default_hidden_types
     effective_confidence_level {
@@ -268,6 +277,9 @@ const meUserFragment = graphql`
   }
 `;
 
+// /!\ Besides refreshing `me`, this subscription keeps the tab's GraphQL WebSocket open for its whole life
+// (the client is lazy): the platform relies on it to log a session out when its last tab is closed.
+// Removing it silently disables that feature (guarded by tests_e2e/settings/sessionPresence.spec.ts).
 const subscription = graphql`
   subscription RootMeSubscription {
     me {
@@ -489,6 +501,10 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryData }) => 
     unitSystem = selectedLocale === LANGUAGES.ENGLISH ? 'Imperial' : 'Metric';
   }
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const dateDisplay = useMemo(
+    () => resolveDateDisplay(me, settings),
+    [me.date_format, me.time_format, settings.platform_date_format, settings.platform_time_format],
+  );
 
   const contextValue = useMemo(() => ({
     queryData,
@@ -502,10 +518,11 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryData }) => 
     about,
     themes,
     unitSystem,
+    dateDisplay,
     locale: selectedLocale,
     tz,
   }), [me, settings, bannerSettings, entitySettings, platformModuleHelpers,
-    schema, isReachable, about, themes, unitSystem, selectedLocale, tz]);
+    schema, isReachable, about, themes, unitSystem, dateDisplay, selectedLocale, tz]);
 
   const passwordExpired = isPasswordExpiredFront(me);
   const onForcePasswordChangeRoute = location.pathname.startsWith(FORCE_PASSWORD_CHANGE_PATH);

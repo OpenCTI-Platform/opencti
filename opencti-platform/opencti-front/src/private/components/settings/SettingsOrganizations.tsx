@@ -1,5 +1,5 @@
 import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import Box from '@mui/material/Box';
 import { SettingsOrganizationLineDummy } from '@components/settings/organizations/SettingsOrganizationLine';
 import ListLines from '../../../components/list_lines/ListLines';
 import SettingsOrganizationsLines, { settingsOrganizationsLinesQuery } from './organizations/SettingsOrganizationsLines';
@@ -17,17 +17,7 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 import useGranted, { SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-}));
-
 const SettingsOrganizations = () => {
-  const classes = useStyles();
   const { me } = useAuth();
   const LOCAL_STORAGE_KEY = 'settings-organizations';
   const {
@@ -50,7 +40,7 @@ const SettingsOrganizations = () => {
   };
 
   const queryRef = useQueryLoading<SettingsOrganizationsLinesPaginationQuery>(settingsOrganizationsLinesQuery, paginationOptions);
-  const { fd, t_i18n } = useFormatter();
+  const { ftd, t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Organizations | Security | Settings'));
 
@@ -71,17 +61,17 @@ const SettingsOrganizations = () => {
       label: 'Original creation date',
       width: '25%',
       isSortable: true,
-      render: (node: Organization) => fd(node.created),
+      render: (node: Organization) => ftd(node.created),
     },
     modified: {
       label: 'Modification date',
       width: '25%',
       isSortable: true,
-      render: (node: Organization) => fd(node.modified),
+      render: (node: Organization) => ftd(node.modified),
     },
   };
   return (
-    <div className={classes.container} data-testid="orga-settings-page">
+    <Box sx={{ margin: 0, padding: '0 200px 50px 0' }} data-testid="orga-settings-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Organizations'), current: true }]} />
       <ListLines
         sortBy={viewStorage.sortBy}
@@ -114,7 +104,7 @@ const SettingsOrganizations = () => {
           </>
         )}
       </ListLines>
-    </div>
+    </Box>
   );
 };
 export default SettingsOrganizations;

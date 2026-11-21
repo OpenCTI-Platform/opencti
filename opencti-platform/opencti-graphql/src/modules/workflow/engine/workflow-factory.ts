@@ -14,6 +14,7 @@ import {
   FILTER_KEYS_WITH_ME_VALUE,
   ME_FILTER_VALUE,
   WORKFLOW_CONTEXT_FILTER_KEYS,
+  WORKFLOW_GROUP_FILTER,
   WORKFLOW_ORGANIZATION_FILTER,
   WORKFLOW_ROLE_FILTER,
   WORKFLOW_USER_FILTER,
@@ -58,6 +59,50 @@ export class WorkflowFactory {
   private static isContextFilter(filter: Filter): boolean {
     const keys = Array.isArray(filter.key) ? filter.key : [filter.key];
     return keys.every((k) => WORKFLOW_CONTEXT_FILTER_KEYS.includes(k));
+  }
+
+  // Who-can-do-it filters. Every other filter (entity name included) is about the entity data: a knowledge filter.
+  private static AUDIENCE_FILTER_KEYS = [WORKFLOW_USER_FILTER, WORKFLOW_GROUP_FILTER, WORKFLOW_ORGANIZATION_FILTER, WORKFLOW_ROLE_FILTER];
+
+  private static isAudienceFilter(filter: Filter): boolean {
+    const keys = Array.isArray(filter.key) ? filter.key : [filter.key];
+    return keys.every((k) => this.AUDIENCE_FILTER_KEYS.includes(k));
+  }
+
+  /**
+   * What the entity must still satisfy for the user to open the transition: the conditions partially
+   * evaluated against the user. Audience filters are resolved, so a branch the user is excluded from
+   * disappears and a branch the user already satisfies drops out. Null when no knowledge filter is left.
+   */
+  public static residualKnowledgeConditions(ctx: Context, filters?: FilterGroup | null): FilterGroup | null {
+    if (!filters) return null;
+    const residue = this.partialEvaluate(ctx, filters);
+    return typeof residue === 'boolean' ? null : residue;
+  }
+
+  // true/false when the user alone settles the group, otherwise the knowledge filters still to meet
+  private static partialEvaluate(ctx: Context, group: FilterGroup): boolean | FilterGroup {
+    // An empty group holds no condition, the evaluation of the transition treats it as met
+    if (group.filters.length === 0 && group.filterGroups.length === 0) return true;
+    const isAnd = group.mode === FilterMode.And;
+    const residueFilters: Filter[] = [];
+    const residueGroups: FilterGroup[] = [];
+    const parts: (boolean | Filter | FilterGroup)[] = [
+      ...group.filters.map((f) => (this.isAudienceFilter(f) ? this.evaluateFilter(ctx, f) : f)),
+      ...group.filterGroups.map((g) => this.partialEvaluate(ctx, g)),
+    ];
+    for (const part of parts) {
+      if (typeof part === 'boolean') {
+        // AND: one false settles it, trues drop. OR: one true settles it, falses drop.
+        if (part !== isAnd) return part;
+      } else if ('filterGroups' in part) {
+        residueGroups.push(part);
+      } else {
+        residueFilters.push(part);
+      }
+    }
+    if (residueFilters.length === 0 && residueGroups.length === 0) return isAnd;
+    return { ...group, filters: residueFilters, filterGroups: residueGroups };
   }
 
   private static entityFilterCaches = new WeakMap<object, EntityFilterCache>();
@@ -121,7 +166,7 @@ export class WorkflowFactory {
     const hasEntityFilter = this.hasEntityFilter(normalizedFilters);
     const rootValidator = async (ctx: TContext): Promise<boolean> => {
       let entityFilterInput: EntityFilterInput | undefined;
-      if (hasEntityFilter) {
+      if (hasEntityFilter && !ctx.assumeKnowledgeConditionsMet) {
         try {
           entityFilterInput = await this.loadEntityFilterInput(ctx, normalizedFilters);
         } catch (error) {
@@ -138,9 +183,10 @@ export class WorkflowFactory {
     const { mode, filters, filterGroups } = group;
 
     // Evaluate individual filters in this group
-    const filterResults = await Promise.all(filters.map((f) => (this.isContextFilter(f)
-      ? this.evaluateFilter(ctx, f)
-      : this.evaluateEntityFilter(ctx, f, entityFilterInput))));
+    const filterResults = await Promise.all(filters.map((f) => {
+      if (ctx.assumeKnowledgeConditionsMet && !this.isAudienceFilter(f)) return true;
+      return this.isContextFilter(f) ? this.evaluateFilter(ctx, f) : this.evaluateEntityFilter(ctx, f, entityFilterInput);
+    }));
 
     // Recursively evaluate nested filter groups
     const groupResults = await Promise.all(filterGroups.map((g) => this.evaluateFilterGroup(ctx, g, entityFilterInput)));
@@ -275,14 +321,21 @@ export class WorkflowFactory {
         && ((a.params as any)?.actions ?? []).some((ia: any) => ia.type === 'UNSHARE' && !ia.context?.values?.length),
       );
 
-      definition.addTransition(t.from, t.to, t.event, {
-        comment: t.comment,
-        conditions: this.createConditions<TContext>(t.conditions),
-        asyncSideEffects,
-        onTransition: syncSideEffects,
-        actionTypes: allActionTypes,
-        requiresShareOrganizationInput,
-        requiresUnshareOrganizationInput,
+      // Validation and the GraphQL type accept an array `from`, but the engine matches a transition
+      // on `from === currentState`: register one transition per source state.
+      const fromStates = Array.isArray(t.from) ? t.from : [t.from];
+      fromStates.forEach((from) => {
+        definition.addTransition(from, t.to, t.event, {
+          comment: t.comment,
+          closingReason: t.closingReason,
+          conditions: this.createConditions<TContext>(t.conditions),
+          conditionFilters: t.conditions?.filters ?? null,
+          asyncSideEffects,
+          onTransition: syncSideEffects,
+          actionTypes: allActionTypes,
+          requiresShareOrganizationInput,
+          requiresUnshareOrganizationInput,
+        });
       });
     });
 

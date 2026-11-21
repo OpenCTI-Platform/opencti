@@ -192,6 +192,7 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
           definition={item.builtIn}
           deploymentCount={item.deploymentCount}
           onClickCreate={() => setBuiltInCreationKind(item.builtIn ? item.builtIn.kind : null)}
+          onImported={refetchFeeds}
         />
       );
     }
@@ -238,6 +239,7 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
             }}
           >
             <SearchInput
+              data-testid="integrations-search-input"
               value={searchInput}
               onSubmit={handleSearchInputSubmit}
               onChange={handleSearchInputChange}
@@ -311,6 +313,7 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
                               }
                             }}
                             onClickCreate={() => setBuiltInCreationKind(item.builtIn ? item.builtIn.kind : null)}
+                            onImported={refetchFeeds}
                           />
                         ))}
                       </Box>

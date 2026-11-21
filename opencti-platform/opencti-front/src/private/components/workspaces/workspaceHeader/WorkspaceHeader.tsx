@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { ReactNode, useState } from 'react';
 import fileDownload from 'js-file-download';
 import { graphql, useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
@@ -56,6 +56,13 @@ type WorkspaceHeaderProps = {
   handleAddWidget?: (widget: Widget) => void;
   handleImportWidget?: (widgetFile: File) => void;
   handleExport?: (workspace: { id: string; name: string }) => void;
+  // Rendered in the edition drawer, below the name and the description.
+  editionExtra?: React.ReactNode;
+  exportElementId?: string;
+  exportName?: string;
+  // Resizes the export element for the length of a capture. Returns the function that undoes it.
+  prepareExportCapture?: (element: HTMLElement) => () => void;
+  viewSwitcher?: ReactNode;
 };
 
 const WorkspaceHeader = ({
@@ -65,6 +72,11 @@ const WorkspaceHeader = ({
   handleAddWidget = () => {},
   handleImportWidget = () => {},
   handleExport = () => {},
+  editionExtra,
+  exportElementId = 'container',
+  exportName,
+  prepareExportCapture,
+  viewSwitcher,
 }: WorkspaceHeaderProps) => {
   const { t_i18n } = useFormatter();
   const workspace = useFragment(workspaceHeaderFragment, data);
@@ -113,12 +125,14 @@ const WorkspaceHeader = ({
           style={DASHBOARD_BUTTONS_STYLE}
         >
           <ExportButtons
-            domElementId="container"
-            name={workspace.name}
+            domElementId={exportElementId}
+            name={exportName ?? workspace.name}
             type={workspace.type}
-            // An investigation is a graph: its toolbar exports the image of the drawing.
-            exportToImage={workspace.type !== 'investigation'}
+            // The investigation graph exports its image from its own toolbar. The matrix view has no
+            // such toolbar (it sets prepareExportCapture), so the header keeps the image export there.
+            exportToImage={workspace.type !== 'investigation' || prepareExportCapture !== undefined}
             adjust={adjust}
+            prepareCapture={prepareExportCapture}
             handleDownloadAsStixReport={handleDownloadAsStixReport}
             handleExportDashboard={handleExportDashboard}
           />
@@ -137,6 +151,8 @@ const WorkspaceHeader = ({
               </Security>
             </>
           )}
+          {/* The view switch sits left of Update, which stays the primary action on the far right. */}
+          {viewSwitcher}
           <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
             <Button
               disableElevation
@@ -152,7 +168,9 @@ const WorkspaceHeader = ({
         handleClose={handleCloseEdit}
         open={displayEdit}
         type={workspace.type}
-      />
+      >
+        {editionExtra}
+      </WorkspaceEditionContainer>
     </>
   );
 };

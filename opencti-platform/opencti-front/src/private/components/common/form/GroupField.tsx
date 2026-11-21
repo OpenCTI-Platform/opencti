@@ -2,26 +2,22 @@ import React, { useState } from 'react';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import { GroupFieldQuery$data } from '@components/common/form/__generated__/GroupFieldQuery.graphql';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { fetchQuery } from '../../../../relay/environment';
 import type { ComboboxChangeMeta } from '@filigran/design-system';
 import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
 
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
 });
 
 export const groupsQuery = graphql`
@@ -63,11 +59,11 @@ interface GroupFieldProps {
   disabled?: boolean;
   predefinedGroups?: GroupFieldOption[];
   showConfidence?: boolean;
+  clearable?: boolean;
 }
 
 const GroupField: React.FC<GroupFieldProps> = (props) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const {
     name,
     label,
@@ -78,6 +74,7 @@ const GroupField: React.FC<GroupFieldProps> = (props) => {
     disabled = false,
     predefinedGroups,
     showConfidence = false,
+    clearable,
   } = props;
 
   const [groups, setGroups] = useState<GroupFieldOption[]>([]);
@@ -117,6 +114,7 @@ const GroupField: React.FC<GroupFieldProps> = (props) => {
       style={style}
       name={name}
       multiple={multiple}
+      clearable={clearable}
       disabled={disabled}
       label={label ?? t_i18n('Groups')}
       helperText={helpertext}
@@ -131,10 +129,10 @@ const GroupField: React.FC<GroupFieldProps> = (props) => {
       onChange={typeof onChange === 'function' ? onChange : null}
       renderOption={(option: { color: string; label: string; labelInList?: string }) => (
         <>
-          <div className={classes.icon} style={{ color: option.color }}>
+          <OptionIcon style={{ color: option.color }}>
             <ItemIcon type="Group" />
-          </div>
-          <div className={classes.text}>{option.labelInList ?? option.label}</div>
+          </OptionIcon>
+          <OptionText>{option.labelInList ?? option.label}</OptionText>
         </>
       )}
     />

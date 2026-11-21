@@ -53,6 +53,7 @@ When the interface configuration is active, the table displays all current SMTP 
 | Port | SMTP server port |
 | Use SSL/TLS | Enable SSL/TLS encryption |
 | Reject unauthorized certificates | Reject connections with invalid TLS certificates |
+| Require STARTTLS | Without SSL/TLS and with credentials, emails are not sent when the server does not upgrade the connection with STARTTLS. Until it is changed in the form, it follows `tls:reject_unauthorized`. Against a network attacker, it protects the credentials only when unauthorized certificates are rejected |
 | Authentication type | `basic` (username/password) or `oauth2` |
 | Username | SMTP username — Basic auth only |
 | Password | SMTP password — Basic auth only (stored encrypted) |

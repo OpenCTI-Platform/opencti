@@ -18,6 +18,8 @@ import StixRelationshipsWordCloud from '../../private/components/common/stix_rel
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
 import WidgetNotImplemented from './WidgetNotImplemented';
+import StixRelationshipsTimeSeriesBreakdown from '../../private/components/common/stix_relationships/StixRelationshipsTimeSeriesBreakdown';
+import { isWidgetBreakdownActive } from '../../utils/widget/widgetBreakdown';
 
 interface DashboardRelationshipsVizProps {
   widget: Widget;
@@ -34,6 +36,18 @@ const DashboardRelationshipsViz = ({
   host,
   refreshRate,
 }: DashboardRelationshipsVizProps) => {
+  if (isWidgetBreakdownActive(widget, host)) {
+    return (
+      <StixRelationshipsTimeSeriesBreakdown
+        widget={widget}
+        popover={popover}
+        host={host}
+        refreshRate={refreshRate}
+        config={config}
+      />
+    );
+  }
+
   switch (widget.type) {
     case 'number':
       return (

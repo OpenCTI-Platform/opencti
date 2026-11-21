@@ -1,8 +1,7 @@
 import React, { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { createTheme, ThemeOptions } from '@mui/material/styles';
-import MuiThemeProvider from '../../../../../components/MuiThemeProvider';
+import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
 import { TooltipProvider } from '@filigran/design-system';
 import GlobalWorkflowSettingsCard from './GlobalWorkflowSettingsCard';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
@@ -13,11 +12,11 @@ const testTheme = createTheme(ThemeDark() as ThemeOptions);
 // The card's help tooltip is the library one, and it throws outside a
 // `TooltipProvider` -- the app mounts one in `private/Index.tsx`.
 const renderWithTheme = (component: React.ReactElement) => render(
-  <MuiThemeProvider theme={testTheme}>
+  <ThemeProvider theme={testTheme}>
     <TooltipProvider>
       {component}
     </TooltipProvider>
-  </MuiThemeProvider>,
+  </ThemeProvider>,
 );
 
 vi.mock('@common/card/Card', () => ({

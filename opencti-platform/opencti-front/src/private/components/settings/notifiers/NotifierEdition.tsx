@@ -1,6 +1,5 @@
 import Button from '@common/button/Button';
 import Box from '@mui/material/Box';
-import makeStyles from '@mui/styles/makeStyles';
 import CoreForm from '@rjsf/core';
 import JsonForm from '@rjsf/mui';
 import type { RJSFSchema } from '@rjsf/utils';
@@ -11,7 +10,6 @@ import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import type { Theme } from '../../../../components/Theme';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import NotifierConnectorField from '../../common/form/NotifierConnectorField';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
@@ -19,23 +17,11 @@ import { NotifierEdition_edition$key } from './__generated__/NotifierEdition_edi
 import { NotifierEditionQuery } from './__generated__/NotifierEditionQuery.graphql';
 import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery.graphql';
 import NotifierTestDialog, { notifierTestQuery } from './NotifierTestDialog';
-import { uiSchema } from './NotifierUtils';
+import { buildNotifierUiSchema, NotifierConnectorFields, variableHelperTemplates, variableHelperWidgets } from './NotifierUtils';
 import notifierValidator from './NotifierValidator';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
 
 const notifierMutationFieldPatch = graphql`
   mutation NotifierEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
@@ -101,7 +87,6 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
   onClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const formRef = useRef<CoreForm>(null);
 
   const [open, setOpen] = useState(false);
@@ -191,23 +176,11 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
               multiple={true}
               name="restricted_members"
             />
-            <Box
-              sx={{
-                paddingLeft: '15px',
-                '& .MuiGrid-root': {
-                  flexDirection: 'column',
-                  paddingTop: '16px',
-                },
-                '& .MuiGrid-container': {
-                  paddingTop: '10px',
-                },
-              }}
-            >
+            <NotifierConnectorFields>
               <JsonForm
-                uiSchema={{
-                  ...JSON.parse(data?.notifier_connector?.connector_schema_ui ?? ' {}'),
-                  ...uiSchema,
-                }}
+                uiSchema={buildNotifierUiSchema(data?.notifier_connector?.connector_schema_ui)}
+                templates={variableHelperTemplates}
+                widgets={variableHelperWidgets}
                 ref={formRef}
                 tagName="div"
                 showErrorList={false}
@@ -221,15 +194,15 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
               >
                 <></>
               </JsonForm>
-            </Box>
-            <div className={classes.buttons}>
+            </NotifierConnectorFields>
+            <Box sx={{ marginTop: '20px', textAlign: 'right' }}>
               <Button
                 onClick={() => {
                   notifierConfiguration.current = JSON.stringify(formRef.current?.state.formData);
                   setOpen(true);
                 }}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}
+                sx={{ marginLeft: 2 }}
               >
                 {t_i18n('Test')}
               </Button>
@@ -239,11 +212,11 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
                   submitForm(setSubmitting, setErrors, values, formRef.current);
                 }}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}
+                sx={{ marginLeft: 2 }}
               >
                 {t_i18n('Save')}
               </Button>
-            </div>
+            </Box>
             <NotifierTestDialog
               open={open}
               onClose={() => {

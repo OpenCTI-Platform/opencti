@@ -28,6 +28,7 @@ import { DraftAddInput, DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCrea
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { AgentOption, fetchAgentsForIntent, isXtmOneIntentWithoutAgents } from '../../../../utils/ai/agentApi';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
+import { authorizedMembersToInput } from '../../../../utils/authorizedMembers';
 
 interface LaunchImportDialogProps {
   file: ImportWorkbenchesContentFileLine_file$data | ImportFilesContentFileLine_file$data;
@@ -158,17 +159,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
         objectAssignee: values.objectAssignee.map(({ value }) => value),
         objectParticipant: values.objectParticipant.map(({ value }) => value),
         createdBy: values.createdBy?.value,
-        authorized_members: !authorized_members
-          ? null
-          : authorized_members
-              .filter((v) => v.accessRight !== 'none')
-              .map((member) => ({
-                id: member.value,
-                access_right: member.accessRight,
-                groups_restriction_ids: member.groupsRestriction?.length > 0
-                  ? member.groupsRestriction.map((group) => group.value)
-                  : undefined,
-              })),
+        authorized_members: authorized_members ? authorizedMembersToInput(authorized_members) : null,
       },
       onCompleted: () => {
         setSubmitting(false);

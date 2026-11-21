@@ -14,11 +14,11 @@ import { Checkbox, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
-import withStyles from '@mui/styles/withStyles';
+import { styled } from '@mui/material/styles';
 import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
 import { FileDelimitedOutline, FormatListGroup, Group, RelationManyToMany, VectorPolygon } from 'mdi-material-ui';
 import * as PropTypes from 'prop-types';
-import { compose, toPairs, uniq } from 'ramda';
+import { toPairs, uniq } from 'ramda';
 import { Component } from 'react';
 import { ErrorBoundary } from '../../private/components/Error';
 import FiligranIcon from '../../private/components/common/FiligranIcon';
@@ -38,80 +38,58 @@ import inject18n from '../i18n';
 import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../utils/fdsLayer';
 import { onActivationKey } from '../../utils/domEvent';
 
-const styles = (theme) => ({
-  container: {
-    transition: theme.transitions.create('padding', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-    padding: '0 0 50px 0',
-  },
-  containerNoPadding: {
-    transition: theme.transitions.create('padding', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-    padding: '0 0 0 0',
-  },
-  parameters: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-    paddingBottom: 10,
-    flexWrap: 'wrap',
-  },
-  parametersWithPadding: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-    paddingBottom: 10,
-    flexWrap: 'wrap',
-  },
-  filler: {
-    flex: 'auto',
-  },
-  views: {
-    display: 'flex',
-  },
-  linesContainer: {
-    margin: 0,
-    padding: 0,
-  },
-  linesContainerBottomNav: {
-    margin: '0 0 90px 0',
-    padding: 0,
-  },
-  item: {
-    paddingLeft: 10,
-  },
-  headerItem: {
-    display: 'flex',
-    fontSize: 12,
-    fontWeight: 700,
-    alignItems: 'center',
-  },
-  sortableHeaderItem: {
-    display: 'flex',
-    fontSize: 12,
-    fontWeight: '700',
-    cursor: 'pointer',
-    paddingRight: 10,
-    alignItems: 'center',
-  },
-  headerItemText: {
-    marginRight: theme.spacing(1),
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    textTransform: 'lowercase',
-    '&::first-letter': {
-      textTransform: 'uppercase',
-    },
-  },
-  info: {
-    paddingTop: 10,
-  },
+const Container = styled('div', {
+  shouldForwardProp: (prop) => prop !== 'noPadding',
+})(({ theme, noPadding }) => ({
+  transition: theme.transitions.create('padding', {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+  padding: noPadding ? '0 0 0 0' : '0 0 50px 0',
+}));
+
+const Parameters = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  paddingBottom: 10,
+  flexWrap: 'wrap',
 });
+
+const Filler = styled('div')({
+  flex: 'auto',
+});
+
+const Views = styled('div')({
+  display: 'flex',
+});
+
+const HeaderItem = styled('div')({
+  display: 'flex',
+  fontSize: 12,
+  fontWeight: 700,
+  alignItems: 'center',
+});
+
+const SortableHeaderItem = styled('div')({
+  display: 'flex',
+  fontSize: 12,
+  fontWeight: '700',
+  cursor: 'pointer',
+  paddingRight: 10,
+  alignItems: 'center',
+});
+
+const HeaderItemText = styled('div')(({ theme }) => ({
+  marginRight: theme.spacing(1),
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  textTransform: 'lowercase',
+  '&::first-letter': {
+    textTransform: 'uppercase',
+  },
+}));
 
 class ListLines extends Component {
   constructor(props) {
@@ -132,39 +110,36 @@ class ListLines extends Component {
   }
 
   renderHeaderElement(field, label, width, isSortable) {
-    const { classes, t, sortBy, orderAsc } = this.props;
+    const { t, sortBy, orderAsc } = this.props;
     if (isSortable) {
       const orderComponent = orderAsc ? (<ArrowDropDown />) : (<ArrowDropUp />);
       return (
-        <div
+        <SortableHeaderItem
           key={field}
-          className={classes.sortableHeaderItem}
           style={{ width }}
           onClick={this.reverseBy.bind(this, field)}
           role="button"
           tabIndex={0}
           onKeyDown={onActivationKey(() => this.reverseBy(field))}
         >
-          <div className={classes.headerItemText}>{t(label)}</div>
+          <HeaderItemText>{t(label)}</HeaderItemText>
           {sortBy === field ? orderComponent : ''}
-        </div>
+        </SortableHeaderItem>
       );
     }
     return (
-      <div
-        className={classes.headerItem}
+      <HeaderItem
         style={{ width }}
         key={field}
       >
-        <div className={classes.headerItemText}>{t(label)}</div>
-      </div>
+        <HeaderItemText>{t(label)}</HeaderItemText>
+      </HeaderItem>
     );
   }
 
   renderContent(availableFilterKeys, entityTypes, selectedIds = []) {
     const {
       t,
-      classes,
       handleSearch,
       handleChangeView,
       disableCards,
@@ -222,15 +197,9 @@ class ListLines extends Component {
       entityTypes: entityTypes ?? [],
     };
     return (
-      <div className={noPadding ? classes.containerNoPadding : classes.container}>
+      <Container noPadding={noPadding}>
         {!inline && (
-          <div
-            className={
-              parametersWithPadding
-                ? classes.parametersWithPadding
-                : classes.parameters
-            }
-          >
+          <Parameters>
 
             {typeof handleSearch === 'function' && (
               <SearchInput
@@ -256,11 +225,11 @@ class ListLines extends Component {
                 availableRelationFilterTypes={availableRelationFilterTypes}
               />
             )}
-            <div className={classes.filler} />
+            <Filler />
 
             {/* alignItems: the row's own container centres its children, but this inner one did not, so the buttons
                 stretched to the row height instead of sitting on the filters' centre line. */}
-            <div className={classes.views} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <Views style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
 
               {numberOfElements && (
                 <div
@@ -421,8 +390,8 @@ class ListLines extends Component {
                 </ToggleButtonGroup>
               )}
               {createButton}
-            </div>
-          </div>
+            </Views>
+          </Parameters>
         )}
         <FilterIconButton
           helpers={helpers}
@@ -446,19 +415,19 @@ class ListLines extends Component {
                 severity="info"
                 variant="outlined"
                 style={{ padding: '0px 10px 0px 10px' }}
-                classes={{ message: classes.info }}
+                slotProps={{ message: { sx: { paddingTop: '10px' } } }}
               >
                 {message}
               </Alert>
             </div>
           )}
           <List
-            classes={{ root: bottomNav ? classes.linesContainerBottomNav : classes.linesContainer }}
+            sx={bottomNav ? { margin: '0 0 90px 0', padding: 0 } : { margin: 0, padding: 0 }}
             style={!handleToggleSelectAll ? { marginTop: 10 } : null}
           >
             {!noHeaders && (
               <ListItem
-                classes={{ root: classes.item }}
+                sx={{ paddingLeft: '10px' }}
                 divider={false}
                 style={{ paddingTop: 0 }}
                 secondaryAction={secondaryAction && (
@@ -610,7 +579,7 @@ class ListLines extends Component {
             </Dialog>
           )}
         </ErrorBoundary>
-      </div>
+      </Container>
     );
   }
 
@@ -647,7 +616,6 @@ class ListLines extends Component {
 }
 
 ListLines.propTypes = {
-  classes: PropTypes.object,
   t: PropTypes.func,
   children: PropTypes.object,
   handleSearch: PropTypes.func,
@@ -702,4 +670,4 @@ ListLines.propTypes = {
   createButton: PropTypes.object,
 };
 
-export default compose(inject18n, withStyles(styles))(ListLines);
+export default inject18n(ListLines);

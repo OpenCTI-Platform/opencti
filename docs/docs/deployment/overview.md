@@ -2,7 +2,7 @@
 
 Before starting the installation, let's discover how OpenCTI is working, which dependencies are needed and what are the minimal requirements to deploy it in production.
 
-!!! tip "Docker deployment of the full XTM suite (OpenCTI - OpenAEV - OpenGRC)"
+!!! tip "Docker deployment of the full XTM suite (OpenCTI - OpenAEV - OpenCRQ)"
 
     If you're looking for information about the deployment of the full eXtended Threat Management (XTM) suite using Docker, please refer [to this repository and documentation](https://github.com/FiligranHQ/xtm-docker).
 
@@ -51,6 +51,10 @@ roles on the platform:
 | Redis                      | >= 7.1             | 1 core    | ≥ 1GB        | SSD                          | ≥ 16GB          |
 | RabbitMQ                   | >= 3.11            | 1 core    | ≥ 512MB      | Standard                     | ≥ 2GB           |
 | S3 / Silo / MinIO          | >= RELEASE.2023-02 | 1 core    | ≥ 128MB      | SSD                          | ≥ 16GB          |
+
+Elasticsearch 8, Elasticsearch 9 and OpenSearch are supported. The platform detects the engine and its version
+behind `elasticsearch:url` at startup: there is nothing to configure (see [Configuration](configuration.md#elasticsearch)
+and, to move from Elasticsearch 8 to 9, [this migration guide](breaking-changes/elasticsearch-9-support.md)).
 
 
 ### Platform

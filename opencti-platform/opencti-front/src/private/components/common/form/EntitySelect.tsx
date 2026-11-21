@@ -49,6 +49,7 @@ interface EntitySelectBaseProps {
 
 interface EntitySelectComponentProps extends EntitySelectBaseProps {
   multiple: boolean;
+  disabled?: boolean;
   value: EntityOption | EntityOption[] | null;
   onChange?: (val: EntityOption | EntityOption[] | null) => void;
 }
@@ -58,6 +59,7 @@ const EntitySelectComponent = ({
   value,
 
   multiple = false,
+  disabled = false,
   onChange,
   onInputChange,
   queryRef,
@@ -78,6 +80,7 @@ const EntitySelectComponent = ({
       value={value}
       options={options}
       multiple={multiple}
+      disabled={disabled}
       // MUI's disableCloseOnSelect is the library's closeOnSelect inverted, and
       // the library already defaults it to false in multiple mode.
       closeOnSelect={!multiple}

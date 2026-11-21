@@ -1,6 +1,6 @@
-import type { CreateCSSProperties } from '@mui/styles/withStyles';
+import type { CSSObject } from '@mui/material/styles';
 
-export const bodyItemStyle: CreateCSSProperties = {
+export const bodyItemStyle: CSSObject = {
   height: 25,
   fontSize: 13,
   float: 'left',

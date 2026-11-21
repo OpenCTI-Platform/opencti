@@ -1,6 +1,7 @@
 import React from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 import { StyledEngineProvider } from '@mui/material/styles';
+import { TooltipProvider } from '@filigran/design-system';
 import { loadQuery, usePreloadedQuery } from 'react-relay';
 import { Route, Routes } from 'react-router';
 import { boundaryWrapper } from '@components/Error';
@@ -14,6 +15,7 @@ import PublicDashboard from './components/PublicDashboard';
 import Message from '../components/Message';
 import Playground from './components/Playground';
 import { AppDataProvider } from '../utils/hooks/useAppData';
+import { TOOLTIP_DELAY_MS } from '../private/components/nav/topBarConstants';
 
 const queryRef = loadQuery<LoginRootPublicQuery>(
   environment,
@@ -41,11 +43,14 @@ const PublicRoot = () => {
           >
             <CssBaseline />
             <Message />
-            <Routes>
-              <Route path="/" element={boundaryWrapper(PublicDataSharing)} />
-              <Route path="/dashboard/:uriKey/*" element={boundaryWrapper(PublicDashboard)} />
-              {isPlaygroundEnabled && <Route path="/graphql/" element={boundaryWrapper(Playground)} />}
-            </Routes>
+            {/* The tooltips of the design system, with the delay of the application */}
+            <TooltipProvider delayDuration={TOOLTIP_DELAY_MS}>
+              <Routes>
+                <Route path="/" element={boundaryWrapper(PublicDataSharing)} />
+                <Route path="/dashboard/:uriKey/*" element={boundaryWrapper(PublicDashboard)} />
+                {isPlaygroundEnabled && <Route path="/graphql/" element={boundaryWrapper(Playground)} />}
+              </Routes>
+            </TooltipProvider>
           </AppDataProvider>
         </ConnectedIntlProvider>
       </ConnectedThemeProvider>

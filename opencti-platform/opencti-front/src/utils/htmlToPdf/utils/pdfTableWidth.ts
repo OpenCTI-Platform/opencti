@@ -1,5 +1,6 @@
 import { CustomTableLayout } from 'pdfmake/interfaces';
 import { detectLanguage } from './pdfFonts';
+import { parseInertHtml } from './inertHtml';
 
 export const WIDE_TABLE_COLUMN_THRESHOLD = 8;
 export const VERY_WIDE_TABLE_COLUMN_THRESHOLD = 12;
@@ -130,8 +131,7 @@ const allocateColumnWidths = (
  * @returns Same content but with new attribute on tables.
  */
 const setTableFullWidth = (content: string, contentWidth = 515.28) => {
-  const container = document.createElement('div');
-  container.innerHTML = content;
+  const container = parseInertHtml(content);
   const cellWidths = new WeakMap<Element, number>();
   const context = container.querySelector('table') ? document.createElement('canvas').getContext('2d') : null;
   const fontFamily = detectLanguage(content);
@@ -165,8 +165,7 @@ const setTableFullWidth = (content: string, contentWidth = 515.28) => {
 };
 
 export const getMaxTableColumnCount = (content: string) => {
-  const container = document.createElement('div');
-  container.innerHTML = content;
+  const container = parseInertHtml(content);
   return Array.from(container.querySelectorAll('table')).reduce((max, table) => {
     const nbColumns = getTableColumnCount(table);
     return Math.max(max, nbColumns);

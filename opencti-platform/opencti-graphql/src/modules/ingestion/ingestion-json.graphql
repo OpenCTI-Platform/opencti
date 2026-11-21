@@ -47,7 +47,7 @@ type IngestionJson implements InternalObject & BasicObject {
     markings: [String!]
     ssl_verify: Boolean
     toConfigurationExport: String!
-    ingestionHealth: IngestionHealth @ff(flags: ["INGESTION_HEALTH"], softFail: true)
+    ingestionHealth: IngestionHealth
 }
 
 type IngestionJsonMapperFromImport {
@@ -69,6 +69,7 @@ type IngestionJsonAddInputFromImport {
     query_attributes: [IngestionQueryAttribute!]
     authentication_type: IngestionAuthType
     ssl_verify: Boolean
+    markings: [String!]
     jsonMapper: IngestionJsonMapperFromImport!
 }
 

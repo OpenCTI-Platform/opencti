@@ -8,8 +8,15 @@ import nconf from 'nconf';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import type { Gauge } from '@opentelemetry/api';
 import { ATTR_ENDUSER_ID } from '../telemetry/semantic-conventions';
+import { registerOtelDiagLogger, sanitizeExporterUrl } from '../telemetry/otel-diag-logger';
 import type { AuthContext, AuthUser } from '../types/user';
-import { ENABLED_METRICS, ENABLED_TRACING } from './conf';
+import { ENABLED_METRICS, ENABLED_TRACING, logApp } from './conf';
+
+// Export failures of the OTLP exporters are only reported through the OpenTelemetry diag API:
+// route them to the platform logs whenever tracing or metrics are enabled.
+if (ENABLED_TRACING || ENABLED_METRICS) {
+  registerOtelDiagLogger(logApp);
+}
 
 class MeterManager {
   meterProvider: MeterProvider;
@@ -25,6 +32,8 @@ class MeterManager {
   private lockWaitHistogram: Histogram | null = null;
 
   private lockContentions: Counter | null = null;
+
+  private ingestionDeduplications: Counter | null = null;
 
   private migrationDurationHistogram: Histogram | null = null;
 
@@ -58,6 +67,14 @@ class MeterManager {
 
   lockContention(attributes?: any) {
     this.lockContentions?.add(1, attributes);
+  }
+
+  ingestionDeduplication(attributes: { entityType: string; userId: string; result: 'skipped' | 'imported' }) {
+    this.ingestionDeduplications?.add(1, {
+      'opencti.entity.type': attributes.entityType,
+      [ATTR_ENDUSER_ID]: attributes.userId,
+      'opencti.deduplication.result': attributes.result,
+    });
   }
 
   migrationDuration(val: number, attributes: {
@@ -96,6 +113,10 @@ class MeterManager {
     this.lockContentions = meter.createCounter('opencti_lock_contentions', {
       valueType: ValueType.INT,
       description: 'Counts lock acquisitions that needed more than one attempt',
+    });
+    this.ingestionDeduplications = meter.createCounter('opencti_ingestion_deduplication', {
+      valueType: ValueType.INT,
+      description: 'Counts imports checked against a deduplication rule, skipped or imported',
     });
     // - Histograms
     this.latencyHistogram = meter.createHistogram('opencti_api_latency', {
@@ -137,11 +158,15 @@ if (ENABLED_METRICS) {
     const metricExporter = new OTLPMetricExporter({ url: exporterOtlp, headers: {}, concurrencyLimit: 1 });
     const metricReader = new PeriodicExportingMetricReader({ exporter: metricExporter, exportIntervalMillis: 1000 });
     metricReaders.push(metricReader);
+    logApp.info('[OPENCTI] [TELEMETRY] OTLP metrics exporter initialized', { url: sanitizeExporterUrl(exporterOtlp) });
   }
   // PROMETHEUS
   const exporterPrometheus = nconf.get('app:telemetry:metrics:exporter_prometheus');
   if (exporterPrometheus) {
-    const prometheusExporter = new PrometheusExporter({ port: exporterPrometheus });
+    // Always pass a host: since @opentelemetry/exporter-prometheus 0.300.0, an unset host listens on localhost only.
+    // Not '::': the exporter builds its base URL from an unbracketed host, so an IPv6 literal answers 400 to every request.
+    const exporterPrometheusHost = nconf.get('app:telemetry:metrics:exporter_prometheus_host') || '0.0.0.0';
+    const prometheusExporter = new PrometheusExporter({ host: exporterPrometheusHost, port: exporterPrometheus });
     metricReaders.push(prometheusExporter);
   }
 }

@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { UseMutationConfig } from 'react-relay';
 import { DraftCreationMutation, DraftCreationMutation$data } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
 import { DraftAddInput } from '@components/drafts/DraftCreation';
+import { authorizedMembersToInput } from '../../../../../utils/authorizedMembers';
 
 type CommitCreationMutation = (args: UseMutationConfig<DraftCreationMutation>) => void;
 
@@ -28,17 +29,7 @@ const useCreateDraft = (
               objectAssignee: values.objectAssignee.map(({ value }) => value),
               objectParticipant: values.objectParticipant.map(({ value }) => value),
               createdBy: values.createdBy?.value,
-              authorized_members: !values.authorized_members
-                ? null
-                : values.authorized_members
-                    .filter((v) => v.accessRight !== 'none')
-                    .map((member) => ({
-                      id: member.value,
-                      access_right: member.accessRight,
-                      groups_restriction_ids: member.groupsRestriction?.length > 0
-                        ? member.groupsRestriction.map((group) => group.value)
-                        : undefined,
-                    })),
+              authorized_members: values.authorized_members ? authorizedMembersToInput(values.authorized_members) : null,
             },
           },
           onCompleted: (response, errors) => {

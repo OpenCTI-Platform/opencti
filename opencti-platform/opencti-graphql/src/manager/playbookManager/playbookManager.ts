@@ -21,12 +21,12 @@ import { type StreamProcessor } from '../../database/stream/stream-utils';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
 import { lockResources } from '../../lock/master-lock';
 import conf, { booleanConf, logApp } from '../../config/conf';
-import { FunctionalError, TYPE_LOCK_ERROR } from '../../config/errors';
+import { TYPE_LOCK_ERROR } from '../../config/errors';
 import { AUTOMATION_MANAGER_USER, executionContext, RETENTION_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import type { SseEvent, StreamDataEvent } from '../../types/event';
 import type { StixBundle, StixObject } from '../../types/stix-2-1-common';
 import { streamEventId, utcDate } from '../../utils/format';
-import { findById, findPlaybooksForEntity } from '../../modules/playbook/playbook-domain';
+import { buildPlaybookNotRunnableError, findById, findPlaybooksForEntity } from '../../modules/playbook/playbook-domain';
 import { type CronConfiguration, PLAYBOOK_INTERNAL_DATA_CRON, type StreamConfiguration } from '../../modules/playbook/playbook-components';
 import { PLAYBOOK_COMPONENTS } from '../../modules/playbook/playbook-components';
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../../modules/playbook/playbook-types';
@@ -176,7 +176,8 @@ export const executePlaybookOnEntity = async (context: AuthContext, id: string, 
   if (filteredPlaybooks.length > 0) {
     playbook = filteredPlaybooks.at(0);
   } else {
-    throw FunctionalError('Playbook does not exist for this entity', { id });
+    // Name the actual reason (unknown playbook, entry component, manual enrollment disabled, entry filter mismatch)
+    throw await buildPlaybookNotRunnableError(context, RETENTION_MANAGER_USER, id, entityId);
   }
   // Execute only if definition is available
   if (playbook && playbook.playbook_definition) {
@@ -232,89 +233,51 @@ const checkManagerDelay = async () => {
   }
 };
 
-const initPlaybookManager = () => {
-  const WAIT_TIME_ACTION = 2000;
-  let streamScheduler: SetIntervalAsyncTimer<[]>;
-  let cronScheduler: SetIntervalAsyncTimer<[]>;
-  let streamProcessor: StreamProcessor;
-  let running = false;
-  let shutdown = false;
-
-  const playbookHandler = async () => {
-    let lock;
-    try {
-      // Lock the manager
-      lock = await lockResources([PLAYBOOK_LIVE_KEY], { retryCount: 0 });
-      running = true;
-      logApp.info('[OPENCTI-MODULE] Running playbook manager');
-      streamProcessor = createStreamProcessor('Playbook manager', playbookStreamHandler, { withInternal: true });
-      const lastEventState = await redisGetManagerEventState(PLAYBOOK_MANAGER_NAME);
-      await streamProcessor.start(lastEventState ?? 'live');
-      let delayCheckerCounter = 0;
-      while (!shutdown && streamProcessor.running()) {
-        lock.signal.throwIfAborted();
-        await streamTimer.start(WAIT_TIME_ACTION);
-        if (++delayCheckerCounter >= 10) {
-          await checkManagerDelay();
-          delayCheckerCounter = 0;
-        }
-      }
-      logApp.info('[OPENCTI-MODULE] End of playbook manager processing (live)');
-    } catch (e: any) {
-      if (e.name === TYPE_LOCK_ERROR) {
-        logApp.debug('[OPENCTI-MODULE] Playbook manager already started by another API');
-      } else {
-        logApp.error('[OPENCTI-MODULE] Playbook manager error', { cause: e, manager: 'PLAYBOOK_MANAGER' });
-      }
-    } finally {
-      if (streamProcessor) await streamProcessor.shutdown();
-      if (lock) await lock.unlock();
+const shouldTriggerNow = (cronConfiguration: CronConfiguration, baseDate: Moment): boolean => {
+  const now = baseDate.clone().startOf('minutes'); // 2022-11-25T19:11:00.000Z
+  const { triggerTime } = cronConfiguration;
+  switch (cronConfiguration.period) {
+    case 'minute': {
+      // Need to check if time is aligned on the perfect hour
+      const nowMinuteAlign = now.clone().startOf('minutes');
+      return now.isSame(nowMinuteAlign);
     }
-  };
-  const shouldTriggerNow = (cronConfiguration: CronConfiguration, baseDate: Moment): boolean => {
-    const now = baseDate.clone().startOf('minutes'); // 2022-11-25T19:11:00.000Z
-    const { triggerTime } = cronConfiguration;
-    switch (cronConfiguration.period) {
-      case 'minute': {
-        // Need to check if time is aligned on the perfect hour
-        const nowMinuteAlign = now.clone().startOf('minutes');
-        return now.isSame(nowMinuteAlign);
-      }
-      case 'hour': {
-        // Need to check if time is aligned on the perfect hour
-        const nowHourAlign = now.clone().startOf('hours');
-        return now.isSame(nowHourAlign);
-      }
-      case 'day': {
-        // Need to check if time is aligned on the day hour (like 19:11:00.000Z)
-        const dayTime = `${now.clone().format('HH:mm:ss.SSS')}Z`;
-        return triggerTime === dayTime;
-      }
-      case 'week': {
-        // Need to check if time is aligned on the week hour (like 1-19:11:00.000Z)
-        // 1 being Monday and 7 being Sunday.
-        const weekTime = `${now.clone().isoWeekday()}-${now.clone().format('HH:mm:ss.SSS')}Z`;
-        return triggerTime === weekTime;
-      }
-      case 'month': {
-        // Need to check if time is aligned on the month hour (like 22-19:11:00.000Z)
-        const monthTime = `${now.clone().date()}-${now.clone().format('HH:mm:ss.SSS')}Z`;
-        return triggerTime === monthTime;
-      }
-      default:
-        return false;
+    case 'hour': {
+      // Need to check if time is aligned on the perfect hour
+      const nowHourAlign = now.clone().startOf('hours');
+      return now.isSame(nowHourAlign);
     }
-  };
-  const handlePlaybookCrons = async (context: AuthContext) => {
-    const baseDate = utcDate().startOf('minutes');
-    const isEE = await isEnterpriseEdition(context);
-    if (!isEE) {
-      return;
+    case 'day': {
+      // Need to check if time is aligned on the day hour (like 19:11:00.000Z)
+      const dayTime = `${now.clone().format('HH:mm:ss.SSS')}Z`;
+      return triggerTime === dayTime;
     }
-    // Get playbook crons that need to be executed
-    const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
-    for (let playbookIndex = 0; playbookIndex < playbooks.length; playbookIndex += 1) {
-      const playbook = playbooks[playbookIndex];
+    case 'week': {
+      // Need to check if time is aligned on the week hour (like 1-19:11:00.000Z)
+      // 1 being Monday and 7 being Sunday.
+      const weekTime = `${now.clone().isoWeekday()}-${now.clone().format('HH:mm:ss.SSS')}Z`;
+      return triggerTime === weekTime;
+    }
+    case 'month': {
+      // Need to check if time is aligned on the month hour (like 22-19:11:00.000Z)
+      const monthTime = `${now.clone().date()}-${now.clone().format('HH:mm:ss.SSS')}Z`;
+      return triggerTime === monthTime;
+    }
+    default:
+      return false;
+  }
+};
+export const handlePlaybookCrons = async (context: AuthContext) => {
+  const baseDate = utcDate().startOf('minutes');
+  const isEE = await isEnterpriseEdition(context);
+  if (!isEE) {
+    return;
+  }
+  // Get playbook crons that need to be executed
+  const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
+  for (let playbookIndex = 0; playbookIndex < playbooks.length; playbookIndex += 1) {
+    const playbook = playbooks[playbookIndex];
+    try { // try catch per playbook to avoid stopping the cron loop if an error is thrown on a playbook
       // Execute only of definition is available
       if (playbook.playbook_definition) {
         // Execute only if event coming from different playbook
@@ -406,6 +369,49 @@ const initPlaybookManager = () => {
           }
         }
       }
+    } catch (e) {
+      logApp.error('[OPENCTI-MODULE] Playbook manager cron playbook error', { cause: e, id: playbook.id, manager: 'PLAYBOOK_MANAGER' });
+    }
+  }
+};
+
+const initPlaybookManager = () => {
+  const WAIT_TIME_ACTION = 2000;
+  let streamScheduler: SetIntervalAsyncTimer<[]>;
+  let cronScheduler: SetIntervalAsyncTimer<[]>;
+  let streamProcessor: StreamProcessor;
+  let running = false;
+  let shutdown = false;
+
+  const playbookHandler = async () => {
+    let lock;
+    try {
+      // Lock the manager
+      lock = await lockResources([PLAYBOOK_LIVE_KEY], { retryCount: 0 });
+      running = true;
+      logApp.info('[OPENCTI-MODULE] Running playbook manager');
+      streamProcessor = createStreamProcessor('Playbook manager', playbookStreamHandler, { withInternal: true });
+      const lastEventState = await redisGetManagerEventState(PLAYBOOK_MANAGER_NAME);
+      await streamProcessor.start(lastEventState ?? 'live');
+      let delayCheckerCounter = 0;
+      while (!shutdown && streamProcessor.running()) {
+        lock.signal.throwIfAborted();
+        await streamTimer.start(WAIT_TIME_ACTION);
+        if (++delayCheckerCounter >= 10) {
+          await checkManagerDelay();
+          delayCheckerCounter = 0;
+        }
+      }
+      logApp.info('[OPENCTI-MODULE] End of playbook manager processing (live)');
+    } catch (e: any) {
+      if (e.name === TYPE_LOCK_ERROR) {
+        logApp.debug('[OPENCTI-MODULE] Playbook manager already started by another API');
+      } else {
+        logApp.error('[OPENCTI-MODULE] Playbook manager error', { cause: e, manager: 'PLAYBOOK_MANAGER' });
+      }
+    } finally {
+      if (streamProcessor) await streamProcessor.shutdown();
+      if (lock) await lock.unlock();
     }
   };
   const PlaybookCronHandler = async () => {

@@ -17,7 +17,7 @@ import { useFormatter } from '../../../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../../../utils/field';
 import ObjectMembersField from '../../../../common/form/ObjectMembersField';
 
-const PlaybookFlowFieldTargets = () => {
+const PlaybookFlowFieldTargets = ({ required = false }: { required?: boolean }) => {
   const { t_i18n } = useFormatter();
 
   return (
@@ -27,6 +27,7 @@ const PlaybookFlowFieldTargets = () => {
       label={t_i18n('Targets')}
       style={fieldSpacingContainerStyle}
       withDynamicKeys
+      required={required}
     />
   );
 };

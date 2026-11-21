@@ -1,5 +1,5 @@
 import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
@@ -11,20 +11,15 @@ import ProcessingMenu from './ProcessingMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-}));
+const Container = styled('div')({
+  margin: 0,
+  padding: '0 200px 50px 0',
+});
 
 const Tasks = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Tasks | Processing | Data'));
-  const classes = useStyles();
   const { platformModuleHelpers } = useAuth();
   const optionsInTasks = {
     count: 100,
@@ -34,17 +29,16 @@ const Tasks = () => {
   };
   if (!platformModuleHelpers.isTasksManagerEnable()) {
     return (
-      <div className={classes.container}>
+      <Container>
         <Alert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(TASK_MANAGER))}
         </Alert>
         <ProcessingMenu />
-      </div>
+      </Container>
     );
   }
   return (
-    <div
-      className={classes.container}
+    <Container
       data-testid="processing-tasks-page"
     >
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('Tasks'), current: true }]} />
@@ -59,7 +53,7 @@ const Tasks = () => {
           return <Loader variant="inElement" />;
         }}
       />
-    </div>
+    </Container>
   );
 };
 

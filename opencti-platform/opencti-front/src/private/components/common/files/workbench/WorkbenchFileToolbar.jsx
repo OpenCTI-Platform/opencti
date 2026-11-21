@@ -9,8 +9,7 @@ import Slide from '@mui/material/Slide';
 import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import withStyles from '@mui/styles/withStyles';
-import withTheme from '@mui/styles/withTheme';
+import { styled } from '@mui/material/styles';
 import { Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -27,75 +26,9 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const styles = (theme) => ({
-  bottomNav: {
-    zIndex: 1,
-    display: 'flex',
-    height: 50,
-    overflow: 'hidden',
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  buttonAdd: {
-    width: '100%',
-    height: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  aliases: {
-    margin: '0 7px 7px 0',
-  },
-  title: {
-    flex: '1 1 100%',
-    fontSize: '12px',
-  },
-  chipValue: {
-    margin: 0,
-  },
-  filter: {
-    margin: '5px 10px 5px 0',
-  },
-  formControl: {
-    width: '100%',
-  },
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
+const Buttons = styled('div')({
+  marginTop: 20,
+  textAlign: 'right',
 });
 
 class WorkbenchFileToolbar extends Component {
@@ -150,7 +83,6 @@ class WorkbenchFileToolbar extends Component {
   render() {
     const {
       t,
-      classes,
       numberOfSelectedElements,
       handleClearSelectedElements,
       submitDelete,
@@ -164,14 +96,17 @@ class WorkbenchFileToolbar extends Component {
           <Drawer
             anchor="bottom"
             variant="persistent"
-            classes={{
-              paper: classes.bottomNav,
-            }}
             open={isOpen}
             slotProps={{
               paper: {
                 variant: 'elevation',
                 elevation: 1,
+                sx: {
+                  zIndex: 1,
+                  display: 'flex',
+                  height: 50,
+                  overflow: 'hidden',
+                },
                 style: {
                   paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
                   bottom: bannerSettings.bannerHeightNumber,
@@ -196,10 +131,11 @@ class WorkbenchFileToolbar extends Component {
                   }}
                 >
                   <Typography
-                    className={classes.title}
                     variant="subtitle1"
                     sx={{
                       color: 'inherit',
+                      flex: '1 1 100%',
+                      fontSize: '12px',
                     }}
                   >
                     {`${numberOfSelectedElements} ${t('selected')}`}
@@ -251,11 +187,11 @@ class WorkbenchFileToolbar extends Component {
                 {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
                   <Form>
                     <ObjectMarkingField name="objectMarking" setFieldValue={setFieldValue} />
-                    <div className={classes.buttons}>
+                    <Buttons>
                       <Button
                         onClick={handleReset}
                         disabled={isSubmitting}
-                        classes={{ root: classes.button }}
+                        sx={{ marginLeft: 2 }}
                       >
                         {t('Cancel')}
                       </Button>
@@ -263,11 +199,11 @@ class WorkbenchFileToolbar extends Component {
                         color="secondary"
                         onClick={submitForm}
                         disabled={isSubmitting}
-                        classes={{ root: classes.button }}
+                        sx={{ marginLeft: 2 }}
                       >
                         {t('Update')}
                       </Button>
-                    </div>
+                    </Buttons>
                   </Form>
                 )}
               </Formik>
@@ -305,8 +241,6 @@ class WorkbenchFileToolbar extends Component {
 }
 
 WorkbenchFileToolbar.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
   t: PropTypes.func,
   numberOfSelectedElements: PropTypes.number,
   selectedElements: PropTypes.object,
@@ -320,7 +254,5 @@ WorkbenchFileToolbar.propTypes = {
 
 export default R.compose(
   inject18n,
-  withTheme,
-  withStyles(styles),
   withHooksSettingsMessagesBannerHeight,
 )(WorkbenchFileToolbar);

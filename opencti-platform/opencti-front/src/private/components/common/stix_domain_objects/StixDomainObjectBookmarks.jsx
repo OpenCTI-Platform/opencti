@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { graphql, createPaginationContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
+import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
@@ -10,10 +10,8 @@ import { StixDomainObjectBookmark, StixDomainObjectBookmarkDummy } from './StixD
 import inject18n from '../../../../components/i18n';
 import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
 
-const styles = () => ({
-  container: {
-    margin: '0 0 10px 0',
-  },
+const Container = styled('div')({
+  margin: '0 0 10px 0',
 });
 
 class StixDomainObjectBookmarksComponent extends Component {
@@ -31,11 +29,11 @@ class StixDomainObjectBookmarksComponent extends Component {
   }
 
   render() {
-    const { classes, data, t, relay } = this.props;
+    const { data, t, relay } = this.props;
     const bookmarks = R.pathOr([], ['bookmarks', 'edges'], data);
     if (bookmarks.length > 0) {
       return (
-        <div className={classes.container}>
+        <Container>
           <Typography
             variant="h4"
             gutterBottom={true}
@@ -70,7 +68,7 @@ class StixDomainObjectBookmarksComponent extends Component {
           >
             {t('All entities')}
           </Typography>
-        </div>
+        </Container>
       );
     }
     return <span />;
@@ -130,7 +128,4 @@ const StixDomainObjectBookmarksFragment = createPaginationContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixDomainObjectBookmarksFragment);
+export default inject18n(StixDomainObjectBookmarksFragment);

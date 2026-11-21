@@ -83,6 +83,8 @@ export const getCustomFieldValueField = (fieldType: CustomFieldType): string => 
   switch (fieldType) {
     case 'integer':
       return 'int_value';
+    case 'decimal':
+      return 'float_value';
     case 'string':
     case 'markdown':
       return 'string_value';
@@ -108,23 +110,27 @@ export const getDynamicTypeAttributeForEntityType = async (
   const resultAttributes = [];
   for (const cfDef of customFieldDefs) {
     let attributeType: AttributeDefinition['type'] = 'string';
-    if (cfDef.field_type === 'integer') attributeType = 'numeric';
+    if (cfDef.field_type === 'integer' || cfDef.field_type === 'decimal') attributeType = 'numeric';
     else if (cfDef.field_type === 'boolean') attributeType = 'boolean';
     else if (cfDef.field_type === 'date') attributeType = 'date';
 
     const entitySetting = getCustomFieldSettingForEntityType(cfDef, entityType);
     const isMandatory = entitySetting?.mandatory ?? false;
+    // A custom field has a single default_value string (validateCustomFieldDefaultValue), unlike
+    // the ref default values of the native attributes, so it is wrapped as its own single value.
+    const defaultValue = entitySetting?.default_value;
     resultAttributes.push({
       name: cfDef.name,
       type: attributeType,
       label: cfDef.label,
+      description: cfDef.description || null,
       mandatory: isMandatory,
       mandatoryType: isMandatory ? 'external' : 'no',
       editDefault: true,
       multiple: cfDef.multiple ?? false,
       upsert: true,
       scale: undefined,
-      defaultValues: undefined,
+      defaultValues: defaultValue ? [{ id: defaultValue, name: defaultValue }] : undefined,
     });
   }
   return resultAttributes;

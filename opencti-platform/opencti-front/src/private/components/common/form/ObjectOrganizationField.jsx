@@ -1,28 +1,24 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import { makeStyles } from '@mui/styles';
+import { styled } from '@mui/material/styles';
 import { fetchQuery } from '../../../../relay/environment';
 import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
 
-}));
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 export const searchObjectOrganizationFieldQuery = graphql`
   query ObjectOrganizationFieldQuery($search: String, $filters: FilterGroup) {
@@ -37,6 +33,9 @@ export const searchObjectOrganizationFieldQuery = graphql`
   }
 `;
 
+// Stable default: a fresh [] per render would defeat the memo of the options.
+const NO_EXTRA_OPTIONS = [];
+
 const ObjectOrganizationField = (props) => {
   const {
     name,
@@ -50,6 +49,9 @@ const ObjectOrganizationField = (props) => {
     multiple = true,
     alert = true,
     filters = null,
+    extraOptions = NO_EXTRA_OPTIONS,
+    getOptionLabel,
+    required = false,
   } = props;
 
   const defaultStateOrganizations = (defaultOrganizations ?? []).map((n) => ({
@@ -57,8 +59,8 @@ const ObjectOrganizationField = (props) => {
     value: n.id,
   }));
   const [organizations, setOrganizations] = useState(defaultStateOrganizations);
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const options = useMemo(() => [...extraOptions, ...organizations], [extraOptions, organizations]);
 
   const searchOrganizations = (search) => {
     fetchQuery(searchObjectOrganizationFieldQuery, {
@@ -84,9 +86,11 @@ const ObjectOrganizationField = (props) => {
         disabled={disabled}
         style={style}
         label={label ? t_i18n(label) : ''}
+        required={required}
         helperText={helpertext}
         noOptionsText={t_i18n('No available options')}
-        options={organizations}
+        options={options}
+        getOptionLabel={getOptionLabel}
         onInputChange={(search, meta) => {
           if (meta.cause === 'type') searchOrganizations(search);
         }}
@@ -94,10 +98,10 @@ const ObjectOrganizationField = (props) => {
         onChange={typeof onChange === 'function' ? onChange : null}
         renderOption={(option) => (
           <>
-            <div className={classes.icon}>
+            <OptionIcon>
               <ItemIcon type="Organization" />
-            </div>
-            <div className={classes.text}>{option.label}</div>
+            </OptionIcon>
+            <OptionText>{getOptionLabel ? getOptionLabel(option) : option.label}</OptionText>
           </>
         )}
       />
@@ -113,9 +117,11 @@ const ObjectOrganizationField = (props) => {
       style={style}
       disabled={disabled}
       label={t_i18n(label) ?? ''}
+      required={required}
       helperText={helpertext}
       noOptionsText={t_i18n('No available options')}
-      options={organizations}
+      options={options}
+      getOptionLabel={getOptionLabel}
       onInputChange={(search, meta) => {
         if (meta.cause === 'type') searchOrganizations(search);
       }}
@@ -123,10 +129,10 @@ const ObjectOrganizationField = (props) => {
       onChange={typeof onChange === 'function' ? onChange : null}
       renderOption={(option) => (
         <>
-          <div className={classes.icon}>
+          <OptionIcon>
             <ItemIcon type="Organization" />
-          </div>
-          <div className={classes.text}>{option.label}</div>
+          </OptionIcon>
+          <OptionText>{getOptionLabel ? getOptionLabel(option) : option.label}</OptionText>
         </>
       )}
     />

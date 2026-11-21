@@ -1,5 +1,6 @@
 import React from 'react';
 import { GraphiQL } from 'graphiql';
+import 'graphiql/setup-workers/vite';
 import { createGraphiQLFetcher } from '@graphiql/toolkit';
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';

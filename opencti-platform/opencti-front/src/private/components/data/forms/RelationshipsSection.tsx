@@ -1,4 +1,3 @@
-import Button from '@common/button/Button';
 import { Add, DeleteOutlined } from '@mui/icons-material';
 // fds:keep-mui Switch/TextField predate this PR; relationship fields still use MUI here.
 import { Box, FormControlLabel, Stack, Switch, TextField, Typography } from '@mui/material';
@@ -9,7 +8,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import type { EntityRelationship, FormBuilderData, FormFieldAttribute, RelationshipTypeOption } from './Form.d';
 import { generateFieldId } from './FormUtils';
-import useStyles from './useFormSchemaEditorStyles';
+import { AddButton, FieldHeader, fieldGroupSx, fieldTitleSx, relationshipGroupSx, TabPanel } from './formSchemaEditorStyles';
 
 export interface RelationshipsSectionProps {
   formData: FormBuilderData;
@@ -36,7 +35,6 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
   handleRemoveRelationship,
   handleAddRelationship,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { schema } = useAuth();
 
@@ -93,9 +91,9 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
     const availableAttributes = getAvailableAttributesForType(field.type);
 
     return (
-      <Box key={field.id} className={classes.fieldGroup}>
-        <div className={classes.fieldHeader}>
-          <Typography className={classes.fieldTitle}>
+      <Box key={field.id} sx={fieldGroupSx}>
+        <FieldHeader>
+          <Typography sx={fieldTitleSx}>
             {field.label || t_i18n('New Field')}
           </Typography>
           <IconButton
@@ -111,7 +109,7 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
             }}
             icon={<DeleteOutlined />}
           />
-        </div>
+        </FieldHeader>
 
         <TextField
           fullWidth
@@ -221,13 +219,13 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
     return (
       <Stack
         key={relationship.id}
-        className={classes.relationshipGroup}
         sx={{
+          ...relationshipGroupSx,
           gap: 2,
         }}
       >
-        <div className={classes.fieldHeader}>
-          <Typography className={classes.fieldTitle}>
+        <FieldHeader>
+          <Typography sx={fieldTitleSx}>
             {t_i18n('Relationship')} {index + 1}
           </Typography>
           <IconButton
@@ -238,7 +236,7 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
             onClick={() => handleRemoveRelationship(relationship.id)}
             icon={<DeleteOutlined />}
           />
-        </div>
+        </FieldHeader>
 
         <Select
           value={relationship.fromEntity}
@@ -324,7 +322,7 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
               relationshipIndex,
             ))}
             <div>
-              <Button
+              <AddButton
                 variant="secondary"
                 startIcon={<Add />}
                 onClick={() => {
@@ -350,11 +348,10 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
                     relationships: updatedRelationships,
                   }));
                 }}
-                className={classes.addButton}
                 disabled={!relationship.relationshipType}
               >
                 {t_i18n('Add field')}
-              </Button>
+              </AddButton>
             </div>
           </div>
 
@@ -364,20 +361,19 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
   };
 
   return (
-    <div className={classes.tabPanel}>
+    <TabPanel>
       <Typography variant="h6" gutterBottom>
         {t_i18n('Relationships')}
       </Typography>
       {formData.relationships.map((relationship, idx) => renderRelationship(relationship, idx))}
-      <Button
+      <AddButton
         variant="secondary"
         startIcon={<Add />}
         onClick={handleAddRelationship}
-        className={classes.addButton}
       >
         {t_i18n('Add relationship')}
-      </Button>
-    </div>
+      </AddButton>
+    </TabPanel>
   );
 };
 

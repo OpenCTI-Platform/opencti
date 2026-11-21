@@ -34,6 +34,7 @@ vi.mock('../../../src/database/data-changes', async (importOriginal) => {
 
 import { LRUCache } from 'lru-cache';
 import { storeLoadByIdsWithRefs } from '../../../src/database/middleware';
+import { convertStoreToStix_2_1 } from '../../../src/database/stix-2-1-converter';
 // eslint-disable-next-line import/extensions
 import { resolveMissingReferences } from '../../../src/graphql/sseMiddleware.js';
 
@@ -371,6 +372,44 @@ describe('resolveMissingReferences', () => {
       expect(isComplete).toBe(true);
       expect(loadedChunks()).toEqual([['from']]);
       expect(published).toEqual(['from']);
+    });
+  });
+
+  describe('with ref relationships in a container', () => {
+    // A ref relationship (e.g. email-message "to" email-addr) added to a container from its graph: no STIX representation
+    const buildRefRelationshipGraph = () => {
+      const graph = buildGraph({ container: ['ref-rel'], message: ['address'], address: [] });
+      graph['ref-rel'] = { internal_id: 'internal-ref-rel', standard_id: 'ref-rel', entity_type: 'to', fromId: 'internal-message', from: graph.message };
+      return graph;
+    };
+
+    it('should publish the source and the target of a ref relationship, but not the ref relationship itself', async () => {
+      const graph = buildRefRelationshipGraph();
+      mockStore(graph);
+      const { isComplete, published } = await resolve(['container']);
+      expect(isComplete).toBe(true);
+      expect(vi.mocked(convertStoreToStix_2_1)).not.toHaveBeenCalledWith(graph['ref-rel']);
+      // Dependencies first: the target before the source referencing it, the source before the container
+      expect(published).toEqual(['address', 'message', 'container']);
+    });
+
+    it('should not republish the source of a ref relationship already in the cache', async () => {
+      const graph = buildRefRelationshipGraph();
+      mockStore(graph);
+      const cache = new LRUCache<string, string>({ max: 5000 });
+      cache.set('message', 'hit');
+      const { isComplete, published } = await resolve(['container'], { cache });
+      expect(isComplete).toBe(true);
+      expect(published).toEqual(['container']);
+    });
+
+    it('should not publish the source of a ref relationship twice when the container also holds it', async () => {
+      const graph = buildRefRelationshipGraph();
+      graph.container.refs = ['ref-rel', 'message', 'address'];
+      mockStore(graph);
+      const { isComplete, published } = await resolve(['container']);
+      expect(isComplete).toBe(true);
+      expect(published).toEqual(['address', 'message', 'container']);
     });
   });
 });

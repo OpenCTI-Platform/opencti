@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import Box from '@mui/material/Box';
 import EntityStixCoreRelationshipsContextualView from '../EntityStixCoreRelationshipsContextualView';
 import { usePaginationLocalStorage } from '../../../../../../utils/hooks/useLocalStorage';
 import { PaginationOptions } from '../../../../../../components/list_lines';
@@ -7,15 +7,6 @@ import EntityStixCoreRelationshipsEntitiesView from '../EntityStixCoreRelationsh
 import EntityStixCoreRelationshipsRelationshipsView from '../EntityStixCoreRelationshipsRelationshipsView';
 import ExportContextProvider from '../../../../../../utils/ExportContextProvider';
 import { emptyFilterGroup } from '../../../../../../utils/filters/filtersUtils';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    marginTop: 15,
-    paddingBottom: 70,
-  },
-}));
 
 interface EntityStixCoreRelationshipsForStixCyberObservableProps {
   entityId: string;
@@ -27,8 +18,6 @@ interface EntityStixCoreRelationshipsForStixCyberObservableProps {
 }
 
 const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntityStixCoreRelationshipsForStixCyberObservableProps> = (props) => {
-  const classes = useStyles();
-
   const { entityId, entityLink, defaultStartTime, defaultStopTime, relationshipTypes, isRelationReversed } = props;
   const entityTypes = ['Stix-Cyber-Observable'];
   const LOCAL_STORAGE_KEY = `relationships-${entityId}-${entityTypes.join('-')}-${relationshipTypes.join('-')}`;
@@ -49,7 +38,7 @@ const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntitySt
 
   return (
     <ExportContextProvider>
-      <div className={classes.container}>
+      <Box sx={{ marginTop: '15px', paddingBottom: '70px' }}>
         {view === 'entities'
           && (
             <EntityStixCoreRelationshipsEntitiesView
@@ -90,7 +79,7 @@ const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntitySt
             currentView={view}
           />
         )}
-      </div>
+      </Box>
     </ExportContextProvider>
   );
 };

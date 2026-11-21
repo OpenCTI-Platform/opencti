@@ -1,21 +1,16 @@
 import React, { FunctionComponent, MutableRefObject, useEffect, useRef } from 'react';
 import { SimplePaletteColorOptions } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled, useTheme } from '@mui/material/styles';
 import { ForceGraphMethods, LinkObject, NodeObject } from 'react-force-graph-2d';
 import type { Theme } from '../../Theme';
 import { GraphLink, GraphNode } from '../graph.types';
 import { pointInPolygon } from '../utils/graphUtils';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles({
-  canvas: {
-    position: 'absolute',
-    overflow: 'hidden',
-    top: 0,
-    left: 0,
-  },
+const Canvas = styled('canvas')({
+  position: 'absolute',
+  overflow: 'hidden',
+  top: 0,
+  left: 0,
 });
 
 interface LassoSelectionProps {
@@ -42,7 +37,6 @@ const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
   setSelectedNodes,
   graph,
 }) => {
-  const classes = useStyles();
   const theme = useTheme<Theme>();
   const lassoRef = useRef<HTMLCanvasElement>(null);
   const gesture = useRef<{ freeHand: boolean; path: number[][] }>({ freeHand: false, path: [] });
@@ -125,11 +119,10 @@ const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
   }, [activated, graph]);
 
   return (
-    <canvas
+    <Canvas
       ref={lassoRef}
       width={(width - 30)}
       height={height}
-      className={classes.canvas}
       id="lasso-canvas"
     />
   );

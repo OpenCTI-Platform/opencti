@@ -6,7 +6,7 @@ import { FormikHelpers } from 'formik/dist/types';
 import type { GraphQLTaggedNode } from 'relay-runtime';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import { useFormatter } from '../../../../components/i18n';
-import { AccessRight, AuthorizedMemberOption, Creator } from '../../../../utils/authorizedMembers';
+import { AccessRight, AuthorizedMemberOption, authorizedMembersToInput, Creator } from '../../../../utils/authorizedMembers';
 import { handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -23,6 +23,8 @@ interface FormAuthorizedMembersDialogProps {
   customAccessRights?: AccessRight[];
   canDeactivate: boolean;
   customInfoMessage?: string;
+  // Defaults to hidden when a platform organization is set
+  showAllMembersLine?: boolean;
 }
 
 const FormAuthorizedMembersDialog = ({
@@ -35,6 +37,7 @@ const FormAuthorizedMembersDialog = ({
   customAccessRights,
   canDeactivate,
   customInfoMessage,
+  showAllMembersLine: showAllMembersLineProp,
 }: FormAuthorizedMembersDialogProps) => {
   const draftContext = useDraftContext();
   const isDraftEntity = !!draftContext && id === draftContext.id;
@@ -43,7 +46,7 @@ const FormAuthorizedMembersDialog = ({
   const [openDrawer, setOpenDrawer] = useState(false);
   const isEnterpriseEdition = useEnterpriseEdition();
   const { settings } = useAuth();
-  const showAllMembersLine = !settings.platform_organization?.id;
+  const showAllMembersLine = showAllMembersLineProp ?? !settings.platform_organization?.id;
   const [commit] = useApiMutation(mutation);
   const onSubmit = (
     values: FormAuthorizedMembersInputs,
@@ -56,17 +59,7 @@ const FormAuthorizedMembersDialog = ({
     commit({
       variables: {
         id,
-        input: !values.authorizedMembers
-          ? null
-          : values.authorizedMembers
-              .filter((v) => v.accessRight !== 'none')
-              .map((member) => ({
-                id: member.value,
-                access_right: member.accessRight,
-                groups_restriction_ids: member.groupsRestriction?.length > 0
-                  ? member.groupsRestriction.map((group) => group.value)
-                  : undefined,
-              })),
+        input: values.authorizedMembers ? authorizedMembersToInput(values.authorizedMembers) : null,
       },
       onCompleted: () => {
         setSubmitting(false);

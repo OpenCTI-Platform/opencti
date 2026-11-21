@@ -5,6 +5,8 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.utils.opencti_stix2_utils import build_custom_field_values_input
+
 from .indicator.opencti_indicator_properties import (
     INDICATOR_PROPERTIES,
     INDICATOR_PROPERTIES_WITH_FILES,
@@ -288,13 +290,17 @@ class Indicator:
         :type files: list
         :param filesMarkings: (optional) list of lists of marking definition IDs for each file
         :type filesMarkings: list
-        :param custom_properties: (optional) list of custom field name/value inputs
-        :type custom_properties: list
+        :param custom_field_values: (optional) list of custom field name/value inputs
+        :type custom_field_values: list
         :return: Indicator object
         :rtype: dict or None
         """
         stix_id = kwargs.get("stix_id", None)
-        custom_properties = kwargs.get("custom_properties", None)
+        custom_field_values = build_custom_field_values_input(
+            kwargs.get("custom_field_values", None),
+            kwargs.get("custom_properties", None),
+            self.opencti.app_logger,
+        )
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
         object_label = kwargs.get("objectLabel", None)
@@ -364,7 +370,7 @@ class Indicator:
                 {
                     "input": {
                         "stix_id": stix_id,
-                        "customFieldValues": custom_properties,
+                        "customFieldValues": custom_field_values,
                         "createdBy": created_by,
                         "objectMarking": object_marking,
                         "objectLabel": object_label,
@@ -576,7 +582,7 @@ class Indicator:
                 )
 
             return self.create(
-                custom_properties=extras.get("custom_properties", None),
+                custom_field_values=extras.get("custom_field_values", None),
                 stix_id=stix_object["id"],
                 createdBy=(
                     extras["created_by_id"] if "created_by_id" in extras else None

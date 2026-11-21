@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { BASE_TYPE_ENTITY, BASE_TYPE_RELATION, ID_INTERNAL, ID_STANDARD, IDS_STIX, INPUT_GRANTED_REFS, INTERNAL_IDS_ALIASES } from '../schema/general';
 import { getParentTypes } from '../schema/schemaUtils';
-import { generateAliasesIdsForInstance, generateInternalId, generateStandardId, normalizeName, X_WORKFLOW_ID } from '../schema/identifier';
+import { generateAliasesIdsForInstance, generateInternalId, generateStandardId, getStaticMarkingAliasStixIds, normalizeName, X_WORKFLOW_ID } from '../schema/identifier';
 import { FROM_START, now, UNTIL_END } from '../utils/format';
 import { inferIndexFromConceptType, isEmptyField, isNotEmptyField } from './utils';
 import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
@@ -23,6 +23,7 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject, isStixObjectAliased, resolveAliasesField, STIX_ORGANIZATIONS_RESTRICTED, STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { getEntitiesListFromCache } from './cache';
+import { StatusScope } from '../generated/graphql';
 import { isServiceAccountUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../utils/access';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
@@ -71,8 +72,10 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
     if (haveStixId && input.stix_id !== standardId) {
       stixIds.push(input.stix_id.toLowerCase());
     }
+    // Static markings (TLP) also answer to the ids other standards give them
+    const staticAliasStixIds = getStaticMarkingAliasStixIds(standardId);
     data = R.pipe(
-      R.assoc(IDS_STIX, stixIds),
+      R.assoc(IDS_STIX, R.uniq([...stixIds, ...staticAliasStixIds])),
       R.dissoc('stix_id'),
       R.assoc('created_at', today),
       R.assoc('updated_at', today),
@@ -102,7 +105,11 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
     if (statusesForType.length > 0) {
       // Check, if status is not set or not valid
       if (R.isNil(input[X_WORKFLOW_ID]) || statusesForType.filter((n) => n.id === input[X_WORKFLOW_ID]).length === 0) {
-        data = R.assoc(X_WORKFLOW_ID, R.head(statusesForType).id, data);
+        // The default status never comes from the request access workflow: only the request form sets one of those
+        const defaultStatus = statusesForType.find((p) => p.scope !== StatusScope.RequestAccess);
+        if (defaultStatus) {
+          data = R.assoc(X_WORKFLOW_ID, defaultStatus.id, data);
+        }
       }
     }
   }

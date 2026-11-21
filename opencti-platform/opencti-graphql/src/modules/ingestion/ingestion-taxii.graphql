@@ -40,7 +40,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
     confidence_to_score: Boolean
     ssl_verify: Boolean
     toConfigurationExport: String!
-    ingestionHealth: IngestionHealth @ff(flags: ["INGESTION_HEALTH"], softFail: true)
+    ingestionHealth: IngestionHealth
 }
 enum IngestionTaxiiOrdering {
     name
@@ -69,6 +69,8 @@ type TaxiiFeedAddInputFromImport {
     authentication_type: String!
     authentication_value: String!
     added_after_start: String
+    ssl_verify: Boolean
+    confidence_to_score: Boolean
 }
 
 enum IngestionLogLevel {

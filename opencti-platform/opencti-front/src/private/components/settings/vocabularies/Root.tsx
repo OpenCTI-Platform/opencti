@@ -4,13 +4,13 @@ import Loader from '../../../../components/Loader';
 import LabelsVocabulariesMenu from '../LabelsVocabulariesMenu';
 import useGranted, {
   SETTINGS_SETCASETEMPLATES,
-  SETTINGS_SETCUSTOMIZATION,
+  SETTINGS_SETCUSTOMFIELDS,
   SETTINGS_SETKILLCHAINPHASES,
   SETTINGS_SETLABELS,
   SETTINGS_SETSTATUSTEMPLATES,
   SETTINGS_SETVOCABULARIES,
 } from '../../../../utils/hooks/useGranted';
-import useHelper from '../../../../utils/hooks/useHelper';
+import { capabilitiesOf } from '../../nav/menuEntries';
 import useSettingsFallbackUrl from '../../../../utils/hooks/useSettingsFallbackUrl';
 
 const Security = lazy(() => import('../../../../utils/Security'));
@@ -29,20 +29,19 @@ const VocabulariesRedirect = () => {
   const isGrantedToCaseTemplates = useGranted([SETTINGS_SETCASETEMPLATES]);
   const isGrantedToStatusTemplates = useGranted([SETTINGS_SETSTATUSTEMPLATES]);
   const isGrantedToVocabularies = useGranted([SETTINGS_SETVOCABULARIES]);
+  const isGrantedToCustomFields = useGranted([SETTINGS_SETCUSTOMFIELDS]);
 
   if (isGrantedToLabels) return <Navigate to="/dashboard/settings/vocabularies/labels" />;
   if (isGrantedToKillChainPhases) return <Navigate to="/dashboard/settings/vocabularies/kill_chain_phases" />;
   if (isGrantedToCaseTemplates) return <Navigate to="/dashboard/settings/vocabularies/case_templates" />;
   if (isGrantedToStatusTemplates) return <Navigate to="/dashboard/settings/vocabularies/status_templates" />;
   if (isGrantedToVocabularies) return <Navigate to="/dashboard/settings/vocabularies/fields" />;
+  if (isGrantedToCustomFields) return <Navigate to="/dashboard/settings/vocabularies/custom_fields" />;
   return <Navigate to="/dashboard/settings" />;
 };
 
 const RootVocabularies = () => {
   const fallbackUrl = useSettingsFallbackUrl();
-  const { isFeatureEnable } = useHelper();
-  const isCustomFieldsFeatureEnabled = isFeatureEnable('CUSTOM_FIELDS');
-
   return (
     <>
       <LabelsVocabulariesMenu />
@@ -52,7 +51,7 @@ const RootVocabularies = () => {
             path="/"
             element={(
               <Security
-                needs={[SETTINGS_SETLABELS, SETTINGS_SETKILLCHAINPHASES, SETTINGS_SETSTATUSTEMPLATES, SETTINGS_SETCASETEMPLATES, SETTINGS_SETVOCABULARIES]}
+                needs={capabilitiesOf('/dashboard/settings/vocabularies')}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <VocabulariesRedirect />
@@ -62,7 +61,7 @@ const RootVocabularies = () => {
           <Route
             path="/labels"
             element={(
-              <Security needs={[SETTINGS_SETLABELS]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/vocabularies/labels')} placeholder={<Navigate to={fallbackUrl} />}>
                 <Labels />
               </Security>
             )}
@@ -70,7 +69,7 @@ const RootVocabularies = () => {
           <Route
             path="/kill_chain_phases"
             element={(
-              <Security needs={[SETTINGS_SETKILLCHAINPHASES]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/vocabularies/kill_chain_phases')} placeholder={<Navigate to={fallbackUrl} />}>
                 <KillChainPhases />
               </Security>
             )}
@@ -78,7 +77,7 @@ const RootVocabularies = () => {
           <Route
             path="/status_templates"
             element={(
-              <Security needs={[SETTINGS_SETSTATUSTEMPLATES]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/vocabularies/status_templates')} placeholder={<Navigate to={fallbackUrl} />}>
                 <StatusTemplates />
               </Security>
             )}
@@ -86,7 +85,7 @@ const RootVocabularies = () => {
           <Route
             path="/case_templates"
             element={(
-              <Security needs={[SETTINGS_SETCASETEMPLATES]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/vocabularies/case_templates')} placeholder={<Navigate to={fallbackUrl} />}>
                 <CaseTemplates />
               </Security>
             )}
@@ -94,25 +93,23 @@ const RootVocabularies = () => {
           <Route
             path="/case_templates/:caseTemplateId/*"
             element={(
-              <Security needs={[SETTINGS_SETCASETEMPLATES]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/vocabularies/case_templates')} placeholder={<Navigate to={fallbackUrl} />}>
                 <CaseTemplateTasks />
               </Security>
             )}
           />
-          {isCustomFieldsFeatureEnabled && (
-            <Route
-              path="/custom_fields"
-              element={(
-                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
-                  <CustomFields />
-                </Security>
-              )}
-            />
-          )}
+          <Route
+            path="/custom_fields"
+            element={(
+              <Security needs={capabilitiesOf('/dashboard/settings/vocabularies/custom_fields')} placeholder={<Navigate to={fallbackUrl} />}>
+                <CustomFields />
+              </Security>
+            )}
+          />
           <Route
             path="/fields"
             element={(
-              <Security needs={[SETTINGS_SETVOCABULARIES]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/vocabularies/fields')} placeholder={<Navigate to={fallbackUrl} />}>
                 <VocabularyCategories />
               </Security>
             )}
@@ -120,7 +117,7 @@ const RootVocabularies = () => {
           <Route
             path="/fields/:category"
             element={(
-              <Security needs={[SETTINGS_SETVOCABULARIES]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/vocabularies/fields')} placeholder={<Navigate to={fallbackUrl} />}>
                 <Vocabularies />
               </Security>
             )}

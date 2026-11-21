@@ -15,6 +15,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import { useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
@@ -52,6 +53,7 @@ const FeedbackCreation: FunctionComponent<{
   initialValue?: Partial<FormikFeedbackAddInput>;
 }> = ({ openDrawer, handleCloseDrawer, initialValue }) => {
   const { t_i18n } = useFormatter();
+  const { isDeferredMode } = useDeferredCreation();
   const { me } = useAuth();
   const [commit] = useApiMutation<FeedbackCreationMutation>(
     feedbackMutation,
@@ -166,11 +168,13 @@ const FeedbackCreation: FunctionComponent<{
               }}
               style={fieldSpacingContainerStyle}
             />
-            <StixCoreObjectsField
-              name="objects"
-              required={(mandatoryAttributes.includes('objects'))}
-              style={fieldSpacingContainerStyle}
-            />
+            {!isDeferredMode && (
+              <StixCoreObjectsField
+                name="objects"
+                required={(mandatoryAttributes.includes('objects'))}
+                style={fieldSpacingContainerStyle}
+              />
+            )}
             <CustomFileUploader setFieldValue={setFieldValue} />
             <ObjectLabelField
               name="objectLabel"

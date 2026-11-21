@@ -56,6 +56,7 @@ export const REVOKED = 'revoked';
 export const X_MITRE_ID_FIELD = 'x_mitre_id';
 export const X_DETECTION = 'x_opencti_detection';
 export const X_WORKFLOW_ID = 'x_opencti_workflow_id';
+export const X_CLOSING_REASON = 'x_opencti_closing_reason';
 export const X_SCORE = 'x_opencti_score';
 // endregion
 
@@ -80,6 +81,19 @@ export const STATIC_MARKING_IDS = [
   MARKING_TLP_AMBER_STRICT,
   MARKING_TLP_RED,
 ];
+// The OASIS TLP 2.0 common objects (oasis-open/cti-stix-common-objects, extension tlp-2.0)
+// use other ids than the static TLP markings above. Many STIX producers emit them:
+// they are kept as other STIX ids of the matching static markings so every reference resolves.
+export const MARKING_TLP_OASIS_V2_ALIASES = {
+  [MARKING_TLP_CLEAR]: ['marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487'],
+  [MARKING_TLP_GREEN]: ['marking-definition--bab4a63c-aed9-4cf5-a766-dfca5abac2bb'],
+  [MARKING_TLP_AMBER]: ['marking-definition--55d920b0-5e8b-4f79-9ee9-91f868d9b421'],
+  [MARKING_TLP_AMBER_STRICT]: ['marking-definition--939a9414-2ddd-4d32-a0cd-375ea402b003'],
+  [MARKING_TLP_RED]: ['marking-definition--e828b379-4e03-4974-9ac4-e53a884c97c1'],
+};
+export const getStaticMarkingAliasStixIds = (standardId) => {
+  return MARKING_TLP_OASIS_V2_ALIASES[standardId] ?? [];
+};
 const STATIC_STANDARD_IDS = [
   { id: MARKING_TLP_CLEAR_ID, data: { definition_type: 'TLP', definition: 'TLP:WHITE' } },
   { id: MARKING_TLP_CLEAR_ID, data: { definition_type: 'TLP', definition: 'TLP:CLEAR' } },
@@ -148,10 +162,10 @@ const stixBaseCyberObservableContribution = {
     from(from) {
       return from?.standard_id;
     },
-    src(src) {
+    [INPUT_SRC](src) {
       return src?.standard_id;
     },
-    dst(dst) {
+    [INPUT_DST](dst) {
       return dst?.standard_id;
     },
     hashes(data) {

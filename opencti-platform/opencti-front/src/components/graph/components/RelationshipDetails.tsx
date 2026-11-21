@@ -3,11 +3,11 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { Link } from 'react-router';
 import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import IconButton from '@common/button/IconButton';
+import { styled } from '@mui/material/styles';
 import { ListItemButton, Stack } from '@mui/material';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../Loader';
@@ -18,7 +18,6 @@ import ItemAuthor from '../../ItemAuthor';
 import ItemConfidence from '../../ItemConfidence';
 import ErrorNotFound from '../../ErrorNotFound';
 import RelationShipFromAndTo from './RelationShipFromAndTo';
-import type { Theme } from '../../Theme';
 import ItemIcon from '../../ItemIcon';
 import ItemCreators from '../../ItemCreators';
 import { RelationshipDetailsQuery } from './__generated__/RelationshipDetailsQuery.graphql';
@@ -28,10 +27,8 @@ import { EMPTY_VALUE } from '../../../utils/String';
 import Label from '@common/label/Label';
 import SecurityCoverageInformation from '../../../private/components/analyses/security_coverages/SecurityCoverageInformation';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttonExpand: {
+const ExpandButton = styled(IconButton)(({ theme }) => ({
+  '&&': {
     position: 'relative',
     left: 0,
     bottom: 0,
@@ -51,17 +48,18 @@ const useStyles = makeStyles<Theme>((theme) => ({
           : 'rgba(0, 0, 0, .2)',
     },
   },
-  bodyItem: {
-    width: '100%',
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
 }));
+
+const BodyItem = styled('div')({
+  width: '100%',
+  height: 25,
+  fontSize: 13,
+  float: 'left',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  paddingRight: 10,
+});
 
 const relationshipDetailsQuery = graphql`
   query RelationshipDetailsQuery($id: String!) {
@@ -321,7 +319,6 @@ interface RelationshipDetailsComponentProps {
 const RelationshipDetailsComponent: FunctionComponent<
   RelationshipDetailsComponentProps
 > = ({ queryRef }) => {
-  const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
   const entity = usePreloadedQuery<RelationshipDetailsQuery>(
     relationshipDetailsQuery,
@@ -436,7 +433,6 @@ const RelationshipDetailsComponent: FunctionComponent<
                     <ListItemButton
                       key={report.id}
                       dense={true}
-                      classes={{ root: classes.item }}
                       divider={true}
                       component={Link}
                       to={`/dashboard/analyses/reports/${report.id}`}
@@ -447,13 +443,13 @@ const RelationshipDetailsComponent: FunctionComponent<
                       <ListItemText
                         primary={(
                           <Tooltip title={report.name}>
-                            <div className={classes.bodyItem}>{report.name}</div>
+                            <BodyItem>{report.name}</BodyItem>
                           </Tooltip>
                         )}
                         secondary={(
-                          <div className={classes.bodyItem}>
+                          <BodyItem>
                             {report.createdBy?.name ?? EMPTY_VALUE}
-                          </div>
+                          </BodyItem>
                         )}
                       />
                     </ListItemButton>
@@ -505,14 +501,14 @@ const RelationshipDetailsComponent: FunctionComponent<
                         </ListItemIcon>
                         <ListItemText
                           primary={(
-                            <div className={classes.bodyItem}>
+                            <BodyItem>
                               {`${externalReference.node.source_name} ${externalReferenceId}`}
-                            </div>
+                            </BodyItem>
                           )}
                           secondary={(
-                            <div className={classes.bodyItem}>
+                            <BodyItem>
                               {externalReferenceSecondary}
-                            </div>
+                            </BodyItem>
                           )}
                         />
                       </ListItemButton>
@@ -582,11 +578,10 @@ const RelationshipDetailsComponent: FunctionComponent<
       </div>
       {computeNotGenericDetails()}
       {expandable && (
-        <IconButton
+        <ExpandButton
           aria-label={expanded ? t_i18n('Collapse') : t_i18n('Expand')}
           size="small"
           onClick={handleToggleExpand}
-          className={classes.buttonExpand}
           aria-expanded={expanded}
         >
           {expanded ? (
@@ -594,7 +589,7 @@ const RelationshipDetailsComponent: FunctionComponent<
           ) : (
             <ExpandMoreOutlined />
           )}
-        </IconButton>
+        </ExpandButton>
       )}
     </Stack>
   );

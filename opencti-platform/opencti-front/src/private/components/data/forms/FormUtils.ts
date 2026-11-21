@@ -366,6 +366,25 @@ export const mapAttributeTypeToFieldType = (attrType: string, attrName: string):
   return 'text';
 };
 
+// Entity Settings store a default value as a raw string ('true', '42', '@now'…): convert it to
+// the value the Form builder field expects. A date relative to the creation (@now) cannot be
+// frozen in the form, so it is not pre-filled: the platform still applies it at creation.
+export const toFieldDefaultValue = (fieldType: string, rawValue: string): string | number | boolean | undefined => {
+  if (fieldType === 'checkbox' || fieldType === 'toggle') {
+    if (rawValue.toLowerCase() === 'true') return true;
+    if (rawValue.toLowerCase() === 'false') return false;
+    return undefined;
+  }
+  if (fieldType === 'number') {
+    const numberValue = rawValue.trim() === '' ? Number.NaN : Number(rawValue);
+    return Number.isFinite(numberValue) ? numberValue : undefined;
+  }
+  if (fieldType === 'date' || fieldType === 'datetime') {
+    return Number.isNaN(Date.parse(rawValue)) ? undefined : rawValue;
+  }
+  return rawValue;
+};
+
 /**
  * Get initial mandatory fields for default entity type
  * @param entityType The entity type to get mandatory fields for
@@ -389,7 +408,7 @@ export const getInitialMandatoryFields = (
 
   // Pre-populate fields for mandatory attributes with default values if available
   return mandatoryAttributes.map((attr: AttributeOption & { defaultValues?: Array<{ id: string; name: string }> | null; mandatoryType?: string; type?: string }) => {
-    const defaultValue = (attr.defaultValues && attr.defaultValues.length && attr.defaultValues.length > 0) ? attr.defaultValues[0] : null;
+    const rawDefaultValue = (attr.defaultValues && attr.defaultValues.length && attr.defaultValues.length > 0) ? attr.defaultValues[0] : null;
 
     // Convert attribute type to appropriate field type
     let fieldType = mapAttributeTypeToFieldType(attr.type || 'string', attr.name);
@@ -397,6 +416,8 @@ export const getInitialMandatoryFields = (
     if (vocabMapping) {
       fieldType = 'openvocab';
     }
+    const rawDefault = rawDefaultValue ? (rawDefaultValue.id || rawDefaultValue.name) : null;
+    const defaultValue = rawDefault ? toFieldDefaultValue(fieldType, rawDefault) : undefined;
 
     return {
       id: generateFieldId(),
@@ -412,7 +433,7 @@ export const getInitialMandatoryFields = (
         attributeName: attr.name,
         mappingType: 'direct',
       },
-      ...(defaultValue ? { defaultValue: defaultValue.id || defaultValue.name } : {}),
+      ...(defaultValue !== undefined ? { defaultValue } : {}),
     };
   });
 };
@@ -456,8 +477,9 @@ export const buildEntityTypes = (
   const processEntityType = (s: { id: string; label?: string }) => {
     const settings = settingsMap.get(s.id);
 
-    // Use attributesDefinitions from the query which contains full attribute info
-    const attributesDefinitions = settings?.attributesDefinitions || [];
+    // Use attributesDefinitions from the query which contains full attribute info.
+    // The refs (createdBy, objectMarking…) are left out: the Form builder offers its own special fields for them.
+    const attributesDefinitions = (settings?.attributesDefinitions || []).filter((attr) => attr.type !== 'ref');
     const mandatoryAttrs = settings?.mandatoryAttributes || [];
 
     // Map attributesDefinitions to the format expected by the form

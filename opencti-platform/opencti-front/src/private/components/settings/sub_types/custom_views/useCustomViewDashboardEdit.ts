@@ -70,7 +70,7 @@ const useCustomViewDashboardEdit = ({ customView }: {
   const [commitSaveLayoutMutation] = useApiMutation<useCustomViewDashboardEdit_LayoutMutation>(customViewLayoutMutation);
   const [commitImportWidgetMutation] = useApiMutation<useCustomViewDashboardEdit_WidgetImportMutation>(customViewImportWidgetMutation);
 
-  const onSave = (id: string, newManifestEncoded: string, noRefresh: boolean, onCompleted: () => void) => {
+  const onSave = (id: string, newManifestEncoded: string, noRefresh: boolean, onCompleted: () => void, onError: (error: Error) => void) => {
     const commitMutation = noRefresh ? commitSaveLayoutMutation : commitSaveMutation;
     commitMutation({
       variables: {
@@ -94,8 +94,10 @@ const useCustomViewDashboardEdit = ({ customView }: {
         }
       },
       onCompleted,
-      onError: () => {
+      onError: (error) => {
         handleError('Failed to save custom view');
+        // Lets the next write of the custom view go.
+        onError(error);
       },
     });
   };

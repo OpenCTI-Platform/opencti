@@ -85,8 +85,9 @@ export const getAuthorizedMembers = async (
       });
     }
     return {
-      // To avoid id relay caching issue, we need to change the id as it is a different object
-      id: `${currentAuthMember.id}_${i}`,
+      // To avoid id relay caching issue, we need to change the id as it is a different object.
+      // Prefixed by the entity: the same member at the same index of another entity is another rule, with its own access and groups
+      id: `${entity.internal_id}_${currentAuthMember.id}_${i}`,
       member_id: currentAuthMember.id,
       name: member?.name ?? '',
       entity_type: member?.entity_type ?? '',

@@ -1,8 +1,7 @@
 import { graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import React, { FunctionComponent, useRef, useState } from 'react';
 import { Field } from 'formik';
-import type { Theme } from '../../../../components/Theme';
 import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { ObjectMembersFieldSearchQuery$data } from './__generated__/ObjectMembersFieldSearchQuery.graphql';
@@ -11,20 +10,17 @@ import ComboboxField from '../../../../components/ComboboxField';
 import ItemIcon from '../../../../components/ItemIcon';
 import { FieldOption } from '../../../../utils/field';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
+const OptionIcon = styled('div')(({ theme }) => ({
+  paddingTop: 4,
+  display: 'inline-block',
+  color: theme.palette.primary.main,
 }));
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 const objectMembersFieldSearchQuery = graphql`
     query ObjectMembersFieldSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {
@@ -78,7 +74,6 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
   dynamicAuthorOrgLabel = 'Author (organization)',
   includeBundleOrganizationDynamicOption = true,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const dynamicMembers: OptionMember[] = withDynamicKeys ? [
     {
@@ -171,10 +166,10 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
         onFocusInput={() => searchMembers('')}
         renderOption={(option: OptionMember) => (
           <>
-            <div className={classes.icon}>
+            <OptionIcon>
               <ItemIcon type={option.type} />
-            </div>
-            <div className={classes.text}>{option.label}</div>
+            </OptionIcon>
+            <OptionText>{option.label}</OptionText>
           </>
         )}
       />

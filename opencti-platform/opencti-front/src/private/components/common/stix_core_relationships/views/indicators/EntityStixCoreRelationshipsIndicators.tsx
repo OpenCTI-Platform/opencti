@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import Box from '@mui/material/Box';
 import ExportContextProvider from '../../../../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../../../../utils/hooks/useLocalStorage';
 import EntityStixCoreRelationshipsRelationshipsView from '../EntityStixCoreRelationshipsRelationshipsView';
@@ -7,15 +7,6 @@ import EntityStixCoreRelationshipsIndicatorsEntitiesView from './EntityStixCoreR
 import { PaginationOptions } from '../../../../../../components/list_lines';
 import EntityStixCoreRelationshipsIndicatorsContextualView from './EntityStixCoreRelationshipsIndicatorsContextualView';
 import { emptyFilterGroup } from '../../../../../../utils/filters/filtersUtils';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    marginTop: 15,
-    paddingBottom: 70,
-  },
-}));
 
 interface EntityStixCoreRelationshipsIndicatorsProps {
   entityId: string;
@@ -32,7 +23,6 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
   defaultStopTime,
   relationshipTypes = ['indicates'],
 }) => {
-  const classes = useStyles();
   const entityTypes = ['Indicator'];
   const LOCAL_STORAGE_KEY = `indicators-relationships-${entityId}-${entityTypes.join('-')}-${relationshipTypes.join('-')}`;
   const localStorage = usePaginationLocalStorage<PaginationOptions>(
@@ -48,7 +38,7 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
   const { view } = localStorage.viewStorage;
   return (
     <ExportContextProvider>
-      <div className={classes.container}>
+      <Box sx={{ marginTop: '15px', paddingBottom: '70px' }}>
         {view === 'entities'
           && (
             <EntityStixCoreRelationshipsIndicatorsEntitiesView
@@ -87,7 +77,7 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
             currentView={view}
           />
         )}
-      </div>
+      </Box>
     </ExportContextProvider>
   );
 };

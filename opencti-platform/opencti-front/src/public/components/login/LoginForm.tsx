@@ -9,6 +9,7 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { Stack } from '@mui/material';
 import { useLoginContext } from './loginContext';
 import { ResetPwdStep } from './ResetPassword';
+import { type LocalAuthLockError, localAuthLockMessage } from '../../../utils/localAuthLockErrors';
 
 const loginMutation = graphql`
   mutation LoginFormMutation($input: UserLoginInput!) {
@@ -23,12 +24,11 @@ interface LoginFormValues {
 
 interface RelayResponseError extends Error {
   res?: {
-    errors?: {
-      message?: string;
+    errors?: (LocalAuthLockError & {
       extensions?: {
         code?: string;
       };
-    }[];
+    })[];
   };
 }
 
@@ -55,8 +55,8 @@ const LoginForm = () => {
           setSubmitting(false);
           return;
         }
-        const errorMsg = firstError?.message;
-        const errorMessage = t_i18n(errorMsg ?? 'Unknown');
+        // A locked account comes with the type of lock and the remaining lock time
+        const errorMessage = localAuthLockMessage(t_i18n, firstError) ?? t_i18n(firstError?.message ?? 'Unknown');
         setErrors({ email: errorMessage });
         setSubmitting(false);
       },

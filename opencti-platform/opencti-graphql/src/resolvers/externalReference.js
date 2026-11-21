@@ -8,6 +8,7 @@ import {
   externalReferenceEditContext,
   externalReferenceEditField,
   externalReferenceImportPush,
+  externalReferenceImportPushRef,
   findReferencesPaginated,
   findById,
   findReferencesForExternalIdPaginated,
@@ -65,9 +66,10 @@ const externalReferenceResolvers = {
       relationDelete: ({ fromId, relationship_type: relationshipType }) => {
         return externalReferenceDeleteRelation(context, context.user, id, fromId, relationshipType);
       },
-      askEnrichment: ({ connectorId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId),
-      askEnrichments: ({ connectorIds }) => askElementEnrichmentForConnectors(context, context.user, id, connectorIds),
+      askEnrichment: ({ connectorId, investigationId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId, { investigationId }),
+      askEnrichments: ({ connectorIds, investigationId }) => askElementEnrichmentForConnectors(context, context.user, id, connectorIds, { investigationId }),
       importPush: (args) => externalReferenceImportPush(context, context.user, id, args.file, args),
+      importPushRef: (args) => externalReferenceImportPushRef(context, context.user, id, args.fileRef),
     }),
     externalReferenceAdd: (_, { input }, context) => addExternalReference(context, context.user, input),
   },

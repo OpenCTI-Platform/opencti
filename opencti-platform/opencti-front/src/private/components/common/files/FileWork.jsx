@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { compose, propOr } from 'ramda';
+import { propOr } from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { createFragmentContainer, graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -20,29 +19,18 @@ import inject18n, { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
-import { useTheme } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
 
-const styles = (theme) => ({
-  nested: {
-    paddingLeft: theme.spacing(4),
-  },
-  nestedNested: {
-    paddingLeft: theme.spacing(8),
-  },
-  tooltip: {
-    maxWidth: 600,
-  },
-  itemText: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    marginRight: 10,
-  },
+const ItemText = styled('span')({
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  marginRight: 10,
 });
 
 const fileWorkDeleteMutation = graphql`
@@ -58,7 +46,6 @@ const FileWorkComponent = (props) => {
   const {
     t,
     nsdt,
-    classes,
     file: { works },
     nested,
   } = props;
@@ -143,14 +130,12 @@ const FileWorkComponent = (props) => {
             <Tooltip
               title={messageToDisplay}
               key={uuid()}
-              classes={{ tooltip: classes.tooltip }}
+              slotProps={{ tooltip: { sx: { maxWidth: 600 } } }}
             >
               <ListItem
                 dense={true}
                 divider={true}
-                classes={{
-                  root: nested ? classes.nestedNested : classes.nested,
-                }}
+                sx={{ paddingLeft: nested ? 8 : 4 }}
                 disabled={work.status === 'deleting'}
               >
                 <ListItemIcon>
@@ -176,10 +161,10 @@ const FileWorkComponent = (props) => {
                 </ListItemIcon>
                 <ListItemText
                   primary={
-                    <span className={classes.itemText}>{computeLabel()}</span>
+                    <ItemText>{computeLabel()}</ItemText>
                   }
                   secondary={
-                    <span className={classes.itemText}>{secondaryLabel}</span>
+                    <ItemText>{secondaryLabel}</ItemText>
                   }
                 />
                 {!!work.draft_context && !draftContext && (
@@ -218,7 +203,6 @@ const FileWorkComponent = (props) => {
 };
 
 FileWorkComponent.propTypes = {
-  classes: PropTypes.object,
   file: PropTypes.object.isRequired,
   nsdt: PropTypes.func,
   nested: PropTypes.bool,
@@ -257,4 +241,4 @@ const FileWork = createFragmentContainer(FileWorkComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(FileWork);
+export default inject18n(FileWork);

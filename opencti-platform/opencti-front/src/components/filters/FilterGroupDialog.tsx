@@ -5,7 +5,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import Box from '@mui/material/Box';
-import { useTheme } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import CodeBlock from '@components/common/CodeBlock';
 import Typography from '@mui/material/Typography';
 import { useFormatter } from '../i18n';

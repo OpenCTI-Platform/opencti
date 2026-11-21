@@ -9,7 +9,7 @@ import { type SavedFiltersSelectionData } from 'src/components/saved_filters/Sav
 import useApiMutation from '../../utils/hooks/useApiMutation';
 import useAuth from '../../utils/hooks/useAuth';
 import useGranted, { KNOWLEDGE_KNSHAREFILTERS } from '../../utils/hooks/useGranted';
-import { AccessRight, type AuthorizedMemberOption } from '../../utils/authorizedMembers';
+import { authorizedMembersToInput, authorizedMembersToOptions } from '../../utils/authorizedMembers';
 import { type AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
 import SavedFilterSharingSection from './SavedFilterSharingSection';
 import Security from '../../utils/Security';
@@ -30,6 +30,10 @@ const savedFilterFieldPatchMutation = graphql`
         entity_type
         access_right
         member_id
+        groups_restriction {
+          id
+          name
+        }
       }
     }
   }
@@ -50,6 +54,10 @@ const savedFilterEditAuthorizedMembersMutation = graphql`
         entity_type
         access_right
         member_id
+        groups_restriction {
+          id
+          name
+        }
       }
     }
   }
@@ -111,14 +119,10 @@ const SavedFilterEditDialog = ({
 
     // Update authorized members
     if (hasShareFilterCapability && values.authorized_members) {
-      const memberAccessInput = values.authorized_members.map((m: AuthorizedMemberOption) => ({
-        id: m.value,
-        access_right: m.accessRight,
-      }));
       commitAuthorizedMembers({
         variables: {
           id: savedFilter.id,
-          input: memberAccessInput,
+          input: authorizedMembersToInput(values.authorized_members),
         },
         onCompleted: () => onSaved?.(),
       });
@@ -127,15 +131,7 @@ const SavedFilterEditDialog = ({
     onClose();
   };
 
-  const initialAuthorizedMembers: AuthorizedMembersFieldValue = savedFilter.authorizedMembers
-    ? savedFilter.authorizedMembers.map((m) => ({
-        value: m.member_id ?? m.id,
-        label: m.name ?? '',
-        type: m.entity_type,
-        accessRight: (m.access_right ?? 'view') as AccessRight,
-        groupsRestriction: [] as { value: string; label: string }[],
-      }))
-    : null;
+  const initialAuthorizedMembers: AuthorizedMembersFieldValue = authorizedMembersToOptions(savedFilter.authorizedMembers);
 
   const initialValues = {
     name: savedFilter.name,

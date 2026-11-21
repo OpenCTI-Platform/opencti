@@ -7,6 +7,7 @@ import {
   distributionEntities,
   stixBundleByIdStringify,
   storeLoadByIdWithRefs,
+  timeSeriesBreakdownEntities,
   timeSeriesEntities,
 } from '../database/middleware';
 import {
@@ -58,7 +59,7 @@ import { createWork, findExportApplicantId, worksForSource, workToExportFile } f
 import { pushToConnector } from '../modules/connector/connector-rabbitmq';
 import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { defaultValidationMode, deleteFile, loadFile, storeFileConverter, uploadToStorage } from '../database/file-storage';
+import { copyFileFromSyncReference, defaultValidationMode, deleteFile, loadFile, storeFileConverter, uploadToStorage } from '../database/file-storage';
 import { getFileContent } from '../database/raw-file-storage';
 import { findById as documentFindById, paginatedForExportContext, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
@@ -115,6 +116,7 @@ import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { buildTranslatedIdsMap } from '../database/data-changes';
 import { addAskAiQueryCount } from '../manager/telemetryManager';
+import { validateEnrichmentInvestigation } from '../modules/workspace/investigation-enrichment';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -377,8 +379,27 @@ export const stixCoreObjectRemoveFromDraft = async (context, user, stixCoreObjec
   return stixCoreObject.id;
 };
 
-export const askElementEnrichmentForConnectors = async (context, user, enrichedId, connectorIds) => {
+/**
+ * Ask the given connectors to enrich an element, optionally on behalf of an investigation.
+ * When an investigation is given, the user must be allowed to edit it and the created works are tagged
+ * with its internal id, whatever id (internal, standard or stix) the caller used to designate it.
+ * Every connector must be an enrichment connector: otherwise nothing is created, so a work of another
+ * type can never be tagged with an investigation.
+ */
+export const askElementEnrichmentForConnectors = async (context, user, enrichedId, connectorIds, opts = {}) => {
+  const { investigationId } = opts;
+  const investigation = investigationId ? await validateEnrichmentInvestigation(context, user, investigationId) : null;
+  const investigationInternalId = investigation?.internal_id;
   const connectors = await storeLoadByIds(context, user, connectorIds, ENTITY_TYPE_CONNECTOR);
+
+  const invalidConnectorIds = connectorIds.filter((_, index) => {
+    const connector = connectors[index];
+    return !connector || connector.connector_type !== CONNECTOR_INTERNAL_ENRICHMENT;
+  });
+  if (invalidConnectorIds.length > 0) {
+    throw FunctionalError('Only enrichment connectors can enrich an element', { connectorIds: invalidConnectorIds });
+  }
+
   const element = await storeLoadByIdWithRefs(context, user, enrichedId);
   if (!element) {
     throw FunctionalError('Cannot enrich the object, element cannot be found.', { enrichedId });
@@ -396,7 +417,11 @@ export const askElementEnrichmentForConnectors = async (context, user, enrichedI
     if (stixResolutionMode === 'stix_bundle' && stix_objects === undefined) {
       stix_objects = await stixBundleByIdStringify(context, user, element.entity_type, element.internal_id);
     }
-    const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id, { draftContext });
+    const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id, {
+      draftContext,
+      investigationId: investigationInternalId,
+      enrichedEntityId: element.internal_id,
+    });
     const message = {
       internal: {
         work_id: work.id, // Related action for history
@@ -420,6 +445,7 @@ export const askElementEnrichmentForConnectors = async (context, user, enrichedI
       connector_name: connector.name,
       entity_name: extractEntityRepresentativeName(element),
       entity_type: element.entity_type,
+      ...(investigationInternalId ? { investigation_id: investigationInternalId } : {}),
     };
     const contextData = completeContextDataForEntity(baseData, element);
     await publishUserAction({
@@ -434,8 +460,11 @@ export const askElementEnrichmentForConnectors = async (context, user, enrichedI
   return works;
 };
 
-export const askElementEnrichmentForConnector = async (context, user, enrichedId, connectorId) => {
-  const works = await askElementEnrichmentForConnectors(context, user, enrichedId, [connectorId]);
+/**
+ * Ask a single connector to enrich an element, optionally on behalf of an investigation.
+ */
+export const askElementEnrichmentForConnector = async (context, user, enrichedId, connectorId, opts = {}) => {
+  const works = await askElementEnrichmentForConnectors(context, user, enrichedId, [connectorId], opts);
   return works.length > 0 ? works[0] : null;
 };
 
@@ -456,6 +485,11 @@ export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
     const types = extractStixCoreObjectTypesFromArgs(timeSeriesParameter);
     return { data: timeSeriesEntities(context, user, types, { ...args, ...timeSeriesParameter }) };
   }));
+};
+
+export const stixCoreObjectsTimeSeriesBreakdown = (context, user, args) => {
+  const types = extractStixCoreObjectTypesFromArgs(args);
+  return timeSeriesBreakdownEntities(context, user, types, args);
 };
 
 export const stixCoreObjectsNumber = (context, user, args) => {
@@ -847,6 +881,27 @@ export const stixCoreObjectImportFile = async (context, user, id, file, args = {
   return uploadedFile;
 };
 
+const copyImportedSyncFile = async (context, user, filePath, fileRef, uploadOpts) => {
+  const hasImportContext = isNotEmptyField(uploadOpts.importContextEntities);
+  const copyResult = await copyFileFromSyncReference(context, user, {
+    syncId: fileRef.sync_id,
+    filePath,
+    storageKey: fileRef.storage_key,
+    name: fileRef.name,
+    mimeType: fileRef.mime_type,
+    version: uploadOpts.meta.version,
+    fileMarkings: uploadOpts.file_markings,
+    entityId: uploadOpts.entity.internal_id,
+    externalReferenceId: uploadOpts.meta.external_reference_id,
+    noTriggerImport: uploadOpts.noTriggerImport,
+    importContextEntities: hasImportContext ? uploadOpts.importContextEntities : [uploadOpts.entity],
+  });
+  if (!copyResult) {
+    throw FunctionalError('Cannot copy referenced sync file', { syncId: fileRef.sync_id });
+  }
+  return copyResult;
+};
+
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
   let lock;
   const {
@@ -857,6 +912,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     fromTemplate = false,
     embedded = false,
     fintelTemplateId,
+    fileRef,
   } = args;
   const previous = await storeLoadByIdWithRefs(context, user, id);
   if (!previous) {
@@ -873,7 +929,12 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     // Lock the participants that will be merged
     lock = await lockResources(participantIds);
     const { internal_id: internalId } = previous;
-    const { filename } = await file;
+    let filename;
+    if (fileRef) {
+      filename = fileRef.name;
+    } else {
+      ({ filename } = await file);
+    }
     const entitySetting = await getEntitySettingFromCache(context, previous.entity_type);
     const isAutoExternal = !entitySetting ? false : entitySetting.platform_entity_files_ref;
     let prefix = 'import';
@@ -892,7 +953,14 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       const key = `${filePath}/${filename}`;
       meta.external_reference_id = generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` });
     }
-    const { upload: up, untouched } = await uploadToStorage(context, user, filePath, file, { meta, noTriggerImport, entity: previous, file_markings, importContextEntities });
+    const uploadOpts = { meta, noTriggerImport, entity: previous, file_markings, importContextEntities };
+    let storedFile;
+    if (fileRef) {
+      storedFile = await copyImportedSyncFile(context, user, filePath, fileRef, uploadOpts);
+    } else {
+      storedFile = await uploadToStorage(context, user, filePath, file, uploadOpts);
+    }
+    const { upload: up, untouched } = storedFile;
     if (untouched) {
       // When synchronizing the version can be the same.
       // If it's the case, just return without any x_opencti_files modifications
@@ -983,6 +1051,18 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
   } finally {
     if (lock) await lock.unlock();
   }
+};
+
+export const stixCoreObjectImportPushRef = async (context, user, id, fileRef, importContextEntities) => {
+  const args = {
+    fileRef,
+    version: fileRef.version,
+    fileMarkings: fileRef.file_markings,
+    noTriggerImport: fileRef.no_trigger_import,
+    embedded: fileRef.embedded,
+    importContextEntities,
+  };
+  return stixCoreObjectImportPush(context, user, id, null, args);
 };
 
 export const stixCoreObjectImportDelete = async (context, user, fileId) => {

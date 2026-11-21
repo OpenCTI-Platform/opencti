@@ -7,7 +7,16 @@ Enriching the data within the OpenCTI platform is made seamlessly through the in
 
 Enrichment can be conducted automatically in two distinct modes:
 
-- Upon data arrival: Configuring the connector to run automatically when data arrives in OpenCTI ensures a real-time enrichment process, supplementing the platform's data. However, it's advisable to avoid automatic enrichment for quota-based connectors to paid sources to prevent quickly depleting all quotas. Additionally, this automatic enrichment contributes to increased data volume. On a large scale, with hundreds of thousands of objects, the disk space occupied by this data can be substantial, and it should be considered, especially if disk space is a concern. The automatic execution is configured at the connector level using the "auto: true|false" parameter.
+- Upon data arrival: Configuring the connector to run automatically when data arrives in OpenCTI ensures a real-time enrichment process, supplementing the platform's data. However, it's advisable to avoid automatic enrichment for quota-based connectors to paid sources to prevent quickly depleting all quotas. Additionally, this automatic enrichment contributes to increased data volume. On a large scale, with hundreds of thousands of objects, the disk space occupied by this data can be substantial, and it should be considered, especially if disk space is a concern. The automatic execution is configured at the connector level with the `connector:auto` parameter (environment variable `CONNECTOR_AUTO`), `false` by default. When it is `true`, the connector enriches new objects whose type is listed in its scope (`connector:scope`, environment variable `CONNECTOR_SCOPE`) and that the connector's user can access. If **Trigger filters** are set on the connector (on its page in the platform), they replace this setting: only new objects matching the filters and the scope are enriched, whatever the value of `auto`.
+
+    For example, in the `docker-compose.yml` of an enrichment connector:
+
+    ```yaml
+    environment:
+      - CONNECTOR_SCOPE=IPv4-Addr,Domain-Name
+      - CONNECTOR_AUTO=true
+    ```
+
 - Targeted enrichment via playbooks: Enrichment can also be performed in a more targeted manner using [playbooks](playbook-automation.md). This approach allows for a customized enrichment strategy, focusing on specific objects and optimizing the relevance of the retrieved data.
 
 ### Manual enrichment
@@ -19,6 +28,8 @@ Manually initiating the enrichment process is straightforward. Simply locate the
 Clicking on this icon unveils a side panel displaying a list of available connectors that can be activated for the given object. If no connectors appear in the panel, it indicates that no enrichment connectors are available for the specific type of object in focus.
 
 ![Enrichment panel](assets/enrichment-panel.png)
+
+In an investigation, you can also enrich the selected entities from the graph and choose which results to add to it: see [Enrich from the graph](pivoting.md#enrich-from-the-graph).
 
 Activation of an enrichment connector triggers a contact with the designated remote source, importing a set of data into OpenCTI to enrich the selected object. Each enrichment connector operates uniquely, focusing on a specific set of object types it can enrich and a distinct set of data it imports. Depending on the connectors, they may, establish relationships, add external references, or complete object information, thereby contributing to the comprehensiveness of information within the platform.
 

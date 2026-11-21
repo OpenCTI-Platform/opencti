@@ -15,9 +15,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import useAuth from './useAuth';
 
-// The Enterprise Edition is granted by the XTM license of XTM One, not by an OpenCTI license.
+// The Enterprise Edition is granted by the Filigran license of XTM One, not by a license held by this platform.
 export const isEnterpriseEditionFromXtmOne = (enterpriseEdition?: { license_source?: string | null } | null) => {
   return enterpriseEdition?.license_source === 'XTM_ONE_LICENSE';
+};
+
+// The Enterprise Edition is granted by a Filigran license pasted in this platform's settings.
+export const isEnterpriseEditionFromFiligranLicense = (enterpriseEdition?: { license_source?: string | null } | null) => {
+  return enterpriseEdition?.license_source === 'FILIGRAN_LICENSE';
 };
 
 const useEnterpriseEdition = (): boolean => {

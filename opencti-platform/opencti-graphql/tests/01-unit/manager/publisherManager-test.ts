@@ -1,17 +1,26 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getHttpClient } from '../../../src/utils/http-client';
-import { handleWebhookNotification, resolveNotificationDataMarkings } from '../../../src/manager/publisherManager';
+import { handleEmailNotification, handleWebhookNotification, processNotificationData, resolveNotificationDataMarkings } from '../../../src/manager/publisherManager';
+import { buildActivityNotificationData } from '../../../src/manager/activityManager';
 import type { NotificationData } from '../../../src/utils/publisher-mock';
 import type { StoreMarkingDefinition } from '../../../src/types/store';
 import type { AuthUser } from '../../../src/types/user';
 import { BYPASS } from '../../../src/utils/access';
 import { sanitizeNotificationData } from '../../../src/utils/templateContextSanitizer';
 import { safeRender } from '../../../src/utils/safeEjs';
+import { sendMail } from '../../../src/database/smtp';
+import { STATIC_NOTIFIER_EMAIL, STATIC_NOTIFIERS } from '../../../src/modules/notifier/notifier-statics';
 
 const { mockedCall } = vi.hoisted(() => ({ mockedCall: vi.fn() }));
 vi.mock('../../../src/utils/http-client', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/utils/http-client')>()),
   getHttpClient: vi.fn(() => ({ call: mockedCall })),
+}));
+
+vi.mock('../../../src/database/smtp', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/database/smtp')>()),
+  sendMail: vi.fn(),
+  smtpComputeFrom: vi.fn(async () => 'from@x.y'),
 }));
 
 describe('handleWebhookNotification', () => {
@@ -306,5 +315,87 @@ describe('resolveNotificationDataMarkings', () => {
     const rendered = await safeRender(template, sanitizeNotificationData({ data }));
 
     expect(rendered).toBe('TLP:AMBER');
+  });
+});
+
+describe('processNotificationData', () => {
+  const NOTIFICATION_ID = 'trigger-id';
+  const user = { user_id: 'user-id' } as any;
+  const notificationMap = new Map([[NOTIFICATION_ID, { id: NOTIFICATION_ID }]] as any);
+  const usersMap = new Map([['user-id', { id: 'user-id' }]] as any);
+
+  // The activity events title their notification with the element name, such as an ingestion name: any name is possible
+  it.each(['constructor', 'toString', 'hasOwnProperty', '__proto__'])('should group the events of an element named %s under its name', async (name) => {
+    const instance = buildActivityNotificationData({ id: 'ingestion-id', entity_type: 'IngestionRss', entity_name: name } as any);
+    const data = [1, 2].map((index) => ({ notification_id: NOTIFICATION_ID, instance, type: 'action', message: `message ${index}` }));
+
+    const content = await processNotificationData({} as any, notificationMap as any, user, data as any, usersMap as any);
+
+    expect(Object.entries(content)).toEqual([[name, [
+      { operation: 'action', message: 'message 1', instance_id: 'ingestion-id', entity_internal_id: 'ingestion-id', entity_type: 'IngestionRss' },
+      { operation: 'action', message: 'message 2', instance_id: 'ingestion-id', entity_internal_id: 'ingestion-id', entity_type: 'IngestionRss' },
+    ]]]);
+  });
+});
+
+describe('handleEmailNotification title', () => {
+  const user = { user_email: 'to@x.y' } as any;
+  const buildData = (name: string, contentTitle = 'L\'APT & co', operation = 'create', triggerType = 'live') => ({
+    notification: { name, trigger_type: triggerType },
+    notification_content: [{ title: contentTitle, events: [{ operation }] }],
+  });
+  const sendWith = async (title: string, data: object) => {
+    await handleEmailNotification(user, JSON.stringify({ title, template: 'body' }), data, ['t1']);
+    return vi.mocked(sendMail).mock.calls[0][0] as { subject: string; html: string };
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should resolve $ variables and keep special characters unescaped in the subject', async () => {
+    const mail = await sendWith(
+      '[$notification.name] $notification_content[0].events[0].operation – $notification_content[0].title',
+      buildData('My trigger'),
+    );
+    expect(mail.subject).toBe('[My trigger] create – L\'APT & co');
+  });
+
+  it('should render a variable resolving to nothing as an empty string', async () => {
+    const mail = await sendWith('$notification_content[3].title done', buildData('My trigger'));
+    expect(mail.subject).toBe('done');
+  });
+
+  it('should keep an unknown root literal', async () => {
+    const mail = await sendWith('$foo $notification.name', buildData('My trigger'));
+    expect(mail.subject).toBe('$foo My trigger');
+  });
+
+  it('should not evaluate EJS found in a variable value', async () => {
+    const mail = await sendWith('$notification.name', buildData('<%= 7*7 %>'));
+    expect(mail.subject).toBe('<%= 7*7 %>');
+  });
+
+  it('should flatten line breaks of a variable value so no header can be injected', async () => {
+    const mail = await sendWith('$notification.name', buildData('A\r\nBcc: x@y.z'));
+    expect(mail.subject).toBe('A Bcc: x@y.z');
+  });
+
+  it('should render the Default mailer title as a single line', async () => {
+    const notifier = STATIC_NOTIFIERS.find((n) => n.id === STATIC_NOTIFIER_EMAIL);
+    const { title } = JSON.parse(notifier!.notifier_configuration);
+    const mail = await sendWith(title, buildData('My trigger', 'X'));
+    expect(mail.subject).toBe('[live] X');
+  });
+
+  it('should not HTML-escape the subject of an EJS tag', async () => {
+    const mail = await sendWith('<%= notification.name %>', buildData('L\'APT & co'));
+    expect(mail.subject).toBe('L\'APT & co');
+  });
+
+  it('should keep HTML-escaping the body', async () => {
+    await handleEmailNotification(user, JSON.stringify({ title: 't', template: '<%= notification.name %>' }), buildData('L\'APT & <b>co</b>'), ['t1']);
+    const mail = vi.mocked(sendMail).mock.calls[0][0] as { html: string };
+    expect(mail.html).toBe('L&#39;APT &amp; &lt;b&gt;co&lt;/b&gt;');
   });
 });

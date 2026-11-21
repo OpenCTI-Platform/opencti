@@ -23,6 +23,33 @@ export const RESTRICTED_VALUE = 'Restricted';
 export const UNTRANSLATED_VALUE = 'Untranslated';
 const MAX_TRANSLATE_LENGTH = 50;
 const MAX_OPERATIONS_FOR_MESSAGE = 3;
+const HTML_ENTITIES: Record<string, string> = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': '\'', '&apos;': '\'', '&nbsp;': ' ' };
+
+// A history message is one line of markdown where every value sits in an inline code span.
+// Values coming from text or rich text attributes (Content is HTML, Description is markdown)
+// must be reduced to plain text: no markup, no line break, no backtick (each would break the span).
+export const toHistoryPlainText = (value: string): string => {
+  return value
+    .replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi, ' ') // drop script and style blocks with their content
+    .replace(/<\/?[a-z][^>]*>/gi, ' ') // drop html tags
+    .replace(/&(amp|lt|gt|quot|#39|apos|nbsp);/g, (entity) => HTML_ENTITIES[entity] ?? entity)
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1') // markdown links and images keep their text
+    .replace(/^[ \t]*(#{1,6}|>|[-*+]|\d+\.)[ \t]+/gm, '') // markdown headings, quotes and list markers at a line start
+    .replace(/(\*\*|~~)/g, '') // markdown bold and strikethrough (underscores kept: identifiers use them)
+    .replace(/`+/g, '\'')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+// Truncate on a word boundary with an ellipsis, never in the middle of a word when a boundary is close.
+export const truncateHistoryValue = (value: string, maxLength = MAX_TRANSLATE_LENGTH): string => {
+  if (value.length <= maxLength) return value;
+  const cut = value.slice(0, maxLength);
+  const lastSpace = cut.lastIndexOf(' ');
+  const endsOnWord = value.charAt(maxLength) === ' ';
+  const base = !endsOnWord && lastSpace > maxLength * 0.6 ? cut.slice(0, lastSpace) : cut;
+  return `${base.replace(/[\s,;:.-]+$/, '')}…`;
+};
 
 const buildMapFromCacheContext = (context: AuthContext, user: AuthUser) => {
   return async (type: string) => {
@@ -191,7 +218,7 @@ export const generateMessageFromChanges = (resolvedMap: Record<string, string>,
       const values = isTooMuch ? vals.slice(0, 3) : (vals ?? []);
       if (noValueToEmpty && values.length === 0) return `\`${EMPTY_VALUE}\``;
       return values.map((v) => {
-        const val = v.length > MAX_TRANSLATE_LENGTH ? v.slice(0, MAX_TRANSLATE_LENGTH) + '...' : v;
+        const val = truncateHistoryValue(toHistoryPlainText(String(v ?? '')));
         return `\`${isEmptyField(val) ? EMPTY_VALUE : val}\``;
       }).join(', ') + (isTooMuch ? ', ...' : '');
     };
@@ -234,10 +261,11 @@ export const generateMessageFromChanges = (resolvedMap: Record<string, string>,
     }
   }
   let newMessage = Object.entries(actions).map(([action, elems]) => {
-    return `${action} ${elems.map((e) => `${e.message} in \`${e.field}\``).join(' - ')}`;
+    return `${action} ${elems.map((e) => `${e.message} in \`${toHistoryPlainText(String(e.field ?? ''))}\``).join(' - ')}`;
   }).join(' | ');
   if (changes.length > MAX_OPERATIONS_FOR_MESSAGE) {
-    newMessage += ' and ' + (changes.length - MAX_OPERATIONS_FOR_MESSAGE) + ' more operations';
+    const more = changes.length - MAX_OPERATIONS_FOR_MESSAGE;
+    newMessage += ` and ${more} more operation${more > 1 ? 's' : ''}`;
   }
   return newMessage;
 };

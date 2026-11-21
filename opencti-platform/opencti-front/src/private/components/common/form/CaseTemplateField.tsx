@@ -1,4 +1,4 @@
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import ComboboxField, { ComboboxFieldProps } from '../../../../components/ComboboxField';
@@ -9,19 +9,16 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { CaseTemplateFieldQuery } from './__generated__/CaseTemplateFieldQuery.graphql';
 import Field, { FieldOption } from '../../../../utils/field';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-}));
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 const caseTemplateFieldQuery = graphql`
   query CaseTemplateFieldQuery {
@@ -44,6 +41,7 @@ interface CaseTemplateFieldComponentProps {
   queryRef: PreloadedQuery<CaseTemplateFieldQuery>;
   label?: string;
   isDisabled?: boolean;
+  required?: boolean;
 }
 
 const CaseTemplateFieldComponent: FunctionComponent<CaseTemplateFieldComponentProps> = ({
@@ -54,8 +52,8 @@ const CaseTemplateFieldComponent: FunctionComponent<CaseTemplateFieldComponentPr
   queryRef,
   label,
   isDisabled,
+  required = false,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const data = usePreloadedQuery(caseTemplateFieldQuery, queryRef);
@@ -82,14 +80,15 @@ const CaseTemplateFieldComponent: FunctionComponent<CaseTemplateFieldComponentPr
         }}
         style={containerStyle}
         disabled={isDisabled}
+        required={required}
         noOptionsText={t_i18n('No available options')}
         options={caseTemplates}
         renderOption={(option) => (
           <>
-            <div className={classes.icon} style={{ color: option.color }}>
+            <OptionIcon style={{ color: option.color }}>
               <ItemIcon type="Case-Template" />
-            </div>
-            <div className={classes.text}>{option.label}</div>
+            </OptionIcon>
+            <OptionText>{option.label}</OptionText>
           </>
         )}
       />

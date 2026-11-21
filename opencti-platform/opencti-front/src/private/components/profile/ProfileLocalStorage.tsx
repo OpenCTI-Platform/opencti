@@ -6,6 +6,7 @@ import DialogActions from '@mui/material/DialogActions';
 import React, { useState } from 'react';
 import Card from '../../../components/common/card/Card';
 import { useFormatter } from '../../../components/i18n';
+import { notifySearchShortcutChange } from '../../../utils/hooks/useSearchShortcut';
 
 const ProfileLocalStorage: React.FC = () => {
   const { t_i18n } = useFormatter();
@@ -56,6 +57,8 @@ const ProfileLocalStorage: React.FC = () => {
           <Button
             onClick={() => {
               localStorage.clear();
+              // Settings read from the storage by mounted components (the search shortcut) must follow at once.
+              notifySearchShortcutChange();
               setDisplayConfirmation(false);
             }}
           >

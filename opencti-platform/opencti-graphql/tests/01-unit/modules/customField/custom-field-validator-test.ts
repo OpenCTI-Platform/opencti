@@ -9,6 +9,7 @@ import {
   normalizeCustomFieldValues,
   resolveCustomFieldValuesIdentity,
   transformCustomFieldValueAddInput,
+  validateCustomFieldDefaultValue,
   validateCustomFieldValues,
   validateCustomFieldValuesEditInput,
 } from '../../../../src/modules/customField/custom-field-validator';
@@ -307,6 +308,33 @@ describe('transformCustomFieldValueAddInput', () => {
     seed(makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'string', aliases: ['x_opencti_cf_alias'] } as any));
     const result = await transform([{ field_name: 'x_opencti_cf_alias', value: ['hello'] } as any]);
     expect(result).toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', string_value: 'hello' }]);
+  });
+
+  it('keeps the first input when the name and an alias of a same field are both given', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'string', aliases: ['x_opencti_cf_alias'] } as any));
+    const result = await transform([
+      { field_name: 'x_opencti_cf_field', value: ['explicit'] } as any,
+      { field_name: 'x_opencti_cf_alias', value: ['from alias'] } as any,
+    ]);
+    expect(result).toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', string_value: 'explicit' }]);
+  });
+
+  it('uses the alias input when the input under the name is dropped', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'integer', aliases: ['x_opencti_cf_alias'] } as any));
+    const result = await transform([
+      { field_name: 'x_opencti_cf_field', value: ['not-a-number'] } as any,
+      { field_name: 'x_opencti_cf_alias', value: [42] } as any,
+    ]);
+    expect(result).toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', int_value: 42 }]);
+  });
+
+  it('keeps both inputs of a repeated name, for the validation to reject them', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'string' }));
+    const result = await transform([
+      { field_name: 'x_opencti_cf_field', value: ['a'] } as any,
+      { field_name: 'x_opencti_cf_field', value: ['b'] } as any,
+    ]);
+    expect(result).toHaveLength(2);
   });
 
   it('transforms an integer input', async () => {
@@ -728,6 +756,32 @@ describe('getCustomFieldDefaultValueFromEntitySettings', () => {
   });
 });
 
+describe('validateCustomFieldDefaultValue', () => {
+  it('accepts no default value', () => {
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'decimal' }), null)).not.toThrow();
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'decimal' }), '')).not.toThrow();
+  });
+
+  it('accepts a valid default value', () => {
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'decimal' }), '0.125')).not.toThrow();
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'integer', min_value: 0, max_value: 10 }), '5')).not.toThrow();
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'date' }), '@now')).not.toThrow();
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'select', select_options: ['a', 'b'] }), 'a')).not.toThrow();
+  });
+
+  it('rejects a default value the creation of the entities would ignore', () => {
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'decimal' }), '1e400')).toThrow('Invalid default value for the custom field');
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'decimal' }), '0,85')).toThrow('Invalid default value for the custom field');
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'integer' }), '1.5')).toThrow('Invalid default value for the custom field');
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'date' }), 'not-a-date')).toThrow('Invalid default value for the custom field');
+  });
+
+  it('rejects a default value the creation of the entities would fail on', () => {
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'integer', min_value: 0, max_value: 10 }), '42')).toThrow('int_value is above maximum');
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'select', select_options: ['a', 'b'] }), 'c')).toThrow();
+  });
+});
+
 describe('fillCustomFieldsDefaultValues', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -951,5 +1005,38 @@ describe('foldCustomFieldValuesInputs', () => {
       input(EditOperation.Add, [{ field_id: 'cf-score', int_value: 42 }]),
     ]);
     expect(result).toEqual([{ field_id: 'cf-sectors', select_values: ['a', 'b', 'c'] }, { field_id: 'cf-score', int_value: 42 }]);
+  });
+});
+
+describe('decimal custom fields', () => {
+  const DECIMAL = makeDefinition({ id: 'cf-rate', name: 'x_opencti_cf_rate', field_type: 'decimal' });
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    seed(DECIMAL);
+  });
+
+  it('stores a decimal input value in float_value and drops a non numeric one', async () => {
+    const values = await transformCustomFieldValueAddInput(CONTEXT, USER, [{ field_name: 'x_opencti_cf_rate', value: [0.85] }], ENTITY_TYPE);
+    expect(values).toEqual([{ field_id: 'cf-rate', field_name: 'x_opencti_cf_rate', float_value: 0.85 }]);
+    const dropped = await transformCustomFieldValueAddInput(CONTEXT, USER, [{ field_name: 'x_opencti_cf_rate', value: ['high'] }], ENTITY_TYPE);
+    expect(dropped).toEqual([]);
+    // Stored as an Elasticsearch double: out of the float range, it is kept
+    const large = await transformCustomFieldValueAddInput(CONTEXT, USER, [{ field_name: 'x_opencti_cf_rate', value: [1e39] }], ENTITY_TYPE);
+    expect(large).toEqual([{ field_id: 'cf-rate', field_name: 'x_opencti_cf_rate', float_value: 1e39 }]);
+  });
+
+  it('validates a decimal value', async () => {
+    await expect(validate([{ field_id: 'cf-rate', field_name: 'x_opencti_cf_rate', float_value: 1.5 }])).resolves.not.toThrow();
+    await expect(validate([{ field_id: 'cf-rate', field_name: 'x_opencti_cf_rate', float_value: -1e39 }])).resolves.not.toThrow();
+    await expect(validate([{ field_id: 'cf-rate', field_name: 'x_opencti_cf_rate', float_value: Number.NaN }])).rejects.toThrow('float_value must be a finite number');
+    await expect(validate([{ field_id: 'cf-rate', field_name: 'x_opencti_cf_rate', float_value: Number.POSITIVE_INFINITY }])).rejects.toThrow('float_value must be a finite number');
+  });
+
+  it('parses a decimal default value', () => {
+    const definition = makeDefinition({ field_type: 'decimal', entity_type_settings: [{ entity_type: ENTITY_TYPE, mandatory: false, default_value: '0.5' }] });
+    expect(getCustomFieldDefaultValueFromEntitySettings(definition, ENTITY_TYPE)).toEqual({ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', float_value: 0.5 });
+    const invalid = makeDefinition({ field_type: 'decimal', entity_type_settings: [{ entity_type: ENTITY_TYPE, mandatory: false, default_value: 'high' }] });
+    expect(getCustomFieldDefaultValueFromEntitySettings(invalid, ENTITY_TYPE)).toBeUndefined();
   });
 });

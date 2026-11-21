@@ -89,6 +89,7 @@ export const stixRelationshipsListQuery = graphql`
               field_id
               field_name
               int_value
+              float_value
               string_value
               boolean_value
               date_value
@@ -103,6 +104,7 @@ export const stixRelationshipsListQuery = graphql`
               field_id
               field_name
               int_value
+              float_value
               string_value
               boolean_value
               date_value
@@ -4536,7 +4538,7 @@ const buildQueryVariables = (
 
   return {
     first: selection.number ?? 50,
-    orderBy: (dateAttribute as StixRelationshipsOrdering),
+    orderBy: dateAttribute as StixRelationshipsOrdering,
     orderMode: (selection.sort_mode ?? 'desc') as OrderingMode,
     filters,
     dynamicFrom,

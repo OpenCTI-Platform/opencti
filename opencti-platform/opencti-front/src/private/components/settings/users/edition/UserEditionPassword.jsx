@@ -2,7 +2,8 @@ import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import { Stack, useTheme } from '@mui/material';
+import { Stack } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import FormHelperText from '@mui/material/FormHelperText';
 import Button from '@common/button/Button';
 import { commitMutation, handleError, MESSAGING$ } from '../../../../../relay/environment';
@@ -112,7 +113,10 @@ const UserEditionPasswordComponent = ({ user }) => {
       {({ submitForm, isSubmitting }) => (
         <Form style={{ marginTop: theme.spacing(2) }}>
           <Stack sx={{ gap: 2.5 }}>
-            <PasswordPolicies />
+            <PasswordPolicies
+              audience={isLoggedUser ? 'self' : 'admin'}
+              hideHistory={external || user.user_service_account === true}
+            />
             <Field
               component={TextField}
               variant="outlined"
@@ -166,6 +170,7 @@ const UserEditionPassword = createFragmentContainer(
       fragment UserEditionPassword_user on User {
         id
         external
+        user_service_account
         account_status
         password_valid_until
       }

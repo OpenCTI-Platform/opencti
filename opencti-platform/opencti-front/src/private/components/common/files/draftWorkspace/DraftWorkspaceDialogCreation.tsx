@@ -24,6 +24,7 @@ import CreatedByField from '@components/common/form/CreatedByField';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../../utils/hooks/useEntitySettings';
 import { DraftAddInput, DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
 import useDefaultValues from '../../../../../utils/hooks/useDefaultValues';
+import { authorizedMembersToInput } from '../../../../../utils/authorizedMembers';
 
 const draftWorkspaceDialogCreationMutation = graphql`
   mutation DraftWorkspaceDialogCreationMutation($input: DraftWorkspaceAddInput!) {
@@ -85,17 +86,7 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
       objectAssignee: values.objectAssignee.map(({ value }) => value),
       objectParticipant: values.objectParticipant.map(({ value }) => value),
       createdBy: values.createdBy?.value,
-      authorized_members: !values.authorized_members
-        ? null
-        : values.authorized_members
-            .filter((v) => v.accessRight !== 'none')
-            .map((member) => ({
-              id: member.value,
-              access_right: member.accessRight,
-              groups_restriction_ids: member.groupsRestriction?.length > 0
-                ? member.groupsRestriction.map((group) => group.value)
-                : undefined,
-            })),
+      authorized_members: values.authorized_members ? authorizedMembersToInput(values.authorized_members) : null,
     };
     commit({
       variables: {

@@ -45,3 +45,10 @@ describe('TextField pivot — caller slots', () => {
     expect(screen.getByText('Key', { selector: 'label' })).toHaveAttribute('data-shrink', 'true');
   });
 });
+
+describe('TextField pivot — test id', () => {
+  it('lands a data-testid on the input element, which e2e specs fill', () => {
+    renderField({ 'data-testid': 'key-field' });
+    expect(screen.getByTestId('key-field').tagName).toBe('INPUT');
+  });
+});

@@ -76,7 +76,7 @@ const PublishButton = ({
 
   const { hasUnpublishedChanges, validationErrors } = validationStatus;
 
-  let mainButtonTooltip: string;
+  let mainButtonTooltip: React.ReactNode;
   let mainButtonIcon: React.ReactNode;
   let mainButtonDisabled: boolean;
   let mainButtonOnClick: (() => void) | undefined;
@@ -87,7 +87,16 @@ const PublishButton = ({
     mainButtonDisabled = true;
     mainButtonOnClick = undefined;
   } else if (hasUnpublishedChanges && validationErrors.length > 0) {
-    mainButtonTooltip = t_i18n('Click to see validation errors');
+    mainButtonTooltip = (
+      <>
+        {t_i18n('Click to see validation errors')}
+        <ul data-testid="workflow-publish-errors" style={{ margin: '4px 0 0', paddingLeft: 16 }}>
+          {validationErrors.map((error, index) => (
+            <li key={`${error.type}-${index}`}>{error.message}</li>
+          ))}
+        </ul>
+      </>
+    );
     mainButtonIcon = <CircleIcon color="error" />;
     mainButtonDisabled = disabled ?? false;
     mainButtonOnClick = onPublish;
@@ -103,6 +112,7 @@ const PublishButton = ({
       <Tooltip title={mainButtonTooltip} placement="top">
         <ButtonGroup ref={anchorRef} sx={{ display: 'flex', backgroundColor: 'background.paper', borderRadius: '4px' }}>
           <Button
+            data-testid="workflow-publish-button"
             startIcon={mainButtonIcon}
             variant="secondary"
             onClick={mainButtonOnClick}
@@ -112,6 +122,7 @@ const PublishButton = ({
             {!hasUnpublishedChanges && validationErrors.length === 0 ? t_i18n('Published') : t_i18n('Publish')}
           </Button>
           <Button
+            data-testid="workflow-publish-dropdown-toggle"
             variant="secondary"
             onClick={handleToggle}
             sx={{ minWidth: '32px', px: 0, borderRadius: '0 4px 4px 0' }}
@@ -140,10 +151,10 @@ const PublishButton = ({
             <Paper>
               <ClickAwayListener onClickAway={handleClose}>
                 <MenuList id="workflow-action-menu" autoFocusItem>
-                  <MenuItem onClick={handleRestoreClick} disabled={!hasUnpublishedChanges || !hasPublishedVersion}>
+                  <MenuItem data-testid="workflow-restore-published-menu-item" onClick={handleRestoreClick} disabled={!hasUnpublishedChanges || !hasPublishedVersion}>
                     {t_i18n('Restore published version')}
                   </MenuItem>
-                  <MenuItem onClick={handleResetClick}>
+                  <MenuItem data-testid="workflow-reset-menu-item" onClick={handleResetClick}>
                     {t_i18n('Reset workflow')}
                   </MenuItem>
                 </MenuList>
@@ -163,7 +174,7 @@ const PublishButton = ({
           <Button variant="secondary" onClick={() => setConfirmOpen(false)}>
             {t_i18n('Cancel')}
           </Button>
-          <Button intent="destructive" onClick={handleConfirmReset}>
+          <Button data-testid="workflow-reset-confirm-button" intent="destructive" onClick={handleConfirmReset}>
             {t_i18n('Reset')}
           </Button>
         </DialogActions>

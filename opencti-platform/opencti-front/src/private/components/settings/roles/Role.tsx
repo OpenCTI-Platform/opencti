@@ -1,11 +1,10 @@
 import React from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import { Link } from 'react-router';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { ListItemButton } from '@mui/material';
+import { Box, ListItemButton } from '@mui/material';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import { useFormatter } from '../../../../components/i18n';
 import { Role_role$data, Role_role$key } from './__generated__/Role_role.graphql';
@@ -17,21 +16,8 @@ import { groupsSearchQuery } from '../Groups';
 import { GroupsSearchQuery } from '../__generated__/GroupsSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import type { Theme } from '../../../../components/Theme';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
 
 const roleFragment = graphql`
   fragment Role_role on Role {
@@ -62,7 +48,6 @@ const Role = ({
   roleData: Role_role$key;
   groupsQueryRef: PreloadedQuery<GroupsSearchQuery>;
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const groupsData = usePreloadedQuery(groupsSearchQuery, groupsQueryRef);
@@ -79,11 +64,11 @@ const Role = ({
   );
 
   return (
-    <div className={classes.container} data-testid="role-details-page">
+    <Box sx={{ margin: 0, padding: '0 200px 0 0' }} data-testid="role-details-page">
       <Grid
         container={true}
         spacing={3}
-        className={classes.gridContainer}
+        sx={{ marginBottom: '20px' }}
       >
         <Grid size={12}>
           <Card title={t_i18n('Basic information')}>
@@ -156,7 +141,7 @@ const Role = ({
           </Grid>
         </Grid>
       </Grid>
-    </div>
+    </Box>
   );
 };
 

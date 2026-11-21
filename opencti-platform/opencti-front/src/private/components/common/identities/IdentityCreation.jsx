@@ -1,13 +1,11 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import withStyles from '@mui/styles/withStyles';
 import { Field, Form } from 'formik';
 import Formik from '@components/common/custom_fields/DynamicCustomFieldsFormik';
 import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { compose } from 'ramda';
 import { Component } from 'react';
 import { graphql } from 'react-relay';
 import { v4 as uuid } from 'uuid';
@@ -21,49 +19,6 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { ExternalReferencesField } from '../form/ExternalReferencesField';
 import ObjectLabelField from '../form/ObjectLabelField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-});
 
 const identityMutation = graphql`
   mutation IdentityCreationMutation($input: IdentityAddInput!) {
@@ -242,8 +197,6 @@ class IdentityCreation extends Component {
 
 IdentityCreation.propTypes = {
   paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
   t: PropTypes.func,
   contextual: PropTypes.bool,
   onlyAuthors: PropTypes.bool,
@@ -253,7 +206,4 @@ IdentityCreation.propTypes = {
   creationCallback: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(IdentityCreation);
+export default inject18n(IdentityCreation);

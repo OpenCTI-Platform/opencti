@@ -4,11 +4,10 @@ import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
 import { TextField } from 'formik-mui';
 import * as Yup from 'yup';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
 import formikFieldToEditInput from '../../../../utils/FormikUtils';
-import type { Theme } from '../../../../components/Theme';
 import { useVocabularyCategory_Vocabularynode$data } from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { MESSAGING$ } from '../../../../relay/environment';
@@ -16,18 +15,12 @@ import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSo
 import { RelayError } from '../../../../relay/relayTypes';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import SwitchField from '../../../../components/fields/SwitchField';
+import ColorPickerField from '../../../../components/ColorPickerField';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
+const Buttons = styled('div')({
+  marginTop: 20,
+  textAlign: 'right',
+});
 
 const vocabularyMutationUpdate = graphql`
   mutation VocabularyEditionUpdateMutation($id: ID!, $input: [EditInput!]!) {
@@ -42,6 +35,7 @@ const attributeValidation = (t: (s: string) => string) => Yup.object().shape({
   description: Yup.string().nullable(),
   order: Yup.number().nullable().integer(t('The value must be a number')),
   is_hidden: Yup.boolean().nullable(),
+  color: Yup.string().nullable().matches(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, { excludeEmptyString: true, message: t('The value must be a hex color, for example #e53935') }),
 });
 
 interface VocabularyEditionFormikValues {
@@ -50,6 +44,7 @@ interface VocabularyEditionFormikValues {
   aliases: { id: string; label: string; value: string }[];
   order: number | null | undefined;
   is_hidden: boolean | null | undefined;
+  color: string;
 }
 
 const VocabularyEdition = ({
@@ -60,7 +55,6 @@ const VocabularyEdition = ({
   vocab: useVocabularyCategory_Vocabularynode$data;
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
 
   const [commitUpdateMutation] = useApiMutation(vocabularyMutationUpdate);
 
@@ -77,6 +71,7 @@ const VocabularyEdition = ({
         name: vocab.name,
         aliases: vocab.aliases ?? [],
         description: vocab.description ?? '',
+        color: vocab.color ?? '',
       },
     );
     if (input.length > 0) {
@@ -110,6 +105,7 @@ const VocabularyEdition = ({
         description: vocab.description ?? '',
         order: vocab.order,
         is_hidden: vocab.is_hidden,
+        color: vocab.color ?? '',
       }}
       validationSchema={attributeValidation(t_i18n)}
       onSubmit={onSubmit}
@@ -145,7 +141,7 @@ const VocabularyEdition = ({
               label: n,
             }))}
             renderOption={(option: FieldOption) => (
-              <div className={classes.text}>{option.label}</div>
+              <div>{option.label}</div>
             )}
           />
           <Field
@@ -158,21 +154,30 @@ const VocabularyEdition = ({
             className="mt-5"
           />
           <Field
+            component={ColorPickerField}
+            variant="outlined"
+            name="color"
+            label={t_i18n('Color')}
+            helperText={t_i18n('Color of the value wherever it is shown as a tag. Empty: the neutral tag.')}
+            fullWidth={true}
+            className="mt-5"
+          />
+          <Field
             component={SwitchField}
             type="checkbox"
             name="is_hidden"
             label={t_i18n('Hidden')}
             containerstyle={fieldSpacingContainerStyle}
           />
-          <div className={classes.buttons}>
+          <Buttons>
             <Button
               onClick={submitForm}
               disabled={isSubmitting || !isValid}
-              classes={{ root: classes.button }}
+              sx={{ marginLeft: 2 }}
             >
               {t_i18n('Update')}
             </Button>
-          </div>
+          </Buttons>
         </Form>
       )}
     </Formik>

@@ -43,7 +43,7 @@ interface ConnectorWorkLineProps {
 const ConnectorWorkLine: FunctionComponent<
   ConnectorWorkLineProps
 > = ({ workId, workName, workStatus, workReceivedTime, workEndTime, workExpectedNumber, workProcessedNumber, workErrors, readOnly, statusLabel }) => {
-  const { t_i18n, nsdt } = useFormatter();
+  const { t_i18n, ftdt } = useFormatter();
 
   const [commit] = useApiMutation(connectorWorksWorkDeletionMutation);
   const [openDrawerErrors, setOpenDrawerErrors] = useState<boolean>(false);
@@ -103,13 +103,13 @@ const ConnectorWorkLine: FunctionComponent<
               <Label>
                 {t_i18n('Work start time')}
               </Label>
-              {nsdt(workReceivedTime)}
+              {ftdt(workReceivedTime)}
             </Grid>
             <Grid size={4}>
               <Label>
                 {t_i18n('Work end time')}
               </Label>
-              {workEndTime ? nsdt(workEndTime) : EMPTY_VALUE}
+              {workEndTime ? ftdt(workEndTime) : EMPTY_VALUE}
             </Grid>
           </Grid>
         </Grid>

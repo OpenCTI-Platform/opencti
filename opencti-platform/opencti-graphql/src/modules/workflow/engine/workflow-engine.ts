@@ -8,6 +8,7 @@ export class StateMachine<TContext extends Context = Context> {
   protected definition: MachineDefinition<TContext>;
   protected currentState: State;
   protected context: TContext;
+  protected completed = false;
 
   /**
    * Creates an instance of a state machine.
@@ -43,6 +44,7 @@ export class StateMachine<TContext extends Context = Context> {
    * Lists all events that can be triggered from the current state.
    */
   public getAvailableEvents(): Event[] {
+    if (this.completed) return [];
     const transitions = this.definition.getTransitions(this.currentState);
     return transitions.map((t) => t.event);
   }
@@ -72,11 +74,13 @@ export class StateMachine<TContext extends Context = Context> {
    * @returns a TriggerResult object indicating success or failure with a reason.
    */
   public async trigger(event: Event): Promise<TriggerResult> {
+    if (this.completed) {
+      return { success: false, reason: 'Workflow has already completed' };
+    }
     const transition = this.definition.getTransition(this.currentState, event);
 
     if (!transition) {
       const reason = `No transition found from state '${this.currentState}' for event '${event}'`;
-      // eslint-disable-next-line no-console
       console.warn(reason);
       return { success: false, reason };
     }
@@ -87,7 +91,6 @@ export class StateMachine<TContext extends Context = Context> {
         const isValid = await condition(this.context);
         if (!isValid) {
           const reason = `Condition failed for transition '${event}'`;
-          // eslint-disable-next-line no-console
           console.error(reason);
           return { success: false, reason };
         }
@@ -123,14 +126,32 @@ export class StateMachine<TContext extends Context = Context> {
       }
     }
 
+    // A terminal transition has no new status: retain the last real status for persistence.
+    if (transition.to == null) {
+      this.completed = true;
+      return { success: true, executionStatus: 'completed', workflowCompleted: true };
+    }
+
     // Update state
     this.currentState = transition.to;
 
-    // Execute onEnter of new state
+    // Execute onEnter of new state.
+    // An onEnter action that opts in (sharing the requested containers of an access request) may hand its work to background
+    // tasks: it registers suspending slots, and the transition suspends there. The remaining onEnter actions run once every
+    // task completed. Any other action, asyncBulkAction included, never suspends the transition.
     const newStateDef = this.definition.getStateDefinition(this.currentState);
     if (newStateDef?.onEnter) {
-      for (const hook of newStateDef.onEnter) {
-        await hook(this.context);
+      this.context.suspendingAsyncSlots = [];
+      for (let index = 0; index < newStateDef.onEnter.length; index += 1) {
+        await newStateDef.onEnter[index](this.context);
+        if (this.context.suspendingAsyncSlots.length > 0) {
+          return {
+            success: true,
+            executionStatus: 'pending',
+            asyncActionSlots: this.context.suspendingAsyncSlots,
+            completedOnEnterActions: index + 1,
+          };
+        }
       }
     }
 

@@ -12,8 +12,10 @@ import stylistic from '@stylistic/eslint-plugin';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
 
 export default defineConfig([
-  // Build and tool output is already named once, in `.gitignore`.
-  includeIgnoreFile(fileURLToPath(new URL('.gitignore', import.meta.url))),
+  includeIgnoreFile(
+    [fileURLToPath(new URL('../../.gitignore', import.meta.url)), fileURLToPath(new URL('.gitignore', import.meta.url))],
+    { gitignoreResolution: true },
+  ),
 
   {
     ignores: [
@@ -134,6 +136,8 @@ export default defineConfig([
       '@stylistic/jsx-curly-newline': 'off',
       '@stylistic/jsx-one-expression-per-line': 'off',
       '@stylistic/multiline-ternary': 'off',
+      // Added to the recommended config in @stylistic v6; it reports about 900 errors in this workspace.
+      '@stylistic/list-style': 'off',
       '@stylistic/brace-style': ['error', '1tbs'],
       '@stylistic/arrow-parens': ['error', 'always'],
       '@stylistic/space-before-blocks': 'error',
@@ -141,7 +145,6 @@ export default defineConfig([
       '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
       '@stylistic/member-delimiter-style': ['error', { singleline: { requireLast: false } }],
       '@stylistic/semi': ['error', 'always'],
-      'custom-rules/classes-rule': 1,
       'custom-rules/no-deprecated-components': 'warn',
       'custom-rules/no-fragment-ref-anchor': 'error',
       'custom-rules/no-replaced-components': 'error',
@@ -210,15 +213,38 @@ export default defineConfig([
     },
   },
 
+  // Pickers go through the wrappers of `components/common/input/picker`, which own the section
+  // selection (#19228). Their types stay importable.
   {
     files: ['src/**/*.{js,jsx,ts,tsx}'],
+    ignores: ['src/components/common/input/picker/**'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': ['error', {
+        patterns: [{
+          regex: '^@mui/x-date-pickers(/(DatePicker|DateTimePicker|TimePicker))?$',
+          importNames: ['DatePicker', 'DateTimePicker', 'TimePicker'],
+          allowTypeImports: true,
+          message: 'Use the wrappers of components/common/input/picker, which own the section selection (#19228).',
+        }],
+      }],
+    },
+  },
+
+  // `*.entries.ts(x)` files are imported eagerly by the pages search (import.meta.glob), so any
+  // component or module-heavy import in them drags that code into the main bundle. Whitelist only.
+  {
+    files: ['**/*.entries.{ts,tsx}'],
     rules: {
       'no-restricted-imports': [
         'error',
         {
-          paths: [
-            { name: '@mui/styles', importNames: ['useTheme'], message: 'Import useTheme from @mui/material/styles.' },
-            { name: '@mui/styles/useTheme', message: 'Import useTheme from @mui/material/styles.' },
+          patterns: [
+            {
+              // Regex, not gitignore globs: a glob cannot re-include a path whose parent dir is matched.
+              regex: '^(?!(react|mdi-material-ui|@mui/icons-material|(\\.{1,2}/)+utils/hooks/capabilities)$)',
+              allowTypeImports: true,
+              message: '*.entries.ts(x) are eagerly loaded by the pages search: only type imports, capability constants (utils/hooks/capabilities) and icons are allowed.',
+            },
           ],
         },
       ],

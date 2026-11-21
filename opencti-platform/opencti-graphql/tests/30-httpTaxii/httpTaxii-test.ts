@@ -6,6 +6,7 @@ import { getGroupEntityByName } from '../utils/domainQueryHelper';
 import { getBaseUrl } from '../../src/config/conf';
 import { createTaxiiCollection, taxiiCollectionDelete } from '../../src/modules/dataSharing/taxiiCollection-domain';
 import { httpGet, httpPost } from '../utils/httpUtils';
+import { getMaxPayloadBodySizeInBytes } from '../../src/http/httpConfig';
 
 describe('Taxii push Feed coverage', () => {
   let taxiiPushIngestionId: string;
@@ -164,6 +165,7 @@ describe('Should taxii collection coverage', () => {
     const data: any = JSON.parse(body);
     expect(statusCode, 'With correct authentication should works fine').toBe(200);
     expect(data.versions).toStrictEqual(['application/taxii+json;version=2.1']);
+    expect(data.max_content_length, 'Should advertise the body size the TAXII parser accepts').toBe(getMaxPayloadBodySizeInBytes());
   });
 
   it('should public taxii collection without user works', async () => {

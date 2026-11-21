@@ -5,6 +5,11 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.utils.opencti_stix2_utils import (
+    build_custom_field_values_input,
+    query_to_stix,
+)
+
 
 class StixCoreRelationship:
     """Main StixCoreRelationship class for OpenCTI
@@ -47,6 +52,7 @@ class StixCoreRelationship:
                 field_id
                 field_name
                 int_value
+                float_value
                 string_value
                 boolean_value
                 date_value
@@ -138,6 +144,17 @@ class StixCoreRelationship:
                                     metaData {
                                         mimetype
                                         version
+                                    }
+                                    objectMarking {
+                                        id
+                                        standard_id
+                                        entity_type
+                                        definition_type
+                                        definition
+                                        created
+                                        modified
+                                        x_opencti_order
+                                        x_opencti_color
                                     }
                                 }
                             }
@@ -685,6 +702,24 @@ class StixCoreRelationship:
             self.opencti.app_logger.error("Missing parameters: id or from_id and to_id")
             return None
 
+    def to_stix(self, **kwargs):
+        """Get the STIX representation of a stix_core_relationship from the backend.
+
+        :param id: the id of the stix_core_relationship
+        :type id: str
+        :param version: the STIX version (``stix_2_0`` or ``stix_2_1``),
+            defaults to the backend default (``stix_2_1``)
+        :type version: str
+        :return: STIX object, or ``None`` if not found
+        :rtype: dict or None
+        """
+        return query_to_stix(
+            self.opencti,
+            "stixCoreRelationship",
+            kwargs.get("id"),
+            kwargs.get("version"),
+        )
+
     def create(self, **kwargs):
         """Create a stix_core_relationship object.
 
@@ -736,8 +771,8 @@ class StixCoreRelationship:
         :type coverage_information: list
         :param update: (optional) whether to update if exists (default: False)
         :type update: bool
-        :param custom_properties: (optional) list of custom field name/value inputs
-        :type custom_properties: list
+        :param custom_field_values: (optional) list of custom field name/value inputs
+        :type custom_field_values: list
         :return: stix_core_relationship object
         :rtype: dict or None
         """
@@ -766,7 +801,11 @@ class StixCoreRelationship:
         coverage_information = kwargs.get("coverage_information", None)
         update = kwargs.get("update", False)
         upsert_operations = kwargs.get("upsert_operations", None)
-        custom_properties = kwargs.get("custom_properties", None)
+        custom_field_values = build_custom_field_values_input(
+            kwargs.get("custom_field_values", None),
+            kwargs.get("custom_properties", None),
+            self.opencti.app_logger,
+        )
 
         self.opencti.app_logger.info(
             "Creating stix_core_relationship",
@@ -815,7 +854,7 @@ class StixCoreRelationship:
                     "coverage_information": coverage_information,
                     "update": update,
                     "upsertOperations": upsert_operations,
-                    "customFieldValues": custom_properties,
+                    "customFieldValues": custom_field_values,
                 }
             },
         )
@@ -1506,7 +1545,7 @@ class StixCoreRelationship:
                     if "opencti_upsert_operations" in stix_relation
                     else None
                 ),
-                custom_properties=extras.get("custom_properties", None),
+                custom_field_values=extras.get("custom_field_values", None),
             )
         else:
             self.opencti.app_logger.error(

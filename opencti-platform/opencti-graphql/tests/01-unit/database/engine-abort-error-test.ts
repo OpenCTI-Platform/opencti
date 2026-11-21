@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { AbortError } from 'node-fetch';
 import { errors as openSearchErrors } from '@opensearch-project/opensearch';
-import { wrapEngineError } from '../../../src/database/engine';
+import { elExecuteWithAbortSignal, wrapEngineError } from '../../../src/database/engine';
 import { CLIENT_ABORT_ERROR, DATABASE_ERROR } from '../../../src/config/errors';
 
 // wrapEngineError is the single, shared classification point used by every
@@ -64,5 +64,29 @@ describe('wrapEngineError testing', () => {
 
     expect(wrapped.extensions?.code).toBe(CLIENT_ABORT_ERROR);
     expect(wrapped.extensions?.code).not.toBe(DATABASE_ERROR);
+  });
+});
+
+// No search engine is initialized in unit tests, so elExecuteWithAbortSignal takes the
+// OpenSearch path, where the abort signal calls .abort() on the pending operation.
+describe('Mid-flight abort testing', () => {
+  const pendingOpenSearchOperation = () => {
+    let rejectOperation: (err: Error) => void = () => {};
+    const operation: any = new Promise((_, reject) => {
+      rejectOperation = reject;
+    });
+    operation.abort = () => rejectOperation(new openSearchErrors.RequestAbortedError('Request aborted'));
+    return operation;
+  };
+
+  it('should classify an abort happening while the engine request is in flight as CLIENT_ABORT_ERROR', async () => {
+    const controller = new AbortController();
+    const execution = elExecuteWithAbortSignal(controller.signal, async () => ({}), pendingOpenSearchOperation)
+      .catch((err) => {
+        throw wrapEngineError('Processing aggregation relations count fail', err);
+      });
+    controller.abort();
+
+    await expect(execution).rejects.toMatchObject({ extensions: { code: CLIENT_ABORT_ERROR } });
   });
 });

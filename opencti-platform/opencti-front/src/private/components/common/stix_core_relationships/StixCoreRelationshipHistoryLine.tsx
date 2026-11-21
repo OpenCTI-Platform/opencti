@@ -41,9 +41,10 @@ export const StixCoreRelationshipHistoryFragment = graphql`
 interface StixCoreRelationshipHistoryLineProps {
   nodeRef: StixCoreRelationshipHistoryLine_node$key;
   isRelation: boolean;
+  hasDetails?: boolean;
 }
 
-const StixCoreRelationshipHistoryLine = ({ nodeRef, isRelation }: StixCoreRelationshipHistoryLineProps) => {
+const StixCoreRelationshipHistoryLine = ({ nodeRef, isRelation, hasDetails }: StixCoreRelationshipHistoryLineProps) => {
   const node = useFragment<StixCoreRelationshipHistoryLine_node$key>(StixCoreRelationshipHistoryFragment, nodeRef);
 
   return (
@@ -57,6 +58,7 @@ const StixCoreRelationshipHistoryLine = ({ nodeRef, isRelation }: StixCoreRelati
         externalReferences: node.context_data?.external_references ?? [],
       }}
       isRelation={isRelation}
+      hasDetails={hasDetails}
     />
   );
 };

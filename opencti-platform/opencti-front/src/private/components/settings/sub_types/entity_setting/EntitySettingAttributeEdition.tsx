@@ -3,12 +3,11 @@ import { graphql } from 'react-relay';
 import { Field, Form, Formik, FormikErrors, FormikValues } from 'formik';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
-import makeStyles from '@mui/styles/makeStyles';
+import Box from '@mui/material/Box';
 import { FormikConfig } from 'formik/dist/types';
 import Drawer from '@components/common/drawer/Drawer';
 import DefaultValueField from '@components/common/form/DefaultValueField';
 import { useFormatter } from '../../../../../components/i18n';
-import type { Theme } from '../../../../../components/Theme';
 import SwitchField from '../../../../../components/fields/SwitchField';
 import type { Scale, ScaleConfig } from '../scale_configuration/scale';
 import type { AttributeConfiguration } from './entitySetting';
@@ -21,18 +20,6 @@ import { handleErrorInForm } from '../../../../../relay/environment';
 import { DefaultValues, defaultValuesToStringArray } from '../../../../../utils/defaultValues';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { capitalizeFirstLetter } from '../../../../../utils/String';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
 
 const entitySettingAttributeEditionPatch = graphql`
   mutation EntitySettingAttributeEditionPatchMutation(
@@ -76,7 +63,6 @@ const EntitySettingAttributeEdition = ({
   open,
 }: EntitySettingAttributeEditionProps) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const computeDefaultValues = useComputeDefaultValues();
 
   const attributesConfiguration: AttributeConfiguration[] = entitySetting.attributes_configuration
@@ -210,7 +196,7 @@ const EntitySettingAttributeEdition = ({
                 style={{ marginTop: 20 }}
               />
             )}
-            <div className={classes.buttons}>
+            <Box sx={{ marginTop: '20px', textAlign: 'right' }}>
               <Button
                 onClick={submitForm}
                 disabled={
@@ -218,11 +204,11 @@ const EntitySettingAttributeEdition = ({
                   || !isValid
                   || Object.keys(scaleErrors).length > 0
                 }
-                classes={{ root: classes.button }}
+                sx={{ marginLeft: 2 }}
               >
                 {t_i18n('Update')}
               </Button>
-            </div>
+            </Box>
           </Form>
         )}
       </Formik>

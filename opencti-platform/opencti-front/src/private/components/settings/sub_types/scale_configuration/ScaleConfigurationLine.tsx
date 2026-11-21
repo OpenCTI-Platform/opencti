@@ -1,7 +1,7 @@
 import { Field, Form, Formik, FormikErrors } from 'formik';
 import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import { DeleteOutlined } from '@mui/icons-material';
+import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import IconButton from '@common/button/IconButton';
 import { ObjectSchema } from 'yup';
@@ -9,17 +9,6 @@ import TextField from '../../../../../components/TextField';
 import ColorPickerField from '../../../../../components/ColorPickerField';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Tick, UndefinedTick } from './scale';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  button: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    alignItems: 'end',
-    height: '100%',
-  },
-}));
 
 interface EntitySettingScaleTickLineProps {
   tick: Tick | UndefinedTick;
@@ -42,7 +31,6 @@ const ScaleConfigurationLine: FunctionComponent<
   handleDelete,
   noMargin,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   return (
@@ -89,13 +77,20 @@ const ScaleConfigurationLine: FunctionComponent<
               </Grid>
               {deleteEnabled && (
                 <Grid size={1}>
-                  <div className={classes.button}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'flex-end',
+                      alignItems: 'end',
+                      height: '100%',
+                    }}
+                  >
                     {handleDelete && (
                       <IconButton aria-label={t_i18n('Delete')} onClick={() => handleDelete()}>
                         <DeleteOutlined fontSize="small" style={{ color: '#00b1ff' }} />
                       </IconButton>
                     )}
-                  </div>
+                  </Box>
                 </Grid>
               )}
             </Grid>

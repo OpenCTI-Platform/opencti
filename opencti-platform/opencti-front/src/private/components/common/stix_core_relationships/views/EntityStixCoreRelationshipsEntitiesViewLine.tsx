@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { Link } from 'react-router';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -11,7 +11,6 @@ import { DraftChip } from '@components/common/draft/DraftChip';
 import { ListItemButton } from '@mui/material';
 import ItemMarkings from '../../../../../components/ItemMarkings';
 import StixCoreObjectLabels from '../../stix_core_objects/StixCoreObjectLabels';
-import type { Theme } from '../../../../../components/Theme';
 import { resolveLink } from '../../../../../utils/Entity';
 import { useFormatter } from '../../../../../components/i18n';
 import { DataColumns } from '../../../../../components/list_lines';
@@ -27,43 +26,23 @@ import { HandleAddFilter } from '../../../../../utils/hooks/useLocalStorage';
 import { EMPTY_VALUE } from '../../../../../utils/String';
 import { Checkbox } from '@filigran/design-system';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  listItemText: {
-    margin: 0,
-  },
-  row: {
-    display: 'flex',
-    alignItems: 'center',
-    height: '100%',
-    width: '100%',
-  },
-  itemIcon: {
-    color: theme.palette.primary?.main,
-  },
-  bodyItem: {
-    height: '100%',
-    fontSize: 13,
-    display: 'flex',
-    alignItems: 'center',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-}));
+const Row = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  height: '100%',
+  width: '100%',
+});
+
+const BodyItem = styled('div')({
+  height: '100%',
+  fontSize: 13,
+  display: 'flex',
+  alignItems: 'center',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  paddingRight: 10,
+});
 
 const entityStixCoreRelationshipsEntitiesFragment = graphql`
   fragment EntityStixCoreRelationshipsEntitiesViewLine_node on StixCoreObject {
@@ -250,21 +229,20 @@ export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
   onToggleShiftEntity,
   index,
 }) => {
-  const classes = useStyles();
-  const { nsdt } = useFormatter();
+  const { ftdt } = useFormatter();
   const stixCoreObject = useFragment(
     entityStixCoreRelationshipsEntitiesFragment,
     node,
   );
   return (
     <ListItemButton
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       component={Link}
       to={`${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`}
     >
       <ListItemIcon
-        classes={{ root: classes.itemIcon }}
+        sx={{ color: 'primary.main' }}
         style={{ minWidth: 40 }}
         onClick={(event) => (event.shiftKey
           ? onToggleShiftEntity(index, stixCoreObject)
@@ -278,21 +256,19 @@ export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
           }
         />
       </ListItemIcon>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type={stixCoreObject.entity_type} />
       </ListItemIcon>
       <ListItemText
-        classes={{ root: classes.listItemText }}
+        sx={{ margin: 0 }}
         primary={(
-          <div className={classes.row}>
-            <div
-              className={classes.bodyItem}
+          <Row>
+            <BodyItem
               style={{ width: dataColumns.entity_type.width }}
             >
               <ItemEntityType entityType={stixCoreObject.entity_type} />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{
                 width: dataColumns.name
                   ? dataColumns.name.width
@@ -301,21 +277,18 @@ export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
             >
               {getMainRepresentative(stixCoreObject)}
               {stixCoreObject.draftVersion && (<DraftChip />)}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.createdBy.width }}
             >
               {stixCoreObject.createdBy?.name ?? EMPTY_VALUE}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.creator.width }}
             >
               {(stixCoreObject.creators ?? []).map((c) => c?.name).join(', ')}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectLabel.width }}
             >
               <StixCoreObjectLabels
@@ -323,26 +296,24 @@ export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
                 labels={stixCoreObject.objectLabel}
                 onClick={onLabelClick}
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.created_at.width }}
             >
-              {nsdt(stixCoreObject.created_at)}
-            </div>
-            <div
-              className={classes.bodyItem}
+              {ftdt(stixCoreObject.created_at)}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
                 markingDefinitions={stixCoreObject.objectMarking ?? []}
                 limit={1}
               />
-            </div>
-          </div>
+            </BodyItem>
+          </Row>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRight />
       </ListItemIcon>
     </ListItemButton>
@@ -353,26 +324,24 @@ export const EntityStixCoreRelationshipsEntitiesLineDummy = ({
 }: {
   dataColumns: DataColumns;
 }) => {
-  const classes = useStyles();
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
+    <ListItem sx={{ paddingLeft: '10px', height: 50 }} divider={true}>
       <ListItemIcon
-        classes={{ root: classes.itemIconDisabled }}
+        sx={{ color: 'grey.700' }}
         style={{ minWidth: 40 }}
       >
         <Checkbox
           disabled={true}
         />
       </ListItemIcon>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        classes={{ root: classes.listItemText }}
+        sx={{ margin: 0 }}
         primary={(
-          <div className={classes.row}>
-            <div
-              className={classes.bodyItem}
+          <Row>
+            <BodyItem
               style={{ width: dataColumns.entity_type.width }}
             >
               <Skeleton
@@ -381,9 +350,8 @@ export const EntityStixCoreRelationshipsEntitiesLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{
                 width: dataColumns.name
                   ? dataColumns.name.width
@@ -396,9 +364,8 @@ export const EntityStixCoreRelationshipsEntitiesLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.createdBy.width }}
             >
               <Skeleton
@@ -407,9 +374,8 @@ export const EntityStixCoreRelationshipsEntitiesLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.creator.width }}
             >
               <Skeleton
@@ -418,9 +384,8 @@ export const EntityStixCoreRelationshipsEntitiesLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectLabel.width }}
             >
               <Skeleton
@@ -429,9 +394,8 @@ export const EntityStixCoreRelationshipsEntitiesLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.created_at.width }}
             >
               <Skeleton
@@ -440,9 +404,8 @@ export const EntityStixCoreRelationshipsEntitiesLineDummy = ({
                 width={140}
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectMarking.width }}
             >
               <Skeleton
@@ -451,11 +414,11 @@ export const EntityStixCoreRelationshipsEntitiesLineDummy = ({
                 width={100}
                 height="100%"
               />
-            </div>
-          </div>
+            </BodyItem>
+          </Row>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRight />
       </ListItemIcon>
     </ListItem>

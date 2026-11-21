@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { generateAliasesId, generateHashedObservableStandardIds, generateStandardId, normalizeName } from '../../../src/schema/identifier';
+import {
+  generateAliasesId,
+  generateHashedObservableStandardIds,
+  generateStandardId,
+  getStaticMarkingAliasStixIds,
+  MARKING_TLP_AMBER,
+  MARKING_TLP_AMBER_STRICT,
+  MARKING_TLP_CLEAR,
+  MARKING_TLP_GREEN,
+  MARKING_TLP_RED,
+  normalizeName,
+} from '../../../src/schema/identifier';
 import { cleanStixIds } from '../../../src/database/stix';
 import { generateInternalType } from '../../../src/schema/schemaUtils';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
@@ -28,7 +39,8 @@ import {
   ENTITY_TYPE_TOOL,
 } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_VULNERABILITY } from '../../../src/modules/vulnerability/vulnerability-types';
-import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_MUTEX, ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
+import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_IPV4_ADDR, ENTITY_MUTEX, ENTITY_NETWORK_TRAFFIC, ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
+import { INPUT_DST, INPUT_SRC } from '../../../src/schema/stixRefRelationship';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../../../src/modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../../../src/modules/administrativeArea/administrativeArea-types';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
@@ -230,6 +242,22 @@ describe('identifier', () => {
     expect(aliasId).toEqual('vulnerability--f140924c-f52e-5b3a-b8bb-37a97cee7063');
   });
 
+  it('should static TLP markings keep their ids and alias the OASIS TLP 2.0 ids', () => {
+    const tlp = (definition) => generateStandardId('Marking-Definition', { definition_type: 'TLP', definition });
+    expect(tlp('TLP:CLEAR')).toEqual(MARKING_TLP_CLEAR);
+    expect(tlp('TLP:WHITE')).toEqual(MARKING_TLP_CLEAR);
+    expect(tlp('TLP:GREEN')).toEqual(MARKING_TLP_GREEN);
+    expect(tlp('TLP:AMBER')).toEqual(MARKING_TLP_AMBER);
+    expect(tlp('TLP:AMBER+STRICT')).toEqual(MARKING_TLP_AMBER_STRICT);
+    expect(tlp('TLP:RED')).toEqual(MARKING_TLP_RED);
+    expect(getStaticMarkingAliasStixIds(MARKING_TLP_CLEAR)).toEqual(['marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487']);
+    expect(getStaticMarkingAliasStixIds(MARKING_TLP_GREEN)).toEqual(['marking-definition--bab4a63c-aed9-4cf5-a766-dfca5abac2bb']);
+    expect(getStaticMarkingAliasStixIds(MARKING_TLP_AMBER)).toEqual(['marking-definition--55d920b0-5e8b-4f79-9ee9-91f868d9b421']);
+    expect(getStaticMarkingAliasStixIds(MARKING_TLP_AMBER_STRICT)).toEqual(['marking-definition--939a9414-2ddd-4d32-a0cd-375ea402b003']);
+    expect(getStaticMarkingAliasStixIds(MARKING_TLP_RED)).toEqual(['marking-definition--e828b379-4e03-4974-9ac4-e53a884c97c1']);
+    expect(getStaticMarkingAliasStixIds('marking-definition--35ee3df2-dc60-4bf3-9b57-98222b827a83')).toEqual([]);
+  });
+
   it('should stix id v5 always added', () => {
     const _2020_09_03T22_41_18 = 'v1--951c8756-ee36-11ea-adc1-0242ac120002';
     const _2020_09_03T22_41_32 = 'v1--9db69b68-ee36-11ea-adc1-0242ac120002';
@@ -390,5 +418,64 @@ describe('Function generateHashedObservableStandardIds - all supported hashes', 
       entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE,
     });
     expect(ids.length).toBe(1);
+  });
+});
+
+// Expected ids follow the STIX 2.1 deterministic id algorithm (uuidv5, OASIS namespace, canonical JSON), computed outside the platform
+const IPV4_A_STANDARD_ID = 'ipv4-addr--40495fb2-6385-5166-bb8f-bf50ce06f444';
+const IPV4_B_STANDARD_ID = 'ipv4-addr--11e01d68-39f3-5730-b866-9a20c44fea75';
+
+const buildResolvedIpv4 = (request) => ({
+  _id: request.internalId,
+  _index: 'opencti_stix_cyber_observables-000001',
+  id: request.internalId,
+  internal_id: request.internalId,
+  standard_id: generateStandardId(ENTITY_IPV4_ADDR, { value: request.value }),
+  entity_type: ENTITY_IPV4_ADDR,
+  value: request.value,
+  updated_at: request.updatedAt,
+  i_group: { id: `ipv4-addr--${request.internalId}`, destKey: INPUT_DST, multiple: false },
+});
+
+describe('Network Traffic standard id', () => {
+  const ipv4A = buildResolvedIpv4({ value: '198.51.100.10', internalId: 'e5a2f0f4-6b1e-4a43-9a64-2f1c1d1a0001', updatedAt: '2026-11-18T10:00:00.000Z' });
+  const ipv4B = buildResolvedIpv4({ value: '203.0.113.20', internalId: 'e5a2f0f4-6b1e-4a43-9a64-2f1c1d1a0002', updatedAt: '2026-11-18T10:00:00.000Z' });
+
+  it('should resolve the referenced IPv4 to its standard id', () => {
+    expect(ipv4A.standard_id).toEqual(IPV4_A_STANDARD_ID);
+    expect(ipv4B.standard_id).toEqual(IPV4_B_STANDARD_ID);
+  });
+
+  it('should generate the STIX 2.1 id from the dst_ref standard id and protocols', () => {
+    const standardId = generateStandardId(ENTITY_NETWORK_TRAFFIC, { [INPUT_DST]: ipv4A, protocols: ['tcp'] });
+    expect(standardId).toEqual('network-traffic--6fef32e0-fd42-53ef-be0d-9058f4d2c526');
+  });
+
+  it('should generate the STIX 2.1 id from every contributing field', () => {
+    const input = { [INPUT_SRC]: ipv4A, [INPUT_DST]: ipv4B, src_port: 51000, dst_port: 443, protocols: ['ipv4', 'tcp'] };
+    expect(generateStandardId(ENTITY_NETWORK_TRAFFIC, input)).toEqual('network-traffic--5c6bb5e1-29a5-566c-91b3-5ca81140bfa9');
+  });
+
+  it('should keep the same id when the referenced IPv4 changes outside its standard id', () => {
+    const ipv4ALater = { ...ipv4A, updated_at: '2026-11-18T11:30:00.000Z', i_group: { id: IPV4_A_STANDARD_ID, destKey: INPUT_DST, multiple: false } };
+    const ipv4AFromStore = { ...ipv4A, i_relation: { internal_id: 'relation-id', entity_type: 'dst' } };
+    const first = generateStandardId(ENTITY_NETWORK_TRAFFIC, { [INPUT_DST]: ipv4A, protocols: ['tcp'] });
+    const later = generateStandardId(ENTITY_NETWORK_TRAFFIC, { [INPUT_DST]: ipv4ALater, protocols: ['tcp'] });
+    const fromStore = generateStandardId(ENTITY_NETWORK_TRAFFIC, { [INPUT_DST]: ipv4AFromStore, protocols: ['tcp'] });
+    expect(later).toEqual(first);
+    expect(fromStore).toEqual(first);
+  });
+
+  it('should not mix up src_ref and dst_ref', () => {
+    const asDst = generateStandardId(ENTITY_NETWORK_TRAFFIC, { [INPUT_DST]: ipv4A, protocols: ['tcp'] });
+    const asSrc = generateStandardId(ENTITY_NETWORK_TRAFFIC, { [INPUT_SRC]: ipv4A, protocols: ['tcp'] });
+    expect(asSrc).toEqual('network-traffic--d0658d2d-f7c7-5f54-b912-f9f3e2f571a4');
+    expect(asSrc).not.toEqual(asDst);
+  });
+
+  it('should change the id when the referenced address changes', () => {
+    const toA = generateStandardId(ENTITY_NETWORK_TRAFFIC, { [INPUT_DST]: ipv4A, protocols: ['tcp'] });
+    const toB = generateStandardId(ENTITY_NETWORK_TRAFFIC, { [INPUT_DST]: ipv4B, protocols: ['tcp'] });
+    expect(toB).not.toEqual(toA);
   });
 });

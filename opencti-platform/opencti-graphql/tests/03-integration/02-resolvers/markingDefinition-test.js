@@ -143,6 +143,56 @@ describe('MarkingDefinition resolver standard behavior', () => {
     });
     expect(queryResult.data.markingDefinitionEdit.contextClean.id).toEqual(markingDefinitionInternalId);
   });
+  it('should resolve the OASIS TLP 2.0 ids to the static TLP markings', async () => {
+    const oasisTlpIds = {
+      'TLP:CLEAR': 'marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487',
+      'TLP:GREEN': 'marking-definition--bab4a63c-aed9-4cf5-a766-dfca5abac2bb',
+      'TLP:AMBER': 'marking-definition--55d920b0-5e8b-4f79-9ee9-91f868d9b421',
+      'TLP:AMBER+STRICT': 'marking-definition--939a9414-2ddd-4d32-a0cd-375ea402b003',
+      'TLP:RED': 'marking-definition--e828b379-4e03-4974-9ac4-e53a884c97c1',
+    };
+    const entries = Object.entries(oasisTlpIds);
+    for (let index = 0; index < entries.length; index += 1) {
+      const [definition, oasisId] = entries[index];
+      const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: oasisId } });
+      expect(queryResult.data.markingDefinition).not.toBeNull();
+      expect(queryResult.data.markingDefinition.definition_type).toEqual('TLP');
+      expect(queryResult.data.markingDefinition.definition).toEqual(definition);
+    }
+  });
+  it('should mark an indicator referencing the OASIS TLP 2.0 RED id as TLP:RED', async () => {
+    const INDICATOR_ADD = gql`
+      mutation IndicatorAdd($input: IndicatorAddInput!) {
+        indicatorAdd(input: $input) {
+          id
+          objectMarking {
+            definition
+          }
+        }
+      }
+    `;
+    const INDICATOR_DELETE = gql`
+      mutation indicatorDelete($id: ID!) {
+        indicatorDelete(id: $id)
+      }
+    `;
+    const indicator = await queryAsAdmin({
+      query: INDICATOR_ADD,
+      variables: {
+        input: {
+          name: 'Indicator marked with the OASIS TLP 2.0 RED id',
+          pattern: "[domain-name:value = 'oasis-tlp-red.example.com']",
+          pattern_type: 'stix',
+          x_opencti_main_observable_type: 'Domain-Name',
+          objectMarking: ['marking-definition--e828b379-4e03-4974-9ac4-e53a884c97c1'],
+        },
+      },
+    });
+    expect(indicator.errors).toBeUndefined();
+    const markings = indicator.data.indicatorAdd.objectMarking.map((m) => m.definition);
+    expect(markings).toEqual(['TLP:RED']);
+    await queryAsAdmin({ query: INDICATOR_DELETE, variables: { id: indicator.data.indicatorAdd.id } });
+  });
   it('should markingDefinition deleted', async () => {
     const DELETE_QUERY = gql`
       mutation markingDefinitionDelete($id: ID!) {

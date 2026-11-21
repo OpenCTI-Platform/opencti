@@ -16,7 +16,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import { UserAnalytics_user$key } from '@components/settings/users/__generated__/UserAnalytics_user.graphql';
 import AuditsMultiVerticalBars from '@components/common/audits/AuditsMultiVerticalBars';
@@ -28,14 +27,6 @@ import AuditsList from '@components/common/audits/AuditsList';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { useFormatter } from '../../../../components/i18n';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
 
 const UserFragment = graphql`
   fragment UserAnalytics_user on User {
@@ -53,7 +44,6 @@ interface UserAnalyticsProps {
 const EMPTY_DASHBOARD_CONFIG: DashboardConfig = {};
 
 const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const user = useFragment(UserFragment, data);
   const userServiceAccount = user.user_service_account;
@@ -67,7 +57,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
         container
         rowSpacing={5}
         columnSpacing={2}
-        className={classes.gridContainer}
+        sx={{ marginBottom: '20px' }}
       >
         <Grid size={6}>
           <AuditsMultiVerticalBars
