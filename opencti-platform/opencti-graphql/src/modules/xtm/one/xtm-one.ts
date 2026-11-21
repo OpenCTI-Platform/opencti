@@ -1,4 +1,4 @@
-import { PLATFORM_VERSION, logApp } from '../../../config/conf';
+import { PLATFORM_BUILD_VERSION, logApp } from '../../../config/conf';
 import { CguStatus } from '../../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreSettings } from '../../../types/settings';
@@ -122,12 +122,18 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
   const previousVerification = verifyXtmOneAnswer(previousAnswer, settings);
   const isChatbotUsable = settings.filigran_chatbot_ai_cgu_status === CguStatus.Enabled
     && (isOwnLicenseValidated || previousVerification.granted);
+  // Each part of the snapshot is collected on its own: a part that fails is left out, the registration still goes.
+  // Imported lazily: this module is imported by settings.js, and a static import of the connector, engine and
+  // broker modules here closes an import cycle (settings -> xtm-one -> connector-domain -> ... -> settings).
+  const { buildXtmOneHealthSnapshot } = await import('./xtm-one-health');
+  const health = await buildXtmOneHealthSnapshot(context, user);
 
   const result = await xtmOneClient.register({
     platform_identifier: 'opencti',
     platform_url: settings.platform_url || '',
     platform_title: settings.platform_title || 'OpenCTI Platform',
-    platform_version: PLATFORM_VERSION,
+    // -dev.<sha7> on a rolling build, so XTM One sees a rolling upgrade as a version change
+    platform_version: PLATFORM_BUILD_VERSION,
     platform_id: getXtmOnePlatformId(settings),
     enterprise_license_pem: pem,
     license_type: licenseType,
@@ -143,6 +149,8 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
     // that cannot prompt at all (AI Insights, NLQ search, playbook nodes), which
     // get the plain approval message in place of a result.
     supports_approval_prompts: isChatbotUsable,
+    // The Platform Health snapshot: XTM One turns it into the findings of its Platform Health page.
+    health,
     intents: [
       { name: 'global.assistant', description: 'General-purpose assistant' },
       { name: 'global.make_it_shorter', description: 'Shorten / summarize content' },
@@ -158,9 +166,6 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
       { name: 'cti.entity_forecast', description: 'Forecast future activity of an OpenCTI entity' },
       { name: 'cti.entity_history', description: 'Summarize internal history of an OpenCTI entity' },
       { name: 'cti.nlq_search', description: 'Generate an OpenCTI filter from a natural language query' },
-      { name: 'cti.pir_insight', description: 'Write an intelligence assessment answering an OpenCTI intelligence requirement' },
-      { name: 'cti.pir_builder', description: 'Turn a question into a configuration of an OpenCTI intelligence requirement' },
-      { name: 'cti.pir_triage', description: 'Give an opinion on whether an entity belongs to an OpenCTI intelligence requirement' },
       { name: 'cti.stix_harvester', description: 'Extract cyber threat intelligence from documents into STIX 2.1 bundles' },
       { name: 'cti.stix_transformer', description: 'Transform a STIX 2.1 bundle (enrich, filter, rewrite, normalize) and return a valid STIX 2.1 bundle' },
       { name: 'cti.stix_consumer', description: 'Consume a STIX 2.1 bundle as the final step of an OpenCTI playbook (summarize, alert, post, dispatch)' },

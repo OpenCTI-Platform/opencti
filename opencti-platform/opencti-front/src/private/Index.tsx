@@ -5,6 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { useTheme } from '@mui/material/styles';
 import { boundaryWrapper, NoMatch } from '@components/Error';
 import PlatformCriticalAlertDialog from '@components/settings/platform_alerts/PlatformCriticalAlertDialog';
+import ConfigPresetBootstrapWizard from '@components/settings/config_preset/ConfigPresetBootstrapWizard';
 import TopBannersManager from '@components/TopBannersManager';
 import TopBar from './components/nav/TopBar';
 import NavBar from './components/nav/NavBar';
@@ -48,7 +49,6 @@ const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
 const RootSettings = lazy(() => import('./components/settings/Root'));
 const RootAudit = lazy(() => import('./components/settings/activity/audit/Root'));
 const RootPir = lazy(() => import('./components/pir/Root'));
-const RootIntelligenceRequirements = lazy(() => import('./components/intelligence_requirements/Root'));
 const RootXTMHub = lazy(() => import('@components/xtm_hub/Root'));
 const ForcePasswordChange = lazy(() => import('./components/profile/ForcePasswordChange'));
 const RootNewsFeed = lazy(() => import('./components/profile/NewsFeedPage'));
@@ -94,6 +94,8 @@ const Index = ({ settings }: IndexProps) => {
     overflowY: 'hidden',
     height: '100vh',
     marginRight: 'var(--chatbot-sidebar-width, 0px)',
+    // Focusable by script only (see focusMainContent): a landmark, not a control, so no focus ring.
+    outline: 'none',
   };
 
   const boxSx: SxProps = {
@@ -114,10 +116,10 @@ const Index = ({ settings }: IndexProps) => {
         {((settings.platform_session_idle_timeout ?? 0) > 0 || (settings.platform_session_timeout ?? 0) > 0) && <TimeoutLock />}
         <SettingsMessagesBanner />
         <PlatformCriticalAlertDialog alerts={settings.platform_critical_alerts} />
+        {!isForcePasswordChangeRoute && <ConfigPresetBootstrapWizard settings={settings} />}
         <Box
           sx={{
             display: 'flex',
-            minWidth: isForcePasswordChangeRoute ? 0 : 1400,
             marginTop: `calc(${topBannerHeight}px + ${bannerHeight})`,
             marginBottom: bannerHeight,
           }}
@@ -127,7 +129,7 @@ const Index = ({ settings }: IndexProps) => {
           {!isForcePasswordChangeRoute && <NavBar />}
           <Message />
           <NewsFeedToastManager />
-          <Stack component="main" sx={mainSx}>
+          <Stack component="main" tabIndex={-1} sx={mainSx}>
             <Box sx={boxSx}>
               <Suspense fallback={<Loader />}>
                 <Routes>
@@ -155,7 +157,6 @@ const Index = ({ settings }: IndexProps) => {
                   <Route path="/integrations/*" element={boundaryWrapper(RootIntegrations)} />
                   {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)} />)}
                   <Route path="/pirs/*" element={boundaryWrapper(RootPir)} />
-                  <Route path="/intelligence_requirements/*" element={boundaryWrapper(RootIntelligenceRequirements)} />
                   <Route path="/news-feed" element={boundaryWrapper(RootNewsFeed)} />
                   <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)} />
                   <Route path="/settings/*" element={boundaryWrapper(RootSettings)} />
