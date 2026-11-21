@@ -85,7 +85,8 @@ testCreatedCounter.relationship = 155; // +1 subtechnique-of created by attackPa
 // Plus 3 created and deleted by workflow-entity-write-test
 testCreatedCounter.report = 77;
 testCreatedCounter.sighting = 8; // 3 created and deleted by relations-deduplication-test
-testCreatedCounter.software = 2;
+// 1 created and deleted by stixCyberObservable-test (software purl)
+testCreatedCounter.software = 3;
 testCreatedCounter.task = 1;
 testCreatedCounter['threat-actor'] = 33;
 testCreatedCounter.tool = 5;
@@ -150,6 +151,8 @@ testUpdatedCounter['ipv4-addr'] = 5;
 // 3 updated by stixCyberObservable-test (2 upserts and 1 contributing field update in network traffic deduplication)
 testUpdatedCounter['network-traffic'] = 3;
 testUpdatedCounter.tool = 10;
+// 1 updated by stixCyberObservable-test (software purl upsert with another purl)
+testUpdatedCounter.software = 1;
 testUpdatedCounter.sighting = 7; // 2 upserts in relations-deduplication-test
 testUpdatedCounter['threat-actor'] = 18;
 // Counts for:
@@ -251,7 +254,8 @@ testDeletedCounter.vocabulary = 3;
 // 1 by ingestionDeduplication-test
 // 3 by filterGroup-test (nil / not_nil operators on numbers)
 testDeletedCounter.vulnerability = 9;
-testDeletedCounter.software = 1;
+// 1 created and deleted by stixCyberObservable-test (software purl)
+testDeletedCounter.software = 2;
 testDeletedCounter.iccid = 4;
 testDeletedCounter.imei = 3;
 testDeletedCounter.imsi = 1;
