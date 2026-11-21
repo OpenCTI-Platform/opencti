@@ -442,6 +442,7 @@ export const ATTRIBUTE_DESCRIPTIONS_BY_TYPE: Record<string, Record<string, strin
   [ENTITY_SOFTWARE]: {
     cpe: 'CPE 2.3 identifier of the software (e.g. cpe:2.3:a:apache:http_server:2.4.58:*:*:*:*:*:*:*).',
     swid: 'SWID tag identifier of the software.',
+    x_opencti_purl: 'Package URL (purl) of the software (e.g. pkg:npm/lodash@4.17.21).',
     languages: 'Languages supported by the software, as ISO 639-2 codes (e.g. eng, fra).',
     vendor: 'Vendor of the software (e.g. Microsoft).',
     version: 'Version of the software (e.g. 2.4.58).',

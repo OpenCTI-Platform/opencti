@@ -32520,6 +32520,7 @@ export type Software = BasicObject & StixCoreObject & StixCyberObservable & Stix
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_product?: Maybe<Scalars['String']['output']>;
+  x_opencti_purl?: Maybe<Scalars['String']['output']>;
   x_opencti_score?: Maybe<Scalars['Int']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
@@ -32689,6 +32690,7 @@ export type SoftwareAddInput = {
   vendor?: InputMaybe<Scalars['String']['input']>;
   version?: InputMaybe<Scalars['String']['input']>;
   x_opencti_product?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_purl?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SoftwareConnection = {
@@ -54057,6 +54059,7 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_product?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_purl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

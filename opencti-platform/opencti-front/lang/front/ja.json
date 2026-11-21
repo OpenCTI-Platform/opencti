@@ -6790,6 +6790,7 @@
   "x_opencti_reliability": "信頼性",
   "X_opencti_score": "Score",
   "x_opencti_score": "スコア",
+  "x_opencti_purl": "PURL",
   "x_opencti_score_gt": "最低スコア",
   "x_opencti_score_lte": "最高スコア",
   "X_opencti_workflow_id": "Status",

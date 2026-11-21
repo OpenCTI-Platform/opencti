@@ -6790,6 +6790,7 @@
   "x_opencti_reliability": "Fiabilidad",
   "X_opencti_score": "Score",
   "x_opencti_score": "Score",
+  "x_opencti_purl": "PURL",
   "x_opencti_score_gt": "Score superior a",
   "x_opencti_score_lte": "Score inferior o igual a",
   "X_opencti_workflow_id": "Estado",
