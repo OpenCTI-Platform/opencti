@@ -18667,7 +18667,7 @@ __metadata:
     react-pdf: "npm:11.1.0"
     react-relay: "npm:21.0.1"
     react-relay-network-modern: "npm:6.2.2"
-    react-router: "npm:8.5.1"
+    react-router: "npm:8.5.2"
     react-syntax-highlighter: "npm:16.1.2"
     react-transition-group: "npm:4.4.5"
     react-virtualized: "npm:10.0.1"
@@ -20651,9 +20651,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:8.5.1":
-  version: 8.5.1
-  resolution: "react-router@npm:8.5.1"
+"react-router@npm:8.5.2":
+  version: 8.5.2
+  resolution: "react-router@npm:8.5.2"
   dependencies:
     "@remix-run/route-pattern": "npm:^0.22.1"
     cookie-es: "npm:^3.1.1"
@@ -20669,7 +20669,7 @@ __metadata:
       optional: true
     react-dom:
       optional: true
-  checksum: 10c0/07503a26d5c5669d84d044e59e3a7f97dad36946dbb9ade14f243f187096bc12cea5bf7401f8681c602d9100238cef752bd3d0e6a742e1c0794e2abd20662368
+  checksum: 10c0/4ff6e74255ca0372cd29698874534d21c4be3c4ca8853707f7176d9fb6284339112896db9a87ae79a6346aa6f8afeb608534de675320c2cd6c674b3ee0bdbf09
   languageName: node
   linkType: hard
 
