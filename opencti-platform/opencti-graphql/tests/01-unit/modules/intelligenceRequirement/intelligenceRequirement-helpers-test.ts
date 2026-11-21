@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { isRequirementDeleted, isRescanSince, markRequirementDeleted, markRequirementRescan } from '../../../../src/modules/intelligenceRequirement/intelligenceRequirement-lifecycle';
+import {
+  isRequirementDeleted,
+  isRescanSince,
+  markRequirementDeleted,
+  markRequirementRescan,
+} from '../../../../src/modules/intelligenceRequirement/intelligenceRequirement-lifecycle';
 import { isBriefDue } from '../../../../src/modules/intelligenceRequirement/intelligenceRequirement-brief';
 import { computeMatchScore, type IrScoreResult, parseMatchHistory, topReasons } from '../../../../src/modules/intelligenceRequirement/intelligenceRequirement-scoring';
 import { isInRequirement } from '../../../../src/modules/intelligenceRequirement/intelligenceRequirementMatch-types';
