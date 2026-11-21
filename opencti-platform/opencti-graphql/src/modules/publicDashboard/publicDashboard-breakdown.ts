@@ -50,12 +50,15 @@ export const getBreakdownEntityTypes = (filters?: FilterGroup | null, typeFilter
   return typeValues.filter((value): value is string => typeof value === 'string');
 };
 
+// A type value of a stored filter: a string, or an { id, value } object written by older or imported widgets
+const readTypeValue = (value: any) => (typeof value === 'string' ? value : (value?.value ?? value?.id));
+
 // A dataset of draft workspaces only, as the front reads it (isDraftWorkspaceFilterGroup in filtersUtils.tsx)
 const isDraftWorkspaceDataset = (filters?: FilterGroup | null) => {
   // Manifest filters can hold the key as a string or as a list
   const typeFilter = (filters?.filters ?? []).find((filter) => [filter.key].flat().includes(TYPE_FILTER));
   const types = typeFilter?.values ?? [];
-  return types.length > 0 && types.every((type) => type === ENTITY_TYPE_DRAFT_WORKSPACE);
+  return types.length > 0 && types.every((type) => readTypeValue(type) === ENTITY_TYPE_DRAFT_WORKSPACE);
 };
 
 /**
