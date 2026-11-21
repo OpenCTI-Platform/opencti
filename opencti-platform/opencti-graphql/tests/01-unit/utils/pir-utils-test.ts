@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { FilterMode } from '../../../src/generated/graphql';
-import { arePirExplanationsEqual, diffPirExplanations, updatePirExplanationsArray } from '../../../src/modules/pir/pir-utils';
+import { FilterMode, PirFlagSide } from '../../../src/generated/graphql';
+import { arePirExplanationsEqual, criterionFlagSide, diffPirExplanations, updatePirExplanationsArray } from '../../../src/modules/pir/pir-utils';
 
 const createFilter = (id: string) => {
   return JSON.stringify({
@@ -277,5 +277,17 @@ describe('Pir utilities: updatePirExplanationsArray()', () => {
     const result = updatePirExplanationsArray(pirExplanations, newExplanations);
     expect(result.length).toEqual(2);
     expect(result).toEqual(newExplanations);
+  });
+});
+
+describe('Pir utilities: criterionFlagSide()', () => {
+  it('should flag the source when the criterion has no flag side', () => {
+    expect(criterionFlagSide({ weight: 1, filters: filters1 } as any)).toEqual(PirFlagSide.Source);
+    expect(criterionFlagSide({ flag_side: null })).toEqual(PirFlagSide.Source);
+  });
+
+  it('should keep the side the criterion names', () => {
+    expect(criterionFlagSide({ flag_side: PirFlagSide.Source })).toEqual(PirFlagSide.Source);
+    expect(criterionFlagSide({ flag_side: PirFlagSide.Target })).toEqual(PirFlagSide.Target);
   });
 });

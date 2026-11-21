@@ -1,9 +1,9 @@
 import { beforeAll, afterEach, describe, it, vi, expect } from 'vitest';
 import type { ParsedPir } from '../../../src/modules/pir/pir-types';
-import { FilterMode, FilterOperator, PirType } from '../../../src/generated/graphql';
+import { FilterMode, FilterOperator, PirFlagSide, PirType } from '../../../src/generated/graphql';
 import * as StixFiltering from '../../../src/utils/filtering/filtering-stix/stix-filtering';
 import { isStixMatchFilterGroup_MockableForUnitTests } from '../../../src/utils/filtering/filtering-stix/stix-filtering';
-import { checkEventOnPir, pirManagerHandler } from '../../../src/manager/pirManager';
+import { checkEventOnPir, computePirFlagActions, pirManagerHandler } from '../../../src/manager/pirManager';
 import type { AuthContext } from '../../../src/types/user';
 import type { SseEvent } from '../../../src/types/event';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
@@ -123,6 +123,78 @@ describe('pirManager: checkEventOnPir()', () => {
     const event = buildEvent({ confidence: 90, target: TEST_PIR_TARGET_2 });
     const matches = await checkEventOnPir(context, event, TEST_PIR);
     expect(matches).toEqual([TEST_PIR_CRITERION_2]);
+  });
+});
+
+describe('pirManager: computePirFlagActions()', () => {
+  const SOFTWARE_ID = 'software-internal-id';
+  const VULNERABILITY_ID = 'vulnerability-internal-id';
+  const RELATIONSHIP_ID = 'relationship-internal-id';
+  const sourceCriterion = { ...TEST_PIR_CRITERION_1 };
+  const targetCriterion = { ...TEST_PIR_CRITERION_2, flag_side: PirFlagSide.Target };
+  const SOURCE_PIR = { ...TEST_PIR, pir_type: PirType.ThreatCustom, pir_criteria: [sourceCriterion] } as ParsedPir;
+  const TARGET_PIR = { ...TEST_PIR, pir_type: PirType.ThreatCustom, pir_criteria: [targetCriterion] } as ParsedPir;
+  const MIXED_PIR = { ...TEST_PIR, pir_type: PirType.ThreatCustom, pir_criteria: [sourceCriterion, targetCriterion] } as ParsedPir;
+
+  const buildHasEvent = (type: string, extension: Record<string, unknown> = {}) => ({
+    type,
+    data: {
+      type: 'relationship',
+      relationship_type: 'has',
+      extensions: {
+        [STIX_EXT_OCTI]: {
+          id: RELATIONSHIP_ID,
+          source_ref: SOFTWARE_ID,
+          source_type: 'Software',
+          target_ref: VULNERABILITY_ID,
+          target_type: 'Vulnerability',
+          ...extension,
+        },
+      },
+    },
+  } as SseEvent<any>);
+
+  const summary = (pir: ParsedPir, event: SseEvent<any>, criteria: any[]) => computePirFlagActions(pir, event, criteria)
+    .map((a) => [a.operation, a.elementId, a.criteria.length]);
+
+  it('should flag the source when the criterion has no flag side (default)', () => {
+    expect(summary(SOURCE_PIR, buildHasEvent('create'), [sourceCriterion])).toEqual([['flag', SOFTWARE_ID, 1]]);
+  });
+
+  it('should flag the target, not the source, when the criterion flags the target', () => {
+    expect(summary(TARGET_PIR, buildHasEvent('create'), [targetCriterion])).toEqual([['flag', VULNERABILITY_ID, 1]]);
+  });
+
+  it('should flag each end with its own criteria when both sides match', () => {
+    expect(summary(MIXED_PIR, buildHasEvent('create'), [sourceCriterion, targetCriterion])).toEqual([
+      ['flag', SOFTWARE_ID, 1],
+      ['flag', VULNERABILITY_ID, 1],
+    ]);
+  });
+
+  it('should unflag the target when a matching relationship is deleted', () => {
+    expect(summary(TARGET_PIR, buildHasEvent('delete'), [targetCriterion])).toEqual([['unflag', VULNERABILITY_ID, 0]]);
+  });
+
+  it('should unflag the target when an update no longer matches and the target is flagged', () => {
+    const event = buildHasEvent('update', { target_ref_pir_refs: ['pir-1'] });
+    expect(summary(TARGET_PIR, event, [])).toEqual([['unflag', VULNERABILITY_ID, 0]]);
+  });
+
+  it('should never touch the target of a PIR whose criteria all flag the source', () => {
+    const event = buildHasEvent('update', { target_ref_pir_refs: ['another-pir'] });
+    expect(summary(SOURCE_PIR, event, [])).toEqual([]);
+  });
+
+  it('should do nothing when nothing matches and no end is flagged', () => {
+    expect(summary(MIXED_PIR, buildHasEvent('update'), [])).toEqual([]);
+    expect(summary(MIXED_PIR, buildHasEvent('create'), [])).toEqual([]);
+  });
+
+  it('should keep the relationship author on a flag', () => {
+    const actions = computePirFlagActions(TARGET_PIR, buildHasEvent('create', { created_by_ref_id: 'author-id' }), [targetCriterion]);
+    expect(actions[0].relationshipAuthorId).toEqual('author-id');
+    expect(actions[0].relationshipId).toEqual(RELATIONSHIP_ID);
   });
 });
 

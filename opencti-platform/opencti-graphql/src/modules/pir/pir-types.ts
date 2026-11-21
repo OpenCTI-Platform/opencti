@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import type { BasicStoreEntity, BasicStoreRelation, StoreEntity, StoreRelation } from '../../types/store';
 import type { StixInternal } from '../../types/stix-2-1-common';
-import { type FilterGroup, PirType } from '../../generated/graphql';
+import { type FilterGroup, type PirFlagSide, PirType } from '../../generated/graphql';
 import type { AuthorizedMember } from '../../utils/access';
 
 export const ENTITY_TYPE_PIR = 'Pir';
@@ -24,6 +24,8 @@ export const PIR_TYPES = Object.values(PirType);
 export interface PirCriterion {
   filters: string;
   weight: number;
+  // End of the matching relationship the criterion flags (source when absent).
+  flag_side?: PirFlagSide | null;
 }
 
 export interface BasicStoreEntityPir extends BasicStoreEntity {
@@ -55,6 +57,7 @@ export interface StixPir extends StixInternal {
 export interface ParsedPirCriterion {
   filters: FilterGroup;
   weight: number;
+  flag_side?: PirFlagSide | null;
 }
 
 export interface ParsedPir {

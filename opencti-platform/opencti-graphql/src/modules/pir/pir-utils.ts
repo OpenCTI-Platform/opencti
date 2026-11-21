@@ -19,7 +19,7 @@ import { internalLoadById, pageRelationsConnection } from '../../database/middle
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { FunctionalError } from '../../config/errors';
 import { createRelation, patchAttribute } from '../../database/middleware';
-import { type FilterGroup, type PirAddInput, PirType } from '../../generated/graphql';
+import { type FilterGroup, type PirAddInput, PirFlagSide, PirType } from '../../generated/graphql';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
@@ -62,6 +62,17 @@ export const serializePir = (pir: PirAddInput) => {
 };
 
 /**
+ * End of a matching relationship a criterion flags.
+ * Criteria saved before the option existed have no flag_side: they flag the source.
+ *
+ * @param criterion A PIR criterion (parsed or stored).
+ * @returns SOURCE or TARGET.
+ */
+export const criterionFlagSide = (criterion: { flag_side?: PirFlagSide | null }) => {
+  return criterion.flag_side === PirFlagSide.Target ? PirFlagSide.Target : PirFlagSide.Source;
+};
+
+/**
  * Helper function to construct final pir filters that the entity of the stream events should match.
  *
  * @param pirType The PIR type
@@ -99,7 +110,13 @@ export const computePirScore = async (context: AuthContext, user: AuthUser, pirI
     if (shouldKeep) uniqueFilters.add(filter);
     return shouldKeep ? explanation.criterion : [];
   });
-  const maxScore = pir.pir_criteria.reduce((acc, val) => acc + val.weight, 0);
+  // The score of an element is computed against the criteria of the side it is flagged on:
+  // a target flagged by a "Software has Vulnerability" criterion is not diluted by the
+  // criteria that flag threats. A PIR whose criteria all flag the source is unchanged.
+  const flaggedSides = new Set(uniqueCriteria.map((c) => criterionFlagSide(c)));
+  const maxScore = pir.pir_criteria
+    .filter((c) => flaggedSides.size === 0 || flaggedSides.has(criterionFlagSide(c)))
+    .reduce((acc, val) => acc + val.weight, 0);
   const criteriaCount = uniqueCriteria.reduce((acc, val) => acc + val.weight, 0);
   if (maxScore <= 0) return 0;
   return Math.round((criteriaCount / maxScore) * 100);
