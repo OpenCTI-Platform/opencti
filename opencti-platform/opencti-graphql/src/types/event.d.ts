@@ -27,10 +27,24 @@ interface CreateEventOpts extends EventOpts {
   restore?: boolean;
 }
 
+// A change of the PIR score of a flagged entity: flag (previous_score 0), score change or unflag (score 0).
+// The PIR name and criteria filters are not carried: a PIR has its own authorized members, the event is read
+// by every user who sees the entity. A consumer with access to the PIR resolves them by pir_id.
+interface PirChangeContext {
+  pir_id: string;
+  previous_score: number;
+  score: number;
+  // The relationship whose creation or deletion caused the change
+  relationship_id: string;
+  // The criteria the entity matches after the change: their weight and the relationships that match them
+  matched_criteria: Array<{ weight: number; relationship_ids: string[] }>;
+}
+
 interface UpdateEventOpts extends EventOpts {
   commit?: CommitContext | undefined;
   related_restrictions?: { markings: string[] };
   pir_ids?: string[];
+  pir_change?: PirChangeContext;
   allow_only_modified?: boolean;
   noHistory?: boolean;
 }
@@ -86,6 +100,7 @@ interface UpdateEvent extends StreamDataEvent {
     reverse_patch: Array<Operation>;
     related_restrictions?: { markings: string[] };
     pir_ids?: string[];
+    pir_change?: PirChangeContext;
     changes: Change[];
   };
 }

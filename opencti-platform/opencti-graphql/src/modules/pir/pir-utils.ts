@@ -13,12 +13,15 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { type BasicStoreEntityPir, type BasicStoreRelationPir, type ParsedPir, type PirExplanation } from './pir-types';
+import { type BasicStoreEntityPir, type BasicStoreRelationPir, type ParsedPir, type PirExplanation, type PirInformation } from './pir-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { internalLoadById, pageRelationsConnection } from '../../database/middleware-loader';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { FunctionalError } from '../../config/errors';
-import { createRelation, patchAttribute } from '../../database/middleware';
+import { createRelation, patchAttribute, storeLoadByIdWithRefs } from '../../database/middleware';
+import { storeUpdateEvent } from '../../database/stream/stream-handler';
+import type { StoreObject } from '../../types/store';
+import type { PirChangeContext } from '../../types/event';
 import { type FilterGroup, type PirAddInput, PirType } from '../../generated/graphql';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../schema/stixDomainObject';
@@ -133,6 +136,69 @@ export const updatePirInformationOnEntity = async (context: AuthContext, user: A
 };
 
 /**
+ * Build the pir_information of an entity once its score for a PIR is set to a new value (0 removes it).
+ */
+export const buildNextPirInformation = (current: PirInformation[] | undefined, pirId: string, score: number, date: string): PirInformation[] => {
+  const others = (current ?? []).filter((information) => information.pir_id !== pirId);
+  return score > 0 ? [...others, { pir_id: pirId, pir_score: score, last_pir_score_date: date }] : others;
+};
+
+/**
+ * The criteria an entity matches for a PIR, with their weight and the relationships behind each one.
+ */
+export const buildPirMatchedCriteria = (explanations: PirExplanation[]): PirChangeContext['matched_criteria'] => {
+  const byFilters = new Map<string, { weight: number; relationship_ids: string[] }>();
+  explanations.forEach((explanation) => {
+    const key = explanation.criterion.filters;
+    const entry = byFilters.get(key) ?? { weight: explanation.criterion.weight, relationship_ids: [] };
+    explanation.dependencies.forEach((dependency) => {
+      if (!entry.relationship_ids.includes(dependency.element_id)) entry.relationship_ids.push(dependency.element_id);
+    });
+    byFilters.set(key, entry);
+  });
+  return Array.from(byFilters.values());
+};
+
+/**
+ * Load an entity with its refs before its PIR score changes, so the change can be published.
+ */
+export const loadPirFlaggedEntity = async (context: AuthContext, user: AuthUser, entityId: string) => {
+  return storeLoadByIdWithRefs<StoreObject>(context, user, entityId);
+};
+
+/**
+ * Publish the change of the PIR score of an entity as an update event of the entity in the live stream.
+ * One event per entity, PIR and score change: flag (0 to N), score change (N to M) and unflag (N to 0).
+ * Nothing is published when the score does not change. The event is external, so live triggers, the
+ * notification manager and every stream consumer see it; the in-pir relationship itself stays internal.
+ * It carries no history: the in-pir relationship already writes the PIR history.
+ */
+export const publishPirScoreChange = async (
+  context: AuthContext,
+  user: AuthUser,
+  previous: StoreObject | undefined,
+  pirId: string,
+  previousScore: number,
+  score: number,
+  relationshipId: string,
+  explanations: PirExplanation[],
+) => {
+  if (!previous || previousScore === score) return undefined;
+  const date = new Date().toISOString();
+  const pirInformation = buildNextPirInformation(previous.pir_information as PirInformation[] | undefined, pirId, score, date);
+  const instance = { ...previous, pir_information: pirInformation } as StoreObject;
+  const pirChange: PirChangeContext = {
+    pir_id: pirId,
+    previous_score: previousScore,
+    score,
+    relationship_id: relationshipId,
+    matched_criteria: score > 0 ? buildPirMatchedCriteria(explanations) : [],
+  };
+  const changes = [{ field: 'pir_information', previous: [String(previousScore)], new: [String(score)] }];
+  return storeUpdateEvent(context, user, previous, instance, changes, { pir_ids: [pirId], pir_change: pirChange, noHistory: true });
+};
+
+/**
  * Determines if two explanations are identical or not.
  *
  * @param explanation1 First explanation.
@@ -212,6 +278,7 @@ export const updatePirExplanations = async (
   pirExplanations: PirExplanation[],
   lockIds: string[],
   operation?: string, // 'add' to add a new dependency, 'replace' by default
+  relationshipId?: string, // the relationship whose creation or deletion caused the update
 ) => {
   const inPirRels = await pageRelationsConnection<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pirId });
   if (inPirRels.edges.length === 0) {
@@ -236,10 +303,14 @@ export const updatePirExplanations = async (
 
   // compute score
   const pir_score = await computePirScore(context, user, pirId, explanations);
+  const previousScore = inPirRel.pir_score ?? 0;
+  const previous = previousScore !== pir_score ? await loadPirFlaggedEntity(context, user, sourceId) : undefined;
   // replace pir_explanation on in-pir rel
   await patchAttribute(context, user, inPirRel.id, RELATION_IN_PIR, { pir_explanation: explanations, pir_score }, { locks: lockIds });
   // update pir information on the entity
   await updatePirInformationOnEntity(context, user, sourceId, pirId, pir_score);
+  // publish the score change of the entity (nothing when the score is unchanged)
+  await publishPirScoreChange(context, user, previous, pirId, previousScore, pir_score, relationshipId ?? '', explanations);
 };
 
 /**
@@ -263,6 +334,7 @@ export const createPirRelation = async (
 ) => {
   // compute score
   const pir_score = await computePirScore(context, user, pirId, pirDependencies); // TODO PIR low level
+  const previous = pir_score > 0 ? await loadPirFlaggedEntity(context, user, sourceId) : undefined;
   // create the in-pir relationship
   const addRelationshipInput = {
     relationship_type: RELATION_IN_PIR,
@@ -272,4 +344,7 @@ export const createPirRelation = async (
     pir_score,
   };
   await createRelation(context, user, addRelationshipInput, { locks: lockIds });
+  // publish the flag of the entity
+  const relationshipId = pirDependencies[0]?.dependencies[0]?.element_id ?? '';
+  await publishPirScoreChange(context, user, previous, pirId, 0, pir_score, relationshipId, pirDependencies);
 };
