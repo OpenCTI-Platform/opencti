@@ -22,7 +22,8 @@ testCreatedCounter['case-incident'] = 23;
 // 40 case-rfi and 1 case-rft created by the request access workflow tests (requestAccess-test, requestAccess-domain-test, workflow-test)
 testCreatedCounter['case-rfi'] = 49;
 testCreatedCounter['case-rft'] = 2;
-testCreatedCounter.channel = 1;
+// 2 created and deleted by stixCoreObject-test (regardingOf on publishes)
+testCreatedCounter.channel = 3;
 testCreatedCounter['course-of-action'] = 4;
 testCreatedCounter.credential = 1;
 testCreatedCounter['data-component'] = 2;
@@ -64,6 +65,7 @@ testCreatedCounter.label = 24;
 testCreatedCounter.language = 1;
 testCreatedCounter.location = 23; // includes 1 created and deleted by publicDashboard-test (time series breakdown)
 testCreatedCounter['mac-addr'] = 1;
+testCreatedCounter['media-content'] = 1; // created and deleted by stixCoreObject-test (regardingOf on publishes)
 // Includes 2 created and deleted by form-submission-test (a verified form import, an existing one left as it is),
 // 2 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown), and 5 by ingestionDeduplication-domain-test
 testCreatedCounter.malware = 77; // 2 by the request access workflow tests
@@ -80,7 +82,9 @@ testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
 // Includes 5 created and deleted by stixRelationship-test, and 1 created by publicDashboard-test, deleted with its target (time series breakdown)
-testCreatedCounter.relationship = 155; // +1 subtechnique-of created by attackPattern-test, removed with its sub-technique
+// +1 subtechnique-of created by attackPattern-test, removed with its sub-technique
+// +1 publishes created by stixCoreObject-test (regardingOf on publishes), removed with its channel
+testCreatedCounter.relationship = 156;
 // Includes 8 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
 // Plus 3 created and deleted by workflow-entity-write-test
 testCreatedCounter.report = 77;
@@ -186,7 +190,7 @@ testDeletedCounter['case-incident'] = 20;
 // 39 case-rfi and 1 case-rft deleted by the request access workflow tests (1 more case-rfi is merged)
 testDeletedCounter['case-rfi'] = 48;
 testDeletedCounter['case-rft'] = 2;
-testDeletedCounter.channel = 1;
+testDeletedCounter.channel = 3; // 2 created and deleted by stixCoreObject-test (regardingOf on publishes)
 testDeletedCounter['course-of-action'] = 2;
 testDeletedCounter['data-component'] = 2;
 testDeletedCounter['data-source'] = 2;
@@ -223,6 +227,7 @@ testDeletedCounter.label = 11;
 testDeletedCounter.language = 1;
 testDeletedCounter.location = 18; // includes 1 created and deleted by publicDashboard-test (time series breakdown)
 testDeletedCounter['mac-addr'] = 1;
+testDeletedCounter['media-content'] = 1; // created and deleted by stixCoreObject-test (regardingOf on publishes)
 // Includes 2 created and deleted by form-submission-test, and 2 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown),
 // and 5 by ingestionDeduplication-domain-test
 testDeletedCounter.malware = 50; // 2 by the request access workflow tests
