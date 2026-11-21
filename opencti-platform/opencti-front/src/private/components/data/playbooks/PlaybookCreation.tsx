@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { InputHTMLAttributes, useContext, useRef } from 'react';
+import React, { InputHTMLAttributes, useContext, useRef, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
@@ -38,6 +38,8 @@ import { PlaybookCreationImportMutation } from './__generated__/PlaybookCreation
 import { PlaybookCreationMutation } from './__generated__/PlaybookCreationMutation.graphql';
 import type { Theme } from '../../../../components/Theme';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import ConfigPresetPartialImportDialog from '../../settings/config_preset/import/partial/ConfigPresetPartialImportDialog';
+import useConfigPresetPartialImportAccess from '../../settings/config_preset/import/partial/useConfigPresetPartialImportAccess';
 
 const playbookCreationMutation = graphql`
   mutation PlaybookCreationMutation($input: PlaybookAddInput!) {
@@ -59,11 +61,17 @@ interface PlaybookCreationForm {
   description: string;
 }
 
-const PlaybookCreation = () => {
+interface PlaybookCreationProps {
+  onPlaybooksImported?: () => void;
+}
+
+const PlaybookCreation = ({ onPlaybooksImported }: PlaybookCreationProps) => {
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const inputRef = useRef<HTMLInputElement>(null);
+  const canImportFromBundle = useConfigPresetPartialImportAccess();
+  const [bundleImportOpen, setBundleImportOpen] = useState(false);
   const { settings, isXTMHubAccessible } = useContext(UserContext);
   const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
     ? `${settings.platform_xtmhub_url}/redirect/opencti_playbooks?platform_id=${settings.id}`
@@ -101,6 +109,7 @@ const PlaybookCreation = () => {
   const handleImport: InputHTMLAttributes<HTMLInputElement>['onChange'] = (event) => {
     const importedFile = event.target?.files?.[0];
     if (importedFile) {
+      setBundleImportOpen(false);
       importMutation({
         variables: { file: importedFile },
         onError: handleError,
@@ -122,7 +131,7 @@ const PlaybookCreation = () => {
           <ToggleButton
             value="import"
             size="small"
-            onClick={() => inputRef.current?.click()}
+            onClick={() => (canImportFromBundle ? setBundleImportOpen(true) : inputRef.current?.click())}
             sx={{ marginLeft: theme.spacing(1) }}
             data-testid="ImporPlaybook"
             aria-label={t_i18n('Import playbook')}
@@ -158,6 +167,20 @@ const PlaybookCreation = () => {
         accept="application/JSON"
         onChange={handleImport}
       />
+      {canImportFromBundle && (
+        <ConfigPresetPartialImportDialog
+          open={bundleImportOpen}
+          onClose={() => setBundleImportOpen(false)}
+          title={t_i18n('Import playbook')}
+          type="playbooks"
+          itemsLabel={t_i18n('playbooks')}
+          fileLabel={t_i18n('Import a playbook file')}
+          fileDescription={t_i18n('A playbook exported as a JSON file')}
+          bundleDescription={t_i18n('Select the playbooks to import from a full configuration bundle (zip)')}
+          onBundleImported={() => onPlaybooksImported?.()}
+          onChooseFile={() => inputRef.current?.click()}
+        />
+      )}
       <Drawer
         title={t_i18n('Create a playbook')}
         controlledDial={CreatePlaybookControlledDial}

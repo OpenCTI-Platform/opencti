@@ -15,6 +15,7 @@ import { labelsFamily } from './registry/labels-configPreset-registry';
 import { connectorsFamily } from './registry/connectors-configPreset-registry';
 import { csvFeedsFamily, jsonFeedsFamily, rssFeedsFamily, taxiiFeedsFamily } from './registry/ingestion-configPreset-registry';
 import { ruleEngineFamily } from './registry/ruleEngine-configPreset-registry';
+import { playbooksFamily } from './registry/playbooks-configPreset-registry';
 import { isEnterpriseEditionUpToDate } from '../../enterprise-edition/ee';
 import { exclusionListsFamily } from './registry/exclusionLists-configPreset-registry';
 import { killChainPhasesFamily } from './registry/killChainPhases-configPreset-registry';
@@ -52,6 +53,7 @@ export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   csvFeedsFamily,
   jsonFeedsFamily,
   taxiiFeedsFamily,
+  playbooksFamily,
   ruleEngineFamily,
   fintelDesignsFamily,
 ];
