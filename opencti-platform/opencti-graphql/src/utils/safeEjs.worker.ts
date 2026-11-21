@@ -1,3 +1,5 @@
+// Must stay the first import: Object.prototype is sealed before any dependency loads (see config/prototype-seal.ts).
+import '../config/prototype-seal';
 import { parentPort } from 'worker_threads';
 import type { Data } from 'ejs';
 import { safeRender } from './safeEjs';

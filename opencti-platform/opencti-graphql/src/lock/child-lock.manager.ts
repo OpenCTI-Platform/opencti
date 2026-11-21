@@ -1,3 +1,5 @@
+// Must stay the first import: Object.prototype is sealed before any dependency loads (see config/prototype-seal.ts).
+import '../config/prototype-seal';
 import { initializeOnlyRedisLockClient, lockResource } from '../database/redis';
 import { logApp } from '../config/conf';
 const PARENT_PROCESS_SCHEDULE_LISTENER = 2000;
