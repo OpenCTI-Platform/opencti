@@ -56,6 +56,16 @@ Elasticsearch 8, Elasticsearch 9 and OpenSearch are supported. The platform dete
 behind `elasticsearch:url` at startup: there is nothing to configure (see [Configuration](configuration.md#elasticsearch)
 and, to move from Elasticsearch 8 to 9, [this migration guide](breaking-changes/elasticsearch-9-support.md)).
 
+!!! note "ElasticSearch / OpenSearch storage performance"
+
+    Use SSD-backed storage for ElasticSearch / OpenSearch in production.
+    For large or extra-large deployments, NVMe storage is recommended. OpenCTI
+    queries current and historical knowledge data (no hot/warm/cold tiering), so
+    storage performance affects both ingestion and analysis. Slower disks or slow
+    network-attached storage can limit indexing throughput before CPU or RAM are saturated.
+
+    For more information about indices that can grow rapidly, see the
+    [indices and rollover policies](advanced/rollover.md).
 
 ### Platform
 
