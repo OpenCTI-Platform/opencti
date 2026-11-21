@@ -1,5 +1,4 @@
-import { TaskAltOutlined } from '@mui/icons-material';
-import { BriefcaseEditOutline, BriefcaseEyeOutline, BriefcaseRemoveOutline, BriefcaseSearchOutline } from 'mdi-material-ui';
+import { Icon } from '@filigran/design-system';
 import type { MenuEntry } from '../common/menus/menuEntry';
 import { KNOWLEDGE } from '../../../utils/hooks/capabilities';
 
@@ -11,7 +10,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/cases/incidents',
     label: 'Incident responses',
     entityType: 'Case-Incident',
-    icon: <BriefcaseEyeOutline fontSize="small" />,
+    icon: <Icon name="custom/case-incident" size={16} />,
     keywords: ['ir', 'dfir', 'ticket', 'soc'],
     ...knowledge,
   },
@@ -19,7 +18,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/cases/rfis',
     label: 'Requests for information',
     entityType: 'Case-Rfi',
-    icon: <BriefcaseSearchOutline fontSize="small" />,
+    icon: <Icon name="custom/case-rfi" size={16} />,
     keywords: ['rfi', 'question', 'tasking', 'requirement'],
     ...knowledge,
   },
@@ -27,7 +26,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/cases/rfts',
     label: 'Requests for takedown',
     entityType: 'Case-Rft',
-    icon: <BriefcaseRemoveOutline fontSize="small" />,
+    icon: <Icon name="custom/case-rft" size={16} />,
     keywords: ['rft', 'removal', 'phishing', 'brand', 'abuse'],
     ...knowledge,
   },
@@ -35,7 +34,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/cases/tasks',
     label: 'Tasks',
     entityType: 'Task',
-    icon: <TaskAltOutlined fontSize="small" />,
+    icon: <Icon name="list-checks" size={16} />,
     keywords: ['todo', 'assignment', 'checklist'],
     ...knowledge,
   },
@@ -43,7 +42,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/cases/feedbacks',
     label: 'Feedbacks',
     entityType: 'Feedback',
-    icon: <BriefcaseEditOutline fontSize="small" />,
+    icon: <Icon name="message-square-text" size={16} />,
     keywords: ['Rating', 'satisfaction', 'survey'],
     ...knowledge,
   },

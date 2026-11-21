@@ -1,4 +1,4 @@
-import { ExtensionOutlined } from '@mui/icons-material';
+import { Icon } from '@filigran/design-system';
 import type { MenuEntry } from '../common/menus/menuEntry';
 import { INGESTION, INGESTION_SETINGESTIONS, MODULES } from '../../../utils/hooks/capabilities';
 
@@ -6,7 +6,7 @@ export const integrations: MenuEntry = {
   path: '/dashboard/integrations',
   label: 'Integrations',
   keywords: ['Connector', 'marketplace', 'application', 'plugin', 'Enrichment', 'Ingestion', 'xtm', 'hub'],
-  icon: <ExtensionOutlined />,
+  icon: <Icon name="link-2" size={16} />,
   requiredCapabilities: [MODULES, INGESTION, INGESTION_SETINGESTIONS],
 };
 

@@ -1,4 +1,4 @@
-import { ExploreOutlined } from '@mui/icons-material';
+import { Icon } from '@filigran/design-system';
 import type { MenuEntry } from '../common/menus/menuEntry';
 import { EXPLORE, INVESTIGATION } from '../../../utils/hooks/capabilities';
 
@@ -20,7 +20,7 @@ export const investigations: MenuEntry = {
   path: '/dashboard/workspaces/investigations',
   label: 'Investigations',
   keywords: ['Graph', 'pivot', 'hunting', 'canvas', 'link', 'Analysis'],
-  icon: <ExploreOutlined />,
+  icon: <Icon name="waypoints" size={16} />,
   requiredCapabilities: [INVESTIGATION],
 };
 
