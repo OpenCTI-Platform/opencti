@@ -113,7 +113,7 @@ testUpdatedCounter.malware = 24; // 1 org sharing by the request access workflow
 testUpdatedCounter.file = 27;
 testUpdatedCounter['intrusion-set'] = 18;
 testUpdatedCounter['data-component'] = 7;
-testUpdatedCounter.location = 14;
+testUpdatedCounter.location = 16; // includes 2 by publicDashboard-test (an import file pushed then deleted)
 // 3 by ingestionDeduplication-test (a change at the source, an edit in the platform, the source content applied again)
 testUpdatedCounter['attack-pattern'] = 6;
 // 5 by workflow-closing-reason-test merge (1) and external status write (4) cases
