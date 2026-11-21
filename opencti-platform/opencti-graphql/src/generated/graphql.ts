@@ -18195,9 +18195,7 @@ export type Mutation = {
   playbookFieldPatch?: Maybe<Playbook>;
   playbookImport: Scalars['String']['output'];
   playbookInsertNode: PlaybookInsertResult;
-  /** Move a node and its branch under another out port in a single write: every link reaching the node is replaced by one link from parentNodeId / parentPortId. */
   playbookMoveNode: Scalars['String']['output'];
-  /** Re-point one link in a single write: a new target node, and optionally a new source node and out port. Refuses a cycle and a node left without a parent. */
   playbookRelink: Scalars['String']['output'];
   playbookReplaceNode: Scalars['String']['output'];
   playbookStepExecution?: Maybe<Scalars['Boolean']['output']>;
@@ -24820,9 +24818,7 @@ export type PlaybookAddNodeInput = {
   configuration?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
-  /** Node this node is linked from: required for every node but the entry point, given with parentPortId. */
   parentNodeId?: InputMaybe<Scalars['ID']['input']>;
-  /** Out port of parentNodeId the link leaves from. */
   parentPortId?: InputMaybe<Scalars['ID']['input']>;
   position: PositionInput;
 };
@@ -25931,6 +25927,7 @@ export type Query = {
   sessions?: Maybe<Array<Maybe<UserSession>>>;
   settings: Settings;
   smtpConfiguration?: Maybe<SmtpConfiguration>;
+  smtpConfigurationDefaults: SmtpConfigurationDefaults;
   status?: Maybe<Status>;
   statusTemplate?: Maybe<StatusTemplate>;
   statusTemplates?: Maybe<StatusTemplateConnection>;
@@ -26068,8 +26065,6 @@ export type Query = {
   works?: Maybe<WorkConnection>;
   workspace?: Maybe<Workspace>;
   workspaces?: Maybe<WorkspaceConnection>;
-  xtmConnections: Array<XtmConnection>;
-  xtmCounterpartsOf: Array<XtmCounterpartResult>;
 };
 
 
@@ -28193,6 +28188,11 @@ export type QuerySchemaAttributeNamesArgs = {
 };
 
 
+export type QuerySchemaAttributesArgs = {
+  entityType?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type QuerySectorArgs = {
   id?: InputMaybe<Scalars['String']['input']>;
 };
@@ -29467,11 +29467,6 @@ export type QueryWorkspacesArgs = {
   orderBy?: InputMaybe<WorkspacesOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type QueryXtmCounterpartsOfArgs = {
-  ids: Array<Scalars['String']['input']>;
 };
 
 export type QueryAttribute = {
@@ -32299,6 +32294,8 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_no_access_message?: Maybe<Scalars['String']['output']>;
   platform_notifier_auto_trigger_assignee: Scalars['Boolean']['output'];
   platform_openaev_url?: Maybe<Scalars['String']['output']>;
+  platform_opencrq_url?: Maybe<Scalars['String']['output']>;
+  /** @deprecated OpenGRC was renamed OpenCRQ. Use platform_opencrq_url, which returns the same value. */
   platform_opengrc_url?: Maybe<Scalars['String']['output']>;
   platform_organization?: Maybe<Organization>;
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig;
@@ -32435,6 +32432,7 @@ export type SmtpConfiguration = {
   oauth_user?: Maybe<Scalars['String']['output']>;
   port?: Maybe<Scalars['Int']['output']>;
   reject_unauthorized?: Maybe<Scalars['Boolean']['output']>;
+  require_tls?: Maybe<Scalars['Boolean']['output']>;
   sender_email_address?: Maybe<Scalars['String']['output']>;
   smtp_enabled: Scalars['Boolean']['output'];
   use_db_config: Scalars['Boolean']['output'];
@@ -32455,11 +32453,17 @@ export type SmtpConfigurationAddInput = {
   password?: InputMaybe<Scalars['String']['input']>;
   port?: InputMaybe<Scalars['Int']['input']>;
   reject_unauthorized?: InputMaybe<Scalars['Boolean']['input']>;
+  require_tls?: InputMaybe<Scalars['Boolean']['input']>;
   sender_email_address?: InputMaybe<Scalars['String']['input']>;
   smtp_enabled?: InputMaybe<Scalars['Boolean']['input']>;
   use_db_config?: InputMaybe<Scalars['Boolean']['input']>;
   use_ssl?: InputMaybe<Scalars['Boolean']['input']>;
   username?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type SmtpConfigurationDefaults = {
+  __typename?: 'SmtpConfigurationDefaults';
+  require_tls: Scalars['Boolean']['output'];
 };
 
 export type Software = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -38165,6 +38169,7 @@ export enum TriggersOrdering {
 export type TypeAttribute = {
   __typename?: 'TypeAttribute';
   defaultValues?: Maybe<Array<DefaultValue>>;
+  description?: Maybe<Scalars['String']['output']>;
   editDefault: Scalars['Boolean']['output'];
   label?: Maybe<Scalars['String']['output']>;
   mandatory: Scalars['Boolean']['output'];
@@ -39231,6 +39236,7 @@ export type Vocabulary = BasicObject & StixMetaObject & StixObject & {
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   order?: Maybe<Scalars['Int']['output']>;
+  parent_name?: Maybe<Scalars['String']['output']>;
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   representative: Representative;
@@ -39252,6 +39258,7 @@ export type VocabularyAddInput = {
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
   order?: InputMaybe<Scalars['Int']['input']>;
+  parent_name?: InputMaybe<Scalars['String']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -40978,44 +40985,6 @@ export enum XtmHubRegistrationStatus {
   LostConnectivity = 'lost_connectivity',
   Registered = 'registered',
   Unregistered = 'unregistered'
-}
-
-export type XtmConnection = {
-  __typename?: 'XtmConnection';
-  connected: Scalars['Boolean']['output'];
-  product: Scalars['String']['output'];
-};
-
-export type XtmCounterpart = {
-  __typename?: 'XtmCounterpart';
-  facts: Array<XtmCounterpartFact>;
-  key: Scalars['String']['output'];
-  object_id: Scalars['String']['output'];
-  object_name?: Maybe<Scalars['String']['output']>;
-  object_type: Scalars['String']['output'];
-  object_url: Scalars['String']['output'];
-  product: Scalars['String']['output'];
-};
-
-export type XtmCounterpartFact = {
-  __typename?: 'XtmCounterpartFact';
-  key: Scalars['String']['output'];
-  value: Scalars['String']['output'];
-};
-
-export type XtmCounterpartResult = {
-  __typename?: 'XtmCounterpartResult';
-  counterpart?: Maybe<XtmCounterpart>;
-  id: Scalars['String']['output'];
-  product: Scalars['String']['output'];
-  status: XtmCounterpartStatus;
-};
-
-export enum XtmCounterpartStatus {
-  Found = 'found',
-  NotFound = 'not_found',
-  NotSupported = 'not_supported',
-  Unavailable = 'unavailable'
 }
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
@@ -42862,6 +42831,7 @@ export type ResolversTypes = ResolversObject<{
   SmtpAuthType: SmtpAuthType;
   SmtpConfiguration: ResolverTypeWrapper<SmtpConfiguration>;
   SmtpConfigurationAddInput: SmtpConfigurationAddInput;
+  SmtpConfigurationDefaults: ResolverTypeWrapper<SmtpConfigurationDefaults>;
   Software: ResolverTypeWrapper<Omit<Software, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'vulnerabilities' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, creators?: Maybe<Array<ResolversTypes['Creator']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, vulnerabilities?: Maybe<ResolversTypes['VulnerabilityConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   SoftwareAddInput: SoftwareAddInput;
   SoftwareConnection: ResolverTypeWrapper<Omit<SoftwareConnection, 'edges'> & { edges: Array<ResolversTypes['SoftwareEdge']> }>;
@@ -43168,11 +43138,6 @@ export type ResolversTypes = ResolversObject<{
   X509CertificateAddInput: X509CertificateAddInput;
   XTMHubCommercialModel: XtmHubCommercialModel;
   XTMHubRegistrationStatus: XtmHubRegistrationStatus;
-  XtmConnection: ResolverTypeWrapper<XtmConnection>;
-  XtmCounterpart: ResolverTypeWrapper<XtmCounterpart>;
-  XtmCounterpartFact: ResolverTypeWrapper<XtmCounterpartFact>;
-  XtmCounterpartResult: ResolverTypeWrapper<XtmCounterpartResult>;
-  XtmCounterpartStatus: XtmCounterpartStatus;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -44000,6 +43965,7 @@ export type ResolversParentTypes = ResolversObject<{
   SettingsMessageInput: SettingsMessageInput;
   SmtpConfiguration: SmtpConfiguration;
   SmtpConfigurationAddInput: SmtpConfigurationAddInput;
+  SmtpConfigurationDefaults: SmtpConfigurationDefaults;
   Software: Omit<Software, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'vulnerabilities' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, vulnerabilities?: Maybe<ResolversParentTypes['VulnerabilityConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   SoftwareAddInput: SoftwareAddInput;
   SoftwareConnection: Omit<SoftwareConnection, 'edges'> & { edges: Array<ResolversParentTypes['SoftwareEdge']> };
@@ -44249,10 +44215,6 @@ export type ResolversParentTypes = ResolversObject<{
   WorkspaceEdge: Omit<WorkspaceEdge, 'node'> & { node: ResolversParentTypes['Workspace'] };
   X509Certificate: Omit<X509Certificate, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   X509CertificateAddInput: X509CertificateAddInput;
-  XtmConnection: XtmConnection;
-  XtmCounterpart: XtmCounterpart;
-  XtmCounterpartFact: XtmCounterpartFact;
-  XtmCounterpartResult: XtmCounterpartResult;
 }>;
 
 export type AllowUnlicensedLtsDirectiveArgs = { };
@@ -52822,7 +52784,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   savedFilter?: Resolver<Maybe<ResolversTypes['SavedFilter']>, ParentType, ContextType, RequireFields<QuerySavedFilterArgs, 'id'>>;
   savedFilters?: Resolver<Maybe<ResolversTypes['SavedFilterConnection']>, ParentType, ContextType, Partial<QuerySavedFiltersArgs>>;
   schemaAttributeNames?: Resolver<Maybe<ResolversTypes['AttributeConnection']>, ParentType, ContextType, RequireFields<QuerySchemaAttributeNamesArgs, 'elementType'>>;
-  schemaAttributes?: Resolver<Maybe<Array<Maybe<ResolversTypes['AttributesMap']>>>, ParentType, ContextType>;
+  schemaAttributes?: Resolver<Maybe<Array<Maybe<ResolversTypes['AttributesMap']>>>, ParentType, ContextType, Partial<QuerySchemaAttributesArgs>>;
   schemaRelationsRefTypesMapping?: Resolver<Array<ResolversTypes['StixRelationshipRefSchema']>, ParentType, ContextType>;
   schemaRelationsTypesMapping?: Resolver<Array<ResolversTypes['StixRelationshipSchema']>, ParentType, ContextType>;
   sector?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, Partial<QuerySectorArgs>>;
@@ -52837,6 +52799,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserSession']>>>, ParentType, ContextType>;
   settings?: Resolver<ResolversTypes['Settings'], ParentType, ContextType>;
   smtpConfiguration?: Resolver<Maybe<ResolversTypes['SmtpConfiguration']>, ParentType, ContextType>;
+  smtpConfigurationDefaults?: Resolver<ResolversTypes['SmtpConfigurationDefaults'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType, RequireFields<QueryStatusArgs, 'id'>>;
   statusTemplate?: Resolver<Maybe<ResolversTypes['StatusTemplate']>, ParentType, ContextType, RequireFields<QueryStatusTemplateArgs, 'id'>>;
   statusTemplates?: Resolver<Maybe<ResolversTypes['StatusTemplateConnection']>, ParentType, ContextType, Partial<QueryStatusTemplatesArgs>>;
@@ -52965,8 +52928,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   works?: Resolver<Maybe<ResolversTypes['WorkConnection']>, ParentType, ContextType, Partial<QueryWorksArgs>>;
   workspace?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<QueryWorkspaceArgs, 'id'>>;
   workspaces?: Resolver<Maybe<ResolversTypes['WorkspaceConnection']>, ParentType, ContextType, Partial<QueryWorkspacesArgs>>;
-  xtmConnections?: Resolver<Array<ResolversTypes['XtmConnection']>, ParentType, ContextType>;
-  xtmCounterpartsOf?: Resolver<Array<ResolversTypes['XtmCounterpartResult']>, ParentType, ContextType, RequireFields<QueryXtmCounterpartsOfArgs, 'ids'>>;
 }>;
 
 export type QueryTaskResolvers<ContextType = any, ParentType extends ResolversParentTypes['QueryTask'] = ResolversParentTypes['QueryTask']> = ResolversObject<{
@@ -53955,6 +53916,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_no_access_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_notifier_auto_trigger_assignee?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_openaev_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_opencrq_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_opengrc_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   platform_protected_sensitive_config?: Resolver<ResolversTypes['PlatformProtectedSensitiveConfig'], ParentType, ContextType>;
@@ -54030,11 +53992,16 @@ export type SmtpConfigurationResolvers<ContextType = any, ParentType extends Res
   oauth_user?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   port?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   reject_unauthorized?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  require_tls?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   sender_email_address?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   smtp_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   use_db_config?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   use_ssl?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   username?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type SmtpConfigurationDefaultsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SmtpConfigurationDefaults'] = ResolversParentTypes['SmtpConfigurationDefaults']> = ResolversObject<{
+  require_tls?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
 export type SoftwareResolvers<ContextType = any, ParentType extends ResolversParentTypes['Software'] = ResolversParentTypes['Software']> = ResolversObject<{
@@ -55849,6 +55816,7 @@ export type TriggerEdgeResolvers<ContextType = any, ParentType extends Resolvers
 
 export type TypeAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['TypeAttribute'] = ResolversParentTypes['TypeAttribute']> = ResolversObject<{
   defaultValues?: Resolver<Maybe<Array<ResolversTypes['DefaultValue']>>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   mandatory?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -56227,6 +56195,7 @@ export type VocabularyResolvers<ContextType = any, ParentType extends ResolversP
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   order?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  parent_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -56912,33 +56881,6 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type XtmConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['XtmConnection'] = ResolversParentTypes['XtmConnection']> = ResolversObject<{
-  connected?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  product?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-}>;
-
-export type XtmCounterpartResolvers<ContextType = any, ParentType extends ResolversParentTypes['XtmCounterpart'] = ResolversParentTypes['XtmCounterpart']> = ResolversObject<{
-  facts?: Resolver<Array<ResolversTypes['XtmCounterpartFact']>, ParentType, ContextType>;
-  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  object_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  object_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  object_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  object_url?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  product?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-}>;
-
-export type XtmCounterpartFactResolvers<ContextType = any, ParentType extends ResolversParentTypes['XtmCounterpartFact'] = ResolversParentTypes['XtmCounterpartFact']> = ResolversObject<{
-  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-}>;
-
-export type XtmCounterpartResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['XtmCounterpartResult'] = ResolversParentTypes['XtmCounterpartResult']> = ResolversObject<{
-  counterpart?: Resolver<Maybe<ResolversTypes['XtmCounterpart']>, ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  product?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  status?: Resolver<ResolversTypes['XtmCounterpartStatus'], ParentType, ContextType>;
-}>;
-
 export type Resolvers<ContextType = any> = ResolversObject<{
   AIBus?: AiBusResolvers<ContextType>;
   AIPrompt?: AiPromptResolvers<ContextType>;
@@ -57545,6 +57487,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   SettingsEditMutations?: SettingsEditMutationsResolvers<ContextType>;
   SettingsMessage?: SettingsMessageResolvers<ContextType>;
   SmtpConfiguration?: SmtpConfigurationResolvers<ContextType>;
+  SmtpConfigurationDefaults?: SmtpConfigurationDefaultsResolvers<ContextType>;
   Software?: SoftwareResolvers<ContextType>;
   SoftwareConnection?: SoftwareConnectionResolvers<ContextType>;
   SoftwareEdge?: SoftwareEdgeResolvers<ContextType>;
@@ -57733,10 +57676,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   WorkspaceConnection?: WorkspaceConnectionResolvers<ContextType>;
   WorkspaceEdge?: WorkspaceEdgeResolvers<ContextType>;
   X509Certificate?: X509CertificateResolvers<ContextType>;
-  XtmConnection?: XtmConnectionResolvers<ContextType>;
-  XtmCounterpart?: XtmCounterpartResolvers<ContextType>;
-  XtmCounterpartFact?: XtmCounterpartFactResolvers<ContextType>;
-  XtmCounterpartResult?: XtmCounterpartResultResolvers<ContextType>;
 }>;
 
 export type DirectiveResolvers<ContextType = any> = ResolversObject<{
