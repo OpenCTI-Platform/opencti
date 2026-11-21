@@ -573,9 +573,12 @@ export const generateAttributesInputsForUpsert = (context, _user, resolvedElemen
     const isInputAvailable = attributeKey in updatePatch;
     if (isInputAvailable) { // The attribute is explicitly available in the patch
       const inputData = updatePatch[attributeKey];
-      const isOutDatedModification = isOutdatedUpdate(context, resolvedElement, attributeKey);
       const isStructuralUpsert = attributeKey === xOpenctiStixIds.name || attributeKey === creatorsAttribute.name; // Ids and creators consolidation is always granted
       const isFullSync = context.synchronizedUpsert || attribute.upsert_force_replace; // In case of full synchronization or force full upsert, just update the data
+      // An add to a multiple attribute (and the ids and creators consolidation) does not depend on the order of the events:
+      // only an overwrite (single value or replace) coming from an event older than the last update of the attribute is outdated
+      const isAdditiveModification = isStructuralUpsert || (attribute.multiple && !isFullSync);
+      const isOutDatedModification = !isAdditiveModification && isOutdatedUpdate(context, resolvedElement, attributeKey);
       const isInputWithData = typeof inputData === 'string' ? isNotEmptyField(inputData.trim()) : isNotEmptyField(inputData);
       const isCurrentlyEmpty = isEmptyField(resolvedElement[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
       // Field can be upsert if:
@@ -608,7 +611,10 @@ export const generateRefsInputsForUpsert = (context, user, resolvedElement, _typ
       const patchInputData = updatePatch[inputField];
       const isInputWithData = isNotEmptyField(patchInputData);
       const isUpsertSynchro = context.synchronizedUpsert;
-      const isOutDatedModification = isOutdatedUpdate(context, resolvedElement, inputField);
+      // An add of multiple refs does not depend on the order of the events:
+      // only a replace (single ref or synchronized upsert) coming from an event older than the last update of the ref is outdated
+      const isAdditiveModification = relDef.multiple && !isUpsertSynchro;
+      const isOutDatedModification = !isAdditiveModification && isOutdatedUpdate(context, resolvedElement, inputField);
       if (!isOutDatedModification) {
         if (relDef.multiple) {
           const currentData = resolvedElement[relDef.databaseName] ?? [];
