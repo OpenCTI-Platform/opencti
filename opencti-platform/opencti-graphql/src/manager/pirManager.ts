@@ -23,7 +23,7 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { AuthContext } from '../types/user';
 import { FunctionalError } from '../config/errors';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type ParsedPir, type ParsedPirCriterion, type StoreEntityPir } from '../modules/pir/pir-types';
-import { constructFinalPirFilters, parsePir } from '../modules/pir/pir-utils';
+import { constructFinalPirFilters, criterionFlagSide, parsePir } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
 import { fetchStreamEventsRangeFromEventId } from '../database/stream/stream-handler';
 import { updatePir } from '../modules/pir/pir-domain';
@@ -32,6 +32,7 @@ import convertEntityPirToStix from '../modules/pir/pir-converter';
 import { buildStixBundle } from '../database/stix-2-1-converter';
 import conf, { booleanConf } from '../config/conf';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
+import { PirFlagSide } from '../generated/graphql';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
 const PIR_MANAGER_LABEL = 'Pir Manager';
@@ -119,6 +120,62 @@ export const checkEventOnPir = async (context: AuthContext, event: SseEvent<any>
   return matchingCriteria;
 };
 
+// The stream data event a PIR reads: its operation type and its STIX data.
+export interface PirRelationshipEvent {
+  type: string;
+  data: any;
+}
+
+export interface PirFlagAction {
+  operation: 'flag' | 'unflag';
+  elementId: string;
+  relationshipId: string;
+  criteria: ParsedPirCriterion[];
+  relationshipAuthorId?: string;
+}
+
+/**
+ * Decide which end of a relationship event to flag or unflag for a PIR.
+ * A criterion flags the source of the relationship unless its flag_side is TARGET
+ * (for instance the Vulnerability of "Software has Vulnerability").
+ * The target side is only considered when the PIR holds at least one target criterion,
+ * so a PIR whose criteria all flag the source behaves exactly as before.
+ *
+ * @param pir The parsed PIR.
+ * @param event The relationship event.
+ * @param matchingCriteria Criteria of the PIR the event matches.
+ * @returns The flag and unflag operations to queue, source first.
+ */
+export const computePirFlagActions = (
+  pir: ParsedPir,
+  event: PirRelationshipEvent,
+  matchingCriteria: ParsedPirCriterion[],
+): PirFlagAction[] => {
+  const { data } = event;
+  const ext = data.extensions?.[STIX_EXT_OCTI];
+  const pirSides = new Set(pir.pir_criteria.map((c) => criterionFlagSide(c)));
+  pirSides.add(PirFlagSide.Source); // the source keeps its historical handling
+  const actions: PirFlagAction[] = [];
+  [PirFlagSide.Source, PirFlagSide.Target].filter((side) => pirSides.has(side)).forEach((side) => {
+    const sideLabel = side === PirFlagSide.Target ? 'target' : 'source';
+    const sideCriteria = matchingCriteria.filter((c) => criterionFlagSide(c) === side);
+    const sidePirRefs: string[] = (side === PirFlagSide.Target ? ext?.target_ref_pir_refs : ext?.source_ref_pir_refs) ?? [];
+    const matches = sideCriteria.length > 0;
+    const unflagOnUpdate = !matches && event.type === EVENT_TYPE_UPDATE && sidePirRefs.length > 0;
+    if (!matches && !unflagOnUpdate) return;
+    const elementId: string = side === PirFlagSide.Target ? ext?.target_ref : ext?.source_ref;
+    if (!elementId) throw FunctionalError(`Cannot flag the ${sideLabel} with Pir ${pir.id}, no ${sideLabel} id found`);
+    const relationshipId: string = ext?.id;
+    if (!relationshipId) throw FunctionalError(`Cannot flag the ${sideLabel} with Pir ${pir.id}, no relationship id found`);
+    if (unflagOnUpdate || event.type === EVENT_TYPE_DELETE) {
+      actions.push({ operation: 'unflag', elementId, relationshipId, criteria: [] });
+    } else if (event.type === EVENT_TYPE_CREATE || event.type === EVENT_TYPE_UPDATE) {
+      actions.push({ operation: 'flag', elementId, relationshipId, criteria: sideCriteria, relationshipAuthorId: ext?.created_by_ref_id });
+    }
+  });
+  return actions;
+};
+
 const processStreamEventsForPir = (context: AuthContext, pir: BasicStoreEntityPir) => {
   const parsedPir = parsePir(pir);
 
@@ -130,32 +187,14 @@ const processStreamEventsForPir = (context: AuthContext, pir: BasicStoreEntityPi
     // Check every event received to see if it matches the Pir.
     for (let i = 0; i < eventsContent.length; i += 1) {
       const event = eventsContent[i];
-      const { data } = event;
       const matchingCriteria = await checkEventOnPir(context, event, parsedPir);
-      if (matchingCriteria.length > 0) { // the event matches Pir
-        const sourceId: string = data.extensions?.[STIX_EXT_OCTI]?.source_ref;
-        if (!sourceId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no source id found`);
-        const relationshipId: string = data.extensions?.[STIX_EXT_OCTI]?.id;
-        if (!relationshipId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no relationship id found`);
-        const relationshipAuthorId = data.extensions?.[STIX_EXT_OCTI]?.created_by_ref_id;
-        switch (event.type) {
-          case EVENT_TYPE_CREATE:
-          case EVENT_TYPE_UPDATE:
-            await pirFlagElementToQueue(context, pir, relationshipId, sourceId, matchingCriteria, relationshipAuthorId);
-            break;
-          case EVENT_TYPE_DELETE:
-            await pirUnflagElementFromQueue(context, pir, relationshipId, sourceId);
-            break;
-          default: // Nothing to do
-        }
-      } else { // the event doesn't match the Pir
-        const sourcePirRefs = data.extensions?.[STIX_EXT_OCTI]?.source_ref_pir_refs ?? [];
-        if (event.type === EVENT_TYPE_UPDATE && sourcePirRefs.length > 0) {
-          const sourceId: string = data.extensions?.[STIX_EXT_OCTI]?.source_ref;
-          if (!sourceId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no source id found`);
-          const relationshipId: string = data.extensions?.[STIX_EXT_OCTI]?.id;
-          if (!relationshipId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no relationship id found`);
-          await pirUnflagElementFromQueue(context, pir, relationshipId, sourceId);
+      const actions = computePirFlagActions(parsedPir, event, matchingCriteria);
+      for (let a = 0; a < actions.length; a += 1) {
+        const { operation, elementId, relationshipId, criteria, relationshipAuthorId } = actions[a];
+        if (operation === 'flag') {
+          await pirFlagElementToQueue(context, pir, relationshipId, elementId, criteria, relationshipAuthorId);
+        } else {
+          await pirUnflagElementFromQueue(context, pir, relationshipId, elementId);
         }
       }
     }

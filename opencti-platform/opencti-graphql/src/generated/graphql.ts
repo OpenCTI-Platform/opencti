@@ -24561,11 +24561,13 @@ export type PirConnection = {
 export type PirCriterion = {
   __typename?: 'PirCriterion';
   filters: Scalars['String']['output'];
+  flag_side?: Maybe<PirFlagSide>;
   weight: Scalars['Int']['output'];
 };
 
 export type PirCriterionInput = {
   filters: FilterGroup;
+  flag_side?: InputMaybe<PirFlagSide>;
   weight: Scalars['Int']['input'];
 };
 
@@ -24596,6 +24598,11 @@ export type PirExplanationInput = {
   criterion: PirCriterionInput;
   dependencies: Array<PirDependencyInput>;
 };
+
+export enum PirFlagSide {
+  Source = 'SOURCE',
+  Target = 'TARGET'
+}
 
 export type PirFlagElementInput = {
   matchingCriteria: Array<PirCriterionInput>;
@@ -42675,6 +42682,7 @@ export type ResolversTypes = ResolversObject<{
   PirExplanation: ResolverTypeWrapper<PirExplanation>;
   PirExplanationInput: PirExplanationInput;
   PirFlagElementInput: PirFlagElementInput;
+  PirFlagSide: PirFlagSide;
   PirInformation: ResolverTypeWrapper<PirInformation>;
   PirOrdering: PirOrdering;
   PirRelationship: ResolverTypeWrapper<Omit<PirRelationship, 'creators' | 'from' | 'to'> & { creators?: Maybe<Array<ResolversTypes['Creator']>>, from?: Maybe<ResolversTypes['StixDomainObject']>, to?: Maybe<ResolversTypes['Pir']> }>;
@@ -52033,6 +52041,7 @@ export type PirConnectionResolvers<ContextType = any, ParentType extends Resolve
 
 export type PirCriterionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirCriterion'] = ResolversParentTypes['PirCriterion']> = ResolversObject<{
   filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  flag_side?: Resolver<Maybe<ResolversTypes['PirFlagSide']>, ParentType, ContextType>;
   weight?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 

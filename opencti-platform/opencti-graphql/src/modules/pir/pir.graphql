@@ -1,6 +1,15 @@
+# Which end of a matching relationship a criterion flags.
+# SOURCE (default) keeps the historical behaviour; TARGET flags the target,
+# for instance the Vulnerability of "Software has Vulnerability".
+enum PirFlagSide {
+    SOURCE
+    TARGET
+}
+
 type PirCriterion {
     filters: String!
     weight: Int!
+    flag_side: PirFlagSide
 }
 
 type PirScore {
@@ -198,6 +207,7 @@ type Query {
 input PirCriterionInput {
     weight: Int!
     filters: FilterGroup!
+    flag_side: PirFlagSide
 }
 
 # Used in StixRefRelationshipAddInput
