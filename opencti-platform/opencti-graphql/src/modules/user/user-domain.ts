@@ -30,7 +30,7 @@ import {
 } from '../../config/errors';
 import { checkDateDisplayInput } from '../../utils/dateDisplay';
 import { ipMatchesWhitelist, isUserExcluded } from '../../http/ipWhitelistMiddleware';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
+import { addCacheForEntity, getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { elLoadBy, elRawDeleteByQuery, elRawUpdateByQuery } from '../../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../../database/middleware';
 import {
@@ -2724,7 +2724,48 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: Express
 };
 
 export const JWT_TOKEN_PREFIX = 'ey';
-type SessionAuthRequest = OriginRequest & { session?: { user?: { id: string } } };
+type RequestSession = { destroy: (callback: (err?: unknown) => void) => void };
+type SessionAuthRequest = OriginRequest & { session?: RequestSession & { user?: { id: string } } };
+
+const destroyRequestSession = async (session: RequestSession) => {
+  await new Promise<void>((resolve) => {
+    session.destroy((err) => {
+      if (err) {
+        logApp.warn('[AUTH] Fail to destroy the session', { cause: err });
+      }
+      resolve();
+    });
+  });
+};
+
+// Resolves the platform user bound to an existing session, for the http requests and the websocket subscriptions.
+// The session content alone is not an identity (no name, capabilities, groups or markings): it is only completed
+// with the user of the users cache. A user missing from the cache of this node may only be late to reach it
+// (created or changed on another node): it is then loaded from the database and added to the cache.
+// Only a user that no longer exists (deleted, merged, data reset...) ends the session.
+export const resolveSessionUser = async <T extends { id: string }>(context: AuthContext, session: RequestSession, sessionUser: T) => {
+  const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const cachedUser = platformUsers.get(sessionUser.id);
+  if (cachedUser) {
+    return { ...sessionUser, ...cachedUser };
+  }
+  const storedUser = await internalLoadById<BasicStoreEntityUser>(context, SYSTEM_USER, sessionUser.id, { type: ENTITY_TYPE_USER });
+  if (!storedUser) {
+    logApp.warn('[AUTH] Session user no longer exists, session destroyed', { user_id: sessionUser.id });
+    await destroyRequestSession(session);
+    return undefined;
+  }
+  logApp.warn('[AUTH] Session user missing from the users cache, adding it', { user_id: sessionUser.id });
+  await addCacheForEntity(storedUser);
+  const refreshedUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const refreshedUser = refreshedUsers.get(sessionUser.id);
+  if (!refreshedUser) {
+    // The user exists: the session is kept, the next request tries again
+    logApp.warn('[AUTH] Session user cannot be added to the users cache', { user_id: sessionUser.id });
+    return undefined;
+  }
+  return { ...sessionUser, ...refreshedUser };
+};
 // This method can only be used in createAuthenticatedContext
 // If you need to check auth and create context, use directly createAuthenticatedContext method
 export const authenticateUserFromRequest = async (context: AuthContext, req: SessionAuthRequest) => {
@@ -2751,10 +2792,8 @@ export const authenticateUserFromRequest = async (context: AuthContext, req: Ses
   const sessionUser = req.session?.user;
   // region If user already have a session
   if (sessionUser) {
-    const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-    const logged = platformUsers.get(sessionUser.id);
-    const authUser = { ...sessionUser, ...logged };
-    return userWithOrigin(req, authUser);
+    const authUser = await resolveSessionUser(context, req.session!, sessionUser);
+    return authUser ? userWithOrigin(req, authUser) : undefined;
   }
   // endregion
   // region Direct authentication

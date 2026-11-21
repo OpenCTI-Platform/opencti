@@ -124,7 +124,8 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
                 return resolve(source, args, context, info);
               }
 
-              const userBaseCapabilities = authenticatedUser.capabilities.map((c) => c.name);
+              // A malformed context user (no capabilities) must be refused, not crash the resolution
+              const userBaseCapabilities = (authenticatedUser.capabilities ?? []).map((c) => c.name);
               // The import of a verified Form Intake submission writes with Create / Update knowledge: this is the
               // only capability the form capability gives, every other check (markings, confidence, ...) still applies.
               if (context.form_submission === true) {

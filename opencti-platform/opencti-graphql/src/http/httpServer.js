@@ -17,10 +17,8 @@ import rateLimit from 'express-rate-limit';
 import createApp from './httpPlatform';
 import createApolloServer, { createSubscriptionServerOptions } from '../graphql/graphql';
 import { getSessionMiddleware } from '../database/session';
-import { executionContext, SYSTEM_USER } from '../utils/access';
+import { executionContext } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';
-import { getEntitiesMapFromCache } from '../database/cache';
-import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { getSettings } from '../domain/settings';
 import { computeLoaders } from './httpAuthenticatedContext';
 import { createGraphqlContext } from './httpGraphqlContext';
@@ -38,6 +36,7 @@ import {
 import { getMaxPayloadBodySize } from './httpConfig';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
 import { onSessionPresenceClose, onSessionPresenceConnect } from '../modules/session/session-presence-ws';
+import { resolveSessionUser } from '../modules/user/user-domain';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -76,11 +75,12 @@ export const extractWsSessionContext = async (context) => {
       group_ids: wsSession.user?.groups?.map((g) => g.internal_id) ?? [],
       organization_ids: wsSession.user?.organizations?.map((o) => o.internal_id) ?? [],
     };
-    const platformUsers = await getEntitiesMapFromCache(sessionContext, SYSTEM_USER, ENTITY_TYPE_USER);
-    const logged = platformUsers.get(wsSession?.user.id);
-    sessionContext.user = { ...wsSession?.user, ...logged, origin };
-    sessionContext.batch = computeLoaders(sessionContext, sessionContext.user);
-    return sessionContext;
+    const logged = await resolveSessionUser(sessionContext, wsSession, wsSession.user);
+    if (logged) {
+      sessionContext.user = { ...logged, origin };
+      sessionContext.batch = computeLoaders(sessionContext, sessionContext.user);
+      return sessionContext;
+    }
   }
   throw ForbiddenAccess('User must be authenticated');
 };

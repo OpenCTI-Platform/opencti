@@ -126,3 +126,12 @@ describe('authDirective - verified form submission', () => {
     expect(labels.errors?.[0]?.message).toBe('You are not allowed to do this.');
   });
 });
+
+describe('authDirective - malformed context user', () => {
+  it('denies access instead of crashing when the user has no capabilities list', async () => {
+    const user = buildUser({ capabilities: undefined });
+    const result = await runRestrictedQuery(user);
+    expect(result.data?.restricted).toBeNull();
+    expect(result.errors?.[0]?.message).toBe('You are not allowed to do this.');
+  });
+});
