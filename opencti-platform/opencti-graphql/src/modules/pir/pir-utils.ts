@@ -176,7 +176,7 @@ export const loadPirFlaggedEntity = async (context: AuthContext, user: AuthUser,
 export const publishPirScoreChange = async (
   context: AuthContext,
   user: AuthUser,
-  previous: StoreObject | undefined,
+  previous: StoreObject | null | undefined,
   pirId: string,
   previousScore: number,
   score: number,
