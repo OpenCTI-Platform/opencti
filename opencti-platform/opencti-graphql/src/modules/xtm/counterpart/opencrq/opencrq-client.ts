@@ -1,10 +1,14 @@
 import conf, { logApp } from '../../../../config/conf';
 import { getHttpClient } from '../../../../utils/http-client';
+import { exchangeXtmOneUserToken } from '../../../../domain/xtm-auth';
 import { counterpartAuthorization } from '../core/counterpart-auth';
 import { type CounterpartCaller, lookupErrorOf } from '../core/counterpart-errors';
 
 const OPENCRQ_TIMEOUT_MS = 5000;
 const OPENCRQ_LOOKUP_PROCEDURE = 'xtm.lookup';
+// A JWT XTM One signed for the calling user, addressed to OpenCRQ (OpenCRQ #29): OpenCRQ reads the facts as
+// that person when it verifies, the links only otherwise.
+export const XTM_USER_TOKEN_HEADER = 'X-XTM-User-Token';
 
 // The kinds OpenCRQ keys its objects by (OpenCRQ XTM_LOOKUP_KINDS): threats by STIX id, CVEs, assets by hostname.
 export type OpenCrqLookupKind = 'THREAT' | 'VULNERABILITY' | 'ASSET';
@@ -53,6 +57,8 @@ export const fetchOpenCrqObjects = async (kind: OpenCrqLookupKind, keys: string[
     return [];
   }
   try {
+    // No XTM One, or XTM One refuses the exchange: the lookup goes without it, as before.
+    const userToken = await exchangeXtmOneUserToken(caller, url);
     const httpClient = getHttpClient({
       baseURL: apiUrl,
       responseType: 'json',
@@ -60,6 +66,7 @@ export const fetchOpenCrqObjects = async (kind: OpenCrqLookupKind, keys: string[
       headers: {
         Authorization: await counterpartAuthorization(caller, url),
         Accept: 'application/json',
+        ...(userToken ? { [XTM_USER_TOKEN_HEADER]: userToken } : {}),
       },
     });
     const input = encodeURIComponent(JSON.stringify({ kind, keys }));

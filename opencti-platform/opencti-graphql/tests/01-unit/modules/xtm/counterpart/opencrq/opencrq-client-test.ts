@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   clientOptions: [] as any[],
   warn: vi.fn(),
   jwt: vi.fn(async (user: { id: string }, target: string) => `jwt-${user.id}@${target}`),
+  exchange: vi.fn(async (_user: { id: string }, _audience: string): Promise<string | undefined> => undefined),
 }));
 
 vi.mock('../../../../../../src/config/conf', () => ({
@@ -23,7 +24,7 @@ vi.mock('../../../../../../src/utils/http-client', () => ({
   },
 }));
 
-vi.mock('../../../../../../src/domain/xtm-auth', () => ({ issueXtmJwt: mocks.jwt }));
+vi.mock('../../../../../../src/domain/xtm-auth', () => ({ issueXtmJwt: mocks.jwt, exchangeXtmOneUserToken: mocks.exchange }));
 
 import { fetchOpenCrqObjects, getOpenCrqApiUrl, getOpenCrqUrl, isOpenCrqConnected } from '../../../../../../src/modules/xtm/counterpart/opencrq/opencrq-client';
 import { openCrqProvider, resetCounterpartCache, resolveCounterpartsOfSources } from '../../../../../../src/modules/xtm/counterpart/core/counterpart-domain';
@@ -53,6 +54,8 @@ describe('OpenCRQ client', () => {
     mocks.clientOptions = [];
     mocks.warn.mockReset();
     mocks.jwt.mockClear();
+    mocks.exchange.mockReset();
+    mocks.exchange.mockResolvedValue(undefined);
     resetCounterpartCache();
   });
 
@@ -86,6 +89,25 @@ describe('OpenCRQ client', () => {
     expect(mocks.clientOptions[0].baseURL).toBe('https://crq.example.com/trpc');
     expect(mocks.jwt).toHaveBeenCalledWith(ALICE, 'https://crq.example.com');
     expect(mocks.clientOptions[0].headers.Authorization).toBe('Bearer jwt-alice@https://crq.example.com');
+    expect(mocks.clientOptions[0].headers).not.toHaveProperty('X-XTM-User-Token');
+  });
+
+  it('forwards the user token XTM One exchanged for the calling user, addressed to OpenCRQ', async () => {
+    connect();
+    mocks.exchange.mockResolvedValue('xtm-one-token-alice');
+    mocks.get.mockResolvedValue(tRpc([remote(STIX)]));
+    await fetchOpenCrqObjects('THREAT', [STIX], ALICE);
+    expect(mocks.exchange).toHaveBeenCalledWith(ALICE, 'https://crq.example.com');
+    expect(mocks.clientOptions[0].headers['X-XTM-User-Token']).toBe('xtm-one-token-alice');
+    expect(mocks.clientOptions[0].headers.Authorization).toBe('Bearer jwt-alice@https://crq.example.com');
+  });
+
+  it('keeps the lookup without the header when XTM One is absent or refuses the exchange', async () => {
+    connect();
+    mocks.exchange.mockResolvedValue(undefined);
+    mocks.get.mockResolvedValue(tRpc([remote(STIX)]));
+    expect(await fetchOpenCrqObjects('THREAT', [STIX], ALICE)).toEqual([remote(STIX)]);
+    expect(mocks.clientOptions[0].headers).not.toHaveProperty('X-XTM-User-Token');
   });
 
   it('a 404 (no xtm.lookup on that OpenCRQ) is not_supported, anything else unavailable, never logging the token', async () => {

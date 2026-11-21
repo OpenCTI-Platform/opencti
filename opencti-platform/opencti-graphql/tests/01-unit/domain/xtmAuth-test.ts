@@ -30,15 +30,23 @@ vi.mock('../../../src/utils/platformCrypto', () => ({
   getPlatformCrypto: vi.fn(),
 }));
 
+const httpMocks = vi.hoisted(() => ({
+  post: vi.fn(),
+  options: [] as any[],
+}));
+
 // An XTM One that predates /xtm/auth/metadata: the configured URL is its identity.
 vi.mock('../../../src/utils/http-client', () => ({
-  getHttpClient: () => ({ get: () => Promise.reject(new Error('Request failed with status code 404')) }),
+  getHttpClient: (options: any) => {
+    httpMocks.options.push(options);
+    return { get: () => Promise.reject(new Error('Request failed with status code 404')), post: httpMocks.post };
+  },
 }));
 
 // --- Imports (resolved after mocks are set up) ---
 
 import { getPlatformCrypto } from '../../../src/utils/platformCrypto';
-import { getXtmJwks, isOwnIssuer, isTrustedIssuer, issueXtmJwt, verifyXtmJwt } from '../../../src/domain/xtm-auth';
+import { exchangeXtmOneUserToken, getXtmJwks, isOwnIssuer, isTrustedIssuer, issueXtmJwt, verifyXtmJwt } from '../../../src/domain/xtm-auth';
 
 // --- Constants ---
 
@@ -276,6 +284,34 @@ describe('XTM Authentication', () => {
 
       await expect(verifyXtmJwt(token))
         .rejects.toThrow('JWT signature verification failed');
+    });
+  });
+
+  describe('exchangeXtmOneUserToken', () => {
+    const ALICE = { id: 'alice-id', user_email: 'alice@example.com' };
+
+    it('posts the audience to XTM One with a JWT of the user addressed to XTM One and returns its token', async () => {
+      httpMocks.options = [];
+      httpMocks.post.mockReset();
+      httpMocks.post.mockResolvedValueOnce({ data: { access_token: 'xtm-one-signed', token_type: 'Bearer' } });
+      const token = await exchangeXtmOneUserToken(ALICE, 'https://crq.example.com');
+      expect(token).toBe('xtm-one-signed');
+      expect(httpMocks.post).toHaveBeenCalledWith('/xtm/auth/exchange', { audience: 'https://crq.example.com' }, { maxRedirects: 0 });
+      const options = httpMocks.options[httpMocks.options.length - 1];
+      expect(options.baseURL).toBe(TRUSTED_XTM_URL);
+      const bearer = String(options.headers.Authorization);
+      expect(bearer.startsWith('Bearer ')).toBe(true);
+      const { payload } = await verifyXtmJwt(bearer.slice('Bearer '.length));
+      expect(payload.sub).toBe(ALICE.id);
+      expect(payload.aud).toBe(TRUSTED_XTM_URL);
+    });
+
+    it('answers undefined when XTM One refuses or answers no token', async () => {
+      httpMocks.post.mockReset();
+      httpMocks.post.mockRejectedValueOnce(Object.assign(new Error('forbidden'), { status: 403 }));
+      expect(await exchangeXtmOneUserToken(ALICE, 'https://crq.example.com')).toBeUndefined();
+      httpMocks.post.mockResolvedValueOnce({ data: {} });
+      expect(await exchangeXtmOneUserToken(ALICE, 'https://crq.example.com')).toBeUndefined();
     });
   });
 });
