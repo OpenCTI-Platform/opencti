@@ -120,6 +120,12 @@ export const checkEventOnPir = async (context: AuthContext, event: SseEvent<any>
   return matchingCriteria;
 };
 
+// The stream data event a PIR reads: its operation type and its STIX data.
+export interface PirRelationshipEvent {
+  type: string;
+  data: any;
+}
+
 export interface PirFlagAction {
   operation: 'flag' | 'unflag';
   elementId: string;
@@ -142,7 +148,7 @@ export interface PirFlagAction {
  */
 export const computePirFlagActions = (
   pir: ParsedPir,
-  event: SseEvent<any>,
+  event: PirRelationshipEvent,
   matchingCriteria: ParsedPirCriterion[],
 ): PirFlagAction[] => {
   const { data } = event;

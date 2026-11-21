@@ -3,7 +3,7 @@ import type { ParsedPir } from '../../../src/modules/pir/pir-types';
 import { FilterMode, FilterOperator, PirFlagSide, PirType } from '../../../src/generated/graphql';
 import * as StixFiltering from '../../../src/utils/filtering/filtering-stix/stix-filtering';
 import { isStixMatchFilterGroup_MockableForUnitTests } from '../../../src/utils/filtering/filtering-stix/stix-filtering';
-import { checkEventOnPir, computePirFlagActions, pirManagerHandler } from '../../../src/manager/pirManager';
+import { checkEventOnPir, computePirFlagActions, type PirRelationshipEvent, pirManagerHandler } from '../../../src/manager/pirManager';
 import type { AuthContext } from '../../../src/types/user';
 import type { SseEvent } from '../../../src/types/event';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
@@ -136,7 +136,7 @@ describe('pirManager: computePirFlagActions()', () => {
   const TARGET_PIR = { ...TEST_PIR, pir_type: PirType.ThreatCustom, pir_criteria: [targetCriterion] } as ParsedPir;
   const MIXED_PIR = { ...TEST_PIR, pir_type: PirType.ThreatCustom, pir_criteria: [sourceCriterion, targetCriterion] } as ParsedPir;
 
-  const buildHasEvent = (type: string, extension: Record<string, unknown> = {}) => ({
+  const buildHasEvent = (type: string, extension: Record<string, unknown> = {}): PirRelationshipEvent => ({
     type,
     data: {
       type: 'relationship',
@@ -152,9 +152,9 @@ describe('pirManager: computePirFlagActions()', () => {
         },
       },
     },
-  } as SseEvent<any>);
+  });
 
-  const summary = (pir: ParsedPir, event: SseEvent<any>, criteria: any[]) => computePirFlagActions(pir, event, criteria)
+  const summary = (pir: ParsedPir, event: PirRelationshipEvent, criteria: any[]) => computePirFlagActions(pir, event, criteria)
     .map((a) => [a.operation, a.elementId, a.criteria.length]);
 
   it('should flag the source when the criterion has no flag side (default)', () => {
