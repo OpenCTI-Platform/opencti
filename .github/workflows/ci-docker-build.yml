@@ -12,11 +12,6 @@ on:
         description: "Reference of the branch or commit sha"
         type: string
         default: ${{ github.sha }}
-      client_python_local:
-        description: "Use client python from the same commit"
-        type: boolean
-        required: false
-        default: false
       publish_to_registry:
         description: "Publish image to registry. If false, will save the image as github artifact"
         type: string
@@ -49,12 +44,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.checkout_ref }}
-
-      - name: Use client-python in OpenCTI from same branch
-        if: ${{ inputs.client_python_local == true }}
-        env:
-          CHECKOUT_REF: ${{ inputs.checkout_ref }}
-        run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@'"$CHECKOUT_REF"'#subdirectory=client-python|' -i ./opencti-platform/opencti-graphql/src/python/requirements.txt
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
@@ -129,12 +118,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.checkout_ref }}
-
-      - name: Use client-python in worker from same branch
-        if: ${{ inputs.client_python_local == true }}
-        env:
-          CHECKOUT_REF: ${{ inputs.checkout_ref }}
-        run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@'"$CHECKOUT_REF"'#subdirectory=client-python|' -i ./opencti-worker/requirements.txt
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1

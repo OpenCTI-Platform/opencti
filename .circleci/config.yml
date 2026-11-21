@@ -11,16 +11,18 @@ jobs:
     steps:
       - checkout
       - run:
-          name: cd client-python && install dependencies
-          command: >
-            cd client-python && pip3 install --user -r requirements.txt -r test-requirements.txt
+          name: install uv
+          # pinned release, verified against its SHA-256, into a directory of the PATH of the image
+          command: sh scripts/ci/install-uv.sh "$HOME/.local/bin"
+      - run:
+          name: install pycti from the lockfile
+          command: uv sync --locked --package pycti --no-default-groups
       - run:
           name: check version
           command: |
             set -x
-            cd client-python
             package_version="$(
-                python3 -c 'import pycti; print(pycti.__version__)'
+                uv run --no-sync --package pycti python -c 'import pycti; print(pycti.__version__)'
             )"
             # Transform tag version to expected PEP 440 package version:
             #   7.260309.0          -> 7.260309.0    (standard release)
@@ -38,7 +40,7 @@ jobs:
       - run:
           name: build
           command: >
-            cd client-python &&  SOURCE_DATE_EPOCH="$(git log -1 --pretty=%ct)" python3 -m build
+            SOURCE_DATE_EPOCH="$(git log -1 --pretty=%ct)" uv build --package pycti --no-sources -o client-python/dist
       - slack/notify:
           branch_pattern: master
           event: fail
@@ -55,9 +57,6 @@ jobs:
       - checkout
       - attach_workspace:
           at: ~/repo/client-python
-      - run:
-          name: install dependencies
-          command: cd client-python && pip3 install -r requirements.txt --user
       - run:
           name: install twine
           command: cd client-python && pip3 install twine
@@ -130,7 +129,7 @@ jobs:
           command: yarn workspaces focus opencti-graphql
       - run:
           working_directory: ~/opencti/opencti-platform/opencti-graphql
-          command: TAG_VERSION=${CIRCLE_TAG} yarn build
+          command: TAG_VERSION=${CIRCLE_TAG} yarn build:prod
       - slack/notify:
           event: fail
           template: basic_fail_1
@@ -156,7 +155,7 @@ jobs:
           command: yarn workspaces focus opencti-graphql
       - run:
           working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
-          command: yarn build
+          command: yarn build:prod
       - slack/notify:
           event: fail
           template: basic_fail_1
@@ -177,9 +176,11 @@ jobs:
       - run: mkdir release
       - run: rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
       - run: mkdir -p release/opencti/opencti-platform
-      - run: cp -a ./package.json ./yarn.lock ./.yarnrc.yml ./patch release/opencti/
+      - run: cp -a ./package.json ./yarn.lock ./.yarnrc.yml ./patch ./pyproject.toml ./uv.lock release/opencti/
       - run: cp -a ./opencti-platform/opencti-graphql release/opencti/opencti-platform/
-      - run: cp -a ./opencti-worker/src release/opencti/worker
+      - run: mkdir -p release/opencti/client-python release/opencti/opencti-worker
+      - run: cp -a ./client-python/pyproject.toml ./client-python/README.md ./client-python/pycti release/opencti/client-python/
+      - run: cp -a ./opencti-worker/pyproject.toml ./opencti-worker/config.yml.sample ./opencti-worker/src release/opencti/opencti-worker/
       - run: cd release/opencti && git clone --single-branch --branch ${CIRCLE_TAG} https://github.com/OpenCTI-Platform/connectors
       - run:
           working_directory: ~/opencti/release
@@ -204,9 +205,11 @@ jobs:
       - run: mkdir release
       - run: rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
       - run: mkdir -p release/opencti/opencti-platform
-      - run: cp -a ./package.json ./yarn.lock ./.yarnrc.yml ./patch release/opencti/
+      - run: cp -a ./package.json ./yarn.lock ./.yarnrc.yml ./patch ./pyproject.toml ./uv.lock release/opencti/
       - run: cp -a ./opencti-platform/opencti-graphql release/opencti/opencti-platform/
-      - run: cp -a ./opencti-worker/src release/opencti/worker
+      - run: mkdir -p release/opencti/client-python release/opencti/opencti-worker
+      - run: cp -a ./client-python/pyproject.toml ./client-python/README.md ./client-python/pycti release/opencti/client-python/
+      - run: cp -a ./opencti-worker/pyproject.toml ./opencti-worker/config.yml.sample ./opencti-worker/src release/opencti/opencti-worker/
       - run: cd release/opencti && git clone --single-branch --branch ${CIRCLE_TAG} https://github.com/OpenCTI-Platform/connectors
       - run:
           working_directory: ~/opencti_musl/release

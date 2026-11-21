@@ -5,10 +5,6 @@ inputs:
   checkout_ref:
     description: "Reference of the branch or commit sha"
     default: ${{ github.sha }}
-  client_python_local:
-    description: "Use client python from the same commit"
-    required: false
-    default: "false"
   tag_version:
     description: "Value of TAG_VERSION for the backend build (release tag, used to fetch the connectors manifest of the tag). Empty for rolling builds."
     required: false
@@ -33,12 +29,6 @@ runs:
       with:
         ref: ${{ inputs.checkout_ref }}
 
-    - name: Use client-python in OpenCTI from same branch
-      shell: bash
-      if: ${{ inputs.client_python_local == 'true' }}
-      run: |
-        find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti.git@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i {} \;
-
     - name: Build platform and package tar.gz
       shell: bash
       env:
@@ -60,7 +50,7 @@ runs:
             cd /workspace &&
             YARN_ENABLE_IMMUTABLE_INSTALLS=true yarn workspaces focus opencti-graphql opencti-front &&
             cd opencti-platform/opencti-graphql &&
-            yarn build &&
+            yarn build:prod &&
             cd ../opencti-front &&
             yarn build
           '
@@ -77,11 +67,14 @@ runs:
         ls -lart
         rm -rf ./opencti-platform/opencti-graphql/.yarn/cache
         mkdir -p release/opencti/opencti-platform
-        cp -a ./package.json ./yarn.lock ./.yarnrc.yml ./patch release/opencti/
+        cp -a ./package.json ./yarn.lock ./.yarnrc.yml ./patch ./pyproject.toml ./uv.lock release/opencti/
         cp -a ./opencti-platform/opencti-graphql release/opencti/opencti-platform/
         # The backend serves the UI from public/ in production, as in the Dockerfile
         cp -a ./opencti-platform/opencti-front/dist release/opencti/opencti-platform/opencti-graphql/public
-        cp -a ./opencti-worker/src release/opencti/worker
+        # uv workspace members: pycti, the worker and the platform Python runtime (inside opencti-graphql)
+        mkdir -p release/opencti/client-python release/opencti/opencti-worker
+        cp -a ./client-python/pyproject.toml ./client-python/README.md ./client-python/pycti release/opencti/client-python/
+        cp -a ./opencti-worker/pyproject.toml ./opencti-worker/config.yml.sample ./opencti-worker/src release/opencti/opencti-worker/
         if [ "${INCLUDE_DOCKER}" == "true" ]; then
           git clone --depth 1 --single-branch --branch master https://github.com/OpenCTI-Platform/docker release/opencti/docker
         fi

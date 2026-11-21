@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 import { PythonShell } from 'python-shell';
 import { ATTR_DB_NAMESPACE, SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
 import * as nodecallspython from 'node-calls-python';
@@ -11,12 +13,33 @@ import { isEmptyField, isNotEmptyField } from '../database/utils';
 const PYTHON_EXECUTOR = nconf.get('app:python_execution') ?? 'native';
 const PYTHON_VENV = nconf.get('app:python_execution_venv');
 const USE_NATIVE_EXEC = PYTHON_EXECUTOR === 'native';
+
+// Interpreter of the virtual environment holding the site-packages, found by its pyvenv.cfg
+// (venv/site-packages, venv/lib/pythonX.Y/site-packages or venv\Lib\site-packages), so that child processes see the same packages
+export const findVenvPython = (sitePackages, platform = process.platform) => {
+  if (isEmptyField(sitePackages)) {
+    return undefined;
+  }
+  let dir = path.resolve(sitePackages);
+  for (let depth = 0; depth < 4; depth += 1) {
+    if (existsSync(path.join(dir, 'pyvenv.cfg'))) {
+      return platform === 'win32' ? path.join(dir, 'Scripts', 'python.exe') : path.join(dir, 'bin', 'python3');
+    }
+    dir = path.dirname(dir);
+  }
+  return undefined;
+};
+const PYTHON_CHILD_EXECUTABLE = findVenvPython(PYTHON_VENV) ?? (DEV_MODE ? 'python' : 'python3');
 const SUPPORTED_CHECKED_PATTERN_TYPES = ['stix', 'yara', 'sigma', 'snort', 'suricata', 'eql'];
 
 // Importing python runtime scripts
 const py = nodecallspython.interpreter;
 // In a venv is available import the site-packages
 if (isNotEmptyField(PYTHON_VENV)) {
+  if (!existsSync(PYTHON_VENV)) {
+    // The Python modules are only installed in the virtual environment, so its imports below fail
+    logApp.warn('[PYTHON] app:python_execution_venv does not exist, install the Python modules or fix the path', { venv: path.resolve(PYTHON_VENV) });
+  }
   py.addImportPath(PYTHON_VENV);
 }
 const pyCheckIndicator = py.importSync('./src/python/runtime/check_indicator.py');
@@ -35,7 +58,7 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
       const messages = [];
       const options = {
         mode: 'text',
-        pythonPath: DEV_MODE ? 'python' : 'python3',
+        pythonPath: PYTHON_CHILD_EXECUTABLE,
         scriptPath,
         args,
         shell: false,
