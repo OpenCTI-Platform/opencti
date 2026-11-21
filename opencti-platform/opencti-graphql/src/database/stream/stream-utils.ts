@@ -1,4 +1,4 @@
-import * as jsonpatch from 'fast-json-patch';
+import { computeJsonPatch } from '../../utils/json-patch';
 import type { AuthUser, UserOrigin } from '../../types/user';
 import type { StoreObject } from '../../types/store';
 import { generateMergeMessage } from '../data-changes';
@@ -123,8 +123,8 @@ export const buildMergeEvent = async (user: AuthUser, previous: StoreObject, ins
     origin: user.origin,
     data: currentStix,
     context: {
-      patch: jsonpatch.compare(previousStix, currentStix),
-      reverse_patch: jsonpatch.compare(currentStix, previousStix),
+      patch: computeJsonPatch(previousStix, currentStix),
+      reverse_patch: computeJsonPatch(currentStix, previousStix),
       sources: await asyncListTransformation<StixObject>(sourceEntities, convertStoreToStix_2_1) as StixCoreObject[],
     },
   };
@@ -138,8 +138,8 @@ export const buildStixUpdateEvent = (
   opts: UpdateEventOpts = {},
 ): UpdateEvent => {
   // Build and send the event
-  const patch = jsonpatch.compare(previousStix, stix);
-  const previousPatch = jsonpatch.compare(stix, previousStix);
+  const patch = computeJsonPatch(previousStix, stix);
+  const previousPatch = computeJsonPatch(stix, previousStix);
   if (patch.length === 0 || previousPatch.length === 0) {
     throw UnsupportedError('Update event must contains a valid previous patch');
   }

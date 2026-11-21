@@ -67,6 +67,25 @@ describe.concurrent('notification manager update event context', () => {
     perTrigger.forEach((context) => {
       expect(context.previous).toEqual(hoisted.previous);
       expect(context.eventContext).toEqual(hoisted.eventContext);
+      expect(context.normalizedUpdatePatch).toEqual(hoisted.normalizedUpdatePatch);
     });
+  });
+
+  it('should normalize array replacements while rebuilding the previous document from the original patch', async () => {
+    const streamEvent = buildUpdateStreamEvent();
+    const event = streamEvent.data as any;
+    event.data = { ...event.data, labels: ['alpha'] };
+    event.context = {
+      patch: [{ op: 'replace', path: '/labels', value: ['alpha'] }],
+      reverse_patch: [{ op: 'replace', path: '/labels', value: ['alpha', 'beta'] }],
+      changes: [{ field: 'Report--labels' }],
+    };
+    const { previous, normalizedUpdatePatch } = buildUpdateEventContext(streamEvent);
+    expect((previous as any).labels).toEqual(['alpha', 'beta']);
+    expect(normalizedUpdatePatch).toEqual({
+      patch: [{ op: 'replace', path: '/labels', value: [] }],
+      reverse_patch: [{ op: 'replace', path: '/labels', value: ['beta'] }],
+    });
+    expect(event.context.reverse_patch[0].value).toEqual(['alpha', 'beta']);
   });
 });
