@@ -21,8 +21,10 @@ vi.mock('@opensearch-project/opensearch/aws', () => ({ AwsSigv4Signer: vi.fn(() 
 import conf from '../../../src/config/conf';
 import {
   buildHistogramBreakdownAggregations,
+  buildIndexedKeywordQuery,
   elAggregationCount,
   elAggregationRanking,
+  elCompleteFilters,
   elConnectionTypesRanking,
   elHistogramBreakdownCount,
   elKeywordWrittenForms,
@@ -38,74 +40,79 @@ import type { AuthContext } from '../../../src/types/user';
 const countOverTime = { date_histogram: { field: 'created_at', calendar_interval: 'day' } };
 
 describe('buildHistogramBreakdownAggregations', () => {
-  it('should count every key of a field and the documents carrying none of them', () => {
+  const sideQuery = (side: string) => ({ query_string: { query: `*_${side}`, fields: ['connections.role'] } });
+  const sideTypeQuery = (side: string, type: string) => ({
+    nested: { path: 'connections', query: { bool: { must: [sideQuery(side), { term: { 'connections.types.keyword': type } }] } } },
+  });
+
+  it('should count every key of a field in one filter each, and the documents carrying none of them in the other bucket', () => {
     const aggs = buildHistogramBreakdownAggregations({ field: 'rel_object-label.internal_id', keys: ['label-a', 'label-b'], withOther: true }, countOverTime);
     expect(aggs).toEqual({
       breakdown: {
-        terms: { field: 'rel_object-label.internal_id.keyword', include: ['label-a', 'label-b'], size: 2 },
-        aggs: { count_over_time: countOverTime },
-      },
-      other: {
-        filter: { bool: { must_not: [{ terms: { 'rel_object-label.internal_id.keyword': ['label-a', 'label-b'] } }] } },
+        filters: {
+          filters: {
+            k0: { term: { 'rel_object-label.internal_id.keyword': 'label-a' } },
+            k1: { term: { 'rel_object-label.internal_id.keyword': 'label-b' } },
+          },
+          other_bucket_key: 'other',
+        },
         aggs: { count_over_time: countOverTime },
       },
     });
   });
 
-  it('should count everything in the Other series without key, and nothing else without Other', () => {
+  it('should key the filters by position: a value with dots never becomes a field name of the response', () => {
+    const aggs = buildHistogramBreakdownAggregations({ field: 'creator_id', keys: ['user.a', 'other'] }, countOverTime) as any;
+    expect(aggs.breakdown.filters).toEqual({ filters: { k0: { term: { 'creator_id.keyword': 'user.a' } }, k1: { term: { 'creator_id.keyword': 'other' } } } });
+  });
+
+  it('should count everything in the other bucket without key, and nothing at all without Other', () => {
     expect(buildHistogramBreakdownAggregations({ field: 'entity_type', keys: [], withOther: true }, countOverTime)).toEqual({
-      other: { filter: { match_all: {} }, aggs: { count_over_time: countOverTime } },
+      breakdown: { filters: { filters: { other: { match_all: {} } } }, aggs: { count_over_time: countOverTime } },
     });
     expect(buildHistogramBreakdownAggregations({ field: 'entity_type', keys: [], withOther: false }, countOverTime)).toEqual({});
   });
 
-  it('should count the relationships by the type of one of their sides, from their connections', () => {
-    const aggs = buildHistogramBreakdownAggregations({ field: 'connections.types', keys: ['malware', 'intrusion-set'], withOther: true, connectionSide: 'from' }, countOverTime) as any;
-    const sideQuery = { query_string: { query: '*_from', fields: ['connections.role'] } };
-    expect(aggs.breakdown).toEqual({
-      nested: { path: 'connections' },
-      aggs: {
-        side: {
-          filter: sideQuery,
-          aggs: {
-            types: {
-              terms: { field: 'connections.types.keyword', include: ['malware', 'intrusion-set'], size: 2 },
-              // Each type bucket counts the relationships themselves, on their own date
-              aggs: { relationships: { reverse_nested: {}, aggs: { count_over_time: countOverTime } } },
-            },
-          },
-        },
+  it('should count the relationships by the type of one of their sides, from their connection on this side', () => {
+    const aggs = buildHistogramBreakdownAggregations({ field: 'connections.types', keys: ['malware', 'intrusion-set'], withOther: true, connectionSide: 'from' }, countOverTime);
+    // The relationships themselves are counted, on their own date: Other holds the ones whose source has none of the types
+    expect(aggs).toEqual({
+      breakdown: {
+        filters: { filters: { k0: sideTypeQuery('from', 'malware'), k1: sideTypeQuery('from', 'intrusion-set') }, other_bucket_key: 'other' },
+        aggs: { count_over_time: countOverTime },
       },
     });
-    // Other: the relationships whose source has none of the types
-    expect(aggs.other).toEqual({
-      filter: {
-        bool: {
-          must_not: [{
-            nested: { path: 'connections', query: { bool: { must: [sideQuery, { terms: { 'connections.types.keyword': ['malware', 'intrusion-set'] } }] } } },
-          }],
-        },
-      },
-      aggs: { count_over_time: countOverTime },
-    });
-  });
-
-  it('should filter every key of a field with many values on its own', () => {
-    const aggs = buildHistogramBreakdownAggregations({ field: 'creator_id', keys: ['user.a', 'user-b'], filterPerKey: true }, countOverTime) as any;
-    // Keyed by position: a value with dots never becomes a field name of the response
-    expect(aggs.breakdown.filters.filters).toEqual({ k0: { term: { 'creator_id.keyword': 'user.a' } }, k1: { term: { 'creator_id.keyword': 'user-b' } } });
-  });
-
-  it('should keep the terms restricted to the keys for a side of the relationships, whatever the filter per key', () => {
-    const aggs = buildHistogramBreakdownAggregations({ field: 'connections.types', keys: ['malware'], filterPerKey: true, connectionSide: 'from' }, countOverTime) as any;
-    expect(aggs.breakdown.nested).toEqual({ path: 'connections' });
-    expect(aggs.breakdown.aggs.side.aggs.types.terms).toEqual({ field: 'connections.types.keyword', include: ['malware'], size: 1 });
   });
 
   it('should read the side of the target from its role', () => {
-    const aggs = buildHistogramBreakdownAggregations({ field: 'connections.types', keys: ['sector'], connectionSide: 'to' }, countOverTime) as any;
-    expect(aggs.breakdown.aggs.side.filter).toEqual({ query_string: { query: '*_to', fields: ['connections.role'] } });
-    expect(aggs.other).toBeUndefined();
+    const aggs = buildHistogramBreakdownAggregations({ field: 'connections.types', keys: ['sector'], connectionSide: 'to' }, countOverTime);
+    expect(aggs).toEqual({ breakdown: { filters: { filters: { k0: sideTypeQuery('to', 'sector') } }, aggs: { count_over_time: countOverTime } } });
+  });
+
+  it('should match an indexed form with an uppercase letter exactly, a term query of it looking for its lowercase', () => {
+    // A small capital `ᴀ` is indexed as `A`: the normalizer of a term query would turn `A` into `a`, another value
+    const aggs = buildHistogramBreakdownAggregations({ field: 'report_types', keys: ['A', 'a', 'ünïcode-ꜱ'], withOther: true }, countOverTime) as any;
+    expect(aggs.breakdown.filters.filters).toEqual({
+      k0: indexedKeyScript('report_types.keyword', 'A'),
+      k1: { term: { 'report_types.keyword': 'a' } },
+      k2: { term: { 'report_types.keyword': 'ünïcode-ꜱ' } },
+    });
+    expect(aggs.breakdown.filters.other_bucket_key).toBe('other');
+  });
+});
+
+const indexedKeyScript = (field: string, key: string) => ({
+  script: { script: { source: 'doc.containsKey(params.field) && doc[params.field].contains(params.key)', params: { field, key } } },
+});
+
+describe('buildIndexedKeywordQuery', () => {
+  it('should keep the term query for an indexed form the normalizer gives back unchanged', () => {
+    expect(buildIndexedKeywordQuery('name.keyword', 'apt-28')).toEqual({ term: { 'name.keyword': 'apt-28' } });
+    expect(buildIndexedKeywordQuery('name.keyword', 'σ-ж-中')).toEqual({ term: { 'name.keyword': 'σ-ж-中' } });
+  });
+
+  it('should match a form with an uppercase letter on the doc values, which hold it as indexed', () => {
+    expect(buildIndexedKeywordQuery('connections.types.keyword', 'X-a')).toEqual(indexedKeyScript('connections.types.keyword', 'X-a'));
   });
 });
 
@@ -348,29 +355,43 @@ describe('engine: requests of the time series breakdowns', () => {
   describe('elHistogramBreakdownCount', () => {
     const points = (value: number) => ({ '2026-01-01': { weight: { value } } });
 
-    it('should return the Other histogram apart, even beside a value named like a reserved key', async () => {
+    it('should return the histogram of each key by its position, and the Other one apart, even for keys named like it', async () => {
+      // A filtered response: the buckets without any document are not sent
       elkSearch.mockResolvedValue(searchResponse({
         breakdown: {
-          buckets: [
-            { key: '__other__', count_over_time: { buckets: points(4) } },
-            { key: 'label-b', count_over_time: { buckets: points(1) } },
-          ],
+          buckets: {
+            k0: { count_over_time: { buckets: points(4) } },
+            k1: { count_over_time: { buckets: points(1) } },
+            other: { count_over_time: { buckets: points(7) } },
+          },
         },
-        other: { count_over_time: { buckets: points(7) } },
       }));
 
       const { histograms, other } = await elHistogramBreakdownCount(context, SYSTEM_USER, 'index', {
         field: 'rel_object-label.internal_id',
         interval: 'day',
-        keys: ['__other__', 'label-b'],
+        keys: ['other', '__other__', 'label-c'],
         withOther: true,
       });
 
-      expect(histograms).toEqual(new Map([['__other__', [{ date: '2026-01-01', value: 4 }]], ['label-b', [{ date: '2026-01-01', value: 1 }]]]));
+      expect(histograms).toEqual(new Map([
+        ['other', [{ date: '2026-01-01', value: 4 }]],
+        ['__other__', [{ date: '2026-01-01', value: 1 }]],
+        // No document for this key: no point
+        ['label-c', []],
+      ]));
       expect(other).toEqual([{ date: '2026-01-01', value: 7 }]);
     });
 
-    it('should only ask for the aggregations, without any document', async () => {
+    it('should count everything in the Other histogram without key', async () => {
+      elkSearch.mockResolvedValue(searchResponse({ breakdown: { buckets: { other: { count_over_time: { buckets: points(3) } } } } }));
+
+      const result = await elHistogramBreakdownCount(context, SYSTEM_USER, 'index', { field: 'creator_id', interval: 'day', keys: [], withOther: true });
+
+      expect(result).toEqual({ histograms: new Map(), other: [{ date: '2026-01-01', value: 3 }] });
+    });
+
+    it('should only ask for the weighted values of the histograms, without any document', async () => {
       elkSearch.mockResolvedValue(searchResponse({}));
 
       await elHistogramBreakdownCount(context, SYSTEM_USER, 'index', { field: 'creator_id', interval: 'day', keys: ['user-a'] });
@@ -378,14 +399,31 @@ describe('engine: requests of the time series breakdowns', () => {
       const request = elkSearch.mock.lastCall?.[0];
       expect(request.body.size).toEqual(0);
       expect(request._source_excludes).toBeUndefined();
+      expect(request.filter_path).toEqual(['_shards', 'aggregations.breakdown.buckets.*.count_over_time.buckets.*.weight.value']);
     });
 
     it('should not return any Other histogram unless it is requested', async () => {
-      elkSearch.mockResolvedValue(searchResponse({ breakdown: { buckets: [{ key: 'label-a', count_over_time: { buckets: points(2) } }] } }));
+      elkSearch.mockResolvedValue(searchResponse({ breakdown: { buckets: { k0: { count_over_time: { buckets: points(2) } } } } }));
 
-      const { other } = await elHistogramBreakdownCount(context, SYSTEM_USER, 'index', { field: 'rel_object-label.internal_id', interval: 'day', keys: ['label-a'] });
+      const result = await elHistogramBreakdownCount(context, SYSTEM_USER, 'index', { field: 'rel_object-label.internal_id', interval: 'day', keys: ['label-a'] });
 
-      expect(other).toBeNull();
+      expect(result).toEqual({ histograms: new Map([['label-a', [{ date: '2026-01-01', value: 2 }]]]), other: null });
+    });
+
+    it('should read the types of a side of the relationships like any other key', async () => {
+      const buckets = { k0: { count_over_time: { buckets: points(5) } }, other: { count_over_time: { buckets: points(2) } } };
+      elkSearch.mockResolvedValue(searchResponse({ breakdown: { buckets } }));
+
+      const result = await elHistogramBreakdownCount(context, SYSTEM_USER, 'index', {
+        field: 'connections.types',
+        interval: 'day',
+        keys: ['malware'],
+        withOther: true,
+        connectionSide: 'from',
+      });
+
+      expect(result).toEqual({ histograms: new Map([['malware', [{ date: '2026-01-01', value: 5 }]]]), other: [{ date: '2026-01-01', value: 2 }] });
+      expect(lastSearchBody().aggs.breakdown.filters.filters.k0.nested.path).toEqual('connections');
     });
 
     it('should keep a request aborted by its client a client abort', async () => {
@@ -395,6 +433,74 @@ describe('engine: requests of the time series breakdowns', () => {
 
       elkSearch.mockRejectedValue(new Error('index_not_found_exception'));
       await expect(elHistogramBreakdownCount(context, SYSTEM_USER, 'index', options)).rejects.toMatchObject({ extensions: { code: DATABASE_ERROR } });
+    });
+  });
+
+  describe('elCompleteFilters', () => {
+    const filter = (key: string, values: unknown[]) => ({ key: [key], values, operator: 'eq', mode: 'or' });
+    const group = (filters: unknown[]) => ({ mode: 'and', filters, filterGroups: [] });
+    // Relationships from a malware to a sector, with a filter on the type the engine completes as well
+    const filters = group([
+      filter('entity_type', ['stix-core-relationship']),
+      filter('dynamicFrom', [group([filter('entity_type', ['Malware'])])]),
+      filter('dynamicTo', [group([filter('entity_type', ['Sector'])])]),
+    ]) as any;
+    const histogramOptions = {
+      types: ['stix-relationship'],
+      startDate: new Date('2026-01-01T00:00:00.000Z'),
+      endDate: new Date('2026-01-31T00:00:00.000Z'),
+      dateAttribute: 'start_time',
+      intervalInclude: true,
+      field: 'relationship_type',
+      interval: 'day',
+      keys: ['targets'],
+      withOther: true,
+    };
+    // Every search finds the same entity, for the dynamic sides
+    const found = {
+      _index: 'opencti_stix_domain_objects-000001',
+      _id: 'entity-1',
+      sort: [1],
+      _source: {
+        id: 'entity-1',
+        internal_id: 'entity-1',
+        standard_id: 'malware--1',
+        entity_type: 'Malware',
+        parent_types: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'],
+        base_type: 'ENTITY',
+      },
+    };
+    const searchResult = { ...searchResponse({ genres: { buckets: [] } }), hits: { total: { value: 1 }, hits: [found] } };
+
+    it('should resolve the dynamic source and target once, for the same queries as the raw filters', async () => {
+      elkSearch.mockResolvedValue(searchResult);
+      await elHistogramBreakdownCount(context, SYSTEM_USER, 'index', { ...histogramOptions, filters });
+      // One search per dynamic side, then the histogram
+      expect(elkSearch).toHaveBeenCalledTimes(3);
+      const rawBody = lastSearchBody();
+      elkSearch.mockClear();
+
+      const completed = await elCompleteFilters(context, SYSTEM_USER, { filters });
+      expect(elkSearch).toHaveBeenCalledTimes(2);
+      expect(JSON.stringify(completed)).toContain('entity-1');
+      await elAggregationRanking(context, SYSTEM_USER, 'index', { ...histogramOptions, filters: completed, filtersCompleted: true, rankingOrder: 'desc' });
+      await elHistogramBreakdownCount(context, SYSTEM_USER, 'index', { ...histogramOptions, filters: completed, filtersCompleted: true });
+
+      // Nothing resolved again: one search for each aggregation
+      expect(elkSearch).toHaveBeenCalledTimes(4);
+      expect(lastSearchBody()).toEqual(rawBody);
+      expect(elkSearch.mock.calls[2][0].body.query).toEqual(rawBody.query);
+    });
+
+    it('should give nothing without any filter, without searching anything', async () => {
+      await expect(elCompleteFilters(context, SYSTEM_USER, {})).resolves.toBeUndefined();
+      await expect(elCompleteFilters(context, SYSTEM_USER, { filters: group([]) as any })).resolves.toBeUndefined();
+      expect(elkSearch).not.toHaveBeenCalled();
+    });
+
+    it('should check the filters as the queries do', async () => {
+      await expect(elCompleteFilters(context, SYSTEM_USER, { filters: group([filter('not-a-filter-key', ['x'])]) as any }))
+        .rejects.toThrow('Incorrect filter keys not existing in any schema definition');
     });
   });
 });

@@ -147,6 +147,18 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
       }
     }
   `;
+  const VOCABULARY_ADD_QUERY = gql`
+    mutation VocabularyAdd($input: VocabularyAddInput!) {
+      vocabularyAdd(input: $input) {
+        id
+      }
+    }
+  `;
+  const VOCABULARY_DELETE_QUERY = gql`
+    mutation VocabularyDelete($id: ID!) {
+      vocabularyDelete(id: $id)
+    }
+  `;
   const BREAKDOWN_QUERY = gql`
     query StixCoreObjectsTimeSeriesBreakdown(
       $field: String!
@@ -302,8 +314,8 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
     expect(all.series.map((s) => s.entity?.value)).toEqual([LABELS.a, LABELS.b, LABELS.c]);
   });
 
-  it('should break down with one filter per value when there are many values for the series kept', async () => {
-    // 3 labels for 1 series: the histogram uses one filter per value instead of a restricted terms
+  it('should break down with many values for the series kept, the other values in Other', async () => {
+    // 3 labels for 1 series
     const { truncated, series } = await breakdown({ field: 'objectLabel', orderMode: 'desc', limit: 1, includeOther: true });
     expect(truncated).toEqual(true);
     expect(series.map((s) => s.entity?.value ?? s.label)).toEqual([LABELS.a, 'Other']);
@@ -386,6 +398,49 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
     expect(sumOf(byType.series[0])).toEqual(REPORTS.length);
     const byReportType = await breakdown({ field: 'report_types' });
     expect(byReportType.series.map((s) => [s.label, s.total])).toEqual([['threat-report', REPORTS.length]]);
+  });
+
+  it('should count a vocabulary value indexed with an uppercase letter in its own series only', async () => {
+    // `bkd-ᴀ` (small capital) is indexed as `bkd-A`, which a term query would look for as `bkd-a`, another value.
+    // A report keeps only the values of its vocabulary: both are added to it first.
+    const vocabularyIds: string[] = [];
+    const reportIdsOfValues: string[] = [];
+    try {
+      for (const name of ['bkd-ᴀ', 'bkd-a']) {
+        const vocabulary = await queryAsAdminWithSuccess({ query: VOCABULARY_ADD_QUERY, variables: { input: { name, category: 'report_types_ov' } } });
+        vocabularyIds.push(vocabulary.data?.vocabularyAdd.id);
+      }
+      const added = [{ type: 'bkd-ᴀ', created: '2021-02-15T12:00:00.000Z' }, { type: 'bkd-a', created: '2021-03-15T12:00:00.000Z' }, { type: 'bkd-a', created: '2021-03-16T12:00:00.000Z' }];
+      for (let i = 0; i < added.length; i += 1) {
+        const { type, created } = added[i];
+        const report = await queryAsAdminWithSuccess({
+          query: REPORT_ADD_QUERY,
+          variables: { input: { name: `bkd-int-report-vocabulary-${i}`, published: created, created, report_types: [type], createdBy: organizationId } },
+        });
+        reportIdsOfValues.push(report.data?.reportAdd.id);
+      }
+      const { series } = await breakdown({ field: 'report_types', orderMode: 'desc', limit: 10, includeOther: true });
+      expect(Object.fromEntries(series.map((s) => [s.label, [s.total, s.values]]))).toEqual({
+        'threat-report': [REPORTS.length, [3, 2, 2]],
+        'bkd-ᴀ': [1, [0, 1, 0]],
+        'bkd-a': [2, [0, 0, 2]],
+        Other: [0, [0, 0, 0]],
+      });
+      // Left out of the series, the value is counted in Other, and the other value is not
+      const top = await breakdown({ field: 'report_types', orderMode: 'desc', limit: 2, includeOther: true });
+      expect(top.series.map((s) => [s.label, s.total, s.values])).toEqual([
+        ['threat-report', REPORTS.length, [3, 2, 2]],
+        ['bkd-a', 2, [0, 0, 2]],
+        ['Other', 1, [0, 1, 0]],
+      ]);
+    } finally {
+      for (const id of reportIdsOfValues) {
+        await queryAsAdminWithSuccess({ query: REPORT_DELETE_QUERY, variables: { id } });
+      }
+      for (const id of vocabularyIds) {
+        await queryAsAdminWithSuccess({ query: VOCABULARY_DELETE_QUERY, variables: { id } });
+      }
+    }
   });
 
   it('should not count the entities above the markings of the user, neither in the series nor in Other', async () => {

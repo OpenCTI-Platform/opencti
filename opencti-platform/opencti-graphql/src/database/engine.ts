@@ -132,7 +132,9 @@ import {
   type SearchConnectionsOpts,
   type SearchRestrictions,
   type QueryBodyBuilderOpts,
+  type CompleteFiltersOpts,
   elQueryBodyBuilder as buildQueryBody,
+  elCompleteFilters as completeQueryFilters,
 } from './engine-query-builder';
 
 const ELK_ENGINE = 'elk';
@@ -1553,6 +1555,10 @@ const engineQueryDeps: EngineQueryDeps = {
 const elQueryBodyBuilder = (context: AuthContext, user: AuthUser, options: QueryBodyBuilderOpts) => {
   return buildQueryBody(context, user, options, engineQueryDeps);
 };
+// The filters checked, converted and completed once, for queries that pass them with `filtersCompleted`
+export const elCompleteFilters = (context: AuthContext, user: AuthUser, options: CompleteFiltersOpts) => {
+  return completeQueryFilters(context, user, options, engineQueryDeps);
+};
 const elResolveSearchConnectionsRestrictions = (
   context: AuthContext,
   user: AuthUser,
@@ -1915,7 +1921,7 @@ const CONNECTION_TYPES_FIELD = 'connections.types.keyword';
 const buildConnectionSideQuery = (side: ConnectionSide) => ({ query_string: { query: `*_${side}`, fields: ['connections.role'] } });
 // Terms on the type of one side of the relationships. A relationship has a single connection per side:
 // the number of connections of a type is its number of relationships, and `relationshipsAggs` goes back to them.
-const buildConnectionTypesAggregation = (side: ConnectionSide, terms: Record<string, unknown>, relationshipsAggs?: Record<string, unknown>) => ({
+const buildConnectionTypesAggregation = (side: ConnectionSide, terms: Record<string, unknown>, relationshipsAggs: Record<string, unknown>) => ({
   nested: { path: 'connections' },
   aggs: {
     side: {
@@ -1923,7 +1929,7 @@ const buildConnectionTypesAggregation = (side: ConnectionSide, terms: Record<str
       aggs: {
         types: {
           terms: { field: CONNECTION_TYPES_FIELD, ...terms },
-          ...(relationshipsAggs ? { aggs: { relationships: { reverse_nested: {}, aggs: relationshipsAggs } } } : {}),
+          aggs: { relationships: { reverse_nested: {}, aggs: relationshipsAggs } },
         },
       },
     },
@@ -1979,75 +1985,70 @@ export type HistogramBreakdownCountOpts = QueryBodyBuilderOpts & {
   interval: string;
   keys: string[];
   withOther?: boolean;
-  // One term filter per key instead of a terms aggregation restricted to the keys: much faster on fields
-  // with many values (labels, users), a little slower on fields with a handful of values
-  filterPerKey?: boolean;
-  // Breaks the relationships down by the type of this side instead of `field`. A side has a handful of
-  // types: the terms aggregation restricted to the keys is used, whatever `filterPerKey`.
+  // Breaks the relationships down by the type of this side instead of `field`
   connectionSide?: ConnectionSide | null;
 };
 export type HistogramBreakdownPoint = { date: string; value: number };
 // Filters are keyed by position: a value, which may contain dots, never becomes a field name of the response
 const breakdownFilterKeyOf = (index: number) => `k${index}`;
-// Aggregations of elHistogramBreakdownCount: `breakdown` holds one bucket per key, `other` the documents carrying none of them
-export const buildHistogramBreakdownAggregations = (
-  options: Pick<HistogramBreakdownCountOpts, 'field' | 'keys' | 'withOther' | 'filterPerKey' | 'connectionSide'>,
-  countOverTime: Record<string, unknown>,
-) => {
-  const { field, keys, withOther = false, filterPerKey = false, connectionSide = null } = options;
-  const aggs: Record<string, unknown> = {};
+// Bucket of the documents carrying none of the keys, apart from the keys whatever they are named
+const BREAKDOWN_OTHER_BUCKET_KEY = 'other';
+// Query of the documents whose keyword field holds an indexed form, exactly. The keyword normalizer (lowercase, then
+// ASCII folding) also applies to the value of a term query, and gives an indexed form back unchanged unless the folding
+// made an uppercase letter of it: a small capital `ᴀ` is indexed as `A`, and a term query of `A` looks for `a`. Such a
+// form is matched on the doc values, which hold it as indexed. Only a form with an uppercase letter pays for the script.
+export const buildIndexedKeywordQuery = (fieldForQuery: string, key: string) => {
+  if (key === key.toLowerCase()) {
+    return { term: { [fieldForQuery]: key } };
+  }
+  return {
+    script: {
+      script: {
+        source: 'doc.containsKey(params.field) && doc[params.field].contains(params.key)',
+        params: { field: fieldForQuery, key },
+      },
+    },
+  };
+};
+// Query of the documents carrying a key: the indexed form of the field, or for a side of the relationships
+// a connection on this side with the key among its types
+const buildBreakdownKeyQuery = (field: string, connectionSide: ConnectionSide | null) => {
   if (connectionSide) {
-    if (keys.length > 0) {
-      aggs.breakdown = buildConnectionTypesAggregation(connectionSide, { include: keys, size: keys.length }, { count_over_time: countOverTime });
-    }
-    if (withOther) {
-      // A relationship has a single source and a single target: none of the keys on this side
-      const sideWithKeys = { nested: { path: 'connections', query: { bool: { must: [buildConnectionSideQuery(connectionSide), { terms: { [CONNECTION_TYPES_FIELD]: keys } }] } } } };
-      aggs.other = {
-        filter: keys.length > 0 ? { bool: { must_not: [sideWithKeys] } } : { match_all: {} },
-        aggs: { count_over_time: countOverTime },
-      };
-    }
-    return aggs;
+    return (key: string) => ({
+      nested: { path: 'connections', query: { bool: { must: [buildConnectionSideQuery(connectionSide), buildIndexedKeywordQuery(CONNECTION_TYPES_FIELD, key)] } } },
+    });
   }
   const fieldForQuery = buildFieldForQuery(field);
-  if (keys.length > 0 && filterPerKey) {
-    aggs.breakdown = {
-      filters: {
-        filters: Object.fromEntries(keys.map((key, index) => [breakdownFilterKeyOf(index), { term: { [fieldForQuery]: key } }])),
-      },
-      aggs: { count_over_time: countOverTime },
-    };
-  } else if (keys.length > 0) {
-    aggs.breakdown = {
-      terms: {
-        field: fieldForQuery,
-        include: keys,
-        size: keys.length,
-      },
-      aggs: { count_over_time: countOverTime },
-    };
-  }
-  if (withOther) {
-    aggs.other = {
-      filter: keys.length > 0
-        ? { bool: { must_not: [{ terms: { [fieldForQuery]: keys } }] } }
-        : { match_all: {} },
-      aggs: { count_over_time: countOverTime },
-    };
-  }
-  return aggs;
+  return (key: string) => buildIndexedKeywordQuery(fieldForQuery, key);
 };
-// One date histogram per term of `field`, restricted to the given raw `keys`, in a single query.
-// With `withOther`, a sibling aggregation counts the entities carrying none of the keys (entities without value included).
-// Its histogram is returned apart from the ones of the keys, whatever the keys are named (null without `withOther`).
+// Aggregation of elHistogramBreakdownCount: one filter per key, and with `withOther` the documents carrying none
+// of them in the other bucket. A document carrying several keys counts for each of them.
+export const buildHistogramBreakdownAggregations = (
+  options: Pick<HistogramBreakdownCountOpts, 'field' | 'keys' | 'withOther' | 'connectionSide'>,
+  countOverTime: Record<string, unknown>,
+) => {
+  const { field, keys, withOther = false, connectionSide = null } = options;
+  if (keys.length === 0 && !withOther) {
+    return {};
+  }
+  const keyQuery = buildBreakdownKeyQuery(field, connectionSide);
+  const keyFilters = Object.fromEntries(keys.map((key, index) => [breakdownFilterKeyOf(index), keyQuery(key)]));
+  // Without any key, every document is in Other: counted by a filter of its own, in the same bucket
+  const filters = keys.length > 0
+    ? { filters: keyFilters, ...(withOther ? { other_bucket_key: BREAKDOWN_OTHER_BUCKET_KEY } : {}) }
+    : { filters: { [BREAKDOWN_OTHER_BUCKET_KEY]: { match_all: {} } } };
+  return { breakdown: { filters, aggs: { count_over_time: countOverTime } } };
+};
+// One date histogram per raw key of `field` (or of the types of a side of the relationships), in a single query.
+// With `withOther`, the documents carrying none of the keys (documents without value included) are counted too.
+// Their histogram is returned apart from the ones of the keys, whatever the keys are named (null without `withOther`).
 export const elHistogramBreakdownCount = async (
   context: AuthContext,
   user: AuthUser,
   indexName: string[] | string | undefined,
   options: HistogramBreakdownCountOpts,
 ): Promise<{ histograms: Map<string, HistogramBreakdownPoint[]>; other: HistogramBreakdownPoint[] | null }> => {
-  const { interval, keys, withOther = false, filterPerKey = false, connectionSide = null, types = null } = options;
+  const { interval, keys, withOther = false, types = null } = options;
   const dateAttribute = options.dateAttribute || 'created_at';
   const dateFormat = getHistogramDateFormat(interval);
   const body = await elQueryBodyBuilder(context, user, { ...options, dateAttribute, noSize: true, noSort: true, intervalInclude: true });
@@ -2067,16 +2068,7 @@ export const elHistogramBreakdownCount = async (
   const query = {
     index: getIndicesToQuery(context, user, indexName),
     // Only what is read below: the response of 50 series over a long period weighs megabytes otherwise
-    filter_path: [
-      '_shards',
-      'aggregations.breakdown.buckets.key',
-      'aggregations.breakdown.buckets.count_over_time.buckets.*.weight.value',
-      'aggregations.breakdown.buckets.*.count_over_time.buckets.*.weight.value',
-      // The types of a side of the relationships, counted on the relationships
-      'aggregations.breakdown.side.types.buckets.key',
-      'aggregations.breakdown.side.types.buckets.relationships.count_over_time.buckets.*.weight.value',
-      'aggregations.other.count_over_time.buckets.*.weight.value',
-    ],
+    filter_path: ['_shards', 'aggregations.breakdown.buckets.*.count_over_time.buckets.*.weight.value'],
     body,
   };
   logApp.debug('[SEARCH] histogramBreakdownCount', { query });
@@ -2087,20 +2079,9 @@ export const elHistogramBreakdownCount = async (
   };
   return elRawSearch(context, user, types, query)
     .then((data) => {
-      const aggregations = data.aggregations ?? {};
-      const histograms = new Map<string, HistogramBreakdownPoint[]>();
-      if (connectionSide) {
-        (aggregations.breakdown?.side?.types?.buckets ?? []).forEach((bucket: any) => {
-          histograms.set(String(bucket.key), toPoints(bucket.relationships?.count_over_time));
-        });
-      } else if (filterPerKey) {
-        keys.forEach((key, index) => histograms.set(key, toPoints(aggregations.breakdown?.buckets?.[breakdownFilterKeyOf(index)]?.count_over_time)));
-      } else {
-        (aggregations.breakdown?.buckets ?? []).forEach((bucket: any) => {
-          histograms.set(String(bucket.key), toPoints(bucket.count_over_time));
-        });
-      }
-      const other = withOther ? toPoints(aggregations.other?.count_over_time) : null;
+      const buckets = data.aggregations?.breakdown?.buckets ?? {};
+      const histograms = new Map(keys.map((key, index) => [key, toPoints(buckets[breakdownFilterKeyOf(index)]?.count_over_time)]));
+      const other = withOther ? toPoints(buckets[BREAKDOWN_OTHER_BUCKET_KEY]?.count_over_time) : null;
       return { histograms, other };
     })
     .catch((err) => {

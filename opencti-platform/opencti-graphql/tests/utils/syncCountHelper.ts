@@ -81,9 +81,9 @@ testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
 // Includes 5 created and deleted by stixRelationship-test, and 1 created by publicDashboard-test, deleted with its target (time series breakdown)
 testCreatedCounter.relationship = 155; // +1 subtechnique-of created by attackPattern-test, removed with its sub-technique
-// Includes 8 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
+// Includes 11 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
 // Plus 3 created and deleted by workflow-entity-write-test
-testCreatedCounter.report = 77;
+testCreatedCounter.report = 80;
 testCreatedCounter.sighting = 8; // 3 created and deleted by relations-deduplication-test
 testCreatedCounter.software = 2;
 testCreatedCounter.task = 1;
@@ -92,7 +92,8 @@ testCreatedCounter.tool = 5;
 testCreatedCounter['tracking-number'] = 1;
 // Counts for:
 // - 3 created and deleted by vocabulary-import-test
-testCreatedCounter.vocabulary = VOCABULARY_NUMBERS + 3;
+// - 2 created and deleted by stixCoreObject-test (time series breakdown of a vocabulary value with an uppercase indexed form)
+testCreatedCounter.vocabulary = VOCABULARY_NUMBERS + 5;
 // 1 created and deleted by ingestionDeduplication-test (a type outside the deduplication allowlist)
 // 3 created and deleted by filterGroup-test (nil / not_nil operators on numbers)
 testCreatedCounter.vulnerability = 15;
@@ -237,9 +238,9 @@ testDeletedCounter.opinion = 4;
 testDeletedCounter.persona = 1;
 testDeletedCounter['phone-number'] = 2;
 testDeletedCounter.relationship = 10; // includes 5 created and deleted by stixRelationship-test (time series breakdown)
-// Includes 8 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
+// Includes 11 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
 // Plus 3 created and deleted by workflow-entity-write-test
-testDeletedCounter.report = 68;
+testDeletedCounter.report = 71;
 testDeletedCounter.sighting = 5; // 3 created and deleted by relations-deduplication-test
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;
@@ -247,7 +248,8 @@ testDeletedCounter['threat-actor'] = 20;
 testDeletedCounter.tool = 5;
 // Counts for:
 // - 3 deleted by vocabulary-import-test
-testDeletedCounter.vocabulary = 3;
+// - 2 created and deleted by stixCoreObject-test (time series breakdown of a vocabulary value with an uppercase indexed form)
+testDeletedCounter.vocabulary = 5;
 // 1 by ingestionDeduplication-test
 // 3 by filterGroup-test (nil / not_nil operators on numbers)
 testDeletedCounter.vulnerability = 9;
