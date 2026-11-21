@@ -197,6 +197,38 @@ describe('SearchInput (top bar) in bulk mode', () => {
     await user.type(document.querySelector('input[name="keyword"]') as HTMLInputElement, 'imp');
     expect(screen.queryAllByRole('option')).toHaveLength(0);
   });
+
+  it('goes back to the bulk search page when Bulk search is clicked again from another page', async () => {
+    const { user } = testRender(<SearchInput variant="topBar" onSubmit={vi.fn()} keyword="" />, { route: '/dashboard' });
+    await user.click(screen.getByRole('button', { name: 'Bulk search' }));
+    mockNavigate.mockClear();
+
+    // The top bar outlives the page: the toggle is still selected once the user has moved elsewhere.
+    await user.click(screen.getByRole('button', { name: 'Bulk search' }));
+    expect(mockNavigate).toHaveBeenCalledWith('/dashboard/search_bulk');
+  });
+
+  it('does not go back to the bulk search page when Ask AI is clicked from another page', async () => {
+    const onSubmit = vi.fn();
+    const { user } = testRender(<SearchInput variant="topBar" onSubmit={onSubmit} keyword="" />, { route: '/dashboard' });
+    await user.type(document.querySelector('input[name="keyword"]') as HTMLInputElement, 'apt');
+    await user.click(screen.getByRole('button', { name: 'Bulk search' }));
+    mockNavigate.mockClear();
+
+    // The AI toggle shares the group with Bulk: MUI reports its click as a click on the selected value.
+    await user.click(screen.getByRole('button', { name: 'Ask AI' }));
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(onSubmit).toHaveBeenCalledWith('apt', true, undefined);
+  });
+
+  it('does not reload the bulk search page when Bulk search is clicked on it', async () => {
+    const { user } = testRender(<SearchInput variant="topBar" onSubmit={vi.fn()} keyword="" />, { route: '/dashboard/search_bulk' });
+    await user.click(screen.getByRole('button', { name: 'Bulk search' }));
+    mockNavigate.mockClear();
+
+    await user.click(screen.getByRole('button', { name: 'Bulk search' }));
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
 });
 
 describe('SearchInput (top bar)', () => {
