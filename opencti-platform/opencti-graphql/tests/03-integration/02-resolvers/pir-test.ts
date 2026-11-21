@@ -17,6 +17,21 @@ import { pirRelationshipsDistribution, pirRelationshipsMultiTimeSeries } from '.
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 import { LAST_PIR_SCORE_DATE_FILTER, PIR_SCORE_FILTER } from '../../../src/utils/filtering/filtering-constants';
+import { fetchStreamEventsRangeFromEventId, fetchStreamInfo } from '../../../src/database/stream/stream-handler';
+import type { SseEvent, UpdateEvent } from '../../../src/types/event';
+import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
+
+// The PIR score change events published in the live stream since a stream position, for one entity and one PIR
+const pirChangeEventsSince = async (startEventId: string, entityId: string, pirId: string) => {
+  const events: SseEvent<UpdateEvent>[] = [];
+  await fetchStreamEventsRangeFromEventId<UpdateEvent>(startEventId, (batch) => {
+    events.push(...batch);
+  }, { streamBatchSize: 5000 });
+  return events.filter((e) => e.event === 'update'
+    && e.data.scope === 'external'
+    && e.data.data.extensions[STIX_EXT_OCTI].id === entityId
+    && e.data.context.pir_change?.pir_id === pirId);
+};
 
 const LIST_QUERY = gql`
   query pirs(
@@ -316,6 +331,7 @@ describe('PIR resolver standard behavior', () => {
       { type: ENTITY_TYPE_MALWARE },
     );
     flaggedElementId = malware.id;
+    const { lastEventId: streamStartId } = await fetchStreamInfo();
     // flag the element
     const flagStartDatetime = now();
     const FLAG_QUERY = gql`
@@ -375,6 +391,25 @@ describe('PIR resolver standard behavior', () => {
     expect(malwareQueryResult.data?.malware.pirInformation.pir_score).toEqual(67);
     expect(malwareQueryResult.data?.malware.pirInformation.pir_explanation.length).toEqual(1);
     expect(malwareQueryResult.data?.malware.pirInformation.pir_explanation[0].criterion.filters).toEqual(JSON.stringify(matchingCriteria.filters));
+    // Verify the flag is published once as an external update of the entity, carrying its PIR information
+    const pirEvents = await pirChangeEventsSince(streamStartId, flaggedElementId, pirInternalId1);
+    expect(pirEvents.length).toEqual(1);
+    const { pir_change } = pirEvents[0].data.context;
+    expect(pir_change?.previous_score).toEqual(0);
+    expect(pir_change?.score).toEqual(67);
+    expect(pir_change?.relationship_id).toEqual(relationshipId);
+    expect(pir_change?.matched_criteria).toEqual([{ weight: 2, relationship_ids: [relationshipId] }]);
+    expect(pirEvents[0].data.context.pir_ids).toEqual([pirInternalId1]);
+    expect(pirEvents[0].data.noHistory).toEqual(true);
+    const eventPirInformation = pirEvents[0].data.data.extensions[STIX_EXT_OCTI].pir_information ?? [];
+    expect(eventPirInformation.filter((i) => i.pir_id === pirInternalId1)[0].pir_score).toEqual(67);
+    // Flagging again with the same relationship and criterion changes nothing and publishes nothing
+    const { lastEventId: replayStartId } = await fetchStreamInfo();
+    await queryAsAdmin({
+      query: FLAG_QUERY,
+      variables: { id: pirInternalId1, input: { relationshipId, sourceId: flaggedElementId, matchingCriteria, relationshipAuthorId } },
+    });
+    expect((await pirChangeEventsSince(replayStartId, flaggedElementId, pirInternalId1)).length).toEqual(0);
   });
 
   it('should display top sources distribution for in-pir relationships', async () => {
@@ -570,6 +605,7 @@ describe('PIR resolver standard behavior', () => {
       }
     `;
     const relationshipId = 'relationship2';
+    const { lastEventId: streamStartId } = await fetchStreamInfo();
     // a criteria matching both Pir1 and Pir2
     const matchingCriteria = {
       filters: {
@@ -616,6 +652,17 @@ describe('PIR resolver standard behavior', () => {
     expect(malwareAfterFlag.pir_information!.filter((s) => s.pir_id === pirInternalId1)[0].pir_score).toEqual(100);
     expect(malwareAfterFlag.pir_information!.filter((s) => s.pir_id === pirInternalId2).length).toEqual(1);
     expect(malwareAfterFlag.pir_information!.filter((s) => s.pir_id === pirInternalId2)[0].pir_score).toEqual(50);
+    // Verify one score change event for Pir1 (67 to 100) and one flag event for Pir2 (0 to 50)
+    const pir1Events = await pirChangeEventsSince(streamStartId, flaggedElementId, pirInternalId1);
+    expect(pir1Events.length).toEqual(1);
+    expect(pir1Events[0].data.context.pir_change?.previous_score).toEqual(67);
+    expect(pir1Events[0].data.context.pir_change?.score).toEqual(100);
+    expect(pir1Events[0].data.context.pir_change?.relationship_id).toEqual(relationshipId);
+    expect(pir1Events[0].data.context.pir_change?.matched_criteria.length).toEqual(2);
+    const pir2Events = await pirChangeEventsSince(streamStartId, flaggedElementId, pirInternalId2);
+    expect(pir2Events.length).toEqual(1);
+    expect(pir2Events[0].data.context.pir_change?.previous_score).toEqual(0);
+    expect(pir2Events[0].data.context.pir_change?.score).toEqual(50);
   });
 
   it('should update a pir relationship by removing an explanation', async () => {
@@ -625,6 +672,7 @@ describe('PIR resolver standard behavior', () => {
       }
     `;
     const relationshipId = 'relationship2';
+    const { lastEventId: streamStartId } = await fetchStreamInfo();
     await queryAsAdmin({
       query: UNFLAG_QUERY,
       variables: { id: pirInternalId1, input: { relationshipId, sourceId: flaggedElementId } },
@@ -640,6 +688,12 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.pirRelationships.edges[0].node.to.id).toEqual(pirInternalId1);
     expect(queryResult.data?.pirRelationships.edges[0].node.pir_score).toEqual(67);
     expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanation.length).toEqual(1);
+    // Verify the score change (100 to 67) is published once
+    const pirEvents = await pirChangeEventsSince(streamStartId, flaggedElementId, pirInternalId1);
+    expect(pirEvents.length).toEqual(1);
+    expect(pirEvents[0].data.context.pir_change?.previous_score).toEqual(100);
+    expect(pirEvents[0].data.context.pir_change?.score).toEqual(67);
+    expect(pirEvents[0].data.context.pir_change?.matched_criteria).toEqual([{ weight: 2, relationship_ids: ['relationship1'] }]);
   });
 
   it('should unflag an element', async () => {
@@ -649,10 +703,19 @@ describe('PIR resolver standard behavior', () => {
       }
     `;
     const relationshipId = 'relationship1';
+    const { lastEventId: streamStartId } = await fetchStreamInfo();
     await queryAsAdmin({
       query: UNFLAG_QUERY,
       variables: { id: pirInternalId1, input: { relationshipId, sourceId: flaggedElementId } },
     });
+    // Verify the unflag is published once, with a score of 0 and no PIR information left for the PIR
+    const pirEvents = await pirChangeEventsSince(streamStartId, flaggedElementId, pirInternalId1);
+    expect(pirEvents.length).toEqual(1);
+    expect(pirEvents[0].data.context.pir_change?.previous_score).toEqual(67);
+    expect(pirEvents[0].data.context.pir_change?.score).toEqual(0);
+    expect(pirEvents[0].data.context.pir_change?.matched_criteria).toEqual([]);
+    const eventPirInformation = pirEvents[0].data.data.extensions[STIX_EXT_OCTI].pir_information ?? [];
+    expect(eventPirInformation.filter((i) => i.pir_id === pirInternalId1).length).toEqual(0);
     // Verify the in-pir rel has been deleted
     const queryResult = await queryAsAdmin({
       query: LIST_RELS_QUERY,

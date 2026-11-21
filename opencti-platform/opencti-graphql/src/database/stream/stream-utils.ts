@@ -162,6 +162,7 @@ export const buildStixUpdateEvent = (
       reverse_patch: previousPatch,
       related_restrictions: opts.related_restrictions,
       pir_ids: opts.pir_ids,
+      ...(opts.pir_change ? { pir_change: opts.pir_change } : {}),
       changes,
     },
   };

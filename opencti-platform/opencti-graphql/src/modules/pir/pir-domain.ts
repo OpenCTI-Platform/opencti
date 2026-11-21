@@ -47,7 +47,7 @@ import { BUS_TOPICS, logApp } from '../../config/conf';
 import { deleteInternalObject, editInternalObject } from '../../domain/internalObject';
 import type { BasicStoreCommon, BasicStoreObject } from '../../types/store';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
-import { createPirRelation, serializePir, updatePirExplanations } from './pir-utils';
+import { createPirRelation, loadPirFlaggedEntity, publishPirScoreChange, serializePir, updatePirExplanations } from './pir-utils';
 import { getPirWithAccessCheck } from './pir-checkPirAccess';
 import { ForbiddenAccess, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
@@ -302,7 +302,7 @@ export const pirFlagElement = async (
 
       // create or update the pir relation
       if (sourceFlagged) {
-        await updatePirExplanations(context, user, sourceId, pir.id, pirDependencies, lockIds, EditOperation.Add);
+        await updatePirExplanations(context, user, sourceId, pir.id, pirDependencies, lockIds, EditOperation.Add, relationshipId);
       } else {
         await createPirRelation(context, user, sourceId, pir.id, pirDependencies, lockIds);
       }
@@ -359,11 +359,13 @@ export const pirUnflagElement = async (
         .map((d) => d.element_id)
         .includes(relationshipId));
       if (newRelDependencies.length === 0) {
-        // delete the in-pir relationship between source and PIR
+        // delete the in-pir relationship between source and PIR, then publish the unflag of the entity
+        const previous = await loadPirFlaggedEntity(context, user, sourceId);
         await deleteRelationsByFromAndTo(context, user, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_REF_RELATIONSHIP);
+        await publishPirScoreChange(context, user, previous, pir.id, (rel as any).pir_score ?? 0, 0, relationshipId, []);
       } else if (newRelDependencies.length < relDependencies.length) {
         // update dependencies
-        await updatePirExplanations(context, user, sourceId, pir.id, newRelDependencies, lockIds);
+        await updatePirExplanations(context, user, sourceId, pir.id, newRelDependencies, lockIds, undefined, relationshipId);
       }
     }
   } catch (err: any) {
