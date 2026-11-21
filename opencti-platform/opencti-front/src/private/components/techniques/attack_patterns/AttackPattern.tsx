@@ -11,6 +11,8 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import OpenAevCard from '../../common/xtm/counterpart/openaev/OpenAevCard';
+import { xtmCardAnchorKey } from '../../common/xtm/counterpart/core/xtmCardAnchorKey';
 
 export const attackPatternFragment = graphql`
   fragment AttackPattern_attackPattern on AttackPattern {
@@ -51,6 +53,7 @@ export const attackPatternFragment = graphql`
     }
     name
     aliases
+    x_mitre_id
     status {
       id
       order
@@ -76,6 +79,8 @@ const AttackPattern: React.FC<AttackPatternProps> = ({
 
   const attackPattern = useFragment<AttackPattern_attackPattern$key>(attackPatternFragment, attackPatternData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(attackPattern.entity_type);
+  const openAevAnchor = xtmCardAnchorKey(overviewLayoutCustomization);
+  const openAevCard = <OpenAevCard gridRow objectId={attackPattern.id} />;
 
   return (
     <div data-testid="attack-pattern-details-page">
@@ -89,15 +94,21 @@ const AttackPattern: React.FC<AttackPatternProps> = ({
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} size={width}>
-                    <AttackPatternDetails attackPattern={attackPattern} />
-                  </Grid>
+                  <React.Fragment key={key}>
+                    <Grid size={width}>
+                      <AttackPatternDetails attackPattern={attackPattern} />
+                    </Grid>
+                    {key === openAevAnchor && openAevCard}
+                  </React.Fragment>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} size={width}>
-                    <StixDomainObjectOverview stixDomainObject={attackPattern} />
-                  </Grid>
+                  <React.Fragment key={key}>
+                    <Grid size={width}>
+                      <StixDomainObjectOverview stixDomainObject={attackPattern} />
+                    </Grid>
+                    {key === openAevAnchor && openAevCard}
+                  </React.Fragment>
                 );
               case 'latestCreatedRelationships':
                 return (
@@ -146,6 +157,7 @@ const AttackPattern: React.FC<AttackPatternProps> = ({
             }
           })
         }
+        {openAevAnchor === null && openAevCard}
       </Grid>
     </div>
   );

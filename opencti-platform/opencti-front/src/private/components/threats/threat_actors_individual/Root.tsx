@@ -162,6 +162,7 @@ const RootThreatActorIndividualComponent = ({
             <StixDomainObjectHeader
               entityType="Threat-Actor-Individual"
               stixDomainObject={threatActorIndividual}
+              xtmCounterpartId={threatActorIndividual.id}
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <ThreatActorIndividualEdition

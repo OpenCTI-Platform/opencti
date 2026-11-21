@@ -142,6 +142,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
             <StixDomainObjectHeader
               entityType="Vulnerability"
               stixDomainObject={vulnerability}
+              xtmCounterpartId={vulnerability.id}
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <VulnerabilityEdition vulnerabilityId={vulnerabilityId} />

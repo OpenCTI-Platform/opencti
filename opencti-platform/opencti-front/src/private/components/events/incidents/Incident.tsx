@@ -11,6 +11,8 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { Incident_incident$key } from './__generated__/Incident_incident.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import OpenAevAlertCard from '../../common/xtm/counterpart/openaev/OpenAevAlertCard';
+import { xtmCardAnchorKey } from '../../common/xtm/counterpart/core/xtmCardAnchorKey';
 
 const incidentFragment = graphql`
   fragment Incident_incident on Incident {
@@ -89,6 +91,10 @@ const Incident: React.FC<IncidentProps> = ({
     incidentData,
   );
   const overviewLayoutCustomization = useOverviewLayoutCustomization(incident.entity_type);
+  const openAevAnchor = xtmCardAnchorKey(overviewLayoutCustomization);
+  const openAevCard = (
+    <OpenAevAlertCard gridRow objectId={incident.id} />
+  );
 
   return (
     <>
@@ -102,19 +108,25 @@ const Incident: React.FC<IncidentProps> = ({
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} size={width}>
-                    <IncidentDetails incidentData={incident} />
-                  </Grid>
+                  <React.Fragment key={key}>
+                    <Grid size={width}>
+                      <IncidentDetails incidentData={incident} />
+                    </Grid>
+                    {key === openAevAnchor && openAevCard}
+                  </React.Fragment>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} size={width}>
-                    <StixDomainObjectOverview
-                      stixDomainObject={incident}
-                      displayAssignees
-                      displayParticipants
-                    />
-                  </Grid>
+                  <React.Fragment key={key}>
+                    <Grid size={width}>
+                      <StixDomainObjectOverview
+                        stixDomainObject={incident}
+                        displayAssignees
+                        displayParticipants
+                      />
+                    </Grid>
+                    {key === openAevAnchor && openAevCard}
+                  </React.Fragment>
                 );
               case 'latestCreatedRelationships':
                 return (
@@ -163,6 +175,7 @@ const Incident: React.FC<IncidentProps> = ({
             }
           })
         }
+        {openAevAnchor === null && openAevCard}
       </Grid>
     </>
   );

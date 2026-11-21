@@ -10,6 +10,8 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import OpenAevCard from '../../common/xtm/counterpart/openaev/OpenAevCard';
+import { OpenCrqCard } from '../../common/xtm/counterpart/opencrq/OpenCrq';
 
 const systemFragment = graphql`
   fragment System_system on System {
@@ -98,6 +100,9 @@ const System: React.FC<SystemProps> = ({
             stixDomainObject={system}
           />
         </Grid>
+        {/* Right under Details and Basic information, above the lists; Notes stays last. */}
+        <OpenAevCard gridRow objectId={system.id} />
+        <OpenCrqCard gridRow objectId={system.id} />
         {viewAs === 'knowledge' && (
           <Grid size={6}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships

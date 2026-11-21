@@ -54,6 +54,7 @@ const attackPatternQuery = graphql`
       standard_id
       entity_type
       name
+      x_mitre_id
       aliases
       x_opencti_graph_data
       currentUserAccessRight
@@ -140,6 +141,8 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
             <StixDomainObjectHeader
               entityType="Attack-Pattern"
               stixDomainObject={attackPattern}
+              xtmCounterpartId={attackPattern.id}
+              xtmCounterpartProducts={['openaev']}
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <AttackPatternEdition attackPatternId={attackPattern.id} />
