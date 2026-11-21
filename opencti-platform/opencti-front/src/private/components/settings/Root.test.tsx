@@ -12,10 +12,23 @@ import { XTM_HUB_AUTO_REGISTER_QUERY_PARAM, XTM_HUB_PERMISSION_REQUIRED_DIALOG_S
 // worker (isolate: false). Stub the one these tests render (Settings) so every
 // import settles inside the test; the mocked Security below never renders Experience.
 vi.mock('./Settings', () => ({ default: () => <div>Settings page</div> }));
+vi.mock('./Experience', () => ({ default: () => <div>Experience page</div> }));
 
-vi.mock('../../../utils/hooks/useSettingsFallbackUrl', () => ({
+vi.mock('./useSettingsFallbackUrl', () => ({
   default: () => '/dashboard/settings',
 }));
+
+// The page rules are covered by EntryGuard's own test: here a page is open unless listed in `deniedPaths` (as the
+// Experience entry is in a draft).
+let deniedPaths: string[] = [];
+vi.mock('../nav/EntryGuard', () => ({
+  default: ({ path, children, placeholder }: { path: string; children?: React.ReactNode; placeholder?: React.ReactNode }) => (
+    <>{deniedPaths.includes(path) ? placeholder : children}</>
+  ),
+}));
+
+// Lets the Experience page through the mocked Security below, to tell it apart from the guard's redirect.
+let experienceGranted = false;
 
 vi.mock('../../../utils/Security', () => ({
   default: ({
@@ -29,7 +42,7 @@ vi.mock('../../../utils/Security', () => ({
   }) => {
     const isExperienceSecurity = needs?.includes(SETTINGS_SUPPORT)
       && needs?.includes(SETTINGS_SETMANAGEXTMHUB);
-    return <>{isExperienceSecurity ? placeholder : children}</>;
+    return <>{isExperienceSecurity && !experienceGranted ? placeholder : children}</>;
   },
 }));
 
@@ -37,6 +50,24 @@ describe('Settings Root permission redirect', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     sessionStorage.clear();
+    deniedPaths = [];
+    experienceGranted = false;
+  });
+
+  it('redirects a user with the Experience capabilities away from the page when its entry denies it (draft)', async () => {
+    experienceGranted = true;
+    deniedPaths = ['/dashboard/settings/experience'];
+    testRender(
+      <Routes>
+        <Route path="/dashboard/settings/*" element={<Root />} />
+      </Routes>,
+      { route: '/dashboard/settings/experience' },
+    );
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/dashboard/settings');
+    });
+    expect(await screen.findByText('Settings page')).toBeInTheDocument();
   });
 
   it('initializes permission dialog marker when experience is denied and auto-register is present', async () => {

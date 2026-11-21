@@ -1,7 +1,9 @@
 import { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router';
+import EntryGuard from '../nav/EntryGuard';
 import { boundaryWrapper } from '@components/Error';
-import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
+import useFirstVisiblePath from '../common/menus/useFirstVisiblePath';
+import { sectionEntries } from '../nav/navSections';
 import Loader from '../../../components/Loader';
 
 const StixCyberObservables = lazy(() => import('./StixCyberObservables'));
@@ -14,55 +16,77 @@ const Infrastructures = lazy(() => import('./Infrastructures'));
 const RootInfrastructure = lazy(() => import('./infrastructures/Root'));
 
 const Root = () => {
-  let redirect: string | null = null;
-  if (!useIsHiddenEntity('Stix-Cyber-Observable')) {
-    redirect = 'observables';
-  } else if (!useIsHiddenEntity('Artifact')) {
-    redirect = 'artifacts';
-  } else if (!useIsHiddenEntity('Indicator')) {
-    redirect = 'indicators';
-  } else if (!useIsHiddenEntity('Infrastructure')) {
-    redirect = 'infrastructures';
-  }
-
+  const redirect = useFirstVisiblePath(sectionEntries('observations'));
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
         <Route
           path="/"
-          element={<Navigate to={`/dashboard/observations/${redirect}`} replace={true} />}
+          element={<Navigate to={redirect} replace={true} />}
         />
         <Route
           path="/observables"
-          element={boundaryWrapper(StixCyberObservables)}
+          element={(
+            <EntryGuard path="/dashboard/observations/observables">
+              {boundaryWrapper(StixCyberObservables)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/observables/:observableId/*"
-          element={boundaryWrapper(RootStixCyberObservable)}
+          element={(
+            <EntryGuard path="/dashboard/observations/observables">
+              {boundaryWrapper(RootStixCyberObservable)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/artifacts"
-          element={boundaryWrapper(Artifacts)}
+          element={(
+            <EntryGuard path="/dashboard/observations/artifacts">
+              {boundaryWrapper(Artifacts)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/artifacts/:observableId/*"
-          element={boundaryWrapper(RootArtifact)}
+          element={(
+            <EntryGuard path="/dashboard/observations/artifacts">
+              {boundaryWrapper(RootArtifact)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/indicators"
-          element={boundaryWrapper(Indicators)}
+          element={(
+            <EntryGuard path="/dashboard/observations/indicators">
+              {boundaryWrapper(Indicators)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/indicators/:indicatorId/*"
-          element={boundaryWrapper(RootIndicator)}
+          element={(
+            <EntryGuard path="/dashboard/observations/indicators">
+              {boundaryWrapper(RootIndicator)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/infrastructures"
-          element={boundaryWrapper(Infrastructures)}
+          element={(
+            <EntryGuard path="/dashboard/observations/infrastructures">
+              {boundaryWrapper(Infrastructures)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/infrastructures/:infrastructureId/*"
-          element={boundaryWrapper(RootInfrastructure)}
+          element={(
+            <EntryGuard path="/dashboard/observations/infrastructures">
+              {boundaryWrapper(RootInfrastructure)}
+            </EntryGuard>
+          )}
         />
       </Routes>
     </Suspense>

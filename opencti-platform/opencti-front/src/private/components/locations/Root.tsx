@@ -1,6 +1,8 @@
 import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
-import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
+import EntryGuard from '../nav/EntryGuard';
+import useFirstVisiblePath from '../common/menus/useFirstVisiblePath';
+import { sectionEntries } from '../nav/navSections';
 import Loader from '../../../components/Loader';
 import { boundaryWrapper } from '../Error';
 
@@ -16,64 +18,93 @@ const AdministrativeAreas = lazy(() => import('./AdministrativeAreas'));
 const RootAdministrativeArea = lazy(() => import('./administrative_areas/Root'));
 
 const Root = () => {
-  let redirect: string | null = null;
-  if (!useIsHiddenEntity('Region')) {
-    redirect = 'regions';
-  } else if (!useIsHiddenEntity('Country')) {
-    redirect = 'countries';
-  } else if (!useIsHiddenEntity('Administrative-Area')) {
-    redirect = 'administrative_areas';
-  } else if (!useIsHiddenEntity('City')) {
-    redirect = 'cities';
-  } else if (!useIsHiddenEntity('Position')) {
-    redirect = 'positions';
-  }
+  const redirect = useFirstVisiblePath(sectionEntries('locations'));
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
         <Route
           path="/"
-          element={<Navigate to={`/dashboard/locations/${redirect}`} replace={true} />}
+          element={<Navigate to={redirect} replace={true} />}
         />
         <Route
           path="/regions"
-          element={boundaryWrapper(Regions)}
+          element={(
+            <EntryGuard path="/dashboard/locations/regions">
+              {boundaryWrapper(Regions)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/regions/:regionId/*"
-          element={boundaryWrapper(RootRegion)}
+          element={(
+            <EntryGuard path="/dashboard/locations/regions">
+              {boundaryWrapper(RootRegion)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/countries"
-          element={boundaryWrapper(Countries)}
+          element={(
+            <EntryGuard path="/dashboard/locations/countries">
+              {boundaryWrapper(Countries)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/countries/:countryId/*"
-          element={boundaryWrapper(RootCountry)}
+          element={(
+            <EntryGuard path="/dashboard/locations/countries">
+              {boundaryWrapper(RootCountry)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/administrative_areas"
-          element={boundaryWrapper(AdministrativeAreas)}
+          element={(
+            <EntryGuard path="/dashboard/locations/administrative_areas">
+              {boundaryWrapper(AdministrativeAreas)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/administrative_areas/:administrativeAreaId/*"
-          element={boundaryWrapper(RootAdministrativeArea)}
+          element={(
+            <EntryGuard path="/dashboard/locations/administrative_areas">
+              {boundaryWrapper(RootAdministrativeArea)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/cities"
-          element={boundaryWrapper(Cities)}
+          element={(
+            <EntryGuard path="/dashboard/locations/cities">
+              {boundaryWrapper(Cities)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/cities/:cityId/*"
-          element={boundaryWrapper(RootCity)}
+          element={(
+            <EntryGuard path="/dashboard/locations/cities">
+              {boundaryWrapper(RootCity)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/positions"
-          element={boundaryWrapper(Positions)}
+          element={(
+            <EntryGuard path="/dashboard/locations/positions">
+              {boundaryWrapper(Positions)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/positions/:positionId/*"
-          element={boundaryWrapper(RootPosition)}
+          element={(
+            <EntryGuard path="/dashboard/locations/positions">
+              {boundaryWrapper(RootPosition)}
+            </EntryGuard>
+          )}
         />
       </Routes>
     </Suspense>

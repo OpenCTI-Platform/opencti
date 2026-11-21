@@ -1,19 +1,13 @@
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
-import useGranted, {
-  isOnlyOrganizationAdmin,
-  SETTINGS_SETACCESSES,
-  SETTINGS_SETAUTH,
-  SETTINGS_SETDISSEMINATION,
-  SETTINGS_SETMARKINGS,
-  VIRTUAL_ORGANIZATION_ADMIN,
-} from '../../../../utils/hooks/useGranted';
+import { isOnlyOrganizationAdmin } from '../../../../utils/hooks/useGranted';
 import Loader from '../../../../components/Loader';
-import { capabilitiesOf } from '../../nav/menuEntries';
+import EntryGuard from '../../nav/EntryGuard';
+import useFirstVisiblePath from '../../common/menus/useFirstVisiblePath';
+import { entriesUnder } from '../../nav/menuEntries';
 import AccessesMenu from '../AccessesMenu';
-import useSettingsFallbackUrl from '../../../../utils/hooks/useSettingsFallbackUrl';
+import useSettingsFallbackUrl from '../useSettingsFallbackUrl';
 
-const Security = lazy(() => import('../../../../utils/Security'));
 const Groups = lazy(() => import('../Groups'));
 const RootGroup = lazy(() => import('../groups/Root'));
 const MarkingDefinitions = lazy(() => import('../MarkingDefinitions'));
@@ -31,30 +25,13 @@ const EmailTemplates = lazy(() => import('../email_template/EmailTemplates'));
 const EmailTemplate = lazy(() => import('../email_template/EmailTemplate'));
 const SmtpConfiguration = lazy(() => import('../smtp_configuration/SmtpConfiguration'));
 
-const AccessesRedirect = () => {
-  const adminOrga = isOnlyOrganizationAdmin();
-  const hasSetAccesses = useGranted([SETTINGS_SETACCESSES]);
-  const hasVirtualOrgAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
-  const hasSetMarkings = useGranted([SETTINGS_SETMARKINGS]);
-  const hasSetDissemination = useGranted([SETTINGS_SETDISSEMINATION]);
-  const hasSetAuth = useGranted([SETTINGS_SETAUTH]);
+const accessesEntries = entriesUnder('/dashboard/settings/accesses');
 
-  if (hasSetAccesses) {
-    return <Navigate to="/dashboard/settings/accesses/users" />;
-  }
-  if (hasVirtualOrgAdmin) {
-    return <Navigate to={adminOrga ? '/dashboard/settings/accesses/organizations' : '/dashboard/settings/accesses/roles'} />;
-  }
-  if (hasSetAuth) {
-    return <Navigate to="/dashboard/settings/accesses/authentications" />;
-  }
-  if (hasSetMarkings) {
-    return <Navigate to="/dashboard/settings/accesses/marking" />;
-  }
-  if (hasSetDissemination) {
-    return <Navigate to="/dashboard/settings/accesses/dissemination_list" />;
-  }
-  return <Navigate to="/dashboard/settings" />;
+// First Security page the user can open, except organization admins, who start from their organizations.
+const AccessesRedirect = ({ fallbackUrl }: { fallbackUrl: string }) => {
+  const adminOrga = isOnlyOrganizationAdmin();
+  const firstVisible = useFirstVisiblePath(accessesEntries, fallbackUrl);
+  return <Navigate to={adminOrga ? '/dashboard/settings/accesses/organizations' : firstVisible} />;
 };
 
 const RootAccesses = () => {
@@ -68,188 +45,188 @@ const RootAccesses = () => {
           <Route
             path="/"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings/accesses')}
+              <EntryGuard
+                path="/dashboard/settings/accesses"
                 placeholder={<Navigate to={fallbackUrl} />}
               >
-                <AccessesRedirect />
-              </Security>
+                <AccessesRedirect fallbackUrl={fallbackUrl} />
+              </EntryGuard>
             )}
           />
           <Route
             path="/users"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings/accesses/users')}
+              <EntryGuard
+                path="/dashboard/settings/accesses/users"
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <Users />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/users/:userId/*"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings/accesses/users')}
+              <EntryGuard
+                path="/dashboard/settings/accesses/users"
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <RootUser />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/organizations"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings/accesses/organizations')}
+              <EntryGuard
+                path="/dashboard/settings/accesses/organizations"
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <SettingsOrganizations />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/organizations/:organizationId/*"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings/accesses/organizations')}
+              <EntryGuard
+                path="/dashboard/settings/accesses/organizations"
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <RootSettingsOrganization />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/roles"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings/accesses/roles')}
+              <EntryGuard
+                path="/dashboard/settings/accesses/roles"
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <Roles />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/roles/:roleId/*"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings/accesses/roles')}
+              <EntryGuard
+                path="/dashboard/settings/accesses/roles"
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <RootRole />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/groups"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings/accesses/groups')}
+              <EntryGuard
+                path="/dashboard/settings/accesses/groups"
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <Groups />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/groups/:groupId/*"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings/accesses/groups')}
+              <EntryGuard
+                path="/dashboard/settings/accesses/groups"
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <RootGroup />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/sessions"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings/accesses/sessions')}
+              <EntryGuard
+                path="/dashboard/settings/accesses/sessions"
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <Sessions />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/policies"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings/accesses/policies')}
+              <EntryGuard
+                path="/dashboard/settings/accesses/policies"
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <Policies />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/marking"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings/accesses/marking')}
+              <EntryGuard
+                path="/dashboard/settings/accesses/marking"
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <MarkingDefinitions />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/dissemination_list"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings/accesses/dissemination_list')}
+              <EntryGuard
+                path="/dashboard/settings/accesses/dissemination_list"
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <DisseminationLists />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/email_templates"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings/accesses/email_templates')}
+              <EntryGuard
+                path="/dashboard/settings/accesses/email_templates"
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <EmailTemplates />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/email_templates/:emailTemplateId/*"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings/accesses/email_templates')}
+              <EntryGuard
+                path="/dashboard/settings/accesses/email_templates"
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <EmailTemplate />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/authentications"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings/accesses/authentications')}
+              <EntryGuard
+                path="/dashboard/settings/accesses/authentications"
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <SSODefinitions />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/smtp"
             element={(
-              <Security
-                needs={capabilitiesOf('/dashboard/settings/accesses/smtp')}
+              <EntryGuard
+                path="/dashboard/settings/accesses/smtp"
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <SmtpConfiguration />
-              </Security>
+              </EntryGuard>
             )}
           />
         </Routes>

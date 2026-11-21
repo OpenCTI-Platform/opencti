@@ -22,6 +22,7 @@ import Pir from './Pir';
 import Loader from '../../../components/Loader';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from '../../../components/i18n';
+import EntryGuard from '../nav/EntryGuard';
 
 const PirRoot = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -30,10 +31,12 @@ const PirRoot = () => {
     <Suspense fallback={<Loader />}>
       {isEnterpriseEdition
         ? (
-            <Routes>
-              <Route path="/" element={boundaryWrapper(Pirs)} />
-              <Route path="/:pirId/*" element={boundaryWrapper(Pir)} />
-            </Routes>
+            <EntryGuard path="/dashboard/pirs">
+              <Routes>
+                <Route path="/" element={boundaryWrapper(Pirs)} />
+                <Route path="/:pirId/*" element={boundaryWrapper(Pir)} />
+              </Routes>
+            </EntryGuard>
           )
         : <EnterpriseEdition feature={t_i18n('PIR')} />}
     </Suspense>

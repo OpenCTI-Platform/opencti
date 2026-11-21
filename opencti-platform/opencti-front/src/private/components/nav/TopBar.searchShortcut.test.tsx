@@ -27,6 +27,8 @@ vi.mock('../chatbox/AskArianeButton', () => ({ default: () => null }));
 vi.mock('../chatbox/CtemCommandCenterButton', () => ({ default: () => null }));
 vi.mock('../cases/feedbacks/FeedbackCreation', () => ({ default: () => null }));
 vi.mock('../common/ai/AINLQ', () => ({ useAINLQ: () => ({ search: vi.fn(), isLoading: false }) }));
+// The top bar icons read their entries' rules, hidden entity types included.
+vi.mock('../../../utils/hooks/useEntitySettings', () => ({ useHiddenEntities: () => [] }));
 
 const renderTopBar = async (capabilities = [{ name: KNOWLEDGE }]) => {
   const result = testRender(<TopBar />, {

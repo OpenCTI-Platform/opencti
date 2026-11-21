@@ -1,7 +1,9 @@
 import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
+import EntryGuard from '../nav/EntryGuard';
 import { boundaryWrapper } from '../Error';
-import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
+import useFirstVisiblePath from '../common/menus/useFirstVisiblePath';
+import { sectionEntries } from '../nav/navSections';
 import Loader from '../../../components/Loader';
 
 const ThreatActorsGroup = lazy(() => import('./ThreatActorsGroup'));
@@ -14,54 +16,77 @@ const ThreatActorsIndividual = lazy(() => import('./ThreatActorsIndividual'));
 const RootThreatActorIndividual = lazy(() => import('./threat_actors_individual/Root'));
 
 const Root = () => {
-  let redirect: string | null = null;
-  if (!useIsHiddenEntity('Threat-Actor-Group')) {
-    redirect = 'threat_actors_group';
-  } else if (!useIsHiddenEntity('Threat-Actor-Individual')) {
-    redirect = 'threat_actors_individual';
-  } else if (!useIsHiddenEntity('Intrusion-Set')) {
-    redirect = 'intrusion_sets';
-  } else if (!useIsHiddenEntity('Campaign')) {
-    redirect = 'campaigns';
-  }
+  const redirect = useFirstVisiblePath(sectionEntries('threats'));
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
         <Route
           path="/"
-          element={<Navigate to={`/dashboard/threats/${redirect}`} replace={true} />}
+          element={<Navigate to={redirect} replace={true} />}
         />
         <Route
           path="/threat_actors_group"
-          element={boundaryWrapper(ThreatActorsGroup)}
+          element={(
+            <EntryGuard path="/dashboard/threats/threat_actors_group">
+              {boundaryWrapper(ThreatActorsGroup)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/threat_actors_group/:threatActorGroupId/*"
-          element={boundaryWrapper(RootThreatActorGroup)}
+          element={(
+            <EntryGuard path="/dashboard/threats/threat_actors_group">
+              {boundaryWrapper(RootThreatActorGroup)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/threat_actors_individual"
-          element={boundaryWrapper(ThreatActorsIndividual)}
+          element={(
+            <EntryGuard path="/dashboard/threats/threat_actors_individual">
+              {boundaryWrapper(ThreatActorsIndividual)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/threat_actors_individual/:threatActorIndividualId/*"
-          element={boundaryWrapper(RootThreatActorIndividual)}
+          element={(
+            <EntryGuard path="/dashboard/threats/threat_actors_individual">
+              {boundaryWrapper(RootThreatActorIndividual)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/intrusion_sets"
-          element={boundaryWrapper(IntrusionSets)}
+          element={(
+            <EntryGuard path="/dashboard/threats/intrusion_sets">
+              {boundaryWrapper(IntrusionSets)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/intrusion_sets/:intrusionSetId/*"
-          element={boundaryWrapper(RootIntrusionSet)}
+          element={(
+            <EntryGuard path="/dashboard/threats/intrusion_sets">
+              {boundaryWrapper(RootIntrusionSet)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/campaigns"
-          element={boundaryWrapper(Campaigns)}
+          element={(
+            <EntryGuard path="/dashboard/threats/campaigns">
+              {boundaryWrapper(Campaigns)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/campaigns/:campaignId/*"
-          element={boundaryWrapper(RootCampaign)}
+          element={(
+            <EntryGuard path="/dashboard/threats/campaigns">
+              {boundaryWrapper(RootCampaign)}
+            </EntryGuard>
+          )}
         />
       </Routes>
     </Suspense>

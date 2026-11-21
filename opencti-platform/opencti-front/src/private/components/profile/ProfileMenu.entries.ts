@@ -20,7 +20,7 @@ export const notificationCenterEntry: MenuEntry = {
   requiredCapabilities: [KNOWLEDGE],
 };
 
-// Same path and capability as the top bar icon (hidden in draft, like the entry by default).
+// Also read by the top bar icon (hidden in draft, like the entry by default).
 export const newsFeedEntry: MenuEntry = {
   path: '/dashboard/news-feed',
   label: 'News Feed',
