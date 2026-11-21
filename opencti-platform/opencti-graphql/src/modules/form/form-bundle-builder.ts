@@ -9,6 +9,9 @@ import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { isNotEmptyField } from '../../database/utils';
+import { ForbiddenAccess } from '../../config/errors';
+import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
+import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { detectObservableType, refangValues } from '../../utils/observable';
 import { createStixPattern } from '../../python/pythonBridge';
 import { transformSpecialFields } from './form-fields-converter';
@@ -16,6 +19,9 @@ import { completeEntity } from './form-entity-builder';
 import { loadFormEntity } from './form-utils';
 import { buildMaterializeOptions, materializeEntityFromFields } from './form-entity-materializer';
 import { materializePendingRoots, type PendingUpload, withArtifactFileNotImported, withPendingExternalReferenceFiles } from './form-pending';
+
+// Tasks, notes and opinions belong to an entity through their own object_refs (a case lists the tasks that reference it)
+const SELF_ATTACHED_STIX_TYPES = ['task', 'note', 'opinion'];
 
 const toStix = (entity: StoreEntity) => withArtifactFileNotImported(withPendingExternalReferenceFiles(convertStoreToStix_2_1(entity), entity));
 
@@ -188,6 +194,8 @@ export const buildAdditionalEntities = async (
   bundle: any,
   isBypass: boolean = false,
   uploads: PendingUpload[] = [],
+  existingToAttach: any[] = [],
+  canUpdateKnowledge: boolean = true,
 ): Promise<Record<string, string[]>> => {
   const additionalEntitiesMap: Record<string, string[]> = {};
   if (!schema.additionalEntities) return additionalEntitiesMap;
@@ -201,9 +209,22 @@ export const buildAdditionalEntities = async (
         const additionalEntities = await Promise.all(vals.map((id: string) => {
           return loadFormEntity(context, user, id, additionalEntityType);
         }));
-        // Existing entities are not added to the bundle: their id is enough for the relationships and the container
+        // Existing entities are not added to the bundle: their id is enough for the relationships and the container.
+        // Except the ones that reference their entity themselves, kept to be attached to the main entities.
         for (let index2 = 0; index2 < additionalEntities.length; index2 += 1) {
           const existingStixId = additionalEntities[index2].standard_id;
+          if (SELF_ATTACHED_STIX_TYPES.includes(existingStixId.split('--')[0])) {
+            const existingStix = toStix(additionalEntities[index2]);
+            // Attaching it updates its refs, which the import skips without a word when the applicant cannot: without
+            // Create / Update knowledge (isCreateOnlyFormImport), or below its confidence once it has refs (generateRefsInputsForUpsert)
+            if (!canUpdateKnowledge) {
+              throw ForbiddenAccess('You are not allowed to attach an existing task, note or opinion: it needs the right to update knowledge.', { id: existingStixId });
+            }
+            if (isNotEmptyField(additionalEntities[index2][RELATION_OBJECT])) {
+              controlUserConfidenceAgainstElement(user, additionalEntities[index2]);
+            }
+            existingToAttach.push(existingStix);
+          }
           if (additionalEntitiesMap[additionalEntity.id]) {
             additionalEntitiesMap[additionalEntity.id].push(existingStixId);
           } else {
@@ -401,6 +422,46 @@ export const buildRelationships = async (
   }
 };
 
+// The tasks, notes and opinions of the submission are attached to the main entities
+const attachToMainEntities = (
+  mainStixEntities: any[],
+  bundle: any,
+  additionalEntitiesMap: Record<string, string[]>,
+  existingToAttach: any[] = [],
+): void => {
+  const mainIds = mainStixEntities.map((entity) => entity.id);
+  if (mainIds.length === 0) return;
+  const additionalIds = new Set(Object.values(additionalEntitiesMap).flat());
+  const created = bundle.objects.filter((object: StixContainer) => additionalIds.has(object.id) && SELF_ATTACHED_STIX_TYPES.includes(object.type));
+  // An existing one is only sent to add the main entities to its refs, the upsert merges them with the ones it has
+  bundle.objects.push(...existingToAttach);
+  const attached: StixContainer[] = [...created, ...existingToAttach];
+  attached.forEach((object) => {
+    object.object_refs = [...new Set([...(object.object_refs ?? []), ...mainIds])];
+  });
+};
+
+const stixRefsOf = (object: Record<string, any>): string[] => Object.entries(object).flatMap(([key, value]) => {
+  if (key.endsWith('_refs')) return value ?? [];
+  return key.endsWith('_ref') && value ? [value] : [];
+});
+
+// The bundle objects that reference this id, directly or through other objects of the bundle
+const referencingIds = (id: string, objects: Record<string, any>[]): Set<string> => {
+  const referencing = new Set<string>();
+  let found = true;
+  while (found) {
+    found = false;
+    objects.forEach((object) => {
+      if (!referencing.has(object.id) && stixRefsOf(object).some((ref) => ref === id || referencing.has(ref))) {
+        referencing.add(object.id);
+        found = true;
+      }
+    });
+  }
+  return referencing;
+};
+
 export const wrapInContainerOrPush = (
   mainEntityType: string,
   mainStixEntities: any[],
@@ -408,14 +469,20 @@ export const wrapInContainerOrPush = (
   includeInContainer: boolean | undefined,
   additionalEntitiesMap: Record<string, string[]> = {},
   isExistingMain: boolean[] = [],
+  existingToAttach: any[] = [],
 ): void => {
+  attachToMainEntities(mainStixEntities, bundle, additionalEntitiesMap, existingToAttach);
   const isContainer = includeInContainer && isStixDomainObjectContainer(mainEntityType);
   for (let i = 0; i < mainStixEntities.length; i += 1) {
     const isExisting = isExistingMain[i] ?? false;
     if (isContainer) {
       const stixContainer = mainStixEntities[i] as StixContainer;
-      // Existing additional entities are not in the bundle, the container still references them
-      stixContainer.object_refs = [...new Set([...bundle.objects.map((n: BasicStoreEntity) => n.id), ...Object.values(additionalEntitiesMap).flat()])];
+      // Existing additional entities are not in the bundle, the container still references them.
+      // An object that references the container is left out (its attached tasks, its relationships): a ref back would be a
+      // cycle, which the worker's splitter breaks by dropping a ref, and with it a relationship
+      const referencing = referencingIds(stixContainer.id, bundle.objects);
+      const containedIds = [...bundle.objects.map((n: BasicStoreEntity) => n.id), ...Object.values(additionalEntitiesMap).flat()];
+      stixContainer.object_refs = [...new Set(containedIds.filter((id) => !referencing.has(id)))];
       // An existing container is only sent to add the submitted objects into it
       if (!isExisting || stixContainer.object_refs.length > 0) {
         bundle.objects.push(stixContainer);

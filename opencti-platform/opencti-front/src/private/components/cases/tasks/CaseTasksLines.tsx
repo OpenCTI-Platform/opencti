@@ -1,14 +1,15 @@
 import Button from '@common/button/Button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Dialog from '@common/dialog/Dialog';
 import Drawer from '@components/common/drawer/Drawer';
 import { AddOutlined, ContentPasteGoOutlined } from '@mui/icons-material';
 import { GridTypeMap } from '@mui/material';
-import Tooltip from '@mui/material/Tooltip';
 import { Form, Formik } from 'formik';
 import { FunctionComponent, MutableRefObject, useState } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import IconButton from '../../../../components/common/button/IconButton';
 import Card from '../../../../components/common/card/Card';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import { useFormatter } from '../../../../components/i18n';
 import ListLines from '../../../../components/list_lines/ListLines';
@@ -184,45 +185,57 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
         title={t_i18n('Tasks')}
         action={(
           <>
-            <Tooltip title={t_i18n('Add a task to this container')}>
-              <IconButton
-                onClick={handleOpen}
-                aria-label={t_i18n('Add a task to this container')}
-              >
-                <AddOutlined fontSize="small" />
-              </IconButton>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <IconButton
+                    onClick={handleOpen}
+                    aria-label={t_i18n('Add a task to this container')}
+                  >
+                    <AddOutlined fontSize="small" />
+                  </IconButton>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{t_i18n('Add a task to this container')}</TooltipContent>
             </Tooltip>
-            <Tooltip title={t_i18n('Apply a new case template')}>
-              <IconButton
-                onClick={() => setOpenCaseTemplate(true)}
-                aria-label={t_i18n('Apply a new case template')}
-              >
-                <ContentPasteGoOutlined fontSize="small" />
-              </IconButton>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <IconButton
+                    onClick={() => setOpenCaseTemplate(true)}
+                    aria-label={t_i18n('Apply a new case template')}
+                  >
+                    <ContentPasteGoOutlined fontSize="small" />
+                  </IconButton>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{t_i18n('Apply a new case template')}</TooltipContent>
             </Tooltip>
           </>
         )}
       >
-        <ListLines
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          handleSort={handleSort}
-          dataColumns={tasksDataColumns}
-          inline={true}
-          secondaryAction={true}
-          iconExtension
-        >
-          <ListLinesContent
+        {(data?.tasks?.edges ?? []).length === 0 ? <WidgetNoData /> : (
+          <ListLines
+            sortBy={sortBy}
+            orderAsc={orderAsc}
+            handleSort={handleSort}
             dataColumns={tasksDataColumns}
-            dataList={data?.tasks?.edges ?? []}
-            LineComponent={CaseTasksLine}
-            isLoading={() => false}
-            entityId={caseId}
-            paginationOptions={tasksFilters}
-            containerRef={containerRef}
-            enableReferences={enableReferences}
-          />
-        </ListLines>
+            inline={true}
+            secondaryAction={true}
+            iconExtension
+          >
+            <ListLinesContent
+              dataColumns={tasksDataColumns}
+              dataList={data?.tasks?.edges ?? []}
+              LineComponent={CaseTasksLine}
+              isLoading={() => false}
+              entityId={caseId}
+              paginationOptions={tasksFilters}
+              containerRef={containerRef}
+              enableReferences={enableReferences}
+            />
+          </ListLines>
+        )}
       </Card>
     </div>
   );
