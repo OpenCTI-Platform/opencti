@@ -6922,5 +6922,14 @@
   "zero": "제로",
   "Zoom": "확대/축소",
   "Zoom in": "확대",
-  "Zoom out": "축소"
+  "Zoom out": "축소",
+  "A custom view exported as a JSON file": "JSON 파일로 내보낸 사용자 지정 뷰",
+  "Another custom view of the import has this name": "가져오기의 다른 사용자 지정 뷰가 이 이름을 사용합니다",
+  "Custom view already exists": "사용자 지정 뷰가 이미 존재합니다",
+  "Custom view name already exists": "사용자 지정 뷰 이름이 이미 존재합니다",
+  "custom views": "사용자 지정 뷰",
+  "Custom views cannot be created for this entity type": "이 엔터티 유형에는 사용자 지정 뷰를 만들 수 없습니다",
+  "Import a custom view file": "사용자 지정 뷰 파일 가져오기",
+  "Select the custom views to import from a full configuration bundle (zip)": "전체 구성 번들(zip)에서 가져올 사용자 지정 뷰를 선택하세요",
+  "Several custom views have this name": "이 이름의 사용자 지정 뷰가 여러 개 있습니다"
 }

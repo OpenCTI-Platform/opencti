@@ -6922,5 +6922,14 @@
   "zero": "Null",
   "Zoom": "Vergrößern",
   "Zoom in": "Vergrößern",
-  "Zoom out": "Verkleinern"
+  "Zoom out": "Verkleinern",
+  "A custom view exported as a JSON file": "Eine als JSON-Datei exportierte benutzerdefinierte Ansicht",
+  "Another custom view of the import has this name": "Eine andere benutzerdefinierte Ansicht des Imports hat diesen Namen",
+  "Custom view already exists": "Die benutzerdefinierte Ansicht existiert bereits",
+  "Custom view name already exists": "Der Name der benutzerdefinierten Ansicht existiert bereits",
+  "custom views": "benutzerdefinierte Ansichten",
+  "Custom views cannot be created for this entity type": "Für diesen Entitätstyp können keine benutzerdefinierten Ansichten erstellt werden",
+  "Import a custom view file": "Eine Datei mit einer benutzerdefinierten Ansicht importieren",
+  "Select the custom views to import from a full configuration bundle (zip)": "Wählen Sie die benutzerdefinierten Ansichten aus, die aus einem vollständigen Konfigurationspaket (zip) importiert werden sollen",
+  "Several custom views have this name": "Mehrere benutzerdefinierte Ansichten haben diesen Namen"
 }

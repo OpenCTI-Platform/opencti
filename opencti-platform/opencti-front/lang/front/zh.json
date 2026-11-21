@@ -6922,5 +6922,14 @@
   "zero": "零",
   "Zoom": "放大",
   "Zoom in": "放大",
-  "Zoom out": "缩小"
+  "Zoom out": "缩小",
+  "A custom view exported as a JSON file": "导出为 JSON 文件的自定义视图",
+  "Another custom view of the import has this name": "本次导入中的另一个自定义视图使用了此名称",
+  "Custom view already exists": "自定义视图已存在",
+  "Custom view name already exists": "自定义视图名称已存在",
+  "custom views": "自定义视图",
+  "Custom views cannot be created for this entity type": "无法为此实体类型创建自定义视图",
+  "Import a custom view file": "导入自定义视图文件",
+  "Select the custom views to import from a full configuration bundle (zip)": "从完整的配置包（zip）中选择要导入的自定义视图",
+  "Several custom views have this name": "有多个自定义视图使用此名称"
 }

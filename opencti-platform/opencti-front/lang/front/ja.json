@@ -6922,5 +6922,14 @@
   "zero": "ゼロ",
   "Zoom": "ズーム",
   "Zoom in": "ズームイン",
-  "Zoom out": "ズームアウト"
+  "Zoom out": "ズームアウト",
+  "A custom view exported as a JSON file": "JSONファイルとしてエクスポートされたカスタムビュー",
+  "Another custom view of the import has this name": "インポート内の別のカスタムビューがこの名前を使用しています",
+  "Custom view already exists": "カスタムビューは既に存在します",
+  "Custom view name already exists": "カスタムビュー名は既に存在します",
+  "custom views": "カスタムビュー",
+  "Custom views cannot be created for this entity type": "このエンティティタイプにはカスタムビューを作成できません",
+  "Import a custom view file": "カスタムビューのファイルをインポート",
+  "Select the custom views to import from a full configuration bundle (zip)": "完全な構成バンドル（zip）からインポートするカスタムビューを選択してください",
+  "Several custom views have this name": "この名前のカスタムビューが複数あります"
 }

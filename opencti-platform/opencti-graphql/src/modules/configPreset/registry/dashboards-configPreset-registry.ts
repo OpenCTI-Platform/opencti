@@ -5,8 +5,8 @@ import { findAllWorkspaces, findWorkspacePaginated } from '../../workspace/works
 import { importDashboard } from '../../workspace/workspace-import';
 import type { BasicStoreEntityWorkspace } from '../../workspace/workspace-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
-import type { ConfigPresetImporter, ConfigPresetImportPlan } from '../import/configPreset-import-types';
-import { buildConfigPresetConnection, dashboardsGroup, standardIdListArgs, toAppliedItem, toComputedItem } from './common-configPreset-registry';
+import type { ConfigPresetImporter } from '../import/configPreset-import-types';
+import { buildConfigPresetConnection, dashboardsGroup, plannedNamesOf, standardIdListArgs, toAppliedItem, toComputedItem } from './common-configPreset-registry';
 
 export const DASHBOARDS_FAMILY_ID = 'dashboards';
 
@@ -23,14 +23,6 @@ const toDashboardItem = (workspace: BasicStoreEntityWorkspace): ConfigPresetItem
   translatable: false,
   exporter: async (context, user) => exportDashboard(context, user, workspace),
 });
-
-// The names the earlier items of a dry run would take. Kept here, by plan, so that the plan of the engine does not have to know about dashboards
-const plannedNames = new WeakMap<ConfigPresetImportPlan, Set<string>>();
-const plannedNamesOf = (plan: ConfigPresetImportPlan) => {
-  const names = plannedNames.get(plan) ?? new Set<string>();
-  plannedNames.set(plan, names);
-  return names;
-};
 
 const dashboardsImporter: ConfigPresetImporter = {
   // The bundle id cannot be checked against the content: the dashboard is matched by its name, not by its id

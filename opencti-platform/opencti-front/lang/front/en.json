@@ -6922,5 +6922,14 @@
   "zero": "zero",
   "Zoom": "Zoom",
   "Zoom in": "Zoom in",
-  "Zoom out": "Zoom out"
+  "Zoom out": "Zoom out",
+  "A custom view exported as a JSON file": "A custom view exported as a JSON file",
+  "Another custom view of the import has this name": "Another custom view of the import has this name",
+  "Custom view already exists": "Custom view already exists",
+  "Custom view name already exists": "Custom view name already exists",
+  "custom views": "custom views",
+  "Custom views cannot be created for this entity type": "Custom views cannot be created for this entity type",
+  "Import a custom view file": "Import a custom view file",
+  "Select the custom views to import from a full configuration bundle (zip)": "Select the custom views to import from a full configuration bundle (zip)",
+  "Several custom views have this name": "Several custom views have this name"
 }

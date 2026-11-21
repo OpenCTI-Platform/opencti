@@ -224,6 +224,8 @@
   "Current_state_hash": "현재 상태 해시",
   "Custom dashboards": "맞춤 대시보드",
   "Custom field values": "사용자 정의 필드 값",
+  "Custom views": "사용자 지정 뷰",
+  "Custom views of the entity types and their widgets": "엔터티 유형의 사용자 지정 뷰와 해당 위젯",
   "Customization": "맞춤 설정",
   "CVSS2 Access Complexity (AC)": "CVSS2 액세스 복잡성(AC)",
   "CVSS2 Access Vector (AV)": "CVSS2 액세스 벡터(AV)",
