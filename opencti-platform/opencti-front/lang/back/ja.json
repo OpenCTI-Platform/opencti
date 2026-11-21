@@ -968,6 +968,7 @@
   "Product": "設定バージョン",
   "Product Name": "製品名",
   "Product name": "商品名",
+  "PURL": "PURL",
   "Product version": "製品バージョン",
   "Propagate a targeting from a child to its parent via attribution.": "アトリビューションにより、子から親へターゲティングを伝播する。",
   "Propagate a targeting from a child to its parent via belonging.": "#__# 所属を経由して、子から親へターゲティングを伝播する。",

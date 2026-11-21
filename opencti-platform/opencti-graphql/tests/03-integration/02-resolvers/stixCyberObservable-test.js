@@ -800,3 +800,80 @@ describe('Network Traffic deduplication on import', () => {
     expect(queryResult.data.stixCyberObservable).toBeNull();
   });
 });
+
+describe('Software PURL', () => {
+  const PURL = 'pkg:npm/lodash@4.17.21';
+  let softwareInternalId;
+  let softwareStandardId;
+
+  const SOFTWARE_ADD_QUERY = gql`
+    mutation SoftwarePurlAdd($type: String!, $Software: SoftwareAddInput) {
+      stixCyberObservableAdd(type: $type, Software: $Software) {
+        id
+        standard_id
+        ... on Software {
+          name
+          x_opencti_purl
+        }
+      }
+    }
+  `;
+  const SOFTWARE_DELETE_QUERY = gql`
+    mutation SoftwarePurlDelete($id: ID!) {
+      stixCyberObservableEdit(id: $id) {
+        delete
+      }
+    }
+  `;
+
+  it('should create a software with a purl', async () => {
+    const result = await queryAsAdminWithSuccess({
+      query: SOFTWARE_ADD_QUERY,
+      variables: { type: 'Software', Software: { name: 'lodash-purl-test', vendor: 'lodash', version: '4.17.21', x_opencti_purl: PURL } },
+    });
+    const software = result.data.stixCyberObservableAdd;
+    expect(software.x_opencti_purl).toEqual(PURL);
+    softwareInternalId = software.id;
+    softwareStandardId = software.standard_id;
+  });
+
+  it('should keep the purl out of the deterministic id', async () => {
+    // Same contributing fields, another purl: the upsert resolves the same software
+    const result = await queryAsAdminWithSuccess({
+      query: SOFTWARE_ADD_QUERY,
+      variables: { type: 'Software', Software: { name: 'lodash-purl-test', vendor: 'lodash', version: '4.17.21', x_opencti_purl: 'pkg:npm/lodash@4.17.21?repository_url=example' } },
+    });
+    expect(result.data.stixCyberObservableAdd.id).toEqual(softwareInternalId);
+    expect(result.data.stixCyberObservableAdd.standard_id).toEqual(softwareStandardId);
+  });
+
+  it('should export the purl as a custom property of the OpenCTI extension', async () => {
+    const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: softwareInternalId } });
+    const stix = JSON.parse(queryResult.data.stixCyberObservable.toStix);
+    const extension = Object.values(stix.extensions).find((ext) => ext.extension_type === 'property-extension' && ext.purl !== undefined);
+    expect(extension).toBeDefined();
+    expect(extension.purl).toMatch(/^pkg:npm\/lodash@4\.17\.21/);
+  });
+
+  it('should filter softwares by purl', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{ key: 'x_opencti_purl', values: ['pkg:npm/lodash@4.17.21?repository_url=example'] }],
+          filterGroups: [],
+        },
+      },
+    });
+    const ids = queryResult.data.stixCyberObservables.edges.map((edge) => edge.node.id);
+    expect(ids).toEqual([softwareInternalId]);
+  });
+
+  it('should delete the software', async () => {
+    await queryAsAdminWithSuccess({ query: SOFTWARE_DELETE_QUERY, variables: { id: softwareInternalId } });
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: softwareInternalId } });
+    expect(queryResult.data.stixCyberObservable).toBeNull();
+  });
+});

@@ -1129,6 +1129,17 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                             "x_opencti_product", observable_data
                         )
                     )
+                if "x_opencti_purl" not in observable_data:
+                    # Exported by the platform as "purl" in the OpenCTI SCO extension
+                    purl = self.opencti.get_attribute_in_extension(
+                        "x_opencti_purl", observable_data
+                    )
+                    if purl is None:
+                        purl = self.opencti.get_attribute_in_extension(
+                            "purl", observable_data
+                        )
+                    if purl is not None:
+                        observable_data["x_opencti_purl"] = purl
                 input_variables["Software"] = {
                     "name": (
                         observable_data["name"] if "name" in observable_data else None
@@ -1157,6 +1168,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "x_opencti_product" in observable_data
                         else None
                     ),
+                    "x_opencti_purl": observable_data.get("x_opencti_purl"),
                     "files": files,
                     "filesMarkings": files_markings,
                     "noTriggerImport": no_trigger_import,

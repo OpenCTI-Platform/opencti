@@ -6790,6 +6790,7 @@
   "x_opencti_reliability": "Verlässlichkeit",
   "X_opencti_score": "Ergebnis",
   "x_opencti_score": "Punktestand",
+  "x_opencti_purl": "PURL",
   "x_opencti_score_gt": "Punktzahl größer als",
   "x_opencti_score_lte": "Punktzahl kleiner als oder gleich",
   "X_opencti_workflow_id": "Status",

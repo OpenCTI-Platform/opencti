@@ -6790,6 +6790,7 @@
   "x_opencti_reliability": "可靠性",
   "X_opencti_score": "分数",
   "x_opencti_score": "分数",
+  "x_opencti_purl": "PURL",
   "x_opencti_score_gt": "分数大于",
   "x_opencti_score_lte": "分数小于等于",
   "X_opencti_workflow_id": "状态",
