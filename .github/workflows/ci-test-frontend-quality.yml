@@ -56,6 +56,29 @@ jobs:
             yarn knip --dependencies
             '
 
+    - name: Frontend oxlint parity (shadow, non-blocking)
+      # Phase 1 of the oxlint rollout: compares oxlint with ESLint and prints the
+      # differences in the job log. Never fails the build; see scripts/lint-parity/README.md.
+      continue-on-error: true
+      run: |
+        docker run  \
+          --name frontend-lint-parity \
+          -v ${{ github.workspace }}:/home/workspace \
+          -e NODE_OPTIONS=--max_old_space_size=8192 \
+          node:22-alpine3.23 \
+          sh -c 'set -eux
+            npm install -g corepack
+            cd /home/workspace
+            node --test "scripts/lint-parity/test/*.test.mjs"
+            cd opencti-platform/opencti-front
+            # Drift check: .oxlintrc.json must equal what lint:ox:sync generates. It writes nothing and
+            # needs no git. The parity run below goes on whatever its result, the step still reports it.
+            check=0
+            yarn lint:ox:check || check=$?
+            yarn lint:parity
+            exit $check
+            '
+
     - name: Custom ESLint rules quality checks
       run: |
         docker run  \

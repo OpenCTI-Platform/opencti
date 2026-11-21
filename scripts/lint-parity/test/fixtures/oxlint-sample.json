@@ -1,0 +1,9 @@
+{ "diagnostics": [{"message": "Variable 'unused' is declared but never used. Unused variables should start with a '_'.","code": "eslint(no-unused-vars)","severity": "warning","url": "https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-unused-vars.html","help": "Consider removing this declaration.","filename": "sample-src/a.ts","labels": [{"label": "'unused' is declared here","span": {"offset": 60,"length": 6,"line": 3,"column": 9}}]},
+{"message": "`debugger` statement is not allowed","code": "eslint(no-debugger)","severity": "error","url": "https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-debugger.html","help": "Remove the debugger statement","filename": "sample-src/a.ts","labels": [{"span": {"offset": 42,"length": 9,"line": 2,"column": 3}}]},
+{"message": "Expected === and instead saw ==","code": "eslint(eqeqeq)","severity": "error","url": "https://oxc.rs/docs/guide/usage/linter/rules/eslint/eqeqeq.html","help": "Prefer === operator","filename": "sample-src/a.ts","labels": [{"span": {"offset": 87,"length": 2,"line": 4,"column": 16}}]}],
+              "number_of_files": 1,
+              "number_of_rules": 101,
+              "threads_count": 12,
+              "start_time": 0.042167541
+            }
+            

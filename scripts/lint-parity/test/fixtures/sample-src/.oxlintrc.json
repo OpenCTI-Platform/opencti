@@ -1,0 +1,9 @@
+{
+  "plugins": ["typescript", "react"],
+  "rules": {
+    "no-debugger": "error",
+    "typescript/no-unused-vars": "warn",
+    "eqeqeq": "error",
+    "react/jsx-key": "error"
+  }
+}
