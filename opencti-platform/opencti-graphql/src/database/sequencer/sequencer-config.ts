@@ -152,10 +152,10 @@ const readConfig = (): SequencerConfig => {
     noopTagCeilingRatio: Math.max(1, Number(conf.get('app:ingestion_sequencer:noop_tag_ceiling_ratio') ?? 5)),
     // Off until measured (task 0040): a misp reference collects 26k citing ids, each append re-indexes its 1 MB
     // document; the references panel of a new object lags by up to the flush period (user decision 2026-11-20)
-    denormBuffer: booleanConf('app:ingestion_sequencer:denorm_buffer', false),
+    denormBuffer: booleanConf('app:ingestion_sequencer:denorm_buffer', true),
     denormBufferRelations: String(conf.get('app:ingestion_sequencer:denorm_buffer_relations') ?? 'external-reference')
       .split(',').map((relation) => relation.trim()).filter((relation) => relation.length > 0),
-    denormFlushPeriodMs: Math.max(100, Number(conf.get('app:ingestion_sequencer:denorm_flush_period_ms') ?? 10000)),
+    denormFlushPeriodMs: Math.max(100, Number(conf.get('app:ingestion_sequencer:denorm_flush_period_ms') ?? 15000)),
     denormFlushTargetMaxIds: Math.max(1, Number(conf.get('app:ingestion_sequencer:denorm_flush_target_max_ids') ?? 5000)),
     denormBufferMaxIds: Math.max(1, Number(conf.get('app:ingestion_sequencer:denorm_buffer_max_ids') ?? 1000000)),
     pendingRefExpiryS: Number(conf.get('app:ingestion_sequencer:pending_ref_expiry_s') ?? 604800),

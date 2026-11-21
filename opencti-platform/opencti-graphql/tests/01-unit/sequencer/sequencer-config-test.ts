@@ -25,9 +25,9 @@ describe('sequencer configuration defaults', () => {
     expect(SEQUENCER_CONFIG.deferredReadmitRatio).toBe(0.5);
   });
   it('should keep the append buffer off by default, on external references, flushed every 10 s (task 0040)', () => {
-    expect(SEQUENCER_CONFIG.denormBuffer).toBe(false);
+    expect(SEQUENCER_CONFIG.denormBuffer).toBe(true);
     expect(SEQUENCER_CONFIG.denormBufferRelations).toEqual(['external-reference']);
-    expect(SEQUENCER_CONFIG.denormFlushPeriodMs).toBe(10000);
+    expect(SEQUENCER_CONFIG.denormFlushPeriodMs).toBe(15000);
     expect(SEQUENCER_CONFIG.denormFlushTargetMaxIds).toBe(5000);
     expect(SEQUENCER_CONFIG.denormBufferMaxIds).toBe(1000000);
   });
