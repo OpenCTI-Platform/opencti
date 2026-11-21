@@ -45,9 +45,9 @@ const isIdFilterDefinition = (
 
 /**
  * Server-side search behind the entity autocomplete: owns the search scope, the entity
- * cache, the typed input and the assembly of the option list (already selected values
- * first, then the compatible dashboard variables, the contextual `SELF_ID` option and the
- * search results).
+ * cache, the typed input and the assembly of the option list (the compatible dashboard
+ * variables, the contextual `SELF_ID` option and the search results, minus the values
+ * already selected — those are rendered as chips from `selectedOptions`).
  *
  * Extracted from the component so the option list can be tested and evolved without
  * touching the MUI Autocomplete kept for gap #155.
@@ -119,8 +119,10 @@ const useFilterEntityOptions = ({
     ...entitiesOptionsFromSearch,
   ];
 
+  // Selected values are shown once, as the field's chips (removed there): the dropdown only
+  // lists what can still be added.
   const selectedOptions: FilterOptionValue[] = getSelectedOptions(allOptions, optionsValues, filtersRepresentativesMap, t_i18n, variables);
-  const options = [...selectedOptions, ...allOptions.filter((option) => !optionsValues.includes(option.value))];
+  const options = allOptions.filter((option) => !optionsValues.includes(option.value));
 
   const triggerSearch = (event: SyntheticEvent) => {
     searchEntities(searchKey, cacheEntities, setCacheEntities, event, subKey ? filterKey : undefined);
