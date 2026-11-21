@@ -14135,6 +14135,7 @@ type Software implements BasicObject & StixCoreObject & StixCyberObservable & St
   x_opencti_inferences: [Inference]
   x_opencti_modified_at: DateTime
   x_opencti_product: String
+  x_opencti_purl: String
   x_opencti_score: Int
   x_opencti_stix_ids: [StixId]
 }
@@ -14154,6 +14155,7 @@ input SoftwareAddInput {
   vendor: String
   version: String
   x_opencti_product: String
+  x_opencti_purl: String
 }
 
 type SoftwareConnection {
@@ -17769,6 +17771,7 @@ type Vulnerability implements BasicObject & StixCoreObject & StixDomainObject & 
   x_opencti_cvss_v4_vector_string: String
   x_opencti_cvss_vector_string: String
   x_opencti_cwe: [String]
+  x_opencti_affected_products: [VulnerabilityAffectedProduct!]
   x_opencti_epss_percentile: Float
   x_opencti_epss_score: Float
   x_opencti_first_seen_active: DateTime
@@ -17853,6 +17856,7 @@ input VulnerabilityAddInput {
   x_opencti_cvss_v4_vector_string: String
   x_opencti_cvss_vector_string: String
   x_opencti_cwe: [String]
+  x_opencti_affected_products: [VulnerabilityAffectedProductInput!]
   x_opencti_epss_percentile: Float
   x_opencti_epss_score: Float
   x_opencti_first_seen_active: DateTime
@@ -17863,6 +17867,32 @@ input VulnerabilityAddInput {
   x_opencti_ssvc_technical_impact: SsvcTechnicalImpact
   x_opencti_stix_ids: [StixId]
   x_opencti_workflow_id: String
+}
+
+type VulnerabilityAffectedProduct {
+  cpe: String
+  fixed_version: String
+  product: String
+  purl: String
+  vendor: String
+  version_end: String
+  version_end_inclusive: Boolean
+  version_scheme: String
+  version_start: String
+  version_start_inclusive: Boolean
+}
+
+input VulnerabilityAffectedProductInput {
+  cpe: String
+  fixed_version: String
+  product: String
+  purl: String
+  vendor: String
+  version_end: String
+  version_end_inclusive: Boolean
+  version_scheme: String
+  version_start: String
+  version_start_inclusive: Boolean
 }
 
 type VulnerabilityConnection {

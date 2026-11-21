@@ -127,6 +127,7 @@ export const INTERNAL_ATTRIBUTES = [
   'x_opencti_cwe',
   'x_opencti_first_seen_active',
   'x_opencti_product',
+  'x_opencti_purl',
   'x_opencti_additional_names',
   // Decay internal fields on Indicator
   'decay_next_reaction_date',

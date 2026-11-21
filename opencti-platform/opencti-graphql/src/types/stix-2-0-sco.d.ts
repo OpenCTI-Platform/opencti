@@ -183,6 +183,7 @@ export interface StixSoftware extends StixCyberObject {
   vendor: string;
   version: string;
   x_opencti_product: string;
+  x_opencti_purl: string;
 }
 
 // URL

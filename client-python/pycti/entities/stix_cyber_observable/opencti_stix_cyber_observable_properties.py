@@ -256,6 +256,7 @@ SCO_PROPERTIES = """
         vendor
         version
         x_opencti_product
+        x_opencti_purl
     }
     ... on Url {
         value
@@ -614,6 +615,7 @@ SCO_PROPERTIES_WITH_FILES = """
         vendor
         version
         x_opencti_product
+        x_opencti_purl
     }
     ... on Url {
         value
