@@ -3,7 +3,7 @@ import type { FilterGroup } from '../../generated/graphql';
 import { countAllThings, fullEntitiesList } from '../../database/middleware-loader';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import type { ParsedIntelligenceRequirement } from './intelligenceRequirement-types';
+import { IR_KIQS_ENABLED, type ParsedIntelligenceRequirement } from './intelligenceRequirement-types';
 import { ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, IR_MATCH_IN_STATUSES } from './intelligenceRequirementMatch-types';
 import { type BasicStoreEntityIntelligenceRequirementItem, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM } from './intelligenceRequirementItem-types';
 import { createItem } from './intelligenceRequirementItem-domain';
@@ -76,8 +76,9 @@ export const findRequirementHealthIssues = async (context: AuthContext, user: Au
     }
   }
   // Key intelligence questions with no answer
-  for (let k = 0; k < ir.ir_kiqs.length; k += 1) {
-    const kiq = ir.ir_kiqs[k];
+  const kiqs = IR_KIQS_ENABLED ? ir.ir_kiqs : [];
+  for (let k = 0; k < kiqs.length; k += 1) {
+    const kiq = kiqs[k];
     if (kiq.criteria_ids.length === 0) {
       findings.push({ title: `Key intelligence question "${kiq.text}" is linked to no criterion`, message: 'Link it to the scope criteria that answer it.' });
     } else {

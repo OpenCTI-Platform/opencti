@@ -25,10 +25,13 @@ import {
   type IrRuleDraft,
   newId,
 } from './irConfigTypes';
-import { IR_ENTITY_TYPES, IR_KEYWORD_FIELDS, IR_RELATIONSHIP_TYPES } from './irConstants';
+import { IR_ENTITY_TYPES, IR_KEYWORD_FIELDS, IR_KIQS_ENABLED, IR_RELATIONSHIP_TYPES } from './irConstants';
 import { IrEntityPicker, IrMultiSelect, IrSelect } from './IrFields';
 import IrFilterBuilder from './IrFilterBuilder';
 import IrDryRunPanel from './IrDryRunPanel';
+import IrCriterionSentence from './IrCriterionSentence';
+import IrConditionSentence from './IrConditionSentence';
+import type { IrConfigView } from './irSentence';
 import type { IntelligenceRequirementConfigurationFormAddMutation } from './__generated__/IntelligenceRequirementConfigurationFormAddMutation.graphql';
 import type { IntelligenceRequirementConfigurationFormUpdateMutation } from './__generated__/IntelligenceRequirementConfigurationFormUpdateMutation.graphql';
 
@@ -145,9 +148,11 @@ const PathConditionFields = ({ value, onChange, relationshipOptions, directionOp
 interface IntelligenceRequirementConfigurationFormProps {
   initialDraft: IrDraft;
   irId?: string;
+  view?: IrConfigView; // how the scope criteria are written: fields (default) or sentences
+  onCreated?: (id: string) => void;
 }
 
-const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: IntelligenceRequirementConfigurationFormProps) => {
+const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId, view = 'fields', onCreated }: IntelligenceRequirementConfigurationFormProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [draft, setDraft] = useState<IrDraft>(initialDraft);
@@ -174,6 +179,76 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: Intell
     { value: 'both', label: t_i18n('Both directions') },
   ];
 
+  // Conditions of the scope of a criterion: the same in both views
+  const renderConditions = (criterion: IrCriterionDraft) => (
+    <Box sx={{ mt: 2.5, pt: 2, borderTop: '1px dashed', borderColor: 'divider' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+        <Text as="span" variant="content-compact-bold">{t_i18n('Only if (all conditions must be met)')}</Text>
+        <Text as="span" variant="content-caption" style={{ opacity: 0.7 }}>
+          {criterion.conditions.length > 0
+            ? `${t_i18n('An entity brought by this path enters only if')} ${criterion.conditions.map((k) => k.name || k.id).join(` ${t_i18n('AND')} `)}`
+            : t_i18n('No condition: every entity brought by this path enters')}
+        </Text>
+        <Box sx={{ flex: 1 }} />
+        <Button variant="tertiary" size="small" onClick={() => setCriterion(criterion.id, { conditions: [...criterion.conditions, emptyCondition()] })}>{t_i18n('Add a condition')}</Button>
+      </Box>
+      {criterion.conditions.map((condition) => (
+        <SubCard key={condition.id} onDelete={() => setCriterion(criterion.id, { conditions: criterion.conditions.filter((k) => k.id !== condition.id) })}>
+          <Row columns="1fr 1fr">
+            <Input label={t_i18n('Condition')} value={condition.name} onChange={(e) => setCondition(criterion, condition.id, { name: e.target.value })} />
+            <IrMultiSelect
+              label={t_i18n('Applies to (empty = every type of the criterion)')}
+              values={condition.applies_to_types}
+              options={typeOptions}
+              onChange={(v) => setCondition(criterion, condition.id, { applies_to_types: v })}
+            />
+          </Row>
+          <GroupLinkFields
+            value={condition.link}
+            onChange={(link) => setCondition(criterion, condition.id, { link })}
+            relationshipOptions={relationshipOptions}
+            groupOptions={entityGroupOptions}
+          />
+          <Text as="div" variant="content-caption" style={{ marginBottom: 8, opacity: 0.8 }}>{t_i18n('The entity matches these filters')}</Text>
+          <IrFilterBuilder value={condition.filters} onChange={(filters) => setCondition(criterion, condition.id, { filters })} />
+          <PathConditionFields
+            value={condition.path_condition}
+            onChange={(path_condition) => setCondition(criterion, condition.id, { path_condition })}
+            relationshipOptions={relationshipOptions}
+            directionOptions={directionOptions}
+            groupOptions={entityGroupOptions}
+          />
+        </SubCard>
+      ))}
+    </Box>
+  );
+
+  // The same conditions written as sentences (sentence view)
+  const renderConditionSentences = (criterion: IrCriterionDraft) => (
+    <Box sx={{ mt: 2, pt: 1.5, borderTop: '1px dashed', borderColor: 'divider' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+        <Text as="span" variant="content-compact-bold">{t_i18n('Only if (all conditions must be met)')}</Text>
+        {criterion.conditions.length === 0 && (
+          <Text as="span" variant="content-caption" style={{ opacity: 0.7 }}>{t_i18n('No condition: every entity brought by this path enters')}</Text>
+        )}
+        <Box sx={{ flex: 1 }} />
+        <Button variant="tertiary" size="small" onClick={() => setCriterion(criterion.id, { conditions: [...criterion.conditions, emptyCondition()] })}>{t_i18n('Add a condition')}</Button>
+      </Box>
+      {criterion.conditions.map((condition, i) => (
+        <React.Fragment key={condition.id}>
+          {i > 0 && <Text as="div" variant="content-caption" style={{ margin: '4px 0', opacity: 0.7 }}>{t_i18n('AND')}</Text>}
+          <IrConditionSentence
+            condition={condition}
+            groups={draft.groups}
+            typeOptions={typeOptions}
+            onChange={(patch) => setCondition(criterion, condition.id, patch)}
+            onDelete={() => setCriterion(criterion.id, { conditions: criterion.conditions.filter((k) => k.id !== condition.id) })}
+          />
+        </React.Fragment>
+      ))}
+    </Box>
+  );
+
   const save = () => {
     setError(null);
     if (!draft.name.trim() || !draft.question.trim()) {
@@ -188,7 +263,10 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: Intell
         variables: { input: input as never },
         onCompleted: (response) => {
           const id = response.intelligenceRequirementAdd?.id;
-          if (id) navigate(`/dashboard/intelligence_requirements/${id}`);
+          if (id) {
+            onCreated?.(id);
+            navigate(`/dashboard/intelligence_requirements/${id}`);
+          }
         },
         onError: (e) => setError(e.message),
       });
@@ -221,11 +299,11 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: Intell
         </Paper>
 
         {/* 1. Question */}
-        <Block step={1} title={t_i18n('Question')} subtitle={t_i18n('why this requirement exists, and its key intelligence questions')}>
+        <Block step={1} title={t_i18n('Question')} subtitle={IR_KIQS_ENABLED ? t_i18n('why this requirement exists, and its key intelligence questions') : t_i18n('why this requirement exists')}>
           <Row columns="1fr">
             <Textarea label={t_i18n('Intelligence question')} required value={draft.question} onChange={(e) => set({ question: e.target.value })} />
           </Row>
-          {draft.kiqs.map((kiq) => (
+          {IR_KIQS_ENABLED && draft.kiqs.map((kiq) => (
             <SubCard key={kiq.id} onDelete={() => set({ kiqs: draft.kiqs.filter((k) => k.id !== kiq.id) })}>
               <Row columns="2fr 1fr">
                 <Input label={t_i18n('Key intelligence question')} value={kiq.text} onChange={(e) => set({ kiqs: draft.kiqs.map((k) => (k.id === kiq.id ? { ...k, text: e.target.value } : k)) })} />
@@ -238,7 +316,7 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: Intell
               </Row>
             </SubCard>
           ))}
-          <Button variant="tertiary" size="small" onClick={() => set({ kiqs: [...draft.kiqs, { id: newId('kiq'), text: '', criteria_ids: [] }] })}>{t_i18n('Add a key intelligence question')}</Button>
+          {IR_KIQS_ENABLED && <Button variant="tertiary" size="small" onClick={() => set({ kiqs: [...draft.kiqs, { id: newId('kiq'), text: '', criteria_ids: [] }] })}>{t_i18n('Add a key intelligence question')}</Button>}
         </Block>
 
         {/* 2. Subjects */}
@@ -298,7 +376,17 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: Intell
           subtitle={t_i18n('what may enter the requirement: a path in the knowledge, and the conditions an entity must meet (all of them)')}
           action={<Button variant="secondary" size="small" onClick={() => set({ criteria: [...draft.criteria, emptyCriterion(draft.groups)] })}>{t_i18n('Add a criterion')}</Button>}
         >
-          {draft.criteria.map((criterion) => (
+          {view === 'sentence' ? draft.criteria.map((criterion) => (
+            <IrCriterionSentence
+              key={criterion.id}
+              criterion={criterion}
+              groups={draft.groups}
+              typeOptions={typeOptions}
+              onChange={(patch) => setCriterion(criterion.id, patch)}
+              onDelete={() => set({ criteria: draft.criteria.filter((c) => c.id !== criterion.id) })}
+              conditions={renderConditionSentences(criterion)}
+            />
+          )) : draft.criteria.map((criterion) => (
             <SubCard key={criterion.id} onDelete={() => set({ criteria: draft.criteria.filter((c) => c.id !== criterion.id) })}>
               <Row columns="2fr 1fr 1fr">
                 <Input label={t_i18n('Criterion name')} value={criterion.name} onChange={(e) => setCriterion(criterion.id, { name: e.target.value })} />
@@ -358,46 +446,7 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: Intell
               )}
               <Text as="div" variant="content-caption" style={{ marginBottom: 8, opacity: 0.8 }}>{t_i18n('Target filters (optional)')}</Text>
               <IrFilterBuilder value={criterion.target_filters} onChange={(filters) => setCriterion(criterion.id, { target_filters: filters })} />
-              <Box sx={{ mt: 2.5, pt: 2, borderTop: '1px dashed', borderColor: 'divider' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
-                  <Text as="span" variant="content-compact-bold">{t_i18n('Only if (all conditions must be met)')}</Text>
-                  <Text as="span" variant="content-caption" style={{ opacity: 0.7 }}>
-                    {criterion.conditions.length > 0
-                      ? `${t_i18n('An entity brought by this path enters only if')} ${criterion.conditions.map((k) => k.name || k.id).join(` ${t_i18n('AND')} `)}`
-                      : t_i18n('No condition: every entity brought by this path enters')}
-                  </Text>
-                  <Box sx={{ flex: 1 }} />
-                  <Button variant="tertiary" size="small" onClick={() => setCriterion(criterion.id, { conditions: [...criterion.conditions, emptyCondition()] })}>{t_i18n('Add a condition')}</Button>
-                </Box>
-                {criterion.conditions.map((condition) => (
-                  <SubCard key={condition.id} onDelete={() => setCriterion(criterion.id, { conditions: criterion.conditions.filter((k) => k.id !== condition.id) })}>
-                    <Row columns="1fr 1fr">
-                      <Input label={t_i18n('Condition')} value={condition.name} onChange={(e) => setCondition(criterion, condition.id, { name: e.target.value })} />
-                      <IrMultiSelect
-                        label={t_i18n('Applies to (empty = every type of the criterion)')}
-                        values={condition.applies_to_types}
-                        options={typeOptions}
-                        onChange={(v) => setCondition(criterion, condition.id, { applies_to_types: v })}
-                      />
-                    </Row>
-                    <GroupLinkFields
-                      value={condition.link}
-                      onChange={(link) => setCondition(criterion, condition.id, { link })}
-                      relationshipOptions={relationshipOptions}
-                      groupOptions={entityGroupOptions}
-                    />
-                    <Text as="div" variant="content-caption" style={{ marginBottom: 8, opacity: 0.8 }}>{t_i18n('The entity matches these filters')}</Text>
-                    <IrFilterBuilder value={condition.filters} onChange={(filters) => setCondition(criterion, condition.id, { filters })} />
-                    <PathConditionFields
-                      value={condition.path_condition}
-                      onChange={(path_condition) => setCondition(criterion, condition.id, { path_condition })}
-                      relationshipOptions={relationshipOptions}
-                      directionOptions={directionOptions}
-                      groupOptions={entityGroupOptions}
-                    />
-                  </SubCard>
-                ))}
-              </Box>
+              {renderConditions(criterion)}
             </SubCard>
           ))}
         </Block>

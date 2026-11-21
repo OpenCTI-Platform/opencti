@@ -9,10 +9,10 @@ import { createEntity, distributionEntities, internalDeleteElementById, timeSeri
 import { fetchStreamInfo } from '../../database/stream/stream-handler';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG, logApp } from '../../config/conf';
+import { BUS_TOPICS, logApp } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { deleteInternalObject, editInternalObject } from '../../domain/internalObject';
-import { enforceEnableFeatureFlag, SYSTEM_USER, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
+import { SYSTEM_USER, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
 import type { EditInput, IntelligenceRequirementInput } from '../../generated/graphql';
 import { FunctionalError } from '../../config/errors';
 import {
@@ -31,17 +31,14 @@ import { invalidateInRequirementEntityIds } from './intelligenceRequirementMatch
 const rescanStartEventId = (rescanDays: number) => `${now() - (rescanDays * 24 * 3600 * 1000)}-0`;
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
-  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
   return storeLoadById<BasicStoreEntityIntelligenceRequirement>(context, user, id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT);
 };
 
 export const findIntelligenceRequirementPaginated = async (context: AuthContext, user: AuthUser, opts?: EntityOptions<BasicStoreEntityIntelligenceRequirement>) => {
-  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
   return pageEntitiesConnection<BasicStoreEntityIntelligenceRequirement>(context, user, [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT], opts);
 };
 
 export const intelligenceRequirementAdd = async (context: AuthContext, user: AuthUser, input: IntelligenceRequirementInput) => {
-  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
   const attributes = serializeIntelligenceRequirementInput(input);
   const authorized_members = input.authorized_members ?? [
     { id: user.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN },
@@ -70,7 +67,6 @@ export const intelligenceRequirementAdd = async (context: AuthContext, user: Aut
  * the stream is read again from the rescan window, so that a wider scope brings them in.
  */
 export const intelligenceRequirementUpdate = async (context: AuthContext, user: AuthUser, id: string, input: IntelligenceRequirementInput) => {
-  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
   const existing = await findById(context, user, id);
   if (!existing) throw FunctionalError('Intelligence requirement not found', { id });
   const attributes = serializeIntelligenceRequirementInput(input);
@@ -92,7 +88,6 @@ export const intelligenceRequirementUpdate = async (context: AuthContext, user: 
 };
 
 export const intelligenceRequirementStatusUpdate = async (context: AuthContext, user: AuthUser, id: string, status: string) => {
-  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
   return editInternalObject<StoreEntityIntelligenceRequirement>(context, user, id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, [{ key: 'ir_status', value: [status] }]);
 };
 
@@ -120,7 +115,6 @@ const DELETE_SWEEP_DELAY = 30 * 1000;
  * The engine stops writing into it at once; a second sweep removes what a batch in flight may still have written.
  */
 export const intelligenceRequirementDelete = async (context: AuthContext, user: AuthUser, id: string) => {
-  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
   markRequirementDeleted(id);
   invalidateInRequirementEntityIds(id);
   const deleted = await deleteInternalObject(context, user, id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT);

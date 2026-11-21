@@ -11,7 +11,7 @@ import IrEntityPreview from './IrEntityPreview';
 import IrScoreHistory from './IrScoreHistory';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { criterionName, explanationText, type IrCriterionRef, type IrExplanationData, ScoreBar, StatusChip } from './IrOutputCommon';
+import { criterionName, explanationSentence, type IrCriterionRef, type IrExplanationData, ScoreBar, StatusChip } from './IrOutputCommon';
 import type { IrMatchDrawerStatusMutation } from './__generated__/IrMatchDrawerStatusMutation.graphql';
 
 const statusMutation = graphql`
@@ -32,6 +32,7 @@ export interface IrMatchData {
   readonly match_entity_id: string;
   readonly match_last_fact_at?: string | null;
   readonly entity?: { readonly representative: { readonly main: string } } | null;
+  readonly match_entity_name?: string | null;
   readonly match_explanations: readonly IrExplanationData[];
   readonly match_score_breakdown: readonly {
     readonly name: string;
@@ -91,7 +92,7 @@ export const IrMatchDetails = ({ irId, match, criteria, onDecided, embedded }: I
         {match.match_explanations.map((e, i) => (
           <Box key={i} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5, mb: 1 }}>
             <Text as="div" variant="content-compact-medium">{criterionName(criteria, e.criterion_id)}</Text>
-            <Text as="div" variant="content-caption" style={{ opacity: 0.8 }}>{explanationText(e)}</Text>
+            <Text as="div" variant="content-caption" style={{ opacity: 0.8 }}>{explanationSentence(e, match.match_entity_name ?? match.entity?.representative.main ?? '')}</Text>
           </Box>
         ))}
       </Box>

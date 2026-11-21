@@ -2,8 +2,6 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { createEntity, internalDeleteElementById, patchAttribute } from '../../database/middleware';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { enforceEnableFeatureFlag } from '../../utils/access';
-import { INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG } from '../../config/conf';
 import type { FilterGroup } from '../../generated/graphql';
 import {
   type BasicStoreEntityIntelligenceRequirementMatch,
@@ -40,7 +38,6 @@ export const findMatchesPaginated = async (
   irId: string,
   opts: EntityOptions<BasicStoreEntityIntelligenceRequirementMatch> & { statuses?: string[] | null } = {},
 ) => {
-  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
   const { statuses, search, ...listOpts } = opts;
   let filters = matchFilters(irId, undefined, statuses ?? undefined, listOpts.filters);
   // Search by entity name (the match itself has no other text)

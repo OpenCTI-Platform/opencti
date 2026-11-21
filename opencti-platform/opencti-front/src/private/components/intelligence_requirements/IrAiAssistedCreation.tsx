@@ -29,6 +29,7 @@ import { environment } from '../../../relay/environment';
 import { type AgentOption, callAgent, callAgentStream, fetchAgentsForIntent } from '../../../utils/ai/agentApi';
 import { IrSelect } from './configuration/IrFields';
 import { inputToDraft, type IrEntityOption } from './configuration/irConfigTypes';
+import { IR_KIQS_ENABLED } from './configuration/irConstants';
 import useIrAiGate from './useIrAiGate';
 import type { IrAiAssistedCreationPreviewQuery, IrAiAssistedCreationPreviewQuery$data } from './__generated__/IrAiAssistedCreationPreviewQuery.graphql';
 
@@ -70,9 +71,9 @@ const parseAgentJson = (content: string): Json => {
   return parsed.response ?? parsed;
 };
 
-const StepTitle = ({ index, current, label }: { index: number; current: number; label: string }) => (
+const StepTitle = ({ index, current, label, number = index }: { index: number; current: number; label: string; number?: number }) => (
   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, opacity: index === current ? 1 : 0.5 }}>
-    <Chip label={String(index)} severity={index <= current ? 'info' : 'neutral'} />
+    <Chip label={String(number)} severity={index <= current ? 'info' : 'neutral'} />
     <Text as="span" variant={index === current ? 'content-base-bold' : 'content-base'}>{label}</Text>
   </Box>
 );
@@ -143,8 +144,7 @@ const IrAiAssistedCreationContent = ({ agent, onClose }: { agent: AgentOption; o
       `Question: ${question?.question}`,
       `Description: ${question?.description}`,
       `Priority: ${question?.priority}`,
-      'Key intelligence questions:',
-      ...chosen.map((k) => `- ${k.text}`),
+      ...(IR_KIQS_ENABLED ? ['Key intelligence questions:', ...chosen.map((k) => `- ${k.text}`)] : []),
       `Analyst request: ${request}`,
       LANGUAGE_OF_REQUEST,
     ].join('\n');
@@ -160,7 +160,8 @@ const IrAiAssistedCreationContent = ({ agent, onClose }: { agent: AgentOption; o
     if (!config) return;
     const entities = new Map<string, IrEntityOption>();
     (config.preview?.groups ?? []).forEach((g) => g.entities.forEach((e) => entities.set(e.id, { value: e.id, label: e.name, type: e.entity_type })));
-    const draft = inputToDraft(config.config, entities);
+    const proposed = inputToDraft(config.config, entities);
+    const draft = IR_KIQS_ENABLED ? proposed : { ...proposed, kiqs: [] };
     onClose();
     navigate('/dashboard/intelligence_requirements/new', { state: { aiDraft: draft, aiNotes: { summary: config.summary, explanations: config.explanations } } });
   };
@@ -185,8 +186,8 @@ const IrAiAssistedCreationContent = ({ agent, onClose }: { agent: AgentOption; o
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Box sx={{ display: 'flex', gap: 3 }}>
         <StepTitle index={1} current={step} label={t_i18n('Question')} />
-        <StepTitle index={2} current={step} label={t_i18n('Key intelligence questions')} />
-        <StepTitle index={3} current={step} label={t_i18n('Configuration')} />
+        {IR_KIQS_ENABLED && <StepTitle index={2} current={step} label={t_i18n('Key intelligence questions')} />}
+        <StepTitle index={3} number={IR_KIQS_ENABLED ? 3 : 2} current={step} label={t_i18n('Configuration')} />
       </Box>
       {error && <Alert severity="error" title={error} />}
 
@@ -219,7 +220,7 @@ const IrAiAssistedCreationContent = ({ agent, onClose }: { agent: AgentOption; o
             </Paper>
           )}
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Button disabled={!question || !question.question.trim() || loading} onClick={() => goTo(2)}>{t_i18n('Next: key intelligence questions')}</Button>
+            <Button disabled={!question || !question.question.trim() || loading} onClick={() => (IR_KIQS_ENABLED ? goTo(2) : goTo(3, true))}>{IR_KIQS_ENABLED ? t_i18n('Next: key intelligence questions') : t_i18n('Next: configuration')}</Button>
           </Box>
         </>
       )}
@@ -291,7 +292,7 @@ const IrAiAssistedCreationContent = ({ agent, onClose }: { agent: AgentOption; o
             </>
           )}
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Button variant="secondary" disabled={loading} onClick={() => setStep(2)}>{t_i18n('Back')}</Button>
+            <Button variant="secondary" disabled={loading} onClick={() => setStep(IR_KIQS_ENABLED ? 2 : 1)}>{t_i18n('Back')}</Button>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button variant="tertiary" disabled={loading} onClick={buildConfiguration}>{t_i18n('Regenerate')}</Button>
               <Button disabled={loading || !config} onClick={openInConfiguration}>{t_i18n('Review in the configuration screen')}</Button>

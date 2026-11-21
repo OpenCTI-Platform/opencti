@@ -18,7 +18,12 @@ import { logApp } from '../../config/conf';
 import { editInternalObject } from '../../domain/internalObject';
 import xtmOneClient from '../xtm/one/xtm-one-client';
 import { callXtmAgent, isXtmOneConfigured, resolveAgentJwtUser } from '../playbook/components/ai-agent-shared';
-import { type BasicStoreEntityIntelligenceRequirement, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, type StoreEntityIntelligenceRequirement } from './intelligenceRequirement-types';
+import {
+  type BasicStoreEntityIntelligenceRequirement,
+  ENTITY_TYPE_INTELLIGENCE_REQUIREMENT,
+  IR_KIQS_ENABLED,
+  type StoreEntityIntelligenceRequirement,
+} from './intelligenceRequirement-types';
 import { createItem } from './intelligenceRequirementItem-domain';
 
 // Recurring AI brief of a requirement: an XTM One agent (intent cti.pir_insight) reads the requirement with its tools
@@ -49,7 +54,9 @@ const briefPrompt = (ir: BasicStoreEntityIntelligenceRequirement, label: string)
     since
       ? `Focus on what changed since ${since}: entities that entered or were proposed, scores that crossed a threshold, analyst decisions, health alerts.`
       : 'It is the first brief: give the current state of the requirement.',
-    'Keep it short and in this order: an executive summary (3 bullet points), what changed, one line per key intelligence question (answered, partly answered or gap), recommended next steps.',
+    IR_KIQS_ENABLED
+      ? 'Keep it short and in this order: an executive summary (3 bullet points), what changed, one line per key intelligence question (answered, partly answered or gap), recommended next steps.'
+      : 'Keep it short and in this order: an executive summary (3 bullet points), what changed, whether the intelligence question is answered (answered, partly answered or gap), recommended next steps.',
     'Answer in the language of the question of the requirement.',
   ].join('\n');
 };

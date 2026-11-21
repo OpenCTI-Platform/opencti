@@ -6,8 +6,10 @@ import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { criterionName, IN_STATUSES, ScoreBar } from './IrOutputCommon';
+import { IR_KIQS_ENABLED } from '../configuration/irConstants';
 import { IrInboxItem } from './IrInbox';
 import IrMatchDrawer, { type IrMatchData } from './IrMatchDrawer';
+import IrTimelinePreview from './IrTimelinePreview';
 import type { IrOverviewQuery } from './__generated__/IrOverviewQuery.graphql';
 
 // Overview: the synthesis of the outputs (inbox to review, top entities, key intelligence questions).
@@ -31,8 +33,10 @@ const overviewQuery = graphql`
           match_excluded
           match_entity_type
           match_entity_id
+          match_entity_name
           match_criteria_ids
           match_last_fact_at
+          match_history { at score eligible status kind trigger changes }
           entity { ... on StixCoreObject { representative { main } } }
           match_explanations {
             criterion_id
@@ -113,11 +117,14 @@ const IrOverview = ({ irId }: { irId: string }) => {
   const kiqs = (ir?.ir_kiqs ?? []).map((k) => ({ ...k, answered: inRequirement.some((m) => m.match_criteria_ids.some((c) => k.criteria_ids.includes(c))) }));
   return (
     <>
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2, mb: 2 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${IR_KIQS_ENABLED ? 4 : 3}, 1fr)`, gap: 2, mb: 2 }}>
         <Kpi label={t_i18n('Entities in the requirement')} value={inRequirement.length} detail={`${proposed.length} ${t_i18n('proposed')} · ${excluded.length} ${t_i18n('not eligible')}`} />
         <Kpi label={t_i18n('Inbox · to review')} value={items.length} detail={`${items.filter((i) => i.item_kind === 'proposed').length} ${t_i18n('proposed to accept')}`} />
         <Kpi label={`${t_i18n('Score')} ≥ ${topThreshold}`} value={high.length} detail={t_i18n('high-priority entities')} />
-        <Kpi label={t_i18n('KIQs answered')} value={`${kiqs.filter((k) => k.answered).length}/${kiqs.length}`} />
+        {IR_KIQS_ENABLED && <Kpi label={t_i18n('KIQs answered')} value={`${kiqs.filter((k) => k.answered).length}/${kiqs.length}`} />}
+      </Box>
+      <Box sx={{ mb: 2 }}>
+        <IrTimelinePreview irId={irId} matches={matches} thresholds={ir?.ir_thresholds ?? []} onOpen={setSelected} />
       </Box>
       <Box sx={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 2 }}>
         <Paper padding={16}>
@@ -154,19 +161,21 @@ const IrOverview = ({ irId }: { irId: string }) => {
               <IrInboxItem key={item.id} item={item} criteria={criteria} groups={groups} matches={matches} onDetails={setSelected} compact />
             ))}
           </Paper>
-          <Paper padding={16}>
-            <Text as="div" variant="title-sm" style={{ marginBottom: 12 }}>{t_i18n('Key intelligence questions')}</Text>
-            {kiqs.length === 0 && <Text as="span" variant="content-caption">{t_i18n('No key intelligence question.')}</Text>}
-            {kiqs.map((k) => (
-              <Box key={k.id} sx={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 1, py: 0.75, borderBottom: '1px solid', borderColor: 'divider' }}>
-                <Box>
-                  <Text as="div" variant="content-compact">{k.text}</Text>
-                  <Text as="div" variant="content-caption" style={{ opacity: 0.7 }}>{`→ ${k.criteria_ids.map((c) => criterionName(criteria, c)).join(', ') || t_i18n('no criterion')}`}</Text>
+          {IR_KIQS_ENABLED && (
+            <Paper padding={16}>
+              <Text as="div" variant="title-sm" style={{ marginBottom: 12 }}>{t_i18n('Key intelligence questions')}</Text>
+              {kiqs.length === 0 && <Text as="span" variant="content-caption">{t_i18n('No key intelligence question.')}</Text>}
+              {kiqs.map((k) => (
+                <Box key={k.id} sx={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 1, py: 0.75, borderBottom: '1px solid', borderColor: 'divider' }}>
+                  <Box>
+                    <Text as="div" variant="content-compact">{k.text}</Text>
+                    <Text as="div" variant="content-caption" style={{ opacity: 0.7 }}>{`→ ${k.criteria_ids.map((c) => criterionName(criteria, c)).join(', ') || t_i18n('no criterion')}`}</Text>
+                  </Box>
+                  <Chip label={t_i18n(k.answered ? 'Answered' : 'Unanswered')} severity={k.answered ? 'low' : 'high'} size="sm" />
                 </Box>
-                <Chip label={t_i18n(k.answered ? 'Answered' : 'Unanswered')} severity={k.answered ? 'low' : 'high'} size="sm" />
-              </Box>
-            ))}
-          </Paper>
+              ))}
+            </Paper>
+          )}
         </Box>
       </Box>
       <IrMatchDrawer

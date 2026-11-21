@@ -1,4 +1,4 @@
-// Demo data of the generic intelligence requirements proof of concept (feature flag INTELLIGENCE_REQUIREMENTS).
+// Demo data of the generic intelligence requirements.
 // Creates the knowledge and the four requirements of the mockup, then waits for the engine and prints a summary.
 //
 // Usage (dev platform running with the flag enabled):

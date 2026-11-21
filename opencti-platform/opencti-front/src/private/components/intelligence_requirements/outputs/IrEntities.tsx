@@ -14,7 +14,8 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
-import { criterionName, explanationText, IN_STATUSES, ScoreBar, StatusChip } from './IrOutputCommon';
+import { criterionName, explanationSentence, IN_STATUSES, ScoreBar, StatusChip } from './IrOutputCommon';
+import { IR_KIQS_ENABLED } from '../configuration/irConstants';
 import IrMatchDrawer, { type IrMatchData } from './IrMatchDrawer';
 import { IrTriageCard, type IrTriageVerdict, runTriage, useIrTriageAgent, VERDICT_CHIPS } from './IrTriage';
 import type { IrEntitiesLinesQuery, IrEntitiesLinesQuery$variables } from './__generated__/IrEntitiesLinesQuery.graphql';
@@ -287,7 +288,7 @@ const IrEntities = ({ irId }: { irId: string }) => {
         if (!proof) return '-';
         return (
           <Text as="span" variant="content-caption" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {`${criterionName(criteria, proof.criterion_id)} · ${explanationText(proof)}${line.match_explanations.length > 1 ? ` (+${line.match_explanations.length - 1})` : ''}`}
+            {`${criterionName(criteria, proof.criterion_id)} · ${explanationSentence(proof, line.match_entity_name ?? line.entity?.representative.main ?? '')}${line.match_explanations.length > 1 ? ` (+${line.match_explanations.length - 1})` : ''}`}
           </Text>
         );
       },
@@ -305,13 +306,15 @@ const IrEntities = ({ irId }: { irId: string }) => {
         </Box>
       ),
     },
-    kiqs: {
-      id: 'kiqs',
-      label: 'KIQ',
-      percentWidth: 6,
-      isSortable: false,
-      render: (line: Line) => <Text as="span" variant="content-caption">{String(kiqs.filter((k) => k.criteria_ids.some((c) => line.match_criteria_ids.includes(c))).length)}</Text>,
-    },
+    ...(IR_KIQS_ENABLED ? {
+      kiqs: {
+        id: 'kiqs',
+        label: 'KIQ',
+        percentWidth: 6,
+        isSortable: false,
+        render: (line: Line) => <Text as="span" variant="content-caption">{String(kiqs.filter((k) => k.criteria_ids.some((c) => line.match_criteria_ids.includes(c))).length)}</Text>,
+      },
+    } : {}),
     match_last_fact_at: { id: 'match_last_fact_at', label: 'Last fact', percentWidth: 8, isSortable: true, render: (line: Line) => <Text as="span" variant="content-caption">{line.match_last_fact_at ? nsdt(line.match_last_fact_at) : '-'}</Text> },
     created_at: { id: 'created_at', label: 'Entered', percentWidth: 8, isSortable: true, render: (line: Line) => <Text as="span" variant="content-caption">{nsdt(line.created_at)}</Text> },
   };

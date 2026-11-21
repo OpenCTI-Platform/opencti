@@ -20,6 +20,10 @@ export const IR_CRITERION_MODES = ['auto', 'propose', 'off'];
 export const IR_DIRECTIONS = ['outgoing', 'incoming', 'both'];
 export const IR_KEYWORD_FIELDS = ['name', 'description', 'content'];
 
+// Key intelligence questions (KIQ) are set aside in the prototype for now: no health check, no preview warning, no AI section.
+// They stay in the model and in the stored configurations, so that they can come back by turning this on.
+export const IR_KIQS_ENABLED = false;
+
 // region configuration blocks
 export interface StoreIrKiq {
   id: string;

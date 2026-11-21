@@ -4,11 +4,9 @@ import type { FilterGroup, IntelligenceRequirementInput } from '../../generated/
 import { internalFindByIds, pageEntitiesConnection, pageRelationsConnection } from '../../database/middleware-loader';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { checkStixCoreRelationshipMapping } from '../../database/stix';
-import { enforceEnableFeatureFlag } from '../../utils/access';
-import { INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG } from '../../config/conf';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { normalizeIntelligenceRequirementInput, parseIrFilters, typesOverlap, validateIntelligenceRequirementConfig } from './intelligenceRequirement-config';
-import type { StoreIrCriterion, StoreIrSubjectGroup } from './intelligenceRequirement-types';
+import { IR_KIQS_ENABLED, type StoreIrCriterion, type StoreIrSubjectGroup } from './intelligenceRequirement-types';
 
 // Preview of a requirement configuration before saving it (AI assisted creation, review screen):
 // blocking errors, resolution of the subjects, what each scope criterion would bring today, warnings.
@@ -42,7 +40,6 @@ const relationAllowed = (relationshipType: string, fromTypes: string[], toTypes:
 }));
 
 export const previewIntelligenceRequirement = async (context: AuthContext, user: AuthUser, input: IntelligenceRequirementInput) => {
-  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
   const errors: string[] = [];
   const warnings: string[] = [];
   const config = normalizeIntelligenceRequirementInput(input);
@@ -82,7 +79,8 @@ export const previewIntelligenceRequirement = async (context: AuthContext, user:
   }
   // Scope criteria: what each one would bring today
   const criteria: PreviewCriterion[] = [];
-  const linkedCriteria = new Set(config.kiqs.flatMap((k) => k.criteria_ids));
+  const kiqs = IR_KIQS_ENABLED ? config.kiqs : [];
+  const linkedCriteria = new Set(kiqs.flatMap((k) => k.criteria_ids));
   for (let i = 0; i < config.criteria.length; i += 1) {
     const criterion: StoreIrCriterion = config.criteria[i];
     const preview: PreviewCriterion = { id: criterion.id, name: criterion.name, kind: criterion.kind, today_count: null, note: null, warnings: [] };
@@ -160,10 +158,10 @@ export const previewIntelligenceRequirement = async (context: AuthContext, user:
         preview.warnings.push(`Condition "${cond.name}" applies to ${cond.applies_to_types.join(', ')}, a type this criterion never brings: it has no effect.`);
       });
     }
-    if (!linkedCriteria.has(criterion.id) && config.kiqs.length > 0) preview.warnings.push('Not linked to any key intelligence question.');
+    if (!linkedCriteria.has(criterion.id) && kiqs.length > 0) preview.warnings.push('Not linked to any key intelligence question.');
     criteria.push(preview);
   }
-  config.kiqs.filter((k) => k.criteria_ids.length === 0).forEach((k) => warnings.push(`KIQ "${k.text}" is linked to no scope criterion: it will always show as unanswered.`));
+  kiqs.filter((k) => k.criteria_ids.length === 0).forEach((k) => warnings.push(`KIQ "${k.text}" is linked to no scope criterion: it will always show as unanswered.`));
   if (config.criteria.length === 0) warnings.push('No scope criterion: nothing will enter the requirement.');
   return { valid: errors.length === 0, errors, warnings, groups, criteria };
 };

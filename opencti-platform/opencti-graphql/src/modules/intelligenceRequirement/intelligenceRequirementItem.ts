@@ -2,7 +2,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { createdAt, updatedAt } from '../../schema/attribute-definition';
-import { INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG } from '../../config/conf';
 import { buildStixObject } from '../../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { cleanObject } from '../../database/stix-converter-utils';
@@ -13,8 +12,6 @@ import {
   type StixIntelligenceRequirementItem,
   type StoreEntityIntelligenceRequirementItem,
 } from './intelligenceRequirementItem-types';
-
-const featureFlag = INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG;
 
 const convertItemToStix = (instance: StoreEntityIntelligenceRequirementItem): StixIntelligenceRequirementItem => {
   const stixObject = buildStixObject(instance);
@@ -41,17 +38,17 @@ const INTELLIGENCE_REQUIREMENT_ITEM_DEFINITION: ModuleDefinition<StoreEntityInte
     },
   },
   attributes: [
-    { ...createdAt, featureFlag },
-    { ...updatedAt, featureFlag },
-    { name: 'ir_id', label: 'Requirement item requirement', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag },
-    { name: 'item_kind', label: 'Requirement item kind', type: 'string', format: 'enum', values: IR_ITEM_KINDS, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag },
-    { name: 'item_status', label: 'Requirement item status', type: 'string', format: 'enum', values: IR_ITEM_STATUSES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag },
-    { name: 'item_title', label: 'Requirement item title', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag },
-    { name: 'item_entity_id', label: 'Requirement item entity', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag },
-    { name: 'item_entity_type', label: 'Requirement item entity type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag },
-    { name: 'item_match_id', label: 'Requirement item match', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag },
-    { name: 'item_data', label: 'Requirement item data', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag },
-    { name: 'item_result', label: 'Requirement item result', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false, featureFlag },
+    { ...createdAt },
+    { ...updatedAt },
+    { name: 'ir_id', label: 'Requirement item requirement', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'item_kind', label: 'Requirement item kind', type: 'string', format: 'enum', values: IR_ITEM_KINDS, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'item_status', label: 'Requirement item status', type: 'string', format: 'enum', values: IR_ITEM_STATUSES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'item_title', label: 'Requirement item title', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'item_entity_id', label: 'Requirement item entity', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'item_entity_type', label: 'Requirement item entity type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'item_match_id', label: 'Requirement item match', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'item_data', label: 'Requirement item data', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'item_result', label: 'Requirement item result', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   ],
   relations: [],
   representative: (stix: StixIntelligenceRequirementItem) => stix.name,

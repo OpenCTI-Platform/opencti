@@ -1,4 +1,4 @@
-# Proof of concept of a generic PIR model (feature flag INTELLIGENCE_REQUIREMENTS).
+# Generic PIR model.
 
 enum IntelligenceRequirementPriority {
   critical
@@ -373,26 +373,18 @@ input IntelligenceRequirementInput {
 # endregion
 
 type Query {
-  intelligenceRequirement(id: ID!): IntelligenceRequirement @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
-  "Check a configuration before saving it: errors, resolved subjects, what each criterion brings today, warnings"
-  intelligenceRequirementPreview(input: IntelligenceRequirementInput!): IrPreview! @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
-  intelligenceRequirementTestEntity(input: IntelligenceRequirementInput!, entity_id: ID!, ir_id: ID): IrEntityTest! @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
-  intelligenceRequirements(
+  intelligenceRequirement(id: ID!): IntelligenceRequirement @auth(for: [PIRAPI])  "Check a configuration before saving it: errors, resolved subjects, what each criterion brings today, warnings"
+  intelligenceRequirementPreview(input: IntelligenceRequirementInput!): IrPreview! @auth(for: [PIRAPI])  intelligenceRequirementTestEntity(input: IntelligenceRequirementInput!, entity_id: ID!, ir_id: ID): IrEntityTest! @auth(for: [PIRAPI])  intelligenceRequirements(
     first: Int
     after: ID
     orderBy: IntelligenceRequirementOrdering
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): IntelligenceRequirementConnection @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
-}
+  ): IntelligenceRequirementConnection @auth(for: [PIRAPI])}
 
 type Mutation {
-  intelligenceRequirementAdd(input: IntelligenceRequirementInput!): IntelligenceRequirement @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
-  intelligenceRequirementUpdate(id: ID!, input: IntelligenceRequirementInput!): IntelligenceRequirement @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
-  intelligenceRequirementStatusUpdate(id: ID!, status: IntelligenceRequirementStatus!): IntelligenceRequirement @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
-  intelligenceRequirementDelete(id: ID!): ID @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
-}
+  intelligenceRequirementAdd(input: IntelligenceRequirementInput!): IntelligenceRequirement @auth(for: [PIRAPI_PIRUPDATE])  intelligenceRequirementUpdate(id: ID!, input: IntelligenceRequirementInput!): IntelligenceRequirement @auth(for: [PIRAPI_PIRUPDATE])  intelligenceRequirementStatusUpdate(id: ID!, status: IntelligenceRequirementStatus!): IntelligenceRequirement @auth(for: [PIRAPI_PIRUPDATE])  intelligenceRequirementDelete(id: ID!): ID @auth(for: [PIRAPI_PIRUPDATE])}
 
 # region entities of a requirement (matches)
 enum IrMatchStatus {
@@ -471,9 +463,7 @@ extend type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): IntelligenceRequirementMatchConnection @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
-  intelligenceRequirementMatch(id: ID!): IntelligenceRequirementMatch @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
-}
+  ): IntelligenceRequirementMatchConnection @auth(for: [PIRAPI])  intelligenceRequirementMatch(id: ID!): IntelligenceRequirementMatch @auth(for: [PIRAPI])}
 # endregion
 
 type IrMatchHistoryPoint {
@@ -569,20 +559,12 @@ extend type Query {
     after: ID
     filters: FilterGroup
     search: String
-  ): IntelligenceRequirementItemConnection @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
-}
+  ): IntelligenceRequirementItemConnection @auth(for: [PIRAPI])}
 extend type Mutation {
   "AI Insight with the LLM configured on the platform, when XTM One is not usable"
-  intelligenceRequirementAiInsight(id: ID!, language: String): String @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
-  "Generate the AI brief of a requirement now (XTM One agent of the cti.pir_insight intent) and add it to its inbox"
-  intelligenceRequirementBriefGenerate(id: ID!): IntelligenceRequirementItem @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
-  "Run the health checks of a requirement now; returns the number of health items raised"
-  intelligenceRequirementHealthCheck(id: ID!): Int @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
-  intelligenceRequirementItemDecide(id: ID!, decision: IrItemDecision!): IntelligenceRequirementItem @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
-  "Same decision on several inbox items; items that are closed or that the decision does not apply to are skipped. Returns the number of items decided."
-  intelligenceRequirementItemsDecide(ids: [ID!]!, decision: IrItemDecision!): Int @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
-  "Same decision on several entities of a requirement; entities the decision does not apply to are skipped. Returns the number decided."
-  intelligenceRequirementMatchesStatusUpdate(ids: [ID!]!, status: IrMatchDecisionStatus!): Int @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
-  intelligenceRequirementMatchStatusUpdate(id: ID!, status: IrMatchDecisionStatus!): IntelligenceRequirementMatch @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
-}
+  intelligenceRequirementAiInsight(id: ID!, language: String): String @auth(for: [PIRAPI])  "Generate the AI brief of a requirement now (XTM One agent of the cti.pir_insight intent) and add it to its inbox"
+  intelligenceRequirementBriefGenerate(id: ID!): IntelligenceRequirementItem @auth(for: [PIRAPI_PIRUPDATE])  "Run the health checks of a requirement now; returns the number of health items raised"
+  intelligenceRequirementHealthCheck(id: ID!): Int @auth(for: [PIRAPI_PIRUPDATE])  intelligenceRequirementItemDecide(id: ID!, decision: IrItemDecision!): IntelligenceRequirementItem @auth(for: [PIRAPI_PIRUPDATE])  "Same decision on several inbox items; items that are closed or that the decision does not apply to are skipped. Returns the number of items decided."
+  intelligenceRequirementItemsDecide(ids: [ID!]!, decision: IrItemDecision!): Int @auth(for: [PIRAPI_PIRUPDATE])  "Same decision on several entities of a requirement; entities the decision does not apply to are skipped. Returns the number decided."
+  intelligenceRequirementMatchesStatusUpdate(ids: [ID!]!, status: IrMatchDecisionStatus!): Int @auth(for: [PIRAPI_PIRUPDATE])  intelligenceRequirementMatchStatusUpdate(id: ID!, status: IrMatchDecisionStatus!): IntelligenceRequirementMatch @auth(for: [PIRAPI_PIRUPDATE])}
 # endregion

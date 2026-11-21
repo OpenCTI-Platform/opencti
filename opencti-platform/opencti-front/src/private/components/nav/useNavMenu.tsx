@@ -227,7 +227,7 @@ const useNavMenu = (): NavGroup[] => {
         !inDraft && canSeePir && {
           id: 'pir', label: t_i18n('PIR'), icon: <TrackChanges />, link: '/dashboard/pirs',
         },
-        !inDraft && canSeePir && isFeatureEnable('INTELLIGENCE_REQUIREMENTS') && {
+        !inDraft && canSeePir && {
           id: 'intelligence-requirements', label: t_i18n('PIR (generic)'), icon: <TrackChanges />, link: '/dashboard/intelligence_requirements',
         },
       ],

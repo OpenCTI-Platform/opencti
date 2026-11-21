@@ -1,4 +1,4 @@
-import conf, { booleanConf, INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { type ManagerDefinition, registerManager } from './managerModule';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import type { AuthContext } from '../types/user';
@@ -434,6 +434,4 @@ const INTELLIGENCE_REQUIREMENT_MANAGER_DEFINITION: ManagerDefinition = {
   },
 };
 
-if (isFeatureEnabled(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG)) {
-  registerManager(INTELLIGENCE_REQUIREMENT_MANAGER_DEFINITION);
-}
+registerManager(INTELLIGENCE_REQUIREMENT_MANAGER_DEFINITION);

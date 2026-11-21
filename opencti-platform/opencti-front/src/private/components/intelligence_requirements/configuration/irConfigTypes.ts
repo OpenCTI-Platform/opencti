@@ -1,4 +1,4 @@
-// Proof of concept of a generic PIR model (feature flag INTELLIGENCE_REQUIREMENTS).
+// Generic PIR model.
 // Local draft of the configuration in four blocks, converted to the GraphQL input on save.
 
 export type IrPriority = 'critical' | 'high' | 'medium' | 'low';

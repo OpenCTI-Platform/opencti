@@ -617,9 +617,6 @@ export const INGESTION_HEALTH_FEATURE_FLAG = 'INGESTION_HEALTH';
 // to check activation)
 export const CONFIG_PRESET_FEATURE_FLAG = 'CONFIG_PRESET';
 
-// Generic intelligence requirements, a proof of concept next to the existing PIR
-// (use isFeatureEnabled(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG) to check activation)
-export const INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG = 'INTELLIGENCE_REQUIREMENTS';
 
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;

@@ -1,0 +1,229 @@
+{
+  "name": "Arsenal, TTP et vulnérabilités des acteurs nord-coréens contre la finance",
+  "description": "Suivre les malwares, outils, techniques et vulnérabilités utilisés par les groupes et campagnes d'origine nord-coréenne, classés selon leur usage contre le secteur financier.",
+  "ir_question": "Quels malwares, outils, TTP et vulnérabilités les groupes d'intrusion et les campagnes d'origine nord-coréenne utilisent-ils, en particulier contre le secteur financier ?",
+  "ir_priority": "high",
+  "ir_status": "paused",
+  "ir_thresholds": [40, 70],
+  "ir_rescan_days": 365,
+  "ir_brief_frequency": "weekly",
+  "ir_kiqs": [
+    { "id": "k-arsenal", "text": "Quels malwares et outils les acteurs et campagnes nord-coréens déploient-ils ?", "criteria_ids": ["c-arsenal"] },
+    { "id": "k-ttp", "text": "Quelles techniques (ATT&CK) emploient-ils, directement ou via leur arsenal ?", "criteria_ids": ["c-ttp", "c-arsenal-ttp"] },
+    { "id": "k-vulns", "text": "Quelles vulnérabilités ciblent-ils ou exploitent-ils via leur arsenal ?", "criteria_ids": ["c-vulns", "c-arsenal-vulns"] },
+    { "id": "k-campaigns", "text": "Quelles campagnes sont attribuées aux groupes nord-coréens ?", "criteria_ids": ["c-campaigns"] }
+  ],
+  "ir_subject_groups": [
+    {
+      "id": "g-dprk",
+      "name": "Acteurs et campagnes nord-coréens",
+      "kind": "filter",
+      "role": "entry",
+      "entity_ids": [],
+      "keywords": [],
+      "filters": {
+        "mode": "and",
+        "filterGroups": [],
+        "filters": [
+          { "key": ["entity_type"], "values": ["Intrusion-Set", "Threat-Actor-Group", "Campaign"], "operator": "eq", "mode": "or" },
+          {
+            "key": ["regardingOf"],
+            "values": [
+              { "key": "id", "values": ["<NORTH_KOREA_COUNTRY_ID>"] },
+              { "key": "relationship_type", "values": ["originates-from"] }
+            ],
+            "operator": "eq",
+            "mode": "or"
+          }
+        ]
+      }
+    },
+    {
+      "id": "g-finance",
+      "name": "Secteur financier",
+      "kind": "list",
+      "role": "context",
+      "entity_ids": ["<FINANCE_SECTOR_ID>"],
+      "filters": null,
+      "keywords": []
+    }
+  ],
+  "ir_scope_criteria": [
+    {
+      "id": "c-campaigns",
+      "name": "Campagnes attribuées aux groupes nord-coréens",
+      "kind": "graph",
+      "from_group_ids": ["g-dprk"],
+      "from_in_requirement": false,
+      "from_types": ["Intrusion-Set", "Threat-Actor-Group"],
+      "relationship_types": ["attributed-to"],
+      "direction": "incoming",
+      "target_types": ["Campaign"],
+      "target_filters": null,
+      "keyword_fields": [],
+      "mode": "auto"
+    },
+    {
+      "id": "c-arsenal",
+      "name": "Arsenal (malwares et outils)",
+      "kind": "graph",
+      "from_group_ids": ["g-dprk"],
+      "from_in_requirement": true,
+      "from_types": ["Intrusion-Set", "Threat-Actor-Group", "Campaign"],
+      "relationship_types": ["uses"],
+      "direction": "outgoing",
+      "target_types": ["Malware", "Tool"],
+      "target_filters": null,
+      "keyword_fields": [],
+      "mode": "auto"
+    },
+    {
+      "id": "c-ttp",
+      "name": "TTP",
+      "kind": "graph",
+      "from_group_ids": ["g-dprk"],
+      "from_in_requirement": true,
+      "from_types": ["Intrusion-Set", "Threat-Actor-Group", "Campaign"],
+      "relationship_types": ["uses"],
+      "direction": "outgoing",
+      "target_types": ["Attack-Pattern"],
+      "target_filters": null,
+      "keyword_fields": [],
+      "mode": "auto"
+    },
+    {
+      "id": "c-vulns",
+      "name": "Vulnérabilités ciblées",
+      "kind": "graph",
+      "from_group_ids": ["g-dprk"],
+      "from_in_requirement": true,
+      "from_types": ["Intrusion-Set", "Threat-Actor-Group", "Campaign"],
+      "relationship_types": ["targets"],
+      "direction": "outgoing",
+      "target_types": ["Vulnerability"],
+      "target_filters": null,
+      "keyword_fields": [],
+      "mode": "auto"
+    },
+    {
+      "id": "c-arsenal-vulns",
+      "name": "Vulnérabilités exploitées par l'arsenal (2e hop)",
+      "kind": "graph",
+      "from_group_ids": [],
+      "from_in_requirement": true,
+      "from_types": ["Malware", "Tool"],
+      "relationship_types": ["exploits"],
+      "direction": "outgoing",
+      "target_types": ["Vulnerability"],
+      "target_filters": null,
+      "keyword_fields": [],
+      "mode": "auto"
+    },
+    {
+      "id": "c-arsenal-ttp",
+      "name": "TTP de l'arsenal (2e hop)",
+      "kind": "graph",
+      "from_group_ids": [],
+      "from_in_requirement": true,
+      "from_types": ["Malware"],
+      "relationship_types": ["uses"],
+      "direction": "outgoing",
+      "target_types": ["Attack-Pattern"],
+      "target_filters": null,
+      "keyword_fields": [],
+      "mode": "propose"
+    }
+  ],
+  "ir_relevance_rules": [
+    {
+      "id": "r-used-against-finance",
+      "name": "Utilisé par une menace qui cible la finance",
+      "applies_to_types": [],
+      "applies_to_criterion_id": null,
+      "filters": null,
+      "link": null,
+      "path_condition": {
+        "relationship_types": ["uses", "targets", "exploits"],
+        "direction": "incoming",
+        "target_relationship_type": "targets",
+        "target_ids": [],
+        "target_group_ids": ["g-finance"]
+      },
+      "points": 30,
+      "required": false,
+      "enabled": true
+    },
+    {
+      "id": "r-targets-finance",
+      "name": "Cible directement la finance",
+      "applies_to_types": [],
+      "applies_to_criterion_id": null,
+      "filters": null,
+      "link": { "relationship_types": ["targets"], "group_ids": ["g-finance"] },
+      "path_condition": null,
+      "points": 20,
+      "required": false,
+      "enabled": true
+    },
+    {
+      "id": "r-kev",
+      "name": "Au catalogue CISA KEV",
+      "applies_to_types": ["Vulnerability"],
+      "applies_to_criterion_id": null,
+      "filters": { "mode": "and", "filterGroups": [], "filters": [{ "key": ["x_opencti_cisa_kev"], "values": ["true"], "operator": "eq", "mode": "or" }] },
+      "link": null,
+      "path_condition": null,
+      "points": 25,
+      "required": false,
+      "enabled": true
+    },
+    {
+      "id": "r-epss",
+      "name": "Exploitation probable (EPSS >= 0.5)",
+      "applies_to_types": ["Vulnerability"],
+      "applies_to_criterion_id": null,
+      "filters": { "mode": "and", "filterGroups": [], "filters": [{ "key": ["x_opencti_epss_score"], "values": ["0.5"], "operator": "gte", "mode": "or" }] },
+      "link": null,
+      "path_condition": null,
+      "points": 15,
+      "required": false,
+      "enabled": true
+    },
+    {
+      "id": "r-direct-arsenal",
+      "name": "Arsenal relié directement à un acteur ou une campagne",
+      "applies_to_types": [],
+      "applies_to_criterion_id": "c-arsenal",
+      "filters": null,
+      "link": null,
+      "path_condition": null,
+      "points": 10,
+      "required": false,
+      "enabled": true
+    },
+    {
+      "id": "r-direct-ttp",
+      "name": "TTP reliée directement à un acteur ou une campagne",
+      "applies_to_types": [],
+      "applies_to_criterion_id": "c-ttp",
+      "filters": null,
+      "link": null,
+      "path_condition": null,
+      "points": 10,
+      "required": false,
+      "enabled": true
+    },
+    {
+      "id": "r-direct-vuln",
+      "name": "Vulnérabilité ciblée directement par un acteur ou une campagne",
+      "applies_to_types": [],
+      "applies_to_criterion_id": "c-vulns",
+      "filters": null,
+      "link": null,
+      "path_condition": null,
+      "points": 10,
+      "required": false,
+      "enabled": true
+    }
+  ]
+}

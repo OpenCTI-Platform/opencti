@@ -1,7 +1,5 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { storeLoadById } from '../../database/middleware-loader';
-import { enforceEnableFeatureFlag } from '../../utils/access';
-import { INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { type BasicStoreEntityIntelligenceRequirement, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, type ParsedIntelligenceRequirement } from './intelligenceRequirement-types';
 import { type BasicStoreEntityIntelligenceRequirementMatch, IR_MATCH_IN_STATUSES } from './intelligenceRequirementMatch-types';
@@ -257,7 +255,6 @@ const MATCH_STATUS_RESULTS: Record<string, string> = {
 };
 
 export const setMatchStatus = async (context: AuthContext, user: AuthUser, matchId: string, status: string) => {
-  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
   if (!MATCH_STATUS_RESULTS[status]) throw FunctionalError('Unsupported status', { status });
   const match = await loadMatchById(context, user, matchId);
   if (!match) throw FunctionalError('Entity of the requirement not found', { matchId });
@@ -295,7 +292,6 @@ const MATCH_DECISION_FROM: Record<string, string[]> = {
  * Mass operation on the entities of a requirement (entities list), one after the other.
  */
 export const setMatchesStatus = async (context: AuthContext, user: AuthUser, matchIds: string[], status: string) => {
-  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
   let decided = 0;
   for (let i = 0; i < matchIds.length; i += 1) {
     const match = await loadMatchById(context, user, matchIds[i]);
@@ -310,7 +306,6 @@ export const setMatchesStatus = async (context: AuthContext, user: AuthUser, mat
 const DECISION_STATUSES: Record<string, string> = { accept: 'accepted', reject: 'rejected', remove: 'removed' };
 
 export const decideItem = async (context: AuthContext, user: AuthUser, itemId: string, decision: string) => {
-  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
   const item = await storeLoadById<BasicStoreEntityIntelligenceRequirementItem>(context, user, itemId, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM);
   if (!item) throw FunctionalError('Inbox item not found', { itemId });
   if (decision === 'acknowledge') return closeItem(context, user, itemId, 'Seen');
@@ -333,7 +328,6 @@ export const IR_ITEM_DECISIONS: Record<string, string[]> = {
  * Closed items and items the decision does not apply to are skipped.
  */
 export const decideItems = async (context: AuthContext, user: AuthUser, itemIds: string[], decision: string) => {
-  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
   let decided = 0;
   for (let i = 0; i < itemIds.length; i += 1) {
     const item = await storeLoadById<BasicStoreEntityIntelligenceRequirementItem>(context, user, itemIds[i], ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM);

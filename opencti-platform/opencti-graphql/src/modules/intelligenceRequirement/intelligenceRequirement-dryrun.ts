@@ -3,8 +3,6 @@ import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import type { IntelligenceRequirementInput } from '../../generated/graphql';
 import { fullRelationsList, internalFindByIds, internalLoadById } from '../../database/middleware-loader';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
-import { enforceEnableFeatureFlag } from '../../utils/access';
-import { INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { normalizeIntelligenceRequirementInput, parseIrFilters } from './intelligenceRequirement-config';
 import type { ParsedIntelligenceRequirement, StoreIrCriterion } from './intelligenceRequirement-types';
@@ -133,7 +131,6 @@ export const testIntelligenceRequirementEntity = async (
   entityId: string,
   irId?: string | null,
 ) => {
-  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
   const config = normalizeIntelligenceRequirementInput(input);
   const ir = {
     id: irId ?? DRY_RUN_ID,

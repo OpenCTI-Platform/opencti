@@ -11,6 +11,8 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 import { PRIORITY_SEVERITY } from './IntelligenceRequirementsCards';
 import IrOverview from './outputs/IrOverview';
 import IrEntities from './outputs/IrEntities';
+import IrGraph from './outputs/IrGraph';
+import IrTimeline from './outputs/IrTimeline';
 import IrInbox from './outputs/IrInbox';
 import IrProcessing from './outputs/IrProcessing';
 import IrAiInsight from './IrAiInsight';
@@ -49,6 +51,8 @@ const IntelligenceRequirement = () => {
   if (pathname.endsWith('/entities')) tab = 'entities';
   if (pathname.endsWith('/inbox')) tab = 'inbox';
   if (pathname.endsWith('/processing')) tab = 'processing';
+  if (pathname.endsWith('/graph')) tab = 'graph';
+  if (pathname.endsWith('/timeline')) tab = 'timeline';
   return (
     <>
       <Breadcrumbs elements={[{ label: t_i18n('PIR (generic)'), link: '/dashboard/intelligence_requirements' }, { label: ir.name, current: true }]} />
@@ -84,6 +88,8 @@ const IntelligenceRequirement = () => {
         <TabsList className="mb-6 mt-4">
           <TabsTrigger value="overview" asChild><Link to={base}>{t_i18n('Overview')}</Link></TabsTrigger>
           <TabsTrigger value="entities" asChild><Link to={`${base}/entities`}>{t_i18n('Entities')}</Link></TabsTrigger>
+          <TabsTrigger value="graph" asChild><Link to={`${base}/graph`}>{t_i18n('Graph')}</Link></TabsTrigger>
+          <TabsTrigger value="timeline" asChild><Link to={`${base}/timeline`}>{t_i18n('Timeline')}</Link></TabsTrigger>
           <TabsTrigger value="inbox" asChild>
             <Link to={`${base}/inbox`} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
               {t_i18n('Inbox')}
@@ -104,6 +110,8 @@ const IntelligenceRequirement = () => {
         <Routes>
           <Route path="/" element={<IrOverview irId={ir.id} />} />
           <Route path="/entities" element={<IrEntities irId={ir.id} />} />
+          <Route path="/graph" element={<IrGraph irId={ir.id} />} />
+          <Route path="/timeline" element={<IrTimeline irId={ir.id} />} />
           <Route path="/inbox" element={<IrInbox irId={ir.id} />} />
           <Route path="/processing" element={<IrProcessing irId={ir.id} />} />
         </Routes>

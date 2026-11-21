@@ -4,8 +4,6 @@ import { type EntityOptions, fullEntitiesList, internalLoadById, pageEntitiesCon
 import { createEntity, patchAttribute } from '../../database/middleware';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { enforceEnableFeatureFlag } from '../../utils/access';
-import { INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG } from '../../config/conf';
 import { OrderingMode } from '../../generated/graphql';
 import { type BasicStoreEntityIntelligenceRequirementItem, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM, type StoreIrItemData } from './intelligenceRequirementItem-types';
 import { isRequirementDeleted } from './intelligenceRequirement-lifecycle';
@@ -54,7 +52,6 @@ export const findItemsPaginated = async (
   irId: string,
   opts: EntityOptions<BasicStoreEntityIntelligenceRequirementItem> & { statuses?: string[] | null; kinds?: string[] | null } = {},
 ) => {
-  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
   const { statuses, kinds, ...listOpts } = opts;
   let filters = addFilter(listOpts.filters, 'ir_id', irId);
   if (statuses && statuses.length > 0) filters = addFilter(filters, 'item_status', statuses);

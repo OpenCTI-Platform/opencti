@@ -56,3 +56,8 @@ export const groupMemberIds = async (context: AuthContext, user: AuthUser, ir: P
   }
   return Array.from(ids);
 };
+
+// Measures and tests: resolve the groups again (cold)
+export const resetSubjectGroupCache = () => {
+  cache.clear();
+};

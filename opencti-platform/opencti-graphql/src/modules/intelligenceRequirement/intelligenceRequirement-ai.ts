@@ -3,13 +3,11 @@ import type { BasicStoreEntity } from '../../types/store';
 import { internalFindByIds, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { queryAi } from '../../database/ai-llm';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
-import { enforceEnableFeatureFlag } from '../../utils/access';
-import { INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { OrderingMode } from '../../generated/graphql';
-import { type BasicStoreEntityIntelligenceRequirement, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, type StoreIrCriterion } from './intelligenceRequirement-types';
+import { type BasicStoreEntityIntelligenceRequirement, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, IR_KIQS_ENABLED, type StoreIrCriterion } from './intelligenceRequirement-types';
 import { parseIntelligenceRequirement } from './intelligenceRequirement-config';
 import { type BasicStoreEntityIntelligenceRequirementMatch, IR_MATCH_IN_STATUSES } from './intelligenceRequirementMatch-types';
 import { listMatches, parseMatchExplanations } from './intelligenceRequirementMatch-domain';
@@ -74,7 +72,7 @@ export const buildRequirementAiPrompt = async (context: AuthContext, user: AuthU
     .sort((a, b) => (b.match_score ?? 0) - (a.match_score ?? 0));
   const proposed = matches.filter((m) => m.match_status === 'proposed').sort((a, b) => (b.match_score ?? 0) - (a.match_score ?? 0)).slice(0, MAX_PROPOSED);
   // Entities used by the prompt: top entities, entities per question, proposals
-  const kiqEntities = ir.ir_kiqs.map((kiq) => ({
+  const kiqEntities = (IR_KIQS_ENABLED ? ir.ir_kiqs : []).map((kiq) => ({
     kiq,
     matches: inRequirement.filter((m) => (m.match_criteria_ids ?? []).some((c) => kiq.criteria_ids.includes(c))).slice(0, MAX_ENTITIES_PER_KIQ),
   }));
@@ -112,7 +110,9 @@ export const buildRequirementAiPrompt = async (context: AuthContext, user: AuthU
   const typeCounts = inRequirement.reduce<Record<string, number>>((acc, m) => ({ ...acc, [m.match_entity_type]: (acc[m.match_entity_type] ?? 0) + 1 }), {});
 
   const sections = [
-    'You are a senior cyber threat intelligence analyst. Write an intelligence report answering the priority intelligence requirement (PIR) below, key intelligence question by key intelligence question.',
+    IR_KIQS_ENABLED
+      ? 'You are a senior cyber threat intelligence analyst. Write an intelligence report answering the priority intelligence requirement (PIR) below, key intelligence question by key intelligence question.'
+      : 'You are a senior cyber threat intelligence analyst. Write an intelligence report answering the intelligence question of the priority intelligence requirement (PIR) below.',
     'Rules:',
     '- Base your answers on the facts listed below. You may use your tools to read more about an entity with its OpenCTI id (description, relationships, reports), but do not invent facts.',
     '- Cite the entities you rely on by name, with their type and score.',
@@ -121,7 +121,9 @@ export const buildRequirementAiPrompt = async (context: AuthContext, user: AuthU
     `- Answer in ${language}. Format the answer in simple HTML (h3, p, ul, li, strong) without any CSS or script.`,
     'Structure:',
     '1. "Executive summary": 3 to 5 bullet points.',
-    '2. One section per key intelligence question, titled with the question, containing: Answer, Evidence (bullet list of entities), Confidence, Gaps.',
+    IR_KIQS_ENABLED
+      ? '2. One section per key intelligence question, titled with the question, containing: Answer, Evidence (bullet list of entities), Confidence, Gaps.'
+      : '2. "Answer to the intelligence question", containing: Answer, Evidence (bullet list of entities), Confidence, Gaps.',
     `3. "What changed in the last ${RECENT_DAYS} days", based on the recent activity.`,
     '4. "Recommended next steps" for the analyst (e.g. proposals to review, entities to investigate, configuration to adjust).',
     '',
@@ -136,8 +138,8 @@ export const buildRequirementAiPrompt = async (context: AuthContext, user: AuthU
     '',
     `=== Content of the PIR: ${inRequirement.length} entities in the requirement (${Object.entries(typeCounts).map(([t, n]) => `${n} ${t}`).join(', ') || 'none'}), ${matches.filter((m) => m.match_status === 'proposed').length} proposals waiting for review ===`,
     '',
-    '=== Key intelligence questions and their evidence ===',
-    ...(kiqEntities.length === 0 ? ['No key intelligence question: answer the main intelligence question.'] : kiqEntities.flatMap(({ kiq, matches: kiqMatches }) => [
+    ...(IR_KIQS_ENABLED ? ['=== Key intelligence questions and their evidence ==='] : []),
+    ...(kiqEntities.length === 0 ? (IR_KIQS_ENABLED ? ['No key intelligence question: answer the main intelligence question.'] : []) : kiqEntities.flatMap(({ kiq, matches: kiqMatches }) => [
       `Question: ${kiq.text}`,
       kiq.criteria_ids.length === 0
         ? '(not linked to any scope criterion: use the whole content of the PIR below to answer it)'
@@ -166,7 +168,6 @@ export const buildRequirementAiPrompt = async (context: AuthContext, user: AuthU
  * Fallback when XTM One is not usable: the same prompt sent to the LLM configured on the platform (no tools, one answer).
  */
 export const generateRequirementAiInsight = async (context: AuthContext, user: AuthUser, irId: string, language: string) => {
-  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
   await checkEnterpriseEdition(context);
   const ir = await storeLoadById<BasicStoreEntityIntelligenceRequirement>(context, user, irId, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT);
   if (!ir) throw FunctionalError('Intelligence requirement not found', { id: irId });

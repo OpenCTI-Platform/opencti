@@ -14,3 +14,7 @@ export const IR_RELATIONSHIP_TYPES = [
 ];
 
 export const IR_KEYWORD_FIELDS = ['name', 'description', 'content'];
+
+// Key intelligence questions (KIQ) are set aside in the prototype for now: hidden from every screen.
+// The model keeps them (stored KIQs are saved back unchanged), so that they can come back by turning this on.
+export const IR_KIQS_ENABLED = false;
