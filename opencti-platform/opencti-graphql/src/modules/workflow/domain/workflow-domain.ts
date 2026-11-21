@@ -9,8 +9,8 @@ import { loadAssignees, loadParticipants } from '../../../database/members';
 import { createEntity, createRelation, deleteElementById, idVocabulary, loadEntity, updateAttribute } from '../../../database/middleware';
 import { fullEntitiesList, internalLoadById, storeLoadById, storeLoadByIds } from '../../../database/middleware-loader';
 import { notify } from '../../../database/redis';
-import { READ_DATA_INDICES, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY } from '../../../database/utils';
-import { elAggregationCount, ES_MAX_CONCURRENCY } from '../../../database/engine';
+import { READ_DATA_INDICES, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
+import { elAggregationCount, elRawUpdateByQuery, ES_MAX_CONCURRENCY } from '../../../database/engine';
 import { createListTask } from '../../../domain/backgroundTask-common';
 import { resolveUserById } from '../../user/user-domain';
 import { createStatus, findByType as findStatusesByType } from '../../../domain/status';
@@ -72,6 +72,7 @@ import { extractCanonicalStateIds, findInstancesBlockingStateRemoval, validateWo
 import { computeStateOrder, findStatesWithOutgoingTransitions } from './workflow-ordering';
 import { findInstancesInStates, isStatusReferencedByEntity } from './workflow-status-usage';
 import { projectWorkflowState, resolveMappedStatusId, resolveProjectionScope } from './workflow-projection';
+import { projectDraftWorkflowStatuses } from './workflow-draft-projection';
 import {
   appendWorkflowHistoryEntry,
   cancelPendingContainerTasks,
@@ -1150,6 +1151,34 @@ const unlinkWorkflowDefinitionUnderLock = async (
 };
 
 /**
+ * Drafts persist their workflow status (`x_opencti_workflow_id`). Without a workflow there is no
+ * state to show, so deleting the DraftWorkspace workflow clears it: filters and distributions then
+ * treat every draft as having no status, as they did before the projection existed.
+ */
+const clearDraftWorkflowStatuses = async () => {
+  try {
+    await elRawUpdateByQuery({
+      index: READ_INDEX_INTERNAL_OBJECTS,
+      refresh: true,
+      conflicts: 'proceed',
+      body: {
+        script: { source: 'ctx._source.remove(\'x_opencti_workflow_id\')' },
+        query: {
+          bool: {
+            must: [
+              { term: { 'entity_type.keyword': { value: ENTITY_TYPE_DRAFT_WORKSPACE } } },
+              { exists: { field: 'x_opencti_workflow_id' } },
+            ],
+          },
+        },
+      },
+    });
+  } catch (error) {
+    logApp.warn('[OPENCTI-MODULE] Failed to clear the workflow state of existing drafts', { cause: error });
+  }
+};
+
+/**
  * Delete workflow definition for an entity type.
  */
 export const deleteWorkflowDefinition = async (
@@ -1159,7 +1188,13 @@ export const deleteWorkflowDefinition = async (
   scope: StatusScope = StatusScope.Global,
 ): Promise<BasicStoreEntityEntitySetting | undefined> => {
   assertScopeAllowed(entityType, scope);
-  return withWorkflowStatusLock(entityType, () => unlinkWorkflowDefinitionUnderLock(context, user, entityType, scope));
+  return withWorkflowStatusLock(entityType, async () => {
+    const entitySetting = await unlinkWorkflowDefinitionUnderLock(context, user, entityType, scope);
+    if (entityType === 'DraftWorkspace' && scope === StatusScope.Global) {
+      await clearDraftWorkflowStatuses();
+    }
+    return entitySetting;
+  });
 };
 
 /**
@@ -1640,6 +1675,7 @@ const publishWorkflowDraftUnderLock = async (
   // Full-mapping invariant: every state in the definition being published must map to a real
   // Status record, creating any missing ones before the definition is marked published.
   let publishedDefinitionData: WorkflowDefinitionData | null = null;
+  let publishedInitialState: string | null = null;
   try {
     const rawContent = draftVersion.content;
     publishedDefinitionData = typeof rawContent === 'string' ? JSON.parse(rawContent) : rawContent;
@@ -1647,6 +1683,7 @@ const publishWorkflowDraftUnderLock = async (
     // Malformed content will already have failed validation earlier; nothing to reconcile here.
   }
   if (publishedDefinitionData) {
+    publishedInitialState = publishedDefinitionData.initialState && publishedDefinitionData.initialState !== '*' ? publishedDefinitionData.initialState : null;
     await ensureFullStatusMapping(executionContext, executionUser, entityType, publishedDefinitionData, scope);
     if (scope === StatusScope.RequestAccess) {
       await syncRequestAccessLegacyStatusIds(executionContext, executionUser, entityType, publishedDefinitionData);
@@ -1671,6 +1708,22 @@ const publishWorkflowDraftUnderLock = async (
   ) as WorkflowDefinitionEntity;
   // Validate consistency after update
   validateVersionConsistency(updatedWorkflow);
+
+  // Drafts hold a status only once it is projected: those created before the workflow was published are
+  // in its initial state. Best-effort, a draft left without status is projected when its instance is read.
+  if (entityType === 'DraftWorkspace' && scope === StatusScope.Global) {
+    try {
+      // System identity: restricted drafts must be projected whatever the publisher can see.
+      await projectDraftWorkflowStatuses(
+        executionContext,
+        SYSTEM_USER,
+        publishedInitialState,
+        (body) => elRawUpdateByQuery({ index: READ_INDEX_INTERNAL_OBJECTS, refresh: true, conflicts: 'proceed', body }),
+      );
+    } catch (error) {
+      logApp.warn('[OPENCTI-MODULE] Failed to project the published workflow state onto existing drafts', { cause: error });
+    }
+  }
 
   addWorkflowPublishCount();
   if (scope === StatusScope.RequestAccess) {
