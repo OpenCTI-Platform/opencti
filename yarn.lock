@@ -10954,10 +10954,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"content-disposition@npm:3.0.0":
-  version: 3.0.0
-  resolution: "content-disposition@npm:3.0.0"
-  checksum: 10c0/6b35c4e1f28eda550852b049b92aeb36d56a002fe534d1f58b86b19ac29e25a8ff2d3ce723942a5573c3667a2f4b3fd9cb6cc58385ad96cd1236278f7d624bab
+"content-disposition@npm:3.1.0":
+  version: 3.1.0
+  resolution: "content-disposition@npm:3.1.0"
+  checksum: 10c0/90c33ca820de113b90d55424e4493272cd4f2f26bdbec9e54f1787ca7a3d5ee123cf675b8c485419c517912229030211db56ca9d7be6c586fb061b92c938e247
   languageName: node
   linkType: hard
 
@@ -18784,7 +18784,7 @@ __metadata:
     canonicalize: "npm:5.1.0"
     chokidar: "npm:6.0.0"
     compression: "npm:1.8.2"
-    content-disposition: "npm:3.0.0"
+    content-disposition: "npm:3.1.0"
     content-type: "npm:3.1.1"
     convert: "npm:8.1.0"
     cors: "npm:2.8.6"
