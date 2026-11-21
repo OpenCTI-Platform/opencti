@@ -13960,7 +13960,8 @@ type Settings implements BasicObject & InternalObject & IntlSettings & ThemeSett
   platform_no_access_message: String
   platform_notifier_auto_trigger_assignee: Boolean!
   platform_openaev_url: String
-  platform_opengrc_url: String
+  platform_opencrq_url: String
+  platform_opengrc_url: String @deprecated(reason: "OpenGRC was renamed OpenCRQ. Use platform_opencrq_url, which returns the same value.")
   platform_organization: Organization
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
   platform_providers: [Provider!]!

@@ -29,7 +29,7 @@ All components of OpenCTI are shipped both as [Docker images](https://hub.docker
     [:octicons-arrow-right-24:{ .middle } Explore](#manual-installation)
 </div>
 
-!!! tip "Docker deployment of the full XTM suite (OpenCTI - OpenAEV - OpenGRC)"
+!!! tip "Docker deployment of the full XTM suite (OpenCTI - OpenAEV - OpenCRQ)"
 
     If you're looking for information about the deployment of the full eXtended Threat Management (XTM) suite using Docker, please refer [to this repository and documentation](https://github.com/FiligranHQ/xtm-docker).
 

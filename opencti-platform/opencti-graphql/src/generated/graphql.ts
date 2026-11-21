@@ -32294,6 +32294,8 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_no_access_message?: Maybe<Scalars['String']['output']>;
   platform_notifier_auto_trigger_assignee: Scalars['Boolean']['output'];
   platform_openaev_url?: Maybe<Scalars['String']['output']>;
+  platform_opencrq_url?: Maybe<Scalars['String']['output']>;
+  /** @deprecated OpenGRC was renamed OpenCRQ. Use platform_opencrq_url, which returns the same value. */
   platform_opengrc_url?: Maybe<Scalars['String']['output']>;
   platform_organization?: Maybe<Organization>;
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig;
@@ -53914,6 +53916,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_no_access_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_notifier_auto_trigger_assignee?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_openaev_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_opencrq_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_opengrc_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   platform_protected_sensitive_config?: Resolver<ResolversTypes['PlatformProtectedSensitiveConfig'], ParentType, ContextType>;
