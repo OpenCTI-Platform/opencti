@@ -24,7 +24,7 @@ import {
 } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import pjson from '../../package.json';
-import { stringListConf } from './conf-utils';
+import { platformBuildVersion, stringListConf } from './conf-utils';
 import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
 import { ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE } from '../modules/ingestionDeduplication/ingestionDeduplicationRule-types';
@@ -63,6 +63,8 @@ const LINUX_CERTFILES = [
 const DEFAULT_ENV = 'production';
 export const OPENCTI_SESSION = 'opencti_session';
 export const PLATFORM_VERSION = pjson.version;
+// The version reported to XTM One: PLATFORM_VERSION, with -dev.<sha7> on a rolling build (see platformBuildVersion)
+export const PLATFORM_BUILD_VERSION = platformBuildVersion(PLATFORM_VERSION, process.env.OPENCTI_BUILD_COMMIT);
 const LOG_APP = 'APP';
 const LOG_AUDIT = 'AUDIT';
 

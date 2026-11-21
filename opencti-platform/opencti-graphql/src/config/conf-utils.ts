@@ -20,3 +20,15 @@ export const stringListConf = (key: string) => {
     .map((entry) => entry.trim())
     .filter((entry) => entry.length > 0);
 };
+
+// The version a build reports to XTM One: the release version of a release image, `<version>-dev.<sha7>` for a
+// rolling image built from another commit (OPENCTI_BUILD_COMMIT, set by the rolling image build only), so an
+// upgrade between two rolling builds of the same release is a version change. Anything but a hexadecimal commit
+// keeps the release version.
+export const platformBuildVersion = (version: string, commit: string | undefined) => {
+  const sha = (commit ?? '').trim().toLowerCase();
+  if (!/^[0-9a-f]{7,40}$/.test(sha)) {
+    return version;
+  }
+  return `${version}-dev.${sha.slice(0, 7)}`;
+};
