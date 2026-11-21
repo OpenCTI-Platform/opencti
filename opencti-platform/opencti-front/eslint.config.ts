@@ -241,9 +241,16 @@ export default defineConfig([
           patterns: [
             {
               // Regex, not gitignore globs: a glob cannot re-include a path whose parent dir is matched.
-              regex: '^(?!(react|mdi-material-ui|@mui/icons-material|(\\.{1,2}/)+utils/hooks/capabilities)$)',
+              regex: '^(?!(react|mdi-material-ui|@mui/icons-material|@filigran/design-system|(\\.{1,2}/)+utils/hooks/capabilities)$)',
               allowTypeImports: true,
               message: '*.entries.ts(x) are eagerly loaded by the pages search: only type imports, capability constants (utils/hooks/capabilities) and icons are allowed.',
+            },
+            {
+              // The design system is already in the main bundle (left bar): only its Icon component is allowed here.
+              regex: '^@filigran/design-system$',
+              allowImportNames: ['Icon'],
+              allowTypeImports: true,
+              message: '*.entries.ts(x) are eagerly loaded by the pages search: only the Icon component of @filigran/design-system is allowed.',
             },
           ],
         },
