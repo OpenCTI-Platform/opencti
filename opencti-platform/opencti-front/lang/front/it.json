@@ -4493,6 +4493,7 @@
   "Playground": "Playground",
   "PLC": "PLC",
   "Please add square bracket & each value between double quotes (even for unique value). For example: [\"value1\", \"value2\"]": "Aggiungere una parentesi quadra & a ogni valore tra doppi apici (anche se si tratta di un valore unico). Ad esempio: [\"valore1\", \"valore2\"]",
+  "Please ask your administrator to enable the Enterprise Edition.": "Chiedi al tuo amministratore di attivare l'edizione Enterprise.",
   "Please choose a user responsible for data creation": "Scegliere un utente responsabile della creazione dei dati",
   "Please connect your product so you can deploy resources": "Collega il tuo prodotto per poter distribuire le risorse",
   "Please contact an administrator": "Si prega di contattare un amministratore",

@@ -2,7 +2,7 @@ import { Button } from '@filigran/design-system';
 import FiligranIcon from '@components/common/FiligranIcon';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
-import { CGUStatus } from '@components/settings/Experience';
+import { CGUStatus } from '@components/settings/ExperienceFieldPatch';
 import ValidateTermsOfUseDialog from '@components/settings/ValidateTermsOfUseDialog';
 import { useTheme } from '@mui/material/styles';
 import { LogoXtmOneIcon } from 'filigran-icon';

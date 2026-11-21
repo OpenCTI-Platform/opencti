@@ -39,12 +39,7 @@ import ValidateTermsOfUseDialog from './ValidateTermsOfUseDialog';
 import ConfigPresetExportFooter from './config_preset/export/ConfigPresetExportFooter';
 import useConfigPresetExportAccess from './config_preset/export/useConfigPresetExportAccess';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
-
-export enum CGUStatus {
-  pending = 'pending',
-  disabled = 'disabled',
-  enabled = 'enabled',
-}
+import { CGUStatus, experienceFieldPatch } from './ExperienceFieldPatch';
 
 const ExperienceFragment = graphql`
   fragment Experience on Settings {
@@ -82,19 +77,6 @@ const experienceQuery = graphql`
 interface ExperienceComponentProps {
   queryRef: PreloadedQuery<ExperienceQuery>;
 }
-
-export const experienceFieldPatch = graphql`
-  mutation ExperienceFieldPatchMutation($id: ID!, $input: [EditInput]!) {
-    settingsEdit(id: $id) {
-      fieldPatch(input: $input) {
-        ...Experience
-        platform_enterprise_edition {
-          license_validated
-        }
-      }
-    }
-  }
-`;
 
 const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ queryRef }) => {
   const { t_i18n, fldt } = useFormatter();

@@ -27,7 +27,7 @@ import CtemCommandCenterButton from '../chatbox/CtemCommandCenterButton';
 import { notificationCenterEntry, profileEntry } from '../profile/ProfileMenu.entries';
 import { ariaKeyShortcuts, formatSearchShortcut, TOP_BAR_SEARCH_ID } from '../../../utils/searchShortcut';
 import useFocusSearchShortcut from './useFocusSearchShortcut';
-import { CGUStatus } from '../settings/Experience';
+import { CGUStatus } from '../settings/ExperienceFieldPatch';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useTopBanner from '../../../utils/hooks/useTopBanner';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';

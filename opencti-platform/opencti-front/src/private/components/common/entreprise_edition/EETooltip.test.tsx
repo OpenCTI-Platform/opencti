@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
 import EETooltip from './EETooltip';
+import EETooltipBase from './EETooltipBase';
 
 // Gated paths (no Enterprise Edition, or AI not configured): EETooltip wraps
 // `children` in a focusable `role="button"` span that opens the
@@ -19,8 +20,10 @@ vi.mock('../../../../utils/hooks/useAuth', async (importOriginal) => ({
   default: () => ({ settings: { id: 'settings-id' } }),
 }));
 vi.mock('../../../../utils/hooks/useAI', () => ({ default: () => ({ enabled: false, configured: false }) }));
-// Both dialogs are Relay-bound and irrelevant to what this asserts.
-vi.mock('../../cases/feedbacks/FeedbackCreation', () => ({ default: () => null }));
+// Both dialogs are Relay-bound: stand-ins that only show whether they are open
+vi.mock('../../cases/feedbacks/FeedbackCreation', () => ({
+  default: ({ openDrawer }: { openDrawer: boolean }) => (openDrawer ? <div>Feedback form</div> : null),
+}));
 vi.mock('./EnterpriseEditionAgreement', () => ({ default: () => null }));
 
 // A control enabled after the gate mounted, as a form does once its data loads
@@ -94,6 +97,19 @@ describe('EETooltip', () => {
     await user.tab();
     await user.keyboard('{Enter}');
     expect(childAction).not.toHaveBeenCalled();
+    expect(await screen.findByText('Feedback form')).toBeInTheDocument();
+  });
+
+  it('sends a non-admin to their administrator, without the feedback form, in its base form', async () => {
+    const { user } = testRender(
+      <EETooltipBase title="Some AI feature" forAi>
+        <button type="button">Ask AI</button>
+      </EETooltipBase>,
+    );
+
+    await user.click(screen.getByText('Ask AI'));
+    expect(await screen.findByText('Please ask your administrator to enable the Enterprise Edition.')).toBeInTheDocument();
+    expect(screen.queryByText('Feedback form')).not.toBeInTheDocument();
   });
 
   it('opens the "enable AI" dialog instead of running the wrapped control\'s own action', async () => {
