@@ -38,7 +38,7 @@ from collections import deque
 from collections.abc import Iterable, Mapping
 from enum import Enum
 from queue import Queue
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import boto3
 import jwt
@@ -514,6 +514,19 @@ def create_mq_ssl_context(config: Dict) -> ssl.SSLContext:
     return ssl_context
 
 
+def _split_listen_callback_result(result) -> Tuple[Any, Any]:
+    """Split what a listen callback returned into the work message and the errors.
+
+    :param result: A status message, or a ``(message, errors)`` tuple
+    :return: The work message, and the errors (None when none were returned)
+    :rtype: tuple
+    """
+    # Anything but a pair is the work message, as before errors reporting
+    if isinstance(result, tuple) and len(result) == 2:
+        return result[0], result[1]
+    return result, None
+
+
 class ListenQueue(threading.Thread):
     """Thread class for consuming messages from RabbitMQ or HTTP API.
 
@@ -815,9 +828,17 @@ class ListenQueue(threading.Thread):
             if "configuration" in json_data:
                 event_data["configuration"] = json_data["configuration"]
             # Send the enriched to the callback
-            message = self.callback(event_data)
+            message, error_list = _split_listen_callback_result(
+                self.callback(event_data)
+            )
+            # Reported before closing the work: a failing to_processed must not lose them
+            reported_errors = self.helper._report_callback_errors(
+                error_list, "Listen callback"
+            )
             if work_id:
-                self.helper.api.work.to_processed(work_id, message)
+                self.helper.api.work.to_processed(
+                    work_id, message, in_error=bool(reported_errors)
+                )
             self._set_draft_id("")
 
         except Exception as e:  # pylint: disable=broad-except
@@ -1116,6 +1137,7 @@ class PingAlive(threading.Thread):
         - Signal that the connector is alive
         - Send current connector state and info
         - Receive and apply any remote state updates
+        - For a stream connector, remove the errors the ping has sent
 
         If the remote state differs from local state, the local state
         is updated to match. This allows state resets from the UI.
@@ -1126,13 +1148,14 @@ class PingAlive(threading.Thread):
             try:
                 self.connector_logger.debug("PingAlive running.")
                 initial_state = self.get_state()
-                connector_info = self.connector_info.all_details
+                connector_info, sent_errors = self.connector_info._details_for_ping()
                 self.connector_logger.debug(
                     "PingAlive ConnectorInfo", {"connector_info": connector_info}
                 )
                 result = self.api.connector.ping(
                     self.connector_id, initial_state, connector_info
                 )
+                self.connector_info._acknowledge_sent_errors(sent_errors)
                 remote_state = (
                     json.loads(result["connector_state"])
                     if result["connector_state"] is not None
@@ -1595,7 +1618,7 @@ class BatchCallbackWrapper:
                 )
 
         try:
-            self.batch_callback(batch_data)
+            error_list = self.batch_callback(batch_data)
         except Exception as e:
             self.helper.connector_logger.error(
                 "Batch callback failed",
@@ -1608,6 +1631,8 @@ class BatchCallbackWrapper:
             )
             # Don't update state on failure - messages can be reprocessed on restart
             raise
+
+        self.helper._report_callback_errors(error_list, "Batch callback")
 
         # Update state with last message ID from the batch
         if batch_data["events"]:
@@ -1851,7 +1876,10 @@ class ListenStream(threading.Thread):
                             state["start_from"] = str(msg.id)
                             self.helper.set_state(state)
                     else:
-                        self.callback(msg)
+                        error_list = self.callback(msg)
+                        self.helper._report_callback_errors(
+                            error_list, "Stream callback"
+                        )
                         # Skip state update if callback manages its own state
                         if not getattr(self.callback, "manages_state", False):
                             state = self.helper.get_state()
@@ -1947,6 +1975,17 @@ def _sanitize_connector_errors(errors) -> List[Dict]:
     return deduplicated[:CONNECTOR_ERRORS_MAX_COUNT]
 
 
+def _connector_error_code_key(error) -> Optional[str]:
+    # Same key as _sanitize_connector_error, so storing one error per key changes nothing that is sent
+    try:
+        code = error.get("code")
+    except Exception:  # pylint: disable=broad-except
+        return None
+    if code is None:
+        return None
+    return str(code).strip()[:CONNECTOR_ERROR_CODE_MAX_LENGTH] or None
+
+
 class ConnectorInfo:
     """Container for connector runtime information and status.
 
@@ -2015,6 +2054,10 @@ class ConnectorInfo:
         self._errors: List[Dict] = list(errors) if errors else []
         # Until errors are reported, none are sent: a restarted process must not clear the previous one's
         self._errors_reported = errors is not None
+        # A stream connector reports errors as it processes events: each is kept until a ping has sent it
+        self._clear_errors_once_sent = False
+        # Errors are written by the connector threads while the ping thread reads them
+        self._errors_lock = threading.RLock()
         self.logger = logger
 
     @property
@@ -2033,9 +2076,66 @@ class ConnectorInfo:
             "last_run_datetime": self._last_run_datetime,
         }
         # An explicit list, even empty, replaces the errors stored by the platform
-        if self._errors_reported:
-            details["errors"] = _sanitize_connector_errors(self._errors)
+        with self._errors_lock:
+            if self._errors_reported:
+                details["errors"] = _sanitize_connector_errors(self._errors)
         return details
+
+    def _details_for_ping(self):
+        """Get all details and the errors they carry, read together.
+
+        :return: The details to send, and the errors to pass to
+            _acknowledge_sent_errors once the ping went through
+        :rtype: tuple
+        """
+        with self._errors_lock:
+            sent_errors = (
+                list(self._errors)
+                if self._errors_reported and isinstance(self._errors, list)
+                else []
+            )
+            return self.all_details, sent_errors
+
+    def _acknowledge_sent_errors(self, sent_errors: List) -> None:
+        """Remove the errors a ping has sent, for a stream connector only.
+
+        An error reported since the details were read is kept for the next ping.
+
+        :param sent_errors: The errors returned by _details_for_ping
+        :type sent_errors: list
+        """
+        if not self._clear_errors_once_sent or not sent_errors:
+            return
+        with self._errors_lock:
+            if not isinstance(self._errors, list):
+                return
+            # By identity: an error reported again since then is a new object, sent on the next ping
+            sent_ids = {id(error) for error in sent_errors}
+            self._errors = [
+                error for error in self._errors if id(error) not in sent_ids
+            ]
+
+    def _store_errors(self, errors: List[Dict]) -> None:
+        """Add validated errors, replacing a stored error of the same code.
+
+        Keeping one error per code bounds what accumulates between two pings,
+        and sends the same as keeping all of them.
+
+        :param errors: Validated errors (dicts with code, message, criticity)
+        :type errors: list
+        """
+        with self._errors_lock:
+            if not isinstance(self._errors, list):
+                self._errors = []
+            for error in errors:
+                key = _connector_error_code_key(error)
+                self._errors = [
+                    stored
+                    for stored in self._errors
+                    if _connector_error_code_key(stored) != key
+                ]
+                self._errors.append(error)
+            self._errors_reported = True
 
     @property
     def run_and_terminate(self) -> bool:
@@ -2161,8 +2261,9 @@ class ConnectorInfo:
         :param value: List of dicts with ``code``, ``message`` and ``criticity``
         :type value: list or None
         """
-        self._errors = list(value) if value else []
-        self._errors_reported = True
+        with self._errors_lock:
+            self._errors = list(value) if value else []
+            self._errors_reported = True
 
     def add_error(
         self,
@@ -2172,7 +2273,8 @@ class ConnectorInfo:
     ) -> None:
         """Add an error, sent on every ping until the errors are cleared.
 
-        A scheduled connector's errors are cleared before each run. An invalid
+        A scheduled connector's errors are cleared before each run. A stream
+        connector's errors are cleared once a ping has sent them. An invalid
         error is ignored with a warning, never raised. When sent, code and
         message are truncated, a repeated code keeps its last report, and only
         the most critical errors are kept.
@@ -2195,13 +2297,13 @@ class ConnectorInfo:
                     {"received": repr((code, message, criticity)), "reason": str(e)},
                 )
             return
-        self._errors.append(error.model_dump())
-        self._errors_reported = True
+        self._store_errors([error.model_dump()])
 
     def clear_errors(self) -> None:
         """Remove all reported errors."""
-        self._errors = []
-        self._errors_reported = True
+        with self._errors_lock:
+            self._errors = []
+            self._errors_reported = True
 
 
 class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
@@ -3337,33 +3439,77 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             )
             sys.excepthook(*sys.exc_info())
 
+    def _parse_returned_errors(self, error_list, returned_by: str) -> List[Dict]:
+        """Validate the errors returned by a connector callback.
+
+        :param error_list: What the callback returned
+        :param returned_by: Who returned it, for the warnings
+        :type returned_by: str
+        :return: The valid errors, malformed ones dropped with a warning
+        :rtype: list
+        """
+        # Other non-list returns (True, a status string...) predate errors reporting and stay silent
+        if isinstance(error_list, Mapping):
+            self.connector_logger.warning(
+                f"{returned_by} returned a single error instead of a list, ignored",
+                {"received": repr(error_list)},
+            )
+        # Strings, bytes and mappings are iterable but are not a list of errors
+        if not isinstance(error_list, Iterable) or isinstance(
+            error_list, (str, bytes, Mapping)
+        ):
+            return []
+        returned_errors: List[Dict] = []
+        for error in error_list:
+            try:
+                returned_errors.append(
+                    _ConnectorRunError.model_validate(error).model_dump()
+                )
+            except ValidationError as e:
+                self.connector_logger.warning(
+                    "Malformed error response from the connector",
+                    {"received": repr(error), "reason": str(e)},
+                )
+        return returned_errors
+
+    def _report_callback_errors(self, error_list, returned_by: str) -> List[Dict]:
+        """Add the errors returned by a stream or listen callback, kept until a ping sends them.
+
+        Any return, None or an empty list included, reports that the event
+        raised no new error. Never raises: reporting errors must not stop the
+        processing of the next events.
+
+        :param error_list: What the callback returned
+        :param returned_by: Who returned it, for the warnings
+        :type returned_by: str
+        :return: The valid errors that were stored
+        :rtype: list
+        """
+        try:
+            returned_errors = self._parse_returned_errors(error_list, returned_by)
+            self.connector_info._store_errors(returned_errors)
+            if returned_errors:
+                self.connector_logger.debug(
+                    f"Errors reported by the {returned_by.lower()}",
+                    {"errors": returned_errors},
+                )
+            return returned_errors
+        except Exception as err:  # pylint: disable=broad-except
+            self.connector_logger.warning(
+                f"Unable to report the errors returned by the {returned_by.lower()}",
+                {"reason": str(err)},
+            )
+            return []
+
     def _run_and_collect_errors(
         self, message_callback: Callable[[], Optional[List[Dict]]]
     ) -> None:
         # Errors belong to a run: cleared before it so those added with add_error during it are kept
         self.connector_info.clear_errors()
-        error_list = message_callback()
-        # Other non-list returns (True, a status string...) predate errors reporting and stay silent
-        if isinstance(error_list, Mapping):
-            self.connector_logger.warning(
-                "Connector run returned a single error instead of a list, ignored",
-                {"received": repr(error_list)},
-            )
-        # Strings, bytes and mappings are iterable but are not a list of errors
-        if isinstance(error_list, Iterable) and not isinstance(
-            error_list, (str, bytes, Mapping)
-        ):
-            returned_errors: List[Dict] = []
-            for error in error_list:
-                try:
-                    returned_errors.append(
-                        _ConnectorRunError.model_validate(error).model_dump()
-                    )
-                except ValidationError as e:
-                    self.connector_logger.warning(
-                        "Malformed error response from the connector",
-                        {"received": repr(error), "reason": str(e)},
-                    )
+        returned_errors = self._parse_returned_errors(
+            message_callback(), "Connector run"
+        )
+        if returned_errors:
             self.connector_info.errors = self.connector_info.errors + returned_errors
         if self.connector_info.errors:
             self.connector_logger.info(
@@ -3488,7 +3634,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
     def listen(
         self,
-        message_callback: Callable[[Dict], str],
+        message_callback: Callable[[Dict], Union[str, Tuple[str, List[Dict]], None]],
     ) -> None:
         """Listen for messages from the queue and process them via callback.
 
@@ -3497,10 +3643,22 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         through the provided callback function. This method blocks until the
         listener is stopped.
 
+        The callback returns the status message of the work, or a
+        ``(message, errors)`` tuple to also report errors, each a dict with
+        ``code`` (str), ``message`` (str) and ``criticity`` (int). Reported
+        errors close the work in error, and build up across messages, a
+        repeated code keeping its last report, until the next successful ping
+        reports them to the platform and clears them. Any other return reports
+        no new error. The errors added with connector_info.add_error are
+        cleared once sent in the same way.
+
         :param message_callback: Function to process incoming messages. Receives
-            event data dict and should return a status message string.
-        :type message_callback: Callable[[Dict], str]
+            event data dict and should return a status message string, or a
+            ``(message, errors)`` tuple.
+        :type message_callback: Callable[[Dict], Union[str, Tuple[str, List[Dict]], None]]
         """
+        # Each message can report errors: keep them only until a ping has sent them
+        self.connector_info._clear_errors_once_sent = True
         self.listen_queue = ListenQueue(
             self,
             self.opencti_token,
@@ -3534,7 +3692,18 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         Connects to an SSE stream and processes events through the callback.
         Parameters default to connector configuration values if not specified.
 
-        :param message_callback: Function to call for each stream event
+        The callback may return a list of errors, each a dict with ``code``
+        (str), ``message`` (str) and ``criticity`` (int), the same contract as
+        a scheduled run (see schedule_process). Errors build up across events,
+        a repeated code keeping its last report, and each is reported to the
+        platform by the next successful ping, then cleared. Returning None or
+        an empty list reports no new error. The errors added with
+        connector_info.add_error are cleared once sent in the same way.
+        A callback made with create_batch_callback reports the errors returned
+        by the batch callback.
+
+        :param message_callback: Function to call for each stream event,
+            optionally returning a list of errors
         :type message_callback: Callable
         :param url: Base URL for stream (defaults to opencti_url)
         :type url: str or None
@@ -3609,6 +3778,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         url = url.rstrip("/") + "/stream"
         if live_stream_id is not None:
             url = url + "/" + live_stream_id
+        # Each event can report errors: keep them only until a ping has sent them
+        self.connector_info._clear_errors_once_sent = True
         self.listen_stream = ListenStream(
             self,
             message_callback,
