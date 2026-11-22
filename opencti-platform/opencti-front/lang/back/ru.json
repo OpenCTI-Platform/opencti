@@ -968,6 +968,7 @@
   "Product": "Продукт",
   "Product Name": "Название продукта",
   "Product name": "Название продукта",
+  "PURL": "PURL",
   "Product version": "Версия продукта",
   "Propagate a targeting from a child to its parent via attribution.": "Распространять таргетинг от дочернего объекта к родительскому через атрибуцию.",
   "Propagate a targeting from a child to its parent via belonging.": "Распространять таргетинг от дочернего объекта к родительскому через принадлежность.",
@@ -1359,6 +1360,5 @@
   "XTM Hub Token": "Токен концентратора XTM",
   "XTM One intent": "Намерение XTM One",
   "XTM One registration manager": "Менеджер регистрации XTM One",
-  "XTM1 CGU acceptance status": "Статус принятия XTM1 CGU",
-  "INTELLIGENCE_REQUIREMENT_MANAGER": "Менеджер разведывательных требований"
+  "XTM1 CGU acceptance status": "Статус принятия XTM1 CGU"
 }

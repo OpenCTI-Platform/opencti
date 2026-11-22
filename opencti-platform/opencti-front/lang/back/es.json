@@ -968,6 +968,7 @@
   "Product": "Producto",
   "Product Name": "Nombre del producto",
   "Product name": "Nombre del producto",
+  "PURL": "PURL",
   "Product version": "Versión del producto",
   "Propagate a targeting from a child to its parent via attribution.": "Propagar un objetivo de un hijo a su padre mediante atribución.",
   "Propagate a targeting from a child to its parent via belonging.": "Propagar un objetivo de un hijo a su padre a través de la pertenencia.",
@@ -1359,6 +1360,5 @@
   "XTM Hub Token": "Token del concentrador XTM",
   "XTM One intent": "Intento de XTM One",
   "XTM One registration manager": "Gestor de inscripciones XTM One",
-  "XTM1 CGU acceptance status": "XTM1 Estado de aceptación de la UGC",
-  "INTELLIGENCE_REQUIREMENT_MANAGER": "Gestor de requisitos de inteligencia"
+  "XTM1 CGU acceptance status": "XTM1 Estado de aceptación de la UGC"
 }

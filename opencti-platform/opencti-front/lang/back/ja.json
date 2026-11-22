@@ -968,6 +968,7 @@
   "Product": "設定バージョン",
   "Product Name": "製品名",
   "Product name": "商品名",
+  "PURL": "PURL",
   "Product version": "製品バージョン",
   "Propagate a targeting from a child to its parent via attribution.": "アトリビューションにより、子から親へターゲティングを伝播する。",
   "Propagate a targeting from a child to its parent via belonging.": "#__# 所属を経由して、子から親へターゲティングを伝播する。",
@@ -1359,6 +1360,5 @@
   "XTM Hub Token": "XTM ハブ・トークン",
   "XTM One intent": "XTMワンの意図",
   "XTM One registration manager": "XTM One登録マネージャー",
-  "XTM1 CGU acceptance status": "XTM1 CGU受入状況",
-  "INTELLIGENCE_REQUIREMENT_MANAGER": "インテリジェンス要件マネージャー"
+  "XTM1 CGU acceptance status": "XTM1 CGU受入状況"
 }

@@ -968,6 +968,7 @@
   "Product": "제품",
   "Product Name": "제품 이름",
   "Product name": "제품 이름",
+  "PURL": "PURL",
   "Product version": "제품 버전",
   "Propagate a targeting from a child to its parent via attribution.": "어트리뷰션을 통해 자식에서 부모로 타겟팅을 전파합니다.",
   "Propagate a targeting from a child to its parent via belonging.": "소속을 통해 자식에서 부모로 타겟팅을 전파합니다.",
@@ -1359,6 +1360,5 @@
   "XTM Hub Token": "XTM 허브 토큰",
   "XTM One intent": "XTM One 의도",
   "XTM One registration manager": "XTM One 등록 관리자",
-  "XTM1 CGU acceptance status": "XTM1 CGU 승인 상태",
-  "INTELLIGENCE_REQUIREMENT_MANAGER": "인텔리전스 요구사항 관리자"
+  "XTM1 CGU acceptance status": "XTM1 CGU 승인 상태"
 }
