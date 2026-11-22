@@ -5,7 +5,6 @@ import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/material/styles';
 import { DraftChip, DraftStatusChip } from '@components/common/draft/DraftChip';
 import { HorizontalRule, Security } from '@mui/icons-material';
-import { Pirs_PirFragment$data } from '@components/pir/__generated__/Pirs_PirFragment.graphql';
 import SecurityCoverageScores from '@components/analyses/security_coverages/security_coverage_scores/SecurityCoverageScores';
 import ItemCvssScore from '../ItemCvssScore';
 import type { DataTableColumn } from './dataTableTypes';
@@ -974,15 +973,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 35,
     isSortable: true,
     render: ({ phase_name }) => defaultRender(phase_name),
-  },
-  pir_type: {
-    percentWidth: 12,
-    id: 'pir_type',
-    label: 'Type',
-    render: ({ pir_type }: Pirs_PirFragment$data) => {
-      const { t_i18n } = useFormatter();
-      return <Tag label={t_i18n(pir_type)} />;
-    },
   },
   primary_motivation: {
     id: 'primary_motivation',
