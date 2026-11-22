@@ -1,5 +1,5 @@
-// Cost of each primitive of the PIR engines, measured on the data of this platform (read-only, except the write
-// measures which create and delete their own documents). Baseline: the V1 check of a stream event.
+// Cost of each primitive of the intelligence requirement engine, measured on the data of this platform (read-only,
+// except the write measures which create and delete their own documents).
 // Usage: yarn script:exec script-pir-cost
 import '../src/modules/index';
 import { logApp } from '../src/config/conf';
@@ -11,7 +11,6 @@ import { executionContext, SYSTEM_USER } from '../src/utils/access';
 import { internalFindByIds, storeLoadById } from '../src/database/middleware-loader';
 import { fetchStreamEventsRangeFromEventId, fetchStreamInfo } from '../src/database/stream/stream-handler';
 import type { BasicStoreEntity } from '../src/types/store';
-import { checkEventOnPir } from '../src/manager/pirManager';
 import { parsePir } from '../src/modules/pir/pir-utils';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR } from '../src/modules/pir/pir-types';
 import type { ParsedIntelligenceRequirement, StoreIrCriterion, StoreIrSubjectGroup } from '../src/modules/intelligenceRequirement/intelligenceRequirement-types';
@@ -134,19 +133,6 @@ const run = async () => {
     readMs.push(await time(() => fetchStreamEventsRangeFromEventId(`${headMs - 4 * 24 * 3600 * 1000}-0`, () => {}, { streamBatchSize: 2000 })));
   }
   record('0 stream', 'Read 2,000 events from the stream', readMs, 'ms per batch');
-  // endregion
-
-  // region 1. V1: check of an event against a PIR (in memory)
-  if (v1) {
-    const parsed = parsePir(v1);
-    const ms: number[] = [];
-    for (let r = 0; r < 3; r += 1) {
-      const start = performance.now();
-      for (let i = 0; i < relationshipEvents.length; i += 1) await checkEventOnPir(context, relationshipEvents[i], parsed);
-      ms.push((performance.now() - start) / Math.max(1, relationshipEvents.length));
-    }
-    record('1 V1', `V1 check of a relationship event (${parsed.pir_criteria.length} criteria)`, ms, 'ms per event');
-  }
   // endregion
 
   // region 2. V2 basic: same PIR as V1 (relationship "targets" toward a list of targets), evaluation of the events
