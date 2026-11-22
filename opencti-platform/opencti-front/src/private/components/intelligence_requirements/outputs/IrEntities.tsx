@@ -196,8 +196,20 @@ const DECISION_FROM: Record<Decision, string[]> = { accepted: ['proposed'], reje
 
 interface TriageResult { line: Line; verdict?: IrTriageVerdict; error?: string; loading: boolean }
 
+// A date cell: the short numeric date, cut with an ellipsis when the column is narrow, the full date and time in the tooltip
+const DateCell = ({ short, full }: { short: string; full: string }) => (
+  <Text
+    as="span"
+    variant="content-caption"
+    title={full}
+    style={{ display: 'block', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+  >
+    {short}
+  </Text>
+);
+
 const IrEntities = ({ irId }: { irId: string }) => {
-  const { t_i18n, nsdt } = useFormatter();
+  const { t_i18n, nsd, nsdt } = useFormatter();
   const storageKey = `intelligenceRequirementEntities-${irId}`;
   const [preset, setPreset] = useState<Preset>('in');
   const [entityType, setEntityType] = useState<string | null>(null);
@@ -265,7 +277,7 @@ const IrEntities = ({ irId }: { irId: string }) => {
     match_entity_name: {
       id: 'match_entity_name',
       label: 'Entity',
-      percentWidth: 20,
+      percentWidth: 22,
       isSortable: true,
       render: (line: Line) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
@@ -276,12 +288,13 @@ const IrEntities = ({ irId }: { irId: string }) => {
         </Box>
       ),
     },
-    match_status: { id: 'match_status', label: 'Status', percentWidth: 8, isSortable: true, render: (line: Line) => <StatusChip status={line.match_status} excluded={line.match_excluded} t={t_i18n} /> },
+    match_status: { id: 'match_status', label: 'Status', percentWidth: 9, isSortable: true, render: (line: Line) => <StatusChip status={line.match_status} excluded={line.match_excluded} t={t_i18n} /> },
     match_score: { id: 'match_score', label: 'Score', percentWidth: 10, isSortable: true, render: (line: Line) => <ScoreBar score={line.match_score} excluded={line.match_excluded} /> },
     why: {
       id: 'why',
       label: 'Why it is in the requirement',
-      percentWidth: 24,
+      // The columns fill the table: the KIQ column, when enabled, takes its width from this one
+      percentWidth: IR_KIQS_ENABLED ? 19 : 25,
       isSortable: false,
       render: (line: Line) => {
         const proof = line.match_explanations[0];
@@ -298,13 +311,25 @@ const IrEntities = ({ irId }: { irId: string }) => {
       label: 'Score reasons',
       percentWidth: 16,
       isSortable: false,
-      render: (line: Line) => (
-        <Box sx={{ display: 'flex', gap: 0.5, overflow: 'hidden' }}>
-          {line.match_score_breakdown.filter((o) => o.kind !== 'condition' && o.hit && o.points !== 0).slice(0, 2).map((o) => (
-            <Box key={o.name} component="span" sx={{ fontSize: 11, border: '1px solid', borderColor: 'divider', borderRadius: 0.5, px: 0.75, whiteSpace: 'nowrap' }}>{`${o.name} ${o.points > 0 ? '+' : ''}${o.points}`}</Box>
-          ))}
-        </Box>
-      ),
+      render: (line: Line) => {
+        // The first reason as a chip, the others counted in a "+N" chip; every reason in the tooltip
+        const reasons = line.match_score_breakdown
+          .filter((o) => o.kind !== 'condition' && o.hit && o.points !== 0)
+          .map((o) => `${o.name} ${o.points > 0 ? '+' : ''}${o.points}`);
+        if (reasons.length === 0) return '-';
+        return (
+          <Box title={reasons.join('\n')} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0, overflow: 'hidden' }}>
+            <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
+              <Chip label={reasons[0]} size="sm" />
+            </Box>
+            {reasons.length > 1 && (
+              <Box sx={{ flexShrink: 0 }}>
+                <Chip label={`+${reasons.length - 1}`} size="sm" />
+              </Box>
+            )}
+          </Box>
+        );
+      },
     },
     ...(IR_KIQS_ENABLED ? {
       kiqs: {
@@ -315,8 +340,8 @@ const IrEntities = ({ irId }: { irId: string }) => {
         render: (line: Line) => <Text as="span" variant="content-caption">{String(kiqs.filter((k) => k.criteria_ids.some((c) => line.match_criteria_ids.includes(c))).length)}</Text>,
       },
     } : {}),
-    match_last_fact_at: { id: 'match_last_fact_at', label: 'Last fact', percentWidth: 8, isSortable: true, render: (line: Line) => <Text as="span" variant="content-caption">{line.match_last_fact_at ? nsdt(line.match_last_fact_at) : '-'}</Text> },
-    created_at: { id: 'created_at', label: 'Entered', percentWidth: 8, isSortable: true, render: (line: Line) => <Text as="span" variant="content-caption">{nsdt(line.created_at)}</Text> },
+    match_last_fact_at: { id: 'match_last_fact_at', label: 'Last fact', percentWidth: 9, isSortable: true, render: (line: Line) => (line.match_last_fact_at ? <DateCell short={nsd(line.match_last_fact_at)} full={nsdt(line.match_last_fact_at)} /> : '-') },
+    created_at: { id: 'created_at', label: 'Entered', percentWidth: 9, isSortable: true, render: (line: Line) => <DateCell short={nsd(line.created_at)} full={nsdt(line.created_at)} /> },
   };
 
   return (
