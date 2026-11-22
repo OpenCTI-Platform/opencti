@@ -17,68 +17,72 @@ import { useMemo } from 'react';
 import { PirThreatMapFragment$data } from './__generated__/PirThreatMapFragment.graphql';
 import { getNodes } from '../../../../../utils/connection';
 import { minutesBetweenDates } from '../../../../../utils/Time';
-import { itemColor } from '../../../../../utils/Colors';
-import { ApexPirThreatMapSeries, PirThreatMapMarker } from './pirThreatMapUtils';
+import { ApexPirThreatMapSeries, markerSize, PirThreatMapMarker, PirThreatMapTypeStyle } from './pirThreatMapUtils';
 
 interface UseBuildScatterDataArgs {
   stixDomainObjects: PirThreatMapFragment$data['stixDomainObjects'];
+  // Entity types shown on the map (the legend filter).
   entityTypes: string[];
+  typeStyles: Record<string, PirThreatMapTypeStyle>;
+  // Entities scoring below it are left out (the score band filter).
+  scoreMin?: number;
+  // Two entities closer than this in time (minutes) and score are drawn as one cluster.
+  clusterMinutes?: number;
 }
+
+const MIN_DIFF_SCORE = 5;
 
 const useBuildScatterData = ({
   stixDomainObjects,
   entityTypes,
+  typeStyles,
+  scoreMin = 0,
+  clusterMinutes = 1080, // 18h, the 7-day window
 }: UseBuildScatterDataArgs) => {
-  const MIN_DIFF_DATE = 1080; // 1080min = 18h.
-  const MIN_DIFF_SCORE = 5;
-
   const series: ApexPirThreatMapSeries = useMemo(() => {
-    const groupedData: PirThreatMapMarker[][] = [];
+    const groups: PirThreatMapMarker[][] = [];
     getNodes(stixDomainObjects).forEach((d) => {
-      const item = {
+      const item: PirThreatMapMarker = {
         id: d.id,
         date: d.refreshed_at,
         score: d.pirInformation?.pir_score ?? 0,
         name: d?.representative?.main ?? '',
         type: d?.entity_type ?? '',
+        matchedCriteria: d.pirInformation?.pir_explanation?.length ?? 0,
       };
-      if (entityTypes.includes(item.type)) {
-        if (Object.keys(groupedData).length === 0) {
-          groupedData.push([item]);
-        } else {
-          let filled = false;
-          for (const group of groupedData) {
-            const diffDate = Math.abs(minutesBetweenDates(group[0].date, item.date));
-            const diffScore = Math.abs(group[0].score - item.score);
-            if (diffDate < MIN_DIFF_DATE && diffScore < MIN_DIFF_SCORE) {
-              group.push(item);
-              filled = true;
-              break;
-            }
-          }
-          if (!filled) groupedData.push([item]);
-        }
-      }
+      if (!entityTypes.includes(item.type) || item.score < scoreMin) return;
+      // A cluster holds one entity type only, so its colour and shape stay meaningful.
+      const group = groups.find((g) => g[0].type === item.type
+        && Math.abs(minutesBetweenDates(g[0].date, item.date)) < clusterMinutes
+        && Math.abs(g[0].score - item.score) < MIN_DIFF_SCORE);
+      if (group) group.push(item);
+      else groups.push([item]);
     });
 
-    return groupedData.map((group) => {
-      const item = group[0];
-      const color = group.length > 1 ? '#ffffff' : itemColor(item.type);
+    return groups.map((group) => {
+      // Highest score first: the tooltip lists the most relevant entities on top.
+      const sorted = [...group].sort((a, b) => b.score - a.score);
+      const head = group[0];
       return {
+        name: head.type,
         data: [{
-          x: new Date(item.date),
-          y: item.score,
-          fillColor: color,
+          x: new Date(head.date).getTime(),
+          y: head.score,
+          fillColor: typeStyles[head.type]?.color ?? '#888888',
           meta: {
-            group,
+            group: sorted,
             size: group.length,
+            type: head.type,
           },
         }],
       };
     });
-  }, [stixDomainObjects, entityTypes]);
+  }, [stixDomainObjects, entityTypes, typeStyles, scoreMin, clusterMinutes]);
 
-  return series;
+  const markerSizes = useMemo(() => series.map((s) => markerSize(s.data[0].meta.size)), [series]);
+  const markerShapes = useMemo(() => series.map((s) => typeStyles[s.data[0].meta.type]?.shape ?? 'circle'), [series, typeStyles]);
+
+  return { series, markerSizes, markerShapes };
 };
 
 export default useBuildScatterData;

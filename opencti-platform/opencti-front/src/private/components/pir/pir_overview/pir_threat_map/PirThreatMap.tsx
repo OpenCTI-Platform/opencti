@@ -13,12 +13,15 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { CSSProperties, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/material/Grid';
 import { graphql, useFragment } from 'react-relay';
+import { useNavigate } from 'react-router';
 import { InfoOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import PirThreatMapTooltip from './PirThreatMapTooltip';
 import useBuildScatterData from './useBuildScatterData';
 import WidgetScatter from '../../../../../components/dashboard/WidgetScatter';
@@ -28,8 +31,10 @@ import { PirThreatMapFragment$key } from './__generated__/PirThreatMapFragment.g
 import { getNodes } from '../../../../../utils/connection';
 import PirThreatMapLegend from './PirThreatMapLegend';
 import { uniqueArray } from '../../../../../utils/utils';
-import { PirThreatMapMarker } from './pirThreatMapUtils';
+import { buildTypeStyles, PIR_THREAT_MAP_SCORE_BANDS, PIR_THREAT_MAP_WINDOWS, PirThreatMapMarker, PirThreatMapScoreBand, PirThreatMapWindow } from './pirThreatMapUtils';
 import Card from '../../../../../components/common/card/Card';
+import { colors } from '../../../../../utils/Charts';
+import { useComputeLink } from '../../../../../utils/hooks/useAppData';
 
 const pirThreatMapFragment = graphql`
   fragment PirThreatMapFragment on Query {
@@ -49,6 +54,11 @@ const pirThreatMapFragment = graphql`
           }
           pirInformation(pirId: $pirId) {
             pir_score
+            pir_explanation {
+              criterion {
+                weight
+              }
+            }
           }
         }
       }
@@ -58,54 +68,50 @@ const pirThreatMapFragment = graphql`
 
 interface PirThreatMapProps {
   data: PirThreatMapFragment$key;
+  // Time window of the map, in days; the query is reloaded when it changes.
+  days?: PirThreatMapWindow;
+  onDaysChange?: (days: PirThreatMapWindow) => void;
 }
 
-const PirThreatMap = ({ data }: PirThreatMapProps) => {
-  const CHART_SIZE = 500;
+const CHART_HEIGHT = 420;
+
+const PirThreatMap = ({ data, days = 7, onDaysChange }: PirThreatMapProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const navigate = useNavigate();
+  const computeLink = useComputeLink();
   const [tooltipData, setTooltipData] = useState<PirThreatMapMarker[]>();
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+  const [scoreMin, setScoreMin] = useState<PirThreatMapScoreBand>(0);
 
   const { stixDomainObjects } = useFragment<PirThreatMapFragment$key>(pirThreatMapFragment, data);
+  const nodes = getNodes(stixDomainObjects);
 
-  const entityTypes = uniqueArray(getNodes(stixDomainObjects).flatMap((d) => {
-    return d?.entity_type ? d.entity_type : [];
-  }));
-  const [filteredEntityTypes, setFilteredEntityTypes] = useState(entityTypes);
+  const entityTypes = uniqueArray(nodes.flatMap((d) => (d?.entity_type ? d.entity_type : []))).sort();
+  const [filteredEntityTypes, setFilteredEntityTypes] = useState<string[] | null>(null);
+  const shownTypes = filteredEntityTypes ?? entityTypes;
 
-  const series = useBuildScatterData({
+  const palette = useMemo(() => colors(theme.palette.mode === 'dark' ? 400 : 600), [theme.palette.mode]);
+  const typeStyles = useMemo(() => buildTypeStyles(entityTypes, palette), [entityTypes.join(','), palette]);
+  const counts = useMemo(() => {
+    const result: Record<string, number> = {};
+    nodes.forEach((d) => {
+      if ((d.pirInformation?.pir_score ?? 0) >= scoreMin) {
+        result[d.entity_type] = (result[d.entity_type] ?? 0) + 1;
+      }
+    });
+    return result;
+  }, [nodes, scoreMin]);
+
+  // Clusters widen with the window so a 90-day map stays readable.
+  const clusterMinutes = Math.round((days * 24 * 60) / 9);
+  const { series, markerSizes, markerShapes } = useBuildScatterData({
     stixDomainObjects,
-    entityTypes: filteredEntityTypes,
+    entityTypes: shownTypes,
+    typeStyles,
+    scoreMin,
+    clusterMinutes,
   });
-
-  const containerStyle: CSSProperties = {
-    position: 'relative',
-    paddingLeft: theme.spacing(1),
-    paddingBottom: theme.spacing(1.5),
-    fontSize: 12,
-  };
-
-  const axisStyle: CSSProperties = {
-    position: 'absolute',
-    display: 'flex',
-    justifyContent: 'space-between',
-  };
-
-  const xStyle: CSSProperties = {
-    ...axisStyle,
-    bottom: -6,
-    left: theme.spacing(1),
-    right: 0,
-  };
-
-  const yStyle: CSSProperties = {
-    ...axisStyle,
-    transform: 'rotate(-90deg)',
-    transformOrigin: 'top left',
-    width: CHART_SIZE,
-    left: -12,
-  };
 
   const title = (
     <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
@@ -120,21 +126,75 @@ const PirThreatMap = ({ data }: PirThreatMapProps) => {
     </div>
   );
 
+  const action = (
+    <div style={{ display: 'flex', gap: theme.spacing(1), alignItems: 'center' }}>
+      <ToggleButtonGroup
+        size="small"
+        exclusive
+        value={scoreMin}
+        aria-label={t_i18n('Score band')}
+        onChange={(_, value) => {
+          if (value !== null) setScoreMin(value);
+        }}
+      >
+        {PIR_THREAT_MAP_SCORE_BANDS.map((band) => (
+          <ToggleButton key={band} value={band} style={{ padding: '2px 8px', fontSize: 12 }}>
+            {band === 0 ? t_i18n('All scores') : `≥ ${band}`}
+          </ToggleButton>
+        ))}
+      </ToggleButtonGroup>
+      {onDaysChange && (
+        <ToggleButtonGroup
+          size="small"
+          exclusive
+          value={days}
+          aria-label={t_i18n('Time window')}
+          onChange={(_, value) => {
+            if (value !== null) onDaysChange(value);
+          }}
+        >
+          {PIR_THREAT_MAP_WINDOWS.map((window) => (
+            <ToggleButton key={window} value={window} style={{ padding: '2px 8px', fontSize: 12 }}>
+              {t_i18n('{count, plural, one {# day} other {# days}}', { values: { count: window } })}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+      )}
+    </div>
+  );
+
   return (
     <Grid size={{ xs: 12 }}>
-      <Card title={title}>
-        <div style={containerStyle}>
-          <div style={{ height: CHART_SIZE }}>
+      <Card title={title} action={action}>
+        <div style={{ position: 'relative', fontSize: 12 }}>
+          <div style={{ height: CHART_HEIGHT }}>
             <WidgetScatter
               series={series}
               options={{
                 background: theme.palette.background.accent,
+                days,
+                showAxes: true,
+                yTitle: t_i18n('PIR score'),
+                markerSizes,
+                markerShapes,
                 // Called when mouse hover a node on map.
                 dataPointMouseEnter: (e, _, opts) => {
                   const apexSeries = opts.w.config.series[opts.seriesIndex];
                   const item = apexSeries.data[opts.dataPointIndex].meta.group as PirThreatMapMarker[];
                   setTooltipData(item);
                   setTooltipPos({ x: e.offsetX, y: e.offsetY });
+                },
+                // A click on a single entity opens it; a click on a cluster keeps its list open.
+                dataPointSelection: (e, _, opts) => {
+                  const apexSeries = opts.w.config.series[opts.seriesIndex];
+                  const group = apexSeries.data[opts.dataPointIndex].meta.group as PirThreatMapMarker[];
+                  if (group.length === 1) {
+                    const link = computeLink({ id: group[0].id, entity_type: group[0].type });
+                    if (link) navigate(link);
+                  } else {
+                    setTooltipData(group);
+                    setTooltipPos({ x: e.offsetX, y: e.offsetY });
+                  }
                 },
                 labelsFormatter: (_, opts) => {
                   const apexSeries = opts.w.config.series[opts.seriesIndex];
@@ -144,21 +204,29 @@ const PirThreatMap = ({ data }: PirThreatMapProps) => {
               }}
             />
           </div>
-          <div style={xStyle}>
-            <span>{t_i18n('One week ago')}</span>
-            <span>{t_i18n('Today')}</span>
-          </div>
-          <div style={yStyle}>
-            <span>{t_i18n('0 - Less relevant')}</span>
-            <span>{t_i18n('Most relevant - 100')}</span>
-          </div>
+          {series.length === 0 && (
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: theme.palette.text?.secondary,
+            }}
+            >
+              {t_i18n('No entity matches the selected filters in this time window')}
+            </div>
+          )}
         </div>
         <PirThreatMapLegend
           entityTypes={entityTypes}
+          typeStyles={typeStyles}
+          counts={counts}
           onFilter={setFilteredEntityTypes}
         />
         <PirThreatMapTooltip
           data={tooltipData}
+          typeStyles={typeStyles}
           x={tooltipPos.x}
           y={tooltipPos.y}
           onMouseLeave={() => setTooltipData(undefined)}

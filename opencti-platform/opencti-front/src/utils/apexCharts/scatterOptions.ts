@@ -4,12 +4,23 @@ import { colors } from '../Charts';
 import type { Theme } from '../../components/Theme';
 import type { ApexChartEvents, ApexChartLabels } from './apex';
 
+type MarkerShape = NonNullable<NonNullable<ApexOptions['markers']>['shape']>;
+
 export interface ScatterChartOptionsArgs {
   theme: Theme;
   background?: string;
   dataPointMouseEnter?: ApexChartEvents['dataPointMouseEnter'];
   dataPointMouseLeave?: ApexChartEvents['dataPointMouseLeave'];
+  dataPointSelection?: ApexChartEvents['dataPointSelection'];
   labelsFormatter?: ApexChartLabels['formatter'];
+  // Days back from now the x axis starts at (default 7).
+  days?: number;
+  // One size and one shape per series, in series order (default: one size, circles).
+  markerSizes?: number[];
+  markerShapes?: MarkerShape;
+  // Readable axes: the y axis is the PIR score (0-100), the x axis the date.
+  showAxes?: boolean;
+  yTitle?: string;
 }
 
 export const scatterChartOptions = ({
@@ -17,7 +28,13 @@ export const scatterChartOptions = ({
   background,
   dataPointMouseEnter,
   dataPointMouseLeave,
+  dataPointSelection,
   labelsFormatter,
+  days = 7,
+  markerSizes,
+  markerShapes,
+  showAxes = false,
+  yTitle,
 }: ScatterChartOptionsArgs): ApexOptions => ({
   chart: {
     type: 'scatter',
@@ -28,6 +45,7 @@ export const scatterChartOptions = ({
     events: {
       dataPointMouseEnter,
       dataPointMouseLeave,
+      dataPointSelection,
     },
     foreColor: theme.palette.text?.secondary,
     width: '100%',
@@ -62,7 +80,11 @@ export const scatterChartOptions = ({
     },
   },
   grid: {
-    show: false,
+    show: showAxes,
+    borderColor: theme.palette.divider,
+    strokeDashArray: 3,
+    xaxis: { lines: { show: false } },
+    yaxis: { lines: { show: showAxes } },
   },
   legend: {
     show: false,
@@ -72,25 +94,30 @@ export const scatterChartOptions = ({
   },
   xaxis: {
     type: 'datetime',
-    min: new Date(daysAgo(7)).getTime(),
+    min: new Date(daysAgo(days)).getTime(),
     max: new Date(now()).getTime(),
     labels: {
-      show: false,
+      show: showAxes,
+      datetimeUTC: false,
     },
     axisBorder: {
-      show: false,
+      show: showAxes,
     },
     axisTicks: {
       show: false,
     },
   },
   yaxis: {
-    show: false,
+    show: showAxes,
     min: 0,
     max: 100,
+    tickAmount: 4,
+    title: yTitle ? { text: yTitle } : undefined,
   },
   markers: {
-    size: 10,
-    strokeWidth: 0,
+    size: markerSizes && markerSizes.length > 0 ? markerSizes : 10,
+    shape: markerShapes,
+    strokeWidth: showAxes ? 1 : 0,
+    strokeColors: background,
   },
 });

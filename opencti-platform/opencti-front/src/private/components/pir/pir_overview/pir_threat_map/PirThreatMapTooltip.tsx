@@ -18,66 +18,85 @@ import { useTheme } from '@mui/material/styles';
 import { Link } from 'react-router';
 import { Box } from '@mui/material';
 import type { Theme } from '../../../../../components/Theme';
-import { PirThreatMapMarker } from './pirThreatMapUtils';
+import { PirThreatMapMarker, PirThreatMapTypeStyle } from './pirThreatMapUtils';
 import { itemColor } from '../../../../../utils/Colors';
 import { useFormatter } from '../../../../../components/i18n';
 import { useComputeLink } from '../../../../../utils/hooks/useAppData';
+import PirThreatMapShape from './PirThreatMapShape';
 
 interface PirThreatMapTooltipProps {
   data?: PirThreatMapMarker[];
+  typeStyles?: Record<string, PirThreatMapTypeStyle>;
   onMouseLeave?: MouseEventHandler;
   x: number;
   y: number;
 }
 
+export const PIR_THREAT_MAP_TOOLTIP_MAX_ITEMS = 8;
+
 const PirThreatMapTooltip = ({
   data,
+  typeStyles,
   onMouseLeave,
   x,
   y,
 }: PirThreatMapTooltipProps) => {
-  const { fsd } = useFormatter();
+  const { t_i18n, fsd } = useFormatter();
   const theme = useTheme<Theme>();
   const computeLink = useComputeLink();
 
-  if (!data) return null;
+  if (!data || data.length === 0) return null;
 
-  const MAX_ITEMS = 10;
-  const hasMore = data.length > MAX_ITEMS;
-  const rows = data.slice(0, MAX_ITEMS);
+  const rows = data.slice(0, PIR_THREAT_MAP_TOOLTIP_MAX_ITEMS);
+  const more = data.length - rows.length;
 
   const wrapperStyle: CSSProperties = {
-    padding: theme.spacing(2),
+    padding: theme.spacing(1.5),
     position: 'absolute',
-    transform: 'translateX(calc(-100% + 50px))',
+    transform: 'translateX(calc(-100% + 40px))',
     top: y,
     left: x,
+    zIndex: 2,
   };
 
   const containerStyle: CSSProperties = {
     background: theme.palette.background.nav,
-    padding: theme.spacing(0.5),
+    padding: theme.spacing(1),
     borderRadius: theme.borderRadius,
-    fontSize: '12px',
+    border: `1px solid ${theme.palette.divider}`,
+    fontSize: 12,
     display: 'flex',
     flexDirection: 'column',
+    gap: theme.spacing(0.25),
+    minWidth: 260,
+    maxWidth: 360,
   };
 
   const rowStyle: CSSProperties = {
-    display: 'flex',
+    display: 'grid',
+    gridTemplateColumns: '12px 1fr auto',
     alignItems: 'center',
-    gap: theme.spacing(1),
+    columnGap: theme.spacing(1),
     color: theme.palette.text?.primary,
+    textDecoration: 'none',
   };
 
+  const secondary: CSSProperties = { color: theme.palette.text?.secondary, fontSize: 11 };
+
   return (
-    <div style={wrapperStyle} onMouseLeave={onMouseLeave}>
+    <div style={wrapperStyle} onMouseLeave={onMouseLeave} role="dialog" aria-label={t_i18n('Threat map')}>
       <div style={containerStyle}>
-        {rows.map(({ type, id, name, date, score }) => {
+        {data.length > 1 && (
+          <div style={{ ...secondary, paddingBottom: theme.spacing(0.5) }}>
+            {t_i18n('{count, plural, one {# entity} other {# entities}}', { values: { count: data.length } })}
+          </div>
+        )}
+        {rows.map(({ type, id, name, date, score, matchedCriteria }) => {
           const link = computeLink({ id, entity_type: type }) ?? '';
+          const style = typeStyles?.[type];
           return (
             <Box
-              key={name}
+              key={id}
               sx={{
                 borderRadius: 1,
                 padding: 0.5,
@@ -87,22 +106,25 @@ const PirThreatMapTooltip = ({
               }}
             >
               <Link to={link} style={rowStyle}>
-                <div
-                  style={{
-                    width: '10px',
-                    height: '10px',
-                    borderRadius: '10px',
-                    background: itemColor(type),
-                  }}
-                />
-                <span style={{ whiteSpace: 'nowrap' }}>
-                  {fsd(date)} - {name} ({score}%)
+                <PirThreatMapShape shape={style?.shape ?? 'circle'} color={style?.color ?? itemColor(type)} />
+                <span style={{ overflow: 'hidden' }}>
+                  <span style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 600 }}>
+                    {name}
+                  </span>
+                  <span style={{ ...secondary, display: 'block', whiteSpace: 'nowrap' }}>
+                    {t_i18n(`entity_${type}`)} · {fsd(date)} · {t_i18n('{count, plural, one {# criterion matched} other {# criteria matched}}', { values: { count: matchedCriteria } })}
+                  </span>
                 </span>
+                <span style={{ fontWeight: 700, fontSize: 14 }} aria-label={t_i18n('PIR score')}>{score}</span>
               </Link>
             </Box>
           );
         })}
-        {hasMore && <div>...</div>}
+        {more > 0 && (
+          <div style={{ ...secondary, paddingTop: theme.spacing(0.5) }}>
+            {t_i18n('{count, plural, one {# more entity} other {# more entities}}', { values: { count: more } })}
+          </div>
+        )}
       </div>
     </div>
   );

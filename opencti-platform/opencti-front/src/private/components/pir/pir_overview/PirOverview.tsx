@@ -13,11 +13,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React from 'react';
+import React, { useState } from 'react';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import PirThreatMap from './pir_threat_map/PirThreatMap';
+import { PirThreatMapWindow } from './pir_threat_map/pirThreatMapUtils';
 import { pirHistoryFilterGroup } from '../pir-history-utils';
 import PirOverviewCountFlagged from './PirOverviewCountFlagged';
 import PirOverviewCounts from './PirOverviewCounts';
@@ -71,6 +72,8 @@ interface PirOverviewComponentProps {
   redisQueryRef: PreloadedQuery<PirOverviewRedisStreamQuery>;
   historyQueryRef: PreloadedQuery<PirOverviewHistoryQuery>;
   threatMapQueryRef: PreloadedQuery<PirOverviewThreatMapQuery>;
+  threatMapDays: PirThreatMapWindow;
+  onThreatMapDaysChange: (days: PirThreatMapWindow) => void;
 }
 
 const PirOverviewComponent = ({
@@ -78,6 +81,8 @@ const PirOverviewComponent = ({
   redisQueryRef,
   historyQueryRef,
   threatMapQueryRef,
+  threatMapDays,
+  onThreatMapDaysChange,
 }: PirOverviewComponentProps) => {
   const dataRedis = usePreloadedQuery(redisStreamQuery, redisQueryRef);
   const dataHistory = usePreloadedQuery(pirHistoryQuery, historyQueryRef);
@@ -91,6 +96,11 @@ const PirOverviewComponent = ({
           <PirOverviewCounts data={pir} />
         </Stack>
       </Grid>
+      <PirThreatMap
+        data={dataThreatMap}
+        days={threatMapDays}
+        onDaysChange={onThreatMapDaysChange}
+      />
       <Grid size={{ xs: 6 }}>
         <Stack spacing={3} useFlexGap>
           <PirOverviewHistory dataHistory={dataHistory} dataPir={pir} />
@@ -98,7 +108,6 @@ const PirOverviewComponent = ({
       </Grid>
       <Grid size={{ xs: 6 }}>
         <Stack spacing={3} useFlexGap>
-          <PirThreatMap data={dataThreatMap} />
           <PirOverviewTopSources data={pir} />
           <PirOverviewCountFlagged data={pir} />
         </Stack>
@@ -113,6 +122,7 @@ interface PirOverviewProps {
 
 const PirOverview = ({ data }: PirOverviewProps) => {
   const pir = useFragment(overviewFragment, data);
+  const [threatMapDays, setThreatMapDays] = useState<PirThreatMapWindow>(7);
 
   const redisQueryRef = useQueryLoading<PirOverviewRedisStreamQuery>(redisStreamQuery);
   const pirHistoryQueryRef = useQueryLoading<PirOverviewHistoryQuery>(pirHistoryQuery, {
@@ -140,7 +150,7 @@ const PirOverview = ({ data }: PirOverviewProps) => {
         {
           key: ['refreshed_at'],
           operator: 'within',
-          values: ['now-7d', 'now'],
+          values: [`now-${threatMapDays}d`, 'now'],
           mode: 'or',
         },
       ],
@@ -157,6 +167,8 @@ const PirOverview = ({ data }: PirOverviewProps) => {
       redisQueryRef={redisQueryRef}
       historyQueryRef={pirHistoryQueryRef}
       threatMapQueryRef={threatMapQueryRef}
+      threatMapDays={threatMapDays}
+      onThreatMapDaysChange={setThreatMapDays}
     />
   );
 };

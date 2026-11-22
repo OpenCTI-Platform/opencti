@@ -19,13 +19,19 @@ import type { Theme } from '../../../../../components/Theme';
 import { itemColor } from '../../../../../utils/Colors';
 import { useFormatter } from '../../../../../components/i18n';
 import { onActivationKey } from '../../../../../utils/domEvent';
+import { PirThreatMapTypeStyle } from './pirThreatMapUtils';
+import PirThreatMapShape from './PirThreatMapShape';
 
 interface PirThreatMapLegendProps {
   entityTypes: string[];
   onFilter: (entityTypes: string[]) => void;
+  // Colour and shape of each type as the map draws it.
+  typeStyles?: Record<string, PirThreatMapTypeStyle>;
+  // Entities per type on the map, shown next to the label.
+  counts?: Record<string, number>;
 }
 
-const PirThreatMapLegend = ({ entityTypes, onFilter }: PirThreatMapLegendProps) => {
+const PirThreatMapLegend = ({ entityTypes, onFilter, typeStyles, counts }: PirThreatMapLegendProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [disabledTypes, setDisabledTypes] = useState<string[]>([]);
@@ -41,39 +47,45 @@ const PirThreatMapLegend = ({ entityTypes, onFilter }: PirThreatMapLegendProps) 
   return (
     <div style={{
       display: 'flex',
+      flexWrap: 'wrap',
       justifyContent: 'center',
-      gap: theme.spacing(2),
+      gap: theme.spacing(1.5),
       fontSize: 12,
       cursor: 'pointer',
     }}
     >
-      {entityTypes.map((type) => (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: theme.spacing(0.5),
-            opacity: disabledTypes.includes(type) ? 0.5 : 1,
-          }}
-          key={type}
-          onClick={() => toggleType(type)}
-          role="button"
-          tabIndex={0}
-          // Opacity alone shows whether the type is on the map: expose it too
-          aria-pressed={!disabledTypes.includes(type)}
-          onKeyDown={onActivationKey(() => toggleType(type))}
-        >
+      {entityTypes.map((type) => {
+        const style = typeStyles?.[type];
+        const count = counts?.[type];
+        return (
           <div
             style={{
-              width: 10,
-              height: 10,
-              borderRadius: 10,
-              background: itemColor(type),
+              display: 'flex',
+              alignItems: 'center',
+              gap: theme.spacing(0.5),
+              opacity: disabledTypes.includes(type) ? 0.4 : 1,
+              textDecoration: disabledTypes.includes(type) ? 'line-through' : 'none',
             }}
-          />
-          <span>{t_i18n(`entity_${type}`)}</span>
-        </div>
-      ))}
+            key={type}
+            onClick={() => toggleType(type)}
+            role="button"
+            tabIndex={0}
+            // Opacity alone shows whether the type is on the map: expose it too
+            aria-pressed={!disabledTypes.includes(type)}
+            onKeyDown={onActivationKey(() => toggleType(type))}
+          >
+            <PirThreatMapShape
+              shape={style?.shape ?? 'circle'}
+              color={style?.color ?? itemColor(type)}
+              size={10}
+            />
+            <span>{t_i18n(`entity_${type}`)}</span>
+            {count !== undefined && (
+              <span aria-hidden="true" style={{ color: theme.palette.text?.secondary }}>{count}</span>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };
