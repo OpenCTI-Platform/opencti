@@ -2,7 +2,7 @@ import Button from '@common/button/Button';
 import { FileUploadOutlined } from '@mui/icons-material';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router';
 import * as Yup from 'yup';
@@ -27,6 +27,11 @@ import { WorkspacesLinesPaginationQuery$variables } from './__generated__/Worksp
 import useDashboardImport from '../../../components/dashboard/import-export/useDashboardImport';
 import DashboardHiddenImportInput from '../../../components/dashboard/import-export/DashboardHiddenImportInput';
 import { Tooltip } from '@mui/material';
+import ConfigPresetPartialImportDialog from '../settings/config_preset/import/partial/ConfigPresetPartialImportDialog';
+import useConfigPresetPartialImportAccess from '../settings/config_preset/import/partial/useConfigPresetPartialImportAccess';
+
+// The configuration preset type of the dashboards
+const DASHBOARDS_CONFIG_PRESET_TYPE = 'dashboards';
 
 const workspaceMutation = graphql`
   mutation WorkspaceCreationMutation($input: WorkspaceAddInput!) {
@@ -56,9 +61,11 @@ interface WorkspaceCreationForm {
 interface WorkspaceCreationProps {
   paginationOptions: WorkspacesLinesPaginationQuery$variables;
   type: string;
+  // After the import of dashboards from a configuration bundle: the list reads its dashboards again
+  onDashboardsImported?: () => void;
 }
 
-const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) => {
+const WorkspaceCreation = ({ paginationOptions, type, onDashboardsImported }: WorkspaceCreationProps) => {
   const { t_i18n } = useFormatter();
   const { settings, isXTMHubAccessible } = useContext(UserContext);
   const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
@@ -85,6 +92,9 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
     });
   });
   const importHelpers = useDashboardImport({ onImport: handleImport });
+  // Without the partial import (not a BYPASS user, or the CONFIG_PRESET flag off), the dashboard file import stays as it is
+  const canImportFromBundle = useConfigPresetPartialImportAccess();
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   const [commitCreationMutation] = useApiMutation(workspaceMutation);
 
@@ -132,7 +142,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
             value="import"
             size="default"
             variant="secondary"
-            onClick={importHelpers.handleImport}
+            onClick={canImportFromBundle ? () => setImportDialogOpen(true) : importHelpers.handleImport}
             data-testid="ImportDashboard"
 
             aria-label={t_i18n('Import dashboard')}
@@ -158,6 +168,24 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
   return (
     <>
       <DashboardHiddenImportInput helpers={importHelpers} />
+      {canImportFromBundle && (
+        <ConfigPresetPartialImportDialog
+          open={importDialogOpen}
+          onClose={() => setImportDialogOpen(false)}
+          title={t_i18n('Import dashboard')}
+          type={DASHBOARDS_CONFIG_PRESET_TYPE}
+          itemsLabel={t_i18n('dashboards')}
+          fileLabel={t_i18n('Import a dashboard file')}
+          fileDescription={t_i18n('A dashboard exported as a JSON file')}
+          bundleDescription={t_i18n('Select the dashboards to import from a full configuration bundle (zip)')}
+          onBundleImported={() => onDashboardsImported?.()}
+          // The same file import as without the dialog: the dialog closes, the file picker opens, and the import tells its outcome as before
+          onChooseFile={() => {
+            setImportDialogOpen(false);
+            importHelpers.handleImport();
+          }}
+        />
+      )}
       <Drawer
         title={t_i18n(`Create ${type}`)}
         controlledDial={(type === 'dashboard')

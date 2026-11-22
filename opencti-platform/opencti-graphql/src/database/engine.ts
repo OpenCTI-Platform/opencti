@@ -45,6 +45,7 @@ import {
   DatabaseError,
   EngineShardsError,
   FunctionalError,
+  isClientAbortError,
   LockTimeoutError,
   TYPE_LOCK_ERROR,
   UnsupportedError,
@@ -560,12 +561,6 @@ export const isTransitoryError = (error: any): boolean => {
 // payload itself may trip the breaker (e.g. large attachments): replaying them would only add memory pressure.
 export const isTransitoryNonCircuitBreakingError = (error: any): boolean => {
   return !isCircuitBreakingError(error) && isTransitoryError(error);
-};
-
-// covers both engine clients: node-fetch's AbortError (ElkClient) and
-// OpenSearch's RequestAbortedError.
-export const isClientAbortError = (err: any): boolean => {
-  return err instanceof AbortError || err?.name === 'AbortError' || err?.name === 'RequestAbortedError';
 };
 
 // Use this instead of throwing DatabaseError directly when catching an error
@@ -3746,6 +3741,17 @@ const fetchEngineUsedSize = async (): Promise<number> => {
 
 export const getEngineUsedSize = async (): Promise<number> => {
   return retryElOperations(fetchEngineUsedSize);
+};
+
+// The cluster health status and the disk allocation of every data node, read for the XTM One health snapshot.
+// Branches are kept separate for the same reason as fetchEngineUsedSize.
+export const getEngineHealth = async (): Promise<{ status?: string; allocation: Array<Record<string, unknown>> }> => {
+  if (isElkEngine(engine)) {
+    const [health, allocation] = await Promise.all([engine.cluster.health(), engine.cat.allocation({ format: 'json' })]);
+    return { status: oebp(health)?.status, allocation: oebp(allocation) ?? [] };
+  }
+  const [health, allocation] = await Promise.all([engine.cluster.health(), engine.cat.allocation({ format: 'json' })]);
+  return { status: oebp(health)?.status, allocation: oebp(allocation) ?? [] };
 };
 
 export const isEngineAlive = async () => {

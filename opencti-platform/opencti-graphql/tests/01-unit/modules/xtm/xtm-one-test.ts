@@ -9,6 +9,10 @@ vi.mock('../../../../src/modules/xtm/one/xtm-one-client', () => ({
   },
 }));
 
+vi.mock('../../../../src/modules/xtm/one/xtm-one-health', () => ({
+  buildXtmOneHealthSnapshot: vi.fn(async () => ({ schema_version: 1, rabbitmq: { queue_messages: 3, consumers: 2 } })),
+}));
+
 vi.mock('../../../../src/database/cache', () => ({
   getEntityFromCache: vi.fn(),
 }));
@@ -31,6 +35,7 @@ vi.mock('../../../../src/config/conf', () => ({
   default: { get: vi.fn() },
   logApp: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
   PLATFORM_VERSION: '6.0.0-test',
+  PLATFORM_BUILD_VERSION: '6.0.0-test-dev.abc1234',
 }));
 
 let redisRegistrationResult: object | null = null;
@@ -142,6 +147,8 @@ describe('registerWithXtmOne', () => {
     expect(callArgs.platform_url).toBe('https://opencti.test');
     expect(callArgs.platform_title).toBe('Test OpenCTI');
     expect(callArgs.platform_id).toBe('settings-internal-id-123');
+    // The build version, so a rolling upgrade is a version change for XTM One
+    expect(callArgs.platform_version).toBe('6.0.0-test-dev.abc1234');
     expect(callArgs.enterprise_license_pem).toBe('test-pem');
     expect(callArgs.license_type).toBe('enterprise');
     expect(callArgs.business_vertical).toBe('cti');
@@ -154,6 +161,8 @@ describe('registerWithXtmOne', () => {
     // The Ask AI container report generation routes through this intent when
     // XTM One is configured; without the declaration it would find no agent.
     expect(callArgs.intents.map((i: { name: string }) => i.name)).toContain('cti.container_report');
+    // The Platform Health snapshot rides on the heartbeat.
+    expect(callArgs.health).toEqual({ schema_version: 1, rabbitmq: { queue_messages: 3, consumers: 2 } });
   });
 
   it('should not advertise approval prompts when the chatbot is not usable', async () => {

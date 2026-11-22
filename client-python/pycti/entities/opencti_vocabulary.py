@@ -247,18 +247,32 @@ class Vocabulary:
         """
         value = kwargs.get("name", None)
         category = kwargs.get("category", None)
-        filters = [{"key": "name", "values": [value]}]
-        # A name can exist in several categories (e.g. malware-analysis is a
-        # grouping context by default): look it up in the requested one only.
-        if category is not None:
-            filters.append({"key": "category", "values": [category]})
-        vocab = self.read(
-            filters={
+        if category is None:
+            lookup = {
                 "mode": "and",
-                "filters": filters,
+                "filters": [{"key": "name", "values": [value]}],
                 "filterGroups": [],
             }
-        )
+        else:
+            # A name can exist in several categories (e.g. malware-analysis is a
+            # grouping context by default): look it up in the requested one only,
+            # as a name or as an alias of an entry (critical is an alias of
+            # integrity_level_ov/system), so an existing entry is never re-added.
+            lookup = {
+                "mode": "and",
+                "filters": [{"key": "category", "values": [category]}],
+                "filterGroups": [
+                    {
+                        "mode": "or",
+                        "filters": [
+                            {"key": "name", "values": [value]},
+                            {"key": "alias", "values": [value]},
+                        ],
+                        "filterGroups": [],
+                    }
+                ],
+            }
+        vocab = self.read(filters=lookup)
         if (
             vocab is not None
             and category is not None

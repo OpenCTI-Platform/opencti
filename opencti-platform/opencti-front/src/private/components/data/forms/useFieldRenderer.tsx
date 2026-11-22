@@ -266,14 +266,8 @@ const useFieldRenderer = ({
 
                 if (!field.type || !compatibleTypes.some((t) => t.value === field.type)) {
                 // Set a default only if none is selected or the current one no longer fits.
-                  if (selectedAttribute?.defaultValues && selectedAttribute.defaultValues.length > 0) {
-                  // If attribute has vocabulary, suggest select (not multiselect unless multiple is true)
-                    const suggestedType = selectedAttribute.multiple ? 'multiselect' : 'select';
-                    handleFieldChange(`fields.${fieldIndex}.type`, suggestedType);
-                    if (suggestedType === 'multiselect') {
-                      handleFieldChange(`fields.${fieldIndex}.multiple`, true);
-                    }
-                  } else if (compatibleTypes.length > 0) {
+                // The default values of an attribute are its Entity Settings defaults, not its possible values.
+                  if (compatibleTypes.length > 0) {
                   // Set the first compatible type as default
                     handleFieldChange(`fields.${fieldIndex}.type`, compatibleTypes[0].value);
                   } else {
@@ -343,96 +337,68 @@ const useFieldRenderer = ({
             className="mt-2"
           />
 
-          {(field.type === 'select' || field.type === 'multiselect') && (() => {
-          // Check if the mapped attribute has vocabulary (defaultValues)
-            const entityForVocab = entityTypes.find((e) => e.value === entityType);
-            const attribute = entityForVocab?.attributes?.find((attr) => attr.name === field.attributeMapping.attributeName);
-            const hasVocabulary = attribute?.defaultValues && attribute.defaultValues.length > 0;
-
-            if (hasVocabulary) {
-            // Use vocabulary from the attribute
-              return (
-                <div>
-                  <Typography variant="caption">
-                    {t_i18n('Options (from vocabulary)')}
-                  </Typography>
-                  <Typography variant="body2" color="textSecondary" style={{ marginTop: 5 }}>
-                    {t_i18n('This field uses predefined vocabulary values.')}
-                  </Typography>
-                  <Box style={{ marginTop: 10, paddingLeft: 10 }}>
-                    {attribute.defaultValues?.map((value: { id: string; name: string }) => (
-                      <Typography key={value.id} variant="body2" style={{ marginTop: 5 }}>
-                        • {value.name}
-                      </Typography>
-                    ))}
-                  </Box>
-                </div>
-              );
-            }
-
-            // Custom options for fields without vocabulary
-            return (
-              <div>
-                <Typography variant="caption" style={{ marginRight: 20 }}>{t_i18n('Options')}</Typography>
-                {field.options?.map((option, optIndex) => (
-                  <Box
-                    key={optIndex}
-                    style={{ marginTop: 10 }}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <TextField
-                      variant="outlined"
-                      label={t_i18n('Label')}
-                      value={option.label}
-                      onChange={(e) => {
-                        const newOptions = [...(field.options || [])];
-                        newOptions[optIndex] = { ...option, label: e.target.value };
-                        handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
-                      }}
-                      style={{ flex: 1, marginRight: 10 }}
-                    />
-                    <TextField
-                      variant="outlined"
-                      label={t_i18n('Value')}
-                      value={option.value}
-                      onChange={(e) => {
-                        const newOptions = [...(field.options || [])];
-                        newOptions[optIndex] = { ...option, value: e.target.value };
-                        handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
-                      }}
-                      style={{ flex: 1, marginRight: 10 }}
-                    />
-                    <IconButton
-                      variant="destructive"
-                      priority="tertiary"
-                      aria-label={t_i18n('Delete')}
-                      size="sm"
-                      onClick={() => {
-                        const newOptions = field.options?.filter((_, i) => i !== optIndex) || [];
-                        handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
-                      }}
-                      icon={<DeleteOutlined fontSize="small" />}
-                    />
-                  </Box>
-                ))}
-                <Button
-                  variant="secondary"
-                  size="small"
-                  startIcon={<Add fontSize="small" />}
-                  onClick={() => {
-                    const newOptions = [...(field.options || []), { label: '', value: '' }];
-                    handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
-                  }}
+          {/* Options of the select: the default values of an attribute are not its possible values */}
+          {(field.type === 'select' || field.type === 'multiselect') && (
+            <div>
+              <Typography variant="caption" style={{ marginRight: 20 }}>{t_i18n('Options')}</Typography>
+              {field.options?.map((option, optIndex) => (
+                <Box
+                  key={optIndex}
                   style={{ marginTop: 10 }}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
                 >
-                  {t_i18n('Add option')}
-                </Button>
-              </div>
-            );
-          })()}
+                  <TextField
+                    variant="outlined"
+                    label={t_i18n('Label')}
+                    value={option.label}
+                    onChange={(e) => {
+                      const newOptions = [...(field.options || [])];
+                      newOptions[optIndex] = { ...option, label: e.target.value };
+                      handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
+                    }}
+                    style={{ flex: 1, marginRight: 10 }}
+                  />
+                  <TextField
+                    variant="outlined"
+                    label={t_i18n('Value')}
+                    value={option.value}
+                    onChange={(e) => {
+                      const newOptions = [...(field.options || [])];
+                      newOptions[optIndex] = { ...option, value: e.target.value };
+                      handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
+                    }}
+                    style={{ flex: 1, marginRight: 10 }}
+                  />
+                  <IconButton
+                    variant="destructive"
+                    priority="tertiary"
+                    aria-label={t_i18n('Delete')}
+                    size="sm"
+                    onClick={() => {
+                      const newOptions = field.options?.filter((_, i) => i !== optIndex) || [];
+                      handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
+                    }}
+                    icon={<DeleteOutlined fontSize="small" />}
+                  />
+                </Box>
+              ))}
+              <Button
+                variant="secondary"
+                size="small"
+                startIcon={<Add fontSize="small" />}
+                onClick={() => {
+                  const newOptions = [...(field.options || []), { label: '', value: '' }];
+                  handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
+                }}
+                style={{ marginTop: 10 }}
+              >
+                {t_i18n('Add option')}
+              </Button>
+            </div>
+          )}
 
           {/* Default value field for text, number, textarea, select, and date fields */}
           {(field.type === 'text' || field.type === 'textarea' || field.type === 'number' || field.type === 'date' || field.type === 'datetime' || field.type === 'select') && (

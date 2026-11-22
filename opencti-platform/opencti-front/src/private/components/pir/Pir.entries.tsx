@@ -1,0 +1,16 @@
+import { Icon } from '@filigran/design-system';
+import type { MenuEntry } from '../common/menus/menuEntry';
+import { PIRAPI } from '../../../utils/hooks/capabilities';
+
+export const pir: MenuEntry = {
+  path: '/dashboard/pirs',
+  label: 'PIR',
+  icon: <Icon name="radar" size={16} />,
+  keywords: ['priority', 'intelligence', 'requirement', 'watchlist', 'relevance'],
+  requiredCapabilities: [PIRAPI],
+};
+
+// Pure data (no component import): collected by the left bar and the pages search through its `*.entries.ts(x)` name.
+const menuEntries: MenuEntry[] = [pir];
+
+export default menuEntries;

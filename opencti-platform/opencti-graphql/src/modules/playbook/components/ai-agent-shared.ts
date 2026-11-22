@@ -419,6 +419,7 @@ export const callXtmAgent = async (
     const httpClient = getHttpClient({
       baseURL: xtmOneUrl,
       responseType: 'json',
+      trusted: true,
       headers: {
         Authorization: `Bearer ${jwt}`,
         'Content-Type': 'application/json',

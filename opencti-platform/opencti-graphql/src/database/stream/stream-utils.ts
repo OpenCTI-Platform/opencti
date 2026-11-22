@@ -68,20 +68,20 @@ export interface SizedNotifEvent<T extends StreamNotifEvent> {
 
 export interface RawStreamClient {
   initializeStreams: () => Promise<void>;
-  rawPushToStream: <T extends BaseEvent> (event: T) => Promise<void>;
+  rawPushToStream: <T extends BaseEvent>(event: T) => Promise<void>;
   rawFetchStreamInfo: (streamName?: string) => Promise<StreamInfo>;
-  rawCreateStreamProcessor: <T extends BaseEvent> (
+  rawCreateStreamProcessor: <T extends BaseEvent>(
     provider: string,
     callback: (events: Array<SseEvent<T>>, lastEventId: string) => Promise<void>,
     opts?: StreamProcessorOption,
   ) => StreamProcessor;
-  rawFetchStreamEventsRangeFromEventId: <T extends BaseEvent> (
+  rawFetchStreamEventsRangeFromEventId: <T extends BaseEvent>(
     startEventId: string,
     callback: (events: Array<SseEvent<T>>, lastEventId: string) => void,
     opts?: FetchEventRangeOption,
   ) => Promise<{ lastEventId: string }>;
-  rawStoreNotificationEvent: <T extends StreamNotifEvent> (event: T) => Promise<void>;
-  rawFetchRangeNotifications: <T extends StreamNotifEvent> (
+  rawStoreNotificationEvent: <T extends StreamNotifEvent>(event: T) => Promise<void>;
+  rawFetchRangeNotifications: <T extends StreamNotifEvent>(
     start: Date,
     end: Date,
     callback: (events: Array<SizedNotifEvent<T>>) => Promise<boolean | void> | boolean | void,

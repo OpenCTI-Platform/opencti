@@ -1,4 +1,5 @@
 import { GraphQLError } from 'graphql';
+import { AbortError } from 'node-fetch';
 
 // region DOC CODE
 // Doc codes are a stable contract, they identify a precise error.
@@ -205,9 +206,12 @@ export const ResourceNotFoundError = (reason?: string, data?: any) => error(RESO
   ...data,
 });
 
-const TYPE_LOCK = 'LOCK_ERROR';
+// LOCK_ERROR is the code of the error returned to the client (and retried by the workers).
+// TYPE_LOCK_ERROR is the name of the internal abort error raised while waiting for the lock,
+// checked by the callers to convert it into a LockTimeoutError.
+export const LOCK_ERROR = 'LOCK_ERROR';
 export const TYPE_LOCK_ERROR = 'ExecutionError';
-export const LockTimeoutError = (data: any, reason?: string) => error(TYPE_LOCK, reason ?? 'Execution timeout, too many concurrent call on the same entities', {
+export const LockTimeoutError = (data: any, reason?: string) => error(LOCK_ERROR, reason ?? 'Execution timeout, too many concurrent call on the same entities', {
   http_status: 500,
   genre: CATEGORY_BUSINESS,
   ...data,
@@ -223,6 +227,18 @@ export const ClientAbortError = (reason?: string, data?: any) => error(CLIENT_AB
   genre: CATEGORY_BUSINESS,
   ...data,
 });
+
+// Raw error of an engine call aborted because the caller disconnected. Covers both
+// engine clients: node-fetch's AbortError (ElkClient) and OpenSearch's RequestAbortedError.
+export const isClientAbortError = (err: any): boolean => {
+  return err instanceof AbortError || err?.name === 'AbortError' || err?.name === 'RequestAbortedError';
+};
+
+// Whether a failure only means that the caller went away: either the raw engine error
+// or the ClientAbortError it is wrapped into (see wrapEngineError in database/engine.ts).
+export const isClientAbort = (err: any): boolean => {
+  return err?.extensions?.code === CLIENT_ABORT_ERROR || isClientAbortError(err);
+};
 
 export const DRAFT_LOCKED_ERROR = 'DRAFT_LOCKED';
 export const DraftLockedError = (reason?: string, data?: any) => error(DRAFT_LOCKED_ERROR, reason ?? 'Draft is in a locked state, no request can be done within this draft', {
@@ -266,7 +282,7 @@ export const FUNCTIONAL_ERRORS = [
   MISSING_REF_ERROR,
   VALIDATION_ERROR,
   RESOURCE_NOT_FOUND_ERROR,
-  TYPE_LOCK_ERROR,
+  LOCK_ERROR,
   CLIENT_ABORT_ERROR,
   PASSWORD_REUSED,
   PASSWORD_CHANGE_THROTTLED,

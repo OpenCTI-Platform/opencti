@@ -34,16 +34,16 @@ export type SchemaType = {
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>;
 };
 
-export type PlatformLang
-  = | 'de-de'
-    | 'en-us'
-    | 'es-es'
-    | 'fr-fr'
-    | 'it-it'
-    | 'ja-jp'
-    | 'ko-kr'
-    | 'zh-cn'
-    | 'ru-ru';
+export type PlatformLang =
+  | 'de-de'
+  | 'en-us'
+  | 'es-es'
+  | 'fr-fr'
+  | 'it-it'
+  | 'ja-jp'
+  | 'ko-kr'
+  | 'zh-cn'
+  | 'ru-ru';
 
 const defaultLang: PlatformLang = 'en-us';
 

@@ -16,10 +16,8 @@ const readObject = async (key: string): Promise<string | null> => {
   const stream = await downloadFileWithoutLogging(key);
   return stream ? streamToString(stream) : null;
 };
-// The copy step logs its failure with the S3 or HTTP cause before returning null
-const copyFailureCause = (logError: MockInstance<typeof logApp.error>): Error | undefined => {
-  const call = logError.mock.calls.find((args) => args[0] === '[FILE STORAGE] Cannot copy referenced sync file in S3');
-  return call ? ((call[1] as Record<string, unknown>).cause as Error) : undefined;
+const isRejectedByValidator = (logWarn: MockInstance<typeof logApp.warn>): boolean => {
+  return logWarn.mock.calls.some((args) => args[0] === '[FILE STORAGE] Rejected sync file reference copy: invalid or unauthorized storage_key');
 };
 
 describe('copyFileFromSyncReference against the object storage', () => {
@@ -82,29 +80,35 @@ describe('copyFileFromSyncReference against the object storage', () => {
     expect(document.metaData.sha256).toBe(crypto.createHash('sha256').update(STAGED_CONTENT).digest('hex'));
   });
 
-  it('fails closed on a key that still holds a percent escape once normalized', async () => {
-    const literalKey = await stage('report%20final.pdf', STAGED_CONTENT);
-    const logError = vi.spyOn(logApp, 'error');
-    const result = await copyFileFromSyncReference(testContext, ADMIN_USER, buildCopyProps(literalKey.replace('%20', '%2520'), 'escaped.txt'));
-    targetIds.push(`${TARGET_PATH}/escaped.txt`);
+  it('never copies a neighbour object that a percent escape in the key decodes to', async () => {
+    const remoteFileId = crypto.randomBytes(16).toString('hex');
+    const literalKey = `${SYNC_INFLIGHT_STORAGE_PATH}/${syncId}/${remoteFileId}/report%20final.pdf`;
+    const neighbourKey = `${SYNC_INFLIGHT_STORAGE_PATH}/${syncId}/${remoteFileId}/report final.pdf`;
+    await rawUpload(literalKey, STAGED_CONTENT);
+    await rawUpload(neighbourKey, 'neighbour content');
+    stagedKeys.push(literalKey, neighbourKey);
+    const logWarn = vi.spyOn(logApp, 'warn');
+    const result = await copyFileFromSyncReference(testContext, ADMIN_USER, buildCopyProps(literalKey.replace('%20', '%2520'), 'neighbour.txt'));
+    targetIds.push(`${TARGET_PATH}/neighbour.txt`);
 
     expect(result).toBeNull();
-    expect(copyFailureCause(logError)?.name).toBe('NoSuchKey');
-    logError.mockRestore();
+    expect(isRejectedByValidator(logWarn)).toBe(true);
+    logWarn.mockRestore();
     expect(await readObject(literalKey)).toBe(STAGED_CONTENT);
-    expect(await readObject(`${TARGET_PATH}/escaped.txt`)).toBeNull();
-    expect(await findDocumentById(testContext, ADMIN_USER, `${TARGET_PATH}/escaped.txt`)).toBeUndefined();
+    expect(await readObject(neighbourKey)).toBe('neighbour content');
+    expect(await readObject(`${TARGET_PATH}/neighbour.txt`)).toBeNull();
+    expect(await findDocumentById(testContext, ADMIN_USER, `${TARGET_PATH}/neighbour.txt`)).toBeUndefined();
   });
 
-  it('fails closed on a key the HTTP layer cannot send as a copy source', async () => {
+  it('rejects a key the HTTP layer cannot send as a copy source before it reaches the storage', async () => {
     const storageKey = await stage('report-😀.pdf', STAGED_CONTENT);
-    const logError = vi.spyOn(logApp, 'error');
+    const logWarn = vi.spyOn(logApp, 'warn');
     const result = await copyFileFromSyncReference(testContext, ADMIN_USER, buildCopyProps(storageKey, 'emoji.txt'));
     targetIds.push(`${TARGET_PATH}/emoji.txt`);
 
     expect(result).toBeNull();
-    expect((copyFailureCause(logError) as NodeJS.ErrnoException | undefined)?.code).toBe('ERR_INVALID_CHAR');
-    logError.mockRestore();
+    expect(isRejectedByValidator(logWarn)).toBe(true);
+    logWarn.mockRestore();
     expect(await readObject(storageKey)).toBe(STAGED_CONTENT);
     expect(await readObject(`${TARGET_PATH}/emoji.txt`)).toBeNull();
     expect(await findDocumentById(testContext, ADMIN_USER, `${TARGET_PATH}/emoji.txt`)).toBeUndefined();

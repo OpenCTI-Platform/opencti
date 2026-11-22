@@ -1,6 +1,6 @@
 import { Navbar, NavbarItem, NavbarSeparator, NavbarSubmenu, NavbarSubmenuItem, ProductSwitcher } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import { Link, useLocation } from 'react-router';
 import { useFormatter } from '../../../components/i18n';
@@ -8,6 +8,8 @@ import { Theme } from '../../../components/Theme';
 import { THEME_DARK_DEFAULT_BACKGROUND } from '../../../components/ThemeDark';
 import logoOpenAEVDark from '../../../static/images/logo_open_aev_dark.svg';
 import logoOpenAEVLight from '../../../static/images/logo_open_aev_light.svg';
+import logoOpenCRQDark from '../../../static/images/logo_open_crq_dark.svg';
+import logoOpenCRQLight from '../../../static/images/logo_open_crq_light.svg';
 import logoXTMHubDark from '../../../static/images/logo_xtm_hub_dark.svg';
 import logoXTMHubLight from '../../../static/images/logo_xtm_hub_light.svg';
 import LogoCollapsedOrange from '../../../static/images/logo_orange.svg';
@@ -25,6 +27,7 @@ import { readNavOpen, readSelectedMenu, writeNavOpen, writeSelectedMenu } from '
 import useNavMenu, { NavGroup, NavItem, NavSubItem } from './useNavMenu';
 
 const OPENAEV_FALLBACK_URL = 'https://filigran.io/solutions/open-aev/';
+const OPENCRQ_FALLBACK_URL = 'https://filigran.io/products/opencrq';
 const XTMHUB_FALLBACK_URL = 'https://hub.filigran.io';
 
 export const navBarQuery = graphql`
@@ -40,6 +43,21 @@ export const isRouteSelected = (pathname: string, link: string, exact?: boolean)
   if (link === '/dashboard/data' && pathname.includes('/import/draft/')) return false;
   return pathname === link || pathname.startsWith(`${link}/`);
 };
+
+/** A row standing for several pages (a sub-section) is selected on any of them. */
+export const isSubItemSelected = (pathname: string, sub: NavSubItem): boolean => (
+  (sub.paths ?? [sub.link]).some((path) => isRouteSelected(pathname, path, sub.exact))
+);
+
+/** Id of the menu section holding the page being shown, if any. Same test as the selected row. */
+export const findSectionToOpen = (groups: NavGroup[], pathname: string): string | undefined => groups
+  .flatMap((group) => group.items)
+  .find((item) => item.subItems?.some((sub) => isSubItemSelected(pathname, sub)))?.id;
+
+/** `menus` with `id` open: alone when sections auto collapse, next to the others otherwise. */
+export const openSection = (menus: string[], id: string, autoCollapse: boolean): string[] => (
+  autoCollapse ? [id] : [...menus.filter((menu) => menu !== id), id]
+);
 
 export interface NavBarViewProps {
   groups: NavGroup[];
@@ -98,16 +116,29 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
       to={sub.link}
       linkComponent={Link}
       icon={sub.icon}
-      aria-current={isRouteSelected(pathname, sub.link, sub.exact) ? 'page' : undefined}
+      aria-current={isSubItemSelected(pathname, sub) ? 'page' : undefined}
     >
       {sub.label}
     </NavbarSubmenuItem>
   );
 
+  const ROW_ICON_COLLAPSED = 'inline-flex shrink-0 text-default-primary mr-0.5';
+  const ROW_ICON_EXPANDED = [
+    'inline-flex shrink-0 text-default-secondary',
+    'group-hover:text-default-primary group-focus-visible:text-default-primary group-[[aria-current=page]]:text-default-primary',
+  ].join(' ');
+
   // FDS-WORKAROUND #7: row body re-implemented for asChild — remove when asChild composes the row body — see fds-migration/LIBRARY-FEEDBACK.md #7
   const renderRowBody = (icon: React.ReactNode, label: string) => (
     <>
-      <span className="inline-flex shrink-0" aria-hidden="true">{icon}</span>
+      {/* Same icon tones as the library's own (non-asChild) row: subtle at rest, primary on hover, focus, current
+          page and while collapsed. */}
+      <span
+        className={collapsed ? ROW_ICON_COLLAPSED : ROW_ICON_EXPANDED}
+        aria-hidden="true"
+      >
+        {icon}
+      </span>
       <span className={collapsed ? 'sr-only' : 'flex-1 truncate text-left'}>{label}</span>
     </>
   );
@@ -177,6 +208,7 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
     me: { submenu_auto_collapse: submenuAutoCollapse, submenu_show_icons: submenuShowIcons, draftContext },
     settings: {
       platform_openaev_url: openAEVUrl,
+      platform_opencrq_url: openCRQUrl,
       platform_xtmhub_url: xtmhubUrl,
       xtm_hub_registration_status: xtmhubStatus,
     },
@@ -209,17 +241,24 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
   };
 
   const handleSubmenuOpenChange = (id: string, open: boolean) => {
-    let updated: string[];
-    if (!open) {
-      updated = openSubmenus.filter((menu) => menu !== id);
-    } else if (submenuAutoCollapse) {
-      updated = [id];
-    } else {
-      updated = [...openSubmenus.filter((menu) => menu !== id), id];
-    }
+    const updated = open
+      ? openSection(openSubmenus, id, !!submenuAutoCollapse)
+      : openSubmenus.filter((menu) => menu !== id);
     setOpenSubmenus(updated);
     writeSelectedMenu(updated);
   };
+
+  // Reaching a page (search, link, URL) opens its section. Not tied to `openSubmenus`, so closing it by hand sticks.
+  const currentSection = findSectionToOpen(groups, location.pathname);
+  useEffect(() => {
+    if (!currentSection || !navOpen) return;
+    setOpenSubmenus((menus) => {
+      if (menus.includes(currentSection)) return menus;
+      const updated = openSection(menus, currentSection, !!submenuAutoCollapse);
+      writeSelectedMenu(updated); // idempotent, so safe if React runs the updater twice
+      return updated;
+    });
+  }, [location.pathname, currentSection, navOpen, submenuAutoCollapse]);
 
   const isLightTheme = theme.palette.mode === 'light';
 
@@ -275,6 +314,13 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
               // Option logos fill their own slot; a fixed width overflows it.
               logo: <img src={isLightTheme ? logoOpenAEVLight : logoOpenAEVDark} alt="" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />,
               href: isNotEmptyField(openAEVUrl) ? (openAEVUrl as string) : OPENAEV_FALLBACK_URL,
+            },
+            {
+              id: 'opencrq',
+              label: t_i18n('OpenCRQ'),
+              tooltip: isNotEmptyField(openCRQUrl) ? t_i18n('Platform connected') : t_i18n('Get OpenCRQ now'),
+              logo: <img src={isLightTheme ? logoOpenCRQLight : logoOpenCRQDark} alt="" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />,
+              href: isNotEmptyField(openCRQUrl) ? (openCRQUrl as string) : OPENCRQ_FALLBACK_URL,
             },
             {
               id: 'xtmhub',

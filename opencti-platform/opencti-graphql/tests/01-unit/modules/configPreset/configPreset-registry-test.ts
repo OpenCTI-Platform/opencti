@@ -65,6 +65,7 @@ import { disarmKillChainPhase, killChainPhase, otherKillChainPhase } from './con
 import { customVocabulary, modifiedVocabulary } from './configPreset-vocabularies-fixtures';
 import { customStatusTemplate, defaultStatusTemplate } from './configPreset-statusTemplates-fixtures';
 import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemplates-fixtures';
+import { executiveDashboard, socDashboard } from './configPreset-dashboards-fixtures';
 import { mitreConnector } from './configPreset-connectors-fixtures';
 import { exportConnector } from '../../../../src/modules/connector/connector-export';
 import { customEmailTemplate, otherEmailTemplate } from './configPreset-emailTemplates-fixtures';
@@ -221,7 +222,14 @@ describe('Config preset registry', () => {
         group: 'taxonomy',
         itemIds: [fraudCaseTemplate.standard_id, phishingCaseTemplate.standard_id],
       },
+      // The dashboards by name, never an investigation
+      { id: 'dashboards', label: 'Custom dashboards', description: '', group: 'dashboards', itemIds: [executiveDashboard.standard_id, socDashboard.standard_id] },
       { id: 'connectors', label: 'Connectors', description: 'Managed connectors and their parameters, without their secrets', group: 'integrations', itemIds: ['mitre'] },
+      // The feeds by name; the next feeds of the same name by creation date
+      { id: 'rssFeeds', label: 'RSS feeds', description: 'RSS feeds and their parameters, without their state', group: 'integrations', itemIds: ['Security news', 'Security news (1)'] },
+      { id: 'csvFeeds', label: 'CSV feeds', description: 'CSV feeds with their mapper, without their credentials', group: 'integrations', itemIds: [] },
+      { id: 'jsonFeeds', label: 'JSON feeds', description: 'JSON feeds with their mapper, without their credentials', group: 'integrations', itemIds: [] },
+      { id: 'taxiiFeeds', label: 'TAXII feeds', description: 'TAXII feeds and their parameters, without their credentials', group: 'integrations', itemIds: ['Partner/TAXII'] },
       // Every rule the platform declares, by its id
       {
         id: 'ruleEngine',
@@ -282,7 +290,12 @@ describe('Config preset registry', () => {
       ['IN_PROGRESS', false],
       ['Fraud investigation', false],
       ['Phishing triage', false],
+      ['Executive summary', false],
+      ['SOC overview', false],
       ['MITRE', false],
+      ['Security news', false],
+      ['Security news', false],
+      ['Partner/TAXII', false],
       ...RULES_DECLARATION.map(({ name }) => [name, true]),
       ['Filigran report', false],
       ['Night briefing', false],
@@ -329,7 +342,12 @@ describe('Config preset registry', () => {
       `taxonomy/status_templates/${defaultStatusTemplate.standard_id}.json`,
       `taxonomy/case_templates/${fraudCaseTemplate.standard_id}.json`,
       `taxonomy/case_templates/${phishingCaseTemplate.standard_id}.json`,
+      `dashboards/${executiveDashboard.standard_id}.json`,
+      `dashboards/${socDashboard.standard_id}.json`,
       'integrations/connectors/mitre.json',
+      'integrations/rss_feeds/Security news.json',
+      'integrations/rss_feeds/Security news (1).json',
+      'integrations/taxii_feeds/Partner_TAXII.json',
       ...RULES_DECLARATION.map(({ id }) => `automation_rules/rule_engine/${id}.json`),
       `customization/fintel_designs/${defaultFintelDesign.standard_id}.json`,
       `customization/fintel_designs/${nightFintelDesign.standard_id}.json`,
@@ -341,6 +359,33 @@ describe('Config preset registry', () => {
     const family = findFamily('platform');
     const item = await findItem('platform', 'platform');
     expect(configPresetItemFilePath(family, { ...item, fileName: 'custom-name.json' })).toBe('platform_settings/custom-name.json');
+  });
+
+  describe('dashboards', () => {
+    it('exports what the dashboard is, never an internal id nor who can open it, not even everyone', async () => {
+      const family = findFamily('dashboards');
+      const soc = await exportConfigPresetItem(context, user, family, await findItem('dashboards', socDashboard.standard_id));
+      expect(soc).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'dashboards.dashboards',
+        id: socDashboard.standard_id,
+        configuration: { name: 'SOC overview', description: 'What the SOC watches', tags: ['soc'], refresh_interval: 300 },
+      });
+      const executive = await exportConfigPresetItem(context, user, family, await findItem('dashboards', executiveDashboard.standard_id));
+      // Shared with everyone on the platform, as the file export of a dashboard: the bundle does not say it.
+      // The description, the tags and the refresh interval are written empty, so that an overwrite can clear them
+      expect(executive.configuration).toEqual({ name: 'Executive summary', description: '', tags: [], refresh_interval: 0 });
+      expect(JSON.stringify([soc, executive])).not.toMatch(/creator-secret-id|created_at|dashboard-id/);
+    });
+
+    it('lists the dashboards only, an investigation is a workspace that is not exported', async () => {
+      const family = findFamily('dashboards');
+      expect((await family.resolveItems(context, user, null, [])).map(({ label }) => label)).toEqual(['Executive summary', 'SOC overview']);
+      expect((await family.resolveItems(context, user, null, [executiveDashboard.standard_id])).map(({ label }) => label)).toEqual(['SOC overview']);
+      expect(await family.resolveItems(context, user, [], [])).toEqual([]);
+      const page = await family.listItems(context, user, { first: 10, search: 'incident' });
+      expect(page.edges).toEqual([]);
+    });
   });
 
   describe('platform configuration', () => {
@@ -418,6 +463,52 @@ describe('Config preset registry', () => {
       expect(await ids({})).toEqual(['mitre']);
       expect(await ids({ excludedIds: ['mitre'] })).toEqual([]);
       expect(await ids({ ids: ['external'] })).toEqual([]);
+    });
+  });
+
+  describe('feeds', () => {
+    const rssFeeds = findFamily('rssFeeds');
+    const taxiiFeeds = findFamily('taxiiFeeds');
+
+    it('exports an RSS feed by name, with its markings by standard id and the confidence of its user, without its user nor its state', async () => {
+      const item = await findItem('rssFeeds', 'Security news');
+      expect(item.dependsOn).toEqual([{ type: 'markings', id: customMarking.standard_id }]);
+      const file = await exportConfigPresetItem(context, user, rssFeeds, item);
+      expect(file).toMatchObject({ type: 'integrations.rssFeeds', id: 'Security news' });
+      expect(file.configuration).toEqual({
+        name: 'Security news',
+        description: 'Daily news',
+        scheduling_period: 'PT1H',
+        uri: 'https://news.example.com/rss',
+        ssl_verify: null,
+        confidence_level: 75,
+        report_types: ['threat-report'],
+        markings: [{ standard_id: customMarking.standard_id, definition_type: customMarking.definition_type, definition: customMarking.definition }],
+        author: null,
+      });
+      expect(JSON.stringify(file)).not.toMatch(/mitre-user-id|current_state_date|2026-03-01|ingestion_running|security-news-id/);
+    });
+
+    it('exports the next feed of the same name as a copy, by creation date', async () => {
+      const file = await exportConfigPresetItem(context, user, rssFeeds, await findItem('rssFeeds', 'Security news (1)'));
+      expect(file.configuration).toMatchObject({ name: 'Security news', uri: 'https://other-news.example.com/rss' });
+    });
+
+    it('exports a TAXII feed with its authentication type, never its credentials nor its cursor', async () => {
+      const item = await findItem('taxiiFeeds', 'Partner/TAXII');
+      expect(item.fileName).toEqual('Partner_TAXII.json');
+      const file = await exportConfigPresetItem(context, user, taxiiFeeds, item);
+      expect(file.configuration).toMatchObject({ name: 'Partner/TAXII', authentication_type: 'basic', version: 'v21', collection: 'collection-id' });
+      expect(JSON.stringify(file)).not.toMatch(/encrypted-credentials|authentication_value|cursor/);
+    });
+
+    it('lists the feeds by name, searched on their name', async () => {
+      const ids = async (args: Parameters<typeof rssFeeds.listItems>[2]) => (await rssFeeds.listItems(context, user, args)).edges.map(({ node }) => node.id);
+      expect(await ids({})).toEqual(['Security news', 'Security news (1)']);
+      expect(await ids({ first: 1 })).toEqual(['Security news']);
+      expect(await ids({ first: 1, after: 'Security news' })).toEqual(['Security news (1)']);
+      expect(await ids({ excludedIds: ['Security news'] })).toEqual(['Security news (1)']);
+      expect(await ids({ search: 'other' })).toEqual([]);
     });
   });
 
