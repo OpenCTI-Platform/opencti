@@ -10436,6 +10436,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   vendor: String
   version: String
   x_opencti_product: String
+  x_opencti_purl: String
   vulnerabilities: VulnerabilityConnection
   # Technical
   creators: [Creator!]
@@ -10478,6 +10479,7 @@ input SoftwareAddInput {
   vendor: String
   version: String
   x_opencti_product: String
+  x_opencti_purl: String
   file: Upload
   fileMarkings: [String]
   files: [Upload]

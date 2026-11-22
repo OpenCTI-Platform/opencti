@@ -50,6 +50,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<OpenVocabularyEn
     { key: 'AI_TARGET', description: 'LLM endpoint, AI agent, MCP server or RAG pipeline.', order: 10, color: '#8e24aa' },
     { key: 'SECURITY_PLATFORM', description: 'Defensive security platform: EDR, XDR, SIEM, SOAR, NDR or similar.', order: 11, color: '#43a047' },
     { key: 'GENERIC_ASSET', description: 'Anything that does not fit another category yet.', order: 12, color: '#78909c' },
+    { key: 'SOURCE_CODE', description: 'Code repository, pipeline or package your teams build and ship.', order: 13, color: '#827717' },
   ],
   // Criticality on the severity scale: very high critical, high, medium, low, unknown neutral
   system_criticality_ov: [
@@ -166,6 +167,11 @@ export const openVocabularies: Record<VocabularyCategory, Array<OpenVocabularyEn
     { key: 'LLM_FIREWALL', description: 'Firewall that filters prompts and answers of language models', parent_name: 'SECURITY_PLATFORM' },
     { key: 'AI_GATEWAY', description: 'Gateway that controls access to AI models', parent_name: 'SECURITY_PLATFORM' },
     { key: 'VULNERABILITY_SCANNER', description: 'Scanner that finds vulnerabilities', parent_name: 'SECURITY_PLATFORM' },
+    { key: 'CODE_REPOSITORY', description: 'Source code repository: GitHub, GitLab, Bitbucket or similar', parent_name: 'SOURCE_CODE' },
+    { key: 'CI_CD_PIPELINE', description: 'Pipeline that builds, tests and ships the code', parent_name: 'SOURCE_CODE' },
+    { key: 'PACKAGE_REGISTRY', description: 'Registry that stores and serves the packages the teams publish', parent_name: 'SOURCE_CODE' },
+    { key: 'SOFTWARE_PACKAGE', description: 'Library or package the teams build, publish or depend on', parent_name: 'SOURCE_CODE' },
+    { key: 'CODE_OTHER', description: 'Any other code asset', parent_name: 'SOURCE_CODE' },
   ],
   attack_resource_level_ov: [
     {
