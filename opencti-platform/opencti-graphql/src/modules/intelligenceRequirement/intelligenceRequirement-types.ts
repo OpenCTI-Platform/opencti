@@ -78,6 +78,7 @@ export interface StoreIrCriterion {
   direction: string; // outgoing | incoming | both
   target_types: string[];
   target_filters: string | null; // serialized FilterGroup
+  relationship_filters?: string | null; // graph: serialized FilterGroup evaluated on the relationship event (criteria converted from a legacy PIR)
   keyword_fields: string[];
   mode: string; // auto | propose | off
   conditions?: StoreIrCondition[]; // all must be met (AND) for the entity to be eligible

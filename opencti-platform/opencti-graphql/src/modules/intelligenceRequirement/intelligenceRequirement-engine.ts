@@ -12,6 +12,7 @@ import type { StoreIrMatchExplanation } from './intelligenceRequirementMatch-typ
 import { parseIrFilters } from './intelligenceRequirement-config';
 import { getInRequirementEntityIds } from './intelligenceRequirementMatch-domain';
 import { resolveSubjectGroup } from './intelligenceRequirement-groups';
+import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 
 // Scope engine: evaluates one stream event against the entry criteria of a requirement
 // and returns the entities that should enter it (with the criterion and the proof).
@@ -107,6 +108,9 @@ export const evaluateRelationship = async (context: AuthContext, user: AuthUser,
   const criteria = activeCriteria(state.ir, 'graph').filter((c) => c.relationship_types.includes(relationshipType));
   for (let i = 0; i < criteria.length; i += 1) {
     const criterion = criteria[i];
+    // Filters on the relationship itself (a criterion converted from a legacy PIR: its pir_filters and criterion filters)
+    const relationshipFilters = parseIrFilters(criterion.relationship_filters);
+    if (relationshipFilters && !await isStixMatchFilterGroup(context, user, stix, relationshipFilters)) continue;
     const sides = [];
     if (criterion.direction === 'outgoing' || criterion.direction === 'both') {
       sides.push({ anchorId: ext.source_ref, anchorType: ext.source_type, targetId: ext.target_ref, targetType: ext.target_type, direction: 'outgoing' });
