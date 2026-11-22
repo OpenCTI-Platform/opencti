@@ -1,5 +1,6 @@
-import openAevMark from '../../../../../../static/images/logo_oaev.svg';
-import openCrqMark from '../../../../../../static/images/logo_ocrq.svg';
+// The product glyphs of the design system's product switcher, the same files in the three products.
+import openAevMark from '../../../../../../static/images/xtm/xtm-mark-openaev.svg';
+import openCrqMark from '../../../../../../static/images/xtm/xtm-mark-opencrq.svg';
 import { OPENAEV_FACTS, OPENCRQ_FACTS, type FactDefinition } from './counterpartFacts';
 
 // The XTM products an OpenCTI object can have a counterpart in, in the order the emblems are drawn

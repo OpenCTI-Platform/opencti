@@ -7,7 +7,7 @@ import Box from '@mui/material/Box';
 interface XtmMarkProps {
   src: string;
   size?: number;
-  // A theme palette path (primary.main, text.disabled) or currentColor (the default).
+  // A design system ink (var(--icon-highlight), var(--icon-disabled)) or currentColor (the default).
   color?: string;
 }
 

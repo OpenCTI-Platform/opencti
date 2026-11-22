@@ -22,10 +22,12 @@ import type { XtmProduct } from './xtmProducts';
 // - unavailable (X could not answer this time): the emblem greyed, "X is unavailable".
 // Nothing while loading and for an object X has no counterpart for.
 
-// Two colours only, the same for every product (Sam, 22 Nov 2026): found = the theme primary,
-// not found, not connected and unavailable = the theme's disabled grey. No per-product colour.
-export const EMBLEM_FOUND = 'primary.main';
-export const EMBLEM_MUTED = 'text.disabled';
+// Two colours only, the same for every product and the same hex in OpenCTI, OpenAEV and OpenCRQ
+// (Sam, 22 Nov 2026): found = the design system's highlight ink (--icon-highlight, the brand primary
+// of the theme, a custom primary included), not found, not connected and unavailable = its disabled
+// ink (--icon-disabled). Design system tokens, never the MUI palette, so the three products agree.
+export const EMBLEM_FOUND = 'var(--icon-highlight)';
+export const EMBLEM_MUTED = 'var(--icon-disabled)';
 
 interface XtmEmblemProps {
   product: XtmProduct;
@@ -51,7 +53,7 @@ export const XtmCounterpartPreview: React.FC<{ product: XtmProduct; counterpart:
 const NotFound: React.FC<{ product: XtmProduct }> = ({ product }) => {
   const { t_i18n } = useFormatter();
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, maxWidth: 280 }} data-testid="xtm-not-found">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, maxWidth: 288 }} data-testid="xtm-not-found">
       <Box component="span" sx={{ fontWeight: 600 }}>{t_i18n(product.notFound)}</Box>
       <Box component="span" sx={{ opacity: 0.72 }}>{t_i18n(product.howItGetsThere)}</Box>
     </Box>
