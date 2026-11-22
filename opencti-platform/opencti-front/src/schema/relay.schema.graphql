@@ -10232,6 +10232,11 @@ type Mutation {
   pirAdd(input: PirAddInput!): Pir
   pirDelete(id: ID!): ID
   pirEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): Pir
+
+  """
+  Switch the engine that flags the entities of a Pir; the switch to the requirement is refused, Pir unchanged, when a flag would change
+  """
+  pirEngineSwitch(engine: PirEngine!, id: ID!): PirEngineSwitchResult
   pirFieldPatch(id: ID!, input: [EditInput!]!): Pir
   pirFlagElement(id: ID!, input: PirFlagElementInput!): ID
   pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID
@@ -11847,7 +11852,9 @@ type Pir implements BasicObject & InternalObject {
   parent_types: [String!]!
   pirContainers(after: ID, filters: FilterGroup, first: Int, orderBy: ContainersOrdering, orderMode: OrderingMode, search: String): ContainerConnection
   pir_criteria: [PirCriterion!]!
+  pir_engine: PirEngine
   pir_filters: String!
+  pir_requirement_id: ID
   pir_rescan_days: Int!
   pir_type: PirType!
   queue_messages: Int!
@@ -11899,6 +11906,21 @@ type PirEdge {
   node: Pir!
 }
 
+enum PirEngine {
+  legacy
+  requirement
+}
+
+type PirEngineSwitchResult {
+  engine: PirEngine!
+  flags: Int
+  mismatches: [PirParityMismatch!]
+  reason: String
+  requirement_id: ID
+  seeded: Int
+  switched: Boolean!
+}
+
 type PirExplanation {
   criterion: PirCriterion!
   dependencies: [PirDependency!]!
@@ -11928,6 +11950,13 @@ enum PirOrdering {
   creator
   name
   updated_at
+}
+
+type PirParityMismatch {
+  entity_id: ID!
+  projected_score: Int!
+  same_explanations: Boolean!
+  stored_score: Int!
 }
 
 type PirRelationship implements BasicRelationship {

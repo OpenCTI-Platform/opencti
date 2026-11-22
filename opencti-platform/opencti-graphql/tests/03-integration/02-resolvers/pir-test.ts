@@ -729,6 +729,48 @@ describe('PIR resolver standard behavior', () => {
     resetCacheForEntity(ENTITY_TYPE_PIR);
   });
 
+  it('should switch the engine of a pir through the API, then back', async () => {
+    const SWITCH_QUERY = gql`
+      mutation pirEngineSwitch($id: ID!, $engine: PirEngine!) {
+        pirEngineSwitch(id: $id, engine: $engine) {
+          switched
+          engine
+          requirement_id
+          flags
+          reason
+        }
+      }
+    `;
+    const READ_ENGINE_QUERY = gql`
+      query pirEngine($id: ID!) {
+        pir(id: $id) {
+          id
+          pir_engine
+          pir_requirement_id
+        }
+      }
+    `;
+    const toRequirement = await queryAsAdmin({ query: SWITCH_QUERY, variables: { id: pirInternalId2, engine: 'requirement' } });
+    expect(toRequirement.errors).toBeUndefined();
+    expect(toRequirement.data?.pirEngineSwitch.switched).toBe(true);
+    expect(toRequirement.data?.pirEngineSwitch.engine).toEqual('requirement');
+    expect(toRequirement.data?.pirEngineSwitch.requirement_id).toBeTruthy();
+    resetCacheForEntity(ENTITY_TYPE_PIR);
+    const read = await queryAsAdmin({ query: READ_ENGINE_QUERY, variables: { id: pirInternalId2 } });
+    expect(read.data?.pir.pir_engine).toEqual('requirement');
+    expect(read.data?.pir.pir_requirement_id).toEqual(toRequirement.data?.pirEngineSwitch.requirement_id);
+    // the flag is unchanged by the switch
+    const flags = await pageRelationsConnection<BasicStoreRelationPir>(testContext, SYSTEM_USER, RELATION_IN_PIR, { toId: [pirInternalId2] });
+    expect(flags.edges.length).toEqual(1);
+    expect(flags.edges[0].node.pir_score).toEqual(50);
+    const toLegacy = await queryAsAdmin({ query: SWITCH_QUERY, variables: { id: pirInternalId2, engine: 'legacy' } });
+    expect(toLegacy.errors).toBeUndefined();
+    expect(toLegacy.data?.pirEngineSwitch.engine).toEqual('legacy');
+    resetCacheForEntity(ENTITY_TYPE_PIR);
+    const back = await queryAsAdmin({ query: READ_ENGINE_QUERY, variables: { id: pirInternalId2 } });
+    expect(back.data?.pir.pir_engine).toEqual('legacy');
+  });
+
   it('should pir deleted', async () => {
     const DELETE_QUERY = gql`
       mutation pirDelete($id: ID!) {

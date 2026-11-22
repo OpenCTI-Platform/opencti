@@ -23,6 +23,7 @@ import {
   findPirRelationPaginated,
   pirAdd,
   pirEditAuthorizedMembers,
+  pirEngineSwitch,
   pirFlagElement,
   pirRelationshipsDistribution,
   pirRelationshipsMultiTimeSeries,
@@ -61,6 +62,9 @@ const pirResolvers: Resolvers = {
     pirFieldPatch: (_, { id, input }, context) => updatePir(context, context.user, id, input),
     pirEditAuthorizedMembers: (_, { id, input }, context) => pirEditAuthorizedMembers(context, context.user, id, input),
     pirDelete: (_, { id }, context) => deletePir(context, context.user, id),
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore engine is the PirEngine enum, the result its PirEngineSwitchResult
+    pirEngineSwitch: (_, { id, engine }, context) => pirEngineSwitch(context, context.user, id, engine),
     pirFlagElement: (_, { id, input }, context) => pirFlagElement(context, context.user, id, input),
     pirUnflagElement: (_, { id, input }, context) => pirUnflagElement(context, context.user, id, input),
   },
