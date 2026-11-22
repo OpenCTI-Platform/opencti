@@ -6,8 +6,11 @@ import { ABSTRACT_BASIC_OBJECT, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT 
 import { isStixRelationshipExceptRef } from './stixRelationship';
 import { RELATION_PARTICIPATE_TO, RELATION_IN_PIR } from './internalRelationship';
 import type { StoreObject } from '../types/store';
+import { ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH } from '../modules/intelligenceRequirement/intelligenceRequirementMatch-types';
 
-export const INTERNAL_EXPORTABLE_TYPES = [RELATION_PARTICIPATE_TO, RELATION_IN_PIR];
+// Internal types whose changes go to the stream with the internal scope (never to the external live streams):
+// the managers listening with withInternal (playbooks, history) read them.
+export const INTERNAL_EXPORTABLE_TYPES = [RELATION_PARTICIPATE_TO, RELATION_IN_PIR, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH];
 
 export const isStixCoreObject = (type: string) => isStixDomainObject(type) || isStixCyberObservable(type) || type === ABSTRACT_STIX_CORE_OBJECT;
 export const isStixObject = (type: string) => isStixCoreObject(type) || isStixMetaObject(type) || type === ABSTRACT_STIX_OBJECT;

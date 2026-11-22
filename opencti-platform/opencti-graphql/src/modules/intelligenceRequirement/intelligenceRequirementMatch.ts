@@ -18,6 +18,10 @@ const convertMatchToStix = (instance: StoreEntityIntelligenceRequirementMatch): 
     name: instance.match_entity_id,
     ir_id: instance.ir_id,
     match_entity_id: instance.match_entity_id,
+    match_entity_type: instance.match_entity_type,
+    match_status: instance.match_status,
+    match_excluded: instance.match_excluded ?? false,
+    match_score: instance.match_score,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({ ...stixObject.extensions[STIX_EXT_OCTI], extension_type: 'new-sdo' }),
     },

@@ -61,7 +61,13 @@ export interface BasicStoreEntityIntelligenceRequirementMatch extends BasicStore
 
 export interface StoreEntityIntelligenceRequirementMatch extends StoreEntity, IntelligenceRequirementMatchFields {}
 
+// The stream form of an entity of a requirement (internal scope, like in-pir): what the playbook entry
+// "Listen intelligence requirement events" reads to tell an entry from an exit.
 export interface StixIntelligenceRequirementMatch extends StixInternal {
   ir_id: string;
   match_entity_id: string;
+  match_entity_type?: string;
+  match_status?: string;
+  match_excluded?: boolean;
+  match_score?: number;
 }
