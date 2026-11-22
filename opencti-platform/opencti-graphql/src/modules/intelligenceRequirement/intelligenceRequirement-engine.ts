@@ -133,6 +133,7 @@ export const evaluateRelationship = async (context: AuthContext, user: AuthUser,
             relationship_id: ext.id,
             relationship_type: relationshipType,
             direction: side.direction,
+            author_id: ext.created_by_ref_id ?? null,
           },
         });
       }

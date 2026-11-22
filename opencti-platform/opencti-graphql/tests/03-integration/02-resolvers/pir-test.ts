@@ -18,7 +18,10 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organiza
 import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 import { LAST_PIR_SCORE_DATE_FILTER, PIR_SCORE_FILTER } from '../../../src/utils/filtering/filtering-constants';
 import { type BasicStoreEntityIntelligenceRequirement, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT } from '../../../src/modules/intelligenceRequirement/intelligenceRequirement-types';
-import type { BasicStoreEntityPir } from '../../../src/modules/pir/pir-types';
+import { type BasicStoreEntityPir, PIR_ENGINE_REQUIREMENT } from '../../../src/modules/pir/pir-types';
+import { switchPirToLegacyEngine, switchPirToRequirementEngine } from '../../../src/modules/intelligenceRequirement/intelligenceRequirement-pirLink';
+import { listMatches } from '../../../src/modules/intelligenceRequirement/intelligenceRequirementMatch-domain';
+import { projectMatchOnPir } from '../../../src/modules/intelligenceRequirement/intelligenceRequirement-projection';
 
 const loadRequirementOfPir = async (pirId: string) => {
   const pir = await internalLoadById<BasicStoreEntityPir>(testContext, SYSTEM_USER, pirId, { type: ENTITY_TYPE_PIR });
@@ -684,6 +687,46 @@ describe('PIR resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.pirRelationships.edges.length).toEqual(0);
+  });
+
+  it('should switch a pir to its intelligence requirement with its flags unchanged, then back', async () => {
+    // Pir2 holds one legacy flag on the malware (criterion d17360d5, weight 1 of 2: score 50)
+    const before = await pageRelationsConnection<BasicStoreRelationPir>(testContext, SYSTEM_USER, RELATION_IN_PIR, { toId: [pirInternalId2] });
+    expect(before.edges.length).toEqual(1);
+    const storedScore = before.edges[0].node.pir_score;
+    expect(storedScore).toEqual(50);
+    const result = await switchPirToRequirementEngine(testContext, pirInternalId2);
+    expect(result.switched).toBe(true);
+    if (!result.switched) return;
+    expect(result.flags).toEqual(1);
+    expect(result.seeded).toEqual(1);
+    const { pir, requirement } = await loadRequirementOfPir(pirInternalId2);
+    expect(pir.pir_engine).toEqual(PIR_ENGINE_REQUIREMENT);
+    expect(requirement?.ir_status).toEqual('active');
+    expect(requirement?.lastEventId).toEqual(pir.lastEventId);
+    // the flag became the entity of the requirement, and its projection writes back the same flag
+    const matches = await listMatches(testContext, SYSTEM_USER, requirement!.id);
+    expect(matches.length).toEqual(1);
+    expect(matches[0].match_entity_id).toEqual(flaggedElementId);
+    expect(matches[0].match_status).toEqual('auto');
+    const projection = await projectMatchOnPir(testContext, { ir_pir_id: pirInternalId2 }, matches[0]);
+    expect(projection).toEqual('unchanged');
+    const after = await pageRelationsConnection<BasicStoreRelationPir>(testContext, SYSTEM_USER, RELATION_IN_PIR, { toId: [pirInternalId2] });
+    expect(after.edges.length).toEqual(1);
+    expect(after.edges[0].node.pir_score).toEqual(storedScore);
+    // idempotent
+    const again = await switchPirToRequirementEngine(testContext, pirInternalId2);
+    expect(again.switched).toBe(true);
+    expect((await listMatches(testContext, SYSTEM_USER, requirement!.id)).length).toEqual(1);
+    // back to the legacy engine: the requirement is paused, the flag stays
+    const back = await switchPirToLegacyEngine(testContext, pirInternalId2);
+    expect(back.engine).toEqual('legacy');
+    const { pir: legacyPir, requirement: pausedRequirement } = await loadRequirementOfPir(pirInternalId2);
+    expect(legacyPir.pir_engine).toEqual('legacy');
+    expect(pausedRequirement?.ir_status).toEqual('paused');
+    const kept = await pageRelationsConnection<BasicStoreRelationPir>(testContext, SYSTEM_USER, RELATION_IN_PIR, { toId: [pirInternalId2] });
+    expect(kept.edges.length).toEqual(1);
+    resetCacheForEntity(ENTITY_TYPE_PIR);
   });
 
   it('should pir deleted', async () => {

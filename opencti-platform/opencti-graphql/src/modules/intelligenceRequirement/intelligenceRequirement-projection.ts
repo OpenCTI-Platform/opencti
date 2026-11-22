@@ -38,11 +38,57 @@ export const matchToPirExplanations = (pir: Pick<BasicStoreEntityPir, 'pir_crite
     const current = byCriterion.get(index) ?? { dependencies: [], criterion: { filters: criteria[index].filters, weight: criteria[index].weight } };
     const elementId = explanation.relationship_id ?? explanation.anchor_id;
     if (elementId && !current.dependencies.some((d) => d.element_id === elementId)) {
-      current.dependencies.push({ element_id: elementId, author_id: null });
+      current.dependencies.push({ element_id: elementId, author_id: explanation.author_id ?? null });
     }
     byCriterion.set(index, current);
   });
   return Array.from(byCriterion.entries()).sort(([a], [b]) => a - b).map(([, e]) => e);
+};
+
+/**
+ * A serialized filter group with its keys sorted, so two writings of the same criterion compare equal
+ * (the legacy engine stores the criterion as the manager serialized it, the Pir as it was created).
+ */
+export const canonicalPirFilters = (filters: string) => {
+  const sortKeys = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(sortKeys);
+    if (value && typeof value === 'object') {
+      return Object.keys(value as Record<string, unknown>).sort().reduce((acc, key) => {
+        acc[key] = sortKeys((value as Record<string, unknown>)[key]);
+        return acc;
+      }, {} as Record<string, unknown>);
+    }
+    return value;
+  };
+  try {
+    return JSON.stringify(sortKeys(JSON.parse(filters)));
+  } catch {
+    return filters;
+  }
+};
+
+const explanationKeys = (explanations: PirExplanation[]) => {
+  const keys = new Map<string, Set<string>>();
+  explanations.forEach((e) => {
+    const key = `${canonicalPirFilters(e.criterion.filters)}#${e.criterion.weight}`;
+    const deps = keys.get(key) ?? new Set<string>();
+    e.dependencies.forEach((d) => deps.add(`${d.element_id}|${d.author_id ?? ''}`));
+    keys.set(key, deps);
+  });
+  return keys;
+};
+
+/**
+ * Same legacy explanations whatever their order, the order of their dependencies and the key order of the criterion filters.
+ */
+export const samePirExplanations = (a: PirExplanation[], b: PirExplanation[]) => {
+  const keysA = explanationKeys(a);
+  const keysB = explanationKeys(b);
+  if (keysA.size !== keysB.size) return false;
+  return Array.from(keysA.entries()).every(([key, deps]) => {
+    const other = keysB.get(key);
+    return !!other && other.size === deps.size && Array.from(deps).every((d) => other.has(d));
+  });
 };
 
 /**
@@ -106,7 +152,7 @@ export const projectMatchOnPir = async (
       return 'created';
     }
     const sameScore = existing.pir_score === pir_score;
-    const sameExplanations = JSON.stringify(existing.pir_explanation ?? []) === JSON.stringify(explanations);
+    const sameExplanations = samePirExplanations(existing.pir_explanation ?? [], explanations);
     if (sameScore && sameExplanations) return 'unchanged';
     await patchAttribute(context, SYSTEM_USER, existing.id, RELATION_IN_PIR, { pir_explanation: explanations, pir_score }, { locks: lockIds });
     await updatePirInformationOnEntity(context, SYSTEM_USER, entityId, pir.id, pir_score);

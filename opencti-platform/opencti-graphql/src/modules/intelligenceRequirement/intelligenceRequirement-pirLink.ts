@@ -1,14 +1,20 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { storeLoadById } from '../../database/middleware-loader';
+import { fullRelationsList, storeLoadById } from '../../database/middleware-loader';
 import { createEntity, patchAttribute } from '../../database/middleware';
 import { logApp } from '../../config/conf';
 import { SYSTEM_USER } from '../../utils/access';
 import type { EditInput } from '../../generated/graphql';
-import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, isPirDrivenByRequirement } from '../pir/pir-types';
+import { RELATION_IN_PIR } from '../../schema/internalRelationship';
+import { lockResources } from '../../lock/master-lock';
+import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, isPirDrivenByRequirement, PIR_ENGINE_LEGACY, PIR_ENGINE_REQUIREMENT } from '../pir/pir-types';
 import { parsePir } from '../pir/pir-utils';
 import { type BasicStoreEntityIntelligenceRequirement, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT } from './intelligenceRequirement-types';
-import { legacyPirToRequirement } from './intelligenceRequirement-legacy';
+import { legacyCriterionId, legacyPirToRequirement } from './intelligenceRequirement-legacy';
 import { intelligenceRequirementDelete } from './intelligenceRequirement-domain';
+import { type BasicStoreEntityIntelligenceRequirementMatch, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, type StoreIrMatchExplanation } from './intelligenceRequirementMatch-types';
+import { invalidateInRequirementEntityIds, listMatchesForEntities } from './intelligenceRequirementMatch-domain';
+import { entityDisplayName } from './intelligenceRequirementItem-domain';
+import { canonicalPirFilters, matchToPirExplanations, matchToPirScore, samePirExplanations } from './intelligenceRequirement-projection';
 
 // Link between a Pir and the intelligence requirement built from it (pir_requirement_id on the Pir, ir_pir_id on the requirement).
 // The Pir stays the public face: its write API (pirFieldPatch, pirEditAuthorizedMembers, pirDelete) is mirrored onto the requirement,
@@ -131,6 +137,146 @@ export const mirrorPirMembersOnRequirement = async (context: AuthContext, pirId:
     logApp.error('[OPENCTI-MODULE] Pir members not mirrored on its intelligence requirement', { cause: err, pir: pirId });
     return false;
   }
+};
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Engine switch: the requirement takes over the flagging of its Pir.
+// The legacy flags (in-pir relationships) become the entities of the requirement, then a parity check proves that the
+// projection of every one of them writes back the same pir_score and the same pir_explanation: only then the Pir is
+// switched. A Pir whose flags would change is left on the legacy engine (nothing written on the Pir), so a switch never
+// changes what a consumer of the Pir sees. The switch is explicit, per Pir: an instance with the defaults keeps the
+// legacy engine everywhere.
+
+export interface PirParityMismatch {
+  entity_id: string;
+  stored_score: number;
+  projected_score: number;
+  same_explanations: boolean;
+}
+
+/**
+ * The match an in-pir relationship becomes: one proof per dependency of each legacy explanation, on the criterion
+ * the explanation was written for (found by its filters and weight). Pure.
+ */
+export const inPirRelationToMatch = (pir: Pick<BasicStoreEntityPir, 'pir_criteria'>, relation: Pick<BasicStoreRelationPir, 'fromId' | 'pir_explanation' | 'pir_score'>, at: string) => {
+  const criteria = (pir.pir_criteria ?? []).map((c) => `${canonicalPirFilters(c.filters)}#${c.weight}`);
+  const criteriaIds = new Set<string>();
+  const explanations: StoreIrMatchExplanation[] = [];
+  (relation.pir_explanation ?? []).forEach((legacy) => {
+    const index = criteria.indexOf(`${canonicalPirFilters(legacy.criterion.filters)}#${legacy.criterion.weight}`);
+    if (index < 0) return;
+    const criterionId = legacyCriterionId(index);
+    criteriaIds.add(criterionId);
+    legacy.dependencies.forEach((dependency) => {
+      explanations.push({ criterion_id: criterionId, kind: 'graph', at, relationship_id: dependency.element_id, author_id: dependency.author_id ?? null });
+    });
+  });
+  return {
+    match_criteria_ids: Array.from(criteriaIds),
+    match_explanations: JSON.stringify(explanations),
+    match_score: relation.pir_score ?? 0,
+  };
+};
+
+/**
+ * Parity of one flag: the match built from it projects back the stored score and explanations. Pure.
+ */
+export const checkInPirParity = (pir: Pick<BasicStoreEntityPir, 'pir_criteria'>, relation: BasicStoreRelationPir, at: string): PirParityMismatch | null => {
+  const seed = inPirRelationToMatch(pir, relation, at);
+  const match = { ...seed, match_status: 'auto', match_excluded: false } as unknown as BasicStoreEntityIntelligenceRequirementMatch;
+  const projectedScore = matchToPirScore(pir, match);
+  const sameExplanations = samePirExplanations(relation.pir_explanation ?? [], matchToPirExplanations(pir, match));
+  if (projectedScore === relation.pir_score && sameExplanations) return null;
+  return { entity_id: relation.fromId, stored_score: relation.pir_score, projected_score: projectedScore, same_explanations: sameExplanations };
+};
+
+const withPirLock = async <T>(pirId: string, fn: () => Promise<T>) => {
+  const lock = await lockResources([pirId]);
+  try {
+    return await fn();
+  } finally {
+    await lock.unlock();
+  }
+};
+
+export type PirEngineSwitchResult =
+  | { switched: true; engine: string; requirementId: string; flags: number; seeded: number }
+  | { switched: false; engine: string; reason: string; mismatches?: PirParityMismatch[] };
+
+/**
+ * Switch a Pir to the engine of its requirement. Idempotent. Refused (Pir unchanged) when a flag fails the parity check.
+ * The requirement starts at the stream position of the Pir: no event is read twice, none is skipped.
+ */
+export const switchPirToRequirementEngine = async (context: AuthContext, pirId: string): Promise<PirEngineSwitchResult> => {
+  return withPirLock(pirId, async () => {
+    const pir = await storeLoadById<BasicStoreEntityPir>(context, SYSTEM_USER, pirId, ENTITY_TYPE_PIR);
+    if (!pir) return { switched: false, engine: PIR_ENGINE_LEGACY, reason: 'Pir not found' };
+    if (isPirDrivenByRequirement(pir) && pir.pir_requirement_id) {
+      return { switched: true, engine: PIR_ENGINE_REQUIREMENT, requirementId: pir.pir_requirement_id, flags: 0, seeded: 0 };
+    }
+    const requirementId = await linkPirToRequirement(context, pir);
+    const relations = await fullRelationsList<BasicStoreRelationPir>(context, SYSTEM_USER, RELATION_IN_PIR, { toId: pir.id });
+    const at = new Date().toISOString();
+    const mismatches = relations.map((relation) => checkInPirParity(pir, relation, at)).filter((m): m is PirParityMismatch => m !== null);
+    if (mismatches.length > 0) {
+      logApp.warn('[OPENCTI-MODULE] Pir kept on the legacy engine: its flags would change', { pir: pir.id, mismatches: mismatches.slice(0, 20) });
+      return { switched: false, engine: PIR_ENGINE_LEGACY, reason: 'parity', mismatches };
+    }
+    // The flags become the entities of the requirement (an entity already there is kept as it is: resumable)
+    const existing = await listMatchesForEntities(context, SYSTEM_USER, requirementId, relations.map((r) => r.fromId));
+    const known = new Set(existing.map((m) => m.match_entity_id));
+    let seeded = 0;
+    for (let i = 0; i < relations.length; i += 1) {
+      const relation = relations[i];
+      if (!known.has(relation.fromId)) {
+        const now = new Date();
+        await createEntity(context, SYSTEM_USER, {
+          ir_id: requirementId,
+          match_entity_id: relation.fromId,
+          match_entity_type: relation.fromType,
+          match_entity_name: await entityDisplayName(context, SYSTEM_USER, relation.fromId),
+          match_status: 'auto',
+          ...inPirRelationToMatch(pir, relation, at),
+          match_score_breakdown: '[]',
+          match_excluded: false,
+          match_last_fact_at: now,
+          created_at: now,
+          updated_at: now,
+        }, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH);
+        known.add(relation.fromId);
+        seeded += 1;
+      }
+    }
+    invalidateInRequirementEntityIds(requirementId);
+    // The Pir first (the legacy manager stops reading the stream for it), then the requirement resumes from the same position
+    await patchAttribute(context, SYSTEM_USER, pir.id, ENTITY_TYPE_PIR, { pir_engine: PIR_ENGINE_REQUIREMENT });
+    await patchAttribute(context, SYSTEM_USER, requirementId, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, {
+      ir_status: 'active',
+      lastEventId: pir.lastEventId,
+      ir_processing: JSON.stringify({ catchup_from: pir.lastEventId }),
+    });
+    logApp.info('[OPENCTI-MODULE] Pir switched to its intelligence requirement', { pir: pir.id, requirement: requirementId, flags: relations.length, seeded });
+    return { switched: true, engine: PIR_ENGINE_REQUIREMENT, requirementId, flags: relations.length, seeded };
+  });
+};
+
+/**
+ * Back to the legacy engine: the requirement is paused and the Pir resumes from the position the requirement reached.
+ * The flags written by the requirement stay: they have the legacy shape.
+ */
+export const switchPirToLegacyEngine = async (context: AuthContext, pirId: string): Promise<PirEngineSwitchResult> => {
+  return withPirLock(pirId, async () => {
+    const pir = await storeLoadById<BasicStoreEntityPir>(context, SYSTEM_USER, pirId, ENTITY_TYPE_PIR);
+    if (!pir) return { switched: false, engine: PIR_ENGINE_LEGACY, reason: 'Pir not found' };
+    const requirement = await loadLinkedRequirement(context, pir);
+    const patch: Record<string, unknown> = { pir_engine: PIR_ENGINE_LEGACY };
+    if (requirement) {
+      await patchAttribute(context, SYSTEM_USER, requirement.id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, { ir_status: 'paused' });
+      if (isPirDrivenByRequirement(pir) && requirement.lastEventId) patch.lastEventId = requirement.lastEventId;
+    }
+    await patchAttribute(context, SYSTEM_USER, pir.id, ENTITY_TYPE_PIR, patch);
+    return { switched: true, engine: PIR_ENGINE_LEGACY, requirementId: requirement?.id ?? '', flags: 0, seeded: 0 };
+  });
 };
 
 /**

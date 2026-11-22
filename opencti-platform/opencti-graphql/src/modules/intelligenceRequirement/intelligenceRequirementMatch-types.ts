@@ -22,6 +22,7 @@ export interface StoreIrMatchExplanation {
   relationship_id?: string;
   relationship_type?: string;
   direction?: string; // outgoing | incoming, seen from the anchor
+  author_id?: string | null; // author of the proof relationship, kept for the Pir explanation it projects to
   // keywords
   keyword?: string;
   field?: string;
