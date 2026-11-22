@@ -16,7 +16,7 @@ export const up = async (next: (error?: Error) => void) => {
   const report = await migratePirsToRequirements(context);
   report.failed.forEach((failure) => {
     if (!failure.converted) {
-      logMigration.error(`${message} > Pir ${failure.pir_id} (${failure.name}) kept: ${failure.reason}`, { mismatches: failure.mismatches });
+      logMigration.error(`${message} > Pir ${failure.pir_id} (${failure.name}) kept: ${failure.reason}; mismatches: ${JSON.stringify(failure.mismatches ?? [])}`);
     }
   });
   report.playbooks_kept.forEach((kept) => {
