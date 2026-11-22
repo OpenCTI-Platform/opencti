@@ -16,8 +16,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React, { useEffect, useRef, useState } from 'react';
 import { fetchQuery, graphql } from 'react-relay';
 import { useNavigate } from 'react-router';
-import { Alert, Checkbox, Chip, Input, Paper, Text, Textarea, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Alert, Checkbox, Chip, Input, Menu, MenuContent, MenuItem, MenuTrigger, Paper, Text, Textarea } from '@filigran/design-system';
 import Box from '@mui/material/Box';
+import { AddOutlined, ArrowDropDownOutlined, ArrowDropUpOutlined } from '@mui/icons-material';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
@@ -304,9 +305,13 @@ const IrAiAssistedCreationContent = ({ agent, onClose }: { agent: AgentOption; o
   );
 };
 
+// The one create entry point of the list: "Create a requirement" opens a menu with the blank form and "Create with AI",
+// so the toolbar keeps one button at every width.
 const IrAiAssistedCreation = () => {
   const { t_i18n } = useFormatter();
-  const { visible, xtmOneConfigured, termsPending, disabledReason } = useIrAiGate('AI assisted PIR');
+  const navigate = useNavigate();
+  const { visible, xtmOneConfigured, termsPending, disabledReason } = useIrAiGate('Create with AI');
+  const [menuOpen, setMenuOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
   const [agent, setAgent] = useState<AgentOption | null | undefined>(undefined);
@@ -316,31 +321,44 @@ const IrAiAssistedCreation = () => {
     fetchAgentsForIntent(INTENT).then((found) => setAgent(found[0] ?? null));
   }, [open, xtmOneConfigured]);
 
-  if (!visible) return null;
   // The assistant needs an XTM One agent able to read the model and the data of the platform
-  const reason = disabledReason ?? (xtmOneConfigured ? null : t_i18n('AI assisted PIR needs XTM One.'));
-  const button = (
-    <Button
-      variant="secondary"
-      intent="ai"
-      disabled={!!reason}
-      startIcon={<FiligranIcon icon={LogoXtmOneIcon} size={16} />}
-      onClick={() => (termsPending ? setTermsOpen(true) : setOpen(true))}
-    >
-      {t_i18n('AI assisted PIR')}
-    </Button>
-  );
+  const reason = disabledReason ?? (xtmOneConfigured ? null : t_i18n('Create with AI needs XTM One.'));
+  const closeThen = (action: () => void) => () => {
+    setMenuOpen(false);
+    action();
+  };
+  const createBlank = () => navigate('/dashboard/intelligence_requirements/new');
+  // AI disabled on the platform: one plain button, no menu of a single entry
+  if (!visible) {
+    return <Button data-testid="create-intelligence-requirement-button" onClick={createBlank}>{t_i18n('Create a requirement')}</Button>;
+  }
   return (
     <>
-      {reason ? (
-        <Tooltip>
-          <TooltipTrigger asChild><span style={{ display: 'inline-flex' }}>{button}</span></TooltipTrigger>
-          <TooltipContent>{reason}</TooltipContent>
-        </Tooltip>
-      ) : button}
+      <Menu open={menuOpen} onOpenChange={setMenuOpen} modal={false}>
+        <MenuTrigger asChild>
+          <Button data-testid="create-intelligence-requirement-button" endIcon={menuOpen ? <ArrowDropUpOutlined /> : <ArrowDropDownOutlined />}>
+            {t_i18n('Create a requirement')}
+          </Button>
+        </MenuTrigger>
+        <MenuContent align="end" sideOffset={6} style={{ minWidth: 280 }}>
+          <MenuItem startIcon={<AddOutlined fontSize="small" />} onSelect={closeThen(createBlank)}>
+            {t_i18n('Blank requirement')}
+          </MenuItem>
+          <MenuItem
+            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size={16} />}
+            disabled={!!reason}
+            onSelect={closeThen(() => (termsPending ? setTermsOpen(true) : setOpen(true)))}
+          >
+            <span style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '4px 0' }}>
+              <span>{t_i18n('Create with AI')}</span>
+              {reason && <Text as="span" variant="content-compact">{reason}</Text>}
+            </span>
+          </MenuItem>
+        </MenuContent>
+      </Menu>
       {termsOpen && <ValidateTermsOfUseDialog open={termsOpen} onClose={() => setTermsOpen(false)} />}
       {/* The drawer clones its single child: keep one */}
-      <Drawer open={open} onClose={() => setOpen(false)} title={t_i18n('AI assisted PIR')} size="large">
+      <Drawer open={open} onClose={() => setOpen(false)} title={t_i18n('Create with AI')} size="large">
         <>
           {open && agent === undefined && <Loader variant={LoaderVariant.inElement} />}
           {open && agent === null && <Alert severity="warning" title={t_i18n('No agent available')} description={t_i18n('Bind an XTM One agent to the cti.pir_builder intent.')} />}

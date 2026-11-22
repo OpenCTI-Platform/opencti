@@ -3,8 +3,8 @@ import { graphql, PreloadedQuery, useFragment } from 'react-relay';
 import { useNavigate } from 'react-router';
 import { Card, CardTitle, Chip, Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
-import Button from '@common/button/Button';
 import { useFormatter } from '../../../components/i18n';
+import ListCardsContent from '../../../components/list_cards/ListCardsContent';
 import usePreloadedPaginationFragment from '../../../utils/hooks/usePreloadedPaginationFragment';
 import type { UseLocalStorageHelpers } from '../../../utils/hooks/useLocalStorage';
 import IrSparkline from './IrSparkline';
@@ -15,6 +15,10 @@ import type { IntelligenceRequirementsLine_node$key } from './__generated__/Inte
 // List of the requirements: shared queries (list and cards views) and the cards view.
 
 export const PRIORITY_SEVERITY: Record<string, 'critical' | 'high' | 'medium' | 'low'> = { critical: 'critical', high: 'high', medium: 'medium', low: 'low' };
+// The label of a stored priority (never the raw value on screen): one map for the list, the cards, the detail and the forms
+export const PRIORITY_LABEL: Record<string, string> = { critical: 'Critical', high: 'High', medium: 'Medium', low: 'Low' };
+export const IR_PRIORITIES = ['critical', 'high', 'medium', 'low'] as const;
+export const priorityLabel = (t_i18n: (key: string) => string, priority: string) => t_i18n(PRIORITY_LABEL[priority] ?? priority);
 
 export const intelligenceRequirementLineFragment = graphql`
   fragment IntelligenceRequirementsLine_node on IntelligenceRequirement {
@@ -88,6 +92,7 @@ export const intelligenceRequirementsLinesQuery = graphql`
 `;
 
 const CARD_HEIGHT = 250;
+const CARDS_TO_LOAD = 25;
 const clampStyle = (lines: number): React.CSSProperties => ({ display: '-webkit-box', WebkitLineClamp: lines, WebkitBoxOrient: 'vertical', overflow: 'hidden' });
 
 const IntelligenceRequirementCard = ({ node }: { node: IntelligenceRequirementsLine_node$key }) => {
@@ -100,7 +105,7 @@ const IntelligenceRequirementCard = ({ node }: { node: IntelligenceRequirementsL
         {/* The card is clickable through its title: the FDS Card stretches the title's control over the surface */}
         <CardTitle as="div"><span style={clampStyle(2)}>{ir.name}</span></CardTitle>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-          <Chip label={t_i18n(ir.ir_priority)} severity={PRIORITY_SEVERITY[ir.ir_priority]} />
+          <Chip label={priorityLabel(t_i18n, ir.ir_priority)} severity={PRIORITY_SEVERITY[ir.ir_priority]} />
           <Chip label={t_i18n(ir.ir_status === 'active' ? 'Active' : 'Paused')} />
           <Text as="span" variant="content-caption" style={{ opacity: 0.7 }}>{fsd(ir.created_at)}</Text>
         </Box>
@@ -124,6 +129,8 @@ const IntelligenceRequirementCard = ({ node }: { node: IntelligenceRequirementsL
   );
 };
 
+const IntelligenceRequirementCardDummy = () => <Card padding={16} gap={0} style={{ height: CARD_HEIGHT }}><Box /></Card>;
+
 interface IntelligenceRequirementsCardsProps {
   queryRef: PreloadedQuery<IntelligenceRequirementsLinesQuery>;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
@@ -138,21 +145,24 @@ const IntelligenceRequirementsCards = ({ queryRef, setNumberOfElements }: Intell
     nodePath: ['intelligenceRequirements', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
-  const nodes = (data?.intelligenceRequirements?.edges ?? []).map((e) => e.node);
-  if (nodes.length === 0) {
+  const edges = data?.intelligenceRequirements?.edges ?? [];
+  if (data && edges.length === 0) {
     return <Text as="div" variant="content-base">{t_i18n('No requirement yet.')}</Text>;
   }
+  // The shared infinite scroll of the cards views: the next page loads as the grid scrolls, nothing is drawn below it
   return (
-    <>
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 2 }}>
-        {nodes.map((node) => <IntelligenceRequirementCard key={node.id} node={node} />)}
-      </Box>
-      {hasMore() && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-          <Button variant="secondary" onClick={() => loadMore(25)} disabled={isLoadingMore()}>{t_i18n('Load more')}</Button>
-        </Box>
-      )}
-    </>
+    <ListCardsContent
+      initialLoading={!data}
+      loadMore={loadMore}
+      hasMore={hasMore}
+      isLoading={isLoadingMore}
+      DummyCardComponent={IntelligenceRequirementCardDummy}
+      dataList={edges}
+      globalCount={data?.intelligenceRequirements?.pageInfo?.globalCount ?? CARDS_TO_LOAD}
+      CardComponent={IntelligenceRequirementCard}
+      nbOfCardsToLoad={CARDS_TO_LOAD}
+      rowHeight={CARD_HEIGHT + 30}
+    />
   );
 };
 

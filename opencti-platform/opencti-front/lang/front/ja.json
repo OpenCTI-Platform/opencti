@@ -6938,5 +6938,10 @@
   "{count, plural, one {# criterion matched} other {# criteria matched}}": "{count, plural, other {#件の条件に一致}}",
   "{count, plural, one {# more entity} other {# more entities}}": "{count, plural, other {他#件のエンティティ}}",
   "No entity matches the selected filters in this time window": "この期間に選択したフィルターに一致するエンティティはありません",
-  "Intelligence requirements": "インテリジェンス要件"
+  "Intelligence requirements": "インテリジェンス要件",
+  "Create with AI": "AIで作成",
+  "Create with AI needs XTM One.": "AIで作成するには XTM One が必要です。",
+  "Blank requirement": "空の要件",
+  "Unnamed group {number}": "名前のないグループ {number}",
+  "Deleted group": "削除されたグループ"
 }

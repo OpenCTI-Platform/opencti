@@ -7,6 +7,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { environment } from '../../../../relay/environment';
 import { draftToInput, type IrDraft, type IrEntityOption } from './irConfigTypes';
 import { IrEntityPicker } from './IrFields';
+import { irGroupLabel } from './irConstants';
 import type { IrDryRunPanelPreviewQuery, IrDryRunPanelPreviewQuery$data } from './__generated__/IrDryRunPanelPreviewQuery.graphql';
 import type { IrDryRunPanelTestQuery, IrDryRunPanelTestQuery$data } from './__generated__/IrDryRunPanelTestQuery.graphql';
 
@@ -111,7 +112,7 @@ const PreviewView = ({ preview }: { preview: Preview }) => {
           if (g.kind === 'filter') value = g.matching_count === null || g.matching_count === undefined ? '…' : n(g.matching_count);
           else if (g.kind === 'list') value = n(g.entities.length);
           const detail = g.unresolved_ids.length > 0 ? `${g.unresolved_ids.length} ${t_i18n('entities not found')}` : null;
-          return <Line key={g.id} label={g.name || g.id} value={value} detail={g.kind === 'keywords' ? t_i18n('Keywords: searched in the texts as they arrive') : detail} />;
+          return <Line key={g.id} label={irGroupLabel(t_i18n, preview.groups, g.id)} value={value} detail={g.kind === 'keywords' ? t_i18n('Keywords: searched in the texts as they arrive') : detail} />;
         })}
       </Section>
       <Section title={t_i18n('What each criterion brings today')}>

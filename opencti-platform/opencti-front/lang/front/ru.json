@@ -6938,5 +6938,10 @@
   "{count, plural, one {# criterion matched} other {# criteria matched}}": "{count, plural, one {# критерий совпал} few {# критерия совпали} many {# критериев совпали} other {# критерия совпали}}",
   "{count, plural, one {# more entity} other {# more entities}}": "{count, plural, one {ещё # сущность} few {ещё # сущности} many {ещё # сущностей} other {ещё # сущности}}",
   "No entity matches the selected filters in this time window": "Нет сущностей, соответствующих выбранным фильтрам в этом временном окне",
-  "Intelligence requirements": "Разведывательные требования"
+  "Intelligence requirements": "Разведывательные требования",
+  "Create with AI": "Создать с помощью ИИ",
+  "Create with AI needs XTM One.": "Для создания с помощью ИИ нужен XTM One.",
+  "Blank requirement": "Пустое требование",
+  "Unnamed group {number}": "Группа без названия {number}",
+  "Deleted group": "Удалённая группа"
 }

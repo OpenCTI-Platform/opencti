@@ -6938,5 +6938,10 @@
   "{count, plural, one {# criterion matched} other {# criteria matched}}": "{count, plural, one {# critère correspondant} other {# critères correspondants}}",
   "{count, plural, one {# more entity} other {# more entities}}": "{count, plural, one {# entité de plus} other {# entités de plus}}",
   "No entity matches the selected filters in this time window": "Aucune entité ne correspond aux filtres sélectionnés sur cette période",
-  "Intelligence requirements": "Besoins en renseignement"
+  "Intelligence requirements": "Besoins en renseignement",
+  "Create with AI": "Créer avec l'IA",
+  "Create with AI needs XTM One.": "Créer avec l'IA nécessite XTM One.",
+  "Blank requirement": "Exigence vierge",
+  "Unnamed group {number}": "Groupe sans nom {number}",
+  "Deleted group": "Groupe supprimé"
 }

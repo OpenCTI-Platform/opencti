@@ -6,7 +6,7 @@ import IconButton from '@common/button/IconButton';
 import { DeleteOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import { emptyLink, emptyPathCondition, type IrConditionDraft, type IrGroupDraft, type IrPathConditionDraft } from './irConfigTypes';
-import { IR_RELATIONSHIP_TYPES } from './irConstants';
+import { groupSelectOptions, irGroupLabel, irRelationshipLabel, IR_RELATIONSHIP_TYPES } from './irConstants';
 import { IrEntityPicker, IrMultiSelect, IrSelect } from './IrFields';
 import IrFilterBuilder from './IrFilterBuilder';
 import { SentenceToken } from './IrCriterionSentence';
@@ -33,16 +33,10 @@ const IrConditionSentence = ({ condition, groups, typeOptions, onChange, onDelet
   const [active, setActive] = useState<TokenKey | null>(null);
   const toggle = (key: TokenKey) => setActive((current) => (current === key ? null : key));
 
-  // The relationship labels of the platform ("uses", "targets"...), the same as everywhere else in OpenCTI
-  const relationshipLabel = (rel: string) => {
-    if (rel === 'object') return t_i18n('contains');
-    const key = `relationship_${rel}`;
-    const label = t_i18n(key);
-    return label === key ? rel : label;
-  };
+  const relationshipLabel = (rel: string) => irRelationshipLabel(t_i18n, rel);
   const relationshipOptions = IR_RELATIONSHIP_TYPES.map((r) => ({ value: r, label: relationshipLabel(r) }));
-  const memberGroupOptions = groups.filter((g) => g.kind !== 'keywords').map((g) => ({ value: g.id, label: g.name || g.id }));
-  const groupName = (id: string) => groups.find((g) => g.id === id)?.name || id;
+  const memberGroupOptions = groupSelectOptions(t_i18n, groups, (g) => g.kind !== 'keywords');
+  const groupName = (id: string) => irGroupLabel(t_i18n, groups, id);
   const orList = (labels: string[], placeholder: string) => (labels.length > 0 ? labels.join(` ${t_i18n('or')} `) : placeholder);
 
   const token = (key: TokenKey, label: string, empty = false) => (

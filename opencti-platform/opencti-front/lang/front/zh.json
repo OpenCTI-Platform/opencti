@@ -6938,5 +6938,10 @@
   "{count, plural, one {# criterion matched} other {# criteria matched}}": "{count, plural, other {匹配 # 个条件}}",
   "{count, plural, one {# more entity} other {# more entities}}": "{count, plural, other {另外 # 个实体}}",
   "No entity matches the selected filters in this time window": "此时间窗口内没有符合所选筛选条件的实体",
-  "Intelligence requirements": "情报需求"
+  "Intelligence requirements": "情报需求",
+  "Create with AI": "使用 AI 创建",
+  "Create with AI needs XTM One.": "使用 AI 创建需要 XTM One。",
+  "Blank requirement": "空白需求",
+  "Unnamed group {number}": "未命名组 {number}",
+  "Deleted group": "已删除的组"
 }

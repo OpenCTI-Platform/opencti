@@ -12,7 +12,6 @@ const IntelligenceRequirementsRoot = () => {
       <Routes>
         <Route path="/" element={boundaryWrapper(IntelligenceRequirements)} />
         <Route path="/new" element={boundaryWrapper(IntelligenceRequirementConfiguration)} />
-        <Route path="/:irId/configuration" element={boundaryWrapper(IntelligenceRequirementConfiguration)} />
         <Route path="/:irId/*" element={boundaryWrapper(IntelligenceRequirement)} />
       </Routes>
     </Suspense>

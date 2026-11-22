@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { useLocation, useParams, useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 import { Alert, Paper, Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
@@ -210,7 +210,8 @@ const IrViewChooser = ({ onPick }: { onPick: (view: IrConfigView) => void }) => 
   );
 };
 
-const EditConfiguration = ({ irId }: { irId: string }) => {
+// The Configuration tab of a requirement: rendered under its header and tabs (IntelligenceRequirement), which carry the breadcrumbs
+export const IntelligenceRequirementConfigurationTab = ({ irId }: { irId: string }) => {
   const { t_i18n } = useFormatter();
   const [view, setView] = useState<IrConfigView>(() => readConfigView(irId));
   const changeView = (next: IrConfigView) => {
@@ -222,12 +223,6 @@ const EditConfiguration = ({ irId }: { irId: string }) => {
   if (!ir) return <div>{t_i18n('This intelligence requirement does not exist')}</div>;
   return (
     <>
-      <Breadcrumbs elements={[
-        { label: t_i18n('Intelligence requirements'), link: '/dashboard/intelligence_requirements' },
-        { label: ir.name, link: `/dashboard/intelligence_requirements/${ir.id}` },
-        { label: t_i18n('Configuration'), current: true },
-      ]}
-      />
       <IrViewToggle view={view} onChange={changeView} />
       <IntelligenceRequirementConfigurationForm initialDraft={nodeToDraft(ir)} irId={ir.id} view={view} />
     </>
@@ -237,12 +232,10 @@ const EditConfiguration = ({ irId }: { irId: string }) => {
 const IntelligenceRequirementConfiguration = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  const { irId } = useParams() as { irId?: string };
   setTitle(t_i18n('Intelligence requirements'));
   // Proposal of the AI assisted creation: opened unsaved, with the notes of the agent
   const { state } = useLocation() as { state?: { aiDraft?: IrDraft; aiNotes?: { summary: string; explanations: { criterion_id: string; text: string }[] } } };
   const [searchParams, setSearchParams] = useSearchParams();
-  if (irId) return <EditConfiguration irId={irId} />;
   const aiNotes = state?.aiNotes;
   const picked = searchParams.get('view');
   // A proposal of the AI opens in the form fields, as before; a new requirement asks first

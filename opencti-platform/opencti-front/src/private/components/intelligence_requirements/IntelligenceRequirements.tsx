@@ -1,8 +1,5 @@
 import React, { Suspense, useState } from 'react';
-import { useNavigate } from 'react-router';
 import { Chip, Text } from '@filigran/design-system';
-import Box from '@mui/material/Box';
-import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { DeleteOutlined } from '@mui/icons-material';
 import Breadcrumbs from '../../../components/Breadcrumbs';
@@ -21,6 +18,7 @@ import IntelligenceRequirementsCards, {
   intelligenceRequirementsLinesFragment,
   intelligenceRequirementsLinesQuery,
   PRIORITY_SEVERITY,
+  priorityLabel,
 } from './IntelligenceRequirementsCards';
 import IrSparkline from './IrSparkline';
 import IrAiAssistedCreation from './IrAiAssistedCreation';
@@ -35,7 +33,6 @@ const ENTITY_TYPE = 'IntelligenceRequirement';
 
 const IntelligenceRequirements = () => {
   const { t_i18n } = useFormatter();
-  const navigate = useNavigate();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Intelligence requirements'));
   const initialValues = {
@@ -52,12 +49,8 @@ const IntelligenceRequirements = () => {
   const queryRef = useQueryLoading<IntelligenceRequirementsLinesQuery>(intelligenceRequirementsLinesQuery, queryPaginationOptions);
   const [toDelete, setToDelete] = useState<{ id: string; name: string } | null>(null);
 
-  const createButton = (
-    <Box sx={{ display: 'flex', gap: 1 }}>
-      <IrAiAssistedCreation />
-      <Button onClick={() => navigate('/dashboard/intelligence_requirements/new')}>{t_i18n('Create a requirement')}</Button>
-    </Box>
-  );
+  // One create entry point: "Create a requirement", whose menu holds "Create with AI"
+  const createButton = <IrAiAssistedCreation />;
   const viewButtons = [
     <ViewSwitchingButtons key="switching_buttons" handleChangeView={helpers.handleChangeView} currentView={viewStorage.view} />,
   ];
@@ -70,7 +63,7 @@ const IntelligenceRequirements = () => {
         label: 'Priority',
         percentWidth: 9,
         isSortable: false, // stored as text: an alphabetical sort would put high before critical
-        render: ({ ir_priority }: IntelligenceRequirementsLine_node$data) => <Chip label={t_i18n(ir_priority)} severity={PRIORITY_SEVERITY[ir_priority]} />,
+        render: ({ ir_priority }: IntelligenceRequirementsLine_node$data) => <Chip label={priorityLabel(t_i18n, ir_priority)} severity={PRIORITY_SEVERITY[ir_priority]} />,
       },
       ir_status: {
         id: 'ir_status',

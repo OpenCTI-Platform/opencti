@@ -8,7 +8,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { PRIORITY_SEVERITY } from './IntelligenceRequirementsCards';
+import { PRIORITY_SEVERITY, priorityLabel } from './IntelligenceRequirementsCards';
 import IrOverview from './outputs/IrOverview';
 import IrEntities from './outputs/IrEntities';
 import IrGraph from './outputs/IrGraph';
@@ -17,6 +17,7 @@ import IrInbox from './outputs/IrInbox';
 import IrProcessing from './outputs/IrProcessing';
 import IrAiInsight from './IrAiInsight';
 import IrDeleteDialog from './IrDeleteDialog';
+import { IntelligenceRequirementConfigurationTab } from './configuration/IntelligenceRequirementConfiguration';
 import type { IntelligenceRequirementQuery } from './__generated__/IntelligenceRequirementQuery.graphql';
 
 // Page of a requirement: the same output screens for every question (Overview, Entities, Inbox).
@@ -53,6 +54,7 @@ const IntelligenceRequirement = () => {
   if (pathname.endsWith('/processing')) tab = 'processing';
   if (pathname.endsWith('/graph')) tab = 'graph';
   if (pathname.endsWith('/timeline')) tab = 'timeline';
+  if (pathname.endsWith('/configuration')) tab = 'configuration';
   return (
     <>
       <Breadcrumbs elements={[{ label: t_i18n('Intelligence requirements'), link: '/dashboard/intelligence_requirements' }, { label: ir.name, current: true }]} />
@@ -61,13 +63,12 @@ const IntelligenceRequirement = () => {
           <Text as="h1" variant="title-md">{ir.name}</Text>
           <Text as="div" variant="content-base" style={{ opacity: 0.8, marginTop: 4 }}>{`“${ir.ir_question}”`}</Text>
           <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-            <Chip label={t_i18n(ir.ir_priority)} severity={PRIORITY_SEVERITY[ir.ir_priority]} />
+            <Chip label={priorityLabel(t_i18n, ir.ir_priority)} severity={PRIORITY_SEVERITY[ir.ir_priority]} />
             <Chip label={t_i18n(ir.ir_status === 'active' ? 'Active' : 'Paused')} />
           </Box>
         </Box>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           <IrAiInsight irId={ir.id} />
-          <Button variant="secondary" onClick={() => navigate(`/dashboard/intelligence_requirements/${ir.id}/configuration`)}>{t_i18n('Configuration')}</Button>
           <Button variant="secondary" intent="destructive" onClick={() => setDeleting(true)}>{t_i18n('Delete')}</Button>
         </Box>
       </Box>
@@ -114,6 +115,7 @@ const IntelligenceRequirement = () => {
           <Route path="/timeline" element={<IrTimeline irId={ir.id} />} />
           <Route path="/inbox" element={<IrInbox irId={ir.id} />} />
           <Route path="/processing" element={<IrProcessing irId={ir.id} />} />
+          <Route path="/configuration" element={<IntelligenceRequirementConfigurationTab irId={ir.id} />} />
         </Routes>
       </Suspense>
     </>

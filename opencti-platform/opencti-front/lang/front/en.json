@@ -6961,8 +6961,6 @@
   "second hop": "second hop",
   "Regenerate": "Regenerate",
   "Review in the configuration screen": "Review in the configuration screen",
-  "AI assisted PIR needs XTM One.": "AI assisted PIR needs XTM One.",
-  "AI assisted PIR": "AI assisted PIR",
   "Bind an XTM One agent to the cti.pir_builder intent.": "Bind an XTM One agent to the cti.pir_builder intent.",
   "Unable to prepare the content of the requirement.": "Unable to prepare the content of the requirement.",
   "AI Insight": "AI Insight",
@@ -7257,5 +7255,10 @@
   "{count, plural, one {# criterion matched} other {# criteria matched}}": "{count, plural, one {# criterion matched} other {# criteria matched}}",
   "{count, plural, one {# more entity} other {# more entities}}": "{count, plural, one {# more entity} other {# more entities}}",
   "No entity matches the selected filters in this time window": "No entity matches the selected filters in this time window",
-  "Intelligence requirements": "Intelligence requirements"
+  "Intelligence requirements": "Intelligence requirements",
+  "Create with AI": "Create with AI",
+  "Create with AI needs XTM One.": "Create with AI needs XTM One.",
+  "Blank requirement": "Blank requirement",
+  "Unnamed group {number}": "Unnamed group {number}",
+  "Deleted group": "Deleted group"
 }

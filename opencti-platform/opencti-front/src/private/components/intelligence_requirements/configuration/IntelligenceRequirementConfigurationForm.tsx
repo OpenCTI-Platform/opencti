@@ -25,7 +25,8 @@ import {
   type IrRuleDraft,
   newId,
 } from './irConfigTypes';
-import { IR_ENTITY_TYPES, IR_KEYWORD_FIELDS, IR_KIQS_ENABLED, IR_RELATIONSHIP_TYPES } from './irConstants';
+import { groupSelectOptions, irRelationshipLabel, IR_ENTITY_TYPES, IR_KEYWORD_FIELDS, IR_KIQS_ENABLED, IR_RELATIONSHIP_TYPES } from './irConstants';
+import { IR_PRIORITIES, priorityLabel } from '../IntelligenceRequirementsCards';
 import { IrEntityPicker, IrMultiSelect, IrSelect } from './IrFields';
 import IrFilterBuilder from './IrFilterBuilder';
 import IrDryRunPanel from './IrDryRunPanel';
@@ -169,9 +170,9 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId, view = '
   });
 
   const typeOptions = IR_ENTITY_TYPES.map((t) => ({ value: t, label: t_i18n(`entity_${t}`) }));
-  const relationshipOptions = IR_RELATIONSHIP_TYPES.map((r) => ({ value: r, label: r === 'object' ? t_i18n('object (contained in a report or container)') : r }));
-  const groupOptions = draft.groups.map((g) => ({ value: g.id, label: g.name || g.id }));
-  const entityGroupOptions = draft.groups.filter((g) => g.kind !== 'keywords').map((g) => ({ value: g.id, label: g.name || g.id }));
+  const relationshipOptions = IR_RELATIONSHIP_TYPES.map((r) => ({ value: r, label: r === 'object' ? t_i18n('object (contained in a report or container)') : irRelationshipLabel(t_i18n, r) }));
+  const groupOptions = groupSelectOptions(t_i18n, draft.groups);
+  const entityGroupOptions = groupSelectOptions(t_i18n, draft.groups, (g) => g.kind !== 'keywords');
   const criterionOptions = draft.criteria.map((c) => ({ value: c.id, label: c.name || c.id }));
   const directionOptions = [
     { value: 'outgoing', label: t_i18n('Outgoing (anchor → target)') },
@@ -283,7 +284,7 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId, view = '
             <IrSelect
               label={t_i18n('Priority')}
               value={draft.priority}
-              options={['critical', 'high', 'medium', 'low'].map((p) => ({ value: p, label: t_i18n(p) }))}
+              options={IR_PRIORITIES.map((p) => ({ value: p, label: priorityLabel(t_i18n, p) }))}
               onChange={(v) => set({ priority: v as IrDraft['priority'] })}
             />
             <IrSelect
@@ -437,7 +438,7 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId, view = '
                   <IrMultiSelect
                     label={t_i18n('Keyword groups')}
                     values={criterion.from_group_ids}
-                    options={draft.groups.filter((g) => g.kind === 'keywords').map((g) => ({ value: g.id, label: g.name || g.id }))}
+                    options={groupSelectOptions(t_i18n, draft.groups, (g) => g.kind === 'keywords')}
                     onChange={(v) => setCriterion(criterion.id, { from_group_ids: v })}
                   />
                   <IrMultiSelect label={t_i18n('Search in')} values={criterion.keyword_fields} options={IR_KEYWORD_FIELDS.map((f) => ({ value: f, label: t_i18n(f) }))} onChange={(v) => setCriterion(criterion.id, { keyword_fields: v })} />

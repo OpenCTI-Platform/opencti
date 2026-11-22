@@ -6,7 +6,7 @@ import IconButton from '@common/button/IconButton';
 import { DeleteOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import type { IrCriterionDraft, IrGroupDraft } from './irConfigTypes';
-import { IR_KEYWORD_FIELDS } from './irConstants';
+import { groupSelectOptions, irGroupLabel, IR_KEYWORD_FIELDS } from './irConstants';
 import { IrMultiSelect, IrSelect } from './IrFields';
 import IrFilterBuilder from './IrFilterBuilder';
 import { criterionToPhrases, criterionToStarts, impliedPhrases, IN_REQUIREMENT_START, phrasesToCriterion, relationPhraseOptions, startsToCriterion } from './irSentence';
@@ -59,7 +59,7 @@ const IrCriterionSentence = ({ criterion, groups, typeOptions, onChange, onDelet
   const [advanced, setAdvanced] = useState(false);
   const toggle = (key: TokenKey) => setActive((current) => (current === key ? null : key));
 
-  const groupName = (id: string) => groups.find((g) => g.id === id)?.name || id;
+  const groupName = (id: string) => irGroupLabel(t_i18n, groups, id);
   const list = (labels: string[], placeholder: string) => (labels.length > 0 ? labels.join(', ') : placeholder);
 
   const modeOptions = [
@@ -71,11 +71,11 @@ const IrCriterionSentence = ({ criterion, groups, typeOptions, onChange, onDelet
   const phrases = criterionToPhrases(criterion);
   const implied = impliedPhrases(phrases);
   const startOptions = [
-    ...groups.filter((g) => g.kind !== 'keywords').map((g) => ({ value: g.id, label: g.name || g.id })),
+    ...groupSelectOptions(t_i18n, groups, (g) => g.kind !== 'keywords'),
     { value: IN_REQUIREMENT_START, label: t_i18n('the entities already in the requirement') },
   ];
-  const memberGroupOptions = groups.filter((g) => g.kind !== 'keywords').map((g) => ({ value: g.id, label: g.name || g.id }));
-  const keywordGroupOptions = groups.filter((g) => g.kind === 'keywords').map((g) => ({ value: g.id, label: g.name || g.id }));
+  const memberGroupOptions = groupSelectOptions(t_i18n, groups, (g) => g.kind !== 'keywords');
+  const keywordGroupOptions = groupSelectOptions(t_i18n, groups, (g) => g.kind === 'keywords');
   const fieldOptions = IR_KEYWORD_FIELDS.map((f) => ({ value: f, label: t_i18n(f) }));
 
   const typesLabel = list(criterion.target_types.map((t) => t_i18n(`entity_${t}`)), t_i18n('entities of any type'));

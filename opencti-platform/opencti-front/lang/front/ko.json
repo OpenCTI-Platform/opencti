@@ -6938,5 +6938,10 @@
   "{count, plural, one {# criterion matched} other {# criteria matched}}": "{count, plural, other {#개 조건 일치}}",
   "{count, plural, one {# more entity} other {# more entities}}": "{count, plural, other {엔터티 #개 더}}",
   "No entity matches the selected filters in this time window": "이 기간에 선택한 필터와 일치하는 엔터티가 없습니다",
-  "Intelligence requirements": "인텔리전스 요구사항"
+  "Intelligence requirements": "인텔리전스 요구사항",
+  "Create with AI": "AI로 만들기",
+  "Create with AI needs XTM One.": "AI로 만들기에는 XTM One이 필요합니다.",
+  "Blank requirement": "빈 요구 사항",
+  "Unnamed group {number}": "이름 없는 그룹 {number}",
+  "Deleted group": "삭제된 그룹"
 }
