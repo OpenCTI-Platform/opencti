@@ -6949,5 +6949,9 @@
   "Connect OpenAEV to see how this object is simulated and what it exposes.": "Connetti OpenAEV per vedere come viene simulato questo oggetto e cosa espone.",
   "Connect OpenCRQ to see the annual loss this object drives.": "Connetti OpenCRQ per vedere la perdita annua generata da questo oggetto.",
   "Open the documentation to connect it.": "Apri la documentazione per connetterlo.",
-  "Ask an administrator to connect it.": "Chiedi a un amministratore di connetterlo."
+  "Ask an administrator to connect it.": "Chiedi a un amministratore di connetterlo.",
+  "Not found in OpenAEV": "Non trovato in OpenAEV",
+  "Not found in OpenCRQ": "Non trovato in OpenCRQ",
+  "It appears once a simulation or a collector in OpenAEV uses it.": "Compare quando una simulazione o un collector di OpenAEV lo utilizza.",
+  "It appears once a risk scenario in OpenCRQ uses it.": "Compare quando uno scenario di rischio di OpenCRQ lo utilizza."
 }

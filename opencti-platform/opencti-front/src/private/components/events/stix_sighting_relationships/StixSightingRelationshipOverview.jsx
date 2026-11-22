@@ -39,7 +39,6 @@ import StixSightingRelationshipLabelsView from './StixSightingRelationshipLabels
 import StixSightingRelationshipLatestHistory from './StixSightingRelationshipLatestHistory';
 import StixSightingRelationshipSharing from './StixSightingRelationshipSharing';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import OpenAevAlertCard from '../../common/xtm/counterpart/openaev/OpenAevAlertCard';
 
 const Container = styled('div')({
   margin: 0,
@@ -464,7 +463,6 @@ class StixSightingRelationshipContainer extends Component {
                   }
                 />
               </Grid>
-              <OpenAevAlertCard gridRow objectId={stixSightingRelationship.id} />
               <Grid size={6}>
                 <StixSightingRelationshipExternalReferences
                   stixSightingRelationshipId={stixSightingRelationship.id}

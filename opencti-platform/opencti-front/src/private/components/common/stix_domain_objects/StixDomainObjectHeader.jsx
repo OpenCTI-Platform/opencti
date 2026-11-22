@@ -53,8 +53,8 @@ import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMe
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
-import OpenAevPivot from '../xtm/counterpart/openaev/OpenAevPivot';
-import { OpenCrqPivot } from '../xtm/counterpart/opencrq/OpenCrq';
+import { XtmEmblems } from '../xtm/counterpart/core/XtmEmblem';
+import { xtmProductsFor } from '../xtm/counterpart/core/xtmProducts';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 
 export const stixDomainObjectMutation = graphql`
@@ -295,12 +295,9 @@ const StixDomainObjectHeader = (props) => {
     enableEnrollPlaybook,
     enableAuthorizedMembers,
     redirectToContent,
-    // id of an object the other XTM products can also hold: the server reads its key and answers
-    // per product (a product without such objects draws nothing)
+    // id of an object the other XTM products can also hold: one icon-only emblem per product that
+    // holds this entity type (xtmProductsFor), the server reads its key and answers per product
     xtmCounterpartId,
-    // the products that can hold this type of object, so a product that is not connected offers its
-    // "Connect" call to action only where it would have something to show (OpenCRQ holds no attack pattern)
-    xtmCounterpartProducts = ['openaev', 'opencrq'],
   } = props;
   const currentAccessRight = useGetCurrentUserAccessRight(stixDomainObject.currentUserAccessRight);
   const enableManageAuthorizedMembers = currentAccessRight.canManage && enableAuthorizedMembers;
@@ -529,10 +526,7 @@ const StixDomainObjectHeader = (props) => {
         rightActions={(
           <>
             {xtmCounterpartId && (
-              <>
-                {xtmCounterpartProducts.includes('openaev') && <OpenAevPivot objectId={xtmCounterpartId} />}
-                {xtmCounterpartProducts.includes('opencrq') && <OpenCrqPivot objectId={xtmCounterpartId} />}
-              </>
+              <XtmEmblems products={xtmProductsFor(stixDomainObject.entity_type ?? entityType)} objectId={xtmCounterpartId} />
             )}
             {disableSharing !== true && (
               <StixCoreObjectSharing

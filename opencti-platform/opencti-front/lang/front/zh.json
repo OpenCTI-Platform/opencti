@@ -6949,5 +6949,9 @@
   "Connect OpenAEV to see how this object is simulated and what it exposes.": "连接 OpenAEV 以查看此对象如何被模拟以及它暴露了什么。",
   "Connect OpenCRQ to see the annual loss this object drives.": "连接 OpenCRQ 以查看此对象造成的年度损失。",
   "Open the documentation to connect it.": "打开文档以进行连接。",
-  "Ask an administrator to connect it.": "请管理员进行连接。"
+  "Ask an administrator to connect it.": "请管理员进行连接。",
+  "Not found in OpenAEV": "在 OpenAEV 中未找到",
+  "Not found in OpenCRQ": "在 OpenCRQ 中未找到",
+  "It appears once a simulation or a collector in OpenAEV uses it.": "当 OpenAEV 中的模拟或采集器使用它时会显示。",
+  "It appears once a risk scenario in OpenCRQ uses it.": "当 OpenCRQ 中的风险场景使用它时会显示。"
 }

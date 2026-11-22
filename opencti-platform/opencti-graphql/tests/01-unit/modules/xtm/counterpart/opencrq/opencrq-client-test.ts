@@ -27,7 +27,8 @@ vi.mock('../../../../../../src/utils/http-client', () => ({
 vi.mock('../../../../../../src/domain/xtm-auth', () => ({ issueXtmJwt: mocks.jwt, exchangeXtmOneUserToken: mocks.exchange }));
 
 import { fetchOpenCrqObjects, getOpenCrqApiUrl, getOpenCrqUrl, isOpenCrqConnected } from '../../../../../../src/modules/xtm/counterpart/opencrq/opencrq-client';
-import { openCrqProvider, resetCounterpartCache, resolveCounterpartsOfSources } from '../../../../../../src/modules/xtm/counterpart/core/counterpart-domain';
+import { resetCounterpartCache, resolveCounterpartsOfSources } from '../../../../../../src/modules/xtm/counterpart/core/counterpart-domain';
+import { openCrqProvider } from '../../../../../../src/modules/xtm/counterpart/opencrq/opencrq-provider';
 
 const STIX = 'intrusion-set--3b0a1c2d-0000-4000-8000-000000000001';
 const ALICE = { id: 'alice', user_email: 'alice@example.com' };

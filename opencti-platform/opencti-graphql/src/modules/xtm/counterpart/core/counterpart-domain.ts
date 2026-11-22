@@ -1,7 +1,5 @@
 import type { AuthContext, AuthUser } from '../../../../types/user';
 import { logApp } from '../../../../config/conf';
-import { fetchOpenAevObjects, getOpenAevUrl, isOpenAevConnected, type OpenAevObjectPath } from '../openaev/openaev-client';
-import { fetchOpenCrqObjects, getOpenCrqUrl, isOpenCrqConnected, type OpenCrqLookupKind } from '../opencrq/opencrq-client';
 import { CounterpartLookupError, type CounterpartCaller } from './counterpart-errors';
 import { counterpartKeysOf, type CounterpartSource } from './counterpart-keys';
 
@@ -138,66 +136,45 @@ export const normaliseCounterpartKey = (kind: CounterpartKind, key: string | nul
   }
 };
 
-const OPENAEV_PATHS: Record<CounterpartKind, OpenAevObjectPath> = {
-  ASSET: 'assets',
-  ATTACK_PATTERN: 'attack-patterns',
-  VULNERABILITY: 'vulnerabilities',
-  THREAT: 'threats',
-  ALERT: 'alerts',
+/**
+ * The counterparts a product answered for some keys, kept only when well formed and asked for,
+ * their keys normalised back (each product answers keys in its own case), their facts sanitised.
+ */
+export const counterpartsOfAnswer = (
+  product: string,
+  kind: CounterpartKind,
+  keys: string[],
+  objects: ReadonlyArray<{ object_key: string; object_id: string; object_type: string; object_name?: string | null; object_url: string; object_facts?: unknown }>,
+): XtmCounterpart[] => {
+  const asked = new Set(keys);
+  return objects
+    .filter((o) => o && typeof o.object_id === 'string' && typeof o.object_url === 'string')
+    .map((o) => ({ ...o, key: normaliseCounterpartKey(kind, o.object_key) ?? o.object_key }))
+    .filter((o) => asked.has(o.key))
+    .map((o) => ({
+      key: o.key,
+      product,
+      object_id: o.object_id,
+      object_type: o.object_type,
+      object_name: o.object_name ?? null,
+      object_url: o.object_url,
+      facts: sanitiseFacts(o.object_facts),
+    }));
 };
 
-export const openAevProvider: CounterpartProvider = {
-  product: 'openaev',
-  url: getOpenAevUrl,
-  isConnected: isOpenAevConnected,
-  supports: (kind) => kind in OPENAEV_PATHS,
-  resolve: async (kind, keys, caller) => {
-    const objects = await fetchOpenAevObjects(OPENAEV_PATHS[kind], keys, caller);
-    const asked = new Set(keys);
-    return objects
-      .filter((o) => o && typeof o.object_id === 'string' && typeof o.object_url === 'string')
-      .map((o) => ({ ...o, key: normaliseCounterpartKey(kind, o.object_key) ?? o.object_key }))
-      .filter((o) => asked.has(o.key))
-      .map((o) => ({
-        key: o.key,
-        product: 'openaev',
-        object_id: o.object_id,
-        object_type: o.object_type,
-        object_name: o.object_name ?? null,
-        object_url: o.object_url,
-        facts: sanitiseFacts(o.object_facts),
-      }));
-  },
+// The registry: each product registers its provider from its own folder (openaev/, opencrq/),
+// imported by counterpart-graphql.ts, so core imports nothing from a product folder. The order of
+// registration is the order of the answers and of xtmConnections.
+const PROVIDERS: CounterpartProvider[] = [];
+
+export const registerCounterpartProvider = (provider: CounterpartProvider) => {
+  const index = PROVIDERS.findIndex((p) => p.product === provider.product);
+  if (index >= 0) {
+    PROVIDERS[index] = provider;
+  } else {
+    PROVIDERS.push(provider);
+  }
 };
-
-const OPENCRQ_KINDS: ReadonlySet<CounterpartKind> = new Set<OpenCrqLookupKind>(['THREAT', 'VULNERABILITY', 'ASSET']);
-
-export const openCrqProvider: CounterpartProvider = {
-  product: 'opencrq',
-  url: getOpenCrqUrl,
-  isConnected: isOpenCrqConnected,
-  supports: (kind) => OPENCRQ_KINDS.has(kind),
-  resolve: async (kind, keys, caller) => {
-    const objects = await fetchOpenCrqObjects(kind as OpenCrqLookupKind, keys, caller);
-    const asked = new Set(keys);
-    return objects
-      .filter((o) => o && typeof o.object_id === 'string' && typeof o.object_url === 'string')
-      // OpenCRQ answers keys in its own case (STIX ids and hostnames lower, CVEs upper): normalise them back.
-      .map((o) => ({ ...o, key: normaliseCounterpartKey(kind, o.object_key) ?? o.object_key }))
-      .filter((o) => asked.has(o.key))
-      .map((o) => ({
-        key: o.key,
-        product: 'opencrq',
-        object_id: o.object_id,
-        object_type: o.object_type,
-        object_name: o.object_name ?? null,
-        object_url: o.object_url,
-        facts: sanitiseFacts(o.object_facts),
-      }));
-  },
-};
-
-const PROVIDERS: CounterpartProvider[] = [openAevProvider, openCrqProvider];
 
 // Short-TTL cache of found counterparts and known misses, per USER, product, kind and key: each
 // product answers under the caller's own rights, so one user's answer is never served to another.
@@ -275,7 +252,7 @@ const resolveKeys = async (
 export const resolveCounterpartsOfSources = async (
   sources: CounterpartSource[],
   caller: CounterpartCaller,
-  providers: CounterpartProvider[] = PROVIDERS,
+  providers: ReadonlyArray<CounterpartProvider> = PROVIDERS,
   now: () => number = Date.now,
 ): Promise<XtmCounterpartResult[]> => {
   const byKind = new Map<CounterpartKind, Set<string>>();
@@ -319,7 +296,7 @@ export const resolveCounterpartsOfSources = async (
   return results;
 };
 
-export const xtmConnections = (providers: CounterpartProvider[] = PROVIDERS): XtmConnection[] => {
+export const xtmConnections = (providers: ReadonlyArray<CounterpartProvider> = PROVIDERS): XtmConnection[] => {
   return providers.map((p) => ({ product: p.product, connected: p.isConnected() }));
 };
 

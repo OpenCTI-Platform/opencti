@@ -25,6 +25,7 @@ import {
   normaliseCounterpartKey,
   resetCounterpartCache,
   resolveCounterpartsOfSources,
+  registerCounterpartProvider,
   xtmConnections,
   type XtmCounterpart,
 } from '../../../../../../src/modules/xtm/counterpart/core/counterpart-domain';
@@ -196,5 +197,17 @@ describe('XTM counterparts: id-based resolution', () => {
     const [result] = await resolveCounterpartsOfSources([alert], ALICE, [aev]);
     expect(result.status).toBe('found');
     expect(result.counterpart?.key).toBe('https://edr.example.com/a/2');
+  });
+
+  it('the registry serves the providers in registration order, a second registration replacing the first', () => {
+    const first = { ...provider(true, []), product: 'first' };
+    const second = { ...provider(false, []), product: 'second' };
+    registerCounterpartProvider(first);
+    registerCounterpartProvider(second);
+    registerCounterpartProvider({ ...first, isConnected: () => false });
+    expect(xtmConnections()).toEqual([
+      { product: 'first', connected: false },
+      { product: 'second', connected: false },
+    ]);
   });
 });

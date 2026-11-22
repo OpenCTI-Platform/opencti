@@ -31,10 +31,11 @@ import {
   CounterpartLookupError,
   findXtmConnections,
   findXtmCounterpartsByIds,
-  openAevProvider,
   resetCounterpartCache,
   sanitiseFacts,
 } from '../../../../../../src/modules/xtm/counterpart/core/counterpart-domain';
+import { openAevProvider } from '../../../../../../src/modules/xtm/counterpart/openaev/openaev-provider';
+import '../../../../../../src/modules/xtm/counterpart/opencrq/opencrq-provider';
 
 const ALICE = { id: 'alice', user_email: 'alice@example.com' };
 

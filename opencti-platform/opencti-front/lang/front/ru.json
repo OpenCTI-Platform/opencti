@@ -6949,5 +6949,9 @@
   "Connect OpenAEV to see how this object is simulated and what it exposes.": "Подключите OpenAEV, чтобы увидеть, как этот объект моделируется и что он раскрывает.",
   "Connect OpenCRQ to see the annual loss this object drives.": "Подключите OpenCRQ, чтобы увидеть годовые потери, связанные с этим объектом.",
   "Open the documentation to connect it.": "Откройте документацию, чтобы подключить его.",
-  "Ask an administrator to connect it.": "Попросите администратора подключить его."
+  "Ask an administrator to connect it.": "Попросите администратора подключить его.",
+  "Not found in OpenAEV": "Не найдено в OpenAEV",
+  "Not found in OpenCRQ": "Не найдено в OpenCRQ",
+  "It appears once a simulation or a collector in OpenAEV uses it.": "Появится, когда его использует симуляция или коллектор OpenAEV.",
+  "It appears once a risk scenario in OpenCRQ uses it.": "Появится, когда его использует сценарий риска OpenCRQ."
 }

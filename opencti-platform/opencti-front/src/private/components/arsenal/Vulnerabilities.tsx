@@ -17,7 +17,7 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 import { Box, Stack } from '@mui/material';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import OpenAevRowMark from '../common/xtm/counterpart/openaev/OpenAevRowMark';
-import { OpenCrqRowMark } from '../common/xtm/counterpart/opencrq/OpenCrq';
+import OpenCrqRowMark from '../common/xtm/counterpart/opencrq/OpenCrqRowMark';
 
 const LOCAL_STORAGE_KEY = 'vulnerabilities';
 

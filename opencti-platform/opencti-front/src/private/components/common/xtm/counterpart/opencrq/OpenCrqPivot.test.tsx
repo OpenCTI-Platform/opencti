@@ -2,7 +2,8 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../../../utils/tests/test-render';
-import { OpenCrqPivot, OpenCrqRowMark } from './OpenCrq';
+import OpenCrqPivot from './OpenCrqPivot';
+import OpenCrqRowMark from './OpenCrqRowMark';
 import { OPENCRQ_FACTS, previewFactsOf } from '../core/counterpartFacts';
 import { XTM_CONNECT_DOC_URL } from '../core/xtmConnect';
 import { resetXtmCounterpartCache } from '../core/useXtmCounterparts';
@@ -64,32 +65,30 @@ describe('OpenCRQ pivots', () => {
     mocks.granted = true;
   });
 
-  it('opens the OpenCRQ counterpart when both products hold the object', async () => {
+  it('found: an active icon-only link to the OpenCRQ counterpart', async () => {
     mocks.results = [result('vuln-1', 'openaev', 'found', aev), result('vuln-1', 'opencrq', 'found', crq)];
     testRender(<OpenCrqPivot objectId="vuln-1" />);
-    const pivot = await screen.findByTestId('opencrq-pivot');
-    expect(pivot).toHaveTextContent('Open in OpenCRQ');
-    expect(pivot.closest('a') ?? pivot).toHaveAttribute('href', crq.object_url);
+    const emblem = await screen.findByTestId('opencrq-emblem');
+    expect(emblem).toHaveAttribute('href', crq.object_url);
+    expect(emblem).toHaveAttribute('aria-label', 'Open in OpenCRQ');
+    expect(emblem).not.toHaveTextContent('Open in OpenCRQ');
   });
 
-  it('draws nothing when OpenCRQ is connected and does not hold the object', async () => {
+  it('connected, not found: a greyed focusable emblem named "Not found in OpenCRQ"', async () => {
     mocks.results = [result('vuln-1', 'openaev', 'found', aev), result('vuln-1', 'opencrq', 'not_found')];
     testRender(<OpenCrqPivot objectId="vuln-1" />);
-    await waitFor(() => expect(mocks.lookups).toBe(1));
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50);
-    });
-    expect(screen.queryByTestId('opencrq-pivot')).not.toBeInTheDocument();
-    expect(screen.queryByText('Not in OpenCRQ')).not.toBeInTheDocument();
+    const emblem = await screen.findByTestId('opencrq-emblem');
+    expect(emblem).toHaveAttribute('aria-label', 'Not found in OpenCRQ');
+    expect(emblem).toHaveAttribute('aria-disabled', 'true');
+    expect(emblem).toHaveAttribute('data-status', 'no_match');
   });
 
-  it('shows a disabled muted "OpenCRQ is unavailable" when OpenCRQ could not answer, OpenAEV unaffected', async () => {
+  it('unavailable: a greyed "OpenCRQ is unavailable", OpenAEV unaffected', async () => {
     mocks.results = [result('vuln-1', 'openaev', 'found', aev), result('vuln-1', 'opencrq', 'unavailable')];
     testRender(<OpenCrqPivot objectId="vuln-1" />);
-    const pivot = await screen.findByTestId('opencrq-pivot');
-    expect(pivot).toHaveTextContent('OpenCRQ is unavailable');
-    expect(pivot).toHaveAttribute('data-status', 'unavailable');
-    expect(pivot).toBeDisabled();
+    const emblem = await screen.findByTestId('opencrq-emblem');
+    expect(emblem).toHaveAttribute('aria-label', 'OpenCRQ is unavailable');
+    expect(emblem).toHaveAttribute('data-status', 'unavailable');
   });
 
   it('draws nothing for an object type OpenCRQ does not hold (not_supported)', async () => {
@@ -99,25 +98,25 @@ describe('OpenCRQ pivots', () => {
     await new Promise((resolve) => {
       setTimeout(resolve, 50);
     });
-    expect(screen.queryByTestId('opencrq-pivot')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('opencrq-emblem')).not.toBeInTheDocument();
   });
 
-  it('offers "Connect OpenCRQ" to a user who can configure the platform', async () => {
+  it('not connected, configurer: a greyed emblem "Connect OpenCRQ" linking to the documentation', async () => {
     mocks.connected = { openaev: true, opencrq: false };
     testRender(<OpenCrqPivot objectId="sys-1" />);
-    const pivot = await screen.findByTestId('opencrq-pivot');
-    expect(pivot).toHaveTextContent('Connect OpenCRQ');
-    expect(pivot.closest('a') ?? pivot).toHaveAttribute('href', XTM_CONNECT_DOC_URL);
+    const emblem = await screen.findByTestId('opencrq-emblem');
+    expect(emblem).toHaveAttribute('aria-label', 'Connect OpenCRQ');
+    expect(emblem).toHaveAttribute('href', XTM_CONNECT_DOC_URL);
     expect(mocks.lookups).toBe(0);
   });
 
-  it('shows a disabled read-only hint to a user who cannot configure the platform', async () => {
+  it('not connected, read-only user: "OpenCRQ is not connected", no link', async () => {
     mocks.connected = { openaev: true, opencrq: false };
     mocks.granted = false;
     testRender(<OpenCrqPivot objectId="sys-1" />);
-    const pivot = await screen.findByTestId('opencrq-pivot');
-    expect(pivot).toBeDisabled();
-    expect(pivot).toHaveAttribute('aria-label', 'OpenCRQ is not connected');
+    const emblem = await screen.findByTestId('opencrq-emblem');
+    expect(emblem).toHaveAttribute('aria-label', 'OpenCRQ is not connected');
+    expect(emblem).not.toHaveAttribute('href');
   });
 
   it('marks a list row on a match only, in one batched lookup shared with OpenAEV', async () => {

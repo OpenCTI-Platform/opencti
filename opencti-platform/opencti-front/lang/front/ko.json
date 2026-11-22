@@ -6949,5 +6949,9 @@
   "Connect OpenAEV to see how this object is simulated and what it exposes.": "OpenAEV를 연결하여 이 객체가 어떻게 시뮬레이션되고 무엇을 노출하는지 확인하세요.",
   "Connect OpenCRQ to see the annual loss this object drives.": "OpenCRQ를 연결하여 이 객체로 인한 연간 손실을 확인하세요.",
   "Open the documentation to connect it.": "문서를 열어 연결하세요.",
-  "Ask an administrator to connect it.": "관리자에게 연결을 요청하세요."
+  "Ask an administrator to connect it.": "관리자에게 연결을 요청하세요.",
+  "Not found in OpenAEV": "OpenAEV에서 찾을 수 없음",
+  "Not found in OpenCRQ": "OpenCRQ에서 찾을 수 없음",
+  "It appears once a simulation or a collector in OpenAEV uses it.": "OpenAEV의 시뮬레이션이나 수집기가 사용하면 표시됩니다.",
+  "It appears once a risk scenario in OpenCRQ uses it.": "OpenCRQ의 위험 시나리오가 사용하면 표시됩니다."
 }

@@ -1,10 +1,9 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../../../utils/tests/test-render';
 import OpenAevPivot from './OpenAevPivot';
 import { XTM_CONNECT_DOC_URL } from '../core/xtmConnect';
-import { XTM_PIVOT_COMPACT_QUERY } from '../core/useCompactPivot';
 import { resetXtmCounterpartCache } from '../core/useXtmCounterparts';
 
 type Result = { id: string; product: string; status: string; counterpart: Record<string, unknown> | null };
@@ -53,7 +52,7 @@ const counterpart = {
 const found = (id: string): Result => ({ id, product: 'openaev', status: 'found', counterpart });
 const answered = (id: string, status: string): Result => ({ id, product: 'openaev', status, counterpart: null });
 
-describe('OpenAevPivot', () => {
+describe('OpenAevPivot (Contract v3: icon-only emblem)', () => {
   beforeEach(() => {
     resetXtmCounterpartCache();
     mocks.connected = true;
@@ -64,49 +63,44 @@ describe('OpenAevPivot', () => {
     mocks.calls = [];
   });
 
-  it('links to the OpenAEV counterpart when connected with a match', async () => {
+  it('found: an active icon-only link named "Open in OpenAEV", no text', async () => {
     mocks.results = [found('ap-octi-1')];
     testRender(<OpenAevPivot objectId="ap-octi-1" />);
     const link = await screen.findByRole('link', { name: 'Open in OpenAEV' });
     expect(link).toHaveAttribute('href', counterpart.object_url);
     expect(link).toHaveAttribute('target', '_blank');
-    // A framed text button, like the other text actions of the header, never an icon alone.
-    expect(link).toHaveTextContent('Open in OpenAEV');
+    expect(link).toHaveAttribute('data-status', 'match');
+    expect(link).not.toHaveTextContent('Open in OpenAEV');
   });
 
-  it('draws nothing when OpenAEV is connected and does not hold the object', async () => {
+  it('connected, not found: a greyed emblem, still focusable, named "Not found in OpenAEV"', async () => {
     mocks.results = [answered('vuln-1', 'not_found')];
     testRender(<OpenAevPivot objectId="vuln-1" />);
-    await waitFor(() => expect(mocks.calls.filter((c) => c.isLookup)).toHaveLength(1));
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50);
-    });
-    expect(screen.queryByTestId('openaev-pivot')).not.toBeInTheDocument();
-    expect(screen.queryByText('Not in OpenAEV')).not.toBeInTheDocument();
+    const emblem = await screen.findByRole('button', { name: 'Not found in OpenAEV' });
+    expect(emblem).toHaveAttribute('aria-disabled', 'true');
+    expect(emblem).not.toBeDisabled();
+    expect(emblem).toHaveAttribute('data-status', 'no_match');
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
 
-  it('shows a disabled muted "OpenAEV is unavailable" when OpenAEV could not answer, and asks again next time', async () => {
+  it('unavailable: a greyed "OpenAEV is unavailable", and asks again next time', async () => {
     mocks.results = [answered('sys-1', 'unavailable')];
     const { unmount } = testRender(<OpenAevPivot objectId="sys-1" />);
-    const pivot = await screen.findByRole('button', { name: 'OpenAEV is unavailable' });
-    expect(pivot).toBeDisabled();
-    expect(pivot).toHaveAttribute('data-status', 'unavailable');
+    expect(await screen.findByRole('button', { name: 'OpenAEV is unavailable' })).toHaveAttribute('aria-disabled', 'true');
     unmount();
-    // Never cached: the next render asks again and shows the answer.
     mocks.results = [found('sys-1')];
     testRender(<OpenAevPivot objectId="sys-1" />);
     expect(await screen.findByRole('link', { name: 'Open in OpenAEV' })).toBeInTheDocument();
     expect(mocks.calls.filter((c) => c.isLookup)).toHaveLength(2);
   });
 
-  it('shows "OpenAEV is unavailable" on a failed lookup, never a page error and never "Not in OpenAEV"', async () => {
+  it('a failed lookup is unavailable, never a page error', async () => {
     mocks.fail = true;
     testRender(<OpenAevPivot objectId="sys-1" />);
-    expect(await screen.findByRole('button', { name: 'OpenAEV is unavailable' })).toBeDisabled();
-    expect(screen.queryByTestId('openaev-pivot')).toHaveAttribute('data-status', 'unavailable');
+    expect(await screen.findByRole('button', { name: 'OpenAEV is unavailable' })).toHaveAttribute('data-status', 'unavailable');
   });
 
-  it('draws nothing when the object has no entry (no key, not readable) or OpenAEV has no such lookup', async () => {
+  it('draws nothing for an object OpenAEV has no lookup for (not_supported) or no entry', async () => {
     mocks.results = [answered('ap-2', 'not_supported')];
     testRender(
       <>
@@ -118,32 +112,31 @@ describe('OpenAevPivot', () => {
     await new Promise((resolve) => {
       setTimeout(resolve, 50);
     });
-    expect(screen.queryByTestId('openaev-pivot')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('openaev-emblem')).not.toBeInTheDocument();
   });
 
-  it('offers to connect OpenAEV to a user who can configure the platform', async () => {
+  it('not connected, configurer: a greyed emblem linking to the connection documentation', async () => {
     mocks.connected = false;
     testRender(<OpenAevPivot objectId="sys-1" />);
     const link = await screen.findByRole('link', { name: 'Connect OpenAEV' });
     expect(link).toHaveAttribute('href', XTM_CONNECT_DOC_URL);
-    expect(link).toHaveTextContent('Connect OpenAEV');
-    // Not connected: no counterpart lookup is sent.
+    expect(link).toHaveAttribute('data-status', 'not_connected');
+    expect(link).not.toHaveTextContent('Connect OpenAEV');
     expect(mocks.calls.filter((c) => c.isLookup)).toHaveLength(0);
   });
 
-  it('shows a read-only hint to a user without the right to configure', async () => {
+  it('not connected, read-only user: a greyed emblem named "OpenAEV is not connected", no link', async () => {
     mocks.connected = false;
     mocks.granted = false;
     testRender(<OpenAevPivot objectId="sys-1" />);
-    expect(await screen.findByRole('button', { name: 'OpenAEV is not connected' })).toBeDisabled();
-    expect(screen.queryByRole('link', { name: 'Connect OpenAEV' })).not.toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'OpenAEV is not connected' })).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
 
   it('a failed connections query is unavailable, never "not connected", and is not cached', async () => {
     mocks.connectionsFail = true;
     const { unmount } = testRender(<OpenAevPivot objectId="sys-1" />);
-    expect(await screen.findByRole('button', { name: 'OpenAEV is unavailable' })).toBeDisabled();
-    expect(screen.queryByRole('link', { name: 'Connect OpenAEV' })).not.toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'OpenAEV is unavailable' })).toBeInTheDocument();
     unmount();
     mocks.connectionsFail = false;
     mocks.results = [found('sys-1')];
@@ -159,44 +152,9 @@ describe('OpenAevPivot', () => {
         <OpenAevPivot objectId="vuln-1" />
       </>,
     );
-    await waitFor(() => expect(screen.getAllByTestId('openaev-pivot')).toHaveLength(1));
+    await waitFor(() => expect(screen.getAllByTestId('openaev-emblem')).toHaveLength(2));
     const lookups = mocks.calls.filter((c) => c.isLookup);
     expect(lookups).toHaveLength(1);
     expect(lookups[0].variables).toEqual({ ids: ['ap-octi-1', 'vuln-1'] });
-  });
-
-  describe('below 1280 px', () => {
-    const originalMatchMedia = window.matchMedia;
-    beforeEach(() => {
-      window.matchMedia = ((query: string) => ({
-        matches: query === XTM_PIVOT_COMPACT_QUERY,
-        media: query,
-        onchange: null,
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        addListener: () => {},
-        removeListener: () => {},
-        dispatchEvent: () => false,
-      })) as typeof window.matchMedia;
-    });
-    afterEach(() => {
-      window.matchMedia = originalMatchMedia;
-    });
-
-    it('renders the match as an icon-only link named "Open in OpenAEV", so a long title keeps its room', async () => {
-      mocks.results = [found('ap-octi-1')];
-      testRender(<OpenAevPivot objectId="ap-octi-1" />);
-      const link = await screen.findByRole('link', { name: 'Open in OpenAEV' });
-      expect(link).toHaveAttribute('href', counterpart.object_url);
-      expect(link).not.toHaveTextContent('Open in OpenAEV');
-    });
-
-    it('renders the connect call to action as an icon-only link named "Connect OpenAEV"', async () => {
-      mocks.connected = false;
-      testRender(<OpenAevPivot objectId="sys-1" />);
-      const link = await screen.findByRole('link', { name: 'Connect OpenAEV' });
-      expect(link).toHaveAttribute('href', XTM_CONNECT_DOC_URL);
-      expect(link).not.toHaveTextContent('Connect OpenAEV');
-    });
   });
 });

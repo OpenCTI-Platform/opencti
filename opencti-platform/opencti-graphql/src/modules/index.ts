@@ -172,6 +172,9 @@ import './form/form-graphql';
 import './xtm/hub/xtm-hub-graphql';
 import './xtm/hub/news-feed/news-feed-graphql';
 import './xtm/counterpart/core/counterpart-graphql';
+// Each XTM product registers its counterpart provider; the order is the order of the answers.
+import './xtm/counterpart/openaev/openaev-provider';
+import './xtm/counterpart/opencrq/opencrq-provider';
 import './metrics/metrics-graphql';
 import './authenticationProvider/authenticationProvider-graphql';
 import './customView/customView-graphql';

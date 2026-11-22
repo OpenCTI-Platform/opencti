@@ -18,7 +18,7 @@ import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import OpenAevRowMark from '../../common/xtm/counterpart/openaev/OpenAevRowMark';
-import { OpenCrqRowMark } from '../../common/xtm/counterpart/opencrq/OpenCrq';
+import OpenCrqRowMark from '../../common/xtm/counterpart/opencrq/OpenCrqRowMark';
 
 const BodyItem = styled('div')(bodyItemStyle);
 

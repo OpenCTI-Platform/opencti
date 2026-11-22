@@ -13,17 +13,19 @@ export interface FactFormatters {
 }
 
 type FactKind = 'count' | 'money' | 'date';
+// [fact key the product answers, label, kind]
+export type FactDefinition = [string, string, FactKind];
 
 // The facts each product answers (OpenAEV LocalObjectService, OpenCRQ object_facts), in display
 // order. An unknown key, or a value of the wrong shape, is not shown.
-export const OPENAEV_FACTS: ReadonlyArray<[string, string, FactKind]> = [
+export const OPENAEV_FACTS: ReadonlyArray<FactDefinition> = [
   ['simulations', 'Simulations', 'count'],
   ['last_simulation', 'Last simulation', 'date'],
   ['findings', 'Findings', 'count'],
   ['affected_assets', 'Affected assets', 'count'],
 ];
 
-export const OPENCRQ_FACTS: ReadonlyArray<[string, string, FactKind]> = [
+export const OPENCRQ_FACTS: ReadonlyArray<FactDefinition> = [
   ['annual_loss', 'Annual loss expectancy', 'money'],
   ['risk_scenarios', 'Risk scenarios', 'count'],
   ['fix_value', 'Loss avoided by fixing', 'money'],
@@ -32,7 +34,7 @@ export const OPENCRQ_FACTS: ReadonlyArray<[string, string, FactKind]> = [
 /** The facts answered for these definitions, labelled and formatted, in display order. */
 export const previewFactsOf = (
   facts: ReadonlyArray<CounterpartFact> | null | undefined,
-  definitions: ReadonlyArray<[string, string, FactKind]>,
+  definitions: ReadonlyArray<FactDefinition>,
   format: FactFormatters,
 ): PreviewFact[] => {
   const byKey = new Map((facts ?? []).map((f) => [f.key, f.value]));
@@ -56,4 +58,4 @@ export const previewFactsOf = (
 };
 
 /** The labels a teaser lists: what the product would answer once connected. */
-export const factLabelsOf = (definitions: ReadonlyArray<[string, string, FactKind]>, t_i18n: Translate): string[] => definitions.map(([, label]) => t_i18n(label));
+export const factLabelsOf = (definitions: ReadonlyArray<FactDefinition>, t_i18n: Translate): string[] => definitions.map(([, label]) => t_i18n(label));

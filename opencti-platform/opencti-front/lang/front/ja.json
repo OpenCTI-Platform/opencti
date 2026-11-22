@@ -6949,5 +6949,9 @@
   "Connect OpenAEV to see how this object is simulated and what it exposes.": "OpenAEVを接続すると、このオブジェクトのシミュレーション方法と露出内容を確認できます。",
   "Connect OpenCRQ to see the annual loss this object drives.": "OpenCRQを接続すると、このオブジェクトによる年間損失を確認できます。",
   "Open the documentation to connect it.": "ドキュメントを開いて接続してください。",
-  "Ask an administrator to connect it.": "管理者に接続を依頼してください。"
+  "Ask an administrator to connect it.": "管理者に接続を依頼してください。",
+  "Not found in OpenAEV": "OpenAEVに見つかりません",
+  "Not found in OpenCRQ": "OpenCRQに見つかりません",
+  "It appears once a simulation or a collector in OpenAEV uses it.": "OpenAEVのシミュレーションまたはコレクターが使用すると表示されます。",
+  "It appears once a risk scenario in OpenCRQ uses it.": "OpenCRQのリスクシナリオが使用すると表示されます。"
 }
