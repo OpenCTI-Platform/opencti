@@ -25,6 +25,10 @@ describe('humanizeVocabularyKey', () => {
     expect(humanizeVocabularyKey('SAN_NAS')).toEqual('SAN / NAS');
     expect(humanizeVocabularyKey('AI_ML_SERVICE')).toEqual('AI / ML service');
     expect(humanizeVocabularyKey('CLOUD_OTHER')).toEqual('Other cloud resource');
+    expect(humanizeVocabularyKey('CI_CD_PIPELINE')).toEqual('CI/CD pipeline');
+    expect(humanizeVocabularyKey('CODE_OTHER')).toEqual('Other code asset');
+    expect(humanizeVocabularyKey('SOURCE_CODE')).toEqual('Source code');
+    expect(humanizeVocabularyKey('CODE_REPOSITORY')).toEqual('Code repository');
   });
 
   it('leaves a value already written as a label untouched', () => {

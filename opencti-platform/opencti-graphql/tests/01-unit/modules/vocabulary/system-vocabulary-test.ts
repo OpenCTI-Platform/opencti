@@ -43,11 +43,11 @@ describe('System asset vocabularies', () => {
   it('should ship the OpenAEV asset taxonomy values', () => {
     expect(openVocabularies.system_category_ov.map(({ key }) => key)).toEqual([
       'HOST', 'CONTAINER_WORKLOAD', 'CLOUD_RESOURCE', 'WEB_APPLICATION', 'NETWORK_DEVICE', 'MOBILE_DEVICE',
-      'IOT_OT_DEVICE', 'IDENTITY', 'SAAS_APPLICATION', 'AI_TARGET', 'SECURITY_PLATFORM', 'GENERIC_ASSET',
+      'IOT_OT_DEVICE', 'IDENTITY', 'SAAS_APPLICATION', 'AI_TARGET', 'SECURITY_PLATFORM', 'GENERIC_ASSET', 'SOURCE_CODE',
     ]);
     expect(openVocabularies.system_criticality_ov.map(({ key }) => key)).toEqual(['VERY_HIGH', 'HIGH', 'MEDIUM', 'LOW', 'UNKNOWN']);
     expect(openVocabularies.system_internet_facing_ov.map(({ key }) => key)).toEqual(['yes', 'no', 'unknown']);
-    expect(openVocabularies.system_subcategory_ov).toHaveLength(80);
+    expect(openVocabularies.system_subcategory_ov).toHaveLength(85);
     const subcategories = openVocabularies.system_subcategory_ov.map(({ key }) => key);
     expect(new Set(subcategories).size).toEqual(subcategories.length);
   });
@@ -97,6 +97,13 @@ describe('System asset vocabularies', () => {
     // The five host subcategories of the issue keep their category
     const hosts = openVocabularies.system_subcategory_ov.filter(({ parent_name }) => parent_name === 'HOST').map(({ key }) => key);
     expect(hosts).toEqual(expect.arrayContaining(['SERVER', 'WORKSTATION', 'LAPTOP', 'VIRTUAL_MACHINE', 'HYPERVISOR']));
+  });
+
+  it('should ship the Source code category of the OpenAEV taxonomy with its five subcategories', () => {
+    const sourceCode = openVocabularies.system_category_ov.find(({ key }) => key === 'SOURCE_CODE');
+    expect(sourceCode).toMatchObject({ order: 13, description: 'Code repository, pipeline or package your teams build and ship.' });
+    const codeSubcategories = openVocabularies.system_subcategory_ov.filter(({ parent_name }) => parent_name === 'SOURCE_CODE').map(({ key }) => key);
+    expect(codeSubcategories).toEqual(['CODE_REPOSITORY', 'CI_CD_PIPELINE', 'PACKAGE_REGISTRY', 'SOFTWARE_PACKAGE', 'CODE_OTHER']);
   });
 
   it('should seed parent_name with the subcategory and leave it out elsewhere', () => {
