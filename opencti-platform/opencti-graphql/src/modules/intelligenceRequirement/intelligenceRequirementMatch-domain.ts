@@ -167,8 +167,19 @@ export const upsertMatch = async (
     match_status: status,
     match_last_fact_at: now,
   };
-  const { element } = await patchAttribute(context, user, existing.id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, patch);
+  const { element } = await patchMatch(context, user, existing.id, patch);
   return { match: element as unknown as BasicStoreEntityIntelligenceRequirementMatch, created: false, previousStatus: existing.match_status };
+};
+
+/**
+ * Every write on a match goes through here. A match travels on the stream (internal scope) and its stream form carries
+ * only the fields the playbook entry reads: a write of the other fields alone (history, proofs, criteria, breakdown,
+ * name) would leave the stream form unchanged and the update event is refused ('Update event must contains a valid
+ * previous patch'). The match is not a dated internal object, so updated_at is set here: every write changes the
+ * stream form through its updated_at.
+ */
+export const patchMatch = async (context: AuthContext, user: AuthUser, matchId: string, patch: Record<string, unknown>) => {
+  return patchAttribute(context, user, matchId, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, { ...patch, updated_at: new Date() });
 };
 
 export const loadMatchById = async (context: AuthContext, user: AuthUser, matchId: string) => {
@@ -184,7 +195,7 @@ export const deleteMatch = async (context: AuthContext, user: AuthUser, matchId:
 };
 
 export const updateMatchStatus = async (context: AuthContext, user: AuthUser, matchId: string, status: string) => {
-  const { element } = await patchAttribute(context, user, matchId, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, { match_status: status });
+  const { element } = await patchMatch(context, user, matchId, { match_status: status });
   return element as unknown as BasicStoreEntityIntelligenceRequirementMatch;
 };
 
@@ -195,7 +206,7 @@ export const backfillMatchEntityNames = async (context: AuthContext, user: AuthU
   });
   for (let i = 0; i < missing.length; i += 1) {
     const match = missing[i];
-    await patchAttribute(context, user, match.id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, { match_entity_name: await entityDisplayName(context, user, match.match_entity_id) });
+    await patchMatch(context, user, match.id, { match_entity_name: await entityDisplayName(context, user, match.match_entity_id) });
   }
   return missing.length;
 };
