@@ -29,7 +29,7 @@ const MATCHES_QUERY = gql`
 
 const ITEMS_QUERY = gql`
   query IrManagerItems($id: ID!) {
-    intelligenceRequirementItems(id: $id, first: 50) { edges { node { id item_kind item_status } } }
+    intelligenceRequirementItems(id: $id, first: 50) { edges { node { id item_kind item_status item_match_id } } }
   }
 `;
 
@@ -65,7 +65,7 @@ const APT41_USES_PARADISE_STIX_ID = 'relationship--9f999fc5-5c74-4964-ab87-ee4c7
 
 interface Ids { actor: string; malware: string; attackPattern: string; relationship: string }
 type MatchNode = { id: string; match_entity_id: string; match_status: string; match_score: number };
-type ItemNode = { id: string; item_kind: string; item_status: string };
+type ItemNode = { id: string; item_kind: string; item_status: string; item_match_id: string | null };
 
 const buildInput = (ids: Ids, confidencePoints = 40): Record<string, any> => ({
   name: 'IR manager integration requirement',
@@ -209,8 +209,10 @@ describe('Intelligence requirement manager: stream processing', () => {
     expect(proposed).toBeDefined();
     const { data } = await queryAsAdminWithSuccess({ query: MATCH_STATUS_QUERY, variables: { id: proposed!.id, status: 'accepted' } });
     expect(data.intelligenceRequirementMatchStatusUpdate.match_status).toEqual('accepted');
-    const items = await readItems(irId);
-    expect(items.filter((i) => i.item_kind === 'proposed').every((i) => i.item_status !== 'open')).toBe(true);
+    // Only the items of the accepted entity are closed: the second hop may propose other attack patterns of the malware
+    const proposedItems = (await readItems(irId)).filter((i) => i.item_kind === 'proposed' && i.item_match_id === proposed!.id);
+    expect(proposedItems.length).toBeGreaterThan(0);
+    expect(proposedItems.every((i) => i.item_status !== 'open')).toBe(true);
   });
 
   it('should rescore the entities of the requirement when its relevance changes', async () => {
