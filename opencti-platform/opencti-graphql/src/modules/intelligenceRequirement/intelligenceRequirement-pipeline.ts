@@ -19,6 +19,7 @@ import { SYSTEM_USER } from '../../utils/access';
 import { appendMatchHistory, type IrChangeMeta, type IrMatchWriter, isCandidateEligible, rescoreMatch, topReasons } from './intelligenceRequirement-scoring';
 import { closeItem, closeOpenItemsOfMatch, createItem, entityDisplayName } from './intelligenceRequirementItem-domain';
 import { parseIntelligenceRequirement } from './intelligenceRequirement-config';
+import { projectMatchOnPir, unprojectMatchFromPir } from './intelligenceRequirement-projection';
 
 // Glue between the scope engine, the relevance engine and the inbox:
 // every change on an entity of the requirement goes through processMatchChange.
@@ -85,9 +86,12 @@ export const processMatchChange = async (
     change.writer?.discard(match.id);
     await closeOpenItemsOfMatch(context, user, ir.id, match.id, NOT_ELIGIBLE_RESULT);
     await deleteMatch(context, user, match.id);
+    await unprojectMatchFromPir(context, ir, match);
     return { ...rescore, becameVisible: false, dropped: true };
   }
   const visible = isIn(status) && !excluded;
+  // The Pir this requirement drives keeps its in-pir flag and pir_information in step with the entity
+  await projectMatchOnPir(context, ir, match);
   const itemBase = { entityId: match.match_entity_id, entityType: match.match_entity_type, matchId: match.id };
   let name = change.displayName;
   const getName = async () => {
@@ -238,11 +242,12 @@ export const rescoreRequirement = async (context: AuthContext, user: AuthUser, i
  * Entities stored before candidates were checked against the conditions of the scope, that do not meet them:
  * automatic and proposed ones leave the requirement (accepted ones stay, the analyst decided).
  */
-export const purgeNotEligibleMatches = async (context: AuthContext, user: AuthUser, irId: string) => {
+export const purgeNotEligibleMatches = async (context: AuthContext, user: AuthUser, irId: string, ir?: Pick<ParsedIntelligenceRequirement, 'ir_pir_id'>) => {
   const matches = (await listMatches(context, user, irId, LEAVES_WHEN_NOT_ELIGIBLE)).filter((m) => m.match_excluded);
   for (let i = 0; i < matches.length; i += 1) {
     await closeOpenItemsOfMatch(context, user, irId, matches[i].id, NOT_ELIGIBLE_RESULT);
     await deleteMatch(context, user, matches[i].id);
+    if (ir) await unprojectMatchFromPir(context, ir, matches[i]);
   }
   return matches.length;
 };
@@ -277,6 +282,9 @@ export const setMatchStatus = async (context: AuthContext, user: AuthUser, match
     }
   } else {
     await appendMatchHistory(context, user, updated, { status, kind: 'decision', trigger: `${MATCH_STATUS_RESULTS[status]} by ${user.name}` });
+    // Rejected or removed: the entity is no longer part of the requirement, its flag on the driven Pir goes
+    const ir = await storeLoadById<BasicStoreEntityIntelligenceRequirement>(context, user, match.ir_id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT);
+    if (ir) await projectMatchOnPir(context, ir, updated);
   }
   return updated;
 };

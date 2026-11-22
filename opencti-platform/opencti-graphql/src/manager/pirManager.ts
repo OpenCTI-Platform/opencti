@@ -22,7 +22,7 @@ import { STIX_TYPE_RELATION } from '../schema/general';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { AuthContext } from '../types/user';
 import { FunctionalError } from '../config/errors';
-import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type ParsedPir, type ParsedPirCriterion, type StoreEntityPir } from '../modules/pir/pir-types';
+import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, isPirDrivenByRequirement, type ParsedPir, type ParsedPirCriterion, type StoreEntityPir } from '../modules/pir/pir-types';
 import { constructFinalPirFilters, parsePir } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
 import { fetchStreamEventsRangeFromEventId } from '../database/stream/stream-handler';
@@ -167,7 +167,9 @@ const processStreamEventsForPir = (context: AuthContext, pir: BasicStoreEntityPi
  */
 export const pirManagerHandler = async () => {
   const context = executionContext(PIR_MANAGER_CONTEXT);
-  const allPirs = await getEntitiesListFromCache<BasicStoreEntityPir>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR);
+  // A Pir driven by its intelligence requirement is flagged by the intelligence requirement manager, not here
+  const allPirs = (await getEntitiesListFromCache<BasicStoreEntityPir>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR))
+    .filter((pir) => !isPirDrivenByRequirement(pir));
 
   // Loop through all Pirs by group
   await BluePromise.map(allPirs, async (pir) => {

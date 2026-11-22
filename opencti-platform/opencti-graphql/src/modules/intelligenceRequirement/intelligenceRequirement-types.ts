@@ -144,6 +144,7 @@ interface IntelligenceRequirementFields {
   ir_brief_frequency?: string; // off | daily | weekly: AI brief delivered to the inbox
   ir_last_brief_at?: Date | string | null;
   ir_processing?: string; // serialized StoreIrProcessing, written by the engine with lastEventId
+  ir_pir_id?: string | null; // the legacy Pir this requirement drives (in-pir flags and pir_information written onto it)
   lastEventId: string;
 }
 
