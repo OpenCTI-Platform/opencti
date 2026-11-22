@@ -64,14 +64,14 @@ export const buildRequirementForPir = (pir: BasicStoreEntityPir) => {
  * Create the requirement of a Pir and link both. Idempotent: a Pir already linked to an existing requirement returns it,
  * a link to a requirement that no longer exists is rebuilt (the migration and pirAdd both call it).
  */
-export const linkPirToRequirement = async (context: AuthContext, pir: BasicStoreEntityPir) => {
+export const linkPirToRequirement = async (context: AuthContext, pir: BasicStoreEntityPir, locks: string[] = []) => {
   if (pir.pir_requirement_id) {
     const existing = await storeLoadById<BasicStoreEntityIntelligenceRequirement>(context, SYSTEM_USER, pir.pir_requirement_id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT);
     if (existing) return existing.id;
   }
   const now = new Date();
   const created = await createEntity(context, SYSTEM_USER, { ...buildRequirementForPir(pir), created_at: now, updated_at: now }, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT);
-  await patchAttribute(context, SYSTEM_USER, pir.id, ENTITY_TYPE_PIR, { pir_requirement_id: created.internal_id });
+  await patchAttribute(context, SYSTEM_USER, pir.id, ENTITY_TYPE_PIR, { pir_requirement_id: created.internal_id }, { locks });
   return created.internal_id as string;
 };
 
@@ -190,10 +190,11 @@ export const checkInPirParity = (pir: Pick<BasicStoreEntityPir, 'pir_criteria'>,
   return { entity_id: relation.fromId, stored_score: relation.pir_score, projected_score: projectedScore, same_explanations: sameExplanations };
 };
 
-const withPirLock = async <T>(pirId: string, fn: () => Promise<T>) => {
+// The lock is not reentrant: every write on the Pir inside fn passes { locks: [pirId] } so it does not wait on this lock.
+const withPirLock = async <T>(pirId: string, fn: (locks: string[]) => Promise<T>) => {
   const lock = await lockResources([pirId]);
   try {
-    return await fn();
+    return await fn([pirId]);
   } finally {
     await lock.unlock();
   }
@@ -208,13 +209,13 @@ export type PirEngineSwitchResult =
  * The requirement starts at the stream position of the Pir: no event is read twice, none is skipped.
  */
 export const switchPirToRequirementEngine = async (context: AuthContext, pirId: string): Promise<PirEngineSwitchResult> => {
-  return withPirLock(pirId, async () => {
+  return withPirLock(pirId, async (locks) => {
     const pir = await storeLoadById<BasicStoreEntityPir>(context, SYSTEM_USER, pirId, ENTITY_TYPE_PIR);
     if (!pir) return { switched: false, engine: PIR_ENGINE_LEGACY, reason: 'Pir not found' };
     if (isPirDrivenByRequirement(pir) && pir.pir_requirement_id) {
       return { switched: true, engine: PIR_ENGINE_REQUIREMENT, requirementId: pir.pir_requirement_id, flags: 0, seeded: 0 };
     }
-    const requirementId = await linkPirToRequirement(context, pir);
+    const requirementId = await linkPirToRequirement(context, pir, locks);
     const relations = await fullRelationsList<BasicStoreRelationPir>(context, SYSTEM_USER, RELATION_IN_PIR, { toId: pir.id });
     const at = new Date().toISOString();
     const mismatches = relations.map((relation) => checkInPirParity(pir, relation, at)).filter((m): m is PirParityMismatch => m !== null);
@@ -249,7 +250,7 @@ export const switchPirToRequirementEngine = async (context: AuthContext, pirId: 
     }
     invalidateInRequirementEntityIds(requirementId);
     // The Pir first (the legacy manager stops reading the stream for it), then the requirement resumes from the same position
-    await patchAttribute(context, SYSTEM_USER, pir.id, ENTITY_TYPE_PIR, { pir_engine: PIR_ENGINE_REQUIREMENT });
+    await patchAttribute(context, SYSTEM_USER, pir.id, ENTITY_TYPE_PIR, { pir_engine: PIR_ENGINE_REQUIREMENT }, { locks });
     await patchAttribute(context, SYSTEM_USER, requirementId, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, {
       ir_status: 'active',
       lastEventId: pir.lastEventId,
@@ -265,7 +266,7 @@ export const switchPirToRequirementEngine = async (context: AuthContext, pirId: 
  * The flags written by the requirement stay: they have the legacy shape.
  */
 export const switchPirToLegacyEngine = async (context: AuthContext, pirId: string): Promise<PirEngineSwitchResult> => {
-  return withPirLock(pirId, async () => {
+  return withPirLock(pirId, async (locks) => {
     const pir = await storeLoadById<BasicStoreEntityPir>(context, SYSTEM_USER, pirId, ENTITY_TYPE_PIR);
     if (!pir) return { switched: false, engine: PIR_ENGINE_LEGACY, reason: 'Pir not found' };
     const requirement = await loadLinkedRequirement(context, pir);
@@ -274,7 +275,7 @@ export const switchPirToLegacyEngine = async (context: AuthContext, pirId: strin
       await patchAttribute(context, SYSTEM_USER, requirement.id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, { ir_status: 'paused' });
       if (isPirDrivenByRequirement(pir) && requirement.lastEventId) patch.lastEventId = requirement.lastEventId;
     }
-    await patchAttribute(context, SYSTEM_USER, pir.id, ENTITY_TYPE_PIR, patch);
+    await patchAttribute(context, SYSTEM_USER, pir.id, ENTITY_TYPE_PIR, patch, { locks });
     return { switched: true, engine: PIR_ENGINE_LEGACY, requirementId: requirement?.id ?? '', flags: 0, seeded: 0 };
   });
 };
