@@ -18195,9 +18195,7 @@ export type Mutation = {
   playbookFieldPatch?: Maybe<Playbook>;
   playbookImport: Scalars['String']['output'];
   playbookInsertNode: PlaybookInsertResult;
-  /** Move a node and its branch under another out port in a single write: every link reaching the node is replaced by one link from parentNodeId / parentPortId. */
   playbookMoveNode: Scalars['String']['output'];
-  /** Re-point one link in a single write: a new target node, and optionally a new source node and out port. Refuses a cycle and a node left without a parent. */
   playbookRelink: Scalars['String']['output'];
   playbookReplaceNode: Scalars['String']['output'];
   playbookStepExecution?: Maybe<Scalars['Boolean']['output']>;
@@ -24820,9 +24818,7 @@ export type PlaybookAddNodeInput = {
   configuration?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
-  /** Node this node is linked from: required for every node but the entry point, given with parentPortId. */
   parentNodeId?: InputMaybe<Scalars['ID']['input']>;
-  /** Out port of parentNodeId the link leaves from. */
   parentPortId?: InputMaybe<Scalars['ID']['input']>;
   position: PositionInput;
 };
@@ -26069,8 +26065,6 @@ export type Query = {
   works?: Maybe<WorkConnection>;
   workspace?: Maybe<Workspace>;
   workspaces?: Maybe<WorkspaceConnection>;
-  xtmConnections: Array<XtmConnection>;
-  xtmCounterpartsOf: Array<XtmCounterpartResult>;
 };
 
 
@@ -29475,11 +29469,6 @@ export type QueryWorkspacesArgs = {
   search?: InputMaybe<Scalars['String']['input']>;
 };
 
-
-export type QueryXtmCounterpartsOfArgs = {
-  ids: Array<Scalars['String']['input']>;
-};
-
 export type QueryAttribute = {
   data_operation?: InputMaybe<Scalars['String']['input']>;
   default?: InputMaybe<Scalars['String']['input']>;
@@ -32531,6 +32520,7 @@ export type Software = BasicObject & StixCoreObject & StixCyberObservable & Stix
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_product?: Maybe<Scalars['String']['output']>;
+  x_opencti_purl?: Maybe<Scalars['String']['output']>;
   x_opencti_score?: Maybe<Scalars['Int']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
@@ -32700,6 +32690,7 @@ export type SoftwareAddInput = {
   vendor?: InputMaybe<Scalars['String']['input']>;
   version?: InputMaybe<Scalars['String']['input']>;
   x_opencti_product?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_purl?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SoftwareConnection = {
@@ -40998,44 +40989,6 @@ export enum XtmHubRegistrationStatus {
   Unregistered = 'unregistered'
 }
 
-export type XtmConnection = {
-  __typename?: 'XtmConnection';
-  connected: Scalars['Boolean']['output'];
-  product: Scalars['String']['output'];
-};
-
-export type XtmCounterpart = {
-  __typename?: 'XtmCounterpart';
-  facts: Array<XtmCounterpartFact>;
-  key: Scalars['String']['output'];
-  object_id: Scalars['String']['output'];
-  object_name?: Maybe<Scalars['String']['output']>;
-  object_type: Scalars['String']['output'];
-  object_url: Scalars['String']['output'];
-  product: Scalars['String']['output'];
-};
-
-export type XtmCounterpartFact = {
-  __typename?: 'XtmCounterpartFact';
-  key: Scalars['String']['output'];
-  value: Scalars['String']['output'];
-};
-
-export type XtmCounterpartResult = {
-  __typename?: 'XtmCounterpartResult';
-  counterpart?: Maybe<XtmCounterpart>;
-  id: Scalars['String']['output'];
-  product: Scalars['String']['output'];
-  status: XtmCounterpartStatus;
-};
-
-export enum XtmCounterpartStatus {
-  Found = 'found',
-  NotFound = 'not_found',
-  NotSupported = 'not_supported',
-  Unavailable = 'unavailable'
-}
-
 export type WithIndex<TObject> = TObject & Record<string, any>;
 export type ResolversObject<TObject> = WithIndex<TObject>;
 
@@ -43187,11 +43140,6 @@ export type ResolversTypes = ResolversObject<{
   X509CertificateAddInput: X509CertificateAddInput;
   XTMHubCommercialModel: XtmHubCommercialModel;
   XTMHubRegistrationStatus: XtmHubRegistrationStatus;
-  XtmConnection: ResolverTypeWrapper<XtmConnection>;
-  XtmCounterpart: ResolverTypeWrapper<XtmCounterpart>;
-  XtmCounterpartFact: ResolverTypeWrapper<XtmCounterpartFact>;
-  XtmCounterpartResult: ResolverTypeWrapper<XtmCounterpartResult>;
-  XtmCounterpartStatus: XtmCounterpartStatus;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -44269,10 +44217,6 @@ export type ResolversParentTypes = ResolversObject<{
   WorkspaceEdge: Omit<WorkspaceEdge, 'node'> & { node: ResolversParentTypes['Workspace'] };
   X509Certificate: Omit<X509Certificate, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   X509CertificateAddInput: X509CertificateAddInput;
-  XtmConnection: XtmConnection;
-  XtmCounterpart: XtmCounterpart;
-  XtmCounterpartFact: XtmCounterpartFact;
-  XtmCounterpartResult: XtmCounterpartResult;
 }>;
 
 export type AllowUnlicensedLtsDirectiveArgs = { };
@@ -52986,8 +52930,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   works?: Resolver<Maybe<ResolversTypes['WorkConnection']>, ParentType, ContextType, Partial<QueryWorksArgs>>;
   workspace?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<QueryWorkspaceArgs, 'id'>>;
   workspaces?: Resolver<Maybe<ResolversTypes['WorkspaceConnection']>, ParentType, ContextType, Partial<QueryWorkspacesArgs>>;
-  xtmConnections?: Resolver<Array<ResolversTypes['XtmConnection']>, ParentType, ContextType>;
-  xtmCounterpartsOf?: Resolver<Array<ResolversTypes['XtmCounterpartResult']>, ParentType, ContextType, RequireFields<QueryXtmCounterpartsOfArgs, 'ids'>>;
 }>;
 
 export type QueryTaskResolvers<ContextType = any, ParentType extends ResolversParentTypes['QueryTask'] = ResolversParentTypes['QueryTask']> = ResolversObject<{
@@ -54117,6 +54059,7 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_product?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_purl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -56941,33 +56884,6 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type XtmConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['XtmConnection'] = ResolversParentTypes['XtmConnection']> = ResolversObject<{
-  connected?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  product?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-}>;
-
-export type XtmCounterpartResolvers<ContextType = any, ParentType extends ResolversParentTypes['XtmCounterpart'] = ResolversParentTypes['XtmCounterpart']> = ResolversObject<{
-  facts?: Resolver<Array<ResolversTypes['XtmCounterpartFact']>, ParentType, ContextType>;
-  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  object_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  object_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  object_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  object_url?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  product?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-}>;
-
-export type XtmCounterpartFactResolvers<ContextType = any, ParentType extends ResolversParentTypes['XtmCounterpartFact'] = ResolversParentTypes['XtmCounterpartFact']> = ResolversObject<{
-  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-}>;
-
-export type XtmCounterpartResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['XtmCounterpartResult'] = ResolversParentTypes['XtmCounterpartResult']> = ResolversObject<{
-  counterpart?: Resolver<Maybe<ResolversTypes['XtmCounterpart']>, ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  product?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  status?: Resolver<ResolversTypes['XtmCounterpartStatus'], ParentType, ContextType>;
-}>;
-
 export type Resolvers<ContextType = any> = ResolversObject<{
   AIBus?: AiBusResolvers<ContextType>;
   AIPrompt?: AiPromptResolvers<ContextType>;
@@ -57763,10 +57679,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   WorkspaceConnection?: WorkspaceConnectionResolvers<ContextType>;
   WorkspaceEdge?: WorkspaceEdgeResolvers<ContextType>;
   X509Certificate?: X509CertificateResolvers<ContextType>;
-  XtmConnection?: XtmConnectionResolvers<ContextType>;
-  XtmCounterpart?: XtmCounterpartResolvers<ContextType>;
-  XtmCounterpartFact?: XtmCounterpartFactResolvers<ContextType>;
-  XtmCounterpartResult?: XtmCounterpartResultResolvers<ContextType>;
 }>;
 
 export type DirectiveResolvers<ContextType = any> = ResolversObject<{
