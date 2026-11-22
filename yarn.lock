@@ -11189,10 +11189,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"convert@npm:8.1.0":
-  version: 8.1.0
-  resolution: "convert@npm:8.1.0"
-  checksum: 10c0/e44b395eb6f716783886758aa2dd20ddcee93d99881a58f428aaf884d0021d70b125121428c3e5a6be8d254549a7d6bf71ce3648dcad44b88982c1bf4e3fbc90
+"convert@npm:8.2.0":
+  version: 8.2.0
+  resolution: "convert@npm:8.2.0"
+  checksum: 10c0/08a2c2ed35dd61b57d516730b70488b9bdec078a586c4baba983cacb43ceb9df60f661b1a17fa49d0fd6061591dbccc252ebedd283e24d37832db663cd645e07
   languageName: node
   linkType: hard
 
@@ -18800,7 +18800,7 @@ __metadata:
     analytics: "npm:0.8.19"
     apexcharts: "npm:4.7.0"
     babel-plugin-relay: "npm:21.0.1"
-    convert: "npm:8.1.0"
+    convert: "npm:8.2.0"
     d3-scale: "npm:4.0.3"
     d3-timer: "npm:3.0.2"
     date-fns: "npm:4.4.0"
@@ -18985,7 +18985,7 @@ __metadata:
     compression: "npm:1.8.2"
     content-disposition: "npm:3.1.0"
     content-type: "npm:3.1.1"
-    convert: "npm:8.1.0"
+    convert: "npm:8.2.0"
     cors: "npm:2.8.6"
     csv-parse: "npm:7.0.3"
     dataloader: "npm:2.2.3"
