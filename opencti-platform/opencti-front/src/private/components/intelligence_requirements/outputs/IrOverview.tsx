@@ -118,8 +118,8 @@ const IrOverview = ({ irId }: { irId: string }) => {
   return (
     <>
       <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${IR_KIQS_ENABLED ? 4 : 3}, 1fr)`, gap: 2, mb: 2 }}>
-        <Kpi label={t_i18n('Entities in the requirement')} value={inRequirement.length} detail={`${proposed.length} ${t_i18n('proposed')} · ${excluded.length} ${t_i18n('not eligible')}`} />
-        <Kpi label={t_i18n('Inbox · to review')} value={items.length} detail={`${items.filter((i) => i.item_kind === 'proposed').length} ${t_i18n('proposed to accept')}`} />
+        <Kpi label={t_i18n('Entities in the requirement')} value={inRequirement.length} detail={`${t_i18n('{count, plural, one {# proposed} other {# proposed}}', { values: { count: proposed.length } })} · ${t_i18n('{count, plural, one {# not eligible} other {# not eligible}}', { values: { count: excluded.length } })}`} />
+        <Kpi label={t_i18n('Inbox · to review')} value={items.length} detail={t_i18n('{count, plural, one {# proposed to accept} other {# proposed to accept}}', { values: { count: items.filter((i) => i.item_kind === 'proposed').length } })} />
         <Kpi label={`${t_i18n('Score')} ≥ ${topThreshold}`} value={high.length} detail={t_i18n('high-priority entities')} />
         {IR_KIQS_ENABLED && <Kpi label={t_i18n('KIQs answered')} value={`${kiqs.filter((k) => k.answered).length}/${kiqs.length}`} />}
       </Box>

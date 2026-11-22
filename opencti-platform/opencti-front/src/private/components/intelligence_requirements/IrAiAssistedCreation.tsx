@@ -275,7 +275,7 @@ const IrAiAssistedCreationContent = ({ agent, onClose }: { agent: AgentOption; o
                     <Text as="span" variant="content-compact">{`${g.name} (${t_i18n(g.kind)}${g.matching_count != null ? `, ${g.matching_count}` : ''})`}</Text>
                     {g.entities.slice(0, 8).map((e) => <Chip key={e.id} label={e.name} severity="info" />)}
                     {keywords.map((k) => <Chip key={k} label={`#${k}`} />)}
-                    {g.unresolved_ids.length > 0 && <Chip label={`${g.unresolved_ids.length} ${t_i18n('not found')}`} severity="high" />}
+                    {g.unresolved_ids.length > 0 && <Chip label={t_i18n('{count, plural, one {# not found} other {# not found}}', { values: { count: g.unresolved_ids.length } })} severity="high" />}
                   </Box>
                 );
               })}
@@ -284,7 +284,7 @@ const IrAiAssistedCreationContent = ({ agent, onClose }: { agent: AgentOption; o
                 <Paper key={c.id} padding={16}>
                   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 0.5 }}>
                     <Text as="span" variant="content-compact-bold">{c.name}</Text>
-                    <Chip label={c.today_count != null ? `${c.today_count} ${t_i18n('today')}` : t_i18n('second hop')} severity={c.today_count ? 'low' : 'neutral'} />
+                    <Chip label={c.today_count != null ? t_i18n('{count, plural, one {# today} other {# today}}', { values: { count: c.today_count } }) : t_i18n('second hop')} severity={c.today_count ? 'low' : 'neutral'} />
                   </Box>
                   <Text as="div" variant="content-caption">{config.explanations.find((e) => e.criterion_id === c.id)?.text ?? c.note ?? ''}</Text>
                   {c.warnings.map((w) => <Text key={w} as="div" variant="content-caption">{`⚠ ${w}`}</Text>)}
@@ -330,14 +330,18 @@ const IrAiAssistedCreation = () => {
   const createBlank = () => navigate('/dashboard/intelligence_requirements/new');
   // AI disabled on the platform: one plain button, no menu of a single entry
   if (!visible) {
-    return <Button data-testid="create-intelligence-requirement-button" onClick={createBlank}>{t_i18n('Create a requirement')}</Button>;
+    return <Button data-testid="create-intelligence-requirement-button" aria-label={t_i18n('Create a requirement')} onClick={createBlank}>{t_i18n('Create')}</Button>;
   }
   return (
     <>
       <Menu open={menuOpen} onOpenChange={setMenuOpen} modal={false}>
         <MenuTrigger asChild>
-          <Button data-testid="create-intelligence-requirement-button" endIcon={menuOpen ? <ArrowDropUpOutlined /> : <ArrowDropDownOutlined />}>
-            {t_i18n('Create a requirement')}
+          <Button
+            data-testid="create-intelligence-requirement-button"
+            aria-label={t_i18n('Create a requirement')}
+            endIcon={menuOpen ? <ArrowDropUpOutlined /> : <ArrowDropDownOutlined />}
+          >
+            {t_i18n('Create')}
           </Button>
         </MenuTrigger>
         <MenuContent align="end" sideOffset={6} style={{ minWidth: 280 }}>

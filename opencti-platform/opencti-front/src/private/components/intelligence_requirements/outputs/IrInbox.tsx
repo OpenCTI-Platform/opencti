@@ -13,6 +13,7 @@ import {
   buildProofChain,
   criterionName,
   explanationSentence,
+  itemTitleText,
   type IrChainMatch,
   type IrCriterionRef,
   type IrExplanationData,
@@ -201,6 +202,7 @@ export interface IrInboxItemData {
     readonly criterion_id?: string | null;
     readonly from_score?: number | null;
     readonly to_score?: number | null;
+    readonly threshold?: number | null;
     readonly reasons?: readonly string[] | null;
     readonly message?: string | null;
     readonly content?: string | null;
@@ -290,7 +292,7 @@ export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecid
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {item.item_entity_type && <ItemIcon type={item.item_entity_type} size="small" />}
-          <Text as="div" variant={compact ? 'content-compact-medium' : 'content-base-bold'}>{item.item_title}</Text>
+          <Text as="div" variant={compact ? 'content-compact-medium' : 'content-base-bold'}>{itemTitleText(t_i18n, item)}</Text>
         </Box>
         {!compact && item.item_data.message && (
           <Text as="div" variant="content-caption" style={{ opacity: 0.85 }}>{item.item_data.message}</Text>
@@ -318,7 +320,7 @@ export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecid
           </Box>
         )}
         {!chain && proofs.length > 0 && (
-          <Text as="div" variant="content-caption" style={{ opacity: 0.8 }}>{proofs.slice(0, 3).map((e) => explanationSentence(e, entityName)).join(' · ')}</Text>
+          <Text as="div" variant="content-caption" style={{ opacity: 0.8 }}>{proofs.slice(0, 3).map((e) => explanationSentence(t_i18n, e, entityName)).join(' · ')}</Text>
         )}
         {!compact && relationship && (
           <Box sx={{ display: 'flex', gap: 2, opacity: 0.7 }}>
@@ -479,12 +481,12 @@ const IrInbox = ({ irId }: { irId: string }) => {
       </Box>
       {filter !== 'done' && openTotal > open.length && (
         <Text as="div" variant="content-caption" style={{ opacity: 0.7, marginBottom: 8 }}>
-          {`${t_i18n('Showing the')} ${open.length} ${t_i18n('most recent open items out of')} ${openTotal}`}
+          {t_i18n('{count, plural, one {Showing the most recent open item out of {total}} other {Showing the # most recent open items out of {total}}}', { values: { count: open.length, total: openTotal } })}
         </Text>
       )}
       {filter === 'done' && (data.doneItems?.pageInfo.globalCount ?? 0) > (data.doneItems?.edges.length ?? 0) && (
         <Text as="div" variant="content-caption" style={{ opacity: 0.7, marginBottom: 8 }}>
-          {`${t_i18n('Showing the')} ${data.doneItems?.edges.length ?? 0} ${t_i18n('most recent done items out of')} ${data.doneItems?.pageInfo.globalCount ?? 0}`}
+          {t_i18n('{count, plural, one {Showing the most recent done item out of {total}} other {Showing the # most recent done items out of {total}}}', { values: { count: data.doneItems?.edges.length ?? 0, total: data.doneItems?.pageInfo.globalCount ?? 0 } })}
         </Text>
       )}
       {view === 'mailbox' && filter !== 'done' && (
@@ -505,7 +507,7 @@ const IrInbox = ({ irId }: { irId: string }) => {
           <Checkbox
             checked={allSelected}
             onCheckedChange={(value) => setChecked(value === true ? new Set(selectable.map((i) => i.id)) : new Set())}
-            label={selectedItems.length > 0 ? `${selectedItems.length} ${t_i18n('selected')}` : `${t_i18n('Select all')} (${selectable.length})`}
+            label={selectedItems.length > 0 ? t_i18n('{count, plural, one {# selected} other {# selected}}', { values: { count: selectedItems.length } }) : `${t_i18n('Select all')} (${selectable.length})`}
           />
           <Box sx={{ flex: 1 }} />
           {selectedItems.length > 0 && (
@@ -547,7 +549,7 @@ const IrInbox = ({ irId }: { irId: string }) => {
           <DialogContent>
             <DialogTitle>{t_i18n(confirm === 'reject' ? 'Reject the selected proposals?' : 'Remove the selected entities from the requirement?')}</DialogTitle>
             <DialogDescription>
-              {`${applicable(confirm).length} ${t_i18n('items')} · ${t_i18n('a rejected or removed entity does not come back into the requirement automatically.')}`}
+              {`${t_i18n('{count, plural, one {# item} other {# items}}', { values: { count: applicable(confirm).length } })} · ${t_i18n('a rejected or removed entity does not come back into the requirement automatically.')}`}
             </DialogDescription>
             <DialogFooter>
               <Button variant="tertiary" onClick={() => setConfirm(null)}>{t_i18n('Cancel')}</Button>
@@ -556,7 +558,15 @@ const IrInbox = ({ irId }: { irId: string }) => {
           </DialogContent>
         </Dialog>
       )}
-      <Drawer open={!!briefId} onClose={() => setBriefId(null)} title={items.find((i) => i.id === briefId)?.item_title ?? t_i18n('AI brief')} size="large">
+      <Drawer
+        open={!!briefId}
+        onClose={() => setBriefId(null)}
+        title={(() => {
+          const briefItem = items.find((i) => i.id === briefId);
+          return briefItem ? itemTitleText(t_i18n, briefItem) : t_i18n('AI brief');
+        })()}
+        size="large"
+      >
         <XtmOneAISummaryDisplay
           disclaimerText={t_i18n('This brief was written by an XTM One agent from the content of the requirement. It has been generated by AI and can contain mistakes.')}
           noAgent={false}

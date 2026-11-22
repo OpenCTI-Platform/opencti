@@ -3,6 +3,9 @@ import { Chip, Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import { CheckCircleOutlined, HighlightOffOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
+import { irRelationshipLabel } from '../configuration/irConstants';
+
+type Translate = (key: string, values?: { values: Record<string, unknown> }) => string;
 
 // Shared rendering helpers of the output screens (Overview, Entities, Inbox) of the proof of concept.
 
@@ -43,26 +46,55 @@ export const criterionName = (criteria: readonly IrCriterionRef[], id: string) =
 /**
  * One line of proof: why the entity entered the requirement.
  */
-export const explanationText = (e: IrExplanationData) => {
+export const explanationText = (t_i18n: Translate, e: IrExplanationData) => {
   if (e.kind === 'graph') {
     const anchor = e.anchor?.representative.main ?? '?';
-    return e.direction === 'incoming' ? `—${e.relationship_type}→ ${anchor}` : `${anchor} —${e.relationship_type}→`;
+    const rel = irRelationshipLabel(t_i18n, e.relationship_type ?? '');
+    return e.direction === 'incoming' ? `—${rel}→ ${anchor}` : `${anchor} —${rel}→`;
   }
   if (e.kind === 'keywords') {
-    return `“${e.keyword}” in ${e.field} of ${e.container?.representative.main ?? 'itself'}`;
+    const field = t_i18n(e.field ?? '');
+    return e.container
+      ? t_i18n('“{keyword}” in the {field} of {container}', { values: { keyword: e.keyword ?? '', field, container: e.container.representative.main } })
+      : t_i18n('“{keyword}” in its {field}', { values: { keyword: e.keyword ?? '', field } });
   }
-  return 'matches the attribute filters';
+  return t_i18n('Matches the attribute filters');
 };
 
 /**
  * The same proof as a full sentence, with the entity itself: "Scattered Spider —uses→ Rhadamanthys".
  */
-export const explanationSentence = (e: IrExplanationData, entityName: string) => {
+export const explanationSentence = (t_i18n: Translate, e: IrExplanationData, entityName: string) => {
   if (e.kind === 'graph' && entityName) {
     const anchor = e.anchor?.representative.main ?? '?';
-    return e.direction === 'incoming' ? `${entityName} —${e.relationship_type}→ ${anchor}` : `${anchor} —${e.relationship_type}→ ${entityName}`;
+    const rel = irRelationshipLabel(t_i18n, e.relationship_type ?? '');
+    return e.direction === 'incoming' ? `${entityName} —${rel}→ ${anchor}` : `${anchor} —${rel}→ ${entityName}`;
   }
-  return explanationText(e);
+  return explanationText(t_i18n, e);
+};
+
+// The title of an inbox item, written from its kind and data in the reader's language (the stored title is the fallback)
+export const itemTitleText = (
+  t_i18n: Translate,
+  item: {
+    readonly item_kind: string;
+    readonly item_title: string;
+    readonly item_data: { readonly criterion_id?: string | null; readonly threshold?: number | null; readonly message?: string | null };
+    readonly match?: { readonly entity?: { readonly representative: { readonly main: string } } | null } | null;
+  },
+) => {
+  const name = item.match?.entity?.representative.main;
+  if (!name) return item.item_title;
+  if (item.item_kind === 'proposed') return t_i18n('{name} is proposed for the requirement', { values: { name } });
+  if (item.item_kind === 'score' && item.item_data.threshold != null) {
+    return t_i18n('{name} reached a score of {threshold}', { values: { name, threshold: item.item_data.threshold } });
+  }
+  if (item.item_kind === 'entered') {
+    return item.item_data.criterion_id
+      ? t_i18n('{name} is now in the requirement', { values: { name } })
+      : t_i18n('{name} brought new entities into the requirement', { values: { name } });
+  }
+  return item.item_title;
 };
 
 // A match reduced to what the proof chain needs (to walk back a second hop to its subject).
@@ -108,26 +140,31 @@ export const buildProofChain = (
 /**
  * The chain drawn with chips: the subject in blue, the entity in green, the hops in between neutral.
  */
-export const ProofChain = ({ chain }: { chain: IrProofChain }) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-    {chain.nodes.map((node, i) => {
-      const last = i === chain.nodes.length - 1;
-      let severity: 'info' | 'low' | 'neutral' = 'neutral';
-      if (i === 0) severity = 'info';
-      else if (last) severity = 'low';
-      return (
-        <React.Fragment key={`${node}-${i}`}>
-          <Chip label={node} severity={severity} />
-          {!last && (
-            <Text as="span" variant="content-caption" style={{ fontFamily: 'monospace', opacity: i === chain.links.length - 1 ? 1 : 0.6 }}>
-              {chain.links[i].incoming ? `←${chain.links[i].relationship_type}—` : `—${chain.links[i].relationship_type}→`}
-            </Text>
-          )}
-        </React.Fragment>
-      );
-    })}
-  </Box>
-);
+export const ProofChain = ({ chain }: { chain: IrProofChain }) => {
+  const { t_i18n } = useFormatter();
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+      {chain.nodes.map((node, i) => {
+        const last = i === chain.nodes.length - 1;
+        let severity: 'info' | 'low' | 'neutral' = 'neutral';
+        if (i === 0) severity = 'info';
+        else if (last) severity = 'low';
+        return (
+          <React.Fragment key={`${node}-${i}`}>
+            <Chip label={node} severity={severity} />
+            {!last && (
+              <Text as="span" variant="content-caption" style={{ fontFamily: 'monospace', opacity: i === chain.links.length - 1 ? 1 : 0.6 }}>
+                {chain.links[i].incoming
+                  ? `←${irRelationshipLabel(t_i18n, chain.links[i].relationship_type)}—`
+                  : `—${irRelationshipLabel(t_i18n, chain.links[i].relationship_type)}→`}
+              </Text>
+            )}
+          </React.Fragment>
+        );
+      })}
+    </Box>
+  );
+};
 
 export const STATUS_CHIP: Record<string, { label: string; severity: 'neutral' | 'info' | 'low' | 'medium' | 'high' | 'critical' }> = {
   auto: { label: 'Auto', severity: 'neutral' },

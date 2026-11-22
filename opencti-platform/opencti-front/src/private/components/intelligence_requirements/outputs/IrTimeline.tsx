@@ -106,7 +106,7 @@ const IrTimeline = ({ irId }: { irId: string }) => {
   const entityList = (card: Highlight, withScores: boolean) => (
     <>
       <Button variant="tertiary" size="small" onClick={() => toggleCard(card.key)}>
-        {expanded.includes(card.key) ? t_i18n('Hide') : `${t_i18n('Show the')} ${card.events.length}`}
+        {expanded.includes(card.key) ? t_i18n('Hide') : t_i18n('{count, plural, one {Show the entity} other {Show the # entities}}', { values: { count: card.events.length } })}
       </Button>
       {expanded.includes(card.key) && (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
@@ -139,13 +139,13 @@ const IrTimeline = ({ irId }: { irId: string }) => {
       sentence = <>{entityLink(first)}{` · ${first.trigger}`}</>;
     } else if (card.kind === 'moves') {
       const up = card.events.filter((e) => e.toScore > (e.fromScore ?? 0)).length;
-      sentence = `${card.events.length} ${t_i18n('other score changes, no threshold crossed')} (${up} ${t_i18n('up')}, ${card.events.length - up} ${t_i18n('down')})`;
+      sentence = t_i18n('{count, plural, one {# other score change, no threshold crossed ({up} up, {down} down)} other {# other score changes, no threshold crossed ({up} up, {down} down)}}', { values: { count: card.events.length, up, down: card.events.length - up } });
       caption = null;
     } else if (card.kind === 'config') {
       const up = card.events.filter((e) => e.toScore > (e.fromScore ?? 0)).length;
       const down = card.events.filter((e) => e.toScore < (e.fromScore ?? 0)).length;
       const lost = card.events.filter((e) => e.eligibility === 'lost').length;
-      sentence = `${card.trigger}: ${card.events.length} ${t_i18n('scores recalculated')} (${up} ${t_i18n('up')}, ${down} ${t_i18n('down')}${lost > 0 ? `, ${lost} ${t_i18n('no longer eligible')}` : ''})`;
+      sentence = `${card.trigger}: ${t_i18n('{count, plural, one {# score recalculated ({up} up, {down} down)} other {# scores recalculated ({up} up, {down} down)}}', { values: { count: card.events.length, up, down } })}${lost > 0 ? ` · ${t_i18n('{count, plural, one {# no longer eligible} other {# no longer eligible}}', { values: { count: lost } })}` : ''}`;
     } else {
       sentence = `${t_i18n('{count, plural, one {# entity} other {# entities}}', { values: { count: card.events.length } })} (${t_i18n(`entity_${card.entityType}`)}) · ${card.trigger}`;
       if (card.peak) {

@@ -90,7 +90,7 @@ const IrScoreHistory = ({ matchId, irId }: { matchId: string; irId: string }) =>
         const p = points[Math.min(dataPointIndex, points.length - 1)];
         const lines = [
           `<b>${escapeHtml(fldt(p.at))}</b>`,
-          `${escapeHtml(t_i18n('Score'))}: ${p.eligible ? p.score : '—'}${p.eligible ? '' : ` (${escapeHtml(t_i18n('not eligible'))})`}`,
+          `${escapeHtml(t_i18n('Score'))}: ${p.eligible ? p.score : escapeHtml(t_i18n('Not eligible'))}`,
           p.trigger ? escapeHtml(p.trigger) : '',
           ...p.changes.map((c) => `• ${escapeHtml(c)}`),
         ].filter(Boolean);
@@ -115,11 +115,11 @@ const IrScoreHistory = ({ matchId, irId }: { matchId: string; irId: string }) =>
               </Box>
               {p.changes.length > 0 && <Text as="div" variant="content-caption" style={{ opacity: 0.8 }}>{p.changes.join(' · ')}</Text>}
             </Box>
-            <Text as="span" variant="content-compact-bold" style={{ textAlign: 'right' }}>{scored && p.eligible ? p.score : '—'}</Text>
+            <Text as="span" variant="content-compact-bold" style={{ textAlign: 'right' }}>{scored && p.eligible ? p.score : t_i18n('Not eligible')}</Text>
           </Box>
         ))}
         {points.length > MAX_EVENTS && (
-          <Text as="div" variant="content-caption" style={{ opacity: 0.7, marginTop: 4 }}>{`${points.length - MAX_EVENTS} ${t_i18n('earlier changes')}`}</Text>
+          <Text as="div" variant="content-caption" style={{ opacity: 0.7, marginTop: 4 }}>{t_i18n('{count, plural, one {# earlier change} other {# earlier changes}}', { values: { count: points.length - MAX_EVENTS } })}</Text>
         )}
       </Box>
     </Box>

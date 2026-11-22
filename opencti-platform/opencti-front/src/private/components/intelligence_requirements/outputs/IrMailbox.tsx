@@ -6,7 +6,7 @@ import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { AgentOption } from '../../../../utils/ai/agentApi';
-import { criterionName, type IrCriterionRef, KIND_CHIP, StatusChip } from './IrOutputCommon';
+import { criterionName, type IrCriterionRef, itemTitleText, KIND_CHIP, StatusChip } from './IrOutputCommon';
 import { IrMatchDetails, type IrMatchData, useMatchDecision } from './IrMatchDrawer';
 import { IrTriageCard, useIrTriage } from './IrTriage';
 import type { IrInboxItemData } from './IrInbox';
@@ -192,7 +192,7 @@ const IrMailbox = ({ irId, items, matches, criteria, sort, triageAgent, onDecide
         <Checkbox
           checked={selectedThreads.length > 0 && selectedThreads.length === threads.length}
           onCheckedChange={(value) => setChecked(value === true ? new Set(threads.map((t) => t.key)) : new Set())}
-          label={selectedThreads.length > 0 ? `${selectedThreads.length} ${t_i18n('selected')}` : `${t_i18n('Select all')} (${threads.length})`}
+          label={selectedThreads.length > 0 ? t_i18n('{count, plural, one {# selected} other {# selected}}', { values: { count: selectedThreads.length } }) : `${t_i18n('Select all')} (${threads.length})`}
         />
         {selectedThreads.length > 0 && (
           <>
@@ -259,13 +259,13 @@ const IrMailbox = ({ irId, items, matches, criteria, sort, triageAgent, onDecide
                   <Text as="div" variant="content-caption" style={{ opacity: 0.75, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {[
                       kinds.join(' · '),
-                      thread.items.length > 1 ? `${thread.items.length} ${t_i18n('events')}` : null,
+                      thread.items.length > 1 ? t_i18n('{count, plural, one {# event} other {# events}}', { values: { count: thread.items.length } }) : null,
                       criterionId ? criterionName(criteria, criterionId) : null,
                     ].filter(Boolean).join(' · ')}
                   </Text>
                 </Box>
                 <Box sx={{ textAlign: 'right' }}>
-                  {scored && <Text as="div" variant="title-sm">{thread.match && !thread.match.match_excluded ? String(thread.match.match_score) : '—'}</Text>}
+                  {scored && <Text as="div" variant="title-sm">{thread.match && !thread.match.match_excluded ? String(thread.match.match_score) : t_i18n('Not eligible')}</Text>}
                   <Text as="div" variant="content-caption" style={{ opacity: 0.6 }}>{nsdt(thread.latest)}</Text>
                 </Box>
               </Box>
@@ -284,7 +284,7 @@ const IrMailbox = ({ irId, items, matches, criteria, sort, triageAgent, onDecide
               </Box>
               {current.match && (
                 <Box sx={{ textAlign: 'right' }}>
-                  {scored && <Text as="div" variant="title-lg">{current.match.match_excluded ? '—' : String(current.match.match_score)}</Text>}
+                  {scored && <Text as="div" variant={current.match.match_excluded ? 'content-compact-bold' : 'title-lg'}>{current.match.match_excluded ? t_i18n('Not eligible') : String(current.match.match_score)}</Text>}
                   <Link to={`/dashboard/id/${current.match.match_entity_id}`} target="_blank" rel="noopener noreferrer">{t_i18n('Open entity')}</Link>
                 </Box>
               )}
@@ -297,7 +297,7 @@ const IrMailbox = ({ irId, items, matches, criteria, sort, triageAgent, onDecide
                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                       <Chip label={t_i18n(KIND_CHIP[item.item_kind]?.label ?? item.item_kind)} severity={KIND_CHIP[item.item_kind]?.severity} size="sm" />
                       {isNew(item.created_at) && <Chip label={t_i18n('New')} severity="info" size="sm" />}
-                      <Text as="span" variant="content-compact">{item.item_title}</Text>
+                      <Text as="span" variant="content-compact">{itemTitleText(t_i18n, item)}</Text>
                     </Box>
                     {item.item_data.message && <Text as="div" variant="content-caption" style={{ opacity: 0.8 }}>{item.item_data.message}</Text>}
                     {item.item_kind === 'score' && (
@@ -343,7 +343,7 @@ const IrMailbox = ({ irId, items, matches, criteria, sort, triageAgent, onDecide
           <DialogContent>
             <DialogTitle>{t_i18n(confirm === 'reject' ? 'Reject the selected proposals?' : 'Remove the selected entities from the requirement?')}</DialogTitle>
             <DialogDescription>
-              {`${bulkIds(confirm).length} ${t_i18n('items')} · ${t_i18n('a rejected or removed entity does not come back into the requirement automatically.')}`}
+              {`${t_i18n('{count, plural, one {# item} other {# items}}', { values: { count: bulkIds(confirm).length } })} · ${t_i18n('a rejected or removed entity does not come back into the requirement automatically.')}`}
             </DialogDescription>
             <DialogFooter>
               <Button variant="tertiary" onClick={() => setConfirm(null)}>{t_i18n('Cancel')}</Button>

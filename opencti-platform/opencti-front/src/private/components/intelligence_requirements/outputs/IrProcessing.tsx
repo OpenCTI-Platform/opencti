@@ -104,10 +104,10 @@ const IrProcessing = ({ irId }: { irId: string }) => {
             detail={status.lag_seconds <= 120 ? undefined : `≈ ${n(status.lag_events)} ${t_i18n('events to process (estimate)')}`}
           />
           <Kpi label={t_i18n('Last event processed')} value={fldt(status.cursor_at)} />
-          <Kpi label={t_i18n('Stream')} value={`${n(status.stream_size)} ${t_i18n('events')}`} detail={`${t_i18n('Head')}: ${fldt(status.stream_head_at)}`} />
+          <Kpi label={t_i18n('Stream')} value={t_i18n('{count, plural, one {# event} other {# events}}', { values: { count: status.stream_size } })} detail={`${t_i18n('Head')}: ${fldt(status.stream_head_at)}`} />
           <Kpi
             label={t_i18n('Engine queue')}
-            value={`${status.active_requirements} ${t_i18n('active requirements')}`}
+            value={t_i18n('{count, plural, one {# active requirement} other {# active requirements}}', { values: { count: status.active_requirements } })}
             detail={t_i18n('processed one after the other')}
           />
         </Box>

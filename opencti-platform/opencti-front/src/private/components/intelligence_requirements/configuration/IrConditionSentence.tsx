@@ -1,5 +1,5 @@
 import React, { ReactNode, useState } from 'react';
-import { Input, Text } from '@filigran/design-system';
+import { Input, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
@@ -43,7 +43,12 @@ const IrConditionSentence = ({ condition, groups, typeOptions, onChange, onDelet
     <SentenceToken active={active === key} empty={empty} onClick={() => toggle(key)}>{label}</SentenceToken>
   );
   const remove = (label: string, onClick: () => void) => (
-    <IconButton size="small" onClick={onClick} aria-label={label} title={label} style={{ marginLeft: 4 }}><CloseOutlined fontSize="small" /></IconButton>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <IconButton size="small" onClick={onClick} aria-label={label} style={{ marginLeft: 4 }}><CloseOutlined fontSize="small" /></IconButton>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
   );
 
   const subject = condition.applies_to_types.length > 0

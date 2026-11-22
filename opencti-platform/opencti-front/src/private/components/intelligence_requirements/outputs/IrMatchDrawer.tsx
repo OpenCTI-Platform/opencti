@@ -92,7 +92,7 @@ export const IrMatchDetails = ({ irId, match, criteria, onDecided, embedded }: I
         {match.match_explanations.map((e, i) => (
           <Box key={i} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5, mb: 1 }}>
             <Text as="div" variant="content-compact-medium">{criterionName(criteria, e.criterion_id)}</Text>
-            <Text as="div" variant="content-caption" style={{ opacity: 0.8 }}>{explanationSentence(e, match.match_entity_name ?? match.entity?.representative.main ?? '')}</Text>
+            <Text as="div" variant="content-caption" style={{ opacity: 0.8 }}>{explanationSentence(t_i18n, e, match.match_entity_name ?? match.entity?.representative.main ?? '')}</Text>
           </Box>
         ))}
       </Box>
@@ -124,11 +124,11 @@ export const IrMatchDetails = ({ irId, match, criteria, onDecided, embedded }: I
             <Text as="span" variant="content-compact-bold" style={{ textAlign: 'right' }}>{o.hit ? `${o.points > 0 ? '+' : ''}${o.points}` : '0'}</Text>
           </Box>
         ))}
-        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 60px', py: 1 }}>
-          <Text as="span" variant="content-compact-bold">{match.match_excluded ? t_i18n('Not eligible') : t_i18n('Score (sum, capped 0–100)')}</Text>
-          <Text as="span" variant="content-compact-bold" style={{ textAlign: 'right' }}>{match.match_excluded ? '—' : match.match_score}</Text>
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 1, py: 1 }}>
+          <Text as="span" variant="content-compact-bold">{t_i18n('Score (sum, capped 0–100)')}</Text>
+          <Text as="span" variant="content-compact-bold" style={{ textAlign: 'right' }}>{match.match_excluded ? t_i18n('Not eligible') : match.match_score}</Text>
         </Box>
-        {notApplicable > 0 && <Text as="div" variant="content-caption" style={{ opacity: 0.7 }}>{`${notApplicable} ${t_i18n('rules not applicable to this entity')}`}</Text>}
+        {notApplicable > 0 && <Text as="div" variant="content-caption" style={{ opacity: 0.7 }}>{t_i18n('{count, plural, one {# rule not applicable to this entity} other {# rules not applicable to this entity}}', { values: { count: notApplicable } })}</Text>}
       </Box>
       <Box>
         <Text as="div" variant="content-compact-bold" style={{ marginBottom: 8 }}>{t_i18n('History')}</Text>

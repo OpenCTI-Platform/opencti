@@ -288,7 +288,7 @@ const IrEntities = ({ irId }: { irId: string }) => {
         if (!proof) return '-';
         return (
           <Text as="span" variant="content-caption" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {`${criterionName(criteria, proof.criterion_id)} · ${explanationSentence(proof, line.match_entity_name ?? line.entity?.representative.main ?? '')}${line.match_explanations.length > 1 ? ` (+${line.match_explanations.length - 1})` : ''}`}
+            {`${criterionName(criteria, proof.criterion_id)} · ${explanationSentence(t_i18n, proof, line.match_entity_name ?? line.entity?.representative.main ?? '')}${line.match_explanations.length > 1 ? ` (+${line.match_explanations.length - 1})` : ''}`}
           </Text>
         );
       },
@@ -354,7 +354,7 @@ const IrEntities = ({ irId }: { irId: string }) => {
       </Box>
       {numberOfSelectedElements > 0 && (
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap', mb: 1, px: 1.5, py: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-          <Text as="span" variant="content-compact-bold">{`${numberOfSelectedElements} ${t_i18n('selected')}`}</Text>
+          <Text as="span" variant="content-compact-bold">{t_i18n('{count, plural, one {# selected} other {# selected}}', { values: { count: numberOfSelectedElements } })}</Text>
           <Box sx={{ flex: 1 }} />
           {triageAgent && (
             <Button size="small" variant="secondary" intent="ai" onClick={assessSelection}>

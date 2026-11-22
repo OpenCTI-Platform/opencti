@@ -110,7 +110,7 @@ const IrTimelineAxis = ({ buckets, start, end, selectedDay, onSelectDay, compact
                   style={{ cursor: 'pointer' }}
                   onClick={() => onSelectDay(selectedDay === b.day ? null : b.day)}
                 >
-                  <title>{`${fsd(b.day)}: ${b.entry} ${t_i18n('entries')}, ${b.up + b.down} ${t_i18n('score changes')}, ${b.decision} ${t_i18n('decisions')}`}</title>
+                  <title>{`${fsd(b.day)}: ${t_i18n('{count, plural, one {# entry} other {# entries}}', { values: { count: b.entry } })}, ${t_i18n('{count, plural, one {# score change} other {# score changes}}', { values: { count: b.up + b.down } })}, ${t_i18n('{count, plural, one {# decision} other {# decisions}}', { values: { count: b.decision } })}`}</title>
                 </rect>
               </g>
             );
