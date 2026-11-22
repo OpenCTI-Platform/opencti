@@ -91,9 +91,18 @@ export const intelligenceRequirementsLinesQuery = graphql`
   }
 `;
 
-const CARD_HEIGHT = 250;
+// Every card has the same rows: the title and the question reserve 2 lines each, the date has its own line,
+// so the figures and the sparkline sit at the same height in every card and the content fits the fixed
+// card height the virtualised grid needs (rowHeight), with padding kept under the sparkline
+const CARD_HEIGHT = 320;
 const CARDS_TO_LOAD = 25;
-const clampStyle = (lines: number): React.CSSProperties => ({ display: '-webkit-box', WebkitLineClamp: lines, WebkitBoxOrient: 'vertical', overflow: 'hidden' });
+const clampStyle = (lines: number): React.CSSProperties => ({
+  display: '-webkit-box',
+  WebkitLineClamp: lines,
+  WebkitBoxOrient: 'vertical',
+  overflow: 'hidden',
+  minHeight: `${lines}lh`,
+});
 
 const IntelligenceRequirementCard = ({ node }: { node: IntelligenceRequirementsLine_node$key }) => {
   const { t_i18n, fsd } = useFormatter();
@@ -104,13 +113,13 @@ const IntelligenceRequirementCard = ({ node }: { node: IntelligenceRequirementsL
       <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minWidth: 0, gap: 1 }}>
         {/* The card is clickable through its title: the FDS Card stretches the title's control over the surface */}
         <CardTitle as="div"><span style={clampStyle(2)}>{ir.name}</span></CardTitle>
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'nowrap', minWidth: 0, overflow: 'hidden' }}>
           <Chip label={priorityLabel(t_i18n, ir.ir_priority)} severity={PRIORITY_SEVERITY[ir.ir_priority]} />
           <Chip label={t_i18n(ir.ir_status === 'active' ? 'Active' : 'Paused')} />
-          <Text as="span" variant="content-caption" style={{ opacity: 0.7 }}>{fsd(ir.created_at)}</Text>
         </Box>
+        <Text as="div" variant="content-caption" style={{ opacity: 0.7, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{fsd(ir.created_at)}</Text>
         <Text as="div" variant="content-caption" style={{ ...clampStyle(2), opacity: 0.8 }}>{ir.ir_question}</Text>
-        <Box sx={{ flex: 1 }} />
+        <Box sx={{ flex: 1, minHeight: 0 }} />
         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
           <Box sx={{ minWidth: 0 }}>
             <Text as="div" variant="title-lg">{String(ir.ir_entities_count)}</Text>
@@ -121,7 +130,7 @@ const IntelligenceRequirementCard = ({ node }: { node: IntelligenceRequirementsL
             <Text as="div" variant="content-caption" style={{ opacity: 0.7 }}>{t_i18n('Inbox')}</Text>
           </Box>
         </Box>
-        <Box sx={{ width: '100%', height: 36 }}>
+        <Box sx={{ width: '100%', height: 36, flexShrink: 0, mb: 0.5 }}>
           <IrSparkline points={ir.ir_activity} width="100%" height={36} />
         </Box>
       </Box>
