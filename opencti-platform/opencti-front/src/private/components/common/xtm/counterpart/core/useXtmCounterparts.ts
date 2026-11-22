@@ -19,7 +19,9 @@ export const xtmCounterpartsConnectionsQuery = graphql`
 export const xtmCounterpartsOfQuery = graphql`
   query useXtmCounterpartsOfQuery($ids: [String!]!) {
     xtmCounterpartsOf(ids: $ids) {
-      id
+      # Aliased: the id is the OpenCTI object's own id, so Relay must not normalise this result
+      # into that object's record (it would overwrite its __typename and break the page).
+      source_id: id
       product
       status
       counterpart {
@@ -74,9 +76,9 @@ const flush = () => {
       .then((data) => {
         const byId = new Map<string, Map<string, XtmCounterpartResult>>();
         (data?.xtmCounterpartsOf ?? []).forEach((result) => {
-          const answer = byId.get(result.id) ?? new Map<string, XtmCounterpartResult>();
+          const answer = byId.get(result.source_id) ?? new Map<string, XtmCounterpartResult>();
           answer.set(result.product, result);
-          byId.set(result.id, answer);
+          byId.set(result.source_id, answer);
         });
         ids.forEach((id) => waiting.get(id)?.(byId.get(id) ?? new Map()));
       })

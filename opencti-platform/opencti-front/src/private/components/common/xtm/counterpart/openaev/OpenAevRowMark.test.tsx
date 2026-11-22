@@ -23,7 +23,7 @@ vi.mock('../../../../../../relay/environment', async (importOriginal) => ({
         return Promise.resolve({ xtmConnections: [{ product: 'openaev', connected: mocks.connected }] });
       }
       const ids = variables.ids as string[];
-      return Promise.resolve({ xtmCounterpartsOf: mocks.results.filter((r) => ids.includes(r.id)) });
+      return Promise.resolve({ xtmCounterpartsOf: mocks.results.filter((r) => ids.includes(r.id)).map((r) => ({ ...r, source_id: r.id })) });
     },
   }),
 }));

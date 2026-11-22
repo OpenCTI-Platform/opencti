@@ -30,7 +30,7 @@ vi.mock('../../../../../../relay/environment', async (importOriginal) => ({
       }
       if (mocks.fail) return Promise.reject(new Error('unreachable'));
       const ids = variables.ids as string[];
-      return Promise.resolve({ xtmCounterpartsOf: mocks.results.filter((r) => ids.includes(r.id)) });
+      return Promise.resolve({ xtmCounterpartsOf: mocks.results.filter((r) => ids.includes(r.id)).map((r) => ({ ...r, source_id: r.id })) });
     },
   }),
 }));
