@@ -22,10 +22,13 @@ import { PirPopoverFragment$key } from './__generated__/PirPopoverFragment.graph
 import { useFormatter } from '../../../components/i18n';
 import stopEvent from '../../../utils/domEvent';
 import PirDeletion from './PirDeletion';
+import PirEngineSwitch from './PirEngineSwitch';
 
 const popoverFragment = graphql`
   fragment PirPopoverFragment on Pir {
     id
+    name
+    pir_engine
   }
 `;
 
@@ -38,7 +41,7 @@ const PirPopover = ({ data }: PirPopoverProps) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
 
-  const { id } = useFragment(popoverFragment, data);
+  const { id, name, pir_engine } = useFragment(popoverFragment, data);
 
   const onOpenMenu = (e: UIEvent) => {
     stopEvent(e);
@@ -62,6 +65,15 @@ const PirPopover = ({ data }: PirPopoverProps) => {
       </ToggleButton>
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onCloseMenu}>
+        {pir_engine !== 'requirement' && (
+          <PirEngineSwitch pirId={id} pirName={name} onClose={() => setAnchorEl(undefined)}>
+            {({ handleOpen, switching }) => (
+              <MenuItem onClick={handleOpen} disabled={switching}>
+                {t_i18n('Switch to the intelligence requirement engine')}
+              </MenuItem>
+            )}
+          </PirEngineSwitch>
+        )}
         <PirDeletion
           pirId={id}
           onDeleteComplete={() => navigate('/dashboard/pirs')}
