@@ -104,7 +104,7 @@ test('Pir CRUD', { tag: ['@pir', '@mutation', '@ee'] }, async ({ page, request }
     await requirement.gotoEntities(basePath);
     return requirement.getEntity(FLAGGED_MALWARE).isVisible();
   };
-  await awaitUntilCondition(waitForFlagging, 5000, 20);
+  await awaitUntilCondition(waitForFlagging, 2000, 15);
   await expect(requirement.getEntity(FLAGGED_MALWARE)).toBeVisible();
 
   // ---------
@@ -123,7 +123,7 @@ test('Pir CRUD', { tag: ['@pir', '@mutation', '@ee'] }, async ({ page, request }
     await requirement.gotoEntities(basePath);
     return !(await requirement.getEntity(FLAGGED_MALWARE).isVisible());
   };
-  await awaitUntilCondition(waitForUnflagging, 5000, 20);
+  await awaitUntilCondition(waitForUnflagging, 2000, 15);
   await expect(requirement.getEntity(FLAGGED_MALWARE)).toBeHidden();
 
   // ---------
