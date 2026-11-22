@@ -179,6 +179,32 @@ describe('Intelligence requirement resolvers', () => {
     expect(data.intelligenceRequirementPreview.errors.length).toEqual(1);
   });
 
+  it('should preview a dynamic subject group resolved from its filters', async () => {
+    const input = buildInput(malwareId);
+    input.ir_subject_groups = [
+      {
+        id: 'g-filter',
+        name: 'Every malware',
+        kind: 'filter',
+        role: 'both',
+        filters: { mode: 'and', filterGroups: [], filters: [{ key: ['entity_type'], values: ['Malware'], operator: 'eq' }] },
+      },
+    ];
+    input.ir_kiqs = [];
+    input.ir_scope_criteria = [
+      { id: 'c-filter', name: 'Members', kind: 'attribute', from_group_ids: ['g-filter'], target_types: ['Malware'], mode: 'auto' },
+      { id: 'c-filter-targets', name: 'Targets', kind: 'graph', from_group_ids: ['g-filter'], relationship_types: ['targets'], direction: 'outgoing', mode: 'propose' },
+    ];
+    const { data } = await queryAsAdminWithSuccess({ query: PREVIEW_QUERY, variables: { input } });
+    const preview = data.intelligenceRequirementPreview;
+    expect(preview.valid).toBe(true);
+    const group = preview.groups.find((g: { id: string }) => g.id === 'g-filter');
+    expect(group.matching_count).toBeGreaterThanOrEqual(1);
+    expect(preview.criteria.map((c: { id: string }) => c.id)).toEqual(['c-filter', 'c-filter-targets']);
+    const test = await queryAsAdminWithSuccess({ query: TEST_ENTITY_QUERY, variables: { input, entityId: malwareId } });
+    expect(test.data.intelligenceRequirementTestEntity.entity_id).toEqual(malwareId);
+  });
+
   it('should refuse to create an invalid requirement', async () => {
     const input = buildInput(malwareId);
     input.ir_subject_groups[0].entity_ids = [];

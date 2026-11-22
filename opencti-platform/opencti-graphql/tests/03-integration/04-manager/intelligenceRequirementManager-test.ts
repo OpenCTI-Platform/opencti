@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { testContext } from '../../utils/testQuery';
-import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { internalLoadById } from '../../../src/database/middleware-loader';
 import * as streamHandler from '../../../src/database/stream/stream-handler';
@@ -48,6 +48,81 @@ const MATCHES_STATUS_QUERY = gql`
 const ITEMS_DECIDE_QUERY = gql`
   mutation IrManagerItemsDecide($ids: [ID!]!, $decision: IrItemDecision!) {
     intelligenceRequirementItemsDecide(ids: $ids, decision: $decision)
+  }
+`;
+
+const MATCH_DETAIL_QUERY = gql`
+  query IrManagerMatch($id: ID!) {
+    intelligenceRequirementMatch(id: $id) {
+      id
+      match_entity_id
+      match_criteria_ids
+      match_excluded
+      match_score
+      match_score_breakdown { rule_id name points hit }
+      match_history { at score eligible status kind changes }
+      match_explanations { criterion_id kind anchor_id anchor { id } relationship_id relationship { id } container { id } }
+      entity { id }
+      created_at
+      updated_at
+    }
+  }
+`;
+
+const ITEMS_DETAIL_QUERY = gql`
+  query IrManagerItemsDetail($id: ID!) {
+    intelligenceRequirementItems(id: $id, first: 50) {
+      edges { node { id item_kind item_entity_id entity { id } match { id } item_data { criterion_id from_score to_score reasons } created_at updated_at } }
+    }
+  }
+`;
+
+const AI_PROMPT_QUERY = gql`
+  query IrManagerAiPrompt($id: ID!, $referenceOnly: Boolean) {
+    intelligenceRequirement(id: $id) {
+      id
+      ir_ai_prompt(language: "English", reference_only: $referenceOnly)
+      ir_entities_by_type { entity_type count }
+      ir_stored_counts { entities items }
+      ir_inbox_counts { open proposed entered score health brief done }
+      ir_activity(days: 7) { date value }
+    }
+  }
+`;
+
+const MANAGER_PREVIEW_QUERY = gql`
+  query IrManagerPreview($input: IntelligenceRequirementInput!) {
+    intelligenceRequirementPreview(input: $input) {
+      valid
+      errors
+      groups { id matching_count }
+      criteria { id kind today_count note warnings }
+    }
+  }
+`;
+
+const MANAGER_TEST_ENTITY_QUERY = gql`
+  query IrManagerTestEntity($input: IntelligenceRequirementInput!, $entityId: ID!, $irId: ID) {
+    intelligenceRequirementTestEntity(input: $input, entity_id: $entityId, ir_id: $irId) {
+      entity_id
+      in_requirement
+      score
+      verdict
+      criteria { criterion_id matched conditions { name met } }
+      rules { name points hit }
+    }
+  }
+`;
+
+const BRIEF_QUERY = gql`
+  mutation IrManagerBrief($id: ID!) {
+    intelligenceRequirementBriefGenerate(id: $id) { id }
+  }
+`;
+
+const HEALTH_QUERY = gql`
+  mutation IrManagerHealth($id: ID!) {
+    intelligenceRequirementHealthCheck(id: $id)
   }
 `;
 
@@ -227,6 +302,70 @@ describe('Intelligence requirement manager: stream processing', () => {
     const { data } = await queryAsAdminWithSuccess({ query: ITEMS_DECIDE_QUERY, variables: { ids: open.map((i) => i.id), decision: 'acknowledge' } });
     expect(data.intelligenceRequirementItemsDecide).toBeGreaterThanOrEqual(0);
     expect(data.intelligenceRequirementItemsDecide).toBeLessThanOrEqual(open.length);
+  });
+
+  it('should expose the proofs, the score breakdown and the history of an entity', async () => {
+    const malware = (await readMatches(irId)).find((m) => m.match_entity_id === ids.malware);
+    expect(malware).toBeDefined();
+    const { data } = await queryAsAdminWithSuccess({ query: MATCH_DETAIL_QUERY, variables: { id: malware!.id } });
+    const match = data.intelligenceRequirementMatch;
+    expect(match.match_entity_id).toEqual(ids.malware);
+    expect(match.entity.id).toEqual(ids.malware);
+    expect(match.match_criteria_ids).toContain('c-uses');
+    expect(match.match_excluded).toBe(false);
+    expect(Array.isArray(match.match_score_breakdown)).toBe(true);
+    expect(match.match_history.length).toBeGreaterThan(0);
+    const graphProof = match.match_explanations.find((e: { criterion_id: string }) => e.criterion_id === 'c-uses');
+    expect(graphProof.kind).toEqual('graph');
+    expect([ids.actor, ids.malware]).toContain(graphProof.anchor_id);
+  });
+
+  it('should expose the entity, the match and the data of the inbox items', async () => {
+    const { data } = await queryAsAdminWithSuccess({ query: ITEMS_DETAIL_QUERY, variables: { id: irId } });
+    const items = data.intelligenceRequirementItems.edges.map((e: { node: any }) => e.node);
+    const entered = items.find((i: { item_kind: string; item_entity_id: string }) => i.item_kind === 'entered' && i.item_entity_id === ids.malware);
+    expect(entered).toBeDefined();
+    expect(entered.entity.id).toEqual(ids.malware);
+    expect(entered.match.id).toBeDefined();
+    expect(entered.item_data).toBeDefined();
+  });
+
+  it('should write the AI prompt and the reference request with the content of the requirement', async () => {
+    const full = await queryAsAdminWithSuccess({ query: AI_PROMPT_QUERY, variables: { id: irId, referenceOnly: false } });
+    const ir = full.data.intelligenceRequirement;
+    expect(ir.ir_ai_prompt).toContain('=== PIR ===');
+    expect(ir.ir_ai_prompt).toContain('What does APT41 use?');
+    expect(ir.ir_ai_prompt).toContain(ids.malware);
+    expect(ir.ir_ai_prompt).toContain('Data version:');
+    expect(ir.ir_entities_by_type.length).toBeGreaterThan(0);
+    expect(ir.ir_stored_counts.entities).toBeGreaterThan(0);
+    expect(ir.ir_inbox_counts.entered).toBeGreaterThanOrEqual(0);
+    expect(Array.isArray(ir.ir_activity)).toBe(true);
+    const reference = await queryAsAdminWithSuccess({ query: AI_PROMPT_QUERY, variables: { id: irId, referenceOnly: true } });
+    expect(reference.data.intelligenceRequirement.ir_ai_prompt).toContain(`ID ${irId}`);
+    expect(reference.data.intelligenceRequirement.ir_ai_prompt).toContain('Answer in English.');
+  });
+
+  it('should preview and dry run a graph configuration with a second hop', async () => {
+    const preview = await queryAsAdminWithSuccess({ query: MANAGER_PREVIEW_QUERY, variables: { input: buildInput(ids) } });
+    expect(preview.data.intelligenceRequirementPreview.valid).toBe(true);
+    const criteria = preview.data.intelligenceRequirementPreview.criteria.map((c: { id: string }) => c.id);
+    expect(criteria).toEqual(['c-actor', 'c-uses', 'c-hop']);
+    const malwareTest = await queryAsAdminWithSuccess({ query: MANAGER_TEST_ENTITY_QUERY, variables: { input: buildInput(ids), entityId: ids.malware, irId } });
+    const test = malwareTest.data.intelligenceRequirementTestEntity;
+    expect(test.entity_id).toEqual(ids.malware);
+    expect(test.criteria.map((c: { criterion_id: string }) => c.criterion_id)).toContain('c-uses');
+    expect(test.rules.length).toBeGreaterThan(0);
+    const patternTest = await queryAsAdminWithSuccess({ query: MANAGER_TEST_ENTITY_QUERY, variables: { input: buildInput(ids), entityId: ids.attackPattern, irId } });
+    expect(patternTest.data.intelligenceRequirementTestEntity.entity_id).toEqual(ids.attackPattern);
+    expect(typeof patternTest.data.intelligenceRequirementTestEntity.verdict).toEqual('string');
+  });
+
+  it('should run the health checks and refuse the brief when XTM One is not configured', async () => {
+    const health = await queryAsAdminWithSuccess({ query: HEALTH_QUERY, variables: { id: irId } });
+    expect(health.data.intelligenceRequirementHealthCheck).toBeGreaterThanOrEqual(0);
+    const brief = await queryAsAdmin({ query: BRIEF_QUERY, variables: { id: irId } });
+    expect(brief.errors?.length).toEqual(1);
   });
 
   it('should remove entities from the requirement and keep the decision on new proofs', async () => {
