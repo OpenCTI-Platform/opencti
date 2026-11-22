@@ -20,6 +20,7 @@ import { appendMatchHistory, type IrChangeMeta, type IrMatchWriter, isCandidateE
 import { closeItem, closeOpenItemsOfMatch, createItem, entityDisplayName } from './intelligenceRequirementItem-domain';
 import { parseIntelligenceRequirement } from './intelligenceRequirement-config';
 import { projectMatchOnPir, unprojectMatchFromPir } from './intelligenceRequirement-projection';
+import { IR_ACCESS_EDIT, loadRequirementWithAccess } from './intelligenceRequirement-access';
 
 // Glue between the scope engine, the relevance engine and the inbox:
 // every change on an entity of the requirement goes through processMatchChange.
@@ -263,6 +264,8 @@ export const setMatchStatus = async (context: AuthContext, user: AuthUser, match
   if (!MATCH_STATUS_RESULTS[status]) throw FunctionalError('Unsupported status', { status });
   const match = await loadMatchById(context, user, matchId);
   if (!match) throw FunctionalError('Entity of the requirement not found', { matchId });
+  // A decision changes the requirement: it needs the edit right on it, not only the read
+  await loadRequirementWithAccess(context, user, match.ir_id, IR_ACCESS_EDIT);
   const updated = await updateMatchStatus(context, user, matchId, status);
   invalidateInRequirementEntityIds(match.ir_id);
   await closeOpenItemsOfMatch(context, user, match.ir_id, matchId, MATCH_STATUS_RESULTS[status]);
@@ -316,6 +319,9 @@ const DECISION_STATUSES: Record<string, string> = { accept: 'accepted', reject: 
 export const decideItem = async (context: AuthContext, user: AuthUser, itemId: string, decision: string) => {
   const item = await storeLoadById<BasicStoreEntityIntelligenceRequirementItem>(context, user, itemId, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM);
   if (!item) throw FunctionalError('Inbox item not found', { itemId });
+  // Items inherit the access of their requirement: unreadable is not found, a decision needs the edit right
+  if (!await loadRequirementWithAccess(context, user, item.ir_id)) throw FunctionalError('Inbox item not found', { itemId });
+  await loadRequirementWithAccess(context, user, item.ir_id, IR_ACCESS_EDIT);
   if (decision === 'acknowledge') return closeItem(context, user, itemId, 'Seen');
   const status = DECISION_STATUSES[decision];
   if (!status || !item.item_match_id) throw FunctionalError('Unsupported decision for this item', { itemId, decision });
@@ -339,7 +345,7 @@ export const decideItems = async (context: AuthContext, user: AuthUser, itemIds:
   let decided = 0;
   for (let i = 0; i < itemIds.length; i += 1) {
     const item = await storeLoadById<BasicStoreEntityIntelligenceRequirementItem>(context, user, itemIds[i], ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM);
-    if (item && item.item_status === 'open' && (IR_ITEM_DECISIONS[item.item_kind] ?? []).includes(decision)) {
+    if (item && item.item_status === 'open' && await loadRequirementWithAccess(context, user, item.ir_id) && (IR_ITEM_DECISIONS[item.item_kind] ?? []).includes(decision)) {
       await decideItem(context, user, item.id, decision);
       decided += 1;
     }

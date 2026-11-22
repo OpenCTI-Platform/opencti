@@ -29,6 +29,7 @@ import { buildRequirementAiPrompt, buildRequirementAiReference, generateRequirem
 import { previewIntelligenceRequirement } from './intelligenceRequirement-preview';
 import { testIntelligenceRequirementEntity } from './intelligenceRequirement-dryrun';
 import { parseMatchHistory } from './intelligenceRequirement-scoring';
+import { loadReadableOrRestricted, readableMatchEntityName } from './intelligenceRequirement-restricted';
 
 const parseJson = <T>(value: string | null | undefined, fallback: T): T => {
   try {
@@ -93,7 +94,9 @@ const intelligenceRequirementResolvers: Resolvers = {
   IntelligenceRequirementMatch: {
     created_at: (match) => match.created_at ?? match.match_last_fact_at ?? new Date(0),
     updated_at: (match) => match.updated_at ?? match.match_last_fact_at ?? new Date(0),
-    entity: (match, _, context) => context.batch.idsBatchLoader.load({ id: match.match_entity_id, type: match.match_entity_type }),
+    // An entity or a proof object the reader may not read is shown as a Restricted placeholder, never as itself
+    entity: (match, _, context) => loadReadableOrRestricted(context, match.match_entity_id, match.match_entity_type),
+    match_entity_name: (match, _, context) => readableMatchEntityName(context, match),
     match_explanations: (match) => parseMatchExplanations(match),
     match_criteria_ids: (match) => match.match_criteria_ids ?? [],
     match_excluded: (match) => match.match_excluded ?? false,
@@ -104,23 +107,14 @@ const intelligenceRequirementResolvers: Resolvers = {
   IntelligenceRequirementItem: {
     created_at: (item) => item.created_at ?? new Date(0),
     updated_at: (item) => item.updated_at ?? item.created_at ?? new Date(0),
-    entity: (item, _, context) => (item.item_entity_id ? context.batch.idsBatchLoader.load({ id: item.item_entity_id, type: item.item_entity_type }) : null),
+    entity: (item, _, context) => loadReadableOrRestricted(context, item.item_entity_id, item.item_entity_type),
     match: (item, _, context) => (item.item_match_id ? loadMatchById(context, context.user, item.item_match_id) : null),
     item_data: (item) => parseItemData(item),
   },
   IrMatchExplanation: {
-    anchor: (explanation, _, context) => {
-      if (!explanation.anchor_id) return null;
-      return context.batch.idsBatchLoader.load({ id: explanation.anchor_id, type: explanation.anchor_type });
-    },
-    relationship: (explanation, _, context) => {
-      if (!explanation.relationship_id) return null;
-      return context.batch.idsBatchLoader.load({ id: explanation.relationship_id, type: explanation.relationship_type });
-    },
-    container: (explanation, _, context) => {
-      if (!explanation.container_id) return null;
-      return context.batch.idsBatchLoader.load({ id: explanation.container_id, type: explanation.container_type });
-    },
+    anchor: (explanation, _, context) => loadReadableOrRestricted(context, explanation.anchor_id, explanation.anchor_type),
+    relationship: (explanation, _, context) => loadReadableOrRestricted(context, explanation.relationship_id, explanation.relationship_type),
+    container: (explanation, _, context) => loadReadableOrRestricted(context, explanation.container_id, explanation.container_type),
   },
   Mutation: {
     intelligenceRequirementAdd: (_, { input }, context) => intelligenceRequirementAdd(context, context.user, input),

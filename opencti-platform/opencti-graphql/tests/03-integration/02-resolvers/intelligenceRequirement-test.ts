@@ -106,6 +106,12 @@ const TEST_ENTITY_QUERY = gql`
   }
 `;
 
+const MATCHES_DECIDE_QUERY = gql`
+  mutation IrMatchesDecide($ids: [ID!]!, $status: IrMatchDecisionStatus!) {
+    intelligenceRequirementMatchesStatusUpdate(ids: $ids, status: $status)
+  }
+`;
+
 const HEALTH_QUERY = gql`
   mutation IrHealth($id: ID!) {
     intelligenceRequirementHealthCheck(id: $id)
@@ -331,6 +337,20 @@ describe('Intelligence requirement resolvers', () => {
     const list = await queryAsUser(USER_PARTICIPATE, { query: LIST_QUERY, variables: { search: 'IR integration restricted' } });
     const ids = (list.data?.intelligenceRequirements?.edges ?? []).map((e: { node: { id: string } }) => e.node.id);
     expect(ids).not.toContain(restrictedIrId);
+  });
+
+  it('should hide the entities and the inbox of a restricted requirement and refuse its decisions', async () => {
+    const matches = await queryAsUser(USER_PARTICIPATE, { query: MATCHES_QUERY, variables: { id: restrictedIrId } });
+    expect(matches.data?.intelligenceRequirementMatches?.edges ?? []).toEqual([]);
+    const items = await queryAsUser(USER_PARTICIPATE, { query: ITEMS_QUERY, variables: { id: restrictedIrId } });
+    expect(items.data?.intelligenceRequirementItems?.edges ?? []).toEqual([]);
+    const status = await queryAsUser(USER_PARTICIPATE, { query: STATUS_QUERY, variables: { id: restrictedIrId, status: 'paused' } });
+    expect(status.errors?.length).toBeGreaterThanOrEqual(1);
+    const stored = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: restrictedIrId } });
+    expect(stored.data.intelligenceRequirement.ir_status).toEqual('active');
+    const decide = await queryAsUser(USER_PARTICIPATE, { query: MATCHES_DECIDE_QUERY, variables: { ids: ['unknown-match-id'], status: 'removed' } });
+    // Refused by the capability or decided on nothing: no entity of the requirement changes
+    expect(decide.data?.intelligenceRequirementMatchesStatusUpdate ?? 0).toEqual(0);
   });
 
   it('should delete the requirements and everything stored for them', async () => {

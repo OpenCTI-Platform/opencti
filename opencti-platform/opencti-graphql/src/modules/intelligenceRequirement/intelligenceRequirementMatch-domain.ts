@@ -2,6 +2,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { createEntity, internalDeleteElementById, patchAttribute } from '../../database/middleware';
 import { addFilter } from '../../utils/filtering/filtering-utils';
+import { buildPagination } from '../../database/utils';
 import type { FilterGroup } from '../../generated/graphql';
 import {
   type BasicStoreEntityIntelligenceRequirementMatch,
@@ -13,6 +14,7 @@ import {
 import type { StoreIrCriterion } from './intelligenceRequirement-types';
 import { entityDisplayName } from './intelligenceRequirementItem-domain';
 import { isRequirementDeleted } from './intelligenceRequirement-lifecycle';
+import { filterByRequirementAccess, loadRequirementWithAccess } from './intelligenceRequirement-access';
 
 const MAX_EXPLANATIONS = 20;
 
@@ -38,6 +40,8 @@ export const findMatchesPaginated = async (
   irId: string,
   opts: EntityOptions<BasicStoreEntityIntelligenceRequirementMatch> & { statuses?: string[] | null } = {},
 ) => {
+  // The entities of a requirement the reader cannot read are not listed (segregation by the requirement)
+  if (!await loadRequirementWithAccess(context, user, irId)) return buildPagination(0, null, [], 0);
   const { statuses, search, ...listOpts } = opts;
   let filters = matchFilters(irId, undefined, statuses ?? undefined, listOpts.filters);
   // Search by entity name (the match itself has no other text)
@@ -168,7 +172,10 @@ export const upsertMatch = async (
 };
 
 export const loadMatchById = async (context: AuthContext, user: AuthUser, matchId: string) => {
-  return storeLoadById<BasicStoreEntityIntelligenceRequirementMatch>(context, user, matchId, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH);
+  const match = await storeLoadById<BasicStoreEntityIntelligenceRequirementMatch>(context, user, matchId, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH);
+  if (!match) return null;
+  const [readable] = await filterByRequirementAccess(context, user, [match]);
+  return readable ?? null;
 };
 
 // An entity that leaves the requirement (it no longer meets the conditions of the scope): nothing is kept for it

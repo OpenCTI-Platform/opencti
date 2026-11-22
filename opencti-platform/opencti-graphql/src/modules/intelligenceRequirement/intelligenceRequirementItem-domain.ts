@@ -7,6 +7,8 @@ import { addFilter } from '../../utils/filtering/filtering-utils';
 import { OrderingMode } from '../../generated/graphql';
 import { type BasicStoreEntityIntelligenceRequirementItem, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM, type StoreIrItemData } from './intelligenceRequirementItem-types';
 import { isRequirementDeleted } from './intelligenceRequirement-lifecycle';
+import { loadRequirementWithAccess } from './intelligenceRequirement-access';
+import { buildPagination } from '../../database/utils';
 
 export const parseItemData = (item: BasicStoreEntityIntelligenceRequirementItem): StoreIrItemData => {
   try {
@@ -52,6 +54,8 @@ export const findItemsPaginated = async (
   irId: string,
   opts: EntityOptions<BasicStoreEntityIntelligenceRequirementItem> & { statuses?: string[] | null; kinds?: string[] | null } = {},
 ) => {
+  // The inbox of a requirement the reader cannot read is empty for him (segregation by the requirement)
+  if (!await loadRequirementWithAccess(context, user, irId)) return buildPagination(0, null, [], 0);
   const { statuses, kinds, ...listOpts } = opts;
   let filters = addFilter(listOpts.filters, 'ir_id', irId);
   if (statuses && statuses.length > 0) filters = addFilter(filters, 'item_status', statuses);
