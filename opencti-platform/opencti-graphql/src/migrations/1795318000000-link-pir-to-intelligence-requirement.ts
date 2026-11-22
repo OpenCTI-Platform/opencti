@@ -26,7 +26,8 @@ export const up = async (next: (error?: Error) => void) => {
       if (requirementId !== before) linked += 1;
     } catch (err) {
       failed += 1;
-      logMigration.error(`${message} > Pir not linked`, { cause: err, pir: pir.id });
+      const reason = err instanceof Error ? err.message : String(err);
+      logMigration.error(`${message} > Pir ${pir.id} not linked: ${reason}`);
     }
   }
   logMigration.info(`${message} > done in ${Date.now() - startTime} ms (${pirs.length} Pir, ${linked} linked, ${failed} failed)`);
