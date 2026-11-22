@@ -1,7 +1,4 @@
 import React from 'react';
-import OpenAevCard from '../../common/xtm/counterpart/openaev/OpenAevCard';
-import { xtmCardAnchorKey } from '../../common/xtm/counterpart/core/xtmCardAnchorKey';
-import { OpenCrqCard } from '../../common/xtm/counterpart/opencrq/OpenCrq';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import { ThreatActorGroup_ThreatActorGroup$key } from '@components/threats/threat_actors_group/__generated__/ThreatActorGroup_ThreatActorGroup.graphql';
@@ -81,13 +78,6 @@ const ThreatActorGroup: React.FC<ThreatActorGroupProps> = ({ threatActorGroupDat
     threatActorGroupData,
   );
   const overviewLayoutCustomization = useOverviewLayoutCustomization(threatActorGroup.entity_type);
-  const openAevAnchor = xtmCardAnchorKey(overviewLayoutCustomization);
-  const openAevCard = (
-    <>
-      <OpenAevCard gridRow objectId={threatActorGroup.id} />
-      <OpenCrqCard gridRow objectId={threatActorGroup.id} />
-    </>
-  );
 
   return (
     <div data-testid="threat-actor-group-details-page">
@@ -101,21 +91,15 @@ const ThreatActorGroup: React.FC<ThreatActorGroupProps> = ({ threatActorGroupDat
             switch (key) {
               case 'details':
                 return (
-                  <React.Fragment key={key}>
-                    <Grid size={width}>
-                      <ThreatActorGroupDetails threatActorGroup={threatActorGroup} />
-                    </Grid>
-                    {key === openAevAnchor && openAevCard}
-                  </React.Fragment>
+                  <Grid key={key} size={width}>
+                    <ThreatActorGroupDetails threatActorGroup={threatActorGroup} />
+                  </Grid>
                 );
               case 'basicInformation':
                 return (
-                  <React.Fragment key={key}>
-                    <Grid size={width}>
-                      <StixDomainObjectOverview stixDomainObject={threatActorGroup} />
-                    </Grid>
-                    {key === openAevAnchor && openAevCard}
-                  </React.Fragment>
+                  <Grid key={key} size={width}>
+                    <StixDomainObjectOverview stixDomainObject={threatActorGroup} />
+                  </Grid>
                 );
               case 'latestCreatedRelationships':
                 return (
@@ -164,7 +148,6 @@ const ThreatActorGroup: React.FC<ThreatActorGroupProps> = ({ threatActorGroupDat
             }
           })
         }
-        {openAevAnchor === null && openAevCard}
       </Grid>
     </div>
   );

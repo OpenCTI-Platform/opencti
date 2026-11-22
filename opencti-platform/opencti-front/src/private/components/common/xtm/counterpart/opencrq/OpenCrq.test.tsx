@@ -2,7 +2,8 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../../../utils/tests/test-render';
-import { formatOpenCrqFacts, OpenCrqCard, OpenCrqPivot, OpenCrqRowMark } from './OpenCrq';
+import { OpenCrqPivot, OpenCrqRowMark } from './OpenCrq';
+import { OPENCRQ_FACTS, previewFactsOf } from '../core/counterpartFacts';
 import { XTM_CONNECT_DOC_URL } from '../core/xtmConnect';
 import { resetXtmCounterpartCache } from '../core/useXtmCounterparts';
 
@@ -71,12 +72,15 @@ describe('OpenCRQ pivots', () => {
     expect(pivot.closest('a') ?? pivot).toHaveAttribute('href', crq.object_url);
   });
 
-  it('shows a disabled "Not in OpenCRQ" when only OpenAEV holds the object', async () => {
+  it('draws nothing when OpenCRQ is connected and does not hold the object', async () => {
     mocks.results = [result('vuln-1', 'openaev', 'found', aev), result('vuln-1', 'opencrq', 'not_found')];
     testRender(<OpenCrqPivot objectId="vuln-1" />);
-    const pivot = await screen.findByTestId('opencrq-pivot');
-    expect(pivot).toHaveTextContent('Not in OpenCRQ');
-    expect(pivot).toBeDisabled();
+    await waitFor(() => expect(mocks.lookups).toBe(1));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
+    expect(screen.queryByTestId('opencrq-pivot')).not.toBeInTheDocument();
+    expect(screen.queryByText('Not in OpenCRQ')).not.toBeInTheDocument();
   });
 
   it('shows a disabled muted "OpenCRQ is unavailable" when OpenCRQ could not answer, OpenAEV unaffected', async () => {
@@ -116,52 +120,6 @@ describe('OpenCRQ pivots', () => {
     expect(pivot).toHaveAttribute('aria-label', 'OpenCRQ is not connected');
   });
 
-  it('shows the risk the counterpart drives in the card, with no link of its own', async () => {
-    mocks.results = [result('vuln-1', 'opencrq', 'found', {
-      ...crq,
-      facts: [
-        { key: 'risk_scenarios', value: '3' },
-        { key: 'annual_loss', value: '125000' },
-        { key: 'fix_value', value: 'not a number' },
-        { key: 'unknown', value: '1' },
-      ],
-    })];
-    testRender(<OpenCrqCard objectId="vuln-1" />);
-    expect(await screen.findByText('In OpenCRQ')).toBeInTheDocument();
-    expect(screen.getByText('Shared identifier: CVE-2024-3400')).toBeInTheDocument();
-    const facts = screen.getByTestId('opencrq-card-facts');
-    expect(facts).toHaveTextContent('3 risk scenarios');
-    expect(facts).toHaveTextContent('Annual loss expectancy:');
-    expect(facts).not.toHaveTextContent('Loss avoided by fixing');
-    expect(screen.queryByRole('link')).not.toBeInTheDocument();
-  });
-
-  it('a user without rights in OpenCRQ sees the counterpart without the financial facts', async () => {
-    mocks.results = [result('vuln-1', 'opencrq', 'found', crq)];
-    testRender(<OpenCrqCard objectId="vuln-1" />);
-    expect(await screen.findByText(crq.object_name)).toBeInTheDocument();
-    expect(screen.queryByTestId('opencrq-card-facts')).not.toBeInTheDocument();
-  });
-
-  it('draws no card when OpenCRQ is not connected or on a lookup error', async () => {
-    mocks.connected = { openaev: true, opencrq: false };
-    const { unmount } = testRender(<OpenCrqCard objectId="intrusion-1" />);
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50);
-    });
-    expect(screen.queryByTestId('opencrq-card')).not.toBeInTheDocument();
-    unmount();
-    resetXtmCounterpartCache();
-    mocks.connected = { openaev: true, opencrq: true };
-    mocks.fail = true;
-    testRender(<OpenCrqCard objectId="sys-1" />);
-    await new Promise((resolve) => {
-      setTimeout(resolve, 80);
-    });
-    expect(screen.queryByTestId('opencrq-card')).not.toBeInTheDocument();
-    expect(screen.queryByText('Not in OpenCRQ')).not.toBeInTheDocument();
-  });
-
   it('marks a list row on a match only, in one batched lookup shared with OpenAEV', async () => {
     mocks.results = [result('sys-1', 'opencrq', 'found', { ...crq, key: 'srv-01', object_type: 'Asset' }), result('sys-2', 'opencrq', 'not_found')];
     testRender(
@@ -176,15 +134,21 @@ describe('OpenCRQ pivots', () => {
   });
 });
 
-describe('formatOpenCrqFacts', () => {
-  const t = (message: string, options?: { values: Record<string, number> }) => (options ? `${options.values.count} ${message}` : message);
-  it('keeps the known numeric facts in display order', () => {
-    expect(formatOpenCrqFacts([
+describe('previewFactsOf', () => {
+  const format = { t_i18n: (m: string) => m, count: (v: number) => `${v}`, money: (v: number) => `${v} EUR`, date: (v: string) => v.slice(0, 10) };
+  it('keeps the known OpenCRQ facts in display order, wrong shapes and unknown keys dropped', () => {
+    expect(previewFactsOf([
       { key: 'fix_value', value: '10' },
       { key: 'risk_scenarios', value: '1' },
-    ], t, (v) => `${v}`)).toEqual([
-      '1 {count, plural, one {# risk scenario} other {# risk scenarios}}',
-      'Loss avoided by fixing: 10',
+      { key: 'annual_loss', value: 'not a number' },
+      { key: 'unknown', value: '3' },
+    ], OPENCRQ_FACTS, format)).toEqual([
+      { label: 'Risk scenarios', value: '1' },
+      { label: 'Loss avoided by fixing', value: '10 EUR' },
     ]);
+  });
+  it('answers no fact for a counterpart without facts (a user without rights there)', () => {
+    expect(previewFactsOf([], OPENCRQ_FACTS, format)).toEqual([]);
+    expect(previewFactsOf(null, OPENCRQ_FACTS, format)).toEqual([]);
   });
 });

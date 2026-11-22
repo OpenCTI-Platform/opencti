@@ -141,16 +141,6 @@ type XtmNoMatch = { status: 'no_match' };
 type XtmMatch = { status: 'match'; counterpart: XtmCounterpart };
 export type XtmCounterpartState = XtmLoading | XtmNone | XtmNotConnected | XtmUnavailable | XtmNoMatch | XtmMatch;
 
-// A STIX id (a threat's key) or an alert link means nothing to an analyst as an identifier.
-const STIX_ID_PATTERN = /^[a-z][a-z0-9-]*--[0-9a-f-]{36}$/i;
-
-/** The identifier both products share for a counterpart (hostname, MITRE id, CVE id), or null. */
-export const sharedIdentifierOf = (counterpart: XtmCounterpart | null | undefined): string | null => {
-  const key = counterpart?.key;
-  if (!key || STIX_ID_PATTERN.test(key) || /^https?:\/\//i.test(key)) return null;
-  return key;
-};
-
 /** The state one product's answer gives for one object. */
 export const xtmCounterpartStateOf = (lookup: Lookup, product: string): XtmCounterpartState => {
   if (lookup === XTM_LOOKUP_FAILED) return { status: 'unavailable' };

@@ -74,10 +74,15 @@ describe('OpenAevPivot', () => {
     expect(link).toHaveTextContent('Open in OpenAEV');
   });
 
-  it('shows a disabled "Not in OpenAEV" when OpenAEV answered without a match', async () => {
+  it('draws nothing when OpenAEV is connected and does not hold the object', async () => {
     mocks.results = [answered('vuln-1', 'not_found')];
     testRender(<OpenAevPivot objectId="vuln-1" />);
-    expect(await screen.findByRole('button', { name: 'Not in OpenAEV' })).toBeDisabled();
+    await waitFor(() => expect(mocks.calls.filter((c) => c.isLookup)).toHaveLength(1));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
+    expect(screen.queryByTestId('openaev-pivot')).not.toBeInTheDocument();
+    expect(screen.queryByText('Not in OpenAEV')).not.toBeInTheDocument();
   });
 
   it('shows a disabled muted "OpenAEV is unavailable" when OpenAEV could not answer, and asks again next time', async () => {
@@ -98,7 +103,7 @@ describe('OpenAevPivot', () => {
     mocks.fail = true;
     testRender(<OpenAevPivot objectId="sys-1" />);
     expect(await screen.findByRole('button', { name: 'OpenAEV is unavailable' })).toBeDisabled();
-    expect(screen.queryByRole('button', { name: 'Not in OpenAEV' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('openaev-pivot')).toHaveAttribute('data-status', 'unavailable');
   });
 
   it('draws nothing when the object has no entry (no key, not readable) or OpenAEV has no such lookup', async () => {
@@ -154,7 +159,7 @@ describe('OpenAevPivot', () => {
         <OpenAevPivot objectId="vuln-1" />
       </>,
     );
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Not in OpenAEV' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByTestId('openaev-pivot')).toHaveLength(1));
     const lookups = mocks.calls.filter((c) => c.isLookup);
     expect(lookups).toHaveLength(1);
     expect(lookups[0].variables).toEqual({ ids: ['ap-octi-1', 'vuln-1'] });

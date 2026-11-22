@@ -1,7 +1,4 @@
 import React from 'react';
-import OpenAevCard from '../../common/xtm/counterpart/openaev/OpenAevCard';
-import { xtmCardAnchorKey } from '../../common/xtm/counterpart/core/xtmCardAnchorKey';
-import { OpenCrqCard } from '../../common/xtm/counterpart/opencrq/OpenCrq';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
@@ -76,13 +73,6 @@ const IntrusionSet: React.FC<IntrusionSetProps> = ({ intrusionSetData }) => {
   useInitCreateRelationshipContext();
   const intrusionSet = useFragment<IntrusionSet_intrusionSet$key>(intrusionSetFragment, intrusionSetData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(intrusionSet.entity_type);
-  const openAevAnchor = xtmCardAnchorKey(overviewLayoutCustomization);
-  const openAevCard = (
-    <>
-      <OpenAevCard gridRow objectId={intrusionSet.id} />
-      <OpenCrqCard gridRow objectId={intrusionSet.id} />
-    </>
-  );
   return (
     <>
       <Grid
@@ -95,21 +85,15 @@ const IntrusionSet: React.FC<IntrusionSetProps> = ({ intrusionSetData }) => {
             switch (key) {
               case 'details':
                 return (
-                  <React.Fragment key={key}>
-                    <Grid size={width}>
-                      <IntrusionSetDetails intrusionSet={intrusionSet} />
-                    </Grid>
-                    {key === openAevAnchor && openAevCard}
-                  </React.Fragment>
+                  <Grid key={key} size={width}>
+                    <IntrusionSetDetails intrusionSet={intrusionSet} />
+                  </Grid>
                 );
               case 'basicInformation':
                 return (
-                  <React.Fragment key={key}>
-                    <Grid size={width}>
-                      <StixDomainObjectOverview stixDomainObject={intrusionSet} />
-                    </Grid>
-                    {key === openAevAnchor && openAevCard}
-                  </React.Fragment>
+                  <Grid key={key} size={width}>
+                    <StixDomainObjectOverview stixDomainObject={intrusionSet} />
+                  </Grid>
                 );
               case 'latestCreatedRelationships':
                 return (
@@ -158,7 +142,6 @@ const IntrusionSet: React.FC<IntrusionSetProps> = ({ intrusionSetData }) => {
             }
           })
         }
-        {openAevAnchor === null && openAevCard}
       </Grid>
     </>
   );
