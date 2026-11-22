@@ -13,7 +13,7 @@ import type { XtmProduct } from './xtmProducts';
 
 // Contract v3 (Sam, 22 Nov 2026), identical in OpenCTI, OpenAEV and OpenCRQ: one icon-only emblem
 // per counterpart product in the header, at the size of the sibling header actions, no text.
-// - connected and found: the emblem in the product colour, a link to the counterpart, the preview
+// - connected and found: the emblem in the theme primary, a link to the counterpart, the preview
 //   of its facts on hover and keyboard focus;
 // - connected and not found: the emblem greyed, still focusable, tooltip "Not found in X" and how
 //   an object gets there;
@@ -22,7 +22,10 @@ import type { XtmProduct } from './xtmProducts';
 // - unavailable (X could not answer this time): the emblem greyed, "X is unavailable".
 // Nothing while loading and for an object X has no counterpart for.
 
-const MUTED = 'text.disabled';
+// Two colours only, the same for every product (Sam, 22 Nov 2026): found = the theme primary,
+// not found, not connected and unavailable = the theme's disabled grey. No per-product colour.
+export const EMBLEM_FOUND = 'primary.main';
+export const EMBLEM_MUTED = 'text.disabled';
 
 interface XtmEmblemProps {
   product: XtmProduct;
@@ -35,7 +38,7 @@ export const XtmCounterpartPreview: React.FC<{ product: XtmProduct; counterpart:
   const { t_i18n, n, fd } = useFormatter();
   return (
     <XtmPivotPreview
-      mark={<XtmMark src={product.mark} size={16} color={product.color} />}
+      mark={<XtmMark src={product.mark} size={16} color={EMBLEM_FOUND} />}
       productName={product.name}
       entityType={counterpart.object_type}
       name={counterpart.object_name}
@@ -83,7 +86,7 @@ export const XtmEmblem: React.FC<XtmEmblemProps> = ({ product, objectId }) => {
       label = canConfigure ? t_i18n(product.connect) : t_i18n(product.notConnected);
       tooltip = (
         <XtmPivotTeaser
-          mark={<XtmMark src={product.mark} size={16} />}
+          mark={<XtmMark src={product.mark} size={16} color={EMBLEM_MUTED} />}
           productName={product.name}
           labels={factLabelsOf(product.facts, t_i18n)}
           pitch={t_i18n(product.pitch)}
@@ -109,7 +112,7 @@ export const XtmEmblem: React.FC<XtmEmblemProps> = ({ product, objectId }) => {
           data-status={state.status}
           {...link}
         >
-          <XtmMark src={product.mark} color={active ? product.color : MUTED} />
+          <XtmMark src={product.mark} color={active ? EMBLEM_FOUND : EMBLEM_MUTED} />
         </IconButton>
       </TooltipTrigger>
       <TooltipContent>{tooltip}</TooltipContent>
@@ -128,7 +131,7 @@ export const XtmEmblems: React.FC<{ products: ReadonlyArray<XtmProduct>; objectI
 );
 
 /**
- * List-row mark: the 16 px emblem in the product colour, only when the product holds the object;
+ * List-row mark: the 16 px emblem in the theme primary, only when the product holds the object;
  * nothing on the row otherwise (the header carries the other states). The lookups of every row of
  * a page go out batched in one query.
  */
@@ -150,7 +153,7 @@ export const XtmRowMark: React.FC<XtmEmblemProps> = ({ product, objectId }) => {
           onClick={(event: React.MouseEvent) => event.stopPropagation()}
           sx={{ display: 'inline-flex', alignItems: 'center', flexShrink: 0, ml: 0.5, verticalAlign: 'middle' }}
         >
-          <XtmMark src={product.mark} size={16} color={product.color} />
+          <XtmMark src={product.mark} size={16} color={EMBLEM_FOUND} />
         </Box>
       </TooltipTrigger>
       <TooltipContent><XtmCounterpartPreview product={product} counterpart={state.counterpart} /></TooltipContent>

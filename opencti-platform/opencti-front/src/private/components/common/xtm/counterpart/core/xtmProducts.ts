@@ -10,9 +10,6 @@ export interface XtmProduct {
   product: string;
   name: string;
   mark: string;
-  // The colour of the active emblem: the brand colour on a light theme, a lighter tone of it on a
-  // dark theme (the OpenCRQ brand blue is under 2:1 on the dark header).
-  color: { light: string; dark: string };
   facts: ReadonlyArray<FactDefinition>;
   // The accessible name and tooltip title of each state, i18n keys written out so the checker sees them.
   open: string;
@@ -34,7 +31,6 @@ export const OPENAEV_PRODUCT: XtmProduct = {
   product: 'openaev',
   name: 'OpenAEV',
   mark: openAevMark,
-  color: { light: '#d6246e', dark: '#ff5ca8' },
   facts: OPENAEV_FACTS,
   open: 'Open in OpenAEV',
   notFound: 'Not found in OpenAEV',
@@ -51,7 +47,6 @@ export const OPENCRQ_PRODUCT: XtmProduct = {
   product: 'opencrq',
   name: 'OpenCRQ',
   mark: openCrqMark,
-  color: { light: '#001bda', dark: '#7a8cff' },
   facts: OPENCRQ_FACTS,
   open: 'Open in OpenCRQ',
   notFound: 'Not found in OpenCRQ',
