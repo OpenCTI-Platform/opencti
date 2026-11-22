@@ -7680,6 +7680,182 @@ enum IngestionTaxiiOrdering {
   version
 }
 
+type IntelligenceRequirement implements InternalObject & BasicObject {
+  authorizedMembers: [MemberAccess!]!
+  created_at: DateTime!
+  creators: [Creator!]
+  currentUserAccessRight: String
+  description: String
+  entity_type: String!
+  id: ID!
+  ir_activity(days: Int): [IrActivityPoint!]!
+  """
+  AI Insight: prompt for an XTM One agent (content of the requirement and its questions)
+  """
+  ir_ai_prompt(language: String, reference_only: Boolean): String!
+  ir_brief_frequency: IrBriefFrequency!
+  """
+  Entities of the requirement per type (quick type filters), for the given statuses and exclusion
+  """
+  ir_entities_by_type(excluded: Boolean, statuses: [IrMatchStatus!]): [IrTypeCount!]!
+  ir_entities_count: Int!
+  ir_inbox_counts: IrInboxCounts!
+  ir_inbox_open_count: Int!
+  ir_kiqs: [IrKiq!]!
+  ir_last_brief_at: DateTime
+  ir_priority: IntelligenceRequirementPriority!
+  """
+  Where the requirement stands in the stream (catch-up, lag, last batch, last error)
+  """
+  ir_processing_status: IrProcessingStatus!
+  ir_question: String!
+  ir_relevance_rules: [IrRule!]!
+  ir_rescan_days: Int!
+  ir_scope_criteria: [IrCriterion!]!
+  ir_status: IntelligenceRequirementStatus!
+  """
+  Everything stored for the requirement, removed with it (entities whatever their status, inbox items)
+  """
+  ir_stored_counts: IrStoredCounts!
+  ir_subject_groups: [IrSubjectGroup!]!
+  ir_thresholds: [Int!]!
+  lastEventId: String
+  metrics: [Metric]
+  name: String!
+  parent_types: [String!]!
+  refreshed_at: DateTime
+  representative: Representative!
+  standard_id: String!
+  updated_at: DateTime!
+}
+
+type IntelligenceRequirementConnection {
+  edges: [IntelligenceRequirementEdge!]!
+  pageInfo: PageInfo!
+}
+
+type IntelligenceRequirementEdge {
+  cursor: String!
+  node: IntelligenceRequirement!
+}
+
+input IntelligenceRequirementInput {
+  authorized_members: [MemberAccessInput!]
+  description: String
+  ir_brief_frequency: IrBriefFrequency
+  ir_kiqs: [IrKiqInput!]
+  ir_priority: IntelligenceRequirementPriority!
+  ir_question: String!
+  ir_relevance_rules: [IrRuleInput!]
+  ir_rescan_days: Int
+  ir_scope_criteria: [IrCriterionInput!]!
+  ir_status: IntelligenceRequirementStatus
+  ir_subject_groups: [IrSubjectGroupInput!]!
+  ir_thresholds: [Int!]
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+}
+
+type IntelligenceRequirementItem implements InternalObject & BasicObject {
+  created_at: DateTime!
+  entity: StixCoreObject
+  entity_type: String!
+  id: ID!
+  ir_id: String!
+  item_data: IrItemData!
+  item_entity_id: String
+  item_entity_type: String
+  item_kind: IrItemKind!
+  item_match_id: String
+  item_result: String
+  item_status: IrItemStatus!
+  item_title: String!
+  match: IntelligenceRequirementMatch
+  metrics: [Metric]
+  parent_types: [String!]!
+  refreshed_at: DateTime
+  representative: Representative!
+  standard_id: String!
+  updated_at: DateTime!
+}
+
+type IntelligenceRequirementItemConnection {
+  edges: [IntelligenceRequirementItemEdge!]!
+  pageInfo: PageInfo!
+}
+
+type IntelligenceRequirementItemEdge {
+  cursor: String!
+  node: IntelligenceRequirementItem!
+}
+
+type IntelligenceRequirementMatch implements InternalObject & BasicObject {
+  created_at: DateTime!
+  entity: StixCoreObject
+  entity_type: String!
+  id: ID!
+  ir_id: String!
+  match_criteria_ids: [String!]!
+  match_entity_id: String!
+  match_entity_name: String
+  match_entity_type: String!
+  match_excluded: Boolean!
+  match_explanations: [IrMatchExplanation!]!
+  """
+  Score, eligibility and status over time, dated with the events that changed them
+  """
+  match_history: [IrMatchHistoryPoint!]!
+  match_last_fact_at: DateTime
+  match_score: Int!
+  match_score_breakdown: [IrRuleOutcome!]!
+  match_status: IrMatchStatus!
+  metrics: [Metric]
+  parent_types: [String!]!
+  refreshed_at: DateTime
+  representative: Representative!
+  standard_id: String!
+  updated_at: DateTime!
+}
+
+type IntelligenceRequirementMatchConnection {
+  edges: [IntelligenceRequirementMatchEdge!]!
+  pageInfo: PageInfo!
+}
+
+type IntelligenceRequirementMatchEdge {
+  cursor: String!
+  node: IntelligenceRequirementMatch!
+}
+
+enum IntelligenceRequirementMatchOrdering {
+  created_at
+  match_entity_name
+  match_entity_type
+  match_last_fact_at
+  match_score
+  match_status
+}
+
+enum IntelligenceRequirementOrdering {
+  _score
+  created_at
+  ir_priority
+  name
+  updated_at
+}
+
+enum IntelligenceRequirementPriority {
+  critical
+  high
+  low
+  medium
+}
+
+enum IntelligenceRequirementStatus {
+  active
+  paused
+}
+
 interface InternalObject {
   entity_type: String!
   id: ID!
@@ -7866,6 +8042,412 @@ input InvestigationDuplicateInput {
 
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
+}
+
+type IrActivityPoint {
+  date: DateTime!
+  value: Int!
+}
+
+type IrBatchStats {
+  backfilled: Int!
+  entered: Int!
+  errors: Int!
+  events: Int!
+  rescored: Int!
+  skipped: Int
+  updated: Int!
+}
+
+enum IrBriefFrequency {
+  daily
+  off
+  weekly
+}
+
+type IrCondition {
+  applies_to_types: [String!]!
+  filters: String
+  id: String!
+  link: IrGroupLink
+  name: String!
+  path_condition: IrPathCondition
+}
+
+input IrConditionInput {
+  applies_to_types: [String!]
+  filters: FilterGroup
+  id: String!
+  link: IrGroupLinkInput
+  name: String!
+  path_condition: IrPathConditionInput
+}
+
+type IrCriterion {
+  """
+  Scope conditions: all must be met for an entity brought by the criterion to enter the requirement
+  """
+  conditions: [IrCondition!]!
+  direction: IrDirection!
+  from_group_ids: [String!]!
+  from_in_requirement: Boolean!
+  from_types: [String!]
+  id: String!
+  keyword_fields: [String!]!
+  kind: IrCriterionKind!
+  mode: IrCriterionMode!
+  name: String!
+  relationship_types: [String!]!
+  target_filters: String
+  target_types: [String!]!
+}
+
+input IrCriterionInput {
+  conditions: [IrConditionInput!]
+  direction: IrDirection
+  from_group_ids: [String!]
+  from_in_requirement: Boolean
+  from_types: [String!]
+  id: String!
+  keyword_fields: [String!]
+  kind: IrCriterionKind!
+  mode: IrCriterionMode!
+  name: String
+  relationship_types: [String!]
+  target_filters: FilterGroup
+  target_types: [String!]
+}
+
+enum IrCriterionKind {
+  attribute
+  graph
+  keywords
+}
+
+enum IrCriterionMode {
+  auto
+  off
+  propose
+}
+
+enum IrDirection {
+  both
+  incoming
+  outgoing
+}
+
+type IrEntityTest {
+  criteria: [IrEntityTestCriterion!]!
+  entity_id: String!
+  entity_name: String!
+  entity_type: String!
+  in_requirement: Boolean!
+  notes: [String!]!
+  rules: [IrEntityTestRule!]!
+  score: Int!
+  verdict: String!
+}
+
+type IrEntityTestCondition {
+  met: Boolean!
+  name: String!
+}
+
+type IrEntityTestCriterion {
+  conditions: [IrEntityTestCondition!]!
+  criterion_id: String!
+  kind: String!
+  matched: Boolean!
+  name: String!
+  proof: String
+}
+
+type IrEntityTestRule {
+  hit: Boolean!
+  name: String!
+  points: Int!
+  reason: String
+}
+
+"""
+The entity has one of the relationship types with a member of one of the subject groups (object: it contains one)
+"""
+type IrGroupLink {
+  group_ids: [String!]!
+  relationship_types: [String!]!
+}
+
+input IrGroupLinkInput {
+  group_ids: [String!]!
+  relationship_types: [String!]!
+}
+
+type IrInboxCounts {
+  brief: Int!
+  done: Int!
+  entered: Int!
+  health: Int!
+  open: Int!
+  proposed: Int!
+  score: Int!
+}
+
+type IrItemData {
+  content: String
+  criterion_id: String
+  from_score: Int
+  message: String
+  reasons: [String!]
+  threshold: Int
+  to_score: Int
+}
+
+enum IrItemDecision {
+  accept
+  acknowledge
+  reject
+  remove
+}
+
+enum IrItemKind {
+  brief
+  entered
+  health
+  proposed
+  score
+}
+
+enum IrItemStatus {
+  done
+  open
+}
+
+type IrKiq {
+  criteria_ids: [String!]!
+  id: String!
+  text: String!
+}
+
+input IrKiqInput {
+  criteria_ids: [String!]
+  id: String!
+  text: String!
+}
+
+type IrLastBatch {
+  at: DateTime!
+  backfilled: Int!
+  duration_ms: Int!
+  entered: Int!
+  errors: Int!
+  events: Int!
+  rescored: Int!
+  skipped: Int
+  updated: Int!
+}
+
+enum IrMatchDecisionStatus {
+  accepted
+  rejected
+  removed
+}
+
+type IrMatchExplanation {
+  anchor: StixCoreObject
+  anchor_id: String
+  anchor_type: String
+  at: DateTime
+  container: StixCoreObject
+  container_id: String
+  container_type: String
+  criterion_id: String!
+  direction: String
+  field: String
+  keyword: String
+  kind: IrCriterionKind!
+  relationship: StixCoreRelationship
+  relationship_id: String
+  relationship_type: String
+}
+
+type IrMatchHistoryPoint {
+  at: DateTime!
+  changes: [String!]!
+  eligible: Boolean!
+  """entry, fact, config or decision"""
+  kind: String!
+  score: Int!
+  status: String!
+  trigger: String
+}
+
+enum IrMatchStatus {
+  accepted
+  auto
+  proposed
+  rejected
+  removed
+}
+
+type IrPathCondition {
+  direction: IrDirection!
+  relationship_types: [String!]!
+  target_group_ids: [String!]!
+  target_ids: [String!]!
+  target_relationship_type: String!
+  targets: [StixCoreObject!]!
+}
+
+input IrPathConditionInput {
+  direction: IrDirection!
+  relationship_types: [String!]!
+  target_group_ids: [String!]
+  target_ids: [String!]!
+  target_relationship_type: String!
+}
+
+type IrPreview {
+  criteria: [IrPreviewCriterion!]!
+  errors: [String!]!
+  groups: [IrPreviewGroup!]!
+  valid: Boolean!
+  warnings: [String!]!
+}
+
+type IrPreviewCriterion {
+  id: String!
+  kind: String!
+  name: String!
+  note: String
+  today_count: Int
+  warnings: [String!]!
+}
+
+type IrPreviewEntity {
+  entity_type: String!
+  id: String!
+  name: String!
+}
+
+type IrPreviewGroup {
+  entities: [IrPreviewEntity!]!
+  id: String!
+  kind: String!
+  matching_count: Int
+  name: String!
+  unresolved_ids: [String!]!
+}
+
+type IrProcessingError {
+  at: DateTime!
+  event_id: String
+  message: String!
+}
+
+type IrProcessingStatus {
+  """Active requirements, processed one after the other by the engine"""
+  active_requirements: Int!
+  catchup_from_at: DateTime!
+  cursor_at: DateTime!
+  """Estimate: the stream does not count the events between two positions"""
+  lag_events: Int!
+  lag_seconds: Int!
+  last_batch: IrLastBatch
+  last_error: IrProcessingError
+  """
+  Progress of the catch-up, from its start to the head of the stream (0-100)
+  """
+  progress: Int!
+  """live, catching_up or paused"""
+  state: String!
+  stream_head_at: DateTime!
+  stream_size: Int!
+  totals: IrBatchStats
+}
+
+type IrRule {
+  applies_to_criterion_id: String
+  applies_to_types: [String!]!
+  enabled: Boolean!
+  filters: String
+  id: String!
+  link: IrGroupLink
+  name: String!
+  path_condition: IrPathCondition
+  points: Int!
+  """
+  Legacy: required rules are converted into scope conditions of the criteria
+  """
+  required: Boolean!
+}
+
+input IrRuleInput {
+  applies_to_criterion_id: String
+  applies_to_types: [String!]
+  enabled: Boolean
+  filters: FilterGroup
+  id: String!
+  link: IrGroupLinkInput
+  name: String!
+  path_condition: IrPathConditionInput
+  points: Int!
+  required: Boolean
+}
+
+type IrRuleOutcome {
+  criterion_id: String
+  hit: Boolean!
+  """rule (relevance) or condition (scope)"""
+  kind: String
+  name: String!
+  points: Int!
+  reason: String
+  rule_id: String!
+}
+
+type IrStoredCounts {
+  entities: Int!
+  items: Int!
+}
+
+type IrSubjectGroup {
+  entities: [StixCoreObject!]!
+  entity_ids: [String!]!
+  exclude_keywords: [String!]
+  filters: String
+  id: String!
+  keywords: [String!]!
+  kind: IrSubjectGroupKind!
+  name: String!
+  role: IrSubjectGroupRole!
+}
+
+input IrSubjectGroupInput {
+  entity_ids: [String!]
+  exclude_keywords: [String!]
+  filters: FilterGroup
+  id: String!
+  keywords: [String!]
+  kind: IrSubjectGroupKind!
+  name: String!
+  role: IrSubjectGroupRole!
+}
+
+enum IrSubjectGroupKind {
+  filter
+  keywords
+  list
+}
+
+enum IrSubjectGroupRole {
+  both
+  context
+  entry
+}
+
+type IrTypeCount {
+  count: Int!
+  entity_type: String!
 }
 
 scalar JSON
@@ -9542,6 +10124,32 @@ type Mutation {
   ingestionTaxiiDelete(id: ID!): ID
   ingestionTaxiiFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxii
   ingestionTaxiiResetState(id: ID!): IngestionTaxii
+  intelligenceRequirementAdd(input: IntelligenceRequirementInput!): IntelligenceRequirement
+  """
+  AI Insight with the LLM configured on the platform, when XTM One is not usable
+  """
+  intelligenceRequirementAiInsight(id: ID!, language: String): String
+  """
+  Generate the AI brief of a requirement now (XTM One agent of the cti.pir_insight intent) and add it to its inbox
+  """
+  intelligenceRequirementBriefGenerate(id: ID!): IntelligenceRequirementItem
+  intelligenceRequirementDelete(id: ID!): ID
+  """
+  Run the health checks of a requirement now; returns the number of health items raised
+  """
+  intelligenceRequirementHealthCheck(id: ID!): Int
+  intelligenceRequirementItemDecide(decision: IrItemDecision!, id: ID!): IntelligenceRequirementItem
+  """
+  Same decision on several inbox items; items that are closed or that the decision does not apply to are skipped. Returns the number of items decided.
+  """
+  intelligenceRequirementItemsDecide(decision: IrItemDecision!, ids: [ID!]!): Int
+  intelligenceRequirementMatchStatusUpdate(id: ID!, status: IrMatchDecisionStatus!): IntelligenceRequirementMatch
+  """
+  Same decision on several entities of a requirement; entities the decision does not apply to are skipped. Returns the number decided.
+  """
+  intelligenceRequirementMatchesStatusUpdate(ids: [ID!]!, status: IrMatchDecisionStatus!): Int
+  intelligenceRequirementStatusUpdate(id: ID!, status: IntelligenceRequirementStatus!): IntelligenceRequirement
+  intelligenceRequirementUpdate(id: ID!, input: IntelligenceRequirementInput!): IntelligenceRequirement
   intrusionSetAdd(input: IntrusionSetAddInput!): IntrusionSet
   intrusionSetEdit(id: ID!): IntrusionSetEditMutations
   investigationDuplicate(input: InvestigationDuplicateInput!): Workspace
@@ -11240,6 +11848,7 @@ type Pir implements BasicObject & InternalObject {
   pirContainers(after: ID, filters: FilterGroup, first: Int, orderBy: ContainersOrdering, orderMode: OrderingMode, search: String): ContainerConnection
   pir_criteria: [PirCriterion!]!
   pir_filters: String!
+  pir_requirement_id: ID
   pir_rescan_days: Int!
   pir_type: PirType!
   queue_messages: Int!
@@ -11982,7 +12591,6 @@ type Query {
     startDate: DateTime!
     types: [String]
   ): TimeSeriesBreakdown
-
   """
   Auth log history by provider id: internal_id for DB providers, or static id for singletons (Headers, Cert).
   """
@@ -12168,6 +12776,16 @@ type Query {
   ingestionTaxiiCollections(after: ID, filters: FilterGroup, first: Int, includeAuthorities: Boolean, orderBy: IngestionTaxiiCollectionOrdering, orderMode: OrderingMode, search: String): IngestionTaxiiCollectionConnection
   ingestionTaxiiLogs(id: String!): [IngestionEntry]
   ingestionTaxiis(after: ID, filters: FilterGroup, first: Int, includeAuthorities: Boolean, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, search: String): IngestionTaxiiConnection
+  intelligenceRequirement(id: ID!): IntelligenceRequirement
+  intelligenceRequirementItems(after: ID, filters: FilterGroup, first: Int, id: ID!, kinds: [IrItemKind!], search: String, statuses: [IrItemStatus!]): IntelligenceRequirementItemConnection
+  intelligenceRequirementMatch(id: ID!): IntelligenceRequirementMatch
+  intelligenceRequirementMatches(after: ID, filters: FilterGroup, first: Int, id: ID!, orderBy: IntelligenceRequirementMatchOrdering, orderMode: OrderingMode, search: String, statuses: [IrMatchStatus!]): IntelligenceRequirementMatchConnection
+  """
+  Check a configuration before saving it: errors, resolved subjects, what each criterion brings today, warnings
+  """
+  intelligenceRequirementPreview(input: IntelligenceRequirementInput!): IrPreview!
+  intelligenceRequirementTestEntity(entity_id: ID!, input: IntelligenceRequirementInput!, ir_id: ID): IrEntityTest!
+  intelligenceRequirements(after: ID, filters: FilterGroup, first: Int, orderBy: IntelligenceRequirementOrdering, orderMode: OrderingMode, search: String): IntelligenceRequirementConnection
   intrusionSet(id: String): IntrusionSet
   intrusionSets(after: ID, filters: FilterGroup, first: Int, orderBy: IntrusionSetsOrdering, orderMode: OrderingMode, search: String, toStix: Boolean): IntrusionSetConnection
   isWorkAlive(id: ID!): Boolean
@@ -12438,7 +13056,6 @@ type Query {
   threatActors(after: ID, filters: FilterGroup, first: Int, orderBy: ThreatActorsOrdering, orderMode: OrderingMode, search: String, toStix: Boolean): ThreatActorConnection
   threatActorsGroup(after: ID, filters: FilterGroup, first: Int, orderBy: ThreatActorsOrdering, orderMode: OrderingMode, search: String, toStix: Boolean): ThreatActorGroupConnection
   threatActorsIndividuals(after: ID, filters: FilterGroup, first: Int, orderBy: ThreatActorsIndividualOrdering, orderMode: OrderingMode, search: String, toStix: Boolean): ThreatActorIndividualConnection
-
   """
   Keys of the fields a time series widget of the perspective can be broken down by, for the types its dataset is
   restricted to (at most 1,000, duplicates ignored), as the widget editor lists them. Without types, the ones the

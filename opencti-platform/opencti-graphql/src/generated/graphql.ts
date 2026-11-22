@@ -43,6 +43,9 @@ import type { BasicStoreEntityFintelTemplate } from '../modules/fintelTemplate/f
 import type { BasicStoreEntitySavedFilter } from '../modules/savedFilter/savedFilter-types';
 import type { BasicStoreEntityFintelDesign } from '../modules/fintelDesign/fintelDesign-types';
 import type { BasicStoreEntityPir } from '../modules/pir/pir-types';
+import type { BasicStoreEntityIntelligenceRequirement, StoreIrSubjectGroup, StoreIrKiq, StoreIrCriterion, StoreIrRule, StoreIrPathCondition } from '../modules/intelligenceRequirement/intelligenceRequirement-types';
+import type { BasicStoreEntityIntelligenceRequirementMatch, StoreIrMatchExplanation } from '../modules/intelligenceRequirement/intelligenceRequirementMatch-types';
+import type { BasicStoreEntityIntelligenceRequirementItem } from '../modules/intelligenceRequirement/intelligenceRequirementItem-types';
 import type { BasicStoreEntitySecurityPlatform } from '../modules/securityPlatform/securityPlatform-types';
 import type { BasicStoreEntitySecurityCoverage, CoveredEntity } from '../modules/securityCoverage/securityCoverage-types';
 import type { BasicStoreEntitySecurityCoverageResult } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
@@ -14933,6 +14936,197 @@ export enum IngestionTaxiiOrdering {
   Version = 'version'
 }
 
+export type IntelligenceRequirement = BasicObject & InternalObject & {
+  __typename?: 'IntelligenceRequirement';
+  authorizedMembers: Array<MemberAccess>;
+  created_at: Scalars['DateTime']['output'];
+  creators?: Maybe<Array<Creator>>;
+  currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  ir_activity: Array<IrActivityPoint>;
+  /** AI Insight: prompt for an XTM One agent (content of the requirement and its questions) */
+  ir_ai_prompt: Scalars['String']['output'];
+  ir_brief_frequency: IrBriefFrequency;
+  /** Entities of the requirement per type (quick type filters), for the given statuses and exclusion */
+  ir_entities_by_type: Array<IrTypeCount>;
+  ir_entities_count: Scalars['Int']['output'];
+  ir_inbox_counts: IrInboxCounts;
+  ir_inbox_open_count: Scalars['Int']['output'];
+  ir_kiqs: Array<IrKiq>;
+  ir_last_brief_at?: Maybe<Scalars['DateTime']['output']>;
+  ir_priority: IntelligenceRequirementPriority;
+  /** Where the requirement stands in the stream (catch-up, lag, last batch, last error) */
+  ir_processing_status: IrProcessingStatus;
+  ir_question: Scalars['String']['output'];
+  ir_relevance_rules: Array<IrRule>;
+  ir_rescan_days: Scalars['Int']['output'];
+  ir_scope_criteria: Array<IrCriterion>;
+  ir_status: IntelligenceRequirementStatus;
+  /** Everything stored for the requirement, removed with it (entities whatever their status, inbox items) */
+  ir_stored_counts: IrStoredCounts;
+  ir_subject_groups: Array<IrSubjectGroup>;
+  ir_thresholds: Array<Scalars['Int']['output']>;
+  lastEventId?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  name: Scalars['String']['output'];
+  parent_types: Array<Scalars['String']['output']>;
+  refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  representative: Representative;
+  standard_id: Scalars['String']['output'];
+  updated_at: Scalars['DateTime']['output'];
+};
+
+
+export type IntelligenceRequirementIr_ActivityArgs = {
+  days?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type IntelligenceRequirementIr_Ai_PromptArgs = {
+  language?: InputMaybe<Scalars['String']['input']>;
+  reference_only?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type IntelligenceRequirementIr_Entities_By_TypeArgs = {
+  excluded?: InputMaybe<Scalars['Boolean']['input']>;
+  statuses?: InputMaybe<Array<IrMatchStatus>>;
+};
+
+export type IntelligenceRequirementConnection = {
+  __typename?: 'IntelligenceRequirementConnection';
+  edges: Array<IntelligenceRequirementEdge>;
+  pageInfo: PageInfo;
+};
+
+export type IntelligenceRequirementEdge = {
+  __typename?: 'IntelligenceRequirementEdge';
+  cursor: Scalars['String']['output'];
+  node: IntelligenceRequirement;
+};
+
+export type IntelligenceRequirementInput = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  ir_brief_frequency?: InputMaybe<IrBriefFrequency>;
+  ir_kiqs?: InputMaybe<Array<IrKiqInput>>;
+  ir_priority: IntelligenceRequirementPriority;
+  ir_question: Scalars['String']['input'];
+  ir_relevance_rules?: InputMaybe<Array<IrRuleInput>>;
+  ir_rescan_days?: InputMaybe<Scalars['Int']['input']>;
+  ir_scope_criteria: Array<IrCriterionInput>;
+  ir_status?: InputMaybe<IntelligenceRequirementStatus>;
+  ir_subject_groups: Array<IrSubjectGroupInput>;
+  ir_thresholds?: InputMaybe<Array<Scalars['Int']['input']>>;
+  name: Scalars['String']['input'];
+};
+
+export type IntelligenceRequirementItem = BasicObject & InternalObject & {
+  __typename?: 'IntelligenceRequirementItem';
+  created_at: Scalars['DateTime']['output'];
+  entity?: Maybe<StixCoreObject>;
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  ir_id: Scalars['String']['output'];
+  item_data: IrItemData;
+  item_entity_id?: Maybe<Scalars['String']['output']>;
+  item_entity_type?: Maybe<Scalars['String']['output']>;
+  item_kind: IrItemKind;
+  item_match_id?: Maybe<Scalars['String']['output']>;
+  item_result?: Maybe<Scalars['String']['output']>;
+  item_status: IrItemStatus;
+  item_title: Scalars['String']['output'];
+  match?: Maybe<IntelligenceRequirementMatch>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  parent_types: Array<Scalars['String']['output']>;
+  refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  representative: Representative;
+  standard_id: Scalars['String']['output'];
+  updated_at: Scalars['DateTime']['output'];
+};
+
+export type IntelligenceRequirementItemConnection = {
+  __typename?: 'IntelligenceRequirementItemConnection';
+  edges: Array<IntelligenceRequirementItemEdge>;
+  pageInfo: PageInfo;
+};
+
+export type IntelligenceRequirementItemEdge = {
+  __typename?: 'IntelligenceRequirementItemEdge';
+  cursor: Scalars['String']['output'];
+  node: IntelligenceRequirementItem;
+};
+
+export type IntelligenceRequirementMatch = BasicObject & InternalObject & {
+  __typename?: 'IntelligenceRequirementMatch';
+  created_at: Scalars['DateTime']['output'];
+  entity?: Maybe<StixCoreObject>;
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  ir_id: Scalars['String']['output'];
+  match_criteria_ids: Array<Scalars['String']['output']>;
+  match_entity_id: Scalars['String']['output'];
+  match_entity_name?: Maybe<Scalars['String']['output']>;
+  match_entity_type: Scalars['String']['output'];
+  match_excluded: Scalars['Boolean']['output'];
+  match_explanations: Array<IrMatchExplanation>;
+  /** Score, eligibility and status over time, dated with the events that changed them */
+  match_history: Array<IrMatchHistoryPoint>;
+  match_last_fact_at?: Maybe<Scalars['DateTime']['output']>;
+  match_score: Scalars['Int']['output'];
+  match_score_breakdown: Array<IrRuleOutcome>;
+  match_status: IrMatchStatus;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  parent_types: Array<Scalars['String']['output']>;
+  refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  representative: Representative;
+  standard_id: Scalars['String']['output'];
+  updated_at: Scalars['DateTime']['output'];
+};
+
+export type IntelligenceRequirementMatchConnection = {
+  __typename?: 'IntelligenceRequirementMatchConnection';
+  edges: Array<IntelligenceRequirementMatchEdge>;
+  pageInfo: PageInfo;
+};
+
+export type IntelligenceRequirementMatchEdge = {
+  __typename?: 'IntelligenceRequirementMatchEdge';
+  cursor: Scalars['String']['output'];
+  node: IntelligenceRequirementMatch;
+};
+
+export enum IntelligenceRequirementMatchOrdering {
+  CreatedAt = 'created_at',
+  MatchEntityName = 'match_entity_name',
+  MatchEntityType = 'match_entity_type',
+  MatchLastFactAt = 'match_last_fact_at',
+  MatchScore = 'match_score',
+  MatchStatus = 'match_status'
+}
+
+export enum IntelligenceRequirementOrdering {
+  Score = '_score',
+  CreatedAt = 'created_at',
+  IrPriority = 'ir_priority',
+  Name = 'name',
+  UpdatedAt = 'updated_at'
+}
+
+export enum IntelligenceRequirementPriority {
+  Critical = 'critical',
+  High = 'high',
+  Low = 'low',
+  Medium = 'medium'
+}
+
+export enum IntelligenceRequirementStatus {
+  Active = 'active',
+  Paused = 'paused'
+}
+
 export type InternalObject = {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
@@ -15304,6 +15498,431 @@ export enum IntrusionSetsOrdering {
 export type InvestigationDuplicateInput = {
   id: Scalars['ID']['input'];
   name: Scalars['String']['input'];
+};
+
+export type IrActivityPoint = {
+  __typename?: 'IrActivityPoint';
+  date: Scalars['DateTime']['output'];
+  value: Scalars['Int']['output'];
+};
+
+export type IrBatchStats = {
+  __typename?: 'IrBatchStats';
+  backfilled: Scalars['Int']['output'];
+  entered: Scalars['Int']['output'];
+  errors: Scalars['Int']['output'];
+  events: Scalars['Int']['output'];
+  rescored: Scalars['Int']['output'];
+  skipped?: Maybe<Scalars['Int']['output']>;
+  updated: Scalars['Int']['output'];
+};
+
+export enum IrBriefFrequency {
+  Daily = 'daily',
+  Off = 'off',
+  Weekly = 'weekly'
+}
+
+export type IrCondition = {
+  __typename?: 'IrCondition';
+  applies_to_types: Array<Scalars['String']['output']>;
+  filters?: Maybe<Scalars['String']['output']>;
+  id: Scalars['String']['output'];
+  link?: Maybe<IrGroupLink>;
+  name: Scalars['String']['output'];
+  path_condition?: Maybe<IrPathCondition>;
+};
+
+export type IrConditionInput = {
+  applies_to_types?: InputMaybe<Array<Scalars['String']['input']>>;
+  filters?: InputMaybe<FilterGroup>;
+  id: Scalars['String']['input'];
+  link?: InputMaybe<IrGroupLinkInput>;
+  name: Scalars['String']['input'];
+  path_condition?: InputMaybe<IrPathConditionInput>;
+};
+
+export type IrCriterion = {
+  __typename?: 'IrCriterion';
+  /** Scope conditions: all must be met for an entity brought by the criterion to enter the requirement */
+  conditions: Array<IrCondition>;
+  direction: IrDirection;
+  from_group_ids: Array<Scalars['String']['output']>;
+  from_in_requirement: Scalars['Boolean']['output'];
+  from_types?: Maybe<Array<Scalars['String']['output']>>;
+  id: Scalars['String']['output'];
+  keyword_fields: Array<Scalars['String']['output']>;
+  kind: IrCriterionKind;
+  mode: IrCriterionMode;
+  name: Scalars['String']['output'];
+  relationship_types: Array<Scalars['String']['output']>;
+  target_filters?: Maybe<Scalars['String']['output']>;
+  target_types: Array<Scalars['String']['output']>;
+};
+
+export type IrCriterionInput = {
+  conditions?: InputMaybe<Array<IrConditionInput>>;
+  direction?: InputMaybe<IrDirection>;
+  from_group_ids?: InputMaybe<Array<Scalars['String']['input']>>;
+  from_in_requirement?: InputMaybe<Scalars['Boolean']['input']>;
+  from_types?: InputMaybe<Array<Scalars['String']['input']>>;
+  id: Scalars['String']['input'];
+  keyword_fields?: InputMaybe<Array<Scalars['String']['input']>>;
+  kind: IrCriterionKind;
+  mode: IrCriterionMode;
+  name?: InputMaybe<Scalars['String']['input']>;
+  relationship_types?: InputMaybe<Array<Scalars['String']['input']>>;
+  target_filters?: InputMaybe<FilterGroup>;
+  target_types?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+export enum IrCriterionKind {
+  Attribute = 'attribute',
+  Graph = 'graph',
+  Keywords = 'keywords'
+}
+
+export enum IrCriterionMode {
+  Auto = 'auto',
+  Off = 'off',
+  Propose = 'propose'
+}
+
+export enum IrDirection {
+  Both = 'both',
+  Incoming = 'incoming',
+  Outgoing = 'outgoing'
+}
+
+export type IrEntityTest = {
+  __typename?: 'IrEntityTest';
+  criteria: Array<IrEntityTestCriterion>;
+  entity_id: Scalars['String']['output'];
+  entity_name: Scalars['String']['output'];
+  entity_type: Scalars['String']['output'];
+  in_requirement: Scalars['Boolean']['output'];
+  notes: Array<Scalars['String']['output']>;
+  rules: Array<IrEntityTestRule>;
+  score: Scalars['Int']['output'];
+  verdict: Scalars['String']['output'];
+};
+
+export type IrEntityTestCondition = {
+  __typename?: 'IrEntityTestCondition';
+  met: Scalars['Boolean']['output'];
+  name: Scalars['String']['output'];
+};
+
+export type IrEntityTestCriterion = {
+  __typename?: 'IrEntityTestCriterion';
+  conditions: Array<IrEntityTestCondition>;
+  criterion_id: Scalars['String']['output'];
+  kind: Scalars['String']['output'];
+  matched: Scalars['Boolean']['output'];
+  name: Scalars['String']['output'];
+  proof?: Maybe<Scalars['String']['output']>;
+};
+
+export type IrEntityTestRule = {
+  __typename?: 'IrEntityTestRule';
+  hit: Scalars['Boolean']['output'];
+  name: Scalars['String']['output'];
+  points: Scalars['Int']['output'];
+  reason?: Maybe<Scalars['String']['output']>;
+};
+
+/** The entity has one of the relationship types with a member of one of the subject groups (object: it contains one) */
+export type IrGroupLink = {
+  __typename?: 'IrGroupLink';
+  group_ids: Array<Scalars['String']['output']>;
+  relationship_types: Array<Scalars['String']['output']>;
+};
+
+export type IrGroupLinkInput = {
+  group_ids: Array<Scalars['String']['input']>;
+  relationship_types: Array<Scalars['String']['input']>;
+};
+
+export type IrInboxCounts = {
+  __typename?: 'IrInboxCounts';
+  brief: Scalars['Int']['output'];
+  done: Scalars['Int']['output'];
+  entered: Scalars['Int']['output'];
+  health: Scalars['Int']['output'];
+  open: Scalars['Int']['output'];
+  proposed: Scalars['Int']['output'];
+  score: Scalars['Int']['output'];
+};
+
+export type IrItemData = {
+  __typename?: 'IrItemData';
+  content?: Maybe<Scalars['String']['output']>;
+  criterion_id?: Maybe<Scalars['String']['output']>;
+  from_score?: Maybe<Scalars['Int']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  reasons?: Maybe<Array<Scalars['String']['output']>>;
+  threshold?: Maybe<Scalars['Int']['output']>;
+  to_score?: Maybe<Scalars['Int']['output']>;
+};
+
+export enum IrItemDecision {
+  Accept = 'accept',
+  Acknowledge = 'acknowledge',
+  Reject = 'reject',
+  Remove = 'remove'
+}
+
+export enum IrItemKind {
+  Brief = 'brief',
+  Entered = 'entered',
+  Health = 'health',
+  Proposed = 'proposed',
+  Score = 'score'
+}
+
+export enum IrItemStatus {
+  Done = 'done',
+  Open = 'open'
+}
+
+export type IrKiq = {
+  __typename?: 'IrKiq';
+  criteria_ids: Array<Scalars['String']['output']>;
+  id: Scalars['String']['output'];
+  text: Scalars['String']['output'];
+};
+
+export type IrKiqInput = {
+  criteria_ids?: InputMaybe<Array<Scalars['String']['input']>>;
+  id: Scalars['String']['input'];
+  text: Scalars['String']['input'];
+};
+
+export type IrLastBatch = {
+  __typename?: 'IrLastBatch';
+  at: Scalars['DateTime']['output'];
+  backfilled: Scalars['Int']['output'];
+  duration_ms: Scalars['Int']['output'];
+  entered: Scalars['Int']['output'];
+  errors: Scalars['Int']['output'];
+  events: Scalars['Int']['output'];
+  rescored: Scalars['Int']['output'];
+  skipped?: Maybe<Scalars['Int']['output']>;
+  updated: Scalars['Int']['output'];
+};
+
+export enum IrMatchDecisionStatus {
+  Accepted = 'accepted',
+  Rejected = 'rejected',
+  Removed = 'removed'
+}
+
+export type IrMatchExplanation = {
+  __typename?: 'IrMatchExplanation';
+  anchor?: Maybe<StixCoreObject>;
+  anchor_id?: Maybe<Scalars['String']['output']>;
+  anchor_type?: Maybe<Scalars['String']['output']>;
+  at?: Maybe<Scalars['DateTime']['output']>;
+  container?: Maybe<StixCoreObject>;
+  container_id?: Maybe<Scalars['String']['output']>;
+  container_type?: Maybe<Scalars['String']['output']>;
+  criterion_id: Scalars['String']['output'];
+  direction?: Maybe<Scalars['String']['output']>;
+  field?: Maybe<Scalars['String']['output']>;
+  keyword?: Maybe<Scalars['String']['output']>;
+  kind: IrCriterionKind;
+  relationship?: Maybe<StixCoreRelationship>;
+  relationship_id?: Maybe<Scalars['String']['output']>;
+  relationship_type?: Maybe<Scalars['String']['output']>;
+};
+
+export type IrMatchHistoryPoint = {
+  __typename?: 'IrMatchHistoryPoint';
+  at: Scalars['DateTime']['output'];
+  changes: Array<Scalars['String']['output']>;
+  eligible: Scalars['Boolean']['output'];
+  /** entry, fact, config or decision */
+  kind: Scalars['String']['output'];
+  score: Scalars['Int']['output'];
+  status: Scalars['String']['output'];
+  trigger?: Maybe<Scalars['String']['output']>;
+};
+
+export enum IrMatchStatus {
+  Accepted = 'accepted',
+  Auto = 'auto',
+  Proposed = 'proposed',
+  Rejected = 'rejected',
+  Removed = 'removed'
+}
+
+export type IrPathCondition = {
+  __typename?: 'IrPathCondition';
+  direction: IrDirection;
+  relationship_types: Array<Scalars['String']['output']>;
+  target_group_ids: Array<Scalars['String']['output']>;
+  target_ids: Array<Scalars['String']['output']>;
+  target_relationship_type: Scalars['String']['output'];
+  targets: Array<StixCoreObject>;
+};
+
+export type IrPathConditionInput = {
+  direction: IrDirection;
+  relationship_types: Array<Scalars['String']['input']>;
+  target_group_ids?: InputMaybe<Array<Scalars['String']['input']>>;
+  target_ids: Array<Scalars['String']['input']>;
+  target_relationship_type: Scalars['String']['input'];
+};
+
+export type IrPreview = {
+  __typename?: 'IrPreview';
+  criteria: Array<IrPreviewCriterion>;
+  errors: Array<Scalars['String']['output']>;
+  groups: Array<IrPreviewGroup>;
+  valid: Scalars['Boolean']['output'];
+  warnings: Array<Scalars['String']['output']>;
+};
+
+export type IrPreviewCriterion = {
+  __typename?: 'IrPreviewCriterion';
+  id: Scalars['String']['output'];
+  kind: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  note?: Maybe<Scalars['String']['output']>;
+  today_count?: Maybe<Scalars['Int']['output']>;
+  warnings: Array<Scalars['String']['output']>;
+};
+
+export type IrPreviewEntity = {
+  __typename?: 'IrPreviewEntity';
+  entity_type: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+};
+
+export type IrPreviewGroup = {
+  __typename?: 'IrPreviewGroup';
+  entities: Array<IrPreviewEntity>;
+  id: Scalars['String']['output'];
+  kind: Scalars['String']['output'];
+  matching_count?: Maybe<Scalars['Int']['output']>;
+  name: Scalars['String']['output'];
+  unresolved_ids: Array<Scalars['String']['output']>;
+};
+
+export type IrProcessingError = {
+  __typename?: 'IrProcessingError';
+  at: Scalars['DateTime']['output'];
+  event_id?: Maybe<Scalars['String']['output']>;
+  message: Scalars['String']['output'];
+};
+
+export type IrProcessingStatus = {
+  __typename?: 'IrProcessingStatus';
+  /** Active requirements, processed one after the other by the engine */
+  active_requirements: Scalars['Int']['output'];
+  catchup_from_at: Scalars['DateTime']['output'];
+  cursor_at: Scalars['DateTime']['output'];
+  /** Estimate: the stream does not count the events between two positions */
+  lag_events: Scalars['Int']['output'];
+  lag_seconds: Scalars['Int']['output'];
+  last_batch?: Maybe<IrLastBatch>;
+  last_error?: Maybe<IrProcessingError>;
+  /** Progress of the catch-up, from its start to the head of the stream (0-100) */
+  progress: Scalars['Int']['output'];
+  /** live, catching_up or paused */
+  state: Scalars['String']['output'];
+  stream_head_at: Scalars['DateTime']['output'];
+  stream_size: Scalars['Int']['output'];
+  totals?: Maybe<IrBatchStats>;
+};
+
+export type IrRule = {
+  __typename?: 'IrRule';
+  applies_to_criterion_id?: Maybe<Scalars['String']['output']>;
+  applies_to_types: Array<Scalars['String']['output']>;
+  enabled: Scalars['Boolean']['output'];
+  filters?: Maybe<Scalars['String']['output']>;
+  id: Scalars['String']['output'];
+  link?: Maybe<IrGroupLink>;
+  name: Scalars['String']['output'];
+  path_condition?: Maybe<IrPathCondition>;
+  points: Scalars['Int']['output'];
+  /** Legacy: required rules are converted into scope conditions of the criteria */
+  required: Scalars['Boolean']['output'];
+};
+
+export type IrRuleInput = {
+  applies_to_criterion_id?: InputMaybe<Scalars['String']['input']>;
+  applies_to_types?: InputMaybe<Array<Scalars['String']['input']>>;
+  enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  id: Scalars['String']['input'];
+  link?: InputMaybe<IrGroupLinkInput>;
+  name: Scalars['String']['input'];
+  path_condition?: InputMaybe<IrPathConditionInput>;
+  points: Scalars['Int']['input'];
+  required?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+export type IrRuleOutcome = {
+  __typename?: 'IrRuleOutcome';
+  criterion_id?: Maybe<Scalars['String']['output']>;
+  hit: Scalars['Boolean']['output'];
+  /** rule (relevance) or condition (scope) */
+  kind?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
+  points: Scalars['Int']['output'];
+  reason?: Maybe<Scalars['String']['output']>;
+  rule_id: Scalars['String']['output'];
+};
+
+export type IrStoredCounts = {
+  __typename?: 'IrStoredCounts';
+  entities: Scalars['Int']['output'];
+  items: Scalars['Int']['output'];
+};
+
+export type IrSubjectGroup = {
+  __typename?: 'IrSubjectGroup';
+  entities: Array<StixCoreObject>;
+  entity_ids: Array<Scalars['String']['output']>;
+  exclude_keywords?: Maybe<Array<Scalars['String']['output']>>;
+  filters?: Maybe<Scalars['String']['output']>;
+  id: Scalars['String']['output'];
+  keywords: Array<Scalars['String']['output']>;
+  kind: IrSubjectGroupKind;
+  name: Scalars['String']['output'];
+  role: IrSubjectGroupRole;
+};
+
+export type IrSubjectGroupInput = {
+  entity_ids?: InputMaybe<Array<Scalars['String']['input']>>;
+  exclude_keywords?: InputMaybe<Array<Scalars['String']['input']>>;
+  filters?: InputMaybe<FilterGroup>;
+  id: Scalars['String']['input'];
+  keywords?: InputMaybe<Array<Scalars['String']['input']>>;
+  kind: IrSubjectGroupKind;
+  name: Scalars['String']['input'];
+  role: IrSubjectGroupRole;
+};
+
+export enum IrSubjectGroupKind {
+  Filter = 'filter',
+  Keywords = 'keywords',
+  List = 'list'
+}
+
+export enum IrSubjectGroupRole {
+  Both = 'both',
+  Context = 'context',
+  Entry = 'entry'
+}
+
+export type IrTypeCount = {
+  __typename?: 'IrTypeCount';
+  count: Scalars['Int']['output'];
+  entity_type: Scalars['String']['output'];
 };
 
 export type JsonAttributeBasedOn = {
@@ -18099,6 +18718,22 @@ export type Mutation = {
   ingestionTaxiiDelete?: Maybe<Scalars['ID']['output']>;
   ingestionTaxiiFieldPatch?: Maybe<IngestionTaxii>;
   ingestionTaxiiResetState?: Maybe<IngestionTaxii>;
+  intelligenceRequirementAdd?: Maybe<IntelligenceRequirement>;
+  /** AI Insight with the LLM configured on the platform, when XTM One is not usable */
+  intelligenceRequirementAiInsight?: Maybe<Scalars['String']['output']>;
+  /** Generate the AI brief of a requirement now (XTM One agent of the cti.pir_insight intent) and add it to its inbox */
+  intelligenceRequirementBriefGenerate?: Maybe<IntelligenceRequirementItem>;
+  intelligenceRequirementDelete?: Maybe<Scalars['ID']['output']>;
+  /** Run the health checks of a requirement now; returns the number of health items raised */
+  intelligenceRequirementHealthCheck?: Maybe<Scalars['Int']['output']>;
+  intelligenceRequirementItemDecide?: Maybe<IntelligenceRequirementItem>;
+  /** Same decision on several inbox items; items that are closed or that the decision does not apply to are skipped. Returns the number of items decided. */
+  intelligenceRequirementItemsDecide?: Maybe<Scalars['Int']['output']>;
+  intelligenceRequirementMatchStatusUpdate?: Maybe<IntelligenceRequirementMatch>;
+  /** Same decision on several entities of a requirement; entities the decision does not apply to are skipped. Returns the number decided. */
+  intelligenceRequirementMatchesStatusUpdate?: Maybe<Scalars['Int']['output']>;
+  intelligenceRequirementStatusUpdate?: Maybe<IntelligenceRequirement>;
+  intelligenceRequirementUpdate?: Maybe<IntelligenceRequirement>;
   intrusionSetAdd?: Maybe<IntrusionSet>;
   intrusionSetEdit?: Maybe<IntrusionSetEditMutations>;
   investigationDuplicate?: Maybe<Workspace>;
@@ -19669,6 +20304,68 @@ export type MutationIngestionTaxiiFieldPatchArgs = {
 
 export type MutationIngestionTaxiiResetStateArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationIntelligenceRequirementAddArgs = {
+  input: IntelligenceRequirementInput;
+};
+
+
+export type MutationIntelligenceRequirementAiInsightArgs = {
+  id: Scalars['ID']['input'];
+  language?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type MutationIntelligenceRequirementBriefGenerateArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationIntelligenceRequirementDeleteArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationIntelligenceRequirementHealthCheckArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationIntelligenceRequirementItemDecideArgs = {
+  decision: IrItemDecision;
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationIntelligenceRequirementItemsDecideArgs = {
+  decision: IrItemDecision;
+  ids: Array<Scalars['ID']['input']>;
+};
+
+
+export type MutationIntelligenceRequirementMatchStatusUpdateArgs = {
+  id: Scalars['ID']['input'];
+  status: IrMatchDecisionStatus;
+};
+
+
+export type MutationIntelligenceRequirementMatchesStatusUpdateArgs = {
+  ids: Array<Scalars['ID']['input']>;
+  status: IrMatchDecisionStatus;
+};
+
+
+export type MutationIntelligenceRequirementStatusUpdateArgs = {
+  id: Scalars['ID']['input'];
+  status: IntelligenceRequirementStatus;
+};
+
+
+export type MutationIntelligenceRequirementUpdateArgs = {
+  id: Scalars['ID']['input'];
+  input: IntelligenceRequirementInput;
 };
 
 
@@ -25800,6 +26497,14 @@ export type Query = {
   ingestionTaxiiCollections?: Maybe<IngestionTaxiiCollectionConnection>;
   ingestionTaxiiLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestionTaxiis?: Maybe<IngestionTaxiiConnection>;
+  intelligenceRequirement?: Maybe<IntelligenceRequirement>;
+  intelligenceRequirementItems?: Maybe<IntelligenceRequirementItemConnection>;
+  intelligenceRequirementMatch?: Maybe<IntelligenceRequirementMatch>;
+  intelligenceRequirementMatches?: Maybe<IntelligenceRequirementMatchConnection>;
+  /** Check a configuration before saving it: errors, resolved subjects, what each criterion brings today, warnings */
+  intelligenceRequirementPreview: IrPreview;
+  intelligenceRequirementTestEntity: IrEntityTest;
+  intelligenceRequirements?: Maybe<IntelligenceRequirementConnection>;
   intrusionSet?: Maybe<IntrusionSet>;
   intrusionSets?: Maybe<IntrusionSetConnection>;
   isWorkAlive?: Maybe<Scalars['Boolean']['output']>;
@@ -27365,6 +28070,61 @@ export type QueryIngestionTaxiisArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   includeAuthorities?: InputMaybe<Scalars['Boolean']['input']>;
   orderBy?: InputMaybe<IngestionTaxiiOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryIntelligenceRequirementArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryIntelligenceRequirementItemsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  id: Scalars['ID']['input'];
+  kinds?: InputMaybe<Array<IrItemKind>>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  statuses?: InputMaybe<Array<IrItemStatus>>;
+};
+
+
+export type QueryIntelligenceRequirementMatchArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryIntelligenceRequirementMatchesArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  id: Scalars['ID']['input'];
+  orderBy?: InputMaybe<IntelligenceRequirementMatchOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  statuses?: InputMaybe<Array<IrMatchStatus>>;
+};
+
+
+export type QueryIntelligenceRequirementPreviewArgs = {
+  input: IntelligenceRequirementInput;
+};
+
+
+export type QueryIntelligenceRequirementTestEntityArgs = {
+  entity_id: Scalars['ID']['input'];
+  input: IntelligenceRequirementInput;
+  ir_id?: InputMaybe<Scalars['ID']['input']>;
+};
+
+
+export type QueryIntelligenceRequirementsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<IntelligenceRequirementOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
@@ -41434,6 +42194,9 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicStoreEntityIngestionRss )
     | ( BasicStoreEntityIngestionTaxii )
     | ( BasicStoreEntityIngestionTaxiiCollection )
+    | ( BasicStoreEntityIntelligenceRequirement )
+    | ( BasicStoreEntityIntelligenceRequirementItem )
+    | ( BasicStoreEntityIntelligenceRequirementMatch )
     | ( Omit<IntrusionSet, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'locations' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'securityCoverage' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'workflowInstance' | 'x_opencti_inferences'> & { avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, locations?: Maybe<_RefType['LocationConnection']>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, securityCoverage?: Maybe<_RefType['SecurityCoverage']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, workflowInstance?: Maybe<_RefType['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( BasicStoreEntityJsonMapper )
     | ( Omit<KillChainPhase, 'creators' | 'editContext' | 'x_opencti_inferences'> & { creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
@@ -41564,6 +42327,9 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicStoreEntityIngestionRss )
     | ( BasicStoreEntityIngestionTaxii )
     | ( BasicStoreEntityIngestionTaxiiCollection )
+    | ( BasicStoreEntityIntelligenceRequirement )
+    | ( BasicStoreEntityIntelligenceRequirementItem )
+    | ( BasicStoreEntityIntelligenceRequirementMatch )
     | ( BasicStoreEntityJsonMapper )
     | ( BasicStoreEntityConnector )
     | ( BasicStoreEntityManagerConfiguration )
@@ -42454,6 +43220,20 @@ export type ResolversTypes = ResolversObject<{
   IngestionTaxiiEdge: ResolverTypeWrapper<Omit<IngestionTaxiiEdge, 'node'> & { node: ResolversTypes['IngestionTaxii'] }>;
   IngestionTaxiiOrdering: IngestionTaxiiOrdering;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
+  IntelligenceRequirement: ResolverTypeWrapper<BasicStoreEntityIntelligenceRequirement>;
+  IntelligenceRequirementConnection: ResolverTypeWrapper<Omit<IntelligenceRequirementConnection, 'edges'> & { edges: Array<ResolversTypes['IntelligenceRequirementEdge']> }>;
+  IntelligenceRequirementEdge: ResolverTypeWrapper<Omit<IntelligenceRequirementEdge, 'node'> & { node: ResolversTypes['IntelligenceRequirement'] }>;
+  IntelligenceRequirementInput: IntelligenceRequirementInput;
+  IntelligenceRequirementItem: ResolverTypeWrapper<BasicStoreEntityIntelligenceRequirementItem>;
+  IntelligenceRequirementItemConnection: ResolverTypeWrapper<Omit<IntelligenceRequirementItemConnection, 'edges'> & { edges: Array<ResolversTypes['IntelligenceRequirementItemEdge']> }>;
+  IntelligenceRequirementItemEdge: ResolverTypeWrapper<Omit<IntelligenceRequirementItemEdge, 'node'> & { node: ResolversTypes['IntelligenceRequirementItem'] }>;
+  IntelligenceRequirementMatch: ResolverTypeWrapper<BasicStoreEntityIntelligenceRequirementMatch>;
+  IntelligenceRequirementMatchConnection: ResolverTypeWrapper<Omit<IntelligenceRequirementMatchConnection, 'edges'> & { edges: Array<ResolversTypes['IntelligenceRequirementMatchEdge']> }>;
+  IntelligenceRequirementMatchEdge: ResolverTypeWrapper<Omit<IntelligenceRequirementMatchEdge, 'node'> & { node: ResolversTypes['IntelligenceRequirementMatch'] }>;
+  IntelligenceRequirementMatchOrdering: IntelligenceRequirementMatchOrdering;
+  IntelligenceRequirementOrdering: IntelligenceRequirementOrdering;
+  IntelligenceRequirementPriority: IntelligenceRequirementPriority;
+  IntelligenceRequirementStatus: IntelligenceRequirementStatus;
   InternalObject: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['InternalObject']>;
   InternalRelationship: ResolverTypeWrapper<Omit<InternalRelationship, 'creators' | 'from' | 'to'> & { creators?: Maybe<Array<ResolversTypes['Creator']>>, from?: Maybe<ResolversTypes['InternalObject']>, to?: Maybe<ResolversTypes['InternalObject']> }>;
   InternalRelationshipAddInput: InternalRelationshipAddInput;
@@ -42465,6 +43245,51 @@ export type ResolversTypes = ResolversObject<{
   IntrusionSetEditMutations: ResolverTypeWrapper<Omit<IntrusionSetEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['IntrusionSet']>, contextPatch?: Maybe<ResolversTypes['IntrusionSet']>, fieldPatch?: Maybe<ResolversTypes['IntrusionSet']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['IntrusionSet']> }>;
   IntrusionSetsOrdering: IntrusionSetsOrdering;
   InvestigationDuplicateInput: InvestigationDuplicateInput;
+  IrActivityPoint: ResolverTypeWrapper<IrActivityPoint>;
+  IrBatchStats: ResolverTypeWrapper<IrBatchStats>;
+  IrBriefFrequency: IrBriefFrequency;
+  IrCondition: ResolverTypeWrapper<Omit<IrCondition, 'link' | 'path_condition'> & { link?: Maybe<ResolversTypes['IrGroupLink']>, path_condition?: Maybe<ResolversTypes['IrPathCondition']> }>;
+  IrConditionInput: IrConditionInput;
+  IrCriterion: ResolverTypeWrapper<StoreIrCriterion>;
+  IrCriterionInput: IrCriterionInput;
+  IrCriterionKind: IrCriterionKind;
+  IrCriterionMode: IrCriterionMode;
+  IrDirection: IrDirection;
+  IrEntityTest: ResolverTypeWrapper<IrEntityTest>;
+  IrEntityTestCondition: ResolverTypeWrapper<IrEntityTestCondition>;
+  IrEntityTestCriterion: ResolverTypeWrapper<IrEntityTestCriterion>;
+  IrEntityTestRule: ResolverTypeWrapper<IrEntityTestRule>;
+  IrGroupLink: ResolverTypeWrapper<IrGroupLink>;
+  IrGroupLinkInput: IrGroupLinkInput;
+  IrInboxCounts: ResolverTypeWrapper<IrInboxCounts>;
+  IrItemData: ResolverTypeWrapper<IrItemData>;
+  IrItemDecision: IrItemDecision;
+  IrItemKind: IrItemKind;
+  IrItemStatus: IrItemStatus;
+  IrKiq: ResolverTypeWrapper<StoreIrKiq>;
+  IrKiqInput: IrKiqInput;
+  IrLastBatch: ResolverTypeWrapper<IrLastBatch>;
+  IrMatchDecisionStatus: IrMatchDecisionStatus;
+  IrMatchExplanation: ResolverTypeWrapper<StoreIrMatchExplanation>;
+  IrMatchHistoryPoint: ResolverTypeWrapper<IrMatchHistoryPoint>;
+  IrMatchStatus: IrMatchStatus;
+  IrPathCondition: ResolverTypeWrapper<StoreIrPathCondition>;
+  IrPathConditionInput: IrPathConditionInput;
+  IrPreview: ResolverTypeWrapper<IrPreview>;
+  IrPreviewCriterion: ResolverTypeWrapper<IrPreviewCriterion>;
+  IrPreviewEntity: ResolverTypeWrapper<IrPreviewEntity>;
+  IrPreviewGroup: ResolverTypeWrapper<IrPreviewGroup>;
+  IrProcessingError: ResolverTypeWrapper<IrProcessingError>;
+  IrProcessingStatus: ResolverTypeWrapper<IrProcessingStatus>;
+  IrRule: ResolverTypeWrapper<StoreIrRule>;
+  IrRuleInput: IrRuleInput;
+  IrRuleOutcome: ResolverTypeWrapper<IrRuleOutcome>;
+  IrStoredCounts: ResolverTypeWrapper<IrStoredCounts>;
+  IrSubjectGroup: ResolverTypeWrapper<StoreIrSubjectGroup>;
+  IrSubjectGroupInput: IrSubjectGroupInput;
+  IrSubjectGroupKind: IrSubjectGroupKind;
+  IrSubjectGroupRole: IrSubjectGroupRole;
+  IrTypeCount: ResolverTypeWrapper<IrTypeCount>;
   JSON: ResolverTypeWrapper<Scalars['JSON']['output']>;
   JsonAttributeBasedOn: ResolverTypeWrapper<JsonAttributeBasedOn>;
   JsonAttributeColumnConfiguration: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['JsonAttributeColumnConfiguration']>;
@@ -43637,6 +44462,16 @@ export type ResolversParentTypes = ResolversObject<{
   IngestionTaxiiConnection: Omit<IngestionTaxiiConnection, 'edges'> & { edges: Array<ResolversParentTypes['IngestionTaxiiEdge']> };
   IngestionTaxiiEdge: Omit<IngestionTaxiiEdge, 'node'> & { node: ResolversParentTypes['IngestionTaxii'] };
   Int: Scalars['Int']['output'];
+  IntelligenceRequirement: BasicStoreEntityIntelligenceRequirement;
+  IntelligenceRequirementConnection: Omit<IntelligenceRequirementConnection, 'edges'> & { edges: Array<ResolversParentTypes['IntelligenceRequirementEdge']> };
+  IntelligenceRequirementEdge: Omit<IntelligenceRequirementEdge, 'node'> & { node: ResolversParentTypes['IntelligenceRequirement'] };
+  IntelligenceRequirementInput: IntelligenceRequirementInput;
+  IntelligenceRequirementItem: BasicStoreEntityIntelligenceRequirementItem;
+  IntelligenceRequirementItemConnection: Omit<IntelligenceRequirementItemConnection, 'edges'> & { edges: Array<ResolversParentTypes['IntelligenceRequirementItemEdge']> };
+  IntelligenceRequirementItemEdge: Omit<IntelligenceRequirementItemEdge, 'node'> & { node: ResolversParentTypes['IntelligenceRequirementItem'] };
+  IntelligenceRequirementMatch: BasicStoreEntityIntelligenceRequirementMatch;
+  IntelligenceRequirementMatchConnection: Omit<IntelligenceRequirementMatchConnection, 'edges'> & { edges: Array<ResolversParentTypes['IntelligenceRequirementMatchEdge']> };
+  IntelligenceRequirementMatchEdge: Omit<IntelligenceRequirementMatchEdge, 'node'> & { node: ResolversParentTypes['IntelligenceRequirementMatch'] };
   InternalObject: ResolversInterfaceTypes<ResolversParentTypes>['InternalObject'];
   InternalRelationship: Omit<InternalRelationship, 'creators' | 'from' | 'to'> & { creators?: Maybe<Array<ResolversParentTypes['Creator']>>, from?: Maybe<ResolversParentTypes['InternalObject']>, to?: Maybe<ResolversParentTypes['InternalObject']> };
   InternalRelationshipAddInput: InternalRelationshipAddInput;
@@ -43647,6 +44482,40 @@ export type ResolversParentTypes = ResolversObject<{
   IntrusionSetEdge: Omit<IntrusionSetEdge, 'node'> & { node: ResolversParentTypes['IntrusionSet'] };
   IntrusionSetEditMutations: Omit<IntrusionSetEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['IntrusionSet']>, contextPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, fieldPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['IntrusionSet']> };
   InvestigationDuplicateInput: InvestigationDuplicateInput;
+  IrActivityPoint: IrActivityPoint;
+  IrBatchStats: IrBatchStats;
+  IrCondition: Omit<IrCondition, 'link' | 'path_condition'> & { link?: Maybe<ResolversParentTypes['IrGroupLink']>, path_condition?: Maybe<ResolversParentTypes['IrPathCondition']> };
+  IrConditionInput: IrConditionInput;
+  IrCriterion: StoreIrCriterion;
+  IrCriterionInput: IrCriterionInput;
+  IrEntityTest: IrEntityTest;
+  IrEntityTestCondition: IrEntityTestCondition;
+  IrEntityTestCriterion: IrEntityTestCriterion;
+  IrEntityTestRule: IrEntityTestRule;
+  IrGroupLink: IrGroupLink;
+  IrGroupLinkInput: IrGroupLinkInput;
+  IrInboxCounts: IrInboxCounts;
+  IrItemData: IrItemData;
+  IrKiq: StoreIrKiq;
+  IrKiqInput: IrKiqInput;
+  IrLastBatch: IrLastBatch;
+  IrMatchExplanation: StoreIrMatchExplanation;
+  IrMatchHistoryPoint: IrMatchHistoryPoint;
+  IrPathCondition: StoreIrPathCondition;
+  IrPathConditionInput: IrPathConditionInput;
+  IrPreview: IrPreview;
+  IrPreviewCriterion: IrPreviewCriterion;
+  IrPreviewEntity: IrPreviewEntity;
+  IrPreviewGroup: IrPreviewGroup;
+  IrProcessingError: IrProcessingError;
+  IrProcessingStatus: IrProcessingStatus;
+  IrRule: StoreIrRule;
+  IrRuleInput: IrRuleInput;
+  IrRuleOutcome: IrRuleOutcome;
+  IrStoredCounts: IrStoredCounts;
+  IrSubjectGroup: StoreIrSubjectGroup;
+  IrSubjectGroupInput: IrSubjectGroupInput;
+  IrTypeCount: IrTypeCount;
   JSON: Scalars['JSON']['output'];
   JsonAttributeBasedOn: JsonAttributeBasedOn;
   JsonAttributeColumnConfiguration: ResolversInterfaceTypes<ResolversParentTypes>['JsonAttributeColumnConfiguration'];
@@ -44962,7 +45831,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type BasicObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['BasicObject'] = ResolversParentTypes['BasicObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AuthenticationProvider' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DataComponent' | 'DataSource' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionDeduplicationRule' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'NewsFeedItem' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AuthenticationProvider' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DataComponent' | 'DataSource' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionDeduplicationRule' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntelligenceRequirement' | 'IntelligenceRequirementItem' | 'IntelligenceRequirementMatch' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'NewsFeedItem' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -49375,8 +50244,126 @@ export type IngestionTaxiiEdgeResolvers<ContextType = any, ParentType extends Re
   node?: Resolver<ResolversTypes['IngestionTaxii'], ParentType, ContextType>;
 }>;
 
+export type IntelligenceRequirementResolvers<ContextType = any, ParentType extends ResolversParentTypes['IntelligenceRequirement'] = ResolversParentTypes['IntelligenceRequirement']> = ResolversObject<{
+  authorizedMembers?: Resolver<Array<ResolversTypes['MemberAccess']>, ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ir_activity?: Resolver<Array<ResolversTypes['IrActivityPoint']>, ParentType, ContextType, Partial<IntelligenceRequirementIr_ActivityArgs>>;
+  ir_ai_prompt?: Resolver<ResolversTypes['String'], ParentType, ContextType, Partial<IntelligenceRequirementIr_Ai_PromptArgs>>;
+  ir_brief_frequency?: Resolver<ResolversTypes['IrBriefFrequency'], ParentType, ContextType>;
+  ir_entities_by_type?: Resolver<Array<ResolversTypes['IrTypeCount']>, ParentType, ContextType, Partial<IntelligenceRequirementIr_Entities_By_TypeArgs>>;
+  ir_entities_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  ir_inbox_counts?: Resolver<ResolversTypes['IrInboxCounts'], ParentType, ContextType>;
+  ir_inbox_open_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  ir_kiqs?: Resolver<Array<ResolversTypes['IrKiq']>, ParentType, ContextType>;
+  ir_last_brief_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  ir_priority?: Resolver<ResolversTypes['IntelligenceRequirementPriority'], ParentType, ContextType>;
+  ir_processing_status?: Resolver<ResolversTypes['IrProcessingStatus'], ParentType, ContextType>;
+  ir_question?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  ir_relevance_rules?: Resolver<Array<ResolversTypes['IrRule']>, ParentType, ContextType>;
+  ir_rescan_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  ir_scope_criteria?: Resolver<Array<ResolversTypes['IrCriterion']>, ParentType, ContextType>;
+  ir_status?: Resolver<ResolversTypes['IntelligenceRequirementStatus'], ParentType, ContextType>;
+  ir_stored_counts?: Resolver<ResolversTypes['IrStoredCounts'], ParentType, ContextType>;
+  ir_subject_groups?: Resolver<Array<ResolversTypes['IrSubjectGroup']>, ParentType, ContextType>;
+  ir_thresholds?: Resolver<Array<ResolversTypes['Int']>, ParentType, ContextType>;
+  lastEventId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type IntelligenceRequirementConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IntelligenceRequirementConnection'] = ResolversParentTypes['IntelligenceRequirementConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['IntelligenceRequirementEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type IntelligenceRequirementEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IntelligenceRequirementEdge'] = ResolversParentTypes['IntelligenceRequirementEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['IntelligenceRequirement'], ParentType, ContextType>;
+}>;
+
+export type IntelligenceRequirementItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['IntelligenceRequirementItem'] = ResolversParentTypes['IntelligenceRequirementItem']> = ResolversObject<{
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  entity?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ir_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  item_data?: Resolver<ResolversTypes['IrItemData'], ParentType, ContextType>;
+  item_entity_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  item_entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  item_kind?: Resolver<ResolversTypes['IrItemKind'], ParentType, ContextType>;
+  item_match_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  item_result?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  item_status?: Resolver<ResolversTypes['IrItemStatus'], ParentType, ContextType>;
+  item_title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  match?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementMatch']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type IntelligenceRequirementItemConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IntelligenceRequirementItemConnection'] = ResolversParentTypes['IntelligenceRequirementItemConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['IntelligenceRequirementItemEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type IntelligenceRequirementItemEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IntelligenceRequirementItemEdge'] = ResolversParentTypes['IntelligenceRequirementItemEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['IntelligenceRequirementItem'], ParentType, ContextType>;
+}>;
+
+export type IntelligenceRequirementMatchResolvers<ContextType = any, ParentType extends ResolversParentTypes['IntelligenceRequirementMatch'] = ResolversParentTypes['IntelligenceRequirementMatch']> = ResolversObject<{
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  entity?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ir_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  match_criteria_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  match_entity_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  match_entity_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  match_entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  match_excluded?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  match_explanations?: Resolver<Array<ResolversTypes['IrMatchExplanation']>, ParentType, ContextType>;
+  match_history?: Resolver<Array<ResolversTypes['IrMatchHistoryPoint']>, ParentType, ContextType>;
+  match_last_fact_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  match_score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  match_score_breakdown?: Resolver<Array<ResolversTypes['IrRuleOutcome']>, ParentType, ContextType>;
+  match_status?: Resolver<ResolversTypes['IrMatchStatus'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type IntelligenceRequirementMatchConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IntelligenceRequirementMatchConnection'] = ResolversParentTypes['IntelligenceRequirementMatchConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['IntelligenceRequirementMatchEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type IntelligenceRequirementMatchEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IntelligenceRequirementMatchEdge'] = ResolversParentTypes['IntelligenceRequirementMatchEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['IntelligenceRequirementMatch'], ParentType, ContextType>;
+}>;
+
 export type InternalObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['InternalObject'] = ResolversParentTypes['InternalObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionDeduplicationRule' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'NewsFeedItem' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionDeduplicationRule' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntelligenceRequirement' | 'IntelligenceRequirementItem' | 'IntelligenceRequirementMatch' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'NewsFeedItem' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -49497,6 +50484,257 @@ export type IntrusionSetEditMutationsResolvers<ContextType = any, ParentType ext
   fieldPatch?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, RequireFields<IntrusionSetEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<IntrusionSetEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, RequireFields<IntrusionSetEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
+}>;
+
+export type IrActivityPointResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrActivityPoint'] = ResolversParentTypes['IrActivityPoint']> = ResolversObject<{
+  date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type IrBatchStatsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrBatchStats'] = ResolversParentTypes['IrBatchStats']> = ResolversObject<{
+  backfilled?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  entered?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  errors?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  events?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  rescored?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  skipped?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  updated?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type IrConditionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrCondition'] = ResolversParentTypes['IrCondition']> = ResolversObject<{
+  applies_to_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  link?: Resolver<Maybe<ResolversTypes['IrGroupLink']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path_condition?: Resolver<Maybe<ResolversTypes['IrPathCondition']>, ParentType, ContextType>;
+}>;
+
+export type IrCriterionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrCriterion'] = ResolversParentTypes['IrCriterion']> = ResolversObject<{
+  conditions?: Resolver<Array<ResolversTypes['IrCondition']>, ParentType, ContextType>;
+  direction?: Resolver<ResolversTypes['IrDirection'], ParentType, ContextType>;
+  from_group_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  from_in_requirement?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  from_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  keyword_fields?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  kind?: Resolver<ResolversTypes['IrCriterionKind'], ParentType, ContextType>;
+  mode?: Resolver<ResolversTypes['IrCriterionMode'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  relationship_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  target_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  target_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type IrEntityTestResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrEntityTest'] = ResolversParentTypes['IrEntityTest']> = ResolversObject<{
+  criteria?: Resolver<Array<ResolversTypes['IrEntityTestCriterion']>, ParentType, ContextType>;
+  entity_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  entity_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  in_requirement?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  notes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  rules?: Resolver<Array<ResolversTypes['IrEntityTestRule']>, ParentType, ContextType>;
+  score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  verdict?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type IrEntityTestConditionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrEntityTestCondition'] = ResolversParentTypes['IrEntityTestCondition']> = ResolversObject<{
+  met?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type IrEntityTestCriterionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrEntityTestCriterion'] = ResolversParentTypes['IrEntityTestCriterion']> = ResolversObject<{
+  conditions?: Resolver<Array<ResolversTypes['IrEntityTestCondition']>, ParentType, ContextType>;
+  criterion_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  kind?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  matched?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  proof?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type IrEntityTestRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrEntityTestRule'] = ResolversParentTypes['IrEntityTestRule']> = ResolversObject<{
+  hit?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  points?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type IrGroupLinkResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrGroupLink'] = ResolversParentTypes['IrGroupLink']> = ResolversObject<{
+  group_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  relationship_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type IrInboxCountsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrInboxCounts'] = ResolversParentTypes['IrInboxCounts']> = ResolversObject<{
+  brief?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  done?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  entered?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  health?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  open?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  proposed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type IrItemDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrItemData'] = ResolversParentTypes['IrItemData']> = ResolversObject<{
+  content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  criterion_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  from_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  reasons?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  threshold?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  to_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+}>;
+
+export type IrKiqResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrKiq'] = ResolversParentTypes['IrKiq']> = ResolversObject<{
+  criteria_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type IrLastBatchResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrLastBatch'] = ResolversParentTypes['IrLastBatch']> = ResolversObject<{
+  at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  backfilled?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  duration_ms?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  entered?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  errors?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  events?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  rescored?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  skipped?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  updated?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type IrMatchExplanationResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrMatchExplanation'] = ResolversParentTypes['IrMatchExplanation']> = ResolversObject<{
+  anchor?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
+  anchor_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  anchor_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  container?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
+  container_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  container_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  criterion_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  direction?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  field?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  keyword?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  kind?: Resolver<ResolversTypes['IrCriterionKind'], ParentType, ContextType>;
+  relationship?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType>;
+  relationship_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  relationship_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type IrMatchHistoryPointResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrMatchHistoryPoint'] = ResolversParentTypes['IrMatchHistoryPoint']> = ResolversObject<{
+  at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  changes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  eligible?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  kind?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  trigger?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type IrPathConditionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrPathCondition'] = ResolversParentTypes['IrPathCondition']> = ResolversObject<{
+  direction?: Resolver<ResolversTypes['IrDirection'], ParentType, ContextType>;
+  relationship_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  target_group_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  target_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  target_relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  targets?: Resolver<Array<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
+}>;
+
+export type IrPreviewResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrPreview'] = ResolversParentTypes['IrPreview']> = ResolversObject<{
+  criteria?: Resolver<Array<ResolversTypes['IrPreviewCriterion']>, ParentType, ContextType>;
+  errors?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  groups?: Resolver<Array<ResolversTypes['IrPreviewGroup']>, ParentType, ContextType>;
+  valid?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  warnings?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type IrPreviewCriterionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrPreviewCriterion'] = ResolversParentTypes['IrPreviewCriterion']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  kind?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  note?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  today_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  warnings?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type IrPreviewEntityResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrPreviewEntity'] = ResolversParentTypes['IrPreviewEntity']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type IrPreviewGroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrPreviewGroup'] = ResolversParentTypes['IrPreviewGroup']> = ResolversObject<{
+  entities?: Resolver<Array<ResolversTypes['IrPreviewEntity']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  kind?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  matching_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  unresolved_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type IrProcessingErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrProcessingError'] = ResolversParentTypes['IrProcessingError']> = ResolversObject<{
+  at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  event_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type IrProcessingStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrProcessingStatus'] = ResolversParentTypes['IrProcessingStatus']> = ResolversObject<{
+  active_requirements?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  catchup_from_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  cursor_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  lag_events?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  lag_seconds?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  last_batch?: Resolver<Maybe<ResolversTypes['IrLastBatch']>, ParentType, ContextType>;
+  last_error?: Resolver<Maybe<ResolversTypes['IrProcessingError']>, ParentType, ContextType>;
+  progress?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  state?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stream_head_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  stream_size?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  totals?: Resolver<Maybe<ResolversTypes['IrBatchStats']>, ParentType, ContextType>;
+}>;
+
+export type IrRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrRule'] = ResolversParentTypes['IrRule']> = ResolversObject<{
+  applies_to_criterion_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  applies_to_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  link?: Resolver<Maybe<ResolversTypes['IrGroupLink']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path_condition?: Resolver<Maybe<ResolversTypes['IrPathCondition']>, ParentType, ContextType>;
+  points?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  required?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type IrRuleOutcomeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrRuleOutcome'] = ResolversParentTypes['IrRuleOutcome']> = ResolversObject<{
+  criterion_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  hit?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  kind?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  points?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  rule_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type IrStoredCountsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrStoredCounts'] = ResolversParentTypes['IrStoredCounts']> = ResolversObject<{
+  entities?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  items?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type IrSubjectGroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrSubjectGroup'] = ResolversParentTypes['IrSubjectGroup']> = ResolversObject<{
+  entities?: Resolver<Array<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
+  entity_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  exclude_keywords?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  keywords?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  kind?: Resolver<ResolversTypes['IrSubjectGroupKind'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  role?: Resolver<ResolversTypes['IrSubjectGroupRole'], ParentType, ContextType>;
+}>;
+
+export type IrTypeCountResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrTypeCount'] = ResolversParentTypes['IrTypeCount']> = ResolversObject<{
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['JSON'], any> {
@@ -50754,6 +51992,17 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ingestionTaxiiDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiDeleteArgs, 'id'>>;
   ingestionTaxiiFieldPatch?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiFieldPatchArgs, 'id' | 'input'>>;
   ingestionTaxiiResetState?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiResetStateArgs, 'id'>>;
+  intelligenceRequirementAdd?: Resolver<Maybe<ResolversTypes['IntelligenceRequirement']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementAddArgs, 'input'>>;
+  intelligenceRequirementAiInsight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementAiInsightArgs, 'id'>>;
+  intelligenceRequirementBriefGenerate?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementItem']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementBriefGenerateArgs, 'id'>>;
+  intelligenceRequirementDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementDeleteArgs, 'id'>>;
+  intelligenceRequirementHealthCheck?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementHealthCheckArgs, 'id'>>;
+  intelligenceRequirementItemDecide?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementItem']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementItemDecideArgs, 'decision' | 'id'>>;
+  intelligenceRequirementItemsDecide?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementItemsDecideArgs, 'decision' | 'ids'>>;
+  intelligenceRequirementMatchStatusUpdate?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementMatch']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementMatchStatusUpdateArgs, 'id' | 'status'>>;
+  intelligenceRequirementMatchesStatusUpdate?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementMatchesStatusUpdateArgs, 'ids' | 'status'>>;
+  intelligenceRequirementStatusUpdate?: Resolver<Maybe<ResolversTypes['IntelligenceRequirement']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementStatusUpdateArgs, 'id' | 'status'>>;
+  intelligenceRequirementUpdate?: Resolver<Maybe<ResolversTypes['IntelligenceRequirement']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementUpdateArgs, 'id' | 'input'>>;
   intrusionSetAdd?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, RequireFields<MutationIntrusionSetAddArgs, 'input'>>;
   intrusionSetEdit?: Resolver<Maybe<ResolversTypes['IntrusionSetEditMutations']>, ParentType, ContextType, RequireFields<MutationIntrusionSetEditArgs, 'id'>>;
   investigationDuplicate?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationInvestigationDuplicateArgs, 'input'>>;
@@ -52674,6 +53923,13 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   ingestionTaxiiCollections?: Resolver<Maybe<ResolversTypes['IngestionTaxiiCollectionConnection']>, ParentType, ContextType, Partial<QueryIngestionTaxiiCollectionsArgs>>;
   ingestionTaxiiLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType, RequireFields<QueryIngestionTaxiiLogsArgs, 'id'>>;
   ingestionTaxiis?: Resolver<Maybe<ResolversTypes['IngestionTaxiiConnection']>, ParentType, ContextType, Partial<QueryIngestionTaxiisArgs>>;
+  intelligenceRequirement?: Resolver<Maybe<ResolversTypes['IntelligenceRequirement']>, ParentType, ContextType, RequireFields<QueryIntelligenceRequirementArgs, 'id'>>;
+  intelligenceRequirementItems?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementItemConnection']>, ParentType, ContextType, RequireFields<QueryIntelligenceRequirementItemsArgs, 'id'>>;
+  intelligenceRequirementMatch?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementMatch']>, ParentType, ContextType, RequireFields<QueryIntelligenceRequirementMatchArgs, 'id'>>;
+  intelligenceRequirementMatches?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementMatchConnection']>, ParentType, ContextType, RequireFields<QueryIntelligenceRequirementMatchesArgs, 'id'>>;
+  intelligenceRequirementPreview?: Resolver<ResolversTypes['IrPreview'], ParentType, ContextType, RequireFields<QueryIntelligenceRequirementPreviewArgs, 'input'>>;
+  intelligenceRequirementTestEntity?: Resolver<ResolversTypes['IrEntityTest'], ParentType, ContextType, RequireFields<QueryIntelligenceRequirementTestEntityArgs, 'entity_id' | 'input'>>;
+  intelligenceRequirements?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementConnection']>, ParentType, ContextType, Partial<QueryIntelligenceRequirementsArgs>>;
   intrusionSet?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, Partial<QueryIntrusionSetArgs>>;
   intrusionSets?: Resolver<Maybe<ResolversTypes['IntrusionSetConnection']>, ParentType, ContextType, Partial<QueryIntrusionSetsArgs>>;
   isWorkAlive?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryIsWorkAliveArgs, 'id'>>;
@@ -57245,6 +58501,15 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IngestionTaxiiCollectionEdge?: IngestionTaxiiCollectionEdgeResolvers<ContextType>;
   IngestionTaxiiConnection?: IngestionTaxiiConnectionResolvers<ContextType>;
   IngestionTaxiiEdge?: IngestionTaxiiEdgeResolvers<ContextType>;
+  IntelligenceRequirement?: IntelligenceRequirementResolvers<ContextType>;
+  IntelligenceRequirementConnection?: IntelligenceRequirementConnectionResolvers<ContextType>;
+  IntelligenceRequirementEdge?: IntelligenceRequirementEdgeResolvers<ContextType>;
+  IntelligenceRequirementItem?: IntelligenceRequirementItemResolvers<ContextType>;
+  IntelligenceRequirementItemConnection?: IntelligenceRequirementItemConnectionResolvers<ContextType>;
+  IntelligenceRequirementItemEdge?: IntelligenceRequirementItemEdgeResolvers<ContextType>;
+  IntelligenceRequirementMatch?: IntelligenceRequirementMatchResolvers<ContextType>;
+  IntelligenceRequirementMatchConnection?: IntelligenceRequirementMatchConnectionResolvers<ContextType>;
+  IntelligenceRequirementMatchEdge?: IntelligenceRequirementMatchEdgeResolvers<ContextType>;
   InternalObject?: InternalObjectResolvers<ContextType>;
   InternalRelationship?: InternalRelationshipResolvers<ContextType>;
   IntlSettings?: IntlSettingsResolvers<ContextType>;
@@ -57252,6 +58517,33 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IntrusionSetConnection?: IntrusionSetConnectionResolvers<ContextType>;
   IntrusionSetEdge?: IntrusionSetEdgeResolvers<ContextType>;
   IntrusionSetEditMutations?: IntrusionSetEditMutationsResolvers<ContextType>;
+  IrActivityPoint?: IrActivityPointResolvers<ContextType>;
+  IrBatchStats?: IrBatchStatsResolvers<ContextType>;
+  IrCondition?: IrConditionResolvers<ContextType>;
+  IrCriterion?: IrCriterionResolvers<ContextType>;
+  IrEntityTest?: IrEntityTestResolvers<ContextType>;
+  IrEntityTestCondition?: IrEntityTestConditionResolvers<ContextType>;
+  IrEntityTestCriterion?: IrEntityTestCriterionResolvers<ContextType>;
+  IrEntityTestRule?: IrEntityTestRuleResolvers<ContextType>;
+  IrGroupLink?: IrGroupLinkResolvers<ContextType>;
+  IrInboxCounts?: IrInboxCountsResolvers<ContextType>;
+  IrItemData?: IrItemDataResolvers<ContextType>;
+  IrKiq?: IrKiqResolvers<ContextType>;
+  IrLastBatch?: IrLastBatchResolvers<ContextType>;
+  IrMatchExplanation?: IrMatchExplanationResolvers<ContextType>;
+  IrMatchHistoryPoint?: IrMatchHistoryPointResolvers<ContextType>;
+  IrPathCondition?: IrPathConditionResolvers<ContextType>;
+  IrPreview?: IrPreviewResolvers<ContextType>;
+  IrPreviewCriterion?: IrPreviewCriterionResolvers<ContextType>;
+  IrPreviewEntity?: IrPreviewEntityResolvers<ContextType>;
+  IrPreviewGroup?: IrPreviewGroupResolvers<ContextType>;
+  IrProcessingError?: IrProcessingErrorResolvers<ContextType>;
+  IrProcessingStatus?: IrProcessingStatusResolvers<ContextType>;
+  IrRule?: IrRuleResolvers<ContextType>;
+  IrRuleOutcome?: IrRuleOutcomeResolvers<ContextType>;
+  IrStoredCounts?: IrStoredCountsResolvers<ContextType>;
+  IrSubjectGroup?: IrSubjectGroupResolvers<ContextType>;
+  IrTypeCount?: IrTypeCountResolvers<ContextType>;
   JSON?: GraphQLScalarType;
   JsonAttributeBasedOn?: JsonAttributeBasedOnResolvers<ContextType>;
   JsonAttributeColumnConfiguration?: JsonAttributeColumnConfigurationResolvers<ContextType>;
