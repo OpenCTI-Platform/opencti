@@ -55,7 +55,7 @@ export const findItemsPaginated = async (
   opts: EntityOptions<BasicStoreEntityIntelligenceRequirementItem> & { statuses?: string[] | null; kinds?: string[] | null } = {},
 ) => {
   // The inbox of a requirement the reader cannot read is empty for him (segregation by the requirement)
-  if (!await loadRequirementWithAccess(context, user, irId)) return buildPagination(0, null, [], 0);
+  if (!await loadRequirementWithAccess(context, user, irId)) return buildPagination<BasicStoreEntityIntelligenceRequirementItem>(0, null, [], 0);
   const { statuses, kinds, ...listOpts } = opts;
   let filters = addFilter(listOpts.filters, 'ir_id', irId);
   if (statuses && statuses.length > 0) filters = addFilter(filters, 'item_status', statuses);

@@ -41,7 +41,7 @@ export const findMatchesPaginated = async (
   opts: EntityOptions<BasicStoreEntityIntelligenceRequirementMatch> & { statuses?: string[] | null } = {},
 ) => {
   // The entities of a requirement the reader cannot read are not listed (segregation by the requirement)
-  if (!await loadRequirementWithAccess(context, user, irId)) return buildPagination(0, null, [], 0);
+  if (!await loadRequirementWithAccess(context, user, irId)) return buildPagination<BasicStoreEntityIntelligenceRequirementMatch>(0, null, [], 0);
   const { statuses, search, ...listOpts } = opts;
   let filters = matchFilters(irId, undefined, statuses ?? undefined, listOpts.filters);
   // Search by entity name (the match itself has no other text)
