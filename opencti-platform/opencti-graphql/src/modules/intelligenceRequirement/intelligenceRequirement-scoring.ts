@@ -312,8 +312,8 @@ export const rescoreMatch = async (
     };
     // A match just created may not carry its index yet: written at once
     if (writer && match._index) writer.write(match, doc);
-    // updated_at with it: the match travels on the stream and a write of its history alone would not change its stream form
-    else await patchAttribute(context, user, match.id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, { ...doc, updated_at: new Date() });
+    // The middleware stamps updated_at (dated internal object), so a write of the history alone still changes the stream form
+    else await patchAttribute(context, user, match.id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, doc);
   }
   // Keep the in-memory match up to date: the engine reuses it for the next events of the batch
   Object.assign(match, { match_score_breakdown: breakdown, match_history: serializedHistory });
@@ -331,7 +331,7 @@ export const appendMatchHistory = async (
 ) => {
   const history = parseMatchHistory(match);
   history.push({ ...point, at: point.at ?? new Date().toISOString(), score: match.match_score ?? 0, eligible: !match.match_excluded, changes: [] });
-  await patchAttribute(context, user, match.id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, { match_history: JSON.stringify(history.slice(-MAX_HISTORY)), updated_at: new Date() });
+  await patchAttribute(context, user, match.id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, { match_history: JSON.stringify(history.slice(-MAX_HISTORY)) });
 };
 
 export const topReasons = (result: IrScoreResult) => result.breakdown

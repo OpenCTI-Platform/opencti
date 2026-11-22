@@ -175,11 +175,12 @@ export const upsertMatch = async (
  * Every write on a match goes through here. A match travels on the stream (internal scope) and its stream form carries
  * only the fields the playbook entry reads: a write of the other fields alone (history, proofs, criteria, breakdown,
  * name) would leave the stream form unchanged and the update event is refused ('Update event must contains a valid
- * previous patch'). The match is not a dated internal object, so updated_at is set here: every write changes the
- * stream form through its updated_at.
+ * previous patch'). The match is a dated internal object (schema/internalObject.ts): the middleware stamps its
+ * updated_at on every write that changes it, so the stream form always changes. updated_at is never written here: it
+ * is not updatable ('You cannot update incompatible attribute').
  */
 export const patchMatch = async (context: AuthContext, user: AuthUser, matchId: string, patch: Record<string, unknown>) => {
-  return patchAttribute(context, user, matchId, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, { ...patch, updated_at: new Date() });
+  return patchAttribute(context, user, matchId, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, patch);
 };
 
 export const loadMatchById = async (context: AuthContext, user: AuthUser, matchId: string) => {

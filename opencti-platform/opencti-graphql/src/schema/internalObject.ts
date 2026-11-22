@@ -9,6 +9,7 @@ import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTem
 import { ENTITY_TYPE_SAVED_FILTER } from '../modules/savedFilter/savedFilter-types';
 import { ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE } from '../modules/ingestionDeduplication/ingestionDeduplicationRule-types';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH } from '../modules/intelligenceRequirement/intelligenceRequirementMatch-types';
 import { ENTITY_TYPE_FINTEL_DESIGN } from '../modules/fintelDesign/fintelDesign-types';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 import { ENTITY_TYPE_FORM } from '../modules/form/form-types';
@@ -66,6 +67,8 @@ const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_EXCLUSION_LIST,
   ENTITY_TYPE_SAVED_FILTER,
   ENTITY_TYPE_PIR,
+  // A match travels on the stream: the middleware stamps its updated_at on every write, so an update event always carries a patch
+  ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH,
   ENTITY_TYPE_FORM,
   ENTITY_TYPE_THEME,
   ENTITY_TYPE_PLAYBOOK,
