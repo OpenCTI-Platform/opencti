@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { buildUpdatePatchForUpsert, generateAttributesInputsForUpsert, generateRefsInputsForUpsert, isDateLimitSentinel, isStoredLimitDateKeptValid } from '../../../src/utils/upsert-utils';
+import {
+  buildUpdatePatchForUpsert,
+  generateAttributesInputsForUpsert,
+  generateRefsInputsForUpsert,
+  isDateLimitSentinel,
+  isStoredLimitDateKeptValid,
+} from '../../../src/utils/upsert-utils';
 import { FROM_START_STR, UNTIL_END_STR } from '../../../src/utils/format';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import { testContext } from '../../utils/testQuery';
