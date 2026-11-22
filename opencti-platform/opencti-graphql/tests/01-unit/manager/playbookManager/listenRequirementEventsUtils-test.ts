@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  entityIdOfMatchEvent,
-  isRequirementMatchEvent,
-  requirementTransitionOfMatchEvent,
-} from '../../../../src/manager/playbookManager/listenRequirementEventsUtils';
+import { entityIdOfMatchEvent, isRequirementMatchEvent, requirementTransitionOfMatchEvent } from '../../../../src/manager/playbookManager/listenRequirementEventsUtils';
 import type { StreamDataEvent } from '../../../../src/types/event';
 import type { RequirementStreamConfiguration } from '../../../../src/modules/playbook/components/data-stream-requirement-component';
 import { ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH } from '../../../../src/modules/intelligenceRequirement/intelligenceRequirementMatch-types';
