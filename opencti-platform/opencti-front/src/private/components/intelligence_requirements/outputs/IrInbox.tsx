@@ -2,9 +2,12 @@ import React, { startTransition, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Checkbox, Chip, Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle, Paper, Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
+import { useTheme } from '@mui/material/styles';
+import { CheckOutlined, CloseOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
+import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import {
   buildProofChain,
@@ -212,7 +215,14 @@ export interface IrInboxItemData {
   } | null;
 }
 
-const KIND_COLORS: Record<string, string> = { proposed: '#c084fc', entered: '#42caff', score: '#e6700f', health: '#e6c20f', brief: '#00f0bc' };
+// The kind bar reads the theme tokens of its chip's severity (KIND_CHIP), never literal colours
+const KIND_COLOR: Record<string, (theme: Theme) => string | undefined> = {
+  proposed: (theme) => theme.palette.ai.main ?? theme.palette.primary.main,
+  entered: (theme) => theme.palette.primary.main,
+  score: (theme) => theme.palette.severity.high,
+  health: (theme) => theme.palette.severity.medium,
+  brief: (theme) => theme.palette.ai.main ?? theme.palette.primary.main,
+};
 
 export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecide, onDetails, compact, checked, onCheck, irId, triageAgent, onReadBrief }: {
   item: IrInboxItemData;
@@ -229,6 +239,7 @@ export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecid
   onReadBrief?: (itemId: string) => void;
 }) => {
   const { t_i18n, nsdt, fsd } = useFormatter();
+  const theme = useTheme<Theme>();
   const chip = KIND_CHIP[item.item_kind] ?? KIND_CHIP.entered;
   const done = item.item_status !== 'open';
   const entering = item.item_kind === 'proposed' || item.item_kind === 'entered';
@@ -262,7 +273,7 @@ export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecid
         '&:hover': compact && openDetails ? { bgcolor: 'action.hover' } : undefined,
       }}
     >
-      <Box sx={{ bgcolor: KIND_COLORS[item.item_kind] ?? '#42caff' }} />
+      <Box sx={{ bgcolor: (KIND_COLOR[item.item_kind] ?? KIND_COLOR.entered)(theme) }} />
       {onCheck && (
         <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1.75 }}>
           {!done && <Checkbox checked={!!checked} onCheckedChange={(value) => onCheck(item.id, value === true)} aria-label={t_i18n('Select')} />}
@@ -303,7 +314,7 @@ export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecid
         {chain && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             <ProofChain chain={chain} />
-            {proofs.length > 1 && <Text as="span" variant="content-caption" style={{ opacity: 0.7 }}>{`+${proofs.length - 1} ${t_i18n('other proofs')}`}</Text>}
+            {proofs.length > 1 && <Text as="span" variant="content-caption" style={{ opacity: 0.7 }}>{t_i18n('{count, plural, one {+# other proof} other {+# other proofs}}', { values: { count: proofs.length - 1 } })}</Text>}
           </Box>
         )}
         {!chain && proofs.length > 0 && (
@@ -323,8 +334,8 @@ export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecid
           {done && <Text as="span" variant="content-caption">{item.item_result ?? t_i18n('Done')}</Text>}
           {!done && item.item_kind === 'proposed' && (
             <>
-              <Button size="small" fullWidth onClick={() => onDecide(item.id, 'accept')}>{`✓ ${t_i18n('Accept into the requirement')}`}</Button>
-              <Button size="small" fullWidth variant="secondary" onClick={() => onDecide(item.id, 'reject')}>{`✕ ${t_i18n('Reject')}`}</Button>
+              <Button size="small" fullWidth startIcon={<CheckOutlined fontSize="small" />} onClick={() => onDecide(item.id, 'accept')}>{t_i18n('Accept into the requirement')}</Button>
+              <Button size="small" fullWidth variant="secondary" startIcon={<CloseOutlined fontSize="small" />} onClick={() => onDecide(item.id, 'reject')}>{t_i18n('Reject')}</Button>
             </>
           )}
           {!done && item.item_kind === 'entered' && (

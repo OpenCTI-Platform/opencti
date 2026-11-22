@@ -8,6 +8,7 @@ import { environment } from '../../../../relay/environment';
 import { draftToInput, type IrDraft, type IrEntityOption } from './irConfigTypes';
 import { IrEntityPicker } from './IrFields';
 import { irGroupLabel } from './irConstants';
+import { ConditionStatus } from '../outputs/IrOutputCommon';
 import type { IrDryRunPanelPreviewQuery, IrDryRunPanelPreviewQuery$data } from './__generated__/IrDryRunPanelPreviewQuery.graphql';
 import type { IrDryRunPanelTestQuery, IrDryRunPanelTestQuery$data } from './__generated__/IrDryRunPanelTestQuery.graphql';
 
@@ -102,7 +103,7 @@ const PreviewView = ({ preview }: { preview: Preview }) => {
     <>
       {preview.errors.length > 0 && (
         <Section title={t_i18n('To fix before saving')}>
-          {preview.errors.map((e) => <Text key={e} as="div" variant="content-compact" style={{ color: '#ff8a80', marginBottom: 4 }}>{e}</Text>)}
+          {preview.errors.map((e) => <Box key={e} sx={{ color: 'error.main', mb: 0.5 }}><Text as="div" variant="content-compact">{e}</Text></Box>)}
         </Section>
       )}
       <Section title={t_i18n('Starting points today')}>
@@ -145,17 +146,17 @@ const TestView = ({ test }: { test: Test }) => {
       </Box>
       {test.criteria.map((c) => (
         <Box key={c.criterion_id} sx={{ py: 0.75, borderBottom: '1px solid', borderColor: 'divider', opacity: c.matched ? 1 : 0.6 }}>
-          <Text as="div" variant="content-compact">{`${c.matched ? '✓' : '·'} ${c.name}`}</Text>
+          <ConditionStatus met={c.matched} name={c.name} />
           <Text as="div" variant="content-caption" style={{ opacity: 0.75 }}>{c.matched ? c.proof : t_i18n('Does not bring it today')}</Text>
           {c.conditions.map((k) => (
-            <Text key={k.name} as="div" variant="content-caption" style={{ color: k.met ? undefined : '#ff8a80', paddingLeft: 12 }}>{`${k.met ? '✓' : '✗'} ${k.name}`}</Text>
+            <Box key={k.name} sx={{ pl: 1.5 }}><ConditionStatus met={k.met} name={k.name} /></Box>
           ))}
         </Box>
       ))}
       {test.rules.length > 0 && (
         <Box sx={{ mt: 1 }}>
           {test.rules.map((r) => (
-            <Line key={r.name} label={`${r.hit ? '✓' : '·'} ${r.name}`} value={r.hit ? `${r.points > 0 ? '+' : ''}${r.points}` : '0'} muted={!r.hit} />
+            <Line key={r.name} label={r.name} value={r.hit ? `${r.points > 0 ? '+' : ''}${r.points}` : '0'} muted={!r.hit} />
           ))}
           <Line label={t_i18n('Score')} value={String(test.score)} />
         </Box>
@@ -196,7 +197,7 @@ const IrDryRunPanel = ({ draft, irId }: IrDryRunPanelProps) => {
       <Text as="div" variant="content-caption" style={{ opacity: 0.7, marginBottom: 16 }}>
         {t_i18n('What this configuration represents in the platform today. Updated as you edit; nothing is saved.')}
       </Text>
-      {preview.error && <Text as="div" variant="content-caption" style={{ color: '#ff8a80', marginBottom: 12 }}>{preview.error}</Text>}
+      {preview.error && <Box sx={{ color: 'error.main', mb: 1.5 }}><Text as="div" variant="content-caption">{preview.error}</Text></Box>}
       {preview.result && <PreviewView preview={preview.result} />}
       <Section title={t_i18n('Test an entity')}>
         <IrEntityPicker
@@ -205,7 +206,7 @@ const IrDryRunPanel = ({ draft, irId }: IrDryRunPanelProps) => {
         />
         <Box sx={{ mt: 1.5 }}>
           {!entity && <Text as="div" variant="content-caption" style={{ opacity: 0.7 }}>{t_i18n('Pick an entity to see whether this configuration brings it in, and why.')}</Text>}
-          {entity && test.error && <Text as="div" variant="content-caption" style={{ color: '#ff8a80' }}>{test.error}</Text>}
+          {entity && test.error && <Box sx={{ color: 'error.main' }}><Text as="div" variant="content-caption">{test.error}</Text></Box>}
           {entity && test.result && <TestView test={test.result} />}
         </Box>
       </Section>

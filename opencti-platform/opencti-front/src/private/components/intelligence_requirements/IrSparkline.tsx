@@ -14,7 +14,7 @@ interface IrSparklineProps {
 
 const IrSparkline = ({ points, width = 120, height = 32 }: IrSparklineProps) => {
   const theme = useTheme<Theme>();
-  const color = theme.palette.primary.main ?? '#0fbcff';
+  const color = theme.palette.primary.main;
   const last = points.length - 1;
   const options: ApexOptions = {
     chart: { type: 'line', sparkline: { enabled: true }, animations: { enabled: false } },

@@ -165,11 +165,11 @@ const IrGraph = ({ irId }: { irId: string }) => {
 
   // The graph told in sentences
   const summary = [
-    `${counts.subjects} ${t_i18n(counts.subjects > 1 ? 'subjects bring in' : 'subject brings in')} ${counts.entities} ${t_i18n(counts.entities > 1 ? 'entities of the requirement' : 'entity of the requirement')}${
+    `${t_i18n('{subjects, plural, one {# subject brings in} other {# subjects bring in}} {entities, plural, one {# entity of the requirement} other {# entities of the requirement}}', { values: { subjects: counts.subjects, entities: counts.entities } })}${
       counts.texts > 0 ? ` (${t_i18n('and')} ${counts.texts} ${t_i18n('containers or keywords')})` : ''}.`,
     ...(graph.total > counts.entities ? [`${t_i18n('Only the best scores are shown')}: ${counts.entities} ${t_i18n('out of')} ${graph.total}.`] : []),
     shared.length > 0
-      ? `${shared.length} ${t_i18n(shared.length > 1 ? 'entities are brought in by several subjects: they are listed below.' : 'entity is brought in by several subjects: it is listed below.')}`
+      ? t_i18n('{count, plural, one {# entity is brought in by several subjects: it is listed below.} other {# entities are brought in by several subjects: they are listed below.}}', { values: { count: shared.length } })
       : t_i18n('Each entity is brought in by a single subject.'),
   ];
 

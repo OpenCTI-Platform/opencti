@@ -15,6 +15,9 @@ const MAX_ANCHORS = 500;
 const SHORT_KEYWORD = 4;
 const IR_CONTAINS_RELATIONSHIP = 'object';
 
+// "1 condition", "3 conditions": the preview notes never write "condition(s)"
+export const counted = (count: number, one: string, other: string) => `${count} ${count === 1 ? one : other}`;
+
 interface PreviewEntity { id: string; name: string; entity_type: string }
 interface PreviewGroup { id: string; name: string; kind: string; entities: PreviewEntity[]; unresolved_ids: string[]; matching_count: number | null }
 interface PreviewCriterion { id: string; name: string; kind: string; today_count: number | null; note: string | null; warnings: string[] }
@@ -60,7 +63,7 @@ export const previewIntelligenceRequirement = async (context: AuthContext, user:
       const known = new Set(found.flatMap((e) => [e.internal_id, e.standard_id, ...(e.x_opencti_stix_ids ?? [])]));
       preview.unresolved_ids = group.entity_ids.filter((id) => !known.has(id));
       preview.matching_count = preview.entities.length;
-      if (preview.unresolved_ids.length > 0) warnings.push(`Subject group "${group.name}": ${preview.unresolved_ids.length} entity id(s) not found in the platform.`);
+      if (preview.unresolved_ids.length > 0) warnings.push(`Subject group "${group.name}": ${counted(preview.unresolved_ids.length, 'entity id', 'entity ids')} not found in the platform.`);
     }
     if (group.kind === 'filter') {
       const filters = parseIrFilters(group.filters);
@@ -126,17 +129,17 @@ export const previewIntelligenceRequirement = async (context: AuthContext, user:
             total += page.pageInfo.globalCount ?? 0;
           }
           preview.today_count = total;
-          preview.note = `${total} matching relationship(s) today${criterion.from_in_requirement ? ', plus the second hop once entities enter' : ''}.`;
+          preview.note = `${counted(total, 'matching relationship', 'matching relationships')} today${criterion.from_in_requirement ? ', plus the second hop once entities enter' : ''}.`;
         }
       }
       if (criterion.kind === 'attribute' && criterion.from_group_ids.length > 0) {
         const members = groups.filter((g) => criterion.from_group_ids.includes(g.id)).reduce((sum, g) => sum + (g.matching_count ?? 0), 0);
         preview.today_count = members;
-        preview.note = `${members} member(s) of its subject group(s) today (they enter when they are created or updated, and as soon as they become members).`;
+        preview.note = `${counted(members, 'member', 'members')} of ${criterion.from_group_ids.length === 1 ? 'its subject group' : 'its subject groups'} today (they enter when they are created or updated, and as soon as they become members).`;
       } else if (criterion.kind === 'attribute') {
         const page = await pageEntitiesConnection<BasicStoreEntity>(context, user, targetTypes, { filters: parseIrFilters(criterion.target_filters), first: 1 });
         preview.today_count = page.pageInfo.globalCount ?? 0;
-        preview.note = `${preview.today_count} matching entities today (they enter when they are created or updated).`;
+        preview.note = `${counted(preview.today_count, 'matching entity', 'matching entities')} today (they enter when they are created or updated).`;
       }
       if (criterion.kind === 'keywords') {
         const keywords = criterion.from_group_ids.flatMap((gid) => config.groups.find((g) => g.id === gid)?.keywords ?? []);
@@ -153,7 +156,7 @@ export const previewIntelligenceRequirement = async (context: AuthContext, user:
     }
     const conditions = criterion.conditions ?? [];
     if (conditions.length > 0) {
-      preview.note = `${preview.note ?? ''}${preview.note ? ' ' : ''}Counted before its ${conditions.length} condition(s): ${conditions.map((cond) => cond.name).join(' AND ')}.`;
+      preview.note = `${preview.note ?? ''}${preview.note ? ' ' : ''}Counted before its ${counted(conditions.length, 'condition', 'conditions')}: ${conditions.map((cond) => cond.name).join(' AND ')}.`;
       conditions.filter((cond) => !typesOverlap(criterion.target_types, cond.applies_to_types)).forEach((cond) => {
         preview.warnings.push(`Condition "${cond.name}" applies to ${cond.applies_to_types.join(', ')}, a type this criterion never brings: it has no effect.`);
       });

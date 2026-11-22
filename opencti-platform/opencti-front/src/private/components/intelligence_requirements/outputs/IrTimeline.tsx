@@ -147,10 +147,10 @@ const IrTimeline = ({ irId }: { irId: string }) => {
       const lost = card.events.filter((e) => e.eligibility === 'lost').length;
       sentence = `${card.trigger}: ${card.events.length} ${t_i18n('scores recalculated')} (${up} ${t_i18n('up')}, ${down} ${t_i18n('down')}${lost > 0 ? `, ${lost} ${t_i18n('no longer eligible')}` : ''})`;
     } else {
-      sentence = `${card.events.length} ${t_i18n(card.events.length > 1 ? 'entities' : 'entity')} (${t_i18n(`entity_${card.entityType}`)}) · ${card.trigger}`;
+      sentence = `${t_i18n('{count, plural, one {# entity} other {# entities}}', { values: { count: card.events.length } })} (${t_i18n(`entity_${card.entityType}`)}) · ${card.trigger}`;
       if (card.peak) {
         caption = card.days > 1
-          ? `${t_i18n('over')} ${card.days} ${t_i18n('days')}, ${t_i18n('most on')} ${fsd(card.peak.day)} (${card.peak.count})`
+          ? `${t_i18n('{count, plural, one {over # day} other {over # days}}', { values: { count: card.days } })}, ${t_i18n('most on')} ${fsd(card.peak.day)} (${card.peak.count})`
           : `${t_i18n('on')} ${fsd(card.peak.day)}`;
       }
     }
@@ -173,7 +173,7 @@ const IrTimeline = ({ irId }: { irId: string }) => {
 
   let title = t_i18n('Since the creation');
   if (selectedDay) title = fld(selectedDay);
-  else if (period > 0) title = `${t_i18n('Last')} ${period} ${t_i18n('days')}`;
+  else if (period > 0) title = t_i18n('{count, plural, one {Last day} other {Last # days}}', { values: { count: period } });
 
   return (
     <>
@@ -182,7 +182,7 @@ const IrTimeline = ({ irId }: { irId: string }) => {
           <IrSelect
             label={t_i18n('Period')}
             value={String(period)}
-            options={PERIODS.map((p) => ({ value: String(p), label: p === 0 ? t_i18n('Everything') : `${t_i18n('Last')} ${p} ${t_i18n('days')}` }))}
+            options={PERIODS.map((p) => ({ value: String(p), label: p === 0 ? t_i18n('Everything') : t_i18n('{count, plural, one {Last day} other {Last # days}}', { values: { count: p } }) }))}
             onChange={(v) => changePeriod(Number(v))}
           />
         </Box>

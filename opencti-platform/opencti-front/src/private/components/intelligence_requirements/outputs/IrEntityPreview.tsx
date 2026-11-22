@@ -49,33 +49,49 @@ const IrEntityPreviewContent = ({ entityId }: { entityId: string }) => {
   }
   const references = (entity.externalReferences?.edges ?? []).map((e) => e.node);
   const created = entity.created ?? entity.created_at;
+  // Only the fields that hold a value; the empty ones are named on one quiet line, never a column of dashes
+  const fields: { label: string; set: boolean; node: React.ReactNode }[] = [
+    { label: 'Author', set: !!entity.createdBy, node: <ItemAuthor createdBy={entity.createdBy} /> },
+    { label: 'Marking', set: (entity.objectMarking ?? []).length > 0, node: <ItemMarkings markingDefinitions={entity.objectMarking} limit={3} /> },
+    { label: 'Labels', set: (entity.objectLabel ?? []).length > 0, node: <StixCoreObjectLabels labels={entity.objectLabel} /> },
+    { label: 'Confidence', set: entity.confidence != null, node: <Text as="span" variant="content-compact">{String(entity.confidence)}</Text> },
+    { label: 'Created', set: !!created, node: <Text as="span" variant="content-compact">{created ? fsd(created) : null}</Text> },
+    { label: 'Modified', set: !!entity.modified, node: <Text as="span" variant="content-compact">{entity.modified ? fsd(entity.modified) : null}</Text> },
+  ];
+  const shown = fields.filter((f) => f.set);
+  const empty = [
+    ...(entity.representative.secondary ? [] : ['Description']),
+    ...fields.filter((f) => !f.set).map((f) => f.label),
+    ...(references.length > 0 ? [] : ['External references']),
+  ].map((label) => t_i18n(label));
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Field label={t_i18n('Description')}>
-        {entity.representative.secondary
-          ? <ExpandableMarkdown source={entity.representative.secondary} limit={400} />
-          : <Text as="span" variant="content-caption">-</Text>}
-      </Field>
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-        <Field label={t_i18n('Author')}><ItemAuthor createdBy={entity.createdBy} /></Field>
-        <Field label={t_i18n('Marking')}><ItemMarkings markingDefinitions={entity.objectMarking} limit={3} /></Field>
-        <Field label={t_i18n('Labels')}><StixCoreObjectLabels labels={entity.objectLabel} /></Field>
-        <Field label={t_i18n('Confidence')}>
-          <Text as="span" variant="content-compact">{entity.confidence != null ? String(entity.confidence) : '-'}</Text>
+      {entity.representative.secondary && (
+        <Field label={t_i18n('Description')}>
+          <ExpandableMarkdown source={entity.representative.secondary} limit={400} />
         </Field>
-        <Field label={t_i18n('Created')}><Text as="span" variant="content-compact">{created ? fsd(created) : '-'}</Text></Field>
-        <Field label={t_i18n('Modified')}><Text as="span" variant="content-compact">{entity.modified ? fsd(entity.modified) : '-'}</Text></Field>
-      </Box>
-      <Field label={t_i18n('External references')}>
-        {references.length === 0 && <Text as="span" variant="content-caption">-</Text>}
-        {references.map((r) => (
-          <Text key={r.id} as="div" variant="content-caption">
-            {r.url
-              ? <a href={r.url} target="_blank" rel="noopener noreferrer">{`${r.source_name}${r.external_id ? ` · ${r.external_id}` : ''}`}</a>
-              : `${r.source_name}${r.external_id ? ` · ${r.external_id}` : ''}`}
-          </Text>
-        ))}
-      </Field>
+      )}
+      {shown.length > 0 && (
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+          {shown.map((f) => <Field key={f.label} label={t_i18n(f.label)}>{f.node}</Field>)}
+        </Box>
+      )}
+      {references.length > 0 && (
+        <Field label={t_i18n('External references')}>
+          {references.map((r) => (
+            <Text key={r.id} as="div" variant="content-caption">
+              {r.url
+                ? <a href={r.url} target="_blank" rel="noopener noreferrer">{`${r.source_name}${r.external_id ? ` · ${r.external_id}` : ''}`}</a>
+                : `${r.source_name}${r.external_id ? ` · ${r.external_id}` : ''}`}
+            </Text>
+          ))}
+        </Field>
+      )}
+      {empty.length > 0 && (
+        <Text as="div" variant="content-caption" style={{ opacity: 0.7 }}>
+          {`${t_i18n('{count, plural, one {# field not set} other {# fields not set}}', { values: { count: empty.length } })}: ${empty.join(', ')}`}
+        </Text>
+      )}
     </Box>
   );
 };

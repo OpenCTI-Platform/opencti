@@ -11,7 +11,7 @@ import IrEntityPreview from './IrEntityPreview';
 import IrScoreHistory from './IrScoreHistory';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { criterionName, explanationSentence, type IrCriterionRef, type IrExplanationData, ScoreBar, StatusChip } from './IrOutputCommon';
+import { ConditionStatus, criterionName, explanationSentence, type IrCriterionRef, type IrExplanationData, ScoreBar, StatusChip } from './IrOutputCommon';
 import type { IrMatchDrawerStatusMutation } from './__generated__/IrMatchDrawerStatusMutation.graphql';
 
 const statusMutation = graphql`
@@ -105,7 +105,7 @@ export const IrMatchDetails = ({ irId, match, criteria, onDecided, embedded }: I
             <Box key={criterionId} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5, mb: 1 }}>
               <Text as="div" variant="content-compact-medium" style={{ marginBottom: 4 }}>{criterionName(criteria, criterionId)}</Text>
               {conditions.filter((o) => (o.criterion_id ?? '') === criterionId).map((o, i) => (
-                <Text key={i} as="div" variant="content-compact" style={{ color: o.hit ? undefined : '#ff8a80' }}>{`${o.hit ? '✓' : '✗'} ${o.name}`}</Text>
+                <ConditionStatus key={i} met={o.hit} name={o.name} />
               ))}
             </Box>
           ))}
@@ -116,7 +116,7 @@ export const IrMatchDetails = ({ irId, match, criteria, onDecided, embedded }: I
         {applicable.map((o, i) => (
           <Box key={i} sx={{ display: 'grid', gridTemplateColumns: '1fr 60px', py: 0.75, borderBottom: '1px solid', borderColor: 'divider', opacity: o.hit ? 1 : 0.6 }}>
             <Box>
-              <Text as="div" variant="content-compact">{`${o.hit ? '✓' : '·'} ${o.name}`}</Text>
+              <ConditionStatus met={o.hit} name={o.name} />
               {!o.hit && o.reason && (
                 <Text as="div" variant="content-caption" style={{ opacity: 0.8 }}>{t_i18n(o.reason)}</Text>
               )}

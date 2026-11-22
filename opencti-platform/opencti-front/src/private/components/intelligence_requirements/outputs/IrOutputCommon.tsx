@@ -1,6 +1,8 @@
 import React from 'react';
 import { Chip, Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
+import { CheckCircleOutlined, HighlightOffOutlined } from '@mui/icons-material';
+import { useFormatter } from '../../../../components/i18n';
 
 // Shared rendering helpers of the output screens (Overview, Entities, Inbox) of the proof of concept.
 
@@ -149,13 +151,30 @@ export const StatusChip = ({ status, excluded, t }: { status: string; excluded?:
   return <Chip label={t(chip.label)} severity={chip.severity} size="sm" />;
 };
 
-export const ScoreBar = ({ score, excluded }: { score: number; excluded?: boolean }) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-    <Box sx={{ width: 70, height: 6, borderRadius: 3, bgcolor: 'action.hover', overflow: 'hidden' }}>
-      <Box sx={{ width: `${excluded ? 0 : score}%`, height: '100%', background: 'linear-gradient(90deg, #42caff, #00f0bc)' }} />
+// The bar uses the primary token; an excluded entity reads "Not eligible" (the word of its status chip), never a dash
+export const ScoreBar = ({ score, excluded }: { score: number; excluded?: boolean }) => {
+  const { t_i18n } = useFormatter();
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ width: 70, height: 6, borderRadius: 3, bgcolor: 'action.hover', overflow: 'hidden' }}>
+        <Box sx={{ width: `${excluded ? 0 : score}%`, height: '100%', bgcolor: 'primary.main' }} />
+      </Box>
+      <Box component="span" sx={{ fontWeight: 600, fontSize: 13, minWidth: 26 }}>{excluded ? t_i18n('Not eligible') : score}</Box>
     </Box>
-    <Box component="span" sx={{ fontWeight: 600, fontSize: 13, minWidth: 26 }}>{excluded ? '—' : score}</Box>
-  </Box>
-);
+  );
+};
+
+// A met or unmet condition: the status icon of the platform in the success or error token, then its name
+export const ConditionStatus = ({ met, name }: { met: boolean; name: string }) => {
+  const { t_i18n } = useFormatter();
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, color: met ? 'text.primary' : 'error.main' }}>
+      {met
+        ? <CheckCircleOutlined fontSize="small" color="success" titleAccess={t_i18n('Met')} />
+        : <HighlightOffOutlined fontSize="small" color="error" titleAccess={t_i18n('Not met')} />}
+      <Text as="span" variant="content-compact">{name}</Text>
+    </Box>
+  );
+};
 
 export const IN_STATUSES = ['auto', 'accepted'];

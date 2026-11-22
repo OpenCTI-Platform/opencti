@@ -55,6 +55,18 @@ const isTyping = (target: EventTarget | null) => {
 
 const IrMailbox = ({ irId, items, matches, criteria, sort, triageAgent, onDecideItems, onRefresh, onReadBrief }: IrMailboxProps) => {
   const { t_i18n, nsdt } = useFormatter();
+  // The two panes fill the viewport below their top edge: the page does not scroll, the list and the preview each scroll in their pane
+  const panesRef = useRef<HTMLDivElement>(null);
+  const [panesTop, setPanesTop] = useState(300);
+  useEffect(() => {
+    const measure = () => {
+      if (panesRef.current) setPanesTop(Math.max(0, panesRef.current.getBoundingClientRect().top + window.scrollY));
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
+  const paneHeight = `calc(100vh - ${panesTop + 24}px)`;
   // "New since your last review": the previous visit of this browser, recorded when leaving the mailbox
   const [since, setSince] = useState<string | null>(() => localStorage.getItem(lastReviewKey(irId)));
   useEffect(() => () => localStorage.setItem(lastReviewKey(irId), new Date().toISOString()), [irId]);
@@ -206,8 +218,8 @@ const IrMailbox = ({ irId, items, matches, criteria, sort, triageAgent, onDecide
           {t_i18n('Mark all as reviewed')}
         </Button>
       </Box>
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 3fr)', gap: 2, alignItems: 'start' }}>
-        <Paper padding={0} style={{ maxHeight: 'calc(100vh - 300px)', overflowY: 'auto' }}>
+      <Box ref={panesRef} sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 3fr)', gap: 2, alignItems: 'stretch', height: paneHeight, minHeight: 320 }}>
+        <Paper padding={0} style={{ height: '100%', overflowY: 'auto' }}>
           {threads.map((thread) => {
             const active = thread.key === current?.key;
             const kinds = Array.from(new Set(thread.items.map((i) => t_i18n(KIND_CHIP[i.item_kind]?.label ?? i.item_kind))));
@@ -261,7 +273,7 @@ const IrMailbox = ({ irId, items, matches, criteria, sort, triageAgent, onDecide
           })}
         </Paper>
         {current && (
-          <Paper padding={24} style={{ position: 'sticky', top: 16, maxHeight: 'calc(100vh - 300px)', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <Paper padding={24} style={{ height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Text as="div" variant="title-md">{current.name}</Text>

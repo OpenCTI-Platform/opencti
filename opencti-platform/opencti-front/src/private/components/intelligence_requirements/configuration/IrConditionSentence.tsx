@@ -3,7 +3,7 @@ import { Input, Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import { DeleteOutlined } from '@mui/icons-material';
+import { CloseOutlined, DeleteOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import { emptyLink, emptyPathCondition, type IrConditionDraft, type IrGroupDraft, type IrPathConditionDraft } from './irConfigTypes';
 import { groupSelectOptions, irGroupLabel, irRelationshipLabel, IR_RELATIONSHIP_TYPES } from './irConstants';
@@ -43,7 +43,7 @@ const IrConditionSentence = ({ condition, groups, typeOptions, onChange, onDelet
     <SentenceToken active={active === key} empty={empty} onClick={() => toggle(key)}>{label}</SentenceToken>
   );
   const remove = (label: string, onClick: () => void) => (
-    <Box component="button" type="button" onClick={onClick} aria-label={label} sx={{ font: 'inherit', fontSize: 12, cursor: 'pointer', border: 'none', background: 'none', color: 'text.secondary', ml: 0.5 }}>✕</Box>
+    <IconButton size="small" onClick={onClick} aria-label={label} title={label} style={{ marginLeft: 4 }}><CloseOutlined fontSize="small" /></IconButton>
   );
 
   const subject = condition.applies_to_types.length > 0
@@ -59,7 +59,7 @@ const IrConditionSentence = ({ condition, groups, typeOptions, onChange, onDelet
     parts.push(
       <span key="filters">
         {`${t_i18n('it matches')} `}
-        {token('filters', filterCount > 0 ? `${filterCount} ${t_i18n(filterCount > 1 ? 'filters' : 'filter')}` : t_i18n('which filters?'), filterCount === 0)}
+        {token('filters', filterCount > 0 ? t_i18n('{count, plural, one {# filter} other {# filters}}', { values: { count: filterCount } }) : t_i18n('which filters?'), filterCount === 0)}
         {remove(t_i18n('Remove the filters'), () => onChange({ filters: null }))}
       </span>,
     );

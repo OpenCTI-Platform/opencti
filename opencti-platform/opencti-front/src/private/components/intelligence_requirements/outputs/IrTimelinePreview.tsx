@@ -40,10 +40,10 @@ const IrTimelinePreview = ({ irId, matches, thresholds, onOpen }: IrTimelinePrev
   return (
     <Paper padding={16}>
       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 1 }}>
-        <Text as="span" variant="title-sm">{`${t_i18n('Last')} ${PERIOD} ${t_i18n('days')}`}</Text>
+        <Text as="span" variant="title-sm">{t_i18n('{count, plural, one {Last day} other {Last # days}}', { values: { count: PERIOD } })}</Text>
         <Text as="span" variant="content-caption" style={{ opacity: 0.7 }}>
           {entries > 0 && peak
-            ? `${entries} ${t_i18n(entries > 1 ? 'entries' : 'entry')}, ${t_i18n('most on')} ${fsd(peak.day)} (${peak.entry})`
+            ? `${t_i18n('{count, plural, one {# entry} other {# entries}}', { values: { count: entries } })}, ${t_i18n('most on')} ${fsd(peak.day)} (${peak.entry})`
             : t_i18n('no entry')}
         </Text>
         <Box sx={{ flex: 1 }} />
@@ -82,7 +82,7 @@ const IrTimelinePreview = ({ irId, matches, thresholds, onOpen }: IrTimelinePrev
           })}
           {others > 0 && (
             <Box sx={{ mt: 0.75 }}>
-              <Link to={timelinePath}>{`+ ${others} ${t_i18n(others > 1 ? 'other facts' : 'other fact')}`}</Link>
+              <Link to={timelinePath}>{t_i18n('{count, plural, one {+ # other fact} other {+ # other facts}}', { values: { count: others } })}</Link>
             </Box>
           )}
         </Box>
