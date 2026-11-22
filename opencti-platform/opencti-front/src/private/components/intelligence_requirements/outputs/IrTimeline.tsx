@@ -10,6 +10,7 @@ import IrMatchDrawer, { type IrMatchData } from './IrMatchDrawer';
 import { buildHighlights, dailyBuckets, type Highlight, timelineEvents, type TimelineEvent } from './irTimelineEvents';
 import IrTimelineAxis from './IrTimelineAxis';
 import { HighlightPill, ScoreMove } from './IrTimelineParts';
+import { triggerText } from './IrOutputCommon';
 import type { IrTimelineQuery } from './__generated__/IrTimelineQuery.graphql';
 
 // Timeline of a requirement, read from the dated history of each entity:
@@ -129,14 +130,14 @@ const IrTimeline = ({ irId }: { irId: string }) => {
     let right: ReactNode = null;
     if (card.kind === 'crossed') {
       sentence = <>{entityLink(first)}{` ${t_i18n('is now above')} ${card.threshold}${first.changes.length > 0 ? `: ${first.changes.join(', ')}` : ''}`}</>;
-      caption = first.trigger;
+      caption = triggerText(t_i18n, first.trigger);
       right = scoreMove(first);
     } else if (card.kind === 'dropped') {
       sentence = <>{entityLink(first)}{card.threshold !== null ? ` ${t_i18n('fell below')} ${card.threshold}` : ` ${t_i18n('is no longer eligible')}`}</>;
-      caption = first.trigger;
+      caption = triggerText(t_i18n, first.trigger);
       right = scoreMove(first);
     } else if (card.kind === 'decision') {
-      sentence = <>{entityLink(first)}{` · ${first.trigger}`}</>;
+      sentence = <>{entityLink(first)}{` · ${triggerText(t_i18n, first.trigger)}`}</>;
     } else if (card.kind === 'moves') {
       const up = card.events.filter((e) => e.toScore > (e.fromScore ?? 0)).length;
       sentence = t_i18n('{count, plural, one {# other score change, no threshold crossed ({up} up, {down} down)} other {# other score changes, no threshold crossed ({up} up, {down} down)}}', { values: { count: card.events.length, up, down: card.events.length - up } });
@@ -145,9 +146,9 @@ const IrTimeline = ({ irId }: { irId: string }) => {
       const up = card.events.filter((e) => e.toScore > (e.fromScore ?? 0)).length;
       const down = card.events.filter((e) => e.toScore < (e.fromScore ?? 0)).length;
       const lost = card.events.filter((e) => e.eligibility === 'lost').length;
-      sentence = `${card.trigger}: ${t_i18n('{count, plural, one {# score recalculated ({up} up, {down} down)} other {# scores recalculated ({up} up, {down} down)}}', { values: { count: card.events.length, up, down } })}${lost > 0 ? ` · ${t_i18n('{count, plural, one {# no longer eligible} other {# no longer eligible}}', { values: { count: lost } })}` : ''}`;
+      sentence = `${triggerText(t_i18n, card.trigger)}: ${t_i18n('{count, plural, one {# score recalculated ({up} up, {down} down)} other {# scores recalculated ({up} up, {down} down)}}', { values: { count: card.events.length, up, down } })}${lost > 0 ? ` · ${t_i18n('{count, plural, one {# no longer eligible} other {# no longer eligible}}', { values: { count: lost } })}` : ''}`;
     } else {
-      sentence = `${t_i18n('{count, plural, one {# entity} other {# entities}}', { values: { count: card.events.length } })} (${t_i18n(`entity_${card.entityType}`)}) · ${card.trigger}`;
+      sentence = `${t_i18n('{count, plural, one {# entity} other {# entities}}', { values: { count: card.events.length } })} (${t_i18n(`entity_${card.entityType}`)}) · ${triggerText(t_i18n, card.trigger)}`;
       if (card.peak) {
         caption = card.days > 1
           ? `${t_i18n('{count, plural, one {over # day} other {over # days}}', { values: { count: card.days } })}, ${t_i18n('most on')} ${fsd(card.peak.day)} (${card.peak.count})`

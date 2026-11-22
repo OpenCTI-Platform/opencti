@@ -204,7 +204,7 @@ const IrMailbox = ({ irId, items, matches, criteria, sort, triageAgent, onDecide
         )}
         <Box sx={{ flex: 1 }} />
         <Text as="span" variant="content-caption" style={{ opacity: 0.7 }}>
-          {since ? `${newCount} ${t_i18n('new since your last review')} (${nsdt(since)})` : t_i18n('First review in this browser')}
+          {since ? t_i18n('{count, plural, one {# new since your last review ({date})} other {# new since your last review ({date})}}', { values: { count: newCount, date: nsdt(since) } }) : t_i18n('First review in this browser')}
         </Text>
         <Button
           size="small"
@@ -341,13 +341,13 @@ const IrMailbox = ({ irId, items, matches, criteria, sort, triageAgent, onDecide
           }}
         >
           <DialogContent>
-            <DialogTitle>{t_i18n(confirm === 'reject' ? 'Reject the selected proposals?' : 'Remove the selected entities from the requirement?')}</DialogTitle>
+            <DialogTitle>{confirm === 'reject' ? t_i18n('Reject the selected proposals?') : t_i18n('Remove the selected entities from the requirement?')}</DialogTitle>
             <DialogDescription>
               {`${t_i18n('{count, plural, one {# item} other {# items}}', { values: { count: bulkIds(confirm).length } })} · ${t_i18n('a rejected or removed entity does not come back into the requirement automatically.')}`}
             </DialogDescription>
             <DialogFooter>
               <Button variant="tertiary" onClick={() => setConfirm(null)}>{t_i18n('Cancel')}</Button>
-              <Button intent="destructive" onClick={() => runBulk(confirm)}>{t_i18n(confirm === 'reject' ? 'Reject' : 'Remove')}</Button>
+              <Button intent="destructive" onClick={() => runBulk(confirm)}>{confirm === 'reject' ? t_i18n('Reject') : t_i18n('Remove')}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

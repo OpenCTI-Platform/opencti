@@ -79,15 +79,17 @@ export const itemTitleText = (
   item: {
     readonly item_kind: string;
     readonly item_title: string;
-    readonly item_data: { readonly criterion_id?: string | null; readonly threshold?: number | null; readonly message?: string | null };
+    readonly item_data: { readonly criterion_id?: string | null; readonly threshold?: number | null; readonly to_score?: number | null; readonly message?: string | null };
     readonly match?: { readonly entity?: { readonly representative: { readonly main: string } } | null } | null;
   },
 ) => {
   const name = item.match?.entity?.representative.main;
   if (!name) return item.item_title;
   if (item.item_kind === 'proposed') return t_i18n('{name} is proposed for the requirement', { values: { name } });
-  if (item.item_kind === 'score' && item.item_data.threshold != null) {
-    return t_i18n('{name} reached a score of {threshold}', { values: { name, threshold: item.item_data.threshold } });
+  if (item.item_kind === 'score') {
+    // Older score items carry no threshold: the score reached is the next best fact
+    const threshold = item.item_data.threshold ?? item.item_data.to_score;
+    if (threshold != null) return t_i18n('{name} reached a score of {threshold}', { values: { name, threshold } });
   }
   if (item.item_kind === 'entered') {
     return item.item_data.criterion_id
@@ -95,6 +97,45 @@ export const itemTitleText = (
       : t_i18n('{name} brought new entities into the requirement', { values: { name } });
   }
   return item.item_title;
+};
+
+// The trigger of a history point, stored in English by the engine, written in the reader's language.
+// The known shapes are rebuilt from their parts (criterion name, relationship type, fields, user); anything else is shown as stored.
+export const triggerText = (t_i18n: Translate, trigger: string | null | undefined): string => {
+  if (!trigger) return '';
+  let m = trigger.match(/^(Entered|New proof) through "(.*)"( \(second hop\))?$/);
+  if (m) {
+    const criterion = m[2];
+    if (m[1] === 'Entered') return m[3] ? t_i18n('Entered through “{criterion}” (second hop)', { values: { criterion } }) : t_i18n('Entered through “{criterion}”', { values: { criterion } });
+    return m[3] ? t_i18n('New proof through “{criterion}” (second hop)', { values: { criterion } }) : t_i18n('New proof through “{criterion}”', { values: { criterion } });
+  }
+  m = trigger.match(/^(New|Updated) (\S+) relationship$/);
+  if (m) {
+    const relationship = irRelationshipLabel(t_i18n, m[2]);
+    return m[1] === 'New' ? t_i18n('New relationship: {relationship}', { values: { relationship } }) : t_i18n('Updated relationship: {relationship}', { values: { relationship } });
+  }
+  m = trigger.match(/^Updated: (.*)$/);
+  if (m) return t_i18n('Updated: {fields}', { values: { fields: m[1] } });
+  if (trigger === 'Entity created') return t_i18n('Entity created');
+  if (trigger === 'Entity updated') return t_i18n('Entity updated');
+  m = trigger.match(/^(Configuration changed|Accepted into the requirement|Accepted|Rejected|Removed from the requirement) by (.*)$/);
+  if (m) {
+    const user = m[2];
+    if (m[1] === 'Configuration changed') return t_i18n('Configuration changed by {user}', { values: { user } });
+    if (m[1] === 'Rejected') return t_i18n('Rejected by {user}', { values: { user } });
+    if (m[1] === 'Removed from the requirement') return t_i18n('Removed from the requirement by {user}', { values: { user } });
+    return t_i18n('Accepted by {user}', { values: { user } });
+  }
+  return trigger;
+};
+
+// The kind of a history point, as a label
+export const historyKindLabel = (t_i18n: Translate, kind: string) => {
+  if (kind === 'entry') return t_i18n('Entered');
+  if (kind === 'fact') return t_i18n('New fact');
+  if (kind === 'config') return t_i18n('Configuration');
+  if (kind === 'decision') return t_i18n('Decision');
+  return kind;
 };
 
 // A match reduced to what the proof chain needs (to walk back a second hop to its subject).

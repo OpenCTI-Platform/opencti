@@ -7,6 +7,7 @@ import Box from '@mui/material/Box';
 import Chart from '@components/common/charts/Chart';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
+import { historyKindLabel, triggerText } from './IrOutputCommon';
 import type { IrScoreHistoryQuery } from './__generated__/IrScoreHistoryQuery.graphql';
 
 // History of an entity of the requirement: its score over time (step chart, score thresholds, periods where it did not
@@ -28,7 +29,6 @@ const historyQuery = graphql`
 
 type Point = NonNullable<IrScoreHistoryQuery['response']['intelligenceRequirementMatch']>['match_history'][number];
 
-const KIND_LABEL: Record<string, string> = { entry: 'Entered', fact: 'New fact', config: 'Configuration', decision: 'Decision' };
 const MAX_EVENTS = 8;
 
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string);
@@ -91,7 +91,7 @@ const IrScoreHistory = ({ matchId, irId }: { matchId: string; irId: string }) =>
         const lines = [
           `<b>${escapeHtml(fldt(p.at))}</b>`,
           `${escapeHtml(t_i18n('Score'))}: ${p.eligible ? p.score : escapeHtml(t_i18n('Not eligible'))}`,
-          p.trigger ? escapeHtml(p.trigger) : '',
+          p.trigger ? escapeHtml(triggerText(t_i18n, p.trigger)) : '',
           ...p.changes.map((c) => `• ${escapeHtml(c)}`),
         ].filter(Boolean);
         return `<div style="padding:8px 10px;font-size:12px;line-height:1.5">${lines.join('<br/>')}</div>`;
@@ -109,9 +109,9 @@ const IrScoreHistory = ({ matchId, irId }: { matchId: string; irId: string }) =>
             <Text as="span" variant="content-caption" style={{ opacity: 0.8 }}>{fldt(p.at)}</Text>
             <Box sx={{ minWidth: 0 }}>
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-                <Chip label={t_i18n(KIND_LABEL[p.kind] ?? p.kind)} size="sm" />
+                <Chip label={historyKindLabel(t_i18n, p.kind)} size="sm" />
                 {!p.eligible && <Chip label={t_i18n('Not eligible')} severity="critical" size="sm" />}
-                {p.trigger && <Text as="span" variant="content-caption">{p.trigger}</Text>}
+                {p.trigger && <Text as="span" variant="content-caption">{triggerText(t_i18n, p.trigger)}</Text>}
               </Box>
               {p.changes.length > 0 && <Text as="div" variant="content-caption" style={{ opacity: 0.8 }}>{p.changes.join(' · ')}</Text>}
             </Box>

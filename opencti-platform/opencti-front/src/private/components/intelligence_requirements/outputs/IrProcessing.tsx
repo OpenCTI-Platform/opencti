@@ -36,10 +36,13 @@ type Status = NonNullable<IrProcessingQuery$data['intelligenceRequirement']>['ir
 
 const REFRESH_MS = 10000;
 
-const STATE: Record<string, { label: string; severity: 'low' | 'medium' | 'info'; help: string }> = {
-  live: { label: 'Live', severity: 'low', help: 'The requirement follows the stream in real time.' },
-  catching_up: { label: 'Catching up', severity: 'medium', help: 'The requirement replays the history of the stream: its content is not complete yet.' },
-  paused: { label: 'Paused', severity: 'info', help: 'The requirement does not read the stream: nothing enters or changes until it is active again.' },
+type Translate = ReturnType<typeof useFormatter>['t_i18n'];
+
+// Each state with its label and help, translated where they are written so every key is a literal of the catalogs
+const stateOf = (t_i18n: Translate, state: string): { label: string; severity: 'low' | 'medium' | 'info'; help: string } => {
+  if (state === 'live') return { label: t_i18n('Live'), severity: 'low', help: t_i18n('The requirement follows the stream in real time.') };
+  if (state === 'paused') return { label: t_i18n('Paused'), severity: 'info', help: t_i18n('The requirement does not read the stream: nothing enters or changes until it is active again.') };
+  return { label: t_i18n('Catching up'), severity: 'medium', help: t_i18n('The requirement replays the history of the stream: its content is not complete yet.') };
 };
 
 const duration = (seconds: number) => {
@@ -77,15 +80,15 @@ const IrProcessing = ({ irId }: { irId: string }) => {
     };
   }, [irId]);
   if (!status) return <Loader variant={LoaderVariant.inElement} />;
-  const state = STATE[status.state] ?? STATE.catching_up;
+  const state = stateOf(t_i18n, status.state);
   const batch = status.last_batch;
   const totals = status.totals;
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Paper padding={24}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-          <Chip label={t_i18n(state.label)} severity={state.severity} />
-          <Text as="span" variant="content-compact">{t_i18n(state.help)}</Text>
+          <Chip label={state.label} severity={state.severity} />
+          <Text as="span" variant="content-compact">{state.help}</Text>
         </Box>
         <Text as="div" id="ir-catchup-label" variant="content-compact-bold" style={{ marginBottom: 8 }}>
           {`${t_i18n('Catch-up')} · ${status.progress} %`}
@@ -101,7 +104,7 @@ const IrProcessing = ({ irId }: { irId: string }) => {
           <Kpi
             label={t_i18n('Lag behind the stream')}
             value={status.lag_seconds <= 120 ? t_i18n('Up to date') : duration(status.lag_seconds)}
-            detail={status.lag_seconds <= 120 ? undefined : `≈ ${n(status.lag_events)} ${t_i18n('events to process (estimate)')}`}
+            detail={status.lag_seconds <= 120 ? undefined : t_i18n('{count, plural, one {About # event to process (estimate)} other {About # events to process (estimate)}}', { values: { count: status.lag_events } })}
           />
           <Kpi label={t_i18n('Last event processed')} value={fldt(status.cursor_at)} />
           <Kpi label={t_i18n('Stream')} value={t_i18n('{count, plural, one {# event} other {# events}}', { values: { count: status.stream_size } })} detail={`${t_i18n('Head')}: ${fldt(status.stream_head_at)}`} />
@@ -116,7 +119,7 @@ const IrProcessing = ({ irId }: { irId: string }) => {
         <Text as="div" variant="content-compact-bold" style={{ marginBottom: 12 }}>{t_i18n('Last batch')}</Text>
         {batch ? (
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 3 }}>
-            <Kpi label={t_i18n('Processed')} value={fldt(batch.at)} detail={`${t_i18n('in')} ${duration(Math.max(1, Math.round(batch.duration_ms / 1000)))}`} />
+            <Kpi label={t_i18n('Processed')} value={fldt(batch.at)} detail={t_i18n('Duration {duration}', { values: { duration: duration(Math.max(1, Math.round(batch.duration_ms / 1000))) } })} />
             <Kpi label={t_i18n('Events')} value={n(batch.events)} />
             <Kpi label={t_i18n('Entered')} value={n(batch.entered)} />
             <Kpi label={t_i18n('Updated')} value={n(batch.updated)} />
@@ -129,7 +132,15 @@ const IrProcessing = ({ irId }: { irId: string }) => {
         )}
         {totals && (
           <Text as="div" variant="content-caption" style={{ opacity: 0.7, marginTop: 12 }}>
-            {`${t_i18n('Since the statistics exist')}: ${n(totals.events)} ${t_i18n('events')}, ${n(totals.entered)} ${t_i18n('entered')}, ${n(totals.updated)} ${t_i18n('updated')}, ${n(totals.rescored)} ${t_i18n('rescored')}, ${n(totals.skipped ?? 0)} ${t_i18n('not meeting the scope conditions')}, ${n(totals.errors)} ${t_i18n('errors')}`}
+            {[
+              t_i18n('Since the statistics exist:'),
+              t_i18n('{count, plural, one {# event} other {# events}}', { values: { count: totals.events } }),
+              t_i18n('{count, plural, one {# entered} other {# entered}}', { values: { count: totals.entered } }),
+              t_i18n('{count, plural, one {# updated} other {# updated}}', { values: { count: totals.updated } }),
+              t_i18n('{count, plural, one {# rescored} other {# rescored}}', { values: { count: totals.rescored } }),
+              t_i18n('{count, plural, one {# not meeting the scope conditions} other {# not meeting the scope conditions}}', { values: { count: totals.skipped ?? 0 } }),
+              t_i18n('{count, plural, one {# error} other {# errors}}', { values: { count: totals.errors } }),
+            ].join(' · ')}
           </Text>
         )}
       </Paper>

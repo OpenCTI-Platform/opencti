@@ -49,7 +49,8 @@ const IntelligenceRequirements = () => {
   const queryRef = useQueryLoading<IntelligenceRequirementsLinesQuery>(intelligenceRequirementsLinesQuery, queryPaginationOptions);
   const [toDelete, setToDelete] = useState<{ id: string; name: string } | null>(null);
 
-  // One create entry point: "Create a requirement", whose menu holds "Create with AI"
+  // One create entry point: "Create a requirement", whose menu holds "Create with AI". It sits in the header row,
+  // not in the table toolbar, so the toolbar never runs past a 1080 px viewport.
   const createButton = <IrAiAssistedCreation />;
   const viewButtons = [
     <ViewSwitchingButtons key="switching_buttons" handleChangeView={helpers.handleChangeView} currentView={viewStorage.view} />,
@@ -116,7 +117,6 @@ const IntelligenceRequirements = () => {
         entityTypes={[ENTITY_TYPE]}
         searchContextFinal={{ entityTypes: [ENTITY_TYPE] }}
         additionalHeaderToggleButtons={viewButtons}
-        createButton={createButton}
         actions={(row: IntelligenceRequirementsLine_node$data) => (
           <IconButton
             aria-label={t_i18n('Delete')}
@@ -149,7 +149,6 @@ const IntelligenceRequirements = () => {
       filters={viewStorage.filters}
       paginationOptions={queryPaginationOptions}
       numberOfElements={viewStorage.numberOfElements}
-      createButton={createButton}
     >
       {queryRef && (
         <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
@@ -161,7 +160,10 @@ const IntelligenceRequirements = () => {
 
   return (
     <>
-      <Breadcrumbs elements={[{ label: t_i18n('Intelligence requirements'), current: true }]} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+        <Breadcrumbs elements={[{ label: t_i18n('Intelligence requirements'), current: true }]} />
+        {createButton}
+      </div>
       {viewStorage.view === 'cards' ? renderCards() : renderList()}
       <IrDeleteDialog
         ir={toDelete}

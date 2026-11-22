@@ -42,14 +42,15 @@ const INTENT = 'cti.pir_builder';
 // The analyst writes the request: the whole proposal follows its language, not the default AI language of the platform
 const LANGUAGE_OF_REQUEST = 'Answer in the language of the analyst request (the same language as the request text).';
 
+// Preview ids aliased out of `id` (see IrDryRunPanel): they are the subject group, criterion and entity ids
 const previewQuery = graphql`
   query IrAiAssistedCreationPreviewQuery($input: IntelligenceRequirementInput!) {
     intelligenceRequirementPreview(input: $input) {
       valid
       errors
       warnings
-      groups { id name kind matching_count unresolved_ids entities { id name entity_type } }
-      criteria { id name kind today_count note warnings }
+      groups { group_id: id name kind matching_count unresolved_ids entities { entity_id: id name entity_type } }
+      criteria { criterion_id: id name kind today_count note warnings }
     }
   }
 `;
@@ -160,7 +161,7 @@ const IrAiAssistedCreationContent = ({ agent, onClose }: { agent: AgentOption; o
   const openInConfiguration = () => {
     if (!config) return;
     const entities = new Map<string, IrEntityOption>();
-    (config.preview?.groups ?? []).forEach((g) => g.entities.forEach((e) => entities.set(e.id, { value: e.id, label: e.name, type: e.entity_type })));
+    (config.preview?.groups ?? []).forEach((g) => g.entities.forEach((e) => entities.set(e.entity_id, { value: e.entity_id, label: e.name, type: e.entity_type })));
     const proposed = inputToDraft(config.config, entities);
     const draft = IR_KIQS_ENABLED ? proposed : { ...proposed, kiqs: [] };
     onClose();
@@ -269,11 +270,11 @@ const IrAiAssistedCreationContent = ({ agent, onClose }: { agent: AgentOption; o
               {(config.preview?.warnings ?? []).map((w) => <Alert key={w} severity="warning" title={w} />)}
               <Text as="div" variant="content-compact-bold">{t_i18n('Subjects')}</Text>
               {(config.preview?.groups ?? []).map((g) => {
-                const keywords: string[] = (config.config.ir_subject_groups ?? []).find((cg: Json) => cg.id === g.id)?.keywords ?? [];
+                const keywords: string[] = (config.config.ir_subject_groups ?? []).find((cg: Json) => cg.id === g.group_id)?.keywords ?? [];
                 return (
-                  <Box key={g.id} sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <Box key={g.group_id} sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
                     <Text as="span" variant="content-compact">{`${g.name} (${t_i18n(g.kind)}${g.matching_count != null ? `, ${g.matching_count}` : ''})`}</Text>
-                    {g.entities.slice(0, 8).map((e) => <Chip key={e.id} label={e.name} severity="info" />)}
+                    {g.entities.slice(0, 8).map((e) => <Chip key={e.entity_id} label={e.name} severity="info" />)}
                     {keywords.map((k) => <Chip key={k} label={`#${k}`} />)}
                     {g.unresolved_ids.length > 0 && <Chip label={t_i18n('{count, plural, one {# not found} other {# not found}}', { values: { count: g.unresolved_ids.length } })} severity="high" />}
                   </Box>
@@ -281,12 +282,12 @@ const IrAiAssistedCreationContent = ({ agent, onClose }: { agent: AgentOption; o
               })}
               <Text as="div" variant="content-compact-bold">{t_i18n('Scope criteria')}</Text>
               {(config.preview?.criteria ?? []).map((c) => (
-                <Paper key={c.id} padding={16}>
+                <Paper key={c.criterion_id} padding={16}>
                   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 0.5 }}>
                     <Text as="span" variant="content-compact-bold">{c.name}</Text>
                     <Chip label={c.today_count != null ? t_i18n('{count, plural, one {# today} other {# today}}', { values: { count: c.today_count } }) : t_i18n('second hop')} severity={c.today_count ? 'low' : 'neutral'} />
                   </Box>
-                  <Text as="div" variant="content-caption">{config.explanations.find((e) => e.criterion_id === c.id)?.text ?? c.note ?? ''}</Text>
+                  <Text as="div" variant="content-caption">{config.explanations.find((e) => e.criterion_id === c.criterion_id)?.text ?? c.note ?? ''}</Text>
                   {c.warnings.map((w) => <Text key={w} as="div" variant="content-caption">{`⚠ ${w}`}</Text>)}
                 </Paper>
               ))}

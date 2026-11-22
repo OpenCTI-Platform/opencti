@@ -358,7 +358,9 @@ const IrEntities = ({ irId }: { irId: string }) => {
           <Box sx={{ flex: 1 }} />
           {triageAgent && (
             <Button size="small" variant="secondary" intent="ai" onClick={assessSelection}>
-              {`${t_i18n('Why is this of interest?')}${selection.length > MAX_BULK_TRIAGE ? ` (${MAX_BULK_TRIAGE} ${t_i18n('first')})` : ''}`}
+              {selection.length > MAX_BULK_TRIAGE
+                ? t_i18n('Why is this of interest? ({count, plural, one {first #} other {first #}})', { values: { count: MAX_BULK_TRIAGE } })
+                : t_i18n('Why is this of interest?')}
             </Button>
           )}
           <Button size="small" disabled={bulkInFlight || applicable('accepted').length === 0} onClick={() => decide('accepted')}>{`${t_i18n('Accept')} (${applicable('accepted').length})`}</Button>

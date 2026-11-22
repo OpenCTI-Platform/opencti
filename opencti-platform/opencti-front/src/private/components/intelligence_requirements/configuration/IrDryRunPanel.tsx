@@ -14,6 +14,8 @@ import type { IrDryRunPanelTestQuery, IrDryRunPanelTestQuery$data } from './__ge
 
 // Dry run of the configuration being written, next to the form: what each subject and criterion represents today,
 // and the verdict of the configuration on an entity chosen by the analyst. Nothing is saved or written.
+// The preview ids are aliased out of `id`: a preview group, criterion or entity shares its id with the saved subject
+// group or the entity, and Relay would merge the records and drop the fields the requirement header reads.
 
 const previewQuery = graphql`
   query IrDryRunPanelPreviewQuery($input: IntelligenceRequirementInput!) {
@@ -21,8 +23,8 @@ const previewQuery = graphql`
       valid
       errors
       warnings
-      groups { id name kind matching_count unresolved_ids entities { id } }
-      criteria { id name kind today_count note warnings }
+      groups { group_id: id name kind matching_count unresolved_ids entities { entity_id: id } }
+      criteria { criterion_id: id name kind today_count note warnings }
     }
   }
 `;
@@ -141,17 +143,17 @@ const PreviewView = ({ preview, criteria }: { preview: Preview; criteria: readon
           const detail = g.unresolved_ids.length > 0
             ? t_i18n('{count, plural, one {# entity not found} other {# entities not found}}', { values: { count: g.unresolved_ids.length } })
             : null;
-          return <Line key={g.id} label={irGroupLabel(t_i18n, preview.groups, g.id)} value={value} detail={g.kind === 'keywords' ? t_i18n('Keywords: searched in the texts as they arrive') : detail} />;
+          return <Line key={g.group_id} label={irGroupLabel(t_i18n, preview.groups.map((p) => ({ id: p.group_id, name: p.name })), g.group_id)} value={value} detail={g.kind === 'keywords' ? t_i18n('Keywords: searched in the texts as they arrive') : detail} />;
         })}
       </Section>
       <Section title={t_i18n('What each criterion brings today')}>
         {preview.criteria.length === 0 && <Text as="div" variant="content-caption">{t_i18n('No criterion yet.')}</Text>}
         {preview.criteria.map((c) => {
-          const draft = criteria.find((d) => d.id === c.id);
+          const draft = criteria.find((d) => d.id === c.criterion_id);
           return (
             <Line
-              key={c.id}
-              label={c.name || c.id}
+              key={c.criterion_id}
+              label={c.name || c.criterion_id}
               value={c.today_count === null || c.today_count === undefined ? t_i18n('Not counted today') : n(c.today_count)}
               detail={[criterionNote(t_i18n, draft, c.today_count, c.note ?? null), ...c.warnings].filter((d) => !!d).join(' ') || null}
             />

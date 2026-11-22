@@ -79,7 +79,7 @@ const IntelligenceRequirement = () => {
               <Text as="span" variant="content-caption" style={{ textTransform: 'uppercase', opacity: 0.7 }}>{g.name}</Text>
               {g.kind === 'keywords'
                 ? g.keywords.map((k) => <Chip key={k} label={`#${k}`} severity="info" size="sm" />)
-                : g.entities.map((e) => <Chip key={e.id} label={e.representative.main} severity="info" size="sm" />)}
+                : g.entities.filter((e) => !!e.representative?.main).map((e) => <Chip key={e.id} label={e.representative.main} severity="info" size="sm" />)}
               {g.kind === 'filter' && <Chip label={t_i18n('Dynamic filter')} size="sm" />}
             </Box>
           ))}
