@@ -333,14 +333,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/client-s3@npm:3.1168.0":
-  version: 3.1168.0
-  resolution: "@aws-sdk/client-s3@npm:3.1168.0"
+"@aws-sdk/client-s3@npm:3.1172.0":
+  version: 3.1172.0
+  resolution: "@aws-sdk/client-s3@npm:3.1172.0"
   dependencies:
     "@aws-sdk/checksums": "npm:^3.1002.5"
     "@aws-sdk/core": "npm:^3.981.0"
     "@aws-sdk/credential-provider-node": "npm:^3.972.97"
-    "@aws-sdk/middleware-sdk-s3": "npm:^3.972.89"
+    "@aws-sdk/middleware-sdk-s3": "npm:^3.972.90"
     "@aws-sdk/signature-v4-multi-region": "npm:^3.996.52"
     "@aws-sdk/types": "npm:^3.975.1"
     "@smithy/core": "npm:^3.40.0"
@@ -348,13 +348,13 @@ __metadata:
     "@smithy/node-http-handler": "npm:^4.14.2"
     "@smithy/types": "npm:^4.20.0"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/6ac306baa6af088ace2305b8fda21563989b80f9406b440d8d1515042e847ae4d9eed1546c3d7b73f7e45a72175b21fae32c32c42e39fcf5942c3acd6ca3b50d
+  checksum: 10c0/e5edb8748b3d4571564958204f1c1a6f245de54ce72c89d2648ecc02760bf550309dd12aaa2d867744caeaee3712ef0712acfb3d90fa4eed473797111554c5c0
   languageName: node
   linkType: hard
 
-"@aws-sdk/client-sts@npm:3.1168.0":
-  version: 3.1168.0
-  resolution: "@aws-sdk/client-sts@npm:3.1168.0"
+"@aws-sdk/client-sts@npm:3.1172.0":
+  version: 3.1172.0
+  resolution: "@aws-sdk/client-sts@npm:3.1172.0"
   dependencies:
     "@aws-sdk/core": "npm:^3.981.0"
     "@aws-sdk/credential-provider-node": "npm:^3.972.97"
@@ -365,7 +365,7 @@ __metadata:
     "@smithy/node-http-handler": "npm:^4.14.2"
     "@smithy/types": "npm:^4.20.0"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/e97cb9f6644a90794873cf3ccb32331346712c159d3cb97c9f2e90f99a16293d753d2a45a6a5aa394d4a78a1ccafbff117a3111abd1dd917d0ad1b8d64461d33
+  checksum: 10c0/83f6ca445cbac3935bb671724afde2994cb707398e9b5382bbad82e0b61ccbf7cc511ebfeedb4c4c11c7647efdcc233ce26e60e9f6867ed11a036cbd865d1e88
   languageName: node
   linkType: hard
 
@@ -509,9 +509,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/lib-storage@npm:3.1168.0":
-  version: 3.1168.0
-  resolution: "@aws-sdk/lib-storage@npm:3.1168.0"
+"@aws-sdk/lib-storage@npm:3.1172.0":
+  version: 3.1172.0
+  resolution: "@aws-sdk/lib-storage@npm:3.1172.0"
   dependencies:
     "@smithy/core": "npm:^3.40.0"
     "@smithy/types": "npm:^4.20.0"
@@ -520,14 +520,14 @@ __metadata:
     stream-browserify: "npm:3.0.0"
     tslib: "npm:^2.6.2"
   peerDependencies:
-    "@aws-sdk/client-s3": ^3.1168.0
-  checksum: 10c0/543058bc81f066f0abed1e11b35e651722f2a25f2de584acfb6dd88b4ca32894b186dcb31e5e85d1a0a10c2fd39a1ff1de5f488552fa09e889639b96b0829765
+    "@aws-sdk/client-s3": ^3.1172.0
+  checksum: 10c0/d1683c7371487f74e59fc9f4d9554385ee5a605cf448542d765413c9d9a2e66a63df57a5cee2b5d99df213eaebac3f2a09d8912c576584ff23488ba06af9c5aa
   languageName: node
   linkType: hard
 
-"@aws-sdk/middleware-sdk-s3@npm:^3.972.89":
-  version: 3.972.89
-  resolution: "@aws-sdk/middleware-sdk-s3@npm:3.972.89"
+"@aws-sdk/middleware-sdk-s3@npm:^3.972.90":
+  version: 3.972.90
+  resolution: "@aws-sdk/middleware-sdk-s3@npm:3.972.90"
   dependencies:
     "@aws-sdk/core": "npm:^3.981.0"
     "@aws-sdk/signature-v4-multi-region": "npm:^3.996.52"
@@ -535,7 +535,7 @@ __metadata:
     "@smithy/core": "npm:^3.40.0"
     "@smithy/types": "npm:^4.20.0"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/1a232b35ad18f167b956db24d7442354049390d0d88e3948054c00f47aee5675dd62b3b2110e7fc5c0bb34c740206e0838788e02a20aded993f91120dde0a9a8
+  checksum: 10c0/a1944f8ec5ddbfee11046990ce181121dd74d7a2a61e1ea4aa98223cf80b2161570e1969fada6446c0d2ce3e2826f7ba6751e3a4fc613553ba533ad5fa5bca8d
   languageName: node
   linkType: hard
 
@@ -1963,9 +1963,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/design-system@npm:1.9.0":
-  version: 1.9.0
-  resolution: "@filigran/design-system@npm:1.9.0"
+"@filigran/design-system@npm:1.10.0":
+  version: 1.10.0
+  resolution: "@filigran/design-system@npm:1.10.0"
   dependencies:
     "@dnd-kit/core": "npm:^6.3.1"
     "@dnd-kit/sortable": "npm:^10.0.0"
@@ -2005,7 +2005,7 @@ __metadata:
     react-dom: ^19.0.0
   bin:
     filigran-design-system: bin/install-skills.mjs
-  checksum: 10c0/17d04623ec7c8e5af81324bb293af205d388ee884df6043853823521d7a6456be59be23a174085b766b1044b785b8f0ff18feb00e513e76851d2fc20ae1983ea
+  checksum: 10c0/26a35a5bdd2378002dc9a403ca90fd15c19068ff741b9da5278644aeb1a59707348b8975e6a5b62851a9a256c52a4198d7e06709f8de45ae2493364027e64b46
   languageName: node
   linkType: hard
 
@@ -3629,9 +3629,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/core@npm:1.4.1":
-  version: 1.4.1
-  resolution: "@langchain/core@npm:1.4.1"
+"@langchain/core@npm:1.4.2":
+  version: 1.4.2
+  resolution: "@langchain/core@npm:1.4.2"
   dependencies:
     "@cfworker/json-schema": "npm:^4.1.4"
     "@standard-schema/spec": "npm:^1.1.0"
@@ -3640,7 +3640,7 @@ __metadata:
     mustache: "npm:^4.2.0"
     p-queue: "npm:^6.6.2"
     zod: "npm:^4.6.6"
-  checksum: 10c0/dec85c097e11031324ed5e5c5c48d7770980b544d3f71e13ea20b4dc2e507be3e202708071cbc1ee4a7d9fa54152af4585e8838cf59f96d7a0ecc623e34ed216
+  checksum: 10c0/bd9fbdf0e37cd8cfc67f3ce7f37c65bb54c9a55fc7f08e42d0627468de18c0b2b6ca9ab580e815aba8b3a6122ea1b1c2a3cc2145ae3eb49391b45dcced2a59ae
   languageName: node
   linkType: hard
 
@@ -10954,10 +10954,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"content-disposition@npm:3.0.0":
-  version: 3.0.0
-  resolution: "content-disposition@npm:3.0.0"
-  checksum: 10c0/6b35c4e1f28eda550852b049b92aeb36d56a002fe534d1f58b86b19ac29e25a8ff2d3ce723942a5573c3667a2f4b3fd9cb6cc58385ad96cd1236278f7d624bab
+"content-disposition@npm:3.1.0":
+  version: 3.1.0
+  resolution: "content-disposition@npm:3.1.0"
+  checksum: 10c0/90c33ca820de113b90d55424e4493272cd4f2f26bdbec9e54f1787ca7a3d5ee123cf675b8c485419c517912229030211db56ca9d7be6c586fb061b92c938e247
   languageName: node
   linkType: hard
 
@@ -13043,15 +13043,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express-rate-limit@npm:8.7.4":
-  version: 8.7.4
-  resolution: "express-rate-limit@npm:8.7.4"
+"express-rate-limit@npm:8.7.5":
+  version: 8.7.5
+  resolution: "express-rate-limit@npm:8.7.5"
   dependencies:
     debug: "npm:^4.4.3"
     ip-address: "npm:^10.2.0"
   peerDependencies:
     express: ">= 4.11"
-  checksum: 10c0/65f98af650d29729ea58500a7ac218b3c43c31b962d85ba21db679c94a8012fab5c88d4bb41cdeaa8114169f5ac4f32576e2bc561c417507d567c3a4a2a24ece
+  checksum: 10c0/a050b858e2ff9dbc24b01e8dfe6a9ca243016454d1a7dfdca793038f89dd87fda2856be67c05e0fb0881a41ec8ee4fee1a7d4e678aee6b74a20fa4226a1d8217
   languageName: node
   linkType: hard
 
@@ -15601,10 +15601,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jose@npm:6.2.17, jose@npm:^6.2.15":
-  version: 6.2.17
-  resolution: "jose@npm:6.2.17"
-  checksum: 10c0/1a00d44656e38664c54a8b2d903b6c947b3fc4275f7ede2462f74e50ce320359ea324deba15652dcc158c14ed99135a2382a4c5718be350923a9e583bea727db
+"jose@npm:6.2.18, jose@npm:^6.2.15":
+  version: 6.2.18
+  resolution: "jose@npm:6.2.18"
+  checksum: 10c0/95144c43dfa0c8206f13f8133ed74ba9106785df81c864d6399af06616ad8fdbdc18937109aac099f560f6159aaf2fe2fca3984a6629c899af396a1e9986008d
   languageName: node
   linkType: hard
 
@@ -18553,7 +18553,7 @@ __metadata:
     "@faker-js/faker": "npm:10.6.0"
     "@filigran/chatbot": "npm:7.0.0"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
-    "@filigran/design-system": "npm:1.9.0"
+    "@filigran/design-system": "npm:1.10.0"
     "@filigran/rich-text-editor": "npm:2.0.1"
     "@fontsource/geologica": "npm:5.3.0"
     "@fontsource/ibm-plex-sans": "npm:5.3.0"
@@ -18702,10 +18702,10 @@ __metadata:
   dependencies:
     "@apollo/server": "npm:5.5.2"
     "@as-integrations/express5": "npm:1.1.2"
-    "@aws-sdk/client-s3": "npm:3.1168.0"
-    "@aws-sdk/client-sts": "npm:3.1168.0"
+    "@aws-sdk/client-s3": "npm:3.1172.0"
+    "@aws-sdk/client-sts": "npm:3.1172.0"
     "@aws-sdk/credential-provider-node": "npm:3.972.97"
-    "@aws-sdk/lib-storage": "npm:3.1168.0"
+    "@aws-sdk/lib-storage": "npm:3.1172.0"
     "@aws-sdk/types": "npm:3.975.1"
     "@elastic/elasticsearch": "npm:8.19.2"
     "@elastic/elasticsearch-v9": "npm:@elastic/elasticsearch@9.5.1"
@@ -18719,7 +18719,7 @@ __metadata:
     "@graphql-tools/schema": "npm:11.0.9"
     "@graphql-tools/utils": "npm:13.2.2"
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
-    "@langchain/core": "npm:1.4.1"
+    "@langchain/core": "npm:1.4.2"
     "@langchain/mistralai": "npm:1.2.0"
     "@langchain/openai": "npm:1.8.4"
     "@lezer/javascript": "npm:1.5.6"
@@ -18784,7 +18784,7 @@ __metadata:
     canonicalize: "npm:5.1.0"
     chokidar: "npm:6.0.0"
     compression: "npm:1.8.2"
-    content-disposition: "npm:3.0.0"
+    content-disposition: "npm:3.1.0"
     content-type: "npm:3.1.1"
     convert: "npm:8.1.0"
     cors: "npm:2.8.6"
@@ -18801,7 +18801,7 @@ __metadata:
     eventsource: "npm:5.1.5"
     eventsource-parser: "npm:4.1.3"
     express: "npm:5.3.0"
-    express-rate-limit: "npm:8.7.4"
+    express-rate-limit: "npm:8.7.5"
     express-session: "npm:1.19.0"
     fast-json-patch: "npm:3.1.1"
     file-type: "npm:22.3.0"
@@ -18824,7 +18824,7 @@ __metadata:
     ioredis: "npm:5.11.1"
     ipaddr.js: "npm:2.5.0"
     jiti: "npm:2.7.0"
-    jose: "npm:6.2.17"
+    jose: "npm:6.2.18"
     js-deep-equals: "npm:2.1.1"
     jsonpath-plus: "npm:11.3.0"
     jwt-decode: "npm:4.0.0"
@@ -18856,7 +18856,7 @@ __metadata:
     python-shell: "npm:5.0.0"
     ramda: "npm:0.32.0"
     rate-limiter-flexible: "npm:11.5.0"
-    re2: "npm:1.27.1"
+    re2: "npm:1.27.2"
     sanitize-html: "npm:2.18.2"
     semver: "npm:7.8.6"
     set-interval-async: "npm:3.0.6"
@@ -20217,14 +20217,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"re2@npm:1.27.1":
-  version: 1.27.1
-  resolution: "re2@npm:1.27.1"
+"re2@npm:1.27.2":
+  version: 1.27.2
+  resolution: "re2@npm:1.27.2"
   dependencies:
     install-artifact-from-github: "npm:^1.8.1"
     nan: "npm:^2.30.0"
     node-gyp: "npm:^13.1.0"
-  checksum: 10c0/9bb87c654cb2ee4f8a999306eedc9098599aaa248a61eabfd908707a846fc66133457dba6748e4471543aa8a196bb1f81341cbc2d35d2be52bf50d841629dcbf
+  checksum: 10c0/3ef6dc6a2b84e63470d8e880303cfaa38880e38bfe399004ea50e4a39d6c313997ab15f48293f9a6927ab04238a827bda1fe946091a265cd0dbe92bfb3d3d2f1
   languageName: node
   linkType: hard
 

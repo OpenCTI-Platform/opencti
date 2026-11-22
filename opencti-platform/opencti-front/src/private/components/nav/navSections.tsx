@@ -1,5 +1,4 @@
-import { AssignmentOutlined, CasesOutlined, ConstructionOutlined, InsertChartOutlinedOutlined, LayersOutlined } from '@mui/icons-material';
-import { Binoculars, CogOutline, Database, FlaskOutline, FolderTableOutline, GlobeModel, Timetable } from 'mdi-material-ui';
+import { Icon } from '@filigran/design-system';
 import type { NavSection } from '../common/menus/menuEntry';
 import { home } from './Home.entries';
 import { customDashboards, investigations, publicDashboards } from '../workspaces/Workspaces.entries';
@@ -35,29 +34,29 @@ export const navSections: NavSection[] = [
     id: 'dashboards',
     group: 'main',
     label: 'Dashboards',
-    icon: <InsertChartOutlinedOutlined />,
+    icon: <Icon name="layout-dashboard" size={16} />,
     items: [customDashboards, publicDashboards],
   },
   { id: 'investigations', group: 'main', page: investigations },
   { id: 'pir', group: 'main', page: pir },
 
-  { id: 'analyses', group: 'knowledge', label: 'Analyses', icon: <AssignmentOutlined />, items: analyses },
-  { id: 'cases', group: 'knowledge', label: 'Cases', icon: <CasesOutlined />, items: cases },
-  { id: 'events', group: 'knowledge', label: 'Events', icon: <Timetable />, items: events },
-  { id: 'observations', group: 'knowledge', label: 'Observations', icon: <Binoculars />, items: observations },
+  { id: 'analyses', group: 'knowledge', label: 'Analyses', icon: <Icon name="clipboard-list" size={16} />, items: analyses },
+  { id: 'cases', group: 'knowledge', label: 'Cases', icon: <Icon name="briefcase" size={16} />, items: cases },
+  { id: 'events', group: 'knowledge', label: 'Events', icon: <Icon name="calendar-days" size={16} />, items: events },
+  { id: 'observations', group: 'knowledge', label: 'Observations', icon: <Icon name="custom/binocular" size={16} />, items: observations },
 
-  { id: 'threats', group: 'threat-landscape', label: 'Threats', icon: <FlaskOutline />, items: threats },
-  { id: 'arsenal', group: 'threat-landscape', label: 'Arsenal', icon: <LayersOutlined />, items: arsenal },
-  { id: 'techniques', group: 'threat-landscape', label: 'Techniques', icon: <ConstructionOutlined />, items: techniques },
-  { id: 'entities', group: 'threat-landscape', label: 'Entities', icon: <FolderTableOutline />, items: entities },
-  { id: 'locations', group: 'threat-landscape', label: 'Locations', icon: <GlobeModel />, items: locations },
+  { id: 'threats', group: 'threat-landscape', label: 'Threats', icon: <Icon name="custom/threat-actor-individual" size={16} />, items: threats },
+  { id: 'arsenal', group: 'threat-landscape', label: 'Arsenal', icon: <Icon name="layers" size={16} />, items: arsenal },
+  { id: 'techniques', group: 'threat-landscape', label: 'Techniques', icon: <Icon name="custom/attack-pattern" size={16} />, items: techniques },
+  { id: 'entities', group: 'threat-landscape', label: 'Entities', icon: <Icon name="folder" size={16} />, items: entities },
+  { id: 'locations', group: 'threat-landscape', label: 'Locations', icon: <Icon name="earth" size={16} />, items: locations },
 
   { id: 'integrations', group: 'data', page: integrations },
   {
     id: 'data',
     group: 'data',
     label: 'Data',
-    icon: <Database />,
+    icon: <Icon name="database" size={16} />,
     items: [
       dataEntities,
       dataRelationships,
@@ -74,7 +73,7 @@ export const navSections: NavSection[] = [
     id: 'settings',
     group: 'settings',
     label: 'Settings',
-    icon: <CogOutline />,
+    icon: <Icon name="settings" size={16} />,
     items: [
       parameters,
       { label: 'Security', entries: settingsAccesses },

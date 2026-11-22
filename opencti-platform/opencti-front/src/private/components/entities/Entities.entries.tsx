@@ -1,4 +1,4 @@
-import { AccountBalanceOutlined, DomainOutlined, EventOutlined, PersonOutlined, SecurityOutlined, StorageOutlined } from '@mui/icons-material';
+import { Icon } from '@filigran/design-system';
 import type { MenuEntry } from '../common/menus/menuEntry';
 import { KNOWLEDGE } from '../../../utils/hooks/capabilities';
 
@@ -10,7 +10,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/entities/sectors',
     label: 'Sectors',
     entityType: 'Sector',
-    icon: <DomainOutlined fontSize="small" />,
+    icon: <Icon name="network" size={16} />,
     keywords: ['industry', 'vertical', 'Victimology', 'naics', 'entity'],
     ...knowledge,
   },
@@ -18,7 +18,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/entities/events',
     label: 'Events',
     entityType: 'Event',
-    icon: <EventOutlined fontSize="small" />,
+    icon: <Icon name="calendar" size={16} />,
     keywords: ['conference', 'election', 'summit', 'geopolitical', 'news', 'entity'],
     ...knowledge,
   },
@@ -26,7 +26,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/entities/organizations',
     label: 'Organizations',
     entityType: 'Organization',
-    icon: <AccountBalanceOutlined fontSize="small" />,
+    icon: <Icon name="building-2" size={16} />,
     keywords: ['company', 'Vendor', 'Identity', 'Victimology', 'entity'],
     ...knowledge,
   },
@@ -34,7 +34,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/entities/security_platforms',
     label: 'Security platforms',
     entityType: 'SecurityPlatform',
-    icon: <SecurityOutlined fontSize="small" />,
+    icon: <Icon name="custom/security-platforms" size={16} />,
     keywords: ['EDR', 'XDR', 'SIEM', 'Firewall', 'Product', 'entity'],
     ...knowledge,
   },
@@ -42,7 +42,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/entities/systems',
     label: 'Systems',
     entityType: 'System',
-    icon: <StorageOutlined fontSize="small" />,
+    icon: <Icon name="server" size={16} />,
     keywords: ['asset', 'Host', 'Server', 'Endpoint', 'entity'],
     ...knowledge,
   },
@@ -50,7 +50,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/entities/individuals',
     label: 'Individuals',
     entityType: 'Individual',
-    icon: <PersonOutlined fontSize="small" />,
+    icon: <Icon name="user" size={16} />,
     keywords: ['person', 'people', 'Identity', 'Victimology', 'vip', 'entity'],
     ...knowledge,
   },

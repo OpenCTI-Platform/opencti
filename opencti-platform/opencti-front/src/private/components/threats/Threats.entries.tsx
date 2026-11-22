@@ -1,5 +1,4 @@
-import { DiamondOutlined } from '@mui/icons-material';
-import { AccountMultipleOutline, ChessKnight, LaptopAccount } from 'mdi-material-ui';
+import { Icon } from '@filigran/design-system';
 import type { MenuEntry } from '../common/menus/menuEntry';
 import { KNOWLEDGE } from '../../../utils/hooks/capabilities';
 
@@ -11,7 +10,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/threats/threat_actors_group',
     label: 'Threat actors (group)',
     entityType: 'Threat-Actor-Group',
-    icon: <AccountMultipleOutline fontSize="small" />,
+    icon: <Icon name="users" size={16} />,
     keywords: ['apt', 'Adversary', 'gang', 'cybercriminal', 'nation', 'State', 'hacktivist', 'ransomware'],
     ...knowledge,
   },
@@ -19,7 +18,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/threats/threat_actors_individual',
     label: 'Threat actors (individual)',
     entityType: 'Threat-Actor-Individual',
-    icon: <LaptopAccount fontSize="small" />,
+    icon: <Icon name="custom/threat-actor-individual" size={16} />,
     keywords: ['hacker', 'persona', 'insider', 'cybercriminal', 'Alias'],
     ...knowledge,
   },
@@ -27,7 +26,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/threats/intrusion_sets',
     label: 'Intrusion sets',
     entityType: 'Intrusion-Set',
-    icon: <DiamondOutlined fontSize="small" />,
+    icon: <Icon name="custom/intrusion-set" size={16} />,
     keywords: ['apt', 'Adversary', 'actor', 'Cluster', 'unc'],
     ...knowledge,
   },
@@ -35,7 +34,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/threats/campaigns',
     label: 'Campaigns',
     entityType: 'Campaign',
-    icon: <ChessKnight fontSize="small" />,
+    icon: <Icon name="chess-knight" size={16} />,
     keywords: ['Operation', 'wave', 'Cluster'],
     ...knowledge,
   },
