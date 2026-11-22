@@ -12480,8 +12480,6 @@ type Query {
   works(after: ID, filters: FilterGroup, first: Int, orderBy: WorksOrdering, orderMode: OrderingMode, search: String): WorkConnection
   workspace(id: String!): Workspace
   workspaces(after: ID, filters: FilterGroup, first: Int, includeAuthorities: Boolean, orderBy: WorkspacesOrdering, orderMode: OrderingMode, search: String): WorkspaceConnection
-  xtmConnections: [XtmConnection!]!
-  xtmCounterpartsOf(ids: [String!]!): [XtmCounterpartResult!]!
 }
 
 input QueryAttribute {
@@ -14137,6 +14135,7 @@ type Software implements BasicObject & StixCoreObject & StixCyberObservable & St
   x_opencti_inferences: [Inference]
   x_opencti_modified_at: DateTime
   x_opencti_product: String
+  x_opencti_purl: String
   x_opencti_score: Int
   x_opencti_stix_ids: [StixId]
 }
@@ -14156,6 +14155,7 @@ input SoftwareAddInput {
   vendor: String
   version: String
   x_opencti_product: String
+  x_opencti_purl: String
 }
 
 type SoftwareConnection {
@@ -18548,38 +18548,4 @@ enum XTMHubRegistrationStatus {
   lost_connectivity
   registered
   unregistered
-}
-
-type XtmConnection {
-  connected: Boolean!
-  product: String!
-}
-
-type XtmCounterpart {
-  facts: [XtmCounterpartFact!]!
-  key: String!
-  object_id: String!
-  object_name: String
-  object_type: String!
-  object_url: String!
-  product: String!
-}
-
-type XtmCounterpartFact {
-  key: String!
-  value: String!
-}
-
-type XtmCounterpartResult {
-  counterpart: XtmCounterpart
-  id: String!
-  product: String!
-  status: XtmCounterpartStatus!
-}
-
-enum XtmCounterpartStatus {
-  found
-  not_found
-  not_supported
-  unavailable
 }
