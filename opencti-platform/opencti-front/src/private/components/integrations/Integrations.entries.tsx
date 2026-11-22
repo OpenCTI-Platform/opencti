@@ -6,7 +6,7 @@ export const integrations: MenuEntry = {
   path: '/dashboard/integrations',
   label: 'Integrations',
   keywords: ['Connector', 'marketplace', 'application', 'plugin', 'Enrichment', 'Ingestion', 'xtm', 'hub'],
-  icon: <Icon name="link-2" size={16} />,
+  icon: <Icon name="puzzle" size={16} />,
   requiredCapabilities: [MODULES, INGESTION, INGESTION_SETINGESTIONS],
 };
 
