@@ -4,7 +4,7 @@ import { INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATI
 import { logApp } from '../config/conf';
 import { storeFileConverter, uploadToStorage } from '../database/file-storage';
 import path from 'path';
-import { computeDateFromEventId, truncate, utcDate } from './format';
+import { computeDateFromEventId, FROM_START_STR, truncate, UNTIL_END_STR, utcDate } from './format';
 import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REPLACE } from '../database/utils';
 import { hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE } from '../modules/indicator/indicator-utils';
 import { creators as creatorsAttribute, customFieldValues, iAttributes, xOpenctiStixIds } from '../schema/attribute-definition';
@@ -21,6 +21,7 @@ import { FunctionalError } from '../config/errors';
 import { getDraftContext } from './draftContext';
 import { getDraftFilePrefix } from '../database/draft-utils';
 import { pushAll } from './arrayUtil';
+import { dateForEndAttributes, dateForLimitsAttributes, dateForStartAttributes } from '../schema/fieldDataAdapter';
 
 const ALIGN_OLDEST = 'oldest';
 const ALIGN_NEWEST = 'newest';
@@ -562,6 +563,57 @@ export const mergeUpsertInputs = (resolvedElement, updatePatch, updatePatchInput
   return Array.from(updatePatchInputsMap.values());
 };
 
+// A start or end limit date (first_seen, last_seen, start_time, stop_time, valid_from, valid_until, first_observed, last_observed)
+// equal to its FROM_START / UNTIL_END sentinel carries no information: it is the default the creation path writes when the
+// producer gave no date (domain add functions, client libraries sending nothing for a missing STIX field).
+export const isDateLimitSentinel = (attributeKey, inputData) => {
+  if (!dateForLimitsAttributes.includes(attributeKey) || isEmptyField(inputData) || Array.isArray(inputData)) {
+    return false;
+  }
+  const date = utcDate(inputData);
+  if (!date.isValid()) {
+    return false;
+  }
+  const isoDate = date.toISOString();
+  return (dateForStartAttributes.includes(attributeKey) && isoDate === FROM_START_STR)
+    || (dateForEndAttributes.includes(attributeKey) && isoDate === UNTIL_END_STR);
+};
+
+const LIMIT_DATE_PAIRS = {
+  first_seen: 'last_seen',
+  last_seen: 'first_seen',
+  start_time: 'stop_time',
+  stop_time: 'start_time',
+  valid_from: 'valid_until',
+  valid_until: 'valid_from',
+  first_observed: 'last_observed',
+  last_observed: 'first_observed',
+};
+
+// Keeping the stored date instead of a sentinel input is only safe when the stored date still bounds the period the
+// upsert produces: a start date moved after the stored end (or an end moved before the stored start) needs the sentinel,
+// else the update is rejected for an inverted period (e.g. an expired decay-excluded indicator upserted with a later
+// valid_from and no valid_until, issue #19796).
+export const isStoredLimitDateKeptValid = (attributeKey, resolvedElement, updatePatch) => {
+  const pairKey = LIMIT_DATE_PAIRS[attributeKey];
+  const storedValue = resolvedElement[attributeKey];
+  if (!pairKey || isEmptyField(storedValue)) {
+    return true;
+  }
+  const patchPairValue = updatePatch[pairKey];
+  const isPairMoved = pairKey in updatePatch && isNotEmptyField(patchPairValue) && !isDateLimitSentinel(pairKey, patchPairValue);
+  const pairValue = isPairMoved ? patchPairValue : resolvedElement[pairKey];
+  if (isEmptyField(pairValue)) {
+    return true;
+  }
+  const storedDate = utcDate(storedValue);
+  const pairDate = utcDate(pairValue);
+  if (!storedDate.isValid() || !pairDate.isValid()) {
+    return true;
+  }
+  return dateForStartAttributes.includes(attributeKey) ? !storedDate.isAfter(pairDate) : !storedDate.isBefore(pairDate);
+};
+
 export const generateAttributesInputsForUpsert = (context, _user, resolvedElement, type, updatePatch, confidenceForUpsert) => {
   const { isConfidenceMatch } = confidenceForUpsert;
   // -- Upsert attributes
@@ -573,19 +625,20 @@ export const generateAttributesInputsForUpsert = (context, _user, resolvedElemen
     const isInputAvailable = attributeKey in updatePatch;
     if (isInputAvailable) { // The attribute is explicitly available in the patch
       const inputData = updatePatch[attributeKey];
+      const isOutDatedModification = isOutdatedUpdate(context, resolvedElement, attributeKey);
       const isStructuralUpsert = attributeKey === xOpenctiStixIds.name || attributeKey === creatorsAttribute.name; // Ids and creators consolidation is always granted
       const isFullSync = context.synchronizedUpsert || attribute.upsert_force_replace; // In case of full synchronization or force full upsert, just update the data
-      // An add to a multiple attribute (and the ids and creators consolidation) does not depend on the order of the events:
-      // only an overwrite (single value or replace) coming from an event older than the last update of the attribute is outdated
-      const isAdditiveModification = isStructuralUpsert || (attribute.multiple && !isFullSync);
-      const isOutDatedModification = !isAdditiveModification && isOutdatedUpdate(context, resolvedElement, attributeKey);
       const isInputWithData = typeof inputData === 'string' ? isNotEmptyField(inputData.trim()) : isNotEmptyField(inputData);
       const isCurrentlyEmpty = isEmptyField(resolvedElement[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
       // Field can be upsert if:
       // 1. Confidence is correct
       // 2. Attribute is declared upsert=true in the schema
       // 3. Data from the inputs is not empty to prevent any data cleaning
-      const canBeUpsert = isConfidenceMatch && attribute.upsert && isInputWithData;
+      // 4. Data is not a start/end limit sentinel: a sentinel means 'no date given' and must never overwrite a stored date.
+      //    A full synchronization (synchronized-upsert header) or a forced replace keeps its full-replace semantics.
+      //    The sentinel is still applied when the stored date would no longer bound the new period (start after end).
+      const isSentinelInput = isDateLimitSentinel(attributeKey, inputData) && isStoredLimitDateKeptValid(attributeKey, resolvedElement, updatePatch);
+      const canBeUpsert = isConfidenceMatch && attribute.upsert && isInputWithData && !isSentinelInput;
       // Upsert will be done if upsert is well-defined but also in full synchro mode or if the current value is empty
       if (!isOutDatedModification) {
         if (isStructuralUpsert || canBeUpsert || isFullSync || isCurrentlyEmpty) {
@@ -611,10 +664,7 @@ export const generateRefsInputsForUpsert = (context, user, resolvedElement, _typ
       const patchInputData = updatePatch[inputField];
       const isInputWithData = isNotEmptyField(patchInputData);
       const isUpsertSynchro = context.synchronizedUpsert;
-      // An add of multiple refs does not depend on the order of the events:
-      // only a replace (single ref or synchronized upsert) coming from an event older than the last update of the ref is outdated
-      const isAdditiveModification = relDef.multiple && !isUpsertSynchro;
-      const isOutDatedModification = !isAdditiveModification && isOutdatedUpdate(context, resolvedElement, inputField);
+      const isOutDatedModification = isOutdatedUpdate(context, resolvedElement, inputField);
       if (!isOutDatedModification) {
         if (relDef.multiple) {
           const currentData = resolvedElement[relDef.databaseName] ?? [];

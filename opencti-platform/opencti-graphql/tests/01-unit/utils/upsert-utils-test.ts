@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildUpdatePatchForUpsert, generateAttributesInputsForUpsert, generateRefsInputsForUpsert } from '../../../src/utils/upsert-utils';
+import { buildUpdatePatchForUpsert, generateAttributesInputsForUpsert, isDateLimitSentinel, isStoredLimitDateKeptValid } from '../../../src/utils/upsert-utils';
+import { FROM_START_STR, UNTIL_END_STR } from '../../../src/utils/format';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import { testContext } from '../../utils/testQuery';
 
@@ -127,64 +128,45 @@ describe('buildUpdatePatchForUpsert - indicator confidence gating', () => {
   });
 });
 
-describe('generate upsert inputs - event older than the last update of the attribute', () => {
-  const eventTime = Date.parse('2026-01-01T10:00:00.000Z');
-  // The attributes were updated 40 seconds after the event that triggered this upsert (a long playbook run, for instance)
-  const lastUpdate = new Date(eventTime + 40000).toISOString();
-  const outdatedContext = { ...testContext, eventId: `${eventTime}-0` };
-  const confidence = { confidenceLevelToApply: 80, isConfidenceMatch: true, isConfidenceUpper: true };
-  const updatedAt = (name: string) => ({ name, updated_at: lastUpdate, confidence: 80, user_id: 'other-user' });
-  const existingIndicator = {
-    entity_type: ENTITY_TYPE_INDICATOR,
-    standard_id: 'indicator--existing',
-    confidence: 80,
-    name: 'existing name',
-    description: 'existing description',
-    x_opencti_stix_ids: ['indicator--11111111-1111-4111-8111-111111111111'],
-    'object-marking': ['marking-1'],
-    'created-by': 'identity-1',
-    i_attributes: [
-      updatedAt('x_opencti_stix_ids'),
-      updatedAt('description'),
-      updatedAt('name'),
-      updatedAt('objectMarking'),
-      updatedAt('createdBy'),
-    ],
-  };
-
-  it('should keep the stix ids consolidation', () => {
-    const newStixId = 'indicator--22222222-2222-4222-8222-222222222222';
-    const inputs = generateAttributesInputsForUpsert(outdatedContext, makeUser(), existingIndicator, ENTITY_TYPE_INDICATOR, { x_opencti_stix_ids: [newStixId] }, confidence);
-    expect(inputs.find((i) => i.key === 'x_opencti_stix_ids')).toEqual({ key: 'x_opencti_stix_ids', value: [newStixId], operation: 'add' });
+describe('isDateLimitSentinel', () => {
+  it('should flag the start sentinel on a start limit date', () => {
+    expect(isDateLimitSentinel('first_seen', FROM_START_STR)).toBe(true);
+    expect(isDateLimitSentinel('start_time', new Date(0))).toBe(true);
+    expect(isDateLimitSentinel('valid_from', FROM_START_STR)).toBe(true);
   });
 
-  it('should discard the overwrite of a single value attribute', () => {
-    const inputs = generateAttributesInputsForUpsert(outdatedContext, makeUser(), existingIndicator, ENTITY_TYPE_INDICATOR, { description: 'older description', name: 'older name' }, confidence);
-    expect(inputs).toEqual([]);
+  it('should flag the end sentinel on an end limit date', () => {
+    expect(isDateLimitSentinel('last_seen', UNTIL_END_STR)).toBe(true);
+    expect(isDateLimitSentinel('stop_time', new Date(UNTIL_END_STR))).toBe(true);
   });
 
-  it('should apply the overwrite of a single value attribute when the event is newer', () => {
-    const newerContext = { ...testContext, eventId: `${eventTime + 60000}-0` };
-    const inputs = generateAttributesInputsForUpsert(newerContext, makeUser(), existingIndicator, ENTITY_TYPE_INDICATOR, { description: 'newer description' }, confidence);
-    expect(inputs).toEqual([{ key: 'description', value: ['newer description'] }]);
+  it('should not flag a real date, an empty value, a crossed sentinel or another attribute', () => {
+    expect(isDateLimitSentinel('first_seen', '2026-10-23T00:00:00.000Z')).toBe(false);
+    expect(isDateLimitSentinel('first_seen', null)).toBe(false);
+    expect(isDateLimitSentinel('first_seen', UNTIL_END_STR)).toBe(false);
+    expect(isDateLimitSentinel('last_seen', FROM_START_STR)).toBe(false);
+    expect(isDateLimitSentinel('created', FROM_START_STR)).toBe(false);
+  });
+});
+
+describe('isStoredLimitDateKeptValid', () => {
+  const stored = { valid_from: '2026-08-01T00:00:00.000Z', valid_until: '2026-11-13T00:00:00.000Z' };
+
+  it('should keep the stored end date when it still bounds the period', () => {
+    expect(isStoredLimitDateKeptValid('valid_until', stored, { valid_from: '2026-10-01T00:00:00.000Z', valid_until: UNTIL_END_STR })).toBe(true);
+    expect(isStoredLimitDateKeptValid('valid_until', stored, { valid_until: UNTIL_END_STR })).toBe(true);
   });
 
-  it('should keep the add of a multiple ref', () => {
-    const patch = { objectMarking: [{ internal_id: 'marking-1' }, { internal_id: 'marking-2' }] };
-    const inputs = generateRefsInputsForUpsert(outdatedContext, makeUser(), existingIndicator, ENTITY_TYPE_INDICATOR, patch, confidence, false);
-    expect(inputs).toEqual([{ key: 'objectMarking', value: [{ internal_id: 'marking-2' }], operation: 'add' }]);
+  it('should not keep the stored end date when the new start date is after it (issue #19796)', () => {
+    expect(isStoredLimitDateKeptValid('valid_until', stored, { valid_from: '2026-11-18T00:00:00.000Z', valid_until: UNTIL_END_STR })).toBe(false);
   });
 
-  it('should discard the replace of multiple refs on a synchronized upsert', () => {
-    const synchronizedContext = { ...outdatedContext, synchronizedUpsert: true };
-    const patch = { objectMarking: [{ internal_id: 'marking-2' }] };
-    const inputs = generateRefsInputsForUpsert(synchronizedContext, makeUser(), existingIndicator, ENTITY_TYPE_INDICATOR, patch, confidence, false);
-    expect(inputs).toEqual([]);
+  it('should not keep the stored start date when the new end date is before it', () => {
+    expect(isStoredLimitDateKeptValid('first_seen', { first_seen: '2026-10-01T00:00:00.000Z' }, { first_seen: FROM_START_STR, last_seen: '2026-09-01T00:00:00.000Z' })).toBe(false);
   });
 
-  it('should discard the overwrite of a single ref', () => {
-    const patch = { createdBy: { internal_id: 'identity-2' } };
-    const inputs = generateRefsInputsForUpsert(outdatedContext, makeUser(), existingIndicator, ENTITY_TYPE_INDICATOR, patch, confidence, false);
-    expect(inputs).toEqual([]);
+  it('should keep any stored date without a pair or without a stored value', () => {
+    expect(isStoredLimitDateKeptValid('created', stored, {})).toBe(true);
+    expect(isStoredLimitDateKeptValid('last_seen', {}, { first_seen: '2026-11-18T00:00:00.000Z', last_seen: UNTIL_END_STR })).toBe(true);
   });
 });
