@@ -1963,9 +1963,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/design-system@npm:1.9.0":
-  version: 1.9.0
-  resolution: "@filigran/design-system@npm:1.9.0"
+"@filigran/design-system@npm:1.10.0":
+  version: 1.10.0
+  resolution: "@filigran/design-system@npm:1.10.0"
   dependencies:
     "@dnd-kit/core": "npm:^6.3.1"
     "@dnd-kit/sortable": "npm:^10.0.0"
@@ -2005,7 +2005,7 @@ __metadata:
     react-dom: ^19.0.0
   bin:
     filigran-design-system: bin/install-skills.mjs
-  checksum: 10c0/17d04623ec7c8e5af81324bb293af205d388ee884df6043853823521d7a6456be59be23a174085b766b1044b785b8f0ff18feb00e513e76851d2fc20ae1983ea
+  checksum: 10c0/26a35a5bdd2378002dc9a403ca90fd15c19068ff741b9da5278644aeb1a59707348b8975e6a5b62851a9a256c52a4198d7e06709f8de45ae2493364027e64b46
   languageName: node
   linkType: hard
 
@@ -18553,7 +18553,7 @@ __metadata:
     "@faker-js/faker": "npm:10.6.0"
     "@filigran/chatbot": "npm:7.0.0"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
-    "@filigran/design-system": "npm:1.9.0"
+    "@filigran/design-system": "npm:1.10.0"
     "@filigran/rich-text-editor": "npm:2.0.1"
     "@fontsource/geologica": "npm:5.3.0"
     "@fontsource/ibm-plex-sans": "npm:5.3.0"

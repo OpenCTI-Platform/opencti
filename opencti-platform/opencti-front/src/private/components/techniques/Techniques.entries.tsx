@@ -1,5 +1,4 @@
-import { SourceOutlined, SpeakerNotesOutlined, StreamOutlined } from '@mui/icons-material';
-import { LockPattern, ProgressWrench } from 'mdi-material-ui';
+import { Icon } from '@filigran/design-system';
 import type { MenuEntry } from '../common/menus/menuEntry';
 import { KNOWLEDGE } from '../../../utils/hooks/capabilities';
 
@@ -11,7 +10,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/techniques/attack_patterns',
     label: 'Attack patterns',
     entityType: 'Attack-Pattern',
-    icon: <LockPattern fontSize="small" />,
+    icon: <Icon name="custom/attack-pattern" size={16} />,
     keywords: ['TTPs', 'mitre', 'att&ck', 'matrix', 'capec'],
     ...knowledge,
   },
@@ -19,7 +18,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/techniques/narratives',
     label: 'Narratives',
     entityType: 'Narrative',
-    icon: <SpeakerNotesOutlined fontSize="small" />,
+    icon: <Icon name="message-square-more" size={16} />,
     keywords: ['disinformation', 'misinformation', 'propaganda', 'influence', 'fimi'],
     ...knowledge,
   },
@@ -27,7 +26,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/techniques/courses_of_action',
     label: 'Courses of action',
     entityType: 'Course-Of-Action',
-    icon: <ProgressWrench fontSize="small" />,
+    icon: <Icon name="custom/course-of-action" size={16} />,
     keywords: ['mitigation', 'remediation', 'countermeasure', 'defense', 'd3fend'],
     ...knowledge,
   },
@@ -35,7 +34,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/techniques/data_components',
     label: 'Data components',
     entityType: 'Data-Component',
-    icon: <SourceOutlined fontSize="small" />,
+    icon: <Icon name="layers-2" size={16} />,
     keywords: ['telemetry', 'Logs', 'source', 'mitre', 'Detection'],
     ...knowledge,
   },
@@ -43,7 +42,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/techniques/data_sources',
     label: 'Data sources',
     entityType: 'Data-Source',
-    icon: <StreamOutlined fontSize="small" />,
+    icon: <Icon name="file-input" size={16} />,
     keywords: ['telemetry', 'Logs', 'mitre', 'Visibility'],
     ...knowledge,
   },

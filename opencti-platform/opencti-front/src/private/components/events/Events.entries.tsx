@@ -1,5 +1,4 @@
-import { VisibilityOutlined, WifiTetheringOutlined } from '@mui/icons-material';
-import { Fire } from 'mdi-material-ui';
+import { Icon } from '@filigran/design-system';
 import type { MenuEntry } from '../common/menus/menuEntry';
 import { KNOWLEDGE } from '../../../utils/hooks/capabilities';
 
@@ -11,7 +10,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/events/incidents',
     label: 'Incidents',
     entityType: 'Incident',
-    icon: <Fire fontSize="small" />,
+    icon: <Icon name="custom/fire" size={16} />,
     keywords: ['breach', 'compromise', 'intrusion', 'alert', 'attack'],
     ...knowledge,
   },
@@ -19,7 +18,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/events/sightings',
     label: 'Sightings',
     entityType: 'stix-sighting-relationship',
-    icon: <VisibilityOutlined fontSize="small" />,
+    icon: <Icon name="eye" size={16} />,
     keywords: ['seen', 'Detection', 'Match', 'positive', 'False'],
     ...knowledge,
   },
@@ -27,7 +26,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/events/observed_data',
     label: 'Observed datas',
     entityType: 'Observed-Data',
-    icon: <WifiTetheringOutlined fontSize="small" />,
+    icon: <Icon name="satellite-dish" size={16} />,
     keywords: ['telemetry', 'observation', 'Logs', 'evidence'],
     ...knowledge,
   },
