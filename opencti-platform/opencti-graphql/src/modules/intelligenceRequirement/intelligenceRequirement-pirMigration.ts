@@ -16,7 +16,7 @@ import { entityDisplayName } from './intelligenceRequirementItem-domain';
 import { checkInPirParity, inPirRelationToMatch, linkPirToRequirement, type PirParityMismatch } from './intelligenceRequirement-pirLink';
 
 // Full replacement of the PIR engine (opencti #20278): every Pir becomes an intelligence requirement, then the Pir is deleted.
-// Called by the migration 1795318000000 only, which runs before the managers start (no engine reads the stream meanwhile).
+// Called by the migration 1795536000000 only, which runs before the managers start (no engine reads the stream meanwhile).
 //
 // Per Pir, in order, each step safe to run again:
 // 1. link: the requirement built from the Pir (criteria, filters, weights, rescan window, authorized members), ir_pir_id = the Pir;

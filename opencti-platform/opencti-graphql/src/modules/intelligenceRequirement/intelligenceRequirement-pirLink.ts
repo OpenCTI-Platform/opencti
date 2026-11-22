@@ -134,7 +134,7 @@ export const mirrorPirMembersOnRequirement = async (context: AuthContext, pirId:
 };
 
 // ---------------------------------------------------------------------------------------------------------------------
-// Conversion of legacy flags (used by the migration 1795318000000): an in-pir relationship becomes an entity of the
+// Conversion of legacy flags (used by the migration 1795536000000): an in-pir relationship becomes an entity of the
 // requirement, and a parity check proves that its projection writes back the same pir_score and pir_explanation.
 
 export interface PirParityMismatch {

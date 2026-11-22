@@ -16,7 +16,7 @@ import { type BasicStoreEntityIntelligenceRequirement, ENTITY_TYPE_INTELLIGENCE_
 import { listMatches } from '../../../src/modules/intelligenceRequirement/intelligenceRequirementMatch-domain';
 import { loadRequirementOfPirMap, migratePirsToRequirements } from '../../../src/modules/intelligenceRequirement/intelligenceRequirement-pirMigration';
 
-// Migration 1795318000000 (opencti #20278): every Pir becomes an intelligence requirement with its flags and scores unchanged,
+// Migration 1795536000000 (opencti #20278): every Pir becomes an intelligence requirement with its flags and scores unchanged,
 // then the Pir is deleted. Run twice to prove it is idempotent.
 
 const CREATE_QUERY = gql`

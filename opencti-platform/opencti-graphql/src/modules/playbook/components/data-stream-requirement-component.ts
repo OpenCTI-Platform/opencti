@@ -3,7 +3,7 @@ import type { PlaybookComponent } from '../playbook-types';
 
 // Entry point of a playbook on the events of intelligence requirements: an entity enters or leaves a requirement,
 // an entity of a requirement is updated or linked. It replaces "Listen PIR events" (PLAYBOOK_DATA_STREAM_PIR):
-// the migration 1795318000000 rewrites every playbook that started on a PIR to this entry, the PIR ids of its
+// the migration 1795536000000 rewrites every playbook that started on a PIR to this entry, the PIR ids of its
 // configuration replaced by the ids of the requirements the PIRs became.
 export const PLAYBOOK_DATA_STREAM_REQUIREMENT_ID = 'PLAYBOOK_DATA_STREAM_INTELLIGENCE_REQUIREMENT';
 
