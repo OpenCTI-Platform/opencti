@@ -20,8 +20,7 @@ import { graphql, useFragment } from 'react-relay';
 import { useNavigate } from 'react-router';
 import { InfoOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import PirThreatMapTooltip from './PirThreatMapTooltip';
 import useBuildScatterData from './useBuildScatterData';
 import WidgetScatter from '../../../../../components/dashboard/WidgetScatter';
@@ -128,37 +127,38 @@ const PirThreatMap = ({ data, days = 7, onDaysChange }: PirThreatMapProps) => {
 
   const action = (
     <div style={{ display: 'flex', gap: theme.spacing(1), alignItems: 'center' }}>
-      <ToggleButtonGroup
-        size="small"
-        exclusive
-        value={scoreMin}
-        aria-label={t_i18n('Score band')}
-        onChange={(_, value) => {
-          if (value !== null) setScoreMin(value);
-        }}
+      {/* A ButtonGroupItem renders a glyph only (LIBRARY-FEEDBACK #63): text choices use the FDS Select. */}
+      <Select
+        value={String(scoreMin)}
+        onValueChange={(value: string) => setScoreMin(Number(value) as PirThreatMapScoreBand)}
       >
-        {PIR_THREAT_MAP_SCORE_BANDS.map((band) => (
-          <ToggleButton key={band} value={band} style={{ padding: '2px 8px', fontSize: 12 }}>
-            {band === 0 ? t_i18n('All scores') : `≥ ${band}`}
-          </ToggleButton>
-        ))}
-      </ToggleButtonGroup>
-      {onDaysChange && (
-        <ToggleButtonGroup
-          size="small"
-          exclusive
-          value={days}
-          aria-label={t_i18n('Time window')}
-          onChange={(_, value) => {
-            if (value !== null) onDaysChange(value);
-          }}
-        >
-          {PIR_THREAT_MAP_WINDOWS.map((window) => (
-            <ToggleButton key={window} value={window} style={{ padding: '2px 8px', fontSize: 12 }}>
-              {t_i18n('{count, plural, one {# day} other {# days}}', { values: { count: window } })}
-            </ToggleButton>
+        <SelectTrigger aria-label={t_i18n('Score band')}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent aria-label={t_i18n('Score band')}>
+          {PIR_THREAT_MAP_SCORE_BANDS.map((band) => (
+            <SelectItem key={band} value={String(band)}>
+              {band === 0 ? t_i18n('All scores') : `≥ ${band}`}
+            </SelectItem>
           ))}
-        </ToggleButtonGroup>
+        </SelectContent>
+      </Select>
+      {onDaysChange && (
+        <Select
+          value={String(days)}
+          onValueChange={(value: string) => onDaysChange(Number(value) as PirThreatMapWindow)}
+        >
+          <SelectTrigger aria-label={t_i18n('Time window')}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent aria-label={t_i18n('Time window')}>
+            {PIR_THREAT_MAP_WINDOWS.map((window) => (
+              <SelectItem key={window} value={String(window)}>
+                {t_i18n('{count, plural, one {# day} other {# days}}', { values: { count: window } })}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       )}
     </div>
   );
