@@ -37,7 +37,7 @@ const IntelligenceRequirements = () => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('PIR (generic)'));
+  setTitle(t_i18n('Intelligence requirements'));
   const initialValues = {
     searchTerm: '',
     sortBy: 'created_at',
@@ -168,7 +168,7 @@ const IntelligenceRequirements = () => {
 
   return (
     <>
-      <Breadcrumbs elements={[{ label: t_i18n('PIR (generic)'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Intelligence requirements'), current: true }]} />
       {viewStorage.view === 'cards' ? renderCards() : renderList()}
       <IrDeleteDialog
         ir={toDelete}

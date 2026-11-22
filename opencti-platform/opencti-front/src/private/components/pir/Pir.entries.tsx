@@ -3,10 +3,11 @@ import type { MenuEntry } from '../common/menus/menuEntry';
 import { PIRAPI } from '../../../utils/hooks/capabilities';
 
 export const pir: MenuEntry = {
-  path: '/dashboard/pirs',
-  label: 'PIR',
+  // One PIR concept: the left menu opens the intelligence requirements; /dashboard/pirs redirects there.
+  path: '/dashboard/intelligence_requirements',
+  label: 'Intelligence requirements',
   icon: <TrackChanges />,
-  keywords: ['priority', 'intelligence', 'requirement', 'watchlist', 'relevance'],
+  keywords: ['pir', 'priority', 'intelligence', 'requirement', 'watchlist', 'relevance'],
   requiredCapabilities: [PIRAPI],
 };
 

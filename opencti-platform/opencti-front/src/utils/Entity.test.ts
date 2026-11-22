@@ -282,8 +282,9 @@ describe('Function: resolveLink', () => {
     expect(resolveLink('DraftWorkspace')).toEqual('/dashboard/data/import/draft');
   });
 
-  it('should return URL to PIRs for Pir type', () => {
-    expect(resolveLink('Pir')).toEqual('/dashboard/pirs');
+  it('should return URL to intelligence requirements for Pir and IntelligenceRequirement types', () => {
+    expect(resolveLink('Pir')).toEqual('/dashboard/intelligence_requirements');
+    expect(resolveLink('IntelligenceRequirement')).toEqual('/dashboard/intelligence_requirements');
   });
 
   // Default / unknown

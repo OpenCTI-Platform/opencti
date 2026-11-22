@@ -6931,5 +6931,6 @@
   "{count, plural, one {# day} other {# days}}": "{count, plural, one {# jour} other {# jours}}",
   "{count, plural, one {# criterion matched} other {# criteria matched}}": "{count, plural, one {# critère correspondant} other {# critères correspondants}}",
   "{count, plural, one {# more entity} other {# more entities}}": "{count, plural, one {# entité de plus} other {# entités de plus}}",
-  "No entity matches the selected filters in this time window": "Aucune entité ne correspond aux filtres sélectionnés sur cette période"
+  "No entity matches the selected filters in this time window": "Aucune entité ne correspond aux filtres sélectionnés sur cette période",
+  "Intelligence requirements": "Besoins en renseignement"
 }

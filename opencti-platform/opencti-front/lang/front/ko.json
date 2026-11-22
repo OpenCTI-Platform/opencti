@@ -6931,5 +6931,6 @@
   "{count, plural, one {# day} other {# days}}": "{count, plural, other {#일}}",
   "{count, plural, one {# criterion matched} other {# criteria matched}}": "{count, plural, other {#개 조건 일치}}",
   "{count, plural, one {# more entity} other {# more entities}}": "{count, plural, other {엔터티 #개 더}}",
-  "No entity matches the selected filters in this time window": "이 기간에 선택한 필터와 일치하는 엔터티가 없습니다"
+  "No entity matches the selected filters in this time window": "이 기간에 선택한 필터와 일치하는 엔터티가 없습니다",
+  "Intelligence requirements": "인텔리전스 요구사항"
 }

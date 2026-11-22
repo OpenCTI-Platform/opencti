@@ -2,13 +2,44 @@ import { v4 as uuid } from 'uuid';
 import { expect, test } from '../fixtures/baseFixtures';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import PirPage from '../model/pir.pageModel';
-import PirFormPageModel from '../model/form/pirForm.pageModel';
 import IntelligenceRequirementPageModel from '../model/intelligenceRequirement.pageModel';
 import { addRelationship, deleteRelationship } from '../dataForTesting/relationship.data';
 import { executeGraphql } from '../dataForTesting/query-utils';
 import { awaitUntilCondition } from '../utils';
 
 const FLAGGED_MALWARE = 'E2E dashboard - Malware - month ago';
+const TARGETED_LOCATION = 'location--5acd8b26-51c2-4608-86ed-e9edd43ad971';
+
+/** Create a threat landscape PIR on one location through the PIR API, the contract consumers keep calling. */
+const createPir = async (request: Parameters<typeof executeGraphql>[0], name: string) => {
+  const { stixCoreObject } = await executeGraphql<{ stixCoreObject: { id: string } | null }>(
+    request,
+    'stixCoreObject',
+    'query E2EPirLocation($id: String!) { stixCoreObject(id: $id) { id } }',
+    { id: TARGETED_LOCATION },
+  );
+  if (!stixCoreObject) throw new Error(`Location ${TARGETED_LOCATION} not found`);
+  await executeGraphql(request, 'pirAdd', 'mutation E2EPirAdd($input: PirAddInput!) { pirAdd(input: $input) { id } }', {
+    input: {
+      name,
+      pir_type: 'THREAT_LANDSCAPE',
+      description: 'e2e PIR description',
+      pir_rescan_days: 0,
+      pir_criteria: [{
+        weight: 1,
+        filters: {
+          mode: 'and',
+          filterGroups: [],
+          filters: [
+            { key: ['entity_type'], values: ['targets'], operator: 'eq', mode: 'or' },
+            { key: ['toId'], values: [stixCoreObject.id], operator: 'eq', mode: 'or' },
+          ],
+        },
+      }],
+      pir_filters: { mode: 'and', filterGroups: [], filters: [{ key: ['confidence'], values: ['0'], operator: 'gte', mode: 'or' }] },
+    },
+  });
+};
 
 const deletePirByName = async (request: Parameters<typeof executeGraphql>[0], name: string) => {
   const data = await executeGraphql<{ pirs: { edges: { node: { id: string; name: string } }[] } }>(
@@ -25,8 +56,9 @@ const deletePirByName = async (request: Parameters<typeof executeGraphql>[0], na
 /**
  * Content of the test
  * -------------------
- * Create a PIR from the PIR form
- * Open it: it is read on the screen of its intelligence requirement
+ * The PIR list URL redirects to the intelligence requirements, opened from the left menu
+ * Create a PIR through the PIR API
+ * Open it from the list: it is read on the screen of its intelligence requirement
  * Navigate through the requirement tabs
  * Flag an entity with a relationship, then unflag it
  * Delete the PIR
@@ -34,36 +66,24 @@ const deletePirByName = async (request: Parameters<typeof executeGraphql>[0], na
 test('Pir CRUD', { tag: ['@pir', '@mutation', '@ee'] }, async ({ page, request }) => {
   const leftNavigation = new LeftBarPage(page);
   const pirPage = new PirPage(page);
-  const pirForm = new PirFormPageModel(page);
   const requirement = new IntelligenceRequirementPageModel(page);
 
+  // One PIR concept: the old list URL lands on the intelligence requirements
   await pirPage.goto();
+  await page.waitForURL(/\/dashboard\/intelligence_requirements$/);
   await pirPage.navigateFromMenu();
+  await page.waitForURL(/\/dashboard\/intelligence_requirements$/);
   // open nav bar once and for all
   await leftNavigation.open();
 
   // region Create PIR
   // -----------------
 
-  await pirPage.openCreateForm();
-  await expect(pirForm.getCreateTitle()).toBeVisible();
-  // Step 1
   const pirName = `PIR - ${uuid()}`;
-  await pirForm.nameField.fill('');
-  await expect(pirForm.getNextButton()).toBeDisabled();
-  await pirForm.nameField.fill(pirName);
-  await expect(pirForm.getNextButton()).toBeEnabled();
-  await pirForm.descriptionField.fill('e2e PIR description');
-  await pirForm.rescanPeriodField.selectOption('No rescan');
-  await pirForm.getNextButton().click();
-  // Step 2
-  await expect(pirForm.getCreateButton()).toBeDisabled();
-  await pirForm.locationsField.selectOption('France');
-  await expect(pirForm.getCreateButton()).toBeEnabled();
-  await pirForm.industriesField.selectOption('Agriculture');
-  await pirForm.getCreateButton().click();
+  await createPir(request, pirName);
 
-  // The PIR is read on the screen of its intelligence requirement
+  // The PIR is listed and read on the screen of its intelligence requirement
+  await pirPage.goto();
   await pirPage.getItemFromList(pirName).click();
   await page.waitForURL(/\/dashboard\/intelligence_requirements\/[^/]+/);
   await expect(requirement.getTitle(pirName)).toBeVisible();

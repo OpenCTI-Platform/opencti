@@ -6931,5 +6931,6 @@
   "{count, plural, one {# day} other {# days}}": "{count, plural, other {#日}}",
   "{count, plural, one {# criterion matched} other {# criteria matched}}": "{count, plural, other {#件の条件に一致}}",
   "{count, plural, one {# more entity} other {# more entities}}": "{count, plural, other {他#件のエンティティ}}",
-  "No entity matches the selected filters in this time window": "この期間に選択したフィルターに一致するエンティティはありません"
+  "No entity matches the selected filters in this time window": "この期間に選択したフィルターに一致するエンティティはありません",
+  "Intelligence requirements": "インテリジェンス要件"
 }

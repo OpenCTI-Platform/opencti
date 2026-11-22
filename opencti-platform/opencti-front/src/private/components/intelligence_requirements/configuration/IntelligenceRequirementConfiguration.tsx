@@ -223,7 +223,7 @@ const EditConfiguration = ({ irId }: { irId: string }) => {
   return (
     <>
       <Breadcrumbs elements={[
-        { label: t_i18n('PIR (generic)'), link: '/dashboard/intelligence_requirements' },
+        { label: t_i18n('Intelligence requirements'), link: '/dashboard/intelligence_requirements' },
         { label: ir.name, link: `/dashboard/intelligence_requirements/${ir.id}` },
         { label: t_i18n('Configuration'), current: true },
       ]}
@@ -238,7 +238,7 @@ const IntelligenceRequirementConfiguration = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   const { irId } = useParams() as { irId?: string };
-  setTitle(t_i18n('PIR (generic)'));
+  setTitle(t_i18n('Intelligence requirements'));
   // Proposal of the AI assisted creation: opened unsaved, with the notes of the agent
   const { state } = useLocation() as { state?: { aiDraft?: IrDraft; aiNotes?: { summary: string; explanations: { criterion_id: string; text: string }[] } } };
   const [searchParams, setSearchParams] = useSearchParams();
@@ -251,7 +251,7 @@ const IntelligenceRequirementConfiguration = () => {
   return (
     <>
       <Breadcrumbs elements={[
-        { label: t_i18n('PIR (generic)'), link: '/dashboard/intelligence_requirements' },
+        { label: t_i18n('Intelligence requirements'), link: '/dashboard/intelligence_requirements' },
         { label: t_i18n('New requirement'), current: true },
       ]}
       />

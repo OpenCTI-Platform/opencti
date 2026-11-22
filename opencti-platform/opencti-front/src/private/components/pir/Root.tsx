@@ -14,10 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React, { Suspense } from 'react';
-import { Route, Routes } from 'react-router';
+import { Navigate, Route, Routes } from 'react-router';
 import { boundaryWrapper } from '@components/Error';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
-import Pirs from './Pirs';
 import Pir from './Pir';
 import Loader from '../../../components/Loader';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
@@ -31,7 +30,8 @@ const PirRoot = () => {
       {isEnterpriseEdition
         ? (
             <Routes>
-              <Route path="/" element={boundaryWrapper(Pirs)} />
+              {/* One PIR concept: the PIR list is the intelligence requirement list */}
+              <Route path="/" element={<Navigate to="/dashboard/intelligence_requirements" replace={true} />} />
               <Route path="/:pirId/*" element={boundaryWrapper(Pir)} />
             </Routes>
           )

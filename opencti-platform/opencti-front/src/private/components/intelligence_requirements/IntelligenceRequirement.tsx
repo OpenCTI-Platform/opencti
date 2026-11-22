@@ -44,7 +44,7 @@ const IntelligenceRequirement = () => {
   const [deleting, setDeleting] = useState(false);
   const data = useLazyLoadQuery<IntelligenceRequirementQuery>(requirementQuery, { id: irId }, { fetchPolicy: 'network-only' });
   const ir = data.intelligenceRequirement;
-  setTitle(ir?.name ?? t_i18n('PIR (generic)'));
+  setTitle(ir?.name ?? t_i18n('Intelligence requirements'));
   if (!ir) return <div>{t_i18n('This intelligence requirement does not exist')}</div>;
   const base = `/dashboard/intelligence_requirements/${ir.id}`;
   let tab = 'overview';
@@ -55,7 +55,7 @@ const IntelligenceRequirement = () => {
   if (pathname.endsWith('/timeline')) tab = 'timeline';
   return (
     <>
-      <Breadcrumbs elements={[{ label: t_i18n('PIR (generic)'), link: '/dashboard/intelligence_requirements' }, { label: ir.name, current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Intelligence requirements'), link: '/dashboard/intelligence_requirements' }, { label: ir.name, current: true }]} />
       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
         <Box sx={{ flex: 1 }}>
           <Text as="h1" variant="title-md">{ir.name}</Text>

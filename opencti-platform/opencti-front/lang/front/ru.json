@@ -6931,5 +6931,6 @@
   "{count, plural, one {# day} other {# days}}": "{count, plural, one {# день} few {# дня} many {# дней} other {# дня}}",
   "{count, plural, one {# criterion matched} other {# criteria matched}}": "{count, plural, one {# критерий совпал} few {# критерия совпали} many {# критериев совпали} other {# критерия совпали}}",
   "{count, plural, one {# more entity} other {# more entities}}": "{count, plural, one {ещё # сущность} few {ещё # сущности} many {ещё # сущностей} other {ещё # сущности}}",
-  "No entity matches the selected filters in this time window": "Нет сущностей, соответствующих выбранным фильтрам в этом временном окне"
+  "No entity matches the selected filters in this time window": "Нет сущностей, соответствующих выбранным фильтрам в этом временном окне",
+  "Intelligence requirements": "Разведывательные требования"
 }

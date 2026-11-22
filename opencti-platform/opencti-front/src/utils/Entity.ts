@@ -161,7 +161,6 @@ export const resolveLink = (type = 'unknown'): string | null => {
     case 'IMSI':
       return '/dashboard/observations/observables';
     case 'Pir':
-      return '/dashboard/pirs';
     case 'IntelligenceRequirement':
       return '/dashboard/intelligence_requirements';
     case 'EmailTemplate':

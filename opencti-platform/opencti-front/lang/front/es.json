@@ -6931,5 +6931,6 @@
   "{count, plural, one {# day} other {# days}}": "{count, plural, one {# día} other {# días}}",
   "{count, plural, one {# criterion matched} other {# criteria matched}}": "{count, plural, one {# criterio cumplido} other {# criterios cumplidos}}",
   "{count, plural, one {# more entity} other {# more entities}}": "{count, plural, one {# entidad más} other {# entidades más}}",
-  "No entity matches the selected filters in this time window": "Ninguna entidad coincide con los filtros seleccionados en esta ventana temporal"
+  "No entity matches the selected filters in this time window": "Ninguna entidad coincide con los filtros seleccionados en esta ventana temporal",
+  "Intelligence requirements": "Requisitos de inteligencia"
 }

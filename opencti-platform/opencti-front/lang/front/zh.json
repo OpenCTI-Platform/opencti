@@ -6931,5 +6931,6 @@
   "{count, plural, one {# day} other {# days}}": "{count, plural, other {# 天}}",
   "{count, plural, one {# criterion matched} other {# criteria matched}}": "{count, plural, other {匹配 # 个条件}}",
   "{count, plural, one {# more entity} other {# more entities}}": "{count, plural, other {另外 # 个实体}}",
-  "No entity matches the selected filters in this time window": "此时间窗口内没有符合所选筛选条件的实体"
+  "No entity matches the selected filters in this time window": "此时间窗口内没有符合所选筛选条件的实体",
+  "Intelligence requirements": "情报需求"
 }
