@@ -1,36 +1,29 @@
 import { logMigration } from '../config/conf';
-import { fullEntitiesList } from '../database/middleware-loader';
-import { type BasicStoreEntityPir, ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
-import { linkPirToRequirement } from '../modules/intelligenceRequirement/intelligenceRequirement-pirLink';
-import { executionContext, SYSTEM_USER } from '../utils/access';
+import { migratePirsToRequirements } from '../modules/intelligenceRequirement/intelligenceRequirement-pirMigration';
+import { executionContext } from '../utils/access';
 
-const message = '[MIGRATION] Linking every Pir to its intelligence requirement';
+const message = '[MIGRATION] Converting every Pir into an intelligence requirement';
 
-// Every existing Pir gets the intelligence requirement built from its criteria, filters, weights, rescan window and members
-// (pir_requirement_id on the Pir, ir_pir_id on the requirement). The engine of the Pir is not changed: the legacy manager
-// keeps flagging it and the requirement stays paused, so an instance behaves exactly as before after this migration.
-// Idempotent and resumable: a Pir already linked to an existing requirement is skipped, a broken link is rebuilt,
-// and a Pir that fails is logged and left for the next run without stopping the others.
+// Full replacement of the PIR engine (opencti #20278). Every Pir becomes an intelligence requirement with the same criteria,
+// filters, weights, rescan window, authorized members, flags and scores; then the Pir is deleted. Every playbook that starts on
+// "Listen PIR events" is rewritten to "Listen intelligence requirement events" on the requirements the Pirs became.
+// Idempotent and resumable: a converted Pir is gone, a half-converted one is finished (its requirement and entities kept).
+// A Pir that fails (its flags would change, or an error) is logged, kept and reported; its playbooks are kept unchanged.
 export const up = async (next: (error?: Error) => void) => {
   const startTime = Date.now();
   logMigration.info(`${message} > started`);
   const context = executionContext('migration');
-  const pirs = await fullEntitiesList<BasicStoreEntityPir>(context, SYSTEM_USER, [ENTITY_TYPE_PIR]);
-  let linked = 0;
-  let failed = 0;
-  for (let i = 0; i < pirs.length; i += 1) {
-    const pir = pirs[i];
-    try {
-      const before = pir.pir_requirement_id;
-      const requirementId = await linkPirToRequirement(context, pir);
-      if (requirementId !== before) linked += 1;
-    } catch (err) {
-      failed += 1;
-      const reason = err instanceof Error ? err.message : String(err);
-      logMigration.error(`${message} > Pir ${pir.id} not linked: ${reason}`);
+  const report = await migratePirsToRequirements(context);
+  report.failed.forEach((failure) => {
+    if (!failure.converted) {
+      logMigration.error(`${message} > Pir ${failure.pir_id} (${failure.name}) kept: ${failure.reason}`, { mismatches: failure.mismatches });
     }
-  }
-  logMigration.info(`${message} > done in ${Date.now() - startTime} ms (${pirs.length} Pir, ${linked} linked, ${failed} failed)`);
+  });
+  report.playbooks_kept.forEach((kept) => {
+    logMigration.error(`${message} > playbook ${kept.playbook_id} kept on "Listen PIR events": ${kept.reason}`);
+  });
+  logMigration.info(`${message} > done in ${Date.now() - startTime} ms (${report.pirs} Pir, ${report.converted} converted, ${report.failed.length} kept; `
+    + `${report.playbooks_rewritten} playbook(s) rewritten, ${report.playbooks_kept.length} kept)`);
   next();
 };
 
