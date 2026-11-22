@@ -210,4 +210,4 @@ The rules engine empowers OpenCTI with the capability to automatically establish
 ## Additional resources
 
 - **Usefulness:** To understand the benefits and results of these rules, refer to the [Inferences and reasoning](../usage/inferences.md) page in the User Guide section of the documentation.
-- **New inference rule:** Given the potential impact of a rule on your data, users are not allowed to add new rules. However, users can submit rule suggestions via a GitHub issue for evaluation. These suggestions are carefully evaluated by our team, ensuring continuous improvement and innovation.
+- **New inference rule:** Given the potential impact of a rule on your data, users are not allowed to add new rules. However, users can submit rule suggestions via a [GitHub issue](https://github.com/OpenCTI-Platform/opencti/issues/new/choose) for evaluation. These suggestions are carefully evaluated by our team, ensuring continuous improvement and innovation.

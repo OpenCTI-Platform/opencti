@@ -24,7 +24,7 @@ You can individually restore or permanently delete an object from the trash view
 
 ![Trash actions](assets/trash-actions.png)
 
-Alternatively, you can use the checkboxes at the start of the line to select a subset of deleted objects, and trigger a background task to restore or permanently delete them by batch.
+Alternatively, you can use the checkboxes at the start of the line to select a subset of deleted objects, and trigger a [background task](background-tasks.md#knowledge-tasks) to restore or permanently delete them by batch.
 
 ## Restore
 
@@ -46,7 +46,7 @@ Deleted objects are kept in trash during a fixed period of time (7 days by defau
 
 ## Configuration
 
-The trash system is enabled by default but can be disabled in the platform [configuration](../deployment/configuration.md).
+The trash system is enabled by default. To disable it, set `app:trash:enabled` (environment variable `APP__TRASH__ENABLED`) to `false` in the platform [configuration](../deployment/configuration.md#functional-customization). Deleted objects are then permanently deleted at once and the trash manager is disabled.
 
 The trash retention period can also be configured in the settings of the garbage collector manager, you can set any number of days in parameter `garbage_collection_manager:deleted_retention_days`.   
 

@@ -14,10 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { Tooltip } from '@mui/material';
-import { Field } from 'formik';
+import { Field, useField } from 'formik';
 import ComboboxField from '../../../../../../components/ComboboxField';
 import { fieldSpacingContainerStyle } from '../../../../../../utils/field';
 import useEntityTranslation from '../../../../../../utils/hooks/useEntityTranslation';
+import { useFormatter } from '../../../../../../components/i18n';
 
 interface Option {
   const: string;
@@ -40,6 +41,8 @@ const PlaybookFlowFieldArray = ({
   required,
 }: PlaybookFlowFieldArrayProps) => {
   const { translateEntityType } = useEntityTranslation();
+  const { t_i18n } = useFormatter();
+  const [{ value: fieldValue }] = useField<string | string[] | null | undefined>(name);
   const fieldOptions = [...options]
     .sort((a, b) =>
       translateEntityType(a?.title ?? '').localeCompare(
@@ -51,6 +54,12 @@ const PlaybookFlowFieldArray = ({
   const findOption = (value: string) => {
     return options.find((o) => o.const === value);
   };
+  // A stored id the component no longer offers (a notifier, a template... deleted since, or a
+  // playbook imported from another platform) is named as deleted, never shown as a raw id (#15012,
+  // #15762), and the field says it has to be replaced.
+  const selected = (Array.isArray(fieldValue) ? fieldValue : [fieldValue])
+    .filter((v): v is string => typeof v === 'string' && v.length > 0);
+  const hasDeleted = options.length > 0 && selected.some((v) => !findOption(v));
 
   return (
     <Field
@@ -62,6 +71,7 @@ const PlaybookFlowFieldArray = ({
       label={label}
       name={name}
       options={fieldOptions}
+      helperText={hasDeleted ? t_i18n('A selected item no longer exists: remove it and pick another') : undefined}
       // renderTags is gone: the library builds chips from getOptionLabel, which is the same
       // function the input and the filter use.
       renderOption={(value: string) => {
@@ -79,7 +89,8 @@ const PlaybookFlowFieldArray = ({
       }}
       getOptionLabel={(val: string) => {
         const option = findOption(val);
-        return option ? translateEntityType(option.title) : '';
+        if (option) return translateEntityType(option.title);
+        return options.length > 0 && val ? `${t_i18n('Unknown')} - ${t_i18n('deleted')}` : '';
       }}
     />
   );

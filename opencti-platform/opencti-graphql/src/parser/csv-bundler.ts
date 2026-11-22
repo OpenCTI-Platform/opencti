@@ -31,6 +31,8 @@ export interface CsvBundlerIngestionOpts {
   maxRecordNumber?: number;
   connectorId: string;
   draftId?: string;
+  // Checked before each bundle is sent: when it answers true, the run stops sending.
+  isStopped?: () => Promise<boolean>;
 }
 
 const sendBundleToWorker = async (context: AuthContext, bundle: BundleBuilder, opts: CsvBundlerIngestionOpts) => {
@@ -83,8 +85,15 @@ const internalGenerateBundles = async (
   const refEntities = await handleRefEntities(context, applicantUser, csvMapper);
   let totalBundleSend = 0;
   let totalObjectSend = 0;
+  let aborted = false;
+  const mustStop = async () => {
+    if (sendBundles && opts.isStopped && await opts.isStopped()) {
+      aborted = true;
+    }
+    return aborted;
+  };
   if (records) {
-    for (let rec = 0; rec < records.length; rec += 1) {
+    for (let rec = 0; rec < records.length && !aborted; rec += 1) {
       const record = records[rec];
       const isEmptyLine = record.length === 1 && isEmptyField(record[0]);
       if (!isEmptyLine) {
@@ -102,7 +111,7 @@ const internalGenerateBundles = async (
           // Add to bundle or else send current bundle content and move to next bundle.
           if (bundleBuilder.canAddObjects(stixObjects) && bundleBuilder.objects.length < CSV_MAX_BUNDLE_SIZE_GENERATION) {
             bundleBuilder.addObjects(stixObjects, csvData);
-          } else {
+          } else if (!(await mustStop())) {
             let objectSentCount = bundleBuilder.objects.length;
             if (sendBundles) {
               objectSentCount = await sendBundleToWorker(context, bundleBuilder, opts);
@@ -120,7 +129,7 @@ const internalGenerateBundles = async (
         }
       }
     }
-    if (bundleBuilder.objects.length > 0) {
+    if (!aborted && bundleBuilder.objects.length > 0 && !(await mustStop())) {
       let objectSentCount = bundleBuilder.objects.length;
       if (sendBundles) {
         objectSentCount = await sendBundleToWorker(context, bundleBuilder, opts);
@@ -129,7 +138,10 @@ const internalGenerateBundles = async (
       totalBundleSend += 1;
     }
   }
-  return { bundleCount: totalBundleSend, objectCount: totalObjectSend, allBundlesToSend };
+  if (aborted) {
+    logApp.info(`${LOG_PREFIX} run stopped after ${totalBundleSend} bundles: the feed is no longer running.`);
+  }
+  return { bundleCount: totalBundleSend, objectCount: totalObjectSend, allBundlesToSend, aborted };
 };
 
 /**
@@ -144,9 +156,9 @@ export const generateAndSendBundleProcess = async (
   opts: CsvBundlerIngestionOpts,
 ) => {
   logApp.info(`${LOG_PREFIX} generate and push bundles for a bulk of ${lines.length}.`);
-  const { bundleCount, objectCount } = await internalGenerateBundles(context, lines, opts, true);
+  const { bundleCount, objectCount, aborted } = await internalGenerateBundles(context, lines, opts, true);
   logApp.info(`${LOG_PREFIX} generate and push bundles for a bulk of ${lines.length} - DONE.`);
-  return { bundleCount, objectCount };
+  return { bundleCount, objectCount, aborted };
 };
 // END region CSV actual Ingestion
 // ----------------------------

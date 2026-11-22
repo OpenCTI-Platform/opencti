@@ -7,7 +7,7 @@ import WorkspaceCreation from './WorkspaceCreation';
 import Security from '../../../utils/Security';
 import { EXPLORE, EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { useQueryLoadingWithLoadQuery } from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
@@ -139,7 +139,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     filters,
   } as unknown as WorkspacesLinesPaginationQuery$variables;
 
-  const queryRef = useQueryLoading<WorkspacesLinesPaginationQuery>(
+  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<WorkspacesLinesPaginationQuery>(
     workspacesLinesQuery,
     workspacePaginationOptions,
   );
@@ -205,6 +205,8 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
               <WorkspaceCreation
                 paginationOptions={workspacePaginationOptions}
                 type={type}
+                // After the import of dashboards from a configuration bundle: no mutation returns them, the list is read again
+                onDashboardsImported={() => loadQuery(workspacePaginationOptions, { fetchPolicy: 'store-and-network' })}
               />
             </Security>
           )}

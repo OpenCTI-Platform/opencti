@@ -13,6 +13,8 @@ vi.mock('../../../../src/config/conf', async (importOriginal) => ({
 vi.mock('../../../../src/enterprise-edition/ee', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/enterprise-edition/ee')>()),
   isEnterpriseEditionUpToDate: vi.fn(async () => enterpriseEdition.enabled),
+  // The domain of a family of the Enterprise Edition checks the license too: the registry only reaches it when the platform has it
+  checkEnterpriseEdition: vi.fn(),
 }));
 vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
@@ -54,12 +56,15 @@ import { builtInTheme, customTheme, otherCustomTheme } from './configPreset-them
 import { mockConfigPresetLoaders } from './configPreset-loaders-fixtures';
 import { administratorRole, analystRole } from './configPreset-roles-fixtures';
 import { administratorsGroup, analystsGroup } from './configPreset-groups-fixtures';
-import { customMarking, papRed } from './configPreset-markings-fixtures';
+import { customMarking, papRed, tlpAmber } from './configPreset-markings-fixtures';
 import { customLabel, otherLabel } from './configPreset-labels-fixtures';
 import { dnsExclusionList, retiredExclusionList } from './configPreset-exclusionLists-fixtures';
 import { disarmKillChainPhase, killChainPhase, otherKillChainPhase } from './configPreset-killChainPhases-fixtures';
 import { customStatusTemplate, defaultStatusTemplate } from './configPreset-statusTemplates-fixtures';
 import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemplates-fixtures';
+import { customEmailTemplate, otherEmailTemplate } from './configPreset-emailTemplates-fixtures';
+import { defaultFintelDesign, nightFintelDesign } from './configPreset-fintelDesigns-fixtures';
+import { executiveDashboard, socDashboard } from './configPreset-dashboards-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -98,6 +103,9 @@ const themeItem = (theme: { standard_id: string; name: string }, isDefault: bool
   dependsOn: [],
   isDefault,
 });
+const emailTemplateItem = (template: { standard_id: string; name: string }) => (
+  { key: template.standard_id, label: template.name, translatable: false, dependsOn: [], isDefault: false }
+);
 const labelItem = (label: { standard_id: string; value: string }) => ({ key: label.standard_id, label: label.value, translatable: false, dependsOn: [], isDefault: false });
 const exclusionListItem = (list: { standard_id: string; name: string }) => ({ key: list.standard_id, label: list.name, translatable: false, dependsOn: [], isDefault: false });
 const phaseItem = (phase: { standard_id: string; kill_chain_name: string; phase_name: string }) => ({
@@ -186,9 +194,9 @@ describe('Config preset exportable types query', () => {
         label: 'Markings',
         description: 'Marking definitions, their colors and orders',
         group: { key: 'securityAccess', label: 'Security & Access' },
-        // The markings by definition, without the built-in ones
-        items: [customMarking, papRed].map((marking) => ({ key: marking.standard_id, label: marking.definition, translatable: false, dependsOn: [], isDefault: false })),
-        itemsPageInfo: onePage(2),
+        // The markings by definition, built-in ones included
+        items: [customMarking, papRed, tlpAmber].map((marking) => ({ key: marking.standard_id, label: marking.definition, translatable: false, dependsOn: [], isDefault: false })),
+        itemsPageInfo: onePage(3),
       },
       {
         key: 'roles',
@@ -203,7 +211,7 @@ describe('Config preset exportable types query', () => {
         label: 'Groups',
         description: 'Groups with their roles, markings and confidence level',
         group: { key: 'securityAccess', label: 'Security & Access' },
-        // Each group depends on its roles
+        // Each group depends on its roles, never on a built-in marking
         items: [[administratorsGroup, administratorRole], [analystsGroup, analystRole]].map(([group, role]) => ({
           key: group.standard_id,
           label: group.name,
@@ -220,6 +228,15 @@ describe('Config preset exportable types query', () => {
         group: { key: 'securityAccess', label: 'Security & Access' },
         items: [staticItem('policies', 'Policies')],
         itemsPageInfo: onePage(1),
+      },
+      {
+        key: 'emailTemplates',
+        label: 'Email templates',
+        description: 'Email templates and their content',
+        group: { key: 'securityAccess', label: 'Security & Access' },
+        // The email templates by name
+        items: [emailTemplateItem(otherEmailTemplate), emailTemplateItem(customEmailTemplate)],
+        itemsPageInfo: onePage(2),
       },
       {
         key: 'labels',
@@ -276,11 +293,55 @@ describe('Config preset exportable types query', () => {
         itemsPageInfo: onePage(2),
       },
       {
+        key: 'dashboards',
+        label: 'Custom dashboards',
+        description: '',
+        group: { key: 'dashboards', label: 'Dashboards' },
+        // By name, the investigation is not a dashboard
+        items: [statusTemplateItem(executiveDashboard), statusTemplateItem(socDashboard)],
+        itemsPageInfo: onePage(2),
+      },
+      {
         key: 'connectors',
         label: 'Connectors',
         description: 'Managed connectors and their parameters, without their secrets',
         group: { key: 'integrations', label: 'Integrations' },
         items: [{ key: 'mitre', label: 'MITRE', translatable: false, dependsOn: [], isDefault: false }],
+        itemsPageInfo: onePage(1),
+      },
+      {
+        key: 'rssFeeds',
+        label: 'RSS feeds',
+        description: 'RSS feeds and their parameters, without their state',
+        group: { key: 'integrations', label: 'Integrations' },
+        items: [
+          { key: 'Security news', label: 'Security news', translatable: false, dependsOn: [{ type: 'markings', key: customMarking.standard_id }], isDefault: false },
+          { key: 'Security news (1)', label: 'Security news', translatable: false, dependsOn: [], isDefault: false },
+        ],
+        itemsPageInfo: onePage(2),
+      },
+      {
+        key: 'csvFeeds',
+        label: 'CSV feeds',
+        description: 'CSV feeds with their mapper, without their credentials',
+        group: { key: 'integrations', label: 'Integrations' },
+        items: [],
+        itemsPageInfo: onePage(0),
+      },
+      {
+        key: 'jsonFeeds',
+        label: 'JSON feeds',
+        description: 'JSON feeds with their mapper, without their credentials',
+        group: { key: 'integrations', label: 'Integrations' },
+        items: [],
+        itemsPageInfo: onePage(0),
+      },
+      {
+        key: 'taxiiFeeds',
+        label: 'TAXII feeds',
+        description: 'TAXII feeds and their parameters, without their credentials',
+        group: { key: 'integrations', label: 'Integrations' },
+        items: [{ key: 'Partner/TAXII', label: 'Partner/TAXII', translatable: false, dependsOn: [], isDefault: false }],
         itemsPageInfo: onePage(1),
       },
       {
@@ -291,6 +352,24 @@ describe('Config preset exportable types query', () => {
         // The first page of the rules declared on the platform
         items: RULES_DECLARATION.slice(0, 10).map(({ id, name }) => staticItem(id, name)),
         itemsPageInfo: { hasNextPage: true, globalCount: RULES_DECLARATION.length },
+      },
+      {
+        key: 'fintelDesigns',
+        label: 'Fintel designs',
+        description: 'Fintel designs, their colors and logos',
+        group: { key: 'customization', label: 'Customization' },
+        // By name, the default design marked: no design depends on it
+        items: [
+          { key: defaultFintelDesign.standard_id, label: 'Filigran report', translatable: false, dependsOn: [], isDefault: true },
+          {
+            key: nightFintelDesign.standard_id,
+            label: 'Night briefing',
+            translatable: false,
+            dependsOn: [],
+            isDefault: false,
+          },
+        ],
+        itemsPageInfo: onePage(2),
       },
     ]);
   });
@@ -332,9 +411,12 @@ describe('Config preset exportable types query', () => {
     const types = result.data?.configPresetExportableTypes as { key: string; lockedByEnterpriseEdition: boolean; items: unknown[]; itemsPageInfo: unknown }[];
     expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
-      ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['labels', false], ['exclusionLists', false], ['killChainPhases', false],
-      ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['connectors', true], ['ruleEngine', false],
+      ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['emailTemplates', true], ['labels', false], ['exclusionLists', false], ['killChainPhases', false],
+      ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['dashboards', false], ['connectors', true],
+      ['rssFeeds', false], ['csvFeeds', false], ['jsonFeeds', false], ['taxiiFeeds', false], ['ruleEngine', false], ['fintelDesigns', true],
     ]);
+    expect(types.find((type) => type.key === 'emailTemplates')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
+    expect(types.find((type) => type.key === 'fintelDesigns')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
     const licensed = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
@@ -375,14 +457,21 @@ describe('Config preset exportable types query', () => {
       ['roles', 'securityAccess'],
       ['groups', 'securityAccess'],
       ['policies', 'securityAccess'],
+      ['emailTemplates', 'securityAccess'],
       ['labels', 'taxonomy'],
       ['exclusionLists', 'customization'],
       ['killChainPhases', 'taxonomy'],
       ['vocabularies', 'taxonomy'],
       ['statusTemplates', 'taxonomy'],
       ['caseTemplates', 'taxonomy'],
+      ['dashboards', 'dashboards'],
       ['connectors', 'integrations'],
+      ['rssFeeds', 'integrations'],
+      ['csvFeeds', 'integrations'],
+      ['jsonFeeds', 'integrations'],
+      ['taxiiFeeds', 'integrations'],
       ['ruleEngine', 'automationRules'],
+      ['fintelDesigns', 'customization'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);
@@ -435,7 +524,7 @@ describe('Config preset exportable items query', () => {
   });
 
   it('rejects an unknown type', async () => {
-    const result = await queryItems({ type: 'dashboards' });
+    const result = await queryItems({ type: 'unknownType' });
     expect(result.errors?.[0].message).toBe('Unknown configuration preset type');
   });
 

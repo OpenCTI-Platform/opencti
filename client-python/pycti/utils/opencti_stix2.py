@@ -93,12 +93,11 @@ STIX_VERSION_2_0: str = "stix_2_0"
 # STIX 2.0 export: entity types whose serialization is delegated to the
 # GraphQL ``toStix(version: stix_2_0)`` field instead of the legacy converter.
 # Only used when the caller opts in with ``stix_version=STIX_VERSION_2_0``.
-# Every SDO is migrated, containers included, except the types without a
-# backend STIX 2.0 converter (Language, Security-Coverage,
-# Security-Coverage-Result). Relationships are listed by their abstract type,
-# see `_stix_2_0_dispatch_type`.
-# TODO(stix-2-0-migration): once every type is covered, drop this set and the
-# legacy code path in `generate_export` / `prepare_export`.
+# Every exportable type is migrated: SDOs (containers included), SCOs,
+# relationships and sightings. Relationships are listed by their abstract
+# type, see `_stix_2_0_dispatch_type`.
+# TODO(stix-2-0-migration): drop this set and the legacy code path in
+# `generate_export` / `prepare_export` once the backend export is the default.
 _STIX_2_0_BACKEND_ENTITY_TYPES = frozenset(
     {
         # Non-container SDOs
@@ -113,9 +112,12 @@ _STIX_2_0_BACKEND_ENTITY_TYPES = frozenset(
         "Indicator",
         "Infrastructure",
         "Intrusion-Set",
+        "Language",
         "Malware",
         "Malware-Analysis",
         "Narrative",
+        "Security-Coverage",
+        "Security-Coverage-Result",
         "Threat-Actor-Group",
         "Threat-Actor-Individual",
         "Tool",
@@ -196,7 +198,8 @@ _STIX_2_0_RELATIONSHIP_TYPES = {
 
 # Raw GraphQL keys kept on the backend payload so that `prepare_export` can
 # still add the related objects (author, markings, files, contained objects,
-# data source, relationship source and target) to the bundle.
+# data source, relationship source and target, security coverage results and
+# coverage of a result) to the bundle.
 # TODO(stix-2-0-migration): DELETE once the backend produces these objects,
 # except `from` / `to`: they also leave out the source and target refs that
 # the export access filter excludes, which the backend converter does not do.
@@ -215,6 +218,8 @@ _STIX_2_0_PRESERVED_KEYS = (
     "dataSourceId",
     "from",
     "to",
+    "results",
+    "resultOf",
 )
 
 # Backend keys dropped because `prepare_export` rebuilds them from the
@@ -255,6 +260,13 @@ _STIX_2_0_LEGACY_NESTED_REF_KEYS = {
     },
     "windows-registry-key": {"values": MultipleRefRelationship.VALUES.value},
 }
+
+# Nested refs that the backend outputs under another key than the legacy
+# export: nested ref relationship type -> backend key, without its `_ref` /
+# `_refs` suffix. The legacy export names the key after the relationship
+# type (`object_covered_ref`), the backend uses the STIX key that the import
+# reads (`covered_ref`).
+_STIX_2_0_NESTED_REF_KEY_PREFIXES = {"object-covered": "covered"}
 
 #: STIX Extension ID for OpenCTI custom Cyber Observables (SCO)
 STIX_EXT_OCTI_SCO: str = "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
@@ -892,49 +904,24 @@ class OpenCTIStix2:
             stix_object["labels"] = self.opencti.get_attribute_in_extension(
                 "labels", stix_object
             )
-        if "labels" in stix_object:
-            for label in stix_object["labels"]:
-                label_key = "label_" + label
-                label_in_cache = self.get_in_cache(label_key)
-                if label_in_cache is not None:
-                    label_data = label_in_cache
-                else:
-                    # Fail in label creation is allowed
-                    label_data = self.opencti.label.read_or_create_unchecked(
-                        value=label
-                    )
-                if label_data is not None:
-                    self.set_in_cache(label_key, label_data)
-                    object_label_ids.append(label_data["id"])
-        elif "x_opencti_labels" in stix_object:
-            for label in stix_object["x_opencti_labels"]:
-                label_key = "label_" + label
-                label_in_cache = self.get_in_cache(label_key)
-                if label_in_cache is not None:
-                    label_data = label_in_cache
-                else:
-                    # Fail in label creation is allowed
-                    label_data = self.opencti.label.read_or_create_unchecked(
-                        value=label
-                    )
-                if label_data is not None:
-                    self.set_in_cache(label_key, label_data)
-                    object_label_ids.append(label_data["id"])
-        elif "x_opencti_tags" in stix_object:
-            for tag in stix_object["x_opencti_tags"]:
-                label = tag["value"]
-                color = tag["color"] if "color" in tag else None
-                label_key = "label_" + label
-                label_in_cache = self.get_in_cache(label_key)
-                if label_in_cache is not None:
-                    label_data = label_in_cache
-                else:
-                    # Fail in label creation is allowed
-                    label_data = self.opencti.label.read_or_create_unchecked(
-                        value=label, color=color
-                    )
-                if label_data is not None:
-                    self.set_in_cache(label_key, label_data)
+        # Labels can sit in several locations at once (for example after a
+        # playbook deep-merges two versions of an object): read them all.
+        for label, color in self._collect_labels(stix_object):
+            label_key = "label_" + label
+            label_in_cache = self.get_in_cache(label_key)
+            if label_in_cache is not None:
+                label_data = label_in_cache
+            elif color is not None:
+                # Fail in label creation is allowed
+                label_data = self.opencti.label.read_or_create_unchecked(
+                    value=label, color=color
+                )
+            else:
+                # Fail in label creation is allowed
+                label_data = self.opencti.label.read_or_create_unchecked(value=label)
+            if label_data is not None:
+                self.set_in_cache(label_key, label_data)
+                if label_data["id"] not in object_label_ids:
                     object_label_ids.append(label_data["id"])
         # Kill Chain Phases
         kill_chain_phases_ids = []
@@ -1051,11 +1038,17 @@ class OpenCTIStix2:
                     "external_references", stix_object
                 )
             )
-        if (
-            "external_references" in stix_object
-            and stix_object["external_references"] is not None
-        ):
-            for external_reference in stix_object["external_references"]:
+        # External references can sit in several locations at once: read them
+        # all and keep each reference once (same generated id).
+        seen_external_reference_ids = set()
+        extension_refs = self.opencti.get_attribute_in_extension(
+            "external_references", stix_object
+        )
+        standard_external_references = []
+        for location in (stix_object.get("external_references"), extension_refs):
+            standard_external_references.extend(location or [])
+        if len(standard_external_references) > 0:
+            for external_reference in standard_external_references:
                 try:
                     url = (
                         external_reference["url"]
@@ -1075,9 +1068,13 @@ class OpenCTIStix2:
                     generated_ref_id = self.opencti.external_reference.generate_id(
                         url, source_name, external_id
                     )
-                    if generated_ref_id is None:
+                    if (
+                        generated_ref_id is None
+                        or generated_ref_id in seen_external_reference_ids
+                    ):
                         continue
                     else:
+                        seen_external_reference_ids.add(generated_ref_id)
                         # Collect files for external reference
                         ext_ref_files = []
                         if "x_opencti_files" in external_reference:
@@ -1230,7 +1227,7 @@ class OpenCTIStix2:
                     self.opencti.app_logger.warning(
                         "Cannot generate external reference"
                     )
-        elif (
+        if (
             "x_opencti_external_references" in stix_object
             and stix_object["x_opencti_external_references"] is not None
         ):
@@ -1249,9 +1246,13 @@ class OpenCTIStix2:
                 generated_ref_id = self.opencti.external_reference.generate_id(
                     url, source_name, external_id
                 )
-                if generated_ref_id is None:
+                if (
+                    generated_ref_id is None
+                    or generated_ref_id in seen_external_reference_ids
+                ):
                     continue
                 else:
+                    seen_external_reference_ids.add(generated_ref_id)
                     # Collect files from both x_opencti_files and extension
                     all_files = []
                     if "x_opencti_files" in external_reference:
@@ -1345,6 +1346,41 @@ class OpenCTIStix2:
             "external_references": external_references_ids,
             "reports": reports,
         }
+
+    def _collect_labels(self, stix_object):
+        """Collect the labels of a STIX object from every location, without duplicates.
+
+        Reads the top-level ``labels``, the ``labels`` of the OpenCTI extension,
+        ``x_opencti_labels`` and ``x_opencti_tags``, in this order. A label found
+        in several locations is kept once; the color of an ``x_opencti_tags``
+        entry is kept for it.
+
+        :param stix_object: the STIX object
+        :type stix_object: dict
+        :return: list of (label value, color or None) tuples, in reading order
+        :rtype: list
+        """
+        colors = {}
+
+        def add(value, color=None):
+            if value is None:
+                return
+            if value not in colors or (colors[value] is None and color is not None):
+                colors[value] = color
+
+        extension_labels = self.opencti.get_attribute_in_extension(
+            "labels", stix_object
+        )
+        for location in (
+            stix_object.get("labels"),
+            extension_labels,
+            stix_object.get("x_opencti_labels"),
+        ):
+            for label in location or []:
+                add(label)
+        for tag in stix_object.get("x_opencti_tags") or []:
+            add(tag.get("value"), tag.get("color"))
+        return list(colors.items())
 
     # Please use get_reader instead of this definition
     def get_readers(self):
@@ -2316,10 +2352,13 @@ class OpenCTIStix2:
         """
 
         def refs(nested_refs: List[Dict]) -> set:
-            """(key prefix, target id) of each nested ref."""
+            """(backend key prefix, target id) of each nested ref."""
             return {
                 (
-                    self._nested_ref_key_prefix(nested_ref["relationship_type"]),
+                    _STIX_2_0_NESTED_REF_KEY_PREFIXES.get(
+                        nested_ref["relationship_type"],
+                        self._nested_ref_key_prefix(nested_ref["relationship_type"]),
+                    ),
                     (nested_ref.get("to") or {}).get("standard_id"),
                 )
                 for nested_ref in nested_refs
@@ -2851,8 +2890,8 @@ class OpenCTIStix2:
         without its id, is built client-side with the legacy rules instead, so
         that it does not fail the whole export.
 
-        An object that is not migrated (e.g. Language) keeps legacy markings:
-        in a bundle mixing both, the first copy of a shared marking is kept.
+        An object exported by the legacy converter keeps legacy markings: in a
+        bundle mixing both, the first copy of a shared marking is kept.
 
         :param marking: Marking definition as returned by the API
             (``objectMarking`` entry)
@@ -3936,7 +3975,7 @@ class OpenCTIStix2:
         :param item: Item to rescan rules for
         :type item: dict
         """
-        self.opencti.stix_core_object.rules_rescan_async(
+        self.opencti.stix_core_object.rule_rescan_async(
             element_id=item["id"], execution_id=bundle_id
         )
 

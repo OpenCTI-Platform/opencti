@@ -120,6 +120,80 @@ describe('Vocabulary resolver standard behavior', () => {
   });
 });
 
+describe('Vocabulary resolver parent entry behavior (#20006)', () => {
+  const CHILDREN_QUERY = gql`
+    query vocabularies($category: VocabularyCategory, $filters: FilterGroup) {
+      vocabularies(category: $category, filters: $filters, first: 200) {
+        edges {
+          node {
+            id
+            name
+            description
+            parent_name
+          }
+        }
+      }
+    }
+  `;
+  const PATCH_QUERY = gql`
+    mutation VocabularyFieldPatch($id: ID!, $input: [EditInput!]!) {
+      vocabularyFieldPatch(id: $id, input: $input) {
+        id
+        name
+        description
+        parent_name
+      }
+    }
+  `;
+  const entriesOf = async (category) => {
+    const result = await queryAsAdminWithSuccess({ query: CHILDREN_QUERY, variables: { category } });
+    return result.data.vocabularies.edges.map(({ node }) => node);
+  };
+  const hostSubcategories = ['SERVER', 'WORKSTATION', 'LAPTOP', 'VIRTUAL_MACHINE', 'HYPERVISOR'];
+  it('should seed every system subcategory with its category in parent_name', async () => {
+    const subcategories = await entriesOf('system_subcategory_ov');
+    expect(subcategories.length).toBeGreaterThanOrEqual(80);
+    hostSubcategories.forEach((name) => {
+      const subcategory = subcategories.find((entry) => entry.name === name);
+      expect(subcategory.parent_name).toEqual('HOST');
+      expect(subcategory.description).not.toMatch(/\(category: /);
+    });
+  });
+  it('should keep the subcategories of a renamed system category', async () => {
+    const host = (await entriesOf('system_category_ov')).find(({ name }) => name === 'HOST');
+    await queryAsAdminWithSuccess({ query: PATCH_QUERY, variables: { id: host.id, input: { key: 'name', value: ['HOSTS'] } } });
+    let subcategories = await entriesOf('system_subcategory_ov');
+    hostSubcategories.forEach((name) => {
+      expect(subcategories.find((entry) => entry.name === name).parent_name).toEqual('HOSTS');
+    });
+    expect(subcategories.filter(({ parent_name }) => parent_name === 'HOST')).toHaveLength(0);
+    // Clean: the rename back carries the link back
+    await queryAsAdminWithSuccess({ query: PATCH_QUERY, variables: { id: host.id, input: { key: 'name', value: ['HOST'] } } });
+    subcategories = await entriesOf('system_subcategory_ov');
+    hostSubcategories.forEach((name) => {
+      expect(subcategories.find((entry) => entry.name === name).parent_name).toEqual('HOST');
+    });
+  });
+  it('should keep the category of a subcategory whose description is edited', async () => {
+    const server = (await entriesOf('system_subcategory_ov')).find(({ name }) => name === 'SERVER');
+    const edited = await queryAsAdminWithSuccess({
+      query: PATCH_QUERY,
+      variables: { id: server.id, input: { key: 'description', value: ['Any server'] } },
+    });
+    expect(edited.data.vocabularyFieldPatch.parent_name).toEqual('HOST');
+    // Clean
+    await queryAsAdminWithSuccess({ query: PATCH_QUERY, variables: { id: server.id, input: { key: 'description', value: [server.description] } } });
+  });
+  it('should leave the other categories alone on a rename of a category with no subcategories', async () => {
+    const container = (await entriesOf('system_category_ov')).find(({ name }) => name === 'CONTAINER_WORKLOAD');
+    const before = await entriesOf('system_subcategory_ov');
+    await queryAsAdminWithSuccess({ query: PATCH_QUERY, variables: { id: container.id, input: { key: 'name', value: ['CONTAINERS'] } } });
+    await queryAsAdminWithSuccess({ query: PATCH_QUERY, variables: { id: container.id, input: { key: 'name', value: ['CONTAINER_WORKLOAD'] } } });
+    const after = await entriesOf('system_subcategory_ov');
+    expect(after.map(({ name, parent_name }) => `${name}:${parent_name}`).sort()).toEqual(before.map(({ name, parent_name }) => `${name}:${parent_name}`).sort());
+  });
+});
+
 describe('Vocabulary resolver closed category behavior', () => {
   const CATEGORIES_QUERY = gql`
     query vocabularyCategories {

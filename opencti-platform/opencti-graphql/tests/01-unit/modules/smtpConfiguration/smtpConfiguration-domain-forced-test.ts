@@ -38,6 +38,7 @@ vi.mock('../../../../src/database/smtp', () => ({
     port: 587,
     use_ssl: false,
     reject_unauthorized: false,
+    require_tls: false,
     auth_type: null,
     username: null,
     oauth_user: null,

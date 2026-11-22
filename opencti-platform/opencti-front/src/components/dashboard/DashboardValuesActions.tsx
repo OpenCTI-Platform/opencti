@@ -3,42 +3,31 @@ import { useFormatter } from '../i18n';
 import { EXPORT_REMOVE_CLASS } from '../../utils/Image';
 
 interface DashboardValuesActionsProps {
-  // Allows setting the current values (variables and time range) as the dashboard defaults.
-  canSetAsDefaults: boolean;
+  // The name of the preset Reset goes back to (the default one of the user); none: the dashboard defaults.
+  resetTargetName?: string;
   disabled?: boolean;
   onReset: () => void;
-  onSetAsDefaults?: () => void;
 }
 
 /**
- * The actions on the per user values of a dashboard, variables and time range together.
- * Whether they show at all is up to the caller: only when a value differs from its default.
+ * Reset of the per user values of a dashboard, variables and time range together. It names what it restores and
+ * writes nothing. Whether it shows at all is up to the caller: only when a value differs from its default.
  */
-const DashboardValuesActions = ({ canSetAsDefaults, disabled = false, onReset, onSetAsDefaults }: DashboardValuesActionsProps) => {
+const DashboardValuesActions = ({ resetTargetName, disabled = false, onReset }: DashboardValuesActionsProps) => {
   const { t_i18n } = useFormatter();
   return (
-    <>
-      <Button
-        className={EXPORT_REMOVE_CLASS}
-        variant="tertiary"
-        size="small"
-        disabled={disabled}
-        onClick={onReset}
-      >
-        {t_i18n('Reset')}
-      </Button>
-      {canSetAsDefaults && (
-        <Button
-          className={EXPORT_REMOVE_CLASS}
-          variant="secondary"
-          size="small"
-          disabled={disabled}
-          onClick={onSetAsDefaults}
-        >
-          {t_i18n('Set as default values')}
-        </Button>
-      )}
-    </>
+    <Button
+      className={EXPORT_REMOVE_CLASS}
+      variant="tertiary"
+      size="small"
+      data-testid="dashboard-values-reset"
+      disabled={disabled}
+      onClick={onReset}
+    >
+      {resetTargetName !== undefined
+        ? t_i18n('Reset to “{name}”', { values: { name: resetTargetName } })
+        : t_i18n('Reset to defaults')}
+    </Button>
   );
 };
 

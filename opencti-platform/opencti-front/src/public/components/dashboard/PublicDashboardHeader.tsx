@@ -1,5 +1,5 @@
 import Typography from '@mui/material/Typography';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import DatePicker from '../../../components/common/input/picker/BaseDatePicker';
 import { useFormatter } from '../../../components/i18n';
 import type { DashboardConfig } from '../../../components/dashboard/dashboard-types';
 import DashboardRelativeDateSelect from '../../../components/dashboard/DashboardRelativeDateSelect';

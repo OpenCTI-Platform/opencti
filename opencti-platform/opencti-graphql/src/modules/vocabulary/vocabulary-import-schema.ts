@@ -16,6 +16,10 @@ export const vocabularyImportSchema = z.strictObject({
   order: z.number().int().nullable().optional(),
   // A hidden entry is not offered as a choice of the fields of its category. Absent or null: a new entry is visible
   is_hidden: z.boolean().nullable().optional(),
+  // The name of the parent entry (the category of a System subcategory). Absent or null: no parent
+  parent_name: z.string().trim().min(1).nullable().optional(),
+  // The display colour of the entry, as VocabularyAddInput takes it. Absent or null: a new entry has no colour (a file of an older platform has none)
+  color: z.string().nullable().optional(),
 });
 
 export type VocabularyImportConfiguration = z.infer<typeof vocabularyImportSchema>;

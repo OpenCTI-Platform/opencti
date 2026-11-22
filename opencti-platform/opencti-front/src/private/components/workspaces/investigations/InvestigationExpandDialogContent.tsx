@@ -242,11 +242,11 @@ const InvestigationExpandDialogContentComponent = ({
               // toLowerCase() because relationship names are pascalized
               // in elAggregationRelationsCount().
               value:
-                  (rel.value ?? 0)
-                  - (
-                    existingRelsSelected.get(rel.label.toLowerCase())
-                    ?? new Set()
-                  ).size,
+                (rel.value ?? 0)
+                - (
+                  existingRelsSelected.get(rel.label.toLowerCase())
+                  ?? new Set()
+                ).size,
             },
           ]
         : []))

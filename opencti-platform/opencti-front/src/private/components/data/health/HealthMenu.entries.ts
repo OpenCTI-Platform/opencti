@@ -1,0 +1,16 @@
+import type { MenuEntry } from '../../common/menus/menuEntry';
+import { BYPASS } from '../../../../utils/hooks/capabilities';
+
+// Pure data (no component import): collected by the pages search through its `*.entries.ts(x)` name.
+const menuEntries: MenuEntry[] = [
+  {
+    path: '/dashboard/data/health/operations',
+    label: 'Operations',
+    keywords: ['duplicates', 'Deduplication', 'Merge', 'cleanup', 'orphan', 'inconsistency', 'sanity', 'quality', 'integrity'],
+    // Same rule as the left nav (useNavMenu).
+    requiredCapabilities: [BYPASS],
+    featureFlag: 'DATA_SANITY_MANAGER',
+  },
+];
+
+export default menuEntries;

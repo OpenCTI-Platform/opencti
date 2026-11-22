@@ -1084,6 +1084,7 @@ type CSVFeedAddInputFromImport {
   markings: [String!]!
   name: String!
   scheduling_period: String
+  ssl_verify: Boolean
   uri: String!
 }
 
@@ -2311,6 +2312,7 @@ type ConfigPresetImportItem {
   isEnabled: Boolean
   key: String!
   label: String!
+  serviceAccountRequired: Boolean!
   translatable: Boolean!
 }
 
@@ -3522,6 +3524,42 @@ enum CustomViewsOrdering {
 
 type CustomViewsSettings {
   canEntityTypeHaveCustomViews: Boolean!
+}
+
+type DashboardPreset {
+  config: DashboardPresetConfig!
+  id: ID!
+  name: String!
+  values: [DashboardPresetValue!]!
+}
+
+type DashboardPresetConfig {
+  endDate: String
+  relativeDate: String
+  startDate: String
+}
+
+input DashboardPresetConfigInput {
+  endDate: String
+  relativeDate: String
+  startDate: String
+}
+
+input DashboardPresetInput {
+  config: DashboardPresetConfigInput
+  id: ID
+  name: String!
+  values: [DashboardPresetValueInput!]
+}
+
+type DashboardPresetValue {
+  value: String!
+  variableId: ID!
+}
+
+input DashboardPresetValueInput {
+  value: String!
+  variableId: ID!
 }
 
 type DashboardVariable {
@@ -5038,6 +5076,7 @@ type ExternalReferenceEditMutations {
   delete: ID
   fieldPatch(input: [EditInput]!): ExternalReference
   importPush(embedded: Boolean, file: Upload!, fileMarkings: [String], noTriggerImport: Boolean, version: DateTime): File
+  importPushRef(fileRef: FileRefInput!): File
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference
 }
@@ -5342,6 +5381,17 @@ enum FileOrdering {
   objectMarking
 }
 
+input FileRefInput {
+  embedded: Boolean
+  file_markings: [String]
+  mime_type: String
+  name: String!
+  no_trigger_import: Boolean
+  storage_key: String!
+  sync_id: ID!
+  version: DateTime
+}
+
 type FilesMetrics {
   globalCount: Int!
   globalSize: Float!
@@ -5615,6 +5665,7 @@ type Group implements BasicObject & InternalObject {
   created_at: DateTime
   default_assignation: Boolean
   default_dashboard: Workspace
+  default_dashboard_preset: String
   default_hidden_types: [String!]
   default_marking: [DefaultMarking!]
   description: String
@@ -7359,6 +7410,7 @@ type IngestionJsonAddInputFromImport {
   description: String
   headers: [IngestionHeader!]
   jsonMapper: IngestionJsonMapperFromImport!
+  markings: [String!]
   name: String!
   pagination_with_sub_page: Boolean
   pagination_with_sub_page_attribute_path: String
@@ -7465,12 +7517,14 @@ input IngestionRssAddInput {
 }
 
 type IngestionRssAddInputFromImport {
+  created_by_ref: DefaultMarkingDefinition
   current_state_date: DateTime
   description: String
   name: String!
   object_marking_refs: [DefaultMarkingDefinition]
   report_types: [String!]
   scheduling_period: String
+  ssl_verify: Boolean
   uri: String
 }
 
@@ -9019,6 +9073,7 @@ type MeUser implements BasicObject & InternalObject {
   capabilitiesInDraft: [Capability!]!
   date_format: DateFormat
   default_dashboard: Workspace
+  default_dashboard_preset: String
   default_dashboards: [Workspace!]!
   default_hidden_types: [String]!
   default_marking: [DefaultMarking!]
@@ -9328,7 +9383,7 @@ type Mutation {
   configPresetImportSessionClear(delete_file: Boolean): Boolean!
   configPresetImportSessionSave(file_id: ID!, revision: Int!, selections: [ConfigPresetSelectionInput!]!): ConfigPresetImportSession!
   configPresetImportUpload(file: Upload!): File!
-  configPresetPartialImport(file: Upload!, item_modes: [ConfigPresetItemModeInput!], items: [ID!]!, type: ID!): ConfigPresetPartialImportOutput!
+  configPresetPartialImport(credentials: [ConfigPresetItemCredentialsInput!], file: Upload!, item_modes: [ConfigPresetItemModeInput!], items: [ID!]!, service_accounts: [ConfigPresetItemServiceAccountInput!], type: ID!): ConfigPresetPartialImportOutput!
   configPresetPartialImportPreview(file: Upload!, type: ID!): ConfigPresetPartialImportPreview!
   connectorJWT: String!
   connectorMigrateToManaged(input: MigrateConnectorToManagedInput!): ManagedConnector!
@@ -9577,12 +9632,14 @@ type Mutation {
   playbookAddNode(id: ID!, input: PlaybookAddNodeInput!): String!
   playbookDelete(id: ID!): ID
   playbookDeleteLink(id: ID!, linkId: ID!): Playbook
-  playbookDeleteNode(id: ID!, nodeId: ID!): Playbook
+  playbookDeleteNode(id: ID!, nodeId: ID!, keepChildren: Boolean): Playbook
   playbookDuplicate(id: ID!): String!
   playbookExecute(entityId: String!, id: ID!): Boolean
   playbookFieldPatch(commitMessage: String, id: ID!, input: [EditInput!]!, references: [String]): Playbook
   playbookImport(file: Upload!): String!
   playbookInsertNode(childNodeId: ID!, id: ID!, input: PlaybookAddNodeInput!, parentNodeId: ID!, parentPortId: ID!): PlaybookInsertResult!
+  playbookMoveNode(id: ID!, nodeId: ID!, parentNodeId: ID!, parentPortId: ID!): String!
+  playbookRelink(fromNodeId: ID, fromPortId: ID, id: ID!, linkId: ID!, toNodeId: ID!): String!
   playbookReplaceNode(id: ID!, input: PlaybookAddNodeInput!, nodeId: ID!): String!
   playbookStepExecution(bundle: String!, data_instance_id: ID!, event_id: ID!, execution_id: ID!, execution_start: DateTime!, playbook_id: ID!, previous_bundle: String!, previous_step_id: ID!, step_id: ID!): Boolean
   playbookUpdatePositions(id: ID!, positions: String!): ID
@@ -9773,6 +9830,8 @@ type Mutation {
   workspaceDuplicate(input: WorkspaceDuplicateInput!): Workspace
   workspaceEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): Workspace
   workspaceFieldPatch(id: ID!, input: [EditInput!]!): Workspace
+  workspacePresetDelete(id: ID!, presetId: ID!): Workspace
+  workspacePresetUpsert(id: ID!, input: DashboardPresetInput!): Workspace
   workspaceVariableDelete(id: ID!, variableId: ID!): Workspace
   workspaceVariableUpsert(id: ID!, input: DashboardVariableInput!): Workspace
   workspaceWidgetConfigurationImport(id: ID!, input: ImportConfigurationInput!): Workspace
@@ -10772,6 +10831,7 @@ type Organization implements BasicObject & Identity & StixCoreObject & StixDomai
   currentUserAccessRight: String
   customFieldValues: [CustomFieldValue!]
   default_dashboard: Workspace
+  default_dashboard_preset: String
   default_hidden_types: [String!]
   description: String
   draftVersion: DraftVersion
@@ -11453,6 +11513,12 @@ input PlaybookAddNodeInput {
 
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
+
+  "Node this node is linked from: required for every node but the entry point, given with parentPortId."
+  parentNodeId: ID
+
+  "Out port of parentNodeId the link leaves from."
+  parentPortId: ID
   position: PositionInput!
 }
 
@@ -12214,7 +12280,7 @@ type Query {
   savedFilter(id: ID!): SavedFilter
   savedFilters(after: ID, filters: FilterGroup, first: Int, orderBy: SavedFilterOrdering, orderMode: OrderingMode, search: String): SavedFilterConnection
   schemaAttributeNames(elementType: [String]!): AttributeConnection
-  schemaAttributes: [AttributesMap]
+  schemaAttributes(entityType: String): [AttributesMap]
   schemaRelationsRefTypesMapping: [StixRelationshipRefSchema!]!
   schemaRelationsTypesMapping: [StixRelationshipSchema!]!
   sector(id: String): Sector
@@ -12229,6 +12295,7 @@ type Query {
   sessions: [UserSession]
   settings: Settings!
   smtpConfiguration: SmtpConfiguration
+  smtpConfigurationDefaults: SmtpConfigurationDefaults!
   status(id: String!): Status
   statusTemplate(id: String!): StatusTemplate
   statusTemplates(after: ID, first: Int, orderBy: StatusTemplateOrdering, orderMode: OrderingMode, search: String): StatusTemplateConnection
@@ -13893,7 +13960,8 @@ type Settings implements BasicObject & InternalObject & IntlSettings & ThemeSett
   platform_no_access_message: String
   platform_notifier_auto_trigger_assignee: Boolean!
   platform_openaev_url: String
-  platform_opengrc_url: String
+  platform_opencrq_url: String
+  platform_opengrc_url: String @deprecated(reason: "OpenGRC was renamed OpenCRQ. Use platform_opencrq_url, which returns the same value.")
   platform_organization: Organization
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
   platform_providers: [Provider!]!
@@ -13981,6 +14049,7 @@ type SmtpConfiguration {
   oauth_user: String
   port: Int
   reject_unauthorized: Boolean
+  require_tls: Boolean
   sender_email_address: String
   smtp_enabled: Boolean!
   use_db_config: Boolean!
@@ -14001,11 +14070,16 @@ input SmtpConfigurationAddInput {
   password: String
   port: Int
   reject_unauthorized: Boolean
+  require_tls: Boolean
   sender_email_address: String
   smtp_enabled: Boolean
   use_db_config: Boolean
   use_ssl: Boolean
   username: String
+}
+
+type SmtpConfigurationDefaults {
+  require_tls: Boolean!
 }
 
 type Software implements BasicObject & StixCoreObject & StixCyberObservable & StixObject {
@@ -14061,6 +14135,7 @@ type Software implements BasicObject & StixCoreObject & StixCyberObservable & St
   x_opencti_inferences: [Inference]
   x_opencti_modified_at: DateTime
   x_opencti_product: String
+  x_opencti_purl: String
   x_opencti_score: Int
   x_opencti_stix_ids: [StixId]
 }
@@ -14080,6 +14155,7 @@ input SoftwareAddInput {
   vendor: String
   version: String
   x_opencti_product: String
+  x_opencti_purl: String
 }
 
 type SoftwareConnection {
@@ -14586,6 +14662,7 @@ type StixCyberObservableEditMutations {
   exportPush(file: Upload!): Boolean
   fieldPatch(commitMessage: String, input: [EditInput]!, references: [String]): StixCyberObservable
   importPush(embedded: Boolean, file: Upload!, fileMarkings: [String], noTriggerImport: Boolean, version: DateTime): File
+  importPushRef(fileRef: FileRefInput!): File
   promote: StixCyberObservable @deprecated(reason: "[>=6.2 & <6.8]. Use `promoteToIndicator`.")
   promoteToIndicator: Indicator
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
@@ -14726,6 +14803,7 @@ type StixDomainObjectEditMutations {
   exportPush(file: Upload!, file_markings: [String]!): Boolean
   fieldPatch(commitMessage: String, input: [EditInput]!, references: [String]): StixDomainObject
   importPush(embedded: Boolean, file: Upload!, fileMarkings: [String], fintelTemplateId: String, fromTemplate: Boolean, noTriggerImport: Boolean, version: DateTime): File
+  importPushRef(fileRef: FileRefInput!): File
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(relationship_type: String, toId: StixRef!): StixDomainObject
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject
@@ -15392,6 +15470,7 @@ type SubAttackPatternForMatrix {
   attack_pattern_id: String!
   description: String
   name: String!
+  x_mitre_id: String
 }
 
 type SubType {
@@ -15654,8 +15733,6 @@ type System implements BasicObject & Identity & StixCoreObject & StixDomainObjec
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   x_opencti_aliases: [String]
-  x_opencti_system_category: String
-  x_opencti_system_subcategory: String
   x_opencti_closing_reason: String
   x_opencti_criticality: String
   x_opencti_environment: String
@@ -15669,6 +15746,8 @@ type System implements BasicObject & Identity & StixCoreObject & StixDomainObjec
   x_opencti_platform: String
   x_opencti_reliability: String
   x_opencti_stix_ids: [StixId]
+  x_opencti_system_category: String
+  x_opencti_system_subcategory: String
 }
 
 input SystemAddInput {
@@ -15700,8 +15779,6 @@ input SystemAddInput {
   update: Boolean
   upsertOperations: [EditInput!]
   x_opencti_aliases: [String]
-  x_opencti_system_category: String
-  x_opencti_system_subcategory: String
   x_opencti_criticality: String
   x_opencti_environment: String
   x_opencti_firstname: String
@@ -15712,6 +15789,8 @@ input SystemAddInput {
   x_opencti_platform: String
   x_opencti_reliability: String
   x_opencti_stix_ids: [StixId]
+  x_opencti_system_category: String
+  x_opencti_system_subcategory: String
   x_opencti_workflow_id: String
 }
 
@@ -15962,9 +16041,11 @@ type TaxiiFeedAddInputFromImport {
   authentication_type: String!
   authentication_value: String!
   collection: String!
+  confidence_to_score: Boolean
   description: String!
   name: String!
   scheduling_period: String
+  ssl_verify: Boolean
   uri: String!
   version: String!
 }
@@ -16906,6 +16987,7 @@ enum TriggersOrdering {
 
 type TypeAttribute {
   defaultValues: [DefaultValue!]
+  description: String
   editDefault: Boolean!
   label: String
   mandatory: Boolean!
@@ -17451,6 +17533,7 @@ type Vocabulary implements BasicObject & StixMetaObject & StixObject {
   modified: DateTime
   name: String!
   order: Int
+  parent_name: String
   parent_types: [String!]!
   refreshed_at: DateTime
   representative: Representative!
@@ -17474,6 +17557,7 @@ input VocabularyAddInput {
   "*Constraints:*\n* Minimal length: `1`\n* Must match format: `not-blank`\n"
   name: String!
   order: Int
+  parent_name: String
   stix_id: StixId
   update: Boolean
   x_opencti_stix_ids: [StixId]
@@ -18110,6 +18194,11 @@ enum WorkflowExecutionStatus {
 
 type WorkflowInstance {
   allowedTransitions: [WorkflowTransition!]!
+
+  """
+  Transitions the user is targeted by but whose entity conditions are not met yet
+  """
+  blockedTransitions: [WorkflowTransition!]!
   currentState: String!
   currentStatus: Status
   id: ID!
@@ -18207,6 +18296,7 @@ type WorkflowSerializedState {
   order: Int
   requestAccessOutcome: WorkflowRequestAccessOutcome
   statusId: String!
+  workflowStatusId: String
 }
 
 type WorkflowSerializedTransition {
@@ -18222,6 +18312,11 @@ type WorkflowSerializedTransition {
 
 type WorkflowTransition {
   actions: [String!]
+
+  """
+  Blocked transitions only: JSON filter group of the entity conditions not met yet
+  """
+  blockingConditions: String
   closingReason: String
   comment: String
   event: String!
@@ -18260,6 +18355,7 @@ type Workspace implements BasicObject & InternalObject {
   authorizedMembers: [MemberAccess!]!
   created_at: DateTime
   currentUserAccessRight: String
+  currentUserDefaultPresetId: ID
   description: String
   editContext: [EditUserContext!]
   enrichmentWorks(after: ID, entityIds: [String!], filters: FilterGroup, first: Int, orderBy: WorksOrdering, orderMode: OrderingMode, search: String): WorkConnection
@@ -18274,6 +18370,7 @@ type Workspace implements BasicObject & InternalObject {
   objects(after: ID, all: Boolean, filters: FilterGroup, first: Int, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, search: String, types: [String]): StixObjectOrStixRelationshipRefConnection
   owner: Creator
   parent_types: [String!]!
+  presets: [DashboardPreset!]!
   refresh_interval: Int
   refreshed_at: DateTime
   representative: Representative!

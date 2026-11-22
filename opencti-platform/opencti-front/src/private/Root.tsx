@@ -55,7 +55,7 @@ const rootSettingsFragment = graphql`
     platform_date_format
     platform_time_format
     platform_openaev_url
-    platform_opengrc_url
+    platform_opencrq_url
     platform_xtmhub_url
     xtm_hub_registration_status
     xtm_hub_backend_is_reachable
@@ -227,6 +227,7 @@ const meUserFragment = graphql`
     default_dashboard {
       id
     }
+    default_dashboard_preset
     default_time_field
     default_hidden_types
     effective_confidence_level {

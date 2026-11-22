@@ -1,4 +1,4 @@
-import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Select, SelectContent, SelectHelperText, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { useFormatter } from '../../../i18n';
 import useVariableValueLabels from '../useVariableValueLabels';
 import type { ValueInputProps } from '../DashboardVariableValueInput';
@@ -11,7 +11,7 @@ interface SelectOption {
 
 // A form (`commitOn="change"`) can clear its value, which it reads as no value. A live filter (`commitOn="blur"`, the chips)
 // never does: an empty value there is "unset", which the chip does not offer.
-const OptionsSelect = ({ label, value, options, onChange, disabled, commitOn }: Omit<ValueInputProps, 'variable'> & { options: SelectOption[] }) => (
+const OptionsSelect = ({ label, value, options, onChange, disabled, commitOn, required, error }: Omit<ValueInputProps, 'variable'> & { options: SelectOption[] }) => (
   <Select
     value={value}
     onValueChange={(next) => {
@@ -19,9 +19,11 @@ const OptionsSelect = ({ label, value, options, onChange, disabled, commitOn }: 
       else if (commitOn === 'change') onChange('');
     }}
     disabled={disabled}
+    required={required}
+    error={!!error}
     clearable={commitOn === 'change'}
   >
-    <SelectLabel>{label}</SelectLabel>
+    <SelectLabel required={required}>{label}</SelectLabel>
     <SelectTrigger className="w-full">
       <SelectValue />
     </SelectTrigger>
@@ -30,6 +32,7 @@ const OptionsSelect = ({ label, value, options, onChange, disabled, commitOn }: 
         <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
       ))}
     </SelectContent>
+    {error && <SelectHelperText>{error}</SelectHelperText>}
   </Select>
 );
 

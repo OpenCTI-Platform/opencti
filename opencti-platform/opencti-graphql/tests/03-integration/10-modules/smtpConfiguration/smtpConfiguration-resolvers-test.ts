@@ -4,6 +4,7 @@ import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../../utils/testQu
 import { queryAsAdminWithSuccess, queryAsAdminWithError, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
 import { patchAttribute } from '../../../../src/database/middleware';
 import { ENTITY_TYPE_SETTINGS } from '../../../../src/schema/internalObject';
+import { TLS_REJECT_UNAUTHORIZED } from '../../../../src/config/conf';
 
 const SMTP_CONFIGURATION_QUERY = gql`
   query SmtpConfigurationTest {
@@ -15,11 +16,20 @@ const SMTP_CONFIGURATION_QUERY = gql`
       port
       use_ssl
       reject_unauthorized
+      require_tls
       auth_type
       username
       oauth_user
       oauth_client_id
       oauth_issuer
+    }
+  }
+`;
+
+const SMTP_CONFIGURATION_DEFAULTS_QUERY = gql`
+  query SmtpConfigurationDefaultsTest {
+    smtpConfigurationDefaults {
+      require_tls
     }
   }
 `;
@@ -32,6 +42,7 @@ const SMTP_CONFIGURATION_EDIT_MUTATION = gql`
       hostname
       port
       auth_type
+      require_tls
     }
   }
 `;
@@ -66,6 +77,17 @@ describe('SmtpConfiguration resolvers', () => {
     });
   });
 
+  describe('Query smtpConfigurationDefaults', () => {
+    it('should return require_tls following tls:reject_unauthorized, before any configuration is set', async () => {
+      const result = await queryAsAdminWithSuccess({ query: SMTP_CONFIGURATION_DEFAULTS_QUERY });
+      expect(result.data.smtpConfigurationDefaults).toEqual({ require_tls: TLS_REJECT_UNAUTHORIZED });
+    });
+
+    it('should be forbidden for users without SETTINGS_SETACCESSES capability', async () => {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: SMTP_CONFIGURATION_DEFAULTS_QUERY });
+    });
+  });
+
   describe('Mutation smtpConfigurationEdit', () => {
     it('should reject port 25', async () => {
       await queryAsAdminWithError(
@@ -97,6 +119,21 @@ describe('SmtpConfiguration resolvers', () => {
       });
       expect(result.data.smtpConfigurationEdit.smtp_enabled).toBe(true);
       expect(result.data.smtpConfigurationEdit.hostname).toBe('smtp-updated.example.com');
+    });
+
+    it('should expose require_tls following tls:reject_unauthorized while it is not stored', async () => {
+      const result = await queryAsAdminWithSuccess({ query: SMTP_CONFIGURATION_QUERY });
+      expect(result.data.smtpConfiguration.require_tls).toBe(TLS_REJECT_UNAUTHORIZED);
+    });
+
+    it('should store require_tls', async () => {
+      const result = await queryAsAdminWithSuccess({
+        query: SMTP_CONFIGURATION_EDIT_MUTATION,
+        variables: { input: { require_tls: !TLS_REJECT_UNAUTHORIZED } },
+      });
+      expect(result.data.smtpConfigurationEdit.require_tls).toBe(!TLS_REJECT_UNAUTHORIZED);
+      const queryResult = await queryAsAdminWithSuccess({ query: SMTP_CONFIGURATION_QUERY });
+      expect(queryResult.data.smtpConfiguration.require_tls).toBe(!TLS_REJECT_UNAUTHORIZED);
     });
   });
 

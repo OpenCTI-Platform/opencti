@@ -3,6 +3,7 @@
 Decay exclusion rules are used to automatically exclude some IOCs from our Decay engine. 
 
 Multiple reasons explain the existence this feature: 
+
 - Some IOCs, such as YARA rules, should not expire. Indeed, you always want detection rules to be enabled so that your detection system can always detect any threat.
 - Some IOCs are coming from some sources that already manage the IOCs lifecycle. Therefore, our own decay engine conflicts with the source's decay.
 
@@ -23,6 +24,7 @@ By **default**, a decay exclusion rule will be created as **Disabled**, unless y
 Decay exclusion rules offer some filters, to allow you to be precise in the definition of indicators that should be prevented from Decaying.
 
 Currently, you can filter on: 
+
 - Creator
 - Author
 - Marking

@@ -272,9 +272,9 @@ export const itemColor = (
   return stringToColour(normalizedType, reversed);
 };
 
-export type ChipEntityValue
-  = | 'analyses' | 'cases' | 'events' | 'observations' | 'all-threats'
-    | 'arsenal' | 'techniques' | 'victimology' | 'location';
+export type ChipEntityValue =
+  | 'analyses' | 'cases' | 'events' | 'observations' | 'all-threats'
+  | 'arsenal' | 'techniques' | 'victimology' | 'location';
 
 const FAMILY_TO_CHIP_ENTITY: Partial<Record<keyof typeof COLOR_FAMILIES, ChipEntityValue>> = {
   analyse: 'analyses',

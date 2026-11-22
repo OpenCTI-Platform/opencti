@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import LocationMiniMapTargets from '../location/LocationMiniMapTargets';
-import { computeLevel } from '../../../../utils/Number';
+import { computeLogLevel } from '../../../../utils/Number';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
@@ -63,7 +63,7 @@ const VictimologyMap = ({ queryRef, title }) => {
     const headValue = values[0];
     return {
       ...d.entity,
-      level: computeLevel(d.value, lastValue, headValue + 1),
+      level: computeLogLevel(d.value, lastValue, headValue + 1),
     };
   });
 

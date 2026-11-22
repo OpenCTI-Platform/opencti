@@ -16,6 +16,7 @@ import {
   pickConfigPresetTypeItems,
   publishConfigPresetImportAction,
   reloadConfigPresetImportUser,
+  toConfigPresetItemOptions,
 } from './configPreset-import-utils';
 import { computeConfigPresetItem, computeConfigPresetItems, loadConfigPresetImportZip } from './configPreset-import-domain';
 import { readConfigPresetBundle, resolveBundleDependencies } from './configPreset-import-bundle';
@@ -30,7 +31,6 @@ import {
   type ConfigPresetBundle,
   type ConfigPresetBundleItem,
   type ConfigPresetComputedItem,
-  type ConfigPresetImportCredentials,
   type ConfigPresetItemOptions,
   type ConfigPresetImportPlan,
   configPresetPlanKey,
@@ -192,7 +192,7 @@ const realImport = async (
   }
   logApp.info('[CONFIG PRESET] Import started', { user_id: user.id, file_id: fileId, total: items.length });
   const importContext = context;
-  const plan: ConfigPresetImportPlan = { created: new Set(), targets: new Map(), ...itemOptions };
+  const plan: ConfigPresetImportPlan = { created: new Set(), targets: new Map(), emailTemplateNames: new Set(), ...itemOptions };
   const modes = configPresetImportModes(selections);
   const results: ConfigPresetImportItemResult[] = [];
   // Why the import stopped before the end, when it did: a lost lock, or an unexpected error between two items
@@ -285,12 +285,7 @@ export const configPresetImport = async (
   itemServiceAccounts: ConfigPresetItemServiceAccountInput[] = [],
 ): Promise<ConfigPresetImportOutput> => {
   checkConfigPresetImportAccess(context, user);
-  const credentials: ConfigPresetImportCredentials = new Map(itemCredentials.map(({ type, key, values }) => [
-    configPresetPlanKey(type, key),
-    Object.fromEntries(values.map((credential) => [credential.key, credential.secret])),
-  ]));
-  const serviceAccounts = new Map(itemServiceAccounts.map(({ type, key, user_id: userId }) => [configPresetPlanKey(type, key), userId]));
-  const itemOptions: ConfigPresetItemOptions = { credentials, serviceAccounts };
+  const itemOptions = toConfigPresetItemOptions(itemCredentials, itemServiceAccounts);
   // A real import goes on if the browser disconnects: its context is detached from the request
   const engineContext: AuthContext = isDryRun ? context : { ...context, requestAbortSignal: undefined };
   const prepare = async () => {

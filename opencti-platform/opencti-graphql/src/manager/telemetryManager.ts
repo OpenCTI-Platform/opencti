@@ -417,7 +417,7 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   // endregion
   // region OTLP Exporter
   try {
-    const connectivityQuery = await getHttpClient({ responseType: 'json' }).post(FILIGRAN_OTLP_TELEMETRY, {});
+    const connectivityQuery = await getHttpClient({ responseType: 'json', trusted: true }).post(FILIGRAN_OTLP_TELEMETRY, {});
     if (connectivityQuery.status === 200) {
       // OtlpExporterReader can be deactivated if connectivity fail at manager start.
       const OtlpExporterReader = new BatchExportingMetricReader({
@@ -542,6 +542,17 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // region Draft information
     const draftWorkspaces = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
     manager.setDraftCount(draftWorkspaces.length);
+    // endregion
+
+    // region Investigation information
+    // Investigations are restricted to their authorized members: includeAuthorities lets the
+    // bypass telemetry user count all of them.
+    const investigationCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, {
+      types: [ENTITY_TYPE_WORKSPACE],
+      includeAuthorities: true,
+      filters: { mode: FilterMode.And, filters: [{ key: ['type'], values: ['investigation'] }], filterGroups: [] },
+    });
+    manager.setInvestigationCount(investigationCount);
     // endregion
 
     // region Workbenches information

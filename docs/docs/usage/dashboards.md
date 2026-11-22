@@ -31,7 +31,7 @@ You can do mass deletion operations using the checkbox:
 
 You have the flexibility to tailor the arrangement of [widgets](widgets.md) on your dashboard, optimizing organization and workflow efficiency. Widgets can be intuitively placed to highlight key information. Additionally, you can resize widgets from the bottom right corner based on the importance of the information, enabling adaptation to specific analytical needs. This technical flexibility ensures a fluid, visually optimized user experience.
 
-Moreover, the top banner of the dashboard offers a convenient feature to configure the timeframe for displayed data. This can be accomplished through the selection of a relative time period, such as "Last 7 days", or by specifying fixed "Start" and "End" dates, allowing users to precisely control the temporal scope of the displayed information.
+Moreover, the top banner of the dashboard offers a convenient feature to configure the timeframe for displayed data. This can be accomplished through the selection of a relative time period, such as "Last 7 days", or by specifying fixed "Start" and "End" dates, allowing users to precisely control the temporal scope of the displayed information. This time range is personal: it is kept in your browser and does not modify the dashboard. Dashboards can also hold [variables and presets](dashboards-variables.md) to switch the values of the widget filters in one click.
 
 ![Dashboard overview](assets/dashboard-overview.png)
 
@@ -91,7 +91,7 @@ The dashboard configuration will be saved as a JSON file, with the title formatt
 
 ```JSON
 {
-  "openCTI_version": "5.12.0",
+  "openCTI_version": "7.261116.0",
   "type": "dashboard",
   "configuration": {
     "name": "My dashboard title",
@@ -104,11 +104,13 @@ The widget configuration will be saved as a JSON file, with the title formatted 
 
 ```JSON
 {
-  "openCTI_version": "5.12.0",
+  "openCTI_version": "7.261116.0",
   "type": "widget",
   "configuration": "eyJ0eXB(...)iOmZhbHNlfX0="
 }
 ```
+
+The `openCTI_version` field holds the version of the platform that exported the file.
 
 !!! warning "Source platform-related filters"
 
@@ -139,16 +141,19 @@ Within a few seconds, you'll be directed to your newly created custom dashboard.
 
 ![Import dashboard option](assets/one-click-deploy.png)
 
-To import a widget from a dashboard view,
-1- Hover over the Add button (+) in the right bottom corner.
-2- Click on the Import a widget button (cloud with an upward arrow).
-3- Select your file.
+#### Import a widget
+
+To import a widget from a dashboard view:
+
+1. Navigate to the desired dashboard.
+2. Click on the `Import Widget` button at the top of the dashboard.
+3. Select your file.
 
 ![Import widget option](assets/import_widget.png)
 
 !!! warning "Configuration compatibility"
 
-    Only JSON files with the required properties will be accepted, including "openCTI_version: [5.12.0 and above]", "type: [dashboard|widget]", and a "configuration". This applies to both dashboards and widgets configurations.
+    Only JSON files with the required properties will be accepted, including "openCTI_version: [5.12.16 and above]", "type: [dashboard|widget]", and a "configuration". This applies to both dashboards and widgets configurations.
 
 
 ### Duplicate

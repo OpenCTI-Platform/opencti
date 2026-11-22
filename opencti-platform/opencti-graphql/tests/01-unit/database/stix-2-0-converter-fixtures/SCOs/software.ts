@@ -11,6 +11,7 @@ export const SOFTWARE_INSTANCE = {
   version: '4.0',
   languages: ['en'],
   x_opencti_product: 'Cobalt Strike Beacon',
+  x_opencti_purl: 'pkg:generic/cobalt-strike/beacon@4.0',
   objectMarking: [],
 } as unknown as StoreCyberObservable;
 
@@ -32,4 +33,5 @@ export const EXPECTED_SOFTWARE = {
   version: '4.0',
   languages: ['en'],
   x_opencti_product: 'Cobalt Strike Beacon',
+  x_opencti_purl: 'pkg:generic/cobalt-strike/beacon@4.0',
 };

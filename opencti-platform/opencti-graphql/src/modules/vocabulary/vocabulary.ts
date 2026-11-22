@@ -40,6 +40,8 @@ const VOCABULARY_DEFINITION: ModuleDefinition<StoreEntityVocabulary, StixVocabul
     { name: 'order', label: 'Order', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     // Optional display colour of the entry (hex), seeded for the scales that carry a meaning (criticality, exposure, environment, category)
     { name: 'color', label: 'Color', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    // The name of the parent entry (a system subcategory names its system category); kept on a rename of the parent entry
+    { name: 'parent_name', label: 'Parent', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'is_hidden', label: 'Hidden', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'builtIn', label: 'Is built-in', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],

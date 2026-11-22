@@ -5,7 +5,7 @@ import { useEffect } from 'react';
  * These fields are NOT supported by OpenSearch, which does not implement runtime mappings.
  *
  * ⚠️ MAINTENANCE: This list MUST be kept in sync with `RUNTIME_ATTRIBUTES` defined in the back-end:
- * opencti-platform/opencti-graphql/src/database/engine.ts
+ * opencti-platform/opencti-graphql/src/database/engine-query-builder.ts
  *
  * If you add a new runtime attribute in `RUNTIME_ATTRIBUTES` AND expose it as a sortable column
  * in the front-end (isSortable: true), you MUST add its field name here too.

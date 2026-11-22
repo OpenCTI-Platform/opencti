@@ -104,7 +104,7 @@ describe('useFieldRenderer', () => {
     expect(screen.getByRole('option', { name: 'Main observable type' })).toBeInTheDocument();
   });
 
-  it('updates mapping, label, name, and vocabulary field type when an attribute is selected', () => {
+  it('updates mapping, label, name, and field type when an attribute is selected', () => {
     const handleFieldChange = vi.fn();
     const field = createField({ attributeMapping: { entity: 'main_entity', attributeName: '' }, type: '' });
     renderField(field, createFormData({ fields: [field] }), { handleFieldChange });
@@ -115,7 +115,9 @@ describe('useFieldRenderer', () => {
     expect(handleFieldChange).toHaveBeenCalledWith('fields.0.attributeMapping.attributeName', 'status');
     expect(handleFieldChange).toHaveBeenCalledWith('fields.0.label', 'Status');
     expect(handleFieldChange).toHaveBeenCalledWith('fields.0.name', 'status');
-    expect(handleFieldChange).toHaveBeenCalledWith('fields.0.type', 'select');
+    // The default values of an attribute are its Entity Settings defaults, not a vocabulary: no select is forced
+    expect(handleFieldChange).not.toHaveBeenCalledWith('fields.0.type', 'select');
+    expect(handleFieldChange).toHaveBeenCalledWith('fields.0.type', expect.any(String));
   });
 
   it('auto-assigns openvocab for a whitelisted attribute and shows it selected and locked', () => {
@@ -287,15 +289,14 @@ describe('useFieldRenderer', () => {
     expect(screen.queryByRole('option', { name: 'Description' })).not.toBeInTheDocument();
   });
 
-  it('renders vocabulary options read-only and custom option controls without vocabulary', () => {
-    const vocabularyField = createField({
+  it('renders custom option controls for a select, even when the attribute has default values', () => {
+    const defaultValuesField = createField({
       type: 'select',
       attributeMapping: { entity: 'main_entity', attributeName: 'status' },
     });
-    renderField(vocabularyField);
-    expect(screen.getByText('Options (from vocabulary)')).toBeInTheDocument();
-    expect(screen.getByText('• Open')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Add option' })).not.toBeInTheDocument();
+    renderField(defaultValuesField);
+    expect(screen.queryByText('Options (from vocabulary)')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add option' })).toBeInTheDocument();
 
     cleanup();
     const customField = createField({

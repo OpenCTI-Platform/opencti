@@ -97,7 +97,7 @@ export const getFeedsAndSyncsLastFailureDetails = async (ingestionIds: string[])
 
 /**
  * Short description of a failed feed or sync execution, from its ingestion log metadata.
- * The HTTP status (with Cloudflare detail when present) when the source answered, else the error code or raw error.
+ * The HTTP status (with Cloudflare detail when present) when the source answered, else the error message when kept, else the error code.
  * Undefined when the metadata carries none of them.
  */
 export const describeFeedAndSyncExecutionFailure = ({ http_status, http_status_text, error_code, cloudflare, error }: FeedAndSyncExecutionFailure) => {
@@ -105,7 +105,7 @@ export const describeFeedAndSyncExecutionFailure = ({ http_status, http_status_t
     const status = http_status_text ? `HTTP ${http_status} ${http_status_text}` : `HTTP ${http_status}`;
     return cloudflare ? `${status} (${cloudflare})` : status;
   }
-  return error_code ?? error;
+  return error ?? error_code;
 };
 
 // endregion

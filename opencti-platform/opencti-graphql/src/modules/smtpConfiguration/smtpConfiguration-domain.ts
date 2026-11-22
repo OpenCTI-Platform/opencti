@@ -4,7 +4,7 @@ import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { SmtpAuthType, type SmtpConfigurationAddInput } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS } from '../../config/conf';
+import { BUS_TOPICS, TLS_REJECT_UNAUTHORIZED } from '../../config/conf';
 import { ALLOW_EMAIL_REWRITE, SMTP_JSON_CONFIG, smtpTest } from '../../database/smtp';
 import { decryptSmtpSecret, encryptSmtpSecret } from './smtpConfiguration-crypto';
 import type { BasicStoreSettings, SmtpConfiguration } from '../../types/settings';
@@ -48,6 +48,18 @@ const validateSmtpConfigurationInput = (input: SmtpConfigurationAddInput) => {
   }
 };
 
+// Values a configuration follows while it does not store its own, also when no configuration exists yet
+export const getSmtpConfigurationDefaults = () => ({
+  require_tls: TLS_REJECT_UNAUTHORIZED,
+});
+
+// Configurations stored before require_tls existed follow the global default: expose the value in effect,
+// so that the form does not show, then save, another one.
+const withEffectiveRequireTls = (config: SmtpConfiguration): SmtpConfiguration => ({
+  ...config,
+  require_tls: config.require_tls ?? getSmtpConfigurationDefaults().require_tls,
+});
+
 // No feature-flag guard: also used internally by database/smtp.js and boot-time checks.
 export const getSmtpConfiguration = async (
   context: AuthContext,
@@ -60,7 +72,7 @@ export const getSmtpConfiguration = async (
     return { ...(stored ?? {}), ...SMTP_JSON_CONFIG } as unknown as SmtpConfiguration;
   }
   if (!stored) return null;
-  return { ...stored, forced_sender_email: false };
+  return { ...withEffectiveRequireTls(stored), forced_sender_email: false };
 };
 
 export const smtpConfigurationEdit = async (
@@ -87,7 +99,7 @@ export const smtpConfigurationEdit = async (
   });
   await notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
   const stored = (element as unknown as BasicStoreSettings).smtp_configuration!;
-  return { ...stored, forced_sender_email: !ALLOW_EMAIL_REWRITE };
+  return { ...withEffectiveRequireTls(stored), forced_sender_email: !ALLOW_EMAIL_REWRITE };
 };
 
 export const smtpConfigurationRefreshTokenUpdate = async (

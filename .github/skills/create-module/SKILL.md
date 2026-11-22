@@ -37,6 +37,8 @@ Implement `ModuleDefinition` interface.
 Define attributes, relations, and register the definition using `registerDefinition`.
 If the module is behind a feature flag, set `featureFlag: <FLAG_CONSTANT>` on **each**
 attribute and nested mapping — see the `add-feature-flag` skill.
+If an attribute stores a user id, declare it to the user merge, including an id held inside a
+JSON payload — see [User References](../../instructions/backend/patterns/user-references.md).
 
 ### Step 8a — Create GraphQL Registration File (`<name>-graphql.ts`)
 Create a `<name>-graphql.ts` file in the module folder that imports the module schema/resolvers and calls `registerGraphqlSchema(...)`.

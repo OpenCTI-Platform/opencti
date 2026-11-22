@@ -14,6 +14,7 @@ interface PeriodicityFieldProps {
   helperText?: string;
   handleOnChange?: (value: string | null) => void;
   setFieldValue?: (field: string, value: unknown, shouldValidate?: boolean) => void;
+  required?: boolean;
 }
 
 // Parse ISO 8601 duration string to extract value and unit
@@ -47,6 +48,7 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
   helperText,
   handleOnChange,
   setFieldValue,
+  required = false,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -98,7 +100,7 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
 
           return (
             <>
-              <InputLabel variant="outlined" shrink>
+              <InputLabel variant="outlined" shrink required={required}>
                 {label || t_i18n('Periodicity')}
               </InputLabel>
               <Box

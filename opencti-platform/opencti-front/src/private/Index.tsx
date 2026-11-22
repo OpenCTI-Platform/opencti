@@ -94,6 +94,8 @@ const Index = ({ settings }: IndexProps) => {
     overflowY: 'hidden',
     height: '100vh',
     marginRight: 'var(--chatbot-sidebar-width, 0px)',
+    // Focusable by script only (see focusMainContent): a landmark, not a control, so no focus ring.
+    outline: 'none',
   };
 
   const boxSx: SxProps = {
@@ -127,7 +129,7 @@ const Index = ({ settings }: IndexProps) => {
           {!isForcePasswordChangeRoute && <NavBar />}
           <Message />
           <NewsFeedToastManager />
-          <Stack component="main" sx={mainSx}>
+          <Stack component="main" tabIndex={-1} sx={mainSx}>
             <Box sx={boxSx}>
               <Suspense fallback={<Loader />}>
                 <Routes>

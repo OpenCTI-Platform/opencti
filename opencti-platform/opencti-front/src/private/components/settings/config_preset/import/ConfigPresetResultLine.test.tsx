@@ -37,6 +37,11 @@ describe('ConfigPresetResultLine', () => {
     ['Built-in theme', 'Built-in theme'],
     ['Theme already exists', 'Theme already exists'],
     ['Theme name already exists', 'Theme name already exists'],
+    ['The standard id of the fintel design does not match its id', 'The standard id of the fintel design does not match its id'],
+    ['Fintel design already exists', 'Fintel design already exists'],
+    ['Fintel design name already exists', 'Fintel design name already exists'],
+    ['The logo of the fintel design is too large', 'The logo of the fintel design is too large'],
+    ['The logo of the fintel design is not a supported image', 'The logo of the fintel design is not a supported image'],
     ['Added as "Dark (1)"', 'Added as "Dark (1)"'],
     ['Default theme Dark could not be imported', 'Default theme Dark could not be imported'],
     ['Entity types that cannot be hidden: Foo, Bar', 'Entity types that cannot be hidden: Foo, Bar'],
@@ -66,7 +71,6 @@ describe('ConfigPresetResultLine', () => {
     ['The Administrators group keeps the Administrator role', 'The Administrators group keeps the Administrator role'],
     ['Removes sensitive rights', 'Removes sensitive rights'],
     ['Shareable markings not allowed by the group: TLP:RED', 'Shareable markings not allowed by the group: TLP:RED'],
-    ['Built-in marking', 'Built-in marking'],
     ['The order of the marking changes', 'The order of the marking changes'],
     ['Groups that get new markings automatically get this one', 'Groups that get new markings automatically get this one'],
     ['Sets the main organization: Filigran', 'Sets the main organization: Filigran'],
@@ -91,6 +95,13 @@ describe('ConfigPresetResultLine', () => {
     ['The confidence level of the service account is not changed', 'The confidence level of the service account is not changed'],
     ['Configuration to provide: MITRE_API_KEY', 'Configuration to provide: MITRE_API_KEY'],
     ['Connector not available on this platform: opencti/connector-mitre', 'Connector not available on this platform: opencti/connector-mitre'],
+    ['Feed already exists', 'Feed already exists'],
+    ['Feed name already exists', 'Feed name already exists'],
+    ['Several feeds have this name: import it as a copy', 'Several feeds have this name: import it as a copy'],
+    ['Author not found: Filigran', 'Author not found: Filigran'],
+    ['URI parameters left empty: token, next_token', 'URI parameters left empty: token, next_token'],
+    ['JSON mapper created: Vendor mapper', 'JSON mapper created: Vendor mapper'],
+    ['Mapper default values not found: createdBy', 'Mapper default values not found: createdBy'],
   ])('translates the reason %s', (reason, text) => {
     testRender(<ConfigPresetResultLine label="Theme" status="SKIPPED" reason={reason} />);
     expect(screen.getByText(text)).toBeInTheDocument();
