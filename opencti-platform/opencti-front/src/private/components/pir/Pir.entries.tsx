@@ -1,13 +1,12 @@
-import { TrackChanges } from '@mui/icons-material';
+import { Icon } from '@filigran/design-system';
 import type { MenuEntry } from '../common/menus/menuEntry';
 import { PIRAPI } from '../../../utils/hooks/capabilities';
 
 export const pir: MenuEntry = {
-  // One PIR concept: the left menu opens the intelligence requirements; /dashboard/pirs redirects there.
-  path: '/dashboard/intelligence_requirements',
-  label: 'Intelligence requirements',
-  icon: <TrackChanges />,
-  keywords: ['pir', 'priority', 'intelligence', 'requirement', 'watchlist', 'relevance'],
+  path: '/dashboard/pirs',
+  label: 'PIR',
+  icon: <Icon name="radar" size={16} />,
+  keywords: ['priority', 'intelligence', 'requirement', 'watchlist', 'relevance'],
   requiredCapabilities: [PIRAPI],
 };
 
