@@ -25,7 +25,7 @@ import {
   storeLoadById,
   topRelationsList,
 } from '../../database/middleware-loader';
-import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, PIR_ENGINE_REQUIREMENT, type PirExplanation, type StoreEntityPir } from './pir-types';
+import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type PirExplanation, type StoreEntityPir } from './pir-types';
 import {
   type EditInput,
   EditOperation,
@@ -61,7 +61,7 @@ import {
 } from '../../utils/filtering/filtering-constants';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
-import { getUserAccessRight, isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_EDIT, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
+import { isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { READ_INDEX_HISTORY } from '../../database/utils';
 import { ENTITY_TYPE_HISTORY, ENTITY_TYPE_PIR_HISTORY } from '../../schema/internalObject';
@@ -74,8 +74,6 @@ import {
   linkNewPirToRequirement,
   mirrorPirMembersOnRequirement,
   mirrorPirPatchOnRequirement,
-  switchPirToLegacyEngine,
-  switchPirToRequirementEngine,
 } from '../intelligenceRequirement/intelligenceRequirement-pirLink';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -415,31 +413,4 @@ export const pirEditAuthorizedMembers = async (
   // the intelligence requirement of the Pir gets the same members
   await mirrorPirMembersOnRequirement(context, pirId);
   return updated;
-};
-
-/**
- * Explicit switch of the engine that flags the entities of a Pir (one Pir at a time, never a default change).
- * Needs the edit right on the Pir. The switch to the requirement is refused, Pir unchanged, when a flag would change.
- */
-export const pirEngineSwitch = async (context: AuthContext, user: AuthUser, pirId: string, engine: string) => {
-  const pir = await getPirWithAccessCheck(context, user, pirId);
-  const right = getUserAccessRight(user, pir);
-  if (right !== MEMBER_ACCESS_RIGHT_ADMIN && right !== MEMBER_ACCESS_RIGHT_EDIT) {
-    throw ForbiddenAccess('Editing the engine of this PIR needs the edit right on it', { pirId });
-  }
-  const result = engine === PIR_ENGINE_REQUIREMENT
-    ? await switchPirToRequirementEngine(context, pir.id)
-    : await switchPirToLegacyEngine(context, pir.id);
-  if (result.switched) {
-    await publishUserAction({
-      user,
-      event_type: 'mutation',
-      event_scope: 'update',
-      event_access: 'administration',
-      message: `switches the engine of PIR \`${pir.name}\` to \`${result.engine}\``,
-      context_data: { id: pir.id, entity_type: ENTITY_TYPE_PIR, input: { engine } },
-    });
-    return { switched: true, engine: result.engine, requirement_id: result.requirementId || null, flags: result.flags, seeded: result.seeded };
-  }
-  return { switched: false, engine: result.engine, reason: result.reason, mismatches: result.mismatches ?? [] };
 };

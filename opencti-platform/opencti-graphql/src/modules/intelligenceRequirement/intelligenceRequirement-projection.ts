@@ -5,7 +5,7 @@ import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../../schema/general';
 import { SYSTEM_USER } from '../../utils/access';
 import { lockResources } from '../../lock/master-lock';
-import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, isPirDrivenByRequirement, type PirExplanation } from '../pir/pir-types';
+import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type PirExplanation } from '../pir/pir-types';
 import { updatePirInformationOnEntity } from '../pir/pir-utils';
 import type { ParsedIntelligenceRequirement } from './intelligenceRequirement-types';
 import { type BasicStoreEntityIntelligenceRequirementMatch, isInRequirement } from './intelligenceRequirementMatch-types';
@@ -102,8 +102,7 @@ export const matchToPirScore = (pir: Pick<BasicStoreEntityPir, 'pir_criteria'>, 
 const loadDrivenPir = async (context: AuthContext, ir: Pick<ParsedIntelligenceRequirement, 'ir_pir_id'>) => {
   if (!ir.ir_pir_id) return null;
   const pir = await storeLoadById<BasicStoreEntityPir>(context, SYSTEM_USER, ir.ir_pir_id, ENTITY_TYPE_PIR);
-  if (!pir || !isPirDrivenByRequirement(pir)) return null;
-  return pir;
+  return pir ?? null;
 };
 
 const withLock = async <T>(lockIds: string[], fn: () => Promise<T>) => {

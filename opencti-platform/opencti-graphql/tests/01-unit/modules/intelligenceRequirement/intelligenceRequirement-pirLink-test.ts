@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildRequirementForPir, mirroredRequirementPatch } from '../../../../src/modules/intelligenceRequirement/intelligenceRequirement-pirLink';
 import { legacyCriterionId, legacyGroupId } from '../../../../src/modules/intelligenceRequirement/intelligenceRequirement-legacy';
-import { PIR_ENGINE_REQUIREMENT, type BasicStoreEntityPir } from '../../../../src/modules/pir/pir-types';
+import type { BasicStoreEntityPir } from '../../../../src/modules/pir/pir-types';
 import { PirType } from '../../../../src/generated/graphql';
 
 const criterion = (target: string) => JSON.stringify({
@@ -47,10 +47,8 @@ describe('Pir to intelligence requirement link', () => {
     expect(rules.map((r: { points: number }) => r.points)).toEqual([67, 33]);
   });
 
-  it('should pause the requirement of a Pir still flagged by the legacy engine', () => {
-    expect(buildRequirementForPir(buildPir()).ir_status).toEqual('paused');
-    expect(buildRequirementForPir(buildPir({ pir_engine: 'legacy' })).ir_status).toEqual('paused');
-    expect(buildRequirementForPir(buildPir({ pir_engine: PIR_ENGINE_REQUIREMENT })).ir_status).toEqual('active');
+  it('should build an active requirement: it is the only engine that flags the Pir', () => {
+    expect(buildRequirementForPir(buildPir()).ir_status).toEqual('active');
   });
 
   it('should be deterministic (a migration run twice builds the same requirement)', () => {

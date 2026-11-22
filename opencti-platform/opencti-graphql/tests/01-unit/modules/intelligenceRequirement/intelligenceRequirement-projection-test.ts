@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { matchToPirExplanations, matchToPirScore } from '../../../../src/modules/intelligenceRequirement/intelligenceRequirement-projection';
 import { legacyCriterionId } from '../../../../src/modules/intelligenceRequirement/intelligenceRequirement-legacy';
-import { isPirDrivenByRequirement, PIR_ENGINE_LEGACY, PIR_ENGINE_REQUIREMENT } from '../../../../src/modules/pir/pir-types';
 import type { BasicStoreEntityIntelligenceRequirementMatch } from '../../../../src/modules/intelligenceRequirement/intelligenceRequirementMatch-types';
 
 const pir = {
@@ -17,13 +16,6 @@ const buildMatch = (criteriaIds: string[], explanations: any[]) => ({
 } as unknown as BasicStoreEntityIntelligenceRequirementMatch);
 
 describe('intelligence requirement projection onto its Pir', () => {
-  it('should tell which engine drives a Pir', () => {
-    expect(isPirDrivenByRequirement({})).toBe(false);
-    expect(isPirDrivenByRequirement({ pir_engine: null })).toBe(false);
-    expect(isPirDrivenByRequirement({ pir_engine: PIR_ENGINE_LEGACY })).toBe(false);
-    expect(isPirDrivenByRequirement({ pir_engine: PIR_ENGINE_REQUIREMENT })).toBe(true);
-  });
-
   it('should keep the legacy score formula', () => {
     expect(matchToPirScore(pir, buildMatch([legacyCriterionId(0)], []))).toEqual(67);
     expect(matchToPirScore(pir, buildMatch([legacyCriterionId(1)], []))).toEqual(33);

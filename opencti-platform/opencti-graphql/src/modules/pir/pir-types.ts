@@ -21,12 +21,6 @@ import type { AuthorizedMember } from '../../utils/access';
 export const ENTITY_TYPE_PIR = 'Pir';
 export const PIR_TYPES = Object.values(PirType);
 
-// Which engine flags the entities of a Pir: the legacy PIR manager (default) or the intelligence requirement that drives it
-export const PIR_ENGINE_LEGACY = 'legacy';
-export const PIR_ENGINE_REQUIREMENT = 'requirement';
-export const PIR_ENGINES = [PIR_ENGINE_LEGACY, PIR_ENGINE_REQUIREMENT];
-export const isPirDrivenByRequirement = (pir: { pir_engine?: string | null }) => pir.pir_engine === PIR_ENGINE_REQUIREMENT;
-
 export interface PirCriterion {
   filters: string;
   weight: number;
@@ -41,8 +35,7 @@ export interface BasicStoreEntityPir extends BasicStoreEntity {
   pir_filters: string;
   lastEventId: string;
   restricted_members: Array<AuthorizedMember>;
-  pir_engine?: string | null; // legacy (default) | requirement
-  pir_requirement_id?: string | null;
+  pir_requirement_id?: string | null; // the intelligence requirement that flags the entities of the Pir
 }
 
 export interface StoreEntityPir extends StoreEntity {
@@ -54,7 +47,6 @@ export interface StoreEntityPir extends StoreEntity {
   pir_filters: string;
   lastEventId: string;
   restricted_members: Array<AuthorizedMember>;
-  pir_engine?: string | null;
   pir_requirement_id?: string | null;
 }
 

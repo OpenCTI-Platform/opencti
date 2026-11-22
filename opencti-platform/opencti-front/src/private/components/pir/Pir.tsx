@@ -27,12 +27,12 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader from '../../../components/Loader';
 import PirAnalyses from './pir_analyses/PirAnalyses';
 import PirHistory from './pir_history/PirHistory';
-import { requirementPath } from './PirEngineSwitch';
+
+const requirementPath = (requirementId: string) => `/dashboard/intelligence_requirements/${requirementId}`;
 
 const pirQuery = graphql`
   query PirQuery($id: ID!) {
     pir(id: $id) {
-      pir_engine
       pir_requirement_id
       ...PirAnalysesFragment
       ...PirEditionFragment
@@ -55,8 +55,8 @@ const PirComponent = ({
   const { pir } = usePreloadedQuery(pirQuery, pirQueryRef);
 
   if (!pir) return <ErrorNotFound />;
-  // One PIR concept: a PIR scored by its intelligence requirement is read on the requirement screens.
-  if (pir.pir_engine === 'requirement' && pir.pir_requirement_id) {
+  // One PIR concept: every PIR is scored by its intelligence requirement and read on the requirement screens.
+  if (pir.pir_requirement_id) {
     return <Navigate to={requirementPath(pir.pir_requirement_id)} replace={true} />;
   }
 
