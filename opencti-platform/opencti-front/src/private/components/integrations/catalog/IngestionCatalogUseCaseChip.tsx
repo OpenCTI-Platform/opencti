@@ -34,7 +34,7 @@ const IngestionCatalogChip = ({
   const theme = useTheme<Theme>();
 
   const resolvedColor = color && PALETTE_NAMES.includes(color)
-    ? theme.palette[color as PaletteName].main
+    ? (theme.palette[color as PaletteName] as { main?: string } | undefined)?.main
     : color && color !== 'default' ? color : undefined;
 
   const chip = (
