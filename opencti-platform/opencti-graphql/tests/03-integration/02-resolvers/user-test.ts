@@ -1287,10 +1287,10 @@ describe('User has no settings capability and is organization admin query behavi
       query: ORGA_ADMIN_ADD_QUERY, // +1 update event of organization
       variables: { id: testOrganizationId, memberId: userInternalId },
     });
-    // Delete user by its standard id, as an organization administrator that cannot edit authorized_authorities
+    // Delete user, as an organization administrator that cannot edit authorized_authorities
     await queryAsUserWithSuccess(USER_EDITOR, {
       query: DELETE_QUERY, // +1 update event of organization (administrator removed)
-      variables: { id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'user@mail.com' }) },
+      variables: { id: userInternalId },
     });
     // Verify is no longer found
     const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
