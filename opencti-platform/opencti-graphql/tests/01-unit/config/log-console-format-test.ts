@@ -38,6 +38,10 @@ describe('Pretty console log format', () => {
     expect(output).toEqual('error Boom\n{\n  "cause": "unknown"\n}\nError: Boom\n    at test');
   });
 
+  it('should print a BigInt in the metadata as a string instead of throwing', () => {
+    expect(format({ level: 'info', message: 'Counted', count: 12n })).toEqual('info Counted\n{\n  "count": "12"\n}');
+  });
+
   it('should colorize the level tag when colors are enabled', () => {
     const previousForceColor = process.env.FORCE_COLOR;
     process.env.FORCE_COLOR = '1';
