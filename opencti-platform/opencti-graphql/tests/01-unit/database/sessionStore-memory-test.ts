@@ -26,7 +26,7 @@ const createStore = (options: { ttl?: number } = {}) => {
     get: call<[string], StoreSession | undefined>(store.get),
     set: call<[string, StoreSession], void>(store.set),
     touch: call<[string, StoreSession], void>(store.touch),
-    destroy: call<[string], { sessionId: string; session?: StoreSession }>(store.destroy),
+    destroy: call<[string], { sessionId: string; session?: StoreSession; deleted: boolean }>(store.destroy),
     all: call<[], StoreSession[]>(store.all),
     ids: call<[], string[]>(store.ids),
     clear: call<[], void>(store.clear),
@@ -108,13 +108,28 @@ describe('SessionStoreMemory', () => {
     const { get, set, destroy } = createStore();
     const session = buildSession('user-1');
     await set('sid-1', session);
-    expect(await destroy('sid-1')).toEqual({ sessionId: 'sess:sid-1', session });
+    expect(await destroy('sid-1')).toEqual({ sessionId: 'sess:sid-1', session, deleted: true });
     expect(await get('sid-1')).toBeUndefined();
+  });
+
+  it('should report the deletion only to the first of concurrent destroys', async () => {
+    const { set, destroy } = createStore();
+    const session = buildSession('user-1');
+    await set('sid-1', session);
+    const results = await Promise.all([destroy('sid-1'), destroy('sid-1')]);
+    expect(results.map((result) => result.deleted)).toEqual([true, false]);
   });
 
   it('should call back when destroying an unknown session', async () => {
     const { destroy } = createStore();
-    expect(await destroy('unknown-sid')).toEqual({ sessionId: 'sess:unknown-sid', session: undefined });
+    expect(await destroy('unknown-sid')).toEqual({ sessionId: 'sess:unknown-sid', session: undefined, deleted: false });
+  });
+
+  it('should not report the deletion of an expired session', async () => {
+    const { set, destroy } = createStore({ ttl: 20 });
+    await set('sid-1', buildSession('user-1'));
+    await wait(50);
+    expect(await destroy('sid-1')).toEqual({ sessionId: 'sess:sid-1', session: undefined, deleted: false });
   });
 
   it('should list the sessions decorated like the redis store', async () => {

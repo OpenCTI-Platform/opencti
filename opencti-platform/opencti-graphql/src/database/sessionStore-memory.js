@@ -82,10 +82,11 @@ class SessionStoreMemory extends Store {
     return fn && fn(err);
   }
 
-  // Calls back with the killed session in the same envelope as the Redis store, as expected by the sessions management
+  // Calls back with the killed session in the same envelope as the Redis store, as expected by the sessions management.
+  // deleted tells whether this call removed the session, so concurrent kills of the same session can be told apart.
   destroy(sid, fn) {
     const data = this.store.get(sid);
-    this.store.delete(sid);
+    const deleted = this.store.delete(sid);
     let err = null;
     let session;
     try {
@@ -93,7 +94,7 @@ class SessionStoreMemory extends Store {
     } catch (e) {
       err = e;
     }
-    return fn && fn(err, { sessionId: this.prefix + sid, session });
+    return fn && fn(err, { sessionId: this.prefix + sid, session, deleted });
   }
 
   ids(fn) {
