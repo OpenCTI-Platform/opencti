@@ -1802,8 +1802,9 @@ export const userDelete = async (context: AuthContext, user: AuthUser, userId: s
   // Last, once the user is deleted and its sessions are gone: a refused deletion never strips a
   // live user of its administration, and a failed clean-up never leaves a session alive. The user
   // is deleted either way, so a failure is logged rather than reported as a failed deletion.
+  // Administrators are stored by internal id, whichever id the caller deleted the user with.
   try {
-    await organizationAdminRemoveDeletedUser(context, userId);
+    await organizationAdminRemoveDeletedUser(context, deleted.internal_id);
   } catch (err) {
     logApp.error('Failed to remove a deleted user from the administrators of its organizations', { cause: err, userId });
   }
