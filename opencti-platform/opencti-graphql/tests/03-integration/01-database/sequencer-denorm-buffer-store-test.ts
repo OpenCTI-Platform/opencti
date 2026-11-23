@@ -7,8 +7,10 @@ import type { DenormEdit, DenormTarget } from '../../../src/database/sequencer/d
 // buffer on an in-memory store with the same semantics; this file pins those semantics on Redis itself: one set
 // per document and field, the latest commit time, the urgent score over the per-document cap, a total counting the
 // ids until done or moved aside (in flight included), atomic takes into a flush that stays in flight with a mark on
-// each of its documents, removals and renames applied to pending, in-flight and moved aside appends, tombstones
-// while in flight, failed writes counted per flush and moved aside at the limit and age, requeued at start.
+// each of its documents (documents emptied by removals dropped), removals and renames applied to pending, in-flight
+// and moved aside appends, a tombstone on each flush an edit hit (kept a while after done, cancelled by an add of
+// the same id), failed writes counted per flush, replayed after a back-off, moved aside at the limit and age,
+// requeued at start.
 
 const targetOf = (id: string, ids: string[], updatedAt = '2026-11-21T10:00:00.000Z'): DenormTarget => ({
   id,
@@ -21,7 +23,10 @@ const targetOf = (id: string, ids: string[], updatedAt = '2026-11-21T10:00:00.00
 const removal = (docId: string, from: string): DenormEdit => ({ docId, relation: 'external-reference', field: 'internal_id', from, to: null });
 const total = async () => Number(await getClientBase().get('{dn}:total') ?? '0');
 const marksOf = async (doc: string) => (await getClientBase().smembers(`{dn}:infl:${doc}`)).sort();
+const tombsOf = async (flushId: string, doc: string) => ((await store.tombstones(flushId, [doc]))[0]?.edits ?? []).map((e) => e.from).sort();
 const BIG = 1e12;
+const NOW = 1e12; // far above any take time of these tests: every flush is replayable
+const RETRY = { baseMs: 1000, maxMs: 5000 };
 
 describe('Append buffer Redis store (task 0040)', () => {
   const opened: string[] = [];
@@ -33,7 +38,7 @@ describe('Append buffer Redis store (task 0040)', () => {
   // the totals below are exact: flushes left by earlier runs (moved aside or in flight) are dropped first
   beforeAll(async () => {
     await store.requeueDead(0);
-    const left = await store.inflight(100000);
+    const left = await store.inflight(100000, Number.MAX_SAFE_INTEGER);
     for (let i = 0; i < left.length; i += 1) await store.done(left[i].flushId);
   });
   afterAll(async () => {
@@ -95,21 +100,23 @@ describe('Append buffer Redis store (task 0040)', () => {
     expect(await total()).toBe(before);
   });
 
-  it('should list the in-flight flushes oldest first, move a flush aside only once failing long enough, and requeue it', async () => {
+  it('should list the replayable in-flight flushes oldest first, back off a failed one, move it aside only once failing long enough, and requeue it', async () => {
     const [d1, d2] = [uuidv4(), uuidv4()];
     await store.add([targetOf(d1, ['x']), targetOf(d2, ['y'])], BIG, 1000, 1000);
     const { flushId: f1 } = await take([d1], 1);
     const { flushId: f2 } = await take([d2], 2);
-    const flights = await store.inflight(1000);
-    const mine = flights.filter((f) => [f1, f2].includes(f.flushId));
-    expect(mine).toEqual([{ flushId: f1, docIds: [d1] }, { flushId: f2, docIds: [d2] }]);
+    const mineOf = async (nowMs: number) => (await store.inflight(100000, nowMs)).filter((f) => [f1, f2].includes(f.flushId));
+    expect(await mineOf(NOW)).toEqual([{ flushId: f1, docIds: [d1] }, { flushId: f2, docIds: [d2] }]);
     const before = await total();
-    expect(await store.failed(f1, 2, 1000, 5000)).toBe(false);
-    expect(await store.failed(f1, 2, 1000, 5500), 'enough attempts, not long enough').toBe(false);
+    expect(await store.failed(f1, 2, 1000, 5000, RETRY)).toBe(false);
+    expect((await mineOf(5999)).map((f) => f.flushId), 'backing off until 5000 + 1000').toEqual([f2]);
+    expect((await mineOf(6000)).map((f) => f.flushId)).toEqual([f2, f1]);
+    expect(await store.failed(f1, 2, 1000, 5500, RETRY), 'enough attempts, not long enough').toBe(false);
+    expect((await mineOf(7499)).map((f) => f.flushId), 'back-off doubled: 5500 + 2000').toEqual([f2]);
     expect(await store.flight(f1)).not.toBeNull();
-    expect(await store.failed(f1, 2, 1000, 6000)).toBe(true);
+    expect(await store.failed(f1, 2, 1000, 6000, RETRY)).toBe(true);
     expect(await store.flight(f1)).toBeNull();
-    expect((await store.inflight(1000)).map((f) => f.flushId)).not.toContain(f1);
+    expect((await mineOf(NOW)).map((f) => f.flushId)).toEqual([f2]);
     expect(await marksOf(d1), 'a flush moved aside keeps its marks').toEqual([f1]);
     expect(await total()).toBe(before - 1);
     expect(Number(await getClientBase().zscore('{dn}:dead', f1))).toBe(6000);
@@ -120,75 +127,82 @@ describe('Append buffer Redis store (task 0040)', () => {
     expect((await store.flight(f1))?.[0].groups[0].ids).toEqual(['x']);
     expect(await total()).toBe(before);
     // the attempts start again from zero
-    expect(await store.failed(f1, 2, 0, 8000)).toBe(false);
+    expect(await store.failed(f1, 2, 0, 8000, RETRY)).toBe(false);
     await store.done(f1);
     await store.done(f2);
     expect(await marksOf(d1)).toEqual([]);
   });
 
-  it('should drop a removed id and rename a merged one in the pending appends, the total following', async () => {
+  it('should drop a removed id and rename a merged one in the pending appends, the total following, and return what it removed', async () => {
     const doc = uuidv4();
     await store.add([targetOf(doc, ['a', 'b', 'source'])], BIG, 1000, 1000);
     const before = await total();
-    await store.edit([removal(doc, 'a'), { ...removal(doc, 'source'), to: 'target' }, removal(doc, 'absent')]);
+    const removed = await store.edit([removal(doc, 'a'), { ...removal(doc, 'source'), to: 'target' }, removal(doc, 'absent')]);
+    expect(removed).toEqual([{ ...targetOf(doc, ['a', 'source']), updatedAt: removed[0].updatedAt }]);
     expect(await total()).toBe(before - 1);
     // rename onto an id already there: one id less
     await store.edit([{ ...removal(doc, 'b'), to: 'target' }]);
     expect(await total()).toBe(before - 2);
-    expect(await getClientBase().exists(`{dn}:tomb:${doc}`), 'no tombstone out of flight').toBe(0);
     const { taken: [taken] } = await take([doc]);
     expect(taken.groups[0].ids).toEqual(['target']);
   });
 
-  it('should edit the in-flight appends of a document and keep the edits as its tombstones until its last flush is done', async () => {
+  it('should drop at the take a document whose appends were all removed', async () => {
+    const doc = uuidv4();
+    await store.add([targetOf(doc, ['a'])], BIG, 1000, 1000);
+    await store.edit([removal(doc, 'a')]);
+    const { flushId, taken } = await take([doc]);
+    expect(taken).toEqual([]);
+    expect(await store.flight(flushId)).toBeNull();
+    expect(await getClientBase().exists(`{dn}:meta:${doc}`, `{dn}:groups:${doc}`)).toBe(0);
+  });
+
+  it('should tombstone only the flushes an edit hit, and keep their tombstones after done for a late writer', async () => {
     const doc = uuidv4();
     await store.add([targetOf(doc, ['a', 'b'])], BIG, 1000, 1000);
     const { flushId: f1 } = await take([doc]);
     await store.add([targetOf(doc, ['c'])], BIG, 1000, 1000);
     const { flushId: f2 } = await take([doc]);
+    await store.add([targetOf(doc, ['d'])], BIG, 1000, 1000);
     const before = await total();
-    await store.edit([removal(doc, 'a'), removal(doc, 'c')]);
-    expect(await total()).toBe(before - 2);
+    await store.edit([removal(doc, 'a'), removal(doc, 'c'), removal(doc, 'd'), removal(doc, 'never-buffered')]);
+    expect(await total()).toBe(before - 3);
     expect((await store.flight(f1))?.[0].groups[0].ids).toEqual(['b']);
-    expect((await store.flight(f2))?.[0].groups[0].ids ?? []).toEqual([]);
-    const [tombstones] = await store.tombstones([doc, uuidv4()]);
-    expect(tombstones.id).toBe(doc);
-    expect(tombstones.index).toBe('test_stix_meta_objects-000001');
-    expect(tombstones.docId).toBe(`doc-${doc}`);
-    expect(tombstones.edits.map((e) => e.from).sort()).toEqual(['a', 'c']);
+    expect(await tombsOf(f1, doc)).toEqual(['a']);
+    expect(await tombsOf(f2, doc)).toEqual(['c']);
     await store.done(f1);
-    expect((await store.tombstones([doc])).length, 'kept while another flush is in flight').toBe(1);
+    expect(await tombsOf(f1, doc), 'kept after done, for a writer whose lock expired').toEqual(['a']);
+    const ttl = await getClientBase().ttl(`{dn}:tomb:${f1}:${doc}`);
+    expect(ttl).toBeGreaterThan(0);
+    expect(ttl).toBeLessThanOrEqual(600);
     await store.done(f2);
-    expect(await store.tombstones([doc])).toEqual([]);
-    expect(await total()).toBe(before - 2 - 1);
   });
 
-  it('should cancel the tombstone of an id added again, so that an earlier flight does not erase it from a later write', async () => {
+  it('should cancel the tombstones of an id added again in every flush of its document', async () => {
     const doc = uuidv4();
-    await store.add([targetOf(doc, ['a'])], BIG, 1000, 1000);
+    await store.add([targetOf(doc, ['a', 'b'])], BIG, 1000, 1000);
     const { flushId } = await take([doc]);
     await store.edit([removal(doc, 'a'), removal(doc, 'b')]);
     await store.add([targetOf(doc, ['a'])], BIG, 1000, 2000);
-    const [tombstones] = await store.tombstones([doc]);
-    expect(tombstones.edits.map((e) => e.from)).toEqual(['b']);
+    expect(await tombsOf(flushId, doc)).toEqual(['b']);
     await store.done(flushId);
     await store.done((await take([doc])).flushId);
   });
 
-  it('should edit a flush moved aside out of the total, so that its requeue neither brings a removed id back nor skews the total', async () => {
+  it('should edit a flush moved aside out of the total and tombstone it, so that its replay erases what its failed writes landed', async () => {
     const doc = uuidv4();
     await store.add([targetOf(doc, ['a', 'b'])], BIG, 1000, 1000);
     const { flushId } = await take([doc]);
-    expect(await store.failed(flushId, 1, 0, 2000)).toBe(true);
+    expect(await store.failed(flushId, 1, 0, 2000, RETRY)).toBe(true);
     const before = await total();
     await store.edit([removal(doc, 'a')]);
     expect(await total()).toBe(before);
+    expect(await tombsOf(flushId, doc)).toEqual(['a']);
     await store.requeueDead(3000);
     expect((await store.flight(flushId))?.[0].groups[0].ids).toEqual(['b']);
     expect(await total()).toBe(before + 1);
     await store.done(flushId);
     expect(await total()).toBe(before);
-    expect(await getClientBase().exists(`{dn}:tomb:${doc}`)).toBe(0);
   });
 
   it('should hold the lease for one token at a time', async () => {

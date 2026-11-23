@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
-import { SEQUENCER_CONFIG, isSequencerEnabled } from '../../../src/database/sequencer/sequencer-config';
+import { afterEach, describe, expect, it } from 'vitest';
+import conf from '../../../src/config/conf';
+import { SEQUENCER_CONFIG, isSequencerEnabled, numberConf } from '../../../src/database/sequencer/sequencer-config';
 
 describe('sequencer configuration defaults', () => {
   it('should be disabled by default with passthrough mode', () => {
@@ -34,5 +35,24 @@ describe('sequencer configuration defaults', () => {
     expect(SEQUENCER_CONFIG.denormFlushPeriodMs).toBe(15000);
     expect(SEQUENCER_CONFIG.denormFlushTargetMaxIds).toBe(5000);
     expect(SEQUENCER_CONFIG.denormBufferMaxIds).toBe(1000000);
+  });
+});
+
+describe('sequencer numeric knobs (task 0040 numberConf)', () => {
+  const KEY = 'app:ingestion_sequencer:test_number_knob';
+  afterEach(() => {
+    conf.set(KEY, undefined);
+  });
+
+  it('should fall back to the default when the knob is absent, empty or not a number, and hold it at its minimum', () => {
+    expect(numberConf(KEY, 15000, 100)).toBe(15000);
+    conf.set(KEY, '');
+    expect(numberConf(KEY, 15000, 100), 'an empty environment variable is not 0').toBe(15000);
+    conf.set(KEY, 'fifteen');
+    expect(numberConf(KEY, 15000, 100)).toBe(15000);
+    conf.set(KEY, '5');
+    expect(numberConf(KEY, 15000, 100)).toBe(100);
+    conf.set(KEY, '2500');
+    expect(numberConf(KEY, 15000, 100)).toBe(2500);
   });
 });

@@ -1,7 +1,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { createEntity, deleteElementById, deleteRelationsByFromAndTo, mergeEntities } from '../../../src/database/middleware';
-import { elFlushSequencerWrites, elRefreshIndices, engine, initDenormBuffer, resetDenormBuffer } from '../../../src/database/engine';
-import { redisDenormBufferStore } from '../../../src/database/redis';
+import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, mergeEntities } from '../../../src/database/middleware';
+import { elFlushSequencerWrites, elRefreshIndices, elRemoveRelationConnection, engine, initDenormBuffer, resetDenormBuffer } from '../../../src/database/engine';
+import { getClientBase, redisDenormBufferStore } from '../../../src/database/redis';
 import { ES_INDEX_PREFIX } from '../../../src/database/utils';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
@@ -18,9 +18,11 @@ import type { AuthContext } from '../../../src/types/user';
 // (elFlushSequencerWrites) keeps the "to" side appends of the buffered relationship types (external-reference by
 // default) in Redis instead of writing them, lands them before the other side-writes, writes them directly when the
 // buffer refuses them (global cap), fails (Redis), is stopped or turned off; a removal or a merge edits the buffered
-// appends without waiting, and an id a write in progress lands after its removal is erased by that writer. On a
-// node without the buffer, appends are written directly and nothing touches Redis. The batch is played as the loop
-// plays it: the intents apply under the applying scope with a current write buffer, then the loop flushes it.
+// appends without waiting (never for a draft), puts them back when it fails afterwards, and an id a write in
+// progress lands after its removal is erased by that writer unless its relationship exists again. On a node without
+// the buffer, appends are written directly; its removals edit Redis only when the sequencer is enabled. The batch is
+// played as the loop plays it: the intents apply under the applying scope with a current write buffer, then the loop
+// flushes it.
 
 // The search engine client every module shares: a hook can hold or fail one bulk
 type BulkHook = (request: Record<string, any>) => Promise<void>;
@@ -29,18 +31,22 @@ const client = engine as unknown as Record<string, (...args: any[]) => Promise<a
 const originalBulk = client.bulk;
 const isUpdateOf = (request: Record<string, any>, docId: string) => (request.body ?? []).some((line: Record<string, any>) => line?.update?._id === docId);
 const isSideBulk = (request: Record<string, any>) => (request.body ?? []).some((line: Record<string, any>) => line?.update);
+const isRemovalBulk = (request: Record<string, any>) => (request.body ?? []).some((line: Record<string, any>) => line?.script?.params?.cleanupIds);
+const ADD_KEY = (referenceId: string) => `{dn}:add:${referenceId}:${RELATION_EXTERNAL_REFERENCE}|internal_id`;
 
 const applyingContext = (): AuthContext => ({ ...testContext, sequencer: { scope: 'applying' } } as AuthContext);
 const wait = (ms: number) => new Promise((resolve) => {
   setTimeout(resolve, ms);
 });
 
-const reverseIdsOf = async (referenceId: string): Promise<string[]> => {
+const relIdsOf = async (id: string): Promise<string[]> => {
   await elRefreshIndices([`${ES_INDEX_PREFIX}*`]);
-  const reference = await internalLoadById(testContext, ADMIN_USER, referenceId) as Record<string, any>;
-  const ids = reference[`rel_${RELATION_EXTERNAL_REFERENCE}.internal_id`] ?? reference[`rel_${RELATION_EXTERNAL_REFERENCE}`]?.internal_id ?? [];
+  const element = await internalLoadById(testContext, ADMIN_USER, id) as Record<string, any>;
+  const ids = element[`rel_${RELATION_EXTERNAL_REFERENCE}.internal_id`] ?? element[`rel_${RELATION_EXTERNAL_REFERENCE}`]?.internal_id ?? [];
   return Array.isArray(ids) ? ids : [ids];
 };
+// the reverse array of the reference ("to" side), or the citing object's own array ("from" side)
+const reverseIdsOf = relIdsOf;
 
 // One batch: the malware citing the reference is created by an intent, then the batch is flushed
 const commitCitingMalware = async (name: string, referenceId: string) => {
@@ -90,7 +96,48 @@ const fixtures = (prefix: string) => {
 
 describe('Sequencer append buffer, node without the intake manager (task 0040)', () => {
   const { newReference, cite, cleanup } = fixtures('DENORM_NO_BUFFER');
-  afterEach(async () => cleanup());
+  const savedEnabled = SEQUENCER_CONFIG.enabled;
+  afterEach(async () => {
+    SEQUENCER_CONFIG.enabled = savedEnabled;
+    await cleanup();
+  });
+  // an intake node buffered an append of this reference
+  const bufferedElsewhere = async (referenceId: string, citingId: string) => {
+    const target = {
+      id: referenceId,
+      index: `${ES_INDEX_PREFIX}_stix_meta_objects-000001`,
+      docId: referenceId,
+      entityType: ENTITY_TYPE_EXTERNAL_REFERENCE,
+      updatedAt: new Date().toISOString(),
+      groups: [{ relation: RELATION_EXTERNAL_REFERENCE, field: 'internal_id', ids: [citingId] }],
+    };
+    await redisDenormBufferStore.add([target], Number.MAX_SAFE_INTEGER, 1000, Date.now());
+  };
+  const dropBuffered = async (referenceId: string) => {
+    const flushId = `test-${referenceId}`;
+    await redisDenormBufferStore.take([referenceId], flushId, Date.now());
+    await redisDenormBufferStore.done(flushId);
+  };
+
+  it('should edit the appends an intake node buffered when the sequencer is enabled (an API node deletes what an intake node ingested)', async () => {
+    const reference = await newReference('API_NODE');
+    const malware = await cite('API_NODE', reference.internal_id);
+    await bufferedElsewhere(reference.internal_id, malware.internal_id);
+    SEQUENCER_CONFIG.enabled = true;
+    await removeCitation(malware.internal_id, reference.internal_id);
+    expect(await getClientBase().smembers(ADD_KEY(reference.internal_id))).toEqual([]);
+    await dropBuffered(reference.internal_id);
+  });
+
+  it('should touch no Redis on removal in the stock mode (sequencer disabled)', async () => {
+    const reference = await newReference('STOCK');
+    const malware = await cite('STOCK', reference.internal_id);
+    await bufferedElsewhere(reference.internal_id, malware.internal_id);
+    SEQUENCER_CONFIG.enabled = false;
+    await removeCitation(malware.internal_id, reference.internal_id);
+    expect(await getClientBase().smembers(ADD_KEY(reference.internal_id))).toEqual([malware.internal_id]);
+    await dropBuffered(reference.internal_id);
+  });
 
   it('should write the append at the batch commit and keep it out of Redis', async () => {
     const reference = await newReference('DIRECT');
@@ -148,6 +195,7 @@ describe('Sequencer append buffer, engine side (task 0040)', () => {
     const reference = await newReference('BUFFERED');
     const malware = await cite('BUFFERED', reference.internal_id);
     expect(await reverseIdsOf(reference.internal_id), 'not written at the batch commit').not.toContain(malware.internal_id);
+    expect(await relIdsOf(malware.internal_id), 'the citing object\'s own array is written at the commit').toEqual([reference.internal_id]);
     await buffer.flush([reference.internal_id]);
     expect(await reverseIdsOf(reference.internal_id), 'written once at the flush').toEqual([malware.internal_id]);
   });
@@ -271,6 +319,45 @@ describe('Sequencer append buffer, engine side (task 0040)', () => {
     buffer.edit = originalEdit;
     // accepted gap (PR note): the removed id comes back with the flush
     await buffer.flush([reference.internal_id]);
+    expect(await reverseIdsOf(reference.internal_id)).toEqual([malware.internal_id]);
+  });
+
+  it('should not edit the live buffered appends for a removal in a draft (a draft copy keeps the live ids)', async () => {
+    const reference = await newReference('DRAFT');
+    const malware = await cite('DRAFT', reference.internal_id);
+    const draftContext = { ...testContext, draft_context: 'denorm-buffer-test-draft' } as AuthContext;
+    const impact = { [reference.internal_id]: { [`${RELATION_EXTERNAL_REFERENCE}|${ES_INDEX_PREFIX}_stix_meta_relationships|to|${ENTITY_TYPE_EXTERNAL_REFERENCE}`]: [malware.internal_id] } };
+    await elRemoveRelationConnection(draftContext, ADMIN_USER, impact);
+    expect(await getClientBase().smembers(ADD_KEY(reference.internal_id))).toEqual([malware.internal_id]);
+    await buffer.flush([reference.internal_id]);
+    expect(await reverseIdsOf(reference.internal_id)).toEqual([malware.internal_id]);
+  });
+
+  it('should put the pending append back when the removal fails after its edit (the relation stays)', async () => {
+    const reference = await newReference('REMOVAL_FAILED');
+    const malware = await cite('REMOVAL_FAILED', reference.internal_id);
+    hooks.beforeBulk = async (request) => {
+      if (isRemovalBulk(request)) throw new Error('es down');
+    };
+    await expect(removeCitation(malware.internal_id, reference.internal_id)).rejects.toThrow();
+    hooks.beforeBulk = undefined;
+    expect(await getClientBase().smembers(ADD_KEY(reference.internal_id))).toEqual([malware.internal_id]);
+    await buffer.flush([reference.internal_id]);
+    expect(await reverseIdsOf(reference.internal_id)).toEqual([malware.internal_id]);
+  });
+
+  it('should not erase an id whose relation was created again directly while its flush was failing', async () => {
+    const reference = await newReference('RECREATED');
+    const malware = await cite('RECREATED', reference.internal_id);
+    // the flush that took the append failed (its writer died): it waits for its replay
+    await redisDenormBufferStore.take([reference.internal_id], `test-recreated-${reference.internal_id}`, Date.now());
+    await removeCitation(malware.internal_id, reference.internal_id);
+    // the relation is created again through the API: its append is written directly, not buffered
+    const input = { fromId: malware.internal_id, toId: reference.internal_id, relationship_type: RELATION_EXTERNAL_REFERENCE };
+    await createRelation(testContext, ADMIN_USER, input);
+    expect(await reverseIdsOf(reference.internal_id)).toEqual([malware.internal_id]);
+    // the replay applies the tombstone of the removal: the relation exists, the id stays
+    await buffer.tick();
     expect(await reverseIdsOf(reference.internal_id)).toEqual([malware.internal_id]);
   });
 });

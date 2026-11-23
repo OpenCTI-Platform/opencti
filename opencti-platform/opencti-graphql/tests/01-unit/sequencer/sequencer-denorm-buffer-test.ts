@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createDenormBuffer } from '../../../src/database/sequencer/denorm-buffer';
-import type { DenormBufferStore, DenormEdit, DenormFlight, DenormIo, DenormTarget, DenormTombstones } from '../../../src/database/sequencer/denorm-buffer';
+import type { DenormBufferStore, DenormDocEdits, DenormEdit, DenormFlight, DenormIo, DenormTarget, DenormTombstones } from '../../../src/database/sequencer/denorm-buffer';
 import { bufferableRelations, denormTargetBulkLines, toDenormTarget } from '../../../src/database/engine';
 
 // task 0040 append buffer: the "to" side appends of hot documents (a misp external reference collects 26k citing
@@ -8,7 +8,9 @@ import { bufferableRelations, denormTargetBulkLines, toDenormTarget } from '../.
 // Removals edit the buffered appends instead of waiting for them. Each test names the lost, doubled, misordered or
 // ghost append it guards against.
 
-const OPTIONS = { flushPeriodMs: 1000, targetMaxIds: 5, maxIds: 100, flushBatch: 2, maxAttempts: 3, deadAfterMs: 60000 };
+const OPTIONS = { flushPeriodMs: 1000, targetMaxIds: 5, maxIds: 100, flushBatch: 2, maxAttempts: 3, deadAfterMs: 60000, retryMaxMs: 1000 };
+// the retry back-off of a failed flush starts at one tick (half the flush period) and is capped at retryMaxMs
+const RETRY_WAIT_MS = 1000;
 
 const targetOf = (id: string, ids: string[], updatedAt = '2026-11-20T10:00:00.000Z'): DenormTarget => ({
   id,
@@ -22,53 +24,53 @@ const removal = (docId: string, from: string): DenormEdit => ({ docId, relation:
 
 const countOf = (targets: DenormTarget[]) => targets.reduce((n, t) => n + t.groups.reduce((m, g) => m + g.ids.length, 0), 0);
 const copyOf = (targets: DenormTarget[]): DenormTarget[] => targets.map((t) => ({ ...t, groups: t.groups.map((g) => ({ ...g, ids: [...g.ids] })) }));
+const keyOf = (relation: string, field: string, id: string) => `${relation}|${field}|${id}`;
 
 // In-memory store with the semantics of the Redis one (redis.ts redisDenormBufferStore): one set per document and
 // field, a pending time per document, a total counting the ids until done or moved aside (in flight included),
-// takes moved atomically into a flush that stays in flight until done, edits applied to pending, in-flight and
-// moved aside appends and kept as tombstones while the document is in flight (until its last flush is done,
-// cancelled for an id added again), failed writes counted per flush with the time of the first failure, flushes
-// moved aside kept, with their marks, until requeued
+// takes moved atomically into a flush (documents emptied by removals dropped) that stays in flight until done and is
+// replayable from its take time or its next retry (back-off), edits applied to pending, in-flight and moved aside
+// appends, each hit on a flush leaving a tombstone on that flush (kept after done, cancelled by an add of the same
+// id), failed writes counted per flush with the time of the first failure, flushes moved aside kept, with their
+// marks and tombstones, until requeued
 const memoryStore = () => {
   const buffered = new Map<string, DenormTarget>();
   const pendingSince = new Map<string, number>();
   const flights = new Map<string, { at: number; targets: DenormTarget[]; attempts: number; failedAt?: number }>();
   const dead = new Map<string, { at: number; targets: DenormTarget[]; attempts: number }>();
   const marks = new Map<string, Set<string>>();
-  const tombs = new Map<string, DenormEdit[]>();
+  const tombs = new Map<string, Map<string, DenormEdit>>(); // flushId|docId -> relation|field|id -> edit
   let total = 0;
   let lease: string | null = null;
+  const tombKey = (flushId: string, docId: string) => `${flushId}|${docId}`;
   const release = (flushId: string, keep = false) => {
     const flight = flights.get(flushId);
     if (!flight) return;
     total -= countOf(flight.targets);
-    if (!keep) {
-      flight.targets.forEach((t) => {
-        marks.get(t.id)?.delete(flushId);
-        if ((marks.get(t.id)?.size ?? 0) === 0) tombs.delete(t.id);
-      });
-    }
+    if (!keep) flight.targets.forEach((t) => marks.get(t.id)?.delete(flushId));
     flights.delete(flushId);
   };
   const applyEdit = (target: DenormTarget | undefined, e: DenormEdit, counted: boolean) => {
     const group = target?.groups.find((g) => g.relation === e.relation && g.field === e.field);
-    if (!group || !group.ids.includes(e.from)) return;
+    if (!group || !group.ids.includes(e.from)) return false;
     group.ids = group.ids.filter((id) => id !== e.from);
     if (counted) total -= 1;
     if (e.to && !group.ids.includes(e.to)) {
       group.ids.push(e.to);
       if (counted) total += 1;
     }
+    return true;
   };
   const targetIn = (flushId: string, id: string) => (flights.get(flushId) ?? dead.get(flushId))?.targets.find((t) => t.id === id);
   const store: DenormBufferStore & {
-    buffered: typeof buffered; flights: typeof flights; dead: typeof dead; tombs: typeof tombs;
-    total: () => number; setLease: (t: string | null) => void; lease: () => string | null;
+    buffered: typeof buffered; flights: typeof flights; dead: typeof dead;
+    tombsOf: (flushId: string, docId: string) => DenormEdit[]; total: () => number;
+    setLease: (t: string | null) => void; lease: () => string | null;
   } = {
     buffered,
     flights,
     dead,
-    tombs,
+    tombsOf: (flushId, docId) => [...(tombs.get(tombKey(flushId, docId))?.values() ?? [])],
     total: () => total,
     setLease: (t) => {
       lease = t;
@@ -78,6 +80,10 @@ const memoryStore = () => {
       if (total >= maxIds) return false;
       targets.forEach((target) => {
         const current = buffered.get(target.id) ?? { ...target, groups: [] };
+        current.index = target.index;
+        current.docId = target.docId;
+        current.entityType = target.entityType;
+        let size = 0;
         target.groups.forEach((group) => {
           const existing = current.groups.find((g) => g.relation === group.relation && g.field === group.field);
           const before = existing ? existing.ids.length : 0;
@@ -85,12 +91,14 @@ const memoryStore = () => {
           total += ids.length - before;
           if (existing) existing.ids = ids;
           else current.groups.push({ ...group, ids });
-          const tomb = tombs.get(target.id);
-          if (tomb) tombs.set(target.id, tomb.filter((e) => !(e.relation === group.relation && e.field === group.field && group.ids.includes(e.from))));
+          size += ids.length;
+          (marks.get(target.id) ?? new Set<string>()).forEach((flushId) => {
+            group.ids.forEach((id) => tombs.get(tombKey(flushId, target.id))?.delete(keyOf(group.relation, group.field, id)));
+          });
         });
         if (current.updatedAt < target.updatedAt) current.updatedAt = target.updatedAt;
         buffered.set(target.id, current);
-        if (countOf([current]) >= targetMaxIds) pendingSince.set(target.id, 1);
+        if (size >= targetMaxIds) pendingSince.set(target.id, 1);
         else if (!pendingSince.has(target.id)) pendingSince.set(target.id, nowMs);
       });
       return true;
@@ -108,41 +116,53 @@ const memoryStore = () => {
         const target = buffered.get(id);
         buffered.delete(id);
         if (!target) return [];
+        const kept = { ...target, groups: target.groups.filter((g) => g.ids.length > 0) };
+        if (kept.groups.length === 0) return [];
         const docMarks = marks.get(id) ?? new Set<string>();
         docMarks.add(flushId);
         marks.set(id, docMarks);
-        return [target];
+        return [kept];
       });
       if (taken.length > 0) flights.set(flushId, { at: nowMs, targets: taken, attempts: 0 });
       return copyOf(taken);
     },
     done: async (flushId) => release(flushId),
-    inflight: async (limit): Promise<DenormFlight[]> => [...flights.entries()].sort((a, b) => a[1].at - b[1].at).slice(0, limit)
+    inflight: async (limit, nowMs): Promise<DenormFlight[]> => [...flights.entries()].filter(([, f]) => f.at <= nowMs)
+      .sort((a, b) => a[1].at - b[1].at).slice(0, limit)
       .map(([flushId, f]) => ({ flushId, docIds: f.targets.map((t) => t.id) })),
     flight: async (flushId) => {
       const flight = flights.get(flushId);
       return flight ? copyOf(flight.targets) : null;
     },
     edit: async (edits) => {
+      const removed: DenormTarget[] = [];
       edits.forEach((e) => {
-        applyEdit(buffered.get(e.docId), e, true);
-        const docMarks = marks.get(e.docId) ?? new Set<string>();
-        docMarks.forEach((flushId) => applyEdit(targetIn(flushId, e.docId), e, flights.has(flushId)));
-        if (docMarks.size > 0) tombs.set(e.docId, [...(tombs.get(e.docId) ?? []), e]);
+        let meta = applyEdit(buffered.get(e.docId), e, true) ? buffered.get(e.docId) : undefined;
+        (marks.get(e.docId) ?? new Set<string>()).forEach((flushId) => {
+          const target = targetIn(flushId, e.docId);
+          if (applyEdit(target, e, flights.has(flushId))) {
+            const key = tombKey(flushId, e.docId);
+            tombs.set(key, (tombs.get(key) ?? new Map()).set(keyOf(e.relation, e.field, e.from), e));
+            meta = meta ?? target;
+          }
+        });
+        if (meta) removed.push({ ...meta, updatedAt: new Date().toISOString(), groups: [{ relation: e.relation, field: e.field, ids: [e.from] }] });
       });
+      return removed;
     },
-    tombstones: async (ids): Promise<DenormTombstones[]> => ids.flatMap((id) => {
-      const edits = tombs.get(id) ?? [];
-      const flushId = [...(marks.get(id) ?? [])][0];
-      const target = flushId ? targetIn(flushId, id) : undefined;
-      return edits.length > 0 && target ? [{ id, index: target.index, docId: target.docId, edits }] : [];
+    tombstones: async (flushId, ids): Promise<DenormDocEdits[]> => ids.flatMap((id) => {
+      const edits = [...(tombs.get(tombKey(flushId, id))?.values() ?? [])];
+      return edits.length > 0 ? [{ id, edits }] : [];
     }),
-    failed: async (flushId, maxAttempts, minAgeMs, nowMs) => {
+    failed: async (flushId, maxAttempts, minAgeMs, nowMs, retry) => {
       const flight = flights.get(flushId);
       if (!flight) return false;
       flight.attempts += 1;
       flight.failedAt = flight.failedAt ?? nowMs;
-      if (flight.attempts < maxAttempts || nowMs - flight.failedAt < minAgeMs) return false;
+      if (flight.attempts < maxAttempts || nowMs - flight.failedAt < minAgeMs) {
+        flight.at = nowMs + Math.min(retry.baseMs * 2 ** (flight.attempts - 1), retry.maxMs);
+        return false;
+      }
       dead.set(flushId, { at: flight.at, targets: flight.targets, attempts: flight.attempts });
       release(flushId, true);
       return true;
@@ -215,9 +235,15 @@ const memoryIo = (failures = 0) => {
 };
 
 const idsOf = (writes: Array<{ targets: DenormTarget[] }>) => writes.flatMap((w) => w.targets.flatMap((t) => t.groups.flatMap((g) => g.ids))).sort();
+const erasedIds = (erased: DenormTombstones[]) => erased.flatMap((t) => t.edits.map((e) => e.from)).sort();
 const wait = (ms: number) => new Promise((resolve) => {
   setTimeout(resolve, ms);
 });
+// Moves the clock past the retry time of a failed flush (Date only: the timers stay real)
+const afterRetry = () => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(Date.now() + RETRY_WAIT_MS + 1);
+};
 
 afterEach(() => {
   vi.useRealTimers();
@@ -292,10 +318,10 @@ describe('append buffer: buffering and periodic flush', () => {
     await store.add([targetOf('r1', ['a']), targetOf('r2', ['b']), targetOf('r3', ['c'])], 100, 5, Date.now() - 5000);
     const acquire = store.acquireLease;
     let calls = 0;
-    // the tick takes the lease, the renewal after the first batch fails: another node took it
+    // the tick takes the lease before the replays and before the flushes, the renewal after the first batch fails
     store.acquireLease = async (token, ttlMs) => {
       calls += 1;
-      return calls === 1 ? acquire(token, ttlMs) : false;
+      return calls <= 2 ? acquire(token, ttlMs) : false;
     };
     await buffer.tick();
     expect(idsOf(writes)).toEqual(['a', 'b']);
@@ -322,16 +348,45 @@ describe('append buffer: buffering and periodic flush', () => {
     expect(await store.pending(['r1', 'r2', 'r3'])).toEqual(['r1', 'r2', 'r3']);
     expect(reads).toBe(1);
   });
+
+  it('should end a tick at one flush period, so that a backlog cannot hold the flusher (nor a stop waiting for it)', async () => {
+    const store = memoryStore();
+    const { io, writes } = memoryIo();
+    io.write = async (targets) => {
+      await wait(40);
+      writes.push({ targets, replay: false });
+    };
+    const buffer = createDenormBuffer(store, io, { ...OPTIONS, flushPeriodMs: 100, flushBatch: 1 });
+    const ids = Array.from({ length: 10 }, (_, n) => `r${n}`);
+    await store.add(ids.map((id) => targetOf(id, [id])), 100, 5, Date.now() - 5000);
+    await buffer.tick();
+    expect(writes.length).toBeGreaterThan(0);
+    expect(writes.length).toBeLessThan(5);
+  });
+
+  it('should not write a document whose appends were all removed before its take', async () => {
+    const store = memoryStore();
+    const { io, writes } = memoryIo();
+    const buffer = createDenormBuffer(store, io, OPTIONS);
+    await buffer.add([targetOf('ref-1', ['a'])]);
+    await buffer.edit([removal('ref-1', 'a')]);
+    await buffer.flush(['ref-1']);
+    expect(writes).toHaveLength(0);
+    expect(store.flights.size).toBe(0);
+  });
 });
 
 describe('append buffer: failures', () => {
-  it('should replay its own failed flush at its next tick while it keeps the lease (no lost append on one node)', async () => {
+  it('should replay its own failed flush after its back-off while it keeps the lease (no lost append on one node)', async () => {
     const store = memoryStore();
     const { io, writes } = memoryIo(1);
     const buffer = createDenormBuffer(store, io, OPTIONS);
     await store.add([targetOf('ref-1', ['a'])], 100, 5, Date.now() - 5000);
     await buffer.tick();
     expect(store.flights.size).toBe(1);
+    await buffer.tick();
+    expect(writes, 'not replayed before its retry time').toHaveLength(0);
+    afterRetry();
     await buffer.tick();
     expect(writes).toEqual([{ targets: [targetOf('ref-1', ['a'])], replay: true }]);
     expect(store.flights.size).toBe(0);
@@ -369,14 +424,36 @@ describe('append buffer: failures', () => {
     expect(store.flights.has('live-flush')).toBe(true);
   });
 
+  it('should renew the lease between two replays and stop replaying once it is lost', async () => {
+    const store = memoryStore();
+    await store.add([targetOf('r1', ['a']), targetOf('r2', ['b'])], 100, 5, Date.now());
+    await store.take(['r1'], 'f1', Date.now() - 2);
+    await store.take(['r2'], 'f2', Date.now() - 1);
+    const { io, writes } = memoryIo();
+    const acquire = store.acquireLease;
+    let calls = 0;
+    store.acquireLease = async (token, ttlMs) => {
+      calls += 1;
+      return calls === 1 ? acquire(token, ttlMs) : false;
+    };
+    await createDenormBuffer(store, io, OPTIONS).tick();
+    expect(idsOf(writes)).toEqual(['a']);
+    expect(store.flights.has('f2')).toBe(true);
+  });
+
   it('should keep failing flushes in flight through an ES outage shorter than the dead letter delay, then land them', async () => {
     const store = memoryStore();
     const { io, writes, failNext } = memoryIo();
     const buffer = createDenormBuffer(store, io, OPTIONS);
     await store.add([targetOf('ref-1', ['a'])], 100, 5, Date.now() - 5000);
     failNext(6);
-    for (let i = 0; i < 6; i += 1) await buffer.tick();
+    await buffer.tick();
+    for (let i = 0; i < 5; i += 1) {
+      afterRetry();
+      await buffer.tick();
+    }
     expect(store.dead.size, 'an outage is not poison').toBe(0);
+    afterRetry();
     await buffer.tick();
     expect(idsOf(writes)).toEqual(['a']);
     expect(store.total()).toBe(0);
@@ -396,7 +473,9 @@ describe('append buffer: failures', () => {
     const buffer = createDenormBuffer(store, io, { ...OPTIONS, deadAfterMs: 0 });
     await buffer.tick();
     expect(written).toEqual(['ref-1']);
+    afterRetry();
     await buffer.tick();
+    afterRetry();
     await buffer.tick();
     expect(store.flights.size).toBe(0);
     expect([...store.dead.keys()]).toEqual(['poison-flush']);
@@ -407,7 +486,7 @@ describe('append buffer: failures', () => {
     const store = memoryStore();
     await store.add([targetOf('ref-1', ['a'])], 100, 5, Date.now());
     await store.take(['ref-1'], 'f1', Date.now());
-    expect(await store.failed('f1', 1, 0, Date.now())).toBe(true);
+    expect(await store.failed('f1', 1, 0, Date.now(), { baseMs: 1, maxMs: 1 })).toBe(true);
     const { io, writes } = memoryIo();
     const buffer = createDenormBuffer(store, io, OPTIONS);
     buffer.start();
@@ -424,9 +503,27 @@ describe('append buffer: removals and merges edit the buffered appends', () => {
     const { io, writes } = memoryIo();
     const buffer = createDenormBuffer(store, io, OPTIONS);
     await buffer.add([targetOf('ref-1', ['a', 'b'])]);
-    await buffer.edit([removal('ref-1', 'a')]);
+    expect(idsOf([{ targets: await buffer.edit([removal('ref-1', 'a'), removal('ref-1', 'absent')]) }]), 'the removed ids').toEqual(['a']);
     await buffer.flush(['ref-1']);
     expect(idsOf(writes)).toEqual(['b']);
+    expect(store.total()).toBe(0);
+  });
+
+  it('should put back the ids of a removal that failed afterwards, and cancel their tombstones', async () => {
+    const store = memoryStore();
+    await store.add([targetOf('ref-1', ['a'])], 100, 5, Date.now());
+    await store.take(['ref-1'], 'f1', Date.now());
+    const { io, writes, erased } = memoryIo();
+    const buffer = createDenormBuffer(store, io, OPTIONS);
+    await buffer.add([targetOf('ref-1', ['b'])]);
+    const removed = await buffer.edit([removal('ref-1', 'a'), removal('ref-1', 'b')]);
+    await buffer.restore(removed);
+    expect(store.tombsOf('f1', 'ref-1')).toEqual([]);
+    await buffer.tick();
+    await buffer.flush(['ref-1']);
+    expect(writes, 'the replay of f1, emptied by the removal, writes nothing').toHaveLength(1);
+    expect(idsOf(writes)).toEqual(['a', 'b']);
+    expect(erased).toEqual([]);
     expect(store.total()).toBe(0);
   });
 
@@ -451,13 +548,58 @@ describe('append buffer: removals and merges edit the buffered appends', () => {
     await wait(1);
     // the removal happens while the write, which read a and b, is in progress
     await buffer.edit([removal('ref-1', 'a')]);
-    expect(store.tombs.get('ref-1')).toEqual([removal('ref-1', 'a')]);
     release();
     await flushing;
     expect(idsOf(writes)).toEqual(['a', 'b']);
     expect(erased).toEqual([{ id: 'ref-1', index: 'opencti_stix_meta_objects-000001', docId: 'ref-1', edits: [removal('ref-1', 'a')] }]);
     expect(events).toEqual(['write ref-1', 'erase a']);
-    expect(store.tombs.has('ref-1'), 'tombstones go with the last flush').toBe(false);
+  });
+
+  it('should apply the tombstones of its flush even when another writer already did it (its lock expired)', async () => {
+    const store = memoryStore();
+    const { io, erased, holdWrites } = memoryIo();
+    const buffer = createDenormBuffer(store, io, OPTIONS);
+    await buffer.add([targetOf('ref-1', ['a'])]);
+    const release = holdWrites();
+    const flushing = buffer.flush(['ref-1']);
+    await wait(1);
+    const [flushId] = [...store.flights.keys()];
+    await buffer.edit([removal('ref-1', 'a')]);
+    // the late writer's lock expired: another node replayed the flush (without a) and marked it done
+    await store.done(flushId);
+    release();
+    await flushing;
+    expect(erasedIds(erased), 'the late writer landed a, then erased it').toEqual(['a']);
+  });
+
+  it('should not erase from a later flush an id removed from an earlier one (re-added meanwhile by a direct write)', async () => {
+    const store = memoryStore();
+    await store.add([targetOf('ref-1', ['a'])], 100, 5, Date.now());
+    await store.take(['ref-1'], 'f1', Date.now());
+    expect(await store.failed('f1', 1, 0, Date.now(), { baseMs: 1, maxMs: 1 })).toBe(true);
+    const { io, writes, erased } = memoryIo();
+    const buffer = createDenormBuffer(store, io, OPTIONS);
+    await buffer.edit([removal('ref-1', 'a')]);
+    // the relation is created again through the API: its append is written directly, not buffered
+    await buffer.add([targetOf('ref-1', ['y'])]);
+    await buffer.flush(['ref-1']);
+    expect(idsOf(writes)).toEqual(['y']);
+    expect(erased).toEqual([]);
+    expect(store.tombsOf('f1', 'ref-1').map((e) => e.from), 'kept for the replay of f1').toEqual(['a']);
+  });
+
+  it('should cancel the tombstone of an id added again through the buffer, so that the replay of the earlier flush does not erase it', async () => {
+    const store = memoryStore();
+    await store.add([targetOf('ref-1', ['a'])], 100, 5, Date.now());
+    await store.take(['ref-1'], 'f1', Date.now());
+    const { io, writes, erased } = memoryIo();
+    const buffer = createDenormBuffer(store, io, OPTIONS);
+    await buffer.edit([removal('ref-1', 'a')]);
+    await buffer.add([targetOf('ref-1', ['a'])]);
+    await buffer.tick();
+    await buffer.flush(['ref-1']);
+    expect(erased).toEqual([]);
+    expect(idsOf(writes)).toEqual(['a']);
   });
 
   it('should rename a merged id in the pending appends', async () => {
@@ -474,40 +616,27 @@ describe('append buffer: removals and merges edit the buffered appends', () => {
     const store = memoryStore();
     await store.add([targetOf('ref-1', ['a', 'b'])], 100, 5, Date.now());
     await store.take(['ref-1'], 'f1', Date.now());
-    await store.failed('f1', 1, 0, Date.now());
-    const { io, writes } = memoryIo();
+    await store.failed('f1', 1, 0, Date.now(), { baseMs: 1, maxMs: 1 });
+    const { io, writes, erased } = memoryIo();
     const buffer = createDenormBuffer(store, io, OPTIONS);
     await buffer.edit([removal('ref-1', 'a')]);
     expect(store.total(), 'ids moved aside are out of the total').toBe(0);
     await store.requeueDead(Date.now());
     await buffer.tick();
     expect(idsOf(writes)).toEqual(['b']);
+    expect(erasedIds(erased), 'what its failed writes may have landed is erased').toEqual(['a']);
     expect(store.total()).toBe(0);
   });
 
-  it('should not erase an id added again after its removal, while an earlier flush of the document is still in flight', async () => {
+  it('should keep no tombstone for an id that was in no flush (nothing to erase later)', async () => {
     const store = memoryStore();
-    // an earlier flush of the document failed and waits for its replay
-    await store.add([targetOf('ref-1', ['old'])], 100, 5, Date.now());
+    await store.add([targetOf('ref-1', ['a'])], 100, 5, Date.now());
     await store.take(['ref-1'], 'f1', Date.now());
-    const { io, writes, erased } = memoryIo();
-    const buffer = createDenormBuffer(store, io, OPTIONS);
-    await buffer.add([targetOf('ref-1', ['a'])]);
-    await buffer.edit([removal('ref-1', 'a')]);
-    // the relation is created again
-    await buffer.add([targetOf('ref-1', ['a'])]);
-    await buffer.flush(['ref-1']);
-    expect(idsOf(writes)).toEqual(['a']);
-    expect(erased.flatMap((t) => t.edits.map((e) => e.from))).not.toContain('a');
-  });
-
-  it('should keep no tombstone for a document not in flight (nothing to erase later)', async () => {
-    const store = memoryStore();
     const { io } = memoryIo();
     const buffer = createDenormBuffer(store, io, OPTIONS);
-    await buffer.add([targetOf('ref-1', ['a'])]);
-    await buffer.edit([removal('ref-1', 'a')]);
-    expect(store.tombs.size).toBe(0);
+    await buffer.add([targetOf('ref-1', ['b'])]);
+    await buffer.edit([removal('ref-1', 'b'), removal('ref-1', 'never-buffered')]);
+    expect(store.tombsOf('f1', 'ref-1')).toEqual([]);
   });
 });
 
@@ -527,6 +656,17 @@ describe('append buffer: lifecycle', () => {
     expect(buffer.isBuffering()).toBe(false);
   });
 
+  it('should write nothing at stop on a node that does not hold the lease, and leave the lease to its holder', async () => {
+    const store = memoryStore();
+    const { io, writes } = memoryIo();
+    const buffer = createDenormBuffer(store, io, OPTIONS);
+    await store.add([targetOf('r1', ['a'])], 100, 5, Date.now() - 5000);
+    store.setLease('another node');
+    await buffer.stop();
+    expect(writes).toHaveLength(0);
+    expect(store.lease()).toBe('another node');
+  });
+
   it('should bound the final flush of a graceful stop by its budget', async () => {
     const store = memoryStore();
     const { io } = memoryIo();
@@ -539,14 +679,56 @@ describe('append buffer: lifecycle', () => {
     expect((await store.pending(['r1', 'r2', 'r3', 'r4'])).length).toBe(2);
   });
 
+  it('should bound the final replay of a graceful stop by its budget', async () => {
+    const store = memoryStore();
+    for (let i = 0; i < 4; i += 1) {
+      await store.add([targetOf(`r${i}`, [`x${i}`])], 100, 5, Date.now());
+      await store.take([`r${i}`], `f${i}`, Date.now() - 10 + i);
+    }
+    const { io } = memoryIo();
+    io.write = async () => {
+      await wait(20);
+    };
+    const buffer = createDenormBuffer(store, io, { ...OPTIONS, stopBudgetMs: 10 });
+    await buffer.stop();
+    expect(store.flights.size).toBeGreaterThanOrEqual(2);
+  });
+
+  it('should release the lease at stop even when its final flush fails', async () => {
+    const store = memoryStore();
+    store.inflight = async () => {
+      throw new Error('redis down');
+    };
+    const buffer = createDenormBuffer(store, memoryIo().io, OPTIONS);
+    await buffer.stop();
+    expect(store.lease()).toBeNull();
+  });
+
+  it('should cut a running tick short at stop, so that a backlog does not delay the shutdown', async () => {
+    const store = memoryStore();
+    const { io, writes } = memoryIo();
+    io.write = async (targets) => {
+      await wait(30);
+      writes.push({ targets, replay: false });
+    };
+    const buffer = createDenormBuffer(store, io, { ...OPTIONS, flushPeriodMs: 60000, flushBatch: 1, stopBudgetMs: 1 });
+    const ids = Array.from({ length: 20 }, (_, n) => `r${n}`);
+    await store.add(ids.map((id) => targetOf(id, [id])), 100, 5, Date.now() - 120000);
+    const ticking = buffer.tick();
+    await wait(50);
+    await buffer.stop();
+    await ticking;
+    expect(writes.length).toBeLessThan(10);
+  });
+
   it('should keep one tick chain whatever the number of starts', async () => {
     vi.useFakeTimers();
     const store = memoryStore();
     let ticks = 0;
-    const acquire = store.acquireLease;
-    store.acquireLease = async (token, ttlMs) => {
+    const inflight = store.inflight;
+    store.inflight = async (limit, nowMs) => {
       ticks += 1;
-      return acquire(token, ttlMs);
+      return inflight(limit, nowMs);
     };
     const buffer = createDenormBuffer(store, memoryIo().io, OPTIONS);
     buffer.start();
@@ -563,7 +745,7 @@ describe('append buffer: lifecycle', () => {
     vi.useFakeTimers();
     const store = memoryStore();
     await store.add([targetOf('r1', ['a']), targetOf('r2', ['b']), targetOf('r3', ['c'])], 100, 5, Date.now() - 5000);
-    // the first tick is held in its lease renewal between two flush batches
+    // the first tick is held in its lease renewal before its flushes
     let calls = 0;
     let holdRenewal: (() => void) | null = null;
     const acquire = store.acquireLease;
@@ -578,9 +760,9 @@ describe('append buffer: lifecycle', () => {
     };
     let ticks = 0;
     const inflight = store.inflight;
-    store.inflight = async (limit) => {
+    store.inflight = async (limit, nowMs) => {
       ticks += 1;
-      return inflight(limit);
+      return inflight(limit, nowMs);
     };
     const buffer = createDenormBuffer(store, memoryIo().io, OPTIONS);
     buffer.start();

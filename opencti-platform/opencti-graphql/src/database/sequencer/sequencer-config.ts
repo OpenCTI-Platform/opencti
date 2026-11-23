@@ -87,10 +87,11 @@ export interface SequencerConfig {
   partialAcquire: boolean;
 }
 
-// task 0040: a numeric knob that does not parse falls back to its default (NaN would starve the drain or spin the
-// flush timer), then is held at its minimum
-const numberConf = (key: string, defaultValue: number, min: number): number => {
-  const value = Number(conf.get(key) ?? defaultValue);
+// task 0040: a numeric knob that is empty or does not parse falls back to its default (NaN would starve the drain or
+// spin the flush timer, an empty environment variable would read 0), then is held at its minimum
+export const numberConf = (key: string, defaultValue: number, min: number): number => {
+  const raw = conf.get(key);
+  const value = raw === undefined || raw === null || String(raw).trim() === '' ? defaultValue : Number(raw);
   return Math.max(min, Number.isFinite(value) ? value : defaultValue);
 };
 
