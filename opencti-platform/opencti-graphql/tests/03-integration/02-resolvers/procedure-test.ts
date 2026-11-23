@@ -219,6 +219,52 @@ const componentOfRelationshipIds = async (procedureId: string) => {
   return result.data?.stixCoreRelationships.edges.map((e: { node: { id: string } }) => e.node.id);
 };
 
+const COMPONENTS_SET = gql`
+  mutation procedureComponentsSet($id: ID!, $components: [ProcedureComponentInput!]!) {
+    procedureComponentsSet(id: $id, components: $components) {
+      id
+    }
+  }
+`;
+
+const COMPONENTS_READ = gql`
+  query procedureComponents($id: String!) {
+    procedure(id: $id) {
+      procedureComponents {
+        relationship_id
+        component_index
+        component_type
+        observable {
+          id
+        }
+      }
+    }
+  }
+`;
+
+const MALWARE_ADD = gql`
+  mutation procedureComponentMalwareAdd($input: MalwareAddInput!) {
+    malwareAdd(input: $input) {
+      id
+    }
+  }
+`;
+
+const MALWARE_DELETE = gql`
+  mutation procedureComponentMalwareDelete($id: ID!) {
+    malwareEdit(id: $id) {
+      delete
+    }
+  }
+`;
+
+type ComponentRow = { relationship_id: string; component_index: number; component_type: string; observable: { id: string } };
+
+const readComponents = async (procedureId: string): Promise<ComponentRow[]> => {
+  const result = await queryAsAdmin({ query: COMPONENTS_READ, variables: { id: procedureId } });
+  return result.data?.procedure.procedureComponents;
+};
+
 const createdProcedureIds: string[] = [];
 
 const addProcedureAsAdmin = async (input: Record<string, unknown>) => {
@@ -509,5 +555,81 @@ describe('Procedure components', () => {
     const stix = JSON.parse(read.data?.stixCoreRelationship.toStix);
     expect(stix.x_component_index).toBe(3);
     expect(stix.x_component_type).toBe('secondary');
+  });
+});
+
+describe('Procedure component sequence', () => {
+  let procedureId: string;
+  let malwareId: string;
+  const observableIds: string[] = [];
+  const sequence = (order: number[], types: string[]) => order.map((i, position) => ({ id: observableIds[i], type: types[position] }));
+  const WBADMIN_TYPES = ['primary', 'primary', 'secondary', 'secondary', 'secondary'];
+
+  beforeAll(async () => {
+    procedureId = (await addProcedureAsAdmin({ name: 'Copy credential stores via wbadmin' })).id;
+    const process = await queryAsAdminWithSuccess({ query: OBSERVABLE_ADD, variables: { type: 'Process', Process: { command_line: 'wbadmin.exe' } } });
+    observableIds.push(process.data?.stixCyberObservableAdd.id);
+    const tokens = ['start backup', '-backuptarget:\\\\127.0.0.1\\C$\\ProgramData\\', '-include:"C:\\windows\\NTDS\\ntds.dit"', '-quiet'];
+    for (let i = 0; i < tokens.length; i += 1) {
+      const text = await queryAsAdminWithSuccess({ query: TEXT_ADD, variables: { Text: { value: tokens[i] } } });
+      observableIds.push(text.data?.stixCyberObservableAdd.id);
+    }
+    const malware = await queryAsAdminWithSuccess({ query: MALWARE_ADD, variables: { input: { name: 'Procedure component test malware' } } });
+    malwareId = malware.data?.malwareAdd.id;
+  });
+
+  afterAll(async () => {
+    await queryAsAdmin({ query: DELETE_QUERY, variables: { id: procedureId } });
+    for (let i = 0; i < observableIds.length; i += 1) {
+      await queryAsAdmin({ query: OBSERVABLE_DELETE, variables: { id: observableIds[i] } });
+    }
+    await queryAsAdmin({ query: MALWARE_DELETE, variables: { id: malwareId } });
+  });
+
+  it('saves the sequence and lists it in order with its types', async () => {
+    await queryAsAdminWithSuccess({ query: COMPONENTS_SET, variables: { id: procedureId, components: sequence([0, 1, 2, 3, 4], WBADMIN_TYPES) } });
+    const components = await readComponents(procedureId);
+    expect(components.map((c) => c.observable.id)).toEqual(observableIds);
+    expect(components.map((c) => c.component_index)).toEqual([0, 1, 2, 3, 4]);
+    expect(components.map((c) => c.component_type)).toEqual(WBADMIN_TYPES);
+  });
+
+  it('rewrites the indexes when the order changes, leaving no stale relationship', async () => {
+    await queryAsAdminWithSuccess({ query: COMPONENTS_SET, variables: { id: procedureId, components: sequence([1, 0, 2, 3, 4], WBADMIN_TYPES) } });
+    const components = await readComponents(procedureId);
+    expect(components.map((c) => c.observable.id)).toEqual([1, 0, 2, 3, 4].map((i) => observableIds[i]));
+    expect(components.map((c) => c.component_index)).toEqual([0, 1, 2, 3, 4]);
+    expect(await componentOfRelationshipIds(procedureId)).toHaveLength(5);
+  });
+
+  it('refuses a sequence that starts with a secondary component and keeps the previous one', async () => {
+    const result = await queryAsAdmin({ query: COMPONENTS_SET, variables: { id: procedureId, components: sequence([2, 0, 1, 3, 4], ['secondary', 'primary', 'primary', 'secondary', 'secondary']) } });
+    expect(result.errors?.[0]?.message).toContain('The first component must be Primary.');
+    expect((await readComponents(procedureId)).map((c) => c.observable.id)).toEqual([1, 0, 2, 3, 4].map((i) => observableIds[i]));
+  });
+
+  it('refuses an observable twice and keeps the previous sequence', async () => {
+    const result = await queryAsAdmin({ query: COMPONENTS_SET, variables: { id: procedureId, components: sequence([0, 1, 1], ['primary', 'primary', 'secondary']) } });
+    expect(result.errors?.[0]?.message).toContain('This observable is already in the sequence.');
+    expect(await readComponents(procedureId)).toHaveLength(5);
+  });
+
+  it('refuses a component that is not an observable and keeps the previous sequence', async () => {
+    const result = await queryAsAdmin({ query: COMPONENTS_SET, variables: { id: procedureId, components: [{ id: observableIds[0], type: 'primary' }, { id: malwareId, type: 'secondary' }] } });
+    expect(result.errors?.length).toBeGreaterThan(0);
+    expect(await readComponents(procedureId)).toHaveLength(5);
+  });
+
+  it('keeps the other positions when a component observable is deleted', async () => {
+    await queryAsAdminWithSuccess({ query: COMPONENTS_SET, variables: { id: procedureId, components: sequence([0, 1, 2, 3, 4], WBADMIN_TYPES) } });
+    await queryAsAdminWithSuccess({ query: OBSERVABLE_DELETE, variables: { id: observableIds[2] } });
+    const components = await readComponents(procedureId);
+    expect(components.map((c) => c.component_index)).toEqual([0, 1, 3, 4]);
+  });
+
+  it('empties the sequence', async () => {
+    await queryAsAdminWithSuccess({ query: COMPONENTS_SET, variables: { id: procedureId, components: [] } });
+    expect(await readComponents(procedureId)).toEqual([]);
+    expect(await componentOfRelationshipIds(procedureId)).toEqual([]);
   });
 });

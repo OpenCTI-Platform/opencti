@@ -18208,6 +18208,7 @@ export type Mutation = {
   positionAdd?: Maybe<Position>;
   positionEdit?: Maybe<PositionEditMutations>;
   procedureAdd?: Maybe<Procedure>;
+  procedureComponentsSet?: Maybe<Procedure>;
   procedureContextClean?: Maybe<Procedure>;
   procedureContextPatch?: Maybe<Procedure>;
   procedureDelete?: Maybe<Scalars['ID']['output']>;
@@ -20272,6 +20273,12 @@ export type MutationPositionEditArgs = {
 
 export type MutationProcedureAddArgs = {
   input: ProcedureAddInput;
+};
+
+
+export type MutationProcedureComponentsSetArgs = {
+  components: Array<ProcedureComponentInput>;
+  id: Scalars['ID']['input'];
 };
 
 
@@ -25322,6 +25329,7 @@ export type Procedure = BasicObject & StixCoreObject & StixDomainObject & StixOb
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   procedureCommand?: Maybe<StixCyberObservable>;
+  procedureComponents: Array<ProcedureComponent>;
   procedureObservables?: Maybe<StixCyberObservableConnection>;
   procedureSources?: Maybe<Array<Maybe<Identity>>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -25556,6 +25564,19 @@ export type ProcedureAddInput = {
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
   x_procedure_type?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type ProcedureComponent = {
+  __typename?: 'ProcedureComponent';
+  component_index: Scalars['Int']['output'];
+  component_type: Scalars['String']['output'];
+  observable: StixCyberObservable;
+  relationship_id: Scalars['ID']['output'];
+};
+
+export type ProcedureComponentInput = {
+  id: Scalars['String']['input'];
+  type: Scalars['String']['input'];
 };
 
 export type ProcedureConnection = {
@@ -43116,6 +43137,8 @@ export type ResolversTypes = ResolversObject<{
   PositionsOrdering: PositionsOrdering;
   Procedure: ResolverTypeWrapper<BasicStoreEntityProcedure>;
   ProcedureAddInput: ProcedureAddInput;
+  ProcedureComponent: ResolverTypeWrapper<Omit<ProcedureComponent, 'observable'> & { observable: ResolversTypes['StixCyberObservable'] }>;
+  ProcedureComponentInput: ProcedureComponentInput;
   ProcedureConnection: ResolverTypeWrapper<Omit<ProcedureConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ProcedureEdge']>>> }>;
   ProcedureEdge: ResolverTypeWrapper<Omit<ProcedureEdge, 'node'> & { node: ResolversTypes['Procedure'] }>;
   ProceduresOrdering: ProceduresOrdering;
@@ -44270,6 +44293,8 @@ export type ResolversParentTypes = ResolversObject<{
   PositionInput: PositionInput;
   Procedure: BasicStoreEntityProcedure;
   ProcedureAddInput: ProcedureAddInput;
+  ProcedureComponent: Omit<ProcedureComponent, 'observable'> & { observable: ResolversParentTypes['StixCyberObservable'] };
+  ProcedureComponentInput: ProcedureComponentInput;
   ProcedureConnection: Omit<ProcedureConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ProcedureEdge']>>> };
   ProcedureEdge: Omit<ProcedureEdge, 'node'> & { node: ResolversParentTypes['Procedure'] };
   Process: Omit<Process, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'serviceDlls' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, serviceDlls?: Maybe<ResolversParentTypes['StixFileConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
@@ -51265,6 +51290,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   positionAdd?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<MutationPositionAddArgs, 'input'>>;
   positionEdit?: Resolver<Maybe<ResolversTypes['PositionEditMutations']>, ParentType, ContextType, RequireFields<MutationPositionEditArgs, 'id'>>;
   procedureAdd?: Resolver<Maybe<ResolversTypes['Procedure']>, ParentType, ContextType, RequireFields<MutationProcedureAddArgs, 'input'>>;
+  procedureComponentsSet?: Resolver<Maybe<ResolversTypes['Procedure']>, ParentType, ContextType, RequireFields<MutationProcedureComponentsSetArgs, 'components' | 'id'>>;
   procedureContextClean?: Resolver<Maybe<ResolversTypes['Procedure']>, ParentType, ContextType, RequireFields<MutationProcedureContextCleanArgs, 'id'>>;
   procedureContextPatch?: Resolver<Maybe<ResolversTypes['Procedure']>, ParentType, ContextType, RequireFields<MutationProcedureContextPatchArgs, 'id' | 'input'>>;
   procedureDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationProcedureDeleteArgs, 'id'>>;
@@ -52777,6 +52803,7 @@ export type ProcedureResolvers<ContextType = any, ParentType extends ResolversPa
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ProcedurePendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<ProcedurePirInformationArgs, 'pirId'>>;
   procedureCommand?: Resolver<Maybe<ResolversTypes['StixCyberObservable']>, ParentType, ContextType>;
+  procedureComponents?: Resolver<Array<ResolversTypes['ProcedureComponent']>, ParentType, ContextType>;
   procedureObservables?: Resolver<Maybe<ResolversTypes['StixCyberObservableConnection']>, ParentType, ContextType, Partial<ProcedureProcedureObservablesArgs>>;
   procedureSources?: Resolver<Maybe<Array<Maybe<ResolversTypes['Identity']>>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -52804,6 +52831,13 @@ export type ProcedureResolvers<ContextType = any, ParentType extends ResolversPa
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   x_procedure_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ProcedureComponentResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProcedureComponent'] = ResolversParentTypes['ProcedureComponent']> = ResolversObject<{
+  component_index?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  component_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observable?: Resolver<ResolversTypes['StixCyberObservable'], ParentType, ContextType>;
+  relationship_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
 }>;
 
 export type ProcedureConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProcedureConnection'] = ResolversParentTypes['ProcedureConnection']> = ResolversObject<{
@@ -57926,6 +57960,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   PositionEdge?: PositionEdgeResolvers<ContextType>;
   PositionEditMutations?: PositionEditMutationsResolvers<ContextType>;
   Procedure?: ProcedureResolvers<ContextType>;
+  ProcedureComponent?: ProcedureComponentResolvers<ContextType>;
   ProcedureConnection?: ProcedureConnectionResolvers<ContextType>;
   ProcedureEdge?: ProcedureEdgeResolvers<ContextType>;
   Process?: ProcessResolvers<ContextType>;

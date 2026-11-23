@@ -1,5 +1,14 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addProcedure, findProcedureById, findProcedurePaginated, procedureCommand, procedureObservablesPaginated, procedureSources } from './procedure-domain';
+import {
+  addProcedure,
+  findProcedureById,
+  findProcedurePaginated,
+  procedureCommand,
+  procedureComponents,
+  procedureObservablesPaginated,
+  procedureSources,
+  setProcedureComponents,
+} from './procedure-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -22,6 +31,7 @@ const procedureResolvers: Resolvers = {
     procedureObservables: (procedure, args, context) => procedureObservablesPaginated<any>(context, context.user, procedure.id, args),
     procedureCommand: (procedure, _, context) => procedureCommand<any>(context, context.user, procedure.id),
     procedureSources: (procedure, _, context) => procedureSources<any>(context, context.user, procedure.id),
+    procedureComponents: (procedure, _, context) => procedureComponents(context, context.user, procedure.id) as any,
   },
   Mutation: {
     procedureAdd: (_, { input }, context) => {
@@ -29,6 +39,9 @@ const procedureResolvers: Resolvers = {
     },
     procedureDelete: (_, { id }, context) => {
       return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_PROCEDURE);
+    },
+    procedureComponentsSet: (_, { id, components }, context) => {
+      return setProcedureComponents(context, context.user, id, components);
     },
     procedureFieldPatch: (_, { id, input, commitMessage, references }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });

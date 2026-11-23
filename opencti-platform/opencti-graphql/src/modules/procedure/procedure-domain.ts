@@ -1,8 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
-import { createEntity, createRelation } from '../../database/middleware';
+import { createEntity, createRelation, deleteElementById } from '../../database/middleware';
 import {
   type EntityOptions,
   fullEntitiesThroughRelationsToList,
+  fullRelationsList,
   loadEntityThroughRelationsPaginated,
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
@@ -17,11 +18,12 @@ import type { DomainFindById } from '../../domain/domainTypes';
 import { ENTITY_PROCESS } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../../schema/stixMetaObject';
-import { RELATION_HAS_OBSERVABLE, RELATION_IMPLEMENTS_TECHNIQUE } from '../../schema/stixCoreRelationship';
+import { RELATION_COMPONENT_OF, RELATION_HAS_OBSERVABLE, RELATION_IMPLEMENTS_TECHNIQUE } from '../../schema/stixCoreRelationship';
 import { FunctionalError, MissingReferenceError } from '../../config/errors';
 import type { BasicStoreEntityKillChainPhase } from '../killChainPhase/killChainPhase-types';
 import { computeProcedureFingerprint } from './procedure-fingerprint';
-import type { BasicStoreCommon, BasicStoreEntity } from '../../types/store';
+import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
+import { checkComponentPosition, COMPONENT_TYPE_PRIMARY, FIRST_COMPONENT_PRIMARY_MESSAGE } from './procedure-components';
 import { type BasicStoreEntityProcedure, ENTITY_TYPE_PROCEDURE, RELATION_PROCEDURE_COMMAND, RELATION_PROCEDURE_SOURCE, STIX_TYPE_PROCEDURE } from './procedure-types';
 
 export const findProcedureById: DomainFindById<BasicStoreEntityProcedure> = (context: AuthContext, user: AuthUser, procedureId: string) => {
@@ -118,4 +120,72 @@ export const procedureCommand = async <T extends BasicStoreEntity>(context: Auth
 
 export const procedureSources = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, procedureId: string) => {
   return fullEntitiesThroughRelationsToList<T>(context, user, procedureId, RELATION_PROCEDURE_SOURCE, ENTITY_TYPE_IDENTITY);
+};
+
+export type ProcedureComponent = {
+  relationship_id: string;
+  component_index: number;
+  component_type: string;
+  observable: BasicStoreCommon;
+};
+
+const listComponentRelationships = (context: AuthContext, user: AuthUser, procedureId: string) => {
+  return fullRelationsList<BasicStoreRelation>(context, user, RELATION_COMPONENT_OF, { toId: procedureId });
+};
+
+// The procedure's components in sequence order. A component whose observable the user cannot see is left out.
+export const procedureComponents = async (context: AuthContext, user: AuthUser, procedureId: string): Promise<ProcedureComponent[]> => {
+  const relationships = await listComponentRelationships(context, user, procedureId);
+  const components: ProcedureComponent[] = [];
+  for (let i = 0; i < relationships.length; i += 1) {
+    const relationship = relationships[i];
+    const observable = await storeLoadById(context, user, relationship.fromId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+    if (observable) {
+      components.push({
+        relationship_id: relationship.id,
+        component_index: relationship.component_index ?? 0,
+        component_type: relationship.component_type ?? '',
+        observable,
+      });
+    }
+  }
+  return components.sort((a, b) => a.component_index - b.component_index);
+};
+
+// Replaces the whole sequence: the index of each component is its position in the list.
+// Everything is checked before the existing sequence is touched.
+export const setProcedureComponents = async (context: AuthContext, user: AuthUser, procedureId: string, components: { id: string; type: string }[]) => {
+  const procedure = await storeLoadById<BasicStoreEntityProcedure>(context, user, procedureId, ENTITY_TYPE_PROCEDURE);
+  if (!procedure) {
+    throw FunctionalError('Cannot find the procedure', { id: procedureId });
+  }
+  if (components.length > 0 && components[0].type !== COMPONENT_TYPE_PRIMARY) {
+    throw FunctionalError(FIRST_COMPONENT_PRIMARY_MESSAGE, { type: components[0].type });
+  }
+  const observableIds: string[] = [];
+  for (let i = 0; i < components.length; i += 1) {
+    checkComponentPosition(i, components[i].type);
+    const observable = await storeLoadById(context, user, components[i].id, ABSTRACT_STIX_CYBER_OBSERVABLE);
+    if (!observable) {
+      throw FunctionalError('A component must be an observable.', { id: components[i].id });
+    }
+    if (observableIds.includes(observable.internal_id)) {
+      throw FunctionalError('This observable is already in the sequence.', { id: components[i].id });
+    }
+    observableIds.push(observable.internal_id);
+  }
+  const existing = await listComponentRelationships(context, user, procedure.internal_id);
+  for (let i = 0; i < existing.length; i += 1) {
+    await deleteElementById(context, user, existing[i].id, RELATION_COMPONENT_OF);
+  }
+  for (let i = 0; i < observableIds.length; i += 1) {
+    await createRelation(context, user, {
+      fromId: observableIds[i],
+      toId: procedure.internal_id,
+      relationship_type: RELATION_COMPONENT_OF,
+      component_index: i,
+      component_type: components[i].type,
+    });
+  }
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, procedure, user);
 };

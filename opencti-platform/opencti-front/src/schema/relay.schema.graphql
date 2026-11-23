@@ -9655,6 +9655,7 @@ type Mutation {
   positionAdd(input: PositionAddInput!): Position
   positionEdit(id: ID!): PositionEditMutations
   procedureAdd(input: ProcedureAddInput!): Procedure
+  procedureComponentsSet(components: [ProcedureComponentInput!]!, id: ID!): Procedure
   procedureContextClean(id: ID!): Procedure
   procedureContextPatch(id: ID!, input: EditContext!): Procedure
   procedureDelete(id: ID!): ID
@@ -11788,6 +11789,7 @@ type Procedure implements BasicObject & StixCoreObject & StixDomainObject & Stix
   pendingFiles(after: ID, filters: FilterGroup, first: Int, orderBy: FileOrdering, orderMode: OrderingMode, search: String): FileConnection
   pirInformation(pirId: ID!): PirInformation
   procedureCommand: StixCyberObservable
+  procedureComponents: [ProcedureComponent!]!
   procedureObservables(after: ID, first: Int): StixCyberObservableConnection
   procedureSources: [Identity]
   refreshed_at: DateTime
@@ -11857,6 +11859,18 @@ input ProcedureAddInput {
   x_opencti_stix_ids: [StixId]
   x_opencti_workflow_id: String
   x_procedure_type: String
+}
+
+type ProcedureComponent {
+  component_index: Int!
+  component_type: String!
+  observable: StixCyberObservable!
+  relationship_id: ID!
+}
+
+input ProcedureComponentInput {
+  id: String!
+  type: String!
 }
 
 type ProcedureConnection {

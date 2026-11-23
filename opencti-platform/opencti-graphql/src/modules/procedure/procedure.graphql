@@ -153,6 +153,7 @@ type Procedure implements BasicObject & StixObject & StixCoreObject & StixDomain
     x_fingerprint: String
     killChainPhases: [KillChainPhase!]
     procedureObservables(first: Int, after: ID): StixCyberObservableConnection
+    procedureComponents: [ProcedureComponent!]!
     procedureCommand: StixCyberObservable
     procedureSources: [Identity]
 }
@@ -170,6 +171,12 @@ enum ProceduresOrdering {
 }
 
 # Relay connections
+type ProcedureComponent {
+    relationship_id: ID!
+    component_index: Int!
+    component_type: String!
+    observable: StixCyberObservable!
+}
 type ProcedureConnection {
     pageInfo: PageInfo!
     edges: [ProcedureEdge]
@@ -193,6 +200,10 @@ type Query {
 }
 
 # Mutations
+input ProcedureComponentInput {
+    id: String!
+    type: String!
+}
 input ProcedureAddInput {
     stix_id: StixId
     x_opencti_stix_ids: [StixId]
@@ -237,6 +248,7 @@ input ProcedureAddInput {
 type Mutation {
     procedureAdd(input: ProcedureAddInput!): Procedure @auth(for: [KNOWLEDGE_KNUPDATE])
     procedureDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+    procedureComponentsSet(id: ID!, components: [ProcedureComponentInput!]!): Procedure @auth(for: [KNOWLEDGE_KNUPDATE])
     procedureFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Procedure @auth(for: [KNOWLEDGE_KNUPDATE])
     procedureContextPatch(id: ID!, input: EditContext!): Procedure @auth(for: [KNOWLEDGE_KNUPDATE])
     procedureContextClean(id: ID!): Procedure @auth(for: [KNOWLEDGE_KNUPDATE])
