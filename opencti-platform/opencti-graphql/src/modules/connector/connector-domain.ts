@@ -1225,8 +1225,6 @@ const autoUpgradeManagedConnector = async (
       manager_contract_image: latestCompatibleContract.image,
     };
     const { element } = await patchAttribute(context, user, managedConnector.id, ENTITY_TYPE_CONNECTOR, patch);
-    // Notify configuration change for caching system
-    await notify(BUS_TOPICS[ENTITY_TYPE_CONNECTOR].EDIT_TOPIC, element, user);
     if (versionComparison < 0) {
       logApp.info('[OPENCTI-MODULE] Upgraded connector to latest compatible version', {
         module: 'connector',
@@ -1311,6 +1309,17 @@ const autoUpgradeManagedConnector = async (
             newVersion: latestCompatibleContract.contract_version,
           },
         },
+      });
+    }
+    // Notify configuration change for caching system.
+    // The upgrade is already saved: a failed publish must not mark it as failed.
+    try {
+      await notify(BUS_TOPICS[ENTITY_TYPE_CONNECTOR].EDIT_TOPIC, element, user);
+    } catch (exception) {
+      logApp.warn('[OPENCTI-MODULE] Failed to notify the connectors cache after a connector auto-upgrade', {
+        module: 'connector',
+        connectorId: managedConnector.id,
+        cause: exception,
       });
     }
     return true;

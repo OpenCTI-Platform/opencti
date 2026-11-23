@@ -101,7 +101,7 @@ vi.mock('../../../../src/modules/connector/connector-redis', async (importOrigin
 });
 
 import { autoUpgradeManagedConnectors } from '../../../../src/modules/connector/connector-domain';
-import { BUS_TOPICS } from '../../../../src/config/conf';
+import { BUS_TOPICS, logApp } from '../../../../src/config/conf';
 import { ENTITY_TYPE_CONNECTOR } from '../../../../src/schema/internalObject';
 
 const buildManagedConnector = (overrides: Partial<BasicStoreEntityConnector> = {}): BasicStoreEntityConnector => {
@@ -258,6 +258,23 @@ describe('connector-domain auto-upgrade', () => {
       expect.objectContaining({ id: 'connector-1', manager_contract_image: 'opencti/connector-test' }),
       { id: 'user-1' },
     );
+  });
+
+  it('should keep an applied upgrade successful when the cache notification fails', async () => {
+    mockFindManagedConnectorsByCatalogId.mockResolvedValue([buildManagedConnector()]);
+    mockFindLatestCompatibleCatalogContractBySlug.mockResolvedValue(latestCompatibleContract);
+    mockNotify.mockRejectedValueOnce(new Error('publish failed'));
+
+    const result = await autoUpgradeManagedConnectors({ source: 'test' } as any, { id: 'user-1' } as any, ['catalog-1']);
+
+    expect(result).toEqual({ hasErrors: false });
+    expect(logApp.info).toHaveBeenCalledWith('[OPENCTI-MODULE] Upgraded connector to latest compatible version', expect.anything());
+    expect(mockPublishUserAction).toHaveBeenCalled();
+    expect(logApp.warn).toHaveBeenCalledWith(
+      '[OPENCTI-MODULE] Failed to notify the connectors cache after a connector auto-upgrade',
+      expect.objectContaining({ connectorId: 'connector-1' }),
+    );
+    expect(logApp.error).not.toHaveBeenCalled();
   });
 
   it('should patch managed connector when latest compatible contract is an older version (downgrade)', async () => {
