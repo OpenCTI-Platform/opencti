@@ -6,10 +6,11 @@ coverage:
         # Coverage may drop by up to 0.5 point versus the base commit, to absorb noise from non-deterministic test runs
         threshold: 0.5%
         informational: true
+      # Informational, as in every other Filigran repository: patch coverage is the merge gate
       opencti-graphql-mandatory:
         target: auto
         threshold: 0.5%
-        informational: false
+        informational: true
         paths:
           - opencti-platform/opencti-graphql/src
           # Background workers, streams and raw HTTP routes are hard to reach from API tests
