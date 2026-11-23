@@ -346,6 +346,7 @@ jobs:
       run: |
         docker run --name unit-tests \
           -v ${{ github.workspace }}/opencti-platform/opencti-front/lang:/opt/opencti/opencti-platform/opencti-front/lang:ro \
+          -v ${{ github.workspace }}/opencti-platform/opencti-front/src/private/components/workspaces/investigations/investigations_enrichment/InvestigationEnrichmentTool.tsx:/opt/opencti/opencti-platform/opencti-front/src/private/components/workspaces/investigations/investigations_enrichment/InvestigationEnrichmentTool.tsx:ro \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e PYTHONUNBUFFERED=1  \
           filigran/builder:${{ github.sha }} \
