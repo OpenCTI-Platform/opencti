@@ -18099,8 +18099,8 @@ export type MeUser = BasicObject & InternalObject & {
   otp_mandatory?: Maybe<Scalars['Boolean']['output']>;
   otp_qr?: Maybe<Scalars['String']['output']>;
   parent_types: Array<Scalars['String']['output']>;
-  pastel_colours?: Maybe<Scalars['Boolean']['output']>;
   password_valid_until?: Maybe<Scalars['DateTime']['output']>;
+  pastel_colours?: Maybe<Scalars['Boolean']['output']>;
   personal_notifiers?: Maybe<Array<Notifier>>;
   representative: Representative;
   restrict_delete?: Maybe<Scalars['Boolean']['output']>;
@@ -18725,6 +18725,7 @@ export type Mutation = {
   /** Generate the AI brief of a requirement now (XTM One agent of the cti.pir_insight intent) and add it to its inbox */
   intelligenceRequirementBriefGenerate?: Maybe<IntelligenceRequirementItem>;
   intelligenceRequirementDelete?: Maybe<Scalars['ID']['output']>;
+  intelligenceRequirementEditAuthorizedMembers?: Maybe<IntelligenceRequirement>;
   /** Run the health checks of a requirement now; returns the number of health items raised */
   intelligenceRequirementHealthCheck?: Maybe<Scalars['Int']['output']>;
   intelligenceRequirementItemDecide?: Maybe<IntelligenceRequirementItem>;
@@ -18831,7 +18832,9 @@ export type Mutation = {
   playbookFieldPatch?: Maybe<Playbook>;
   playbookImport: Scalars['String']['output'];
   playbookInsertNode: PlaybookInsertResult;
+  /** Move a node and its branch under another out port in a single write: every link reaching the node is replaced by one link from parentNodeId / parentPortId. */
   playbookMoveNode: Scalars['String']['output'];
+  /** Re-point one link in a single write: a new target node, and optionally a new source node and out port. Refuses a cycle and a node left without a parent. */
   playbookRelink: Scalars['String']['output'];
   playbookReplaceNode: Scalars['String']['output'];
   playbookStepExecution?: Maybe<Scalars['Boolean']['output']>;
@@ -20326,6 +20329,12 @@ export type MutationIntelligenceRequirementBriefGenerateArgs = {
 
 export type MutationIntelligenceRequirementDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationIntelligenceRequirementEditAuthorizedMembersArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<MemberAccessInput>;
 };
 
 
@@ -25221,6 +25230,7 @@ export type Pir = BasicObject & InternalObject & {
   pirContainers?: Maybe<ContainerConnection>;
   pir_criteria: Array<PirCriterion>;
   pir_filters: Scalars['String']['output'];
+  pir_requirement_id?: Maybe<Scalars['ID']['output']>;
   pir_rescan_days: Scalars['Int']['output'];
   pir_type: PirType;
   queue_messages: Scalars['Int']['output'];
@@ -25516,7 +25526,9 @@ export type PlaybookAddNodeInput = {
   configuration?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
+  /** Node this node is linked from: required for every node but the entry point, given with parentPortId. */
   parentNodeId?: InputMaybe<Scalars['ID']['input']>;
+  /** Out port of parentNodeId the link leaves from. */
   parentPortId?: InputMaybe<Scalars['ID']['input']>;
   position: PositionInput;
 };
@@ -39205,8 +39217,8 @@ export type User = BasicObject & InternalObject & {
   otp_mandatory?: Maybe<Scalars['Boolean']['output']>;
   otp_qr?: Maybe<Scalars['String']['output']>;
   parent_types: Array<Scalars['String']['output']>;
-  pastel_colours?: Maybe<Scalars['Boolean']['output']>;
   password_valid_until?: Maybe<Scalars['DateTime']['output']>;
+  pastel_colours?: Maybe<Scalars['Boolean']['output']>;
   personal_notifiers?: Maybe<Array<Notifier>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   representative: Representative;
@@ -51589,8 +51601,8 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  pastel_colours?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   password_valid_until?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  pastel_colours?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   personal_notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   restrict_delete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -51999,6 +52011,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   intelligenceRequirementAiInsight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementAiInsightArgs, 'id'>>;
   intelligenceRequirementBriefGenerate?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementItem']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementBriefGenerateArgs, 'id'>>;
   intelligenceRequirementDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementDeleteArgs, 'id'>>;
+  intelligenceRequirementEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['IntelligenceRequirement']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementEditAuthorizedMembersArgs, 'id' | 'input'>>;
   intelligenceRequirementHealthCheck?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementHealthCheckArgs, 'id'>>;
   intelligenceRequirementItemDecide?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementItem']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementItemDecideArgs, 'decision' | 'id'>>;
   intelligenceRequirementItemsDecide?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementItemsDecideArgs, 'decision' | 'ids'>>;
@@ -53270,6 +53283,7 @@ export type PirResolvers<ContextType = any, ParentType extends ResolversParentTy
   pirContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<PirPirContainersArgs>>;
   pir_criteria?: Resolver<Array<ResolversTypes['PirCriterion']>, ParentType, ContextType>;
   pir_filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  pir_requirement_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   pir_rescan_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   pir_type?: Resolver<ResolversTypes['PirType'], ParentType, ContextType>;
   queue_messages?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -57178,8 +57192,8 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  pastel_colours?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   password_valid_until?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  pastel_colours?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   personal_notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
