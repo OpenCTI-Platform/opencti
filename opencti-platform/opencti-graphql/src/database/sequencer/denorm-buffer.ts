@@ -11,12 +11,11 @@
 // flush whose documents can be locked is not being written, so the lease holder replays it at its next tick,
 // contains-guarded since part of it may have landed. A flush still failing after a while is moved aside (dead
 // letter, content kept), requeued at the next start.
-// Removals never wait for the buffer (user decision 2026-11-23): a relation delete drops its ids from the document's
-// pending and in-flight appends, a merge renames them, in Redis. A write already in progress may still land a
-// removed id after the removal: an edit that hit a flush leaves a tombstone on that flush, which its writer applies
-// to ES after its write and before it is done (a replay too); tombstones outlive the flush for a while, so that a
-// writer whose lock expired still applies them, and the engine erases an id only when its relationship is gone.
-// A failed flush is replayed with an exponential back-off.
+// Removals never wait for the buffer (user decision 2026-11-23): once a relation delete has cleaned the ES arrays,
+// it drops its ids from the document's pending, in-flight and moved aside appends, a merge renames them, in Redis.
+// A write already in progress may still land a removed id: a ghost id in the reverse array, accepted (user decision
+// 2026-11-23: not critical, the regardingOf readers keep an id only when its relationship exists). A failed flush is
+// replayed with an exponential back-off.
 import { v4 as uuidv4 } from 'uuid';
 import { logApp } from '../../config/conf';
 import { sequencerMetrics } from './sequencer-metrics';
@@ -51,18 +50,6 @@ export interface DenormEdit {
   to: string | null;
 }
 
-// The tombstones of one document in one flush
-export interface DenormDocEdits {
-  id: string;
-  edits: DenormEdit[];
-}
-
-// Tombstones of a document, with where to apply them
-export interface DenormTombstones extends DenormDocEdits {
-  index: string;
-  docId: string;
-}
-
 export interface DenormRetry {
   baseMs: number;
   maxMs: number;
@@ -78,17 +65,14 @@ export interface DenormBufferStore {
   oldestPendingMs: () => Promise<number | null>;
   // moves the appends of these documents into the in-flight flush, returns them (documents without appends omitted)
   take: (ids: string[], flushId: string, nowMs: number) => Promise<DenormTarget[]>;
-  // the flush landed: its appends leave the buffer, the tombstones of its documents go with their last flush
+  // the flush landed: its appends leave the buffer
   done: (flushId: string) => Promise<void>;
   // in-flight flushes that may be replayed at nowMs (taken, or past their retry time), oldest first
   inflight: (limit: number, nowMs: number) => Promise<DenormFlight[]>;
   // the appends of an in-flight flush, null once done or moved aside
   flight: (flushId: string) => Promise<DenormTarget[] | null>;
-  // applies removals and renames to the pending, in-flight and moved aside appends, tombstones the flushes they hit;
-  // returns the removed ids as appends, so that a removal failing afterwards can put them back
-  edit: (edits: DenormEdit[]) => Promise<DenormTarget[]>;
-  // the tombstones of these documents in this flush, done or not
-  tombstones: (flushId: string, ids: string[]) => Promise<DenormDocEdits[]>;
+  // applies removals and renames to the pending, in-flight and moved aside appends
+  edit: (edits: DenormEdit[]) => Promise<void>;
   // one more failed write: moved aside (true) once it failed maxAttempts times over at least minAgeMs, otherwise
   // replayed no earlier than its next retry
   failed: (flushId: string, maxAttempts: number, minAgeMs: number, nowMs: number, retry: DenormRetry) => Promise<boolean>;
@@ -106,8 +90,6 @@ export interface DenormLock {
 export interface DenormIo {
   // writes the appends to ES and refreshes; replay = contains-guarded (part of it may already be there)
   write: (targets: DenormTarget[], replay: boolean) => Promise<void>;
-  // applies tombstones to ES (removes the ids, renames them when the new id is absent) whose relationship is gone
-  erase: (tombstones: DenormTombstones[]) => Promise<void>;
   // locks these documents for a write of their appends at once, null when one is busy
   lock: (ids: string[]) => Promise<DenormLock | null>;
 }
@@ -152,19 +134,11 @@ export const createDenormBuffer = (store: DenormBufferStore, io: DenormIo, optio
     return added;
   };
 
-  // Removals and renames on the buffered appends (relation delete, merge), never waiting; returns the removed ids
-  const edit = async (edits: DenormEdit[]): Promise<DenormTarget[]> => {
-    if (edits.length === 0) return [];
-    const removed = await store.edit(edits);
+  // Removals and renames on the buffered appends (relation delete, merge), never waiting
+  const edit = async (edits: DenormEdit[]) => {
+    if (edits.length === 0) return;
+    await store.edit(edits);
     sequencerMetrics.denormBuffer('edited_ids', edits.length);
-    return removed;
-  };
-
-  // Puts back the ids a removal took out of the buffer when that removal failed afterwards (never refused)
-  const restore = async (targets: DenormTarget[]) => {
-    if (targets.length === 0) return;
-    await store.add(targets, Number.MAX_SAFE_INTEGER, options.targetMaxIds, Date.now());
-    sequencerMetrics.denormBuffer('restored_ids', countIds(targets));
   };
 
   // A failed write counts against the flush; once failing long enough it is moved aside and logged
@@ -179,23 +153,10 @@ export const createDenormBuffer = (store: DenormBufferStore, io: DenormIo, optio
     }
   };
 
-  // The write of a flush: its appends left (removals may have emptied some documents), then the tombstones it got
-  // meanwhile, read even when it was done by another writer (this one's lock may have expired), then done
+  // The write of a flush: the appends left (removals may have emptied some documents), then done
   const land = async (flushId: string, targets: DenormTarget[], replay: boolean) => {
     const written = withIds(targets);
     if (written.length > 0) await io.write(written, replay);
-    if (targets.length > 0) {
-      const byId = new Map(targets.map((t) => [t.id, t]));
-      const docEdits = await store.tombstones(flushId, targets.map((t) => t.id));
-      const tombstones = docEdits.flatMap((d) => {
-        const target = byId.get(d.id);
-        return target ? [{ ...d, index: target.index, docId: target.docId }] : [];
-      });
-      if (tombstones.length > 0) {
-        await io.erase(tombstones);
-        sequencerMetrics.denormBuffer('tombstones_applied', tombstones.length);
-      }
-    }
     await store.done(flushId);
   };
 
@@ -330,7 +291,7 @@ export const createDenormBuffer = (store: DenormBufferStore, io: DenormIo, optio
   // appends go to the buffer only while it runs
   const isBuffering = () => running;
 
-  return { add, edit, restore, flush, tick, start, stop, isBuffering };
+  return { add, edit, flush, tick, start, stop, isBuffering };
 };
 
 export type DenormBuffer = ReturnType<typeof createDenormBuffer>;

@@ -204,7 +204,7 @@ import { isEsScriptFilterEnabled } from './engine-config';
 import { sequencerIdentityBarrier } from './sequencer/sequencer-barrier';
 import { getCurrentWriteBuffer, type SequencerWriteBuffer } from './sequencer/sequencer-write-buffer';
 import { sequencerMetrics } from './sequencer/sequencer-metrics';
-import { createDenormBuffer, type DenormBuffer, type DenormEdit, type DenormLock, type DenormTarget, type DenormTombstones } from './sequencer/denorm-buffer';
+import { createDenormBuffer, type DenormBuffer, type DenormEdit, type DenormLock, type DenormTarget } from './sequencer/denorm-buffer';
 import { isSequencerEnabled, SEQUENCER_CONFIG } from './sequencer/sequencer-config';
 import { redisDenormBufferStore } from './redis';
 import { AbortError } from 'node-fetch';
@@ -4439,12 +4439,14 @@ export const elDeleteInstances = async <T extends BasicStoreBase>(
     }
   }
 };
-const elRemoveRelationConnectionInES = async (
+export const elRemoveRelationConnection = async (
   context: AuthContext,
   user: AuthUser,
-  impacts: [string, any][],
-  forceRefresh: boolean,
+  elementsImpact: any,
+  opts: { forceRefresh?: boolean } = {},
 ) => {
+  const { forceRefresh = true } = opts;
+  const impacts: [string, any][] = Object.entries(elementsImpact);
   if (impacts.length > 0) {
     const idsToResolve = impacts.map(([k]) => k);
     const dataIds = await elFindByIds(context, user, idsToResolve, { baseData: true, baseFields: ['pir_information'] }) as BasicStoreEntity[];
@@ -4520,24 +4522,8 @@ const elRemoveRelationConnectionInES = async (
         await elBulk(context, { refresh: forceRefresh, timeout: BULK_TIMEOUT, body: bodyUpdate });
       }
     }
-  }
-};
-export const elRemoveRelationConnection = async (
-  context: AuthContext,
-  user: AuthUser,
-  elementsImpact: any,
-  opts: { forceRefresh?: boolean } = {},
-) => {
-  const { forceRefresh = true } = opts;
-  const impacts: [string, any][] = Object.entries(elementsImpact);
-  // task 0040 append buffer: the removed ids leave the buffered appends of these documents, and come back if the
-  // removal fails
-  const removedFromBuffer = await editDenormBuffer(context, user, denormRemovalEdits(impacts));
-  try {
-    await elRemoveRelationConnectionInES(context, user, impacts, forceRefresh);
-  } catch (err) {
-    await restoreDenormBuffer(removedFromBuffer);
-    throw err;
+    // task 0040 append buffer: the removed ids leave the buffered appends of these documents
+    await editDenormBuffer(context, user, denormRemovalEdits(impacts));
   }
 };
 
@@ -5133,64 +5119,6 @@ export const elWriteDenormTargets = async (context: AuthContext, targets: Denorm
     await elRefreshIndices(R.uniq(targets.map((target) => target.index)));
   }
 };
-// Applies tombstones: removes each id, or renames it (the new id added when absent), only where present; a document
-// with nothing to change is not re-indexed
-const EL_DENORM_TOMBSTONES_SCRIPT_SOURCE = `
-  boolean changed = false;
-  for (edit in params.edits) {
-    def values = ctx._source[edit.key];
-    if (values != null && values.contains(edit.from)) {
-      def from = edit.from;
-      values.removeIf(v -> v == from);
-      if (edit.to != null && !values.contains(edit.to)) { values.add(edit.to); }
-      changed = true;
-    }
-  }
-  if (!changed) { ctx.op = 'noop'; }
-`;
-// The tombstone edits whose relationship (relation from the removed id to the document) exists again or still:
-// created again by a path that does not go through the buffer, or a removal that failed. Erasing them would lose an
-// append; keeping one whose relationship is being deleted at this very moment leaves a ghost id (accepted).
-const liveDenormRelations = async (context: AuthContext, tombstone: DenormTombstones) => {
-  const byRelation = R.groupBy((e: DenormEdit) => e.relation, tombstone.edits) as Record<string, DenormEdit[]>;
-  const relations = Object.entries(byRelation);
-  const live = new Set<string>();
-  for (let i = 0; i < relations.length; i += 1) {
-    const [relation, edits] = relations[i];
-    const filters = {
-      mode: FilterMode.And,
-      filterGroups: [],
-      filters: [{ key: ['toId'], values: [tombstone.id] }, { key: ['fromId'], values: R.uniq(edits.map((e) => e.from)) }],
-    };
-    const found = await elList<BasicStoreRelation>(context, SYSTEM_USER, [READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_INFERRED_RELATIONSHIPS], {
-      baseData: true,
-      types: [relation],
-      filters,
-    });
-    found.forEach((r) => live.add(`${relation}|${r.fromId}`));
-  }
-  return live;
-};
-export const elEraseDenormTombstones = async (context: AuthContext, allTombstones: DenormTombstones[]) => {
-  const tombstones: DenormTombstones[] = [];
-  for (let i = 0; i < allTombstones.length; i += 1) {
-    const live = await liveDenormRelations(context, allTombstones[i]);
-    const edits = allTombstones[i].edits.filter((e) => !live.has(`${e.relation}|${e.from}`));
-    if (edits.length > 0) tombstones.push({ ...allTombstones[i], edits });
-  }
-  const body = tombstones.flatMap((tombstone) => {
-    const edits = tombstone.edits.map((e) => ({ key: buildRefRelationKey(e.relation, e.field), from: e.from, to: e.to }));
-    return [
-      { update: { _index: tombstone.index, _id: tombstone.docId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-      { script: { source: EL_DENORM_TOMBSTONES_SCRIPT_SOURCE, params: { edits } } },
-    ];
-  });
-  const chunks = R.splitEvery(MAX_BULK_OPERATIONS * 2, body);
-  for (let i = 0; i < chunks.length; i += 1) {
-    await elBulk(context, { refresh: false, timeout: BULK_TIMEOUT, body: chunks[i] });
-  }
-  if (tombstones.length > 0) await elRefreshIndices(R.uniq(tombstones.map((t) => t.index)));
-};
 let denormBuffer: DenormBuffer | null = null;
 let denormRelations = new Set<string>();
 // The documents a write of buffered appends holds, never waited on, in a lock namespace of their own: batches lock
@@ -5219,7 +5147,6 @@ export const initDenormBuffer = (): DenormBuffer => {
     const context = executionContext('denorm_buffer_flush', SYSTEM_USER);
     denormBuffer = createDenormBuffer(redisDenormBufferStore, {
       write: (targets, replay) => elWriteDenormTargets(context, targets, replay, true),
-      erase: (tombstones) => elEraseDenormTombstones(context, tombstones),
       lock: denormLock,
     }, {
       flushPeriodMs: SEQUENCER_CONFIG.denormFlushPeriodMs,
@@ -5256,37 +5183,25 @@ const denormSinkOf = (context: AuthContext): DenormSink | undefined => {
   return sink;
 };
 // Removals and merge renames edit the buffered appends of their documents (user decision 2026-11-23): no wait, no
-// lock, no ES write; on every node of a deployment running the sequencer (user decision 2026-11-23, D1: an API node
-// deletes what an intake node buffered), never for a draft (the buffer holds live appends only, a draft copy keeps
-// the live ids), and only for the "to" side of the bufferable types (a type removed from the configuration may still
-// have appends to drain). A Redis failure is logged, the removal goes on: a removed id may then come back with a
-// later flush. Returns the removed ids, put back when the removal fails afterwards (user decision 2026-11-23, D2).
+// lock, no ES write, after their own ES update (a removal that fails before leaves the appends of a relation that
+// still exists); on every node of a deployment running the sequencer (an API node deletes what an intake node
+// buffered), never for a draft (the buffer holds live appends only, a draft copy keeps the live ids), and only for
+// the "to" side of the bufferable types (a type removed from the configuration may still have appends to drain).
+// A flush write in progress, or a Redis failure here, may leave a ghost id in the reverse array (accepted: the
+// regardingOf readers keep an id only when its relationship exists).
 const DENORM_EDIT_CHUNK = 1000;
-const editDenormBuffer = async (context: AuthContext, user: AuthUser | undefined, edits: DenormEdit[]): Promise<DenormTarget[]> => {
-  if (edits.length === 0 || getDraftContext(context, user)) return [];
+const editDenormBuffer = async (context: AuthContext, user: AuthUser | undefined, edits: DenormEdit[]) => {
+  if (edits.length === 0 || getDraftContext(context, user)) return;
   const edit = denormBuffer ? denormBuffer.edit : (isSequencerEnabled() ? redisDenormBufferStore.edit : null);
-  if (!edit) return [];
-  const removed: DenormTarget[] = [];
+  if (!edit) return;
   try {
     const chunks = R.splitEvery(DENORM_EDIT_CHUNK, edits);
     for (let i = 0; i < chunks.length; i += 1) {
-      removed.push(...(await edit(chunks[i])));
+      await edit(chunks[i]);
     }
   } catch (err) {
     logApp.warn('[SEQUENCER] denorm buffer edit failed, a removed id may come back with a flush', { cause: err, edits: edits.length });
   }
-  return removed;
-};
-// The removal or merge failed after its edit: the ids it took out of the buffer go back, pending again (and their
-// tombstones cancelled), since their relationships may still exist
-const restoreDenormBuffer = async (removed: DenormTarget[]) => {
-  if (removed.length === 0) return;
-  const restore = denormBuffer
-    ? denormBuffer.restore
-    : (targets: DenormTarget[]) => redisDenormBufferStore.add(targets, Number.MAX_SAFE_INTEGER, SEQUENCER_CONFIG.denormFlushTargetMaxIds, Date.now());
-  await Promise.resolve(restore(removed)).catch((err) => {
-    logApp.error('[SEQUENCER] denorm buffer restore failed, appends of a failed removal are lost', { cause: err, documents: removed.map((t) => t.id) });
-  });
 };
 const denormRemovalEdits = (impacts: [string, any][]): DenormEdit[] => impacts.flatMap(([docId, elementMeta]) => Object.entries(elementMeta as Record<string, string[]>)
   .flatMap(([typeAndIndex, cleanupIds]) => {
@@ -5506,7 +5421,7 @@ export const elUpdateRelationConnections = async (context: AuthContext, elements
     await Promise.all([bulkPromise]);
   }
 };
-const elUpdateEntityConnectionsInES = async (context: AuthContext, elements: any[]) => {
+export const elUpdateEntityConnections = async (context: AuthContext, elements: any[], user?: AuthUser) => {
   if (elements.length > 0) {
     const source = `if (ctx._source[params.key] == null) {
       ctx._source[params.key] = params.to;
@@ -5541,17 +5456,8 @@ const elUpdateEntityConnectionsInES = async (context: AuthContext, elements: any
       ];
     });
     await elBulk(context, { refresh: ES_REFRESH_UPDATE, timeout: BULK_TIMEOUT, body: bodyUpdate });
-  }
-};
-export const elUpdateEntityConnections = async (context: AuthContext, elements: any[]) => {
-  // task 0040 append buffer: the replaced ids are renamed in the buffered appends of these documents, and come back
-  // if the merge update fails
-  const renamedInBuffer = await editDenormBuffer(context, undefined, denormRenameEdits(elements));
-  try {
-    await elUpdateEntityConnectionsInES(context, elements);
-  } catch (err) {
-    await restoreDenormBuffer(renamedInBuffer);
-    throw err;
+    // task 0040 append buffer: the replaced ids are renamed in the buffered appends of these documents
+    await editDenormBuffer(context, user, denormRenameEdits(elements));
   }
 };
 

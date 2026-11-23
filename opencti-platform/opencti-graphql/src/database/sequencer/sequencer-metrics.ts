@@ -16,7 +16,7 @@ export type MapEvent = 'hit' | 'miss' | 'evict' | 'invalidate' | 'absent' | 'wri
   | 'dedup_before_lock' | 'dedup_stamp_changed' | 'dedup_stamps_outlived' | 'dedup_research' | 'partial_acquire' | 'partial_carried_groups';
 
 export type DenormBufferEvent = 'buffered_ids' | 'flushed_ids' | 'flushed_targets' | 'flushes' | 'replayed_targets' | 'fallback_ids'
-  | 'edited_ids' | 'restored_ids' | 'tombstones_applied' | 'flush_failed' | 'dead_targets';
+  | 'edited_ids' | 'flush_failed' | 'dead_targets';
 
 class SequencerMetrics {
   // Hot-path counters (one add per intent, per identity map lookup): plain totals, exported at

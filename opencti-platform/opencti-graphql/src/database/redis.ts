@@ -19,7 +19,7 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import type { DenormBufferStore, DenormEdit, DenormTarget } from './sequencer/denorm-buffer';
+import type { DenormBufferStore, DenormTarget } from './sequencer/denorm-buffer';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -675,9 +675,8 @@ export const redisQueueLeaseStore = {
 // {dn}:total counts the buffered ids, in flight included, until done or moved aside; {dn}:pending scores each
 // document by its first pending append; {dn}:inflight scores each flush by the time it may be replayed (its take,
 // then its next retry); {dn}:infl:<doc> holds the flushes a document is in (moved aside ones included);
-// {dn}:tomb:<flush>:<doc> the edits that removed or renamed an id of that flush, kept for its writer and for a while
-// after done (a writer whose lock expired applies them late); {dn}:attempts and {dn}:failedAt count the failed
-// writes per flush; {dn}:dead keeps the flushes moved aside, with their keys, until requeued.
+// {dn}:attempts and {dn}:failedAt count the failed writes per flush; {dn}:dead keeps the flushes moved aside, with
+// their keys, until requeued.
 const DN_TOTAL_KEY = '{dn}:total';
 const DN_PENDING_KEY = '{dn}:pending';
 const DN_INFLIGHT_KEY = '{dn}:inflight';
@@ -686,12 +685,8 @@ const DN_LEASE_KEY = '{dn}:lease';
 const DN_PREFIX = `local P = string.sub(KEYS[1], 1, #KEYS[1] - ${DN_TOTAL_KEY.length})`;
 // a document over the per-document cap is due at once (score 1, below any real time)
 const DN_URGENT_SCORE = 1;
-// tombstones of a flush outlive it by this long (well above the lock max TTL a late writer may have held)
-const DN_TOMB_TTL_S = 600;
 // KEYS: total, pending; ARGV: max ids, per-document max ids, now ms, JSON targets (validated by the caller).
 // 0 = over the global cap, nothing added. The total follows each target, so a script error midway leaves it exact.
-// An id added again (relation created again) cancels its tombstones in the flushes of its document: an earlier
-// flight must not erase it.
 const DN_ADD_SCRIPT = `${DN_PREFIX}
 local total = tonumber(redis.call('get', KEYS[1]) or '0')
 if total >= tonumber(ARGV[1]) then return 0 end
@@ -700,7 +695,6 @@ for _, t in ipairs(cjson.decode(ARGV[4])) do
   redis.call('hset', meta, 'index', t.index, 'docId', t.docId, 'type', t.entityType)
   local current = redis.call('hget', meta, 'updatedAt')
   if (not current) or current < t.updatedAt then redis.call('hset', meta, 'updatedAt', t.updatedAt) end
-  local flights = redis.call('smembers', P .. '{dn}:infl:' .. t.id)
   local size = 0
   for _, g in ipairs(t.groups) do
     local name = g.relation .. '|' .. g.field
@@ -712,12 +706,6 @@ for _, t in ipairs(cjson.decode(ARGV[4])) do
     end
     redis.call('incrby', KEYS[1], added)
     size = size + redis.call('scard', key)
-    for _, f in ipairs(flights) do
-      local tomb = P .. '{dn}:tomb:' .. f .. ':' .. t.id
-      if redis.call('exists', tomb) == 1 then
-        for _, id in ipairs(g.ids) do redis.call('hdel', tomb, name .. '|' .. id) end
-      end
-    end
   end
   if size >= tonumber(ARGV[2]) then
     redis.call('zadd', KEYS[2], ${DN_URGENT_SCORE}, t.id)
@@ -766,8 +754,7 @@ if #out > 0 then redis.call('zadd', KEYS[3], ARGV[2], f) end
 return out
 `;
 // Removes a flush from the buffer: its ids leave the total; keep = 0 (done) deletes its keys and the marks of its
-// documents, its tombstones expire later; keep = 1 (moved aside) keeps its keys, marks and tombstones, so that
-// removals still edit it and its replay still erases what its failed writes may have landed
+// documents; keep = 1 (moved aside) keeps its keys and marks, so that removals still edit it until it is requeued
 const DN_RELEASE_FLIGHT = `
 local function releaseFlight(P, f, keep)
   local flushKey = P .. '{dn}:fl:' .. f
@@ -782,7 +769,6 @@ local function releaseFlight(P, f, keep)
     if keep == 0 then
       redis.call('del', groupsKey, P .. '{dn}:flmeta:' .. f .. ':' .. t)
       redis.call('srem', P .. '{dn}:infl:' .. t, f)
-      redis.call('expire', P .. '{dn}:tomb:' .. f .. ':' .. t, ${DN_TOMB_TTL_S})
     end
   end
   if keep == 0 then redis.call('del', flushKey) end
@@ -834,41 +820,22 @@ end
 return requeued
 `;
 // KEYS: total; ARGV: JSON edits. Removals (to = null) and renames of ids in the pending, in-flight and moved aside
-// appends of their document (the moved aside ones are out of the total). An edit that hit a flush leaves a tombstone
-// on it for its writer. Returns the edits that hit something, with the document's meta, so that a removal failing
-// afterwards can put the ids back.
+// appends of their document (the moved aside ones are out of the total).
 const DN_EDIT_SCRIPT = `${DN_PREFIX}
 local function apply(key, e, counted)
-  if redis.call('srem', key, e.from) == 0 then return false end
+  if redis.call('srem', key, e.from) == 0 then return end
   local delta = -1
   if e.to and e.to ~= cjson.null then delta = delta + redis.call('sadd', key, e.to) end
   if counted then redis.call('incrby', KEYS[1], delta) end
-  return true
 end
-local out = {}
 for _, e in ipairs(cjson.decode(ARGV[1])) do
   local name = e.relation .. '|' .. e.field
-  local metaKey = nil
-  if apply(P .. '{dn}:add:' .. e.docId .. ':' .. name, e, true) then metaKey = P .. '{dn}:meta:' .. e.docId end
+  apply(P .. '{dn}:add:' .. e.docId .. ':' .. name, e, true)
   for _, f in ipairs(redis.call('smembers', P .. '{dn}:infl:' .. e.docId)) do
-    local counted = not redis.call('zscore', P .. '{dn}:dead', f)
-    if apply(P .. '{dn}:fladd:' .. f .. ':' .. e.docId .. ':' .. name, e, counted) then
-      redis.call('hset', P .. '{dn}:tomb:' .. f .. ':' .. e.docId, name .. '|' .. e.from, cjson.encode(e))
-      metaKey = metaKey or (P .. '{dn}:flmeta:' .. f .. ':' .. e.docId)
-    end
+    apply(P .. '{dn}:fladd:' .. f .. ':' .. e.docId .. ':' .. name, e, not redis.call('zscore', P .. '{dn}:dead', f))
   end
-  if metaKey then table.insert(out, { e.docId, e.relation, e.field, e.from, redis.call('hgetall', metaKey) }) end
 end
-return out
-`;
-// KEYS: total; ARGV: flush id, document ids. The tombstones of these documents in that flush (done or not).
-const DN_TOMBSTONES_SCRIPT = `${DN_PREFIX}
-local out = {}
-for i = 2, #ARGV do
-  local edits = redis.call('hvals', P .. '{dn}:tomb:' .. ARGV[1] .. ':' .. ARGV[i])
-  if #edits > 0 then table.insert(out, { ARGV[i], edits }) end
-end
-return out
+return 1
 `;
 // KEYS: total, inflight; ARGV: limit, now ms. The in-flight flushes that may be replayed now, oldest first, with
 // their documents.
@@ -921,20 +888,6 @@ const parseDenormTarget = ([id, metaFlat, groups]: DnRawTarget): DenormTarget =>
     }),
   };
 };
-// The ids an edit removed, as appends to put back, one target per document
-type DnRawEdited = [string, string, string, string, string[]];
-const parseEditedTargets = (raw: DnRawEdited[], nowIso: string): DenormTarget[] => {
-  const targets = new Map<string, DenormTarget>();
-  raw.forEach(([id, relation, field, from, metaFlat]) => {
-    const meta = metaOf(metaFlat);
-    const target = targets.get(id) ?? { id, index: meta.index, docId: meta.docId, entityType: meta.type, updatedAt: nowIso, groups: [] };
-    const group = target.groups.find((g) => g.relation === relation && g.field === field);
-    if (group) group.ids.push(from);
-    else target.groups.push({ relation, field, ids: [from] });
-    targets.set(id, target);
-  });
-  return Array.from(targets.values());
-};
 const isFilled = (value: unknown) => typeof value === 'string' && value.length > 0;
 // A target the scripts can store whole: a script error midway would leave part of the batch in Redis
 const isValidDenormTarget = (target: DenormTarget) => [target.id, target.index, target.docId, target.entityType, target.updatedAt].every(isFilled)
@@ -974,14 +927,8 @@ export const redisDenormBufferStore: DenormBufferStore = {
     return raw === null ? null : raw.map(parseDenormTarget);
   },
   edit: async (edits) => {
-    if (edits.length === 0) return [];
-    const raw = await getClientBase().eval(DN_EDIT_SCRIPT, 1, DN_TOTAL_KEY, JSON.stringify(edits)) as DnRawEdited[];
-    return parseEditedTargets(raw, new Date().toISOString());
-  },
-  tombstones: async (flushId, ids) => {
-    if (ids.length === 0) return [];
-    const raw = await getClientBase().eval(DN_TOMBSTONES_SCRIPT, 1, DN_TOTAL_KEY, flushId, ...ids) as Array<[string, string[]]>;
-    return raw.map(([id, edits]) => ({ id, edits: edits.map((e) => JSON.parse(e) as DenormEdit) }));
+    if (edits.length === 0) return;
+    await getClientBase().eval(DN_EDIT_SCRIPT, 1, DN_TOTAL_KEY, JSON.stringify(edits));
   },
   failed: async (flushId, maxAttempts, minAgeMs, nowMs, retry) => {
     const args = [flushId, maxAttempts, minAgeMs, nowMs, retry.baseMs, retry.maxMs].map(String);

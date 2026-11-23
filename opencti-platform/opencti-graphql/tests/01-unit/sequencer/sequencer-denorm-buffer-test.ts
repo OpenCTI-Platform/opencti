@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createDenormBuffer } from '../../../src/database/sequencer/denorm-buffer';
-import type { DenormBufferStore, DenormDocEdits, DenormEdit, DenormFlight, DenormIo, DenormTarget, DenormTombstones } from '../../../src/database/sequencer/denorm-buffer';
+import type { DenormBufferStore, DenormEdit, DenormFlight, DenormIo, DenormTarget } from '../../../src/database/sequencer/denorm-buffer';
 import { bufferableRelations, denormTargetBulkLines, toDenormTarget } from '../../../src/database/engine';
 
 // task 0040 append buffer: the "to" side appends of hot documents (a misp external reference collects 26k citing
 // ids, each append re-indexes its 1 MB document) wait in Redis and are written once per flush period per document.
-// Removals edit the buffered appends instead of waiting for them. Each test names the lost, doubled, misordered or
-// ghost append it guards against.
+// Removals edit the buffered appends instead of waiting for them (a write in progress may still land a removed id:
+// a ghost id, accepted). Each test names the lost, doubled or misordered append it guards against.
 
 const OPTIONS = { flushPeriodMs: 1000, targetMaxIds: 5, maxIds: 100, flushBatch: 2, maxAttempts: 3, deadAfterMs: 60000, retryMaxMs: 1000 };
 // the retry back-off of a failed flush starts at one tick (half the flush period) and is capped at retryMaxMs
@@ -24,25 +24,21 @@ const removal = (docId: string, from: string): DenormEdit => ({ docId, relation:
 
 const countOf = (targets: DenormTarget[]) => targets.reduce((n, t) => n + t.groups.reduce((m, g) => m + g.ids.length, 0), 0);
 const copyOf = (targets: DenormTarget[]): DenormTarget[] => targets.map((t) => ({ ...t, groups: t.groups.map((g) => ({ ...g, ids: [...g.ids] })) }));
-const keyOf = (relation: string, field: string, id: string) => `${relation}|${field}|${id}`;
 
 // In-memory store with the semantics of the Redis one (redis.ts redisDenormBufferStore): one set per document and
 // field, a pending time per document, a total counting the ids until done or moved aside (in flight included),
 // takes moved atomically into a flush (documents emptied by removals dropped) that stays in flight until done and is
 // replayable from its take time or its next retry (back-off), edits applied to pending, in-flight and moved aside
-// appends, each hit on a flush leaving a tombstone on that flush (kept after done, cancelled by an add of the same
-// id), failed writes counted per flush with the time of the first failure, flushes moved aside kept, with their
-// marks and tombstones, until requeued
+// appends, failed writes counted per flush with the time of the first failure, flushes moved aside kept, with their
+// marks, until requeued
 const memoryStore = () => {
   const buffered = new Map<string, DenormTarget>();
   const pendingSince = new Map<string, number>();
   const flights = new Map<string, { at: number; targets: DenormTarget[]; attempts: number; failedAt?: number }>();
   const dead = new Map<string, { at: number; targets: DenormTarget[]; attempts: number }>();
   const marks = new Map<string, Set<string>>();
-  const tombs = new Map<string, Map<string, DenormEdit>>(); // flushId|docId -> relation|field|id -> edit
   let total = 0;
   let lease: string | null = null;
-  const tombKey = (flushId: string, docId: string) => `${flushId}|${docId}`;
   const release = (flushId: string, keep = false) => {
     const flight = flights.get(flushId);
     if (!flight) return;
@@ -64,13 +60,12 @@ const memoryStore = () => {
   const targetIn = (flushId: string, id: string) => (flights.get(flushId) ?? dead.get(flushId))?.targets.find((t) => t.id === id);
   const store: DenormBufferStore & {
     buffered: typeof buffered; flights: typeof flights; dead: typeof dead;
-    tombsOf: (flushId: string, docId: string) => DenormEdit[]; total: () => number;
+    total: () => number;
     setLease: (t: string | null) => void; lease: () => string | null;
   } = {
     buffered,
     flights,
     dead,
-    tombsOf: (flushId, docId) => [...(tombs.get(tombKey(flushId, docId))?.values() ?? [])],
     total: () => total,
     setLease: (t) => {
       lease = t;
@@ -92,9 +87,6 @@ const memoryStore = () => {
           if (existing) existing.ids = ids;
           else current.groups.push({ ...group, ids });
           size += ids.length;
-          (marks.get(target.id) ?? new Set<string>()).forEach((flushId) => {
-            group.ids.forEach((id) => tombs.get(tombKey(flushId, target.id))?.delete(keyOf(group.relation, group.field, id)));
-          });
         });
         if (current.updatedAt < target.updatedAt) current.updatedAt = target.updatedAt;
         buffered.set(target.id, current);
@@ -135,25 +127,11 @@ const memoryStore = () => {
       return flight ? copyOf(flight.targets) : null;
     },
     edit: async (edits) => {
-      const removed: DenormTarget[] = [];
       edits.forEach((e) => {
-        let meta = applyEdit(buffered.get(e.docId), e, true) ? buffered.get(e.docId) : undefined;
-        (marks.get(e.docId) ?? new Set<string>()).forEach((flushId) => {
-          const target = targetIn(flushId, e.docId);
-          if (applyEdit(target, e, flights.has(flushId))) {
-            const key = tombKey(flushId, e.docId);
-            tombs.set(key, (tombs.get(key) ?? new Map()).set(keyOf(e.relation, e.field, e.from), e));
-            meta = meta ?? target;
-          }
-        });
-        if (meta) removed.push({ ...meta, updatedAt: new Date().toISOString(), groups: [{ relation: e.relation, field: e.field, ids: [e.from] }] });
+        applyEdit(buffered.get(e.docId), e, true);
+        (marks.get(e.docId) ?? new Set<string>()).forEach((flushId) => applyEdit(targetIn(flushId, e.docId), e, flights.has(flushId)));
       });
-      return removed;
     },
-    tombstones: async (flushId, ids): Promise<DenormDocEdits[]> => ids.flatMap((id) => {
-      const edits = [...(tombs.get(tombKey(flushId, id))?.values() ?? [])];
-      return edits.length > 0 ? [{ id, edits }] : [];
-    }),
     failed: async (flushId, maxAttempts, minAgeMs, nowMs, retry) => {
       const flight = flights.get(flushId);
       if (!flight) return false;
@@ -191,11 +169,9 @@ const memoryStore = () => {
   return store;
 };
 
-// The engine side of the buffer: ES writes and tombstone erasures recorded, document locks never waited on
+// The engine side of the buffer: ES writes recorded, document locks never waited on
 const memoryIo = (failures = 0) => {
   const writes: Array<{ targets: DenormTarget[]; replay: boolean }> = [];
-  const erased: DenormTombstones[] = [];
-  const events: string[] = [];
   const held = new Set<string>();
   let left = failures;
   let gate: Promise<void> | null = null;
@@ -207,11 +183,6 @@ const memoryIo = (failures = 0) => {
         throw new Error('es down');
       }
       writes.push({ targets, replay });
-      events.push(`write ${targets.map((t) => t.id).join(',')}`);
-    },
-    erase: async (tombstones) => {
-      erased.push(...tombstones);
-      events.push(`erase ${tombstones.map((t) => t.edits.map((e) => e.from).join(',')).join(';')}`);
     },
     lock: async (ids) => {
       if (ids.some((id) => held.has(id))) return null;
@@ -229,13 +200,12 @@ const memoryIo = (failures = 0) => {
       release();
     };
   };
-  return { io, writes, erased, events, held, holdWrites, failNext: (n: number) => {
+  return { io, writes, held, holdWrites, failNext: (n: number) => {
     left = n;
   } };
 };
 
 const idsOf = (writes: Array<{ targets: DenormTarget[] }>) => writes.flatMap((w) => w.targets.flatMap((t) => t.groups.flatMap((g) => g.ids))).sort();
-const erasedIds = (erased: DenormTombstones[]) => erased.flatMap((t) => t.edits.map((e) => e.from)).sort();
 const wait = (ms: number) => new Promise((resolve) => {
   setTimeout(resolve, ms);
 });
@@ -503,31 +473,13 @@ describe('append buffer: removals and merges edit the buffered appends', () => {
     const { io, writes } = memoryIo();
     const buffer = createDenormBuffer(store, io, OPTIONS);
     await buffer.add([targetOf('ref-1', ['a', 'b'])]);
-    expect(idsOf([{ targets: await buffer.edit([removal('ref-1', 'a'), removal('ref-1', 'absent')]) }]), 'the removed ids').toEqual(['a']);
+    await buffer.edit([removal('ref-1', 'a'), removal('ref-1', 'absent')]);
     await buffer.flush(['ref-1']);
     expect(idsOf(writes)).toEqual(['b']);
     expect(store.total()).toBe(0);
   });
 
-  it('should put back the ids of a removal that failed afterwards, and cancel their tombstones', async () => {
-    const store = memoryStore();
-    await store.add([targetOf('ref-1', ['a'])], 100, 5, Date.now());
-    await store.take(['ref-1'], 'f1', Date.now());
-    const { io, writes, erased } = memoryIo();
-    const buffer = createDenormBuffer(store, io, OPTIONS);
-    await buffer.add([targetOf('ref-1', ['b'])]);
-    const removed = await buffer.edit([removal('ref-1', 'a'), removal('ref-1', 'b')]);
-    await buffer.restore(removed);
-    expect(store.tombsOf('f1', 'ref-1')).toEqual([]);
-    await buffer.tick();
-    await buffer.flush(['ref-1']);
-    expect(writes, 'the replay of f1, emptied by the removal, writes nothing').toHaveLength(1);
-    expect(idsOf(writes)).toEqual(['a', 'b']);
-    expect(erased).toEqual([]);
-    expect(store.total()).toBe(0);
-  });
-
-  it('should drop a removed id from a dead in-flight flush, so that its replay does not bring it back', async () => {
+  it('should drop a removed id from a failed in-flight flush, so that its replay does not bring it back', async () => {
     const store = memoryStore();
     await store.add([targetOf('ref-1', ['a', 'b'])], 100, 5, Date.now());
     await store.take(['ref-1'], 'dead-flush', Date.now());
@@ -536,70 +488,34 @@ describe('append buffer: removals and merges edit the buffered appends', () => {
     await buffer.edit([removal('ref-1', 'a')]);
     await buffer.tick();
     expect(idsOf(writes)).toEqual(['b']);
+    expect(store.total()).toBe(0);
   });
 
-  it('should erase a removed id a write in progress landed, after that write and before the flush is done', async () => {
-    const store = memoryStore();
-    const { io, writes, erased, events, holdWrites } = memoryIo();
-    const buffer = createDenormBuffer(store, io, OPTIONS);
-    await buffer.add([targetOf('ref-1', ['a', 'b'])]);
-    const release = holdWrites();
-    const flushing = buffer.flush(['ref-1']);
-    await wait(1);
-    // the removal happens while the write, which read a and b, is in progress
-    await buffer.edit([removal('ref-1', 'a')]);
-    release();
-    await flushing;
-    expect(idsOf(writes)).toEqual(['a', 'b']);
-    expect(erased).toEqual([{ id: 'ref-1', index: 'opencti_stix_meta_objects-000001', docId: 'ref-1', edits: [removal('ref-1', 'a')] }]);
-    expect(events).toEqual(['write ref-1', 'erase a']);
-  });
-
-  it('should apply the tombstones of its flush even when another writer already did it (its lock expired)', async () => {
-    const store = memoryStore();
-    const { io, erased, holdWrites } = memoryIo();
-    const buffer = createDenormBuffer(store, io, OPTIONS);
-    await buffer.add([targetOf('ref-1', ['a'])]);
-    const release = holdWrites();
-    const flushing = buffer.flush(['ref-1']);
-    await wait(1);
-    const [flushId] = [...store.flights.keys()];
-    await buffer.edit([removal('ref-1', 'a')]);
-    // the late writer's lock expired: another node replayed the flush (without a) and marked it done
-    await store.done(flushId);
-    release();
-    await flushing;
-    expect(erasedIds(erased), 'the late writer landed a, then erased it').toEqual(['a']);
-  });
-
-  it('should not erase from a later flush an id removed from an earlier one (re-added meanwhile by a direct write)', async () => {
+  it('should replay an in-flight flush emptied by removals as done, without writing', async () => {
     const store = memoryStore();
     await store.add([targetOf('ref-1', ['a'])], 100, 5, Date.now());
-    await store.take(['ref-1'], 'f1', Date.now());
-    expect(await store.failed('f1', 1, 0, Date.now(), { baseMs: 1, maxMs: 1 })).toBe(true);
-    const { io, writes, erased } = memoryIo();
+    await store.take(['ref-1'], 'dead-flush', Date.now());
+    const { io, writes } = memoryIo();
     const buffer = createDenormBuffer(store, io, OPTIONS);
     await buffer.edit([removal('ref-1', 'a')]);
-    // the relation is created again through the API: its append is written directly, not buffered
-    await buffer.add([targetOf('ref-1', ['y'])]);
-    await buffer.flush(['ref-1']);
-    expect(idsOf(writes)).toEqual(['y']);
-    expect(erased).toEqual([]);
-    expect(store.tombsOf('f1', 'ref-1').map((e) => e.from), 'kept for the replay of f1').toEqual(['a']);
-  });
-
-  it('should cancel the tombstone of an id added again through the buffer, so that the replay of the earlier flush does not erase it', async () => {
-    const store = memoryStore();
-    await store.add([targetOf('ref-1', ['a'])], 100, 5, Date.now());
-    await store.take(['ref-1'], 'f1', Date.now());
-    const { io, writes, erased } = memoryIo();
-    const buffer = createDenormBuffer(store, io, OPTIONS);
-    await buffer.edit([removal('ref-1', 'a')]);
-    await buffer.add([targetOf('ref-1', ['a'])]);
     await buffer.tick();
-    await buffer.flush(['ref-1']);
-    expect(erased).toEqual([]);
-    expect(idsOf(writes)).toEqual(['a']);
+    expect(writes).toHaveLength(0);
+    expect(store.flights.size).toBe(0);
+  });
+
+  it('should drop a removed id from a flush moved aside, so that its requeue does not bring it back', async () => {
+    const store = memoryStore();
+    await store.add([targetOf('ref-1', ['a', 'b'])], 100, 5, Date.now());
+    await store.take(['ref-1'], 'f1', Date.now());
+    await store.failed('f1', 1, 0, Date.now(), { baseMs: 1, maxMs: 1 });
+    const { io, writes } = memoryIo();
+    const buffer = createDenormBuffer(store, io, OPTIONS);
+    await buffer.edit([removal('ref-1', 'a')]);
+    expect(store.total(), 'ids moved aside are out of the total').toBe(0);
+    await store.requeueDead(Date.now());
+    await buffer.tick();
+    expect(idsOf(writes)).toEqual(['b']);
+    expect(store.total()).toBe(0);
   });
 
   it('should rename a merged id in the pending appends', async () => {
@@ -612,31 +528,20 @@ describe('append buffer: removals and merges edit the buffered appends', () => {
     expect(idsOf(writes)).toEqual(['b', 'target']);
   });
 
-  it('should drop a removed id from a flush moved aside, so that its requeue does not bring it back', async () => {
+  it('should not wait for a write in progress: that write still lands the removed id (accepted ghost id), nothing after it does', async () => {
     const store = memoryStore();
-    await store.add([targetOf('ref-1', ['a', 'b'])], 100, 5, Date.now());
-    await store.take(['ref-1'], 'f1', Date.now());
-    await store.failed('f1', 1, 0, Date.now(), { baseMs: 1, maxMs: 1 });
-    const { io, writes, erased } = memoryIo();
+    const { io, writes, holdWrites } = memoryIo();
     const buffer = createDenormBuffer(store, io, OPTIONS);
+    await buffer.add([targetOf('ref-1', ['a', 'b'])]);
+    const release = holdWrites();
+    const flushing = buffer.flush(['ref-1']);
+    await wait(1);
     await buffer.edit([removal('ref-1', 'a')]);
-    expect(store.total(), 'ids moved aside are out of the total').toBe(0);
-    await store.requeueDead(Date.now());
-    await buffer.tick();
-    expect(idsOf(writes)).toEqual(['b']);
-    expect(erasedIds(erased), 'what its failed writes may have landed is erased').toEqual(['a']);
+    release();
+    await flushing;
+    expect(idsOf(writes)).toEqual(['a', 'b']);
+    expect(store.flights.size).toBe(0);
     expect(store.total()).toBe(0);
-  });
-
-  it('should keep no tombstone for an id that was in no flush (nothing to erase later)', async () => {
-    const store = memoryStore();
-    await store.add([targetOf('ref-1', ['a'])], 100, 5, Date.now());
-    await store.take(['ref-1'], 'f1', Date.now());
-    const { io } = memoryIo();
-    const buffer = createDenormBuffer(store, io, OPTIONS);
-    await buffer.add([targetOf('ref-1', ['b'])]);
-    await buffer.edit([removal('ref-1', 'b'), removal('ref-1', 'never-buffered')]);
-    expect(store.tombsOf('f1', 'ref-1')).toEqual([]);
   });
 });
 
