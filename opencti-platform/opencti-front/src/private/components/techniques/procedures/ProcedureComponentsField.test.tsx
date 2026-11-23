@@ -35,6 +35,11 @@ describe('componentRowErrors', () => {
 });
 
 describe('ProcedureComponentsField', () => {
+  it('names the field Components', () => {
+    renderField(WBADMIN);
+    expect(screen.getByText('Components')).toBeDefined();
+  });
+
   it('moves a component up', () => {
     const { onChange } = renderField(WBADMIN);
     fireEvent.click(screen.getByRole('button', { name: 'Move component 1 up' }));

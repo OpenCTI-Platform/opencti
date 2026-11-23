@@ -15,6 +15,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Text,
 } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
 
@@ -68,8 +69,11 @@ const ProcedureComponentsField: FunctionComponent<ProcedureComponentsFieldProps>
 
   return (
     <div>
+      <Box sx={{ marginBottom: 1 }}>
+        <Text variant="content-caption">{t_i18n('Components')}</Text>
+      </Box>
       {rows.map((row, index) => (
-        <Box key={`${row.id}-${index}`} sx={{ display: 'flex', alignItems: 'center', gap: 1, marginBottom: 1 }}>
+        <Box key={`${row.id}-${index}`} sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, marginBottom: 1 }}>
           <Box component="span" sx={{ minWidth: 24, textAlign: 'right' }}>{index}</Box>
           <Box sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 1 }}>
             <Chip label={t_i18n(`entity_${row.entity_type}`)} entity="observations" />
