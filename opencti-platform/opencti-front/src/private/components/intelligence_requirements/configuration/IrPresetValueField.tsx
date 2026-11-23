@@ -35,7 +35,18 @@ const numberBounds = (key: string): { min: number; max?: number; step: number } 
 const VocabularyValueField = ({ rule, value, onChange }: FieldProps) => {
   const { t_i18n } = useFormatter();
   const { fieldToCategory } = useVocabularyCategory();
-  const category = rule.vocabularyField ? fieldToCategory(rule.appliesTo[0], rule.vocabularyField) : undefined;
+  // The field may be declared on a different entity type than the first one the rule applies to
+  // (e.g. a Campaign's primary_motivation is a category of Threat-Actor-Group and Intrusion-Set),
+  // so try each type in order, then look the field up without an entity type.
+  const category = useMemo(() => {
+    const field = rule.vocabularyField;
+    if (!field) return undefined;
+    for (const type of rule.appliesTo) {
+      const found = fieldToCategory(type, field);
+      if (found) return found;
+    }
+    return fieldToCategory(undefined, field);
+  }, [rule.vocabularyField, rule.appliesTo.join(',')]);
   const [options, setOptions] = useState<Option[]>([]);
   useEffect(() => {
     if (!category) {
@@ -57,6 +68,7 @@ const VocabularyValueField = ({ rule, value, onChange }: FieldProps) => {
     <IrMultiSelect
       values={value.terms}
       options={options}
+      allowCustom={!category}
       onChange={(terms) => onChange({ ...value, terms })}
       placeholder={t_i18n('Add…')}
     />
@@ -168,7 +180,7 @@ export const IrPresetValueField = ({ rule, value, onChange }: FieldProps) => {
         <div style={{ width: 120 }}>
           <Input
             type="number"
-            aria-label={rule.sentence}
+            aria-label={t_i18n(rule.sentence)}
             min={min}
             max={max}
             step={step}
