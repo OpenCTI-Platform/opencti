@@ -91,6 +91,8 @@ describe('rendered points budget', () => {
 describe('isSameBreakdown', () => {
   const breakdown = (values: number[], overrides = {}) => ({
     truncated: false,
+    // Not given by the private breakdowns
+    interval: null,
     dates: ['2025-10-01T00:00:00.000Z', '2025-10-02T00:00:00.000Z'],
     series: [{ label: 'user-id', isOther: false, entity: { id: 'user-id', name: 'Alice' }, values }],
     ...overrides,

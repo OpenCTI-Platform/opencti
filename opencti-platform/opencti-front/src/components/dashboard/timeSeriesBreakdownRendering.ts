@@ -1,5 +1,5 @@
 import * as C from '@mui/material/colors';
-import type { WidgetTimeSeriesBreakdownData } from './WidgetTimeSeriesBreakdown';
+import type { WidgetTimeSeriesBreakdown_breakdown$data } from './__generated__/WidgetTimeSeriesBreakdown_breakdown.graphql';
 import { colors } from '../../utils/Charts';
 import { itemColor, itemFamily } from '../../utils/Colors';
 
@@ -58,11 +58,14 @@ export const getRenderedPointsBudget = (type: string, width: number, seriesCount
   return Math.min(pointsPerSeries * series, maxPoints);
 };
 
+// The breakdown read from the fragment of WidgetTimeSeriesBreakdown, without the marker of its fragment
+type TimeSeriesBreakdownData = Omit<WidgetTimeSeriesBreakdown_breakdown$data, ' $fragmentType'>;
+
 /**
  * Whether two breakdowns draw the same chart. A refresh hands a new breakdown even when nothing changed
  * (its end date moved), and redrawing every chart of a dashboard for nothing blocks the page for seconds.
  */
-export const isSameBreakdown = (a?: WidgetTimeSeriesBreakdownData | null, b?: WidgetTimeSeriesBreakdownData | null) => {
+export const isSameBreakdown = (a?: TimeSeriesBreakdownData | null, b?: TimeSeriesBreakdownData | null) => {
   if (a === b) return true;
   if (!a || !b || a.truncated !== b.truncated || (a.interval ?? null) !== (b.interval ?? null)
     || a.dates.length !== b.dates.length || a.series.length !== b.series.length) {

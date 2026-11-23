@@ -31,36 +31,7 @@ const stixCoreObjectsTimeSeriesBreakdownQuery = graphql`
       types: $types
       filters: $filters
     ) {
-      truncated
-      dates
-      series {
-        label
-        isOther
-        entity {
-          ... on BasicObject {
-            id
-            entity_type
-          }
-          ... on StixObject {
-            representative {
-              main
-            }
-          }
-          # internal objects
-          ... on Creator {
-            id
-            name
-          }
-          # the colors of the values that have one
-          ... on Label {
-            color
-          }
-          ... on MarkingDefinition {
-            x_opencti_color
-          }
-        }
-        values
-      }
+      ...WidgetTimeSeriesBreakdown_breakdown
     }
   }
 `;
