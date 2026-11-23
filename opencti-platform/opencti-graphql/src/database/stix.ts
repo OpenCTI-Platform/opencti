@@ -88,6 +88,7 @@ import {
   RELATION_TRANSFERRED_TO,
   RELATION_DEMONSTRATES,
   RELATION_AMPLIFIES,
+  RELATION_COMPONENT_OF,
   RELATION_SUPPORTS,
 } from '../schema/stixCoreRelationship';
 import { isStixRefRelationship } from '../schema/stixRefRelationship';
@@ -143,6 +144,11 @@ export type RelationDefinition = { name: string; type: RelationType };
 export type RelationshipMappings = { [k: `${string}_${string}`]: Array<RelationDefinition> };
 
 export const stixCoreRelationshipsMapping: RelationshipMappings = {
+  // region PROCEDURE COMPONENTS
+  [`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${ENTITY_TYPE_PROCEDURE}`]: [
+    { name: RELATION_COMPONENT_OF, type: REL_NEW },
+  ],
+  // endregion
   // Core
   // region ATTACK_PATTERN
   [`${ENTITY_TYPE_ATTACK_PATTERN}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [

@@ -14569,6 +14569,8 @@ input StixCoreObjectsTimeSeriesParameters {
 
 type StixCoreRelationship implements BasicRelationship & StixRelationship {
   cases(first: Int): CaseConnection
+  component_index: Int
+  component_type: String
   confidence: Int
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
@@ -14626,6 +14628,8 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
 
 input StixCoreRelationshipAddInput {
   clientMutationId: String
+  component_index: Int
+  component_type: String
   confidence: Int
   coverage_information: [SecurityCoverageExpectation!]
   created: DateTime

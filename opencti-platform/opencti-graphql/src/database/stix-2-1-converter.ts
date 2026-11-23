@@ -75,7 +75,7 @@ import {
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor,
 } from '../schema/stixDomainObject';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, RELATION_COMPONENT_OF } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
@@ -1294,6 +1294,10 @@ const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
     target_ref: resolvedTo.standard_id,
     start_time: convertToStixDate(instance.start_time),
     stop_time: convertToStixDate(instance.stop_time),
+    ...(instance.relationship_type === RELATION_COMPONENT_OF ? {
+      x_component_index: instance.component_index,
+      x_component_type: instance.component_type,
+    } : {}),
     external_references: buildExternalReferences(instance),
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({

@@ -9,6 +9,7 @@ import { RELATION_EXPLOITS, RELATION_HAS_OBSERVABLE, RELATION_IMPLEMENTS_TECHNIQ
 import { REL_EXTENDED, REL_NEW } from '../../database/stix';
 import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
 import convertProcedureToStix from './procedure-converter';
+import './procedure-components';
 import {
   ATTRIBUTE_COMMAND_REF,
   ATTRIBUTE_SOURCE_REFS,

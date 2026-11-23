@@ -177,6 +177,48 @@ const KILL_CHAIN_PHASE_DELETE = gql`
   }
 `;
 
+const TEXT_ADD = gql`
+  mutation procedureTextAdd($Text: TextAddInput) {
+    stixCyberObservableAdd(type: "Text", Text: $Text) {
+      id
+    }
+  }
+`;
+
+const COMPONENT_READ = gql`
+  query procedureComponentRelationship($id: String!) {
+    stixCoreRelationship(id: $id) {
+      id
+      component_index
+      component_type
+      toStix
+    }
+  }
+`;
+
+const RELATIONSHIP_FIELD_PATCH = gql`
+  mutation procedureComponentPatch($id: ID!, $input: [EditInput]!) {
+    stixCoreRelationshipEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+      }
+    }
+  }
+`;
+
+const componentOfRelationshipIds = async (procedureId: string) => {
+  const filters = {
+    mode: 'and',
+    filters: [
+      { key: ['toId'], values: [procedureId] },
+      { key: ['relationship_type'], values: ['component-of'] },
+    ],
+    filterGroups: [],
+  };
+  const result = await queryAsAdmin({ query: RELATIONSHIPS_QUERY, variables: { filters } });
+  return result.data?.stixCoreRelationships.edges.map((e: { node: { id: string } }) => e.node.id);
+};
+
 const createdProcedureIds: string[] = [];
 
 const addProcedureAsAdmin = async (input: Record<string, unknown>) => {
@@ -396,5 +438,76 @@ describe('Procedure resolver', () => {
     const result = await queryAsAdmin({ query: DELETE_QUERY, variables: { id: p.id } });
     expect(result.data?.procedureDelete).toBe(p.id);
     expect(await readProcedure(p.id)).toBeNull();
+  });
+});
+
+describe('Procedure components', () => {
+  let procedureId: string;
+  let textId: string;
+  let relationshipId: string;
+
+  beforeAll(async () => {
+    procedureId = (await addProcedureAsAdmin({ name: 'Copy credential stores via wbadmin backup' })).id;
+    const text = await queryAsAdminWithSuccess({ query: TEXT_ADD, variables: { Text: { value: 'start backup' } } });
+    textId = text.data?.stixCyberObservableAdd.id;
+  });
+
+  afterAll(async () => {
+    await queryAsAdmin({ query: DELETE_QUERY, variables: { id: procedureId } });
+    await queryAsAdmin({ query: OBSERVABLE_DELETE, variables: { id: textId } });
+  });
+
+  it('refuses a secondary component at index 0', async () => {
+    const result = await queryAsAdmin({
+      query: RELATIONSHIP_ADD,
+      variables: { input: { fromId: textId, toId: procedureId, relationship_type: 'component-of', component_index: 0, component_type: 'secondary' } },
+    });
+    expect(result.errors?.[0]?.message).toContain('The first component must be Primary.');
+  });
+
+  it('refuses a component without an index', async () => {
+    const result = await queryAsAdmin({
+      query: RELATIONSHIP_ADD,
+      variables: { input: { fromId: textId, toId: procedureId, relationship_type: 'component-of', component_type: 'primary' } },
+    });
+    expect(result.errors?.length).toBeGreaterThan(0);
+    expect(await componentOfRelationshipIds(procedureId)).toEqual([]);
+  });
+
+  it('creates a primary component at index 0 with its index and type', async () => {
+    const created = await queryAsAdminWithSuccess({
+      query: RELATIONSHIP_ADD,
+      variables: { input: { fromId: textId, toId: procedureId, relationship_type: 'component-of', component_index: 0, component_type: 'primary' } },
+    });
+    relationshipId = created.data?.stixCoreRelationshipAdd.id;
+    const read = await queryAsAdmin({ query: COMPONENT_READ, variables: { id: relationshipId } });
+    expect(read.data?.stixCoreRelationship.component_index).toBe(0);
+    expect(read.data?.stixCoreRelationship.component_type).toBe('primary');
+  });
+
+  it('updates the index and type when the same component is added again', async () => {
+    await queryAsAdminWithSuccess({
+      query: RELATIONSHIP_ADD,
+      variables: { input: { fromId: textId, toId: procedureId, relationship_type: 'component-of', component_index: 3, component_type: 'secondary' } },
+    });
+    expect(await componentOfRelationshipIds(procedureId)).toEqual([relationshipId]);
+    const read = await queryAsAdmin({ query: COMPONENT_READ, variables: { id: relationshipId } });
+    expect(read.data?.stixCoreRelationship.component_index).toBe(3);
+    expect(read.data?.stixCoreRelationship.component_type).toBe('secondary');
+  });
+
+  it('refuses moving a secondary component to index 0', async () => {
+    const result = await queryAsAdmin({
+      query: RELATIONSHIP_FIELD_PATCH,
+      variables: { id: relationshipId, input: [{ key: 'component_index', value: ['0'] }] },
+    });
+    expect(result.errors?.[0]?.message).toContain('The first component must be Primary.');
+  });
+
+  it('carries the component index and type in STIX', async () => {
+    const read = await queryAsAdmin({ query: COMPONENT_READ, variables: { id: relationshipId } });
+    const stix = JSON.parse(read.data?.stixCoreRelationship.toStix);
+    expect(stix.x_component_index).toBe(3);
+    expect(stix.x_component_type).toBe('secondary');
   });
 });

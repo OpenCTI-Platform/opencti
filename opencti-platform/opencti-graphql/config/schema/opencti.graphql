@@ -13881,6 +13881,8 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   description: String
   start_time: DateTime
   stop_time: DateTime
+  component_index: Int
+  component_type: String
   revoked: Boolean!
   lang: String
   objectLabel: [Label!]
@@ -13948,6 +13950,8 @@ input StixCoreRelationshipAddInput {
   description: String
   start_time: DateTime
   stop_time: DateTime
+  component_index: Int
+  component_type: String
   revoked: Boolean
   lang: String
   objectLabel: [String]

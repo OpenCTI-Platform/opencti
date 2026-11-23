@@ -33583,6 +33583,8 @@ export type StixCoreObjectsTimeSeriesParameters = {
 export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   __typename?: 'StixCoreRelationship';
   cases?: Maybe<CaseConnection>;
+  component_index?: Maybe<Scalars['Int']['output']>;
+  component_type?: Maybe<Scalars['String']['output']>;
   confidence?: Maybe<Scalars['Int']['output']>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
@@ -33705,6 +33707,8 @@ export type StixCoreRelationshipToStixArgs = {
 
 export type StixCoreRelationshipAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  component_index?: InputMaybe<Scalars['Int']['input']>;
+  component_type?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
   coverage_information?: InputMaybe<Array<SecurityCoverageExpectation>>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
@@ -54697,6 +54701,8 @@ export type StixCoreObjectOrStixCoreRelationshipResolvers<ContextType = any, Par
 
 export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreRelationship'] = ResolversParentTypes['StixCoreRelationship']> = ResolversObject<{
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipCasesArgs>>;
+  component_index?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  component_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
