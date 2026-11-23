@@ -1179,6 +1179,7 @@
   "Subscription link": "订阅链接",
   "Support version": "支持版本",
   "SWID": "SWID",
+  "Sync inflight cleanup manager": "同步中转文件清理管理器",
   "Sync workflow statuses by name": "按名称同步工作流状态",
   "SYNC_INFLIGHT_CLEANUP_MANAGER": "同步中转文件清理管理器",
   "Synchronized": "同步",

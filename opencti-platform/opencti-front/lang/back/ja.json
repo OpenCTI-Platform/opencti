@@ -1179,6 +1179,7 @@
   "Subscription link": "サブスクリプションリンク",
   "Support version": "サポート対象バージョン",
   "SWID": "SWID",
+  "Sync inflight cleanup manager": "同期中継ファイルのクリーンアップマネージャ",
   "Sync workflow statuses by name": "ワークフローのステータスを名前で同期する",
   "SYNC_INFLIGHT_CLEANUP_MANAGER": "同期中継ファイルのクリーンアップマネージャ",
   "Synchronized": "同期",

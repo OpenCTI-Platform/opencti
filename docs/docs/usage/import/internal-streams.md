@@ -46,13 +46,13 @@ By default, the receiving platform downloads each file of a synchronized entity 
 !!! warning "Requirements and limits"
 
     - Workers must run the same version as the platform. Older workers do not import staged files.
-    - Files above `sync_manager:file_reference_mode_max_size_mb` (5120 MB by default, the AWS S3 single copy limit) are skipped, like a file that cannot be downloaded. Raise it only if your S3 server copies larger objects.
-    - If the S3 storage of the receiving platform rejects a staged file, the upload is retried up to 3 times with a growing wait (1, 2 and 4 seconds), then the file is skipped and a warning is logged.
+    - Files above `sync_manager:file_reference_mode_max_size_mb` (5120 MB by default, the AWS S3 single copy limit) are skipped, like a file that cannot be downloaded. The sending platform does not send the file size, so such a file is uploaded up to the limit before it is skipped. Raise it only if your S3 server copies larger objects.
+    - If the S3 storage of the receiving platform rejects a staged file, the file is downloaded again from the sending platform and uploaded again, up to 3 times with a growing wait (1, 2 and 4 seconds), then the file is skipped and a warning is logged.
     - Only files of created or updated entities are staged. Files of external references, and files of other events, are still sent inline as before.
     - Each staged file is attached by its own update after the entity is created or updated, so consumers of the receiving platform stream see one more update event per staged file.
     - When [Automatic references at file upload](../../administration/entities.md#automatic-references-at-file-upload) is enabled on the entity type, the external reference of a staged file is created after the entity instead of before it, so its events arrive in a different order.
 
-Staged files that are never consumed are deleted after `sync_inflight_cleanup_manager:ttl` (one week by default). The cleanup follows `sync_manager:file_reference_mode_enabled`. To delete what is left after turning the mode off, set `sync_inflight_cleanup_manager:enabled` to `true` explicitly.
+Staged files that are never consumed are deleted after `sync_inflight_cleanup_manager:ttl` (one week by default). A staged file that is not imported within this delay, for example behind a worker backlog, is deleted and the entity stays without it. The cleanup follows `sync_manager:file_reference_mode_enabled`. To delete what is left after turning the mode off, set `sync_inflight_cleanup_manager:enabled` to `true` explicitly.
 
 ## Export an OpenCTI Stream
 

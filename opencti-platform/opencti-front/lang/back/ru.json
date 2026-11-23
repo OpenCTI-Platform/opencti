@@ -1179,6 +1179,7 @@
   "Subscription link": "Ссылка на подписку",
   "Support version": "Поддерживаемая версия",
   "SWID": "SWID",
+  "Sync inflight cleanup manager": "Менеджер очистки промежуточных файлов синхронизации",
   "Sync workflow statuses by name": "Синхронизация статусов рабочих процессов по названию",
   "SYNC_INFLIGHT_CLEANUP_MANAGER": "Менеджер очистки промежуточных файлов синхронизации",
   "Synchronized": "Синхронизированный",

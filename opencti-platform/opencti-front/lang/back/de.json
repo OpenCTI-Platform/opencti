@@ -1179,6 +1179,7 @@
   "Subscription link": "Abonnement-Link",
   "Support version": "Unterstützte Version",
   "SWID": "SWID",
+  "Sync inflight cleanup manager": "Bereinigungsmanager für zwischengespeicherte Sync-Dateien",
   "Sync workflow statuses by name": "Workflow-Status nach Namen synchronisieren",
   "SYNC_INFLIGHT_CLEANUP_MANAGER": "Bereinigungsmanager für zwischengespeicherte Sync-Dateien",
   "Synchronized": "Synchronisiert",
