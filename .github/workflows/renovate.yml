@@ -6,8 +6,8 @@ name: Renovate
 # Setup:
 # - A GitHub App installed on this repository, with read and write access to:
 #   Contents, Pull requests, Issues, Workflows, Checks and Commit statuses.
-# - Repository variable RENOVATE_APP_ID: the App ID.
-# - Repository variable RENOVATE_APP_SLUG: the App slug, for example filigran-renovate.
+# - Repository variable RENOVATE_APP_CLIENT_ID: the App client ID.
+# - Repository variable RENOVATE_APP_SLUG: the App slug, for example opencti-renovate.
 # - Repository variable RENOVATE_APP_USER_ID: the user ID of the App bot account.
 #   It is given by `gh api /users/<slug>[bot] --jq .id`.
 # - Repository secret RENOVATE_APP_PRIVATE_KEY: the App private key.
@@ -72,7 +72,7 @@ jobs:
         id: app-token
         uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
         with:
-          app-id: ${{ vars.RENOVATE_APP_ID }}
+          client-id: ${{ vars.RENOVATE_APP_CLIENT_ID }}
           private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
 
       - name: Restore Renovate repository cache
