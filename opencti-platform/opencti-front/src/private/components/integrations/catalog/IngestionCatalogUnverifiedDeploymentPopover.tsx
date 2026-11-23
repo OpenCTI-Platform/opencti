@@ -20,6 +20,7 @@ const IngestionCatalogUnverifiedDeploymentPopover: React.FC<IngestionCatalogUnve
 }) => {
   const { t_i18n } = useFormatter();
   const [isAcknowledged, setIsAcknowledged] = useState(false);
+  const acknowledgeLabel = t_i18n('I acknowledge that this connector is not supported by Filigran and deploy it at my own risk');
   useEffect(() => {
     if (isOpen) {
       setIsAcknowledged(false);
@@ -38,15 +39,20 @@ const IngestionCatalogUnverifiedDeploymentPopover: React.FC<IngestionCatalogUnve
         variant="outlined"
         icon={false}
         style={{ marginTop: 20 }}
+        // The message slot scrolls (overflow: auto) and would clip the checkbox and its focus ring.
+        slotProps={{ message: { sx: { overflow: 'visible' } } }}
       >
         <FormControlLabel
+          // MUI's `-11px` offsets its own Checkbox padding, which the library's has not.
+          sx={{ margin: 0, gap: 1 }}
           control={(
             <Checkbox
-              onClick={() => setIsAcknowledged((prev) => !prev)}
+              aria-label={acknowledgeLabel}
               checked={isAcknowledged}
+              onCheckedChange={(state) => setIsAcknowledged(state === true)}
             />
           )}
-          label={t_i18n('I acknowledge that this connector is not supported by Filigran and deploy it at my own risk')}
+          label={acknowledgeLabel}
         />
       </Alert>
       <DialogActions>
