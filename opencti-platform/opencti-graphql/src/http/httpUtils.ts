@@ -13,6 +13,7 @@ import {
   getRateProtectionTimeWindowMs,
   getRateProtectionUserAgentSkipPrefixes,
   isDevMode,
+  isScriptSnippetConfigured,
   isUnsecureHttpResourceAllowed,
   isUpgradeInsecureRequestsEnabled,
 } from './httpConfig';
@@ -151,7 +152,10 @@ export const decodeOidcState = (state: string | undefined) => {
 // Region helmet configuration
 
 const buildScriptSrc = () => {
-  const scriptSrc = ["'self'", "'unsafe-inline'"];
+  const scriptSrc = ["'self'"];
+  if (isScriptSnippetConfigured()) {
+    scriptSrc.push("'unsafe-inline'");
+  }
   if (isDevMode()) {
     scriptSrc.push("'unsafe-eval'");
   }
