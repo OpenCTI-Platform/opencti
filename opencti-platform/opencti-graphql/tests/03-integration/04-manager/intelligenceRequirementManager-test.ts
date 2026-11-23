@@ -195,7 +195,7 @@ const octi = (extension: Record<string, unknown>) => ({ [STIX_EXT_OCTI]: extensi
 // the previous batch left (a requirement created now starts one rescan day back)
 let streamClock = Date.now();
 const nextEventId = () => {
-  streamClock += 1;
+  streamClock = Math.max(streamClock + 1, Date.now());
   return `${streamClock}-0`;
 };
 
