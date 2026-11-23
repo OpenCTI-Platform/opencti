@@ -41,9 +41,10 @@ vi.mock('../../../src/database/sessionStore-memory', async (importOriginal) => {
       return fn();
     }
 
-    destroy(sid: string, fn: () => void) {
-      sharedSessions.delete(sid);
-      return fn();
+    // As the real stores, tell whether this call deleted the session
+    destroy(sid: string, fn: (error: unknown, result: unknown) => void) {
+      const deleted = sharedSessions.delete(sid);
+      return fn(null, { sessionId: sid, deleted });
     }
 
     touch(sid: string, sess: unknown, fn: () => void) {
@@ -273,5 +274,28 @@ describe('session: maximum lifetime', () => {
     expect(isSessionOverMaxLifetime({ id: 'user-1' }, TWELVE_HOURS, LOGIN_TIME)).toBe(true);
     expect(isSessionOverMaxLifetime({ id: 'user-1', session_creation: 'not a date' }, TWELVE_HOURS, LOGIN_TIME)).toBe(true);
     expect(isSessionOverMaxLifetime({ id: 'user-1' }, 0, LOGIN_TIME)).toBe(false);
+  });
+});
+
+describe('session: end of a session', () => {
+  afterEach(() => {
+    sharedSessions.clear();
+    delete process.env.APP__ENCRYPTION_KEY;
+    delete process.env.APP__SESSION_MANAGER;
+  });
+
+  it('should tell only the first of concurrent calls that it ended the session', async () => {
+    const { endSessionByRawId } = await loadSessionModule();
+    sharedSessions.set('session-id', JSON.stringify({ user: { id: 'user-1' } }));
+
+    const results = await Promise.all([endSessionByRawId('session-id'), endSessionByRawId('session-id'), endSessionByRawId('session-id')]);
+
+    expect(results.filter((isDeleted) => isDeleted)).toHaveLength(1);
+    expect(sharedSessions.has('session-id')).toBe(false);
+  });
+
+  it('should not tell that it ended a session that does not exist', async () => {
+    const { endSessionByRawId } = await loadSessionModule();
+    expect(await endSessionByRawId('unknown-session-id')).toBe(false);
   });
 });

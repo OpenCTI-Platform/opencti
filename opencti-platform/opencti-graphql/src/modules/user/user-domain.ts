@@ -49,7 +49,7 @@ import {
   storeLoadById,
 } from '../../database/middleware-loader';
 import { delEditContext, notify, publishCacheResetEvent, setEditContext } from '../../database/redis';
-import { isSessionOverMaxLifetime, killOtherUserSessions, killUserSessions, killUserSessionsOverLimit } from '../../database/session';
+import { endSessionByRawId, isSessionOverMaxLifetime, killOtherUserSessions, killUserSessions, killUserSessionsOverLimit } from '../../database/session';
 import {
   buildPagination,
   isEmptyField,
@@ -2728,31 +2728,35 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: Express
 };
 
 export const JWT_TOKEN_PREFIX = 'ey';
-type SessionDestroyRequest = { session?: { destroy: (callback: (err?: unknown) => void) => void } };
-type SessionAuthRequest = OriginRequest & SessionDestroyRequest & { session?: { user?: { id: string; session_creation?: string } } };
+type SessionEndRequest = { sessionID?: string; session?: unknown };
+type SessionAuthRequest = OriginRequest & { session?: { user?: { id: string; session_creation?: string } } };
 
-// End a session that reached its maximum lifetime (app:session_max_lifetime): the session is destroyed,
+// End a session that reached its maximum lifetime (app:session_max_lifetime): the session is deleted,
 // so its user must log in again, and the logout is recorded in the activity log.
-export const endSessionOverMaxLifetime = async (req: SessionDestroyRequest, user: AuthUser) => {
-  await new Promise<void>((resolve) => {
-    if (!req.session) {
-      resolve();
-      return;
-    }
-    req.session.destroy((err) => {
-      if (err) {
-        logApp.error('Fail to destroy a session over its maximum lifetime', { cause: err, user_id: user.id });
-      }
-      resolve();
+// Several requests of the same session can reach it at once, possibly on several nodes (a page sends its
+// queries in parallel): each one ends the session, but only the one that actually deleted it records the logout.
+export const endSessionOverMaxLifetime = async (req: SessionEndRequest, user: AuthUser) => {
+  const { sessionID } = req;
+  // As express-session does when destroying a session: otherwise the end of the request would save it again
+  delete req.session;
+  if (!sessionID) {
+    return;
+  }
+  let isDeletedByThisRequest = false;
+  try {
+    isDeletedByThisRequest = await endSessionByRawId(sessionID);
+  } catch (err) {
+    logApp.error('Fail to delete a session over its maximum lifetime', { cause: err, user_id: user.id });
+  }
+  if (isDeletedByThisRequest) {
+    await publishUserAction({
+      user,
+      event_type: 'authentication',
+      event_access: 'administration',
+      event_scope: 'logout',
+      context_data: { reason: 'max_lifetime' },
     });
-  });
-  await publishUserAction({
-    user,
-    event_type: 'authentication',
-    event_access: 'administration',
-    event_scope: 'logout',
-    context_data: { reason: 'max_lifetime' },
-  });
+  }
 };
 
 // This method can only be used in createAuthenticatedContext

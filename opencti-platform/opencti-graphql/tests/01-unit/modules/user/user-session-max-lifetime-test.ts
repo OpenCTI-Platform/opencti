@@ -39,6 +39,13 @@ vi.mock('../../../../src/domain/group', () => ({
   defaultMarkingDefinitionsFromGroups: vi.fn().mockResolvedValue([]),
 }));
 
+// The session store is simulated: deleting a session tells, as the real stores do, whether this call deleted it
+const liveSessions = vi.hoisted(() => new Set<string>());
+vi.mock('../../../../src/database/session', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/session')>()),
+  endSessionByRawId: vi.fn(async (sessionId: string) => liveSessions.delete(sessionId)),
+}));
+
 vi.mock('passport', () => ({
   default: {
     authenticate: vi.fn(),
@@ -63,33 +70,30 @@ import { authenticateUserFromRequest } from '../../../../src/modules/user/user-d
 import { getEntitiesMapFromCache } from '../../../../src/database/cache';
 import { publishUserAction } from '../../../../src/listener/UserActionListener';
 import { executionContext } from '../../../../src/utils/access';
+import { endSessionByRawId } from '../../../../src/database/session';
 
 const USER = { id: 'user-1', internal_id: 'user-1', name: 'User 1', user_email: 'user1@opencti.io', groups: [], organizations: [] };
 
-// A request authenticated by a session opened at the given login time
-const sessionRequest = (loginTime: number) => {
-  const req = {
-    ip: '127.0.0.1',
-    headers: {},
-    header: () => undefined,
-    sessionID: 'session-id',
-    session: {
-      user: { id: USER.id, session_creation: new Date(loginTime).toISOString() },
-      destroy: vi.fn((callback: (err?: unknown) => void) => {
-        // As express-session does, the session is removed from the request
-        delete (req as { session?: unknown }).session;
-        callback();
-      }),
-    },
-  };
-  return req;
-};
+// A request authenticated by a session opened at the given login time.
+// Each request holds its own copy of the session, as each one reads it from the store.
+const SESSION_ID = 'session-id';
+const sessionRequest = (loginTime: number) => ({
+  ip: '127.0.0.1',
+  headers: {},
+  header: () => undefined,
+  sessionID: SESSION_ID,
+  session: { user: { id: USER.id, session_creation: new Date(loginTime).toISOString() } } as { user: { id: string; session_creation: string } } | undefined,
+});
 
 describe('authenticateUserFromRequest: maximum lifetime of a session', () => {
   const context = executionContext('test');
+  const overLimitLoginTime = () => Date.now() - TWELVE_HOURS - 60 * 1000;
 
   beforeEach(() => {
+    liveSessions.clear();
+    liveSessions.add(SESSION_ID);
     vi.mocked(publishUserAction).mockClear();
+    vi.mocked(endSessionByRawId).mockClear();
     vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([[USER.id, USER]]) as any);
   });
 
@@ -99,19 +103,19 @@ describe('authenticateUserFromRequest: maximum lifetime of a session', () => {
 
   it('should authenticate the user of a session under its maximum lifetime', async () => {
     const req = sessionRequest(Date.now() - TWELVE_HOURS + 60 * 1000);
-    const { destroy } = req.session;
     const user = await authenticateUserFromRequest(context, req as any);
     expect(user?.id).toEqual(USER.id);
-    expect(destroy).not.toHaveBeenCalled();
+    expect(endSessionByRawId).not.toHaveBeenCalled();
     expect(publishUserAction).not.toHaveBeenCalled();
   });
 
   it('should end a session over its maximum lifetime, even when its user is active', async () => {
-    const req = sessionRequest(Date.now() - TWELVE_HOURS - 60 * 1000);
-    const { destroy } = req.session;
+    const req = sessionRequest(overLimitLoginTime());
     const user = await authenticateUserFromRequest(context, req as any);
     expect(user).toBeUndefined();
-    expect(destroy).toHaveBeenCalledTimes(1);
+    expect(endSessionByRawId).toHaveBeenCalledWith(SESSION_ID);
+    expect(liveSessions.has(SESSION_ID)).toBe(false);
+    // Removed from the request, so that the end of the request does not save it again
     expect(req.session).toBeUndefined();
     expect(publishUserAction).toHaveBeenCalledTimes(1);
     expect(publishUserAction).toHaveBeenCalledWith(expect.objectContaining({
@@ -123,10 +127,27 @@ describe('authenticateUserFromRequest: maximum lifetime of a session', () => {
   });
 
   it('should not authenticate the next requests of an ended session', async () => {
-    const req = sessionRequest(Date.now() - TWELVE_HOURS - 60 * 1000);
+    const req = sessionRequest(overLimitLoginTime());
     await authenticateUserFromRequest(context, req as any);
     expect(await authenticateUserFromRequest(context, req as any)).toBeUndefined();
-    // The logout is recorded once
     expect(publishUserAction).toHaveBeenCalledTimes(1);
+  });
+
+  it('should record the logout once when parallel requests of the session reach its maximum lifetime', async () => {
+    const loginTime = overLimitLoginTime();
+    const requests = [sessionRequest(loginTime), sessionRequest(loginTime), sessionRequest(loginTime)];
+
+    const users = await Promise.all(requests.map((req) => authenticateUserFromRequest(context, req as any)));
+
+    expect(users).toEqual([undefined, undefined, undefined]);
+    expect(endSessionByRawId).toHaveBeenCalledTimes(3);
+    expect(publishUserAction).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not authenticate the request when the session cannot be deleted', async () => {
+    vi.mocked(endSessionByRawId).mockRejectedValueOnce(new Error('Redis unavailable'));
+    const req = sessionRequest(overLimitLoginTime());
+    expect(await authenticateUserFromRequest(context, req as any)).toBeUndefined();
+    expect(publishUserAction).not.toHaveBeenCalled();
   });
 });

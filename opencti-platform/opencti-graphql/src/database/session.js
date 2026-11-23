@@ -139,6 +139,13 @@ export const killSessionByRawId = async (rawSessionId) => {
   return store.destroy(rawSessionId);
 };
 
+// Delete a session, returning true only for the call that actually deleted it. When several requests
+// (possibly on several nodes) end the same session at once, a single one of them gets true.
+export const endSessionByRawId = async (rawSessionId) => {
+  const killed = await killSessionByRawId(rawSessionId);
+  return killed?.deleted === true;
+};
+
 const killSessions = async (sessionsIds) => {
   const killedSessions = [];
   for (let index = 0; index < sessionsIds.length; index += 1) {
